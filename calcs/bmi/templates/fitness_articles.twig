@@ -1,0 +1,47 @@
+{% extends base %}
+
+{% block extra_styles %}
+    <style>
+    .author {font-weight:100;margin:0.7em 0 1em 0;}
+    .author a:hover {text-decoration: underline;}
+    .dot {font-size: 0.8em;}
+    #main-content p {line-height:2;font-weight: 100;margin-top:1.3em;}
+    #main-content a {text-decoration: underline;color: -webkit-link;}
+    #main-content .mini-title {line-height:2;font-weight: 700;margin-top: 1.3em;}
+    #main-content .addthis_native_toolbox:last-child {margin-top: 1.5em;}
+    .button-container {position: relative;}
+    #main-content .button-container a {text-decoration: none;}
+    .hover:hover {background-color: #c275b1;color:white;}
+    .full-button {font-weight:normal;color:#c275b1;border:0.125em solid #c275b1;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;
+        -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;cursor: pointer;}
+    </style>
+{% endblock %}
+
+{% block page_content %}
+
+<p class="author grey small-text">
+    <a class="dark thin-font" href="fitness">Fitness</a>&nbsp;&nbsp;
+    <span class="dot grey thin-font">•</span>&nbsp;&nbsp;<span class="author-name grey thin-font">{{ author }}</span>&nbsp;&nbsp;
+    <span class="dot grey thin-font">•</span>&nbsp;&nbsp;
+    <time class="grey thin-font" datetime="{{ date_time }}" pubdate="pubdate">{{ visible_date }}</time>
+</p>
+<div id="main-content">
+    <img width="100%" height="auto" alt="{{ img_alt }}" src="{{ og_img_url }}" />
+
+    {% for item in article_paragraphs %}
+        {% if item.title %}
+            <h2 class="mini-title">{{ item.title|raw }}</h2>
+        {% endif %}
+        {% for p in item.paragraphs %}
+            <p>{{ p|raw }}</p>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="button-container">
+        <a href="{{ next_article_url }}"><div class="hover full-button">Next Article: {{ next_article }}</div></a>
+    </div>
+
+    <p>{{ author }}, <span class="thin-font grey italic">Fitness Guru,</span> #Beastmode</p>
+
+</div>
+{% endblock %}

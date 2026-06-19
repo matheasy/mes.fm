@@ -1,0 +1,96 @@
+{% extends base %}
+
+{% block extra_styles %}
+    <style>
+    .author {font-weight:100;margin:0.7em 0 1em 0;}
+    .dot {font-size: 0.8em;}
+    #main-content p {line-height:2;font-weight: 100;margin-top:1.3em;}
+    #main-content span {line-height: 2;}
+    #main-content .img-src {word-break: break-all; }
+    #main-content .mini-title {line-height:2;font-weight: 700;margin-top: 0.5em;}
+    #main-content .addthis_native_toolbox:last-child {margin-top: 1.5em;}
+    #main-content .extra-small-text {font-size: 0.7em;}
+    .button-container {position: relative;}
+    #main-content .button-container a {text-decoration: none;}
+    .left-button {display: inline-block;width:45%;}
+    .right-button {position: absolute;right:0;top:0;width:45%;}
+    .hover:hover {background-color: #c275b1;color:white;}
+    .full-button {font-weight:normal;color:#c275b1;border:0.125em solid #c275b1;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;
+        -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;cursor: pointer;}
+    </style>
+{% endblock %}
+
+{% block rel_tags %}
+	{% if p == 1 %}
+        <link rel="next" href="{{ url }}/2" />
+    {% elseif p == 10 %}
+        <link rel="prev" href="{{ url }}/9" />
+    {% else %}
+    	<link rel="prev" href="{{ url }}/{{ prev_page }}" />
+	    <link rel="next" href="{{ url }}/{{ next_page }}" />
+    {% endif %}
+{% endblock %}
+
+{% block page_content %}
+
+<p class="author grey small-text">
+    <a class="dark thin-font" href="sports">Sports</a>&nbsp;&nbsp;
+    <span class="dot grey thin-font">•</span>&nbsp;&nbsp;<span class="author-name grey thin-font">{{ author }}</span>&nbsp;&nbsp;
+    <span class="dot grey thin-font">•</span>&nbsp;&nbsp;
+    <time class="grey thin-font" datetime="{{ date_time }}" pubdate="pubdate">{{ visible_date }}</time>
+</p>
+<div id="main-content">
+	{% if p == 1 %}
+		<p>{{ note }}</p>
+    {% endif %}
+
+	<h2 class="mini-title grey">{{ 11 - p }}. {{ data.name }}</h2>
+    <img width="100%" height="auto" alt="{{ data.name }}" src="{{ data.img_url }}" />
+    <br><span class="img-src small-text">Image Source: {{ data.img_url }}</span>
+    <br><br><span>BMI: {{ data.bmi.bmi }} ({{ data.bmi.category }}), Height: {{ data.bmi.feet }}'{{ data.bmi.inches }}" ({{ data.bmi.meters }} m), Weight: {{ data.bmi.pounds }} lbs ({{ data.bmi.kg }} kg)</span>
+    {% if data.description %}
+        <p class="info">{{ data.description }}</p>
+    {% endif %}
+    {% if data.extra_stats %}
+        <p>{{ data.extra_stats }}</p>
+    {% endif %}
+
+    {% if p == 1 %}
+	    <div class="button-container">
+	        <a href="{{ url }}/{{ next_page }}"><div class="hover full-button">Next Page</div></a>
+	    </div>
+	{% elseif p == 10 %}
+	    <br>
+	    <p>Obviously there are many other great athletes that could have made this Top 10 list. Because of that, we want to hear your feedback on who else should have made this list, or who shouldn’t be on this list.</p>
+        {% if next_article %}
+	       <p>To check out the BMI’s of the {{ next_article }}, please visit my article by clicking on the following link <a href="{{ next_article_url }}">{{ next_article }}</a>.</p>
+       {% endif %}
+	    <div class="button-container">
+            <a href="{{ url }}/{{ prev_page }}">
+                {% if next_article %}
+                    <div class="hover left-button button active-button">Previous Page</div>
+                {% else %}
+                    <div class="hover full-button">Previous Page</div>
+                {% endif %}
+            </a>
+            {% if next_article %}
+                <a href="{{ next_article_url }}">
+                    <div class="hover right-button button">Next Article: {{ next_article }}</div>
+                </a>
+            {% endif %}
+        </div>
+	{% else %}
+		<div class="button-container">
+	        <a href="{{ url }}/{{ prev_page }}">
+	            <div class="hover left-button button active-button">Previous Page</div>
+	        </a>
+	        <a href="{{ url }}/{{ next_page }}">
+	            <div class="hover right-button button">Next Page</div>
+	        </a>
+	    </div>
+	{% endif %}
+
+    <p>{{ author }}, <span class="thin-font grey italic">Fitness Guru,</span> #Beastmode</p>
+
+</div>
+{% endblock %}

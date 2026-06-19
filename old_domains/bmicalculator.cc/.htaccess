@@ -1,0 +1,4 @@
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^bmicalculator\.cc$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.bmicalculator\.cc$
+RewriteRule ^(.*)$ "https\:\/\/bmicalculator\.mes\.fm\/$1" [R=301,L]

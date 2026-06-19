@@ -1,0 +1,55 @@
+{% extends base %}
+
+{% block javascripts %}
+	{{ parent() }}
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	.single-img {width:100%;display:block;height:auto;border:0.125em solid #ddd;box-sizing: border-box;-moz-box-sizing: border-box;-webkit-box-sizing: border-box;}
+	.button-container {display: table;width:100%;margin:1em 0;}
+	.button-container--last {margin-bottom: 2em;}
+	.btn-link {display: table-cell;width:33%;}
+	.btn-link:not(:last-child) {border-right:0.4em solid transparent;}
+	.button--small {margin:0;}
+	{% if not mobile %}
+	.button--small:hover {background-color: {{ dark_color }};color:white;}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% set resp_rect = true %}
+{% set resp_vert_mobile = true %}
+
+{% block ad_above_title %}
+	{{ parent() }}
+	{% if show_ads %}
+        <!-- (Responsive) Horizontal -->
+        <ins class="adsbygoogle"
+             style="display:block;margin:1em 0"
+             data-ad-client="ca-pub-1461238060884369"
+             data-ad-slot="{{ ad_id['resp_horiz'] }}"
+             data-ad-format="horizontal"></ins>
+        <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    {% endif %}
+{% endblock %}
+
+{% block resp_horiz_mobile %}{% endblock %}
+
+{% block page_content %}
+	<div id="main-content">
+		<div class="button-container">
+			{% if prev_meme %}<a class="btn-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ prev_meme }}"><div class="button button--small">&#9668;&nbsp;&nbsp;{% if mobile %}Prev{% else %}Previous{% endif %}</div></a>{% endif %}
+			<a class="btn-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ rand_meme }}"><div class="button button--small">Random</div></a>
+			{% if next_meme %}<a class="btn-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ next_meme }}"><div class="button button--small">Next&nbsp;&nbsp;&#9658;</div></a>{% endif %}
+		</div>
+		<img class="single-img lazyload" height="auto" width="692" data-src="https://{{ url_short }}/img/memes/{{ img_url }}" alt="{{ page_title }}">
+		<div class="button-container button-container--last">
+			{% if prev_meme %}<a class="btn-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ prev_meme }}"><div class="button button--small">&#9668;&nbsp;&nbsp;{% if mobile %}Prev{% else %}Previous{% endif %}</div></a>{% endif %}
+			<a class="btn-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ rand_meme }}"><div class="button button--small">Random</div></a>
+			{% if next_meme %}<a class="btn-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ next_meme }}"><div class="button button--small">Next&nbsp;&nbsp;&#9658;</div></a>{% endif %}
+		</div>
+	</div>
+{% endblock %}

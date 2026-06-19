@@ -1,0 +1,115 @@
+{% extends base %}
+
+{% block extra_head %}
+<script type="text/javascript" src="https://latex.codecogs.com/latexit.js" async></script>
+{% endblock %}
+
+{% block extra_styles %}
+    <style>
+    .metric-header {margin-bottom:1em; font-weight:normal;}
+    .imperial-header {margin-top:2em;font-weight:normal;margin-bottom:1em;}
+    .bmi-equals {display: table-cell;vertical-align: middle;}
+    .bmi-equals p {margin-right:0.5em;}
+    .formula-container {width:10em;display:table-cell;padding-top:0.4em;}
+    .formula-container div:first-child {border-bottom:0.0625em solid #685f62;text-align:center;}
+    .formula-container div:last-child {border-top:0.0625em solid #685f62;text-align:center;}
+    .formula-container div p:first-child {margin-bottom:0.25em;}
+    .formula-container div p:last-child {margin-top:0.1875em;}
+    .multiply-container {display:table-cell;vertical-align:middle;}
+    .multiply-container p {margin-left:0.5em;}
+    .multiply-container sup {vertical-align: top;position:relative;top:-0.3em;}
+    .small-note {margin-top:1em;line-height:normal;}
+    .small-note sup {vertical-align: top;position:relative;top:-0.3em;}
+    </style>
+{% endblock %}
+
+{% block page_content %}
+<div id="main-content">    
+    <h2 class="metric-header big-text">Metric BMI Formula</h2>
+    <div class="bmi-equals"><p class="thin-font">BMI = </p></div>
+    <div class="formula-container">
+        <div><p class="thin-font">Mass (Kilograms)</p></div>
+        <div><p class="thin-font">(Height (Meters))<sup class="thin-font small-text">2</sup></p></div>
+    </div>
+
+    <h2 class="imperial-header big-text">Imperial BMI Formula</h2>
+    <div class="bmi-equals"><p class="thin-font">BMI = </p></div>
+    <div class="formula-container">
+        <div><p class="thin-font">Mass (Pounds)</p></div>
+        <div><p class="thin-font">(Height (Inches))<sup class="thin-font small-text">2</sup></p></div>
+    </div>
+    <div class="multiply-container">
+        <p class="thin-font"> &#215; 703<sup class="thin-font big-text">*</sup></p>
+    </div>
+    <p class="small-note thin-font"><sup class="thin-font big-text">*</sup> The value '703' is more accurately '703.06957964' but higher precision is negligible when calculating BMI.</p>
+</div>
+
+<h2 class="header2">BMI Formula Conversion to Imperial Units</h2>
+<p class="sentence">
+    The BMI Formula is simply the mass of a person divided by the square of the height and is defined using the metric units of kilograms for mass and meters for height. This means that when using the imperial units of pounds for mass and inches for height, these need to be converted metric unites, which arises the extra factor of 703. This conversion is shown below:
+    <ul class="list">
+        <li class="list__indent">1 pound (lb) = 0.453592 kilograms (kg)</li>
+        <li class="list__indent">1 inch (in) = 0.0254 meters (m)</li>
+    </ul>
+</p>
+
+<br>
+
+<div lang="latex">
+    \rightarrow BMI = \frac{Mass (kg)}{[Mass (m)]^2}
+</div>
+
+<div lang="latex">
+    = \frac{Mass (lb) * 0.453592 \frac{kg}{in}}{[Height (in) * 0.0254 \frac{m}{in}]^2}
+</div>
+
+<div lang="latex">
+    = \frac{Mass(lb)}{[Height (in)]^2} * \frac{0.453592 \frac{kg}{lb}}{0.0254^2 \frac{m^2}{in^2}}
+</div>
+
+<div lang="latex">
+    = \frac{Mass(lb)}{[Height (in)]^2} * 703.069 \frac{\frac{kg}{lb}}{\frac{m^2}{in^2}}
+</div>
+
+<div lang="latex">
+    \approx \frac{Mass(lb)}{[Height (in)]^2} * 703 \frac{\frac{kg}{lb}}{\frac{m^2}{in^2}}
+</div>
+
+<br>
+
+<p class="sentence">
+Please note that the units above for the factor 703 simply convert the imperial units to the metric units and thus the 703 is considered to be a conversion factor. Another note is that the conversion factor is simply rounded up to 703 because the body mass index does not need to have a high level of precision since the BMI bodyweight categories are broad and have at most just 1 decimal place of accuracy.
+</p>
+
+<!-- (Responsive) Rectangle Ad -->
+<ins class="adsbygoogle"
+     style="display:block;margin-top:1em;margin-bottom:0.5em;"
+     data-ad-client="ca-pub-1461238060884369"
+     data-ad-slot="{{ ad_id['resp_rect'] }}"
+     data-ad-format="rectangle"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<h2 class="header2">Important Notes</h2>
+<p class="sentence">
+The BMI Formula has been widely used because it is very simple and easy to calculate. This allows for the ability to compare many different peoples and even entire countries BMIs. That being said it still has its limitations because it assumes that mass of a person is proportional to the square of the height. This is in fact not always the case and it can be shown that for taller people the mass is actually more proportional to the cube of the height. Thus this pre-defined proportion of mass to the square of the height is only hypothetical and is used to get a general BMI for all body types, genders, and sizes. This simplification makes it easier and quicker to calculate and compare different people and their bodyweights but at the same time it may be inaccurate for some people. 
+</p>
+
+<p class="sentence">For a full breakdown on the advantages and benefits of the BMI, please go to our <a class="link" href="{{ root_domain }}">BMI Calculator</a> homepage.</p>
+
+{% if mobile %}
+    <!-- (Responsive) Vertical -->
+    <ins class="adsbygoogle"
+         style="display:block;margin-bottom:1em"
+         data-ad-client="ca-pub-1461238060884369"
+         data-ad-slot="{{ ad_id['resp_vert'] }}"
+         data-ad-format="rectangle"></ins>
+    <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+{% endif %}
+
+{% endblock %}
+
+{% block fb_comments %}{{ parent() }}{% endblock %}

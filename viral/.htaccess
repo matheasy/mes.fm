@@ -1,0 +1,7 @@
+
+RewriteEngine on
+
+RewriteCond %{HTTP_HOST} ^viral\.mes\.fm$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.viral\.mes\.fm$
+RewriteRule ^/?$ "https\:\/\/viral\.mes\.fm\/" [R=301,L]
+

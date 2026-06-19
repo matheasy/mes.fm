@@ -1,0 +1,125 @@
+{% extends base %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>$.getScript("{{ root_domain }}js/calculator.js?v=1.4");</script>
+{% endblock %}
+
+{#{% block resp_horiz %}{% endblock %}#}
+
+{% block extra_styles %}
+    <style>
+	.calculator-header {font-size: 1.1em;margin-bottom:1em;font-weight: 700;}
+	.input {height:2em;width:5em;font-size: 1em;text-align: center;}
+	.input-answer {height:2em;width:5em;font-size: 1em;text-align: center;}
+	#left-side-container {display:table-cell;/*padding-right:0.5em;border-right: 0.15em solid #e1e1e1;*/width:55%;}
+	#left-side-container input {margin-left:0.3em;}
+	.height-div {margin-top: 0.5em;}
+	#left-side-container span {display: inline-block;width:10em;font-size: 1em;font-weight: 400;}
+	#imperial-container .height-div input:last-child {margin-left:0.5em;}
+	#imperial-container {margin-top:1.2em;}
+	#right-side-container {display: table-cell;padding-left:2em;width:45%;}
+	#bmi-input-container {display: table-cell;}
+	#bmi-input-container input {display: block;background-color: #EEEEEE;border: 0.0625em #b2b2b2 solid;}
+	#check-mark-container {display: none;vertical-align: middle;}
+	#check-mark-container img {height: 2em;	width: auto;display: block;margin-left:1.2em;}
+	#result-text {color:black;margin-top:0.8em;line-height: 1.3;font-style: italic;font-weight: 400;}
+	#result-text span {font-weight: 700;}
+	#bmi-categories-container {margin-top:0.8em;}
+	#bmi-categories-container .category {line-height: 1.5;font-weight: 400;}
+	/*#note {line-height: 1.2;font-weight: 400;margin-top: 1.2em;display: inline-block;}*/
+	#note {line-height: 1.5;font-weight: 400;display: inline-block;}
+	#note span {line-height: 1.2;font-weight: normal;}
+	#bmi-categories-container .healthy-category {font-weight: normal;color:#62b52d;}
+	#bmi-categories-container .unhealthy-category {font-weight: normal;color:#cb3434;}
+	.button--share-calc {margin-bottom: 1em;}
+    </style>
+{% endblock %}
+
+{% block page_content %}
+	<div id="main-content">
+		<div id="share-calc-button" class="button button--share-calc">Share Your BMI</div>
+		<div id="share-calc-url-container" class="share-calc-url-container hide">
+			<span class="right-arrow">&#9654;</span>
+			<input id="url-to-share" class="share-calc-url">
+			<img src="//mes.fm/main_img/scissors-icon.png" height="32" width="19" id="copy-link-button" class="scissors-icon">
+		</div>
+		<div id="left-side-container">
+			<div id="metric-container">
+				<p class="calculator-header">Metric Measurements</p>
+				<div class="weight-div">
+					<span>Weight (Kilograms)</span><input class="input" id="kilograms-input" placeholder="eg 65.8" type="text" autocomplete="off">
+				</div>
+				<div class="height-div">
+					<span>Height (Centimeters)</span><input class="input" id="centimeters-input" placeholder = "eg 182.9" type="text" autocomplete="off">
+				</div>
+			</div>
+			<div id="imperial-container">
+				<p class="calculator-header">Imperial Measurements</p>
+				<div class="weight-div">
+					<span>Weight (Pounds)</span><input class="input" id="pounds-input" placeholder="eg 145.1" type="text" autocomplete="off">
+				</div>
+				<div class="height-div">
+					<span>Height (Feet - Inches)</span><input class="input" id="feet-input" placeholder = "eg 6" type="text" autocomplete="off"><input class="input" id="inches-input" placeholder = "eg 0" type="text" autocomplete="off">
+				</div>
+			</div>		
+		</div>
+
+		<div id="right-side-container">
+			<div id="bmi-container">
+				<p class="calculator-header">BMI (Body Mass Index)</p>
+				<div class="bmi-div">
+					<div id="bmi-input-container">
+						<input id="bmi-input-result" class="input-answer" readonly="readonly" type="text" autocomplete="off">
+					</div>
+					<div id="check-mark-container">
+						<img src="//mes.fm/main_img/green-check-mark.png" alt="green check mark">
+					</div>
+				</div>
+				<p id="result-text">Please enter your weight and height in the fields to the left.</p>
+			</div>
+			<div id="bmi-categories-container">
+				<p class="category">Underweight: &lt; 18.5</p>
+				<p class="category">Normal weight: 18.5 - 24.9</p>
+				<p class="category">Overweight: 25 - 29.9</p>
+				<p class="category">Obese: &ge; 30</p>
+			</div>
+		</div>
+
+		<!-- (Responsive) Rectangle Ad -->
+	    <ins class="adsbygoogle"
+	         style="display:block;margin:1.5em 0"
+	         data-ad-client="ca-pub-1461238060884369"
+	         data-ad-slot="{{ ad_id['resp_rect'] }}"
+	         data-ad-format="rectangle"></ins>
+	    <script>
+	    (adsbygoogle = window.adsbygoogle || []).push({});
+	    </script>
+
+		<div class="hide-div-button button selected">Important Notes on BMI</div>
+		<div class="box-border">
+			<h2 class="header2 header2--top">Important Notes on BMI</h2>
+		    <p class="sentence">It is important to note that the Body Mass Index is to be used as a general tool for determining a healthy body weight. Basically the BMI assumes a "normal" body weight for men and women of average height and average fitness or activity level. Several issues arise with this method and those are listed below:</p>
+			<ul class="list">
+				<li class="list__indent">The "normal" proportion is used for all heights and weights even though not everyone has the same body type</li>
+				<li class="list__indent">Even though taller people tend to be thinner on average, their larger bone mass usually skews their BMI to slightly larger values</li>
+				<li class="list__indent">Having high muscle mass can result in a higher BMI because muscle is more dense than fat and thus for the same height someone with a lot of muscle can weigh as much as someone with high body fat</li>
+				<li class="list__indent">In reality, the "normal" body weights for people vary from age, gender, and population</li>
+			</ul>
+
+			<p class="sentence">
+			Thus it is important to take all this into account when trying to understand your BMI reading and also speak with a doctor or nutritionist before undergoing any new fitness routine or diet. One last thing to remember is that the "overweight", "underweight" readings shown in this BMI Calculator are relative to a pre-defined average "normal" body weight. This means that for bodybuilders and very fit people, sometimes it’s better being "overweight" because to them the BMI is stating they are heavier than "normal" people, which is in fact the goal most bodybuilders want to obtain.</p>
+
+			<h2 class="header2">Why is the BMI still used?</h2>
+			<p class="sentence">
+			Despite all the downfalls and limitations shown above that come with the body mass index, ironically those same limitations play a role in why it is still widely used. These same limitations still arise in many different health indices and frankly will always have limitations, to different degrees, because for the simple reason that every person is different and thus no single index can comprise all people. Since each and every health index has its limitations, the BMI is still used because it is the broadest and by far simplest index to calculate: just weight divided by height squared.</p>
+			<p class="sentence">
+			Even though different health indices exist such as Body Fat Percentage that are more accurate in predicting whether a certain person has a healthy body weight or not, the problem with those is that they require slightly more effort in obtaining the appropriate measurements for each individual. Not only that but the fact that there are many different indices and formulas for these methods, it makes comparing them more difficult as well.</p>
+
+			<p class="sentence">
+			The body mass index was developed in the 1800’s and has been widely used after World War 2 when it was used to link body weight with cardiovascular disease. Since then it has spread across the world and has thus already has amassed a great deal of data, not just people’s BMIs’ but in scholarly articles that use the simple BMI to link it to different health problems and diseases. Another major reason the BMI is still used is that it has the ability to compare many groups of people and even entire countries by their BMI. This is again simply possible because all that is needed is the height and weight of a person. With other indices, it would be substantially harder to obtain all the necessary data for even a few thousand people let alone in the millions! For example most Driver’s Licenses already have the height and weights listed on the card as well as stored online!</p>
+			<p class="sentence">
+			Thus for these reasons, the body mass index, despite its limitations, is still a useful tool to get a general idea of your body weight but at the end of the day, how healthy you feel is still the best calculator!</p>
+		</div>
+	</div>
+{% endblock %}

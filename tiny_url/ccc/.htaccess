@@ -1,0 +1,5 @@
+RewriteEngine on
+
+RewriteCond %{HTTP_HOST} ^ccc\.mes\.fm$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.ccc\.mes\.fm$
+RewriteRule ^(.*)$ "https\:\/\/chinchatcomics\.mes\.fm\/$1" [R=301,L]

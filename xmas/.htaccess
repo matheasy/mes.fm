@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+
+<If "%{HTTPS} == 'on'">
+AuthType basic
+AuthName "restricted area"
+AuthUserFile /home/mesfm/public_html/xmas/.htpasswd
+Require valid-user
+</If>

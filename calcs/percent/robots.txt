@@ -1,0 +1,5 @@
+User-agent: *
+
+Disallow: /search-results
+Disallow: /plugins/feedback.php
+Sitemap: https://percentagecalculator.mes.fm/sitemap.xml

@@ -1,0 +1,46 @@
+{% extends base %}
+
+{% block page_content %}
+<div id="main-content">
+	<a href="img/bmi-chart.png"><img src="img/bmi-chart.png" alt="bmi chart" width="100%" height="auto"></a>
+
+	<h2 class="header2">How to view your BMI from the Chart</h2>
+    <p class="sentence">
+		To view where your BMI lies in this chart, you can first find your weight on the top horizontal axis and then following the BMI numbers all the way down until the height on the left axis corresponds to your height. The category that your body mass index (BMI) lies under is shaded in the corresponding color which is shown in the legend above as well list below:
+		<ul class="list">
+			<li class="list__indent">Blue: The category is Underweight and corresponds to a BMI of less than 18.5</li>
+			<li class="list__indent">Green: The category is Normal Weight and corresponds to a BMI between 18.5 and 24.9</li>
+			<li class="list__indent">Yellow: The category is Overweight and corresponds to a BMI between 25 and 29.9</li>
+			<li class="list__indent">Orange: The category is Obese and corresponds to a BMI between 30 and 39.9</li>
+			<li class="list__indent">Red: The category is Extremely Obese and corresponds to a BMI of 40 or higher</li>
+		</ul>
+	</p>
+	
+	<!-- (Responsive) Rectangle Ad -->
+    <ins class="adsbygoogle"
+         style="display:block;margin-top:1em;margin-bottom:0.5em;"
+         data-ad-client="ca-pub-1461238060884369"
+         data-ad-slot="{{ ad_id['resp_rect'] }}"
+         data-ad-format="rectangle"></ins>
+    <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+
+    <h2 class="header2">Important Notes</h2>
+    <p class="sentence">The BMI Chart gives the advantage of visually seeing what is the required weight (or height) that needs to be changed in order to jump from one bodyweight category to another. That being said, the body mass index is still to be used along with many other health measures such as lifestyle, fitness, and overall physical happiness. The BMI is not a perfect measure so it is important to ask yourself (and doctor) for possible reasons for your BMI reading to decide if it is due actually having or not having a healthy body weight. A full decision on the advantages and limitations of the body mass index are shown in our <a class="link" href="{{ root_domain }}">BMI Calculator</a> so make sure to read those fully!</p>
+
+    {% if mobile %}
+    	<!-- (Responsive) Vertical -->
+	    <ins class="adsbygoogle"
+	         style="display:block;margin-bottom:1em"
+	         data-ad-client="ca-pub-1461238060884369"
+	         data-ad-slot="{{ ad_id['resp_vert'] }}"
+	         data-ad-format="rectangle"></ins>
+	    <script>
+	    (adsbygoogle = window.adsbygoogle || []).push({});
+	    </script>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block fb_comments %}{{ parent() }}{% endblock %}

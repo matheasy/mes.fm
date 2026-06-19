@@ -1,0 +1,215 @@
+{% extends base %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>$.getScript("{{ root_domain }}js/calculator_mobile.js?v=1.4");</script>
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {-webkit-appearance: none;margin: 0;}
+	.graph-table-container {text-align: center;display:none;}
+	.ass-tag {display: none;margin-bottom:0.7em;}
+	.input-row {margin:0.5em 0;position: relative;}
+	#input-div span {display: inline-block;width:9em;font-size: 1em;font-weight: 400;}
+	#bottom-container {margin-top:1.2em;}
+	#right-side-container {display:none;}
+	#right-side-container p {line-height: normal;}
+	#result-input-container {display: table-cell;}
+	#result-input-container input {display: block;background-color: #EEEEEE;border: 0.0625em #b2b2b2 solid;}
+	#check-mark-container {display: none;vertical-align: middle;}
+	#check-mark-container img {height: 2em;	width: auto;display: block;margin-left:1.2em;}
+	#result-text {color:black;margin-top:0.8em;line-height: 1.3;font-style: italic;font-weight: 400;}
+	#result-text span {font-weight: 700;}
+	#result-categories-container {margin-top:0.8em;}
+	#result-categories-container span {font-weight: 700;}
+	.category {line-height: 1.5;font-weight: 400;font-size:0.95em;}
+	#note {line-height: 1.2;font-weight: 400;display: inline-block;}
+	#note span {line-height: 1.2;font-weight: normal;}
+	#main-content table {width:100%;}
+	#main-content table input {height:1.5em;width:60%;font-size: 1em;text-align: center;border:none;}/**/
+	#right-side-container img {width:1.1em;height:1.1em;vertical-align: text-bottom;}
+	#right-side-container img {cursor: pointer;}
+	#main-content table th {font-weight:normal;padding:0.35em;background-color: #e2e2e2;border-bottom:0.125em solid #333333;vertical-align: middle;}
+	#main-content table td{text-align: center;}
+	#main-content table td:nth-child(3) {padding:0.25em 0.1em;text-align: center;width:32%;}/**/
+	#main-content table td:nth-child(4) {padding:0.25em 0.1em;text-align: center;width:28%;}
+	#main-content table td:last-child {padding:0.25em 0.1em;}/**/
+	#main-content table td:not(:last-child) {border-right:0.125em solid #333333;}/**/
+	#main-content table th:not(:last-child) {border-right:0.125em solid #333333;}
+	#main-content table tr:not(:last-child) td{border-bottom:0.125em solid #333333;}
+	#main-content table .scores-td {width:40%;}
+	#main-content table .scores-input {width:30%;}
+	#graph {margin-bottom: 1em;display:none;}
+	#graph-table {display: none;}
+	#graph-table th {width:50%;}
+	.add-ass-button {cursor: pointer;}
+	#main-content #left-side-container #input-div .input-row {width:100%;display: table;position: relative;}
+	#main-content #left-side-container #input-div .input-row .left {display: table-cell;width:45%;position: relative;padding:0;margin:0;text-align: center;}
+	#main-content #left-side-container #input-div .input-row .right {display: table-cell;width:45%;position: relative;padding:0;margin:0;text-align: center;}
+	#main-content #left-side-container #input-div .input-row input {display: table-cell;width:50%;width: 90%;}
+	.calculator-header {font-size: 1.1em;margin-bottom:1em;}
+	#main-content #left-side-container input {height:2em;font-size: 1em;text-align: center;}
+	#main-content #left-side-container #result {width:10em;}
+	.button-switch {text-align: center;display:table;width:100%;margin-bottom: 1em;}
+	.yes-button, .no-button {display:table-cell;width:50%;cursor:pointer;}
+	.button a {color:#575fab;}
+	.yes-button {border-right-width:0.0625em; }
+	.no-button {border-left-width:0.0625em; }
+	.active-button {background-color:#575fab;color: white;}
+	.active-button a {color:white;}
+	#ass-table {margin-bottom: 1em;}
+	</style>
+{% endblock %}
+
+{% block page_content %}
+	<div id="main-content">
+		<div id="share-calc-button" class="button button--share-calc">Share Your Results</div>
+		<div id="share-calc-url-container" class="share-calc-url-container hide">
+			<span class="right-arrow">&#9654;</span>
+			<input id="url-to-share" class="share-calc-url">
+			<img src="//mes.fm/main_img/scissors-icon.png" height="32" width="19" id="copy-link-button" class="scissors-icon">
+		</div>
+		<div id="right-side-container">
+			<p id="assignments-anchor" class="thin-font">Enter your assignment scores here to automatically calculate your current grade! (eg midterms, tests, homework, labs, etc.)</p>
+			<div class="add-ass-button button">add another assignment</div>
+			<table id="ass-table">
+				<tr>
+					<th>#</th>
+					<th>Score/OutOf</th>
+					<th>Grade (%)</th>
+					<th>Weight (%)</th>
+					<th></th>
+				</tr><tr>
+					<td>1</td>
+					<td class="scores-td"><input type="number" class="scores-input saved-input">/<input type="number" class="scores-input saved-input"></td>
+					<td><input type="number" class="grades-input"></td>
+					<td><input type="number" class="saved-input"></td>
+					<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+				</tr><tr>
+					<td>2</td>
+					<td class="scores-td"><input type="number" class="scores-input saved-input">/<input type="number" class="scores-input saved-input"></td>
+					<td><input type="number" class="grades-input"></td>
+					<td><input type="number" class="saved-input"></td>
+					<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+				</tr><tr>
+					<td>3</td>
+					<td class="scores-td"><input type="number" class="scores-input saved-input">/<input type="number" class="scores-input saved-input"></td>
+					<td><input type="number" class="grades-input"></td>
+					<td><input type="number" class="saved-input"></td>
+					<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+				</tr><tr>
+					<td>4</td>
+					<td class="scores-td"><input type="number" class="scores-input saved-input">/<input type="number" class="scores-input saved-input"></td>
+					<td><input type="number" class="grades-input"></td>
+					<td><input type="number" class="saved-input"></td>
+					<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+				</tr>
+			</table>
+		</div>
+		<div id="left-side-container">
+			<div id="top-container">
+				<p id="question-anchor" class="calculator-header">Do you know your Current Grade?</p>
+				<div class="button-switch">
+					<div class="yes-button active-button button">yes</div><div class="no-button button">no</div>
+				</div>
+
+	            <div id="input-div">
+					<div class="input-row">
+						<div class="left">
+							<span>Desired Grade (%)</span>
+						</div>
+						<div class="right">
+							<input id="desired-grade-input" type="number" placeholder = "eg 80" value="50" autocomplete="off">
+						</div>
+					</div>
+					<div class="input-row">
+						<div class="left">
+							<span>Current Grade (%)</span>
+						</div>
+						<div class="right">
+							<input id="current-grade-input" type="number" placeholder = "eg 82.3" autocomplete="off">
+						</div>
+					</div>
+					<div class="input-row">
+						<div class="left">
+							<span>Weight of Final (%)</span>
+						</div>
+						<div class="right">
+							<input id="final-weight-input" type="number" placeholder = "eg 40" autocomplete="off">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="bottom-container">
+				<p class="calculator-header">Grade Needed on Final Exam</p>
+
+				<div class="input-row">
+					<div class="result-div">
+						<div id="result-input-container">
+							<input id="result" readonly="readonly" type="text" autocomplete="off">
+						</div>
+						<div id="check-mark-container">
+							<img src="//mes.fm/main_img/green-check-mark.png" alt="green check mark">
+						</div>
+					</div>
+					<p id="result-text">Please make sure all textfields are filled out.</p>
+					<div id="result-categories-container">
+						<p class="category">MIN. Attainable Course Grade: <span id="min-result">0%</span></p>
+						<p class="category">MAX. Attainable Course Grade: <span id="max-result">100%</span></p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="graph-table-container">
+			<div class="graph-table-button button">Show All Possible Outcomes</div>
+			<table id="graph-table"></table>
+		</div>
+
+		<!-- GC (Responsive) Rectangle -->
+		<div class="adsense adsense--mobile">
+			<ins class="adsbygoogle"
+			     style="display:block;margin-top:1em;margin-bottom:0.5em;"
+			     data-ad-client="ca-pub-1461238060884369"
+			     data-ad-slot="6884601265"
+			     data-ad-format="rectangle"></ins>
+		</div>
+		{#<script>
+		(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>#}
+
+		<div class="hide-div-button button selected">Important Notes on our Grade Calculator</div>
+		<div class="box-border">
+			<h2 class="header2 header2--top">Important Notes</h2>
+			<p class="sentence combine">Our Final Exam Grade Calculator calculates the final exam grade you would need to get a desired overall course grade and would require you to input your current course percentage grade as well as the weight of the final as a percentage. If you do not know your current grade, you would need to select "no" on the question "Do you know your Current Grade?" and then input the grades you received for your assignments, tests, homework, labs, etc. as well as the weight as a percentage of each. Our grade calculator automatically calculates your current grade as well as the grade needed on the final exam to get your desired overall course grade! Not only that but the minimum and maximum course overall course grades are also calculated. Furthermore, a table and chart of the different possible final exam grades and their corresponding overall course grades are also generated, all automatically.</p>
+
+			{# {% block resp_horiz_mobile %}{% endblock %} #}
+			{# {% if show_ads and mobile and ad_id['resp_horiz'] %} #}
+		        <!-- (Responsive) Horizontal -->
+		        {# <div class="adsense adsense--mobile">
+		            <ins class="adsbygoogle"
+		                 style="display:block;margin:1em 0"
+		                 data-ad-client="ca-pub-1461238060884369"
+		                 data-ad-slot="{{ ad_id['resp_horiz'] }}"
+		                 data-ad-format="rectangle"></ins>
+		        </div> #}
+		        {#<script>
+		        (adsbygoogle = window.adsbygoogle || []).push({});
+		        </script>#}
+		    {# {% endif %} #}
+
+			<h2 class="header2">Inputting Data in our Final Exam Calculator</h2>
+			<p class="sentence">When inputting your Current Grade and the Weight of the Final, our calculator automatically assumes that your current grade is based is based on weight of your course prior to the final exam and is calculated as 100% minus the inputted weight of the final. If your current grade does not account for all the course work (assignments, labs, tests, homework, etc.) prior to your final exam then the calculator results will not be accurate for you.</p>
+
+			<p class="sentence">Similarly, if you don’t know your Current Grade and you input your course work and corresponding grades and weights into our calculator, the calculator automatically calculates your current grade as well as the Weight of the Final. In this case the weight of the final is simply calculated as 100% minus the Sum of the Weights of your course work. Thus if you inputted too many or too little assignments, tests, etc. then the Weight of the Final calculated may not match the actual weight of the final in your course.</p>
+			<p class="sentence">For a more in-depth breakdown of how our grade calculator works, make sure to check out our <a class="link" href="{{ root_domain }}tutorial">Grade Calculator Tutorial</a>!</p>
+		</div>
+
+		{#<div style="margin-top:1em;text-align:center">
+		    <script id="mNCC" language="javascript">  medianet_width='300';  medianet_height= '250';  medianet_crid='971915716';</script>
+			<script id="mNSC" src="//contextual.media.net/nmedianet.js?cid=8CUUOA816" language="javascript"></script>
+		</div>#}
+	</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends base %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>$.getScript("{{ root_domain }}js/calculator.js?v=1.3");</script>
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	.navbar-container {margin-top:0;margin-bottom:1.1em;}
+	.navbar {margin-bottom:0;}
+	.calculator-header {font-size: 1.1em;margin-bottom:0.6em;}
+	#page-description a {color: #428bca;font-weight: 400;}
+	#page-description a:hover {color:#4c6496;text-decoration: underline;}
+	#main-content .input {height:2em;width:10em;font-size: 1em;text-align: center;}
+	#main-content span {display: inline-block;font-weight: 400;}
+	.input-row {margin:1.5em 0;position: relative;}
+	#main-content .small-input {width:3em;}
+
+	.table-cell {display: table-cell;}
+	.vertical-align {vertical-align: middle;}
+	.center-align {text-align: center;}
+
+	.input-container {display:none;}
+	#main-content .input-container input {background-color: #EEEEEE;border: 0.0625em #b2b2b2 solid;}
+	#result-text {font-size:1.1em;color:black;margin-top:0.8em;line-height: 1.3;font-style: italic;font-weight: 400;}
+	#result-text span {font-weight: 700;}
+	#result-text .numbers {font-size: 1.5em;}
+	#result-text .usd {font-size: 18px;}
+	{% if mobile %}
+		#main-content #input2 {margin-top:0.5em;}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% block extra_head %}
+	<!-- Header Tag Code --><script data-cfasync='false' type='text/javascript'>/*<![CDATA[*/(function (a, c, s, u){'Insticator'in a || (a.Insticator={ad:{loadAd: function (b){Insticator.ad.q.push(b)}, q: []}, helper:{}, embed:{}, version: "3.0", q: [], load: function (t, o){Insticator.q.push({t: t, o: o})}}); var b=c.createElement(s); b.src=u; b.async=!0; var d=c.getElementsByTagName(s)[0]; d.parentNode.insertBefore(b, d)})(window, document, 'script', '//d2na2p72vtqyok.cloudfront.net/client-embed/daad81e0-524c-4a38-ad8e-50d905fbd28b.js');/*]]>*/</script><!-- End Header Tag Code -->
+
+	<script async type="text/javascript" src="https://www.dclick.io/static/js/ad.min.js"></script>
+{% endblock %}
+
+{% block resp_horiz %}{% endblock %}
+
+{% block resp_vert %}
+	{% if show_youtube_ads %}
+		<div class="side-bar">
+
+			{% block navbar %}{{ parent() }}{% endblock %}
+                        
+
+			<!-- Insticator API Fire Widget --><div id="insticator-container"><div id="div-insticator-ad-1"></div><div id="insticator-embed"></div><div id="div-insticator-ad-2"></div><script data-cfasync='false' type="text/javascript">/*<![CDATA[*/Insticator.ad.loadAd("div-insticator-ad-1");Insticator.ad.loadAd("div-insticator-ad-2");Insticator.load("em",{id : "0235ffb3-a6df-4a1d-b2ef-6e3c668a10bd"})/*]]>*/</script></div><!-- End Insticator API Fire Widget -->
+
+			{% if subscribe_data %}
+                <a href="https://matheasy.substack.com/" target="_blank" rel="nofollow"><div class="button button--subscribe button--active">Subscribe for Email Updates</div></a>
+            {% endif %}
+
+		</div>
+	{% endif %}
+{% endblock %}
+
+{% block alt_big_mobile_ad_1 %}{% endblock %}
+
+{% block alt_big_mobile_ad_3 %}{% endblock %}
+
+{% block page_content %}
+	<div id="main-content">
+		<div id="share-calc-button" class="button button--share-calc">Share Your Results</div>
+		<div id="share-calc-url-container" class="share-calc-url-container hide">
+			<span class="right-arrow">&#9654;</span>
+			<input id="url-to-share" class="share-calc-url">
+			<img src="//mes.fm/main_img/scissors-icon.png" height="32" width="19" id="copy-link-button" class="scissors-icon">
+		</div>
+
+		<p style="line-height:1.3;font-weight: 400">NOTE: It is important to note that this RPM range is AFTER the cut Google takes from Adsense earnings which is 45%.
+			Thus the total earnings on YouTube is estimated at near $2.00 to $5.00 RPM.</p>
+		<div class="input-row">
+			<span style="margin-right:1em;">Video Views</span><input id="input1" class="input" type="text" autocomplete="off">
+		</div>
+
+		<div class="input-row">
+			<span style="margin-right:1em;">Custom RPM (Revenue per 1000 Views)</span><input id="input2" class="input" type="number" autocomplete="off">
+		</div>
+
+		<div class="input-row">
+			<div class="input-container"><span id="result-text"></span></div>
+		</div>
+
+		<div style="margin-top:2em" class="dclickad" data-client="mes" data-slot="1574135682219"></div>
+
+		{% if mobile %}
+			<!-- Insticator API Fire Widget --><div id="insticator-container"><div id="div-insticator-ad-1"></div><div id="insticator-embed"></div><div id="div-insticator-ad-2"></div><script data-cfasync='false' type="text/javascript">/*<![CDATA[*/Insticator.ad.loadAd("div-insticator-ad-1");Insticator.ad.loadAd("div-insticator-ad-2");Insticator.load("em",{id : "0235ffb3-a6df-4a1d-b2ef-6e3c668a10bd"})/*]]>*/</script></div><!-- End Insticator API Fire Widget -->
+		{% endif %}
+
+		{% if show_youtube_ads and not mobile %}{% endif %}	
+	</div>
+{% endblock %}

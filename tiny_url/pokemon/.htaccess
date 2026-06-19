@@ -1,0 +1,7 @@
+
+RewriteEngine on
+
+RewriteCond %{HTTP_HOST} ^pgc\.mes\.fm$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.pgc\.mes\.fm$
+RewriteRule ^(.*)$ "https\:\/\/pokemongocalculator\.mes\.fm\/$1" [R=301,L]
+

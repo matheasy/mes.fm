@@ -1,0 +1,342 @@
+{% extends base %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>$.getScript("{{ root_domain }}js/calculator.js?v=1.5");</script>
+	<script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	.inputs {text-align: center;}
+	.inputs__div {display: inline-block;text-align: left;margin:0.6em;}
+	.inputs__p {line-height:1.2;max-width:12em;font-size:0.8em;margin-bottom:0.2em;}
+	.inputs__p--small {max-width:10em;}
+	.inputs__p--big {font-weight: 700; text-align: center;margin-bottom: 1em;margin-bottom: 0.3em;}
+	.inputs__input {height:2em;width:12em;font-size:1em;text-align: center;}
+	.inputs__answer {height:2.15em;width:9em;font-size:1em;background-color: #EEEEEE;border: 0.1em solid #b2b2b2;display: table-cell;vertical-align: middle;text-align: center;}
+	.inputs__answer--large {height:2em;width:16em;}
+	.table {border-collapse: collapse;}
+	.table--wide {width:100%;}
+	.table__span {font-weight:700;font-size:0.9em;}
+	.table--wide__cell {padding:0.25em 0.5em;text-align: center;border:0.1em solid #888;}
+	.table__cell {display: table-cell;padding:0.5em 0;border:0.1em solid #888;}
+	.table__cell--grey {background-color: #EEEEEE;}
+	.table__cell--light-green {background-color: #e4efd3;}
+	.table__cell--dark-green {background-color: #c9ddbb;}
+	.text-title {font-weight: 700; text-align: center;margin-bottom: 1em;}
+	.text-title--large {max-width:100%;text-align: center;}
+	.text-title--underline {text-decoration: underline;}
+	.box-border {border:0.1em solid #1b6e34; padding:1em;margin-bottom: 1.2em;}
+	.selected {background-color: #1b6e34;color:white;}
+	.hide {display: none;}
+	.note {line-height: 1.2;margin-top:1em;}
+	.note__bold {font-weight: 700;}
+	{% if mobile %}
+		.inputs__input {height:1.8em;width:10em;font-size:0.8em;}
+		.inputs__p {max-width:8em;}
+		.inputs__answer {height:1.9em;width:8em;font-size:0.8em;}
+		.inputs__answer--large {height:2em;width:15em;}
+		.text-title {font-size:0.9em;}
+		.note {line-height: 1.2;font-size: 0.9em;margin-top:0;}
+		.table--wide span {font-size: 0.8em;}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% block page_content %}
+<div id="main-content">
+	<div id="share-calc-button" class="button button--share-calc">Share These Results</div>
+	<div id="share-calc-url-container" class="share-calc-url-container hide">
+		<span class="right-arrow">&#9654;</span>
+		<input id="url-to-share" class="share-calc-url">
+		<img src="//mes.fm/main_img/scissors-icon.png" height="32" width="19" id="copy-link-button" class="scissors-icon">
+	</div>
+	<div class="inputs">
+		<div class="inputs__div">
+			<p class="inputs__p">Home Value ($)</p>
+			<input type="text" id="home-value-input" class="inputs__input" value="600000" placeholder="eg 655000" step="1000" autocomplete="off">
+		</div>
+		<div class="inputs__div">
+			<p class="inputs__p">Down Payment (%)</p>
+			<input type="number" id="down-payment-percent-input" class="inputs__input" value ="20.00" placeholder="eg 265000" step="any" autocomplete="off">
+		</div>
+		<div class="inputs__div">
+			<p class="inputs__p">Down Payment ($)</p>
+			<input type="text" id="down-payment-amount-input" class="inputs__input" value ="120000" placeholder="eg 115000" step="1000" autocomplete="off">
+		</div>
+
+		<div class="inputs__div">
+			<p class="inputs__p">Loan Amount ($)</p>
+			<input type="text" id="loan-amount-input" class="inputs__input" value ="480000" placeholder="eg 265000" step="1000" autocomplete="off">
+		</div>
+		<div class="inputs__div">
+			<p class="inputs__p">Loan Term (years)</p>
+			<input type="number" id="loan-term-input" class="inputs__input" value="30" placeholder="eg 30" min="0" step="1" autocomplete="off">
+		</div>
+		<div class="inputs__div">
+			<p class="inputs__p">Start Date</p>
+			<input type="text" id="start-date-input" class="inputs__input calendar-month" placeholder="select date" autocomplete="off">
+		</div>
+
+		<div class="inputs__div">
+			<p class="inputs__p">Annual Interest Rate (%)</p>
+			<input type="number" id="interest-rate-input" class="inputs__input" value="3.00" placeholder="eg 4.6" step="any" autocomplete="off">
+		</div>
+		<div class="inputs__div">
+			<p class="inputs__p">Property Tax (%)</p>
+			<input type="number" id="property-tax-input" class="inputs__input" value="1.00" placeholder="eg 1.22" step="any" autocomplete="off">
+		</div>
+
+		<br>
+
+		<div class="inputs__div">
+			<p class="inputs__p">Private Mortgage Insurance (PMI) (%)</p>
+			<input type="number" id="pmi-input" class="inputs__input" value="0.5" placeholder="eg 0.5" step="any" autocomplete="off">
+		</div>
+		<div class="inputs__div">
+			<p class="inputs__p">Months of PMI</p>
+			<input type="number" id="pmi-months-input" class="inputs__input" value="28" placeholder="eg 28" min="0" step="1" autocomplete="off">
+		</div>
+		<div class="inputs__div">
+			<p class="inputs__p">Final Balloon Payment ($)</p>
+			<input type="text" id="final-balloon-payment-input" class="inputs__input" value="100000" placeholder="eg 5000" step="1000" autocomplete="off">
+		</div>
+	</div>
+
+	<div class="hide-div-button button selected">Mortgage Repayment Summary</div>
+	<div class="box-border">
+		<p class="text-title">Mortgage Repayment Summary</p>
+		<div class="inputs">
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">Monthly Payment (without Tax/PMI)</p>
+				<div class="result inputs__answer" id="monthly-payment-no-tax-result"></div>
+			</div>
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">Total Payment (without Tax/PMI)</p>
+				<div class="result inputs__answer" id="total-payment-no-tax-result"></div>
+			</div>
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">Monthly Payment (with Tax/PMI)</p>
+				<div class="result inputs__answer" id="monthly-payment-tax-result"></div>
+			</div>
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">Total Payment (with Tax/PMI)</p>
+				<div class="result inputs__answer" id="total-payment-tax-result"></div>
+			</div>
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">Total Number of Monthly Payments</p>
+				<div class="result inputs__answer" id="number-monthly-payments-result"></div>
+			</div>
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">Pay-Off Date</p>
+				<div class="result inputs__answer" id="pay-off-date-result"></div>
+			</div>
+		</div>
+		<p class="note"><span class="note__bold">Note:</span> Since the PMI is usually paid only at the beginning of the mortgage term while the property tax is usually paid annually, the monthly payment calculation with tax and pmi is simply taken as an average over the full length of the mortgage term.</p>
+	</div>
+	
+	<div class = "mes-ads">
+        <!-- (Responsive) Rectangle Ad -->
+        <ins class="adsbygoogle"
+             style="display:block;margin-top:1em;margin-bottom:0.5em;"
+             data-ad-client="ca-pub-1461238060884369"
+             data-ad-slot="{{ ad_id['resp_rect'] }}"
+             data-ad-format="rectangle"></ins>
+        <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+	<div class="hide-div-button button selected">Payment Breakdown</div>
+	<div class="box-border">
+		<p class="text-title">Payment Breakdown</p>
+		<table class="table--wide">
+			<tr>
+				<td class="table--wide__cell"><span class="table__span bold">Principle</span></td><td class="table--wide__cell table__cell--grey"><span class="result" id="payment-breakdown-principle-result"></span></td>
+			</tr>
+			<tr>
+				<td class="table--wide__cell"><span class="table__span bold">Interest</span></td><td class="table--wide__cell table__cell--grey"><span class="result" id="payment-breakdown-total-interest-paid-result"></span></td>
+			</tr>
+			<tr>
+				<td class="table--wide__cell"><span class="table__span bold">Property Tax</span></td><td class="table--wide__cell table__cell--grey"><span class="result" id="payment-breakdown-property-tax-result"></span></td>
+			</tr>
+			<tr>
+				<td class="table--wide__cell"><span class="table__span bold">PMI</span></td><td class="table--wide__cell table__cell--grey"><span class="result" id="payment-breakdown-pmi-result"></span></td>
+			</tr>
+		</table>
+	</div>
+
+	<div class="hide-div-button button selected">Property Tax</div>
+	<div class="box-border">
+		<p class="text-title">Property Tax</p>
+		<div class="inputs">
+			<div class="inputs__div">
+				<p class="inputs__p">Yearly Property Tax</p>
+				<div class="result inputs__answer" id="property-tax-yearly-result"></div>
+			</div>
+			<div class="inputs__div">
+				<p class="inputs__p">Total Property Tax</p>
+				<div class="result inputs__answer" id="property-tax-total-result"></div>
+			</div>
+		</div>
+		<p class="note"><span class="note__bold">Note:</span> Property Tax is calculated on the value of the home determined by the government and is paid annually but sometimes can be included into the mortgage payment plan. Needless to say, the property tax is always paid every year regardless of whether the mortgage is paid off or not, as long as you are the legal home owner.</p>
+	</div>
+
+	<div class="hide-div-button button selected">Private Mortgage Insurance (PMI)</div>
+	<div class="box-border">
+		<p class="text-title">Private Mortgage Insurance (PMI)</p>
+		<div class="inputs">
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">Monthly PMI Payment</p>
+				<div class="result inputs__answer" id="monthly-pmi-payment-result"></div>
+			</div>
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">Total PMI Paid</p>
+				<div class="result inputs__answer" id="total-pmi-paid-result"></div>
+			</div>
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">Number of Months</p>
+				<div class="result inputs__answer" id="pmi-number-months-result"></div>
+			</div>
+			<div class="inputs__div">
+				<p class="inputs__p inputs__p--small">PMI Pay-Off Date</p>
+				<div class="result inputs__answer" id="pmi-pay-off-date-result"></div>
+			</div>
+		</div>
+
+		<p class="note"><span class="note__bold">Note:</span> PMI is usually only required when the down payment is less than 20% of the home value or purchase price. The insurance is to provide coverage for the lender in case the borrower can not pay off the mortgage and the lender can not cover the cost of the mortgage by the resale of the property. Thus even though the insurance is paid by the borrower, only the lender is covered. The idea behind it is to convince the lender that you are not likely to default on the mortgage and willing to pay extra for insurance since you choose to pay less than the minimum down payment to avoid having to pay for PMI.</p>
+
+		<p class="note">To obtain <span class="note__bold">Mortgage Insurance for yourself and not the lender</span>, in the case you can not pay off the mortgage due to loss of job, injury, or death, etc., you would need to obtain separate insurance from a licensed insurance broker or your bank. Make sure to read the fine print about the Mortgage Insurance you consider getting as well as fully understanding every question on the medical overview questionnaire, even it if means going over it with your doctor. This is because many banks and insurance companies have what's called a "Post Claim Underwriting" method of checking your medical history AFTER you file for a claim on your insurance. This means that they are lenient in accepting you for the insurance but they are very strict in actually giving you your claim in the case you need the insurance! Any part of the initial medical questionnaire can possibly void your claim if they deem it inaccurate, even if that question has very little to do with your actual claim! You can learn more by watching <a class="link" target="_blank" href="https://youtu.be/pMjusQsL88Q">CBC Marketplace Investigation on Mortgage Insurance</a>.</p>
+	</div>
+
+	{# {% block resp_horiz_mobile %}{% endblock %} #}
+	{# {% if show_ads and mobile and ad_id['resp_horiz'] %} #}
+        <!-- (Responsive) Horizontal -->
+        {# <div class="adsense adsense--mobile">
+            <ins class="adsbygoogle"
+                 style="display:block;margin:1em 0"
+                 data-ad-client="ca-pub-1461238060884369"
+                 data-ad-slot="{{ ad_id['resp_horiz'] }}"
+                 data-ad-format="rectangle"></ins>
+        </div> #}
+        {#<script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>#}
+    {# {% endif %} #}
+
+	<div class="hide-div-button button selected">Monthly vs. Bi-Weekly Payment (Excluding Tax/PMI)</div>
+	<div class="box-border">
+		<p class="text-title">Monthly vs. Bi-Weekly Payment (Excluding Tax/PMI)</p>
+		<div class="inputs">
+			<div class="table">
+				<div class="table__cell table__cell--light-green">
+					<p class="text-title">Monthly</p>
+					<div class="inputs__div">
+						<p class="inputs__p">Payment</p>
+						<div class="result inputs__answer" id="monthly-payment-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Total Payment</p>
+						<div class="result inputs__answer" id="monthly-total-payment-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Number of Payments</p>
+						<div class="result inputs__answer" id="monthly-number-payments-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Pay-Off Date</p>
+						<div class="result inputs__answer" id="monthly-pay-off-date-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Total Interest Paid</p>
+						<div class="result inputs__answer" id="monthly-total-interest-paid-result"></div>
+					</div>
+				</div>
+				<div class="table__cell table__cell--dark-green">
+					<p class="text-title">Bi-Weekly</p>
+					<div class="inputs__div">
+						<p class="inputs__p">Payment</p>
+						<div class="result inputs__answer" id="bi-weekly-payment-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Total Payment</p>
+						<div class="result inputs__answer" id="bi-weekly-total-payment-result"></div>
+					</div>
+					<div class="inputs__div"><p class="inputs__p">Number of Payments</p>
+						<div class="result inputs__answer" id="bi-weekly-number-payments-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Pay-Off Date</p>
+						<div class="result inputs__answer" id="bi-weekly-pay-off-date-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Total Interest Paid</p>
+						<div class="result inputs__answer" id="bi-weekly-total-interest-paid-result"></div>
+					</div>
+				</div>
+			</div>
+			<br>
+			<div class="inputs__div">
+				<p class="inputs__p--big">Total Interest Savings</p>
+				<div class="result inputs__answer inputs__answer--large" id="total-interest-savings-result"></div>
+			</div>
+		</div>
+		<p class="note"><span class="note__bold">Note:</span> The bi-weekly payment is usually taken as simply half the monthly payment. Also, it is important to make sure to consult with your bank over any hidden fees or tactics involved in their Bi-Weekly Program! Any hidden fees may add up to offset the interest savings and may even end up costing more than going with a traditional monthly mortgage payment plan! Banks are always pinching pennies and a bi-weekly plan requires them to monitor a greater number of payments which is why they want to offset those extra costs with hidden fees so make sure you are well aware and ask a lot of questions to your bank or mortgage broker!</p>
+	</div>
+
+	<div class="hide-div-button button selected">Balloon Payment Breakdown (Excluding Tax/PMI)</div>
+	<div class="box-border">
+		<p class="text-title">Balloon Payment Breakdown (Excluding Tax/PMI)</p>
+		<div class="inputs">
+			<div class="table">
+				<div class="table__cell table__cell--light-green">
+					{% if mobile %}
+						<p class="text-title">No Balloon</p>
+					{% else %}
+						<p class="text-title">Without Balloon</p>
+					{% endif %}
+					<div class="inputs__div">
+						<p class="inputs__p">Monthly Payment</p>
+						<div class="result inputs__answer" id="monthly-payment-no-balloon-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Total Payment</p>
+						<div class="result inputs__answer" id="total-payment-no-balloon-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Total Interest Paid</p>
+						<div class="result inputs__answer" id="total-interest-paid-no-balloon-result"></div>
+					</div>
+				</div>
+				<div class="table__cell table__cell--dark-green">
+					{% if mobile %}
+						<p class="text-title">Balloon</p>
+					{% else %}
+						<p class="text-title">With Balloon</p>
+					{% endif %}
+					<div class="inputs__div"><p class="inputs__p">Monthly Payment</p>
+						<div class="result inputs__answer" id="monthly-payment-balloon-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Total Payment</p>
+						<div class="result inputs__answer" id="total-payment-balloon-result"></div>
+					</div>
+					<div class="inputs__div">
+						<p class="inputs__p">Total Interest Paid</p>
+						<div class="result inputs__answer" id="total-interest-paid-balloon-result"></div>
+					</div>
+				</div>
+			</div>
+			<br>
+			<div class="inputs__div">
+				<p class="inputs__p--big">Total EXTRA Interest Paid</p>
+				<div class="result inputs__answer inputs__answer--large" id="total-extra-interest-balloon-result"></div>
+			</div>
+		</div>
+		<p class="note"><span class="note__bold">Note:</span> Although using a balloon payment mortgage strategy involves paying extra in total interest, the actual monthly payments are lower. This is sometimes useful for businesses or people that have low income in the near future but forecast a higher income or revenue in the future. This makes it easier to pay the lower monthly mortgage payments in the short term while allowing them to use the higher future income to pay off the final balloon payment. With all non-conventional mortgage payment strategies (even with the conventional ones!), it is important to go over and understand all the fine print, hidden fees, terms and conditions that your bank may have. Another very important note to make is to go over the scenario where you may not be able to pay off the final balloon payment and if possible would like to extend your mortgage plan, so make sure you go over that with your bank or other mortgage provider too!</p>
+	</div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends base %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>$.getScript("{{ root_domain }}js/calculator_midterm.js");</script>
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	.calculator-header {font-size: 1.1em;margin-bottom:1em;}
+	#main-content #left-side-container input {height:2em;width:6em;font-size: 1em;text-align: center;}
+
+	#main-content #left-side-container #result {width:10em;}
+	.button-switch {text-align: center;display:table;width:100%;margin-bottom: 1em;}
+	.yes-button, .no-button {display:table-cell;width:50%;cursor:pointer;}
+	.yes-button {border-right-width:0.0625em; }
+	.no-button {border-left-width:0.0625em; }
+	.active-button {background-color:#575fab;color:white;}
+
+	.graph-table-container {text-align: center;display:none;}
+	.graph-button, .graph-table-button {display:inline-block;width:45%;cursor:pointer;}
+	.graph-button {margin-right:0.5em;}
+	.graph-table-button {margin-left:0.5em;}
+	.ass-tag-midterm {line-height: 1.3;}
+	.ass-tag {display: none;margin-bottom:0.7em;}
+	#main-content #radiobuttons input {width:1em;height:1em;}
+	#main-content #radiobuttons input:last-of-type {margin-left:1em;}
+	.input-row {margin:0.5em 0;position: relative;}
+	#left-side-container {vertical-align:top;display:table-cell;padding-right:1em;border-right: 0.15em solid #e1e1e1;/*width:21em;*/width:19.5em;}
+	#input-div input {margin-left:0.3em;}
+	.height-div {margin-top: 0.5em;}
+	#input-div span {display: inline-block;width:12em;font-size: 1em;font-weight: 400;}
+	#bottom-container .height-div input:last-child {margin-left:0.5em;}
+	#bottom-container {margin-top:1.2em;}
+	#right-side-container {display: table-cell;padding-left:1em;/*opacity: 0.5;*/}
+	#right-side-container p {line-height: normal;}
+	#result-input-container {display: table-cell;}
+	#result-input-container input {display: block;background-color: #EEEEEE;border: 0.0625em #b2b2b2 solid;}
+	#check-mark-container {display: none;vertical-align: middle;}
+	#check-mark-container img {height: 2em;	width: auto;display: block;margin-left:1.2em;}
+	#result-text {color:black;margin-top:0.8em;line-height: 1.3;font-style: italic;font-weight: 400;}
+	#result-text span {font-weight: 700;}
+	#result-categories-container {margin-top:0.8em;}
+	#result-categories-container span {font-weight: 700;}
+	.category {line-height: 1.5;font-weight: 400;font-size:0.95em;}
+	/*#note {line-height: 1.2;font-weight: 400;margin-top: 1.2em;display: inline-block;}*/
+	#note {line-height: 1.2;font-weight: 400;display: inline-block;}
+	#note span {line-height: 1.2;font-weight: normal;}
+
+	.hover:hover {background-color: #575fab;color:white;}
+
+	#main-content table {width:100%;}
+	table input {height:1.5em;width:80%;font-size: 1em;text-align: center;border:none;}
+
+	#right-side-container img {width:1.1em;height:1.1em;vertical-align: text-bottom;}
+	#right-side-container img {cursor: pointer;}
+	#main-content table th {font-weight:normal;padding-top:0.35em;padding-bottom:0.35em;background-color: #e2e2e2;border-bottom:0.125em solid #333333;vertical-align: middle;}
+	#main-content table td {padding:0.25em 0.5em;text-align: center;}
+	#main-content table td:not(:last-child) {border-right:0.125em solid #333333;}
+	#main-content table th:not(:last-child) {border-right:0.125em solid #333333;}
+	#main-content table tr:not(:last-child) td{border-bottom:0.125em solid #333333;}
+
+	.scores-td {width:40%;}
+	.scores-input {width:30%;}
+
+	#graph {margin-bottom: 1em;display:none;}
+
+	#graph-table {display: none;}
+	#graph-table th {width:50%;}
+
+	.add-ass-button {cursor: pointer;}
+
+	#fec-box-ad {position: static;padding-left: 0;}
+	</style>
+{% endblock %}
+
+{% block page_content %}
+<div id="main-content">
+	<div id="left-side-container">
+		<div id="top-container">
+			<p class="ass-tag-midterm">Fill in your assignment grades on the right to automatically calculate your current grade!</p>
+
+            <div id="input-div">
+				<div class="input-row">
+					<span>Desired Current Grade (%)</span><input id="desired-grade-input" type="text" placeholder = "eg 80" value="75" >
+				</div>
+				<div class="input-row">
+					<span>Current Grade (%)</span><input id="current-grade-input" type="text" placeholder = "eg 82.3">
+				</div>
+				<div class="input-row">
+					<span>Weight of Midterm (%)</span><input id="final-weight-input" type="text" placeholder = "eg 40">
+				</div>
+			</div>
+		</div>
+		<div id="bottom-container">
+			<p class="calculator-header">Grade Needed on Midterm Exam</p>
+
+			<div class="input-row">
+				<div class="result-div">
+					<div id="result-input-container">
+						<input id="result" readonly="readonly" type="text">
+					</div>
+					<div id="check-mark-container">
+						<img src="//mes.fm/main_img/green-check-mark.png" alt="green check mark">
+					</div>
+				</div>
+				<p id="result-text">Please make sure all textfields are filled out.</p>
+				<div id="result-categories-container">
+					<p class="category">MINIMUM Grade After Midterm: <span id="min-result">0%</span></p>
+					<p class="category">MAXIMUM Grade After Midterm: <span id="max-result">100%</span></p>
+				</div>
+			</div>
+		</div>		
+	</div>
+
+	<div id="right-side-container">
+		<p class="thin-font">Enter your assignment scores here to automatically calculate your current grade! (eg midterms, tests, homework, labs, etc.)</p>
+		<div class="add-ass-button button hover">add another assignment</div>
+		<table id="ass-table">
+			<tr>
+				<th>#</th>
+				<th>Score&nbsp;/&nbsp;Out Of</th>
+				<th>Grade (%)</th>
+				<th>Weight (%)</th>
+				<th></th>
+			</tr><tr>
+				<td>1</td>
+				<td class="scores-td"><input class="scores-input">&nbsp;/&nbsp;<input class="scores-input"></td>
+				<td><input class="grades-input"></td>
+				<td><input></td>
+				<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+			</tr><tr>
+				<td>2</td>
+				<td class="scores-td"><input class="scores-input">&nbsp;/&nbsp;<input class="scores-input"></td>
+				<td><input class="grades-input"></td>
+				<td><input></td>
+				<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+			</tr><tr>
+				<td>3</td>
+				<td class="scores-td"><input class="scores-input">&nbsp;/&nbsp;<input class="scores-input"></td>
+				<td><input class="grades-input"></td>
+				<td><input></td>
+				<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+			</tr><tr>
+				<td>4</td>
+				<td class="scores-td"><input class="scores-input">&nbsp;/&nbsp;<input class="scores-input"></td>
+				<td><input class="grades-input"></td>
+				<td><input></td>
+				<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+			</tr><tr>
+				<td>5</td>
+				<td class="scores-td"><input class="scores-input">&nbsp;/&nbsp;<input class="scores-input"></td>
+				<td><input class="grades-input"></td>
+				<td><input></td>
+				<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+			</tr><tr>
+				<td>6</td>
+				<td class="scores-td"><input class="scores-input">&nbsp;/&nbsp;<input class="scores-input"></td>
+				<td><input class="grades-input"></td>
+				<td><input></td>
+				<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+			</tr><tr>
+				<td>7</td>
+				<td class="scores-td"><input class="scores-input">&nbsp;/&nbsp;<input class="scores-input"></td>
+				<td><input class="grades-input"></td>
+				<td><input></td>
+				<td><img src="//mes.fm/main_img/red-x-mark.png" alt="red x mark"></td>				
+			</tr>
+		</table>
+	</div>
+
+	<!-- FEC 336x280 -->
+	<div id="fec-box-ad" style="text-align:center;">
+		<ins class="adsbygoogle"
+		     style="display:inline-block;width:21em;height:17.5em;margin-top:1em;margin-bottom:0.5em"
+		     data-ad-client="ca-pub-1461238060884369"
+			 data-ad-slot="7447391646"></ins>
+	</div>
+	<script>
+	(adsbygoogle = window.adsbygoogle || []).push({});
+	</script>
+</div>
+{% endblock %}

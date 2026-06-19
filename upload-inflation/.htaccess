@@ -1,0 +1,4 @@
+AuthType Basic  
+AuthName "restricted area"  
+AuthUserFile /home/mesfm/public_html/upload-inflation/.htpasswd  
+require valid-user

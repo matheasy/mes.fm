@@ -1,0 +1,4 @@
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^matheasysolutions\.com$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.matheasysolutions\.com$
+RewriteRule ^(.*)$ "https\:\/\/mes\.fm\/$1" [R=301,L]

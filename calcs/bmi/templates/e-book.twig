@@ -1,0 +1,99 @@
+{% extends base %}
+
+{% block extra_styles %}
+	<style>
+	.page-title {margin-top:0.8em;}
+	.text-title {font-size:1.5em;}
+	.float-right-img {float:right;padding:0 0 1.3em 1.5em;}
+	.float-left-img {float:left;padding:0 1.5em 1.3em 0;}
+	#main-content p {line-height:1.5;}
+	.margin-top-1 {margin-top:1em;}
+	.margin-bottom-1 {margin-bottom:1em;}
+	#page-description-container .addthis_native_toolbox {margin-top: 1em;}
+	.font-size-2 {font-size:1.3em;}
+	ul.list-a {list-style-type: disc;margin-top:0.7em;}
+	ul.list-a li {font-size:1.1em; margin-left:2em;margin-bottom:1em;}
+	#main-content a {color: #428bca;font-weight: 400;}
+	#main-content a:hover {color:#4c6496;text-decoration: underline;}
+	.button:hover {cursor: pointer;}
+	.button {display:inline-block;color:#c275b1;font-weight:normal;border:0.125em solid #c275b1;margin:0.7em 0;padding:0.5em 8em;text-align:center;
+    -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;}
+    .hover:hover {background-color: #c275b1;color:white;}
+    .clear-both {clear:both;}
+    .food-pic {width:65%;}
+    .small-line {margin: 1em 0;width:100%;height:0.15em;background-color: #e1e1e1; clear:both;}
+    .wrapper {text-align:center;}
+    {% if mobile %}
+		.food-pic {width:50%;}
+		.font-size-2 {font-size:1em;}
+		.button {padding:0.5em 0;width:100%}
+		.text-title {font-size:1.1em;}
+		ul.list-a li {font-size:1em;}
+		.a2a_kit {margin-top:1em;}
+    {% endif %}
+    </style>
+{% endblock %}
+
+{% block body %}
+{% if mobile %}
+	<!-- AddToAny BEGIN -->
+    <div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+    <a class="a2a_button_facebook"></a>
+    <a class="a2a_button_twitter"></a>
+    <a class="a2a_button_google_plus"></a>
+    <a class="a2a_button_whatsapp"></a>
+    <a class="a2a_dd" href="https://www.addtoany.com/share_save"></a>
+    </div>
+    <script type="text/javascript" src="//static.addtoany.com/menu/page.js"></script>
+    <!-- AddToAny END -->
+{% endif %}
+{% block calc_info %}{{ parent() }}{% endblock %}
+<div id="main-content">
+	<img class="float-right-img" src="img/kelly-pic.jpg" alt="kelly walden of fresh take solutions" width="35%" height="auto">
+
+	<p class="text-title">Mornings are the perfect time to have a “Fresh Start” to your day!</p>
+	<p class="text-title">Buy the Breakfast eBook for only {{ e_book_price }}.</p>
+	<p class="font-size-2 margin-top-1">This eBook is a collection of 23 healthy breakfast recipes that are:</p>
+
+	<ul class="list-a">
+	    <li>soy free</li>
+	    <li>wheat/gluten free</li>
+	    <li>dairy free (some recipes contain cheese and can be opted out completely)</li>
+	    <li>refined sugar free</li>
+	    <li>100% organic</li>
+	</ul>
+
+	<p class="font-size-2 margin-top-1">These healthy breakfast recipes for those with sensitivities or wanting to live a healthier lifestyle. All recipes can be made year round!</p>
+
+	<p class="font-size-2 margin-top-1">This eBook has been created by our partner and certified nutritionist Kelly Walden from <a href="http://www.freshtakesolutions.ca" target="_blank">Fresh Take Solutions</a>.</p>
+
+	<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q62FG7XYX8XLQ"><div class="buy-now-button hover button">Buy Now!</div></a>
+
+	<p class="text-title margin-top-1 margin-bottom-1 clear-both">Here is a SNEAK PEAK at some of the recipes found in the eBook!</p>
+
+	<div class="clear-both">
+		<img class="food-pic float-left-img" src="img/power-balls.jpeg" alt="power balls" height="auto">
+		<p class="font-size-2">These bite-sized power balls are ideal for a snack on the run! They contain prebiotics therefore promoting gut-health, magnesium to help reduce effects of migraines and contains serotonin to help calm one’s self!</p>
+	</div>
+	<div class="small-line"></div>
+	<div class="clear-both">
+		<img class="food-pic float-right-img" src="img/easy-to-go-breakfast.jpeg" alt="easy to go breakfast" height="auto">
+		<p class="font-size-2">This easy to-go breakfast contain phytosterols which help to lower cholesterol, source of zinc making it a natural protector against osteoporosis and Ltryptophan which has the potential to help with sleep and lower risk of depression.</p>
+	</div>
+	<div class="small-line"></div>
+	<div class="clear-both">
+		<img class="food-pic float-left-img" src="img/pink-pancakes.jpeg" alt="pink pancakes" height="auto">
+		<p class="font-size-2">Now we're talking pink! Beet root juice is abundant in free radical scavenging manganese, energy-producing iron and sleep-promoting tryptophan!</p>
+	</div>
+
+	<p class="text-title clear-both margin-top-1">Find these and 20 more healthy and delicious breakfast recipes in our eBook!</p>
+
+	<div class="wrapper">
+		<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q62FG7XYX8XLQ"><div class="buy-now-button hover button">Buy Now!</div></a>
+	</div>
+
+	<p class="font-size-2 italic margin-top-1">Note: The E-Book will be emailed to you within 48 hours after purchase.</p>
+	
+</div>
+<div class="fb-comments" data-href="{{ url }}" data-width="100%" data-numposts="10" data-colorscheme="light" data-order-by="reverse_time"></div>
+{% endblock %}

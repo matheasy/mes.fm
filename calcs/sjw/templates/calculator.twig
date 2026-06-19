@@ -1,0 +1,28 @@
+{% extends base %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>$.getScript("{{ root_domain }}js/calculator.js?v=1.1.3");</script>
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	.sjw-container{text-align: center;}
+	.sjw-box{width:90%;max-width:90%;height:35em;padding:1em;font-size:16px;}
+	.button--half{width: 75%;display: inline-block;}
+	.copied{margin-left:0.5em;vertical-align:middle;font-weight:700;color:red;display: none;}
+	{% if mobile %}
+	.sjw-box{height:25em;}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% block page_content %}
+<div id="main-content">
+	<div class="sjw-container">
+		<div id="copy-text-button" class="button button--half">Copy Your Creation</div>
+		<span id="copied-tag" class="copied">Copied!</span>
+		<textarea id="sjw-input" class="sjw-box" placeholder="Type any letter..." autocomplete="off"></textarea>
+	</div>
+</div>
+{% endblock %}

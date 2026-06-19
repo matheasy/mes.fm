@@ -1,0 +1,11 @@
+{
+    "name": "mates/speedreader",
+    "autoload": {
+        "psr-4": {
+            "Mates\\Speedreader\\": "src/"
+        }
+    },
+    "require": {
+        "twig/twig": "^3.21"
+    }
+}

@@ -1,0 +1,1317 @@
+<?php defined('SYSPATH') OR die('No direct script access.'); ?>
+
+2015-03-22 00:04:51 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 00:04:51 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 00:20:37 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 00:20:37 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 00:31:14 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 00:31:14 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 00:35:34 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 00:35:34 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 00:50:25 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 00:50:25 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 01:06:41 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 01:06:41 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 01:23:50 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 01:23:50 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 01:56:57 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 01:56:57 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 02:17:40 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 02:17:40 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 02:42:51 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 02:42:51 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 02:48:55 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 02:48:55 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 02:49:59 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 02:49:59 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('comics')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:01:37 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:01:37 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:16:48 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:16:48 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:16:51 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:16:51 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:19:04 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:19:04 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:32:44 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:32:44 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:46:51 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 03:46:51 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:03:04 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:03:04 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:09:05 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:09:05 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('privacy-policy')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:19:08 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:19:08 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:34:34 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:34:34 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:49:32 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 04:49:32 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:05:22 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:05:22 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:06:41 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:06:41 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:11:42 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:11:42 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-time...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:14:27 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:14:27 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:20:37 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:20:37 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:21:07 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:21:07 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:35:54 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:35:54 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:50:26 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 05:50:26 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 06:03:39 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 06:03:39 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 06:19:12 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 06:19:12 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 06:34:16 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 06:34:16 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 06:51:16 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 06:51:16 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:09:11 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:09:11 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:24:43 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:24:43 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:32:16 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:32:16 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:41:14 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:41:14 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:45:54 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 07:45:54 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:07:54 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:07:54 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:24:42 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:24:42 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:25:24 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:25:24 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:39:47 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:39:47 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:42:56 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 08:42:56 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:00:15 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:00:15 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:00:30 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:00:30 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:15:56 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:15:56 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:32:01 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:32:01 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:48:32 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 09:48:32 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 10:05:49 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 10:05:49 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 10:21:49 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 10:21:49 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 10:40:45 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 10:40:45 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 10:57:12 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 10:57:12 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 11:14:45 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 11:14:45 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 11:21:58 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 11:21:58 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('privacy-policy')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 11:30:31 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 11:30:31 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 11:45:04 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 11:45:04 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:00:03 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:00:03 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:13:19 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:13:19 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:15:09 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:15:09 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:19:08 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:19:08 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('undefined')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:31:43 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:31:43 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:38:59 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:38:59 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('idea-panel')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:45:06 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:45:06 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('dropdown')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:45:13 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:45:13 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('style=')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:46:20 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:46:20 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:55:03 --- EMERGENCY: Database_Exception [ 2 ]: mysql_connect(): Can't connect to MySQL server on 'chinchatcomics.db.6297265.hostedresource.com' (111) ~ MODPATH/database/classes/Kohana/Database/MySQL.php [ 67 ] in /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/MySQL.php:431
+2015-03-22 12:55:03 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/MySQL.php(431): Kohana_Database_MySQL->connect()
+#1 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database.php(478): Kohana_Database_MySQL->escape('red-blue-pill-p...')
+#2 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/Query/Builder.php(116): Kohana_Database->quote('red-blue-pill-p...')
+#3 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/Query/Builder/Select.php(372): Kohana_Database_Query_Builder->_compile_conditions(Object(Database_MySQL), Array)
+#4 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/Query.php(234): Kohana_Database_Query_Builder_Select->compile(Object(Database_MySQL))
+#5 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(65): Kohana_Database_Query->execute()
+#6 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('red-blue-pill-p...')
+#7 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#8 [internal function]: Kohana_Controller->execute()
+#9 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#10 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#11 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#12 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#13 {main} in /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/MySQL.php:431
+2015-03-22 12:55:35 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 12:55:35 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:02:29 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:02:29 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:17:25 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:17:25 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:29:42 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:29:42 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('rolo-stands-up')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:33:26 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:33:26 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:47:44 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 13:47:44 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 14:02:25 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 14:02:25 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 14:17:35 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 14:17:35 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 14:32:34 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 14:32:34 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 14:49:38 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 14:49:38 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:04:42 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:04:42 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:08:04 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:08:04 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('guest-comic-1')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:17:47 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:17:47 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinblog')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:19:53 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:19:53 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:35:15 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:35:15 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:39:39 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:39:39 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:40:14 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:40:14 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:50:31 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 15:50:31 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:07:37 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:07:37 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:23:11 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:23:11 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:39:11 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:39:11 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:51:02 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:51:02 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:53:57 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 16:53:57 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 17:09:34 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 17:09:34 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 17:24:13 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 17:24:13 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 17:39:03 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 17:39:03 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 17:54:26 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 17:54:26 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:09:53 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:09:53 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:24:55 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:24:55 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:25:46 --- EMERGENCY: Database_Exception [ 2 ]: mysql_connect(): Can't connect to MySQL server on 'chinchatcomics.db.6297265.hostedresource.com' (111) ~ MODPATH/database/classes/Kohana/Database/MySQL.php [ 67 ] in /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/MySQL.php:431
+2015-03-22 18:25:46 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/MySQL.php(431): Kohana_Database_MySQL->connect()
+#1 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database.php(478): Kohana_Database_MySQL->escape('super-epic-chin...')
+#2 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/Query/Builder.php(116): Kohana_Database->quote('super-epic-chin...')
+#3 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/Query/Builder/Select.php(372): Kohana_Database_Query_Builder->_compile_conditions(Object(Database_MySQL), Array)
+#4 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/Query.php(234): Kohana_Database_Query_Builder_Select->compile(Object(Database_MySQL))
+#5 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(65): Kohana_Database_Query->execute()
+#6 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('super-epic-chin...')
+#7 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#8 [internal function]: Kohana_Controller->execute()
+#9 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#10 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#11 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#12 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#13 {main} in /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/MySQL.php:431
+2015-03-22 18:39:29 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:39:29 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:52:45 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:52:45 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:55:35 --- EMERGENCY: Database_Exception [ 2 ]: mysql_connect(): Can't connect to MySQL server on 'chinchatcomics.db.6297265.hostedresource.com' (111) ~ MODPATH/database/classes/Kohana/Database/MySQL.php [ 67 ] in /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/MySQL.php:431
+2015-03-22 18:55:35 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/MySQL.php(431): Kohana_Database_MySQL->connect()
+#1 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database.php(478): Kohana_Database_MySQL->escape('st-patricks-fai...')
+#2 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/Query/Builder.php(116): Kohana_Database->quote('st-patricks-fai...')
+#3 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/Query/Builder/Select.php(372): Kohana_Database_Query_Builder->_compile_conditions(Object(Database_MySQL), Array)
+#4 /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/Query.php(234): Kohana_Database_Query_Builder_Select->compile(Object(Database_MySQL))
+#5 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(65): Kohana_Database_Query->execute()
+#6 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('st-patricks-fai...')
+#7 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#8 [internal function]: Kohana_Controller->execute()
+#9 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#10 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#11 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#12 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#13 {main} in /home/content/65/6297265/html/partners/ccc/modules/database/classes/Kohana/Database/MySQL.php:431
+2015-03-22 18:55:50 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 18:55:50 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:03:41 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:03:41 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:10:53 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:10:53 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:25:50 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:25:50 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:41:24 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:41:24 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:53:19 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:53:19 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:55:59 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 19:55:59 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:10:30 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:10:30 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:27:13 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:27:13 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:42:05 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:42:05 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:53:17 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:53:17 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:57:15 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:57:15 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:57:28 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 20:57:28 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinnect')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:11:52 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:11:52 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:23:52 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:23:52 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:26:41 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:26:41 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:41:56 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:41:56 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:53:21 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:53:21 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:56:40 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 21:56:40 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:12:15 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:12:15 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:26:55 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:26:55 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:41:43 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:41:43 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('privacy-policy')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:41:54 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:41:54 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:49:31 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 22:49:31 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('feed')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:00:01 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:00:01 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:15:00 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:15:00 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:19:51 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:19:51 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:37:44 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:37:44 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:52:49 --- EMERGENCY: ErrorException [ 8 ]: Undefined offset: 0 ~ APPPATH/classes/Model/Comics.php [ 66 ] in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66
+2015-03-22 23:52:49 --- DEBUG: #0 /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php(66): Kohana_Core::error_handler(8, 'Undefined offse...', '/home/content/6...', 66, Array)
+#1 /home/content/65/6297265/html/partners/ccc/application/classes/Controller/Comics.php(13): Model_Comics->getComicBySlug('chinchilla-foru...')
+#2 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Controller.php(69): Controller_Comics->before()
+#3 [internal function]: Kohana_Controller->execute()
+#4 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client/Internal.php(97): ReflectionMethod->invoke(Object(Controller_Comics))
+#5 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request/Client.php(114): Kohana_Request_Client_Internal->execute_request(Object(Request), Object(Response))
+#6 /home/content/65/6297265/html/partners/ccc/system/classes/Kohana/Request.php(986): Kohana_Request_Client->execute(Object(Request))
+#7 /home/content/65/6297265/html/partners/ccc/index.php(118): Kohana_Request->execute()
+#8 {main} in /home/content/65/6297265/html/partners/ccc/application/classes/Model/Comics.php:66

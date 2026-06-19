@@ -1,0 +1,6 @@
+
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^tech\.mes\.fm$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.tech\.mes\.fm$
+RewriteRule ^/?$ "https\:\/\/technology\.mes\.fm" [R=301,L]
+

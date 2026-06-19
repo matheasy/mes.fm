@@ -1,0 +1,5 @@
+RewriteEngine on
+
+RewriteCond %{HTTP_HOST} ^vat\.mes\.fm$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.vat\.mes\.fm$
+RewriteRule ^(.*)$ "https\:\/\/vatcalculator\.mes\.fm\/$1" [R=301,L]

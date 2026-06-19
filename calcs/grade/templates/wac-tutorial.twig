@@ -1,0 +1,84 @@
+{% extends base %}
+
+{% block page_content %}
+<div id="main-content">
+	<iframe style="border:none" width="100%" height="400" src="{{ tutorial_src }}" allowfullscreen></iframe>
+
+	<h2 class="header2">What is an Average?</h2>
+	<p class="sentence">The average of a group of numbers is simply defined as the sum of the numbers divided by the total amount of numbers. This definition yields a number that when multiplied by the amount of numbers is equal to the sum of the numbers. This number is known as the average and is illustrated in the example below:</p>
+
+	<p class="sentence italic">Example:</p>
+
+	<p class="sentence sentence--indent">Numbers: 2, 4, 6 (3 numbers in total)</p>
+	<p class="sentence sentence--indent">The average = (2 + 4 + 6) / 3 = 12 /3 = 4</p>
+
+	<p class="sentence">Re-arranging the above equation we get: 3*4 = 12, which shows that the average is simply the number that if all the numbers were equal to it would have the same sum as the initial group of numbers.</p>
+
+	{% if mobile %}
+		<!-- GC (Responsive) Vertical -->
+		<ins class="adsbygoogle"
+		     style="display:block"
+		     data-ad-client="ca-pub-1461238060884369"
+		     data-ad-slot="1440170067"
+		     data-ad-format="rectangle"></ins>
+		<script>
+		(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+	{% endif %}
+
+	<h2 class="header2">What is a Weighted Average?</h2>
+
+	<p class="sentence">A weighted average is the same as an average except that each number is scaled by importance. This simply means that each number has an associated weight or worth and its importance is calculated by multiplying the number by its weight. The weighted average is calculated as the sum of all the numbers multiplied by their weights divided by the sum of the weights. As shown in the following example, it turns out that an average is simply a weighted average except all the numbers have the same weights. And similar to the average, this definition yields a number that when multiplied by the sum of the weights is equal to the sum of all the numbers multiplied by their weights. The following example better illustrates the above definition of a weighted average:</p>
+
+	<p class="sentence italic">Example:</p>
+
+	<table class="basic-table">
+		<tr><th>Number</th><th>Weight</th></tr>
+		<tr><td>2</td><td>6</td></tr>
+		<tr><td>4</td><td>4</td></tr>
+		<tr><td>6</td><td>2</td></tr>
+	</table>
+
+	<p class="sentence">The weighted average = (2*6 + 4*4 + 6*2) / (6 + 4 + 2) = 40/12 = 10/3 = <span class="bold">3.3333...</span></p>
+
+	<p class="sentence">If we assume that the weights in the above example were all the same, W, then the weighted average is simply the average:</p>
+
+	<table class="basic-table">
+		<tr><th>Number</th><th>Weight</th></tr>
+		<tr><td>2</td><td>W</td></tr>
+		<tr><td>4</td><td>W</td></tr>
+		<tr><td>6</td><td>W</td></tr>
+	</table>
+
+	<p class="sentence">The weighted average = (2*W + 4*W + 6*W) / (W + W + W) = (2 + 4 + 6)*W / (3*W) = (2 + 4 + 6) / 3 = 12/3 = <span class="bold">4</span></p>
+
+	<p class="sentence">Notice how the weights all cancel in the above equation because they are all he same, thus yielding simply the average value. This means that for calculating the average, the weight of the numbers don’t matter and when using our calculator to calculate the average, you can simply input the same number for the weights as shown in the example below.</p>
+
+	<!-- GC (Responsive) Rectangle -->
+	<ins class="adsbygoogle"
+	     style="display:block"
+	     data-ad-client="ca-pub-1461238060884369"
+	     data-ad-slot="6884601265"
+	     data-ad-format="rectangle"></ins>
+	<script>
+	(adsbygoogle = window.adsbygoogle || []).push({});
+	</script>
+
+	<h2 class="header2">Example using our Weighted Average Calculator</h2>
+
+	<img width="100%" height="auto" title="Screenshot of weighted average calculator" src="{{ root_domain }}img/wac-tutorial-1.png" alt="A screenshot of a weighted average calculator based on 3 courses.">
+
+	<p class="sentence">In the above example, the calculations behind our weighted average calculator are identical with those shown in the previous examples. The calculations for this example are shown below:</p>
+
+	<p class="sentence">Weighted Average = (90*3 + 75*5 + 60*8) / (3 + 5 + 8) = <span class="bold">70.31%</span></p>
+
+	<p class="sentence">To obtain just the average using our calculator, we can simply input the weight of each course to be the same, for instance choosing the number 1:</p>
+
+	<img width="100%" height="auto" title="Screenshot of average calculator" src="{{ root_domain }}img/wac-tutorial-2.png" alt="A screenshot of a weighted average calculator modified to calculate the basic average.">
+
+	<p class="sentence">Once again, like in the previous examples above, if the weights of all the numbers are the same then the weighted average and average are the same:</p>
+
+	<p class="sentence">Weighted Average = (90*1+ 75*1 + 60*1)/(3) = (90 + 75 + 60) /3 = Average = <span class="bold">75%</span></p>
+
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends base %}
+{% block extra_head %}
+<script type="text/javascript" src="https://latex.codecogs.com/latexit.js"></script>
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+	.list {list-style-type: circle;}
+	.list__indent {margin-left:2em;margin-top:0.2em;margin-bottom:0.2em;}
+	.list__indent--extra {margin-left:4em;list-style-type:disc;}
+	.latex {margin-top:0.3em;margin-bottom:0.3em;font-size:20px}
+	{% if mobile %}
+		.full-width .latex {width:100%}
+		.sentence {font-size:0.9em;}
+		.list__indent--extra,.list__indent {font-size:0.9em;}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% block page_content %}
+<div id="main-content">
+	<div lang="latex">
+	A = P\frac{i(1+i)^n}{(1+i)^n - 1}
+	</div>
+	<p class="sentence">
+		where:
+		<ul class="list">
+			<li class="list__indent">A = periodic payment amount</li>
+			<li class="list__indent">P = amount of principle or loan owing (subtracting any down-payments)</li>
+			<li class="list__indent">i = period interest rate</li>
+			<li class="list__indent--extra">NOTE: if installments are monthly and interest rate is annual, need to divide by 12</li>
+			<li class="list__indent">n = total number of payments</li>
+		</ul>
+	</p>
+	<p class="sentence">The proof of the formula can be found here:</p>
+	<iframe style="border:none" width="100%" height="400" src="//www.youtube.com/embed/jM-0NyIbPt4" allowfullscreen></iframe>
+</div>
+{% endblock %}

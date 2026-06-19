@@ -1,0 +1,66 @@
+{% extends base %}
+{% block extra_head %}
+<script type="text/javascript" src="https://latex.codecogs.com/latexit.js"></script>
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.2}
+	.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+	.list {list-style-type: circle;}
+	.list__indent {margin-left:2em;margin-top:0.2em;margin-bottom:0.2em;}
+	.list__indent--extra {margin-left:4em;list-style-type:disc;}
+	.latex {margin-top:0.3em;margin-bottom:0.3em;font-size:20px}
+	{% if mobile %}
+		.full-width .latex {width:100%}
+		.sentence {font-size:0.9em;}
+		.list__indent--extra,.list__indent {font-size:0.9em;}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% block page_content %}
+<div id="main-content">
+	<iframe style="border:none" width="100%" height="400" src="//www.youtube.com/embed/jM-0NyIbPt4" allowfullscreen></iframe>
+	<h2 class="header2">What is a mortgage?</h2>
+	<p class="sentence">A mortgage is a loan given where the house or property is used as collateral in case the borrower can’t pay off the mortgage loan. Basically if you can’t pay your loan in time, the bank or lender will cease your property. The payments of the mortgage loan are determined based on an agreed upon a fixed interest rate or by variable interest rates and are also affected by property taxes, insurance fees, etc. The payments are usually determined such that they are constant so that this simplifies the finances of the borrower.
+	</p>
+	<h2 class="header2">Amortization</h2>
+	<p class="sentence">Amortization is process of paying off a loan over a period of time and comes from the Middle English "amortisen" which means "to kill". Thus amortization can be seen as the process of killing off a loan or mortgage loan.</p>
+	<h2 class="header2">Mortgage Amortization Formula (Basic)</h2>
+	<p class="sentence">As stated earlier, most mortgage payments are determined in such a way that they are constant either for the whole lifetime of the mortgage loan if the interest rate is fixed or during intervals if the interest rate varies, for example, every 5 years.
+	</p>
+	<p class="sentence">The basic amortization formula is shown below:</p>
+	<div lang="latex">
+	A = P\frac{i(1+i)^n}{(1+i)^n - 1}
+	</div>
+	<p class="sentence">
+		where:
+		<ul class="list">
+			<li class="list__indent">A = periodic payment amount</li>
+			<li class="list__indent">P = amount of principle or loan owing (subtracting any down-payments)</li>
+			<li class="list__indent">i = period interest rate</li>
+			<li class="list__indent--extra">NOTE: if installments are monthly and interest rate is annual, need to divide by 12</li>
+			<li class="list__indent">n = total number of payments</li>
+		</ul>
+	</p>
+	<h2 class="header2">Mortgage Amortization Formula with Final Balloon Payment</h2>
+	<p class="sentence">Sometimes the mortgage loan is contracted out such that the final payment is a large lump sum at the end of the loan term and is often called a Final Balloon Payment. The idea behind this mortgage repayment strategy is that the monthly or periodic payments are lower because the amount being amortized is less than the mortgage loan since the final loan payment will be a large balloon payment. The downside of this strategy is that the overall interest paid on the mortgage loan can be substantially higher than without the balloon payment. This is because of the interest is compounded on the amount of the loan still owning and since the payments are lower per month, this means that less of the principle loan owning is being paid off and thus more interest is able to be accrued. This type of strategy is not usually recommended for individual home owners but often times businesses may consider this strategy the forecasted revenue stream is lower in the short term, thus benefiting from the lower monthly payments, but higher in the long term, thus being able to pay off the final balloon payment at the end of the mortgage loan term.</p>
+	<p class="sentence">The amortization formula including the final balloon payment is shown below:</p>
+	<div class="full-width" lang="latex">
+	A = \frac{iP(1+i)^n}{(1+i)^n - 1} - \frac{iB}{(1+i)^{n+1} - (1+i)}
+	</div>
+	<p class="sentence">
+		where:
+		<ul class="list">
+			<li class="list__indent">A = periodic payment amount</li>
+			<li class="list__indent">P = amount of principle or loan owing (subtracting any down-payments)</li>
+			<li class="list__indent">i = period interest rate</li>
+			<li class="list__indent">n = total number of payments</li>
+			<li class="list__indent">B = Final Balloon Payment</li>
+			<li class="list__indent--extra">If B = 0, then the amortization formula is the same as the basic one</li>
+		</ul>
+	</p>
+	<p class="sentence">The proof for the mortgage amortization formula with and without the balloon payment is shown in the video <a class="link" href="{{ root_domain }}amortization-formula-proof">Mortgage Amortization Proof Video</a> and is embedded in the top of this page.</p>
+</div>
+{% endblock %}

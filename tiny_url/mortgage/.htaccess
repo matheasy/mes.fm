@@ -1,0 +1,7 @@
+
+RewriteEngine on
+
+RewriteCond %{HTTP_HOST} ^mc\.mes\.fm$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.mc\.mes\.fm$
+RewriteRule ^(.*)$ "https\:\/\/mortgagecalculator\.mes\.fm\/$1" [R=301,L]
+

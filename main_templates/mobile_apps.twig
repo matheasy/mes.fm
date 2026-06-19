@@ -1,0 +1,90 @@
+{% extends base %}
+
+{% block javascripts %}
+	{{ parent() }}
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	.tbl {width:100%;table-layout: fixed;}
+	.calc-row {border-bottom: 0.4em solid transparent;}
+	.calc-container:not(:last-child) {border-right:0.4em solid transparent;}
+	.calc-link {display: block;border: 0.15em solid #d4d4d4;padding:0.4em;position:relative;}
+	.calc__img-container,.calc__text {display: table-cell;vertical-align: middle;}
+	.calc__img {margin-right: 0.4em;display: block;}
+	.calc__img--round {border-radius: 0.2em;}
+	.calc__text--title {display:block;margin-bottom:1em;font-size:1.1em;}
+	.calc__text--desc {font-size:0.9em;color: #666666;}
+	{% if mobile %}
+	.calc-row {border-bottom: 0;}
+	.calc-container {display: block;border-right:0;width:100%;border-bottom: 0.4em solid transparent;}
+	.calc-container--last {border-bottom: 0;}
+	.calc__text--title {font-size: 1em;}
+	{% else %}
+	.calc-link:hover {border-color: {{ dark_color }};}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% block resp_horiz_mobile %}
+    {% if show_ads %}
+        <!-- (Responsive) Horizontal -->
+        <ins class="adsbygoogle"
+             style="display:block;margin:1em 0"
+             data-ad-client="ca-pub-1461238060884369"
+             data-ad-slot="{{ ad_id['resp_horiz'] }}"
+             data-ad-format="horizontal"></ins>
+        <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    {% endif %}
+{% endblock %}
+
+{% block page_content %}
+	<div id="main-content">
+		<table class="tbl">
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://itunes.apple.com/ca/app/fail-safe-final-exam-calculator/id673084580">
+		            <div class="calc__img-container"><img class="calc__img" src="img/gc-logo.png" alt="grade calculator logo" width="88" height="88"></div>
+		              <div class="calc__text">
+			              <span class="calc__text--title">Grade Calculator (iOS)</span>
+			              <span class="calc__text--desc">Calculate what you need on your exam to to pass the course.</span>
+			          </div></a>
+		    	</td>
+		        <td class="calc-container"><a class="calc-link" href="https://itunes.apple.com/ca/app/hashtag-everything-lite/id739573482">
+		            <div class="calc__img-container"><img class="calc__img calc__img--round" src="img/hashtag-logo.png" alt="hashtag everything logo" width="88" height="88"></div>
+		            <div class="calc__text">
+			            <span class="calc__text--title">Hashtag Everything (iOS)</span>
+			            <span class="calc__text--desc">Literally hashtag EVERYTHING with ease.</span>
+			        </div></a>
+		        </td>
+		    </tr>
+		    <tr class="calc-row">
+		      	<td class="calc-container"><a class="calc-link" href="https://play.google.com/store/apps/details?id=com.mike.HashtagEverythingLite">
+		            <div class="calc__img-container"><img class="calc__img calc__img--round" src="img/hashtag-logo.png" alt="hashtag everything logo" width="88" height="88"></div>
+		            <div class="calc__text">
+			            <span class="calc__text--title">Hashtag Everything (Android)</span>
+			            <span class="calc__text--desc">Literally hashtag EVERYTHING with ease.</span>
+			        </div></a>
+		        </td>
+		        <td class="calc-container"><a class="calc-link" href="https://itunes.apple.com/ca/app/doge-bounce/id850547912?mt=8">
+		            <div class="calc__img-container"><img class="calc__img calc__img--round" src="img/doge-bounce-logo.jpeg" alt="doge bounce logo" width="88" height="88"></div>
+		            <div class="calc__text">
+			            <span class="calc__text--title">Doge Bounce (iOS)</span>
+			            <span class="calc__text--desc">Help doge collect much dogecoins to reach moon. Wow.</span>
+			        </div></a>
+		        </td>
+		    </tr>
+		    <tr>
+		      	<td class="calc-container calc-container--last"><a class="calc-link" href="https://play.google.com/store/apps/details?id=com.dogetile.android">
+		            <div class="calc__img-container"><img class="calc__img calc__img--round" src="img/doge-tile-logo.png" alt="doge tile logo" width="88" height="88"></div>
+		            <div class="calc__text">
+			            <span class="calc__text--title">Doge Tile (Android)</span>
+			            <span class="calc__text--desc">Much collect dogecoins. Wow very white tiles no touch.</span>
+			        </div></a>
+		        </td>
+		        <td class="calc-container" style="display:none"></td>
+		    </tr>
+		  </table>
+	</div>
+{% endblock %}

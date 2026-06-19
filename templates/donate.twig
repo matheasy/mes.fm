@@ -1,0 +1,40 @@
+{% extends base %}
+
+{% block ad_block_message %}{% endblock %}
+{% block ad_block_script %}{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	{% if mobile %}
+	.header2 {
+		font-size: 0.9em;
+		word-wrap: break-word;
+	}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% block page_content %}
+	<div id="main-content">
+		<p class="header2"><strong>YouTube: </strong><a href="https://www.youtube.com/channel/UCUUBq1GPBvvGNz7dpgO14Ow/join" target="_blank" class="link">Become a MES Super Fan!</a></p>
+		<p class="header2"><strong>Patreon: </strong><a href="https://patreon.com/matheasysolutions" target="_blank" class="link">patreon.com/matheasysolutions</a></p>
+		<p class="header2"><strong>New World Precious Metals: Buy Gold and Silver: </strong><a href="https://info.newworldpm.com/214.html" target="_blank" class="link">info.newworldpm.com/214.html</a></p>
+		<p class="header2" style="margin-left: 20px;"><strong>Become an affiliate yourself: </strong><a href="https://info.newworldpm.com/signup-214.html" target="_blank" class="link">info.newworldpm.com/signup-214.html</a></p>
+		<p class="header2"><strong>PayPal: </strong><a href="https://www.paypal.com/donate?hosted_button_id=JFN38B8X88W7N" target="_blank" class="link">paypal.com/donate?hosted_button_id=JFN38B8X88W7N</a></p>
+		<p class="header2" style="margin-left: 20px;"><strong>PayPal.me: </strong><a href="https://paypal.me/matheasysolutions" target="_blank" class="link">paypal.me/matheasysolutions</a></p>
+		<p class="header2"><strong>Paychute: </strong><a href="https://www.paychute.com/c/ece567da-e04e-4922-b663-ae11fa60fb39" target="_blank" class="link">paychute.com/c/ece567da-e04e-4922-b663-ae11fa60fb39</a></p>
+		<p class="header2"><strong>SubscribeStar: </strong><a href="https://www.subscribestar.com/mes" target="_blank" class="link">subscribestar.com/mes</a></p>
+		<p class="header2"><strong>Nano Ledger Referral: </strong><a href="https://shop.ledger.com/pages/ledger-nano-x?r=7d5787f5fd32" target="_blank" class="link">mes.fm/nano</a></p>
+		<p class="header2"><strong>Ripple XRP: </strong><a href="https://xrpscan.com/account/rDqSZAsxSEBoTgPGDbSqKEtrEe4JxKkDNh" target="_blank" class="link">rDqSZAsxSEBoTgPGDbSqKEtrEe4JxKkDNh</a></p>
+		<p class="header2"><strong>Bitcoin: </strong><a href="https://www.blockchain.com/explorer/addresses/btc/bc1qlerel3vyn5982s24wccqe772qpvts69ehqkgtt" target="_blank" class="link">bc1qlerel3vyn5982s24wccqe772qpvts69ehqkgtt</a></p>
+		<p class="header2"><strong>Ethereum: </strong><a href="https://etherscan.io/address/0xF4987423BB5A955540b38fCB012770e0a929c746" target="_blank" class="link">0xF4987423BB5A955540b38fCB012770e0a929c746</a></p>
+        <p class="header2"><strong>Litecoin: </strong><a href="https://live.blockcypher.com/ltc/address/MWY16KTcLrmysdDamkUabRxK7ACmMdQJhv" target="_blank" class="link">MWY16KTcLrmysdDamkUabRxK7ACmMdQJhv</a></p>
+		<p class="header2"><strong>Hive: </strong><a href="https://peakd.com/@mes" target="_blank" class="link">https://peakd.com/@mes</a></p>
+		<br>
+		<p class="header2">Even a dollar helps!</p>
+	</div>
+{% endblock %}

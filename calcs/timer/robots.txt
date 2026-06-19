@@ -1,0 +1,4 @@
+User-agent: *
+
+Disallow: /search-results
+Disallow: /plugins/feedback.php

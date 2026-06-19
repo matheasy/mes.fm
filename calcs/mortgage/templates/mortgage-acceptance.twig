@@ -1,0 +1,52 @@
+{% extends base %}
+
+{% block extra_styles %}
+	<style>
+	.author {font-weight:100;margin:0.7em 0 1em 0;}
+    .author a:hover {text-decoration: underline;}
+	.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:2}
+	.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;text-decoration:underline}
+	.header3 {margin-top:1em; margin-bottom:0.5em;}
+	.mini-title {line-height: 2; font-weight: 700;margin-top: 1.3em;}
+	.tutorial-img {width:100%;height:auto;}
+	.list {list-style-type: circle;}
+	.list__indent {margin-left:2em;margin-top:0.2em;margin-bottom:0.2em;}
+	.list__indent--extra {margin-left:4em;list-style-type:disc;}
+	.latex {margin-top:0.3em;margin-bottom:0.3em;font-size:20px}
+	{% if mobile %}
+		.full-width .latex {width:100%}
+		.sentence {font-size:0.9em;}
+		.list__indent--extra,.list__indent {font-size:0.9em;}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% block page_content %}
+<p class="author grey small-text">
+    <a class="link thin-font" href="{{ root_domain }}financial-advice/how-to-get-accepted-for-a-mortgage">Financial Advice</a>&nbsp;&nbsp;
+    <span class="dot grey thin-font">•</span>&nbsp;&nbsp;<span class="author-name grey thin-font">{{ author }}</span>&nbsp;&nbsp;
+    <span class="dot grey thin-font">•</span>&nbsp;&nbsp;
+    <time class="grey thin-font" datetime="{{ date_time }}" pubdate="pubdate">{{ visible_date }}</time>
+</p>
+<div id="main-content">
+	<img class="tutorial-img" style="margin-bottom: 5px" src="https://images.unsplash.com/photo-1430285561322-7808604715df?ixlib=rb-0.3.5&s=f37356fce315191ba7a86d4067b9a8c0&auto=format&fit=crop&w=1050&q=80">
+	<h2 class="header2 mini-title">How To Boost Your Chances Of Getting Accepted For A Mortgage</h2>
+	<p class="sentence">
+	Most people don't think about the consequences of their debts when they're young, free, single and enjoying their life. The average price of purchasing an apartment in the city center of Micronesia, according to Numbeo, is $16.145.87 per square meter so good credit is a must. Yet, it's only when you seek the advice of a specialist mortgage advisor that you realise your previous debts may have had a negative impact on your credit score and, thus, your chances of securing a mortgage. Taking on a mortgage <a class="link" href="http://www.nytimes.com/2009/01/22/opinion/22cohen.html">is a big responsibility</a> and it's vital you ensure you're ready for the commitment and the monthly expense by <a class="link" href="{{ root_domain }}">using a mortgage calculator</a> before you agree to the loan. If you are one ready to take the plunge, then you need to ensure your credit and debt statuses are in top shape. 
+	</p>
+
+	<h2 class="mini-title">Reducing debt</h2>
+
+	<p class="sentence">When you're considering applying for a mortgage, you should look for ways to reduce any debt you owe. After all, a mortgage is a large debt to carry around on your shoulders, so you want to minimize all other debts first. Looking for ways to save money wherever you can can also go a long way. Ditching the morning stop at the local coffee store, <a class="link" href="http://www.funfitmom.com/fitness/3-reasons-you-can-cancel-your-gym-membership-today/">cancelling your gym membership</a> and walking instead of taking the bus are brilliant ways to save dollars which can all go towards reducing your debt and, in the long run, boost your chances of a mortgage application being accepted.</p>
+
+	<h2 class="mini-title">Organizing debt</h2>
+
+	<p class="sentence">If you've got debt spread across multiple credit cards, then it may be best to consolidate your debt into one so you can easily track and keep an eye on the amount you owe. Opting for a <a class="link" href="https://www.credible.com/blog/credit-cards/best-balance-transfer-credit-cards/">balance transfer credit card</a> can be a great way of transferring high interest balances onto one card with the added benefit of earning bonuses and rewards, such as cashback, on purchases. These cards also tend to have zero percent interest for a period of time which is a brilliant way of keeping your debt to a minimum and to prevent it from rising.</p>
+
+	<h2 class="mini-title">Building credit</h1>
+
+	<p class="sentence">A good credit score is vital when seeking a mortgage as it shows your lender that they can rely on you to meet your monthly repayments. Paying bills on time, reviewing your credit history and limiting the amount of credit you apply for are easy ways to boost your credit score and prove how responsible you are. Aside from your credit score, you also want to build your finances and get into the black. Making the effort to save money wherever you can and placing these savings into a savings account is the best way to see your balance slowly increase.</p>
+
+	<p class="sentence">Managing and clearing your debt effectively is the most efficient way to boost your chance of gaining a mortgage and stepping onto the property ladder.</p>
+</div>
+{% endblock %}

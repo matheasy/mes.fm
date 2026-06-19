@@ -1,0 +1,56 @@
+.timer-tool {text-align: center;}
+.box-border {border:0.1em solid #f69b14; padding:0.7em;}
+.inputs {margin-top:1em; display: inline-block;}
+.inputs__div {display: inline-block;text-align: left;}
+.inputs__div--not-last {margin-right:1em;}
+.inputs__div--bottom {margin-bottom:0;}
+.bold {font-weight: 700;}
+
+.inputs__input {height:1.5em;width:5em;font-size:1em;text-align: center;margin-left:0.5em;margin-right:0.3em;}
+.inputs__answer {height:2.15em;width:3em;font-size:1em;background-color: #EEEEEE;border: 0.1em solid #b2b2b2;display: table-cell;vertical-align: middle;text-align: center;}
+
+.digits {display: inline-block;vertical-align: bottom;}
+.digit {font-size:2.5em;margin:0 0.2em 0 0.5em;}
+.digit-first {margin-left: 0;}
+.digit--milli {font-size:1.2em;}
+
+.hand {font-size:2em;}
+.hand--milli {font-size:1em;}
+.hand--small {font-size:1.2em;}
+
+.text-title {font-weight: 700; text-align: center;margin-bottom: 1em;}
+.text-title--large {max-width:100%;text-align: center;}
+.text-title--underline {text-decoration: underline;}
+
+.buttons-container {display: inline-block;}
+.buttons-container--top {vertical-align: top;}
+
+.button-switch {display:inline-block;margin-left:1em;width:18em;border-collapse: collapse;table-layout: fixed;}
+.button-switch__cell {display: table-cell;width: 2%;} /* 2% because magic... (triggers the table-layout:fixed property) */
+
+.button--browser {width:30%;display:inline-block;margin:0 0 0.5em 0;}
+.button--more-margin {margin-bottom: 1em;}
+.button--small {width:6em; display:inline-block; margin:0 0 0 2em;}
+.button--last {margin-left:0.5em;}
+.button--blue {color:#7a7ecb;border-color:#7a7ecb;}
+.button--red {color:red;border-color:red;}
+.button--green {color:green;border-color:green;}
+.button--gray {color:gray;border-color:gray;}
+
+.active-button {background-color:#f69b14;color:white;}
+.active-button--blue {background-color: #7a7ecb; color:white;}
+.hover:hover {background-color: #f69b14;color:white;}
+.hover--red:hover {background-color: red;color:white;}
+.hover--green:hover {background-color: green;color:white;}
+
+.selected {background-color: #f69b14;color:white;}
+.selected--gray {background-color: gray;color:white;}
+.hide {display: none;}
+
+.split {width:90%;margin-left: auto;margin-right: auto;}
+.split__table {width:100%;}
+.split__table__cell {display: table-cell;padding:0.5em 0;border:0.1em solid #888;}
+
+/*.note {line-height: 1.2;margin-top:1em;}
+.note__bold {font-weight: 700;}*/
+

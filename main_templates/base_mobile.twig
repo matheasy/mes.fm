@@ -1,0 +1,181 @@
+{% extends "base.twig" %}
+
+{% block header %}
+    <canvas id="navbar-button" class="navbar-button" width="30" height="28"></canvas>
+    <script>
+        var navbarCanvas = document.getElementById('navbar-button');
+        var ctx = navbarCanvas.getContext('2d');
+        ctx.beginPath();
+        ctx.lineWidth=6;
+        ctx.strokeStyle='{{ dark_color }}';
+        ctx.moveTo(0,3);
+        ctx.lineTo(30,3);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0,14);
+        ctx.lineTo(30,14);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0,25);
+        ctx.lineTo(30,25);
+        ctx.stroke();
+    </script>
+
+    <div id="header" class="header">
+        {% block logo_container %}{{ parent() }}{% endblock %}
+        <p class="calculator-title">{{ calc_name }} by MES</p>
+    </div>
+
+    <ul id="navbar-preview" class="navbar">
+        {% if navbar_mobile %}
+            {% for items in navbar_mobile|slice(0, num_navbar_items_mobile|default(4)) %}
+            <li class="navbar__item--preview"><a target="{{ items.link_window | default('_self') }}" class="navbar__link" href='{{ items.url }}'>{{ items.label }}</a></li>
+            {% endfor %}
+        {% else %}
+            <li class="navbar__item--preview"><a class="navbar__link" href="{{ root_domain }}contact">Contact Us</a></li>
+            <li class="navbar__item--preview"><a class="navbar__link" target='_blank' href="https://mes.fm/donate">Donate</a></li>
+        {% endif %}
+        {# {% if not hide_search %}<li class="navbar__item--preview"><img class="search-icon-button lazyload" height="24" width="24" data-src="//mes.fm/main_img/search-icon.png"></li>{% endif %} #}
+    </ul>
+    {% include 'navbar.twig' %}
+    {# {% if not hide_search %}<div id="google-search-box"><gcse:search></gcse:search></div>{% endif %} #}
+{% endblock %}
+{% block body %}
+    {% block ad_above_title %}
+    {% endblock %}
+    <div class="page-content">
+        {% block calc_info %}{{ parent() }}{% endblock %}
+
+        <div style="background-color: {{ dark_color }}; text-align: center; padding: 0.4em; margin: 1em 0">
+            <a class="crypto-text" style="text-decoration: underline; font-size:1.3em; font-weight:bold" href="https://mes.fm/calculators">Popular Calculators/Tools</a>
+            <div class="footer__item">
+                <ul class="footer__list">
+                    {% if local_root != "percent" %}
+                        <li><a class="footer__text" href='https://percentagecalculator.mes.fm'>Percentage Calculator</a></li>
+                    {% endif %}
+                    {% if local_root != "bmi" %}
+                        <li><a class="footer__text" href='https://bmicalculator.mes.fm'>BMI Calculator</a></li>
+                    {% endif %}
+                    {% if local_root != "grade" %}
+                        <li><a class="footer__text" href='https://gradecalculator.mes.fm'>Grade Calculator</a></li>
+                    {% endif %}
+                    {% if local_root == "percent" or local_root == "bmi" or local_root == "grade" %}
+                        <li><a class="footer__text" href='https://mortgagecalculator.mes.fm'>Mortgage Calculator</a></li>
+                    {% endif %}
+                    {% if local_root != "timer" %}
+                        <li><a class="footer__text" href='https://timer.mes.fm'>Timer</a></li>
+                    {% elseif local_root != "speedreader" %}
+                        <li><a class="footer__text" href='https://speedreader.mes.fm'>Speed Reader</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        {% block resp_horiz_mobile %}
+            {% if show_ads and ad_id['resp_horiz'] %}
+                <!-- (Responsive) Horizontal -->
+                <div class="adsense" style="height:280px">
+                    <ins class="adsbygoogle"
+                         style="display:block;margin:1em 0"
+                         data-ad-client="ca-pub-1461238060884369"
+                         data-ad-slot="{{ ad_id['resp_horiz'] }}"
+                         data-ad-format="rectangle"></ins>
+                </div>
+                {#<script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>#}
+            {% endif %}
+        {% endblock %}
+
+        {% if addtoany|default(1) %}
+            <div class="addtoany-container">
+                <span class="social__text">Share:</span>
+                <!-- AddToAny BEGIN -->
+                <div class="a2a_kit a2a_kit_size_28 a2a_default_style" style="">
+                <a class="addtoany__button a2a_button_facebook"></a>
+                <a class="addtoany__button a2a_button_twitter"></a>
+                <a class="addtoany__button a2a_button_pinterest"></a>
+                <a class="addtoany__button a2a_button_whatsapp"></a>
+                {# <a class="addtoany__button a2a_button_email"></a> #}
+                <a class="a2a_dd" href="https://www.addtoany.com/share_save"></a>
+                </div>
+                <!-- AddToAny END -->
+            </div>
+        {% endif %}
+        {% block alt_big_mobile_ad_1 %}{% endblock %}
+        {% block page_content %}{% endblock %}
+        {% block alt_big_mobile_ad_2 %}{% endblock %}
+
+        {% if show_ads and resp_rect %}
+            <!-- (Responsive) Rectangle Ad -->
+            <div class="adsense adsense--mobile">
+                <ins class="adsbygoogle"
+                     style="display:block;margin-top:1em;margin-bottom:0.5em;"
+                     data-ad-client="ca-pub-1461238060884369"
+                     data-ad-slot="{{ ad_id['resp_rect'] }}"
+                     data-ad-format="rectangle"></ins>
+            </div>
+            {#<script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>#}
+        {% endif %}
+
+        {% if main_note %}
+            {% block main_note %}
+                {{ parent() }}
+            {% endblock %}
+        {% endif %}
+
+        {% if addtoany|default(1) %}
+            <div class="addtoany-container">
+                <span class="social__text">Share:</span>
+                <!-- AddToAny BEGIN -->
+                <div class="a2a_kit a2a_kit_size_28 a2a_default_style" style="">
+                <a class="addtoany__button a2a_button_facebook"></a>
+                <a class="addtoany__button a2a_button_twitter"></a>
+                <a class="addtoany__button a2a_button_pinterest"></a>
+                <a class="addtoany__button a2a_button_whatsapp"></a>
+                {# <a class="addtoany__button a2a_button_email"></a> #}
+                <a class="a2a_dd" href="https://www.addtoany.com/share_save"></a>
+                </div>
+                <!-- AddToAny END -->
+            </div>
+        {% endif %}
+
+        {% if show_ads and matched_content|default(1) %}
+            <!-- PC (Responsive/Rectangle) Matched Content -->
+            <div class="adsense adsense--mobile">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-1461238060884369"
+                     data-ad-slot="7894600465"
+                     data-ad-format="autorelaxed"></ins>
+            </div>
+            {#<script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>#}
+        {% endif %}
+
+        {% block app_store_badges %}{{ parent() }}{% endblock %}
+
+        {% block comments %}{{ parent() }}{% endblock %}
+
+        {% block ads_after_comments %}{% endblock %}
+
+        {% block alt_big_mobile_ad_3 %}{% endblock %}
+
+        {% if show_ads and resp_vert_mobile %}
+            <!-- (Responsive) Vertical -->
+            <div class="adsense adsense--mobile">
+                <ins class="adsbygoogle"
+                     style="display:block;margin:1.5em 0 0.8em 0"
+                     data-ad-client="ca-pub-1461238060884369"
+                     data-ad-slot="{{ ad_id['resp_vert'] }}"
+                     data-ad-format="rectangle"></ins>
+            </div>
+            {#<script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>#}
+        {% endif %}
+    </div>
+{% endblock %}

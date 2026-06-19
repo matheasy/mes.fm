@@ -1,0 +1,5 @@
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^gc\.mes\.fm$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.gc\.mes\.fm$
+RewriteRule (.*) "https\:\/\/gradecalculator\.mes\.fm/$1" [R=301,L]
+

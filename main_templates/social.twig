@@ -1,0 +1,11 @@
+<ul class="social">
+	{#{% if social_medias.steemit %}<li class="social__logo social__steemit"><a class="social__link" href="https://steemit.com/{{ social_medias.steemit }}" target="_blank"></a></li></a></li>{% endif %}#}
+	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li>
+    {% if social_medias.fb %}<li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/{{ social_medias.fb }}" target="_blank"></a></li>{% endif %}
+    {% if social_medias.twitter %}<li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/{{ social_medias.twitter }}" target="_blank"></a></li>{% endif %}
+    {% if social_medias.insta %}<li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/{{ social_medias.insta }}" target="_blank"></a></li>{% endif %}
+    {% if social_medias.pin %}<li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/{{ social_medias.pin }}" target="_blank"></a></li>{% endif %}
+    {% if social_medias.yt %}<li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/{{ social_medias.yt }}" target="_blank"></a></li>{% endif %}
+    {% if social_medias.patreon %}<li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/{{ social_medias.patreon }}" target="_blank"></a></li>{% endif %}
+</ul>

@@ -1,0 +1,120 @@
+{% extends base %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+	var pageLink = $(".page-link");
+	pageLink.each(function() {
+		if($(this).html() == {{ page }}) {
+			$(this).addClass("active-page");
+			return false;
+		}
+	});
+	</script>
+{% endblock %}
+
+{% block extra_styles %}
+	<style>
+	.memes {margin:0 auto;}
+	.memes__row {border-bottom: 1em solid transparent;}
+	.memes__img-container:not(:last-child) {border-right:1em solid transparent;}
+	.memes__link {display: block;}
+	.memes__img {height:10.0625em;width:10.0625em;display: block;border:0.15em solid #d4d4d4;box-sizing: border-box;-moz-box-sizing: border-box;-webkit-box-sizing: border-box;}
+	.btn-container {width:100%; display: table;margin-bottom: 2em;table-layout: fixed;}
+	.page-numbers {display: table-cell;text-align: center;vertical-align: middle;}
+	.btn-link {display: table-cell;}
+	.page-link {font-size: 1.2em;padding:0 0.4em;}
+	.active-page {font-weight: 700;color:{{ dark_color }};cursor: default;}
+	{% if mobile %}
+	.memes__row {border-bottom: 0.5em solid transparent;}
+	.memes__img-container:not(:last-child) {border-right:0.5em solid transparent;}
+	.memes__img {width: 100%;height:auto;min-width:8.5em;min-height: 8.5em;}
+	.btn-container {margin-top:0.5em;}
+	.page-numbers {width:20%;}
+	.btn-link {text-align: center;width:30%;}
+	{% else %}
+	.memes__img:hover {border-color: {{ dark_color }};}
+	.page-link:hover:not(.active-page) {text-decoration: underline;}
+	.btn-link:hover {background-color: {{ dark_color }};color:white;}
+	{% endif %}
+	</style>
+{% endblock %}
+
+{% block canonical_tag %}
+	{% if page == 1 %}
+		<link rel="canonical" href="{{ url }}" />
+	{% endif %}
+{% endblock %}
+
+{% set resp_rect = true %}
+{% set resp_vert_mobile = true %}
+
+{% block resp_horiz_mobile %}
+    {% if show_ads %}
+        <!-- (Responsive) Horizontal -->
+        <ins class="adsbygoogle"
+             style="display:block;margin:1em 0"
+             data-ad-client="ca-pub-1461238060884369"
+             data-ad-slot="{{ ad_id['resp_horiz'] }}"
+             data-ad-format="horizontal"></ins>
+        <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    {% endif %}
+{% endblock %}
+
+{% block page_content %}
+	<div id="main-content">
+		<table class="memes">
+			<tr class="memes__row">
+			{% for item in data %}
+				<td class="memes__img-container"><a class="memes__link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ item.urlname }}" title="{{ item.title }}">
+					{% if mobile %}
+						<img height="161" width="161" class="memes__img lazyload" data-src="https://{{ url_short }}/img/memes-thumbnail/{{ item.thumbnailurl }}" alt="{{ item.title }}">
+					{% else %}
+						<img height="161" width="161" class="memes__img lazyload" data-src="https://{{ url_short }}/img/memes-thumbnail/{{ item.thumbnailurl2 }}" alt="{{ item.title }}">
+					{% endif %}
+				</a></td>
+				{% if loop.index % items_per_row == 0 and not loop.last %}
+					</tr><tr class="memes__row">
+				{% endif %}
+			{% endfor %}
+			</tr>
+		</table>
+		<div class="btn-container">
+			{% if page != 1 %}<a class="button btn-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ page - 1 }}">&#9668;&nbsp;&nbsp;Previous</a>{% endif %}
+			{% if mobile %}
+				<div class="page-numbers">Page {{ page }}</div>
+			{% else %}
+				<div class="page-numbers">
+					{% if page < 4 or not data %}
+						{% if max_page > 4 %}
+							{% for i in range(1 , 5) %}
+								<a class="page-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ i }}">{{ i }}</a>
+							{% endfor %}
+						{% else %}
+							{% for i in range(1 , max_page) %}
+								<a class="page-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ i }}">{{ i }}</a>
+							{% endfor %}
+						{% endif %}
+					{% elseif page > 3 and page < (max_page - 1) %}
+						{% for i in range((page-2) , (page+2)) %}
+							<a class="page-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ i }}">{{ i }}</a>
+						{% endfor %}
+					{% else %}
+						{% if max_page > 4 %}
+							{% for i in range((max_page-4) , max_page) %}
+								<a class="page-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ i }}">{{ i }}</a>
+							{% endfor %}
+						{% else %}
+							{% for i in range(1 , max_page) %}
+								<a class="page-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ i }}">{{ i }}</a>
+							{% endfor %}
+						{% endif %}
+					{% endif %}
+				</div>
+			{% endif %}
+			{% if page != max_page %}<a class="button btn-link" href="{{ root_domain }}{{ memes_dir | default('memes')}}/{{ page + 1 }}">Next&nbsp;&nbsp;&#9658;</a>{% endif %}
+		</div>
+	</div>
+{% endblock %}

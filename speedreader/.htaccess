@@ -1,0 +1,34 @@
+# Enable directory indexing
+DirectoryIndex index.php
+
+# Set file permissions
+<FilesMatch "\.(htaccess|htpasswd|php)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Set directory permissions
+<Directory />
+    Options +FollowSymLinks -MultiViews
+    AllowOverride All
+    Require all granted
+</Directory>
+
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Set RewriteBase
+RewriteBase /
+
+# Remove www and redirect to https
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+# Redirect non-www http to https
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Reroute to main controller
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^\.]+)/?$ index.php?uri=$1 [QSA,L]

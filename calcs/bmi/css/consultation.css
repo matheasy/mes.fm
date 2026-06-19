@@ -1,0 +1,84 @@
+#page-description-container p {line-height:2;font-weight: 100;margin-top:1.3em;}
+/*#main-content span {line-height: 2;}
+#main-content a {text-decoration: underline;color: -webkit-link;}
+#main-content .mini-title {line-height:2;font-weight: 700;margin-top: 2.3em;}*/
+#page-description-container a {color: #428bca;font-weight: 400;}
+#page-description-container a:hover {color:#4c6496;text-decoration: underline;}
+#page-description-container .addthis_native_toolbox {margin-top: 1em;}
+#email-error,#captcha-error {color:red;display:none;}
+#main-content .header {font-size: 1.1em;margin-top:2em;margin-bottom:1em;}
+#main-content .select-option {font-size: 1.4em;margin-top:2em;margin-bottom:1em;}
+#main-content select {margin-bottom:0.5em;height:1.5em;width:10.8em;font-size: 1em;text-align: center;}
+#main-content p {line-height: 1.5;}
+#main-content #result {width:10em;}
+.button-switch {text-align: center;display:table;width:100%;margin-top:1em;margin-bottom: 1em;}
+#page-description-container .consultation-tag-line {color:#c275b1;font-size:2.8em;line-height:1.3;font-weight: bolder;margin-top:0.5em;margin-bottom:0.5em;}
+#page-description-container .consultation-description {line-height:1.3;font-size:2.1em;margin-top:0;}
+#page-description-container .consultation-description span {color:#c275b1;}
+.wrapper {clear: both; padding-top: 2em;}
+.box-border {border:0.1em solid #c275b1; padding:1em;}
+#main-content .privacy-policy .header, #main-content .client-statement .header {margin: 0;}
+#main-content .privacy-policy-button {margin-top:3em;}
+.hide {display: none;}
+.kelly-pic {float:right;padding:1.5em 0 0 1.5em;}
+.yes-button, .no-button {display:table-cell;width:50%;cursor:pointer;}
+.button:hover {cursor: pointer;}
+.pay-button:hover {cursor:pointer;}
+.yes-button {border-right-width:0.0625em; }
+.no-button {border-left-width:0.0625em; }
+.active-button {background-color:#c275b1;color:white;}
+.centered {text-align: center;}
+.graph-table-container {text-align: center;display:none;}
+.graph-button, .graph-table-button {display:inline-block;width:45%;cursor:pointer;}
+.graph-button {margin-right:0.5em;}
+.graph-table-button {margin-left:0.5em;}
+
+#main-content #radiobuttons input {width:1em;height:1em;}
+#main-content #radiobuttons input:last-of-type {margin-left:1em;}
+.input-row {margin:0.5em 2em 0.5em 0;position: relative;display: inline-block;}
+/*#input-div input {margin-left:0.3em;}*/
+#input-div p {margin:0.5em 0 0.3em 0;}
+#input-div input {margin-bottom:0.5em;}
+#input-div .health-concerns input {width:50%;min-width:12em;}
+.height-div {margin-top: 0.5em;}
+/*#input-div span {display: inline-block;width:16em;font-size: 1em;font-weight: 100;}*/
+.check-mark-container {display: none;vertical-align: middle;}
+.check-mark-container img {height: 1.4em;width: auto;display: block;margin-left:0.3em;}
+/*#note {line-height: 1.2;font-weight: 100;margin-top: 1.2em;display: inline-block;}*/
+#note {line-height: 1.2;font-weight: 100;display: inline-block;}
+#note span {line-height: 1.2;font-weight: normal;}
+
+.hover:hover {background-color: #c275b1;color:white;}
+
+#consultation-options tr td {vertical-align: middle;padding:0.7em 0.2em;}
+#consultation-options tr:last-child td span {font-size:1.5em;font-weight: bold;}
+#consultation-options th {font-weight: bold;font-size:1.1em;}
+#main-content .options-text {font-size: 2.5em;text-align: center;}
+
+table {width:100%;}
+#main-content table input {width:90%;text-align: center;border:none;}
+
+table th {font-weight:normal;padding:0.35em;background-color: #e2e2e2;border-bottom:0.125em solid #333333;}
+table td {padding:0.2em 0.3em 0 0.3em;text-align: center;}
+table td:not(:last-child) {border-right:0.125em solid #333333;}
+table th:not(:last-child) {border-right:0.125em solid #333333;}
+table tr:not(:last-child) td{border-bottom:0.125em solid #333333;}
+
+#loading-image {display:none;z-index:21;z-index: 21;height: 30%;width: auto;position:fixed;top: 30%;left: 40%;}
+.darkClass {display: none;background-color: white;filter:alpha(opacity=50); opacity: 0.5;
+    -moz-opacity:0.50;z-index: 20;height: 100%;width: 100%;background-repeat:no-repeat;background-position:center;position:fixed;top: 0px;left: 0px;}
+
+.button-switch {text-align: center;display:table;width:100%;margin-bottom: 1em;}
+.button {color:#c275b1;font-weight:normal;border:0.125em solid #c275b1;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;
+    -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;}
+
+.button-switch div {display:table-cell;width:33%;cursor:pointer;}
+.button-switch .left-button {border-right-width:0.0625em;}
+.button-switch .middle-button {border-left-width:0.0625em;border-right-width:0.0625em; }
+.button-switch .right-button {border-left-width:0.0625em;}
+.active-button {background-color:#c275b1;color:white;}
+
+.pay-button {font-size:1.1em;color:#c275b1;font-weight:700;border:0.125em solid #c275b1;margin:0.7em 0 0.7em 0;padding:0.5em 0.2em;text-align:center;
+    -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;width:18em;background-color:white;}
+
+.selected {background-color: #c275b1;color:white;}

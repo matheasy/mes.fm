@@ -1,0 +1,32 @@
+.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5;font-size:0.9em;}
+.list {list-style-type: disc;font-size:0.9em;}
+.list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;}
+
+.inline-block {display:inline-block;}
+.calculator-header {font-size: 1.1em;margin-top:1em;margin-bottom:0.3em;}
+#main-content input {height:2em;width:7em;font-size: 1em;text-align: center;margin-top:0.5em;margin-bottom: 0.5em;}
+#main-content #feet-input,#main-content #inches-input {width:7em;}
+.weight-div {margin-right:0.5em;}
+#imperial-container .height-div input:last-child {margin-left:0.5em;}
+#bmi-input-container {display: table-cell;}
+#bmi-input-container input {display: block;background-color: #EEEEEE;border: 0.0625em #b2b2b2 solid;}
+#check-mark-container {display: none;vertical-align: middle;}
+#check-mark-container img {height: 2em;	width: auto;display: block;margin-left:1.2em;}
+#result-text {color:black;margin-top:0.8em;line-height: 1.3;font-style: italic;font-weight: 100;}
+#result-text span {font-weight: 700;}
+#bmi-categories-container {margin-top:0.8em;}
+#bmi-categories-container .category {line-height: 1.5;font-weight: 100;}
+#note {line-height: 1.5;font-weight: 100;display: inline-block;}
+#note span {line-height: 1.2;font-weight: normal;}
+#bmi-categories-container .healthy-category {font-weight: normal;color:#62b52d;}
+#bmi-categories-container .unhealthy-category {font-weight: normal;color:#cb3434;}
+#main-content #bmi-input-result {width:12em;}
+
+.button-switch {text-align: center;display:table;width:100%;margin-bottom: 1em;}
+.metric-button, .imperial-button {display:table-cell;width:50%;cursor:pointer;}
+.button a {color:#c275b1;}
+.metric-button {border-right-width:0.0625em; }
+.imperial-button {border-left-width:0.0625em; }
+.active-button {background-color:#c275b1;color: white;}
+.active-button a {color:white;}
