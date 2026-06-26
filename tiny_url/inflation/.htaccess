@@ -1,5 +1,0 @@
-RewriteEngine on
-
-RewriteCond %{HTTP_HOST} ^ic\.mes\.fm$ [OR]
-RewriteCond %{HTTP_HOST} ^www\.ic\.mes\.fm$
-RewriteRule ^(.*)$ "https\:\/\/inflationcalculator\.mes\.fm\/$1" [R=301,L]

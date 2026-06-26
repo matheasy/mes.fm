@@ -1,1 +1,0 @@
-var areAdsShowing = true;

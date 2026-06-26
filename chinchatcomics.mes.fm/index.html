@@ -1,0 +1,648 @@
+<style type="text/css">
+#kohana_error { background: #ddd; font-size: 1em; font-family:sans-serif; text-align: left; color: #111; }
+#kohana_error h1,
+#kohana_error h2 { margin: 0; padding: 1em; font-size: 1em; font-weight: normal; background: #911; color: #fff; }
+	#kohana_error h1 a,
+	#kohana_error h2 a { color: #fff; }
+#kohana_error h2 { background: #222; }
+#kohana_error h3 { margin: 0; padding: 0.4em 0 0; font-size: 1em; font-weight: normal; }
+#kohana_error p { margin: 0; padding: 0.2em 0; }
+#kohana_error a { color: #1b323b; }
+#kohana_error pre { overflow: auto; white-space: pre-wrap; }
+#kohana_error table { width: 100%; display: block; margin: 0 0 0.4em; padding: 0; border-collapse: collapse; background: #fff; }
+	#kohana_error table td { border: solid 1px #ddd; text-align: left; vertical-align: top; padding: 0.4em; }
+#kohana_error div.content { padding: 0.4em 1em 1em; overflow: hidden; }
+#kohana_error pre.source { margin: 0 0 1em; padding: 0.4em; background: #fff; border: dotted 1px #b7c680; line-height: 1.2em; }
+	#kohana_error pre.source span.line { display: block; }
+	#kohana_error pre.source span.highlight { background: #f0eb96; }
+		#kohana_error pre.source span.line span.number { color: #666; }
+#kohana_error ol.trace { display: block; margin: 0 0 0 2em; padding: 0; list-style: decimal; }
+	#kohana_error ol.trace li { margin: 0; padding: 0; }
+.js .collapsed { display: none; }
+</style>
+<script type="text/javascript">
+document.documentElement.className = document.documentElement.className + ' js';
+function koggle(elem)
+{
+	elem = document.getElementById(elem);
+
+	if (elem.style && elem.style['display'])
+		// Only works with the "style" attr
+		var disp = elem.style['display'];
+	else if (elem.currentStyle)
+		// For MSIE, naturally
+		var disp = elem.currentStyle['display'];
+	else if (window.getComputedStyle)
+		// For most other browsers
+		var disp = document.defaultView.getComputedStyle(elem, null).getPropertyValue('display');
+
+	// Toggle the state of the "display" style
+	elem.style.display = disp == 'block' ? 'none' : 'block';
+	return false;
+}
+</script>
+<div id="kohana_error">
+	<h1><span class="type">ErrorException [ Fatal Error ]:</span> <span class="message">Uncaught TypeError: Argument 1 passed to Kohana_Kohana_Exception::handler() must be an instance of Exception, instance of Error given in /home/mesfm/public_html/partner_sites/ccc/system/classes/Kohana/Kohana/Exception.php:84
+Stack trace:
+#0 [internal function]: Kohana_Kohana_Exception::handler(Object(Error))
+#1 {main}
+  thrown</span></h1>
+	<div id="error6a3573367984d" class="content">
+		<p><span class="file">SYSPATH/classes/Kohana/Kohana/Exception.php [ 84 ]</span></p>
+		<pre class="source"><code><span class="line"><span class="number">79</span> 	 *
+</span><span class="line"><span class="number">80</span> 	 * @uses    Kohana_Exception::response
+</span><span class="line"><span class="number">81</span> 	 * @param   Exception  $e
+</span><span class="line"><span class="number">82</span> 	 * @return  void
+</span><span class="line"><span class="number">83</span> 	 */
+</span><span class="line highlight"><span class="number">84</span> 	public static function handler(Exception $e)
+</span><span class="line"><span class="number">85</span> 	{
+</span><span class="line"><span class="number">86</span> 		$response = Kohana_Exception::_handler($e);
+</span><span class="line"><span class="number">87</span> 
+</span><span class="line"><span class="number">88</span> 		// Send the response to the browser
+</span><span class="line"><span class="number">89</span> 		echo $response-&gt;send_headers()-&gt;body();
+</span></code></pre>		<ol class="trace">
+					<li>
+				<p>
+					<span class="file">
+													{PHP internal call}
+											</span>
+					&raquo;
+					Kohana_Core::shutdown_handler()
+				</p>
+											</li>
+							</ol>
+	</div>
+	<h2><a href="#error6a3573367984denvironment" onclick="return koggle('error6a3573367984denvironment')">Environment</a></h2>
+	<div id="error6a3573367984denvironment" class="content collapsed">
+				<h3><a href="#error6a3573367984denvironment_included" onclick="return koggle('error6a3573367984denvironment_included')">Included files</a> (82)</h3>
+		<div id="error6a3573367984denvironment_included" class="collapsed">
+			<table cellspacing="0">
+								<tr>
+					<td><code>DOCROOT/index.php</code></td>
+				</tr>
+								<tr>
+					<td><code>APPPATH/bootstrap.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Core.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/I18n.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/I18n.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/HTTP.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/HTTP.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Exception.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Kohana/Exception.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Log.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Log.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Config.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Config.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Log/File.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Log/File.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Log/Writer.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Log/Writer.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Config/File.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Config/File.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Config/File/Reader.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Config/Reader.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Config/Source.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Cookie.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Cookie.php</code></td>
+				</tr>
+								<tr>
+					<td><code>APPPATH/classes/Routes/Comics.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Route.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Route.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Request.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Request.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/HTTP/Request.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/HTTP/Request.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/HTTP/Message.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/HTTP/Message.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/HTTP/Header.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/HTTP/Header.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Request/Client/Internal.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Request/Client/Internal.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Request/Client.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Request/Client.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Arr.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Arr.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Response.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Response.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/HTTP/Response.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/HTTP/Response.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Profiler.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Profiler.php</code></td>
+				</tr>
+								<tr>
+					<td><code>APPPATH/classes/Controller/Comics.php</code></td>
+				</tr>
+								<tr>
+					<td><code>APPPATH/classes/Controller/Base.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Controller/Template.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Controller/Template.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Controller.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Controller.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/View.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/View.php</code></td>
+				</tr>
+								<tr>
+					<td><code>APPPATH/classes/Model/Comics.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Model.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Model.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/DB.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Kohana/DB.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Database/Query/Builder/Select.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Kohana/Database/Query/Builder/Select.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Database/Query/Builder/Where.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Kohana/Database/Query/Builder/Where.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Database/Query/Builder.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Kohana/Database/Query/Builder.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Database/Query.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Kohana/Database/Query.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Database.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Kohana/Database.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/config/database.php</code></td>
+				</tr>
+								<tr>
+					<td><code>APPPATH/config/database.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Config/Group.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Config/Group.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Database/MySQL.php</code></td>
+				</tr>
+								<tr>
+					<td><code>MODPATH/database/classes/Kohana/Database/MySQL.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Debug.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Debug.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Date.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/classes/Kohana/Date.php</code></td>
+				</tr>
+								<tr>
+					<td><code>SYSPATH/views/kohana/error.php</code></td>
+				</tr>
+							</table>
+		</div>
+				<h3><a href="#error6a3573367984denvironment_loaded" onclick="return koggle('error6a3573367984denvironment_loaded')">Loaded extensions</a> (51)</h3>
+		<div id="error6a3573367984denvironment_loaded" class="collapsed">
+			<table cellspacing="0">
+								<tr>
+					<td><code>Core</code></td>
+				</tr>
+								<tr>
+					<td><code>date</code></td>
+				</tr>
+								<tr>
+					<td><code>libxml</code></td>
+				</tr>
+								<tr>
+					<td><code>openssl</code></td>
+				</tr>
+								<tr>
+					<td><code>pcre</code></td>
+				</tr>
+								<tr>
+					<td><code>sqlite3</code></td>
+				</tr>
+								<tr>
+					<td><code>zlib</code></td>
+				</tr>
+								<tr>
+					<td><code>bz2</code></td>
+				</tr>
+								<tr>
+					<td><code>calendar</code></td>
+				</tr>
+								<tr>
+					<td><code>ctype</code></td>
+				</tr>
+								<tr>
+					<td><code>curl</code></td>
+				</tr>
+								<tr>
+					<td><code>hash</code></td>
+				</tr>
+								<tr>
+					<td><code>filter</code></td>
+				</tr>
+								<tr>
+					<td><code>ftp</code></td>
+				</tr>
+								<tr>
+					<td><code>gettext</code></td>
+				</tr>
+								<tr>
+					<td><code>gmp</code></td>
+				</tr>
+								<tr>
+					<td><code>SPL</code></td>
+				</tr>
+								<tr>
+					<td><code>iconv</code></td>
+				</tr>
+								<tr>
+					<td><code>pcntl</code></td>
+				</tr>
+								<tr>
+					<td><code>readline</code></td>
+				</tr>
+								<tr>
+					<td><code>Reflection</code></td>
+				</tr>
+								<tr>
+					<td><code>session</code></td>
+				</tr>
+								<tr>
+					<td><code>standard</code></td>
+				</tr>
+								<tr>
+					<td><code>shmop</code></td>
+				</tr>
+								<tr>
+					<td><code>SimpleXML</code></td>
+				</tr>
+								<tr>
+					<td><code>mbstring</code></td>
+				</tr>
+								<tr>
+					<td><code>tokenizer</code></td>
+				</tr>
+								<tr>
+					<td><code>xml</code></td>
+				</tr>
+								<tr>
+					<td><code>litespeed</code></td>
+				</tr>
+								<tr>
+					<td><code>i360</code></td>
+				</tr>
+								<tr>
+					<td><code>bcmath</code></td>
+				</tr>
+								<tr>
+					<td><code>dom</code></td>
+				</tr>
+								<tr>
+					<td><code>fileinfo</code></td>
+				</tr>
+								<tr>
+					<td><code>gd</code></td>
+				</tr>
+								<tr>
+					<td><code>imagick</code></td>
+				</tr>
+								<tr>
+					<td><code>imap</code></td>
+				</tr>
+								<tr>
+					<td><code>inotify</code></td>
+				</tr>
+								<tr>
+					<td><code>intl</code></td>
+				</tr>
+								<tr>
+					<td><code>json</code></td>
+				</tr>
+								<tr>
+					<td><code>exif</code></td>
+				</tr>
+								<tr>
+					<td><code>mysqli</code></td>
+				</tr>
+								<tr>
+					<td><code>mysqlnd</code></td>
+				</tr>
+								<tr>
+					<td><code>PDO</code></td>
+				</tr>
+								<tr>
+					<td><code>pdo_mysql</code></td>
+				</tr>
+								<tr>
+					<td><code>pdo_sqlite</code></td>
+				</tr>
+								<tr>
+					<td><code>Phar</code></td>
+				</tr>
+								<tr>
+					<td><code>posix</code></td>
+				</tr>
+								<tr>
+					<td><code>soap</code></td>
+				</tr>
+								<tr>
+					<td><code>xmlreader</code></td>
+				</tr>
+								<tr>
+					<td><code>xmlrpc</code></td>
+				</tr>
+								<tr>
+					<td><code>xmlwriter</code></td>
+				</tr>
+							</table>
+		</div>
+																<h3><a href="#error6a3573367984denvironment_server" onclick="return koggle('error6a3573367984denvironment_server')">$_SERVER</a></h3>
+		<div id="error6a3573367984denvironment_server" class="collapsed">
+			<table cellspacing="0">
+								<tr>
+					<td><code>LSPHP_ENABLE_USER_INI</code></td>
+					<td><pre><small>string</small><span>(2)</span> "on"</pre></td>
+				</tr>
+								<tr>
+					<td><code>HTTP_HOST</code></td>
+					<td><pre><small>string</small><span>(21)</span> "chinchatcomics.mes.fm"</pre></td>
+				</tr>
+								<tr>
+					<td><code>DOCUMENT_ROOT</code></td>
+					<td><pre><small>string</small><span>(41)</span> "/home/mesfm/public_html/partner_sites/ccc"</pre></td>
+				</tr>
+								<tr>
+					<td><code>PATH</code></td>
+					<td><pre><small>string</small><span>(28)</span> "/usr/local/bin:/usr/bin:/bin"</pre></td>
+				</tr>
+								<tr>
+					<td><code>TEMP</code></td>
+					<td><pre><small>string</small><span>(4)</span> "/tmp"</pre></td>
+				</tr>
+								<tr>
+					<td><code>TMP</code></td>
+					<td><pre><small>string</small><span>(4)</span> "/tmp"</pre></td>
+				</tr>
+								<tr>
+					<td><code>TMPDIR</code></td>
+					<td><pre><small>string</small><span>(4)</span> "/tmp"</pre></td>
+				</tr>
+								<tr>
+					<td><code>PWD</code></td>
+					<td><pre><small>string</small><span>(1)</span> "/"</pre></td>
+				</tr>
+								<tr>
+					<td><code>HTTP_ACCEPT</code></td>
+					<td><pre><small>string</small><span>(98)</span> "text/html,image/png,image/jpeg,image/pjpeg,image/x-xbitmap,image/svg+xml,image/gif;q=0.9,*/*;q=0.1"</pre></td>
+				</tr>
+								<tr>
+					<td><code>HTTP_ACCEPT_ENCODING</code></td>
+					<td><pre><small>string</small><span>(20)</span> "gzip, identity;q=0.9"</pre></td>
+				</tr>
+								<tr>
+					<td><code>HTTP_ACCEPT_LANGUAGE</code></td>
+					<td><pre><small>string</small><span>(5)</span> "en, *"</pre></td>
+				</tr>
+								<tr>
+					<td><code>HTTP_CONNECTION</code></td>
+					<td><pre><small>string</small><span>(10)</span> "keep-alive"</pre></td>
+				</tr>
+								<tr>
+					<td><code>CONTENT_LENGTH</code></td>
+					<td><pre><small>string</small><span>(1)</span> "0"</pre></td>
+				</tr>
+								<tr>
+					<td><code>HTTP_REFERER</code></td>
+					<td><pre><small>string</small><span>(14)</span> "http://mes.fm/"</pre></td>
+				</tr>
+								<tr>
+					<td><code>HTTP_USER_AGENT</code></td>
+					<td><pre><small>string</small><span>(50)</span> "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)"</pre></td>
+				</tr>
+								<tr>
+					<td><code>UNIQUE_ID</code></td>
+					<td><pre><small>string</small><span>(27)</span> "ajVzNsapvgjqC-8oKE8BVwAAAGg"</pre></td>
+				</tr>
+								<tr>
+					<td><code>USER_ID</code></td>
+					<td><pre><small>string</small><span>(6)</span> "800609"</pre></td>
+				</tr>
+								<tr>
+					<td><code>HTTPS</code></td>
+					<td><pre><small>string</small><span>(2)</span> "on"</pre></td>
+				</tr>
+								<tr>
+					<td><code>SSL_TLS_SNI</code></td>
+					<td><pre><small>string</small><span>(21)</span> "chinchatcomics.mes.fm"</pre></td>
+				</tr>
+								<tr>
+					<td><code>SERVER_SIGNATURE</code></td>
+					<td><pre><small>string</small><span>(0)</span> ""</pre></td>
+				</tr>
+								<tr>
+					<td><code>SERVER_SOFTWARE</code></td>
+					<td><pre><small>string</small><span>(6)</span> "Apache"</pre></td>
+				</tr>
+								<tr>
+					<td><code>SERVER_NAME</code></td>
+					<td><pre><small>string</small><span>(21)</span> "chinchatcomics.mes.fm"</pre></td>
+				</tr>
+								<tr>
+					<td><code>SERVER_ADDR</code></td>
+					<td><pre><small>string</small><span>(14)</span> "23.229.186.102"</pre></td>
+				</tr>
+								<tr>
+					<td><code>SERVER_PORT</code></td>
+					<td><pre><small>string</small><span>(3)</span> "443"</pre></td>
+				</tr>
+								<tr>
+					<td><code>REMOTE_ADDR</code></td>
+					<td><pre><small>string</small><span>(13)</span> "174.6.132.112"</pre></td>
+				</tr>
+								<tr>
+					<td><code>REQUEST_SCHEME</code></td>
+					<td><pre><small>string</small><span>(5)</span> "https"</pre></td>
+				</tr>
+								<tr>
+					<td><code>CONTEXT_PREFIX</code></td>
+					<td><pre><small>string</small><span>(0)</span> ""</pre></td>
+				</tr>
+								<tr>
+					<td><code>CONTEXT_DOCUMENT_ROOT</code></td>
+					<td><pre><small>string</small><span>(41)</span> "/home/mesfm/public_html/partner_sites/ccc"</pre></td>
+				</tr>
+								<tr>
+					<td><code>SERVER_ADMIN</code></td>
+					<td><pre><small>string</small><span>(31)</span> "webmaster@chinchatcomics.mes.fm"</pre></td>
+				</tr>
+								<tr>
+					<td><code>SCRIPT_FILENAME</code></td>
+					<td><pre><small>string</small><span>(51)</span> "/home/mesfm/public_html/partner_sites/ccc/index.php"</pre></td>
+				</tr>
+								<tr>
+					<td><code>REMOTE_PORT</code></td>
+					<td><pre><small>string</small><span>(5)</span> "50638"</pre></td>
+				</tr>
+								<tr>
+					<td><code>SERVER_PROTOCOL</code></td>
+					<td><pre><small>string</small><span>(8)</span> "HTTP/1.1"</pre></td>
+				</tr>
+								<tr>
+					<td><code>REQUEST_METHOD</code></td>
+					<td><pre><small>string</small><span>(3)</span> "GET"</pre></td>
+				</tr>
+								<tr>
+					<td><code>QUERY_STRING</code></td>
+					<td><pre><small>string</small><span>(0)</span> ""</pre></td>
+				</tr>
+								<tr>
+					<td><code>REQUEST_URI</code></td>
+					<td><pre><small>string</small><span>(1)</span> "/"</pre></td>
+				</tr>
+								<tr>
+					<td><code>SCRIPT_NAME</code></td>
+					<td><pre><small>string</small><span>(10)</span> "/index.php"</pre></td>
+				</tr>
+								<tr>
+					<td><code>PHP_SELF</code></td>
+					<td><pre><small>string</small><span>(10)</span> "/index.php"</pre></td>
+				</tr>
+								<tr>
+					<td><code>REQUEST_TIME_FLOAT</code></td>
+					<td><pre><small>float</small> 1781887798.477</pre></td>
+				</tr>
+								<tr>
+					<td><code>REQUEST_TIME</code></td>
+					<td><pre><small>integer</small> 1781887798</pre></td>
+				</tr>
+							</table>
+		</div>
+			</div>
+</div>

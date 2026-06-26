@@ -1,4 +1,0 @@
-AuthType Basic  
-AuthName "Restricted Area"  
-AuthUserFile /home/mesfm/public_html/upload/.htpasswd  
-require valid-user

@@ -1,5 +1,0 @@
-RewriteEngine on
-
-RewriteCond %{HTTP_HOST} ^sjw\.mes\.fm$ [OR]
-RewriteCond %{HTTP_HOST} ^www\.sjw\.mes\.fm$
-RewriteRule ^(.*)$ "https\:\/\/sjwkeyboard\.mes\.fm\/$1" [R=301,L]

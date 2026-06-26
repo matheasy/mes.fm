@@ -1,4 +1,0 @@
-RewriteEngine on
-RewriteCond %{HTTP_HOST} ^youtubemoney\.co$ [OR]
-RewriteCond %{HTTP_HOST} ^www\.youtubemoney\.co$
-RewriteRule ^(.*)$ "https\:\/\/youtubemoney\.mes\.fm\/$1" [R=301,L]

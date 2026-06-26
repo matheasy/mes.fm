@@ -1,5 +1,0 @@
-RewriteEngine on
-
-RewriteCond %{HTTP_HOST} ^pc\.mes\.fm$ [OR]
-RewriteCond %{HTTP_HOST} ^www\.pc\.mes\.fm$
-RewriteRule ^(.*)$ "https\:\/\/percentagecalculator\.mes\.fm\/$1" [R=301,L]

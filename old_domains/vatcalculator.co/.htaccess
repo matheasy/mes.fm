@@ -1,4 +1,0 @@
-RewriteEngine on
-RewriteCond %{HTTP_HOST} ^vatcalculator\.co$ [OR]
-RewriteCond %{HTTP_HOST} ^www\.vatcalculator\.co$
-RewriteRule ^(.*)$ "https\:\/\/vatcalculator\.mes\.fm\/$1" [R=301,L]

@@ -1,4 +1,0 @@
-RewriteEngine on
-RewriteCond %{HTTP_HOST} ^danyella\.tv$ [OR]
-RewriteCond %{HTTP_HOST} ^www\.danyella\.tv$
-RewriteRule ^(.*)$ "https\:\/\/mes\.fm\/$1" [R=302,L]
