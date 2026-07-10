@@ -148,7 +148,16 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .navbar__dropdown-container {color: #222222;background-color:#e4efd3;}
         .header2--top {margin-top: 0.5em;}
         .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
-        </style>	<style>
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+</style>	<style>
 	.memes {margin:0 auto;}
 	.memes__row {border-bottom: 1em solid transparent;}
 	.memes__img-container:not(:last-child) {border-right:1em solid transparent;}
