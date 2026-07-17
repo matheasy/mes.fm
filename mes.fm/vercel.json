@@ -5,6 +5,7 @@
     { "source": "/somewhere", "destination": "https://gofund.me/a3dae599", "permanent": true },
     { "source": "/pg-bitchute", "destination": "https://www.bitchute.com/playlist/yAGW0yVvL43h/", "permanent": true },
     { "source": "/experiments-bitchute", "destination": "https://www.bitchute.com/playlist/7h7fyXU7M2eB/", "permanent": true },
+    { "source": "/bg-wildin", "destination": "https://www.youtube.com/playlist?list=PLdwkvCI5-tzw", "permanent": true },   
     { "source": "/911truth-bitchute", "destination": "https://www.bitchute.com/playlist/MSsLsRJrMPJt/", "permanent": true },
     { "source": "/hutchison", "destination": "https://drive.google.com/drive/folders/1_F1gU5ir6U7QebvXPKWxJiT0hLXgHK8j", "permanent": true },
     { "source": "/meshutchison", "destination": "https://1drv.ms/f/s!As32ynv0LoaIitNiabk7uQmmdV5UJg", "permanent": true },
