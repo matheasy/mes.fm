@@ -81,11 +81,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
 .social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
 
-.addtoany-container {margin-top:1em;}
-.a2a_kit {display:table-cell;height:32px;}
-.a2a_label {display:none;}
-.addtoany__button {margin-right: 0.6em;}
-
 .info-bar-container {display: table-cell;}
 .info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
 .info-bar__item {float:left;}
@@ -127,12 +122,16 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
 .footer__text--black {color:#000;}
 .footer__separator {color:white;}
+#copyright-year {color:white;}
 
 .active-tab {background-color: #f2f2f2;color: #222222;}
 .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color: #1f3b71;}
         .adsense{
             display: block;
         }
+
+        .adsense--top, .adsense--bottom { height: 280px; }
+        .adsense--sidebar { height: 600px; }
 
         .adsense--mobile {
             /*min-height: 300px;*/
@@ -169,7 +168,72 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.select--pokemon {width: 100%; font-size: 1.2em; padding:0.3em; margin-bottom: 0.5em;}
 			.select {width:100%;font-size: 1em;}
 	.input {height:1.4em;}
-	
+
+	/* Mobile card layout for the pokemon calculator table + tap targets */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		/* header: stack logo/title and follow-us icons instead of overlapping */
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .social__text { font-size: 0.9em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		/* nav bar: single line, full width */
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: nowrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 0; min-width: 0; }
+		.info-bar__item__text { padding: 0.6em 0.2em; font-size: 0.68em; text-align: center; white-space: nowrap; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		/* desktop reserves right padding here for the side-bar; on mobile the
+		   side-bar drops below, so this was just shrinking the table for no reason */
+		.page-content { padding: 1.2em 0 0 0; }
+
+		/* pokemon table -> stacked cards, one per pokemon */
+		#pokemon-table { display: block; width: 100%; border: none; }
+		#pokemon-table tr { display: flex; flex-wrap: wrap; margin-bottom: 0.75em; border: 1px solid #cccccc; border-radius: 6px; overflow: hidden; }
+		#pokemon-table tr:first-child { display: none; }
+		#pokemon-table td { display: flex; flex-direction: column; align-items: stretch; gap: 0.3em; box-sizing: border-box; border: none; border-top: 1px solid #ededed; padding: 0.6em 0.75em; text-align: left; }
+		/* pokemon name spans the full card width as a header */
+		#pokemon-table td:first-child { flex: 1 1 100%; border-top: none; flex-direction: row; align-items: center; font-weight: 700; font-size: 1.05em; background-color: #f2f2f2; }
+		/* amount + candy count share a row (2 columns); transfer-evolved gets its own row */
+		#pokemon-table td:nth-child(2) { flex: 1 1 50%; border-right: 1px solid #ededed; }
+		#pokemon-table td:nth-child(3) { flex: 1 1 50%; }
+		#pokemon-table td:nth-child(4) { flex: 1 1 100%; }
+		#pokemon-table td:nth-child(2)::before { content: "Pokemon Amount"; font-weight: 700; font-size: 0.8em; color: #2d57a7; }
+		#pokemon-table td:nth-child(3)::before { content: "Candy Amount"; font-weight: 700; font-size: 0.8em; color: #2d57a7; }
+		#pokemon-table td:nth-child(4)::before { content: "Transfer Evolved Pokemon?"; font-weight: 700; font-size: 0.8em; color: #2d57a7; }
+
+		#pokemon-table .input,
+		#pokemon-table select.input {
+			width: 100%;
+			min-height: 44px;
+			font-size: 1em;
+			box-sizing: border-box;
+		}
+
+		.select--pokemon { min-height: 44px; font-size: 1em; box-sizing: border-box; }
+
+		/* footer: stack columns instead of squeezing table-cells side by side */
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+
 	</style>
 
 
@@ -183,7 +247,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         <meta name="twitter:title" content="Pokemon Go Calculator">
         <meta name="twitter:description" content="This Pokemon GO Calculator makes it easy for you to know how many pokemon you should transfer in order to make the lucky egg most efficient.">
         <meta name="twitter:image" content="https://pokemongocalculator.mes.fm/img/logo-big.png">
-        <meta name="twitter:image:alt" content="Pokemon Go Calculator">            <script type="text/javascript" src="https://static.addtoany.com/menu/page.js" async></script>
+        <meta name="twitter:image:alt" content="Pokemon Go Calculator">
         <!-- Google Analytics -->
         <script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -206,14 +270,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                             <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
 		<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li>
-    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/pokemongocalculator" target="_blank"></a></li>                    </ul>                            </div>                                <div class="social-container--bottom">                                </div>                        </div>
+    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/pokemongocalculator" target="_blank"></a></li>                    </ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png""></a>                            </div>                                <div class="social-container--bottom">                                </div>                        </div>
                         <div class="info-bar-container">
                             <ul id="info-bar" class="info-bar shadow">
                                 <li class="info-bar__item"><a class="info-bar__item__text" href='index.html'>Home</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='experience-chart.html'>XP Chart</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='contact.html'>Contact Us</a></li>
                                     <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li>                            </ul>
                         </div>
-                        <a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png""></a>                                <!-- (Responsive) Horizontal -->
-                                <div class="adsense" style="height:280px">
+                                <!-- (Responsive) Horizontal -->
+                                <div class="adsense adsense--top">
                                     <ins class="adsbygoogle"
                                      style="display:block;margin:0.8em -1em 0 -1em;"
                                      data-ad-client="ca-pub-1461238060884369"
@@ -223,19 +287,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                 </div>                        <div class="outer-page-content">
                             <div class="page-content">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Pokemon Go Calculator</h1>                                        <p class="page-description">This Pokemon GO Calculator makes it easy for you to know how many pokemon you should transfer in order to make the lucky egg most efficient.<br><br>
-			To see how much XP is needed to level up, check out the <a class="link" href="experience-chart.html">Experience Chart</a>!</p>                                    <div class="addtoany-container">
-                                        <span class="social__text">Share:</span>
-                                        <!-- AddToAny BEGIN -->
-                                        <div class="a2a_kit a2a_kit_size_32 a2a_default_style">
-                                        <a class="addtoany__button a2a_button_facebook"></a>
-                                        <a class="addtoany__button a2a_button_twitter"></a>
-                                        <a class="addtoany__button a2a_button_pinterest"></a>
-                                        <a class="addtoany__button a2a_button_whatsapp"></a>
-                                        <a class="addtoany__button a2a_button_email"></a>
-                                        <a class="a2a_dd a2a_counter" href="https://www.addtoany.com/share_save"></a>
-                                        </div>
-                                        <!-- AddToAny END -->
-                                    </div><div id="main-content">
+			To see how much XP is needed to level up, check out the <a class="link" href="experience-chart.html">Experience Chart</a>!</p><div id="main-content">
 
 	<table id="pokemon-table" class="basic-table basic-table--full basic-table--less-bottom">
 
@@ -459,7 +511,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li>
     </ul>
                                     </div>                                    <a href="https://matheasy.substack.com/" target="_blank" rel="nofollow"><div class="button button--subscribe button--active">Subscribe for Email Updates</div></a>                                        <!-- (Responsive) Vertical -->
-                                        <div class="adsense" style="height:600px">
+                                        <div class="adsense adsense--sidebar">
                                             <ins class="adsbygoogle"
                                                  style="display:block;margin-bottom:1em;"
                                                  data-ad-client="ca-pub-1461238060884369"
@@ -467,7 +519,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                                  data-ad-format="vertical"></ins>
                                         </div>
                             </div>                            <!-- (Responsive) Horizontal -->
-                            <div class="adsense" style="height:280px">
+                            <div class="adsense adsense--bottom">
                                 <ins class="adsbygoogle"
                                  style="display:block;margin:0.8em -1em 0 -1em"
                                  data-ad-client="ca-pub-1461238060884369"
@@ -478,56 +530,24 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             <div class="footer__item-container">
             <div class="footer__item">
                 <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" href='../bmicalculator.mes.fm/index.html'>BMI Calculator</a></li>
-                    <li><a class="footer__text" href='../gpacalculator.mes.fm/index.html'>GPA Calculator</a></li>
-                    <li><a class="footer__text" href='../gradecalculator.mes.fm/index.html'>Grade Calculator</a></li>
-                    <li><a class="footer__text" href='../inflationcalculator.mes.fm/index.html'>Inflation Calculator</a></li>
-                    <li><a class="footer__text" href='../mortgagecalculator.mes.fm/index.html'>Mortgage Calculator</a></li>
-                    <li><a class="footer__text" href='../percentagecalculator.mes.fm/index.html'>Percentage Calculator</a></li>
-                    <li><a class="footer__text" href='index.html'>Pokemon Go Calculator</a></li>
-                    <li><a class="footer__text" href='../vatcalculator.mes.fm/index.html'>VAT Calculator</a></li>
-                                    </ul>
             </div>
 
             <div class="footer__item">
                 <a class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" href='../speedreader.mes.fm/index.html'>Speed Reader</a></li>
-                    <li><a class="footer__text" href='../timer.mes.fm/index.html'>Timer</a></li>
-                </ul>
             </div>
 
             <div class="footer__item footer__item--extra-padding">
                 <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps.html">Mobile Apps</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/bmi-calculator-by-mes/id1226817243">BMI Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.bmiCalculator">BMI Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/fail-safe-final-exam-calculator/id673084580">Grade Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.failsafefinalexamcalculator">Grade Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/percentage-calculator-by-math/id1141583865">Percentage Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.percentageCalculator">Percentage Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.mortgageCalculator">Mortgage Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/hashtag-everything-lite/id739573482">Hashtag Everything (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.HashtagEverythingLite">Hashtag Everything (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/doge-bounce/id850547912?mt=8">Doge Bounce (iPhone)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.dogetile.android">Doge Tile (Android)</a></li>
-                </ul>
             </div>
 
-            <div class="footer__item footer__item--extra-padding">
-                <a class="footer__text footer__text--title" href="https://mes.fm/partners.html">Partners</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" target="_blank" href="../chinchatcomics.mes.fm/index.html" title="Chinchilla Comics Galore">Chin Chat Comics</a></li>
-                </ul>
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/links">MES Links</a>
             </div>
         </div>
-        <a class="footer__text" target='_blank' href="https://teespring.com/stores/mes-store">Store</a><span class="footer__separator"> | </span>
         <a class="footer__text" href="contact.html">Contact Us</a><span class="footer__separator"> | </span>
         <a class="footer__text" href="privacy-policy.html">Privacy Policy</a><span class="footer__separator"> | </span>
-        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span>
-        <span class="footer__text footer__text--black mobile-version-button">Mobile Version</span>
-        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; 2013&nbsp;</span><a class="footer__text" href="https://mes.fm/">Math Easy Solutions</a></div>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;</span><a class="footer__text" href="https://mes.fm/">Math Easy Solutions</a></div>
     </div>
 
 
@@ -546,7 +566,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                     });
                 </script>                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script><script src="https://mes.fm/main_js/jquery.adsenseloader.js?v=1.0.3" async></script><script src="https://mes.fm/main_js/jquery.disqusloader.min.js?v=1.0.3" async></script>
 	<script src="js/calculator.js"></script>
-            <script src="https://mes.fm/main_js/main.js"></script>    </body>
+            <script src="https://mes.fm/main_js/main.js"></script>
+            <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    </body>
 
 <!-- Mirrored from pokemongocalculator.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:43:50 GMT -->
 </html>
