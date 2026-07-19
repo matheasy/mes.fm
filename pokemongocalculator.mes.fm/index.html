@@ -173,6 +173,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	@media (max-width: 600px) {
 		.inner-container { padding: 1em 0.75em; }
 
+		/* drop the rectangle/matched-content ads above View Comments and the
+		   vertical ad below Site Navigation; keep them on desktop */
+		.adsense--rectangle, .adsense--matched-content, .adsense--sidebar { display: none; }
+
 		/* header: stack logo/title and follow-us icons instead of overlapping */
 		.header { display: flex; flex-wrap: wrap; align-items: center; }
 		.logo-image-container { flex: 0 0 auto; }
@@ -191,7 +195,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.info-bar-container { display: block; width: 100%; }
 		.info-bar { display: flex; flex-wrap: nowrap; margin-left: 0; padding-left: 0; width: 100%; }
 		.info-bar__item { float: none; flex: 1 1 0; min-width: 0; }
-		.info-bar__item__text { padding: 0.6em 0.2em; font-size: 0.68em; text-align: center; white-space: nowrap; }
+		.info-bar__item__text { padding: 0.6em 0.1em; font-size: 0.85em; text-align: center; white-space: nowrap; }
 		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
 		.button--navbar { box-sizing: border-box; width: 100%; }
 		.navbar { width: 100%; }
@@ -446,14 +450,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	
 </div>
                                     <!-- (Responsive) Rectangle Ad -->
-                                    <div class="adsense" style="280px">
+                                    <div class="adsense adsense--rectangle" style="280px">
                                         <ins class="adsbygoogle"
                                              style="display:block;margin:1.5em 0"
                                              data-ad-client="ca-pub-1461238060884369"
                                              data-ad-slot="7674274465"
                                              data-ad-format="rectangle"></ins>
                                     </div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
-                                    <div class="adsense">
+                                    <div class="adsense adsense--matched-content">
                                         <ins class="adsbygoogle"
                                              style="display:block"
                                              data-ad-client="ca-pub-1461238060884369"
