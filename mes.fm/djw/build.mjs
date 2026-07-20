@@ -152,24 +152,28 @@ function buildPage(post) {
       margin: 0 auto;
     }
 
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
     .theme-toggle-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+      flex: 0 0 auto;
       padding: 5px 10px;
       border: none;
       border-radius: 4px;
       cursor: pointer;
       font-size: 0.85em;
+      white-space: nowrap;
     }
 
     body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
     body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
 
     .site-link {
-      display: block;
-      text-align: center;
-      padding: 16px 0 0;
       font-size: 0.9em;
     }
 
@@ -269,10 +273,11 @@ function buildPage(post) {
   </style>
 </head>
 <body class="dark">
-  <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
-
   <div class="container">
-    <a class="site-link" href="https://mes.fm/">&larr; mes.fm</a>
+    <div class="top-bar">
+      <a class="site-link" href="https://mes.fm/">&larr; mes.fm</a>
+      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+    </div>
 
     <h1>${escapeHtml(title)}</h1>
     <div class="post-meta">
