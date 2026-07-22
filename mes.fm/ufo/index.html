@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MES Science Experiments — a running build log of Tesla coil experiments and progress.">
+  <meta name="author" content="MES">
+  <link rel="canonical" href="https://mes.fm/ufo" />
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>MES Science Experiments | Math Easy Solutions</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #1a1a1a; color: #eeeeee; }
+    body.dark a { color: #6cb6f5; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
+
+    .site-link {
+      font-size: 0.9em;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin: 0.4em 0 0.1em;
+    }
+
+    .page-subtitle {
+      font-size: 0.95em;
+      opacity: 0.85;
+      margin-bottom: 1.4em;
+    }
+
+    .entry {
+      margin: 2em 0;
+    }
+
+    .entry h2 {
+      font-size: 1.4em;
+      margin: 0 0 0.15em;
+    }
+
+    .entry-date {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin-bottom: 0.9em;
+    }
+
+    .entry img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0.6em 0 1.2em;
+    }
+
+    .entry p {
+      margin: 0 0 1em;
+    }
+
+    .spec-table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 100%;
+      margin: 1em 0 1.4em;
+      font-size: 0.95em;
+    }
+
+    .spec-table td {
+      border: 1px solid;
+      border-color: inherit;
+      opacity: 0.95;
+      padding: 6px 10px;
+      vertical-align: top;
+    }
+
+    .spec-table td:first-child {
+      font-weight: bold;
+      white-space: nowrap;
+      width: 40%;
+    }
+
+    body.light .spec-table td { border-color: #dddddd; }
+    body.dark .spec-table td { border-color: #444444; }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    hr {
+      margin: 2em 0;
+      opacity: 0.3;
+    }
+
+    .site-footer-note {
+      font-size: 0.8em;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5em; }
+      body { padding: 0 12px 40px; }
+      .spec-table td:first-child { width: 45%; }
+    }
+  </style>
+</head>
+<body class="dark">
+  <div class="container">
+    <div class="top-bar">
+      <a class="site-link" href="https://mes.fm/">&larr; mes.fm</a>
+      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+    </div>
+
+    <h1>MES Science Experiments</h1>
+    <div class="page-subtitle">A running build log of Tesla coil experiments and progress.</div>
+
+    <hr>
+
+    <!--
+      To add a new entry: copy an <article class="entry"> block and paste it
+      directly below this comment (newest entries stay at the top).
+    -->
+
+    <article class="entry">
+      <h2>SSTC Tesla Coil &mdash; Build Log #1</h2>
+      <div class="entry-date">July 22, 2026</div>
+
+      <img src="img/sstc-tesla-coil-250w.jpg" alt="250W solid-state Tesla coil (SSTC)" width="500" height="500">
+
+      <p>Picked up this 250W solid-state Tesla coil (SSTC) to start experimenting with. Here's the spec sheet for reference, plus the archived listing in case the original goes down.</p>
+
+      <table class="spec-table">
+        <tr><td>Type</td><td>Solid-State Tesla Coil (SSTC), music-reactive</td></tr>
+        <tr><td>Average power</td><td>250W</td></tr>
+        <tr><td>Input voltage</td><td>110&ndash;220V AC</td></tr>
+        <tr><td>Working current</td><td>0.1&ndash;2A</td></tr>
+        <tr><td>Arc length</td><td>Up to 20cm+, adjustable</td></tr>
+        <tr><td>Drive signal</td><td>Coaxial cable (no fiber optic), 3.5mm audio input for music modulation</td></tr>
+        <tr><td>Size</td><td>100 x 100 x 200mm (3.9 x 3.9 x 7.9")</td></tr>
+        <tr><td>Weight</td><td>874g</td></tr>
+        <tr><td>Notes</td><td>No ground wire required; runs directly off wall socket</td></tr>
+      </table>
+
+      <a class="source-link" href="https://archive.ph/iTvHW" target="_blank" rel="noopener">Source listing (archived) &rarr;</a>
+    </article>
+
+    <hr>
+
+    <p class="site-footer-note">Site built with Claude AI.</p>
+  </div>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Switch to Dark Mode';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    const saved = localStorage.getItem('theme');
+    setTheme(saved !== 'light');
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
+  </script>
+</body>
+</html>
