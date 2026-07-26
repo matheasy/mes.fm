@@ -128,6 +128,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
 .footer__text--black {color:#000;}
 .footer__separator {color:white;}
+#copyright-year {color:white;}
 
 .active-tab {background-color: #eef0ff;color: #222222;}
 .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color: #5090bd;}
@@ -167,6 +168,33 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   .info-bar { margin-left: 0 !important; padding-left: 0 !important; display: block !important; }
   .info-bar__item { float: none !important; display: inline-block !important; }
 }
+/* MOBILE-FIX-INSERTED */
+@media (max-width: 600px) {
+  .footer { padding: 1.25em 0.75em; }
+  .footer__item-container { display: block; }
+  .footer__item { display: block; margin-bottom: 0.75em; }
+  .footer__item--extra-padding { padding-left: 0; }
+  .footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+
+  .inner-container { padding: 1em 0.75em; }
+  .page-content { padding-right: 0; }
+
+  .tbl--stack, .tbl--stack tbody, .tbl--stack tr, .tbl--stack td.calc-container { display: block; width: 100%; box-sizing: border-box; }
+  .tbl--stack .calc-container:not(:last-child) { border-right: none; margin-bottom: 0.9em; }
+  .tbl--stack .calc-link { display: flex; align-items: center; padding: 0.9em; border-radius: 0.4em; }
+  .tbl--stack .calc__img-container { flex: 0 0 auto; padding-right: 0.9em; }
+  .tbl--stack .calc__text { flex: 1 1 auto; min-width: 0; }
+  .tbl--stack .calc__img { width: 4.2em !important; height: 4.2em !important; max-width: 4.2em !important; }
+  .tbl--stack .calc__text--desc { line-height: 1.35; }
+
+  .adsense--rectangle, .adsense--matched-content, .adsense--sidebar { display: none; }
+
+  .info-bar__item__text { min-height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+
+  #comments-button { width: auto; box-sizing: border-box; min-height: 44px; margin: 0.75em -0.75em 0 -0.75em; }
+  #comments-box { margin: 0.75em -0.75em; border-left: none; border-right: none; border: 0.1em solid #d4d4d4; border-radius: 0.4em; overflow: hidden; }
+  #comments-box iframe { display: block; width: 100% !important; }
+}
 </style>	<style>
 	.tbl__btn {height:auto;width:13.75em;display: block;}
 	.tbl__link {display: block;}
@@ -200,7 +228,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     <body>        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header">                                <a class="logo-image-container" href='index.html'><img height="88" width="88" id="logo" class="logo lazyload" alt="Math Easy Solutions logo" data-src="https://mes.fm/img/logo.png"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='index.html'>
-                                    <p class="calculator-title">Math Easy Solutions by MES</p>
+                                    <p class="calculator-title">Math Easy Solutions</p>
                                 </a>
                                 <p class="tag-line"></p>                            </div>
 
@@ -213,12 +241,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                 <li class="info-bar__item"><a class="info-bar__item__text" href='index.html'>Home</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='puzzles.html'>Puzzles</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='memes.html'>Memes</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='https://www.youtube.com/user/MathEasySolutions/videos'>Videos</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='calculators.html'>Calculators</a></li>
                                     <li class="info-bar__item"><a class="info-bar__item__text" href='tools.html'>Tools</a></li>
                                     <li class="info-bar__item"><a class="info-bar__item__text" href='mobile-apps.html'>Mobile Apps</a></li>
-                                    <li class="info-bar__item"><a class="info-bar__item__text" href='partners.html'>Partners</a></li>
+                                    
                                     <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='contact.html'>Contact Us</a></li>
                                     <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='donate.html'>Donate</a></li>                            </ul>
                         </div>
                         <a class="info-bar__logo-container" href="index.html" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->
-                                <div class="adsense" style="height:280px">
+                                <div class="adsense adsense--top" style="height:280px">
                                     <ins class="adsbygoogle"
                                      style="display:block;margin:0.8em -1em 0 -1em;"
                                      data-ad-client="ca-pub-1461238060884369"
@@ -260,20 +288,17 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 				<td class="tbl__img-container"><a class="tbl__link" href="tools.html"><img src="img/tools-icon.jpg" class="tbl__btn" alt="tools icon"></a></td>
 				<td class="tbl__img-container"><a class="tbl__link" href="mobile-apps/index.html"><img src="img/mobile-apps-icon.jpg" class="tbl__btn" alt="mobile apps icon"></a></td>
 			</tr>
-			<tr>
-				<td class="tbl__img-container  tbl__img-container--last"><a class="tbl__link" href="partners/index.html"><img src="img/partners-icon.jpg" class="tbl__btn" alt="partners icon"></a></td>
-			</tr>
 		</table>
 	</div>
                                     <!-- (Responsive) Rectangle Ad -->
-                                    <div class="adsense" style="280px">
+                                    <div class="adsense adsense--rectangle" style="280px">
                                         <ins class="adsbygoogle"
                                              style="display:block;margin:1.5em 0"
                                              data-ad-client="ca-pub-1461238060884369"
                                              data-ad-slot="1337595263"
                                              data-ad-format="rectangle"></ins>
                                     </div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
-                                    <div class="adsense">
+                                    <div class="adsense adsense--matched-content">
                                         <ins class="adsbygoogle"
                                              style="display:block"
                                              data-ad-client="ca-pub-1461238060884369"
@@ -281,7 +306,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                              data-ad-format="autorelaxed"></ins>
                                     </div>                                    <div id="comments-button" class="button button--active">View Comments</div>
                                     <div id="comments-box">
-                                        <div id="fastcomments-widget"></div>                                    </div>                                        <a href="https://mes.us13.list-manage.com/subscribe?u=dbcd5a985e8f82625fa9deab8&amp;id=24c1c9c11a" target="_blank" rel="nofollow"><div class="button button--subscribe button--active">Subscribe for Email Updates</div></a>                            </div>
+                                        <div id="fastcomments-widget"></div>                                    </div>                                                                    </div>
                         </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow">
@@ -324,16 +349,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="mobile-apps.html">&#9642; <span>More...</span></a></li>
         </ul>
     </li>
-    <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Partners<span class="dropdown-symbol">&#9660;</span></span>
-        <ul class="navbar__dropdown-container hide">
-            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://chinchatcomics.com/">&#9642; <span>Chin Chat Comics</span></a></li>
-            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="partners.html">&#9642; <span>More...</span></a></li>
-        </ul>
-    </li>
     <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li>
     </ul>
                                     </div>                                    <a href="https://matheasy.substack.com/" target="_blank" rel="nofollow"><div class="button button--subscribe button--active">Subscribe for Email Updates</div></a>                                        <!-- (Responsive) Vertical -->
-                                        <div class="adsense" style="height:600px">
+                                        <div class="adsense adsense--sidebar" style="height:600px">
                                             <ins class="adsbygoogle"
                                                  style="display:block;margin-bottom:1em;"
                                                  data-ad-client="ca-pub-1461238060884369"
@@ -341,7 +360,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                                  data-ad-format="vertical"></ins>
                                         </div>
                             </div>                            <!-- (Responsive) Horizontal -->
-                            <div class="adsense" style="height:280px">
+                            <div class="adsense adsense--bottom" style="height:280px">
                                 <ins class="adsbygoogle"
                                  style="display:block;margin:0.8em -1em 0 -1em"
                                  data-ad-client="ca-pub-1461238060884369"
@@ -352,56 +371,24 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             <div class="footer__item-container">
             <div class="footer__item">
                 <a class="footer__text footer__text--title" href="calculators.html">Calculators</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" href='../bmicalculator.mes.fm/index.html'>BMI Calculator</a></li>
-                    <li><a class="footer__text" href='../gpacalculator.mes.fm/index.html'>GPA Calculator</a></li>
-                    <li><a class="footer__text" href='../gradecalculator.mes.fm/index.html'>Grade Calculator</a></li>
-                    <li><a class="footer__text" href='../inflationcalculator.mes.fm/index.html'>Inflation Calculator</a></li>
-                    <li><a class="footer__text" href='../mortgagecalculator.mes.fm/index.html'>Mortgage Calculator</a></li>
-                    <li><a class="footer__text" href='../percentagecalculator.mes.fm/index.html'>Percentage Calculator</a></li>
-                    <li><a class="footer__text" href='../pokemongocalculator.mes.fm/index.html'>Pokemon Go Calculator</a></li>
-                    <li><a class="footer__text" href='../vatcalculator.mes.fm/index.html'>VAT Calculator</a></li>
-                                    </ul>
             </div>
 
             <div class="footer__item">
                 <a class="footer__text footer__text--title" href="tools.html">Tools</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" href='../speedreader.mes.fm/index.html'>Speed Reader</a></li>
-                    <li><a class="footer__text" href='../timer.mes.fm/index.html'>Timer</a></li>
-                </ul>
             </div>
 
             <div class="footer__item footer__item--extra-padding">
                 <a class="footer__text footer__text--title" href="mobile-apps.html">Mobile Apps</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/bmi-calculator-by-mes/id1226817243">BMI Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.bmiCalculator">BMI Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/fail-safe-final-exam-calculator/id673084580">Grade Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.failsafefinalexamcalculator">Grade Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/percentage-calculator-by-math/id1141583865">Percentage Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.percentageCalculator">Percentage Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.mortgageCalculator">Mortgage Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/hashtag-everything-lite/id739573482">Hashtag Everything (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.HashtagEverythingLite">Hashtag Everything (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/doge-bounce/id850547912?mt=8">Doge Bounce (iPhone)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.dogetile.android">Doge Tile (Android)</a></li>
-                </ul>
             </div>
 
-            <div class="footer__item footer__item--extra-padding">
-                <a class="footer__text footer__text--title" href="partners.html">Partners</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" target="_blank" href="../chinchatcomics.mes.fm/index.html" title="Chinchilla Comics Galore">Chin Chat Comics</a></li>
-                </ul>
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="links/index.html">MES Links</a>
             </div>
         </div>
-        <a class="footer__text" target='_blank' href="https://teespring.com/stores/mes-store">Store</a><span class="footer__separator"> | </span>
         <a class="footer__text" href="contact.html">Contact Us</a><span class="footer__separator"> | </span>
         <a class="footer__text" href="privacy-policy.html">Privacy Policy</a><span class="footer__separator"> | </span>
-        <a class="footer__text" target='_blank' href="donate.html">Donate</a><span class="footer__separator"> | </span>
-        <span class="footer__text footer__text--black mobile-version-button">Mobile Version</span>
-        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; 2013&nbsp;</span><a class="footer__text" href="index.html">Math Easy Solutions</a></div>
+        <a class="footer__text" target='_blank' href="donate.html">Donate</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;</span><a class="footer__text" href="index.html">Math Easy Solutions</a></div>
     </div>
 
 
@@ -419,7 +406,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                         tenantId: '1RGmGBEjdU'
                     });
                 </script>                <script src="main_js/lazysizes.min.js?v=1.0.3" async></script><script src="main_js/jquery.adsenseloader.js?v=1.0.3" async></script><script src="main_js/jquery.disqusloader.min.js?v=1.0.3" async></script>
-            <script src="main_js/main.js"></script>    </body>
+            <script src="main_js/main.js"></script>
+            <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    </body>
 
 <!-- Mirrored from mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:41:28 GMT -->
 </html>
