@@ -29,7 +29,10 @@ $(document).ready(function() {
 
     $("#comments-button").click(function() {
         $("#comments-box").toggleClass("hide");
-        $(this).toggleClass("button--active");
+        if($("#comments-box").hasClass("hide"))
+            $(this).find(".dropdown-symbol").html("&#9660;");
+        else
+            $(this).find(".dropdown-symbol").html("&#9650;");
     });
 
     $(".hide-div-button").click(function() {

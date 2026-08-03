@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mes-fm",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory mes.fm"],
+      "port": 8420,
+      "autoPort": true
+    },
+    {
+      "name": "pokemon-calc",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory pokemongocalculator.mes.fm"],
+      "port": 8421,
+      "autoPort": true
+    }
+  ]
+}

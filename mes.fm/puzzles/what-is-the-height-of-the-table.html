@@ -20,7 +20,6 @@ table {border-collapse:collapse;border-spacing:0;}
 a {text-decoration:none;}
 sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#5ea9dd;color:white;}
         .button {color:#5ea9dd;border:0.125em solid#5ea9dd;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
-        .button--subscribe {line-height:1.2;}
         .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
         .italic {font-style:italic;}
         .bold {font-weight:700;}
@@ -81,12 +80,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .social__steemit {background: url(../main_img/social-sprites.png) -14em 0;}
 .social__hive {background: url(../main_img/social-sprites.png) -16em 0;}
 .social__telegram {background: url(../main_img/social-sprites.png) -18em 0;}
-
-.addtoany-container {margin-top:1em;}
-.a2a_kit {display:table-cell;height:32px;}
-.a2a_label {display:none;}
-.addtoany__button {margin-right: 0.6em;}
-
 .info-bar-container {display: table-cell;}
 .info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
 .info-bar__item {float:left;}
@@ -131,19 +124,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 .active-tab {background-color: #eef0ff;color: #222222;}
 .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color: #5090bd;}
-        .adsense{
-            display: block;
-        }
-
-        .adsense--mobile {
-            /*min-height: 300px;*/
-            /*background-color: red;*/
-        }
-        /*.adsense--loaded .adsense__loading { display: none; }*/
-        /*.adsense:before     { display: none !important; }*/
-        /*.adsense ins        { width: 100%; height: 100%; display: block; }*/
-
-        .info-bar,.color-box,.navbar,.footer {background-color:#5ea9dd;}
+.info-bar,.color-box,.navbar,.footer {background-color:#5ea9dd;}
         .dropdown-symbol--dark {color:#5ea9dd;}
         .button--active {background-color:#5ea9dd;color:white;}
         .navbar__dropdown-container {color: #222222;background-color:#eef0ff;}
@@ -166,6 +147,22 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   .info-bar__logo-container { display: none !important; }
   .info-bar { margin-left: 0 !important; padding-left: 0 !important; display: block !important; }
   .info-bar__item { float: none !important; display: inline-block !important; }
+}
+/* COMMENTS-BUTTON-MOBILE-FIX-INSERTED */
+@media (max-width: 600px) {
+  .footer { padding: 1.25em 0.75em; }
+  .footer__item-container { display: block; }
+  .footer__item { display: block; margin-bottom: 0.75em; }
+  .footer__item--extra-padding { padding-left: 0; }
+  .footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+
+  .inner-container { padding: 1em 0.75em; }
+  .page-content { padding-right: 0; }
+
+  .info-bar__item__text { min-height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+
+  #comments-button { width: 100%; box-sizing: border-box; min-height: 44px; margin-top: 0.75em; display: flex; align-items: center; justify-content: center; }
+  #comments-box { margin: 0.75em 0; border: 0.1em solid #d4d4d4; border-radius: 0.4em; overflow: hidden; }
 }
 </style>	<style>
 	.single-img {width:100%;display:block;height:auto;border:0.125em solid #ddd;box-sizing: border-box;-moz-box-sizing: border-box;-webkit-box-sizing: border-box;}
@@ -193,7 +190,7 @@ Bonus: Can you determine the heights of the cat and turtle from this information
 &lt;br /&gt;
 Bonus: Can you determine the heights of the cat and turtle from this information alone?">
         <meta name="twitter:image" content="https://mes.fm/img/memes/what-is-the-height-of-the-table.jpeg">
-        <meta name="twitter:image:alt" content="What is the height of the table?">            <script type="text/javascript" src="https://static.addtoany.com/menu/page.js" async></script>
+        <meta name="twitter:image:alt" content="What is the height of the table?">
         <!-- Google Analytics -->
         <script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -205,6 +202,7 @@ Bonus: Can you determine the heights of the cat and turtle from this information
           ga('require', 'displayfeatures');
           ga('send', 'pageview');
         </script>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
     </head>
     <body>        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header">                                <a class="logo-image-container" href='../index.html'><img height="88" width="88" id="logo" class="logo lazyload" alt="Math Easy Solutions logo" data-src="https://mes.fm/img/logo.png"></a>
                             <div class="logo-text-container">
@@ -224,62 +222,28 @@ Bonus: Can you determine the heights of the cat and turtle from this information
                                     <li class="info-bar__item"><a class="info-bar__item__text" href='../mobile-apps.html'>Mobile Apps</a></li>
                                     
                                     <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='../contact.html'>Contact Us</a></li>
-                                    <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='../donate.html'>Donate</a></li>                            </ul>
+                                    <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='../donate.html'>Donate</a></li><li class="info-bar__item"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>                            </ul>
                         </div>
-                        <a class="info-bar__logo-container" href="../index.html" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->
-                                <div class="adsense" style="height:280px">
-                                    <ins class="adsbygoogle"
-                                     style="display:block;margin:0.8em -1em 0 -1em;"
-                                     data-ad-client="ca-pub-1461238060884369"
-                                     data-ad-slot="4812438869"
-                                     data-ad-format="auto"
-                                     data-full-width-responsive="true"></ins>
-                                </div>                        <div class="outer-page-content">
+                        <a class="info-bar__logo-container" href="../index.html" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->                        <div class="outer-page-content">
                             <div class="page-content">                                    <div class="color-box"></div>
                                     <h1 class="page-title">What is the height of the table?</h1>                                        <p class="page-description">The difference between the height of a cat on a table and a turtle on the ground is 170 cm. But the difference is 130 cm if the turtle is on the table and the cat is on the ground. How tall is the table? <br />
 <br />
-Bonus: Can you determine the heights of the cat and turtle from this information alone?<br><br>Check out the solution to this puzzle by clicking <a class="link" href="what-is-the-height-of-the-table/solution.html">here</a>!</p>                                    <div class="addtoany-container">
-                                        <span class="social__text">Share:</span>
-                                        <!-- AddToAny BEGIN -->
-                                        <div class="a2a_kit a2a_kit_size_32 a2a_default_style">
-                                        <a class="addtoany__button a2a_button_facebook"></a>
-                                        <a class="addtoany__button a2a_button_twitter"></a>
-                                        <a class="addtoany__button a2a_button_pinterest"></a>
-                                        <a class="addtoany__button a2a_button_whatsapp"></a>
-                                        <a class="addtoany__button a2a_button_email"></a>
-                                        <a class="a2a_dd a2a_counter" href="https://www.addtoany.com/share_save"></a>
-                                        </div>
-                                        <!-- AddToAny END -->
-                                    </div>	<div id="main-content">
+Bonus: Can you determine the heights of the cat and turtle from this information alone?<br><br>Check out the solution to this puzzle by clicking <a class="link" href="what-is-the-height-of-the-table/solution.html">here</a>!</p>	<div id="main-content">
 		<div class="button-container">
 						<a class="btn-link" href="find-the-hidden-8.html"><div class="button button--small">Random</div></a>
-			<a class="btn-link" href="find-the-hidden-8.html"><div class="button button--small">Next&nbsp;&nbsp;&#9658;</div></a>		</div>
+			<a class="btn-link" href="find-the-hidden-8.html"><div class="button button--small" style="position:relative;">Next<span class="btn-arrow" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);">&#9658;</span></div></a>		</div>
 		<img class="single-img lazyload" height="auto" width="692" data-src="https://mes.fm/img/memes/what-is-the-height-of-the-table.jpeg" alt="What is the height of the table?">
 		<div class="button-container button-container--last">
 						<a class="btn-link" href="find-the-hidden-8.html"><div class="button button--small">Random</div></a>
-			<a class="btn-link" href="find-the-hidden-8.html"><div class="button button--small">Next&nbsp;&nbsp;&#9658;</div></a>		</div>
+			<a class="btn-link" href="find-the-hidden-8.html"><div class="button button--small" style="position:relative;">Next<span class="btn-arrow" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);">&#9658;</span></div></a>		</div>
 	</div>
-                                    <!-- (Responsive) Rectangle Ad -->
-                                    <div class="adsense" style="280px">
-                                        <ins class="adsbygoogle"
-                                             style="display:block;margin:1.5em 0"
-                                             data-ad-client="ca-pub-1461238060884369"
-                                             data-ad-slot="1337595263"
-                                             data-ad-format="rectangle"></ins>
-                                    </div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
-                                    <div class="adsense">
-                                        <ins class="adsbygoogle"
-                                             style="display:block"
-                                             data-ad-client="ca-pub-1461238060884369"
-                                             data-ad-slot="7894600465"
-                                             data-ad-format="autorelaxed"></ins>
-                                    </div>                                    <div id="comments-button" class="button button--active">View Comments</div>
+                                    <!-- (Responsive) Rectangle Ad -->                                    <!-- PC (Responsive/Rectangle) Matched Content -->                                    <div id="comments-button" class="button" style="position:relative;">Comments<span class="dropdown-symbol" style="color:inherit;position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9650;</span></div>
                                     <div id="comments-box">
                                         <div id="fastcomments-widget"></div>                                    </div>                                                                    </div>
                         </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow">
-                                        <div class="button button--navbar" id="navbar-button">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark">&#9660;</span></div>    <ul id="navbar" class="navbar">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item"><a class="navbar__link navbar__link--first" href="../index.html">Math Easy Solutions</a></li>
                         <li class="navbar__item"><a target="_self" class="navbar__link" href="../puzzles.html">Puzzles</a></li>
                                 <li class="navbar__item"><a target="_self" class="navbar__link" href="../memes.html">Memes</a></li>
@@ -320,69 +284,29 @@ Bonus: Can you determine the heights of the cat and turtle from this information
     </li>
     <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li>
     </ul>
-                                    </div>                                    <a href="https://matheasy.substack.com/" target="_blank" rel="nofollow"><div class="button button--subscribe button--active">Subscribe for Email Updates</div></a>                                        <!-- (Responsive) Vertical -->
-                                        <div class="adsense" style="height:600px">
-                                            <ins class="adsbygoogle"
-                                                 style="display:block;margin-bottom:1em;"
-                                                 data-ad-client="ca-pub-1461238060884369"
-                                                 data-ad-slot="8125832063"
-                                                 data-ad-format="vertical"></ins>
-                                        </div>
-                            </div>                            <!-- (Responsive) Horizontal -->
-                            <div class="adsense" style="height:280px">
-                                <ins class="adsbygoogle"
-                                 style="display:block;margin:0.8em -1em 0 -1em"
-                                 data-ad-client="ca-pub-1461238060884369"
-                                 data-ad-slot="2696433413"
-                                 data-ad-format="auto"
-                                 data-full-width-responsive="true"></ins>
-                            </div>                </div><div id="footer" class="footer">
+                                    </div>                                        <!-- (Responsive) Vertical -->
+                            </div>                            <!-- (Responsive) Horizontal -->                </div><div id="footer" class="footer">
             <div class="footer__item-container">
             <div class="footer__item">
-                <a class="footer__text footer__text--title" href="../calculators.html">Calculators</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" href='../../bmicalculator.mes.fm/index.html'>BMI Calculator</a></li>
-                    <li><a class="footer__text" href='../../gpacalculator.mes.fm/index.html'>GPA Calculator</a></li>
-                    <li><a class="footer__text" href='../../gradecalculator.mes.fm/index.html'>Grade Calculator</a></li>
-                    <li><a class="footer__text" href='../../inflationcalculator.mes.fm/index.html'>Inflation Calculator</a></li>
-                    <li><a class="footer__text" href='../../mortgagecalculator.mes.fm/index.html'>Mortgage Calculator</a></li>
-                    <li><a class="footer__text" href='../../percentagecalculator.mes.fm/index.html'>Percentage Calculator</a></li>
-                    <li><a class="footer__text" href='../../pokemongocalculator.mes.fm/index.html'>Pokemon Go Calculator</a></li>
-                    <li><a class="footer__text" href='../../vatcalculator.mes.fm/index.html'>VAT Calculator</a></li>
-                                    </ul>
+                <a class="footer__text footer__text--title" href="calculators.html">Calculators</a>
             </div>
 
             <div class="footer__item">
-                <a class="footer__text footer__text--title" href="../tools.html">Tools</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" href='../../speedreader.mes.fm/index.html'>Speed Reader</a></li>
-                    <li><a class="footer__text" href='../../timer.mes.fm/index.html'>Timer</a></li>
-                </ul>
+                <a class="footer__text footer__text--title" href="tools.html">Tools</a>
             </div>
 
             <div class="footer__item footer__item--extra-padding">
-                <a class="footer__text footer__text--title" href="../mobile-apps.html">Mobile Apps</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/bmi-calculator-by-mes/id1226817243">BMI Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.bmiCalculator">BMI Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/fail-safe-final-exam-calculator/id673084580">Grade Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.failsafefinalexamcalculator">Grade Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/percentage-calculator-by-math/id1141583865">Percentage Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.percentageCalculator">Percentage Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.mortgageCalculator">Mortgage Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/hashtag-everything-lite/id739573482">Hashtag Everything (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.HashtagEverythingLite">Hashtag Everything (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/doge-bounce/id850547912?mt=8">Doge Bounce (iPhone)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.dogetile.android">Doge Tile (Android)</a></li>
-                </ul>
+                <a class="footer__text footer__text--title" href="mobile-apps.html">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="links/index.html">MES Links</a>
             </div>
         </div>
-        <a class="footer__text" target='_blank' href="https://teespring.com/stores/mes-store">Store</a><span class="footer__separator"> | </span>
-        <a class="footer__text" href="../contact.html">Contact Us</a><span class="footer__separator"> | </span>
-        <a class="footer__text" href="../privacy-policy.html">Privacy Policy</a><span class="footer__separator"> | </span>
-        <a class="footer__text" target='_blank' href="../donate.html">Donate</a><span class="footer__separator"> | </span>
-        <span class="footer__text footer__text--black mobile-version-button">Mobile Version</span>
-        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; 2013&nbsp;</span><a class="footer__text" href="../index.html">Math Easy Solutions</a></div>
+        <a class="footer__text" href="contact.html">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="privacy-policy.html">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;</span><a class="footer__text" href="index.html">Math Easy Solutions</a></div>
     </div>
 
 
@@ -399,8 +323,9 @@ Bonus: Can you determine the heights of the cat and turtle from this information
                     window.FastCommentsUI(document.getElementById('fastcomments-widget'), {
                         tenantId: '1RGmGBEjdU'
                     });
-                </script>                <script src="../main_js/lazysizes.min.js?v=1.0.3" async></script><script src="../main_js/jquery.adsenseloader.js?v=1.0.3" async></script><script src="../main_js/jquery.disqusloader.min.js?v=1.0.3" async></script>
-            <script src="../main_js/main.js"></script>    </body>
+                </script>                <script src="../main_js/lazysizes.min.js?v=1.0.3" async></script><script src="../main_js/jquery.disqusloader.min.js?v=1.0.3" async></script>
+            <script src="../main_js/main.js?v=1.0.1"></script>
+            <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    </body>
 
 <!-- Mirrored from mes.fm/puzzles/what-is-the-height-of-the-table by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:44:12 GMT -->
 </html>
