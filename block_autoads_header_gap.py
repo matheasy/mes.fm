@@ -52,6 +52,21 @@ keep. Two more requirements came in after seeing it live on mobile:
   mobile-hide special case since this one was asked to be blocked
   everywhere.
 
+Fifth requirement: a completely different Google Auto ads mechanism showed
+up -- the "annotation" text-ad format, not the `google-auto-placed` in-page
+blocks above. Confirmed live on mes.fm and pokemongocalculator.mes.fm: Google
+injects elements like `<div class="google-anno-skip google-anno-sc"
+aria-label="TV & Video">` styled as small pill/badge buttons made to look
+like real nav links, appearing inside the header, the footer, and the
+sidebar. Since Google serves many of these per page load (unlike the single
+in-page ad slot), deleting the ones in these three zones doesn't risk
+starving the page of ads the way deleting the in-page block did, so this one
+is a straight hide-on-sight: any `.google-anno-sc` element inside #header,
+#footer, or .side-bar is hidden immediately on every device. Plain in-text
+`.google-anno` / `.google-anno-t` annotations (which wrap existing real
+words elsewhere on the page, not standalone insertions) are deliberately
+left alone -- hiding those would delete real page text, not an ad.
+
 Idempotent: re-running replaces an already-installed guard with the current
 version (matched by exact prior script text), so it's safe to re-run after
 this script itself is updated or after adding new pages.
@@ -249,7 +264,7 @@ COLLAPSE_IF_UNFILLED_SCRIPT = f"""<script>
 </script>
 """
 
-SCRIPT = f"""<script>
+MOBILE_HIDE_SCRIPT = f"""<script>
 /* {MARKER}: guards two gaps against Google Auto ads.
    1) Logo header <-> nav bar: on desktop, any ad caught here is relocated to
       just below the whole header+nav+logo-badge complex (before
@@ -338,6 +353,119 @@ SCRIPT = f"""<script>
 </script>
 """
 
+SCRIPT = f"""<script>
+/* {MARKER}: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus a third: Google's separate "annotation"
+   text-ad format (chips styled like `<div class="google-anno-skip
+   google-anno-sc" aria-label="...">`, a different Auto ads mechanism than
+   the in-page blocks above -- rendered as small pill/badge buttons made to
+   look like real nav links). 1) Logo header <-> nav bar: on desktop, any
+   in-page ad caught here is relocated to just below the whole
+   header+nav+logo-badge complex (before .outer-page-content) and allowed to
+   show if it fills; on mobile (max-width: 768px, this repo's existing
+   responsive breakpoint) it is hidden outright instead -- no ad shows below
+   the nav bar on mobile at all. 2) Comments toggle (#comments-button) <->
+   comments widget (#comments-box): on every device, any in-page ad caught
+   here is relocated to just after the comments box and allowed to show if
+   it fills. 3) Annotation chips (`.google-anno-sc`) anywhere inside #header,
+   #footer, or .side-bar: hidden outright on every device. Unlike the in-page
+   ad blocks, Google serves many of these annotation chips per page load, so
+   removing the ones in these three zones doesn't cost the page its one
+   shot at an ad the way deleting the in-page block did -- no relocate/poll
+   needed, just hide on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {{
+    function isMobile() {{
+        return window.matchMedia('(max-width: 768px)').matches;
+    }}
+    function isBetween(before, after, el) {{
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }}
+    function collapseIfUnfilled(node) {{
+        var attempts = 0;
+        var poll = setInterval(function () {{
+            attempts++;
+            if (!node.isConnected) {{
+                clearInterval(poll);
+                return;
+            }}
+            if (node.querySelector('iframe')) {{
+                clearInterval(poll);
+                return;
+            }}
+            if (attempts >= 10) {{
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }}
+        }}, 200);
+    }}
+    function handleHeaderNavZone(node) {{
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {{
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }}
+        var target = document.querySelector('.outer-page-content');
+        if (target) {{
+            target.before(node);
+        }} else if (nav) {{
+            nav.after(node);
+        }}
+        collapseIfUnfilled(node);
+        return true;
+    }}
+    function handleCommentsZone(node) {{
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }}
+    function inAnnotationGuardedZone(el) {{
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar'));
+    }}
+    function handleAnnotationChip(node) {{
+        if (node.classList && node.classList.contains('google-anno-sc') && inAnnotationGuardedZone(node)) {{
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }}
+        return false;
+    }}
+    function handle(node) {{
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {{
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }}
+        if (handleAnnotationChip(node)) return;
+        if (node.querySelectorAll) {{
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {{
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            }});
+            node.querySelectorAll('.google-anno-sc').forEach(function (n) {{
+                handleAnnotationChip(n);
+            }});
+        }}
+    }}
+    new MutationObserver(function (mutations) {{
+        mutations.forEach(function (m) {{
+            m.addedNodes.forEach(handle);
+        }});
+    }}).observe(document.documentElement, {{childList: true, subtree: true}});
+}})();
+</script>
+"""
+
 
 def process(path):
     with open(path, encoding="utf-8", errors="surrogateescape") as fh:
@@ -365,7 +493,13 @@ def process(path):
         new_content = content.replace(COLLAPSE_IF_UNFILLED_SCRIPT, SCRIPT)
         with open(path, "w", encoding="utf-8", errors="surrogateescape") as fh:
             fh.write(new_content)
-        return "Upgraded (added mobile hide + comments zone)"
+        return "Upgraded (added mobile hide + comments zone + annotation chips)"
+
+    if MOBILE_HIDE_SCRIPT in content:
+        new_content = content.replace(MOBILE_HIDE_SCRIPT, SCRIPT)
+        with open(path, "w", encoding="utf-8", errors="surrogateescape") as fh:
+            fh.write(new_content)
+        return "Upgraded (added annotation chip guard)"
 
     if MARKER in content:
         return "Already guarded (current version)"
