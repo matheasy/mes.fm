@@ -149,8 +149,14 @@
     }
   </style>
 <script>
-/* autoads-header-gap-guard: removes any Google Auto ads slot Google inserts between the logo
-   header and the nav bar -- ads elsewhere on the page are left alone. */
+/* autoads-header-gap-guard: relocates (never deletes) any Google Auto ads slot Google inserts
+   between the logo header and the nav bar, moving it to below the entire
+   header+nav+logo-badge complex (right before .outer-page-content) instead.
+   Ads placed above the header, or anywhere below the nav, are left
+   completely untouched. Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we also poll it: if no real ad iframe
+   shows up within ~2s, we force the reserved space to 0 ourselves, so an
+   unfilled slot never leaves a blank gap. */
 (function () {
     function isBetweenHeaderAndNav(el) {
         var header = document.getElementById('header');
@@ -159,21 +165,52 @@
         return !!(header.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
                !!(nav.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
     }
-    function purge(node) {
+    function relocate(node) {
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+            return;
+        }
+        var nav = document.querySelector('.info-bar-container');
+        if (nav) nav.after(node);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handle(node) {
         if (node.nodeType !== 1) return;
         if (node.classList && node.classList.contains('google-auto-placed') && isBetweenHeaderAndNav(node)) {
-            node.remove();
+            relocate(node);
+            collapseIfUnfilled(node);
             return;
         }
         if (node.querySelectorAll) {
             node.querySelectorAll('.google-auto-placed').forEach(function (n) {
-                if (isBetweenHeaderAndNav(n)) n.remove();
+                if (isBetweenHeaderAndNav(n)) {
+                    relocate(n);
+                    collapseIfUnfilled(n);
+                }
             });
         }
     }
     new MutationObserver(function (mutations) {
         mutations.forEach(function (m) {
-            m.addedNodes.forEach(purge);
+            m.addedNodes.forEach(handle);
         });
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();

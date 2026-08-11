@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Stop Google Auto ads from ever landing between the logo and the top nav bar.
+"""Stop Google Auto ads from ever landing between the logo and the top nav bar,
+without starving the page of ads entirely.
 
 Google Auto ads is account/JS-driven, not markup-driven: it scans the live
 page and inserts ad containers wherever its algorithm picks, tagging each one
@@ -8,14 +9,42 @@ in a <header> tag) does NOT stop it -- confirmed by inspecting a live page,
 where Google still inserted a `.google-auto-placed` div in the gap between
 #header and .info-bar-container, reserving 280px of space for it.
 
-The only reliable fix is to watch for that insertion and remove it the moment
-it happens, before it paints. This injects a small MutationObserver script
-that removes any `.google-auto-placed` element that lands between #header and
-.info-bar-container specifically -- ads above the header or below the nav bar
-are left untouched.
+First attempt deleted that element outright (node.remove()). That backfired:
+Google Auto ads computes one designated in-page slot per page load and
+doesn't appear to retry elsewhere when it disappears, so deleting it meant no
+ad showed anywhere near the top of the page at all -- including above the
+logo, which is an allowed position.
 
-Idempotent: skips files that already contain the marker, so it's safe to
-re-run after adding new pages.
+Second attempt relocated instead of deleting, moving the node to
+`nav.after(node)`. That also backfired, just more subtly: on this template,
+`.info-bar-container` (the nav) and the small `.info-bar__logo-container`
+"MES.fm" badge right after it are BOTH `display: table-cell`, so the browser
+groups adjacent table-cell siblings into one anonymous table row -- that's
+why the nav bar and the little logo badge render side by side as one visual
+row. Inserting a plain block ad div between them split that pairing apart,
+so the ad appeared wedged into/above the nav row instead of cleanly below it.
+
+Third attempt relocated to `.outer-page-content` (`.before(node)`) instead of
+`nav.after(node)`. `.outer-page-content` is the element that always follows
+the *entire* header+nav+logo-badge complex on this template (confirmed
+across the mes.fm and pokemongocalculator.mes.fm page templates), so
+inserting before it lands the ad below the whole nav row -- nav bar and logo
+badge stay paired, and the ad shows as its own row underneath, matching the
+existing native look on sites like percentagecalculator.mes.fm. This got the
+position right, but on a real pageview where the slot doesn't fill, Google's
+own placeholder-collapse logic (which shrinks the reserved space back to 0
+when no ad loads) stopped kicking in once we moved the node out from under
+it -- leaving a permanent empty reserved box sitting below the nav bar.
+
+The fix: stop relying on Google to clean up after itself. After relocating,
+poll the node for up to ~2s for a real ad iframe. If one shows up, leave it
+alone (a real ad is rendering). If nothing loads in that window, force
+`display: none` on it ourselves. This guarantees "no ad => no reserved
+space" regardless of whether Google's own collapse behavior fires.
+
+Idempotent: re-running replaces an already-installed guard with the current
+version (matched by exact prior script text), so it's safe to re-run after
+this script itself is updated or after adding new pages.
 """
 
 import glob
@@ -27,7 +56,7 @@ SITES = ["mes.fm", "pokemongocalculator.mes.fm"]
 END_MARKER = "</head>"
 MARKER = "autoads-header-gap-guard"
 
-SCRIPT = f"""<script>
+DELETE_SCRIPT = f"""<script>
 /* {MARKER}: removes any Google Auto ads slot Google inserts between the logo
    header and the nav bar -- ads elsewhere on the page are left alone. */
 (function () {{
@@ -59,13 +88,182 @@ SCRIPT = f"""<script>
 </script>
 """
 
+NAV_AFTER_SCRIPT = f"""<script>
+/* {MARKER}: relocates (never deletes) any Google Auto ads slot Google inserts
+   between the logo header and the nav bar, moving it to just below the nav
+   instead. Ads placed above the header or elsewhere below the nav are left
+   completely untouched. */
+(function () {{
+    function isBetweenHeaderAndNav(el) {{
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!header || !nav) return false;
+        return !!(header.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(nav.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }}
+    function relocate(node) {{
+        var nav = document.querySelector('.info-bar-container');
+        if (nav) nav.after(node);
+    }}
+    function handle(node) {{
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed') && isBetweenHeaderAndNav(node)) {{
+            relocate(node);
+            return;
+        }}
+        if (node.querySelectorAll) {{
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {{
+                if (isBetweenHeaderAndNav(n)) relocate(n);
+            }});
+        }}
+    }}
+    new MutationObserver(function (mutations) {{
+        mutations.forEach(function (m) {{
+            m.addedNodes.forEach(handle);
+        }});
+    }}).observe(document.documentElement, {{childList: true, subtree: true}});
+}})();
+</script>
+"""
+
+BEFORE_OUTER_SCRIPT = f"""<script>
+/* {MARKER}: relocates (never deletes) any Google Auto ads slot Google inserts
+   between the logo header and the nav bar, moving it to below the entire
+   header+nav+logo-badge complex (right before .outer-page-content) instead.
+   Ads placed above the header, or anywhere below the nav, are left
+   completely untouched. */
+(function () {{
+    function isBetweenHeaderAndNav(el) {{
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!header || !nav) return false;
+        return !!(header.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(nav.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }}
+    function relocate(node) {{
+        var target = document.querySelector('.outer-page-content');
+        if (target) {{
+            target.before(node);
+            return;
+        }}
+        var nav = document.querySelector('.info-bar-container');
+        if (nav) nav.after(node);
+    }}
+    function handle(node) {{
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed') && isBetweenHeaderAndNav(node)) {{
+            relocate(node);
+            return;
+        }}
+        if (node.querySelectorAll) {{
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {{
+                if (isBetweenHeaderAndNav(n)) relocate(n);
+            }});
+        }}
+    }}
+    new MutationObserver(function (mutations) {{
+        mutations.forEach(function (m) {{
+            m.addedNodes.forEach(handle);
+        }});
+    }}).observe(document.documentElement, {{childList: true, subtree: true}});
+}})();
+</script>
+"""
+
+SCRIPT = f"""<script>
+/* {MARKER}: relocates (never deletes) any Google Auto ads slot Google inserts
+   between the logo header and the nav bar, moving it to below the entire
+   header+nav+logo-badge complex (right before .outer-page-content) instead.
+   Ads placed above the header, or anywhere below the nav, are left
+   completely untouched. Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we also poll it: if no real ad iframe
+   shows up within ~2s, we force the reserved space to 0 ourselves, so an
+   unfilled slot never leaves a blank gap. */
+(function () {{
+    function isBetweenHeaderAndNav(el) {{
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!header || !nav) return false;
+        return !!(header.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(nav.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }}
+    function relocate(node) {{
+        var target = document.querySelector('.outer-page-content');
+        if (target) {{
+            target.before(node);
+            return;
+        }}
+        var nav = document.querySelector('.info-bar-container');
+        if (nav) nav.after(node);
+    }}
+    function collapseIfUnfilled(node) {{
+        var attempts = 0;
+        var poll = setInterval(function () {{
+            attempts++;
+            if (!node.isConnected) {{
+                clearInterval(poll);
+                return;
+            }}
+            if (node.querySelector('iframe')) {{
+                clearInterval(poll);
+                return;
+            }}
+            if (attempts >= 10) {{
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }}
+        }}, 200);
+    }}
+    function handle(node) {{
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed') && isBetweenHeaderAndNav(node)) {{
+            relocate(node);
+            collapseIfUnfilled(node);
+            return;
+        }}
+        if (node.querySelectorAll) {{
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {{
+                if (isBetweenHeaderAndNav(n)) {{
+                    relocate(n);
+                    collapseIfUnfilled(n);
+                }}
+            }});
+        }}
+    }}
+    new MutationObserver(function (mutations) {{
+        mutations.forEach(function (m) {{
+            m.addedNodes.forEach(handle);
+        }});
+    }}).observe(document.documentElement, {{childList: true, subtree: true}});
+}})();
+</script>
+"""
+
 
 def process(path):
     with open(path, encoding="utf-8", errors="surrogateescape") as fh:
         content = fh.read()
 
+    if DELETE_SCRIPT in content:
+        new_content = content.replace(DELETE_SCRIPT, SCRIPT)
+        with open(path, "w", encoding="utf-8", errors="surrogateescape") as fh:
+            fh.write(new_content)
+        return "Upgraded (delete -> relocate-before-outer-page-content)"
+
+    if NAV_AFTER_SCRIPT in content:
+        new_content = content.replace(NAV_AFTER_SCRIPT, SCRIPT)
+        with open(path, "w", encoding="utf-8", errors="surrogateescape") as fh:
+            fh.write(new_content)
+        return "Upgraded (nav.after -> before-outer-page-content + collapse-if-unfilled)"
+
+    if BEFORE_OUTER_SCRIPT in content:
+        new_content = content.replace(BEFORE_OUTER_SCRIPT, SCRIPT)
+        with open(path, "w", encoding="utf-8", errors="surrogateescape") as fh:
+            fh.write(new_content)
+        return "Upgraded (added collapse-if-unfilled)"
+
     if MARKER in content:
-        return "Already guarded"
+        return "Already guarded (current version)"
 
     end = content.find(END_MARKER)
     if end == -1:
