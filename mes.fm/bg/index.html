@@ -84,6 +84,36 @@
       body { padding: 0 12px 40px; }
     }
   </style>
+<script>
+/* autoads-header-gap-guard: removes any Google Auto ads slot Google inserts between the logo
+   header and the nav bar -- ads elsewhere on the page are left alone. */
+(function () {
+    function isBetweenHeaderAndNav(el) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!header || !nav) return false;
+        return !!(header.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(nav.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function purge(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed') && isBetweenHeaderAndNav(node)) {
+            node.remove();
+            return;
+        }
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (isBetweenHeaderAndNav(n)) n.remove();
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(purge);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
 </head>
 <body class="light">
   <div class="container">
