@@ -89,30 +89,27 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369"
      crossorigin="anonymous"></script>
 <script>
-/* autoads-header-gap-guard: relocates (never deletes) any Google Auto ads slot Google inserts
-   between the logo header and the nav bar, moving it to below the entire
-   header+nav+logo-badge complex (right before .outer-page-content) instead.
-   Ads placed above the header, or anywhere below the nav, are left
-   completely untouched. Google's own placeholder-collapse doesn't reliably
-   fire once we've moved the node, so we also poll it: if no real ad iframe
-   shows up within ~2s, we force the reserved space to 0 ourselves, so an
-   unfilled slot never leaves a blank gap. */
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads.
+   1) Logo header <-> nav bar: on desktop, any ad caught here is relocated to
+      just below the whole header+nav+logo-badge complex (before
+      .outer-page-content) and allowed to show if it fills; on mobile
+      (max-width: 768px, this repo's existing responsive breakpoint) it is
+      hidden outright instead -- no ad shows below the nav bar on mobile at
+      all. 2) Comments toggle (#comments-button) <-> comments widget
+      (#comments-box): on every device, any ad caught here is relocated to
+      just after the comments box and allowed to show if it fills.
+   In both cases Google's own placeholder-collapse doesn't reliably fire once
+   we've moved the node, so we poll it: if no real ad iframe shows up within
+   ~2s, we force the reserved space to 0 ourselves, so an unfilled slot never
+   leaves a blank gap. */
 (function () {
-    function isBetweenHeaderAndNav(el) {
-        var header = document.getElementById('header');
-        var nav = document.querySelector('.info-bar-container');
-        if (!header || !nav) return false;
-        return !!(header.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
-               !!(nav.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
     }
-    function relocate(node) {
-        var target = document.querySelector('.outer-page-content');
-        if (target) {
-            target.before(node);
-            return;
-        }
-        var nav = document.querySelector('.info-bar-container');
-        if (nav) nav.after(node);
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
     }
     function collapseIfUnfilled(node) {
         var attempts = 0;
@@ -132,19 +129,42 @@
             }
         }, 200);
     }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
     function handle(node) {
         if (node.nodeType !== 1) return;
-        if (node.classList && node.classList.contains('google-auto-placed') && isBetweenHeaderAndNav(node)) {
-            relocate(node);
-            collapseIfUnfilled(node);
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
             return;
         }
         if (node.querySelectorAll) {
             node.querySelectorAll('.google-auto-placed').forEach(function (n) {
-                if (isBetweenHeaderAndNav(n)) {
-                    relocate(n);
-                    collapseIfUnfilled(n);
-                }
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
             });
         }
     }
