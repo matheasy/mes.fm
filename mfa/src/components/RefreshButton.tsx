@@ -22,7 +22,7 @@ export default function RefreshButton({ onRefreshed }: { onRefreshed: () => void
       disabled={refreshing}
       className="rounded-md border border-bg-border px-3 py-1.5 text-sm text-gray-200 hover:border-accent hover:text-accent disabled:opacity-50"
     >
-      {refreshing ? 'Refreshing…' : 'Refresh'}
+      {refreshing ? 'Refreshing Data…' : 'Refresh Data'}
     </button>
   );
 }

@@ -157,21 +157,38 @@ export async function getHistoricalPriceForToken(token: Transaction['token'], is
   );
 }
 
+interface PricedTransaction extends Transaction {
+  priceUsd: number | null;
+}
+
+/** Attaches each non-zero transaction's historical USD price - shared by the gains engine and the value-history chart */
+async function getPricedTransactions(): Promise<PricedTransaction[]> {
+  const transactions = await getTransactions();
+  const priced: PricedTransaction[] = [];
+
+  for (const tx of transactions) {
+    if (tx.amount === 0) {
+      priced.push({ ...tx, priceUsd: null });
+      continue;
+    }
+    priced.push({ ...tx, priceUsd: await getHistoricalPriceForToken(tx.token, tx.timestamp) });
+  }
+
+  return priced;
+}
+
 /**
  * Builds acquisition lots and disposals for the accounting engine from the transaction feed.
  * Gas paid in BNB is not itself treated as a disposal event (a documented MVP simplification -
  * see README) - only outbound sends/swaps of a token count as disposing of it.
  */
 export async function buildLotsAndDisposals(): Promise<{ lots: Lot[]; disposals: Disposal[] }> {
-  const transactions = await getTransactions();
+  const priced = await getPricedTransactions();
   const lots: Lot[] = [];
   const disposals: Disposal[] = [];
 
-  for (const tx of transactions) {
-    if (tx.amount === 0) continue;
-
-    const priceUsd = await getHistoricalPriceForToken(tx.token, tx.timestamp);
-    if (priceUsd === null) continue;
+  for (const tx of priced) {
+    if (tx.amount === 0 || tx.priceUsd === null) continue;
 
     if (tx.amount > 0) {
       lots.push({
@@ -181,7 +198,7 @@ export async function buildLotsAndDisposals(): Promise<{ lots: Lot[]; disposals:
         acquiredAt: tx.timestamp,
         quantity: tx.amount,
         remainingQuantity: tx.amount,
-        costBasisUsdPerUnit: priceUsd,
+        costBasisUsdPerUnit: tx.priceUsd,
       });
     } else {
       disposals.push({
@@ -189,10 +206,53 @@ export async function buildLotsAndDisposals(): Promise<{ lots: Lot[]; disposals:
         tokenSymbol: tx.token.symbol,
         disposedAt: tx.timestamp,
         quantity: -tx.amount,
-        proceedsUsdPerUnit: priceUsd,
+        proceedsUsdPerUnit: tx.priceUsd,
       });
     }
   }
 
   return { lots, disposals };
+}
+
+export interface PortfolioValuePoint {
+  timestamp: string;
+  totalValueUsd: number;
+}
+
+/**
+ * Reconstructs portfolio value over time from the transaction feed: walks transactions
+ * chronologically, tracking cumulative balance per token and each token's last-known price
+ * (reusing the same historical price already fetched for the gains engine, so this adds no
+ * extra CoinGecko calls), and reports total value after each event. The final point is anchored
+ * to the actual live portfolio value so the right edge of the chart reflects current prices even
+ * when no token's own last transaction was recent.
+ */
+export async function getPortfolioValueHistory(): Promise<PortfolioValuePoint[]> {
+  const priced = await getPricedTransactions();
+  const chronological = priced
+    .filter((tx): tx is PricedTransaction & { priceUsd: number } => tx.amount !== 0 && tx.priceUsd !== null)
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+  const balances = new Map<string, number>();
+  const lastPrice = new Map<string, number>();
+  const points: PortfolioValuePoint[] = [];
+
+  for (const tx of chronological) {
+    const symbol = tx.token.symbol;
+    balances.set(symbol, (balances.get(symbol) ?? 0) + tx.amount);
+    lastPrice.set(symbol, tx.priceUsd);
+
+    let total = 0;
+    for (const [sym, bal] of balances) {
+      if (bal <= 0) continue;
+      total += bal * (lastPrice.get(sym) ?? 0);
+    }
+    points.push({ timestamp: tx.timestamp, totalValueUsd: total });
+  }
+
+  const holdings = await getCurrentHoldings();
+  const currentTotal = holdings.reduce((sum, h) => sum + (h.valueUsd ?? 0), 0);
+  points.push({ timestamp: new Date().toISOString(), totalValueUsd: currentTotal });
+
+  return points;
 }
