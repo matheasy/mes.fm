@@ -1,6 +1,12 @@
 const API_BASE = 'https://api.coingecko.com/api/v3';
 const CHAIN_PLATFORM = 'binance-smart-chain';
 
+/**
+ * Only used for the native coin's current price and for historical prices (needed by the
+ * cost-basis engine). Current BEP-20 prices come from Moralis's wallet-tokens endpoint instead,
+ * which already attaches live USD pricing to each balance - no separate lookup needed.
+ */
+
 function headers(): HeadersInit {
   const key = process.env.COINGECKO_API_KEY;
   return key ? { 'x-cg-demo-api-key': key } : {};
@@ -29,26 +35,6 @@ export async function getNativeCurrentPrice(): Promise<PricePoint> {
   });
   const entry = result.binancecoin;
   return { usd: entry?.usd ?? 0, usd24hChange: entry?.usd_24h_change ?? null };
-}
-
-/** Current USD price + 24h change for BEP-20 tokens, batched by contract address */
-export async function getTokenCurrentPrices(contractAddresses: string[]): Promise<Record<string, PricePoint>> {
-  if (contractAddresses.length === 0) return {};
-
-  const result = await get<Record<string, { usd?: number; usd_24h_change?: number }>>(
-    `/simple/token_price/${CHAIN_PLATFORM}`,
-    {
-      contract_addresses: contractAddresses.map((a) => a.toLowerCase()).join(','),
-      vs_currencies: 'usd',
-      include_24hr_change: 'true',
-    },
-  );
-
-  const out: Record<string, PricePoint> = {};
-  for (const [contract, entry] of Object.entries(result)) {
-    out[contract.toLowerCase()] = { usd: entry.usd ?? 0, usd24hChange: entry.usd_24h_change ?? null };
-  }
-  return out;
 }
 
 /** Resolves a BEP-20 contract address to its CoinGecko coin id, or null if CoinGecko doesn't list it */

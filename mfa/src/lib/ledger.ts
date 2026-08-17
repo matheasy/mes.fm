@@ -1,85 +1,93 @@
 import type { Disposal, Lot } from './accounting/types';
-import * as bscscan from './bscscan';
 import { cached, cacheKey } from './cache';
 import { CACHE_TTL_SECONDS, NATIVE_TOKEN, WALLET_ADDRESS } from './config';
 import * as coingecko from './coingecko';
+import * as moralis from './moralis';
 import type { Holding, Transaction } from './types';
+import { gasFeeBnb, weiToBnb } from './units';
 
 interface RawWalletData {
   nativeBalanceWei: string;
-  normalTxs: bscscan.BscScanNormalTx[];
-  tokenTxs: bscscan.BscScanTokenTx[];
+  tokenBalances: moralis.MoralisTokenBalance[];
+  history: moralis.MoralisHistoryTx[];
 }
 
 async function getRawWalletData(): Promise<RawWalletData> {
   const key = cacheKey('rawwallet', WALLET_ADDRESS);
   return cached(key, CACHE_TTL_SECONDS.transactions, async () => {
-    const [nativeBalanceWei, normalTxs, tokenTxs] = await Promise.all([
-      bscscan.getNativeBalanceWei(WALLET_ADDRESS),
-      bscscan.getNormalTransactions(WALLET_ADDRESS),
-      bscscan.getBep20TokenTransfers(WALLET_ADDRESS),
+    const [nativeBalanceWei, tokenBalances, history] = await Promise.all([
+      moralis.getNativeBalanceWei(WALLET_ADDRESS),
+      moralis.getTokenBalances(WALLET_ADDRESS),
+      moralis.getWalletHistory(WALLET_ADDRESS),
     ]);
-    return { nativeBalanceWei, normalTxs, tokenTxs };
+    return { nativeBalanceWei, tokenBalances, history };
   });
 }
 
 /**
- * Merges BscScan's normal-tx list and BEP-20 transfer list into one chronological, signed
- * transaction feed. A tx hash carrying both an outgoing and incoming token transfer is
- * classified as a swap; plain 0-value contract calls with no token movement are dropped as noise.
+ * Flattens Moralis's decoded per-tx history (which groups native + BEP-20 transfers under one
+ * tx, already categorized) into one signed row per token movement. A tx categorized "token
+ * swap" is trusted directly rather than re-derived from transfer directions.
  */
 export function normalizeTransactions(raw: RawWalletData): Transaction[] {
   const wallet = WALLET_ADDRESS;
   const txs: Transaction[] = [];
 
-  const transfersByHash = new Map<string, bscscan.BscScanTokenTx[]>();
-  for (const t of raw.tokenTxs) {
-    const list = transfersByHash.get(t.hash) ?? [];
-    list.push(t);
-    transfersByHash.set(t.hash, list);
-  }
+  for (const tx of raw.history) {
+    const timestamp = new Date(tx.block_timestamp).toISOString();
+    const isSwap = tx.category === 'token swap';
+    const gasUsedBnb = gasFeeBnb(tx.receipt_gas_used, tx.gas_price);
+    let gasAttributed = false;
 
-  for (const transfers of transfersByHash.values()) {
-    const outgoing = transfers.some((t) => t.from.toLowerCase() === wallet);
-    const incoming = transfers.some((t) => t.to.toLowerCase() === wallet);
-    const isSwap = outgoing && incoming;
-
-    for (const t of transfers) {
-      const decimals = Number(t.tokenDecimal);
-      const amount = bscscan.formatUnits(t.value, decimals);
-      const direction = t.to.toLowerCase() === wallet ? 1 : -1;
+    for (const nt of tx.native_transfers) {
+      const direction = nt.direction === 'receive' ? 1 : -1;
       txs.push({
-        hash: t.hash,
-        timestamp: new Date(Number(t.timeStamp) * 1000).toISOString(),
+        hash: tx.hash,
+        timestamp,
         type: isSwap ? 'swap' : direction > 0 ? 'receive' : 'send',
-        token: { symbol: t.tokenSymbol, contractAddress: t.contractAddress.toLowerCase(), isNative: false },
-        from: t.from,
-        to: t.to,
-        amount: direction * amount,
-        gasUsedBnb: bscscan.gasFeeBnb(t.gasUsed, t.gasPrice),
+        token: { symbol: 'BNB', contractAddress: 'BNB', isNative: true },
+        from: nt.from_address,
+        to: nt.to_address,
+        amount: direction * Number(nt.value_formatted),
+        gasUsedBnb: gasAttributed ? 0 : gasUsedBnb,
         gasUsedUsd: null,
-        methodLabel: isSwap ? 'Swap' : null,
+        methodLabel: tx.method_label,
+      });
+      gasAttributed = true;
+    }
+
+    for (const et of tx.erc20_transfers) {
+      if (et.possible_spam) continue;
+      const direction = et.to_address.toLowerCase() === wallet ? 1 : -1;
+      txs.push({
+        hash: tx.hash,
+        timestamp,
+        type: isSwap ? 'swap' : direction > 0 ? 'receive' : 'send',
+        token: { symbol: et.token_symbol, contractAddress: et.address.toLowerCase(), isNative: false },
+        from: et.from_address,
+        to: et.to_address,
+        amount: direction * Number(et.value_formatted),
+        gasUsedBnb: gasAttributed ? 0 : gasUsedBnb,
+        gasUsedUsd: null,
+        methodLabel: tx.method_label,
+      });
+      gasAttributed = true;
+    }
+
+    if (!gasAttributed) {
+      txs.push({
+        hash: tx.hash,
+        timestamp,
+        type: 'contract',
+        token: { symbol: 'BNB', contractAddress: 'BNB', isNative: true },
+        from: wallet,
+        to: wallet,
+        amount: 0,
+        gasUsedBnb,
+        gasUsedUsd: null,
+        methodLabel: tx.method_label,
       });
     }
-  }
-
-  for (const n of raw.normalTxs) {
-    if (n.value === '0' && !n.functionName) continue;
-
-    const direction = n.to?.toLowerCase() === wallet ? 1 : -1;
-    const amount = bscscan.weiToBnb(n.value);
-    txs.push({
-      hash: n.hash,
-      timestamp: new Date(Number(n.timeStamp) * 1000).toISOString(),
-      type: n.functionName ? 'contract' : direction > 0 ? 'receive' : 'send',
-      token: { symbol: 'BNB', contractAddress: 'BNB', isNative: true },
-      from: n.from,
-      to: n.to,
-      amount: n.value === '0' ? 0 : direction * amount,
-      gasUsedBnb: bscscan.gasFeeBnb(n.gasUsed, n.gasPrice),
-      gasUsedUsd: null,
-      methodLabel: n.functionName ? (n.functionName.split('(')[0] ?? null) : null,
-    });
   }
 
   return txs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -91,25 +99,13 @@ export async function getTransactions(): Promise<Transaction[]> {
 
 export async function getCurrentHoldings(): Promise<Holding[]> {
   const raw = await getRawWalletData();
-  const uniqueContracts = [...new Set(raw.tokenTxs.map((t) => t.contractAddress.toLowerCase()))];
 
-  const [nativePrice, tokenBalances, tokenPrices] = await Promise.all([
-    cached(cacheKey('price', 'native'), CACHE_TTL_SECONDS.currentPrice, () => coingecko.getNativeCurrentPrice()),
-    Promise.all(
-      uniqueContracts.map(async (contract) => ({
-        contract,
-        balance: await cached(cacheKey('balance', WALLET_ADDRESS, contract), CACHE_TTL_SECONDS.portfolio, () =>
-          bscscan.getBep20TokenBalance(WALLET_ADDRESS, contract),
-        ),
-      })),
-    ),
-    cached(cacheKey('price', 'tokens', uniqueContracts.join(',') || 'none'), CACHE_TTL_SECONDS.currentPrice, () =>
-      coingecko.getTokenCurrentPrices(uniqueContracts),
-    ),
-  ]);
+  const nativePrice = await cached(cacheKey('price', 'native'), CACHE_TTL_SECONDS.currentPrice, () =>
+    coingecko.getNativeCurrentPrice(),
+  );
 
   const holdings: Holding[] = [];
-  const nativeBalance = bscscan.weiToBnb(raw.nativeBalanceWei);
+  const nativeBalance = weiToBnb(raw.nativeBalanceWei);
   holdings.push({
     token: NATIVE_TOKEN,
     balance: raw.nativeBalanceWei,
@@ -119,29 +115,24 @@ export async function getCurrentHoldings(): Promise<Holding[]> {
     change24hPct: nativePrice.usd24hChange,
   });
 
-  for (const { contract, balance } of tokenBalances) {
-    const meta = raw.tokenTxs.find((t) => t.contractAddress.toLowerCase() === contract);
-    if (!meta) continue;
-
-    const decimals = Number(meta.tokenDecimal);
-    const balanceFormatted = bscscan.formatUnits(balance, decimals);
+  for (const t of raw.tokenBalances) {
+    const balanceFormatted = Number(t.balance_formatted);
     if (balanceFormatted <= 0) continue;
 
-    const price = tokenPrices[contract];
     holdings.push({
       token: {
-        contractAddress: contract,
-        symbol: meta.tokenSymbol,
-        name: meta.tokenName,
-        decimals,
+        contractAddress: t.token_address.toLowerCase(),
+        symbol: t.symbol,
+        name: t.name,
+        decimals: t.decimals,
         isNative: false,
         coingeckoId: null,
       },
-      balance,
+      balance: t.balance,
       balanceFormatted,
-      priceUsd: price?.usd ?? null,
-      valueUsd: price ? balanceFormatted * price.usd : null,
-      change24hPct: price?.usd24hChange ?? null,
+      priceUsd: t.usd_price,
+      valueUsd: t.usd_value,
+      change24hPct: t.usd_price_24hr_percent_change,
     });
   }
 
