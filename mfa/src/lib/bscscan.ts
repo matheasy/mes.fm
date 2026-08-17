@@ -24,9 +24,11 @@ async function call<T>(params: Record<string, string>): Promise<T> {
 
   const json = (await res.json()) as { status: string; message: string; result: T };
   // BscScan returns status "0" both for genuine errors and for "no records found" - only
-  // treat it as fatal when result isn't a (possibly empty) list.
+  // treat it as fatal when result isn't a (possibly empty) list. The human-readable reason
+  // (e.g. "Invalid API Key") is in `result`, not `message` - `message` is just "NOTOK".
   if (json.status === '0' && !Array.isArray(json.result)) {
-    throw new Error(`BscScan error: ${json.message || 'unknown error'}`);
+    const reason = typeof json.result === 'string' ? json.result : json.message || 'unknown error';
+    throw new Error(`BscScan error: ${reason}`);
   }
   return json.result;
 }
