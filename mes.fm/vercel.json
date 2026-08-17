@@ -55,5 +55,9 @@
     { "source": "/physics-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0EAUu0aAxoZmkS83RI65m1N", "permanent": true },
     { "source": "/antigravity-bitchute", "destination": "https://www.bitchute.com/playlist/RNbuDQkqmSBB/", "permanent": true },
     { "source": "/goldmoney", "destination": "https://www.goldmoney.com/r/sxFtqu", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/mfa", "destination": "https://mfa-mes-fm.vercel.app/mfa" },
+    { "source": "/mfa/:path*", "destination": "https://mfa-mes-fm.vercel.app/mfa/:path*" }
   ]
 }

@@ -14,6 +14,13 @@
       "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory pokemongocalculator.mes.fm"],
       "port": 8421,
       "autoPort": true
+    },
+    {
+      "name": "mfa",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd mfa && npm run dev -- -p \"$PORT\""],
+      "port": 8422,
+      "autoPort": true
     }
   ]
 }
