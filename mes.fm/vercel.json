@@ -57,7 +57,7 @@
     { "source": "/goldmoney", "destination": "https://www.goldmoney.com/r/sxFtqu", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/mfa", "destination": "https://mes-fm-aujh.vercel.app/mfa" },
-    { "source": "/mfa/:path*", "destination": "https://mes-fm-aujh.vercel.app/mfa/:path*" }
+    { "source": "/mfa", "destination": "https://mes-fm-mfa.vercel.app/mfa" },
+    { "source": "/mfa/:path*", "destination": "https://mes-fm-mfa.vercel.app/mfa/:path*" }
   ]
 }
