@@ -22,11 +22,7 @@ function buildQuery(filters: TransactionFilters): string {
 }
 
 export function useTransactions(filters: TransactionFilters) {
-  const { data, error, isLoading, mutate } = useSWR(
-    `${BASE_PATH}/api/transactions${buildQuery(filters)}`,
-    fetcher,
-    { revalidateOnFocus: false, revalidateOnReconnect: false, revalidateIfStale: false },
-  );
+  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/transactions${buildQuery(filters)}`, fetcher);
 
   return {
     transactions: data ?? [],

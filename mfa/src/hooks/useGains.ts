@@ -14,11 +14,7 @@ async function fetcher(url: string): Promise<GainsResponse> {
 }
 
 export function useGains(method: CostBasisMethod) {
-  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/gains?method=${method}`, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    revalidateIfStale: false,
-  });
+  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/gains?method=${method}`, fetcher);
 
   return {
     gains: data,

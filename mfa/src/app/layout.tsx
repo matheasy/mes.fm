@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import SwrProvider from '@/components/SwrProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -11,23 +12,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body>
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-lg font-semibold text-gray-100">MikeFA Trading</h1>
-            <nav className="flex gap-4 text-sm">
-              <Link href="/" className="text-gray-300 hover:text-accent">
-                Overview
-              </Link>
-              <Link href="/transactions" className="text-gray-300 hover:text-accent">
-                Transactions
-              </Link>
-              <Link href="/gains" className="text-gray-300 hover:text-accent">
-                Gains
-              </Link>
-            </nav>
-          </header>
-          <main>{children}</main>
-        </div>
+        <SwrProvider>
+          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+            <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h1 className="text-lg font-semibold text-gray-100">MikeFA Trading</h1>
+              <nav className="flex gap-4 text-sm">
+                <Link href="/" className="text-gray-300 hover:text-accent">
+                  Overview
+                </Link>
+                <Link href="/transactions" className="text-gray-300 hover:text-accent">
+                  Transactions
+                </Link>
+                <Link href="/gains" className="text-gray-300 hover:text-accent">
+                  Gains
+                </Link>
+              </nav>
+            </header>
+            <main>{children}</main>
+          </div>
+        </SwrProvider>
       </body>
     </html>
   );
