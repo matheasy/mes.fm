@@ -25,7 +25,7 @@ export function useTransactions(filters: TransactionFilters) {
   const { data, error, isLoading, mutate } = useSWR(
     `${BASE_PATH}/api/transactions${buildQuery(filters)}`,
     fetcher,
-    { revalidateOnFocus: false },
+    { revalidateOnFocus: false, revalidateOnReconnect: false, revalidateIfStale: false },
   );
 
   return {

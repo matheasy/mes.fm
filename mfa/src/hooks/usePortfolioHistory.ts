@@ -15,6 +15,8 @@ async function fetcher(url: string): Promise<PortfolioValuePoint[]> {
 export function usePortfolioHistory() {
   const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/portfolio/history`, fetcher, {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
   });
 
   return {
