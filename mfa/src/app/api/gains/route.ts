@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { computeRealizedGains, computeUnrealizedGains } from '@/lib/accounting/engine';
 import type { CostBasisMethod, GainResult, UnrealizedGain } from '@/lib/accounting/types';
+import { apiErrorResponse } from '@/lib/errors';
 import { getCurrentHoldings, buildLotsAndDisposals } from '@/lib/ledger';
 import type { ApiResult } from '@/lib/types';
 
@@ -32,7 +33,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: { method, realized, unrealized } } satisfies ApiResult<GainsResponse>);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to compute gains';
-    return NextResponse.json({ error: message } satisfies ApiResult<GainsResponse>, { status: 502 });
+    return apiErrorResponse(err, 'Failed to compute gains');
   }
 }

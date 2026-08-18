@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiErrorResponse } from '@/lib/errors';
 import { getHistoricalPriceForToken, getTransactions } from '@/lib/ledger';
 import type { ApiResult, Transaction, TransactionType } from '@/lib/types';
 
@@ -34,7 +35,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: enriched } satisfies ApiResult<Transaction[]>);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to load transactions';
-    return NextResponse.json({ error: message } satisfies ApiResult<Transaction[]>, { status: 502 });
+    return apiErrorResponse(err, 'Failed to load transactions');
   }
 }

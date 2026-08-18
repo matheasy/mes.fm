@@ -1,23 +1,20 @@
 'use client';
 
 import useSWR from 'swr';
+import { ApiError, fetchApiResult } from '@/lib/apiFetcher';
 import { BASE_PATH } from '@/lib/basePath';
-import type { ApiResult, PortfolioSummary } from '@/lib/types';
-
-async function fetcher(url: string): Promise<PortfolioSummary> {
-  const res = await fetch(url);
-  const json = (await res.json()) as ApiResult<PortfolioSummary>;
-  if ('error' in json) throw new Error(json.error);
-  return json.data;
-}
+import type { PortfolioSummary } from '@/lib/types';
 
 export function usePortfolio() {
-  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/portfolio`, fetcher);
+  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/portfolio`, (url: string) =>
+    fetchApiResult<PortfolioSummary>(url),
+  );
 
   return {
     portfolio: data,
     isLoading,
     error: error instanceof Error ? error.message : null,
+    rateLimited: error instanceof ApiError && error.rateLimited,
     refresh: () => mutate(),
   };
 }

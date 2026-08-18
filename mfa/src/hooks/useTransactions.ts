@@ -1,15 +1,9 @@
 'use client';
 
 import useSWR from 'swr';
+import { ApiError, fetchApiResult } from '@/lib/apiFetcher';
 import { BASE_PATH } from '@/lib/basePath';
-import type { ApiResult, Transaction, TransactionFilters } from '@/lib/types';
-
-async function fetcher(url: string): Promise<Transaction[]> {
-  const res = await fetch(url);
-  const json = (await res.json()) as ApiResult<Transaction[]>;
-  if ('error' in json) throw new Error(json.error);
-  return json.data;
-}
+import type { Transaction, TransactionFilters } from '@/lib/types';
 
 function buildQuery(filters: TransactionFilters): string {
   const params = new URLSearchParams();
@@ -22,12 +16,16 @@ function buildQuery(filters: TransactionFilters): string {
 }
 
 export function useTransactions(filters: TransactionFilters) {
-  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/transactions${buildQuery(filters)}`, fetcher);
+  const { data, error, isLoading, mutate } = useSWR(
+    `${BASE_PATH}/api/transactions${buildQuery(filters)}`,
+    (url: string) => fetchApiResult<Transaction[]>(url),
+  );
 
   return {
     transactions: data ?? [],
     isLoading,
     error: error instanceof Error ? error.message : null,
+    rateLimited: error instanceof ApiError && error.rateLimited,
     refresh: () => mutate(),
   };
 }

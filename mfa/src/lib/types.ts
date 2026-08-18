@@ -50,4 +50,6 @@ export interface TransactionFilters {
   endDate?: string;
 }
 
-export type ApiResult<T> = { data: T; error?: never } | { data?: never; error: string };
+export type ApiResult<T> =
+  | { data: T; error?: never; rateLimited?: never }
+  | { data?: never; error: string; rateLimited?: boolean };

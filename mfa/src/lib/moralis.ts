@@ -1,3 +1,5 @@
+import { RateLimitError } from './errors';
+
 const API_BASE = 'https://deep-index.moralis.io/api/v2.2';
 const CHAIN = 'bsc';
 
@@ -15,6 +17,9 @@ async function get<T>(path: string, params: Record<string, string> = {}): Promis
   const res = await fetch(url.toString(), { headers: { 'X-API-Key': apiKey() }, next: { revalidate: 0 } });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
+    if (res.status === 429 || (res.status === 401 && body.includes('total included usage has been consumed'))) {
+      throw new RateLimitError('Moralis daily usage limit reached');
+    }
     throw new Error(`Moralis request failed: ${res.status} ${body}`.trim());
   }
   return res.json() as Promise<T>;

@@ -15,9 +15,21 @@ import { useTransactions } from '@/hooks/useTransactions';
 const RECENT_TRANSACTIONS_LIMIT = 5;
 
 export default function OverviewPage() {
-  const { portfolio, isLoading, error, refresh } = usePortfolio();
-  const { history, isLoading: historyLoading, error: historyError, refresh: refreshHistory } = usePortfolioHistory();
-  const { transactions, isLoading: txLoading, error: txError, refresh: refreshTx } = useTransactions({});
+  const { portfolio, isLoading, error, rateLimited, refresh } = usePortfolio();
+  const {
+    history,
+    isLoading: historyLoading,
+    error: historyError,
+    rateLimited: historyRateLimited,
+    refresh: refreshHistory,
+  } = usePortfolioHistory();
+  const {
+    transactions,
+    isLoading: txLoading,
+    error: txError,
+    rateLimited: txRateLimited,
+    refresh: refreshTx,
+  } = useTransactions({});
 
   function refreshAll() {
     refresh();
@@ -25,17 +37,20 @@ export default function OverviewPage() {
     refreshTx();
   }
 
+  const anyRateLimited = rateLimited || historyRateLimited || txRateLimited;
+  const disabledReason = anyRateLimited ? (error ?? historyError ?? txError ?? 'Usage limit reached') : undefined;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-end">
-        <RefreshButton onRefreshed={refreshAll} />
+        <RefreshButton onRefreshed={refreshAll} disabledReason={disabledReason} />
       </div>
 
-      <StateView loading={isLoading} error={error} onRetry={refresh}>
+      <StateView loading={isLoading} error={rateLimited && portfolio ? null : error} onRetry={refresh}>
         {portfolio && (
           <div className="flex flex-col gap-6">
             <PortfolioSummary summary={portfolio} />
-            <StateView loading={historyLoading} error={historyError} onRetry={refreshHistory}>
+            <StateView loading={historyLoading} error={historyRateLimited && history.length > 0 ? null : historyError} onRetry={refreshHistory}>
               <PortfolioValueChart history={history} />
             </StateView>
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -55,7 +70,7 @@ export default function OverviewPage() {
         </div>
         <StateView
           loading={txLoading}
-          error={txError}
+          error={txRateLimited && transactions.length > 0 ? null : txError}
           empty={transactions.length === 0}
           emptyMessage="No transactions yet."
           onRetry={refreshTx}

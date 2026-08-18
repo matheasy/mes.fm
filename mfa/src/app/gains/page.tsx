@@ -17,7 +17,7 @@ const METHODS: { value: CostBasisMethod; label: string }[] = [
 
 export default function GainsPage() {
   const [method, setMethod] = useState<CostBasisMethod>('fifo');
-  const { gains, isLoading, error, refresh } = useGains(method);
+  const { gains, isLoading, error, rateLimited, refresh } = useGains(method);
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,11 +38,11 @@ export default function GainsPage() {
         </div>
         <div className="flex gap-2">
           <CsvExportButton method={method} />
-          <RefreshButton onRefreshed={refresh} />
+          <RefreshButton onRefreshed={refresh} disabledReason={rateLimited ? (error ?? 'Usage limit reached') : undefined} />
         </div>
       </div>
 
-      <StateView loading={isLoading} error={error} onRetry={refresh}>
+      <StateView loading={isLoading} error={rateLimited && gains ? null : error} onRetry={refresh}>
         {gains && (
           <div className="flex flex-col gap-6">
             <GainsSummary realized={gains.realized} unrealized={gains.unrealized} />

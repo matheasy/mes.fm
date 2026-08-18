@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { WALLET_ADDRESS } from '@/lib/config';
+import { apiErrorResponse } from '@/lib/errors';
 import { getCurrentHoldings } from '@/lib/ledger';
 import type { ApiResult, PortfolioSummary } from '@/lib/types';
 
@@ -26,7 +27,6 @@ export async function GET() {
 
     return NextResponse.json({ data: summary } satisfies ApiResult<PortfolioSummary>);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to load portfolio';
-    return NextResponse.json({ error: message } satisfies ApiResult<PortfolioSummary>, { status: 502 });
+    return apiErrorResponse(err, 'Failed to load portfolio');
   }
 }

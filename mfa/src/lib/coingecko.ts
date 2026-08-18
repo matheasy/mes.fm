@@ -1,3 +1,5 @@
+import { RateLimitError } from './errors';
+
 const API_BASE = 'https://api.coingecko.com/api/v3';
 const CHAIN_PLATFORM = 'binance-smart-chain';
 
@@ -17,6 +19,7 @@ async function get<T>(path: string, params: Record<string, string>): Promise<T> 
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
   const res = await fetch(url.toString(), { headers: headers(), next: { revalidate: 0 } });
+  if (res.status === 429) throw new RateLimitError('CoinGecko rate limit reached');
   if (!res.ok) throw new Error(`CoinGecko request failed: ${res.status}`);
   return res.json() as Promise<T>;
 }
