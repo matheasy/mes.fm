@@ -62,6 +62,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 data-full-width-responsive="true"
               />
             </div>
+            <div className="mb-2 text-sm">
+              <a href="https://mes.fm/links" className="text-gray-400 hover:text-accent">
+                &larr; mes.fm/links
+              </a>
+            </div>
             <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h1 className="text-lg font-semibold text-gray-100">MikeFA Trading</h1>
               <nav className="flex gap-4 text-sm">
