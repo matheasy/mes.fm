@@ -27,6 +27,7 @@
       font-weight: 550;
       word-wrap: break-word;
       transition: background-color 0.3s, color 0.3s;
+      padding: 0 1.5em 3em;
     }
 
     /* Light mode styles (matches original browser defaults) */
@@ -49,9 +50,18 @@
       color: #4da8ff; /* Lighter blue for visibility in dark mode */
     }
 
+    /* Base (no-JS) layout: a plain responsive flex grid. This is only what renders before the
+       masonry script below runs (or if JS is ever disabled) -- like the previous layout, a
+       fixed N-per-row grid still stretches/gaps around this page's wildly uneven topic-group
+       sizes (one group alone -- 9/11 Truth -- is 5-10x the length of most others), so it's kept
+       intentionally simple as a fallback rather than tuned further. */
     .row {
       display: flex;
       flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0 2.5em;
+      max-width: 1600px;
+      margin: 0 auto;
     }
 
     .column {
@@ -60,15 +70,27 @@
     }
 
     @media (min-width: 600px) {
-      .column {
-        width: 50%;
-      }
+      .column { width: calc(50% - 1.25em); }
     }
 
     @media (min-width: 900px) {
-      .column {
-        width: 25%;
-      }
+      .column { width: calc(25% - 1.875em); }
+    }
+
+    /* Real layout: script.js-free masonry (see the script right after .row in <body>). It
+       regroups every topic group (.list-container, plus the standalone "MES.fm" link) into N
+       balanced-height columns instead of this page's original curated-but-uneven .column
+       groupings, always placing the next group into whichever column is currently shortest --
+       true top-to-bottom packing, not a row-locked grid, so no group is ever stuck waiting on a
+       much taller neighbor before the space below it can be used. */
+    .masonry-col {
+      flex: 1 1 0;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .list-container {
+      margin-bottom: 1.5em;
     }
 
     @media screen and (max-width: 600px) {
@@ -136,124 +158,31 @@
 </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
 <script>
-/* autoads-header-gap-guard: guards gaps against Google Auto ads (in-page ad blocks,
-   class `google-auto-placed`), plus a separate mechanism: Google's "annotation"
-   text-ad format (chips styled like `<div class="google-anno-skip
-   google-anno-sc" aria-label="...">`, a different Auto ads mechanism than
-   the in-page blocks above -- rendered as small pill/badge buttons made to
-   look like real nav links). 1) Logo header <-> nav bar: on desktop, any
-   in-page ad caught here is relocated to just below the whole
-   header+nav+logo-badge complex (before .outer-page-content) and allowed to
-   show if it fills; on mobile (max-width: 768px, this repo's existing
-   responsive breakpoint) it is hidden outright instead -- no ad shows below
-   the nav bar on mobile at all. 2) Comments toggle (#comments-button) <->
-   comments widget (#comments-box): on every device, any in-page ad caught
-   here is relocated to just after the comments box and allowed to show if
-   it fills. 3) Content grid (.row): this page is just a dense grid of link
-   headings/lists with no unused margin, so Auto ads' placement algorithm
-   tends to insert in-page ad blocks directly between links/headings inside
-   .row instead of in a real page gap -- and since it will keep trying at
-   multiple points down the page, relocating every one of them to the same
-   spot just piled up a stack of duplicate ads instead. The page already has
-   one deliberate manual ad unit before the footer, so any Auto ads in-page
-   block that lands inside .row is hidden outright instead of relocated.
-   4) Annotation chips (`.google-anno-sc`) anywhere inside #header, #footer,
-   .side-bar, or .row: also hidden outright on every device. Google serves
-   many of these annotation chips per page load, so hiding the ones in
-   guarded zones doesn't cost the page its one shot at an ad the way hiding
-   an in-page block would elsewhere -- though on this page that tradeoff no
-   longer matters anyway, since the one manual ad unit below covers it.
-   In the relocate cases (1-2) Google's own placeholder-collapse doesn't
-   reliably fire once we've moved the node, so we poll it: if no real ad
-   iframe shows up within ~2s, we force the reserved space to 0 ourselves, so
-   an unfilled slot never leaves a blank gap. Zones 3-4 hide on sight, so no
-   polling is needed there. */
+/* auto-ads-inpage-suppress: this page carries one deliberate manual ad unit (a full-width
+   responsive rectangle, placed below the link grid) instead of Google's Auto ads in-page
+   placements. Auto ads kept inserting its own in-page/native ad blocks anywhere it found room
+   -- inside the link grid, and even stacked several large "matched content"-style units back to
+   back outside it -- which is exactly the duplicate-ad stacking this page doesn't want. Every
+   element Google's Auto ads marks as in-page content (`google-auto-placed`) or as an inline
+   text-ad annotation chip (`google-anno-sc`) is hidden the instant it's inserted, anywhere on
+   the page, leaving only the one manual unit. This does not touch Auto ads' "floating" formats
+   (anchor/vignette), which render through separate fixed-position containers, not these
+   classes. */
 (function () {
-    function isMobile() {
-        return window.matchMedia('(max-width: 768px)').matches;
-    }
-    function isBetween(before, after, el) {
-        if (!before || !after) return false;
-        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
-               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
-    }
-    function collapseIfUnfilled(node) {
-        var attempts = 0;
-        var poll = setInterval(function () {
-            attempts++;
-            if (!node.isConnected) {
-                clearInterval(poll);
-                return;
-            }
-            if (node.querySelector('iframe')) {
-                clearInterval(poll);
-                return;
-            }
-            if (attempts >= 10) {
-                node.style.setProperty('display', 'none', 'important');
-                clearInterval(poll);
-            }
-        }, 200);
-    }
-    function handleHeaderNavZone(node) {
-        var header = document.getElementById('header');
-        var nav = document.querySelector('.info-bar-container');
-        if (!isBetween(header, nav, node)) return false;
-        if (isMobile()) {
-            node.style.setProperty('display', 'none', 'important');
-            return true;
-        }
-        var target = document.querySelector('.outer-page-content');
-        if (target) {
-            target.before(node);
-        } else if (nav) {
-            nav.after(node);
-        }
-        collapseIfUnfilled(node);
-        return true;
-    }
-    function handleCommentsZone(node) {
-        var button = document.getElementById('comments-button');
-        var box = document.getElementById('comments-box');
-        if (!isBetween(button, box, node)) return false;
-        box.after(node);
-        collapseIfUnfilled(node);
-        return true;
-    }
-    function handleContentGridZone(node) {
-        var row = document.querySelector('.row');
-        if (!row || !row.contains(node)) return false;
+    function hide(node) {
         node.style.setProperty('display', 'none', 'important');
-        return true;
     }
-    function inAnnotationGuardedZone(el) {
-        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.row'));
-    }
-    function handleAnnotationChip(node) {
-        if (node.classList && node.classList.contains('google-anno-sc') && inAnnotationGuardedZone(node)) {
-            node.style.setProperty('display', 'none', 'important');
-            return true;
-        }
-        return false;
+    function isAutoAdNode(node) {
+        return node.classList && (node.classList.contains('google-auto-placed') || node.classList.contains('google-anno-sc'));
     }
     function handle(node) {
         if (node.nodeType !== 1) return;
-        if (node.classList && node.classList.contains('google-auto-placed')) {
-            if (handleHeaderNavZone(node)) return;
-            if (handleCommentsZone(node)) return;
-            handleContentGridZone(node);
+        if (isAutoAdNode(node)) {
+            hide(node);
             return;
         }
-        if (handleAnnotationChip(node)) return;
         if (node.querySelectorAll) {
-            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
-                if (handleHeaderNavZone(n)) return;
-                if (handleCommentsZone(n)) return;
-                handleContentGridZone(n);
-            });
-            node.querySelectorAll('.google-anno-sc').forEach(function (n) {
-                handleAnnotationChip(n);
-            });
+            node.querySelectorAll('.google-auto-placed, .google-anno-sc').forEach(hide);
         }
     }
     new MutationObserver(function (mutations) {
@@ -742,6 +671,65 @@
   </div>
 
   <script>
+    // Masonry layout: regroups the topic groups inside .row (originally hand-curated into 8
+    // .column divs of very uneven total length) into N balanced-height columns, always adding
+    // the next group to whichever column is currently shortest. Runs once on load and again
+    // (rebuilt from the same cached item list, so any expand/collapse state survives) on resize,
+    // debounced. Falls back to nothing happening beyond CSS's own responsive .column grid above
+    // if JS is unavailable.
+    (function () {
+      var row = document.querySelector('.row');
+      if (!row) return;
+
+      function collectItems() {
+        var items = [];
+        Array.prototype.forEach.call(row.querySelectorAll(':scope > .column > ul'), function (ul) {
+          Array.prototype.forEach.call(ul.children, function (child) {
+            items.push(child);
+          });
+        });
+        return items;
+      }
+
+      function layoutMasonry() {
+        if (!row._masonryItems) {
+          row._masonryItems = collectItems();
+        }
+        var items = row._masonryItems;
+        var width = row.clientWidth || window.innerWidth;
+        var colCount = Math.max(1, Math.min(6, Math.round(width / 300)));
+        if (colCount === row._masonryColCount) return; // same breakpoint, nothing to redo
+        row._masonryColCount = colCount;
+
+        row.innerHTML = '';
+        var cols = [];
+        var heights = [];
+        for (var i = 0; i < colCount; i++) {
+          var col = document.createElement('div');
+          col.className = 'masonry-col';
+          row.appendChild(col);
+          cols.push(col);
+          heights.push(0);
+        }
+
+        items.forEach(function (item) {
+          var shortest = 0;
+          for (var i = 1; i < colCount; i++) {
+            if (heights[i] < heights[shortest]) shortest = i;
+          }
+          cols[shortest].appendChild(item);
+          heights[shortest] += item.offsetHeight;
+        });
+      }
+
+      layoutMasonry();
+      var resizeTimer;
+      window.addEventListener('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(layoutMasonry, 200);
+      });
+    })();
+
     function toggleAllLists() {
       const lists = document.querySelectorAll('.list-container ul');
       const arrowIconAll = document.getElementById('arrowIconAll');
