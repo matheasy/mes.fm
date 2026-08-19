@@ -97,9 +97,7 @@
 
     /* Theme toggle button styles */
     .theme-toggle-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+      margin: 10px;
       padding: 5px 10px;
       border: none;
       cursor: pointer;
@@ -246,10 +244,6 @@
 </script>
 </head>
 <body>
-<!-- New theme toggle button -->
-<!-- Theme toggle button (no form = no resubmit warning) -->
-<button id="themeToggle" class="theme-toggle-btn">Loading...</button>
-
   <div style="text-align: center;">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
     <!-- MES Links Square -->
@@ -263,6 +257,13 @@
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
   </div>
+
+<!-- New theme toggle button -->
+<!-- Theme toggle button (no form = no resubmit warning); placed below the ad slot above so
+     ad content (whose height varies by ad type/size) can never render on top of it -->
+<div style="text-align: right;">
+  <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+</div>
 
   <header>
     <h1 class="list-header" onclick="toggleAllLists()">MES Links <span id="arrowIconAll" class="arrow-icon">&#9660;</span></h1>
