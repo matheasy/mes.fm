@@ -104,13 +104,13 @@ a Vercel rewrite (Vercel/Next.js's "multi-zones" pattern). The two pieces:
 
 1. **Deploy this project to Vercel** (`vercel` or via the Vercel dashboard, rooted at this `ai/`
    directory), and set the env vars from `.env.example` in the Vercel project settings. Note the
-   deployment's URL (e.g. `https://mes-ai-trading.vercel.app`).
+   deployment's URL (e.g. `https://mes-fm-ai.vercel.app`).
 2. **Add a rewrite in the main site**: in `../mes.fm/vercel.json` (the vercel.json for the root
    `mes.fm` domain), add entries to the existing `rewrites` array (alongside the `mfa` ones):
 
    ```json
-   { "source": "/ai", "destination": "https://mes-ai-trading.vercel.app/ai" },
-   { "source": "/ai/:path*", "destination": "https://mes-ai-trading.vercel.app/ai/:path*" }
+   { "source": "/ai", "destination": "https://mes-fm-ai.vercel.app/ai" },
+   { "source": "/ai/:path*", "destination": "https://mes-fm-ai.vercel.app/ai/:path*" }
    ```
 
    Replace the destination host with your actual deployment URL from step 1. Redeploy the main
