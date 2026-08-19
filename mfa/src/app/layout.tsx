@@ -19,8 +19,49 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
+        {/* ad-slot-fill-and-collapse: requests a fill for the manual "MES Links Square" ad unit
+            below, then hides its wrapper completely (no reserved blank box) if it never receives
+            a real ad - whether that's because nothing filled or because an ad blocker kept the
+            request from ever completing. Mirrors the same poll-for-an-iframe, hide-if-none-shows
+            approach used on the rest of mes.fm. Runs once (next/script dedupes by id), since the
+            App Router keeps this layout mounted across client-side navigation. */}
+        <Script
+          id="ad-slot-fill-and-collapse"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              document.querySelectorAll('.ad-slot ins.adsbygoogle').forEach(function () {
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+              });
+              document.querySelectorAll('.ad-slot').forEach(function (slot) {
+                var attempts = 0;
+                var poll = setInterval(function () {
+                  attempts++;
+                  if (slot.querySelector('iframe')) {
+                    clearInterval(poll);
+                    return;
+                  }
+                  if (attempts >= 10) {
+                    slot.style.setProperty('display', 'none', 'important');
+                    clearInterval(poll);
+                  }
+                }, 200);
+              });
+            `,
+          }}
+        />
         <SwrProvider>
           <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+            <div className="ad-slot mb-6 text-center">
+              <ins
+                className="adsbygoogle"
+                style={{ display: 'block' }}
+                data-ad-client="ca-pub-1461238060884369"
+                data-ad-slot="1197859571"
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              />
+            </div>
             <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h1 className="text-lg font-semibold text-gray-100">MikeFA Trading</h1>
               <nav className="flex gap-4 text-sm">

@@ -158,16 +158,16 @@
 </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
 <script>
-/* auto-ads-inpage-suppress: this page carries one deliberate manual ad unit (a full-width
-   responsive rectangle, placed below the link grid) instead of Google's Auto ads in-page
-   placements. Auto ads kept inserting its own in-page/native ad blocks anywhere it found room
-   -- inside the link grid, and even stacked several large "matched content"-style units back to
-   back outside it -- which is exactly the duplicate-ad stacking this page doesn't want. Every
-   element Google's Auto ads marks as in-page content (`google-auto-placed`) or as an inline
-   text-ad annotation chip (`google-anno-sc`) is hidden the instant it's inserted, anywhere on
-   the page, leaving only the one manual unit. This does not touch Auto ads' "floating" formats
-   (anchor/vignette), which render through separate fixed-position containers, not these
-   classes. */
+/* auto-ads-inpage-suppress: this page carries two deliberate manual ad units (matching
+   full-width responsive rectangles, one right after <body> and one below the link grid) instead
+   of Google's Auto ads in-page placements. Auto ads kept inserting its own in-page/native ad
+   blocks anywhere it found room -- inside the link grid, and even stacked several large "matched
+   content"-style units back to back outside it -- which is exactly the duplicate-ad stacking
+   this page doesn't want. Every element Google's Auto ads marks as in-page content
+   (`google-auto-placed`) or as an inline text-ad annotation chip (`google-anno-sc`) is hidden the
+   instant it's inserted, anywhere on the page, leaving only the two manual units. This does not
+   touch Auto ads' "floating" formats (anchor/vignette), which render through separate
+   fixed-position containers, not these classes. */
 (function () {
     function hide(node) {
         node.style.setProperty('display', 'none', 'important');
@@ -194,6 +194,16 @@
 </script>
 </head>
 <body>
+<div class="ad-slot" style="text-align: center;">
+  <!-- MES Links Square -->
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-1461238060884369"
+       data-ad-slot="1197859571"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
+
 <!-- Theme toggle button (no form = no resubmit warning) -->
 <div style="text-align: right;">
   <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
@@ -792,23 +802,47 @@ themeToggle.addEventListener('click', () => {
     
   <div style="clear: both;"></div>
 
-  <div style="text-align: center;">
-    <!-- MES Links Square: the page's one deliberate ad slot. Auto ads' in-page format is
-         suppressed everywhere inside .row (see the guard script in <head>) so this single
-         responsive unit is the only ad this page ever shows. -->
+  <div class="ad-slot" style="text-align: center;">
+    <!-- MES Links Square: Auto ads' in-page format is suppressed everywhere inside .row (see
+         the guard script in <head>), so these two manual units (this one plus the matching one
+         right after <body>) are the only ads this page ever shows. -->
     <ins class="adsbygoogle"
          style="display:block"
          data-ad-client="ca-pub-1461238060884369"
          data-ad-slot="1197859571"
          data-ad-format="auto"
          data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
   </div>
 
   <footer style="text-align: center;">
     <p>&copy; 2026 Math Easy Solutions (MES). All rights reserved. | <a href="https://mes.fm/contact">Contact Us</a> | <a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
   </footer>
+
+  <script>
+    // ad-slot-fill-and-collapse: requests a fill for every manual "MES Links Square" ad unit on
+    // the page (top + bottom .ad-slot), then hides each one completely -- no reserved blank box
+    // left behind -- if it never receives a real ad, whether that's because nothing filled or
+    // because an ad blocker kept the request from ever completing. Same poll-for-an-iframe,
+    // hide-if-none-shows-up approach as collapseIfUnfilled in the Auto ads guard script above.
+    (function () {
+      document.querySelectorAll('.ad-slot ins.adsbygoogle').forEach(function () {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      });
+      document.querySelectorAll('.ad-slot').forEach(function (slot) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+          attempts++;
+          if (slot.querySelector('iframe')) {
+            clearInterval(poll);
+            return;
+          }
+          if (attempts >= 10) {
+            slot.style.setProperty('display', 'none', 'important');
+            clearInterval(poll);
+          }
+        }, 200);
+      });
+    })();
+  </script>
 </body>
 </html>
