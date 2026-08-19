@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MES Science Experiments: Tesla Coil, Faraday Cage, Ground Rod — build log mirrored from the Hive blockchain.">
+  <meta name="author" content="MES">
+  <link rel="canonical" href="https://mes.fm/log1/tesla-coil" />
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>MES Science Experiments: Tesla Coil, Faraday Cage, Ground Rod | Math Easy Solutions</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #1a1a1a; color: #eeeeee; }
+    body.dark a { color: #6cb6f5; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
+
+    .site-link {
+      font-size: 0.9em;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin: 0.4em 0 0.1em;
+    }
+
+    .page-subtitle {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin-bottom: 1.4em;
+    }
+
+    article h2 {
+      font-size: 1.3em;
+      margin: 1.6em 0 0.6em;
+    }
+
+    article p {
+      margin: 0 0 1em;
+    }
+
+    article img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0.6em 0 1.2em;
+    }
+
+    .center-note {
+      text-align: center;
+      font-style: italic;
+      opacity: 0.9;
+      margin: 1.2em 0;
+    }
+
+    .video-embed {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.6em 0 1.2em;
+    }
+
+    .video-embed video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .spec-table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 100%;
+      margin: 1em 0 1.4em;
+      font-size: 0.95em;
+    }
+
+    .spec-table td {
+      border: 1px solid;
+      border-color: inherit;
+      opacity: 0.95;
+      padding: 6px 10px;
+      vertical-align: top;
+    }
+
+    .spec-table td:first-child {
+      font-weight: bold;
+      white-space: nowrap;
+      width: 40%;
+    }
+
+    body.light .spec-table td { border-color: #dddddd; }
+    body.dark .spec-table td { border-color: #444444; }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .retrieved-note {
+      font-size: 0.85em;
+      opacity: 0.7;
+      margin-top: 0.4em;
+    }
+
+    hr {
+      margin: 2em 0;
+      opacity: 0.3;
+    }
+
+    .site-footer-note {
+      font-size: 0.8em;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.4em; }
+      body { padding: 0 12px 40px; }
+      .spec-table td:first-child { width: 45%; }
+    }
+  </style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369"
+ crossorigin="anonymous"></script>
+<script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus a third: Google's separate "annotation"
+   text-ad format (chips styled like `<div class="google-anno-skip
+   google-anno-sc" aria-label="...">`, a different Auto ads mechanism than
+   the in-page blocks above -- rendered as small pill/badge buttons made to
+   look like real nav links). 1) Logo header <-> nav bar: on desktop, any
+   in-page ad caught here is relocated to just below the whole
+   header+nav+logo-badge complex (before .outer-page-content) and allowed to
+   show if it fills; on mobile (max-width: 768px, this repo's existing
+   responsive breakpoint) it is hidden outright instead -- no ad shows below
+   the nav bar on mobile at all. 2) Comments toggle (#comments-button) <->
+   comments widget (#comments-box): on every device, any in-page ad caught
+   here is relocated to just after the comments box and allowed to show if
+   it fills. 3) Annotation chips (`.google-anno-sc`) anywhere inside #header,
+   #footer, or .side-bar: hidden outright on every device. Unlike the in-page
+   ad blocks, Google serves many of these annotation chips per page load, so
+   removing the ones in these three zones doesn't cost the page its one
+   shot at an ad the way deleting the in-page block did -- no relocate/poll
+   needed, just hide on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-sc') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-sc').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+</head>
+<body class="dark">
+  <div class="container">
+    <div class="top-bar">
+      <a class="site-link" href="https://mes.fm/links">&larr; mes.fm/links</a>
+      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+    </div>
+
+    <h1>MES Science Experiments: Tesla Coil, Faraday Cage, Ground Rod</h1>
+    <div class="page-subtitle">Build log &middot; August 19, 2026 &middot; mirrored from the <a href="https://hive.io/">Hive blockchain</a></div>
+
+    <div class="ad-slot" style="text-align: center;">
+      <!-- MES Links Square -->
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-1461238060884369"
+           data-ad-slot="1197859571"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+
+    <hr>
+
+    <article>
+      <p>I will be tinkering with Tesla coils and other electromagnetic devices in hopes of replicating the Hutchison Effect and other exotic physical phenomena.</p>
+
+      <p>The full progress will be on <a href="https://mes.fm/ufo">mes.fm/ufo</a>, with all articles being on the Hive blockchain.</p>
+
+      <hr>
+
+      <p class="center-note">This first article will outline what I have done so far.</p>
+
+      <hr>
+
+      <h2>Tesla Coil</h2>
+
+      <p><a href="https://t.me/meslinks/28727">I bought this Tesla Coil</a> on February 20, 2025 for $217 CAD including shipping, which was recommended by <a href="https://x.com/i/grok/share/ctJAma6pAnDCOWxVl2jthXjnx">Grok AI</a>.</p>
+
+      <img src="https://files.peakd.com/file/peakd-hive/mes/23zm5BEeydojhdL6ydpa8oh7TS1Xt6mAkts8SJpMbRCUnTngdy2i6TLYRAZXtRwq1V1Fg.jpg" alt="Tesla coil delivery photo">
+
+      <p>This is a 250W solid-state Tesla coil (SSTC) and its specifications is listed below, as <a href="https://claude.ai/share/ba053bb3-766d-494a-868f-4867404ff768">tabulated by Claude AI</a>.</p>
+
+      <img src="https://files.peakd.com/file/peakd-hive/mes/AJoHtsvESRvXZcAv4KXSFV6S7mjNRiZdD8pMHhHs2Ca6RKT3DKkLGuaUbHsiJBs.png" alt="250W solid-state Tesla coil (SSTC)">
+
+      <table class="spec-table">
+        <tr><td>Type</td><td>Solid-State Tesla Coil (SSTC), music-reactive</td></tr>
+        <tr><td>Average power</td><td>250W</td></tr>
+        <tr><td>Input voltage</td><td>110&ndash;220V AC</td></tr>
+        <tr><td>Working current</td><td>0.1&ndash;2A</td></tr>
+        <tr><td>Arc length</td><td>Up to 20cm+, adjustable</td></tr>
+        <tr><td>Drive signal</td><td>Coaxial cable (no fiber optic), 3.5mm audio input for music modulation</td></tr>
+        <tr><td>Size</td><td>100 x 100 x 200mm (3.9 x 3.9 x 7.9")</td></tr>
+        <tr><td>Weight</td><td>874g</td></tr>
+        <tr><td>Notes</td><td>No ground wire required; runs directly off wall socket</td></tr>
+      </table>
+
+      <p><a href="https://t.me/meslinks/29037">The Tesla Coil arrived</a> on March 21, 2025.</p>
+
+      <img src="https://files.peakd.com/file/peakd-hive/mes/23vi61nNq2YfUDjYqBuhRWWLBLWuNYJoAK5joJRaNwGgUfgh4ewH23abGjPRYgoH3qyju.jpg" alt="Tesla coil arrival photo">
+
+      <p><a href="https://t.me/meslinks/29094">On March 26, 2025 I got the Tesla Coil</a> to work and spark up! It also caused buzzing in my ear headphones, and got super loud and painful during the spark in my ears! I NEED a Faraday cage ASAP! &#9889;&#65039;&#128552;</p>
+
+      <div class="video-embed">
+        <video id="teslaSparkVideo" controls playsinline preload="metadata" poster="https://images.hive.blog/DQmaiKoYLz1wcxJ2t9eA6q1bdUgaassCAqN8kWGXrg3fxD2/image"></video>
+        <a class="video-badge" href="https://3speak.tv/watch?v=mes/warning-tesla-coil-sparks-c-653" target="_blank" rel="noopener">View on 3Speak &nearr;</a>
+      </div>
+
+      <p>This experience caused me to take safety precautions for every step of my experimentation.</p>
+
+      <h2>Faraday Cage</h2>
+
+      <p><a href="https://t.me/meslinks/31973">On October 1, 2025 I ordered wire mesh</a> to serve as a Faraday cage.</p>
+
+      <img src="https://files.peakd.com/file/peakd-hive/mes/EogTYWYaPmDF3LyfRKBSW466mpYAmFyEK5ipj5uDiL58qfqd3rSHAFnZ199mm8HMcu3.png" alt="Wire mesh for Faraday cage">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/23wWvfScLWn4GGWyaYusmTnKCCTt2C4AFitPNEPmufPoTn7aW8kDfPR3gSakMa6USqow1.jpg" alt="Wire mesh delivery photo">
+
+      <p><a href="https://t.me/meslinks/32344">On October 31, 2025 I ordered a metal pet fence</a> to serve as the <a href="https://t.me/meslinks/32384">base for the Faraday cage</a>.</p>
+
+      <img src="https://files.peakd.com/file/peakd-hive/mes/23uFu87Z7kCjyQftKutyt7gjFcuWG2ePurrTjJPSzwt3urJFcuiryD3uZkUoGF4Hn6UKi.jpg" alt="Metal pet fence photo">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/Eoc9PXbqFxwX1asGs7FajQYN7aDaHD8hKmY6P865dRmVgn9Cbio1fkPbZARMcNgLTo8.jpg" alt="Metal pet fence base for Faraday cage">
+
+      <p><a href="https://t.me/meslinks/34073">On March 18, 2026 I began wrapping</a> the wire mesh around the pet fence.</p>
+
+      <img src="https://files.peakd.com/file/peakd-hive/mes/EoGyTg7B278vwSJUSJtwC6NaaHNsVS2X273mBqZW3uUqNQHKpJtS6jevdUMthon7Ue7.jpg" alt="Wrapping wire mesh around pet fence">
+
+      <h2>Grounding wire and clamp</h2>
+
+      <p><a href="https://www.amazon.ca/dp/B0G13JSNVN" target="_blank" rel="noopener">On July 8, 2026 I ordered 10 ft 6 AWG copper wire</a> (<a href="https://archive.ph/eAAlq" target="_blank" rel="noopener">archive</a>) to ground the Faraday cage to my house ground wire, as per the <a href="https://grok.com/project/b91b57d7-d8cf-4e82-8cb8-8a06af2ed93e?tab=conversations">instructions from Grok AI</a>.</p>
+
+      <img src="https://files.peakd.com/file/peakd-hive/mes/23tmjb2EJhyt2JMjtYvBLysvNCm6vEe7S8LF9bDccfY3cefuHNob9ZjNFVVvXiiWuNRZk.png" alt="6 AWG copper grounding wire">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/AKJ4Cfqhek8cEsiybMgEWMa1rKvmLyGmJiPDRF2GGLpmWct19U94RnbbuxpwdRd.png" alt="Grounding wire photo">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/AK9SnqBX1ektZYaaDufQPxM6mgdeYJeV8aZ7FTz7BJEG57RfiCexBJtx6E5mL3H.png" alt="Grounding wire photo">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/AKxnb5so3opAbD8bGFxTufxbkfxPMcJzCLVrqQtYj4Ls8eogtqctTKgqfnKAQEE.png" alt="Grounding wire photo">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/AKpAUxALeJFFMZszkzqkqaWrr5p3VYNjNyBC14cGPEK1VPcwY6Ta3Uudtqun34x.png" alt="Grounding wire photo">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/AKAs1k1WjkteU65CCtrZLjQSdD1hoWjGSmC15bUN1cJcHyDaKzy2MfpaPCqqAtt.png" alt="Grounding wire photo">
+
+      <p><a href="https://www.amazon.ca/dp/B0BTLDCHDK" target="_blank" rel="noopener">Also on July 8, 2026 I ordered 2 copper grond rod clamps</a> (<a href="https://archive.ph/wip/JxV8M" target="_blank" rel="noopener">archive</a>) to clamp the copper wire to the house ground rod.</p>
+
+      <img src="https://files.peakd.com/file/peakd-hive/mes/23uRJEV8f7ch6ESUeb7nErjyPCaYxjztUzBqVap5nN38SX6C9GxT7LpkXLQj535AvuWqs.png" alt="Copper ground rod clamp">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/23w3AUqbb1z9pUUT1JXMyxNZv1bDCpL7NUNWrzMzesWzq2A123tfohaTTaZgXqNjqfDzm.png" alt="Copper ground rod clamp photo">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/EpT8SkZ4vcyg81j1uoBcQufDkVPJ64aMdopUEA5GhzrD3QkbLVYqYUbquXUraQAzjkc.png" alt="Copper ground rod clamp photo">
+
+      <h2>House ground rod</h2>
+
+      <p>Here are photos of the house ground rod which is located outside of my garage.</p>
+
+      <img src="https://files.peakd.com/file/peakd-hive/mes/EoAaHcE2Me9i24qK7dCvHoYrNRyWZiFts4g9dtRrVVgvP9kLStQ7qWLCK2Gur1GqacY.png" alt="House ground rod photo">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/23u65Q2n6kVZDHrVRjhJRze4VqJAzpWQ4nJ7zU3cyoD7HjLfQfhETpzHTjacPykqA2wFe.png" alt="House ground rod photo">
+      <img src="https://files.peakd.com/file/peakd-hive/mes/23wgMyet9hjv5uuf853rvzGLyvwKfmuut1byiFDiEaAmhD83jFrBVYcv9MQXoDHq46yaJ.png" alt="House ground rod photo">
+
+      <hr>
+
+      <p>See full progress: <a href="https://mes.fm/ufo">mes.fm/ufo</a></p>
+
+      <a class="source-link" href="https://inleo.io/@mes/mes-science-experiments-tesla-coil-faraday-cage-ground-rod-fkb" target="_blank" rel="noopener">Originally posted on the Hive blockchain via INLEO &rarr;</a>
+      <div class="retrieved-note">Text retrieved from the Hive blockchain on August 19, 2026.</div>
+    </article>
+
+    <hr>
+
+    <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </div>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Switch to Dark Mode';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    const saved = localStorage.getItem('theme');
+    setTheme(saved !== 'light');
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
+  </script>
+
+  <script>
+    // ad-slot-fill-and-collapse: requests a fill for the manual "MES Links Square" ad unit at
+    // the top of the page, then hides it completely -- no reserved blank box left behind -- if
+    // it never receives a real ad, whether that's because nothing filled or because an ad
+    // blocker kept the request from ever completing. Same poll-for-an-iframe, hide-if-none-shows
+    // approach as collapseIfUnfilled in the Auto ads guard script above.
+    (function () {
+      document.querySelectorAll('.ad-slot ins.adsbygoogle').forEach(function () {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      });
+      document.querySelectorAll('.ad-slot').forEach(function (slot) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+          attempts++;
+          if (slot.querySelector('iframe')) {
+            clearInterval(poll);
+            return;
+          }
+          if (attempts >= 10) {
+            slot.style.setProperty('display', 'none', 'important');
+            clearInterval(poll);
+          }
+        }, 200);
+      });
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script>
+    // tesla-spark-video: plays the 3Speak-hosted HLS stream for the Tesla coil spark clip
+    // directly (via hls.js), rather than iframing 3speak.tv -- 3Speak's own /embed route only
+    // ships a bare native <video> with no speed/quality controls, and their full /watch page
+    // drags in the whole app shell (nav, related videos, login prompts) when framed. This is
+    // the same manifest URL 3Speak's public embed API (play.3speak.tv/api/embed) returns for
+    // this video, so native browser video controls (speed via the "..." menu in Chromium,
+    // fullscreen, PiP) are available without a custom player build.
+    (function () {
+      var video = document.getElementById('teslaSparkVideo');
+      var src = 'https://play.3speak.tv/hls?u=https%3A%2F%2Fhotipfs-3speak-1.b-cdn.net%2Fipfs%2FQmTM9UnyiRgaUKD4K4BZiGc6P5pqh22z2eWEZsonek4SWZ%2Fmanifest.m3u8';
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = src;
+      } else if (window.Hls && Hls.isSupported()) {
+        var hls = new Hls();
+        hls.loadSource(src);
+        hls.attachMedia(video);
+      }
+    })();
+  </script>
+</body>
+</html>
