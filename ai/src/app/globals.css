@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-bg text-gray-100;
+}
+
+.panel {
+  @apply rounded-xl border border-bg-border bg-bg-panel p-4 sm:p-6;
+}
+
+.stat-label {
+  @apply text-xs uppercase tracking-wide text-gray-400;
+}
+
+table {
+  @apply w-full border-collapse text-sm;
+}
+
+th {
+  @apply border-b border-bg-border px-3 py-2 text-left text-xs uppercase tracking-wide text-gray-400;
+}
+
+td {
+  @apply border-b border-bg-border/60 px-3 py-2;
+}

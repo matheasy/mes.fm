@@ -58,6 +58,8 @@
   ],
   "rewrites": [
     { "source": "/mfa", "destination": "https://mes-fm-mfa.vercel.app/mfa" },
-    { "source": "/mfa/:path*", "destination": "https://mes-fm-mfa.vercel.app/mfa/:path*" }
+    { "source": "/mfa/:path*", "destination": "https://mes-fm-mfa.vercel.app/mfa/:path*" },
+    { "source": "/ai", "destination": "https://mes-ai-trading.vercel.app/ai" },
+    { "source": "/ai/:path*", "destination": "https://mes-ai-trading.vercel.app/ai/:path*" }
   ]
 }

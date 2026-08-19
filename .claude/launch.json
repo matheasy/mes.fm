@@ -21,6 +21,13 @@
       "runtimeArgs": ["-c", "cd mfa && npm run dev -- -p \"$PORT\""],
       "port": 8422,
       "autoPort": true
+    },
+    {
+      "name": "ai",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd ai && npm run dev -- -p \"$PORT\""],
+      "port": 8423,
+      "autoPort": true
     }
   ]
 }
