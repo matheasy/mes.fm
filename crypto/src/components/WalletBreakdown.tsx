@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import type { WalletPortfolio } from '@/lib/types';
 
 function formatUsd(value: number): string {
@@ -13,7 +12,7 @@ export default function WalletBreakdown({ wallets }: { wallets: WalletPortfolio[
         const loadedOk = w.wallet !== null;
 
         return (
-          <Link key={w.key} href={w.linkPath} className="panel block transition hover:border-accent">
+          <a key={w.key} href={w.linkPath} className="panel block transition hover:border-accent">
             <div className="flex items-center justify-between">
               <p className="stat-label">{w.label}</p>
               <span className="text-xs text-accent">View dashboard &rarr;</span>
@@ -32,7 +31,7 @@ export default function WalletBreakdown({ wallets }: { wallets: WalletPortfolio[
             ) : (
               <p className="mt-2 text-sm text-loss">{w.error ?? 'Unavailable'}</p>
             )}
-          </Link>
+          </a>
         );
       })}
     </div>

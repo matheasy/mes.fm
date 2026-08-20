@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import type { SourcedTransaction } from '@/lib/types';
 import { WALLET_LABELS, WALLET_LINKS } from '@/lib/wallets';
 
@@ -35,9 +34,9 @@ export default function TransactionsTable({ transactions }: { transactions: Sour
           {transactions.map((t) => (
             <tr key={`${t.wallet}-${t.hash}-${t.token.contractAddress}`}>
               <td>
-                <Link href={WALLET_LINKS[t.wallet]} className="text-accent hover:underline">
+                <a href={WALLET_LINKS[t.wallet]} className="text-accent hover:underline">
                   {WALLET_LABELS[t.wallet]}
-                </Link>
+                </a>
               </td>
               <td>{new Date(t.timestamp).toLocaleDateString()}</td>
               <td>{TYPE_LABELS[t.type]}</td>

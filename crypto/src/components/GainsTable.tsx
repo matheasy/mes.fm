@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import type { SourcedGainResult } from '@/app/api/gains/route';
 import { WALLET_LABELS, WALLET_LINKS } from '@/lib/wallets';
 
@@ -28,9 +27,9 @@ export default function GainsTable({ gains }: { gains: SourcedGainResult[] }) {
           {gains.map((g, i) => (
             <tr key={`${g.wallet}-${g.disposalTxHash}-${i}`}>
               <td>
-                <Link href={WALLET_LINKS[g.wallet]} className="text-accent hover:underline">
+                <a href={WALLET_LINKS[g.wallet]} className="text-accent hover:underline">
                   {WALLET_LABELS[g.wallet]}
-                </Link>
+                </a>
               </td>
               <td>{new Date(g.disposedAt).toLocaleDateString()}</td>
               <td>{new Date(g.acquiredAt).toLocaleDateString()}</td>

@@ -45,13 +45,13 @@ export default function OverviewPage() {
     <div className="flex flex-col gap-6">
       <p className="text-sm text-gray-400">
         A combined view across every wallet tracked by{' '}
-        <Link href="/ai" className="text-accent hover:underline">
+        <a href="https://mes.fm/ai" className="text-accent hover:underline">
           mes.fm/ai
-        </Link>{' '}
+        </a>{' '}
         and{' '}
-        <Link href="/mfa" className="text-accent hover:underline">
+        <a href="https://mes.fm/mfa" className="text-accent hover:underline">
           mes.fm/mfa
-        </Link>{' '}
+        </a>{' '}
         — click either wallet below for its full dashboard.
       </p>
 
