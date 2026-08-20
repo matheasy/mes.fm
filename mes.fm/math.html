@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MES Math Tutorials - Free math video/article tutorials on infinite sequences and series, vectors and the geometry of space, vector functions, spherical harmonics, and more.">
+  <meta name="keywords" content="MES, Math, Tutorials, Math Easy Solutions, Calculus">
+  <meta name="author" content="Mathiew Estepho">
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>MES Math Tutorials</title>
+  <style>
+    h1 {
+      text-align: center;
+      font-size: 3.2em;
+    }
+
+    .page-header {
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page-header .theme-toggle-btn {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .list-header {
+      cursor: pointer;
+    }
+
+    .arrow-icon {
+      font-size: 20px;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .top-bar {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    body {
+      font-weight: 550;
+      word-wrap: break-word;
+      transition: background-color 0.3s, color 0.3s;
+      padding: 0 1.5em 3em;
+    }
+
+    body.light {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    body.light a {
+      color: #0000ff;
+    }
+
+    body.dark {
+      background-color: #1a1a1a;
+      color: #ffffff;
+    }
+
+    body.dark a {
+      color: #4da8ff;
+    }
+
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .list-container {
+      margin-bottom: 1.5em;
+    }
+
+    .sub-heading {
+      font-size: 1.1em;
+    }
+
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 2.4em;
+      }
+      h2 {
+        font-size: 1.5em;
+      }
+      .page-header {
+        flex-direction: column;
+      }
+      .page-header .theme-toggle-btn {
+        position: static;
+        transform: none;
+        margin-top: 0;
+      }
+    }
+
+    .theme-toggle-btn {
+      margin: 10px;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    body.light .theme-toggle-btn {
+      background-color: #dddddd;
+      color: #000000;
+    }
+
+    body.dark .theme-toggle-btn {
+      background-color: #555555;
+      color: #ffffff;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 0.5em 0 0;
+    }
+  </style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+<script>
+/* auto-ads-inpage-suppress: same guard as mes.fm/links -- this page carries two deliberate
+   manual ad units (top and bottom) instead of Google's Auto ads in-page placements, so any
+   Auto-ads-inserted in-page/native block is hidden the instant it appears. */
+(function () {
+    function hide(node) {
+        node.style.setProperty('display', 'none', 'important');
+    }
+    function isAutoAdNode(node) {
+        return node.classList && (node.classList.contains('google-auto-placed') || node.classList.contains('google-anno-sc'));
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (isAutoAdNode(node)) {
+            hide(node);
+            return;
+        }
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed, .google-anno-sc').forEach(hide);
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+</head>
+<body>
+<div class="ad-slot" style="text-align: center;">
+  <!-- MES Links Square -->
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-1461238060884369"
+       data-ad-slot="1197859571"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
+
+  <div class="top-bar">
+    <a class="back-link" href="https://mes.fm/links">&larr; MES Links</a>
+  </div>
+
+  <header class="page-header">
+    <h1 class="list-header" onclick="toggleAllLists()">MES Math Tutorials <span id="arrowIconAll" class="arrow-icon">&#9660;</span></h1>
+    <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+  </header>
+
+  <div class="content">
+    <ul>
+      <li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-">MES Math Q/A Streams ▶️</a></li>
+      <li><a href="https://peakd.com/hive-128780/@mes/dzekfnxh">Cubic Formula Proof</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EF05ExjzLbB64NgUjoV1hl">▶️</a></li>
+
+      <li class="list-container">
+        <h2 class="sub-heading" onclick="toggleSubList('infiniteSequence')">Infinite Sequences and Series <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EXHAJ3vRg0T_kKEyPah1Lz">▶️</a> <span id="arrowIcon-infiniteSequence" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+        <ul id="infiniteSequence">
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-limits-squeeze-theorem-fibonacci-sequence-and-golden-ratio-more">Infinite Sequences: Limits, Squeeze Theorem, Fibonacci Sequence & Golden Ratio</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HUgfK34Voi6BvrNqt4X4BV">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/laboratory-project-logistic-sequences">Laboratory Project: Logistic Sequences</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-series-definition-examples-geometric-series-harmonics-series-telescoping-sum-more">Infinite Series: Definition, Examples, Geometric Series, Harmonic Series, Telescoping Sum + MORE</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FfxN_I9trdgSnWtJS-6wK1">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-integral-test-and-estimate-of-sums">The Integral Test and Estimate of Sums</a> <a href="https://www.youtube.com/playlist?list=PLTXCLnbwZspA">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-comparison-tests">The Comparison Tests</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-alternating-tests">Alternating Tests</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-absolute-convergence-and-the-ratio-root-tests">Absolute Convergence and the Ratio/Root Tests</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-strategy-for-testing-series">Strategy for Testing Series</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-power-series">Power Series</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-representations-of-functions-as-power-series">Representations of Functions as Power Series</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-taylor-and-maclaurin-series">Taylor and Maclaurin Series</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/@mes/infinite-sequences-and-series-formulas-for-the-remainder-term-in-taylor-series">Formulas for the Remainder Term in Taylor Series</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-multiplication-and-division-of-power-series">Multiplication and Division of Power Series</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/kummer-s-test-raabe-s-test-and-convergence-of-binomial-series">Kummer's Test, Raabe's Test, and Convergence of Binomial Series</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/laboratory-project-an-elusive-limit">Laboratory Project: An Elusive Limit</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Gzt0ZAIWwnyZr91b7BGoGR">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-applications-of-taylor-polynomials">Applications of Taylor Polynomials</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F76sIU8xm09oqBTq1mlry3">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/applied-project-radiation-from-the-stars">Applied Project: Radiation from the Stars (Blackbody Radiation)</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0H9KtXz4yi98pGrnnbSSYUb">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-review-and-true-false-quiz">Review and True-False Quiz</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FCqXVJv1r7eJvrvphfkr6L">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-problems-plus">Problems Plus</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FQ96Egr5R7fZGeDTIUKz8P">▶️</a></li>
+        </ul>
+      </li>
+
+      <li><a href="https://peakd.com/hive-128780/@mes/220d6572">Spherical Harmonics</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FHh2kZzebadnPFwO6Yi5qu">▶️</a></li>
+
+      <li class="list-container">
+        <h2 class="sub-heading" onclick="toggleSubList('vectors')">Vectors and the Geometry of Space <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FjJpwnxwdrOR7L8Ul8VZoZ">▶️</a> <span id="arrowIcon-vectors" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+        <ul id="vectors">
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems">3D Coordinates Systems</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GiAJeLMzhOsrMliibfce5m">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors">Vectors</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EiRECLVkBCcFhSpbSz8XIw">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices">Complex Numbers as Rotation Matrices</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0E6x0dZEAx77Kqv7LLxYdbx">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product">The Dot Product</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GbHgvpTY1mx61nTNO-Msl8">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product">The Cross Product</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FuRJ8rg-YVQvfPoPOwhuRW">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron">Laboratory Project: The Geometry of a Tetrahedron</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GoEi9wxl8nTFcfw1ay-_1T">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes">Equations of Lines and Planes</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FO3u0IupqllNNkZTsffpIV">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective">Laboratory Project: Putting 3D in Perspective</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0ElsrMs_IBprUoHocIwyAmK">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces">Cylinders and Quadric Surfaces</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EfmYwT81SebJnU1Ny8Fc5u">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review">Review</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EMiATrjv8HH3fPwKVsgU6P">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz">True-False Quiz</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GiYS2qR98dzUjsx-0PRPbC">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/jlgigkdl">Problems Plus</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0G_7Jd6ZORHFQMk8jbwmkos">▶️</a></li>
+        </ul>
+      </li>
+
+      <li class="list-container">
+        <h2 class="sub-heading" onclick="toggleSubList('vectorfunctions')">Vector Functions <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HQl7xTQBS_O8Te8PcpNm4U">▶️</a> <span id="arrowIcon-vectorfunctions" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+        <ul id="vectorfunctions">
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/omhbcxkw">Vector Functions and Space Curves</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GwdMY-E9_4LsmYmO-IxcoX">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/hfsetrue">Derivatives and Integrals of Vector Functions</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FgQ3jBd9IFaWOakOWbHous">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/koxharrd">Arc Length and Curvature</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Gd5OieYiZMaSKw1QfyHbiG">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/e443f9d3">Motion in Space: Velocity and Acceleration</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Hxo8aPU3ezG0tcLvgJnxLB">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/c3b94a80">Applied Project: Kepler's Laws of Planetary Motion</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FSh63mgXOKLQ41H4dkzbaY">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/review-of-vector-functions-138">Review: Concept Check & True-False Quiz</a> <a href="https://www.youtube.com/playlist?list=PLAsz0y2lc-c4">▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://peakd.com/">Problems Plus</a> <a href="https://www.youtube.com/playlist?list=PLHNdnBXVWSlo">▶️</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <script>
+    function toggleAllLists() {
+      const lists = document.querySelectorAll('.list-container ul');
+      const arrowIconAll = document.getElementById('arrowIconAll');
+      lists.forEach(list => list.classList.toggle('hidden'));
+      arrowIconAll.textContent = lists.length && lists[0].classList.contains('hidden') ? '▲' : '▼';
+    }
+
+    function toggleSubList(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById(`arrowIcon-${listId}`);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+  </script>
+
+  <script>
+    // Dark/Light theme toggle – saved in browser (no POST, no resubmit popup)
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Switch to Dark Mode';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    const saved = localStorage.getItem('theme');
+    if (saved === 'light') {
+      setTheme(false);
+    } else {
+      setTheme(true);
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const isDarkNow = body.classList.contains('dark');
+      setTheme(!isDarkNow);
+    });
+  </script>
+
+  <div style="clear: both;"></div>
+
+  <div class="ad-slot" style="text-align: center;">
+    <!-- MES Links Square -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-1461238060884369"
+         data-ad-slot="1197859571"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+  </div>
+
+  <footer style="text-align: center;">
+    <p>&copy; 2026 Math Easy Solutions (MES). All rights reserved. | <a href="https://mes.fm/contact">Contact Us</a> | <a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </footer>
+
+  <script>
+    // ad-slot-fill-and-collapse: same approach as mes.fm/links -- request a fill for each manual
+    // ad unit, then hide it completely if nothing filled within the poll window.
+    (function () {
+      document.querySelectorAll('.ad-slot ins.adsbygoogle').forEach(function () {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      });
+      document.querySelectorAll('.ad-slot').forEach(function (slot) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+          attempts++;
+          if (slot.querySelector('iframe')) {
+            clearInterval(poll);
+            return;
+          }
+          if (attempts >= 10) {
+            slot.style.setProperty('display', 'none', 'important');
+            clearInterval(poll);
+          }
+        }, 200);
+      });
+    })();
+  </script>
+</body>
+</html>
