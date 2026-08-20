@@ -77,6 +77,43 @@
       margin-bottom: 2em;
     }
 
+    .range-tabs {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5em;
+      margin: 1em 0;
+    }
+
+    .range-tab {
+      padding: 0.4em 0.9em;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      border-radius: 999px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    body.light .range-tab {
+      color: #000000;
+    }
+
+    body.dark .range-tab {
+      color: #ffffff;
+    }
+
+    .range-tab.active {
+      font-weight: bold;
+    }
+
+    body.light .range-tab.active {
+      background-color: #dddddd;
+    }
+
+    body.dark .range-tab.active {
+      background-color: #555555;
+    }
+
     .stats-section {
       margin-bottom: 2.5em;
     }
@@ -223,6 +260,14 @@
     <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
   </header>
 
+  <div class="range-tabs" id="rangeTabs">
+    <button class="range-tab" data-range="24h">24 Hours</button>
+    <button class="range-tab" data-range="7d">7 Days</button>
+    <button class="range-tab" data-range="30d">30 Days</button>
+    <button class="range-tab" data-range="365d">365 Days</button>
+    <button class="range-tab" data-range="all">All Time</button>
+  </div>
+
   <p class="updated-at" id="updatedAt">Loading stats&hellip;</p>
 
   <div class="content">
@@ -294,28 +339,43 @@
       return div.innerHTML;
     }
 
+    const RANGE_LABELS = { '24h': '24 hours', '7d': '7 days', '30d': '30 days', '365d': '365 days', all: 'all time' };
+    let currentRange = localStorage.getItem('statsRange') || '7d';
+    if (!(currentRange in RANGE_LABELS)) currentRange = '7d';
+
+    function setActiveTab() {
+      document.querySelectorAll('.range-tab').forEach(function (btn) {
+        btn.classList.toggle('active', btn.dataset.range === currentRange);
+      });
+    }
+
     async function loadStats() {
+      setActiveTab();
+      const topPagesBody = document.getElementById('topPagesBody');
+      const siteTotalsBody = document.getElementById('siteTotalsBody');
+      topPagesBody.innerHTML = '<tr><td colspan="3" class="empty-state">Loading&hellip;</td></tr>';
+      siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>';
+      document.getElementById('updatedAt').textContent = 'Loading stats…';
+
       try {
-        const res = await fetch('/api/stats');
+        const res = await fetch('/api/stats?range=' + encodeURIComponent(currentRange));
         if (!res.ok) throw new Error('bad response');
         const data = await res.json();
 
-        const topPagesBody = document.getElementById('topPagesBody');
         if (data.topPages && data.topPages.length) {
           topPagesBody.innerHTML = data.topPages.map(function (p) {
             return '<tr><td>' + escapeHtml(p.path) + '</td><td class="site">' + escapeHtml(p.site) + '</td><td class="views">' + p.views.toLocaleString() + '</td></tr>';
           }).join('');
         } else {
-          topPagesBody.innerHTML = '<tr><td colspan="3" class="empty-state">No data yet.</td></tr>';
+          topPagesBody.innerHTML = '<tr><td colspan="3" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
         }
 
-        const siteTotalsBody = document.getElementById('siteTotalsBody');
         if (data.siteTotals && data.siteTotals.length) {
           siteTotalsBody.innerHTML = data.siteTotals.map(function (s) {
             return '<tr><td>' + escapeHtml(s.site) + '</td><td class="views">' + s.views.toLocaleString() + '</td></tr>';
           }).join('');
         } else {
-          siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">No data yet.</td></tr>';
+          siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
         }
 
         document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date(data.updatedAt).toLocaleString();
@@ -323,6 +383,14 @@
         document.getElementById('updatedAt').textContent = 'Stats are temporarily unavailable.';
       }
     }
+
+    document.getElementById('rangeTabs').addEventListener('click', function (e) {
+      const btn = e.target.closest('.range-tab');
+      if (!btn || btn.dataset.range === currentRange) return;
+      currentRange = btn.dataset.range;
+      localStorage.setItem('statsRange', currentRange);
+      loadStats();
+    });
 
     loadStats();
   </script>

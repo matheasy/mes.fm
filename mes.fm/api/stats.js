@@ -1,4 +1,14 @@
+const { lastNDayKeys, lastNHourKeys } = require('./_bucket-keys');
+
 const TOP_N = 50;
+
+const RANGES = {
+  '24h': { unit: 'hourly', count: 24 },
+  '7d': { unit: 'daily', count: 7 },
+  '30d': { unit: 'daily', count: 30 },
+  '365d': { unit: 'daily', count: 365 },
+  all: null,
+};
 
 function parseMember(member, score) {
   const sep = member.indexOf('|');
@@ -9,6 +19,10 @@ function parseMember(member, score) {
   };
 }
 
+function randomKey(label) {
+  return `pageviews:tmp:${label}:${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -17,14 +31,45 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const commands = [
-    ['ZREVRANGE', 'pageviews:leaderboard', '0', String(TOP_N - 1), 'WITHSCORES'],
-    ['HGETALL', 'pageviews:site-totals'],
-  ];
+  const range = String(req.query.range || 'all');
+  if (!Object.prototype.hasOwnProperty.call(RANGES, range)) {
+    res.status(400).json({ error: 'invalid range' });
+    return;
+  }
+  const config = RANGES[range];
 
-  let topPagesRaw = [];
-  let siteTotalsRaw = [];
+  let commands;
+  let leaderboardResultIndex;
+  let siteTotalsResultIndex;
 
+  if (!config) {
+    commands = [
+      ['ZREVRANGE', 'pageviews:leaderboard', '0', String(TOP_N - 1), 'WITHSCORES'],
+      ['HGETALL', 'pageviews:site-totals'],
+    ];
+    leaderboardResultIndex = 0;
+    siteTotalsResultIndex = 1;
+  } else {
+    const now = new Date();
+    const bucketKeys = config.unit === 'hourly' ? lastNHourKeys(config.count, now) : lastNDayKeys(config.count, now);
+    const leaderboardKeys = bucketKeys.map((k) => `pageviews:leaderboard:${config.unit}:${k}`);
+    const siteTotalsKeys = bucketKeys.map((k) => `pageviews:sitetotals:${config.unit}:${k}`);
+    const destLeaderboard = randomKey('lb');
+    const destSiteTotals = randomKey('st');
+
+    commands = [
+      ['ZUNIONSTORE', destLeaderboard, String(leaderboardKeys.length), ...leaderboardKeys],
+      ['ZREVRANGE', destLeaderboard, '0', String(TOP_N - 1), 'WITHSCORES'],
+      ['DEL', destLeaderboard],
+      ['ZUNIONSTORE', destSiteTotals, String(siteTotalsKeys.length), ...siteTotalsKeys],
+      ['ZREVRANGE', destSiteTotals, '0', '-1', 'WITHSCORES'],
+      ['DEL', destSiteTotals],
+    ];
+    leaderboardResultIndex = 1;
+    siteTotalsResultIndex = 4;
+  }
+
+  let results;
   try {
     const upstashRes = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
       method: 'POST',
@@ -34,13 +79,14 @@ module.exports = async (req, res) => {
       },
       body: JSON.stringify(commands),
     });
-    const [topPagesResult, siteTotalsResult] = await upstashRes.json();
-    topPagesRaw = topPagesResult.result || [];
-    siteTotalsRaw = siteTotalsResult.result || [];
+    results = await upstashRes.json();
   } catch {
     res.status(502).json({ error: 'stats unavailable' });
     return;
   }
+
+  const topPagesRaw = results[leaderboardResultIndex]?.result || [];
+  const siteTotalsRaw = results[siteTotalsResultIndex]?.result || [];
 
   const topPages = [];
   for (let i = 0; i < topPagesRaw.length; i += 2) {
@@ -55,6 +101,7 @@ module.exports = async (req, res) => {
 
   res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
   res.status(200).json({
+    range,
     topPages,
     siteTotals,
     updatedAt: new Date().toISOString(),
