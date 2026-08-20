@@ -4,3 +4,6 @@ compilation_cache/
 error_log
 **/error_log
 node_modules/
+.env
+.env.local
+.env*.local
