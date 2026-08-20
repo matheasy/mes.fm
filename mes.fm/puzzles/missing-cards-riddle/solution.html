@@ -242,15 +242,18 @@ How many cards are there?">
    3) Annotation/related-entry chips -- any element carrying the
    `google-anno-skip` class, which covers every chip variant Google serves
    (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
-   tooltips, `google-anno-sa-qtx` tooltip text): hidden outright on sight,
-   anywhere on the page. 4) In-text link ads -- `<a class="google-anno">`
-   wrapping a `<span class="google-anno-t">` around an ordinary word (e.g.
-   turning "Calculate" into a double-underlined, clickable ad): unwrapped
-   back to plain text on sight, anywhere on the page, so the word stays
-   readable without the ad behavior. Unlike the in-page ad blocks, Google
-   serves many of these chips/links per page load, so removing them doesn't
-   cost the page its one shot at an ad the way deleting the in-page block
-   did -- no relocate/poll needed, just hide/unwrap on sight.
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
    In the first two cases Google's own placeholder-collapse doesn't reliably
    fire once we've moved the node, so we poll it: if no real ad iframe shows
    up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
@@ -307,15 +310,18 @@ How many cards are there?">
         collapseIfUnfilled(node);
         return true;
     }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
     function handleAnnotationChip(node) {
-        if (node.classList && node.classList.contains('google-anno-skip')) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
             node.style.setProperty('display', 'none', 'important');
             return true;
         }
         return false;
     }
     function handleInTextLinkAd(node) {
-        if (node.classList && node.classList.contains('google-anno') && node.parentNode) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
             node.replaceWith(document.createTextNode(node.textContent));
             return true;
         }
