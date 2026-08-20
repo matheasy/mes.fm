@@ -60,6 +60,8 @@
     { "source": "/mfa", "destination": "https://mes-fm-mfa.vercel.app/mfa" },
     { "source": "/mfa/:path*", "destination": "https://mes-fm-mfa.vercel.app/mfa/:path*" },
     { "source": "/ai", "destination": "https://mes-fm-ai.vercel.app/ai" },
-    { "source": "/ai/:path*", "destination": "https://mes-fm-ai.vercel.app/ai/:path*" }
+    { "source": "/ai/:path*", "destination": "https://mes-fm-ai.vercel.app/ai/:path*" },
+    { "source": "/crypto", "destination": "https://mes-fm-crypto.vercel.app/crypto" },
+    { "source": "/crypto/:path*", "destination": "https://mes-fm-crypto.vercel.app/crypto/:path*" }
   ]
 }

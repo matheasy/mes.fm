@@ -28,6 +28,13 @@
       "runtimeArgs": ["-c", "cd ai && npm run dev -- -p \"$PORT\""],
       "port": 8423,
       "autoPort": true
+    },
+    {
+      "name": "crypto",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd crypto && npm run dev -- -p \"$PORT\""],
+      "port": 8424,
+      "autoPort": true
     }
   ]
 }

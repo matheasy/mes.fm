@@ -63,8 +63,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               />
             </div>
             <div className="mb-2 text-sm">
-              <a href="https://mes.fm/links" className="text-gray-400 hover:text-accent">
-                &larr; mes.fm/links
+              <a href="https://mes.fm/crypto" className="text-gray-400 hover:text-accent">
+                &larr; mes.fm/crypto
               </a>
             </div>
             <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

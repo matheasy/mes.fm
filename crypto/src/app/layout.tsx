@@ -5,8 +5,8 @@ import SwrProvider from '@/components/SwrProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'MES AI Trading',
-  description: 'Read-only BSC wallet portfolio, transaction, and capital gains tracker',
+  title: 'MES Crypto Portfolio',
+  description: 'Combined read-only portfolio, transaction, and capital gains dashboard across every tracked BSC wallet',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -63,12 +63,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               />
             </div>
             <div className="mb-2 text-sm">
-              <a href="https://mes.fm/crypto" className="text-gray-400 hover:text-accent">
-                &larr; mes.fm/crypto
+              <a href="https://mes.fm/links" className="text-gray-400 hover:text-accent">
+                &larr; mes.fm/links
               </a>
             </div>
             <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h1 className="text-lg font-semibold text-gray-100">MES AI Trading</h1>
+              <h1 className="text-lg font-semibold text-gray-100">MES Crypto Portfolio</h1>
               <nav className="flex gap-4 text-sm">
                 <Link href="/" className="text-gray-300 hover:text-accent">
                   Overview
