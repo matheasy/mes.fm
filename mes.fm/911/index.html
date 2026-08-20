@@ -126,24 +126,28 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
 <script>
 /* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
-   class `google-auto-placed`), plus a third: Google's separate "annotation"
-   text-ad format (chips styled like `<div class="google-anno-skip
-   google-anno-sc" aria-label="...">`, a different Auto ads mechanism than
-   the in-page blocks above -- rendered as small pill/badge buttons made to
-   look like real nav links). 1) Logo header <-> nav bar: on desktop, any
-   in-page ad caught here is relocated to just below the whole
-   header+nav+logo-badge complex (before .outer-page-content) and allowed to
-   show if it fills; on mobile (max-width: 768px, this repo's existing
-   responsive breakpoint) it is hidden outright instead -- no ad shows below
-   the nav bar on mobile at all. 2) Comments toggle (#comments-button) <->
-   comments widget (#comments-box): on every device, any in-page ad caught
-   here is relocated to just after the comments box and allowed to show if
-   it fills. 3) Annotation chips (`.google-anno-sc`) anywhere inside #header,
-   #footer, or .side-bar: hidden outright on every device. Unlike the in-page
-   ad blocks, Google serves many of these annotation chips per page load, so
-   removing the ones in these three zones doesn't cost the page its one
-   shot at an ad the way deleting the in-page block did -- no relocate/poll
-   needed, just hide on sight.
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text): hidden outright on sight,
+   anywhere on the page. 4) In-text link ads -- `<a class="google-anno">`
+   wrapping a `<span class="google-anno-t">` around an ordinary word (e.g.
+   turning "Calculate" into a double-underlined, clickable ad): unwrapped
+   back to plain text on sight, anywhere on the page, so the word stays
+   readable without the ad behavior. Unlike the in-page ad blocks, Google
+   serves many of these chips/links per page load, so removing them doesn't
+   cost the page its one shot at an ad the way deleting the in-page block
+   did -- no relocate/poll needed, just hide/unwrap on sight.
    In the first two cases Google's own placeholder-collapse doesn't reliably
    fire once we've moved the node, so we poll it: if no real ad iframe shows
    up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
@@ -200,12 +204,16 @@
         collapseIfUnfilled(node);
         return true;
     }
-    function inAnnotationGuardedZone(el) {
-        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar'));
-    }
     function handleAnnotationChip(node) {
-        if (node.classList && node.classList.contains('google-anno-sc') && inAnnotationGuardedZone(node)) {
+        if (node.classList && node.classList.contains('google-anno-skip')) {
             node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode) {
+            node.replaceWith(document.createTextNode(node.textContent));
             return true;
         }
         return false;
@@ -218,13 +226,17 @@
             return;
         }
         if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
         if (node.querySelectorAll) {
             node.querySelectorAll('.google-auto-placed').forEach(function (n) {
                 if (handleHeaderNavZone(n)) return;
                 handleCommentsZone(n);
             });
-            node.querySelectorAll('.google-anno-sc').forEach(function (n) {
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
                 handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
             });
         }
     }
