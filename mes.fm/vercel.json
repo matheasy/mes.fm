@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/nano", "destination": "https://shop.ledger.com/pages/ledger-nano-x?r=7d5787f5fd32", "permanent": true },
