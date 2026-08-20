@@ -1,5 +1,7 @@
 const MAX_LEN = 200;
-const SITE_RE = /^[a-z0-9.-]{1,64}$/i;
+// Only accept mes.fm itself and its subdomains -- rejects Vercel preview/
+// deployment hostnames (*.vercel.app) and anything else spoofed in.
+const SITE_RE = /^([a-z0-9-]+\.)*mes\.fm$/i;
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
