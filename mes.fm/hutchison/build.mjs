@@ -107,10 +107,41 @@ function fixHutchisonDriveLink(markdown) {
   );
 }
 
+// The post's top-level section headers (the "# <center>X</center>" lines --
+// Highlights, Articles, Unedited Footage, etc.) all render as
+// <h1><center>X</center></h1> in the parsed body. Give each one an id and
+// collect a {id, label} list so a table-of-contents can link straight to it.
+// Two sections share the literal title "Articles", so duplicate slugs/labels
+// get a "(2)"-style suffix to stay unique and distinguishable.
+function addSectionAnchors(bodyHtml) {
+  const seen = new Map();
+  const toc = [];
+  const html = bodyHtml.replace(/<h1><center>(.*?)<\/center><\/h1>/g, (match, inner) => {
+    const plain = inner
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, "&");
+    const slug = plain
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "section";
+    const occurrence = (seen.get(slug) || 0) + 1;
+    seen.set(slug, occurrence);
+    const id = occurrence === 1 ? slug : `${slug}-${occurrence}`;
+    const label = occurrence === 1 ? plain : `${plain} (${occurrence})`;
+    toc.push({ id, label });
+    return `<h1 id="${id}"><center>${inner}</center></h1>`;
+  });
+  return { html, toc };
+}
+
 function buildPage(post) {
   const title = post.title;
   const preprocessed = embedYoutubeLinks(fixTableBoundaries(fixHutchisonDriveLink(post.body)));
-  const bodyHtml = marked.parse(preprocessed);
+  const { html: bodyHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
+  const tocLinksHtml = toc
+    .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
+    .join("\n      ");
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
   const commentCount = post.children ?? 0;
@@ -270,6 +301,82 @@ function buildPage(post) {
       text-align: center;
     }
 
+    /* Table of contents: a fixed side column on wide viewports (there's only
+       room beside the centered 760px .container once the window is wide
+       enough not to overlap it), collapsing to a <details> dropdown above
+       the article on anything narrower -- laptops with a non-maximized
+       window, tablets, and phones alike. */
+    .toc-sidebar {
+      display: none;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-sidebar {
+        display: block;
+        position: fixed;
+        top: 90px;
+        left: calc(50% + 410px);
+        width: 210px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        font-size: 0.85em;
+      }
+
+      .toc-sidebar .toc-title {
+        font-size: 0.75em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+        margin: 0 0 0.7em;
+      }
+
+      .toc-sidebar a {
+        display: block;
+        padding: 0.3em 0;
+        opacity: 0.85;
+        text-decoration: none;
+      }
+
+      .toc-sidebar a:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+    }
+
+    .toc-mobile {
+      margin: 1.2em 0;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-mobile {
+        display: none;
+      }
+    }
+
+    .toc-mobile summary {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0.6em 0.9em;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      border-radius: 6px;
+    }
+
+    .toc-mobile .toc-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4em;
+      padding: 0.8em 0.9em 0.2em;
+    }
+
+    .toc-mobile a {
+      text-decoration: none;
+      opacity: 0.9;
+    }
+
+    .toc-mobile a:hover {
+      text-decoration: underline;
+    }
+
     @media (max-width: 600px) {
       h1 { font-size: 1.5em; }
       body { padding: 0 12px 40px; }
@@ -277,6 +384,10 @@ function buildPage(post) {
   </style>
 </head>
 <body class="dark">
+  <nav class="toc-sidebar" aria-label="Table of contents">
+    <div class="toc-title">Jump to</div>
+      ${tocLinksHtml}
+  </nav>
   <div class="container">
     <div class="top-bar">
       <a class="site-link" href="https://mes.fm/links">&larr; mes.fm/links</a>
@@ -292,6 +403,14 @@ function buildPage(post) {
       <span>${reblogCount} reblogs</span>
     </div>
     <a class="peakd-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
+
+    <details class="toc-mobile">
+      <summary>Jump to section</summary>
+      <nav class="toc-links" aria-label="Table of contents">
+        ${tocLinksHtml}
+      </nav>
+    </details>
+
     <hr>
 
     <div class="post-body">
