@@ -179,6 +179,14 @@ async function buildPage(post) {
       margin: 0 auto;
     }
 
+    /* A "fluid" responsive AdSense unit -- Google picks a wide, short
+       (leaderboard/banner-style) shape at this container's width rather than
+       a tall rectangle, similar to a CNN-style top banner. */
+    .ad-slot {
+      margin: 16px auto 20px;
+      text-align: center;
+    }
+
     .top-bar {
       display: flex;
       align-items: center;
@@ -453,6 +461,16 @@ async function buildPage(post) {
 </head>
 <body class="dark">
   <div class="container">
+    <div class="ad-slot">
+      <!-- MES Links Square -->
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-1461238060884369"
+           data-ad-slot="1197859571"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+
     <div class="top-bar">
       <a class="site-link" href="https://mes.fm/hutchison">&larr; mes.fm/hutchison</a>
       <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
@@ -467,16 +485,6 @@ async function buildPage(post) {
       <span>${reblogCount} reblogs</span>
     </div>
     <a class="peakd-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
-
-    <div class="ad-slot" style="text-align: center;">
-      <!-- MES Links Square -->
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-1461238060884369"
-           data-ad-slot="1197859571"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-    </div>
 
     <hr>
 
