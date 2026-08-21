@@ -160,6 +160,20 @@
       padding: 1em 0;
     }
 
+    .show-more-btn {
+      display: block;
+      margin: 0.8em auto 0;
+      padding: 0.4em 0.9em;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      border-radius: 999px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    body.light .show-more-btn { color: #000000; }
+    body.dark .show-more-btn { color: #ffffff; }
+
     @media screen and (max-width: 600px) {
       h1 {
         font-size: 2.4em;
@@ -403,6 +417,7 @@
           </tbody>
         </table>
       </div>
+      <button id="showMorePages" class="show-more-btn" style="display: none;"></button>
     </section>
 
     <section class="stats-section">
@@ -463,17 +478,51 @@
     let currentRange = localStorage.getItem('statsRange') || '7d';
     if (!(currentRange in RANGE_LABELS)) currentRange = '7d';
 
+    // The API already returns up to 50 rows in one (server-cached) call, so
+    // expanding/collapsing the list below is pure client-side rendering --
+    // no extra request or API cost per click.
+    const PAGES_PREVIEW_COUNT = 10;
+    let topPagesData = [];
+    let showAllPages = false;
+    const showMoreBtn = document.getElementById('showMorePages');
+
     function setActiveTab() {
       document.querySelectorAll('.range-tab').forEach(function (btn) {
         btn.classList.toggle('active', btn.dataset.range === currentRange);
       });
     }
 
+    function renderTopPages() {
+      const topPagesBody = document.getElementById('topPagesBody');
+      if (!topPagesData.length) {
+        topPagesBody.innerHTML = '<tr><td colspan="3" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+        showMoreBtn.style.display = 'none';
+        return;
+      }
+
+      const visible = showAllPages ? topPagesData : topPagesData.slice(0, PAGES_PREVIEW_COUNT);
+      topPagesBody.innerHTML = visible.map(function (p) {
+        return '<tr><td>' + escapeHtml(p.path) + '</td><td class="site">' + escapeHtml(p.site) + '</td><td class="views">' + p.views.toLocaleString() + '</td></tr>';
+      }).join('');
+
+      if (topPagesData.length > PAGES_PREVIEW_COUNT) {
+        showMoreBtn.style.display = 'block';
+        showMoreBtn.textContent = showAllPages ? 'Show top ' + PAGES_PREVIEW_COUNT : 'Show all (' + topPagesData.length + ')';
+      } else {
+        showMoreBtn.style.display = 'none';
+      }
+    }
+
+    showMoreBtn.addEventListener('click', function () {
+      showAllPages = !showAllPages;
+      renderTopPages();
+    });
+
     async function loadStats() {
       setActiveTab();
-      const topPagesBody = document.getElementById('topPagesBody');
       const siteTotalsBody = document.getElementById('siteTotalsBody');
-      topPagesBody.innerHTML = '<tr><td colspan="3" class="empty-state">Loading&hellip;</td></tr>';
+      document.getElementById('topPagesBody').innerHTML = '<tr><td colspan="3" class="empty-state">Loading&hellip;</td></tr>';
+      showMoreBtn.style.display = 'none';
       siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>';
       document.getElementById('updatedAt').textContent = 'Loading stats…';
 
@@ -482,13 +531,9 @@
         if (!res.ok) throw new Error('bad response');
         const data = await res.json();
 
-        if (data.topPages && data.topPages.length) {
-          topPagesBody.innerHTML = data.topPages.map(function (p) {
-            return '<tr><td>' + escapeHtml(p.path) + '</td><td class="site">' + escapeHtml(p.site) + '</td><td class="views">' + p.views.toLocaleString() + '</td></tr>';
-          }).join('');
-        } else {
-          topPagesBody.innerHTML = '<tr><td colspan="3" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
-        }
+        topPagesData = data.topPages || [];
+        showAllPages = false;
+        renderTopPages();
 
         if (data.siteTotals && data.siteTotals.length) {
           siteTotalsBody.innerHTML = data.siteTotals.map(function (s) {
@@ -554,5 +599,5 @@
       });
     })();
   </script>
-<script src="/main_js/track.js" defer></script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
 </html>
