@@ -110,7 +110,7 @@ function buildPage(post) {
   const reblogCount = post.reblogs ?? 0;
   const description =
     post.json_metadata?.description ||
-    `${title} — a Hive blog post by ${AUTHOR}, mirrored from PeakD.`;
+    `${title} — a Hive blog post by ${AUTHOR}, mirrored from the Hive blockchain.`;
   const buildDate = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -288,7 +288,7 @@ function buildPage(post) {
       <span>${reblogCount} reblogs</span>
     </div>
     <div>${badgesHtml}</div>
-    <a class="peakd-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on PeakD &rarr;</a>
+    <a class="peakd-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
 
     <hr>
 
@@ -298,7 +298,7 @@ ${bodyHtml}
 
     <hr>
 
-    <a class="peakd-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on PeakD &rarr;</a>
+    <a class="peakd-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
     <p class="build-note">
       Vote/comment/reblog counts and article text were fetched from the Hive blockchain
       at build time (${buildDate}) and are not live. The "PeakD Daily Top" / "PeakD Weekly Top"
