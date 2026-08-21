@@ -97,21 +97,43 @@ function embedYoutubeLinks(markdown) {
 }
 
 // This post opens with a bare 3Speak embed URL on its own line (PeakD renders
-// these as an embedded player, same idea as the YouTube case above). 3Speak's
-// own /embed route serves a plain <iframe>-friendly player directly, so no
-// custom HLS setup is needed here (unlike mes.fm/log1/tesla-coil, which embeds
-// a specific HLS manifest because it needed a *non*-embed 3Speak video).
-function embed3SpeakLinks(markdown) {
-  return markdown.replace(
-    /^[ \t]*https?:\/\/play\.3speak\.tv\/embed\?v=([\w./-]+)[ \t]*$/gm,
-    (_match, videoPath) =>
-      `<div class="video-embed"><iframe src="https://play.3speak.tv/embed?v=${videoPath}" title="3Speak video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`
-  );
+// these as an embedded player). Iframing 3Speak's own /embed route ships their
+// full app chrome (logo, unrelated video sidebar, oddly proportioned player)
+// even in "embed" mode, so instead fetch the direct HLS manifest from 3Speak's
+// public embed API and play it in a plain <video> tag -- same approach as
+// mes.fm/log1/tesla-coil. Each bare 3Speak URL becomes its own <video> with a
+// unique id; the {id, src} pairs are wired up by a script block appended
+// below once the whole page (with hls.js loaded) exists.
+async function embed3SpeakLinks(markdown) {
+  const pattern = /^[ \t]*https?:\/\/play\.3speak\.tv\/embed\?v=([\w.-]+)\/([\w.-]+)[ \t]*$/gm;
+  const matches = [...markdown.matchAll(pattern)];
+  const videos = [];
+  let html = markdown;
+  for (let i = 0; i < matches.length; i++) {
+    const [full, owner, permlink] = matches[i];
+    const id = `speak-video-${i + 1}`;
+    let src = null;
+    let poster = null;
+    try {
+      const res = await fetch(`https://play.3speak.tv/api/embed?v=${owner}/${permlink}`);
+      const data = await res.json();
+      src = data.videoUrl || null;
+      poster = data.thumbnail || null;
+    } catch {
+      // Best-effort: leave src/poster null, the <video> just renders without one.
+    }
+    videos.push({ id, src });
+    const posterAttr = poster ? ` poster="${escapeHtml(poster)}"` : "";
+    const replacement = `<div class="video-embed"><video id="${id}" controls playsinline preload="metadata"${posterAttr}></video><a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &rarr;</a></div>`;
+    html = html.replace(full, replacement);
+  }
+  return { markdown: html, videos };
 }
 
-function buildPage(post) {
+async function buildPage(post) {
   const title = post.title;
-  const preprocessed = embedYoutubeLinks(embed3SpeakLinks(fixTableBoundaries(post.body)));
+  const { markdown: withVideos, videos } = await embed3SpeakLinks(fixTableBoundaries(post.body));
+  const preprocessed = embedYoutubeLinks(withVideos);
   const bodyHtml = marked.parse(preprocessed);
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
@@ -237,16 +259,41 @@ function buildPage(post) {
       position: relative;
       width: 100%;
       padding-bottom: 56.25%;
+      border-radius: 4px;
+      overflow: hidden;
       margin: 1.2em 0;
     }
 
-    .video-embed iframe {
+    .video-embed iframe,
+    .video-embed video {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       border: 0;
+      background: #000;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
     }
 
     .post-body blockquote {
@@ -498,6 +545,29 @@ ${bodyHtml}
       });
     })();
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script>
+    // speak-video-hls: plays each 3Speak-hosted HLS stream embedded above directly
+    // (via hls.js) rather than iframing 3speak.tv -- see embed3SpeakLinks in build.mjs
+    // for why. Same pattern as mes.fm/log1/tesla-coil's tesla-spark-video script,
+    // generalized to loop over however many videos this post embeds.
+    (function () {
+      var videos = ${JSON.stringify(videos)};
+      videos.forEach(function (v) {
+        if (!v.src) return;
+        var video = document.getElementById(v.id);
+        if (!video) return;
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = v.src;
+        } else if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(v.src);
+          hls.attachMedia(video);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
 `;
@@ -508,7 +578,7 @@ async function main() {
   const post = await fetchPost();
   console.log(`Got post: "${post.title}" (${post.stats?.total_votes ?? 0} votes, ${post.children ?? 0} comments, ${post.reblogs ?? 0} reblogs)`);
 
-  const html = buildPage(post);
+  const html = await buildPage(post);
   const outPath = join(__dirname, "index.html");
   writeFileSync(outPath, html, "utf8");
   console.log(`Wrote ${outPath}`);

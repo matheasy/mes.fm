@@ -109,16 +109,41 @@
       position: relative;
       width: 100%;
       padding-bottom: 56.25%;
+      border-radius: 4px;
+      overflow: hidden;
       margin: 1.2em 0;
     }
 
-    .video-embed iframe {
+    .video-embed iframe,
+    .video-embed video {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       border: 0;
+      background: #000;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
     }
 
     .post-body blockquote {
@@ -296,7 +321,7 @@
     <div class="post-meta">
       <span>By mes</span>
       <span>August 21, 2026</span>
-      <span>6 votes</span>
+      <span>7 votes</span>
       <span>0 comments</span>
       <span>0 reblogs</span>
     </div>
@@ -315,13 +340,13 @@
     <hr>
 
     <div class="post-body">
-<div class="video-embed"><iframe src="https://play.3speak.tv/embed?v=mes/ekqu4tu1" title="3Speak video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+<div class="video-embed"><video id="speak-video-1" controls playsinline preload="metadata" poster="https://images.3speak.tv/images/1787349818486-7d9bcfd2a14330df.webp"></video><a class="video-badge" href="https://3speak.tv/watch?v=mes/ekqu4tu1" target="_blank" rel="noopener">View on 3Speak &rarr;</a></div>
 
 <p>In this video I have uploaded a rare 2007 interview of John Hutchison in his Vancouver lab apartment by photographer Tom Sky and his Polish engineer uncle. John also runs a Hutchison Effect experiment live for them, which levitates a plastic can and aluminum foil in the back. I also include later emails from Tom saying he felt strangely ill after witnessing the Hutchison Effect. Tom told me that he recovered by &quot;grounding in nature&quot; via walking in sand and water at the beach – he felt electrical discharge leave his body! Tom may join a future MES Livestream with John soon, so stay tuned!</p>
 <p>This is rare footage that shows John recording and playing back experiment footage live to observers, as well as showing an extended look at John when he is operating the many radio and electromagnetic frequency controls!</p>
 <p><a href="https://3speak.tv/watch?v=mes/john-hutchison-interviewed-224">3Speak</a> - <a href="https://youtu.be/eEBDSRqCkYk">YouTube</a> - <a href="">Telegram</a> - <a href="">Odysee</a> - <a href="">BitChute</a> - <a href="">Rumble</a> - <a href="https://mes.fm/hutchison-tom-sky">Screenshots</a> - <a href="https://mes.fm/hutchison">Hutchison Effect</a> (<a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X">playlist</a>)</p>
 <p><img src="https://images.3speak.tv/images/1787348035470-17ce55ab8e527dfd.webp" alt="Tom Sky 2007 Thumbnail.jpeg"></p>
-<p>#HutchisonEffect #antigravity #acceleration #technology #physics </p>
+<p>#HutchisonEffect #antigravity #levitation #technology #physics </p>
 <h3>Links to original footage and more info</h3>
 <ul>
 <li>Original video: <a href="https://drive.google.com/file/d/1qUlQmVhZttJhx6a9-2qdiZ1v91YpW_lU/">https://drive.google.com/file/d/1qUlQmVhZttJhx6a9-2qdiZ1v91YpW_lU/</a><ul>
@@ -478,6 +503,29 @@
             clearInterval(poll);
           }
         }, 200);
+      });
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script>
+    // speak-video-hls: plays each 3Speak-hosted HLS stream embedded above directly
+    // (via hls.js) rather than iframing 3speak.tv -- see embed3SpeakLinks in build.mjs
+    // for why. Same pattern as mes.fm/log1/tesla-coil's tesla-spark-video script,
+    // generalized to loop over however many videos this post embeds.
+    (function () {
+      var videos = [{"id":"speak-video-1","src":"https://play.3speak.tv/hls?u=https%3A%2F%2Fhotipfs-3speak-1.b-cdn.net%2Fipfs%2FQmatpSgktBgLKHF99aY14a1tUffrEckTKEoH5rroJHwYPC%2Fmanifest.m3u8"}];
+      videos.forEach(function (v) {
+        if (!v.src) return;
+        var video = document.getElementById(v.id);
+        if (!video) return;
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = v.src;
+        } else if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(v.src);
+          hls.attachMedia(video);
+        }
       });
     })();
   </script>
