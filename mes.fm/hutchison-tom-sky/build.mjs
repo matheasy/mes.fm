@@ -101,7 +101,7 @@ function embedYoutubeLinks(markdown) {
 // full app chrome (logo, unrelated video sidebar, oddly proportioned player)
 // even in "embed" mode, so instead fetch the direct HLS manifest from 3Speak's
 // public embed API and play it in a plain <video> tag -- same approach as
-// mes.fm/log1/tesla-coil. Each bare 3Speak URL becomes its own <video> with a
+// mes.fm/tesla-coil. Each bare 3Speak URL becomes its own <video> with a
 // unique id; the {id, src} pairs are wired up by a script block appended
 // below once the whole page (with hls.js loaded) exists.
 async function embed3SpeakLinks(markdown) {
@@ -558,7 +558,7 @@ ${bodyHtml}
   <script>
     // speak-video-hls: plays each 3Speak-hosted HLS stream embedded above directly
     // (via hls.js) rather than iframing 3speak.tv -- see embed3SpeakLinks in build.mjs
-    // for why. Same pattern as mes.fm/log1/tesla-coil's tesla-spark-video script,
+    // for why. Same pattern as mes.fm/tesla-coil's tesla-spark-video script,
     // generalized to loop over however many videos this post embeds.
     (function () {
       var videos = ${JSON.stringify(videos)};

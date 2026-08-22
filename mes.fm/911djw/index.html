@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MES 9/11 Truth Links">
+  <meta name="keywords" content="MES, Links, Math Easy Solutions">
+  <meta name="author" content="Mathiew Estepho">
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>MES 9/11 Truth</title>
+  <style>
+    h1 {
+      text-align: center;
+      font-size: 4em;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    body {
+      font-weight: 550;
+      word-wrap: break-word;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Light mode styles (matches original browser defaults) */
+    body.light {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    body.light a {
+      color: #0000ff; /* Default blue for links */
+    }
+
+    /* Dark mode styles */
+    body.dark {
+      background-color: #1a1a1a;
+      color: #ffffff;
+    }
+
+    body.dark a {
+      color: #4da8ff; /* Lighter blue for visibility in dark mode */
+    }
+
+    .column {
+      float: left;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    @media (min-width: 600px) {
+      .column {
+        width: 50%;
+      }
+    }
+
+    @media (min-width: 900px) {
+      .column {
+        width: 25%;
+      }
+    }
+
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 3.5em;
+      }
+      h2 {
+        font-size: 1.85em;
+      }
+      #wordInput {
+        width: 100%;
+        max-width: none;
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .list-header {
+      cursor: pointer;
+    }
+
+    .arrow-icon {
+      font-size: 20px;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    /* Theme toggle button styles */
+    .theme-toggle-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    body.light .theme-toggle-btn {
+      background-color: #dddddd;
+      color: #000000;
+    }
+
+    body.dark .theme-toggle-btn {
+      background-color: #555555;
+      color: #ffffff;
+    }
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+</style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+<script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+</head>
+<body>
+<!-- New theme toggle button -->
+<!-- Theme toggle button (no form = no resubmit warning) -->
+<button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+
+  <div style="text-align: center;">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+    <!-- MES Links Square -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-1461238060884369"
+         data-ad-slot="1197859571"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+
+  <div style="text-align: center;">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+    <!-- MES Links Square -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-1461238060884369"
+         data-ad-slot="1197859571"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+
+  <header>
+    <h1 class="list-header" onclick="toggleAllLists()">MES 9/11 Truth<span id="arrowIconAll" class="arrow-icon">&#9660;</span></h1>
+  </header>
+  <div class="row">
+    <div class="column">
+      <ul>
+        <div class="list-container">
+          <li><h2 onclick="toggleList('calculators')">DJW Links<span id="arrowIcon1" class="arrow-icon">&#9660;</span></h2></li>
+          <ul id="calculators">
+            <li>The video, "Irrefutable" was made by an engineer in Canada after reading my book. It has a lot of good visuals in it.  He includes clips of radio shows I've been on as well as others. <a href="https://tinyurl.com/janedoe0911">tinyurl.com/janedoe0911</a></li>
+            <li>GlobalBEM 2012 presentation <a href="https://tinyurl.com/JanedoeBEM">tinyurl.com/JanedoeBEM</a></li>
+            <li>A short clip of Mike Yeadon (former Pfiser VP) on someone's podcast talking about my book. <a href="https://tinyurl.com/YeadonClip">tinyurl.com/YeadonClip</a></li>
+            <li>Andrew Johnson (United Kingsom) website. <a href="https://www.checktheevidence.com/">checktheevidence.com/</a></li>
+            <li style="margin-left: 20px;">Pictures of the OKC event. <a href="https://tinyurl.com/janedoeOKC">tinyurl.com/janedoeOKC</a></li>
+            <li>Morgan Reynolds (Arkansas, USA) <a href="hhttps://nomoregames.net/">nomoregames.net</a></li>
+            <li style="margin-left: 20px;">OKC article <a href="https://tinyurl.com/MorganOKC">tinyurl.com/MorganOKC</a></li>
+            <li>Norman / 911revision (South Africa) <a href="https://911revision.substack.com/">911revision.substack.com</a></li>            
+            <li>Analysis of PBD Interview <a href="https://tinyurl.com/janedoeOKC">tinyurl.com/911revisionPBD</a></li>
+            <li>MES (Mathiew) (Vancouver, Canada) <a href="https://peakd.com/truth/@mes/911">peakd.com/truth/@mes/911</a></li>
+            <li>Richard D. Hall (United Kingdom) <a href="https://tinyurl.com/janedoeRDH">tinyurl.com/janedoeRDH1</a></li>
+          </ul>
+        </div>
+  </div>
+
+  <script>
+    function toggleAllLists() {
+      const lists = document.querySelectorAll('.list-container ul');
+      const arrowIconAll = document.getElementById('arrowIconAll');
+      lists.forEach(list => {
+        list.classList.toggle('hidden');
+      });
+      arrowIconAll.textContent = lists[0].classList.contains('hidden') ? '\u25B2' : '\u25BC';
+    }
+
+    function toggleList(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById(`arrowIcon${listId.slice(-1)}`);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '\u25BC' : '\u25B2';
+    }
+
+    function toggleSubList(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById(`arrowIcon${listId.slice(-1)}`);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '\u25BC' : '\u25B2';
+    }
+  </script>
+  
+<script>
+// Dark/Light theme toggle – saved in browser (no POST, no resubmit popup)
+const themeToggle = document.getElementById('themeToggle');
+const body = document.body;
+
+function setTheme(isDark) {
+  if (isDark) {
+    body.classList.add('dark');
+    body.classList.remove('light');
+    themeToggle.textContent = 'Switch to Light Mode';
+    localStorage.setItem('theme', 'dark');
+  } else {
+    body.classList.add('light');
+    body.classList.remove('dark');
+    themeToggle.textContent = 'Switch to Dark Mode';
+    localStorage.setItem('theme', 'light');
+  }
+}
+
+// Load saved theme (or default to dark)
+const saved = localStorage.getItem('theme');
+if (saved === 'light') {
+  setTheme(false);
+} else {
+  setTheme(true);   // default = dark
+}
+
+themeToggle.addEventListener('click', () => {
+  const isDarkNow = body.classList.contains('dark');
+  setTheme(!isDarkNow);
+});
+</script>
+    
+  <div style="clear: both;"></div>
+
+  <div style="text-align: center;">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+    <!-- MES Links Square -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-1461238060884369"
+         data-ad-slot="1197859571"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+
+  <footer style="text-align: center;">
+    <p>&copy; 2026 Math Easy Solutions (MES). All rights reserved. | <a href="https://mes.fm/contact">Contact Us</a> | <a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </footer>
+  
+<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+</html>

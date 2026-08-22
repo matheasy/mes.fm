@@ -502,7 +502,8 @@
 
       const visible = showAllPages ? topPagesData : topPagesData.slice(0, PAGES_PREVIEW_COUNT);
       topPagesBody.innerHTML = visible.map(function (p) {
-        return '<tr><td>' + escapeHtml(p.path) + '</td><td class="site">' + escapeHtml(p.site) + '</td><td class="views">' + p.views.toLocaleString() + '</td></tr>';
+        const url = 'https://' + p.site + p.path;
+        return '<tr><td><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(p.path) + '</a></td><td class="site"><a href="https://' + escapeHtml(p.site) + '" target="_blank" rel="noopener">' + escapeHtml(p.site) + '</a></td><td class="views">' + p.views.toLocaleString() + '</td></tr>';
       }).join('');
 
       if (topPagesData.length > PAGES_PREVIEW_COUNT) {
@@ -537,7 +538,7 @@
 
         if (data.siteTotals && data.siteTotals.length) {
           siteTotalsBody.innerHTML = data.siteTotals.map(function (s) {
-            return '<tr><td>' + escapeHtml(s.site) + '</td><td class="views">' + s.views.toLocaleString() + '</td></tr>';
+            return '<tr><td><a href="https://' + escapeHtml(s.site) + '" target="_blank" rel="noopener">' + escapeHtml(s.site) + '</a></td><td class="views">' + s.views.toLocaleString() + '</td></tr>';
           }).join('');
         } else {
           siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
