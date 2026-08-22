@@ -445,16 +445,17 @@
         body.classList.add('dark');
         body.classList.remove('light');
         themeToggle.textContent = 'Switch to Light Mode';
-        localStorage.setItem('theme', 'dark');
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
       } else {
         body.classList.add('light');
         body.classList.remove('dark');
         themeToggle.textContent = 'Switch to Dark Mode';
-        localStorage.setItem('theme', 'light');
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
       }
     }
 
-    const saved = localStorage.getItem('theme');
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
     if (saved === 'light') {
       setTheme(false);
     } else {
@@ -475,7 +476,9 @@
     }
 
     const RANGE_LABELS = { '24h': '24 hours', '7d': '7 days', '30d': '30 days', '365d': '365 days', all: 'all time' };
-    let currentRange = localStorage.getItem('statsRange') || '7d';
+    let savedRange;
+    try { savedRange = localStorage.getItem('statsRange'); } catch (e) { savedRange = null; }
+    let currentRange = savedRange || '7d';
     if (!(currentRange in RANGE_LABELS)) currentRange = '7d';
 
     // The API already returns up to 50 rows in one (server-cached) call, so
@@ -554,7 +557,7 @@
       const btn = e.target.closest('.range-tab');
       if (!btn || btn.dataset.range === currentRange) return;
       currentRange = btn.dataset.range;
-      localStorage.setItem('statsRange', currentRange);
+      try { localStorage.setItem('statsRange', currentRange); } catch (e) {}
       loadStats();
     });
 

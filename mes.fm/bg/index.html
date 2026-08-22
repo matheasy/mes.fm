@@ -450,16 +450,17 @@ Thumbnail: <a href="https://claude.ai/share/9eeb99ed-1f64-4d93-9d8f-58a7e6766474
         body.classList.add('dark');
         body.classList.remove('light');
         themeToggle.textContent = 'Switch to Light Mode';
-        localStorage.setItem('theme', 'dark');
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
       } else {
         body.classList.add('light');
         body.classList.remove('dark');
         themeToggle.textContent = 'Switch to Dark Mode';
-        localStorage.setItem('theme', 'light');
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
       }
     }
 
-    const saved = localStorage.getItem('theme');
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
     setTheme(saved === 'dark');
 
     themeToggle.addEventListener('click', () => {
