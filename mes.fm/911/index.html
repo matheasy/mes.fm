@@ -16,16 +16,20 @@
     }
 
     .page-header {
-      position: relative;
       display: flex;
-      justify-content: center;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .page-header h1 {
+      flex: 1;
+      min-width: 0;
+      margin: 0.67em 0;
     }
 
     .page-header .theme-toggle-btn {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
+      flex: 0 0 auto;
     }
 
     .list-header {
@@ -306,6 +310,13 @@
 
   <div class="content">
     <ul>
+      <li class="list-container">
+        <h2 class="sub-heading" onclick="toggleSubList('videos')">Videos <span id="arrowIcon-videos" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+        <ul id="videos">
+          <li style="margin-left: 20px;"><a href="https://mes.fm/stanley-praimnath-jumpers">9/11 Survivor Stanley Praimnath says the jumpers and paper were sucked out from the windows</a></li>
+        </ul>
+      </li>
+
       <li><a href="https://peakd.com/c/hive-113182">HIVE Community</a></li>
       <li><a href="https://www.reddit.com/r/911TruthMES/">Reddit r/911TruthMES</a></li>
       <li><a href="https://peakd.com/truth/@mes/911">HIVE Links and Notes</a></li>
