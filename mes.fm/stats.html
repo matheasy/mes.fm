@@ -160,6 +160,12 @@
       padding: 1em 0;
     }
 
+    tfoot td {
+      font-weight: bold;
+      border-bottom: none;
+      border-top: 2px solid rgba(128, 128, 128, 0.4);
+    }
+
     .show-more-btn {
       display: block;
       margin: 0.8em auto 0;
@@ -430,6 +436,7 @@
           <tbody id="siteTotalsBody">
             <tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>
           </tbody>
+          <tfoot id="siteTotalsFoot"></tfoot>
         </table>
       </div>
     </section>
@@ -528,6 +535,7 @@
       document.getElementById('topPagesBody').innerHTML = '<tr><td colspan="3" class="empty-state">Loading&hellip;</td></tr>';
       showMoreBtn.style.display = 'none';
       siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>';
+      document.getElementById('siteTotalsFoot').innerHTML = '';
       document.getElementById('updatedAt').textContent = 'Loading stats…';
 
       try {
@@ -539,12 +547,16 @@
         showAllPages = false;
         renderTopPages();
 
+        const siteTotalsFoot = document.getElementById('siteTotalsFoot');
         if (data.siteTotals && data.siteTotals.length) {
           siteTotalsBody.innerHTML = data.siteTotals.map(function (s) {
             return '<tr><td><a href="https://' + escapeHtml(s.site) + '" target="_blank" rel="noopener">' + escapeHtml(s.site) + '</a></td><td class="views">' + s.views.toLocaleString() + '</td></tr>';
           }).join('');
+          const totalViews = data.siteTotals.reduce(function (sum, s) { return sum + s.views; }, 0);
+          siteTotalsFoot.innerHTML = '<tr><td>Total</td><td class="views">' + totalViews.toLocaleString() + '</td></tr>';
         } else {
           siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+          siteTotalsFoot.innerHTML = '';
         }
 
         document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date(data.updatedAt).toLocaleString();
