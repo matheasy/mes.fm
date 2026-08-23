@@ -144,6 +144,23 @@
       text-align: center;
     }
 
+    /* Posts and Updates: the one chapter that isn't sourced from the Hive
+       article, so unlike the plain <h1> chapters below it, it's collapsible. */
+    .chapter-toggle-header {
+      cursor: pointer;
+    }
+
+    .chapter-toggle-header .arrow-icon {
+      font-size: 0.6em;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    .chapter-toggle-list.hidden {
+      display: none;
+    }
+
     /* Table of contents: a fixed side column on wide viewports (there's only
        room beside the centered 760px .container once the window is wide
        enough not to overlap it), collapsing to a <details> dropdown above
@@ -224,20 +241,12 @@
       h1 { font-size: 1.5em; }
       body { padding: 0 12px 40px; }
     }
-  /* RESPONSIVE-FIX-INSERTED */
-@media (max-width: 768px) {
-  .outer-container { width: 100% !important; margin: 0 !important; }
-  .outer-page-content { width: 100% !important; display: block !important; }
-  .side-bar { width: 100% !important; float: none !important; }
-  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
-  img { max-width: 100% !important; height: auto !important; }
-  table { max-width: 100% !important; }
-}
-</style>
+  </style>
 </head>
 <body class="dark">
   <nav class="toc-sidebar" aria-label="Table of contents">
     <div class="toc-title">Jump to</div>
+      <a href="#posts-and-updates">Posts and Updates</a>
       <a href="#highlights">Highlights</a>
       <a href="#articles">Articles</a>
       <a href="#debunking-debunkers">Debunking &quot;Debunkers&quot;</a>
@@ -266,7 +275,8 @@
     <details class="toc-mobile">
       <summary>Jump to section</summary>
       <nav class="toc-links" aria-label="Table of contents">
-        <a href="#highlights">Highlights</a>
+        <a href="#posts-and-updates">Posts and Updates</a>
+      <a href="#highlights">Highlights</a>
       <a href="#articles">Articles</a>
       <a href="#debunking-debunkers">Debunking &quot;Debunkers&quot;</a>
       <a href="#news-reels">News Reels</a>
@@ -282,7 +292,10 @@
     <div class="post-body">
 <p>For reference, here are the thumbnails and links to the main videos in the MES Hutchison Effect playlist.</p>
 <ul>
-<li>This Hive playlist: <a href="https://peakd.com/science/@mes/hutchisoneffect">peakd.com/science/@mes/hutchisoneffect</a></li>
+<li>This Hive playlist: <a href="https://peakd.com/science/@mes/hutchisoneffect">peakd.com/science/@mes/hutchisoneffect</a><ul>
+<li><a href="mes.fm/hutchison">https://mes.fm/hutchison</a></li>
+</ul>
+</li>
 <li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X">YouTube playlist</a> (<a href="http://mes.fm/hutchison-playlist">mes.fm/hutchison-playlist</a>) </li>
 <li>John Hutchison official YouTube: <a href="https://www.youtube.com/@HutchisonEffect">@HutchisonEffect</a><ul>
 <li>John Hutchison&#39;s <a href="https://www.youtube.com/playlist?list=PLEhIw6_wPHOjQExywKSeKFVLYSKu2JCY-">YouTube playlist</a></li>
@@ -291,8 +304,15 @@
 <li><a href="https://drive.google.com/drive/folders/1_F1gU5ir6U7QebvXPKWxJiT0hLXgHK8j">3 TB hard drive</a> of uncompressed footage: <a href="https://mes.fm/hutchison-drive">mes.fm/hutchison-drive</a></li>
 <li><a href="https://x.com/MathEasySolns/status/1752373887814521142">X Thread</a> of the Hutchison Effect</li>
 <li>Bob Greenyer&#39;s Hutchison <a href="https://www.youtube.com/playlist?list=PLBgQorZu_mLnIFxSsX4zDPJ314MCR9AuN">YouTube playlist</a></li>
-<li>MES Links: <a href="https://mes.fm/links">mes.fm/links</a></li>
+<li>MES Links: [<a href="https://mes.fm/links%5D">https://mes.fm/links]</a></li>
 </ul>
+<hr>
+<div class="chapter-toggle" id="posts-and-updates">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('posts-and-updates-list')"><center>Posts and Updates <span id="arrowIcon-posts-and-updates-list" class="arrow-icon">&#9660;</span></center></h1>
+<ul id="posts-and-updates-list" class="chapter-toggle-list">
+<li><a href="https://mes.fm/hutchison-health-aug22-2026">Prayers up for John Hutchison &mdash; health update</a></li>
+</ul>
+</div>
 <hr>
 <h1 id="highlights"><center>Highlights</center></h1>
 <hr>
@@ -496,11 +516,18 @@
     <a class="peakd-link" href="https://peakd.com/science/@mes/hutchisoneffect" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
     <p class="build-note">
       Vote/comment/reblog counts and article text were fetched from the Hive blockchain
-      at build time (August 21, 2026) and are not live.
+      at build time (August 22, 2026) and are not live.
     </p>
   </div>
 
   <script>
+    function toggleChapter(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById('arrowIcon-' + listId);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+
     const body = document.body;
     const themeToggle = document.getElementById('themeToggle');
 
@@ -509,17 +536,16 @@
         body.classList.add('dark');
         body.classList.remove('light');
         themeToggle.textContent = 'Switch to Light Mode';
-        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+        localStorage.setItem('theme', 'dark');
       } else {
         body.classList.add('light');
         body.classList.remove('dark');
         themeToggle.textContent = 'Switch to Dark Mode';
-        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+        localStorage.setItem('theme', 'light');
       }
     }
 
-    let saved;
-    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    const saved = localStorage.getItem('theme');
     setTheme(saved !== 'light');
 
     themeToggle.addEventListener('click', () => {
@@ -527,5 +553,5 @@
     });
   </script>
 
-<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+</body>
 </html>

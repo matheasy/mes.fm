@@ -38,7 +38,7 @@
     { "source": "/antigravity", "destination": "https://1drv.ms/f/s!As32ynv0LoaIh5c5_VSbt05w-H0flw", "permanent": true },
     { "source": "/speech-android", "destination": "https://play.google.com/store/apps/details?id=com.naturalsoft.personalweb", "permanent": true },
     { "source": "/science-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0GhjCHmTw1XbqMD_EdVKdd9", "permanent": true },
-    { "source": "/science", "destination": "https://1drv.ms/u/s!As32ynv0LoaIh_ZYG7AbhPTTQqUkYg?e=Cj1sCW", "permanent": true },
+    { "source": "/science-drive", "destination": "https://1drv.ms/u/s!As32ynv0LoaIh_ZYG7AbhPTTQqUkYg?e=Cj1sCW", "permanent": true },
     { "source": "/todolist", "destination": "https://docs.google.com/document/d/1ZswTRX9aTpkeHfhX7NQX2KX3KAHUS85lahhHWN8_lpI/edit", "permanent": true },
     { "source": "/chatroom", "destination": "https://discordapp.com/invite/A4cHxjP", "permanent": true },
     { "source": "/blockchain-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0Fgp_lR0a0rscxWYrHARtkN", "permanent": true },

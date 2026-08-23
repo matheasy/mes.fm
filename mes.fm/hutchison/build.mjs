@@ -138,10 +138,33 @@ function addSectionAnchors(bodyHtml) {
 function buildPage(post) {
   const title = post.title;
   const preprocessed = embedYoutubeLinks(fixTableBoundaries(fixHutchisonDriveLink(post.body)));
-  const { html: bodyHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
+  const { html: parsedBodyHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
+
+  // "Posts and Updates" isn't part of the Hive article -- it's a hand-maintained
+  // chapter for mirrored posts (e.g. mes.fm/hutchison-health-aug22-2026) that we
+  // want to keep adding to without re-publishing the Hive post itself. Pin it to
+  // the top of the TOC and splice it in as the first chapter, right before the
+  // first Hive-sourced <h1> section. Unlike those plain <h1> chapters, this one
+  // is a collapsible dropdown (see .chapter-toggle-header / toggleChapter()).
+  toc.unshift({ id: "posts-and-updates", label: "Posts and Updates" });
   const tocLinksHtml = toc
     .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
     .join("\n      ");
+
+  const postsAndUpdatesChapter = `<div class="chapter-toggle" id="posts-and-updates">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('posts-and-updates-list')"><center>Posts and Updates <span id="arrowIcon-posts-and-updates-list" class="arrow-icon">&#9660;</span></center></h1>
+<ul id="posts-and-updates-list" class="chapter-toggle-list">
+<li><a href="https://mes.fm/hutchison-health-aug22-2026">Prayers up for John Hutchison &mdash; health update</a></li>
+</ul>
+</div>
+<hr>
+`;
+  const firstChapterMatch = parsedBodyHtml.match(/<hr>\n<h1 id="/);
+  const bodyHtml = firstChapterMatch
+    ? parsedBodyHtml.slice(0, firstChapterMatch.index + "<hr>\n".length) +
+      postsAndUpdatesChapter +
+      parsedBodyHtml.slice(firstChapterMatch.index + "<hr>\n".length)
+    : postsAndUpdatesChapter + parsedBodyHtml;
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
   const commentCount = post.children ?? 0;
@@ -301,6 +324,23 @@ function buildPage(post) {
       text-align: center;
     }
 
+    /* Posts and Updates: the one chapter that isn't sourced from the Hive
+       article, so unlike the plain <h1> chapters below it, it's collapsible. */
+    .chapter-toggle-header {
+      cursor: pointer;
+    }
+
+    .chapter-toggle-header .arrow-icon {
+      font-size: 0.6em;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    .chapter-toggle-list.hidden {
+      display: none;
+    }
+
     /* Table of contents: a fixed side column on wide viewports (there's only
        room beside the centered 760px .container once the window is wide
        enough not to overlap it), collapsing to a <details> dropdown above
@@ -427,6 +467,13 @@ ${bodyHtml}
   </div>
 
   <script>
+    function toggleChapter(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById('arrowIcon-' + listId);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+
     const body = document.body;
     const themeToggle = document.getElementById('themeToggle');
 

@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MES Science Tutorials - Links, videos, and articles covering MES Science.">
+  <meta name="keywords" content="MES, Science, Math Easy Solutions">
+  <meta name="author" content="Mathiew Estepho">
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>MES Science Tutorials</title>
+  <style>
+    h1 {
+      text-align: center;
+      font-size: 3.2em;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .page-header h1 {
+      flex: 1;
+      min-width: 0;
+      margin: 0.67em 0;
+    }
+
+    .page-header .theme-toggle-btn {
+      flex: 0 0 auto;
+    }
+
+    .list-header {
+      cursor: pointer;
+    }
+
+    .arrow-icon {
+      font-size: 20px;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .top-bar {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    body {
+      font-weight: 550;
+      word-wrap: break-word;
+      transition: background-color 0.3s, color 0.3s;
+      padding: 0 1.5em 3em;
+    }
+
+    body.light {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    body.light a {
+      color: #0000ff;
+    }
+
+    body.dark {
+      background-color: #1a1a1a;
+      color: #ffffff;
+    }
+
+    body.dark a {
+      color: #4da8ff;
+    }
+
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .list-container {
+      margin-bottom: 1.5em;
+    }
+
+    .sub-heading {
+      font-size: 1.1em;
+    }
+
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 2.4em;
+      }
+      h2 {
+        font-size: 1.5em;
+      }
+      .page-header {
+        flex-direction: column;
+      }
+      .page-header .theme-toggle-btn {
+        position: static;
+        transform: none;
+        margin-top: 0;
+      }
+    }
+
+    .theme-toggle-btn {
+      margin: 10px;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    body.light .theme-toggle-btn {
+      background-color: #dddddd;
+      color: #000000;
+    }
+
+    body.dark .theme-toggle-btn {
+      background-color: #555555;
+      color: #ffffff;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 0.5em 0 0;
+    }
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+</style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="back-link" href="https://mes.fm/links">&larr; MES Links</a>
+  </div>
+
+  <header class="page-header">
+    <h1 class="list-header" onclick="toggleAllLists()">MES Science Tutorials <span id="arrowIconAll" class="arrow-icon">&#9660;</span></h1>
+    <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+  </header>
+
+  <div class="content">
+    <ul>
+      <li class="list-container">
+        <h2 class="sub-heading" onclick="toggleSubList('posts')">Posts <span id="arrowIcon-posts" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+        <ul id="posts">
+        </ul>
+      </li>
+
+      <li><a href="https://peakd.com/c/hive-128780">HIVE community</a></li>
+      <li><a href="https://www.reddit.com/r/AMAZINGMathStuff/">Reddit r/AMAZINGMathStuff</a></li>
+      <li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GhjCHmTw1XbqMD_EdVKdd9">#MESScience YouTube Playlist</a></li>
+      <li style="margin-left: 20px;"><a href="https://mes.fm/science-playlist">mes.fm/science-playlist</a></li>
+      <li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EAUu0aAxoZmkS83RI65m1N">MES Science and Physics Videos Playlist</a></li>
+      <li style="margin-left: 20px;"><a href="https://youtu.be/sJ0izpaKmFU">Faraday's Paradox &amp; Magnetic Isopotentials by FractalWoman</a></li>
+      <li><a href="https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic">Vortex Math</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX">Sections + BeneficenceTV playlist &#9654;&#65039;</a></li>
+      <li><a href="https://peakd.com/hive-128780/@mes/messcience-3-overview-of-biology">Overview of Biology</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FYO6bxFbBAtVJ9sDOJnH72">&#9654;&#65039;</a></li>
+      <li><a href="https://peakd.com/hive-128780/@mes/messcience-4-review-of-covid-19-virus-isolation-paper">Review of COVID-19 "Virus" Isolation Paper</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0E4aQ_cq4ZDD2WGiDU5vVgx">&#9654;&#65039;</a></li>
+      <li><a href="https://www.youtube.com/@FractalWoman">FractalWoman YouTube</a></li>
+      <li><a href="https://www.youtube.com/@AETHERscience">Ionel DINU YouTube</a></li>
+    </ul>
+  </div>
+
+  <script>
+    function toggleAllLists() {
+      const lists = document.querySelectorAll('.list-container ul');
+      const arrowIconAll = document.getElementById('arrowIconAll');
+      lists.forEach(list => list.classList.toggle('hidden'));
+      arrowIconAll.textContent = lists.length && lists[0].classList.contains('hidden') ? '▲' : '▼';
+    }
+
+    function toggleSubList(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById(`arrowIcon-${listId}`);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+  </script>
+
+  <script>
+    // Dark/Light theme toggle – saved in browser (no POST, no resubmit popup)
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Switch to Dark Mode';
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+      }
+    }
+
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    if (saved === 'light') {
+      setTheme(false);
+    } else {
+      setTheme(true);
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const isDarkNow = body.classList.contains('dark');
+      setTheme(!isDarkNow);
+    });
+  </script>
+
+  <div style="clear: both;"></div>
+
+  <footer style="text-align: center;">
+    <p>&copy; 2026 Math Easy Solutions (MES). All rights reserved. | <a href="https://mes.fm/contact">Contact Us</a> | <a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </footer>
+<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+</html>
