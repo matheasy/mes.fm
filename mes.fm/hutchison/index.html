@@ -144,8 +144,9 @@
       text-align: center;
     }
 
-    /* Posts and Updates: the one chapter that isn't sourced from the Hive
-       article, so unlike the plain <h1> chapters below it, it's collapsible. */
+    /* Every chapter (the hand-maintained "Posts and Updates" one plus every
+       Hive-sourced <h1> section) is a collapsible dropdown -- see
+       wrapChaptersInToggles() in build.mjs and toggleChapter() below. */
     .chapter-toggle-header {
       cursor: pointer;
     }
@@ -314,7 +315,9 @@
 </ul>
 </div>
 <hr>
-<h1 id="highlights"><center>Highlights</center></h1>
+<div class="chapter-toggle" id="highlights">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('highlights-list')"><center>Highlights <span id="arrowIcon-highlights-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="highlights-list" class="chapter-toggle-list">
 <hr>
 <h2>Hutchison Effect: 19 lb bushing levitates with linearly increasing acceleration – &quot;Hyperforce”</h2>
 <p><a href="https://3speak.tv/watch?v=mes/hutchison-effect-19-lb-bush-939">3Speak</a> - <a href="https://youtu.be/7v_AYRCw5nU">YouTube</a> - <a href="https://t.me/meslinks/35272">Telegram</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-3rd-derivative-Hyperforce:b">Odysee</a> - <a href="https://www.bitchute.com/video/H9mhJfY5p8Pj/">BitChute</a> - <a href="https://rumble.com/v7dp0c0-hutchison-effect-19-lb-bushing-levitates-with-linearly-increasing-accelerat.html">Rumble</a> - <a href="https://1drv.ms/x/c/88862ef47bcaf6cd/IQB9ztjdln5gQ5CzQ_P6ynxXAdUBzocWCAOwM83kiw03sAo">Excel file</a> - <a href="https://peakd.com/hive-128780/@mes/hutchison-effect-19-lb-bush-939">Screenshots</a></p>
@@ -367,22 +370,34 @@
 <h2>Trailer for Livestream 66: Rare Hutchison Effect Footage</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/244oWj3p8Ybu9EoydUnAB6yi9d7ZLgN7yEbEEtprH6DWb7a6fA6TZUKnCK5dyXnnmoc9j.jpeg" alt="Trailer.jpeg"></p>
 <p><a href="https://youtu.be/WbvO8BbKIP0">YouTube</a></p>
+</div>
+</div>
 <hr>
-<h1 id="articles"><center>Articles</center></h1>
+<div class="chapter-toggle" id="articles">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('articles-list')"><center>Articles <span id="arrowIcon-articles-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="articles-list" class="chapter-toggle-list">
 <h2>Hutchison Effect: Stop Motion Photos of Levitating WATER</h2>
 <p><a href="https://peakd.com/hive-128780/@mes/hutchison-effect-levitating-water-37i">Hive</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-yfh4z4mf">InLeo</a> - <a href="https://t.me/meslinks/29910">Telegram</a></p>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/Eos1McX1hDrTwP8GUx8GhY7VsBhufMNgUygaCrcZY3W6ihMnwByRBQBKiWWfKyfBoit.png" alt="image.png"></p>
 <h2>Photos of John Hutchison&#39;s parents and grandparents!! 👫👼</h2>
 <p><a href="https://peakd.com/hive-128780/@mes/photos-of-john-hutchisons-parents--5aq">Hive</a></p>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/23wMYNDAw3oQpaPk3gkp4zyd4mwq6hstkAoZCNUmFUBu9Hpj5CG9ojCpfnNdrmToHHKua.png" alt="image.png"></p>
+</div>
+</div>
 <hr>
-<h1 id="debunking-debunkers"><center>Debunking &quot;Debunkers&quot;</center></h1>
+<div class="chapter-toggle" id="debunking-debunkers">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('debunking-debunkers-list')"><center>Debunking &quot;Debunkers&quot; <span id="arrowIcon-debunking-debunkers-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="debunking-debunkers-list" class="chapter-toggle-list">
 <hr>
 <h2>Hutchison Effect: Debunking the &quot;Debunkers&quot; (Liars) Robert Murray-Smith and Ace Baker</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/242Nktq4gBzhMiryTReQ8hCXywwgpx1obUvGhBiyLQKFyH6ebN46yGnUY1LCYoEqNL7qb.jpeg" alt="Debunkers.jpeg"></p>
 <p><a href="https://peakd.com/hive-128780/@mes/wbvdabyb">Hive</a> - <a href="https://3speak.tv/watch?v=mes/wbvdabyb">3Speak</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Debunking-Liars-Robert-Murray-Smith-Ace-Baker:f">Odysee</a> - <a href="https://bitchute.com/video/DP7JfOptA756/">BitChute</a> - <a href="https://rumble.com/v5bupqs-hutchison-effect-debunking-the-debunkers-liars-robert-murray-smith-and-ace-.html">Rumble</a> - <a href="https://youtu.be/Po0vWGJDu6M">YouTube</a></p>
+</div>
+</div>
 <hr>
-<h1 id="news-reels"><center>News Reels</center></h1>
+<div class="chapter-toggle" id="news-reels">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('news-reels-list')"><center>News Reels <span id="arrowIcon-news-reels-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="news-reels-list" class="chapter-toggle-list">
 <hr>
 <h2>Hutchison Effect featured on Japanese TV Asahi UFO Special (1993)</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/23xATtygCai5N7PHru9VAwE1QuA4TwpZEymHPaXWyRAJHoJn19h8jdfj2KxWhpBfNZnHm.jpeg" alt="Japan UFO TV 1993.jpeg"></p>
@@ -399,8 +414,12 @@
 <h2>Thomas Bearden explains the Hutchison Effect via Scalar Interferometry</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/Ep5oc2Fz96HEDqCL67g6QFCAFBFWVbA8L1Qk3RazjrwYGTcbezwqktSdt2acDWZuy3Y.png" alt="image.png"></p>
 <p><a href="https://inleo.io/@mes/amazing-1984-report-by-thomas-bearden-star-wars-now-jel">Hive article</a> - <a href="https://3speak.tv/watch?v=mes/3speak-1780351388637">3Speak</a> - <a href="https://youtu.be/BGoYWuo5tOU">YouTube</a> - <a href="https://t.me/meslinks/29310">Telegram</a></p>
+</div>
+</div>
 <hr>
-<h1 id="unedited-footage"><center>Unedited Footage</center></h1>
+<div class="chapter-toggle" id="unedited-footage">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('unedited-footage-list')"><center>Unedited Footage <span id="arrowIcon-unedited-footage-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="unedited-footage-list" class="chapter-toggle-list">
 <hr>
 <h2>Unedited Hutchison Effect: 5 Hours of 1985 Footage Filmed by Jack Houck</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/23wqbqanr7gZBSavserMjJZPWtzcPm7oeDMfasPGxmiBh5kXjwt5CDRMen4uQ9tWEHbAw.jpeg" alt="1985 Jack Houck.jpeg"></p>
@@ -417,8 +436,12 @@
 <h2>Unedited Hutchison Effect: 6 Hours of Rare 2007 Footage</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/23xVPAAe9crRUa2hGLQbt65Qb8SCAEDAqGhYoPBgGLcQgvdtwYYEyh7CRphsBQHrQKih3.jpeg" alt="2007 Hutchison Effect.jpeg"></p>
 <p><a href="https://peakd.com/hive-128780/@mes/blmbleww">Hive</a> - <a href="https://3speak.tv/watch?v=mes/blmbleww">3Speak</a> - <a href="https://odysee.com/@mes:8/Unedited-Hutchison-Effect-2007-Footage:b">Odysee</a> - <a href="https://bitchute.com/video/BkgRyL1zqAYX/">BitChute</a> - <a href="https://rumble.com/v62w0ih-unedited-hutchison-effect-6-hours-of-rare-2007-footage.html">Rumble</a> - <a href="https://youtu.be/CbiHmfWoExM">YouTube</a></p>
+</div>
+</div>
 <hr>
-<h1 id="interviews-and-presentations"><center>Interviews and Presentations</center></h1>
+<div class="chapter-toggle" id="interviews-and-presentations">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('interviews-and-presentations-list')"><center>Interviews and Presentations <span id="arrowIcon-interviews-and-presentations-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="interviews-and-presentations-list" class="chapter-toggle-list">
 <hr>
 <h2>Overview of the Hutchison Effect by George Hathaway in 1993</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/23uFRQ9rBT8SgFqiZKinXqjUi8eACNQSQopk5DCk5XjwfUShqNuZrHgHqY322g51Y1dSx.jpeg" alt="1993 George Hathaway.jpeg"></p>
@@ -456,8 +479,12 @@
 <h2>Jeane Manning 1996 Presentation: The Coming Energy Revolution</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/23vi3sKhKSjErXdiDL2yukpxqnbxrUd3zbxExPpBZxfbyQwHCq7LDdca7SGBLN3xd4PJo.jpeg" alt="Jeane Manning 1996.jpeg"></p>
 <p><a href="https://peakd.com/hive-128780/@mes/jasrjvwl">Hive</a> - <a href="https://3speak.tv/watch?v=mes/jasrjvwl">3Speak</a> - <a href="https://odysee.com/@mes:8/Jeane-Manning-1996-Energy-Revolution:0">Odysee</a> - <a href="https://old.bitchute.com/video/cbl0ulz1iXGg/">BitChute</a> - <a href="https://rumble.com/v6vvja7-jeane-manning-1996-presentation-the-coming-energy-revolution.html">Rumble</a> - <a href="https://youtu.be/i_8FKS3VC0E">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-crkq7ua6">Summary</a></p>
+</div>
+</div>
 <hr>
-<h1 id="cold-fusion-low-energy-nuclear-reactions-lenr"><center>Cold Fusion / Low Energy Nuclear Reactions (LENR)</center></h1>
+<div class="chapter-toggle" id="cold-fusion-low-energy-nuclear-reactions-lenr">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('cold-fusion-low-energy-nuclear-reactions-lenr-list')"><center>Cold Fusion / Low Energy Nuclear Reactions (LENR) <span id="arrowIcon-cold-fusion-low-energy-nuclear-reactions-lenr-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="cold-fusion-low-energy-nuclear-reactions-lenr-list" class="chapter-toggle-list">
 <p><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FKVpHL_onhaqBeVP-8qJXV">Free Energy playlist</a></p>
 <hr>
 <h2>RARE Steven Krivit Interview with Martin Fleischmann discussing Cold Fusion (2003)</h2>
@@ -466,8 +493,12 @@
 <h2>Martin Fleischmann Recounts the 1985 &quot;Hole in the Floor&quot; Palladium Electrolysis Experiment</h2>
 <p><a href="https://peakd.com/hive-128780/@mes/31739ef7">Screenshots</a> - <a href="https://3speak.tv/watch?v=mes/31739ef7">3Speak</a> - <a href="https://odysee.com/Martin-Fleischmann-1985-Hole-Floor-Palladium-Electrolysis:874dff2e462b7d6d5de34860f984c2cc99d62e7b">Odysee</a> - <a href="https://www.bitchute.com/video/vwRVnzyObLdv/">BitChute</a> - <a href="https://rumble.com/v797vl2-martin-fleischmann-recounts-the-1985-hole-in-the-floor-palladium-electrolys.html">Rumble</a> - <a href="https://youtu.be/VaWSwxzCyCg">YouTube</a> - <a href="https://t.me/meslinks/34559">Telegram</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-ihyg2xjk">Summary</a>  </p>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/23y9AsJGvSeFwcyfCvm96ChMNfETJAVrfifK1n5BXTCQijLFi7HrtZJ4vFyfLkxNkNGWm.jpeg" alt="1 Martin Fleischmann Hole in the Floor.jpeg"></p>
+</div>
+</div>
 <hr>
-<h1 id="mes-livestreams"><center>MES Livestreams</center></h1>
+<div class="chapter-toggle" id="mes-livestreams">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('mes-livestreams-list')"><center>MES Livestreams <span id="arrowIcon-mes-livestreams-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="mes-livestreams-list" class="chapter-toggle-list">
 <hr>
 <h2>MES Livestream 118: Hutchison Effect Zero Point Harmonics</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/23wC5Fdv3oj2nmTFSFCxRo9QnUsZv3qtcsaYvHSdd9pXn8V3EvdtDdPbiyWn2ejWTYH2Y.jpeg" alt="Nancy Hutchison.jpeg"></p>
@@ -508,6 +539,8 @@
 <h2>MES Livestream 20: Hutchison Effect Deep Dive</h2>
 <p><img src="https://files.peakd.com/file/peakd-hive/mes/23ywnoW9bh8WHa8cMpr89CkdVfs2JcLxCJrZ46DH7cC5xHDERRsrfakVCngCfuimW2Mp4.jpeg" alt="Hutchison Effect.jpeg"></p>
 <p><a href="https://peakd.com/hive-128780/@mes/livestream-20-hutchison-effect">Hive</a> - <a href="https://youtube.com/live/FHU3nq8oL04">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-mes-2kwjhdig6">Summary</a></p>
+</div>
+</div>
 
     </div>
 

@@ -135,17 +135,42 @@ function addSectionAnchors(bodyHtml) {
   return { html, toc };
 }
 
+// Every Hive-sourced chapter is preceded by its own "<hr>\n<h1 id=\"...\">"
+// marker (added by addSectionAnchors) and runs until the next one (or the end
+// of the body). Wrap each chapter's h1 + its content in a chapter-toggle div
+// so every chapter -- not just the hand-maintained "Posts and Updates" one --
+// can be collapsed via toggleChapter(). The leading <hr> stays outside the
+// div, as the visual divider between chapters.
+function wrapChaptersInToggles(html) {
+  const re = /<hr>\n<h1 id="([^"]+)"><center>([\s\S]*?)<\/center><\/h1>/g;
+  const matches = [...html.matchAll(re)];
+  if (matches.length === 0) return html;
+
+  let out = html.slice(0, matches[0].index);
+  matches.forEach((m, i) => {
+    const [full, id, titleInner] = m;
+    const contentStart = m.index + full.length;
+    const contentEnd = i + 1 < matches.length ? matches[i + 1].index : html.length;
+    const content = html.slice(contentStart, contentEnd);
+    out += `<hr>\n<div class="chapter-toggle" id="${id}">\n`;
+    out += `<h1 class="chapter-toggle-header" onclick="toggleChapter('${id}-list')"><center>${titleInner} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></center></h1>\n`;
+    out += `<div id="${id}-list" class="chapter-toggle-list">${content}</div>\n`;
+    out += `</div>\n`;
+  });
+  return out;
+}
+
 function buildPage(post) {
   const title = post.title;
   const preprocessed = embedYoutubeLinks(fixTableBoundaries(fixHutchisonDriveLink(post.body)));
   const { html: parsedBodyHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
+  const wrappedBodyHtml = wrapChaptersInToggles(parsedBodyHtml);
 
   // "Posts and Updates" isn't part of the Hive article -- it's a hand-maintained
   // chapter for mirrored posts (e.g. mes.fm/hutchison-health-aug22-2026) that we
   // want to keep adding to without re-publishing the Hive post itself. Pin it to
   // the top of the TOC and splice it in as the first chapter, right before the
-  // first Hive-sourced <h1> section. Unlike those plain <h1> chapters, this one
-  // is a collapsible dropdown (see .chapter-toggle-header / toggleChapter()).
+  // first Hive-sourced chapter.
   toc.unshift({ id: "posts-and-updates", label: "Posts and Updates" });
   const tocLinksHtml = toc
     .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
@@ -159,12 +184,12 @@ function buildPage(post) {
 </div>
 <hr>
 `;
-  const firstChapterMatch = parsedBodyHtml.match(/<hr>\n<h1 id="/);
+  const firstChapterMatch = wrappedBodyHtml.match(/<hr>\n<div class="chapter-toggle" id="/);
   const bodyHtml = firstChapterMatch
-    ? parsedBodyHtml.slice(0, firstChapterMatch.index + "<hr>\n".length) +
+    ? wrappedBodyHtml.slice(0, firstChapterMatch.index + "<hr>\n".length) +
       postsAndUpdatesChapter +
-      parsedBodyHtml.slice(firstChapterMatch.index + "<hr>\n".length)
-    : postsAndUpdatesChapter + parsedBodyHtml;
+      wrappedBodyHtml.slice(firstChapterMatch.index + "<hr>\n".length)
+    : postsAndUpdatesChapter + wrappedBodyHtml;
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
   const commentCount = post.children ?? 0;
@@ -324,8 +349,9 @@ function buildPage(post) {
       text-align: center;
     }
 
-    /* Posts and Updates: the one chapter that isn't sourced from the Hive
-       article, so unlike the plain <h1> chapters below it, it's collapsible. */
+    /* Every chapter (the hand-maintained "Posts and Updates" one plus every
+       Hive-sourced <h1> section) is a collapsible dropdown -- see
+       wrapChaptersInToggles() in build.mjs and toggleChapter() below. */
     .chapter-toggle-header {
       cursor: pointer;
     }
