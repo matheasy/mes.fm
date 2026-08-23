@@ -107,6 +107,13 @@ function fixHutchisonDriveLink(markdown) {
   );
 }
 
+// The post's intro list ends with a "MES Links: https://mes.fm/links" bullet,
+// but the page's own top-bar already has a "← mes.fm/links" link right above
+// the title, so that bullet is a redundant duplicate -- drop it.
+function removeRedundantMesLinksBullet(markdown) {
+  return markdown.replace(/^-\s*MES Links:.*\n?/m, "");
+}
+
 // The post's top-level section headers (the "# <center>X</center>" lines --
 // Highlights, Articles, Unedited Footage, etc.) all render as
 // <h1><center>X</center></h1> in the parsed body. Give each one an id and
@@ -162,7 +169,9 @@ function wrapChaptersInToggles(html) {
 
 function buildPage(post) {
   const title = post.title;
-  const preprocessed = embedYoutubeLinks(fixTableBoundaries(fixHutchisonDriveLink(post.body)));
+  const preprocessed = embedYoutubeLinks(
+    fixTableBoundaries(removeRedundantMesLinksBullet(fixHutchisonDriveLink(post.body)))
+  );
   const { html: parsedBodyHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
   const wrappedBodyHtml = wrapChaptersInToggles(parsedBodyHtml);
 
@@ -184,12 +193,20 @@ function buildPage(post) {
 </div>
 <hr>
 `;
+  // Replaces the plain <hr> that would otherwise sit right before the first
+  // chapter with a toolbar that draws the same divider line plus a
+  // collapse/expand-all control (see .chapters-toolbar / toggleAllChapters()).
+  const chaptersToolbar = `<div class="chapters-toolbar">
+<button id="toggleAllChaptersBtn" class="theme-toggle-btn" onclick="toggleAllChapters()">Collapse All</button>
+</div>
+`;
   const firstChapterMatch = wrappedBodyHtml.match(/<hr>\n<div class="chapter-toggle" id="/);
   const bodyHtml = firstChapterMatch
-    ? wrappedBodyHtml.slice(0, firstChapterMatch.index + "<hr>\n".length) +
+    ? wrappedBodyHtml.slice(0, firstChapterMatch.index) +
+      chaptersToolbar +
       postsAndUpdatesChapter +
       wrappedBodyHtml.slice(firstChapterMatch.index + "<hr>\n".length)
-    : postsAndUpdatesChapter + wrappedBodyHtml;
+    : chaptersToolbar + postsAndUpdatesChapter + wrappedBodyHtml;
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
   const commentCount = post.children ?? 0;
@@ -367,6 +384,21 @@ function buildPage(post) {
       display: none;
     }
 
+    /* Sits where a plain <hr> would otherwise be, right before the first
+       chapter -- the top border draws the same divider line, with a
+       collapse/expand-all control anchored to its right edge. */
+    .chapters-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      border-top: 1px solid rgba(128, 128, 128, 0.3);
+      padding-top: 0.8em;
+      margin: 2em 0 0;
+    }
+
+    .chapters-toolbar .theme-toggle-btn {
+      margin: 0 0 1.2em;
+    }
+
     /* Table of contents: a fixed side column on wide viewports (there's only
        room beside the centered 760px .container once the window is wide
        enough not to overlap it), collapsing to a <details> dropdown above
@@ -498,6 +530,18 @@ ${bodyHtml}
       const arrowIcon = document.getElementById('arrowIcon-' + listId);
       list.classList.toggle('hidden');
       arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+
+    function toggleAllChapters() {
+      const lists = document.querySelectorAll('.chapter-toggle-list');
+      const btn = document.getElementById('toggleAllChaptersBtn');
+      const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
+      lists.forEach((list) => {
+        list.classList.toggle('hidden', collapse);
+        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+        if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
+      });
+      btn.textContent = collapse ? 'Expand All' : 'Collapse All';
     }
 
     const body = document.body;

@@ -162,6 +162,21 @@
       display: none;
     }
 
+    /* Sits where a plain <hr> would otherwise be, right before the first
+       chapter -- the top border draws the same divider line, with a
+       collapse/expand-all control anchored to its right edge. */
+    .chapters-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      border-top: 1px solid rgba(128, 128, 128, 0.3);
+      padding-top: 0.8em;
+      margin: 2em 0 0;
+    }
+
+    .chapters-toolbar .theme-toggle-btn {
+      margin: 0 0 1.2em;
+    }
+
     /* Table of contents: a fixed side column on wide viewports (there's only
        room beside the centered 760px .container once the window is wide
        enough not to overlap it), collapsing to a <details> dropdown above
@@ -305,9 +320,10 @@
 <li><a href="https://drive.google.com/drive/folders/1_F1gU5ir6U7QebvXPKWxJiT0hLXgHK8j">3 TB hard drive</a> of uncompressed footage: <a href="https://mes.fm/hutchison-drive">mes.fm/hutchison-drive</a></li>
 <li><a href="https://x.com/MathEasySolns/status/1752373887814521142">X Thread</a> of the Hutchison Effect</li>
 <li>Bob Greenyer&#39;s Hutchison <a href="https://www.youtube.com/playlist?list=PLBgQorZu_mLnIFxSsX4zDPJ314MCR9AuN">YouTube playlist</a></li>
-<li>MES Links: [<a href="https://mes.fm/links%5D">https://mes.fm/links]</a></li>
 </ul>
-<hr>
+<div class="chapters-toolbar">
+<button id="toggleAllChaptersBtn" class="theme-toggle-btn" onclick="toggleAllChapters()">Collapse All</button>
+</div>
 <div class="chapter-toggle" id="posts-and-updates">
 <h1 class="chapter-toggle-header" onclick="toggleChapter('posts-and-updates-list')"><center>Posts and Updates <span id="arrowIcon-posts-and-updates-list" class="arrow-icon">&#9660;</span></center></h1>
 <ul id="posts-and-updates-list" class="chapter-toggle-list">
@@ -559,6 +575,18 @@
       const arrowIcon = document.getElementById('arrowIcon-' + listId);
       list.classList.toggle('hidden');
       arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+
+    function toggleAllChapters() {
+      const lists = document.querySelectorAll('.chapter-toggle-list');
+      const btn = document.getElementById('toggleAllChaptersBtn');
+      const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
+      lists.forEach((list) => {
+        list.classList.toggle('hidden', collapse);
+        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+        if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
+      });
+      btn.textContent = collapse ? 'Expand All' : 'Collapse All';
     }
 
     const body = document.body;
