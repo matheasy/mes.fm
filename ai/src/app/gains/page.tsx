@@ -4,10 +4,14 @@ import { useState } from 'react';
 import CsvExportButton from '@/components/CsvExportButton';
 import GainsSummary from '@/components/GainsSummary';
 import GainsTable from '@/components/GainsTable';
+import HyperliquidPerpSummary from '@/components/HyperliquidPerpSummary';
+import NetworkErrorBanner from '@/components/NetworkErrorBanner';
+import NetworkTabs, { type NetworkSelection } from '@/components/NetworkTabs';
 import RefreshButton from '@/components/RefreshButton';
 import StateView from '@/components/StateView';
 import { useGains } from '@/hooks/useGains';
 import type { CostBasisMethod } from '@/lib/accounting/types';
+import type { NetworkId } from '@/lib/types';
 
 const METHODS: { value: CostBasisMethod; label: string }[] = [
   { value: 'fifo', label: 'FIFO' },
@@ -17,7 +21,9 @@ const METHODS: { value: CostBasisMethod; label: string }[] = [
 
 export default function GainsPage() {
   const [method, setMethod] = useState<CostBasisMethod>('fifo');
-  const { gains, isLoading, error, rateLimited, refresh } = useGains(method);
+  const [network, setNetwork] = useState<NetworkSelection>('all');
+  const selectedNetwork: NetworkId | undefined = network === 'all' ? undefined : network;
+  const { gains, networkErrors, isLoading, error, rateLimited, refresh } = useGains(method, selectedNetwork);
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,10 +43,13 @@ export default function GainsPage() {
           </select>
         </div>
         <div className="flex gap-2">
-          <CsvExportButton method={method} />
+          <CsvExportButton method={method} network={selectedNetwork} />
           <RefreshButton onRefreshed={refresh} disabledReason={rateLimited ? (error ?? 'Usage limit reached') : undefined} />
         </div>
       </div>
+
+      <NetworkTabs value={network} onChange={setNetwork} />
+      <NetworkErrorBanner networkErrors={networkErrors} />
 
       <StateView loading={isLoading} error={rateLimited && gains ? null : error} onRetry={refresh}>
         {gains && (
@@ -49,8 +58,9 @@ export default function GainsPage() {
             {gains.realized.length === 0 ? (
               <div className="panel py-12 text-center text-gray-400">No disposals yet — nothing realized to show.</div>
             ) : (
-              <GainsTable gains={gains.realized} />
+              <GainsTable gains={gains.realized} showNetwork={network === 'all'} />
             )}
+            {gains.hyperliquidPerps && <HyperliquidPerpSummary summary={gains.hyperliquidPerps} />}
           </div>
         )}
       </StateView>

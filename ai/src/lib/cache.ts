@@ -13,6 +13,12 @@ function getClient(): Redis | null {
   return client;
 }
 
+/**
+ * When a key includes a network segment, it MUST come after `wallet` (e.g.
+ * `cacheKey('rawwallet', WALLET_ADDRESS, network)`), never before - `walletCacheKeyPattern()`'s
+ * glob only matches `mfa:<namespace>:<wallet>*`, so a network segment inserted before the wallet
+ * would silently escape invalidation on refresh.
+ */
 export function cacheKey(namespace: string, ...parts: (string | number)[]): string {
   return ['mfa', namespace, ...parts].join(':');
 }

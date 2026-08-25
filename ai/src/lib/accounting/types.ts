@@ -1,9 +1,15 @@
+import type { NetworkId } from '../config';
+
 export type CostBasisMethod = 'fifo' | 'lifo' | 'average';
 
 export interface Lot {
   id: string;
   txHash: string;
+  network: NetworkId;
   tokenSymbol: string;
+  /** Contract address (or native sentinel) - lots/disposals match on this, not just symbol, so two
+   *  different tokens that happen to share a symbol never share a FIFO queue. See engine.ts. */
+  contractAddress: string;
   acquiredAt: string;
   quantity: number;
   remainingQuantity: number;
@@ -12,7 +18,9 @@ export interface Lot {
 
 export interface Disposal {
   txHash: string;
+  network: NetworkId;
   tokenSymbol: string;
+  contractAddress: string;
   disposedAt: string;
   quantity: number;
   proceedsUsdPerUnit: number;
@@ -26,6 +34,7 @@ export interface LotConsumption {
 }
 
 export interface GainResult {
+  network: NetworkId;
   tokenSymbol: string;
   disposalTxHash: string;
   disposedAt: string;
@@ -39,6 +48,7 @@ export interface GainResult {
 }
 
 export interface UnrealizedGain {
+  network: NetworkId;
   tokenSymbol: string;
   quantity: number;
   costBasisUsd: number;

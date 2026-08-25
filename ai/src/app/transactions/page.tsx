@@ -1,23 +1,30 @@
 'use client';
 
 import { useState } from 'react';
+import NetworkErrorBanner from '@/components/NetworkErrorBanner';
+import NetworkTabs, { type NetworkSelection } from '@/components/NetworkTabs';
 import RefreshButton from '@/components/RefreshButton';
 import StateView from '@/components/StateView';
 import TransactionFilters from '@/components/TransactionFilters';
 import TransactionsTable from '@/components/TransactionsTable';
 import { useTransactions } from '@/hooks/useTransactions';
-import type { TransactionFilters as Filters } from '@/lib/types';
+import type { NetworkId, TransactionFilters as Filters } from '@/lib/types';
 
 export default function TransactionsPage() {
+  const [network, setNetwork] = useState<NetworkSelection>('all');
+  const selectedNetwork: NetworkId | undefined = network === 'all' ? undefined : network;
   const [filters, setFilters] = useState<Filters>({});
-  const { transactions, isLoading, error, rateLimited, refresh } = useTransactions(filters);
+  const { transactions, networkErrors, isLoading, error, rateLimited, refresh } = useTransactions({ ...filters, network: selectedNetwork });
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-base font-medium text-gray-200">Transaction History</h2>
         <RefreshButton onRefreshed={refresh} disabledReason={rateLimited ? (error ?? 'Usage limit reached') : undefined} />
       </div>
+
+      <NetworkTabs value={network} onChange={setNetwork} />
+      <NetworkErrorBanner networkErrors={networkErrors} />
 
       <TransactionFilters filters={filters} onChange={setFilters} />
 
@@ -28,7 +35,7 @@ export default function TransactionsPage() {
         emptyMessage="No transactions match these filters."
         onRetry={refresh}
       >
-        <TransactionsTable transactions={transactions} />
+        <TransactionsTable transactions={transactions} showNetwork={network === 'all'} />
       </StateView>
     </div>
   );

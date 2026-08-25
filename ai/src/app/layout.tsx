@@ -6,7 +6,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'MES AI Trading',
-  description: 'Read-only BSC wallet portfolio, transaction, and capital gains tracker',
+  description: 'Read-only multi-network (BSC, Ethereum, Arbitrum, Hyperliquid) wallet portfolio, transaction, and capital gains tracker',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

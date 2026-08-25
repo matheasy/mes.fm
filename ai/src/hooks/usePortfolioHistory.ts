@@ -4,9 +4,11 @@ import useSWR from 'swr';
 import { ApiError, fetchApiResult } from '@/lib/apiFetcher';
 import { BASE_PATH } from '@/lib/basePath';
 import type { PortfolioValuePoint } from '@/lib/ledger';
+import type { NetworkId } from '@/lib/types';
 
-export function usePortfolioHistory() {
-  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/portfolio/history`, (url: string) =>
+export function usePortfolioHistory(network?: NetworkId) {
+  const qs = network ? `?network=${network}` : '';
+  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/portfolio/history${qs}`, (url: string) =>
     fetchApiResult<PortfolioValuePoint[]>(url),
   );
 

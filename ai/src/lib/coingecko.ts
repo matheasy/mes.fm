@@ -1,12 +1,20 @@
 import { RateLimitError } from './errors';
 
 const API_BASE = 'https://api.coingecko.com/api/v3';
-const CHAIN_PLATFORM = 'binance-smart-chain';
+
+/** CoinGecko's "asset platform" id per EVM network, used to resolve a contract address to a coin id */
+export const COINGECKO_PLATFORM: Record<'bsc' | 'ethereum' | 'arbitrum', string> = {
+  bsc: 'binance-smart-chain',
+  ethereum: 'ethereum',
+  arbitrum: 'arbitrum-one',
+};
 
 /**
- * Only used for the native coin's current price and for historical prices (needed by the
- * cost-basis engine). Current BEP-20 prices come from Moralis's wallet-tokens endpoint instead,
- * which already attaches live USD pricing to each balance - no separate lookup needed.
+ * Current/historical USD pricing, used for: the native coin's current price on every EVM network,
+ * historical prices for the cost-basis engine (needed by every network), and Ethereum/Arbitrum
+ * ERC-20 current+historical prices (BEP-20 current prices come from Moralis directly instead;
+ * Hyperliquid spot pricing comes from Hyperliquid's own API - see src/lib/networks/hyperliquid.ts
+ * - since HyperCore assets aren't resolvable by EVM contract address here).
  */
 
 function headers(): HeadersInit {
@@ -29,21 +37,21 @@ export interface PricePoint {
   usd24hChange: number | null;
 }
 
-/** Current USD price + 24h change for the native coin (BNB) */
-export async function getNativeCurrentPrice(): Promise<PricePoint> {
+/** Current USD price + 24h change for any CoinGecko coin id (native coins: binancecoin/ethereum/hyperliquid) */
+export async function getCurrentPrice(coinId: string): Promise<PricePoint> {
   const result = await get<Record<string, { usd: number; usd_24h_change?: number }>>('/simple/price', {
-    ids: 'binancecoin',
+    ids: coinId,
     vs_currencies: 'usd',
     include_24hr_change: 'true',
   });
-  const entry = result.binancecoin;
+  const entry = result[coinId];
   return { usd: entry?.usd ?? 0, usd24hChange: entry?.usd_24h_change ?? null };
 }
 
-/** Resolves a BEP-20 contract address to its CoinGecko coin id, or null if CoinGecko doesn't list it */
-export async function resolveCoinIdByContract(contractAddress: string): Promise<string | null> {
+/** Resolves an EVM contract address to its CoinGecko coin id on the given platform, or null if unlisted */
+export async function resolveCoinIdByContract(contractAddress: string, platform: string): Promise<string | null> {
   try {
-    const result = await get<{ id: string }>(`/coins/${CHAIN_PLATFORM}/contract/${contractAddress.toLowerCase()}`, {});
+    const result = await get<{ id: string }>(`/coins/${platform}/contract/${contractAddress.toLowerCase()}`, {});
     return result.id ?? null;
   } catch {
     return null;

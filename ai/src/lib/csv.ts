@@ -1,6 +1,7 @@
+import { NETWORK_LABELS } from './config';
 import type { GainResult } from './accounting/types';
 
-const HEADERS = ['Date', 'Asset', 'Proceeds (USD)', 'Cost Basis (USD)', 'Gain/Loss (USD)', 'Holding Period', 'Tax Year'];
+const HEADERS = ['Date', 'Network', 'Asset', 'Proceeds (USD)', 'Cost Basis (USD)', 'Gain/Loss (USD)', 'Holding Period', 'Tax Year'];
 
 function escapeCsvField(value: string): string {
   if (/[",\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
@@ -15,6 +16,7 @@ export function buildGainsCsv(gains: GainResult[]): string {
     .map((g) =>
       [
         g.disposedAt.slice(0, 10),
+        NETWORK_LABELS[g.network],
         g.tokenSymbol,
         g.proceedsUsd.toFixed(2),
         g.costBasisUsd.toFixed(2),
