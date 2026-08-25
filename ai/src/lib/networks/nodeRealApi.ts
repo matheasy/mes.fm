@@ -10,10 +10,14 @@ import { createThrottle } from './rateLimit';
  * response shape, or documented free-tier rate limits, as of this writing. The shape assumed
  * below (`{ transfers: [...], pageToken }`, per-transfer `value`/`rawContract`/`metadata` fields)
  * is inferred from NodeReal's own migration-guide request example plus its close resemblance to
- * Alchemy's `alchemy_getAssetTransfers` (which it appears modeled on). `paginateTransfers()`
- * throws a clear, isolated (per-network, not app-wide - see ledger.ts) error if the response
- * isn't shaped as expected, rather than silently computing wrong balances/gains. Re-verify this
- * file against a real API key's actual responses and tighten the parsing once confirmed.
+ * Alchemy's `alchemy_getAssetTransfers` (which it appears modeled on) - though it diverges from
+ * Alchemy on at least one confirmed point: `value` is raw integer units, not decimal-adjusted
+ * (see bsc.ts's transferAmount()), discovered from a live wrong-by-1e18 transaction amount in
+ * production. Assume other fields could carry similar undocumented divergences until spot-checked
+ * against more real data. `paginateTransfers()` throws a clear, isolated (per-network, not
+ * app-wide - see ledger.ts) error if the response isn't shaped as expected at all, rather than
+ * silently computing wrong balances/gains - but that only catches wrong *shape*, not wrong
+ * *convention* within an otherwise-valid shape, as this bug demonstrated.
  */
 const BASE_HOST = 'https://bsc-mainnet.nodereal.io/v1';
 
@@ -26,7 +30,7 @@ function baseUrl(): string {
 let requestId = 0;
 
 /** No published free-tier rate limit for NodeReal - throttled conservatively for the same reason as etherscanApi.ts's throttle */
-const throttle = createThrottle(300);
+const throttle = createThrottle('nodereal', 300);
 
 async function rpc<T>(method: string, params: unknown[]): Promise<T> {
   return throttle(async () => {
@@ -61,8 +65,8 @@ export interface AssetTransfer {
   hash: string;
   from: string;
   to: string | null;
-  /** Assumed already decimal-adjusted (Alchemy-style), not raw wei - see file-level caveat */
-  value: number | null;
+  /** Raw integer units (confirmed live), NOT decimal-adjusted despite resembling Alchemy's API - scale by decimals before use, see bsc.ts's transferAmount() */
+  value: number | string | null;
   asset: string | null;
   /** NodeReal's actual accepted/returned values are bare numbers for token standards, confirmed live: {external, internal, 20, 721, 1155, state, deposit, withdraw} */
   category: 'external' | 'internal' | '20' | string;

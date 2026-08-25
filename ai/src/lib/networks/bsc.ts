@@ -39,6 +39,17 @@ function decodeDecimals(hex: string | null | undefined): number {
 }
 
 /**
+ * nr_getAssetTransfers's `value` is raw integer units (confirmed live: a 0.00166 BNB transfer
+ * came back as `1660000000000000`), not decimal-adjusted like Alchemy's `alchemy_getAssetTransfers`
+ * - despite this API's request params closely mirroring Alchemy's, its response convention
+ * differs here. Always scale by decimals (18 for native, rawContract.decimal for BEP-20).
+ */
+function transferAmount(t: nodeReal.AssetTransfer, isNative: boolean): number {
+  const decimals = isNative ? 18 : decodeDecimals(t.rawContract?.decimal);
+  return formatUnits(String(t.value), decimals);
+}
+
+/**
  * Groups nr_getAssetTransfers results by tx hash (it returns one flat list of transfer legs, not
  * pre-grouped per tx like Moralis was) and classifies each group the same way as the Etherscan-
  * family networks: a single leg is a send/receive, a hash with both a debit and a credit leg is a
@@ -52,7 +63,7 @@ function normalizeTransactions(raw: RawWalletData): Transaction[] {
   const byHash = new Map<string, { timestamp: string; legs: Leg[] }>();
 
   for (const t of raw.transfers) {
-    if (t.value === null || t.value === 0) continue;
+    if (t.value === null || Number(t.value) === 0) continue;
     const timestamp = t.metadata?.blockTimestamp ?? new Date().toISOString();
     const entry = byHash.get(t.hash) ?? { timestamp, legs: [] };
     const direction = (t.to ?? '').toLowerCase() === wallet ? 1 : -1;
@@ -62,7 +73,7 @@ function normalizeTransactions(raw: RawWalletData): Transaction[] {
       ? nativeTokenPick
       : { symbol: t.asset ?? '???', contractAddress: (t.rawContract?.address ?? '').toLowerCase(), isNative: false };
 
-    entry.legs.push({ token, from: t.from, to: t.to ?? wallet, amount: direction * t.value });
+    entry.legs.push({ token, from: t.from, to: t.to ?? wallet, amount: direction * transferAmount(t, isNative) });
     byHash.set(t.hash, entry);
   }
 
@@ -111,9 +122,10 @@ async function getCurrentHoldings(raw: RawWalletData): Promise<Holding[]> {
     if (t.category !== '20' || t.value === null || !t.rawContract?.address) continue;
     const contractAddress = t.rawContract.address.toLowerCase();
     const direction = (t.to ?? '').toLowerCase() === WALLET_ADDRESS ? 1 : -1;
+    const amount = direction * transferAmount(t, false);
     const existing = balances.get(contractAddress);
     if (existing) {
-      existing.balance += direction * t.value;
+      existing.balance += amount;
     } else {
       balances.set(contractAddress, {
         token: {
@@ -125,7 +137,7 @@ async function getCurrentHoldings(raw: RawWalletData): Promise<Holding[]> {
           coingeckoId: null,
           network: NETWORK,
         },
-        balance: direction * t.value,
+        balance: amount,
       });
     }
   }

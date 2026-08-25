@@ -22,7 +22,7 @@ function apiKey(): string {
  * past the ~3-5 req/sec free-tier limit before any of it has a chance to get cached. Every
  * Etherscan call (both networks, every endpoint) is serialized through this one throttle.
  */
-const throttle = createThrottle(300);
+const throttle = createThrottle('etherscan', 300);
 
 async function get<T>(chainId: number, params: Record<string, string>): Promise<T> {
   return throttle(async () => {

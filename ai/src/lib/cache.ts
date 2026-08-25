@@ -45,6 +45,26 @@ export async function cached<T>(key: string, ttlSeconds: number, fetcher: () => 
   return value;
 }
 
+/**
+ * Cross-instance rate limiting: claims a time-boxed slot via `SET key val NX PX minIntervalMs`, so
+ * at most one caller across ALL serverless instances can proceed within any `minIntervalMs` window
+ * for this key - an in-process-only throttle (a plain in-memory queue) doesn't help here, since
+ * Vercel can run concurrent requests to different routes in separate instances that don't share
+ * module state. Falls back to allowing immediately if Redis isn't configured (local dev - matches
+ * `cached()`'s fallback), polling every 50ms up to `maxWaitMs` before giving up.
+ */
+export async function acquireGlobalSlot(key: string, minIntervalMs: number, maxWaitMs = 8000): Promise<void> {
+  const redis = getClient();
+  if (!redis) return;
+
+  const deadline = Date.now() + maxWaitMs;
+  while (Date.now() < deadline) {
+    const claimed = await redis.set(key, '1', { nx: true, px: minIntervalMs });
+    if (claimed) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+}
+
 export async function invalidateByWallet(wallet: string): Promise<void> {
   const redis = getClient();
   if (!redis) return;
