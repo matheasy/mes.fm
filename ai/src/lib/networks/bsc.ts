@@ -56,7 +56,7 @@ function normalizeTransactions(raw: RawWalletData): Transaction[] {
     const timestamp = t.metadata?.blockTimestamp ?? new Date().toISOString();
     const entry = byHash.get(t.hash) ?? { timestamp, legs: [] };
     const direction = (t.to ?? '').toLowerCase() === wallet ? 1 : -1;
-    const isNative = t.category !== 'erc20';
+    const isNative = t.category !== '20';
 
     const token: Transaction['token'] = isNative
       ? nativeTokenPick
@@ -108,7 +108,7 @@ async function getCurrentHoldings(raw: RawWalletData): Promise<Holding[]> {
 
   const balances = new Map<string, { token: Token; balance: number }>();
   for (const t of raw.transfers) {
-    if (t.category !== 'erc20' || t.value === null || !t.rawContract?.address) continue;
+    if (t.category !== '20' || t.value === null || !t.rawContract?.address) continue;
     const contractAddress = t.rawContract.address.toLowerCase();
     const direction = (t.to ?? '').toLowerCase() === WALLET_ADDRESS ? 1 : -1;
     const existing = balances.get(contractAddress);

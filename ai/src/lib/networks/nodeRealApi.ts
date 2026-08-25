@@ -1,4 +1,5 @@
 import { RateLimitError } from '../errors';
+import { createThrottle } from './rateLimit';
 
 /**
  * BSCTrace via NodeReal's MegaNode - the BNB Chain-endorsed, genuinely-free replacement for the
@@ -24,25 +25,30 @@ function baseUrl(): string {
 
 let requestId = 0;
 
-async function rpc<T>(method: string, params: unknown[]): Promise<T> {
-  const res = await fetch(baseUrl(), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', method, params, id: ++requestId }),
-    next: { revalidate: 0 },
-  });
-  if (res.status === 429) throw new RateLimitError('NodeReal (BSCTrace) rate limit reached');
-  if (!res.ok) throw new Error(`NodeReal request failed: ${res.status}`);
+/** No published free-tier rate limit for NodeReal - throttled conservatively for the same reason as etherscanApi.ts's throttle */
+const throttle = createThrottle(300);
 
-  const json = (await res.json()) as { result?: T; error?: { code: number; message: string } };
-  if (json.error) {
-    if (/rate limit|too many requests/i.test(json.error.message)) {
-      throw new RateLimitError('NodeReal (BSCTrace) rate limit reached');
+async function rpc<T>(method: string, params: unknown[]): Promise<T> {
+  return throttle(async () => {
+    const res = await fetch(baseUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', method, params, id: ++requestId }),
+      next: { revalidate: 0 },
+    });
+    if (res.status === 429) throw new RateLimitError('NodeReal (BSCTrace) rate limit reached');
+    if (!res.ok) throw new Error(`NodeReal request failed: ${res.status}`);
+
+    const json = (await res.json()) as { result?: T; error?: { code: number; message: string } };
+    if (json.error) {
+      if (/rate limit|too many requests/i.test(json.error.message)) {
+        throw new RateLimitError('NodeReal (BSCTrace) rate limit reached');
+      }
+      throw new Error(`NodeReal error: ${json.error.message}`);
     }
-    throw new Error(`NodeReal error: ${json.error.message}`);
-  }
-  if (json.result === undefined) throw new Error('NodeReal returned no result');
-  return json.result;
+    if (json.result === undefined) throw new Error('NodeReal returned no result');
+    return json.result;
+  });
 }
 
 export async function getNativeBalanceWei(address: string): Promise<string> {
@@ -58,7 +64,8 @@ export interface AssetTransfer {
   /** Assumed already decimal-adjusted (Alchemy-style), not raw wei - see file-level caveat */
   value: number | null;
   asset: string | null;
-  category: 'external' | 'internal' | 'erc20' | string;
+  /** NodeReal's actual accepted/returned values are bare numbers for token standards, confirmed live: {external, internal, 20, 721, 1155, state, deposit, withdraw} */
+  category: 'external' | 'internal' | '20' | string;
   rawContract: { address: string | null; decimal: string | null } | null;
   metadata?: { blockTimestamp?: string };
 }
@@ -70,22 +77,17 @@ interface AssetTransfersResult {
 
 const PAGE_SIZE = 100;
 const MAX_PAGES = 5;
-const PAGE_DELAY_MS = 300;
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
+/** Spacing between pages comes from the shared throttle in rpc() now - no need to sleep here too */
 async function paginateTransfers(direction: 'fromAddress' | 'toAddress', address: string): Promise<AssetTransfer[]> {
   const out: AssetTransfer[] = [];
   let pageToken = '';
 
   for (let page = 0; page < MAX_PAGES; page++) {
-    if (page > 0) await sleep(PAGE_DELAY_MS);
     const result = await rpc<AssetTransfersResult>('nr_getAssetTransfers', [
       {
         [direction]: address,
-        category: ['external', 'internal', 'erc20'],
+        category: ['external', 'internal', '20'],
         withMetadata: true,
         excludeZeroValue: false,
         pageSize: PAGE_SIZE,

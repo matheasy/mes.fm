@@ -1,4 +1,5 @@
 import { RateLimitError } from '../errors';
+import { createThrottle } from './rateLimit';
 
 /**
  * Etherscan's unified V2 API (api.etherscan.io/v2/api) covers Ethereum, Arbitrum, and 60+ other
@@ -14,38 +15,43 @@ function apiKey(): string {
   return key;
 }
 
+/**
+ * Etherscan's free-tier rate limit is one shared budget across the whole account (not per-chain,
+ * since the V2 unification), but Ethereum and Arbitrum fetch concurrently and each internally
+ * paginates 2-3 endpoints at once - without this, a single "All Networks" page load bursts far
+ * past the ~3-5 req/sec free-tier limit before any of it has a chance to get cached. Every
+ * Etherscan call (both networks, every endpoint) is serialized through this one throttle.
+ */
+const throttle = createThrottle(300);
+
 async function get<T>(chainId: number, params: Record<string, string>): Promise<T> {
-  const url = new URL(API_BASE);
-  url.searchParams.set('chainid', String(chainId));
-  url.searchParams.set('apikey', apiKey());
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  return throttle(async () => {
+    const url = new URL(API_BASE);
+    url.searchParams.set('chainid', String(chainId));
+    url.searchParams.set('apikey', apiKey());
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
-  const res = await fetch(url.toString(), { next: { revalidate: 0 } });
-  if (!res.ok) throw new Error(`Etherscan request failed: ${res.status}`);
+    const res = await fetch(url.toString(), { next: { revalidate: 0 } });
+    if (!res.ok) throw new Error(`Etherscan request failed: ${res.status}`);
 
-  const json = (await res.json()) as { status: string; message: string; result: T };
-  if (json.message === 'NOTOK') {
-    const resultText = typeof json.result === 'string' ? json.result : '';
-    if (/rate limit|max (calls|rate)/i.test(resultText)) throw new RateLimitError('Etherscan rate limit reached');
-    // "No transactions found" surfaces as status "0"/message "No transactions found", not "NOTOK" - only real errors land here
-    throw new Error(`Etherscan request failed: ${resultText || json.message}`);
-  }
-  return json.result;
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+    const json = (await res.json()) as { status: string; message: string; result: T };
+    if (json.message === 'NOTOK') {
+      const resultText = typeof json.result === 'string' ? json.result : '';
+      if (/rate limit|max (calls|rate)/i.test(resultText)) throw new RateLimitError('Etherscan rate limit reached');
+      // "No transactions found" surfaces as status "0"/message "No transactions found", not "NOTOK" - only real errors land here
+      throw new Error(`Etherscan request failed: ${resultText || json.message}`);
+    }
+    return json.result;
+  });
 }
 
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 5;
-/** Etherscan's free tier is a shared, low req/sec budget across both networks now (V2 unification) - space out paginated calls */
-const PAGE_DELAY_MS = 300;
 
+/** Spacing between pages comes from the shared throttle in get() now - no need to sleep here too */
 async function paginate<T>(chainId: number, params: Record<string, string>): Promise<T[]> {
   const out: T[] = [];
   for (let page = 1; page <= MAX_PAGES; page++) {
-    if (page > 1) await sleep(PAGE_DELAY_MS);
     const batch = await get<T[]>(chainId, { ...params, page: String(page), offset: String(PAGE_SIZE) });
     out.push(...batch);
     if (batch.length < PAGE_SIZE) break;
