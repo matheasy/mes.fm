@@ -30,7 +30,7 @@ function baseUrl(): string {
 let requestId = 0;
 
 /** No published free-tier rate limit for NodeReal - throttled conservatively for the same reason as etherscanApi.ts's throttle */
-const throttle = createThrottle('nodereal', 300);
+const throttle = createThrottle('nodereal', 500);
 
 async function rpc<T>(method: string, params: unknown[]): Promise<T> {
   return throttle(async () => {

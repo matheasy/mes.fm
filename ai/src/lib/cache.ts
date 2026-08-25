@@ -1,4 +1,5 @@
 import { Redis } from '@upstash/redis';
+import { RateLimitError } from './errors';
 
 let client: Redis | null = null;
 
@@ -29,20 +30,42 @@ export function walletCacheKeyPattern(wallet: string): string {
 }
 
 /**
+ * Same-instance in-flight de-dup: if two callers ask for the same not-yet-cached key at nearly
+ * the same moment (e.g. the portfolio, history, and transactions hooks all cold-loading Ethereum
+ * data on first page load), only the first actually calls `fetcher` - the rest await that same
+ * promise instead of racing it. Doesn't coordinate across separate serverless instances (see
+ * acquireGlobalSlot() below for that), but cuts a real source of redundant upstream calls within
+ * one warm process, which is often where concurrent requests from one page load land.
+ */
+const inFlight = new Map<string, Promise<unknown>>();
+
+/**
  * Fetches `key` from Redis, or calls `fetcher` and stores the result with a TTL on miss.
  * Falls back to calling `fetcher` directly (no caching) if Redis isn't configured, so local
  * dev works without an Upstash account.
  */
 export async function cached<T>(key: string, ttlSeconds: number, fetcher: () => Promise<T>): Promise<T> {
-  const redis = getClient();
-  if (!redis) return fetcher();
+  const existing = inFlight.get(key);
+  if (existing) return existing as Promise<T>;
 
-  const hit = await redis.get<T>(key);
-  if (hit !== null && hit !== undefined) return hit;
+  const promise = (async () => {
+    const redis = getClient();
+    if (!redis) return fetcher();
 
-  const value = await fetcher();
-  await redis.set(key, value, { ex: ttlSeconds });
-  return value;
+    const hit = await redis.get<T>(key);
+    if (hit !== null && hit !== undefined) return hit;
+
+    const value = await fetcher();
+    await redis.set(key, value, { ex: ttlSeconds });
+    return value;
+  })();
+
+  inFlight.set(key, promise);
+  try {
+    return await promise;
+  } finally {
+    inFlight.delete(key);
+  }
 }
 
 /**
@@ -51,9 +74,15 @@ export async function cached<T>(key: string, ttlSeconds: number, fetcher: () => 
  * for this key - an in-process-only throttle (a plain in-memory queue) doesn't help here, since
  * Vercel can run concurrent requests to different routes in separate instances that don't share
  * module state. Falls back to allowing immediately if Redis isn't configured (local dev - matches
- * `cached()`'s fallback), polling every 50ms up to `maxWaitMs` before giving up.
+ * `cached()`'s fallback), polling every 50ms up to `maxWaitMs`.
+ *
+ * On timeout this throws rather than letting the caller through unprotected - a queue deep enough
+ * to time out (e.g. two networks' worth of paginated calls all waiting their turn) is exactly the
+ * case where bypassing the lock would reintroduce the burst this exists to prevent. The caller's
+ * existing per-network error handling turns this into an isolated "rate limited" banner, not a
+ * crash - see errors.ts's RateLimitError / ledger.ts's per-network Promise.allSettled.
  */
-export async function acquireGlobalSlot(key: string, minIntervalMs: number, maxWaitMs = 8000): Promise<void> {
+export async function acquireGlobalSlot(key: string, minIntervalMs: number, maxWaitMs = 30_000): Promise<void> {
   const redis = getClient();
   if (!redis) return;
 
@@ -63,6 +92,8 @@ export async function acquireGlobalSlot(key: string, minIntervalMs: number, maxW
     if (claimed) return;
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
+
+  throw new RateLimitError(`Timed out waiting for a rate-limit slot on "${key}"`);
 }
 
 export async function invalidateByWallet(wallet: string): Promise<void> {
