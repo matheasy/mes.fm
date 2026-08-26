@@ -158,6 +158,17 @@
       background: rgba(0, 0, 0, 0.85);
     }
 
+    .video-embed .video-badge,
+    .video-embed .theater-toggle-btn {
+      transition: opacity 0.3s ease;
+    }
+
+    .video-embed.controls-hidden .video-badge,
+    .video-embed.controls-hidden .theater-toggle-btn {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     .source-link {
       display: inline-block;
       font-size: 0.9em;
@@ -336,6 +347,39 @@
           setTheater(false);
         }
       });
+    })();
+  </script>
+
+  <script>
+    // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
+    // the video is playing and the pointer is idle, like YouTube's own control bar,
+    // so they don't sit on top of the video permanently. Reappear on any mouse
+    // movement over the player, and stay visible whenever the video is paused.
+    (function () {
+      var video = document.getElementById('lightningVideo');
+      var embed = document.getElementById('videoEmbed');
+      var hideTimer = null;
+
+      function showControls() {
+        embed.classList.remove('controls-hidden');
+      }
+
+      function scheduleHide() {
+        clearTimeout(hideTimer);
+        if (video.paused || video.ended) return;
+        hideTimer = setTimeout(function () {
+          embed.classList.add('controls-hidden');
+        }, 2000);
+      }
+
+      video.addEventListener('play', scheduleHide);
+      video.addEventListener('pause', showControls);
+      video.addEventListener('ended', showControls);
+      embed.addEventListener('mousemove', function () {
+        showControls();
+        scheduleHide();
+      });
+      embed.addEventListener('mouseleave', scheduleHide);
     })();
   </script>
 

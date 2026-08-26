@@ -344,6 +344,17 @@ async function buildPage(post) {
       background: rgba(0, 0, 0, 0.85);
     }
 
+    .video-embed .video-badge,
+    .video-embed .theater-toggle-btn {
+      transition: opacity 0.3s ease;
+    }
+
+    .video-embed.controls-hidden .video-badge,
+    .video-embed.controls-hidden .theater-toggle-btn {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     .post-body blockquote {
       border-left: 3px solid #5ea9dd;
       margin: 1em 0;
@@ -627,6 +638,43 @@ ${bodyHtml}
           var toggle = embed.querySelector('.theater-toggle-btn');
           if (toggle) setTheater(embed, toggle, false);
         });
+      });
+    })();
+  </script>
+
+  <script>
+    // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
+    // a video is playing and the pointer is idle, like YouTube's own control bar,
+    // so they don't sit on top of the video permanently. Reappear on any mouse
+    // movement over that player, and stay visible whenever it's paused. Per-embed
+    // (rather than fixed IDs) since a post can embed more than one 3Speak video.
+    (function () {
+      document.querySelectorAll('.video-embed').forEach(function (embed) {
+        var video = embed.querySelector('video');
+        var toggle = embed.querySelector('.theater-toggle-btn');
+        if (!video || !toggle) return;
+        var hideTimer = null;
+
+        function showControls() {
+          embed.classList.remove('controls-hidden');
+        }
+
+        function scheduleHide() {
+          clearTimeout(hideTimer);
+          if (video.paused || video.ended) return;
+          hideTimer = setTimeout(function () {
+            embed.classList.add('controls-hidden');
+          }, 2000);
+        }
+
+        video.addEventListener('play', scheduleHide);
+        video.addEventListener('pause', showControls);
+        video.addEventListener('ended', showControls);
+        embed.addEventListener('mousemove', function () {
+          showControls();
+          scheduleHide();
+        });
+        embed.addEventListener('mouseleave', scheduleHide);
       });
     })();
   </script>
