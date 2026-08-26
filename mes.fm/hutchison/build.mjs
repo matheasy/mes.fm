@@ -713,17 +713,69 @@ ${bodyHtml}
         }, 50);
       }
 
+      // adGuard: the z-index/exclusion-zone approach above doesn't reliably
+      // keep AdSense's side-rail Auto ads format off the lightbox in practice
+      // -- Google appears to re-append that ad node later in the DOM, which
+      // wins the stacking-order tie even against a matching max z-index. So
+      // while the lightbox is open, directly hide any Auto ads in-page block
+      // (the same google-auto-placed class the other mirrored-article pages'
+      // header/comments guard watches for) and restore it on close. A
+      // MutationObserver catches one that gets (re)inserted while the
+      // lightbox is already open.
+      var AD_SELECTOR = '.google-auto-placed';
+      var adGuardObserver = null;
+
+      function hideAd(el) {
+        if (el.dataset.lbPrevDisplay === undefined) {
+          el.dataset.lbPrevDisplay = el.style.display || '';
+        }
+        el.style.setProperty('display', 'none', 'important');
+      }
+
+      function restoreAds() {
+        document.querySelectorAll(AD_SELECTOR).forEach(function (el) {
+          if (el.dataset.lbPrevDisplay !== undefined) {
+            el.style.display = el.dataset.lbPrevDisplay;
+            delete el.dataset.lbPrevDisplay;
+          }
+        });
+      }
+
+      function startAdGuard() {
+        document.querySelectorAll(AD_SELECTOR).forEach(hideAd);
+        adGuardObserver = new MutationObserver(function (mutations) {
+          mutations.forEach(function (m) {
+            m.addedNodes.forEach(function (node) {
+              if (node.nodeType !== 1) return;
+              if (node.matches && node.matches(AD_SELECTOR)) hideAd(node);
+              if (node.querySelectorAll) node.querySelectorAll(AD_SELECTOR).forEach(hideAd);
+            });
+          });
+        });
+        adGuardObserver.observe(document.body, { childList: true, subtree: true });
+      }
+
+      function stopAdGuard() {
+        if (adGuardObserver) {
+          adGuardObserver.disconnect();
+          adGuardObserver = null;
+        }
+        restoreAds();
+      }
+
       function open(index) {
         show(index);
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
         nudgeSideRail();
+        startAdGuard();
       }
 
       function close() {
         overlay.classList.remove('open');
         document.body.style.overflow = '';
         nudgeSideRail();
+        stopAdGuard();
       }
 
       images.forEach(function (img, index) {
