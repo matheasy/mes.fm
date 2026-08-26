@@ -124,7 +124,7 @@ async function embed3SpeakLinks(markdown) {
     }
     videos.push({ id, src });
     const posterAttr = poster ? ` poster="${escapeHtml(poster)}"` : "";
-    const replacement = `<div class="video-embed"><video id="${id}" controls playsinline preload="metadata"${posterAttr}></video><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &rarr;</a></div>`;
+    const replacement = `<div class="video-embed" google-side-rail-overlap="false"><video id="${id}" controls playsinline preload="metadata"${posterAttr}></video><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &rarr;</a></div>`;
     html = html.replace(full, replacement);
   }
   return { markdown: html, videos };
