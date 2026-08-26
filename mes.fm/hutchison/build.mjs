@@ -342,7 +342,7 @@ function buildPage(post) {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       max-width: 100vw;
       max-height: 100vh;
     }
@@ -350,9 +350,15 @@ function buildPage(post) {
     .lightbox-image {
       width: 100vw;
       max-width: 100vw;
-      max-height: 82vh;
+      max-height: 78vh;
       object-fit: contain;
       display: block;
+    }
+
+    .lightbox-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
 
     .lightbox-counter {
@@ -366,7 +372,6 @@ function buildPage(post) {
     .lightbox-close,
     .lightbox-prev,
     .lightbox-next {
-      position: fixed;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -374,7 +379,6 @@ function buildPage(post) {
       color: #ffffff;
       border: 0;
       cursor: pointer;
-      z-index: 2147483647;
     }
 
     .lightbox-close:hover,
@@ -384,29 +388,26 @@ function buildPage(post) {
     }
 
     .lightbox-close {
+      position: fixed;
       top: 16px;
       right: 16px;
       width: 40px;
       height: 40px;
       border-radius: 50%;
       font-size: 1.3em;
+      z-index: 2147483647;
     }
 
     .lightbox-prev,
     .lightbox-next {
-      top: 50%;
-      transform: translateY(-50%);
-      width: 52px;
-      height: 52px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      font-size: 1.6em;
+      font-size: 1.4em;
     }
 
-    .lightbox-prev { left: 16px; }
-    .lightbox-next { right: 16px; }
-
     @media (max-width: 600px) {
-      .lightbox-prev, .lightbox-next { width: 42px; height: 42px; font-size: 1.3em; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
       .lightbox-close { width: 36px; height: 36px; }
     }
 
@@ -617,12 +618,14 @@ ${bodyHtml}
 
   <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
     <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
-    <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
     <div class="lightbox-content">
       <img class="lightbox-image" id="lightboxImage" src="" alt="">
-      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <div class="lightbox-controls" id="lightboxControls">
+        <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+        <div class="lightbox-counter" id="lightboxCounter"></div>
+        <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+      </div>
     </div>
-    <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
   </div>
 
   <script>
@@ -682,6 +685,7 @@ ${bodyHtml}
 
       var overlay = document.getElementById('lightboxOverlay');
       var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
       var counterEl = document.getElementById('lightboxCounter');
       var closeBtn = document.getElementById('lightboxClose');
       var prevBtn = document.getElementById('lightboxPrev');
@@ -689,8 +693,7 @@ ${bodyHtml}
       var currentIndex = 0;
 
       if (images.length < 2) {
-        prevBtn.style.display = 'none';
-        nextBtn.style.display = 'none';
+        controlsEl.style.display = 'none';
       }
 
       function show(index) {
@@ -699,7 +702,6 @@ ${bodyHtml}
         imageEl.src = img.currentSrc || img.src;
         imageEl.alt = img.alt || '';
         counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
-        counterEl.style.display = images.length > 1 ? '' : 'none';
       }
 
       function nudgeSideRail() {
