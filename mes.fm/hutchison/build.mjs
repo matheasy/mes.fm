@@ -325,7 +325,11 @@ function buildPage(post) {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.96);
-      z-index: 10000;
+      /* Max signed 32-bit z-index: AdSense's own overlay/side-rail formats are
+         known to use this same value, so anything lower can end up rendering
+         underneath them. Matching it guarantees the lightbox -- and its opaque
+         backdrop -- always wins the stacking order, hiding any ad behind it. */
+      z-index: 2147483647;
       align-items: center;
       justify-content: center;
     }
@@ -334,12 +338,29 @@ function buildPage(post) {
       display: flex;
     }
 
+    .lightbox-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      max-width: 100vw;
+      max-height: 100vh;
+    }
+
     .lightbox-image {
       width: 100vw;
       max-width: 100vw;
-      max-height: 92vh;
+      max-height: 82vh;
       object-fit: contain;
       display: block;
+    }
+
+    .lightbox-counter {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.85em;
+      padding: 5px 12px;
+      border-radius: 999px;
     }
 
     .lightbox-close,
@@ -353,7 +374,7 @@ function buildPage(post) {
       color: #ffffff;
       border: 0;
       cursor: pointer;
-      z-index: 10001;
+      z-index: 2147483647;
     }
 
     .lightbox-close:hover,
@@ -383,19 +404,6 @@ function buildPage(post) {
 
     .lightbox-prev { left: 16px; }
     .lightbox-next { right: 16px; }
-
-    .lightbox-counter {
-      position: fixed;
-      bottom: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
-      color: #ffffff;
-      font-size: 0.85em;
-      padding: 5px 12px;
-      border-radius: 999px;
-      z-index: 10001;
-    }
 
     @media (max-width: 600px) {
       .lightbox-prev, .lightbox-next { width: 42px; height: 42px; font-size: 1.3em; }
@@ -607,12 +615,14 @@ ${bodyHtml}
     </p>
   </div>
 
-  <div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
     <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
     <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
-    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-content">
+      <img class="lightbox-image" id="lightboxImage" src="" alt="">
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+    </div>
     <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
-    <div class="lightbox-counter" id="lightboxCounter"></div>
   </div>
 
   <script>
@@ -692,15 +702,26 @@ ${bodyHtml}
         counterEl.style.display = images.length > 1 ? '' : 'none';
       }
 
+      function nudgeSideRail() {
+        // Same trick as the video theater-mode toggle: AdSense only re-checks
+        // google-side-rail-overlap exclusion zones on scroll/resize, not on a
+        // plain class-driven visibility change.
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'));
+        }, 50);
+      }
+
       function open(index) {
         show(index);
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
+        nudgeSideRail();
       }
 
       function close() {
         overlay.classList.remove('open');
         document.body.style.overflow = '';
+        nudgeSideRail();
       }
 
       images.forEach(function (img, index) {
