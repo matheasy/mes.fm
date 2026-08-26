@@ -328,34 +328,39 @@ function buildPage(post) {
       /* Max signed 32-bit z-index: AdSense's own overlay/side-rail formats are
          known to use this same value, so anything lower can end up rendering
          underneath them. Matching it guarantees the lightbox -- and its opaque
-         backdrop -- always wins the stacking order, hiding any ad behind it. */
+         backdrop -- always wins the stacking order, hiding any ad behind it
+         (belt-and-suspenders alongside the JS ad guard, which does the actual
+         reliable hiding -- see adGuard below). */
       z-index: 2147483647;
       align-items: center;
       justify-content: center;
+      /* Reserve room for the fixed bottom control bar (see .lightbox-controls)
+         so it never overlaps the image, and so the image is centered in the
+         space above it rather than the full viewport. */
+      padding-bottom: 96px;
     }
 
     .lightbox-overlay.open {
       display: flex;
     }
 
-    .lightbox-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-      max-width: 100vw;
-      max-height: 100vh;
-    }
-
     .lightbox-image {
       width: 100vw;
       max-width: 100vw;
-      max-height: 78vh;
+      max-height: calc(100vh - 96px);
       object-fit: contain;
       display: block;
     }
 
     .lightbox-controls {
+      /* Fixed to the viewport, not stacked under the image in normal flow --
+         so it stays in the exact same spot no matter the image's aspect
+         ratio/rendered height, letting you click through images rapidly
+         without re-aiming the mouse. */
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
       display: flex;
       align-items: center;
       gap: 16px;
@@ -372,6 +377,7 @@ function buildPage(post) {
     .lightbox-close,
     .lightbox-prev,
     .lightbox-next {
+      position: fixed;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -388,7 +394,6 @@ function buildPage(post) {
     }
 
     .lightbox-close {
-      position: fixed;
       top: 16px;
       right: 16px;
       width: 40px;
@@ -400,6 +405,7 @@ function buildPage(post) {
 
     .lightbox-prev,
     .lightbox-next {
+      position: static;
       width: 44px;
       height: 44px;
       border-radius: 50%;
@@ -407,6 +413,9 @@ function buildPage(post) {
     }
 
     @media (max-width: 600px) {
+      .lightbox-overlay { padding-bottom: 80px; }
+      .lightbox-image { max-height: calc(100vh - 80px); }
+      .lightbox-controls { bottom: 16px; }
       .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
       .lightbox-close { width: 36px; height: 36px; }
     }
@@ -618,13 +627,11 @@ ${bodyHtml}
 
   <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
     <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
-    <div class="lightbox-content">
-      <img class="lightbox-image" id="lightboxImage" src="" alt="">
-      <div class="lightbox-controls" id="lightboxControls">
-        <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
-        <div class="lightbox-counter" id="lightboxCounter"></div>
-        <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
-      </div>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-controls" id="lightboxControls">
+      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
     </div>
   </div>
 
