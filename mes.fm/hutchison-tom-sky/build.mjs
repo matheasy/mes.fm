@@ -124,7 +124,7 @@ async function embed3SpeakLinks(markdown) {
     }
     videos.push({ id, src });
     const posterAttr = poster ? ` poster="${escapeHtml(poster)}"` : "";
-    const replacement = `<div class="video-embed"><video id="${id}" controls playsinline preload="metadata"${posterAttr}></video><a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &rarr;</a></div>`;
+    const replacement = `<div class="video-embed"><video id="${id}" controls playsinline preload="metadata"${posterAttr}></video><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &rarr;</a></div>`;
     html = html.replace(full, replacement);
   }
   return { markdown: html, videos };
@@ -270,6 +270,8 @@ async function buildPage(post) {
       border-radius: 4px;
       overflow: hidden;
       margin: 1.2em 0;
+      transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
+        height 0.25s ease, padding-bottom 0.25s ease, border-radius 0.25s ease;
     }
 
     .video-embed iframe,
@@ -281,6 +283,22 @@ async function buildPage(post) {
       height: 100%;
       border: 0;
       background: #000;
+    }
+
+    .video-embed.theater-mode {
+      width: 100vw;
+      max-width: 100vw;
+      left: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      padding-bottom: 0;
+      height: min(85vh, 56.25vw);
+      border-radius: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode video {
+      object-fit: contain;
     }
 
     .video-badge {
@@ -301,6 +319,28 @@ async function buildPage(post) {
     }
 
     .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .theater-toggle-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      border: 0;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .theater-toggle-btn:hover {
       background: rgba(0, 0, 0, 0.85);
     }
 
@@ -550,6 +590,37 @@ ${bodyHtml}
             clearInterval(poll);
           }
         }, 200);
+      });
+    })();
+  </script>
+
+  <script>
+    // theater-mode: expands a video embed to the full browser width (breaking out of
+    // the .container's max-width), like YouTube's theater mode. Height is capped at
+    // min(85vh, 56.25vw) so ultra-wide viewports don't get a comically tall player.
+    // Delegated + per-embed (rather than fixed IDs) since a post can embed more than
+    // one 3Speak video -- see embed3SpeakLinks above.
+    (function () {
+      function setTheater(embed, toggle, on) {
+        embed.classList.toggle('theater-mode', on);
+        toggle.textContent = on ? 'Default View' : 'Theater Mode';
+        toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+
+      document.addEventListener('click', function (e) {
+        var toggle = e.target.closest('.theater-toggle-btn');
+        if (!toggle) return;
+        var embed = toggle.closest('.video-embed');
+        if (!embed) return;
+        setTheater(embed, toggle, !embed.classList.contains('theater-mode'));
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('.video-embed.theater-mode').forEach(function (embed) {
+          var toggle = embed.querySelector('.theater-toggle-btn');
+          if (toggle) setTheater(embed, toggle, false);
+        });
       });
     })();
   </script>
