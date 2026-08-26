@@ -567,6 +567,12 @@
         embed.classList.toggle('theater-mode', on);
         toggle.textContent = on ? 'Default View' : 'Theater Mode';
         toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion
+        // zones on scroll/resize, not on a plain class-driven layout change, so nudge
+        // it to recompute once the width/height transition above has settled.
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'));
+        }, 300);
       }
 
       document.addEventListener('click', function (e) {
