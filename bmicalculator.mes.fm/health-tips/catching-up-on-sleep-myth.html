@@ -81,11 +81,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
 .social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
 
-.addtoany-container {margin-top:1em;}
-.a2a_kit {display:table-cell;height:32px;}
-.a2a_label {display:none;}
-.addtoany__button {margin-right: 0.6em;}
-
 .info-bar-container {display: table-cell;}
 .info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
 .info-bar__item {float:left;}
@@ -127,21 +122,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
 .footer__text--black {color:#000;}
 .footer__separator {color:white;}
+#copyright-year {color:white;}
 
 .active-tab {background-color: #f8e2ed;color: #222222;}
 .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color: #a76599;}
-        .adsense{
-            display: block;
-        }
-
-        .adsense--mobile {
-            /*min-height: 300px;*/
-            /*background-color: red;*/
-        }
-        /*.adsense--loaded .adsense__loading { display: none; }*/
-        /*.adsense:before     { display: none !important; }*/
-        /*.adsense ins        { width: 100%; height: 100%; display: block; }*/
-
         .info-bar,.color-box,.navbar,.footer {background-color:#c275b1;}
         .dropdown-symbol--dark {color:#c275b1;}
         .button--active {background-color:#c275b1;color:white;}
@@ -165,7 +149,55 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.btn-link:not(:last-child) {border-right:0.4em solid transparent;}
 	.button--small {margin:0;}
 		.button--small:hover {background-color: #c275b1;color:white;}
-		</style>
+		
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		/* header: stack logo/title and follow-us icons instead of overlapping */
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		/* nav bar: wrap since Donate/Subscribe/Links brings this to 9 items */
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		/* calculator inputs: stack the metric/imperial input panel above the
+		   BMI result panel instead of squeezing them into table-cells side
+		   by side */
+		#left-side-container, #right-side-container { display: block; width: 100%; box-sizing: border-box; padding-left: 0; }
+		#left-side-container { padding-bottom: 1em; margin-bottom: 1em; border-bottom: 0.15em solid #e1e1e1; }
+		#left-side-container span { display: block; width: auto; margin-bottom: 0.3em; }
+		#left-side-container input, .input, .input-answer { margin-left: 0; width: 100%; box-sizing: border-box; height: 2.4em; font-size: 1em; }
+		#imperial-container .height-div input { width: 48%; }
+		#imperial-container .height-div input:last-child { margin-left: 4% !important; }
+		#bmi-input-container input { width: 100%; box-sizing: border-box; height: 2.4em; font-size: 1em; }
+
+		/* footer: stack columns instead of squeezing table-cells side by side */
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+</style>
 
         <meta property="fb:app_id" content="1441259629447913" />
         <meta name="author" content="BMI Calculator Staff">
@@ -183,7 +215,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','GTM-K28F7WZ');</script>
-            <!-- End Google Tag Manager -->            <script type="text/javascript" src="https://static.addtoany.com/menu/page.js" async></script>
+            <!-- End Google Tag Manager -->            
         <!-- Google Analytics -->
         <script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -195,6 +227,136 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
           ga('require', 'displayfeatures');
           ga('send', 'pageview');
         </script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
     </head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K28F7WZ"
@@ -209,34 +371,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                             <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
 		<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li>
-    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/BMICalculatorMES" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/bmicalculator__" target="_blank"></a></li>    <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/bmicalculator" target="_blank"></a></li>    <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/BMI_Calculator" target="_blank"></a></li>        </ul>                            </div>                                <div class="social-container--bottom"><a target="_blank" href='https://itunes.apple.com/ca/app/bmi-calculator-by-mes/id1226817243'><img height="40" alt='Get it on the App Store' data-src=https://mes.fm/main_img/app-store-badge.png' class="lazyload" /></a><a target="_blank" href='https://play.google.com/store/apps/details?id=com.mike.bmiCalculator' style="margin-left:0.40em;"><img height="40" alt='Get it on Google Play' data-src=https://mes.fm/main_img/google-play-badge.png' class="lazyload"/></a>                                </div>                        </div>
+    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/BMICalculatorMES" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/bmicalculator__" target="_blank"></a></li>    <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/bmicalculator" target="_blank"></a></li>    <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/BMI_Calculator" target="_blank"></a></li>        </ul><a class="info-bar__logo-container" href="https://mes.fm/index.html" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                <div class="social-container--bottom"><a target="_blank" href='https://itunes.apple.com/ca/app/bmi-calculator-by-mes/id1226817243'><img height="40" alt='Get it on the App Store' data-src=https://mes.fm/main_img/app-store-badge.png' class="lazyload" /></a><a target="_blank" href='https://play.google.com/store/apps/details?id=com.mike.bmiCalculator' style="margin-left:0.40em;"><img height="40" alt='Get it on Google Play' data-src=https://mes.fm/main_img/google-play-badge.png' class="lazyload"/></a>                                </div>                        </div>
                         <div class="info-bar-container">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='../index.html'>Home</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../health-tips.html'>Health Tips</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../memes.html'>Memes</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../body-mass-index.html'>What is BMI?</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../bmi-chart.html'>BMI Chart</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../bmi-formula.html'>BMI Formula</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../sports.html'>Sports Articles</a></li>                            </ul>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='../index.html'>Home</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../health-tips.html'>Health Tips</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../memes.html'>Memes</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../body-mass-index.html'>What is BMI?</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../bmi-chart.html'>BMI Chart</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../bmi-formula.html'>BMI Formula</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../sports.html'>Sports Articles</a></li>                            <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/links'>Links</a></li></ul>
                         </div>
-                        <a class="info-bar__logo-container" href="https://mes.fm/index.html" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->
-                                <div class="adsense" style="height:280px">
-                                    <ins class="adsbygoogle"
-                                     style="display:block;margin:0.8em -1em 0 -1em;"
-                                     data-ad-client="ca-pub-1461238060884369"
-                                     data-ad-slot="1359444863"
-                                     data-ad-format="auto"
-                                     data-full-width-responsive="true"></ins>
-                                </div>                        <div class="outer-page-content">
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
                             <div class="page-content">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Catching Up On Sleep Myth</h1>                                        <p class="page-description">This is a very popular myth, that I have been the victim of following as well. Despite popular believe, you can't actually "catch up on sleep". What happens instead is that when you go many days without getting adequate sleep your body builds up what is known as a "sleep debt" that can't be recovered. In fact going many days without adequate sleep can be worse than occasionally taking an all-nighter because it is the cumulative amount of lack of sleep that matters the most. Lack of adequate sleep has many negative health effects such as slow reaction speed, less productive brain and muscle activity, as well as being a safety hazard when driving car. So remember to not use the excuse of catching up on sleep but instead find ways to get adequate amount of sleep, even if it means napping during the day.<div><br><div>Source:&nbsp;https://sleepfoundation.org/sleep-news/you-cant-catch-sleep</div></div></p>                                    <div class="addtoany-container">
-                                        <span class="social__text">Share:</span>
-                                        <!-- AddToAny BEGIN -->
-                                        <div class="a2a_kit a2a_kit_size_32 a2a_default_style">
-                                        <a class="addtoany__button a2a_button_facebook"></a>
-                                        <a class="addtoany__button a2a_button_twitter"></a>
-                                        <a class="addtoany__button a2a_button_pinterest"></a>
-                                        <a class="addtoany__button a2a_button_whatsapp"></a>
-                                        <a class="addtoany__button a2a_button_email"></a>
-                                        <a class="a2a_dd a2a_counter" href="https://www.addtoany.com/share_save"></a>
-                                        </div>
-                                        <!-- AddToAny END -->
-                                    </div>	<div id="main-content">
+                                    <h1 class="page-title">Catching Up On Sleep Myth</h1>                                        <p class="page-description">This is a very popular myth, that I have been the victim of following as well. Despite popular believe, you can't actually "catch up on sleep". What happens instead is that when you go many days without getting adequate sleep your body builds up what is known as a "sleep debt" that can't be recovered. In fact going many days without adequate sleep can be worse than occasionally taking an all-nighter because it is the cumulative amount of lack of sleep that matters the most. Lack of adequate sleep has many negative health effects such as slow reaction speed, less productive brain and muscle activity, as well as being a safety hazard when driving car. So remember to not use the excuse of catching up on sleep but instead find ways to get adequate amount of sleep, even if it means napping during the day.<div><br><div>Source:&nbsp;https://sleepfoundation.org/sleep-news/you-cant-catch-sleep</div></div></p>                                    	<div id="main-content">
 		<div class="button-container">
 			<a class="btn-link" href="the-danger-of-sitting-down.html"><div class="button button--small">&#9668;&nbsp;&nbsp;Previous</div></a>			<a class="btn-link" href="are-restaurants-really-healthier-than-fast-food.html"><div class="button button--small">Random</div></a>
 			<a class="btn-link" href="how-to-grow-your-muscles-and-get-results.html"><div class="button button--small">Next&nbsp;&nbsp;&#9658;</div></a>		</div>
@@ -246,26 +389,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			<a class="btn-link" href="how-to-grow-your-muscles-and-get-results.html"><div class="button button--small">Next&nbsp;&nbsp;&#9658;</div></a>		</div>
 	</div>
                                     <!-- (Responsive) Rectangle Ad -->
-                                    <div class="adsense" style="280px">
-                                        <ins class="adsbygoogle"
-                                             style="display:block;margin:1.5em 0"
-                                             data-ad-client="ca-pub-1461238060884369"
-                                             data-ad-slot="3046281265"
-                                             data-ad-format="rectangle"></ins>
-                                    </div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
-                                    <div class="adsense">
-                                        <ins class="adsbygoogle"
-                                             style="display:block"
-                                             data-ad-client="ca-pub-1461238060884369"
-                                             data-ad-slot="7894600465"
-                                             data-ad-format="autorelaxed"></ins>
-                                    </div>                                    <div id="comments-button" class="button button--active">View Comments</div>
+                                                                        <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="button" style="position:relative;">Comments<span class="dropdown-symbol" style="color:inherit;position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>
                                     <div id="comments-box">
                                         <div id="fastcomments-widget"></div>                                    </div>                                                                    </div>
                         </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow">
-                                        <div class="button button--navbar" id="navbar-button">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark">&#9660;</span></div>    <ul id="navbar" class="navbar">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item"><a class="navbar__link navbar__link--first" href="../index.html">BMI Calculator</a></li>
                         <li class="navbar__item"><a target="_self" class="navbar__link" href="../health-tips.html">Health Tips</a></li>
                                 <li class="navbar__item"><a target="_self" class="navbar__link" href="../memes.html">Memes</a></li>
@@ -307,16 +438,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://mes.fm/mobile-apps.html">&#9642; <span>More...</span></a></li>
         </ul>
     </li>
-    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li>
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li><li class="navbar__item"><a class="navbar__link" href="https://mes.fm/links">Links</a></li>
     </ul>
                                     </div>                                                                            <!-- (Responsive) Vertical -->
-                                        <div class="adsense" style="height:600px">
-                                            <ins class="adsbygoogle"
-                                                 style="display:block;margin-bottom:1em;"
-                                                 data-ad-client="ca-pub-1461238060884369"
-                                                 data-ad-slot="9103037666"
-                                                 data-ad-format="vertical"></ins>
-                                        </div>                                        <div class="latest-article"><a href="https://www.amazon.ca/dp/B076HD8MM2" target="_blank">
+                                                                                <div class="latest-article"><a href="https://www.amazon.ca/dp/B076HD8MM2" target="_blank">
                                             <p class="big-text latest-article__tag">Help save the planet. Use our stainless steel straws to prevent more plastic from going to landfills. Also save money while you obtain your health goals!</p>
                                             <img class="latest-article__logo lazyload" data-src="https://mes.fm/main_img/steelstraws.jpg" alt="BMI Calculator&#039;s Stainless Steel Straws" width="100%" height="auto">
                                             <p class="thin-font latest-article__title italic">BMI Calculator&#039;s Eco-Friendly Straws</p></a>
@@ -330,67 +455,28 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                             <p class="thin-font latest-article__title italic">Top 10 NBA Players&#039; BMI</p></a>
                                         </div>
                             </div>                            <!-- (Responsive) Horizontal -->
-                            <div class="adsense" style="height:280px">
-                                <ins class="adsbygoogle"
-                                 style="display:block;margin:0.8em -1em 0 -1em"
-                                 data-ad-client="ca-pub-1461238060884369"
-                                 data-ad-slot="2696433413"
-                                 data-ad-format="auto"
-                                 data-full-width-responsive="true"></ins>
-                            </div>                </div><div id="footer" class="footer">
+                                            </div><div id="footer" class="footer">
             <div class="footer__item-container">
             <div class="footer__item">
                 <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" href='../index.html'>BMI Calculator</a></li>
-                    <li><a class="footer__text" href='../../gpacalculator.mes.fm/index.html'>GPA Calculator</a></li>
-                    <li><a class="footer__text" href='../../gradecalculator.mes.fm/index.html'>Grade Calculator</a></li>
-                    <li><a class="footer__text" href='../../inflationcalculator.mes.fm/index.html'>Inflation Calculator</a></li>
-                    <li><a class="footer__text" href='../../mortgagecalculator.mes.fm/index.html'>Mortgage Calculator</a></li>
-                    <li><a class="footer__text" href='../../percentagecalculator.mes.fm/index.html'>Percentage Calculator</a></li>
-                    <li><a class="footer__text" href='../../pokemongocalculator.mes.fm/index.html'>Pokemon Go Calculator</a></li>
-                    <li><a class="footer__text" href='../../vatcalculator.mes.fm/index.html'>VAT Calculator</a></li>
-                                    </ul>
             </div>
 
             <div class="footer__item">
                 <a class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" href='../../speedreader.mes.fm/index.html'>Speed Reader</a></li>
-                    <li><a class="footer__text" href='../../timer.mes.fm/index.html'>Timer</a></li>
-                </ul>
             </div>
 
             <div class="footer__item footer__item--extra-padding">
                 <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps.html">Mobile Apps</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/bmi-calculator-by-mes/id1226817243">BMI Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.bmiCalculator">BMI Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/fail-safe-final-exam-calculator/id673084580">Grade Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.failsafefinalexamcalculator">Grade Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/percentage-calculator-by-math/id1141583865">Percentage Calculator (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.percentageCalculator">Percentage Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.mortgageCalculator">Mortgage Calculator (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/hashtag-everything-lite/id739573482">Hashtag Everything (iOS)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.HashtagEverythingLite">Hashtag Everything (Android)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://itunes.apple.com/ca/app/doge-bounce/id850547912?mt=8">Doge Bounce (iPhone)</a></li>
-                    <li><a class="footer__text" target="_blank" href="https://play.google.com/store/apps/details?id=com.dogetile.android">Doge Tile (Android)</a></li>
-                </ul>
             </div>
 
-            <div class="footer__item footer__item--extra-padding">
-                <a class="footer__text footer__text--title" href="https://mes.fm/partners.html">Partners</a>
-                <ul class="footer__list">
-                    <li><a class="footer__text" target="_blank" href="../../chinchatcomics.mes.fm/index.html" title="Chinchilla Comics Galore">Chin Chat Comics</a></li>
-                </ul>
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/links">MES Links</a>
             </div>
         </div>
-        <a class="footer__text" target='_blank' href="https://teespring.com/stores/mes-store">Store</a><span class="footer__separator"> | </span>
         <a class="footer__text" href="../contact.html">Contact Us</a><span class="footer__separator"> | </span>
         <a class="footer__text" href="../privacy-policy.html">Privacy Policy</a><span class="footer__separator"> | </span>
-        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span>
-        <span class="footer__text footer__text--black mobile-version-button">Mobile Version</span>
-        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; 2013&nbsp;</span><a class="footer__text" href="https://mes.fm/index.html">Math Easy Solutions</a></div>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;</span><a class="footer__text" href="https://mes.fm/">Math Easy Solutions</a></div>
     </div>
 
 
@@ -407,8 +493,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                     window.FastCommentsUI(document.getElementById('fastcomments-widget'), {
                         tenantId: '1RGmGBEjdU'
                     });
-                </script>                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script><script src="https://mes.fm/main_js/jquery.adsenseloader2c70.js?v=1.0.3" async></script>
-            <script src="https://mes.fm/main_js/main.js"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script></body>
+                </script>                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+            <script src="https://mes.fm/main_js/main.js"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script></body>
 
 <!-- Mirrored from bmicalculator.mes.fm/health-tips/catching-up-on-sleep-myth by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 21:42:29 GMT -->
 </html>
