@@ -378,20 +378,34 @@
     // leaphart-video: plays the 3Speak-hosted HLS stream for this clip directly (via hls.js),
     // rather than iframing 3speak.tv -- 3Speak's own /embed route only ships a bare native
     // <video> with no speed/quality controls, and their full /watch page drags in the whole app
-    // shell (nav, related videos, login prompts) when framed. This is the same manifest URL
-    // 3Speak's public embed API (play.3speak.tv/api/embed?v=mestruth/vv4ffhzo) returns for this
-    // video, so native browser video controls (speed via the "..." menu in Chromium, fullscreen,
-    // PiP) are available without a custom player build.
+    // shell (nav, related videos, login prompts) when framed. Playing the manifest directly gives
+    // native browser video controls (speed via the "..." menu in Chromium, fullscreen, PiP)
+    // without a custom player build.
+    //
+    // The manifest URL is resolved at runtime from 3Speak's public embed API
+    // (play.3speak.tv/api/embed, CORS-open) keyed on the video slug, so re-encodes / re-uploads
+    // to the same 3Speak video (which change the underlying IPFS hash but keep the slug) are
+    // picked up automatically. FALLBACK_SRC is the last-known manifest, used only if that fetch
+    // fails -- keep it in sync when you notice the API URL has moved.
     (function () {
       var video = document.getElementById('leaphartVideo');
-      var src = 'https://play.3speak.tv/hls?u=https%3A%2F%2Fhotipfs-3speak-1.b-cdn.net%2Fipfs%2FQmULEhNL99f2qH64Lgj94yB9Pw8mcn8PifiNgfVQ9h56WB%2Fmanifest.m3u8';
-      if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = src;
-      } else if (window.Hls && Hls.isSupported()) {
-        var hls = new Hls();
-        hls.loadSource(src);
-        hls.attachMedia(video);
+      var SLUG = 'mestruth/vv4ffhzo';
+      var FALLBACK_SRC = 'https://play.3speak.tv/hls?u=https%3A%2F%2Fhotipfs-3speak-1.b-cdn.net%2Fipfs%2FQmSLCRC76HjLQAERK1KLs9kpCED28fQFN5jXaf4yiAFkHQ%2Fmanifest.m3u8';
+
+      function play(src) {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = src;
+        } else if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(video);
+        }
       }
+
+      fetch('https://play.3speak.tv/api/embed?v=' + SLUG)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { play((d && d.videoUrl) || FALLBACK_SRC); })
+        .catch(function () { play(FALLBACK_SRC); });
     })();
   </script>
 
