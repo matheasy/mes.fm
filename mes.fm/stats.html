@@ -440,6 +440,21 @@
         </table>
       </div>
     </section>
+
+    <section class="stats-section">
+      <h2>Views by Device</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Device</th><th class="views">Views</th></tr>
+          </thead>
+          <tbody id="deviceTotalsBody">
+            <tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>
+          </tbody>
+          <tfoot id="deviceTotalsFoot"></tfoot>
+        </table>
+      </div>
+    </section>
   </div>
 
   <script>
@@ -483,6 +498,7 @@
     }
 
     const RANGE_LABELS = { '24h': '24 hours', '7d': '7 days', '30d': '30 days', '365d': '365 days', all: 'all time' };
+    const DEVICE_LABELS = { desktop: 'Desktop', mobile: 'Mobile', tablet: 'Tablet', tv: 'TV', bot: 'Bot', unknown: 'Unknown' };
     let savedRange;
     try { savedRange = localStorage.getItem('statsRange'); } catch (e) { savedRange = null; }
     let currentRange = savedRange || '7d';
@@ -536,6 +552,9 @@
       showMoreBtn.style.display = 'none';
       siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>';
       document.getElementById('siteTotalsFoot').innerHTML = '';
+      const deviceTotalsBody = document.getElementById('deviceTotalsBody');
+      deviceTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>';
+      document.getElementById('deviceTotalsFoot').innerHTML = '';
       document.getElementById('updatedAt').textContent = 'Loading stats…';
 
       try {
@@ -557,6 +576,19 @@
         } else {
           siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
           siteTotalsFoot.innerHTML = '';
+        }
+
+        const deviceTotalsFoot = document.getElementById('deviceTotalsFoot');
+        if (data.deviceTotals && data.deviceTotals.length) {
+          deviceTotalsBody.innerHTML = data.deviceTotals.map(function (d) {
+            const label = DEVICE_LABELS[d.device] || escapeHtml(d.device);
+            return '<tr><td>' + label + '</td><td class="views">' + d.views.toLocaleString() + '</td></tr>';
+          }).join('');
+          const totalDeviceViews = data.deviceTotals.reduce(function (sum, d) { return sum + d.views; }, 0);
+          deviceTotalsFoot.innerHTML = '<tr><td>Total</td><td class="views">' + totalDeviceViews.toLocaleString() + '</td></tr>';
+        } else {
+          deviceTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+          deviceTotalsFoot.innerHTML = '';
         }
 
         document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date(data.updatedAt).toLocaleString();

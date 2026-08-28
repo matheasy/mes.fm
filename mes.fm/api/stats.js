@@ -41,21 +41,26 @@ module.exports = async (req, res) => {
   let commands;
   let leaderboardResultIndex;
   let siteTotalsResultIndex;
+  let deviceTotalsResultIndex;
 
   if (!config) {
     commands = [
       ['ZREVRANGE', 'pageviews:leaderboard', '0', String(TOP_N - 1), 'WITHSCORES'],
       ['HGETALL', 'pageviews:site-totals'],
+      ['HGETALL', 'pageviews:device-totals'],
     ];
     leaderboardResultIndex = 0;
     siteTotalsResultIndex = 1;
+    deviceTotalsResultIndex = 2;
   } else {
     const now = new Date();
     const bucketKeys = config.unit === 'hourly' ? lastNHourKeys(config.count, now) : lastNDayKeys(config.count, now);
     const leaderboardKeys = bucketKeys.map((k) => `pageviews:leaderboard:${config.unit}:${k}`);
     const siteTotalsKeys = bucketKeys.map((k) => `pageviews:sitetotals:${config.unit}:${k}`);
+    const deviceTotalsKeys = bucketKeys.map((k) => `pageviews:devicetotals:${config.unit}:${k}`);
     const destLeaderboard = randomKey('lb');
     const destSiteTotals = randomKey('st');
+    const destDeviceTotals = randomKey('dt');
 
     commands = [
       ['ZUNIONSTORE', destLeaderboard, String(leaderboardKeys.length), ...leaderboardKeys],
@@ -64,9 +69,13 @@ module.exports = async (req, res) => {
       ['ZUNIONSTORE', destSiteTotals, String(siteTotalsKeys.length), ...siteTotalsKeys],
       ['ZREVRANGE', destSiteTotals, '0', '-1', 'WITHSCORES'],
       ['DEL', destSiteTotals],
+      ['ZUNIONSTORE', destDeviceTotals, String(deviceTotalsKeys.length), ...deviceTotalsKeys],
+      ['ZREVRANGE', destDeviceTotals, '0', '-1', 'WITHSCORES'],
+      ['DEL', destDeviceTotals],
     ];
     leaderboardResultIndex = 1;
     siteTotalsResultIndex = 4;
+    deviceTotalsResultIndex = 7;
   }
 
   let results;
@@ -87,6 +96,7 @@ module.exports = async (req, res) => {
 
   const topPagesRaw = results[leaderboardResultIndex]?.result || [];
   const siteTotalsRaw = results[siteTotalsResultIndex]?.result || [];
+  const deviceTotalsRaw = results[deviceTotalsResultIndex]?.result || [];
 
   const topPages = [];
   for (let i = 0; i < topPagesRaw.length; i += 2) {
@@ -99,11 +109,18 @@ module.exports = async (req, res) => {
   }
   siteTotals.sort((a, b) => b.views - a.views);
 
+  const deviceTotals = [];
+  for (let i = 0; i < deviceTotalsRaw.length; i += 2) {
+    deviceTotals.push({ device: deviceTotalsRaw[i], views: Number(deviceTotalsRaw[i + 1]) });
+  }
+  deviceTotals.sort((a, b) => b.views - a.views);
+
   res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
   res.status(200).json({
     range,
     topPages,
     siteTotals,
+    deviceTotals,
     updatedAt: new Date().toISOString(),
   });
 };

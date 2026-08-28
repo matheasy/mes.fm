@@ -8,6 +8,27 @@ const SITE_RE = /^([a-z0-9-]+\.)*mes\.fm$/i;
 const HOUR_TTL = 26 * 3600; // covers the rolling 24h window plus buffer
 const DAY_TTL = 366 * 86400; // covers the rolling 365d window plus buffer
 
+// Device type is classified server-side from the User-Agent header rather than
+// trusting a client-supplied field -- one place to get right, and it can't be
+// spoofed any more easily than the UA itself already can be.
+function detectDevice(userAgent) {
+  const ua = String(userAgent || '').toLowerCase();
+  if (!ua) return 'unknown';
+  if (/bot|crawl|spider|slurp|bingpreview|facebookexternalhit|whatsapp|curl\/|wget\/|python-requests|headlesschrome|pingdom|uptimerobot/.test(ua)) {
+    return 'bot';
+  }
+  if (/smart-tv|smarttv|googletv|appletv|hbbtv|netcast|viera|aquos|roku|tvos|crkey|web0s|dtv|tizen.+tv/.test(ua)) {
+    return 'tv';
+  }
+  if (/ipad|tablet|playbook|silk|kindle|nexus (7|9|10)|sm-t\d|gt-p\d/.test(ua) || (/android/.test(ua) && !/mobile/.test(ua))) {
+    return 'tablet';
+  }
+  if (/mobi|iphone|ipod|android|windows phone|blackberry|bb10|iemobile|opera mini/.test(ua)) {
+    return 'mobile';
+  }
+  return 'desktop';
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -32,25 +53,33 @@ module.exports = async (req, res) => {
   }
 
   const member = `${site}|${path}`;
+  const device = detectDevice(req.headers['user-agent']);
   const now = new Date();
   const hk = hourKey(now);
   const dk = dayKey(now);
   const hourlyLeaderboard = `pageviews:leaderboard:hourly:${hk}`;
   const hourlySiteTotals = `pageviews:sitetotals:hourly:${hk}`;
+  const hourlyDeviceTotals = `pageviews:devicetotals:hourly:${hk}`;
   const dailyLeaderboard = `pageviews:leaderboard:daily:${dk}`;
   const dailySiteTotals = `pageviews:sitetotals:daily:${dk}`;
+  const dailyDeviceTotals = `pageviews:devicetotals:daily:${dk}`;
 
   const commands = [
     ['ZINCRBY', 'pageviews:leaderboard', '1', member],
     ['HINCRBY', 'pageviews:site-totals', site, '1'],
+    ['HINCRBY', 'pageviews:device-totals', device, '1'],
     ['ZINCRBY', hourlyLeaderboard, '1', member],
     ['EXPIRE', hourlyLeaderboard, String(HOUR_TTL)],
     ['ZINCRBY', hourlySiteTotals, '1', site],
     ['EXPIRE', hourlySiteTotals, String(HOUR_TTL)],
+    ['ZINCRBY', hourlyDeviceTotals, '1', device],
+    ['EXPIRE', hourlyDeviceTotals, String(HOUR_TTL)],
     ['ZINCRBY', dailyLeaderboard, '1', member],
     ['EXPIRE', dailyLeaderboard, String(DAY_TTL)],
     ['ZINCRBY', dailySiteTotals, '1', site],
     ['EXPIRE', dailySiteTotals, String(DAY_TTL)],
+    ['ZINCRBY', dailyDeviceTotals, '1', device],
+    ['EXPIRE', dailyDeviceTotals, String(DAY_TTL)],
   ];
 
   try {
