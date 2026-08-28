@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a collection of static websites for the `mes.fm` domain and its calculator subdomains (e.g.
 `gradecalculator.mes.fm`, `mortgagecalculator.mes.fm`, `bmicalculator.mes.fm`, `percentagecalculator.mes.fm`,
 `inflationcalculator.mes.fm`, `vatcalculator.mes.fm`, `pokemongocalculator.mes.fm`, `speedreader.mes.fm`,
-`timer.mes.fm`, `youtubemoney.mes.fm`, `gpacalculator.mes.fm`, `chinchatcomics.mes.fm`). Each top-level directory
+`timer.mes.fm`, `youtubemoney.mes.fm`, `gpacalculator.mes.fm`). Each top-level directory
 is one subdomain and is a self-contained static site: plain HTML pages with local `js/` and `img/` folders.
 
 These sites were originally captured from a live GoDaddy-hosted deployment using **HTTrack** (a website mirror
