@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Story time with cat: MES's tuxedo cat joins a reading of Dr. Judy Wood's book Where Did the Towers Go? (WDTTG), then stops for a drink -- mirrored from the Hive blockchain and Telegram.">
+  <meta name="author" content="MES Truth">
+  <link rel="canonical" href="https://mes.fm/cat-wdttg-book" />
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>Story Time with Cat and Dr. Judy Wood's WDTTG Book | MES Truth</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #1a1a1a; color: #eeeeee; }
+    body.dark a { color: #6cb6f5; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
+
+    .site-link {
+      font-size: 0.9em;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin: 0.4em 0 0.1em;
+    }
+
+    .page-subtitle {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin-bottom: 1.4em;
+    }
+
+    article p {
+      margin: 0 0 1em;
+    }
+
+    .post-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      display: block;
+      margin: 0.6em 0 1.2em;
+      cursor: zoom-in;
+    }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      /* Max signed 32-bit z-index: AdSense's own overlay/side-rail formats are
+         known to use this same value, so anything lower can end up rendering
+         underneath them. Matching it guarantees the lightbox -- and its opaque
+         backdrop -- always wins the stacking order, hiding any ad behind it
+         (belt-and-suspenders alongside the JS ad guard, which does the actual
+         reliable hiding -- see adGuard below). */
+      z-index: 2147483647;
+      align-items: center;
+      justify-content: center;
+      /* Reserve room for the fixed bottom control bar (see .lightbox-controls)
+         so it never overlaps the image, and so the image is centered in the
+         space above it rather than the full viewport. */
+      padding-bottom: 120px;
+    }
+
+    .lightbox-overlay.open {
+      display: flex;
+    }
+
+    .lightbox-image {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: calc(100vh - 120px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-controls {
+      /* Fixed to the viewport, not stacked under the image in normal flow --
+         so it stays in the exact same spot no matter the image's aspect
+         ratio/rendered height, letting you click through images rapidly
+         without re-aiming the mouse. */
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lightbox-counter {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.85em;
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      position: fixed;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .lightbox-close:hover,
+    .lightbox-prev:hover,
+    .lightbox-next:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .lightbox-close {
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.3em;
+      z-index: 2147483647;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+      position: static;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.4em;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-overlay { padding-bottom: 100px; }
+      .lightbox-image { max-height: calc(100vh - 100px); }
+      .lightbox-controls { bottom: 32px; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+      .lightbox-close { width: 36px; height: 36px; }
+    }
+
+    .image-caption {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin: -0.8em 0 1.2em;
+    }
+
+    .source-list {
+      margin: 0 0 1.2em;
+      padding-left: 1.3em;
+    }
+
+    .source-list li {
+      margin: 0 0 0.5em;
+    }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .retrieved-note {
+      font-size: 0.85em;
+      opacity: 0.7;
+      margin-top: 0.4em;
+    }
+
+    hr {
+      margin: 2em 0;
+      opacity: 0.3;
+    }
+
+    .site-footer-note {
+      font-size: 0.8em;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.4em; }
+      body { padding: 0 12px 40px; }
+    }
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+</style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+<script>
+/* auto-ads-inpage-suppress: same guard as mes.fm/links -- this page carries two deliberate
+   manual ad units (top and bottom) instead of Google's Auto ads in-page placements, so any
+   Auto-ads-inserted in-page/native block is hidden the instant it appears. */
+(function () {
+    function hide(node) {
+        node.style.setProperty('display', 'none', 'important');
+    }
+    function isAutoAdNode(node) {
+        return node.classList && (node.classList.contains('google-auto-placed') || node.classList.contains('google-anno-sc'));
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (isAutoAdNode(node)) {
+            hide(node);
+            return;
+        }
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed, .google-anno-sc').forEach(hide);
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+</head>
+<body class="dark">
+<div class="ad-slot" style="text-align: center;">
+  <!-- MES Article Square -->
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-1461238060884369"
+       data-ad-slot="1197859571"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
+
+  <div class="container">
+    <div class="top-bar">
+      <a class="site-link" href="https://mes.fm/911">&larr; mes.fm/911</a>
+      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+    </div>
+
+    <h1>Story Time with Cat &#128214; &#128008;&#8205;&#11035;&#65039;</h1>
+    <div class="page-subtitle">Image post &middot; August 28, 2026 &middot; mirrored from the <a href="https://inleo.io/threads/view/mestruth/re-leothreads-39wnplwtq" target="_blank" rel="noopener">Hive blockchain</a> and <a href="https://t.me/meslinks/35431" target="_blank" rel="noopener">Telegram</a></div>
+
+    <article>
+      <p>Story time with cat &#128214; &#128008;&#8205;&#11035;&#65039; &mdash; MES's tuxedo cat wanders in for a reading of Dr. Judy Wood's book <em>Where Did the Towers Go?</em> (WDTTG), open here to Chapter 7, "Conventional Controlled Demolition of a Building."</p>
+
+      <img class="post-image" src="img/cat-wdttg-1.jpg" alt="A tuxedo cat walks across a grey couch in a dimly lit living room; in the foreground, Dr. Judy Wood's book Where Did the Towers Go? lies open on a coffee table showing photo pages.">
+
+      <img class="post-image" src="img/cat-wdttg-2.jpg" alt="The tuxedo cat sits upright at the far side of a dark wooden dining table, watching a ball toy; the WDTTG book is open in the foreground to the start of Chapter 7, 'Conventional Controlled Demolition of a Building.'">
+
+      <img class="post-image" src="img/cat-wdttg-3.jpg" alt="The tuxedo cat leans over a mountain-scene tissue box on the table with its face at the opening -- 'cat drinkin''; the WDTTG book is open below to pages 98-99, one page carrying the 'SIRIUS' documentary image.">
+      <div class="image-caption">Cat drinkin' &#128167;&#128696;&#128008;&#8205;&#11035;&#65039;&#128523;</div>
+
+      <ul class="source-list">
+        <li>Hive (inleo threads): <a href="https://inleo.io/threads/view/mestruth/re-leothreads-39wnplwtq" target="_blank" rel="noopener">inleo.io/threads/view/mestruth</a></li>
+        <li>Telegram: <a href="https://t.me/meslinks/35431" target="_blank" rel="noopener">t.me/meslinks/35431</a></li>
+        <li>The book: <a href="https://mes.fm/judywoodbook">Where Did the Towers Go?</a> by Dr. Judy Wood</li>
+        <li>All 9/11 Truth links: <a href="https://mes.fm/911">mes.fm/911</a></li>
+      </ul>
+
+      <hr>
+
+      <a class="source-link" href="https://inleo.io/threads/view/mestruth/re-leothreads-39wnplwtq" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
+      <div class="retrieved-note">Images and text retrieved from Hive (inleo threads) and Telegram on August 28, 2026.</div>
+    </article>
+
+    <hr>
+
+    <div class="ad-slot" style="text-align: center;">
+      <!-- MES Article Square -->
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-1461238060884369"
+           data-ad-slot="1197859571"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+
+    <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-controls" id="lightboxControls">
+      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+    </div>
+  </div>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Switch to Dark Mode';
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+      }
+    }
+
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    setTheme(saved !== 'light');
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
+  </script>
+
+  <script>
+    // ad-slot-fill-and-collapse: same approach as mes.fm/links -- request a fill for each manual
+    // ad unit, then hide it completely if nothing filled within the poll window.
+    (function () {
+      document.querySelectorAll('.ad-slot ins.adsbygoogle').forEach(function () {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      });
+      document.querySelectorAll('.ad-slot').forEach(function (slot) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+          attempts++;
+          if (slot.querySelector('iframe')) {
+            clearInterval(poll);
+            return;
+          }
+          if (attempts >= 10) {
+            slot.style.setProperty('display', 'none', 'important');
+            clearInterval(poll);
+          }
+        }, 200);
+      });
+    })();
+  </script>
+
+  <script>
+    // image-lightbox: click any article image to pop it out spanning the full browser
+    // width, with prev/next navigation via on-screen arrows and keyboard arrow keys. This
+    // is a fixed full-viewport overlay (not an in-flow width breakout), so it always sits
+    // on top of the page -- no AdSense placement can end up sandwiched above or below it
+    // while it's open.
+    (function () {
+      var images = Array.prototype.slice.call(document.querySelectorAll('article img'));
+      if (!images.length) return;
+
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
+      var counterEl = document.getElementById('lightboxCounter');
+      var closeBtn = document.getElementById('lightboxClose');
+      var prevBtn = document.getElementById('lightboxPrev');
+      var nextBtn = document.getElementById('lightboxNext');
+      var currentIndex = 0;
+
+      if (images.length < 2) {
+        controlsEl.style.display = 'none';
+      }
+
+      function show(index) {
+        currentIndex = (index + images.length) % images.length;
+        var img = images[currentIndex];
+        imageEl.src = img.currentSrc || img.src;
+        imageEl.alt = img.alt || '';
+        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      }
+
+      function nudgeSideRail() {
+        // Same trick as the video theater-mode toggle: AdSense only re-checks
+        // google-side-rail-overlap exclusion zones on scroll/resize, not on a
+        // plain class-driven visibility change.
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'));
+        }, 50);
+      }
+
+      // adGuard: the z-index/exclusion-zone approach above doesn't reliably
+      // keep AdSense's side-rail Auto ads format off the lightbox in practice
+      // -- Google appears to re-append that ad node later in the DOM, which
+      // wins the stacking-order tie even against a matching max z-index. So
+      // while the lightbox is open, directly hide any Auto ads in-page block
+      // (the same google-auto-placed class the header/comments guard above
+      // watches for) and restore it on close. A MutationObserver catches one
+      // that gets (re)inserted while the lightbox is already open.
+      var AD_SELECTOR = '.google-auto-placed';
+      var adGuardObserver = null;
+
+      function hideAd(el) {
+        if (el.dataset.lbPrevDisplay === undefined) {
+          el.dataset.lbPrevDisplay = el.style.display || '';
+        }
+        el.style.setProperty('display', 'none', 'important');
+      }
+
+      function restoreAds() {
+        document.querySelectorAll(AD_SELECTOR).forEach(function (el) {
+          if (el.dataset.lbPrevDisplay !== undefined) {
+            el.style.display = el.dataset.lbPrevDisplay;
+            delete el.dataset.lbPrevDisplay;
+          }
+        });
+      }
+
+      function startAdGuard() {
+        document.querySelectorAll(AD_SELECTOR).forEach(hideAd);
+        adGuardObserver = new MutationObserver(function (mutations) {
+          mutations.forEach(function (m) {
+            m.addedNodes.forEach(function (node) {
+              if (node.nodeType !== 1) return;
+              if (node.matches && node.matches(AD_SELECTOR)) hideAd(node);
+              if (node.querySelectorAll) node.querySelectorAll(AD_SELECTOR).forEach(hideAd);
+            });
+          });
+        });
+        adGuardObserver.observe(document.body, { childList: true, subtree: true });
+      }
+
+      function stopAdGuard() {
+        if (adGuardObserver) {
+          adGuardObserver.disconnect();
+          adGuardObserver = null;
+        }
+        restoreAds();
+      }
+
+      function open(index) {
+        show(index);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        nudgeSideRail();
+        startAdGuard();
+      }
+
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+        nudgeSideRail();
+        stopAdGuard();
+      }
+
+      images.forEach(function (img, index) {
+        img.addEventListener('click', function () { open(index); });
+      });
+
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) close();
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+        else if (e.key === 'ArrowRight') show(currentIndex + 1);
+      });
+    })();
+  </script>
+<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+</html>
