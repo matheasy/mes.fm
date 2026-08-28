@@ -2,6 +2,9 @@ const { lastNDayKeys, lastNHourKeys } = require('./_bucket-keys');
 
 const TOP_N = 50;
 
+// Must match the categories api/track.js's detectDevice() can produce.
+const DEVICES = ['desktop', 'mobile', 'tablet', 'tv', 'bot', 'unknown'];
+
 const RANGES = {
   '24h': { unit: 'hourly', count: 24 },
   '7d': { unit: 'daily', count: 7 },
@@ -23,6 +26,35 @@ function randomKey(label) {
   return `pageviews:tmp:${label}:${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+async function runPipeline(commands) {
+  const upstashRes = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(commands),
+  });
+  return upstashRes.json();
+}
+
+// Given a list of entities (already in the order the caller wants results
+// attached in) and a flat ZMSCORE result whose members were built as
+// DEVICES.length scores per entity in DEVICES order, unflatten it into one
+// { desktop: n, mobile: n, ... } object per entity.
+function unflattenDeviceScores(entityCount, scoresFlat) {
+  const perEntity = [];
+  for (let i = 0; i < entityCount; i++) {
+    const deviceViews = {};
+    DEVICES.forEach((device, j) => {
+      const raw = scoresFlat[i * DEVICES.length + j];
+      deviceViews[device] = raw == null ? 0 : Number(raw);
+    });
+    perEntity.push(deviceViews);
+  }
+  return perEntity;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -37,6 +69,9 @@ module.exports = async (req, res) => {
     return;
   }
   const config = RANGES[range];
+  const bucketKeys = config
+    ? (config.unit === 'hourly' ? lastNHourKeys(config.count, new Date()) : lastNDayKeys(config.count, new Date()))
+    : null;
 
   let commands;
   let leaderboardResultIndex;
@@ -53,8 +88,6 @@ module.exports = async (req, res) => {
     siteTotalsResultIndex = 1;
     deviceTotalsResultIndex = 2;
   } else {
-    const now = new Date();
-    const bucketKeys = config.unit === 'hourly' ? lastNHourKeys(config.count, now) : lastNDayKeys(config.count, now);
     const leaderboardKeys = bucketKeys.map((k) => `pageviews:leaderboard:${config.unit}:${k}`);
     const siteTotalsKeys = bucketKeys.map((k) => `pageviews:sitetotals:${config.unit}:${k}`);
     const deviceTotalsKeys = bucketKeys.map((k) => `pageviews:devicetotals:${config.unit}:${k}`);
@@ -80,15 +113,7 @@ module.exports = async (req, res) => {
 
   let results;
   try {
-    const upstashRes = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(commands),
-    });
-    results = await upstashRes.json();
+    results = await runPipeline(commands);
   } catch {
     res.status(502).json({ error: 'stats unavailable' });
     return;
@@ -115,9 +140,70 @@ module.exports = async (req, res) => {
   }
   deviceTotals.sort((a, b) => b.views - a.views);
 
+  // Second round trip: now that we know which pages/sites made the cut, pull
+  // their per-device breakdown via ZMSCORE (one command, many members --
+  // order-based, so no need to parse composite members back apart). This is
+  // best-effort: if it fails, the tables above still render, just without
+  // the device columns.
+  const pageDeviceMembers = topPages.flatMap((p) => DEVICES.map((d) => `${p.site}|${p.path}|${d}`));
+  const siteDeviceMembers = siteTotals.flatMap((s) => DEVICES.map((d) => `${s.site}|${d}`));
+
+  const commands2 = [];
+  let pageDeviceScoreIndex = -1;
+  let siteDeviceScoreIndex = -1;
+
+  if (pageDeviceMembers.length) {
+    if (!config) {
+      commands2.push(['ZMSCORE', 'pageviews:pagedevices', ...pageDeviceMembers]);
+      pageDeviceScoreIndex = commands2.length - 1;
+    } else {
+      const pageDeviceKeys = bucketKeys.map((k) => `pageviews:pagedevices:${config.unit}:${k}`);
+      const destPageDevices = randomKey('pd');
+      commands2.push(['ZUNIONSTORE', destPageDevices, String(pageDeviceKeys.length), ...pageDeviceKeys]);
+      commands2.push(['ZMSCORE', destPageDevices, ...pageDeviceMembers]);
+      pageDeviceScoreIndex = commands2.length - 1;
+      commands2.push(['DEL', destPageDevices]);
+    }
+  }
+
+  if (siteDeviceMembers.length) {
+    if (!config) {
+      commands2.push(['ZMSCORE', 'pageviews:sitedevices', ...siteDeviceMembers]);
+      siteDeviceScoreIndex = commands2.length - 1;
+    } else {
+      const siteDeviceKeys = bucketKeys.map((k) => `pageviews:sitedevices:${config.unit}:${k}`);
+      const destSiteDevices = randomKey('sd');
+      commands2.push(['ZUNIONSTORE', destSiteDevices, String(siteDeviceKeys.length), ...siteDeviceKeys]);
+      commands2.push(['ZMSCORE', destSiteDevices, ...siteDeviceMembers]);
+      siteDeviceScoreIndex = commands2.length - 1;
+      commands2.push(['DEL', destSiteDevices]);
+    }
+  }
+
+  if (commands2.length) {
+    try {
+      const results2 = await runPipeline(commands2);
+      if (pageDeviceScoreIndex !== -1) {
+        const scores = results2[pageDeviceScoreIndex]?.result || [];
+        unflattenDeviceScores(topPages.length, scores).forEach((deviceViews, i) => {
+          topPages[i].deviceViews = deviceViews;
+        });
+      }
+      if (siteDeviceScoreIndex !== -1) {
+        const scores = results2[siteDeviceScoreIndex]?.result || [];
+        unflattenDeviceScores(siteTotals.length, scores).forEach((deviceViews, i) => {
+          siteTotals[i].deviceViews = deviceViews;
+        });
+      }
+    } catch {
+      // best-effort -- leave deviceViews unset, client falls back to just the Views column
+    }
+  }
+
   res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
   res.status(200).json({
     range,
+    devices: DEVICES,
     topPages,
     siteTotals,
     deviceTotals,

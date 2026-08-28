@@ -54,32 +54,51 @@ module.exports = async (req, res) => {
 
   const member = `${site}|${path}`;
   const device = detectDevice(req.headers['user-agent']);
+  // Composite members so a single sorted set can hold the per-page and
+  // per-site device breakdowns -- same "|"-joined-member trick the plain
+  // leaderboard/site-totals sets already use, just one level deeper.
+  const pageDeviceMember = `${site}|${path}|${device}`;
+  const siteDeviceMember = `${site}|${device}`;
   const now = new Date();
   const hk = hourKey(now);
   const dk = dayKey(now);
   const hourlyLeaderboard = `pageviews:leaderboard:hourly:${hk}`;
   const hourlySiteTotals = `pageviews:sitetotals:hourly:${hk}`;
   const hourlyDeviceTotals = `pageviews:devicetotals:hourly:${hk}`;
+  const hourlyPageDevices = `pageviews:pagedevices:hourly:${hk}`;
+  const hourlySiteDevices = `pageviews:sitedevices:hourly:${hk}`;
   const dailyLeaderboard = `pageviews:leaderboard:daily:${dk}`;
   const dailySiteTotals = `pageviews:sitetotals:daily:${dk}`;
   const dailyDeviceTotals = `pageviews:devicetotals:daily:${dk}`;
+  const dailyPageDevices = `pageviews:pagedevices:daily:${dk}`;
+  const dailySiteDevices = `pageviews:sitedevices:daily:${dk}`;
 
   const commands = [
     ['ZINCRBY', 'pageviews:leaderboard', '1', member],
     ['HINCRBY', 'pageviews:site-totals', site, '1'],
     ['HINCRBY', 'pageviews:device-totals', device, '1'],
+    ['ZINCRBY', 'pageviews:pagedevices', '1', pageDeviceMember],
+    ['ZINCRBY', 'pageviews:sitedevices', '1', siteDeviceMember],
     ['ZINCRBY', hourlyLeaderboard, '1', member],
     ['EXPIRE', hourlyLeaderboard, String(HOUR_TTL)],
     ['ZINCRBY', hourlySiteTotals, '1', site],
     ['EXPIRE', hourlySiteTotals, String(HOUR_TTL)],
     ['ZINCRBY', hourlyDeviceTotals, '1', device],
     ['EXPIRE', hourlyDeviceTotals, String(HOUR_TTL)],
+    ['ZINCRBY', hourlyPageDevices, '1', pageDeviceMember],
+    ['EXPIRE', hourlyPageDevices, String(HOUR_TTL)],
+    ['ZINCRBY', hourlySiteDevices, '1', siteDeviceMember],
+    ['EXPIRE', hourlySiteDevices, String(HOUR_TTL)],
     ['ZINCRBY', dailyLeaderboard, '1', member],
     ['EXPIRE', dailyLeaderboard, String(DAY_TTL)],
     ['ZINCRBY', dailySiteTotals, '1', site],
     ['EXPIRE', dailySiteTotals, String(DAY_TTL)],
     ['ZINCRBY', dailyDeviceTotals, '1', device],
     ['EXPIRE', dailyDeviceTotals, String(DAY_TTL)],
+    ['ZINCRBY', dailyPageDevices, '1', pageDeviceMember],
+    ['EXPIRE', dailyPageDevices, String(DAY_TTL)],
+    ['ZINCRBY', dailySiteDevices, '1', siteDeviceMember],
+    ['EXPIRE', dailySiteDevices, String(DAY_TTL)],
   ];
 
   try {

@@ -192,8 +192,20 @@
         transform: none;
         margin-top: 0;
       }
-      table {
+      table:not(.wide-table) {
         table-layout: fixed;
+      }
+      /* Wide tables (device breakdown columns) can't be squeezed to fit the
+         viewport without wrapping every cell to one character per line --
+         let them size to their content and scroll horizontally in
+         .table-wrap instead, same as any other overflow-prone content. */
+      .wide-table {
+        width: auto;
+        min-width: 100%;
+      }
+      .wide-table td.site,
+      .wide-table td:first-child {
+        white-space: nowrap;
       }
       th, td {
         padding: 0.4em 0.4em;
@@ -414,12 +426,12 @@
     <section class="stats-section">
       <h2>Most Viewed Pages</h2>
       <div class="table-wrap">
-        <table>
-          <thead>
+        <table class="wide-table">
+          <thead id="topPagesHead">
             <tr><th>Page</th><th class="site">Site</th><th class="views">Views</th></tr>
           </thead>
           <tbody id="topPagesBody">
-            <tr><td colspan="3" class="empty-state">Loading&hellip;</td></tr>
+            <tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
           </tbody>
         </table>
       </div>
@@ -429,12 +441,12 @@
     <section class="stats-section">
       <h2>Views by Site</h2>
       <div class="table-wrap">
-        <table>
-          <thead>
+        <table class="wide-table">
+          <thead id="siteTotalsHead">
             <tr><th>Site</th><th class="views">Views</th></tr>
           </thead>
           <tbody id="siteTotalsBody">
-            <tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>
+            <tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
           </tbody>
           <tfoot id="siteTotalsFoot"></tfoot>
         </table>
@@ -499,6 +511,7 @@
 
     const RANGE_LABELS = { '24h': '24 hours', '7d': '7 days', '30d': '30 days', '365d': '365 days', all: 'all time' };
     const DEVICE_LABELS = { desktop: 'Desktop', mobile: 'Mobile', tablet: 'Tablet', tv: 'TV', bot: 'Bot', unknown: 'Unknown' };
+    const DEFAULT_DEVICES = Object.keys(DEVICE_LABELS);
     let savedRange;
     try { savedRange = localStorage.getItem('statsRange'); } catch (e) { savedRange = null; }
     let currentRange = savedRange || '7d';
@@ -509,6 +522,7 @@
     // no extra request or API cost per click.
     const PAGES_PREVIEW_COUNT = 10;
     let topPagesData = [];
+    let topPagesDevices = [];
     let showAllPages = false;
     const showMoreBtn = document.getElementById('showMorePages');
 
@@ -518,18 +532,46 @@
       });
     }
 
+    // Only show a device column if at least one displayed row actually has
+    // views from it -- keeps the table from filling up with all-zero TV/Bot
+    // columns before that kind of traffic has shown up.
+    function visibleDevices(rows, devices) {
+      return (devices || DEFAULT_DEVICES).filter(function (d) {
+        return rows.some(function (r) { return r.deviceViews && r.deviceViews[d] > 0; });
+      });
+    }
+
+    function deviceHeaderCell(d) {
+      return '<th class="views">' + (DEVICE_LABELS[d] || escapeHtml(d)) + '</th>';
+    }
+
+    function deviceCell(row, device) {
+      const v = (row.deviceViews && row.deviceViews[device]) || 0;
+      return '<td class="views">' + v.toLocaleString() + '</td>';
+    }
+
     function renderTopPages() {
+      const topPagesHead = document.getElementById('topPagesHead');
       const topPagesBody = document.getElementById('topPagesBody');
       if (!topPagesData.length) {
-        topPagesBody.innerHTML = '<tr><td colspan="3" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+        topPagesHead.innerHTML = '<tr><th>Page</th><th class="site">Site</th><th class="views">Views</th></tr>';
+        topPagesBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
         showMoreBtn.style.display = 'none';
         return;
       }
 
       const visible = showAllPages ? topPagesData : topPagesData.slice(0, PAGES_PREVIEW_COUNT);
+      const devices = topPagesDevices;
+
+      topPagesHead.innerHTML = '<tr><th>Page</th><th class="site">Site</th>' +
+        devices.map(deviceHeaderCell).join('') + '<th class="views">Views</th></tr>';
+
       topPagesBody.innerHTML = visible.map(function (p) {
         const url = 'https://' + p.site + p.path;
-        return '<tr><td><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(p.path) + '</a></td><td class="site"><a href="https://' + escapeHtml(p.site) + '" target="_blank" rel="noopener">' + escapeHtml(p.site) + '</a></td><td class="views">' + p.views.toLocaleString() + '</td></tr>';
+        return '<tr><td><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(p.path) + '</a></td>' +
+          '<td class="site"><a href="https://' + escapeHtml(p.site) + '" target="_blank" rel="noopener">' + escapeHtml(p.site) + '</a></td>' +
+          devices.map(function (d) { return deviceCell(p, d); }).join('') +
+          '<td class="views">' + p.views.toLocaleString() + '</td></tr>';
       }).join('');
 
       if (topPagesData.length > PAGES_PREVIEW_COUNT) {
@@ -547,11 +589,13 @@
 
     async function loadStats() {
       setActiveTab();
+      const siteTotalsHead = document.getElementById('siteTotalsHead');
       const siteTotalsBody = document.getElementById('siteTotalsBody');
-      document.getElementById('topPagesBody').innerHTML = '<tr><td colspan="3" class="empty-state">Loading&hellip;</td></tr>';
+      const siteTotalsFoot = document.getElementById('siteTotalsFoot');
+      document.getElementById('topPagesBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
       showMoreBtn.style.display = 'none';
-      siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>';
-      document.getElementById('siteTotalsFoot').innerHTML = '';
+      siteTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
+      siteTotalsFoot.innerHTML = '';
       const deviceTotalsBody = document.getElementById('deviceTotalsBody');
       deviceTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>';
       document.getElementById('deviceTotalsFoot').innerHTML = '';
@@ -561,20 +605,33 @@
         const res = await fetch('/api/stats?range=' + encodeURIComponent(currentRange));
         if (!res.ok) throw new Error('bad response');
         const data = await res.json();
+        const devices = data.devices && data.devices.length ? data.devices : DEFAULT_DEVICES;
 
         topPagesData = data.topPages || [];
+        topPagesDevices = visibleDevices(topPagesData, devices);
         showAllPages = false;
         renderTopPages();
 
-        const siteTotalsFoot = document.getElementById('siteTotalsFoot');
         if (data.siteTotals && data.siteTotals.length) {
+          const siteDevices = visibleDevices(data.siteTotals, devices);
+          siteTotalsHead.innerHTML = '<tr><th>Site</th>' +
+            siteDevices.map(deviceHeaderCell).join('') + '<th class="views">Views</th></tr>';
+
           siteTotalsBody.innerHTML = data.siteTotals.map(function (s) {
-            return '<tr><td><a href="https://' + escapeHtml(s.site) + '" target="_blank" rel="noopener">' + escapeHtml(s.site) + '</a></td><td class="views">' + s.views.toLocaleString() + '</td></tr>';
+            return '<tr><td><a href="https://' + escapeHtml(s.site) + '" target="_blank" rel="noopener">' + escapeHtml(s.site) + '</a></td>' +
+              siteDevices.map(function (d) { return deviceCell(s, d); }).join('') +
+              '<td class="views">' + s.views.toLocaleString() + '</td></tr>';
           }).join('');
+
           const totalViews = data.siteTotals.reduce(function (sum, s) { return sum + s.views; }, 0);
-          siteTotalsFoot.innerHTML = '<tr><td>Total</td><td class="views">' + totalViews.toLocaleString() + '</td></tr>';
+          const deviceColumnTotals = siteDevices.map(function (d) {
+            const sum = data.siteTotals.reduce(function (acc, s) { return acc + ((s.deviceViews && s.deviceViews[d]) || 0); }, 0);
+            return '<td class="views">' + sum.toLocaleString() + '</td>';
+          }).join('');
+          siteTotalsFoot.innerHTML = '<tr><td>Total</td>' + deviceColumnTotals + '<td class="views">' + totalViews.toLocaleString() + '</td></tr>';
         } else {
-          siteTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+          siteTotalsHead.innerHTML = '<tr><th>Site</th><th class="views">Views</th></tr>';
+          siteTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
           siteTotalsFoot.innerHTML = '';
         }
 
