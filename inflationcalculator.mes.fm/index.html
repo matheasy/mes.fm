@@ -159,7 +159,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.inflation-button, .cpi-button, .dollar-button {display:inline-block;width:13em;cursor:pointer;}
 	.inflation-button {margin-right:0.6em;}
 	.cpi-button {margin-right:0.6em;}
-	#cpi-graph,#dollar-graph {display: none;}
 
 		
 	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
@@ -631,15 +630,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 			<div class="graph-container">
 			<div class="inflation-button button active-button">Inflation Rate Graph</div>
-			<div class="cpi-button button">CPI Graph</div>
-			<div class="dollar-button button">Dollar Worth Graph</div>
+			<div class="cpi-button button active-button">CPI Graph</div>
+			<div class="dollar-button button active-button">Dollar Worth Graph</div>
 			<div id="inflation-graph"></div>
 			<div id="cpi-graph"></div>
 			<div id="dollar-graph"></div>
 		</div>
-	
-	<div class="button graph-data-button hide-div-button" id="graph-table-button">Graph Data Table</div>
-	<div class="hide">
+
+	<div class="button graph-data-button hide-div-button selected" id="graph-table-button">Graph Data Table</div>
+	<div>
 		<p id="data-table-title" class="header2">*Worth of $1.00 each Year vs. $1.00 in Index Year (2014)</p>
 		<table id="graph-table" class="basic-table basic-table--full"></table>
 	</div>
