@@ -210,68 +210,90 @@ $(document).ready(function(){
                 chart.draw(data, options);
 			},
 
+			// CPI data by source/country/year, loaded once from data/inflation-data.json.
+			// Used to live on GoDaddy in a MySQL table (`inflationdb.countrydata`) served
+			// through php/changeCountry.php and php/changeSource.php -- those PHP scripts
+			// don't run on static hosting, so the same data now ships as a static JSON
+			// file and these two build the same <option> markup client-side instead.
+			countryData: null,
+
+			loadData: function(callback) {
+				if(CALCULATOR.countryData) {
+					callback();
+					return;
+				}
+				$.getJSON('data/inflation-data.json')
+					.done(function(data) {
+						CALCULATOR.countryData = data;
+						callback();
+					});
+			},
+
+			buildYearOptions: function(source,country) {
+				var yearData = (CALCULATOR.countryData[source] || {}).data || {};
+				var cpiByYear = yearData[country] || {};
+				var years = Object.keys(cpiByYear).sort(function(a,b) { return a - b; });
+				var html = '';
+				years.forEach(function(year) {
+					html += '<option value="'+cpiByYear[year]+'">'+year+'</option>';
+				});
+				return html;
+			},
+
+			buildCountryOptions: function(source) {
+				var countries = (CALCULATOR.countryData[source] || {}).countries || [];
+				var html = '';
+				countries.forEach(function(country) {
+					html += '<option value="'+country+'">'+country+'</option>';
+				});
+				return html;
+			},
+
 			changeCountry: function(referrer,i=0,c=0) {
 
 				if(!referrer || referrer == "initialize")
 					$("#country-select,#data-source-select,#index-year-select,#comparison-year-select").attr('disabled','disabled');
-					
+
 				var country = $("#country-select").val();
 				var source = $("#data-source-select").val();
 
-				//$.get('changeCountry.php', {country: country}) /* same as $.ajax */
+				CALCULATOR.loadData(function() {
+					var data = CALCULATOR.buildYearOptions(source,country);
+					$("#index-year-select,#comparison-year-select").html(data);
+					$("#country-select,#data-source-select,#index-year-select,#comparison-year-select").removeAttr('disabled');
+					if(referrer == "initialize") {
+						$("#index-year-select option[value='"+i+"']").attr("selected","selected");
+						$("#comparison-year-select option[value='"+c+"']").attr("selected","selected");
+					} else {
+						$("#index-year-select option").last().attr("selected","selected");
+						$("#comparison-year-select option").last().attr("selected","selected");
+					}
 
-				$.ajax({
-					url:'php/changeCountry.php',
-					type:'GET',
-					data:({country:country,source:source})
-				})
-					.done(
-						function(data) {
-							$("#index-year-select,#comparison-year-select").html(data);
-							$("#country-select,#data-source-select,#index-year-select,#comparison-year-select").removeAttr('disabled');
-							if(referrer == "initialize") {
-								$("#index-year-select option[value='"+i+"']").attr("selected","selected");
-								$("#comparison-year-select option[value='"+c+"']").attr("selected","selected");
-							} else {
-								$("#index-year-select option").last().attr("selected","selected");
-								$("#comparison-year-select option").last().attr("selected","selected");
-							}
-							
-							CALCULATOR.calcAnswer();
-						});
+					CALCULATOR.calcAnswer();
+				});
 			},
 
 			changeSource: function() {
 				$("#country-select,#data-source-select,#index-year-select,#comparison-year-select").attr('disabled','disabled');
 				var source = $("#data-source-select").val();
 
-				$.ajax({
-					url:'php/changeSource.php',
-					type:'GET',
-					data:({source:source})
-				})
-					.done(
-						function(data) {
-							$("#country-select").html(data);
-							CALCULATOR.changeCountry(true);
-						});
+				CALCULATOR.loadData(function() {
+					var data = CALCULATOR.buildCountryOptions(source);
+					$("#country-select").html(data);
+					CALCULATOR.changeCountry(true);
+				});
 			},
 
 			loadCustomData: function(c,iY,cY) {
 				$("#country-select,#data-source-select,#index-year-select,#comparison-year-select").attr('disabled','disabled');
 				var source = $("#data-source-select").val();
 
-				$.ajax({
-					url:'php/changeSource.php',
-					type:'GET',
-					data:({source:source})
-				})
-					.done(
-						function(data) {
-							$("#country-select").html(data);
-							$("#country-select").val(c);
-							CALCULATOR.changeCountry("initialize",iY,cY);
-						});
+				CALCULATOR.loadData(function() {
+					var data = CALCULATOR.buildCountryOptions(source);
+					$("#country-select").html(data);
+					$("#country-select").val(c);
+					CALCULATOR.changeCountry("initialize",iY,cY);
+				});
 			},
 
 			shareUrl: function () {
