@@ -147,68 +147,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   .info-bar__logo-container { display: none !important; }
   .info-bar { margin-left: 0 !important; padding-left: 0 !important; display: block !important; }
   .info-bar__item { float: none !important; display: inline-block !important; }
-
-  /* keep only the site-content links in the header row on mobile (Home/
-     Donate/Subscribe/Links live in the hamburger dropdown instead, see
-     the unconditional block below the media query) -- kept mobile-only
-     since the full row already fits fine as a normal top nav on wider
-     screens */
-  #info-bar > .info-bar__item:has(a[href$="index.html"]),
-  #info-bar > .info-bar__item:has(a[href*="donate"]),
-  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
-  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
 }
-
-/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
-   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
-   panel instead of the always-visible sidebar, at every screen width
-   (not just mobile), so no page reserves a right-hand column for it */
-.inner-container { position: relative !important; }
-.header .social-container { display: none !important; }
-.side-bar { width: auto !important; float: none !important; }
-.navbar-container { margin: 0 !important; box-shadow: none !important; }
-.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
-.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
-.navbar__item--social .social__text { color: white; margin: 0; }
-.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
-#navbar-button {
-  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
-  width: 44px; height: 44px; padding: 0; margin: 0 !important;
-  background: transparent !important; border: none !important;
-  font-size: 0;
-}
-#navbar-button::before {
-  content: ""; display: block; margin: 0 auto;
-  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
-  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
-}
-#navbar { display: none; }
-#navbar.hide {
-  display: block; box-sizing: border-box;
-  position: absolute; top: 76px; right: 16px; z-index: 19;
-  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
-  scrollbar-gutter: stable;
-  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
-  border-radius: 0.25em;
-}
-
-/* dropdown polish: fix the icon/logo row overlapping the next nav item
-   (.info-bar__logo-container's global `display: table-cell` doesn't
-   behave without a table/table-row ancestor), and move "Follow us!" to
-   the bottom of the list instead of the top -- via flex order, not an
-   HTML move, since locating the true closing </ul> among the nested
-   .navbar__dropdown-container <ul>s isn't worth the risk */
-#navbar.hide { display: flex; flex-direction: column; }
-.navbar__item--social { order: 999; }
-.navbar__item--social .info-bar__logo-container { display: block !important; }
-
-/* now that the sidebar is gone, center the main content column in a
-   narrower page instead of leaving it flush-left in a wide, mostly-empty
-   .outer-container -- matches the plain centered-column layout
-   mes.fm/ufo already uses */
-.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
-.outer-page-content { width: 100% !important; display: block !important; }
-.page-content { padding-right: 0 !important; }}
 /* COMMENTS-BUTTON-MOBILE-FIX-INSERTED */
 @media (max-width: 600px) {
   .footer { padding: 1.25em 0.75em; }
@@ -426,26 +365,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
-    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><p class="social__text">Follow us!</p><ul class="social">
-		<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
-    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
-    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>    <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>    <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>    <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>    <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li></ul>                            </div>                                                        </div>
-                        <div class="info-bar-container">
-                            <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='../index.html'>Home</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../puzzles.html'>Puzzles</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../memes.html'>Memes</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='https://mes.fm/math'>Math Tutorials</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='../calculators.html'>Calculators</a></li>
-                                    <li class="info-bar__item"><a class="info-bar__item__text" href='../tools.html'>Tools</a></li>
-                                    <li class="info-bar__item"><a class="info-bar__item__text" href='../mobile-apps.html'>Mobile Apps</a></li>
-                                    
-                                    <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='../contact.html'>Contact Us</a></li>
-                                    <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='../donate.html'>Donate</a></li><li class="info-bar__item"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>                            </ul>
-                        </div>
-                        <a class="info-bar__logo-container" href="../index.html" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->                        <div class="outer-page-content">
-                            <div class="page-content">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Math Riddle</h1>                                        <p class="page-description">Can you solve this math puzzle?? It took me a while but I finally got it ;)<br><br>Check out the solution to this puzzle by clicking <a class="link" href="math-riddle/solution.html">here</a>!</p>	<div id="main-content">
-		<div class="button-container">
-			<a class="btn-link" href="brain-teaser.html"><div class="button button--small" style="position:relative;">Previous<span class="btn-arrow" style="position:absolute;left:0.75em;top:50%;transform:translateY(-50%);">&#9668;</span></div></a>			<a class="btn-link" href="math-stick-equation-puzzle.html"><div class="button button--small">Random</div></a>
-			<a class="btn-link" href="how-many-squares-puzzle.html"><div class="button button--small" style="position:relative;">Next<span class="btn-arrow" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);">&#9658;</span></div></a></div></li>
-    <li class="navbar__item"><a class="navbar__link navbar__link--first" href="../index.html">Home</a></li>
+    <li class="navbar__item"><a class="navbar__link navbar__link--first" href="../index.html">Math Easy Solutions</a></li>
                         <li class="navbar__item"><a target="_self" class="navbar__link" href="../puzzles.html">Puzzles</a></li>
                                 <li class="navbar__item"><a target="_self" class="navbar__link" href="../memes.html">Memes</a></li>
                                 <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
