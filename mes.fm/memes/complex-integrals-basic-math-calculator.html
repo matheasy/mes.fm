@@ -147,16 +147,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   .info-bar__logo-container { display: none !important; }
   .info-bar { margin-left: 0 !important; padding-left: 0 !important; display: block !important; }
   .info-bar__item { float: none !important; display: inline-block !important; }
-
-  /* keep only the site-content links in the header row on mobile (Home/
-     Donate/Subscribe/Links live in the hamburger dropdown instead, see
-     the unconditional block below the media query) -- kept mobile-only
-     since the full row already fits fine as a normal top nav on wider
-     screens */
-  #info-bar > .info-bar__item:has(a[href$="index.html"]),
-  #info-bar > .info-bar__item:has(a[href*="donate"]),
-  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
-  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
 }
 
 /* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
@@ -400,13 +390,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li>
     <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>    <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>    <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>    <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>    <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li></ul>                            </div>                                                        </div>
                         <div class="info-bar-container">
-                            <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='../index.html'>Home</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../puzzles.html'>Puzzles</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../memes.html'>Memes</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='https://mes.fm/math'>Math Tutorials</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='../calculators.html'>Calculators</a></li>
-                                    <li class="info-bar__item"><a class="info-bar__item__text" href='../tools.html'>Tools</a></li>
-                                    <li class="info-bar__item"><a class="info-bar__item__text" href='../mobile-apps.html'>Mobile Apps</a></li>
-                                    
-                                    <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='../contact.html'>Contact Us</a></li>
-                                    <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='../donate.html'>Donate</a></li><li class="info-bar__item"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>                            </ul>
+                            <ul id="info-bar" class="info-bar shadow"><li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../puzzles.html'>Puzzles</a></li><li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='../memes.html'>Memes</a></li><li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='https://mes.fm/math'>Math Tutorials</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='../calculators.html'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='../tools.html'>Tools</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='../mobile-apps.html'>Mobile Apps</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='https://mes.fm/links'>Links</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='../donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='../contact.html'>Contact Us</a></li></ul>
                         </div>
                         <a class="info-bar__logo-container" href="../index.html" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->                        <div class="outer-page-content">
                             <div class="page-content">                                    <div class="color-box"></div>
@@ -512,7 +496,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                     });
                 </script>                <script src="../main_js/lazysizes.min.js?v=1.0.3" async></script>
             <script src="../main_js/main.js?v=1.0.1"></script>
-            <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+            <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script></body>
 
 <!-- Mirrored from mes.fm/memes/complex-integrals-basic-math-calculator by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:50:22 GMT -->
 </html>
