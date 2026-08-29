@@ -148,6 +148,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .navbar__dropdown-container {color: #222222;background-color:#fac7c5;}
         .header2--top {margin-top: 0.5em;}
         .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* the hamburger-menu "Follow us!" duplicate only exists for the
+           mobile dropdown -- hidden by default, unhidden inside the
+           mobile media query below */
+        .navbar__item--social { display: none; }
         /* RESPONSIVE-FIX-INSERTED */
 @media (max-width: 768px) {
   .outer-container { width: 100% !important; margin: 0 !important; }
@@ -156,6 +160,43 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
+
+  /* mobile hamburger nav: reuses the existing #navbar-button/#navbar
+     show/hide (already wired up in main.js) -- adds a CSS-only
+     hamburger icon + dropdown panel instead of showing the sidebar
+     inline, and trims the header row to just the site-content links */
+  .inner-container { position: relative !important; }
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+  .header .social-container { display: none !important; }
+  .navbar-container { margin: 0 !important; box-shadow: none !important; }
+  .navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+  .navbar__item--social .social-container--navbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+  .navbar__item--social .social__text { color: white; margin: 0; }
+  .navbar__item--social .social { display: flex; gap: 0.5em; margin: 0; padding: 0; }
+  .navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+  #navbar-button {
+    position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+    width: 44px; height: 44px; padding: 0; margin: 0 !important;
+    background: transparent !important; border: none !important;
+    font-size: 0;
+  }
+  #navbar-button::before {
+    content: ""; display: block; margin: 0 auto;
+    width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+    box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+  }
+  #navbar { display: none; }
+  #navbar.hide {
+    display: block; box-sizing: border-box;
+    position: absolute; top: 76px; right: 16px; z-index: 19;
+    width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+    scrollbar-gutter: stable;
+    box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+    border-radius: 0.25em;
+  }
 }
 
 	/* Mobile layout: stack header/nav/footer instead of overlapping/squeezing */
@@ -327,7 +368,11 @@ Date of Calculations: September 16, 2016</p>                                    
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow">
                                         <div class="button button--navbar" id="navbar-button">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark">&#9660;</span></div>    <ul id="navbar" class="navbar">
-    <li class="navbar__item"><a class="navbar__link navbar__link--first" href="../index.html">YouTube Money Calculator</a></li>
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><p class="social__text">Follow us!</p><ul class="social">
+		<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/youtubecalculator" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/youtubemoneycal" target="_blank"></a></li>                </ul><a class="info-bar__logo-container" href="https://mes.fm/index.html" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+    <li class="navbar__item"><a class="navbar__link navbar__link--first" href="../index.html">Home</a></li>
                         <li class="navbar__item"><a target="_self" class="navbar__link" href="../youtubers.html">How much do YouTuber&#039;s make?</a></li>
                         <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Calculators<span class="dropdown-symbol">&#9660;</span></span>
         <ul class="navbar__dropdown-container hide">
