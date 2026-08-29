@@ -181,6 +181,10 @@ function buildPage(post) {
   // the top of the TOC and splice it in as the first chapter, right before the
   // first Hive-sourced chapter.
   toc.unshift({ id: "posts-and-updates", label: "Posts and Updates" });
+  // "Important Links" is the article's intro blurb + reference-link list, turned
+  // into its own collapsible chapter below (see importantLinksChapter). Pin it
+  // above "Posts and Updates" so it's the first TOC entry.
+  toc.unshift({ id: "important-links", label: "Important Links" });
   const tocLinksHtml = toc
     .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
     .join("\n      ");
@@ -193,20 +197,35 @@ function buildPage(post) {
 </div>
 <hr>
 `;
-  // Replaces the plain <hr> that would otherwise sit right before the first
-  // chapter with a toolbar that draws the same divider line plus a
-  // collapse/expand-all control (see .chapters-toolbar / toggleAllChapters()).
+  // A collapse/expand-all control (see .chapters-toolbar / toggleAllChapters()),
+  // pinned to the very top of the post body so "Collapse All" also folds the
+  // "Important Links" chapter below it. Its top border draws the same divider
+  // line a plain <hr> would.
   const chaptersToolbar = `<div class="chapters-toolbar">
 <button id="toggleAllChaptersBtn" class="theme-toggle-btn" onclick="toggleAllChapters()">Collapse All</button>
 </div>
 `;
+  // Everything before the first Hive-sourced <h1> section (the intro blurb +
+  // reference-link list) becomes its own collapsible "Important Links" chapter
+  // so it folds along with the rest.
   const firstChapterMatch = wrappedBodyHtml.match(/<hr>\n<div class="chapter-toggle" id="/);
-  const bodyHtml = firstChapterMatch
-    ? wrappedBodyHtml.slice(0, firstChapterMatch.index) +
-      chaptersToolbar +
-      postsAndUpdatesChapter +
-      wrappedBodyHtml.slice(firstChapterMatch.index + "<hr>\n".length)
-    : chaptersToolbar + postsAndUpdatesChapter + wrappedBodyHtml;
+  const leadingHtml = (firstChapterMatch
+    ? wrappedBodyHtml.slice(0, firstChapterMatch.index)
+    : wrappedBodyHtml
+  ).trim();
+  const restChaptersHtml = firstChapterMatch
+    ? wrappedBodyHtml.slice(firstChapterMatch.index + "<hr>\n".length)
+    : "";
+  const importantLinksChapter = `<div class="chapter-toggle" id="important-links">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('important-links-list')"><center>Important Links <span id="arrowIcon-important-links-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="important-links-list" class="chapter-toggle-list">
+${leadingHtml}
+</div>
+</div>
+<hr>
+`;
+  const bodyHtml =
+    chaptersToolbar + importantLinksChapter + postsAndUpdatesChapter + restChaptersHtml;
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
   const commentCount = post.children ?? 0;
@@ -485,19 +504,13 @@ function buildPage(post) {
       display: none;
     }
 
-    /* Sits where a plain <hr> would otherwise be, right before the first
-       chapter -- the top border draws the same divider line, with a
-       collapse/expand-all control anchored to its right edge. */
+    /* Pinned to the top of the post body, just under the <hr> that follows the
+       article meta -- a collapse/expand-all control anchored to the right edge,
+       above the first ("Important Links") chapter. */
     .chapters-toolbar {
       display: flex;
       justify-content: flex-end;
-      border-top: 1px solid rgba(128, 128, 128, 0.3);
-      padding-top: 0.8em;
-      margin: 2em 0 0;
-    }
-
-    .chapters-toolbar .theme-toggle-btn {
-      margin: 0 0 1.2em;
+      margin: -0.8em 0 0.4em;
     }
 
     /* Table of contents: a fixed side column on wide viewports (there's only
@@ -580,7 +593,17 @@ function buildPage(post) {
       h1 { font-size: 1.5em; }
       body { padding: 0 12px 40px; }
     }
-  </style>
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+</style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
 </head>
 <body class="dark">
   <nav class="toc-sidebar" aria-label="Table of contents">
@@ -806,7 +829,7 @@ ${bodyHtml}
     })();
   </script>
 
-</body>
+<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
 </html>
 `;
 }
