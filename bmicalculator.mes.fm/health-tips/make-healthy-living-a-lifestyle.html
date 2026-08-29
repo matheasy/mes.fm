@@ -132,10 +132,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .navbar__dropdown-container {color: #222222;background-color:#f8e2ed;}
         .header2--top {margin-top: 0.5em;}
         .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
-        /* the hamburger-menu "Follow us!" duplicate only exists for the
-           mobile dropdown -- hidden by default, unhidden inside the
-           mobile media query below */
-        .navbar__item--social { display: none; }
         /* RESPONSIVE-FIX-INSERTED */
 @media (max-width: 768px) {
   .outer-container { width: 100% !important; margin: 0 !important; }
@@ -145,42 +141,49 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
 
-  /* mobile hamburger nav: reuses the existing #navbar-button/#navbar
-     show/hide (already wired up in main.js) -- adds a CSS-only
-     hamburger icon + dropdown panel instead of showing the sidebar
-     inline, and trims the header row to just the site-content links */
-  .inner-container { position: relative !important; }
+  /* keep only the site-content links in the header row on mobile (Home/
+     Donate/Subscribe/Links live in the hamburger dropdown instead, see
+     the unconditional block below the media query) -- kept mobile-only
+     since the full row already fits fine as a normal top nav on wider
+     screens */
   #info-bar > .info-bar__item:has(a[href$="index.html"]),
   #info-bar > .info-bar__item:has(a[href*="donate"]),
   #info-bar > .info-bar__item:has(a[href*="substack.com"]),
   #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
-  .header .social-container { display: none !important; }
-  .navbar-container { margin: 0 !important; box-shadow: none !important; }
-  .navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
-  .navbar__item--social .social-container--navbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
-  .navbar__item--social .social__text { color: white; margin: 0; }
-  .navbar__item--social .social { display: flex; gap: 0.5em; margin: 0; padding: 0; }
-  .navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
-  #navbar-button {
-    position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
-    width: 44px; height: 44px; padding: 0; margin: 0 !important;
-    background: transparent !important; border: none !important;
-    font-size: 0;
-  }
-  #navbar-button::before {
-    content: ""; display: block; margin: 0 auto;
-    width: 26px; height: 4px; background: currentColor; border-radius: 1px;
-    box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
-  }
-  #navbar { display: none; }
-  #navbar.hide {
-    display: block; box-sizing: border-box;
-    position: absolute; top: 76px; right: 16px; z-index: 19;
-    width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
-    scrollbar-gutter: stable;
-    box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
-    border-radius: 0.25em;
-  }
+}
+
+/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
+   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
+   panel instead of the always-visible sidebar, at every screen width
+   (not just mobile), so no page reserves a right-hand column for it */
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
 }
 </style>	<style>
 	.single-img {width:100%;display:block;height:auto;border:0.125em solid #ddd;box-sizing: border-box;-moz-box-sizing: border-box;-webkit-box-sizing: border-box;}
@@ -244,15 +247,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         <meta name="author" content="BMI Calculator Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://bmicalculator.mes.fm/health-tips/make-healthy-living-a-lifestyle" />            <meta property="og:title" content="Make Healthy Living a Lifestyle" />        <meta property="og:image" content="https://bmicalculator.mes.fm/img/memes/make-healthy-living-a-lifestyle.jpeg" />
-        <meta property="og:description" content="While this may sound like just another overused clichÃ©, there is actually a lot of meaning packed into. We can not expect to be healthy, both mentally or physically, if we view exercise or eating well as something we must force upon ourselves. This is because your body, and mind, have built-in defensive mechanisms against anything we internally don&#039;t want to do. This is usually expressed in the form of stress and goes beyond just health and fitness. Even in our work and social lives, when we have to force ourselves to wake up every morning to work, or force ourselves to get along with people around us, then this will not last too long.&lt;br /&gt;
+        <meta property="og:description" content="While this may sound like just another overused cliché, there is actually a lot of meaning packed into. We can not expect to be healthy, both mentally or physically, if we view exercise or eating well as something we must force upon ourselves. This is because your body, and mind, have built-in defensive mechanisms against anything we internally don&#039;t want to do. This is usually expressed in the form of stress and goes beyond just health and fitness. Even in our work and social lives, when we have to force ourselves to wake up every morning to work, or force ourselves to get along with people around us, then this will not last too long.&lt;br /&gt;
 &lt;br /&gt;
 Thus the best way to become healthy is to make exercise and eating right a part of your lifestyle, or even more so, a part of who you are. How much a part of your life will depend on your personality and what you would like to accomplish. And the best way to incorport this is by gradually adding new exercises or better eating habits to your daily routine, and from there allow yourself to figure out what works for you. If a certain exercise routine is not working for you, then change it, simple as that. That is why it is best to incrementally improve how you exercise and when, so that you can better assess if something works for you before you build upon it. Same thing goes with eating healthy, and in fact everything else in life. So make sure to always listen to your body and mind, because often they know things you don&#039;t! " />
 
-        <meta name="description" content="While this may sound like just another overused clichÃ©, there is actually a lot of meaning packed into. We can not expect to be healthy, both mentally or physically, if we view exercise or eating well as something we must force upon ourselves. This is because your body, and mind, have built-in defensive mechanisms against anything we internally don&#039;t want to do. This is usually expressed in the form of stress and goes beyond just health and fitness. Even in our work and social lives, when we have to force ourselves to wake up every morning to work, or force ourselves to get along with people around us, then this will not last too long.&lt;br /&gt;
+        <meta name="description" content="While this may sound like just another overused cliché, there is actually a lot of meaning packed into. We can not expect to be healthy, both mentally or physically, if we view exercise or eating well as something we must force upon ourselves. This is because your body, and mind, have built-in defensive mechanisms against anything we internally don&#039;t want to do. This is usually expressed in the form of stress and goes beyond just health and fitness. Even in our work and social lives, when we have to force ourselves to wake up every morning to work, or force ourselves to get along with people around us, then this will not last too long.&lt;br /&gt;
 &lt;br /&gt;
 Thus the best way to become healthy is to make exercise and eating right a part of your lifestyle, or even more so, a part of who you are. How much a part of your life will depend on your personality and what you would like to accomplish. And the best way to incorport this is by gradually adding new exercises or better eating habits to your daily routine, and from there allow yourself to figure out what works for you. If a certain exercise routine is not working for you, then change it, simple as that. That is why it is best to incrementally improve how you exercise and when, so that you can better assess if something works for you before you build upon it. Same thing goes with eating healthy, and in fact everything else in life. So make sure to always listen to your body and mind, because often they know things you don&#039;t! ">            <meta name="twitter:card" content="summary_large_image">        <meta name="twitter:site" content="@bmicalculator__">
         <meta name="twitter:title" content="Make Healthy Living a Lifestyle">
-        <meta name="twitter:description" content="While this may sound like just another overused clichÃ©, there is actually a lot of meaning packed into. We can not expect to be healthy, both mentally or physically, if we view exercise or eating well as something we must force upon ourselves. This is because your body, and mind, have built-in defensive mechanisms against anything we internally don&#039;t want to do. This is usually expressed in the form of stress and goes beyond just health and fitness. Even in our work and social lives, when we have to force ourselves to wake up every morning to work, or force ourselves to get along with people around us, then this will not last too long.&lt;br /&gt;
+        <meta name="twitter:description" content="While this may sound like just another overused cliché, there is actually a lot of meaning packed into. We can not expect to be healthy, both mentally or physically, if we view exercise or eating well as something we must force upon ourselves. This is because your body, and mind, have built-in defensive mechanisms against anything we internally don&#039;t want to do. This is usually expressed in the form of stress and goes beyond just health and fitness. Even in our work and social lives, when we have to force ourselves to wake up every morning to work, or force ourselves to get along with people around us, then this will not last too long.&lt;br /&gt;
 &lt;br /&gt;
 Thus the best way to become healthy is to make exercise and eating right a part of your lifestyle, or even more so, a part of who you are. How much a part of your life will depend on your personality and what you would like to accomplish. And the best way to incorport this is by gradually adding new exercises or better eating habits to your daily routine, and from there allow yourself to figure out what works for you. If a certain exercise routine is not working for you, then change it, simple as that. That is why it is best to incrementally improve how you exercise and when, so that you can better assess if something works for you before you build upon it. Same thing goes with eating healthy, and in fact everything else in life. So make sure to always listen to your body and mind, because often they know things you don&#039;t! ">
         <meta name="twitter:image" content="https://bmicalculator.mes.fm/img/memes/make-healthy-living-a-lifestyle.jpeg">
@@ -426,7 +429,7 @@ Thus the best way to become healthy is to make exercise and eating right a part 
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Make Healthy Living a Lifestyle</h1>                                        <p class="page-description">While this may sound like just another overused clichÃ©, there is actually a lot of meaning packed into. We can not expect to be healthy, both mentally or physically, if we view exercise or eating well as something we must force upon ourselves. This is because your body, and mind, have built-in defensive mechanisms against anything we internally don't want to do. This is usually expressed in the form of stress and goes beyond just health and fitness. Even in our work and social lives, when we have to force ourselves to wake up every morning to work, or force ourselves to get along with people around us, then this will not last too long.<br />
+                                    <h1 class="page-title">Make Healthy Living a Lifestyle</h1>                                        <p class="page-description">While this may sound like just another overused cliché, there is actually a lot of meaning packed into. We can not expect to be healthy, both mentally or physically, if we view exercise or eating well as something we must force upon ourselves. This is because your body, and mind, have built-in defensive mechanisms against anything we internally don't want to do. This is usually expressed in the form of stress and goes beyond just health and fitness. Even in our work and social lives, when we have to force ourselves to wake up every morning to work, or force ourselves to get along with people around us, then this will not last too long.<br />
 <br />
 Thus the best way to become healthy is to make exercise and eating right a part of your lifestyle, or even more so, a part of who you are. How much a part of your life will depend on your personality and what you would like to accomplish. And the best way to incorport this is by gradually adding new exercises or better eating habits to your daily routine, and from there allow yourself to figure out what works for you. If a certain exercise routine is not working for you, then change it, simple as that. That is why it is best to incrementally improve how you exercise and when, so that you can better assess if something works for you before you build upon it. Same thing goes with eating healthy, and in fact everything else in life. So make sure to always listen to your body and mind, because often they know things you don't! </p>                                    	<div id="main-content">
 		<div class="button-container">

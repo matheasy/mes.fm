@@ -132,10 +132,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .navbar__dropdown-container {color: #222222;background-color:#ffebcf;}
         .header2--top {margin-top: 0.5em;}
         .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
-        /* the hamburger-menu "Follow us!" duplicate only exists for the
-           mobile dropdown -- hidden by default, unhidden inside the
-           mobile media query below */
-        .navbar__item--social { display: none; }
         /* RESPONSIVE-FIX-INSERTED */
 @media (max-width: 768px) {
   .outer-container { width: 100% !important; margin: 0 !important; }
@@ -145,42 +141,49 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
 
-  /* mobile hamburger nav: reuses the existing #navbar-button/#navbar
-     show/hide (already wired up in main.js) -- adds a CSS-only
-     hamburger icon + dropdown panel instead of showing the sidebar
-     inline, and trims the header row to just the site-content links */
-  .inner-container { position: relative !important; }
+  /* keep only the site-content links in the header row on mobile (Home/
+     Donate/Subscribe/Links live in the hamburger dropdown instead, see
+     the unconditional block below the media query) -- kept mobile-only
+     since the full row already fits fine as a normal top nav on wider
+     screens */
   #info-bar > .info-bar__item:has(a[href$="index.html"]),
   #info-bar > .info-bar__item:has(a[href*="donate"]),
   #info-bar > .info-bar__item:has(a[href*="substack.com"]),
   #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
-  .header .social-container { display: none !important; }
-  .navbar-container { margin: 0 !important; box-shadow: none !important; }
-  .navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
-  .navbar__item--social .social-container--navbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
-  .navbar__item--social .social__text { color: white; margin: 0; }
-  .navbar__item--social .social { display: flex; gap: 0.5em; margin: 0; padding: 0; }
-  .navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
-  #navbar-button {
-    position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
-    width: 44px; height: 44px; padding: 0; margin: 0 !important;
-    background: transparent !important; border: none !important;
-    font-size: 0;
-  }
-  #navbar-button::before {
-    content: ""; display: block; margin: 0 auto;
-    width: 26px; height: 4px; background: currentColor; border-radius: 1px;
-    box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
-  }
-  #navbar { display: none; }
-  #navbar.hide {
-    display: block; box-sizing: border-box;
-    position: absolute; top: 76px; right: 16px; z-index: 19;
-    width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
-    scrollbar-gutter: stable;
-    box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
-    border-radius: 0.25em;
-  }
+}
+
+/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
+   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
+   panel instead of the always-visible sidebar, at every screen width
+   (not just mobile), so no page reserves a right-hand column for it */
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
 }
 </style>	<style>
 	.single-img {width:100%;display:block;height:auto;border:0.125em solid #ddd;box-sizing: border-box;-moz-box-sizing: border-box;-webkit-box-sizing: border-box;}
@@ -245,15 +248,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         <meta name="author" content="Timer Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://timer.mes.fm/inspirational-quotes/first-casualty-of-war-is-truth" />            <meta property="og:title" content="First Casualty of War is Truth" />        <meta property="og:image" content="https://timer.mes.fm/img/memes/first-casualty-of-war-is-truth.jpeg" />
-        <meta property="og:description" content="The first casualty of war is not someoneâ€™s life, but rather it is the truth. The truth of why we are fighting, why we must kill, why the other side is evil, why our government is on the side of good, and why is what we are fighting worth dying for. The truth of all of this is lost because that is the only way the war can be fought in the first place! We must be misled and lied to in order to be mobilize in us the will power to engage in barbaric blood-lust and cruelty onto our fellow human being. Wars are strategized and designed by the ruling class over their own differences in opinion on the way the world is run, or if they are of the same opinion then it is nothing more than a guise to control and manipulate society. Whatever the reason, it is nothing more than a chess match between those in power while using the people as a whole as pawns in a game of death and destruction. Once again, the only way to do this is to lie and confuse the truth so that the masses believe that the war is a must.&lt;br /&gt;
+        <meta property="og:description" content="The first casualty of war is not someone’s life, but rather it is the truth. The truth of why we are fighting, why we must kill, why the other side is evil, why our government is on the side of good, and why is what we are fighting worth dying for. The truth of all of this is lost because that is the only way the war can be fought in the first place! We must be misled and lied to in order to be mobilize in us the will power to engage in barbaric blood-lust and cruelty onto our fellow human being. Wars are strategized and designed by the ruling class over their own differences in opinion on the way the world is run, or if they are of the same opinion then it is nothing more than a guise to control and manipulate society. Whatever the reason, it is nothing more than a chess match between those in power while using the people as a whole as pawns in a game of death and destruction. Once again, the only way to do this is to lie and confuse the truth so that the masses believe that the war is a must.&lt;br /&gt;
 &lt;br /&gt;
 To counter this, we must be skeptical of everything we are told, and erase the narrative of our news outlets, and look directly at the facts. If a newspaper speaks of the necessity of war and references a government intelligence report, then skip the article and read the report for yourself. If the intelligence report states they have undeniable sources that a dictator has weapons of mass destruction, but the sources are not given, then you must be skeptical of the report, of the government, and above all the necessity for war. To stop all wars from happening, we must force ourselves to look at the facts as they are and hold those accountable that hold the facts from our eyes. To have peace in the world, we must also hold ourselves accountable to never be mislead, to never willingly believe what we are told, and to convince our fellow neighbors of the facts that are being withheld. The truth is the only thing that can set us free from the tyranny of a ruling class that sees us as nothing more than pawns to throw into horrific and immoral wars." />
 
-        <meta name="description" content="The first casualty of war is not someoneâ€™s life, but rather it is the truth. The truth of why we are fighting, why we must kill, why the other side is evil, why our government is on the side of good, and why is what we are fighting worth dying for. The truth of all of this is lost because that is the only way the war can be fought in the first place! We must be misled and lied to in order to be mobilize in us the will power to engage in barbaric blood-lust and cruelty onto our fellow human being. Wars are strategized and designed by the ruling class over their own differences in opinion on the way the world is run, or if they are of the same opinion then it is nothing more than a guise to control and manipulate society. Whatever the reason, it is nothing more than a chess match between those in power while using the people as a whole as pawns in a game of death and destruction. Once again, the only way to do this is to lie and confuse the truth so that the masses believe that the war is a must.&lt;br /&gt;
+        <meta name="description" content="The first casualty of war is not someone’s life, but rather it is the truth. The truth of why we are fighting, why we must kill, why the other side is evil, why our government is on the side of good, and why is what we are fighting worth dying for. The truth of all of this is lost because that is the only way the war can be fought in the first place! We must be misled and lied to in order to be mobilize in us the will power to engage in barbaric blood-lust and cruelty onto our fellow human being. Wars are strategized and designed by the ruling class over their own differences in opinion on the way the world is run, or if they are of the same opinion then it is nothing more than a guise to control and manipulate society. Whatever the reason, it is nothing more than a chess match between those in power while using the people as a whole as pawns in a game of death and destruction. Once again, the only way to do this is to lie and confuse the truth so that the masses believe that the war is a must.&lt;br /&gt;
 &lt;br /&gt;
 To counter this, we must be skeptical of everything we are told, and erase the narrative of our news outlets, and look directly at the facts. If a newspaper speaks of the necessity of war and references a government intelligence report, then skip the article and read the report for yourself. If the intelligence report states they have undeniable sources that a dictator has weapons of mass destruction, but the sources are not given, then you must be skeptical of the report, of the government, and above all the necessity for war. To stop all wars from happening, we must force ourselves to look at the facts as they are and hold those accountable that hold the facts from our eyes. To have peace in the world, we must also hold ourselves accountable to never be mislead, to never willingly believe what we are told, and to convince our fellow neighbors of the facts that are being withheld. The truth is the only thing that can set us free from the tyranny of a ruling class that sees us as nothing more than pawns to throw into horrific and immoral wars.">            <meta name="twitter:card" content="summary_large_image">        <meta name="twitter:site" content="@timermes">
         <meta name="twitter:title" content="First Casualty of War is Truth">
-        <meta name="twitter:description" content="The first casualty of war is not someoneâ€™s life, but rather it is the truth. The truth of why we are fighting, why we must kill, why the other side is evil, why our government is on the side of good, and why is what we are fighting worth dying for. The truth of all of this is lost because that is the only way the war can be fought in the first place! We must be misled and lied to in order to be mobilize in us the will power to engage in barbaric blood-lust and cruelty onto our fellow human being. Wars are strategized and designed by the ruling class over their own differences in opinion on the way the world is run, or if they are of the same opinion then it is nothing more than a guise to control and manipulate society. Whatever the reason, it is nothing more than a chess match between those in power while using the people as a whole as pawns in a game of death and destruction. Once again, the only way to do this is to lie and confuse the truth so that the masses believe that the war is a must.&lt;br /&gt;
+        <meta name="twitter:description" content="The first casualty of war is not someone’s life, but rather it is the truth. The truth of why we are fighting, why we must kill, why the other side is evil, why our government is on the side of good, and why is what we are fighting worth dying for. The truth of all of this is lost because that is the only way the war can be fought in the first place! We must be misled and lied to in order to be mobilize in us the will power to engage in barbaric blood-lust and cruelty onto our fellow human being. Wars are strategized and designed by the ruling class over their own differences in opinion on the way the world is run, or if they are of the same opinion then it is nothing more than a guise to control and manipulate society. Whatever the reason, it is nothing more than a chess match between those in power while using the people as a whole as pawns in a game of death and destruction. Once again, the only way to do this is to lie and confuse the truth so that the masses believe that the war is a must.&lt;br /&gt;
 &lt;br /&gt;
 To counter this, we must be skeptical of everything we are told, and erase the narrative of our news outlets, and look directly at the facts. If a newspaper speaks of the necessity of war and references a government intelligence report, then skip the article and read the report for yourself. If the intelligence report states they have undeniable sources that a dictator has weapons of mass destruction, but the sources are not given, then you must be skeptical of the report, of the government, and above all the necessity for war. To stop all wars from happening, we must force ourselves to look at the facts as they are and hold those accountable that hold the facts from our eyes. To have peace in the world, we must also hold ourselves accountable to never be mislead, to never willingly believe what we are told, and to convince our fellow neighbors of the facts that are being withheld. The truth is the only thing that can set us free from the tyranny of a ruling class that sees us as nothing more than pawns to throw into horrific and immoral wars.">
         <meta name="twitter:image" content="https://timer.mes.fm/img/memes/first-casualty-of-war-is-truth.jpeg">
@@ -428,7 +431,7 @@ To counter this, we must be skeptical of everything we are told, and erase the n
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">First Casualty of War is Truth</h1>                                        <p class="page-description">The first casualty of war is not someoneâ€™s life, but rather it is the truth. The truth of why we are fighting, why we must kill, why the other side is evil, why our government is on the side of good, and why is what we are fighting worth dying for. The truth of all of this is lost because that is the only way the war can be fought in the first place! We must be misled and lied to in order to be mobilize in us the will power to engage in barbaric blood-lust and cruelty onto our fellow human being. Wars are strategized and designed by the ruling class over their own differences in opinion on the way the world is run, or if they are of the same opinion then it is nothing more than a guise to control and manipulate society. Whatever the reason, it is nothing more than a chess match between those in power while using the people as a whole as pawns in a game of death and destruction. Once again, the only way to do this is to lie and confuse the truth so that the masses believe that the war is a must.<br />
+                                    <h1 class="page-title">First Casualty of War is Truth</h1>                                        <p class="page-description">The first casualty of war is not someone’s life, but rather it is the truth. The truth of why we are fighting, why we must kill, why the other side is evil, why our government is on the side of good, and why is what we are fighting worth dying for. The truth of all of this is lost because that is the only way the war can be fought in the first place! We must be misled and lied to in order to be mobilize in us the will power to engage in barbaric blood-lust and cruelty onto our fellow human being. Wars are strategized and designed by the ruling class over their own differences in opinion on the way the world is run, or if they are of the same opinion then it is nothing more than a guise to control and manipulate society. Whatever the reason, it is nothing more than a chess match between those in power while using the people as a whole as pawns in a game of death and destruction. Once again, the only way to do this is to lie and confuse the truth so that the masses believe that the war is a must.<br />
 <br />
 To counter this, we must be skeptical of everything we are told, and erase the narrative of our news outlets, and look directly at the facts. If a newspaper speaks of the necessity of war and references a government intelligence report, then skip the article and read the report for yourself. If the intelligence report states they have undeniable sources that a dictator has weapons of mass destruction, but the sources are not given, then you must be skeptical of the report, of the government, and above all the necessity for war. To stop all wars from happening, we must force ourselves to look at the facts as they are and hold those accountable that hold the facts from our eyes. To have peace in the world, we must also hold ourselves accountable to never be mislead, to never willingly believe what we are told, and to convince our fellow neighbors of the facts that are being withheld. The truth is the only thing that can set us free from the tyranny of a ruling class that sees us as nothing more than pawns to throw into horrific and immoral wars.</p>                                    	<div id="main-content">
 		<div class="button-container">
