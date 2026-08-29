@@ -181,6 +181,25 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   border-radius: 0.25em;
 }
 
+/* dropdown polish: fix the icon/logo row overlapping the next nav item
+   (.info-bar__logo-container's global `display: table-cell` doesn't
+   behave without a table/table-row ancestor), and move "Follow us!" to
+   the bottom of the list instead of the top -- via flex order, not an
+   HTML move, since locating the true closing </ul> among the nested
+   .navbar__dropdown-container <ul>s isn't worth the risk */
+#navbar.hide { display: flex; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+/* now that the sidebar is gone, center the main content column in a
+   narrower page instead of leaving it flush-left in a wide, mostly-empty
+   .outer-container -- matches the plain centered-column layout
+   mes.fm/ufo already uses */
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+
 	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
 	@media (max-width: 600px) {
 		.inner-container { padding: 1em 0.75em; }
