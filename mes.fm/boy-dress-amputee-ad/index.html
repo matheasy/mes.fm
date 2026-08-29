@@ -231,45 +231,8 @@
 }
 </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
-<script>
-/* auto-ads-inpage-suppress: same guard as mes.fm/links -- this page carries two deliberate
-   manual ad units (top and bottom) instead of Google's Auto ads in-page placements, so any
-   Auto-ads-inserted in-page/native block is hidden the instant it appears. */
-(function () {
-    function hide(node) {
-        node.style.setProperty('display', 'none', 'important');
-    }
-    function isAutoAdNode(node) {
-        return node.classList && (node.classList.contains('google-auto-placed') || node.classList.contains('google-anno-sc'));
-    }
-    function handle(node) {
-        if (node.nodeType !== 1) return;
-        if (isAutoAdNode(node)) {
-            hide(node);
-            return;
-        }
-        if (node.querySelectorAll) {
-            node.querySelectorAll('.google-auto-placed, .google-anno-sc').forEach(hide);
-        }
-    }
-    new MutationObserver(function (mutations) {
-        mutations.forEach(function (m) {
-            m.addedNodes.forEach(handle);
-        });
-    }).observe(document.documentElement, {childList: true, subtree: true});
-})();
-</script>
 </head>
 <body class="dark">
-<div class="ad-slot" style="text-align: center;">
-  <!-- MES Article Square -->
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-1461238060884369"
-       data-ad-slot="1197859571"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-</div>
 
   <div class="container">
     <div class="top-bar">
@@ -302,16 +265,7 @@
 
     <hr>
 
-    <div class="ad-slot" style="text-align: center;">
-      <!-- MES Article Square -->
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-1461238060884369"
-           data-ad-slot="1197859571"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-    </div>
-
+    
     <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
   </div>
 
@@ -352,30 +306,7 @@
     });
   </script>
 
-  <script>
-    // ad-slot-fill-and-collapse: same approach as mes.fm/links -- request a fill for each manual
-    // ad unit, then hide it completely if nothing filled within the poll window.
-    (function () {
-      document.querySelectorAll('.ad-slot ins.adsbygoogle').forEach(function () {
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      });
-      document.querySelectorAll('.ad-slot').forEach(function (slot) {
-        var attempts = 0;
-        var poll = setInterval(function () {
-          attempts++;
-          if (slot.querySelector('iframe')) {
-            clearInterval(poll);
-            return;
-          }
-          if (attempts >= 10) {
-            slot.style.setProperty('display', 'none', 'important');
-            clearInterval(poll);
-          }
-        }, 200);
-      });
-    })();
-  </script>
-
+  
   <script>
     // image-lightbox: click any article image to pop it out spanning the full browser
     // width, with prev/next navigation via on-screen arrows and keyboard arrow keys. This

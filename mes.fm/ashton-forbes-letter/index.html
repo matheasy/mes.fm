@@ -219,16 +219,7 @@
 </style>
 </head>
 <body class="dark">
-  <div class="ad-slot" style="text-align: center;">
-    <!-- MES Article Square -->
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-1461238060884369"
-         data-ad-slot="1197859571"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-  </div>
-
+  
   <div class="container">
     <div class="top-bar">
       <a class="site-link" href="https://mes.fm/conspiracy">&larr; mes.fm/conspiracy</a>
@@ -274,16 +265,7 @@
     <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
   </div>
 
-  <div class="ad-slot" style="text-align: center;">
-    <!-- MES Article Square -->
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-1461238060884369"
-         data-ad-slot="1197859571"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-  </div>
-
+  
   <script>
     const body = document.body;
     const themeToggle = document.getElementById('themeToggle');
@@ -398,28 +380,5 @@
     })();
   </script>
 
-  <script>
-    // ad-slot-fill-and-collapse: same approach as mes.fm/conspiracy -- request a fill for each
-    // manual ad unit, then hide it completely if nothing filled within the poll window.
-    (function () {
-      document.querySelectorAll('.ad-slot ins.adsbygoogle').forEach(function () {
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      });
-      document.querySelectorAll('.ad-slot').forEach(function (slot) {
-        var attempts = 0;
-        var poll = setInterval(function () {
-          attempts++;
-          if (slot.querySelector('iframe')) {
-            clearInterval(poll);
-            return;
-          }
-          if (attempts >= 10) {
-            slot.style.setProperty('display', 'none', 'important');
-            clearInterval(poll);
-          }
-        }, 200);
-      });
-    })();
-  </script>
-<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
 </html>

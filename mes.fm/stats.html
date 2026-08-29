@@ -253,34 +253,6 @@
 </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
 <script>
-/* auto-ads-inpage-suppress: same guard as mes.fm/links -- this page carries two deliberate
-   manual ad units (top and bottom) instead of Google's Auto ads in-page placements, so any
-   Auto-ads-inserted in-page/native block is hidden the instant it appears. */
-(function () {
-    function hide(node) {
-        node.style.setProperty('display', 'none', 'important');
-    }
-    function isAutoAdNode(node) {
-        return node.classList && (node.classList.contains('google-auto-placed') || node.classList.contains('google-anno-sc'));
-    }
-    function handle(node) {
-        if (node.nodeType !== 1) return;
-        if (isAutoAdNode(node)) {
-            hide(node);
-            return;
-        }
-        if (node.querySelectorAll) {
-            node.querySelectorAll('.google-auto-placed, .google-anno-sc').forEach(hide);
-        }
-    }
-    new MutationObserver(function (mutations) {
-        mutations.forEach(function (m) {
-            m.addedNodes.forEach(handle);
-        });
-    }).observe(document.documentElement, {childList: true, subtree: true});
-})();
-</script>
-<script>
 /* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
    class `google-auto-placed`), plus a third: Google's separate "annotation"
    text-ad format (chips styled like `<div class="google-anno-skip
@@ -393,15 +365,6 @@
 </script>
 </head>
 <body>
-<div class="ad-slot" style="text-align: center;">
-  <!-- MES Links Square -->
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-1461238060884369"
-       data-ad-slot="1197859571"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-</div>
 
   <div class="top-bar">
     <a class="back-link" href="https://mes.fm">&larr; MES</a> | <a class="back-link" href="https://mes.fm/links">MES Links</a>
@@ -667,42 +630,10 @@
 
   <div style="clear: both;"></div>
 
-  <div class="ad-slot" style="text-align: center;">
-    <!-- MES Links Square -->
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-1461238060884369"
-         data-ad-slot="1197859571"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-  </div>
-
+  
   <footer style="text-align: center;">
     <p>&copy; 2026 Math Easy Solutions (MES). All rights reserved. | <a href="https://mes.fm/contact">Contact Us</a> | <a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
   </footer>
 
-  <script>
-    // ad-slot-fill-and-collapse: same approach as mes.fm/links -- request a fill for each manual
-    // ad unit, then hide it completely if nothing filled within the poll window.
-    (function () {
-      document.querySelectorAll('.ad-slot ins.adsbygoogle').forEach(function () {
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      });
-      document.querySelectorAll('.ad-slot').forEach(function (slot) {
-        var attempts = 0;
-        var poll = setInterval(function () {
-          attempts++;
-          if (slot.querySelector('iframe')) {
-            clearInterval(poll);
-            return;
-          }
-          if (attempts >= 10) {
-            slot.style.setProperty('display', 'none', 'important');
-            clearInterval(poll);
-          }
-        }, 200);
-      });
-    })();
-  </script>
-<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
 </html>
