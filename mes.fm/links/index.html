@@ -166,6 +166,28 @@
       background-color: #555555;
       color: #ffffff;
     }
+
+    /* Quick-links button row, below the title */
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6em;
+      margin: 1.2em 0 1.8em;
+    }
+
+    .quick-links a {
+      padding: 0.6em 1.2em;
+      border-radius: 0.3em;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light .quick-links a { background-color: #dddddd; color: #000000; }
+    body.dark .quick-links a { background-color: #555555; color: #ffffff; }
+    body.light .quick-links a:hover { background-color: #cacaca; }
+    body.dark .quick-links a:hover { background-color: #6a6a6a; }
   /* RESPONSIVE-FIX-INSERTED */
 @media (max-width: 768px) {
   .outer-container { width: 100% !important; margin: 0 !important; }
@@ -304,6 +326,14 @@
     <!-- Theme toggle button (no form = no resubmit warning) -->
     <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
   </header>
+
+  <nav class="quick-links">
+    <a href="https://mes.fm/math">Math Tutorials</a>
+    <a href="https://mes.fm/science">Science</a>
+    <a href="https://mes.fm/911">9/11 Truth</a>
+    <a href="https://mes.fm/conspiracy">Conspiracy</a>
+    <a href="https://mes.fm/mathiew">Personal</a>
+  </nav>
 
   <div class="row">
     <div class="column">
