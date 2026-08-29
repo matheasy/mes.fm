@@ -160,7 +160,68 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   .info-bar__logo-container { display: none !important; }
   .info-bar { margin-left: 0 !important; padding-left: 0 !important; display: block !important; }
   .info-bar__item { float: none !important; display: inline-block !important; }
+
+  /* keep only the site-content links in the header row on mobile (Home/
+     Donate/Subscribe/Links live in the hamburger dropdown instead, see
+     the unconditional block below the media query) -- kept mobile-only
+     since the full row already fits fine as a normal top nav on wider
+     screens */
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
 }
+
+/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
+   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
+   panel instead of the always-visible sidebar, at every screen width
+   (not just mobile), so no page reserves a right-hand column for it */
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+/* dropdown polish: fix the icon/logo row overlapping the next nav item
+   (.info-bar__logo-container's global `display: table-cell` doesn't
+   behave without a table/table-row ancestor), and move "Follow us!" to
+   the bottom of the list instead of the top -- via flex order, not an
+   HTML move, since locating the true closing </ul> among the nested
+   .navbar__dropdown-container <ul>s isn't worth the risk */
+#navbar.hide { display: flex; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+/* now that the sidebar is gone, center the main content column in a
+   narrower page instead of leaving it flush-left in a wide, mostly-empty
+   .outer-container -- matches the plain centered-column layout
+   mes.fm/ufo already uses */
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }}
 /* MOBILE-FIX-INSERTED */
 @media (max-width: 600px) {
   .footer { padding: 1.25em 0.75em; }
@@ -529,6 +590,227 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><p class="social__text">Follow us!</p><ul class="social">
+		<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>    <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>    <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>    <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>    <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li></ul>                            </div>                                                        </div>
+                        <div class="info-bar-container">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='index.html'>Home</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='puzzles.html'>Puzzles</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='memes.html'>Memes</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='https://mes.fm/math'>Math Tutorials</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='calculators.html'>Calculators</a></li>
+                                    <li class="info-bar__item"><a class="info-bar__item__text" href='tools.html'>Tools</a></li>
+                                    <li class="info-bar__item"><a class="info-bar__item__text" href='mobile-apps.html'>Mobile Apps</a></li>
+                                    
+                                    <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='contact.html'>Contact Us</a></li>
+                                    <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='donate.html'>Donate</a></li><li class="info-bar__item"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/links'>Links</a></li>                            </ul>
+                        </div>
+                        <a class="info-bar__logo-container" href="index.html" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                        <div class="outer-page-content">
+                            <div class="page-content">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Privacy Policy</h1><div id="main-content">
+	<p>
+	This Privacy Policy governs the manner in which Math Easy Solutions collects, uses, maintains and
+	discloses information collected from users (each, a "User") of the mes.fm website
+	("Site"). This privacy policy applies to the Site and all products and services offered by Math Easy Solutions.
+	</p>
+
+	<h2 class="mini-title">Personal identification information</h2>
+	
+	<p>
+	We may collect personal identification information from Users in a variety of ways, including, but
+	not limited to, when Users visit our site, register on the site, place an order, subscribe to the
+	newsletter, respond to a survey, fill out a form, and in connection with other activities, services,
+	features or resources we make available on our Site. Users may be asked for, as appropriate, name,
+	email address. Users may, however, visit our Site anonymously. We will collect personal
+	identification information from Users only if they voluntarily submit such information to us. Users
+	can always refuse to supply personally identification information, except that it may prevent them
+	from engaging in certain Site related activities.
+	</p>
+	
+	<h2 class="mini-title">Non-personal identification information</h2>
+	
+	<p>
+	We may collect non-personal identification information about Users whenever they interact with our
+	Site. Non-personal identification information may include the browser name, the type of computer and
+	technical information about Users means of connection to our Site, such as the operating system and
+	the Internet service providers utilized and other similar information.
+	</p>
+	
+	<h2 class="mini-title">Web browser cookies</h2>
+	
+	<p>
+	Our Site may use "cookies" to enhance User experience. User's web browser places cookies on their
+	hard drive for record-keeping purposes and sometimes to track information about them. User may
+	choose to set their web browser to refuse cookies, or to alert you when cookies are being sent. If
+	they do so, note that some parts of the Site may not function properly.
+	</p>
+	
+	<h2 class="mini-title">How we use collected information</h2>
+	
+	<p>
+	Math Easy Solutions may collect and use Users personal information for the following purposes:
+	</p>
+	
+	<p class="italic">
+	- To improve customer service
+	</p>
+	<p class="small-margin">Information you provide helps us respond to your customer service requests and support needs more efficiently.</p>
+	<p class="italic">- To personalize user experience</p>
+	<p class="small-margin">We may use information in the aggregate to understand how our Users as a group use the services and resources
+	provided on our Site. </p>
+	<p class="italic">- To improve our Site</p>
+	<p class="small-margin">We may use feedback you provide to improve our products and services.</p>
+	<p class="italic">- To process payments</p>
+	<p class="small-margin">We may use the information Users provide about themselves when placing an order only to provide 
+	service to that order. We do not share this information with outside parties except to the extent 
+	necessary to provide the service.</p>
+	<p class="italic">- To run a promotion, contest, survey or other Site feature</p>
+	<p class="small-margin">To send Users information they agreed to receive about topics we think will be of interest to them.</p>
+	<p class="italic">- To send periodic emails</p>
+	<p class="small-margin">We may use the email address to send User information and updates 
+	pertaining to their order. It may also be used to respond to their inquiries, questions, 
+	and/or other requests. If User decides to opt-in to our mailing list, they will receive 
+	emails that may include company news, updates, related product or service information, etc.
+	If at any time the User would like to unsubscribe from receiving future emails, 
+	we include detailed unsubscribe instructions at the bottom of each email or 
+	User may contact us via our Site.
+	</p>
+	
+	<h2 class="mini-title">How we protect your information</h2>
+	
+	<p>
+	We adopt appropriate data collection, storage and processing practices and security measures to
+	protect against unauthorized access, alteration, disclosure or destruction of your personal
+	information, username, password, transaction information and data stored on our Site.
+	</p>
+	
+	<h2 class="mini-title">Sharing your personal information</h2>
+	
+	<p>
+	We do not sell, trade, or rent Users personal identification information to others. We may share
+	generic aggregated demographic information not linked to any personal identification information
+	regarding visitors and users with our business partners, trusted affiliates and advertisers for the
+	purposes outlined above.
+	</p>
+	
+	<h2 class="mini-title">Third party websites</h2>
+	
+	<p>
+	Users may find advertising or other content on our Site that link to the sites and services of our
+	partners, suppliers, advertisers, sponsors, licensors and other third parties. We do not control the
+	content or links that appear on these sites and are not responsible for the practices employed by
+	websites linked to or from our Site. In addition, these sites or services, including their content
+	and links, may be constantly changing. These sites and services may have their own privacy policies
+	and customer service policies. Browsing and interaction on any other website, including websites
+	which have a link to our Site, is subject to that website's own terms and policies.
+	</p>
+	
+	<h2 class="mini-title">Advertising</h2>
+	
+	<p>
+	Ads appearing on our site may be delivered to Users by advertising partners, who may set cookies.
+	These cookies allow the ad server to recognize your computer each time they send you an online
+	advertisement to compile non personal identification information about you or others who use your
+	computer. This information allows ad networks to, among other things, deliver targeted
+	advertisements that they believe will be of most interest to you. This privacy policy does not cover
+	the use of cookies by any advertisers.
+	</p>
+	
+	<h2 class="mini-title">Google Adsense</h2>
+	
+	<p>
+	Some of the ads may be served by Google. Google's use of the DART cookie enables it to serve ads to
+	Users based on their visit to our Site and other sites on the Internet. DART uses "non personally
+	identifiable information" and does NOT track personal information about you, such as your name,
+	email address, physical address, etc. You may opt out of the use of the DART cookie by visiting the
+	Google ad and content network privacy policy at http://www.google.com/privacy_ads.html
+	</p>
+	
+	<h2 class="mini-title">Changes to this privacy policy</h2>
+	
+	<p>
+	Math Easy Solutions has the discretion to update this privacy policy at any time. When we do, we will
+	revise the updated date at the bottom of this page. We encourage Users to frequently check this page
+	for any changes to stay informed about how we are helping to protect the personal information we
+	collect. You acknowledge and agree that it is your responsibility to review this privacy policy
+	periodically and become aware of modifications.
+	</p>
+	
+	<h2 class="mini-title">Your acceptance of these terms</h2>
+	
+	<p>
+	By using this Site, you signify your acceptance of this policy. If you do not agree to this policy,
+	please do not use our Site. Your continued use of the Site following the posting of changes to this
+	policy will be deemed your acceptance of those changes.
+	</p>
+	
+	<h2 class="mini-title">Contacting us</h2>
+	
+	<p>
+	If you have any questions about this Privacy Policy, the practices of this site, or your dealings
+	with this site, please contact us at: contact@mes.fm
+	</p>
+	
+	<p>
+	This document was last updated on Jan 8, 2016
+	</p>
+
+	<p class="generated-by">
+	Privacy policy created by http://www.generateprivacypolicy.com
+	</p>
+</div>
+                                    <div id="comments-button" class="button" style="position:relative;">Comments<span class="dropdown-symbol" style="color:inherit;position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9650;</span></div>
+                                    <div id="comments-box">
+                                        <div id="fastcomments-widget"></div>                                    </div>                                                                    </div>
+                        </div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item"><a class="navbar__link navbar__link--first" href="index.html">Home</a></li>
+                        <li class="navbar__item"><a target="_self" class="navbar__link" href="puzzles.html">Puzzles</a></li>
+                                <li class="navbar__item"><a target="_self" class="navbar__link" href="memes.html">Memes</a></li>
+                                <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
+                        <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Calculators<span class="dropdown-symbol">&#9660;</span></span>
+        <ul class="navbar__dropdown-container hide">
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://bmicalculator.mes.fm/">&#9642; <span>BMI Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://gpacalculator.mes.fm/">&#9642; <span>GPA Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://gradecalculator.mes.fm/">&#9642; <span>Grade Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://inflationcalculator.mes.fm/">&#9642; <span>Inflation Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mortgagecalculator.mes.fm/">&#9642; <span>Mortgage Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://percentagecalculator.mes.fm/">&#9642; <span>Percentage Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://pokemongocalculator.mes.fm/">&#9642; <span>Pokemon Go Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://vatcalculator.mes.fm/">&#9642; <span>VAT Calculator</span></a></li>
+                            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://youtubemoney.mes.fm/index.html">&#9642; <span>YouTube Money Calculator</span></a></li>
+                        <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="calculators.html">&#9642; <span>More...</span></a></li>
+        </ul>
+    </li>
+    <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Tools<span class="dropdown-symbol">&#9660;</span></span>
+        <ul class="navbar__dropdown-container hide">
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://speedreader.mes.fm/">&#9642; <span>Speed Reader</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://timer.mes.fm/">&#9642; <span>Timer</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="tools.html">&#9642; <span>More...</span></a></li>
+        </ul>
+    </li>
+    <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Mobile Apps<span class="dropdown-symbol">&#9660;</span></span>
+        <ul class="navbar__dropdown-container hide">
+        	<li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://itunes.apple.com/ca/app/bmi-calculator-by-mes/id1226817243">&#9642; <span>BMI Calculator (iOS)</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.bmiCalculator">&#9642; <span>BMI Calculator (Android)</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://itunes.apple.com/ca/app/fail-safe-final-exam-calculator/id673084580">&#9642; <span>Grade Calculator (iOS)</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.failsafefinalexamcalculator">&#9642; <span>Grade Calculator (Android)</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://itunes.apple.com/ca/app/percentage-calculator-by-math/id1141583865">&#9642; <span>Percentage Calculator (iOS)</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.percentageCalculator">&#9642; <span>Percentage Calculator (Android)</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.mortgageCalculator">&#9642; <span>Mortgage Calculator (Android)</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://itunes.apple.com/ca/app/hashtag-everything-lite/id739573482">&#9642; <span>Hashtag Everything (iOS)</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="https://play.google.com/store/apps/details?id=com.mike.HashtagEverythingLite">&#9642; <span>Hashtag Everything (Android)</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" target="_blank" href="mobile-apps.html">&#9642; <span>More...</span></a></li>
+        </ul>
+    </li>
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="https://mes.fm/links">Links</a></li>
+    </ul>
+                                    </div>
+                            </div>                </div><div id="footer" class="footer">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="calculators.html">Calculators</a></div></li>
     <li class="navbar__item"><a class="navbar__link navbar__link--first" href="index.html">Math Easy Solutions</a></li>
                         <li class="navbar__item"><a target="_self" class="navbar__link" href="puzzles.html">Puzzles</a></li>
                                 <li class="navbar__item"><a target="_self" class="navbar__link" href="memes.html">Memes</a></li>
