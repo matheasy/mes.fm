@@ -24,11 +24,36 @@ import { marked } from "marked";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const AUTHOR = "mes";
-const PERMLINK = "review-of-vector-functions-138";
+const PERMLINK = "vector-functions-problems-p-729";
 const COMMUNITY = "hive-128780";
 const PEAKD_URL = `https://peakd.com/${COMMUNITY}/@${AUTHOR}/${PERMLINK}`;
 const CANONICAL = "https://mes.fm/vector-functions-problems-plus";
 const BACK_LINK = "https://mes.fm/links";
+
+// Guard against pointing PERMLINK at the wrong article. MES's Hive posts link
+// back to their own mes.fm page (e.g. "[Notes](https://mes.fm/<slug>)"), so if
+// the fetched article's body never mentions this page's CANONICAL url, PERMLINK
+// and CANONICAL have most likely drifted apart -- warn loudly. Set
+// ALLOW_SLUG_MISMATCH=1 to build anyway (e.g. a brand-new post that doesn't
+// self-reference yet).
+function checkSlugMatch(post) {
+  const slug = CANONICAL.replace(/^https?:\/\//, "");
+  const ok = post.body.includes(CANONICAL) || post.body.includes(slug);
+  console.log(
+    `Slug check: @${AUTHOR}/${PERMLINK} "${post.title}" -> ${CANONICAL} ${
+      ok ? "(OK — article self-references this page)" : "(NO self-reference found)"
+    }`
+  );
+  if (!ok && process.env.ALLOW_SLUG_MISMATCH !== "1") {
+    throw new Error(
+      `\n\n  ⚠  SLUG MISMATCH\n` +
+        `  The article @${AUTHOR}/${PERMLINK} ("${post.title}")\n` +
+        `  does not link back to ${CANONICAL} anywhere in its body.\n` +
+        `  PERMLINK and CANONICAL are probably out of sync -- double-check the Hive URL.\n` +
+        `  Re-run with ALLOW_SLUG_MISMATCH=1 to build anyway.\n`
+    );
+  }
+}
 
 async function hiveCall(method, params) {
   const res = await fetch("https://api.hive.blog", {
@@ -215,8 +240,11 @@ function wrapChaptersInToggles(html) {
     const contentStart = m.index + full.length;
     const contentEnd = i + 1 < matches.length ? matches[i + 1].index : html.length;
     const content = html.slice(contentStart, contentEnd);
+    // Some headings are "# <center>Title</center>" -- strip the wrapper so the
+    // chapter header doesn't end up with a nested <center>.
+    const cleanTitle = titleInner.replace(/^\s*<center>|<\/center>\s*$/g, "").trim();
     out += `<hr>\n<div class="chapter-toggle" id="${id}">\n`;
-    out += `<h1 class="chapter-toggle-header" onclick="toggleChapter('${id}-list')"><center>${titleInner} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></center></h1>\n`;
+    out += `<h1 class="chapter-toggle-header" onclick="toggleChapter('${id}-list')"><center>${cleanTitle} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></center></h1>\n`;
     out += `<div id="${id}-list" class="chapter-toggle-list">${content}</div>\n`;
     out += `</div>\n`;
   });
@@ -989,6 +1017,8 @@ async function main() {
   console.log(`Fetching @${AUTHOR}/${PERMLINK} from api.hive.blog ...`);
   const post = await fetchPost();
   console.log(`Got post: "${post.title}"`);
+
+  checkSlugMatch(post);
 
   const html = await buildPage(post);
   const outPath = join(__dirname, "index.html");
