@@ -196,13 +196,20 @@ function embedYoutubeLinks(markdown) {
   );
 }
 
-// Give every top-level "# " heading (rendered as <h1>...</h1> by marked) an id
-// and collect a {id, label} list so the table-of-contents can link to it.
-// Duplicate slugs/labels get a "(2)"-style suffix to stay unique.
+// Give every chapter heading an id and collect a {id, label} list so the
+// table-of-contents can link to it. Chapter headings are every top-level "# "
+// heading (rendered as <h1> by marked) plus any centered "## <center>..." one
+// (MES uses a centered h2 for a few section headers, e.g. "Links and Calculus
+// Book Chapter") -- those get promoted to <h1> first so wrapChaptersInToggles
+// picks them up too. Duplicate slugs/labels get a "(2)"-style suffix.
 function addSectionAnchors(bodyHtml) {
   const seen = new Map();
   const toc = [];
-  const html = bodyHtml.replace(/<h1>([\s\S]*?)<\/h1>/g, (match, inner) => {
+  const promoted = bodyHtml.replace(
+    /<h2><center>([\s\S]*?)<\/center><\/h2>/g,
+    "<h1><center>$1</center></h1>"
+  );
+  const html = promoted.replace(/<h1>([\s\S]*?)<\/h1>/g, (match, inner) => {
     const plain = inner
       .replace(/<[^>]+>/g, "")
       .replace(/&quot;/g, '"')
