@@ -166,6 +166,17 @@
       border-top: 2px solid rgba(128, 128, 128, 0.4);
     }
 
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    th.sortable:hover,
+    th.active-sort {
+      opacity: 1;
+    }
+
     .show-more-btn {
       display: block;
       margin: 0.8em auto 0;
@@ -420,11 +431,11 @@
       <h2>Views by Device</h2>
       <div class="table-wrap">
         <table>
-          <thead>
+          <thead id="deviceTotalsHead">
             <tr><th>Device</th><th class="views">Views</th></tr>
           </thead>
           <tbody id="deviceTotalsBody">
-            <tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>
+            <tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
           </tbody>
           <tfoot id="deviceTotalsFoot"></tfoot>
         </table>
@@ -486,8 +497,61 @@
     const PAGES_PREVIEW_COUNT = 10;
     let topPagesData = [];
     let topPagesDevices = [];
+    let siteTotalsData = [];
+    let siteTotalsDevices = [];
+    let deviceTotalsData = [];
     let showAllPages = false;
     const showMoreBtn = document.getElementById('showMorePages');
+
+    // Per-table sort state. Text columns (page path, site domain, device
+    // name) default to A-Z; numeric columns (views, and each device's view
+    // count) default to most-first. Clicking the already-active column just
+    // flips its direction instead of picking a new default.
+    let pagesSort = { key: 'views', dir: 'desc' };
+    let siteSort = { key: 'views', dir: 'desc' };
+    let deviceSort = { key: 'views', dir: 'desc' };
+
+    function isTextSortKey(key) {
+      return key === 'site' || key === 'path' || key === 'device';
+    }
+
+    function toggleSort(state, key) {
+      if (state.key === key) {
+        state.dir = state.dir === 'desc' ? 'asc' : 'desc';
+      } else {
+        state.key = key;
+        state.dir = isTextSortKey(key) ? 'asc' : 'desc';
+      }
+    }
+
+    function compareRows(a, b, key) {
+      if (key === 'views') return a.views - b.views;
+      if (key === 'site') return (a.site || '').localeCompare(b.site || '');
+      if (key === 'path') return (a.path || '').localeCompare(b.path || '');
+      if (key === 'device') return (DEVICE_LABELS[a.device] || a.device || '').localeCompare(DEVICE_LABELS[b.device] || b.device || '');
+      // Anything else is a per-device view-count column.
+      return ((a.deviceViews && a.deviceViews[key]) || 0) - ((b.deviceViews && b.deviceViews[key]) || 0);
+    }
+
+    function sortRows(rows, state) {
+      const sign = state.dir === 'desc' ? -1 : 1;
+      return rows.slice().sort(function (a, b) { return sign * compareRows(a, b, state.key); });
+    }
+
+    function sortArrow(state, key) {
+      if (state.key !== key) return '';
+      return state.dir === 'desc' ? ' ▼' : ' ▲';
+    }
+
+    function thCell(label, key, state, extraClass) {
+      const classes = ['sortable'];
+      if (extraClass) classes.push(extraClass);
+      const isActive = state.key === key;
+      if (isActive) classes.push('active-sort');
+      const ariaSort = isActive ? (state.dir === 'desc' ? 'descending' : 'ascending') : 'none';
+      return '<th class="' + classes.join(' ') + '" data-sort-key="' + key + '" aria-sort="' + ariaSort + '">' +
+        escapeHtml(label) + sortArrow(state, key) + '</th>';
+    }
 
     function setActiveTab() {
       document.querySelectorAll('.range-tab').forEach(function (btn) {
@@ -504,10 +568,6 @@
       });
     }
 
-    function deviceHeaderCell(d) {
-      return '<th class="views">' + (DEVICE_LABELS[d] || escapeHtml(d)) + '</th>';
-    }
-
     function deviceCell(row, device) {
       const v = (row.deviceViews && row.deviceViews[device]) || 0;
       return '<td class="views">' + v.toLocaleString() + '</td>';
@@ -517,17 +577,19 @@
       const topPagesHead = document.getElementById('topPagesHead');
       const topPagesBody = document.getElementById('topPagesBody');
       if (!topPagesData.length) {
-        topPagesHead.innerHTML = '<tr><th>Page</th><th class="site">Site</th><th class="views">Views</th></tr>';
+        topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) + thCell('Site', 'site', pagesSort, 'site') + thCell('Views', 'views', pagesSort, 'views') + '</tr>';
         topPagesBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
         showMoreBtn.style.display = 'none';
         return;
       }
 
-      const visible = showAllPages ? topPagesData : topPagesData.slice(0, PAGES_PREVIEW_COUNT);
       const devices = topPagesDevices;
+      const sorted = sortRows(topPagesData, pagesSort);
+      const visible = showAllPages ? sorted : sorted.slice(0, PAGES_PREVIEW_COUNT);
 
-      topPagesHead.innerHTML = '<tr><th>Page</th><th class="site">Site</th>' +
-        devices.map(deviceHeaderCell).join('') + '<th class="views">Views</th></tr>';
+      topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) + thCell('Site', 'site', pagesSort, 'site') +
+        devices.map(function (d) { return thCell(DEVICE_LABELS[d] || d, d, pagesSort, 'views'); }).join('') +
+        thCell('Views', 'views', pagesSort, 'views') + '</tr>';
 
       topPagesBody.innerHTML = visible.map(function (p) {
         const url = 'https://' + p.site + p.path;
@@ -545,22 +607,95 @@
       }
     }
 
+    function renderSiteTotals() {
+      const siteTotalsHead = document.getElementById('siteTotalsHead');
+      const siteTotalsBody = document.getElementById('siteTotalsBody');
+      const siteTotalsFoot = document.getElementById('siteTotalsFoot');
+      if (!siteTotalsData.length) {
+        siteTotalsHead.innerHTML = '<tr>' + thCell('Site', 'site', siteSort) + thCell('Views', 'views', siteSort, 'views') + '</tr>';
+        siteTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+        siteTotalsFoot.innerHTML = '';
+        return;
+      }
+
+      const devices = siteTotalsDevices;
+      const sorted = sortRows(siteTotalsData, siteSort);
+
+      siteTotalsHead.innerHTML = '<tr>' + thCell('Site', 'site', siteSort) +
+        devices.map(function (d) { return thCell(DEVICE_LABELS[d] || d, d, siteSort, 'views'); }).join('') +
+        thCell('Views', 'views', siteSort, 'views') + '</tr>';
+
+      siteTotalsBody.innerHTML = sorted.map(function (s) {
+        return '<tr><td><a href="https://' + escapeHtml(s.site) + '" target="_blank" rel="noopener">' + escapeHtml(s.site) + '</a></td>' +
+          devices.map(function (d) { return deviceCell(s, d); }).join('') +
+          '<td class="views">' + s.views.toLocaleString() + '</td></tr>';
+      }).join('');
+
+      const totalViews = siteTotalsData.reduce(function (sum, s) { return sum + s.views; }, 0);
+      const deviceColumnTotals = devices.map(function (d) {
+        const sum = siteTotalsData.reduce(function (acc, s) { return acc + ((s.deviceViews && s.deviceViews[d]) || 0); }, 0);
+        return '<td class="views">' + sum.toLocaleString() + '</td>';
+      }).join('');
+      siteTotalsFoot.innerHTML = '<tr><td>Total</td>' + deviceColumnTotals + '<td class="views">' + totalViews.toLocaleString() + '</td></tr>';
+    }
+
+    function renderDeviceTotals() {
+      const deviceTotalsHead = document.getElementById('deviceTotalsHead');
+      const deviceTotalsBody = document.getElementById('deviceTotalsBody');
+      const deviceTotalsFoot = document.getElementById('deviceTotalsFoot');
+      if (!deviceTotalsData.length) {
+        deviceTotalsHead.innerHTML = '<tr>' + thCell('Device', 'device', deviceSort) + thCell('Views', 'views', deviceSort, 'views') + '</tr>';
+        deviceTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+        deviceTotalsFoot.innerHTML = '';
+        return;
+      }
+
+      const sorted = sortRows(deviceTotalsData, deviceSort);
+
+      deviceTotalsHead.innerHTML = '<tr>' + thCell('Device', 'device', deviceSort) + thCell('Views', 'views', deviceSort, 'views') + '</tr>';
+
+      deviceTotalsBody.innerHTML = sorted.map(function (d) {
+        const label = DEVICE_LABELS[d.device] || escapeHtml(d.device);
+        return '<tr><td>' + label + '</td><td class="views">' + d.views.toLocaleString() + '</td></tr>';
+      }).join('');
+
+      const totalDeviceViews = deviceTotalsData.reduce(function (sum, d) { return sum + d.views; }, 0);
+      deviceTotalsFoot.innerHTML = '<tr><td>Total</td><td class="views">' + totalDeviceViews.toLocaleString() + '</td></tr>';
+    }
+
     showMoreBtn.addEventListener('click', function () {
       showAllPages = !showAllPages;
       renderTopPages();
     });
 
+    document.getElementById('topPagesHead').addEventListener('click', function (e) {
+      const th = e.target.closest('th[data-sort-key]');
+      if (!th) return;
+      toggleSort(pagesSort, th.dataset.sortKey);
+      renderTopPages();
+    });
+
+    document.getElementById('siteTotalsHead').addEventListener('click', function (e) {
+      const th = e.target.closest('th[data-sort-key]');
+      if (!th) return;
+      toggleSort(siteSort, th.dataset.sortKey);
+      renderSiteTotals();
+    });
+
+    document.getElementById('deviceTotalsHead').addEventListener('click', function (e) {
+      const th = e.target.closest('th[data-sort-key]');
+      if (!th) return;
+      toggleSort(deviceSort, th.dataset.sortKey);
+      renderDeviceTotals();
+    });
+
     async function loadStats() {
       setActiveTab();
-      const siteTotalsHead = document.getElementById('siteTotalsHead');
-      const siteTotalsBody = document.getElementById('siteTotalsBody');
-      const siteTotalsFoot = document.getElementById('siteTotalsFoot');
       document.getElementById('topPagesBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
       showMoreBtn.style.display = 'none';
-      siteTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
-      siteTotalsFoot.innerHTML = '';
-      const deviceTotalsBody = document.getElementById('deviceTotalsBody');
-      deviceTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">Loading&hellip;</td></tr>';
+      document.getElementById('siteTotalsBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
+      document.getElementById('siteTotalsFoot').innerHTML = '';
+      document.getElementById('deviceTotalsBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
       document.getElementById('deviceTotalsFoot').innerHTML = '';
       document.getElementById('updatedAt').textContent = 'Loading stats…';
 
@@ -575,41 +710,12 @@
         showAllPages = false;
         renderTopPages();
 
-        if (data.siteTotals && data.siteTotals.length) {
-          const siteDevices = visibleDevices(data.siteTotals, devices);
-          siteTotalsHead.innerHTML = '<tr><th>Site</th>' +
-            siteDevices.map(deviceHeaderCell).join('') + '<th class="views">Views</th></tr>';
+        siteTotalsData = data.siteTotals || [];
+        siteTotalsDevices = visibleDevices(siteTotalsData, devices);
+        renderSiteTotals();
 
-          siteTotalsBody.innerHTML = data.siteTotals.map(function (s) {
-            return '<tr><td><a href="https://' + escapeHtml(s.site) + '" target="_blank" rel="noopener">' + escapeHtml(s.site) + '</a></td>' +
-              siteDevices.map(function (d) { return deviceCell(s, d); }).join('') +
-              '<td class="views">' + s.views.toLocaleString() + '</td></tr>';
-          }).join('');
-
-          const totalViews = data.siteTotals.reduce(function (sum, s) { return sum + s.views; }, 0);
-          const deviceColumnTotals = siteDevices.map(function (d) {
-            const sum = data.siteTotals.reduce(function (acc, s) { return acc + ((s.deviceViews && s.deviceViews[d]) || 0); }, 0);
-            return '<td class="views">' + sum.toLocaleString() + '</td>';
-          }).join('');
-          siteTotalsFoot.innerHTML = '<tr><td>Total</td>' + deviceColumnTotals + '<td class="views">' + totalViews.toLocaleString() + '</td></tr>';
-        } else {
-          siteTotalsHead.innerHTML = '<tr><th>Site</th><th class="views">Views</th></tr>';
-          siteTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
-          siteTotalsFoot.innerHTML = '';
-        }
-
-        const deviceTotalsFoot = document.getElementById('deviceTotalsFoot');
-        if (data.deviceTotals && data.deviceTotals.length) {
-          deviceTotalsBody.innerHTML = data.deviceTotals.map(function (d) {
-            const label = DEVICE_LABELS[d.device] || escapeHtml(d.device);
-            return '<tr><td>' + label + '</td><td class="views">' + d.views.toLocaleString() + '</td></tr>';
-          }).join('');
-          const totalDeviceViews = data.deviceTotals.reduce(function (sum, d) { return sum + d.views; }, 0);
-          deviceTotalsFoot.innerHTML = '<tr><td>Total</td><td class="views">' + totalDeviceViews.toLocaleString() + '</td></tr>';
-        } else {
-          deviceTotalsBody.innerHTML = '<tr><td colspan="2" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
-          deviceTotalsFoot.innerHTML = '';
-        }
+        deviceTotalsData = data.deviceTotals || [];
+        renderDeviceTotals();
 
         document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date(data.updatedAt).toLocaleString();
       } catch (e) {
