@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A live sky dashboard for Richmond, BC, Canada: 9 AM temperature, sunrise, sunset, moonrise and moonset, plus the Sun's and Moon's constellation, distance, coordinates and magnitude. Computed in your browser and refreshed on demand.">
+  <meta name="author" content="Mathiew Estepho">
+  <meta name="keywords" content="MES, Moon, Sun, planets, astronomy, sunrise, sunset, moonrise, moonset, Richmond BC, constellation, right ascension, declination">
+  <link rel="canonical" href="https://mes.fm/moon" />
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>MES Moon, Sun, Planets &amp; Astronomy</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #0f1420; color: #eef1f6; }
+    body.dark a { color: #6cb6f5; }
+
+    .container { max-width: 760px; margin: 0 auto; }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
+
+    .site-link { font-size: 0.9em; }
+
+    h1 { font-size: 1.8em; margin: 0.4em 0 0.1em; }
+
+    .page-subtitle {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin-bottom: 1.4em;
+    }
+
+    .refresh-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      margin: 0 0 1.6em;
+    }
+
+    .refresh-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.95em;
+      font-weight: bold;
+    }
+
+    body.light .refresh-btn { background-color: #1a6fb0; color: #ffffff; }
+    body.dark .refresh-btn { background-color: #2a6fb0; color: #ffffff; }
+    .refresh-btn:disabled { opacity: 0.55; cursor: default; }
+
+    .updated-line { font-size: 0.85em; opacity: 0.75; }
+
+    h2 { font-size: 1.25em; margin: 1.8em 0 0.2em; }
+
+    .section-note { font-size: 0.85em; opacity: 0.7; margin: 0 0 0.9em; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 0 0.6em;
+      font-size: 0.98em;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+      vertical-align: top;
+    }
+
+    th { width: 44%; font-weight: bold; white-space: nowrap; }
+    td { font-variant-numeric: tabular-nums; }
+
+    tbody tr:last-child th,
+    tbody tr:last-child td { border-bottom: none; }
+
+    body.light tbody tr:nth-child(odd) { background-color: #f6f8fa; }
+    body.dark tbody tr:nth-child(odd) { background-color: #161c2b; }
+
+    .big-value { font-size: 1.05em; font-weight: bold; }
+    .muted { opacity: 0.7; font-weight: normal; }
+
+    .source-line { font-size: 0.9em; font-style: italic; margin: 0.2em 0 0; }
+
+    ul.more-links { margin: 0.4em 0 0; padding-left: 1.3em; }
+    ul.more-links li { margin: 0 0 0.4em; }
+
+    hr { margin: 2.4em 0 1.6em; border: 0; border-top: 1px solid rgba(128, 128, 128, 0.3); }
+
+    .site-footer-note { font-size: 0.8em; opacity: 0.6; text-align: center; }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.4em; }
+      body { padding: 0 12px 40px; }
+      th { width: 50%; white-space: normal; }
+      th, td { padding: 8px 8px; }
+    }
+  </style>
+</head>
+<body class="dark">
+  <div class="container">
+    <div class="top-bar">
+      <a class="site-link" href="https://mes.fm/science">&larr; MES Science</a>
+      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+    </div>
+
+    <h1>MES Moon, Sun, Planets &amp; Astronomy &#127765;&#9728;&#65039;</h1>
+    <div class="page-subtitle">A live sky dashboard for Richmond, British&nbsp;Columbia, Canada
+      (49.17&deg;N, 123.14&deg;W). Values are computed in your browser &mdash; press
+      <em>Refresh</em> for the current moment.</div>
+
+    <div class="refresh-bar">
+      <button id="refreshBtn" class="refresh-btn" type="button">Refresh now</button>
+      <span class="updated-line" id="updatedLine">Loading&hellip;</span>
+    </div>
+
+    <h2>Richmond, BC &mdash; Sun &amp; Moon Times</h2>
+    <p class="section-note">Rise and set times for today's local calendar day (Pacific).
+    Compare with <a href="https://weather.com/weather/today/l/49.17,-123.14" target="_blank" rel="noopener">weather.com</a>.</p>
+    <table>
+      <tbody>
+        <tr>
+          <th>Temperature at 9&nbsp;AM <span id="tempTzLabel" class="muted">Pacific</span></th>
+          <td class="big-value" id="temp9am">&mdash;</td>
+        </tr>
+        <tr><th>Sunrise</th><td class="big-value" id="sunrise">&mdash;</td></tr>
+        <tr><th>Sunset</th><td class="big-value" id="sunset">&mdash;</td></tr>
+        <tr><th>Moonrise</th><td class="big-value" id="moonrise">&mdash;</td></tr>
+        <tr><th>Moonset</th><td class="big-value" id="moonset">&mdash;</td></tr>
+        <tr><th>Moon phase</th><td class="big-value" id="moonphase">&mdash;</td></tr>
+      </tbody>
+    </table>
+    <p class="source-line">Temperature: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> forecast.
+      Rise / set / phase: computed with <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy&nbsp;Engine</a>.</p>
+
+    <h2>The Sun Right Now</h2>
+    <p class="section-note">Apparent geocentric coordinates for the moment shown above.
+    Compare with <a href="https://theskylive.com/sun-info" target="_blank" rel="noopener">theskylive.com/sun-info</a>.</p>
+    <table>
+      <tbody>
+        <tr><th>Constellation</th><td class="big-value" id="sunConst">&mdash;</td></tr>
+        <tr><th>Distance from Earth</th><td class="big-value" id="sunDistKm">&mdash;</td></tr>
+        <tr><th>Distance from Earth (AU)</th><td id="sunDistAu">&mdash;</td></tr>
+        <tr><th>Right Ascension</th><td class="big-value" id="sunRa">&mdash;</td></tr>
+        <tr><th>Declination</th><td class="big-value" id="sunDec">&mdash;</td></tr>
+        <tr><th>Magnitude</th><td class="big-value" id="sunMag">&mdash;</td></tr>
+      </tbody>
+    </table>
+
+    <h2>The Moon Right Now</h2>
+    <p class="section-note">Apparent geocentric coordinates for the moment shown above.
+    Compare with <a href="https://theskylive.com/moon-info" target="_blank" rel="noopener">theskylive.com/moon-info</a>.</p>
+    <table>
+      <tbody>
+        <tr><th>Constellation</th><td class="big-value" id="moonConst">&mdash;</td></tr>
+        <tr><th>Illumination</th><td id="moonIllum">&mdash;</td></tr>
+        <tr><th>Distance from Earth</th><td class="big-value" id="moonDistKm">&mdash;</td></tr>
+        <tr><th>Distance from Earth (AU)</th><td id="moonDistAu">&mdash;</td></tr>
+        <tr><th>Right Ascension</th><td class="big-value" id="moonRa">&mdash;</td></tr>
+        <tr><th>Declination</th><td class="big-value" id="moonDec">&mdash;</td></tr>
+        <tr><th>Magnitude</th><td class="big-value" id="moonMag">&mdash;</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Planets &amp; Live Sky Data</h2>
+    <p class="section-note">External pages that also update in real time &mdash; handy for planning what to observe tonight.</p>
+    <ul class="more-links">
+      <li><a href="https://theskylive.com/planets" target="_blank" rel="noopener">TheSkyLive &ndash; Planets</a> (positions, rise/set, visibility)</li>
+      <li><a href="https://theskylive.com/planetarium" target="_blank" rel="noopener">TheSkyLive &ndash; Interactive Planetarium</a></li>
+      <li><a href="https://www.timeanddate.com/astronomy/canada/richmond" target="_blank" rel="noopener">timeanddate.com &ndash; Richmond, BC Sun &amp; Moon</a></li>
+      <li><a href="https://weather.com/weather/tenday/l/49.17,-123.14" target="_blank" rel="noopener">weather.com &ndash; Richmond, BC 10-day forecast</a></li>
+    </ul>
+
+    <hr>
+
+    <p class="section-note" id="methodNote" style="margin:0;">The Sun and Moon figures are computed locally with
+    Astronomy&nbsp;Engine (an offline astronomy library, no data sent anywhere). Only the
+    9&nbsp;AM temperature is fetched, from Open-Meteo. Values may differ by up to a minute
+    (rise / set) or a degree or two (temperature) from weather.com and TheSkyLive, which
+    use their own models.</p>
+
+    <hr>
+
+    <p class="site-footer-note">&copy; 2026 Math Easy Solutions (MES). |
+      <a href="https://mes.fm/contact">Contact Us</a> |
+      <a href="https://mes.fm/privacy-policy">Privacy Policy</a>
+    </p>
+  </div>
+
+  <script>
+    // Dark / light theme toggle, remembered in localStorage.
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Switch to Dark Mode';
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+      }
+    }
+
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    setTheme(saved !== 'light');
+    themeToggle.addEventListener('click', () => setTheme(!body.classList.contains('dark')));
+  </script>
+
+  <script src="/moon/js/astronomy.browser.min.js"></script>
+  <script>
+    // Live Sun/Moon dashboard for Richmond, BC.
+    //
+    // Everything except the 9 AM air temperature is computed on-device with Astronomy
+    // Engine (github.com/cosinekitty/astronomy, MIT), vendored at /moon/js/. The only
+    // network call is a single Open-Meteo request for the hourly forecast, used to pull
+    // the 09:00 local value. Press "Refresh now" to recompute for the current instant.
+    (function () {
+      var LAT = 49.17, LON = -123.14, ELEV = 4;      // Brighouse, Richmond, BC
+      var TZ = 'America/Vancouver';
+      var AU_KM = 149597870.7;
+      var LIGHT_SEC_PER_AU = 499.004784;
+
+      var A = window.Astronomy;
+      var $ = function (id) { return document.getElementById(id); };
+      var btn = $('refreshBtn');
+
+      function set(id, text) { var el = $(id); if (el) el.textContent = text; }
+
+      // --- formatting helpers -------------------------------------------------
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+      function fmtClock(date) {
+        return date.toLocaleTimeString('en-US', {
+          timeZone: TZ, hour: 'numeric', minute: '2-digit', hour12: true
+        });
+      }
+
+      function tzAbbrev(date) {
+        try {
+          var parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: TZ, timeZoneName: 'short'
+          }).formatToParts(date);
+          for (var i = 0; i < parts.length; i++) {
+            if (parts[i].type === 'timeZoneName') return parts[i].value;
+          }
+        } catch (e) {}
+        return 'Pacific';
+      }
+
+      function fmtRA(hours) {
+        var total = hours * 3600;
+        var h = Math.floor(total / 3600);
+        var m = Math.floor((total % 3600) / 60);
+        var s = Math.round(total % 60);
+        if (s === 60) { s = 0; m++; }
+        if (m === 60) { m = 0; h++; }
+        h = (h % 24 + 24) % 24;
+        return h + 'h ' + pad(m) + 'm ' + pad(s) + 's';
+      }
+
+      function fmtDec(deg) {
+        var sign = deg < 0 ? '−' : '+';
+        var d = Math.abs(deg);
+        var dd = Math.floor(d);
+        var mm = Math.floor((d - dd) * 60);
+        var ss = Math.round((((d - dd) * 60) - mm) * 60);
+        if (ss === 60) { ss = 0; mm++; }
+        if (mm === 60) { mm = 0; dd++; }
+        return sign + pad(dd) + '° ' + pad(mm) + '′ ' + pad(ss) + '″';
+      }
+
+      function fmtMag(mag) {
+        var t = mag.toFixed(2);
+        return t.charAt(0) === '-' ? '−' + t.slice(1) : t;
+      }
+
+      function fmtLightTime(au) {
+        var s = au * LIGHT_SEC_PER_AU;
+        if (s < 60) return s.toFixed(2) + 's';
+        var m = Math.floor(s / 60);
+        return m + 'm ' + (s - m * 60).toFixed(1) + 's';
+      }
+
+      function phaseName(elong) {
+        if (elong < 22.5 || elong >= 337.5) return 'New Moon';
+        if (elong < 67.5) return 'Waxing Crescent';
+        if (elong < 112.5) return 'First Quarter';
+        if (elong < 157.5) return 'Waxing Gibbous';
+        if (elong < 202.5) return 'Full Moon';
+        if (elong < 247.5) return 'Waning Gibbous';
+        if (elong < 292.5) return 'Last Quarter';
+        return 'Waning Crescent';
+      }
+
+      // Start of today's local calendar day, as a Date (UTC instant).
+      function localDayStart(now) {
+        var f = new Intl.DateTimeFormat('en-CA', {
+          timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+        }).formatToParts(now).reduce(function (a, p) { a[p.type] = p.value; return a; }, {});
+        var asUTC = Date.UTC(+f.year, +f.month - 1, +f.day, +f.hour, +f.minute, +f.second);
+        var offsetMs = asUTC - now.getTime();           // local = UTC + offsetMs
+        return new Date(Date.UTC(+f.year, +f.month - 1, +f.day, 0, 0, 0) - offsetMs);
+      }
+
+      function riseSet(bodyName, dir, dayStart) {
+        try {
+          var t = A.SearchRiseSet(bodyName, observer, dir, dayStart, 1);
+          return t ? fmtClock(t.date) : 'none today';
+        } catch (e) { return '—'; }
+      }
+
+      var observer;
+
+      // --- main compute -----------------------------------------------------
+      function computeSkyBodies(now) {
+        observer = new A.Observer(LAT, LON, ELEV);
+
+        for (var pair, i = 0, bodies = [
+          ['Sun', A.Body.Sun, 'sun'], ['Moon', A.Body.Moon, 'moon']
+        ]; (pair = bodies[i]); i++) {
+          var b = pair[1], p = pair[2];
+          var app = A.Equator(b, now, observer, true, true);   // apparent, of-date
+          var j2k = A.Equator(b, now, observer, false, true);  // J2000 for constellation
+          var ill = A.Illumination(b, now);
+
+          set(p + 'Const', A.Constellation(j2k.ra, j2k.dec).name);
+          set(p + 'DistKm', Math.round(app.dist * AU_KM).toLocaleString('en-US') + ' km');
+          set(p + 'DistAu', app.dist.toPrecision(9) + ' AU · light travel ' + fmtLightTime(app.dist));
+          set(p + 'Ra', fmtRA(app.ra));
+          set(p + 'Dec', fmtDec(app.dec));
+          set(p + 'Mag', fmtMag(ill.mag));
+        }
+
+        var elong = A.MoonPhase(now);
+        var moonIll = A.Illumination(A.Body.Moon, now);
+        set('moonIllum', (moonIll.phase_fraction * 100).toFixed(1) + '% lit');
+        set('moonphase', phaseName(elong));
+
+        var dayStart = localDayStart(now);
+        set('sunrise', riseSet(A.Body.Sun, 1, dayStart));
+        set('sunset', riseSet(A.Body.Sun, -1, dayStart));
+        set('moonrise', riseSet(A.Body.Moon, 1, dayStart));
+        set('moonset', riseSet(A.Body.Moon, -1, dayStart));
+      }
+
+      function fetchTemperature() {
+        set('temp9am', 'loading…');
+        var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + LAT +
+          '&longitude=' + LON + '&hourly=temperature_2m&temperature_unit=fahrenheit' +
+          '&timezone=' + encodeURIComponent(TZ) + '&forecast_days=1';
+        return fetch(url)
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+          .then(function (d) {
+            var times = d.hourly.time, temps = d.hourly.temperature_2m, f = null;
+            for (var i = 0; i < times.length; i++) {
+              if (times[i].slice(11, 16) === '09:00') { f = temps[i]; break; }
+            }
+            if (f == null) { set('temp9am', 'unavailable'); return; }
+            var c = Math.round((f - 32) / 1.8);
+            set('temp9am', Math.round(f) + '°F (' + c + '°C)');
+          })
+          .catch(function () { set('temp9am', 'unavailable — see weather.com'); });
+      }
+
+      function refresh() {
+        var now = new Date();
+        if (!A) {
+          set('updatedLine', 'Astronomy library did not load — use the source links below.');
+          return;
+        }
+        btn.disabled = true;
+        set('tempTzLabel', tzAbbrev(now));
+        try {
+          computeSkyBodies(now);
+        } catch (e) {
+          set('updatedLine', 'Could not compute sky data: ' + e.message);
+          btn.disabled = false;
+          return;
+        }
+        set('updatedLine', 'As of ' + now.toLocaleString('en-US', {
+          timeZone: TZ, dateStyle: 'medium', timeStyle: 'short'
+        }) + ' ' + tzAbbrev(now));
+        fetchTemperature().then(function () { btn.disabled = false; });
+      }
+
+      btn.addEventListener('click', refresh);
+      refresh();
+    })();
+  </script>
+
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script>
+</body>
+</html>
