@@ -1,13 +1,199 @@
-<!DOCTYPE html>
+// Build-time generator for mes.fm/911-alchemy.
+//
+// Fetches the post from Hive's public bridge API and writes a static index.html.
+// This is NOT run by Vercel — run it manually (`npm run build`) whenever the Hive
+// article changes, then commit the regenerated index.html.
+//
+// Usage:
+//   npm install
+//   npm run build
+//
+// Same scaffold as mes.fm/jerry-leaphart-dew and mes.fm/911-jumper-launched (the
+// other 9/11 clip mirrors that link back to mes.fm/911), plus the multi-video
+// embed + Theater Mode handling from mes.fm/hutchison-tom-sky: every bare YouTube
+// URL on its own line becomes a responsive iframe, and every bare 3Speak URL
+// becomes a direct HLS <video>, each with a theater-mode toggle.
+
+import { writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { marked } from "marked";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const AUTHOR = "mestruth";
+const PERMLINK = "911-alchemy-by-wolf-clan-media-7xn";
+const COMMUNITY = "hive-113182";
+const PEAKD_URL = `https://peakd.com/${COMMUNITY}/@${AUTHOR}/${PERMLINK}`;
+const CANONICAL = "https://mes.fm/911-alchemy";
+const BACK_LINK = "https://mes.fm/911";
+
+async function hiveCall(method, params) {
+  const res = await fetch("https://api.hive.blog", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
+  });
+  if (!res.ok) throw new Error(`Hive API request failed: HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(`Hive API error: ${JSON.stringify(data.error)}`);
+  return data.result;
+}
+
+async function fetchPost() {
+  const result = await hiveCall("bridge.get_post", { author: AUTHOR, permlink: PERMLINK });
+  if (!result || !result.body) {
+    throw new Error("Hive API returned no post — check author/permlink.");
+  }
+  return result;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function formatDate(isoString) {
+  return new Date(isoString + "Z").toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function ipfsToGateway(uri) {
+  if (!uri) return null;
+  if (uri.startsWith("ipfs://")) {
+    return `https://ipfs-3speak.b-cdn.net/ipfs/${uri.slice("ipfs://".length)}`;
+  }
+  return uri;
+}
+
+// A bare 3Speak URL resolves to its direct HLS manifest so we can play it in a
+// plain <video> (native speed/quality/PiP controls) instead of iframing 3speak.tv
+// and inheriting their whole app shell. Try 3Speak's public embed API first; if
+// that 404s (older permlinks aren't all indexed), fall back to the 3Speak video's
+// own Hive post metadata, which carries the IPFS manifest hash. Re-encodes /
+// re-uploads keep the permlink, so re-running this build picks them up.
+async function resolve3Speak(owner, permlink) {
+  try {
+    const res = await fetch(`https://play.3speak.tv/api/embed?v=${owner}/${permlink}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.videoUrl) {
+        return { src: data.videoUrl, poster: data.thumbnail || null };
+      }
+    }
+  } catch {
+    /* fall through to Hive metadata */
+  }
+
+  try {
+    const post = await hiveCall("condenser_api.get_content", [owner, permlink]);
+    const meta = JSON.parse(post.json_metadata || "{}");
+    const info = (meta.video && meta.video.info) || {};
+    const sourceMap = info.sourceMap || [];
+    const manifest =
+      info.video_v2 ||
+      (sourceMap.find((s) => s.type === "video" && s.format === "m3u8") || {}).url ||
+      null;
+    const thumb = (sourceMap.find((s) => s.type === "thumbnail") || {}).url;
+    const poster =
+      (Array.isArray(meta.image) && meta.image[0]) || ipfsToGateway(thumb) || null;
+
+    if (manifest && manifest.startsWith("ipfs://")) {
+      const gateway = ipfsToGateway(manifest);
+      return {
+        src: `https://play.3speak.tv/hls?u=${encodeURIComponent(gateway)}`,
+        poster,
+      };
+    }
+    if (manifest) return { src: manifest, poster };
+  } catch {
+    /* best effort */
+  }
+
+  return { src: null, poster: null };
+}
+
+// Bare 3Speak URLs on their own line (PeakD renders these as an embedded player).
+// Each becomes a <video> with a unique id; the {id, src} pairs get wired up by a
+// script block once hls.js has loaded. The pattern is anchored to a whole line
+// (^...$) so it only touches standalone embeds, never the same URL appearing
+// inside a "[3Speak](...)" link in a link row.
+async function embed3SpeakLinks(markdown) {
+  const pattern =
+    /^[ \t]*https?:\/\/(?:play\.)?3speak\.tv\/(?:watch|embed)\?v=([\w.-]+)\/([\w.-]+)[ \t]*$/gm;
+  const matches = [...markdown.matchAll(pattern)];
+  const videos = [];
+  const resolved = [];
+
+  for (let i = 0; i < matches.length; i++) {
+    const [, owner, permlink] = matches[i];
+    const id = `speak-video-${i + 1}`;
+    const { src, poster } = await resolve3Speak(owner, permlink);
+    resolved.push({ id, owner, permlink, poster });
+    videos.push({ id, src });
+  }
+
+  let idx = 0;
+  const html = markdown.replace(pattern, () => {
+    const { id, owner, permlink, poster } = resolved[idx++];
+    const posterAttr = poster ? ` poster="${escapeHtml(poster)}"` : "";
+    return (
+      `<div class="video-embed" google-side-rail-overlap="false">` +
+      `<video id="${id}" controls playsinline preload="metadata"${posterAttr}></video>` +
+      `<button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button>` +
+      `<a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &nearr;</a>` +
+      `</div>`
+    );
+  });
+
+  return { markdown: html, videos };
+}
+
+// Bare YouTube URLs on their own line become a responsive iframe embed, with the
+// same Theater Mode toggle + badge as the 3Speak embeds above.
+function embedYoutubeLinks(markdown) {
+  return markdown.replace(
+    /^[ \t]*(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)\S*[ \t]*$/gm,
+    (_match, videoId) =>
+      `<div class="video-embed" google-side-rail-overlap="false">` +
+      `<iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>` +
+      `<button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button>` +
+      `<a class="video-badge" href="https://youtu.be/${videoId}" target="_blank" rel="noopener">View on YouTube &nearr;</a>` +
+      `</div>`
+  );
+}
+
+async function buildPage(post) {
+  const title = post.title;
+  const { markdown: withVideos, videos } = await embed3SpeakLinks(post.body);
+  const preprocessed = embedYoutubeLinks(withVideos);
+  const bodyHtml = marked.parse(preprocessed);
+  const publishedDate = formatDate(post.created);
+  const buildDate = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const description =
+    (post.json_metadata && post.json_metadata.description) ||
+    "The 3-part 9/11 Alchemy documentary series by Chris Hampton and Mark Conlon of Wolf Clan Media -- Free Energy & Free Thinking, Facing Reality, and A Big Idea -- with embedded videos. Mirrored from the Hive blockchain.";
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="The 3-part 9/11 Alchemy documentary series by Chris Hampton and Mark Conlon of Wolf Clan Media -- Free Energy &amp; Free Thinking, Facing Reality, and A Big Idea -- with embedded videos. Mirrored from the Hive blockchain.">
+  <meta name="description" content="${escapeHtml(description)}">
   <meta name="author" content="MES">
-  <link rel="canonical" href="https://mes.fm/911-alchemy" />
+  <link rel="canonical" href="${CANONICAL}" />
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
-  <title>9/11 Alchemy by Wolf Clan Media | Math Easy Solutions</title>
+  <title>${escapeHtml(title)} | Math Easy Solutions</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -233,45 +419,19 @@
 <body class="dark">
   <div class="container">
     <div class="top-bar">
-      <a class="site-link" href="https://mes.fm/911">&larr; mes.fm/911</a>
+      <a class="site-link" href="${BACK_LINK}">&larr; mes.fm/911</a>
       <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
     </div>
 
-    <h1>9/11 Alchemy by Wolf Clan Media</h1>
-    <div class="page-subtitle">Documentary series &middot; August 30, 2026 &middot; mirrored from the <a href="https://peakd.com/hive-113182/@mestruth/911-alchemy-by-wolf-clan-media-7xn" target="_blank" rel="noopener">Hive blockchain</a></div>
+    <h1>${escapeHtml(title)}</h1>
+    <div class="page-subtitle">Documentary series &middot; ${escapeHtml(publishedDate)} &middot; mirrored from the <a href="${PEAKD_URL}" target="_blank" rel="noopener">Hive blockchain</a></div>
 
     <article class="post-body">
-<p>Links to the 3-part 9/11 Alchemy video series by Chris Hampton (and Mark Conlon among a few others) of Wolf Clan Media are listed below. This is also available at <a href="https://mes.fm/911-alchemy">mes.fm/911-alchemy</a>.</p>
-<h2>9/11 Alchemy - Free Energy &amp; Free Thinking</h2>
-<p><a href="https://peakd.com/hive-113182/@mes/911truth-part-18-9-11-alchemy-free-energy-and-free-thinking-by-wcm">Hive notes</a> - <a href="https://3speak.tv/watch?v=mes/pptgowdb">3Speak</a> - <a href="https://odysee.com/@mes:8/911truth-part-18-feature-documentary-9:9">Odysee</a> - <a href="https://www.bitchute.com/video/GcAFLJqegRXD/">BitChute</a> - <a href="https://rumble.com/v1rc8po-911truth-part-18-feature-documentary-911-alchemy-free-energy-and-free-think.html">Rumble</a> - <a href="https://youtu.be/Otq1ZdGrPPQ">YouTube</a></p>
-<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/Otq1ZdGrPPQ" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/Otq1ZdGrPPQ" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
-
-<p><img src="https://files.peakd.com/file/peakd-hive/mes/cx6JdXYb-911Truth20Part20182091120Alchemy20Free20Energy.jpeg" alt="911Truth Part 18 911 Alchemy Free Energy.jpeg"></p>
-<h2>9/11 Alchemy – Facing Reality</h2>
-<p><a href="https://peakd.com/terrorism/@mes/911truth-part-11-feature-documentary-9-11-alchemy-facing-reality-by-wolf-clan-media">Hive notes</a> - <a href="https://3speak.tv/watch?v=mes/tcqyprkc">3Speak</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-11-Feature-Documentary-911-Alchemy:6">Odysee</a> - <a href="https://www.bitchute.com/video/iu7zQw4sSYkv/">BitChute</a> - <a href="https://rumble.com/v21x70e-911truth-part-11-feature-documentary-911-alchemy-facing-reality-by-wolf-cla.html">Rumble</a> - <a href="https://youtu.be/CrzNeZUp0tU">YouTube</a> (Update 6 May 2023: YouTube reinstated the video without warning - UPDATE 29 September 2022: <a href="https://peakd.com/hive-113182/@mes/youtube-removes-my-911truth-part-11-upload-for-hate-speech">YouTube has removed it after being up for 4 years</a> - UPDATE 5 January 2019: <a href="https://peakd.com/censorship/@mes/orwellian-youtube-censors-my-9-11-video-after-it-went-viral-911truth-censorship">YouTube has censored this video by placing it in a &quot;Limited State&quot;</a> - UPDATE: YouTube has muted some audio clips for music copyright issues.) - <a href="https://inleo.io/threads/view/mes/re-leothreads-2yrwzxhal">French Translation</a></p>
-<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/CrzNeZUp0tU" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/CrzNeZUp0tU" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
-
-<p><img src="https://cdn.steemitimages.com/DQmQ9zi1NtAqMYWQ29pn4eVCPxfvthv8zoxySpcx2hHMLNv/#911Truth%20Part%2011%20911%20Alchemy%20Documentary.jpeg" alt="#911Truth Part 11 911 Alchemy Documentary.jpeg"></p>
-<h3>French Translation: L&#39;alchimie du 11 Septembre ~ Arme à énergie dirigée &amp; projection holographique</h3>
-<p><a href="https://youtu.be/vMxSQkMWEEY">YouTube</a> - <a href="https://t.me/meslinks/29223">Telegram</a></p>
-<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/vMxSQkMWEEY" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/vMxSQkMWEEY" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
-
-<p><img src="https://files.peakd.com/file/peakd-hive/mes/23wX5EUcsQh7ztqR2Qjarmcq7s421qgDDZNQDzGPJoaxZ6hv4SuABV4h8AEcCiNsGgAuY.png" alt="image.png"></p>
-<h2>9/11 Alchemy – A Big Idea</h2>
-<p><a href="https://peakd.com/hive-113182/@mes/vgouudww">Hive notes</a> - <a href="https://3speak.tv/watch?v=mes/vgouudww">3Speak</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-31-911-Alchemy-Big-Idea:c">Odysee</a> - <a href="https://bitchute.com/video/HviA2gzBCwHo/">BitChute</a> - <a href="https://rumble.com/v5ehwdv-911truth-part-31-feature-documentary-911-alchemy-a-big-idea-by-wolf-clan-me.html">Rumble</a> - <a href="https://youtu.be/yV-atFC14lw">YouTube New</a> - <a href="https://youtu.be/tDvQuas9hoQ">YouTube Old</a> (<a href="https://t.me/meslinks/26552">deleted</a>)</p>
-<div class="video-embed" google-side-rail-overlap="false"><video id="speak-video-1" controls playsinline preload="metadata" poster="https://files.peakd.com/file/peakd-hive/mes/23vsUxyXRa3cvPbnmTaJZitjmVqTW7kP3Psoy7gDgrzquKfkqTWBoXv357u24CuoMPN3F.jpeg"></video><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://3speak.tv/watch?v=mes/vgouudww" target="_blank" rel="noopener">View on 3Speak &nearr;</a></div>
-
-<p><img src="https://files.peakd.com/file/peakd-hive/mes/23vsUxyXRa3cvPbnmTaJZitjmVqTW7kP3Psoy7gDgrzquKfkqTWBoXv357u24CuoMPN3F.jpeg" alt="911 Alchemy Big Idea.jpeg"></p>
-<hr>
-<ul>
-<li>MES 9/11 Truth: <a href="https://mes.fm/911">https://mes.fm/911</a></li>
-</ul>
-<p>Posted Using <a href="https://inleo.io/@mestruth/911-alchemy-by-wolf-clan-media-7xn">INLEO</a></p>
-
+${bodyHtml}
       <hr>
 
-      <a class="source-link" href="https://peakd.com/hive-113182/@mestruth/911-alchemy-by-wolf-clan-media-7xn" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
-      <div class="retrieved-note">Text retrieved from the Hive blockchain on August 30, 2026.</div>
+      <a class="source-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
+      <div class="retrieved-note">Text retrieved from the Hive blockchain on ${escapeHtml(buildDate)}.</div>
     </article>
 
     <hr>
@@ -387,7 +547,7 @@
     // (via hls.js) rather than iframing 3speak.tv. Manifest URLs are resolved at
     // build time (see resolve3Speak in build.mjs); re-run the build to refresh them.
     (function () {
-      var videos = [{"id":"speak-video-1","src":"https://play.3speak.tv/hls?u=https%3A%2F%2Fipfs-3speak.b-cdn.net%2Fipfs%2FQmSBVXyGhCSnWNKmbqyaruLiNoSNKSW5D9cSLUM8aGLwTG%2Fmanifest.m3u8"}];
+      var videos = ${JSON.stringify(videos)};
       videos.forEach(function (v) {
         if (!v.src) return;
         var video = document.getElementById(v.id);
@@ -406,3 +566,21 @@
   <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script>
 </body>
 </html>
+`;
+}
+
+async function main() {
+  console.log(`Fetching @${AUTHOR}/${PERMLINK} from api.hive.blog ...`);
+  const post = await fetchPost();
+  console.log(`Got post: "${post.title}"`);
+
+  const html = await buildPage(post);
+  const outPath = join(__dirname, "index.html");
+  writeFileSync(outPath, html, "utf8");
+  console.log(`Wrote ${outPath}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
