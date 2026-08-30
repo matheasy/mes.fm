@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review of vectors functions by going over a concept check and true-false quiz at the end of the Stewart Calculus chapter">
+  <meta name="author" content="MES">
+  <link rel="canonical" href="https://mes.fm/vector-functions-problems-plus" />
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>Review of Vector Functions Chapter – Concept Check &amp; True-False Quiz | Math Easy Solutions</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #1a1a1a; color: #eeeeee; }
+    body.dark a { color: #6cb6f5; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
+
+    .site-link {
+      font-size: 0.9em;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin: 0.4em 0 0.2em;
+    }
+
+    .post-meta {
+      font-size: 0.9em;
+      opacity: 0.85;
+      margin-bottom: 0.6em;
+    }
+
+    .post-meta span:not(:last-child)::after {
+      content: " \00b7 ";
+    }
+
+    .peakd-link {
+      display: inline-block;
+      margin: 0.6em 0 1.4em;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .post-body {
+      word-wrap: break-word;
+    }
+
+    .post-body h1 {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.8em 0 0.8em;
+    }
+
+    .post-body h2 {
+      font-size: 1.3em;
+      margin: 1.9em 0 0.4em;
+    }
+
+    .post-body h3 {
+      font-size: 1.1em;
+      margin: 1.6em 0 0.4em;
+    }
+
+    .post-body p {
+      margin: 0 0 1em;
+    }
+
+    .post-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0.6em 0;
+      cursor: zoom-in;
+    }
+
+    .post-body ul {
+      padding-left: 1.3em;
+    }
+
+    .post-body li {
+      margin: 0 0 0.5em;
+    }
+
+    .post-body blockquote {
+      border-left: 3px solid #5ea9dd;
+      margin: 1em 0;
+      padding: 0.2em 1em;
+      opacity: 0.9;
+    }
+
+    .post-body table {
+      border-collapse: collapse;
+      max-width: 100%;
+      margin: 1.5em 0;
+    }
+
+    .post-body td,
+    .post-body th {
+      border: 1px solid;
+      border-color: inherit;
+      padding: 6px 10px;
+    }
+
+    .video-embed {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.6em 0 1.2em;
+      transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
+        height 0.25s ease, padding-bottom 0.25s ease, border-radius 0.25s ease;
+    }
+
+    .video-embed iframe,
+    .video-embed video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode {
+      width: 100vw;
+      max-width: 100vw;
+      left: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      padding-bottom: 0;
+      height: min(85vh, 56.25vw);
+      border-radius: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode iframe,
+    .video-embed.theater-mode video {
+      object-fit: contain;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .theater-toggle-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      border: 0;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .theater-toggle-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .video-embed .video-badge,
+    .video-embed .theater-toggle-btn {
+      transition: opacity 0.3s ease;
+    }
+
+    .video-embed.controls-hidden .video-badge,
+    .video-embed.controls-hidden .theater-toggle-btn {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 2147483647;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 120px;
+    }
+
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox-image {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: calc(100vh - 120px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-controls {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lightbox-counter {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.85em;
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      position: fixed;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .lightbox-close:hover,
+    .lightbox-prev:hover,
+    .lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+    .lightbox-close {
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.3em;
+      z-index: 2147483647;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+      position: static;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.4em;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-overlay { padding-bottom: 100px; }
+      .lightbox-image { max-height: calc(100vh - 100px); }
+      .lightbox-controls { bottom: 32px; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+      .lightbox-close { width: 36px; height: 36px; }
+    }
+
+    hr {
+      margin: 2em 0;
+      opacity: 0.3;
+    }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .retrieved-note {
+      font-size: 0.85em;
+      opacity: 0.7;
+      margin-top: 0.4em;
+    }
+
+    .site-footer-note {
+      font-size: 0.8em;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    /* Every chapter (the leading "Overview" one plus every Hive-sourced "# "
+       section) is a collapsible dropdown -- see wrapChaptersInToggles() in
+       build.mjs and toggleChapter() below. */
+    .chapter-toggle-header {
+      cursor: pointer;
+    }
+
+    .chapter-toggle-header .arrow-icon {
+      font-size: 0.6em;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    .chapter-toggle-list.hidden {
+      display: none;
+    }
+
+    /* Pinned to the top of the post body, just under the <hr> that follows the
+       article meta -- a collapse/expand-all control anchored to the right edge,
+       above the first ("Overview") chapter. */
+    .chapters-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin: -0.8em 0 0.4em;
+    }
+
+    /* Table of contents: a fixed side column on wide viewports, collapsing to a
+       <details> dropdown above the article on anything narrower. */
+    .toc-sidebar {
+      display: none;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-sidebar {
+        display: block;
+        position: fixed;
+        top: 90px;
+        left: calc(50% + 410px);
+        width: 210px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        font-size: 0.85em;
+      }
+
+      .toc-sidebar .toc-title {
+        font-size: 0.75em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+        margin: 0 0 0.7em;
+      }
+
+      .toc-sidebar a {
+        display: block;
+        padding: 0.3em 0;
+        opacity: 0.85;
+        text-decoration: none;
+      }
+
+      .toc-sidebar a:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+    }
+
+    .toc-mobile {
+      margin: 1.2em 0;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-mobile {
+        display: none;
+      }
+    }
+
+    .toc-mobile summary {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0.6em 0.9em;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      border-radius: 6px;
+    }
+
+    .toc-mobile .toc-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4em;
+      padding: 0.8em 0.9em 0.2em;
+    }
+
+    .toc-mobile a {
+      text-decoration: none;
+      opacity: 0.9;
+    }
+
+    .toc-mobile a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5em; }
+      body { padding: 0 12px 40px; }
+    }
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+</style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+</head>
+<body class="dark">
+  <nav class="toc-sidebar" aria-label="Table of contents">
+    <div class="toc-title">Jump to</div>
+      <a href="#overview">Overview</a>
+      <a href="#review">Review</a>
+      <a href="#true-false-quiz">True-False Quiz</a>
+      <a href="#sections-playlist-and-thumbnails">Sections Playlist and Thumbnails</a>
+  </nav>
+  <div class="container">
+    <div class="top-bar">
+      <a class="site-link" href="https://mes.fm/links">&larr; mes.fm/links</a>
+      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+    </div>
+
+    <h1>Review of Vector Functions Chapter – Concept Check &amp; True-False Quiz</h1>
+    <div class="post-meta">
+      <span>By mes</span>
+      <span>July 12, 2026</span>
+      <span>54 votes</span>
+      <span>1 comments</span>
+      <span>1 reblogs</span>
+    </div>
+    <a class="peakd-link" href="https://peakd.com/hive-128780/@mes/review-of-vector-functions-138" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
+
+    <details class="toc-mobile">
+      <summary>Jump to section</summary>
+      <nav class="toc-links" aria-label="Table of contents">
+        <a href="#overview">Overview</a>
+      <a href="#review">Review</a>
+      <a href="#true-false-quiz">True-False Quiz</a>
+      <a href="#sections-playlist-and-thumbnails">Sections Playlist and Thumbnails</a>
+      </nav>
+    </details>
+
+    <hr>
+
+    <div class="post-body">
+<div class="chapters-toolbar">
+<button id="toggleAllChaptersBtn" class="theme-toggle-btn" onclick="toggleAllChapters()">Collapse All</button>
+</div>
+<div class="chapter-toggle" id="overview">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Overview <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="overview-list" class="chapter-toggle-list">
+<div class="video-embed" google-side-rail-overlap="false"><video id="speak-video-1" controls playsinline preload="metadata" poster="https://images.3speak.tv/images/1783921322879-6ff4aa711a7371cc.webp"></video><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://3speak.tv/watch?v=mes/2e9u7kyv" target="_blank" rel="noopener">View on 3Speak &nearr;</a></div>
+
+<p>In this video, I go over the concept check questions and true-false quiz as part of the review on the vector functions chapter from my calculus book. There are 9 concept check questions and 14 quiz questions, so try them out before I go over the solutions. I also use this as an opportunity to link back to my earlier videos on vector functions, as well as the very detailed thumbnails I made throughout these videos. If you do try the questions on your own, let me know how well you did!</p>
+<p>▶️ <a href="https://play.3speak.tv/embed?v=mes/2e9u7kyv">Watch on 3Speak</a> - <a href="https://odysee.com/Vector-Functions-Review-Quiz:00623b6d1fc96e2bd6f7cc5adf79a76c05b34239">Odysee</a> - <a href="https://www.bitchute.com/video/rn9b9lR9jKUY/">BitChute</a> - <a href="https://rumble.com/v7coxec-review-of-vector-functions-chapter-concept-check-and-true-false-quiz.html">Rumble</a> - <a href="https://t.me/meslinks/35175">Telegram</a> - <a href="https://youtu.be/qQkC5yM7syM">YouTube</a> - <a href="https://1drv.ms/b/c/88862ef47bcaf6cd/IQBokCnjxqATTaZomZ0XQkmfAemuPrx1yRkCqFOuuLR-4io">PDF Notes</a> - <a href="https://peakd.com/hive-128780/@mes/review-of-vector-functions-138">Notes</a> - <a href="https://www.youtube.com/playlist?list=PLAsz0y2lc-c4">Playlist</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HQl7xTQBS_O8Te8PcpNm4U">Vector Functions</a> - <a href="https://mes.fm/links">MES Links</a></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcNnfbkHj6RCZV1KJSU2Ye6EvxtM3CF3avYDfPsVfJ1L7SNmaYLxc2jGqej5CJBYtdv.png" alt="Vector Functions Review.png"></p>
+<p>#math #vectors #calculus #education #quiz </p>
+<h3>Timestamps</h3>
+<ul>
+<li>Intro – 0:00</li>
+<li>Calculus book reference – 1:06</li>
+<li>Calculus book chapter – 1:31</li>
+<li>Topics to cover – 2:41</li>
+<li>Review: Concept Check – 3:52<ul>
+<li>Question 1: Vector function calculus – 6:13</li>
+<li>Question 2: Space curves – 11:30</li>
+<li>Question 3: Tangent vector – 13:43</li>
+<li>Question 4: Differentiation rules – 18:33</li>
+<li>Question 5: Length of a space curve – 23:13</li>
+<li>Question 6: Curvature – 27:34</li>
+<li>Question 7: Unit normal, binormal planes, and osculating circle – 32:26</li>
+<li>Question 8: Velocity, speed, and acceleration – 38:01</li>
+<li>Question 9: Kepler&#39;s Laws – 42:42</li>
+</ul>
+</li>
+<li>True-False Quiz – 45:59<ul>
+<li>Question 1: Vector equation of a line – 49:07</li>
+<li>Question 2: Parabola – 50:43</li>
+<li>Question 3: Line through the origin – 53:11</li>
+<li>Question 4: Differentiation by components – 54:53</li>
+<li>Question 5: Derivative of cross product – 55:41</li>
+<li>Question 6: Derivative of the magnitude of a vector – 56:36</li>
+<li>Question 7: Curvature – 1:01:10</li>
+<li>Question 8: Binormal vector – 1:03:06</li>
+<li>Question 9: Curvature and inflection points – 1:05:02</li>
+<li>Question 10: Curvature of a straight line – 1:07:57</li>
+<li>Question 11: Constant magnitude of a vector – 1:11:06</li>
+<li>Question 12: Space curve on a sphere – 1:16:20</li>
+<li>Question 13: Osculating circle – 1:18:03</li>
+<li>Question 14: Parameterizations of a curve – 1:20:16</li>
+</ul>
+</li>
+<li>Outro – 1:23:28</li>
+</ul>
+<hr>
+<h3>View Video Notes Below!</h3>
+<hr>
+<blockquote>
+<ul>
+<li><a href="https://mes.fm/links">MES Links</a> - <a href="https://mes.fm/donate">Donate</a> - <a href="https://t.me/meslinks">Telegram</a> -  @mestruth on <a href="https://3speak.tv/user/mestruth">Hive</a> &amp; <a href="https://www.youtube.com/@mestruth">YouTube</a> - <a href="https://peakd.com/hive-181335/@mes/tdvxnmej">Hive blockchain tutorial</a> - <a href="https://peakd.com/video/@mes/play-videos-at-faster-or-slower-speeds-on-any-website">Video playback speed tutorial</a> - <a href="http://wheredidthetowersgo.com">Where Did the Towers Go? by Dr. Judy Wood</a> + MANY more links…</li>
+<li><strong>Reuse of my videos:</strong> Feel free to make use of / re-upload / monetize my videos as long as you provide a <strong>link</strong> to the original video.</li>
+<li><strong>Fight back against censorship:</strong> Bookmark sites/channels/accounts and check periodically. - <a href="https://chrome.google.com/webstore/detail/archive-page/gcaimhkfmliahedmeklebabdgagipbia">Archive webpages</a> - <a href="https://dhenz14.github.io/archive/index.html">ArcHive</a></li>
+</ul>
+</blockquote>
+<hr>
+<h3>Calculus Book Reference</h3>
+<p>Note that I mainly follow along the book:</p>
+<ul>
+<li><strong>Calculus: Early Transcendentals 7th Edition by James Stewart</strong>: <a href="https://web.archive.org/web/20250216211115/https://patemath.weebly.com/uploads/5/2/5/8/52589185/james-stewart-calculus-early-transcendentals-7th-edition-2012-1-20ng7to-1ck11on.pdf">Link</a><ul>
+<li>I used the following solution manual for this chapter: <a href="https://web.ma.utexas.edu/users/shirley/a408d/hwlist/1hw/Addendum/Stewart's%20Calculus,%209th%20ed,%20Soln's%20Manuals/Solution%20Manual,%20ch's%2010-16/Stewart_CalcET9e_SAG__CH13.pdf">Link</a></li>
+<li>I used Quizlet.com 30 day free trial for the solutions to the Concept Check: <a href="https://theswissbay.ch/pdf/Gentoomen%20Library/Maths/Calculus/Calculus%20-%20Early%20Transcendentals%206e.pdf">Link</a></li>
+</ul>
+</li>
+<li><strong>Note</strong>: In some earlier videos I used the <a href="https://theswissbay.ch/pdf/Gentoomen%20Library/Maths/Calculus/Calculus%20-%20Early%20Transcendentals%206e.pdf">6th edition</a>.</li>
+</ul>
+<hr>
+<h3>Calculus Book Chapter</h3>
+<p>The Hive notes and sections playlist for each video of this chapter are listed below:</p>
+<p><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HQl7xTQBS_O8Te8PcpNm4U"><strong>Vector Functions</strong> ▶️</a></p>
+<ol>
+<li><a href="https://peakd.com/hive-128780/@mes/vector-functions-space-curves">Vector Functions and Space Curves</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GwdMY-E9_4LsmYmO-IxcoX">▶️</a></li>
+<li><a href="https://peakd.com/hive-128780/@mes/hfsetrue">Derivatives and Integrals of Vector Functions</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FgQ3jBd9IFaWOakOWbHous">▶️</a></li>
+<li><a href="https://peakd.com/hive-128780/@mes/koxharrd">Arc Length and Curvature</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Gd5OieYiZMaSKw1QfyHbiG">▶️</a></li>
+<li><a href="https://peakd.com/hive-128780/@mes/e443f9d3">Motion in Space: Velocity and Acceleration</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Hxo8aPU3ezG0tcLvgJnxLB">▶️</a><ul>
+<li><a href="https://peakd.com/hive-128780/@mes/c3b94a80">Applied Project: Kepler&#39;s Laws</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FSh63mgXOKLQ41H4dkzbaY">▶️</a></li>
+</ul>
+</li>
+<li>Review - <a href="https://www.youtube.com/playlist?list=PLAsz0y2lc-c4">▶️</a> — <strong>CURRENT VIDEO</strong><ul>
+<li>Concept Check</li>
+<li>True-False Quiz</li>
+</ul>
+</li>
+<li>Problems Plus</li>
+</ol>
+<p>This links are also on MES Links: <a href="https://mes.fm/links">https://mes.fm/links</a></p>
+<hr>
+<h2>Topics to Cover</h2>
+<p>Note that the timestamps will be included in the video description for each topic listed below.</p>
+<ul>
+<li>Concept Check<ul>
+<li>Question 1: Vector function calculus</li>
+<li>Question 2: Space curves</li>
+<li>Question 3: Tangent vector</li>
+<li>Question 4: Differentiation rules</li>
+<li>Question 5: Length of a space curve</li>
+<li>Question 6: Curvature</li>
+<li>Question 7: Unit normal, binormal planes, and osculating circle</li>
+<li>Question 8: Velocity, speed, and acceleration</li>
+<li>Question 9: Kepler&#39;s Laws</li>
+</ul>
+</li>
+<li>True-False Quiz<ul>
+<li>Question 1: Vector equation of a line</li>
+<li>Question 2: Parabola</li>
+<li>Question 3: Line through the origin</li>
+<li>Question 4: Differentiation by components</li>
+<li>Question 5: Derivative of cross product</li>
+<li>Question 6: Derivative of the magnitude of a vector</li>
+<li>Question 7: Curvature</li>
+<li>Question 8: Binormal vector</li>
+<li>Question 9: Curvature and inflection points</li>
+<li>Question 10: Curvature of a straight line</li>
+<li>Question 11: Constant magnitude of a vector</li>
+<li>Question 12: Space curve on a sphere</li>
+<li>Question 13: Osculating circle</li>
+<li>Question 14: Parametrizations of a curve</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="review">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('review-list')"><center>Review <span id="arrowIcon-review-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="review-list" class="chapter-toggle-list">
+<hr>
+<h2>Concept Check</h2>
+<hr>
+<p><strong>Question 1: Vector function calculus</strong>
+	
+What is a vector function? </p>
+<p>How do you find its derivative and its integral?</p>
+<p><strong>Question 2: Space curves</strong></p>
+<p>What is the connection between vector functions and space curves?</p>
+<p><strong>Question 3: Tangent vector</strong></p>
+<p>How do you find the tangent vector to a smooth curve at a point?</p>
+<p>How do you find the tangent line? The unit tangent vector?</p>
+<p><strong>Question 4: Differentiation rules</strong></p>
+<p>If <strong>u</strong> and <strong>v</strong> are differentiable vector functions, c is a scalar, and f is a real-valued function, write the rules for differentiating the following vector functions.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmjgGNFiEr3oQmHRsab6KEX6fqERFwWA8uWLmJwMeHnf5U8rEHNDd8JqkKEUFqTSH2v.png" alt="image.png"></p>
+<p><strong>Question 5: Length of a space curve</strong></p>
+<p>How do you find the length of a space curve given by a vector function <strong>r</strong>(t)?</p>
+<p><strong>Question 6: Curvature</strong></p>
+<p>(a) What is the definition of curvature?</p>
+<p>(b) Write a formula for curvature in terms of <strong>r</strong>&#39;(t) and <strong>T</strong>&#39;(t).</p>
+<p>(c) Write a formula for curvature in terms of <strong>r</strong>&#39;(t) and <strong>r</strong>&quot;(t).</p>
+<p>(d) Write a formula for the curvature of a plane curve with equation y = f(x).</p>
+<p><strong>Question 7: Unit normal, binormal planes, and osculating circle</strong></p>
+<p>(a) Write formulas for the unit normal and binormal vectors of a smooth space curve <strong>r</strong>(t).</p>
+<p>(b) What is the normal plane of a curve at a point? What is the osculating plane? What is the osculating circle?</p>
+<p><strong>Question 8: Velocity, speed, and acceleration</strong></p>
+<p>(a) How do you find the velocity, speed, and acceleration of a particle that moves along a space curve?</p>
+<p>(b) Write the acceleration in terms of its tangential and normal components?</p>
+<p><strong>Question 9: Kepler&#39;s Laws</strong></p>
+<p>State Kepler&#39;s Laws.</p>
+<hr>
+<h3>Solution to Question 1: Vector function calculus</h3>
+<p>What is a vector function? </p>
+<p>How do you find its derivative and its integral?</p>
+<p><strong>Solution:</strong></p>
+<p>A vector-valued function, or a vector function, is a function whose domain is a set of real numbers and whose range is a set of vectors. </p>
+<p>In general, a vector function in 3D space can be written in component form just like equations for lines.</p>
+<p>That is, any vector function is of the form, where the parameter t typically denotes time:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23wCdT2J57CYBLPMXLByCZ1pZVaxGtfR6zn1n3DenMiUUp13AnVkDNn37PVXBvPE4N4nn.png" alt="image.png"></p>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/omhbcxkw">earlier video</a> on vector functions.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23viRctaHpCdqtyqnQebwtKx1kaTxG3QiYhPv2isA3vwNP1gA6GquwhdcCcgjyH84CDUZ.png" alt="image.png">
+	
+To differentiate the vector function, we differentiate each component separately to get:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/EoibxT5NRmVKk9LeCLVn3CwSp5ZRaiEi2suR91kDdMHEUPVGrhdvNmDsPVSciDgNUCb.png" alt="image.png"></p>
+<p>To integrate the vector function, we integrate each component separately to get:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23x1aTvxqKjhyKqAcznVz3Nd4JxhtdPMrUg2JZBmKq7JMABBbLVoNTvYkH4CN1SRnVABz.png" alt="image.png"></p>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/hfsetrue">earlier video</a> on derivatives and integrals of vector functions.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23u6YmnLJ5HuZJsL9yf7kp69J22uxzGn9raZETPMbMUzfvJdesmozCmdfwptcF7hbqZW8.png" alt="image.png"></p>
+<hr>
+<h2>Solution to Question 2: Space curves</h2>
+<p>What is the connection between vector functions and space curves?</p>
+<p><strong>Solution:</strong></p>
+<p>A space curve is a curve in space.</p>
+<p>There is a close connection between space curves and vector functions.</p>
+<p>Specifically, we can determine a vector function which traces along a space curve C (provided we put the tail of the vectors at the origin, so they are position vectors).</p>
+<p>Likewise, any vector function defines a space curve.</p>
+<p>For example, if we have a vector function <strong>r</strong>(t) = f(t) <strong>i</strong> + g(t) <strong>j</strong> + h(t) <strong>k</strong> and we vary t, the position vector <strong>r</strong>(t) traces out the curve C.</p>
+<p>See my <a href="https://peakd.com/hive-128780/@mes/omhbcxkw">earlier video</a> on vector functions and space curves.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23twA2WUFZSR6oEojw4wRMhxXfawRdqybwTBgkc96oKc3Ro1CPYVdTkADMT5mdczVa8TB.png" alt="image.png"></p>
+<h3>Solution to Question 3: Tangent vector</h3>
+<p>How do you find the tangent vector to a smooth curve at a point?</p>
+<p>How do you find the tangent line? The unit tangent vector?</p>
+<p><strong>Solution:</strong></p>
+<p>Let C be a smooth curve with position vector <strong>r</strong>(t).</p>
+<p>The tangent vector is <strong>r</strong>&#39;(t).</p>
+<p>The unit tangent vector is:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23uFwS9uofKznSEXQgryTEwK7izmEBY4izxm1nh1Sz7zzKZQxn1UfZEW2cypEo6FRpTb2.png" alt="image.png"></p>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/hfsetrue">earlier video</a> on the definition of derivative of a vector function.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmmNARarE44qe28SMymfSzTp23QrJBJb6ZJbmx21kYeqh989CPEUnc5cVTB5Rww6A6M.png" alt="image.png"></p>
+<p>Recall also my earlier video for the vector equation of a line.</p>
+<p>Thus the vector equation of the tangent line at t = a is:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcP5UHCUyfkTR5Leh2KPwb2h67RtZLVVtTrWwTrXRkQp7pegSxV14RmAUPrunRF6Kk5.png" alt="image.png"></p>
+<h3>Solution to Question 4: Differentiation rules</h3>
+<p>If <strong>u</strong> and <strong>v</strong> are differentiable vector functions, c is a scalar, and f is a real-valued function, write the rules for differentiating the following vector functions.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmj919xTfGY7sC78MJXy5VQpTuJLB3Hid7mHaWXX4gRrZWBDDHjiErdmm12JNk6YbDT.png" alt="image.png"></p>
+<p><strong>Solution:</strong></p>
+<p>These are the differential rules for vector functions that I went over in my <a href="https://peakd.com/hive-128780/@mes/hfsetrue">earlier video</a>.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmmXSdNGCCS5FEumaVxW7VHH1phMRDRTMf5uRkq2feX1uH5JjpKJx9DZoBAXmBRHcPz.png" alt="image.png"></p>
+<p>The derivation for each rule is illustrated in the sections video thumbnails below.</p>
+<p><strong>Solution to (a):</strong> </p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tHbTvSiupQtTUKXSN4zrG8N98GRFzbG4qtySsJuvouc7B1umTFec6RiWe8yHeAbE7sn.png" alt="image.png"></p>
+<p><strong>Solution to (b) and (c):</strong></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tSyukFYfzafUh55td7sQxzjJRTpg61sk2DQmGV8TDzzweD3DeRnh4aGf9RAwkPBVYLC.png" alt="image.png"></p>
+<p><strong>Solution to (d):</strong></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23t8Cig7Xey8PpKWukgQXbNGuZMp38t42rh3nUQv8H1dHYywAcgT5A3tUVgu5CqTozm7W.png" alt="image.png"></p>
+<p><strong>Solution to (e):</strong></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tHbTvSj3aeTYPTzWM5p2LcxZdS9M1dHR57uu3xXeGfrtWM3xzJFetToDBf5d8fyHtLw.png" alt="image.png"></p>
+<p><strong>Solution to (f):</strong></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23t8Cb16WiAL8qGUjMZTiYQ5VUxAy6QiaxFaCwUkYurBvq2HLLjez1djhGjXxTCaHTUXp.png" alt="image.png"></p>
+<h3>Solution to Question 5: Length of a space curve</h3>
+<p>How do you find the length of a space curve given by a vector function <strong>r</strong>(t)?</p>
+<p><strong>Solution:</strong></p>
+<p>The rate of change of the distance with respect to t is:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23wCdNcqxjW7GdoxuAgaMj5bMA3kCpRfYwMLpE9JGPneuZ4gUwFfeoTGzFnZxE2b86XNp.png" alt="image.png"></p>
+<p>For a small displacement of t, the length of the line segment from <strong>r</strong>(t) to <strong>r</strong>(t + Δt) is:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23wgoGrpptHB85mGRkmFDzpnpJ8hAk1GAkihFroivvBgHrLyQhB9gLEjZaBD448yPP2Xr.png" alt="image.png"></p>
+<p>When Δt → 0, the length of space curve is equal to Δs.</p>
+<p>Therefore the length of the space curve from r(a) to r(b) is:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23twA7QknK6de6kd6QkXG4GwUpVQAdYLnp7qd6o4WH4Siiv6eCyFgBy9tzBjBt782rB4y.png" alt="image.png"></p>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a> on the length of a space curve.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23twA7QknK6dnhRmAe3n4kRPYQtStGTsTnSAG9FLmRVFFy9V1oATTVMfFGpM8n25PRyTD.png" alt="image.png"></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmmNARbCjC7e23BFBgVyo3i2K5hRsAJ926rahbvyxzrXdd5mDoZXZiRUzmaWjXhJ3F7.png" alt="image.png">
+	</p>
+<h3>Solution to Question 6: Curvature</h3>
+<p>(a) What is the definition of curvature?</p>
+<p>(b) Write a formula for curvature in terms of <strong>r</strong>&#39;(t) and <strong>T</strong>&#39;(t).</p>
+<p>(c) Write a formula for curvature in terms of <strong>r</strong>&#39;(t) and <strong>r</strong>&quot;(t).</p>
+<p>(d) Write a formula for the curvature of a plane curve with equation y = f(x).</p>
+<p><strong>Solution to (a):</strong></p>
+<p>The notion of curvature measures how sharply a curve bends.</p>
+<p>We would expect the curvature to be 0 for a straight line, to be very small for curves which bend very little, and to be large for curves which bend sharply.</p>
+<p>If we move along a curve, we see that the direction of the tangent vector will not change as long as the curve is flat.</p>
+<p>Its direction will change if the curve bends.</p>
+<p>The more the curve bends, the more the direction of the tangent vector will change.</p>
+<p>Curvature is defined as:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/EoH5CEDttq2z4JNhNLbPbFDhFGLzJNmLBmG7wsDuLhC2koHtCTS38eVhc5AzoQY3GVW.png" alt="image.png"></p>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a> on curvature.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23uFwMHA8VK1WoPTZLTuNGJ98cdHM7BY6VWfXqMtmdTsZ5pprpbuhs5Uvn8q5tVvV3zoR.png" alt="image.png"></p>
+<p><strong>Solution to (b):</strong></p>
+<p>From above:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23uRL1ejeFWGFUwM9nvhv8wAxy8ktXq9hrsc2Kdufw73KYs7edZZt9fQtrxn2Rgx5vTAB.png" alt="image.png"></p>
+<p><strong>Solution to (c):</strong></p>
+<p>The formula is shown below my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a> on curvature.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcNhnr6dTSMLLXnXKmNGXtoUm96vN1SP1cAVnsRFjWppm5CNR6vkwqzC5VUdT9v5vi3.png" alt="image.png"></p>
+<p><strong>Solution to (d):</strong></p>
+<p>The formula is shown below from my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a> on curvature of a plane curve.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tw8Leje1bp3UGuCM3cqPRgxJdT3wiNvoz6vyDVvKCweaCxowMWYFeQu7Hzs6Mjp3dQZ.png" alt="image.png"></p>
+<h3>Solution to Question 7: Unit normal, binormal planes, and osculating circle</h3>
+<p>(a) Write formulas for the unit normal and binormal vectors of a smooth space curve <strong>r</strong>(t).</p>
+<p>(b) What is the normal plane of a curve at a point? What is the osculating plane? What is the osculating circle?</p>
+<p><strong>Solution to (a):</strong></p>
+<p>The formulas for the unit normal and binormal vectors are shown below from my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a>.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmjgGNHCoLCJouAqYtGBbRymmtAkdk8tuVnN1wEaoMBESAZ1rvQn67qRipeqUD5tzfT.png" alt="image.png"></p>
+<p><strong>Solution to (b):</strong></p>
+<p>The plane formed by the normal vector <strong>N</strong>(t) and binormal vector <strong>B</strong>(t) at a point on the curve <strong>r</strong>(t) is the <strong>normal plane</strong> of this curve.</p>
+<p>The plane formed by the unit tangent vector <strong>T</strong>(t) and the normal vector <strong>N</strong>(t) at a point on the curve <strong>r</strong>(t) is the <strong>osculating plane</strong> of this curve.</p>
+<p>Now, if P is a point on the curve, the circle that lies in the osculating plane at P, has the same tangent as the curve at P, lies on the concave side of the curve (the side toward which the normal vector points), and has radius ρ = 1/κ (where κ is the curvature of this curve at P) is the <strong>osculating circle</strong>.</p>
+<p>See my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a> on the TNB frame and osculating circle.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23xf6xdgJtKyAo43EPkveXJpNMS2Dq9RtLTdW4UDeyTdScRR5ajCftJRrTBj4ZV8Po5HR.png" alt="image.png"></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcNhnr562TxNem9CgjMXZV1eBSCgd6x6jEcRKMEqSFzRoC1PJ6XUh5xrCfJHPJgaPiQ.png" alt="image.png"></p>
+<h3>Solution to Question 8: Velocity, speed, and acceleration</h3>
+<p>(a) How do you find the velocity, speed, and acceleration of a particle that moves along a space curve?</p>
+<p>(b) Write the acceleration in terms of its tangential and normal components?</p>
+<p><strong>Solution to (a):</strong></p>
+<p>If the trajectory of a particle moving along a space curve is modeled by <strong>r</strong>(t), the <strong>velocity</strong> of the particle at time t will be given by the vector:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/Eonrj6iXZi6nVrDdrznAGizpc5HSUbia2KwGHdB4inpV78HRkEL2tTTwTtKiyrMez1w.png" alt="image.png"></p>
+<p>The <strong>speed</strong> of the particle at time t is the scalar:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/Eopz8Hx1cNkjj97zmoERBo1BHMM7kyUyUDTcFwBTd6tz4CJjD6oCkHALTrXvGPmLRcn.png" alt="image.png"></p>
+<p>Finally, the <strong>acceleration</strong> of the particle at time t moving along a space curve is the vector:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23wN1x7foHJhjfY8SzfFhojSKZwoixJKMtWb61eubutTtQWXC62Eue3px93gos9TSkAaW.png" alt="image.png"></p>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/e443f9d3">earlier video</a> on moving objects in 2D and 3D.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tSz3RpRiks5M1MvKbcmd9885HdRER5hb66BecsZsttQbFyYUSgPEh5bAJ3sjZVbhHw6.png" alt="image.png"></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tw8LdwmMbpTiadhzRtX4ecnP5rfLrwoEJZdU7SsNXkvquwhYYLmYZvAjATwQdZ7bu4w.png" alt="image.png">
+	
+<strong>Solution to (b):</strong></p>
+<p>The formulas for the tangential and normal accelerations are shown below from my <a href="https://peakd.com/hive-128780/@mes/e443f9d3">earlier video</a>.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmmEVQZqsxCK5nJoQyqB9QbNYqTCxCJJp9zjojiCW5B6HxdQiLcKgkPEKCme8Yf2J4h.png" alt="image.png"></p>
+<h3>Solution to Question 9: Kepler&#39;s Laws</h3>
+<p>State Kepler&#39;s Laws.</p>
+<p><strong>Solution:</strong></p>
+<p>Kepler&#39;s Laws of planetary motion are:</p>
+<ol>
+<li>A planet revolves around the Sun in an elliptical orbit with the Sun at one focus.</li>
+<li>The line joining the Sun to a planet sweeps out equal areas in equal times.</li>
+<li>The square of the period of revolution of a planet is proportional to the cube of the length of the major axis of its orbit.</li>
+</ol>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/c3b94a80">earlier video</a> on Kepler&#39;s Laws.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tSz8HNt3LeCWRRP8MwQbGRDmTBmbC18URMDqssauBPQzgsEj3cFFiVyEajPRmAbg8sH.png" alt="image.png">
+	
+Here is also a <a href="https://en.wikipedia.org/wiki/Kepler%27s_laws_of_planetary_motion">good photo from Wikipedia</a> showing different planets sharing the same focus, the Sun.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcNeS8TvaHKPGiT6HyrW9RoZ4CKQYgdkt6WgsT7dUoFnKAyR1YztbhtVyUkdgKeRGvC.png" alt="image.png"></p>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="true-false-quiz">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('true-false-quiz-list')"><center>True-False Quiz <span id="arrowIcon-true-false-quiz-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="true-false-quiz-list" class="chapter-toggle-list">
+<hr>
+<p><strong>Question 1: Vector equation of a line</strong></p>
+<p>The curve <strong>r</strong>(t) = t<sup>3</sup> <strong>i</strong> + 2t<sup>3</sup> <strong>j</strong> + 3t<sup>3</sup> <strong>k</strong> is a line.</p>
+<p><strong>Question 2: Parabola</strong></p>
+<p>The curve <strong>r</strong>(t) = &lt;0, t<sup>2</sup>, 4t&gt; is a parabola.</p>
+<p><strong>Question 3: Line through the origin</strong></p>
+<p>The curve <strong>r</strong>(t) = &lt;2t, 3-t, 0&gt; is a line that passes through the origin.</p>
+<p><strong>Question 4: Differentiation by components</strong></p>
+<p>The derivative of a vector function is obtained by differentiating each component function.</p>
+<p><strong>Question 5: Derivative of cross product</strong></p>
+<p>If <strong>u</strong>(t) and <strong>v</strong>(t) are differentiable vector functions, then:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23w3EvKqua8WiCjtNha3RBWmCTT8fK4t25GiwKYBm3hR7tk6Mck9bZwTeKuMxYJa4dbZk.png" alt="image.png"></p>
+<p><strong>Question 6: Derivative of the magnitude of a vector</strong></p>
+<p>If <strong>r</strong>(t) is a differentiable vector function, then:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23w3EdNWmbXe3qKNBrNaeaHSHfL1YkGJbqXxBXpWrAjaRq8raVhXm6MqBH55PovcqfwaF.png" alt="image.png"></p>
+<p><strong>Question 7: Curvature</strong></p>
+<p>If <strong>T</strong>(t) is the unit tangent vector of a smooth curve, then the curvature is:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23uFwS9uoqVB6GaggevYq7YsuFuCG3f59gy4vSwRX4kGMcMRFkHJjbFLLAtymVrE9jhUy.png" alt="image.png"></p>
+<p><strong>Question 8: Binormal vector</strong></p>
+<p>The binormal vector is <strong>B</strong>(t) = <strong>N</strong>(t) x <strong>T</strong>(t).</p>
+<p><strong>Question 9: Curvature and inflection points</strong></p>
+<p>Suppose f is twice continuously differentiable.</p>
+<p>At an inflection point of the curve y = f(x), the curvature is 0.</p>
+<p><strong>Question 10: Curvature of a straight line</strong></p>
+<p>If κ(t) = 0 for all t, the curve is a straight line.</p>
+<p><strong>Question 11: Constant magnitude of a vector</strong></p>
+<p>If |<strong>r</strong>(t)| = 1 for all t, then |<strong>r</strong>&#39;(t)| is a constant.</p>
+<p><strong>Question 12: Space curve on a sphere</strong></p>
+<p>If |<strong>r</strong>(t)| = 1 for all t, then <strong>r</strong>&#39;(t) is orthogonal to <strong>r</strong>(t) for all t.</p>
+<p><strong>Question 13: Osculating circle</strong></p>
+<p>The osculating circle of a curve C at a point has the same tangent vector, normal vector, and curvature as C at that point.</p>
+<p><strong>Question 14: Parametrizations of a curve</strong></p>
+<p>Different parametrizations of the same curve result in identical tangent vectors at a given point on the curve.</p>
+<hr>
+<h3>Solution to Question 1: Vector equation of a line</h3>
+<p>The curve <strong>r</strong>(t) = t<sup>3</sup> <strong>i</strong> + 2t<sup>3</sup> <strong>j</strong> + 3t<sup>3</sup> <strong>k</strong> is a line.</p>
+<p><strong>Solution: True</strong></p>
+<p>If we reparameterize the curve by replacing u = t<sup>3</sup> , we have:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23viTbagtDAZaA2bq1gjDjUp5qWVGUWPkHLo2sSGE3J3dJq9VRHXtHvPVHXctj1ekqS7v.png" alt="image.png"></p>
+<p>This is a line through the origin with direction vector:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tw9yBHVUede4LzBs5EQhLCoig2fY5SqtGoYZrW9A5EN9uRwnFT4pxNWgfv6joxRiBTY.png" alt="image.png"></p>
+<hr>
+<h3>Solution to Question 2: Parabola</h3>
+<p>The curve <strong>r</strong>(t) = &lt;0, t<sup>2</sup>, 4t&gt; is a parabola.</p>
+<p><strong>Solution: True</strong></p>
+<p>Parametric equations for the curve are:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23t8CfKPvnngMjNMM556dB4beEtJp5fciFwbJTFHaP1q1rBvimr7BKRNfm6YZm2KMATZf.png" alt="image.png"></p>
+<p>This is an equation of a parabola in the yz-plane.</p>
+<h3>Solution to Question 3: Line through the origin</h3>
+<p>The curve <strong>r</strong>(t) = &lt;2t, 3-t, 0&gt; is a line that passes through the origin.</p>
+<p><strong>Solution: False</strong></p>
+<p>The vector function <strong>r</strong>(t) represents a line, but the line does not pass through the origin.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tSzR6HQsWYJSiUeGupDWRV85CKyR82Y8Fpyhm7yWQSfrpyLo2Hh5fr64cF3Sfg7rEhR.png" alt="image.png"></p>
+<h3>Solution to Question 4: Differentiation by components</h3>
+<p>The derivative of a vector function is obtained by differentiating each component function.</p>
+<p><strong>Solution: True</strong></p>
+<p>See my <a href="https://peakd.com/hive-128780/@mes/hfsetrue">earlier video</a> on the derivative of vector functions by components.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmmEV5NXv7aZL19JcWXK9XUair1tFj1VRRwtWzRu2M9kqXQ3YfC3okuyDST6jyo3qKn.png" alt="image.png"></p>
+<h3>Solution to Question 5: Derivative of cross product</h3>
+<p>If <strong>u</strong>(t) and <strong>v</strong>(t) are differentiable vector functions, then:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23w3EvKqua8WiCjtNiJNXPKd4njUrLMx7CWYySBadaVnbe8unzQJZeTPSrxjt6XnJTzTB.png" alt="image.png"></p>
+<p><strong>Solution: False</strong></p>
+<p>See my <a href="https://peakd.com/hive-128780/@mes/hfsetrue">earlier video</a> on the derivative of a cross product of vector functions.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcNnfbkZyBXTrF55SLGUBXmcijSh7K5eStpU2n4LUmmyYBDu9fXPRobbfp2uRJaAKW3.png" alt="image.png"></p>
+<h3>Solution to Question 6: Derivative of the magnitude of a vector</h3>
+<p>If <strong>r</strong>(t) is a differentiable vector function, then:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23vsr3sgwBWY2Ps13yGnvkmsn2n8dVEN8hbGZGRwdE7aTkjPzUAgeuLRktGCDBNfBJmMt.png" alt="image.png"></p>
+<p><strong>Solution: False</strong></p>
+<p>For example:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23t8D6MYf5uEdZEHJXpvmDuZ5pqFq5sABwcARrEWAuvPSAJVQLyyFvR46WGf1xCJzcdnG.png" alt="image.png"></p>
+<p>Recall the equation for the length of a vector in 2D (and 3D) from my <a href="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems">earlier video</a>.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcNhnr5SXvH7AdTQMGhvNy1CkXNddUPk1JPzuBBJMA47xt1WcVgTE4NdoaZhmrkhjHS.png" alt="image.png"></p>
+<p>Also recall the Pythagorean Identity from my <a href="https://peakd.com/hive-128780/@mes/trigonometry-identity-proof-that-sin2x-cos2x-1">earlier video</a>.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23u6YrBnNpMGNzg8c2yXQSx2pZmA28xGmwGAA1djufS3V4Btsqj5AM3vdiJctwDLxAb44.png" alt="image.png"></p>
+<h3>Solution to Question 7: Curvature</h3>
+<p>If <strong>T</strong>(t) is the unit tangent vector of a smooth curve, then the curvature is:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23uFwS9uoqV9hmuRGpzJPNRLW24fH4kZY1uDyqUssHM9yWKwShf3W6Uks318rPewuTszY.png" alt="image.png"></p>
+<p><strong>Solution: False</strong></p>
+<p>The curvature is the magnitude of the rate of change of the unit vector with respect to arc length s, not with respect to t, as described in my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a>.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23uFwMHA8VK1WoPTZLTuNGJ98cdHM7BY6VWfXqMtmdTsZ5pprpbuhs5Uvn8q5tVvV3zoR.png" alt="image.png"></p>
+<h3>Solution to Question 8: Binormal vector</h3>
+<p>The binormal vector is <strong>B</strong>(t) = <strong>N</strong>(t) x <strong>T</strong>(t).</p>
+<p><strong>Solution: False</strong></p>
+<p>As shown in my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a>, the binormal vector is <strong>B</strong>(t) = <strong>T</strong>(t) x <strong>N</strong>(t).</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmjgGNHCoLCJouAqYtGBbRymmtAkdk8tuVnN1wEaoMBESAZ1rvQn67qRingZPxT7j5a.png" alt="image.png"></p>
+<p>Recall from my <a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product">earlier video</a> that switching the order of the cross product obtains the negative value.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23twA2Y183f2ySqrU3FgCK5HpcRCeXciHEzN9m22wViK7LJHGKLutp9jooNq9kUK8ZYEe.png" alt="image.png"></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23wXQcVFK6huALqNrdw2wkQ4truneCzk3KaKy6HAX42o8e4n1nkk6enAJhvqmdVpG4edH.png" alt="image.png"></p>
+<h3>Solution to Question 9: Curvature and inflection points</h3>
+<p>Suppose f is twice continuously differentiable.</p>
+<p>At an inflection point of the curve y = f(x), the curvature is 0.</p>
+<p><strong>Solution: True</strong></p>
+<p>At an inflection point where f is twice continuously differentiable we must have f&#39;&#39;(x) = 0, thus the curvature is 0 there by my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a>.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tw8Leje1bp3UGuCM3cqPRgxJdT3wiNvoz6vyDVvKCweaCxowMWYFeQu7Hzs6Mjp3dQZ.png" alt="image.png"></p>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/second-derivative-test-concavity-and-inflection-points">earlier video</a> on inflection points and concavity.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23wMzAbk94TMLXbST3m22qPBTVfmHxnwbJtriXaRgVQuNubF19PQmMKdcEjTUU1uyE6Nu.png" alt="image.png"></p>
+<blockquote>
+<p>A continuous function that changes concavity means that at the inflection point the 2nd derivative (aka acceleration) is zero. </p>
+</blockquote>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tHbr9aBUmnf8C3NfKdy1dQKQAnTAXpyvYpE7UuKF6hkU6BvZBz5TqfaeuBFSJqCBRgn.png" alt="image.png"></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23wgo9B9HLZUkKAGf7QXHhYtEVxPmxyjrd7bjWMjfSGU9mX6stfrnWBXT5KMruhgcRYeb.png" alt="image.png">
+	</p>
+<h3>Solution to Question 10: Curvature of a straight line</h3>
+<p>If κ(t) = 0 for all t, the curve is a straight line.</p>
+<p><strong>Solution: True</strong></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tSzR6hgqMTN22SieEG4Adr8ab8BX3c9Dm47nBhBvbvuYFeGrruxp6XpowrF858d9Ki4.png" alt="image.png"></p>
+<p>If the tangent vector is a constant vector, then the curve must be a straight line.</p>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a> on curvature.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcNs53sz8fsp9mSSszf1bzNm1f1EfdLEbcWZ5iPowgfUNByebZNyNa1PR3Lzg9WQMWh.png" alt="image.png"></p>
+<h3>Solution to Question 11: Constant magnitude of a vector</h3>
+<p>If |<strong>r</strong>(t)| = 1 for all t, then |<strong>r</strong>&#39;(t)| is a constant.</p>
+<p><strong>Solution: False</strong></p>
+<p>If <strong>r</strong>(t) is the position of a moving particle at time t and |<strong>r</strong>(t)| = 1, then the particle lies on the unit circle or the unit sphere, but this does not mean that the speed |<strong>r</strong>&#39;(t)| must be constant.</p>
+<p>As a counterexample:</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tSzR6hh5KvrWDxmcDbMXzn3e7z3S1TYC4V9fBT4xvpMwbdwyHPkogcwqoGK22of2tvo.png" alt="image.png"></p>
+<h3>Solution to Question 12: Space curve on a sphere</h3>
+<p>If |<strong>r</strong>(t)| = 1 for all t, then <strong>r</strong>&#39;(t) is orthogonal to <strong>r</strong>(t) for all t.</p>
+<p><strong>Solution: True</strong></p>
+<p>See my <a href="https://peakd.com/hive-128780/@mes/hfsetrue">earlier video</a> of the curve on a sphere.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23xyrCj7DhziXRaZqGtSQ3RN1piSxEoJy8z55RgTqBmfhp35jXHULTWNXFs7mAMkKGsBJ.png" alt="image.png"></p>
+<h3>Solution to Question 13: Osculating circle</h3>
+<p>The osculating circle of a curve C at a point has the same tangent vector, normal vector, and curvature as C at that point.</p>
+<p><strong>Solution: True</strong></p>
+<p>See my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a> on the osculating circle.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23uFwDc976UZM6XmeGF7CXe9sCmHE1qLAfCmW3ZbjsDFbHesAEBRgVeFqznidEVYLrozY.png" alt="image.png"></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcNhnr562TxNem9CgjMXZV1eBSCgd6x6jEcRKMEqSFzRoC1PJ6XUh5xrChENUzrwKrr.png" alt="image.png">
+	</p>
+<h3>Solution to Question 14: Parameterizations of a curve</h3>
+<p>Different parameterizations of the same curve result in identical tangent vectors at a given point on the curve.</p>
+<p><strong>Solution: False</strong></p>
+<p>For example both vectors <strong>r</strong><sub>1</sub>(t) = &lt;t, t&gt; and r<sub>2</sub>(t) = &lt;2t, 2t&gt; represent the same plane curve (the line y = x), but their tangent vectors are different.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tSym8QDepGdu1e1UhnNLBLSXdwZUbfbXdLvEH1H3pt68HNBG2gPt6d2gqzRta7KoBTN.png" alt="image.png"></p>
+<p>In fact, different parameterizations give parallel tangent vectors at a point, but their magnitudes may differ.</p>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="sections-playlist-and-thumbnails">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('sections-playlist-and-thumbnails-list')"><center>Sections Playlist and Thumbnails <span id="arrowIcon-sections-playlist-and-thumbnails-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="sections-playlist-and-thumbnails-list" class="chapter-toggle-list">
+<p><a href="https://peakd.com/hive-128780/@mes/review-of-vector-functions-138">Notes</a> - <a href="https://www.youtube.com/playlist?list=PLAsz0y2lc-c4">Playlist</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HQl7xTQBS_O8Te8PcpNm4U">Vector Functions</a></p>
+<h2>Review of Vector Functions Chapter – Concept Check &amp; True-False Quiz</h2>
+<p>▶️ <a href="https://play.3speak.tv/embed?v=mes/2e9u7kyv">Watch on 3Speak</a> - <a href="https://odysee.com/Vector-Functions-Review-Quiz:00623b6d1fc96e2bd6f7cc5adf79a76c05b34239">Odysee</a> - <a href="https://www.bitchute.com/video/rn9b9lR9jKUY/">BitChute</a> - <a href="https://rumble.com/v7coxec-review-of-vector-functions-chapter-concept-check-and-true-false-quiz.html">Rumble</a> - <a href="https://t.me/meslinks/35175">Telegram</a> - <a href="https://youtu.be/qQkC5yM7syM">YouTube</a> - <a href="https://peakd.com/hive-128780/@mes/review-of-vector-functions-138">Notes</a></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tcNnfbkHj6RCZV1KJSU2Ye6EvxtM3CF3avYDfPsVfJ1L7SNmaYLxc2jGqej5CJBYtdv.png" alt="Vector Functions Review.png"></p>
+<h3>Review of Vector Functions – Concept Check</h3>
+<p><a href="https://3speak.tv/watch?v=mes/review-of-vector-functions-802">3Speak</a> - <a href="https://youtu.be/YsgBMf4j47w">YouTube</a> - <a href="https://t.me/meslinks/35195">Telegram</a>
+<img src="https://images.3speak.tv/images/1784225296210-651d575056bfb072.webp" alt="1 Concept Check.png"></p>
+<h3>Vector Equation of a Tangent Line on a Space Curve</h3>
+<p><a href="https://3speak.tv/watch?v=mes/vector-equation-of-a-tangen-684">3Speak</a> - <a href="https://youtu.be/uwCOUGP5UCc">YouTube</a> - <a href="https://t.me/meslinks/35206">Telegram</a></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23twA7QQtKsAbsfGMRhJ1XZhfG6UiiBytaBbmQgPoXq9W5meJA3Zh6MRJaCPuzQSpdZ6f.png" alt="2 Tangent Line.png"></p>
+<h3>Review of Vector Functions – True-False Quiz</h3>
+<p><a href="https://3speak.tv/watch?v=mes/review-of-vector-functions-290">3Speak</a> - <a href="https://youtu.be/26DJkBp0vm0">YouTube</a> - <a href="https://t.me/meslinks/35234">Telegram</a></p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23tmj919xA4aL5Kyu7gkDgzgW36MPrpw5e68Nagv63fMEQNnR1FFFSdUUQz2mjpbgKx1v.png" alt="3 Quiz.png"></p>
+<hr>
+<h3>MES Links: <a href="https://mes.fm/links">https://mes.fm/links</a></h3>
+<hr>
+</div>
+</div>
+
+    </div>
+
+    <hr>
+
+    <a class="source-link" href="https://peakd.com/hive-128780/@mes/review-of-vector-functions-138" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
+    <div class="retrieved-note">
+      Vote/comment/reblog counts and article text were fetched from the Hive blockchain
+      at build time (August 30, 2026) and are not live.
+    </div>
+    <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-controls" id="lightboxControls">
+      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleChapter(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById('arrowIcon-' + listId);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+
+    function toggleAllChapters() {
+      const lists = document.querySelectorAll('.chapter-toggle-list');
+      const btn = document.getElementById('toggleAllChaptersBtn');
+      const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
+      lists.forEach((list) => {
+        list.classList.toggle('hidden', collapse);
+        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+        if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
+      });
+      btn.textContent = collapse ? 'Expand All' : 'Collapse All';
+    }
+
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Switch to Dark Mode';
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+      }
+    }
+
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    setTheme(saved !== 'light');
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
+  </script>
+
+  <script>
+    // theater-mode: expands a video embed to the full browser width (breaking out of
+    // the .container's 760px max-width), like YouTube's theater mode. Delegated +
+    // per-embed since a page may hold several videos.
+    (function () {
+      function setTheater(embed, toggle, on) {
+        embed.classList.toggle('theater-mode', on);
+        toggle.textContent = on ? 'Default View' : 'Theater Mode';
+        toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'));
+        }, 300);
+      }
+
+      document.addEventListener('click', function (e) {
+        var toggle = e.target.closest('.theater-toggle-btn');
+        if (!toggle) return;
+        var embed = toggle.closest('.video-embed');
+        if (!embed) return;
+        setTheater(embed, toggle, !embed.classList.contains('theater-mode'));
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('.video-embed.theater-mode').forEach(function (embed) {
+          var toggle = embed.querySelector('.theater-toggle-btn');
+          if (toggle) setTheater(embed, toggle, false);
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
+    // a native <video> is playing and the pointer is idle, like YouTube's own
+    // control bar. Only applies to embeds that hold a real <video> (the 3Speak
+    // HLS player) -- YouTube iframes keep their badge.
+    (function () {
+      document.querySelectorAll('.video-embed').forEach(function (embed) {
+        var video = embed.querySelector('video');
+        var toggle = embed.querySelector('.theater-toggle-btn');
+        if (!video || !toggle) return;
+        var hideTimer = null;
+
+        function showControls() {
+          embed.classList.remove('controls-hidden');
+        }
+
+        function scheduleHide() {
+          clearTimeout(hideTimer);
+          if (video.paused || video.ended) return;
+          hideTimer = setTimeout(function () {
+            embed.classList.add('controls-hidden');
+          }, 2000);
+        }
+
+        video.addEventListener('play', scheduleHide);
+        video.addEventListener('pause', showControls);
+        video.addEventListener('ended', showControls);
+        embed.addEventListener('mousemove', function () {
+          showControls();
+          scheduleHide();
+        });
+        embed.addEventListener('mouseleave', scheduleHide);
+      });
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script>
+    // speak-video-hls: plays each 3Speak-hosted HLS stream embedded above directly
+    // (via hls.js). Manifest URLs are resolved at build time (see resolve3Speak in
+    // build.mjs); re-run the build to refresh them.
+    (function () {
+      var videos = [{"id":"speak-video-1","src":"https://play.3speak.tv/hls?u=https%3A%2F%2Fhotipfs-3speak-1.b-cdn.net%2Fipfs%2FQmav2yuLy1uXhMhqjq3e2HTvzMFPvsjChKPSMNqJH9qgrq%2Fmanifest.m3u8"}];
+      videos.forEach(function (v) {
+        if (!v.src) return;
+        var video = document.getElementById(v.id);
+        if (!video) return;
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = v.src;
+        } else if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(v.src);
+          hls.attachMedia(video);
+        }
+      });
+    })();
+  </script>
+
+  <script>
+    // image-lightbox: click any post-body image to pop it out full-viewport, with
+    // prev/next via on-screen arrows and keyboard arrows.
+    (function () {
+      var images = Array.prototype.slice.call(document.querySelectorAll('.post-body img'));
+      if (!images.length) return;
+
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
+      var counterEl = document.getElementById('lightboxCounter');
+      var closeBtn = document.getElementById('lightboxClose');
+      var prevBtn = document.getElementById('lightboxPrev');
+      var nextBtn = document.getElementById('lightboxNext');
+      var currentIndex = 0;
+
+      if (images.length < 2) {
+        controlsEl.style.display = 'none';
+      }
+
+      function show(index) {
+        currentIndex = (index + images.length) % images.length;
+        var img = images[currentIndex];
+        imageEl.src = img.currentSrc || img.src;
+        imageEl.alt = img.alt || '';
+        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      }
+
+      function open(index) {
+        show(index);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      images.forEach(function (img, index) {
+        img.addEventListener('click', function () { open(index); });
+      });
+
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) close();
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+        else if (e.key === 'ArrowRight') show(currentIndex + 1);
+      });
+    })();
+  </script>
+
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script>
+</body>
+</html>
