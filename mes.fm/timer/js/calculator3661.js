@@ -6,7 +6,7 @@ $(document).ready(function(){
             interval: 0,
             interval2: 0,
             interval3: 0,
-            alarmAudio: new Audio('/timer/audio/grandfather_alarm_clock.wav'),
+            alarmAudio: new Audio('/timer/audio/grandfather_alarm_clock.mp3'),
             alarmOn: false,
             muteSound: false,
             numSplits: 1,
@@ -331,7 +331,7 @@ $(document).ready(function(){
 	$("#friendly-sound-button").click(function() {
 		$("#annoying-sound-button,#sound-off-button").removeClass("active-button--blue");
 		$(this).addClass("active-button--blue");
-		CALCULATOR.alarmAudio.src = "/timer/audio/grandfather_alarm_clock.wav";
+		CALCULATOR.alarmAudio.src = "/timer/audio/grandfather_alarm_clock.mp3";
 		CALCULATOR.alarmAudio.volume = 1;
 		if(CALCULATOR.alarmOn) {
 			CALCULATOR.playSound();
@@ -341,7 +341,7 @@ $(document).ready(function(){
 	$("#annoying-sound-button").click(function() {
 		$("#friendly-sound-button,#sound-off-button").removeClass("active-button--blue");
 		$(this).addClass("active-button--blue");
-		CALCULATOR.alarmAudio.src = "/timer/audio/annoying_alarm_clock.wav";
+		CALCULATOR.alarmAudio.src = "/timer/audio/annoying_alarm_clock.mp3";
 		CALCULATOR.alarmAudio.volume = 1;
 		if(CALCULATOR.alarmOn) {
 			CALCULATOR.playSound();
@@ -457,7 +457,7 @@ $(document).ready(function(){
 	$("#friendly-sound-button-alarm").click(function() {
 		$("#annoying-sound-button-alarm,#sound-off-button-alarm").removeClass("active-button--blue");
 		$(this).addClass("active-button--blue");
-		CALCULATOR.alarmAudio.src = "/timer/audio/grandfather_alarm_clock.wav";
+		CALCULATOR.alarmAudio.src = "/timer/audio/grandfather_alarm_clock.mp3";
 		CALCULATOR.alarmAudio.volume = 1;
 		if(CALCULATOR.alarmOn) {
 			CALCULATOR.playSound(60000);
@@ -467,7 +467,7 @@ $(document).ready(function(){
 	$("#annoying-sound-button-alarm").click(function() {
 		$("#friendly-sound-button-alarm,#sound-off-button-alarm").removeClass("active-button--blue");
 		$(this).addClass("active-button--blue");
-		CALCULATOR.alarmAudio.src = "/timer/audio/annoying_alarm_clock.wav";
+		CALCULATOR.alarmAudio.src = "/timer/audio/annoying_alarm_clock.mp3";
 		CALCULATOR.alarmAudio.volume = 1;
 		if(CALCULATOR.alarmOn) {
 			CALCULATOR.playSound(60000);
