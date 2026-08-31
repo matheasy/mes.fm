@@ -414,6 +414,7 @@ async function buildPage(post) {
   table { max-width: 100% !important; }
 }
 </style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
 </head>
 <body class="dark">
   <div class="container">
