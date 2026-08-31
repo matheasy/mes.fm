@@ -266,38 +266,49 @@ $(document).ready(function(){
 
 			createUrl: function(data) {
 
-
 				$("#url-to-share").val("Loading...");
 
+				// php/createShareUrl.php used to write to a MySQL table (sharecalcdb.gc)
+				// that doesn't exist on static hosting -- api/share.js replaces it with
+				// an Upstash Redis-backed serverless function (same Redis mes.fm/api's
+				// own pageview tracking already uses). Share links are now
+				// gradecalculator.mes.fm/s/<id>.
 				$.ajax({
-					url:'php/createShareUrl.php',
+					url:'/api/share',
 					type:'POST',
-					data:({data:data,tableName:'gc',site:'https://gc.mes.fm/'})
+					contentType:'application/json',
+					data: JSON.stringify({data:data})
 				})
 					.done(
-						function(data) {							
-							$("#url-to-share").val(data);
-							CALCULATOR.oldShareUrl = data;
+						function(response) {
+							var url = window.location.origin + '/s/' + response.id;
+							$("#url-to-share").val(url);
+							CALCULATOR.oldShareUrl = url;
+						})
+					.fail(
+						function() {
+							$("#url-to-share").val("Sharing is temporarily unavailable.");
 						});
 			},
 
 			initializeCustomCalculation: function() {
 
-				var indexOfSlash = window.location.pathname.lastIndexOf('/');
-				var id = window.location.pathname.substring(indexOfSlash + 1);
+				var match = window.location.pathname.match(/^\/s\/([A-Za-z0-9]+)\/?$/);
 
-				if(!id)
+				if(!match)
 					return false;
 
+				var id = match[1];
+
 				$.ajax({
-					url:'php/getShareUrl.php',
+					url:'/api/share',
 					type:'GET',
-					data:({id:id,tableName:'gc'})
+					data:({id:id})
 				})
 				.done(
 					function(data) {
 						if(data) {
-							var decodedDataArray = JSON.parse(data);
+							var decodedDataArray = (typeof data === 'string') ? JSON.parse(data) : data;
 
 							if(decodedDataArray['ass']) {
 
@@ -328,6 +339,11 @@ $(document).ready(function(){
 
 							}
 						}
+					}
+				)
+				.fail(
+					function() {
+						// bad/expired id -- nothing to restore, leave the page at its default state
 					}
 				);
 
