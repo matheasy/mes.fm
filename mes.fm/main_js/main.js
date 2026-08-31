@@ -1,8 +1,14 @@
 $(document).ready(function() {
 
     if(MES_Vars.mobile == false) {
-        $("#info-bar .info-bar__item__text:eq("+MES_Vars.current_tab+")").addClass("active-tab");
-        $("#navbar>.navbar__item:eq("+MES_Vars.current_tab+")>.navbar__link").addClass("active-tab");
+        /* current_tab indexes the nav sections as [Home/CalcName, s1, s2, ...].
+           #navbar prepends a social-links <li>, so skip it. #info-bar on
+           mes.fm's own pages has no "Home" item, so a page can override the
+           info-bar index; -1 (or any out-of-range value) highlights nothing. */
+        var info_bar_tab = (typeof MES_Vars.info_bar_tab === "number") ? MES_Vars.info_bar_tab : MES_Vars.current_tab;
+        if(info_bar_tab >= 0)
+            $("#info-bar .info-bar__item__text:eq("+info_bar_tab+")").addClass("active-tab");
+        $("#navbar>.navbar__item").not(".navbar__item--social").eq(MES_Vars.current_tab).children(".navbar__link").addClass("active-tab");
         $(".active-tab .dropdown-symbol").addClass("dropdown-symbol--dark");
         $.getScript("https://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en");
     }
