@@ -9,13 +9,6 @@
       "autoPort": true
     },
     {
-      "name": "timer",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory timer.mes.fm"],
-      "port": 8425,
-      "autoPort": true
-    },
-    {
       "name": "pokemon-calc",
       "runtimeExecutable": "sh",
       "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory pokemongocalculator.mes.fm"],
