@@ -2,5 +2,8 @@
   "cleanUrls": true,
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/s/:id", "destination": "/index.html" }
   ]
 }
