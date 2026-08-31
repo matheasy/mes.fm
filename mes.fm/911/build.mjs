@@ -161,6 +161,7 @@ function wrapChaptersInToggles(html) {
 const POSTS_CHAPTER = `<div class="chapter-toggle" id="posts">
 <h1 class="chapter-toggle-header" onclick="toggleChapter('posts-list')"><center>Posts <span id="arrowIcon-posts-list" class="arrow-icon">&#9660;</span></center></h1>
 <ul id="posts-list" class="chapter-toggle-list">
+<li><a href="https://mes.fm/bought-911-hutchison-shirt">Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</a></li>
 <li><a href="https://mes.fm/csis-911-lights">CSIS Posts a Photo of the 9/11 Tribute in Light "Blue Beam" Lights</a></li>
 <li><a href="https://mes.fm/cat-wdttg-book">Story Time with Cat and Dr. Judy Wood's WDTTG Book</a></li>
 </ul>
