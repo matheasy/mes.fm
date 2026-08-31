@@ -1,0 +1,77 @@
+import { RateLimitError } from '../errors';
+import { createThrottle } from './rateLimit';
+
+/**
+ * Etherscan's unified V2 API (api.etherscan.io/v2/api) covers Ethereum, Polygon, and 60+ other
+ * EVM chains under one Etherscan-issued API key, selected via `chainid`. SOV only needs one
+ * endpoint from it: the ERC-20 transfer history of a single contract (WBTC on Ethereum, WBTC on
+ * Polygon), which it filters server-side with `contractaddress`.
+ */
+const API_BASE = 'https://api.etherscan.io/v2/api';
+
+function apiKey(): string {
+  const key = process.env.ETHERSCAN_API_KEY;
+  if (!key) throw new Error('ETHERSCAN_API_KEY is not set');
+  return key;
+}
+
+/** Free-tier rate limit is one budget across the whole account (V2 unification), so serialize every call. */
+const throttle = createThrottle('etherscan', 500);
+
+async function get<T>(chainId: number, params: Record<string, string>): Promise<T> {
+  return throttle(async () => {
+    const url = new URL(API_BASE);
+    url.searchParams.set('chainid', String(chainId));
+    url.searchParams.set('apikey', apiKey());
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+    const res = await fetch(url.toString(), { next: { revalidate: 0 } });
+    if (!res.ok) throw new Error(`Etherscan request failed: ${res.status}`);
+
+    const json = (await res.json()) as { status: string; message: string; result: T };
+    if (json.message === 'NOTOK') {
+      const resultText = typeof json.result === 'string' ? json.result : '';
+      if (/rate limit|max (calls|rate)/i.test(resultText)) throw new RateLimitError('Etherscan rate limit reached');
+      throw new Error(`Etherscan request failed: ${resultText || json.message}`);
+    }
+    return json.result;
+  });
+}
+
+const PAGE_SIZE = 1000;
+const MAX_PAGES = 5;
+
+async function paginate<T>(chainId: number, params: Record<string, string>): Promise<T[]> {
+  const out: T[] = [];
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const batch = await get<T[]>(chainId, { ...params, page: String(page), offset: String(PAGE_SIZE) });
+    if (!Array.isArray(batch)) break; // "No transactions found" comes back as status 0 / empty string
+    out.push(...batch);
+    if (batch.length < PAGE_SIZE) break;
+  }
+  return out;
+}
+
+export interface EtherscanTokenTx {
+  hash: string;
+  timeStamp: string;
+  from: string;
+  to: string;
+  contractAddress: string;
+  value: string;
+  tokenSymbol: string;
+  tokenDecimal: string;
+}
+
+/** ERC-20 transfer history for one address, optionally restricted to a single token contract */
+export async function getTokenTxList(chainId: number, address: string, contractAddress?: string): Promise<EtherscanTokenTx[]> {
+  return paginate<EtherscanTokenTx>(chainId, {
+    module: 'account',
+    action: 'tokentx',
+    address,
+    ...(contractAddress ? { contractaddress: contractAddress } : {}),
+    startblock: '0',
+    endblock: '99999999',
+    sort: 'desc',
+  });
+}

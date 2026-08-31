@@ -28,4 +28,10 @@ export const WALLET_SOURCES: WalletSource[] = [
     apiBaseUrl: process.env.MFA_SOURCE_URL ?? 'https://mes-fm-mfa.vercel.app/mfa',
     linkPath: WALLET_LINKS.mfa,
   },
+  {
+    key: 'sov',
+    label: WALLET_LABELS.sov,
+    apiBaseUrl: process.env.SOV_SOURCE_URL ?? 'https://mes-fm-sov.vercel.app/sov',
+    linkPath: WALLET_LINKS.sov,
+  },
 ];

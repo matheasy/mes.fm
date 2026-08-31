@@ -65,6 +65,8 @@
     { "source": "/ai/:path*", "destination": "https://mes-fm-ai.vercel.app/ai/:path*" },
     { "source": "/portfolio", "destination": "https://mes-fm-crypto.vercel.app/crypto" },
     { "source": "/portfolio/:path*", "destination": "https://mes-fm-crypto.vercel.app/crypto/:path*" },
-    { "source": "/crypto/:path+", "destination": "https://mes-fm-crypto.vercel.app/crypto/:path*" }
+    { "source": "/crypto/:path+", "destination": "https://mes-fm-crypto.vercel.app/crypto/:path*" },
+    { "source": "/sov", "destination": "https://mes-fm-sov.vercel.app/sov" },
+    { "source": "/sov/:path*", "destination": "https://mes-fm-sov.vercel.app/sov/:path*" }
   ]
 }

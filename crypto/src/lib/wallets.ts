@@ -1,10 +1,11 @@
-export type WalletKey = 'ai' | 'mfa';
+export type WalletKey = 'ai' | 'mfa' | 'sov';
 
-export const WALLET_KEYS: WalletKey[] = ['ai', 'mfa'];
+export const WALLET_KEYS: WalletKey[] = ['ai', 'mfa', 'sov'];
 
 export const WALLET_LABELS: Record<WalletKey, string> = {
   ai: 'AI Trading',
   mfa: 'MikeFA',
+  sov: 'Store of Value',
 };
 
 /**
@@ -16,4 +17,5 @@ export const WALLET_LABELS: Record<WalletKey, string> = {
 export const WALLET_LINKS: Record<WalletKey, string> = {
   ai: 'https://mes.fm/ai',
   mfa: 'https://mes.fm/mfa',
+  sov: 'https://mes.fm/sov',
 };
