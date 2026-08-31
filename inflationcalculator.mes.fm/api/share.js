@@ -58,13 +58,12 @@ module.exports = async (req, res) => {
     const payload = JSON.stringify(equation).slice(0, 2000);
     try {
       const r = await redis([['SET', KEY_PREFIX + id, payload, 'EX', String(TTL_SECONDS)]]);
-      // TEMP DIAGNOSTIC (remove once share works): surface what Upstash actually said.
       if (!r || !Array.isArray(r) || r[0]?.error) {
-        res.status(502).json({ error: 'storage unavailable', debug: r, hasUrl: !!process.env.UPSTASH_REDIS_REST_URL, hasToken: !!process.env.UPSTASH_REDIS_REST_TOKEN });
+        res.status(502).json({ error: 'storage unavailable' });
         return;
       }
     } catch (e) {
-      res.status(502).json({ error: 'storage unavailable', debug: String(e && e.message || e), hasUrl: !!process.env.UPSTASH_REDIS_REST_URL, hasToken: !!process.env.UPSTASH_REDIS_REST_TOKEN });
+      res.status(502).json({ error: 'storage unavailable' });
       return;
     }
     res.status(200).json({ id });
