@@ -180,6 +180,10 @@ function buildPage(post) {
   // want to keep adding to without re-publishing the Hive post itself. Pin it to
   // the top of the TOC and splice it in as the first chapter, right before the
   // first Hive-sourced chapter.
+  // "Videos" is also hand-maintained (not part of the Hive article) -- a place to
+  // link mes.fm video-clip mirrors (e.g. mes.fm/livestream-66-trailer). Pinned
+  // right after "Posts and Updates".
+  toc.unshift({ id: "videos", label: "Videos" });
   toc.unshift({ id: "posts-and-updates", label: "Posts and Updates" });
   // "Important Links" is the article's intro blurb + reference-link list, turned
   // into its own collapsible chapter below (see importantLinksChapter). Pin it
@@ -194,6 +198,14 @@ function buildPage(post) {
 <ul id="posts-and-updates-list" class="chapter-toggle-list">
 <li><a href="https://mes.fm/bought-911-hutchison-shirt">Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</a></li>
 <li><a href="https://mes.fm/hutchison-health-aug22-2026">Prayers up for John Hutchison &mdash; health update</a></li>
+</ul>
+</div>
+<hr>
+`;
+  const videosChapter = `<div class="chapter-toggle" id="videos">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('videos-list')"><center>Videos <span id="arrowIcon-videos-list" class="arrow-icon">&#9660;</span></center></h1>
+<ul id="videos-list" class="chapter-toggle-list">
+<li><a href="https://mes.fm/livestream-66-trailer">Trailer for MES Livestream 66: Rare Hutchison Effect Footage</a></li>
 </ul>
 </div>
 <hr>
@@ -226,7 +238,11 @@ ${leadingHtml}
 <hr>
 `;
   const bodyHtml =
-    chaptersToolbar + importantLinksChapter + postsAndUpdatesChapter + restChaptersHtml;
+    chaptersToolbar +
+    importantLinksChapter +
+    postsAndUpdatesChapter +
+    videosChapter +
+    restChaptersHtml;
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
   const commentCount = post.children ?? 0;
