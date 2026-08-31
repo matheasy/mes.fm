@@ -187,7 +187,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 }
 #navbar { display: none; }
 #navbar.hide {
-  display: block; box-sizing: border-box;
+  /* !important: this page loads Bootstrap 3's CSS, whose
+     `.hide { display: none !important }` utility would otherwise
+     keep the menu hidden even with #navbar.hide's higher specificity */
+  display: block !important; box-sizing: border-box;
   position: absolute; top: 76px; right: 16px; z-index: 19;
   width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
   scrollbar-gutter: stable;
@@ -201,7 +204,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
    the bottom of the list instead of the top -- via flex order, not an
    HTML move, since locating the true closing </ul> among the nested
    .navbar__dropdown-container <ul>s isn't worth the risk */
-#navbar.hide { display: flex; flex-direction: column; }
+#navbar.hide { display: flex !important; flex-direction: column; }
 .navbar__item--social { order: 999; }
 .navbar__item--social .info-bar__logo-container { display: block !important; }
 
