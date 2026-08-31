@@ -276,6 +276,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+
+	/* the mixed-fraction row's answer box needs more clearance than a single-input row (whole-number input + stacked fraction inputs is wider), so the 600px breakpoint above isn't enough on its own -- it still overlaps the fraction inputs up to ~680px. A second, wider-only media query instead of just raising the block above to 700px, since everything else in it is already confirmed fine at 600px. */
+	@media (max-width: 700px) {
+		.input-container--mixed { position: static !important; display: block; margin-top: 0.6em; bottom: auto; }
+	}
 </style>
         <meta property="fb:app_id" content="1398196443773284" />
         <meta name="author" content="Percentage Calculator Staff">

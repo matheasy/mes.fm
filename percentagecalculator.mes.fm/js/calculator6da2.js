@@ -289,8 +289,11 @@ $(document).ready(function(){
 							}
 						}
 
-						//open extra calculations
-						$("#more-calcs-button").click();
+						//open extra calculations -- ensure it's shown rather than
+						//toggling, since it's open by default now (a blind .click()
+						//would close it instead of opening it)
+						$("#extra-calcs").removeClass("hide");
+						$("#more-calcs-button").addClass("selected");
 
 						//flatten 3D array into 1D array
 						var oneDimensionalArray = $.map(decodedDataArray, function recurs(n) {

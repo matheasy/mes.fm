@@ -23,6 +23,13 @@
       "autoPort": true
     },
     {
+      "name": "percentage-calc",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory percentagecalculator.mes.fm"],
+      "port": 8426,
+      "autoPort": true
+    },
+    {
       "name": "mfa",
       "runtimeExecutable": "sh",
       "runtimeArgs": ["-c", "cd mfa && npm run dev -- -p \"$PORT\""],

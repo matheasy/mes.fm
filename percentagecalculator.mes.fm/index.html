@@ -295,6 +295,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+
+	/* the mixed-fraction row's answer box needs more clearance than a single-input row (whole-number input + stacked fraction inputs is wider), so the 600px breakpoint above isn't enough on its own -- it still overlaps the fraction inputs up to ~680px. A second, wider-only media query instead of just raising the block above to 700px, since everything else in it is already confirmed fine at 600px. */
+	@media (max-width: 700px) {
+		.input-container--mixed { position: static !important; display: block; margin-top: 0.6em; bottom: auto; }
+	}
 </style>            <link rel="publisher" href="https://plus.google.com/u/0/+PercentcalculatorMES">
         <meta property="fb:app_id" content="1398196443773284" />
         <meta name="author" content="Percentage Calculator Staff">
@@ -536,9 +541,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			</div>
 		</div>
 
-		<div id="more-calcs-button" class="hide-div-button button">more calculations</div>
+		<div id="more-calcs-button" class="hide-div-button button selected">more calculations</div>
 
-		<div id="extra-calcs" class="hide">
+		<div id="extra-calcs">
 			<div class="equation" id="equation-6">
 				<div class="input-row">
 					<div class="button-icon question-mark-button">?</div><input autocomplete="off" class="input" type="text"><span>&nbsp;x&nbsp;</span><input autocomplete="off" class="input" type="text"><span>&nbsp;% ?</span>
