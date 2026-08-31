@@ -192,6 +192,7 @@ function buildPage(post) {
   const postsAndUpdatesChapter = `<div class="chapter-toggle" id="posts-and-updates">
 <h1 class="chapter-toggle-header" onclick="toggleChapter('posts-and-updates-list')"><center>Posts and Updates <span id="arrowIcon-posts-and-updates-list" class="arrow-icon">&#9660;</span></center></h1>
 <ul id="posts-and-updates-list" class="chapter-toggle-list">
+<li><a href="https://mes.fm/bought-911-hutchison-shirt">Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</a></li>
 <li><a href="https://mes.fm/hutchison-health-aug22-2026">Prayers up for John Hutchison &mdash; health update</a></li>
 </ul>
 </div>
