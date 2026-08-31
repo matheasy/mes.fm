@@ -168,6 +168,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   background: transparent !important; border: none !important;
   font-size: 0;
 }
+
+/* on narrow screens the title/logo-text can wrap wide enough that its
+   flex-item bounding box runs under the absolutely-positioned hamburger
+   button (out of normal flow, so nothing naturally reserves space for
+   it) -- give the header a bit of right padding on mobile so wrapped
+   title text never renders underneath the button */
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
 #navbar-button::before {
   content: ""; display: block; margin: 0 auto;
   width: 26px; height: 4px; background: currentColor; border-radius: 1px;
