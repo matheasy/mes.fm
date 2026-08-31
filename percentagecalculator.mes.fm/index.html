@@ -296,9 +296,20 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
 
-	/* the mixed-fraction row's answer box needs more clearance than a single-input row (whole-number input + stacked fraction inputs is wider), so the 600px breakpoint above isn't enough on its own -- it still overlaps the fraction inputs up to ~680px. A second, wider-only media query instead of just raising the block above to 700px, since everything else in it is already confirmed fine at 600px. */
+	/* the 600px breakpoint above isn't wide enough a threshold for every
+	   row: .input-container is absolutely positioned (right:0) with
+	   nothing reserving space for it, so any row whose inline text +
+	   inputs is long enough (varies per row -- "is what percentage of",
+	   "Increase/Decrease from ... to" and the mixed-fraction row's
+	   whole+fraction stack all overlap it somewhere in the ~601-700px
+	   range, not just the mixed-fraction row) still overlaps up to
+	   ~700px depending on its own content length. A second, wider-only
+	   media query covering every .input-container instead of raising
+	   the 600px block itself, since everything in that block is already
+	   confirmed fine at 600px and doesn't need the wider threshold. */
 	@media (max-width: 700px) {
-		.input-container--mixed { position: static !important; display: block; margin-top: 0.6em; bottom: auto; }
+		.input-container { position: static !important; display: block; margin-top: 0.6em; }
+		.input-container--mixed { bottom: auto; }
 	}
 </style>            <link rel="publisher" href="https://plus.google.com/u/0/+PercentcalculatorMES">
         <meta property="fb:app_id" content="1398196443773284" />
