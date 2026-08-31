@@ -9,13 +9,6 @@
       "autoPort": true
     },
     {
-      "name": "pokemon-calc",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory pokemongocalculator.mes.fm"],
-      "port": 8421,
-      "autoPort": true
-    },
-    {
       "name": "percentage-calc",
       "runtimeExecutable": "sh",
       "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory percentagecalculator.mes.fm"],

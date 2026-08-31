@@ -62,6 +62,9 @@ def rewrite_in_tree(text: str, slug: str, page_parts: pathlib.PurePosixPath) -> 
     text = text.replace(f"https://{slug}.mes.fm/", f"https://mes.fm/{slug}/")
     text = text.replace(f"https://{slug}.mes.fm", f"https://mes.fm/{slug}")
 
+    # --- tidy old-style cross-subdomain nav links (HTTrack / pre-cleanUrls) ---
+    text = re.sub(r'(https://[a-z0-9-]+\.mes\.fm)/index\.html(["\'])', r'\1/\2', text)
+
     # --- bare-relative asset dirs at any ../ depth -> absolute /slug/... ---
     text = re.sub(
         r'(src|href|data-src)=(["\'])(?:\.\./)*(img|js|css)/',
