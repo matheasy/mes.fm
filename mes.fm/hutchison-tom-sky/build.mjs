@@ -1,8 +1,15 @@
 // Build-time generator for mes.fm/hutchison-tom-sky.
 //
-// Fetches the post from Hive's public bridge API and writes a static index.html.
-// This is NOT run by Vercel — run it manually (`npm run build`) whenever you want
-// to refresh the vote/comment counts, then commit the regenerated index.html.
+// Fetches @mes/john-hutchison-interviewed-224 from Hive's public bridge API and
+// writes a static index.html. This is NOT run by Vercel -- run it manually
+// (`npm run build`) whenever the Hive article changes, then commit index.html.
+//
+// Same scaffold as mes.fm/vector-functions-problems-plus: the bare 3Speak URL
+// becomes a Theater-Mode video (HLS via hls.js, manifest resolved at build
+// time), and every section heading becomes a collapsible chapter with a
+// "Collapse All" toolbar and a "Jump to" table of contents (fixed sidebar on
+// wide viewports, <details> dropdown otherwise). This article uses "### "
+// headings for its sections, so chapters are keyed on <h3>.
 //
 // Usage:
 //   npm install
@@ -19,35 +26,56 @@ const AUTHOR = "mes";
 const PERMLINK = "john-hutchison-interviewed-224";
 const COMMUNITY = "hive-128780";
 const PEAKD_URL = `https://peakd.com/${COMMUNITY}/@${AUTHOR}/${PERMLINK}`;
+const CANONICAL = "https://mes.fm/hutchison-tom-sky";
+const BACK_LINK = "https://mes.fm/hutchison";
 
-async function fetchPost() {
+// Guard against pointing PERMLINK at the wrong article. MES's Hive posts link
+// back to their own mes.fm page (e.g. "[Notes](https://mes.fm/<slug>)"), so if
+// the fetched article's body never mentions this page's CANONICAL url, PERMLINK
+// and CANONICAL have most likely drifted apart -- warn loudly. Set
+// ALLOW_SLUG_MISMATCH=1 to build anyway (e.g. a brand-new post that doesn't
+// self-reference yet).
+function checkSlugMatch(post) {
+  const slug = CANONICAL.replace(/^https?:\/\//, "");
+  const ok = post.body.includes(CANONICAL) || post.body.includes(slug);
+  console.log(
+    `Slug check: @${AUTHOR}/${PERMLINK} "${post.title}" -> ${CANONICAL} ${
+      ok ? "(OK — article self-references this page)" : "(NO self-reference found)"
+    }`
+  );
+  if (!ok && process.env.ALLOW_SLUG_MISMATCH !== "1") {
+    throw new Error(
+      `\n\n  ⚠  SLUG MISMATCH\n` +
+        `  The article @${AUTHOR}/${PERMLINK} ("${post.title}")\n` +
+        `  does not link back to ${CANONICAL} anywhere in its body.\n` +
+        `  PERMLINK and CANONICAL are probably out of sync -- double-check the Hive URL.\n` +
+        `  Re-run with ALLOW_SLUG_MISMATCH=1 to build anyway.\n`
+    );
+  }
+}
+
+async function hiveCall(method, params) {
   const res = await fetch("https://api.hive.blog", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      method: "bridge.get_post",
-      params: { author: AUTHOR, permlink: PERMLINK },
-      id: 1,
-    }),
+    body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
   });
-
-  if (!res.ok) {
-    throw new Error(`Hive API request failed: HTTP ${res.status}`);
-  }
-
+  if (!res.ok) throw new Error(`Hive API request failed: HTTP ${res.status}`);
   const data = await res.json();
-  if (data.error) {
-    throw new Error(`Hive API error: ${JSON.stringify(data.error)}`);
-  }
-  if (!data.result) {
-    throw new Error("Hive API returned no result — check author/permlink.");
-  }
+  if (data.error) throw new Error(`Hive API error: ${JSON.stringify(data.error)}`);
   return data.result;
 }
 
+async function fetchPost() {
+  const result = await hiveCall("bridge.get_post", { author: AUTHOR, permlink: PERMLINK });
+  if (!result || !result.body) {
+    throw new Error("Hive API returned no post — check author/permlink.");
+  }
+  return result;
+}
+
 function escapeHtml(str) {
-  return str
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -55,98 +83,234 @@ function escapeHtml(str) {
 }
 
 function formatDate(isoString) {
-  const date = new Date(isoString + "Z");
-  return date.toLocaleDateString("en-US", {
+  return new Date(isoString + "Z").toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 }
 
-// Hive posts sometimes have a table row immediately followed by a plain text
-// line with no blank line between them. Per GFM, a line with no "|" should end
-// the table, but marked's table lexer is lenient and swallows it as an extra
-// row. Insert the missing blank line so the following text renders as its own
-// paragraph instead of a table row.
-function fixTableBoundaries(markdown) {
-  const lines = markdown.split("\n");
-  const out = [];
-  for (let i = 0; i < lines.length; i++) {
-    out.push(lines[i]);
-    const cur = lines[i];
-    const next = lines[i + 1];
-    const curIsTableRow = cur.includes("|") && cur.trim() !== "";
-    const nextIsBlank = next === undefined || next.trim() === "";
-    const nextIsTableRow = next !== undefined && next.includes("|");
-    if (curIsTableRow && !nextIsBlank && !nextIsTableRow) {
-      out.push("");
-    }
+function ipfsToGateway(uri) {
+  if (!uri) return null;
+  if (uri.startsWith("ipfs://")) {
+    return `https://ipfs-3speak.b-cdn.net/ipfs/${uri.slice("ipfs://".length)}`;
   }
-  return out.join("\n");
+  return uri;
 }
 
-// Hive posts often contain a bare YouTube URL on its own line (PeakD renders
-// these as an embedded player). Turn them into a responsive iframe embed
-// before markdown parsing, since marked will otherwise just linkify the URL.
+// A bare 3Speak URL resolves to its direct HLS manifest so we can play it in a
+// plain <video> (native speed/quality/PiP controls) instead of iframing 3speak.tv.
+// Try 3Speak's public embed API first; if that 404s (older permlinks aren't all
+// indexed), fall back to the 3Speak video's own Hive post metadata, which carries
+// the IPFS manifest hash. Re-encodes / re-uploads keep the permlink, so re-running
+// this build picks them up.
+async function resolve3Speak(owner, permlink) {
+  try {
+    const res = await fetch(`https://play.3speak.tv/api/embed?v=${owner}/${permlink}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.videoUrl) {
+        return { src: data.videoUrl, poster: data.thumbnail || null };
+      }
+    }
+  } catch {
+    /* fall through to Hive metadata */
+  }
+
+  try {
+    const post = await hiveCall("condenser_api.get_content", [owner, permlink]);
+    const meta = JSON.parse(post.json_metadata || "{}");
+    const info = (meta.video && meta.video.info) || {};
+    const sourceMap = info.sourceMap || [];
+    const manifest =
+      info.video_v2 ||
+      (sourceMap.find((s) => s.type === "video" && s.format === "m3u8") || {}).url ||
+      null;
+    const thumb = (sourceMap.find((s) => s.type === "thumbnail") || {}).url;
+    const poster =
+      (Array.isArray(meta.image) && meta.image[0]) || ipfsToGateway(thumb) || null;
+
+    if (manifest && manifest.startsWith("ipfs://")) {
+      const gateway = ipfsToGateway(manifest);
+      return {
+        src: `https://play.3speak.tv/hls?u=${encodeURIComponent(gateway)}`,
+        poster,
+      };
+    }
+    if (manifest) return { src: manifest, poster };
+  } catch {
+    /* best effort */
+  }
+
+  return { src: null, poster: null };
+}
+
+// Bare 3Speak URLs on their own line (PeakD renders these as an embedded player).
+// Each becomes a <video> with a unique id; the {id, src} pairs get wired up by a
+// script block once hls.js has loaded. Anchored to a whole line (^...$) so it
+// only touches standalone embeds, never the same URL inside a "[3Speak](...)"
+// link in a link row.
+async function embed3SpeakLinks(markdown) {
+  const pattern =
+    /^[ \t]*https?:\/\/(?:play\.)?3speak\.tv\/(?:watch|embed)\?v=([\w.-]+)\/([\w.-]+)[ \t]*$/gm;
+  const matches = [...markdown.matchAll(pattern)];
+  const resolved = [];
+  const videos = [];
+
+  for (let i = 0; i < matches.length; i++) {
+    const [, owner, permlink] = matches[i];
+    const id = `speak-video-${i + 1}`;
+    const { src, poster } = await resolve3Speak(owner, permlink);
+    resolved.push({ id, owner, permlink, poster });
+    videos.push({ id, src });
+  }
+
+  let idx = 0;
+  const html = markdown.replace(pattern, () => {
+    const { id, owner, permlink, poster } = resolved[idx++];
+    const posterAttr = poster ? ` poster="${escapeHtml(poster)}"` : "";
+    return (
+      `<div class="video-embed" google-side-rail-overlap="false">` +
+      `<video id="${id}" controls playsinline preload="metadata"${posterAttr}></video>` +
+      `<button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button>` +
+      `<a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &nearr;</a>` +
+      `</div>`
+    );
+  });
+
+  return { markdown: html, videos };
+}
+
+// Bare YouTube URLs on their own line become a responsive iframe embed, with the
+// same Theater Mode toggle + badge as the 3Speak embeds above.
 function embedYoutubeLinks(markdown) {
   return markdown.replace(
     /^[ \t]*(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)\S*[ \t]*$/gm,
     (_match, videoId) =>
-      `<div class="video-embed"><iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`
+      `<div class="video-embed" google-side-rail-overlap="false">` +
+      `<iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>` +
+      `<button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button>` +
+      `<a class="video-badge" href="https://youtu.be/${videoId}" target="_blank" rel="noopener">View on YouTube &nearr;</a>` +
+      `</div>`
   );
 }
 
-// This post opens with a bare 3Speak embed URL on its own line (PeakD renders
-// these as an embedded player). Iframing 3Speak's own /embed route ships their
-// full app chrome (logo, unrelated video sidebar, oddly proportioned player)
-// even in "embed" mode, so instead fetch the direct HLS manifest from 3Speak's
-// public embed API and play it in a plain <video> tag -- same approach as
-// mes.fm/tesla-coil. Each bare 3Speak URL becomes its own <video> with a
-// unique id; the {id, src} pairs are wired up by a script block appended
-// below once the whole page (with hls.js loaded) exists.
-async function embed3SpeakLinks(markdown) {
-  const pattern = /^[ \t]*https?:\/\/play\.3speak\.tv\/embed\?v=([\w.-]+)\/([\w.-]+)[ \t]*$/gm;
-  const matches = [...markdown.matchAll(pattern)];
-  const videos = [];
-  let html = markdown;
-  for (let i = 0; i < matches.length; i++) {
-    const [full, owner, permlink] = matches[i];
-    const id = `speak-video-${i + 1}`;
-    let src = null;
-    let poster = null;
-    try {
-      const res = await fetch(`https://play.3speak.tv/api/embed?v=${owner}/${permlink}`);
-      const data = await res.json();
-      src = data.videoUrl || null;
-      poster = data.thumbnail || null;
-    } catch {
-      // Best-effort: leave src/poster null, the <video> just renders without one.
+// Give every "### " section heading (rendered as <h3> by marked) an id and
+// collect a {id, label} list so the table-of-contents can link to it.
+// Duplicate slugs/labels get a "(2)"-style suffix.
+function addSectionAnchors(bodyHtml) {
+  const seen = new Map();
+  const toc = [];
+  const html = bodyHtml.replace(/<h3>([\s\S]*?)<\/h3>/g, (match, inner) => {
+    const plain = inner
+      .replace(/<[^>]+>/g, "")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, "&")
+      .trim();
+    const slug =
+      plain
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "section";
+    const occurrence = (seen.get(slug) || 0) + 1;
+    seen.set(slug, occurrence);
+    const id = occurrence === 1 ? slug : `${slug}-${occurrence}`;
+    const label = occurrence === 1 ? plain : `${plain} (${occurrence})`;
+    toc.push({ id, label });
+    return `<h3 id="${id}">${inner}</h3>`;
+  });
+  return { html, toc };
+}
+
+// Each section runs from its own "<h3 id=\"...\">" (added by addSectionAnchors)
+// until the next one (or the end of the body). Wrap each heading + content in a
+// chapter-toggle div so it can be collapsed via toggleChapter(). A section whose
+// body is only whitespace / an <hr> (this article ends with a bare
+// "### Hutchison Effect: <url>" CTA line) is left as a plain heading and its id
+// is returned in emptyIds so it can be dropped from the table of contents.
+function wrapChaptersInToggles(html) {
+  const re = /<h3 id="([^"]+)">([\s\S]*?)<\/h3>/g;
+  const matches = [...html.matchAll(re)];
+  if (matches.length === 0) return { html, emptyIds: [] };
+
+  const emptyIds = [];
+  let out = html.slice(0, matches[0].index).replace(/\s*<hr>\s*$/, "");
+  matches.forEach((m, i) => {
+    const [full, id, titleInner] = m;
+    const contentStart = m.index + full.length;
+    const contentEnd = i + 1 < matches.length ? matches[i + 1].index : html.length;
+    const content = html.slice(contentStart, contentEnd);
+    const cleanTitle = titleInner.replace(/^\s*<center>|<\/center>\s*$/g, "").trim();
+    const hasBody =
+      /<img\b/.test(content) ||
+      content.replace(/<hr\s*\/?>/g, "").replace(/<[^>]+>/g, "").trim() !== "";
+    if (!hasBody) {
+      emptyIds.push(id);
+      out += `<hr>\n<h3 id="${id}"><center>${cleanTitle}</center></h3>\n`;
+      return;
     }
-    videos.push({ id, src });
-    const posterAttr = poster ? ` poster="${escapeHtml(poster)}"` : "";
-    const replacement = `<div class="video-embed" google-side-rail-overlap="false"><video id="${id}" controls playsinline preload="metadata"${posterAttr}></video><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &rarr;</a></div>`;
-    html = html.replace(full, replacement);
-  }
-  return { markdown: html, videos };
+    out += `<hr>\n<div class="chapter-toggle" id="${id}">\n`;
+    out += `<h1 class="chapter-toggle-header" onclick="toggleChapter('${id}-list')"><center>${cleanTitle} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></center></h1>\n`;
+    out += `<div id="${id}-list" class="chapter-toggle-list">${content}</div>\n`;
+    out += `</div>\n`;
+  });
+  return { html: out, emptyIds };
 }
 
 async function buildPage(post) {
   const title = post.title;
-  const { markdown: withVideos, videos } = await embed3SpeakLinks(fixTableBoundaries(post.body));
+  const { markdown: withVideos, videos } = await embed3SpeakLinks(post.body);
   const preprocessed = embedYoutubeLinks(withVideos);
-  const bodyHtml = marked.parse(preprocessed);
+  const { html: parsedBodyHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
+  const { html: wrappedBodyHtml, emptyIds } = wrapChaptersInToggles(parsedBodyHtml);
+  const chapters = toc.filter((t) => !emptyIds.includes(t.id));
+
+  // Everything before the first section heading (the video + the intro
+  // paragraphs) becomes its own collapsible "Overview" chapter, pinned above
+  // the article's own sections.
+  chapters.unshift({ id: "overview", label: "Overview" });
+  const tocLinksHtml = chapters
+    .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
+    .join("\n      ");
+
+  const chaptersToolbar = `<div class="chapters-toolbar">
+<button id="toggleAllChaptersBtn" class="theme-toggle-btn" onclick="toggleAllChapters()">Collapse All</button>
+</div>
+`;
+
+  const firstChapterMatch = wrappedBodyHtml.match(/<hr>\n<div class="chapter-toggle" id="/);
+  const leadingHtml = (firstChapterMatch
+    ? wrappedBodyHtml.slice(0, firstChapterMatch.index)
+    : wrappedBodyHtml
+  ).trim();
+  const restChaptersHtml = firstChapterMatch
+    ? wrappedBodyHtml.slice(firstChapterMatch.index + "<hr>\n".length)
+    : "";
+
+  const overviewChapter = `<div class="chapter-toggle" id="overview">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Overview <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="overview-list" class="chapter-toggle-list">
+${leadingHtml}
+</div>
+</div>
+<hr>
+`;
+
+  const bodyHtml = chaptersToolbar + overviewChapter + restChaptersHtml;
+
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
   const commentCount = post.children ?? 0;
   const reblogCount = post.reblogs ?? 0;
-  const description =
-    post.json_metadata?.description ||
-    `${title} — mirrored from the Hive blockchain.`;
   const buildDate = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+  const description =
+    (post.json_metadata && post.json_metadata.description) ||
+    "A rare 2007 interview of John Hutchison in his Vancouver lab by photographer Tom Sky, including a live Hutchison Effect experiment. Mirrored from the Hive blockchain.";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -155,7 +319,7 @@ async function buildPage(post) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escapeHtml(description)}">
   <meta name="author" content="MES">
-  <link rel="canonical" href="https://mes.fm/hutchison-tom-sky" />
+  <link rel="canonical" href="${CANONICAL}" />
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
   <title>${escapeHtml(title)} | Math Easy Solutions</title>
   <style>
@@ -177,14 +341,6 @@ async function buildPage(post) {
     .container {
       max-width: 760px;
       margin: 0 auto;
-    }
-
-    /* A "fluid" responsive AdSense unit -- Google picks a wide, short
-       (leaderboard/banner-style) shape at this container's width rather than
-       a tall rectangle, similar to a CNN-style top banner. */
-    .ad-slot {
-      margin: 16px auto 20px;
-      text-align: center;
     }
 
     .top-bar {
@@ -213,7 +369,7 @@ async function buildPage(post) {
     }
 
     h1 {
-      font-size: 1.8em;
+      font-size: 2em;
       margin: 0.4em 0 0.2em;
     }
 
@@ -238,9 +394,24 @@ async function buildPage(post) {
       word-wrap: break-word;
     }
 
+    .post-body h1 {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.8em 0 0.8em;
+    }
+
+    .post-body h2 {
+      font-size: 1.3em;
+      margin: 1.9em 0 0.4em;
+    }
+
     .post-body h3 {
-      font-size: 1.15em;
-      margin: 1.6em 0 0.5em;
+      font-size: 1.1em;
+      margin: 1.6em 0 0.4em;
+    }
+
+    .post-body p {
+      margin: 0 0 1em;
     }
 
     .post-body img {
@@ -248,6 +419,22 @@ async function buildPage(post) {
       height: auto;
       border-radius: 4px;
       margin: 0.6em 0;
+      cursor: zoom-in;
+    }
+
+    .post-body ul {
+      padding-left: 1.3em;
+    }
+
+    .post-body li {
+      margin: 0 0 0.5em;
+    }
+
+    .post-body blockquote {
+      border-left: 3px solid #5ea9dd;
+      margin: 1em 0;
+      padding: 0.2em 1em;
+      opacity: 0.9;
     }
 
     .post-body table {
@@ -269,7 +456,7 @@ async function buildPage(post) {
       padding-bottom: 56.25%;
       border-radius: 4px;
       overflow: hidden;
-      margin: 1.2em 0;
+      margin: 0.6em 0 1.2em;
       transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
         height 0.25s ease, padding-bottom 0.25s ease, border-radius 0.25s ease;
     }
@@ -297,6 +484,7 @@ async function buildPage(post) {
       background: #000;
     }
 
+    .video-embed.theater-mode iframe,
     .video-embed.theater-mode video {
       object-fit: contain;
     }
@@ -355,11 +543,87 @@ async function buildPage(post) {
       pointer-events: none;
     }
 
-    .post-body blockquote {
-      border-left: 3px solid #5ea9dd;
-      margin: 1em 0;
-      padding: 0.2em 1em;
-      opacity: 0.9;
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 2147483647;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 120px;
+    }
+
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox-image {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: calc(100vh - 120px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-controls {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lightbox-counter {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.85em;
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      position: fixed;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .lightbox-close:hover,
+    .lightbox-prev:hover,
+    .lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+    .lightbox-close {
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.3em;
+      z-index: 2147483647;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+      position: static;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.4em;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-overlay { padding-bottom: 100px; }
+      .lightbox-image { max-height: calc(100vh - 100px); }
+      .lightbox-controls { bottom: 32px; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+      .lightbox-close { width: 36px; height: 36px; }
     }
 
     hr {
@@ -367,163 +631,148 @@ async function buildPage(post) {
       opacity: 0.3;
     }
 
-    .build-note {
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .retrieved-note {
+      font-size: 0.85em;
+      opacity: 0.7;
+      margin-top: 0.4em;
+    }
+
+    .site-footer-note {
       font-size: 0.8em;
       opacity: 0.6;
       text-align: center;
     }
 
+    /* Every chapter (the leading "Overview" one plus every Hive-sourced "### "
+       section) is a collapsible dropdown -- see wrapChaptersInToggles() in
+       build.mjs and toggleChapter() below. */
+    .chapter-toggle-header {
+      cursor: pointer;
+    }
+
+    .chapter-toggle-header .arrow-icon {
+      font-size: 0.6em;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    .chapter-toggle-list.hidden {
+      display: none;
+    }
+
+    /* Pinned to the top of the post body, just under the <hr> that follows the
+       article meta -- a collapse/expand-all control anchored to the right edge,
+       above the first ("Overview") chapter. */
+    .chapters-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin: -0.8em 0 0.4em;
+    }
+
+    /* Table of contents: a fixed side column on wide viewports, collapsing to a
+       <details> dropdown above the article on anything narrower. */
+    .toc-sidebar {
+      display: none;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-sidebar {
+        display: block;
+        position: fixed;
+        top: 90px;
+        left: calc(50% + 410px);
+        width: 210px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        font-size: 0.85em;
+      }
+
+      .toc-sidebar .toc-title {
+        font-size: 0.75em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+        margin: 0 0 0.7em;
+      }
+
+      .toc-sidebar a {
+        display: block;
+        padding: 0.3em 0;
+        opacity: 0.85;
+        text-decoration: none;
+      }
+
+      .toc-sidebar a:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+    }
+
+    .toc-mobile {
+      margin: 1.2em 0;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-mobile {
+        display: none;
+      }
+    }
+
+    .toc-mobile summary {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0.6em 0.9em;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      border-radius: 6px;
+    }
+
+    .toc-mobile .toc-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4em;
+      padding: 0.8em 0.9em 0.2em;
+    }
+
+    .toc-mobile a {
+      text-decoration: none;
+      opacity: 0.9;
+    }
+
+    .toc-mobile a:hover {
+      text-decoration: underline;
+    }
+
     @media (max-width: 600px) {
-      h1 { font-size: 1.4em; }
+      h1 { font-size: 1.5em; }
       body { padding: 0 12px 40px; }
     }
-  </style>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369"
- crossorigin="anonymous"></script>
-<script>
-/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
-   class \`google-auto-placed\`), plus Google's separate "annotation" text-ad
-   formats, which are a different Auto ads mechanism than the in-page blocks
-   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
-   is relocated to just below the whole header+nav+logo-badge complex
-   (before .outer-page-content) and allowed to show if it fills; on mobile
-   (max-width: 768px, this repo's existing responsive breakpoint) it is
-   hidden outright instead -- no ad shows below the nav bar on mobile at
-   all. 2) Comments toggle (#comments-button) <-> comments widget
-   (#comments-box): on every device, any in-page ad caught here is relocated
-   to just after the comments box and allowed to show if it fills.
-   3) Annotation/related-entry chips -- any element carrying the
-   \`google-anno-skip\` class, which covers every chip variant Google serves
-   (\`google-anno-sc\` pill/badge tooltips, \`goog-rentry\` related-entry
-   tooltips, \`google-anno-sa-qtx\` tooltip text) -- and 4) in-text link ads
-   (\`<a class="google-anno">\` wrapping a \`<span class="google-anno-t">\`
-   around an ordinary word, e.g. turning "Calculate" into a
-   double-underlined, clickable ad): both are only guarded inside #header,
-   #footer, the top .info-bar-container nav, or the .side-bar "Site
-   Navigation" widget -- chips are hidden outright there, and in-text links
-   are unwrapped back to plain text there, so the word stays readable
-   without the ad behavior. Elsewhere in the actual page content both are
-   left alone on purpose. Unlike the in-page ad blocks, Google serves many
-   of these chips/links per page load, so removing the guarded-zone ones
-   doesn't cost the page its one shot at an ad the way deleting the in-page
-   block did -- no relocate/poll needed, just hide/unwrap on sight.
-   In the first two cases Google's own placeholder-collapse doesn't reliably
-   fire once we've moved the node, so we poll it: if no real ad iframe shows
-   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
-   slot never leaves a blank gap. */
-(function () {
-    function isMobile() {
-        return window.matchMedia('(max-width: 768px)').matches;
-    }
-    function isBetween(before, after, el) {
-        if (!before || !after) return false;
-        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
-               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
-    }
-    function collapseIfUnfilled(node) {
-        var attempts = 0;
-        var poll = setInterval(function () {
-            attempts++;
-            if (!node.isConnected) {
-                clearInterval(poll);
-                return;
-            }
-            if (node.querySelector('iframe')) {
-                clearInterval(poll);
-                return;
-            }
-            if (attempts >= 10) {
-                node.style.setProperty('display', 'none', 'important');
-                clearInterval(poll);
-            }
-        }, 200);
-    }
-    function handleHeaderNavZone(node) {
-        var header = document.getElementById('header');
-        var nav = document.querySelector('.info-bar-container');
-        if (!isBetween(header, nav, node)) return false;
-        if (isMobile()) {
-            node.style.setProperty('display', 'none', 'important');
-            return true;
-        }
-        var target = document.querySelector('.outer-page-content');
-        if (target) {
-            target.before(node);
-        } else if (nav) {
-            nav.after(node);
-        }
-        collapseIfUnfilled(node);
-        return true;
-    }
-    function handleCommentsZone(node) {
-        var button = document.getElementById('comments-button');
-        var box = document.getElementById('comments-box');
-        if (!isBetween(button, box, node)) return false;
-        box.after(node);
-        collapseIfUnfilled(node);
-        return true;
-    }
-    function inAnnotationGuardedZone(el) {
-        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
-    }
-    function handleAnnotationChip(node) {
-        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
-            node.style.setProperty('display', 'none', 'important');
-            return true;
-        }
-        return false;
-    }
-    function handleInTextLinkAd(node) {
-        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
-            node.replaceWith(document.createTextNode(node.textContent));
-            return true;
-        }
-        return false;
-    }
-    function handle(node) {
-        if (node.nodeType !== 1) return;
-        if (node.classList && node.classList.contains('google-auto-placed')) {
-            if (handleHeaderNavZone(node)) return;
-            handleCommentsZone(node);
-            return;
-        }
-        if (handleAnnotationChip(node)) return;
-        if (handleInTextLinkAd(node)) return;
-        if (node.querySelectorAll) {
-            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
-                if (handleHeaderNavZone(n)) return;
-                handleCommentsZone(n);
-            });
-            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
-                handleAnnotationChip(n);
-            });
-            node.querySelectorAll('.google-anno').forEach(function (n) {
-                handleInTextLinkAd(n);
-            });
-        }
-    }
-    new MutationObserver(function (mutations) {
-        mutations.forEach(function (m) {
-            m.addedNodes.forEach(handle);
-        });
-    }).observe(document.documentElement, {childList: true, subtree: true});
-})();
-</script>
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+</style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
 </head>
 <body class="dark">
+  <nav class="toc-sidebar" aria-label="Table of contents">
+    <div class="toc-title">Jump to</div>
+      ${tocLinksHtml}
+  </nav>
   <div class="container">
-    <div class="ad-slot">
-      <!-- MES Links Square -->
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-1461238060884369"
-           data-ad-slot="1197859571"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-    </div>
-
     <div class="top-bar">
-      <a class="site-link" href="https://mes.fm/hutchison">&larr; mes.fm/hutchison</a>
+      <a class="site-link" href="${BACK_LINK}">&larr; mes.fm/hutchison</a>
       <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
     </div>
 
@@ -537,6 +786,13 @@ async function buildPage(post) {
     </div>
     <a class="peakd-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
 
+    <details class="toc-mobile">
+      <summary>Jump to section</summary>
+      <nav class="toc-links" aria-label="Table of contents">
+        ${tocLinksHtml}
+      </nav>
+    </details>
+
     <hr>
 
     <div class="post-body">
@@ -545,14 +801,44 @@ ${bodyHtml}
 
     <hr>
 
-    <a class="peakd-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
-    <p class="build-note">
+    <a class="source-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
+    <div class="retrieved-note">
       Vote/comment/reblog counts and article text were fetched from the Hive blockchain
-      at build time (${buildDate}) and are not live.
-    </p>
+      at build time (${escapeHtml(buildDate)}) and are not live.
+    </div>
+    <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-controls" id="lightboxControls">
+      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+    </div>
   </div>
 
   <script>
+    function toggleChapter(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById('arrowIcon-' + listId);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+
+    function toggleAllChapters() {
+      const lists = document.querySelectorAll('.chapter-toggle-list');
+      const btn = document.getElementById('toggleAllChaptersBtn');
+      const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
+      lists.forEach((list) => {
+        list.classList.toggle('hidden', collapse);
+        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+        if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
+      });
+      btn.textContent = collapse ? 'Expand All' : 'Collapse All';
+    }
+
     const body = document.body;
     const themeToggle = document.getElementById('themeToggle');
 
@@ -561,16 +847,17 @@ ${bodyHtml}
         body.classList.add('dark');
         body.classList.remove('light');
         themeToggle.textContent = 'Switch to Light Mode';
-        localStorage.setItem('theme', 'dark');
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
       } else {
         body.classList.add('light');
         body.classList.remove('dark');
         themeToggle.textContent = 'Switch to Dark Mode';
-        localStorage.setItem('theme', 'light');
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
       }
     }
 
-    const saved = localStorage.getItem('theme');
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
     setTheme(saved !== 'light');
 
     themeToggle.addEventListener('click', () => {
@@ -579,46 +866,14 @@ ${bodyHtml}
   </script>
 
   <script>
-    // ad-slot-fill-and-collapse: requests a fill for the manual "MES Links Square" ad unit at
-    // the top of the page, then hides it completely -- no reserved blank box left behind -- if
-    // it never receives a real ad, whether that's because nothing filled or because an ad
-    // blocker kept the request from ever completing. Same poll-for-an-iframe, hide-if-none-shows
-    // approach as collapseIfUnfilled in the Auto ads guard script above.
-    (function () {
-      document.querySelectorAll('.ad-slot ins.adsbygoogle').forEach(function () {
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      });
-      document.querySelectorAll('.ad-slot').forEach(function (slot) {
-        var attempts = 0;
-        var poll = setInterval(function () {
-          attempts++;
-          if (slot.querySelector('iframe')) {
-            clearInterval(poll);
-            return;
-          }
-          if (attempts >= 10) {
-            slot.style.setProperty('display', 'none', 'important');
-            clearInterval(poll);
-          }
-        }, 200);
-      });
-    })();
-  </script>
-
-  <script>
     // theater-mode: expands a video embed to the full browser width (breaking out of
-    // the .container's max-width), like YouTube's theater mode. Height is capped at
-    // min(85vh, 56.25vw) so ultra-wide viewports don't get a comically tall player.
-    // Delegated + per-embed (rather than fixed IDs) since a post can embed more than
-    // one 3Speak video -- see embed3SpeakLinks above.
+    // the .container's 760px max-width), like YouTube's theater mode. Delegated +
+    // per-embed since a page may hold several videos.
     (function () {
       function setTheater(embed, toggle, on) {
         embed.classList.toggle('theater-mode', on);
         toggle.textContent = on ? 'Default View' : 'Theater Mode';
         toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion
-        // zones on scroll/resize, not on a plain class-driven layout change, so nudge
-        // it to recompute once the width/height transition above has settled.
         setTimeout(function () {
           window.dispatchEvent(new Event('resize'));
         }, 300);
@@ -644,10 +899,9 @@ ${bodyHtml}
 
   <script>
     // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
-    // a video is playing and the pointer is idle, like YouTube's own control bar,
-    // so they don't sit on top of the video permanently. Reappear on any mouse
-    // movement over that player, and stay visible whenever it's paused. Per-embed
-    // (rather than fixed IDs) since a post can embed more than one 3Speak video.
+    // a native <video> is playing and the pointer is idle, like YouTube's own
+    // control bar. Only applies to embeds that hold a real <video> (the 3Speak
+    // HLS player) -- YouTube iframes keep their badge.
     (function () {
       document.querySelectorAll('.video-embed').forEach(function (embed) {
         var video = embed.querySelector('video');
@@ -682,9 +936,8 @@ ${bodyHtml}
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
   <script>
     // speak-video-hls: plays each 3Speak-hosted HLS stream embedded above directly
-    // (via hls.js) rather than iframing 3speak.tv -- see embed3SpeakLinks in build.mjs
-    // for why. Same pattern as mes.fm/tesla-coil's tesla-spark-video script,
-    // generalized to loop over however many videos this post embeds.
+    // (via hls.js). Manifest URLs are resolved at build time (see resolve3Speak in
+    // build.mjs); re-run the build to refresh them.
     (function () {
       var videos = ${JSON.stringify(videos)};
       videos.forEach(function (v) {
@@ -701,6 +954,68 @@ ${bodyHtml}
       });
     })();
   </script>
+
+  <script>
+    // image-lightbox: click any post-body image to pop it out full-viewport, with
+    // prev/next via on-screen arrows and keyboard arrows.
+    (function () {
+      var images = Array.prototype.slice.call(document.querySelectorAll('.post-body img'));
+      if (!images.length) return;
+
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
+      var counterEl = document.getElementById('lightboxCounter');
+      var closeBtn = document.getElementById('lightboxClose');
+      var prevBtn = document.getElementById('lightboxPrev');
+      var nextBtn = document.getElementById('lightboxNext');
+      var currentIndex = 0;
+
+      if (images.length < 2) {
+        controlsEl.style.display = 'none';
+      }
+
+      function show(index) {
+        currentIndex = (index + images.length) % images.length;
+        var img = images[currentIndex];
+        imageEl.src = img.currentSrc || img.src;
+        imageEl.alt = img.alt || '';
+        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      }
+
+      function open(index) {
+        show(index);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      images.forEach(function (img, index) {
+        img.addEventListener('click', function () { open(index); });
+      });
+
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) close();
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+        else if (e.key === 'ArrowRight') show(currentIndex + 1);
+      });
+    })();
+  </script>
+
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script>
 </body>
 </html>
 `;
@@ -709,7 +1024,9 @@ ${bodyHtml}
 async function main() {
   console.log(`Fetching @${AUTHOR}/${PERMLINK} from api.hive.blog ...`);
   const post = await fetchPost();
-  console.log(`Got post: "${post.title}" (${post.stats?.total_votes ?? 0} votes, ${post.children ?? 0} comments, ${post.reblogs ?? 0} reblogs)`);
+  console.log(`Got post: "${post.title}"`);
+
+  checkSlugMatch(post);
 
   const html = await buildPage(post);
   const outPath = join(__dirname, "index.html");
