@@ -205,6 +205,7 @@ function buildPage(post) {
   const videosChapter = `<div class="chapter-toggle" id="videos">
 <h1 class="chapter-toggle-header" onclick="toggleChapter('videos-list')"><center>Videos <span id="arrowIcon-videos-list" class="arrow-icon">&#9660;</span></center></h1>
 <ul id="videos-list" class="chapter-toggle-list">
+<li><a href="https://mes.fm/hutchison-effect-steel-molybdenum">Hutchison Effect: George Hathaway and John Alexander Discuss Crumbling Steel &amp; Bent Molybdenum Rods</a></li>
 <li><a href="https://mes.fm/livestream-66-trailer">Trailer for MES Livestream 66: Rare Hutchison Effect Footage</a></li>
 </ul>
 </div>
