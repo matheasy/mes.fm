@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Demystifying the ferrocell: the holographic colored lines are specular reflection off nanoparticles aligned along the magnetic field, not the field lines themselves -- with tutorial and simulation videos. Mirrored from the Hive blockchain.">
+  <meta name="author" content="MES">
+  <link rel="canonical" href="https://mes.fm/ferrocell-specular-reflection" />
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>Demystifying the Ferrocell: Specular Reflection | Math Easy Solutions</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #1a1a1a; color: #eeeeee; }
+    body.dark a { color: #6cb6f5; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
+
+    .site-link {
+      font-size: 0.9em;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin: 0.4em 0 0.2em;
+    }
+
+    .post-meta {
+      font-size: 0.9em;
+      opacity: 0.85;
+      margin-bottom: 0.6em;
+    }
+
+    .post-meta span:not(:last-child)::after {
+      content: " \00b7 ";
+    }
+
+    .peakd-link {
+      display: inline-block;
+      margin: 0.6em 0 1.4em;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .post-body {
+      word-wrap: break-word;
+    }
+
+    .post-body h1 {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.8em 0 0.8em;
+    }
+
+    .post-body h2 {
+      font-size: 1.3em;
+      margin: 1.9em 0 0.4em;
+    }
+
+    .post-body h3 {
+      font-size: 1.1em;
+      margin: 1.6em 0 0.4em;
+    }
+
+    .post-body p {
+      margin: 0 0 1em;
+    }
+
+    .post-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0.6em 0;
+      cursor: zoom-in;
+    }
+
+    .post-body ul {
+      padding-left: 1.3em;
+    }
+
+    .post-body li {
+      margin: 0 0 0.5em;
+    }
+
+    .post-body blockquote {
+      border-left: 3px solid #5ea9dd;
+      margin: 1em 0;
+      padding: 0.2em 1em;
+      opacity: 0.9;
+    }
+
+    .post-body table {
+      border-collapse: collapse;
+      max-width: 100%;
+      margin: 1.5em 0;
+    }
+
+    .post-body td,
+    .post-body th {
+      border: 1px solid;
+      border-color: inherit;
+      padding: 6px 10px;
+    }
+
+    .video-embed {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.6em 0 1.2em;
+      transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
+        height 0.25s ease, padding-bottom 0.25s ease, border-radius 0.25s ease;
+    }
+
+    .video-embed iframe,
+    .video-embed video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode {
+      width: 100vw;
+      max-width: 100vw;
+      left: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      padding-bottom: 0;
+      height: min(85vh, 56.25vw);
+      border-radius: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode iframe,
+    .video-embed.theater-mode video {
+      object-fit: contain;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .theater-toggle-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      border: 0;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .theater-toggle-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .video-embed .video-badge,
+    .video-embed .theater-toggle-btn {
+      transition: opacity 0.3s ease;
+    }
+
+    .video-embed.controls-hidden .video-badge,
+    .video-embed.controls-hidden .theater-toggle-btn {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 2147483647;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 120px;
+    }
+
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox-image {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: calc(100vh - 120px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-controls {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lightbox-counter {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.85em;
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      position: fixed;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .lightbox-close:hover,
+    .lightbox-prev:hover,
+    .lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+    .lightbox-close {
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.3em;
+      z-index: 2147483647;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+      position: static;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.4em;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-overlay { padding-bottom: 100px; }
+      .lightbox-image { max-height: calc(100vh - 100px); }
+      .lightbox-controls { bottom: 32px; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+      .lightbox-close { width: 36px; height: 36px; }
+    }
+
+    hr {
+      margin: 2em 0;
+      opacity: 0.3;
+    }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .retrieved-note {
+      font-size: 0.85em;
+      opacity: 0.7;
+      margin-top: 0.4em;
+    }
+
+    .site-footer-note {
+      font-size: 0.8em;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    /* Every chapter (the leading "Overview" one plus every Hive-sourced "# "
+       section) is a collapsible dropdown -- see wrapChaptersInToggles() in
+       build.mjs and toggleChapter() below. */
+    .chapter-toggle-header {
+      cursor: pointer;
+    }
+
+    .chapter-toggle-header .arrow-icon {
+      font-size: 0.6em;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    .chapter-toggle-list.hidden {
+      display: none;
+    }
+
+    /* Pinned to the top of the post body, just under the <hr> that follows the
+       article meta -- a collapse/expand-all control anchored to the right edge,
+       above the first ("Overview") chapter. */
+    .chapters-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin: -0.8em 0 0.4em;
+    }
+
+    /* Table of contents: a fixed side column on wide viewports, collapsing to a
+       <details> dropdown above the article on anything narrower. */
+    .toc-sidebar {
+      display: none;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-sidebar {
+        display: block;
+        position: fixed;
+        top: 90px;
+        left: calc(50% + 410px);
+        width: 210px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        font-size: 0.85em;
+      }
+
+      .toc-sidebar .toc-title {
+        font-size: 0.75em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+        margin: 0 0 0.7em;
+      }
+
+      .toc-sidebar a {
+        display: block;
+        padding: 0.3em 0;
+        opacity: 0.85;
+        text-decoration: none;
+      }
+
+      .toc-sidebar a:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+    }
+
+    .toc-mobile {
+      margin: 1.2em 0;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-mobile {
+        display: none;
+      }
+    }
+
+    .toc-mobile summary {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0.6em 0.9em;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      border-radius: 6px;
+    }
+
+    .toc-mobile .toc-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4em;
+      padding: 0.8em 0.9em 0.2em;
+    }
+
+    .toc-mobile a {
+      text-decoration: none;
+      opacity: 0.9;
+    }
+
+    .toc-mobile a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5em; }
+      body { padding: 0 12px 40px; }
+    }
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+</style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+</head>
+<body class="dark">
+  <nav class="toc-sidebar" aria-label="Table of contents">
+    <div class="toc-title">Jump to</div>
+      <a href="#overview">Overview</a>
+      <a href="#specular-reflection">Specular Reflection</a>
+      <a href="#ferrocell-tutorial-videos">Ferrocell Tutorial Videos</a>
+      <a href="#ferrocell-and-simulation-videos">Ferrocell and Simulation Videos</a>
+  </nav>
+  <div class="container">
+    <div class="top-bar">
+      <a class="site-link" href="https://mes.fm/science">&larr; mes.fm/science</a>
+      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+    </div>
+
+    <h1>Demystifying the Ferrocell: Specular Reflection</h1>
+    <div class="post-meta">
+      <span>By mes</span>
+      <span>November 15, 2021</span>
+      <span>44 votes</span>
+      <span>0 comments</span>
+      <span>2 reblogs</span>
+    </div>
+    <a class="peakd-link" href="https://peakd.com/hive-128780/@mes/demystifying-the-ferrocell-specular-reflection" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
+
+    <details class="toc-mobile">
+      <summary>Jump to section</summary>
+      <nav class="toc-links" aria-label="Table of contents">
+        <a href="#overview">Overview</a>
+      <a href="#specular-reflection">Specular Reflection</a>
+      <a href="#ferrocell-tutorial-videos">Ferrocell Tutorial Videos</a>
+      <a href="#ferrocell-and-simulation-videos">Ferrocell and Simulation Videos</a>
+      </nav>
+    </details>
+
+    <hr>
+
+    <div class="post-body">
+<div class="chapters-toolbar">
+<button id="toggleAllChaptersBtn" class="theme-toggle-btn" onclick="toggleAllChapters()">Collapse All</button>
+</div>
+<div class="chapter-toggle" id="overview">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Overview <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="overview-list" class="chapter-toggle-list">
+<p>In my previous posts I had posted about the amazing visualizations and geometry present in a ferrocell as well as several possible explanations as to what causes the unique holographic colored lines. Recently, however, the YouTuber <a href="https://www.youtube.com/watch?v=pc9ghVd1rsw">AB science</a> may very well have cracked the actual explanation, which is specular reflection. </p>
+<p>Recap that the ferrocell comprises the following:</p>
+<ul>
+<li>2 thin glass sheet with a 10 um gap.</li>
+<li>Nano-sized ferromagnetic particles mixed in with a lubricating oil.</li>
+</ul>
+<p>Previous theories about what the lines represent included the magnetic field lines or magnetic field isopotential lines. However, those don&#39;t actually describe most of the colored lines observed in real life. On the other hand, specular reflection provides very accurate simulations for many, if not most, effects of the ferrocell.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23vhny5FYdGt5Vi9vRPtqXcPUCNTMTAhM3FtxDNqwoqgWWWmd6Ua5nzvWDPZbD1AZts7y.png" alt="image.png"></p>
+<p>The above image compares the ferrocell lines with light sources spread all around the cell vs. a simulation modeling the specular reflection off the nanoparticles as they align along the magnetic field of the permanent magnets. The ferrocell and simulation match up very well.</p>
+<p>Note that the simulation on above appears to have the light sources a bit misplaced. Here is another example but with the magnetic pole perpendicular to the ferrocell.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23uFMUYRDfUJFc28ezx7Fra3p6owasNQKNjwjQYzeKoar8hQQuAMcD7CvngkRgQnBPGuE.png" alt="image.png"></p>
+<p>The same software can be used to predict the ferrocell geometry of very complex configurations, such as this comparison between the simulation (left) and the 12 magnets configuration (bottom right).</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/242hfFMSRB6kUVCsmGFoNLcBukpTRsK8xDPtPTvbTHKLMwPr8DXuGkRX1dYPjZrFP8n2s.png" alt="image.png"></p>
+<blockquote>
+<p>Image source: <a href="https://www.researchgate.net/publication/353803975_Horocycles_of_Light_in_a_Ferrocell">https://www.researchgate.net/publication/353803975_Horocycles_of_Light_in_a_Ferrocell</a>
+Note that the top right (a) image is the magnetic isopotentials or lines of equal magnetic field strength.</p>
+</blockquote>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="specular-reflection">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('specular-reflection-list')"><center>Specular Reflection <span id="arrowIcon-specular-reflection-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="specular-reflection-list" class="chapter-toggle-list">
+<p>Specular reflection is just simply the phenomenon that occurs when incoming light reflects such that the angle of incidence is the same as the angle of reflection and as illustrated in the image below.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/48Kd8r2FxJFy5KvB78g7R6hQPXxoneDqW6Lbg8fbdJQqXsUsUeybobdEGj5Mx3fHaF.png" alt="image.png"></p>
+<p>Looking in the mirror is an example of specular reflection.</p>
+<h2>Diffuse Reflection</h2>
+<p>In real life, however, not every surface acts as a perfect specular reflector, thus there will be some diffuse reflection. The incoming light may be scattered across many different angles besides just the specular reflection angle.</p>
+<p><img src="https://files.peakd.com/file/peakd-hive/mes/23w3EM2FW5funDCiRe2DfD9x8yrLEgoYxTme7rCrFhnL83AdWFotbvsf9iFny7crqBQJq.png" alt="image.png"></p>
+<p>The ferrocell is predominantly specular reflection but some diffuse reflection is to be expected.</p>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="ferrocell-tutorial-videos">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('ferrocell-tutorial-videos-list')"><center>Ferrocell Tutorial Videos <span id="arrowIcon-ferrocell-tutorial-videos-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="ferrocell-tutorial-videos-list" class="chapter-toggle-list">
+<p>Lori Gardi aka Fractal Woman goes over several tutorials illustrating the concept of specular reflection and the simulation modeling of the ferrocell.</p>
+<h3>Demystifying the Ferrocell: Parts 1 to 3</h3>
+<blockquote>
+<p>Part 1: <a href="https://youtu.be/VM90bghJ1Fc">https://youtu.be/VM90bghJ1Fc</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/VM90bghJ1Fc" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/VM90bghJ1Fc" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<blockquote>
+<p>Part 2: <a href="https://youtu.be/jM3OikVbsn0">https://youtu.be/jM3OikVbsn0</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/jM3OikVbsn0" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/jM3OikVbsn0" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<blockquote>
+<p>Part 3: <a href="https://youtu.be/IsSucBxg8eI">https://youtu.be/IsSucBxg8eI</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/IsSucBxg8eI" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/IsSucBxg8eI" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<h2>What the Ferrocell Shows</h2>
+<blockquote>
+<p><a href="https://youtu.be/jzjlguCDG1c">https://youtu.be/jzjlguCDG1c</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/jzjlguCDG1c" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/jzjlguCDG1c" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<h2>The Ferrocell: Demystifying the Misconceptions</h2>
+<blockquote>
+<p><a href="https://youtu.be/yES1nV3BTwU">https://youtu.be/yES1nV3BTwU</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/yES1nV3BTwU" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/yES1nV3BTwU" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<blockquote>
+<p><a href="https://youtu.be/HJ5LOFnww_s">https://youtu.be/HJ5LOFnww_s</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/HJ5LOFnww_s" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/HJ5LOFnww_s" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<blockquote>
+<p><a href="https://youtu.be/uQH0bLFcd-k">https://youtu.be/uQH0bLFcd-k</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/uQH0bLFcd-k" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/uQH0bLFcd-k" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<h2>Demystifying Reflection and Scattering (and the Ferrocell Once and for All)</h2>
+<blockquote>
+<p><a href="https://youtu.be/NOPF49lNqHU">https://youtu.be/NOPF49lNqHU</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/NOPF49lNqHU" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/NOPF49lNqHU" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="ferrocell-and-simulation-videos">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('ferrocell-and-simulation-videos-list')"><center>Ferrocell and Simulation Videos <span id="arrowIcon-ferrocell-and-simulation-videos-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="ferrocell-and-simulation-videos-list" class="chapter-toggle-list">
+<p>Here are several videos comparing the ferrocell real life optical geometry with that of the specular reflection simulations.</p>
+<blockquote>
+<p><a href="https://youtu.be/o6WYL0eubb0">https://youtu.be/o6WYL0eubb0</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/o6WYL0eubb0" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/o6WYL0eubb0" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<blockquote>
+<p><a href="https://youtu.be/0IjdnGo06xs">https://youtu.be/0IjdnGo06xs</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/0IjdnGo06xs" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/0IjdnGo06xs" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<blockquote>
+<p><a href="https://youtu.be/2_h1JlvtBCg">https://youtu.be/2_h1JlvtBCg</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/2_h1JlvtBCg" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/2_h1JlvtBCg" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<blockquote>
+<p><a href="https://youtu.be/JSl98f6xLTE">https://youtu.be/JSl98f6xLTE</a></p>
+</blockquote>
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/JSl98f6xLTE" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/JSl98f6xLTE" target="_blank" rel="noopener">View on YouTube &nearr;</a></div>
+
+<div class="video-embed" google-side-rail-overlap="false"><iframe src="https://www.youtube.com/embed/wqbOhAcqVf4" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://youtu.be/wqbOhAcqVf4" target="_blank" rel="noopener">View on YouTube &nearr;</a></div></div>
+</div>
+
+    </div>
+
+    <hr>
+
+    <a class="source-link" href="https://peakd.com/hive-128780/@mes/demystifying-the-ferrocell-specular-reflection" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
+    <div class="retrieved-note">
+      Vote/comment/reblog counts and article text were fetched from the Hive blockchain
+      at build time (August 31, 2026) and are not live.
+    </div>
+    <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-controls" id="lightboxControls">
+      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleChapter(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById('arrowIcon-' + listId);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+
+    function toggleAllChapters() {
+      const lists = document.querySelectorAll('.chapter-toggle-list');
+      const btn = document.getElementById('toggleAllChaptersBtn');
+      const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
+      lists.forEach((list) => {
+        list.classList.toggle('hidden', collapse);
+        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+        if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
+      });
+      btn.textContent = collapse ? 'Expand All' : 'Collapse All';
+    }
+
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Switch to Dark Mode';
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+      }
+    }
+
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    setTheme(saved !== 'light');
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
+  </script>
+
+  <script>
+    // theater-mode: expands a video embed to the full browser width (breaking out of
+    // the .container's 760px max-width), like YouTube's theater mode. Delegated +
+    // per-embed since a page may hold several videos.
+    (function () {
+      function setTheater(embed, toggle, on) {
+        embed.classList.toggle('theater-mode', on);
+        toggle.textContent = on ? 'Default View' : 'Theater Mode';
+        toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'));
+        }, 300);
+      }
+
+      document.addEventListener('click', function (e) {
+        var toggle = e.target.closest('.theater-toggle-btn');
+        if (!toggle) return;
+        var embed = toggle.closest('.video-embed');
+        if (!embed) return;
+        setTheater(embed, toggle, !embed.classList.contains('theater-mode'));
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('.video-embed.theater-mode').forEach(function (embed) {
+          var toggle = embed.querySelector('.theater-toggle-btn');
+          if (toggle) setTheater(embed, toggle, false);
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
+    // a native <video> is playing and the pointer is idle, like YouTube's own
+    // control bar. Only applies to embeds that hold a real <video> (the 3Speak
+    // HLS player) -- YouTube iframes keep their badge.
+    (function () {
+      document.querySelectorAll('.video-embed').forEach(function (embed) {
+        var video = embed.querySelector('video');
+        var toggle = embed.querySelector('.theater-toggle-btn');
+        if (!video || !toggle) return;
+        var hideTimer = null;
+
+        function showControls() {
+          embed.classList.remove('controls-hidden');
+        }
+
+        function scheduleHide() {
+          clearTimeout(hideTimer);
+          if (video.paused || video.ended) return;
+          hideTimer = setTimeout(function () {
+            embed.classList.add('controls-hidden');
+          }, 2000);
+        }
+
+        video.addEventListener('play', scheduleHide);
+        video.addEventListener('pause', showControls);
+        video.addEventListener('ended', showControls);
+        embed.addEventListener('mousemove', function () {
+          showControls();
+          scheduleHide();
+        });
+        embed.addEventListener('mouseleave', scheduleHide);
+      });
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script>
+    // speak-video-hls: plays each 3Speak-hosted HLS stream embedded above directly
+    // (via hls.js). Manifest URLs are resolved at build time (see resolve3Speak in
+    // build.mjs); re-run the build to refresh them.
+    (function () {
+      var videos = [];
+      videos.forEach(function (v) {
+        if (!v.src) return;
+        var video = document.getElementById(v.id);
+        if (!video) return;
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = v.src;
+        } else if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(v.src);
+          hls.attachMedia(video);
+        }
+      });
+    })();
+  </script>
+
+  <script>
+    // image-lightbox: click any post-body image to pop it out full-viewport, with
+    // prev/next via on-screen arrows and keyboard arrows.
+    (function () {
+      var images = Array.prototype.slice.call(document.querySelectorAll('.post-body img'));
+      if (!images.length) return;
+
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
+      var counterEl = document.getElementById('lightboxCounter');
+      var closeBtn = document.getElementById('lightboxClose');
+      var prevBtn = document.getElementById('lightboxPrev');
+      var nextBtn = document.getElementById('lightboxNext');
+      var currentIndex = 0;
+
+      if (images.length < 2) {
+        controlsEl.style.display = 'none';
+      }
+
+      function show(index) {
+        currentIndex = (index + images.length) % images.length;
+        var img = images[currentIndex];
+        imageEl.src = img.currentSrc || img.src;
+        imageEl.alt = img.alt || '';
+        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      }
+
+      function open(index) {
+        show(index);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      images.forEach(function (img, index) {
+        img.addEventListener('click', function () { open(index); });
+      });
+
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) close();
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+        else if (e.key === 'ArrowRight') show(currentIndex + 1);
+      });
+    })();
+  </script>
+
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script>
+</body>
+</html>
