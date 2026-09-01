@@ -222,7 +222,7 @@ $(document).ready(function(){
 					callback();
 					return;
 				}
-				$.getJSON('data/inflation-data.json')
+				$.getJSON('/inflationcalculator/data/inflation-data.json')
 					.done(function(data) {
 						CALCULATOR.countryData = data;
 						callback();
@@ -316,20 +316,19 @@ $(document).ready(function(){
 				$("#url-to-share").val("Loading...");
 
 				// php/createShareUrl.php used to write to a MySQL table (sharecalcdb.ic)
-				// that doesn't exist on static hosting -- api/share.js replaces it with
-				// an Upstash Redis-backed serverless function (same Redis mes.fm/api's
-				// own pageview tracking already uses). Share links are now
-				// inflationcalculator.mes.fm/s/<id> instead of the old ic.mes.fm/<id>
-				// short domain -- see api/share.js for why.
+				// that doesn't exist on static hosting -- mes.fm/api/share.js replaces
+				// it with an Upstash Redis-backed serverless function (same Redis
+				// mes.fm/api's own pageview tracking already uses; ?calc=ic namespaces
+				// the key). Share links are now mes.fm/inflationcalculator/s/<id>.
 				$.ajax({
-					url:'/api/share',
+					url:'/api/share?calc=ic',
 					type:'POST',
 					contentType:'application/json',
-					data: JSON.stringify({data:data})
+					data: JSON.stringify({calc:'ic', data:data})
 				})
 					.done(
 						function(response) {
-							var url = window.location.origin + '/s/' + response.id;
+							var url = window.location.origin + '/inflationcalculator/s/' + response.id;
 							$("#url-to-share").val(url);
 							CALCULATOR.oldShareUrl = url;
 						})
@@ -341,7 +340,7 @@ $(document).ready(function(){
 
 			initializeCustomCalculation: function() {
 
-				var match = window.location.pathname.match(/^\/s\/([A-Za-z0-9]+)\/?$/);
+				var match = window.location.pathname.match(/^\/inflationcalculator\/s\/([A-Za-z0-9]+)\/?$/);
 
 				if(!match) {
 					CALCULATOR.changeCountry();
@@ -353,7 +352,7 @@ $(document).ready(function(){
 				$.ajax({
 					url:'/api/share',
 					type:'GET',
-					data:({id:id})
+					data:({calc:'ic', id:id})
 				})
 				.done(
 					function(data) {

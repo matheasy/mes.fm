@@ -62,6 +62,7 @@
     { "source": "/vatcalculator/s/:id", "destination": "/vatcalculator" },
     { "source": "/gpacalculator/s/:id", "destination": "/gpacalculator" },
     { "source": "/youtubemoney/s/:id", "destination": "/youtubemoney" },
+    { "source": "/inflationcalculator/s/:id", "destination": "/inflationcalculator" },
     { "source": "/mfa", "destination": "https://mes-fm-mfa.vercel.app/mfa" },
     { "source": "/mfa/:path*", "destination": "https://mes-fm-mfa.vercel.app/mfa/:path*" },
     { "source": "/ai", "destination": "https://mes-fm-ai.vercel.app/ai" },
