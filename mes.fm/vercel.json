@@ -66,6 +66,7 @@
     { "source": "/mortgagecalculator/s/:id", "destination": "/mortgagecalculator" },
     { "source": "/percentagecalculator/s/:id", "destination": "/percentagecalculator" },
     { "source": "/bmicalculator/s/:id", "destination": "/bmicalculator" },
+    { "source": "/gradecalculator/s/:id", "destination": "/gradecalculator" },
     { "source": "/mfa", "destination": "https://mes-fm-mfa.vercel.app/mfa" },
     { "source": "/mfa/:path*", "destination": "https://mes-fm-mfa.vercel.app/mfa/:path*" },
     { "source": "/ai", "destination": "https://mes-fm-ai.vercel.app/ai" },

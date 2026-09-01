@@ -1,9 +1,6 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/s/:id",
-      "destination": "/"
-    }
+  "redirects": [
+    { "source": "/", "destination": "https://mes.fm/gradecalculator", "permanent": true },
+    { "source": "/(.*)", "destination": "https://mes.fm/gradecalculator/$1", "permanent": true }
   ]
 }
