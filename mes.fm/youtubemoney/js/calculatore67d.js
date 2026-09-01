@@ -58,7 +58,7 @@ $(document).ready(function(){
 				equation['rpm'] = $("#input2").val().replace(/[^0-9\.]/g, '');
 
 				if(isNaN(equation['views']) || equation['views'] == '') {
-					$("#url-to-share").val("https://ymc.mes.fm");
+					$("#url-to-share").val("https://mes.fm/youtubemoney");
 					return false;
 				}
 
@@ -71,19 +71,19 @@ $(document).ready(function(){
 				$("#url-to-share").val("Loading...");
 
 				// php/createShareUrl.php used to write to a MySQL table (sharecalcdb.ymc)
-				// that doesn't exist on static hosting -- api/share.js replaces it with
-				// an Upstash Redis-backed serverless function (same Redis mes.fm/api's
-				// own pageview tracking already uses). Share links are now
-				// youtubemoney.mes.fm/s/<id>.
+				// that doesn't exist on static hosting -- mes.fm/api/share.js replaces
+				// it with an Upstash Redis-backed serverless function (same Redis
+				// mes.fm/api's own pageview tracking already uses; ?calc=ymc namespaces
+				// the key). Share links are now mes.fm/youtubemoney/s/<id>.
 				$.ajax({
-					url:'/api/share',
+					url:'/api/share?calc=ymc',
 					type:'POST',
 					contentType:'application/json',
-					data: JSON.stringify({data:data})
+					data: JSON.stringify({calc:'ymc', data:data})
 				})
 					.done(
 						function(response) {
-							var url = window.location.origin + '/s/' + response.id;
+							var url = window.location.origin + '/youtubemoney/s/' + response.id;
 							$("#url-to-share").val(url);
 							CALCULATOR.oldShareUrl = url;
 						})
@@ -95,7 +95,7 @@ $(document).ready(function(){
 
 			initializeCustomCalculation: function() {
 
-				var match = window.location.pathname.match(/^\/s\/([A-Za-z0-9]+)\/?$/);
+				var match = window.location.pathname.match(/^\/youtubemoney\/s\/([A-Za-z0-9]+)\/?$/);
 
 				if(!match)
 					return false;
@@ -105,7 +105,7 @@ $(document).ready(function(){
 				$.ajax({
 					url:'/api/share',
 					type:'GET',
-					data:({id:id})
+					data:({calc:'ymc', id:id})
 				})
 				.done(
 					function(data) {
