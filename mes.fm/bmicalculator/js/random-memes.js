@@ -1,0 +1,17 @@
+(function(){
+  var S=["400-calories-of-different-foods","al-bundy-does-not-beat-around-the-bush","and-on-the-third-day-he-lifted","anthony-davis-surfing-the-internet","at-the-mcdonalds-gym","best-day-in-gym-class","best-foods-for-diabetes-and-worst-foods-for-diabetes","big-dog-litte-dog-lifting-weights","bmi-doesnt-account-for-muscle-mass","brain-lifting-weights","bro-do-you-even-lift","broke-gym-rats","close-enough","cute-dog-lifting-weights","day-after-leg-day","dem-gains","didnt-make-it-to-the-gym-today-5-years-in-a-row","disabled-nah-bro-leg-day-yesterday","dont-be-like-her","dont-let-the-world-tell-you-what-you-should-be","dont-worry-bro-im-just-bulking","dream-big-achieve-greatness","e--mclift-","eat-better-not-less","eat-clean-train-dirty","eating-and-complaining-are-my-hobbies","everyones-at-the-gym-and-im-at-home-like","evolution-of-the-fitness-instructor","exercise-or-extra-fries","face-you-make-when-someone-wants-to-workout-with-you","feel-my-gains","fitness-youre-doing-it-wrong","friends-dont-let-friends-skip-torso-day","friends-who-sweat-together-stay-together","girl-pistol-squatting-on-45lb-weight","goes-to-the-gym-and-puts-on-cologne","goku","gym-before-and-after-new-year","gym-carrey","gym-closes-early","haters-gonna-hate","he-asked-me-how-i-got-that-big-i-told-him-crossfit","health-is-improved-one-step-at-a-time","homer-after-one-day-at-the-gym","homer-simpson-muscles","if-this-means-trust-i-dont-have-any","im-too-short-according-to-bmi-calculator","its-called-shooting-guard-not-passing-guard","its-time-to-get-wheysted","its-you-vs-you","ive-been-working-on-my-core","jedi-weight-lifting-level","just-got-to-the-gym-left-my-headphones","kevin-hart-gonna-do-a-handstand","kittys-muscles","last-rep-got-me-like","lebron-james-and-dwyane-wade-like-when-their-shaker-bottles-are-clean","lifting-heavy--beastface","maximus-decimus-meridius","mouse-lifting-weights","my-quads-are-on-fire","never-give-up-on-your-dreams","no-excuses","not-in-my-house","novak-djokovic-knows-what-it-takes","now-or-later","one-hour-workout-is-6-of-your-day","osama-bin-liftin","overspotter","put-the-scoop-at-the-bottom-of-every-protein-container","rainier-wolfcastle","rest-day-where-is-my-rest-muscle","richard-sherman-leg-days","run-no-matter-what","should-i-workout-today-yes","slower-is-better-than-sitting","spongebob-squarepants-has-muscles","stewie-lifts","summer-bodies","that-guy","the-face-you-make-after-leaving-the-gym","the-gun-show-cartoon--firearms-convention","the-weights-are-not-going-to-lift-themselves","this-is-why-emergency-rooms-exist","tired-of-being-fat--ugly-","too-much-protein-no-whey-mate","when-the-rock-goes-to-the-gym","where-did-those-rolls-come-from","why-arent-you-playing-outside","world-food-waste","you-have-to-start-somewhere","youll-have-to-speak-up-i-have-a-pump","your-bmi-is-25-why-not-100","youre-not-welcome-here-go-away"],B="/bmicalculator/memes/";
+  function wire(){
+    var here=(location.pathname.split("/").pop()||"").replace(/\.html$/,"");
+    [].forEach.call(document.querySelectorAll("a.btn-link"),function(a){
+      if(!/Random/.test(a.textContent))return;
+      a.setAttribute("href",B+S[Math.random()*S.length|0]);
+      a.addEventListener("click",function(e){
+        e.preventDefault();
+        var p;do{p=S[Math.random()*S.length|0];}while(S.length>1&&p===here);
+        location.href=B+p;
+      });
+    });
+  }
+  if(document.readyState!=="loading")wire();
+  else document.addEventListener("DOMContentLoaded",wire);
+})();

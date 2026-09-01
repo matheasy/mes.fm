@@ -1,0 +1,17 @@
+(function(){
+  var S=["a-small-group-makes-big-change","adjust-your-sails","ahmed-mohamed-clock-bomb-scare","albert-einstein-likes-our-timer","amazing-indy-car-bush","be-superior-to-your-former-self","bill-nye-the-science-guy-quote","build-a-door-for-opportunity","create-the-future","dare-to-jump","dont-build-walls-around-yourself","dont-burn-your-opportunities","dont-stare-at-the-past","elderly-love","emma-watson-powerful-quote-from-un-speech","every-goal-starts-with-go","every-journey-starts-with-one-step","everyone-learns-differently","fear-kills-dreams","first-casualty-of-war-is-truth","fix-what-is-broken","gandalf-time-quote","give-to-your-own-ability","help-people-that-cant-help-you","if-not-now-then-when","im-closer-than-yesterday","its-never-too-late-to-be-what-you-might-have-been","keep-going-never-stop","laotzu-time-inspirational-quote","lebron-james-inspirational-quote","life-is-a-puzzle","life-is-like-riding-a-bicycle","life-is-short-time-is-fast","life-is-special","love-can-turn-an-enemy-into-a-friend","make-your-dreams-a-reality","marcus-aurelius-good-man-quote","marilyn-monroe-amazing-quote-on-imperfection","martin-luther-king-quote","michael-jordans-secret-to-success","money-is-not-everything","mothers-day-quote","muhammad-ali-great-quote","never-look-down-on-anybody","nothing-worth-having-comes-easy","now-watch","opportunities-are-like-sunrises","order-more-clocks","our-thoughts-make-us-who-we-are","our-timer-works-everytime","pain-is-weakness-leaving-the-body","people-around-you-form-you","people-dont-notice-until-its-gone","perseverance-is-never-giving-up","raise-your-words-not-your-voice","regret-is-scarier-than-change","respect-versus-being-liked","right-and-wrong-depends-on-perspective","simplicity-is-the-ultimate-sophistication","sometimes-its-better-to-be-crazy","spend-time-not-money-on-your-children","spread-love-everywhere-you-go","steve-jobs-inpsirational-quote","stones-thrown-in-your-path","success-is-sometimes-hidden","take-the-stairs-to-success","take-time-to-sit-and-reflect","the-best-give-is-time","the-difference-between-helping-and-pretending","the-greatest-gift-of-all","the-iceberg-illusion","the-power-of-knowledge","the-power-of-love-overcomes-the-love-of-power","the-pursuit-of-truth-is-to-be-a-child-for-ever","the-universe-is-at-your-grasp","the-world-is-an-illusion","time-enjoyed-is-not-wasted","time-flies-but-youre-the-pilot","time-is-free-fragile-but-priceless","time-is-not-recycleable","time-is-what-we-want-most-but-use-worst","to-be-free-is-to-rebel","tough-times-never-last-tough-people-do","we-are-much-more-than-we-think","whats-holding-you-back-is-in-your-head","why-stay-when-you-can-fly","will-smith-quote-on-money-and-success","work-as-hard-as-an-ant-does","write-your-own-story","you-are-the-pilot","you-dont-have-time","you-must-be-crazy-to-change-the-world"],B="/timer/inspirational-quotes/";
+  function wire(){
+    var here=(location.pathname.split("/").pop()||"").replace(/\.html$/,"");
+    [].forEach.call(document.querySelectorAll("a.btn-link"),function(a){
+      if(!/Random/.test(a.textContent))return;
+      a.setAttribute("href",B+S[Math.random()*S.length|0]);
+      a.addEventListener("click",function(e){
+        e.preventDefault();
+        var p;do{p=S[Math.random()*S.length|0];}while(S.length>1&&p===here);
+        location.href=B+p;
+      });
+    });
+  }
+  if(document.readyState!=="loading")wire();
+  else document.addEventListener("DOMContentLoaded",wire);
+})();
