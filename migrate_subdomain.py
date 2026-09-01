@@ -43,6 +43,10 @@ def rewrite_in_tree(text: str, slug: str, page_parts: pathlib.PurePosixPath) -> 
     tree = f"mes.fm/{slug}/"
     here = (pathlib.PurePosixPath("mes.fm") / page_parts).parent
 
+    # --- <base href="/"> (share-link pages use it so /s/:id resolves
+    #     assets from root) -> rebase at the slug dir ---
+    text = re.sub(r'(<base href=")/(")', rf'\g<1>/{slug}/\g<2>', text)
+
     # --- canonical + og:url: point at this page's real new URL ---
     my_url = "https://mes.fm" + clean_path(page_parts)
     text = re.sub(r'(<link rel="canonical" href=")[^"]*(")', rf'\g<1>{my_url}\g<2>', text)

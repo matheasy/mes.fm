@@ -1,19 +1,20 @@
-// Vercel serverless function backing the "Share Results" feature.
+// Shared serverless backend for the calculators' "Share Your Results" feature.
 //
-// Replaces the old GoDaddy PHP endpoints (php/createShareUrl.php,
-// php/getShareUrl.php) which read/wrote a MySQL table (sharecalcdb.vat)
-// that doesn't exist on static hosting. Uses the same Upstash Redis REST
-// API mes.fm/api/track.js already talks to (same Upstash account -- copy
-// the same two env vars, UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN,
-// into this project's Vercel settings) -- no new database to provision,
-// just a "share:vat:<id>" string key per share. Same pattern as
-// inflationcalculator.mes.fm/api/share.js.
+// Each calculator subdomain used to carry its own api/share.js (a near-copy
+// differing only in a KEY_PREFIX). As the subdomains fold into mes.fm/<slug>
+// they all point their client at this one endpoint and pass ?calc=<code>;
+// the key is namespaced "share:<code>:<id>" so existing links keep resolving.
 //
-// POST { data: {...} }        -> { id }
-// GET  ?id=<id>                -> the original equation object
+// Storage is the same Upstash Redis the pageview tracker (api/track.js) uses --
+// UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN, already set on this
+// project. No database to provision, one string key per share.
+//
+// POST { calc, data:{...} } (or ?calc=)  -> { id }
+// GET  ?calc=<code>&id=<id>               -> the original equation object
 const crypto = require('crypto');
 
-const KEY_PREFIX = 'share:vat:';
+// calc code -> the KEY_PREFIX its per-site share.js used, so old shares resolve
+const CALC_CODES = new Set(['vat', 'bmi', 'gpa', 'gc', 'ic', 'mc', 'pc', 'ymc']);
 const TTL_SECONDS = 3 * 365 * 86400; // 3 years
 const ID_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; // no 0/O/1/l/I
 
@@ -48,8 +49,16 @@ module.exports = async (req, res) => {
     return;
   }
 
+  const body = req.body || {};
+  const calc = String((req.method === 'POST' ? body.calc : req.query.calc) || '').trim();
+  if (!CALC_CODES.has(calc)) {
+    res.status(400).json({ error: 'invalid calc' });
+    return;
+  }
+  const keyPrefix = `share:${calc}:`;
+
   if (req.method === 'POST') {
-    const equation = (req.body || {}).data;
+    const equation = body.data;
     if (!equation || typeof equation !== 'object') {
       res.status(400).json({ error: 'missing data' });
       return;
@@ -57,7 +66,7 @@ module.exports = async (req, res) => {
     const id = randomId();
     const payload = JSON.stringify(equation).slice(0, 2000);
     try {
-      const r = await redis([['SET', KEY_PREFIX + id, payload, 'EX', String(TTL_SECONDS)]]);
+      const r = await redis([['SET', keyPrefix + id, payload, 'EX', String(TTL_SECONDS)]]);
       if (!r || !Array.isArray(r) || r[0]?.error) {
         res.status(502).json({ error: 'storage unavailable' });
         return;
@@ -78,7 +87,7 @@ module.exports = async (req, res) => {
     }
     let result;
     try {
-      result = await redis([['GET', KEY_PREFIX + id]]);
+      result = await redis([['GET', keyPrefix + id]]);
     } catch {
       res.status(502).json({ error: 'storage unavailable' });
       return;

@@ -55,7 +55,7 @@ $(document).ready(function(){
 				equation['rate'] = $("#vat-rate-input").val().replace(/[^0-9\.]/g, '');
 
 				if($("#result").val() == '') {
-					$("#url-to-share").val("https://vat.mes.fm");
+					$("#url-to-share").val("https://mes.fm/vatcalculator");
 					return false;
 				}
 
@@ -68,19 +68,19 @@ $(document).ready(function(){
 				$("#url-to-share").val("Loading...");
 
 				// php/createShareUrl.php used to write to a MySQL table (sharecalcdb.vat)
-				// that doesn't exist on static hosting -- api/share.js replaces it with
-				// an Upstash Redis-backed serverless function (same Redis mes.fm/api's
-				// own pageview tracking already uses). Share links are now
-				// vatcalculator.mes.fm/s/<id>.
+				// that doesn't exist on static hosting -- mes.fm/api/share.js replaces
+				// it with an Upstash Redis-backed serverless function (same Redis
+				// mes.fm/api's own pageview tracking already uses; ?calc=vat namespaces
+				// the key). Share links are now mes.fm/vatcalculator/s/<id>.
 				$.ajax({
-					url:'/api/share',
+					url:'/api/share?calc=vat',
 					type:'POST',
 					contentType:'application/json',
-					data: JSON.stringify({data:data})
+					data: JSON.stringify({calc:'vat', data:data})
 				})
 					.done(
 						function(response) {
-							var url = window.location.origin + '/s/' + response.id;
+							var url = window.location.origin + '/vatcalculator/s/' + response.id;
 							$("#url-to-share").val(url);
 							CALCULATOR.oldShareUrl = url;
 						})
@@ -92,7 +92,7 @@ $(document).ready(function(){
 
 			initializeCustomCalculation: function() {
 
-				var match = window.location.pathname.match(/^\/s\/([A-Za-z0-9]+)\/?$/);
+				var match = window.location.pathname.match(/^\/vatcalculator\/s\/([A-Za-z0-9]+)\/?$/);
 
 				if(!match)
 					return false;
@@ -102,7 +102,7 @@ $(document).ready(function(){
 				$.ajax({
 					url:'/api/share',
 					type:'GET',
-					data:({id:id})
+					data:({calc:'vat', id:id})
 				})
 				.done(
 					function(data) {

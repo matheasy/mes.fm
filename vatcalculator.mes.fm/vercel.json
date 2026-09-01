@@ -1,16 +1,6 @@
 {
-  "cleanUrls": true,
   "redirects": [
-    {
-      "source": "/index.html",
-      "destination": "/",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/s/:id",
-      "destination": "/"
-    }
+    { "source": "/", "destination": "https://mes.fm/vatcalculator", "permanent": true },
+    { "source": "/(.*)", "destination": "https://mes.fm/vatcalculator/$1", "permanent": true }
   ]
 }
