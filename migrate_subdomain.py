@@ -84,8 +84,12 @@ def rewrite_in_tree(text: str, slug: str, page_parts: pathlib.PurePosixPath) -> 
     # --- footer shared pages: the per-site copies are dropped in the move,
     #     so point at mes.fm's shared ones (before the generic .html pass
     #     below would otherwise map them into /slug/) ---
-    text = re.sub(r'href=(["\'])(?:\.\./)*contact\.html\1', r'href=\1/contact\1', text)
-    text = re.sub(r'href=(["\'])(?:\.\./)*privacy-policy\.html\1', r'href=\1/privacy-policy\1', text)
+    text = re.sub(r'href=(["\'])(?:\.\./)*(contact|privacy-policy)(?:\.html)?\1', r'href=\1/\2\1', text)
+    # already-absolute shared-page links (from the pre-migration sweep) ->
+    # the short root-relative form used everywhere else in the moved tree
+    text = re.sub(r'href=(["\'])https://mes\.fm/(contact|privacy-policy)\1', r'href=\1/\2\1', text)
+    # ...and any that got prefixed into the slug dir by the domain swap above
+    text = re.sub(rf'href=(["\'])https://mes\.fm/{slug}/(contact|privacy-policy)\1', r'href=\1/\2\1', text)
 
     # --- internal .html links: resolve, then map anything inside the moved
     #     tree to /slug/<cleanpath>, and fix HTTrack's broken cross-subdomain
