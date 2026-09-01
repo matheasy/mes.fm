@@ -442,8 +442,9 @@
           set(p + 'Mag', fmtMag(ill.mag));
         }
 
-        set('moonIllum', (A.Illumination(A.Body.Moon, now).phase_fraction * 100).toFixed(1) + '% lit');
-        set('moonphase', phaseName(A.MoonPhase(now)));
+        var moonPct = A.Illumination(A.Body.Moon, now).phase_fraction * 100;
+        set('moonIllum', moonPct.toFixed(1) + '% lit');
+        set('moonphase', phaseName(A.MoonPhase(now)) + ' · ' + Math.round(moonPct) + '% lit');
 
         var dayStart = localDayStart(now);
         set('sunrise', riseSet(A.Body.Sun, 1, dayStart));
