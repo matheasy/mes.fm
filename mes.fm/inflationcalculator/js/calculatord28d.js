@@ -364,9 +364,12 @@ $(document).ready(function(){
 							var indexYearValue = decodedDataArray['indexYear'];
 							var comparisonYearValue = decodedDataArray['comparisonYear'];
 							CALCULATOR.loadCustomData(countryValue,indexYearValue,comparisonYearValue);
-							$(".cpi-button").click();
-							$(".dollar-button").click();
-							$("#graph-table-button").click();
+							// keep the CPI/Dollar graphs and the data table open on a
+							// shared link -- they're shown by default, so a blind
+							// .click() would toggle them closed instead of open
+							$("#cpi-graph, #dollar-graph").css("display", "block");
+							$(".cpi-button, .dollar-button").addClass("active-button");
+							$("#graph-table-button").addClass("selected").next().removeClass("hide");
 						}
 					}
 				)
