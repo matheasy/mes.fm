@@ -1,9 +1,6 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/s/:id",
-      "destination": "/"
-    }
+  "redirects": [
+    { "source": "/", "destination": "https://mes.fm/gpacalculator", "permanent": true },
+    { "source": "/(.*)", "destination": "https://mes.fm/gpacalculator/$1", "permanent": true }
   ]
 }

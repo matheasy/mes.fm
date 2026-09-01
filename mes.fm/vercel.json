@@ -60,6 +60,7 @@
   ],
   "rewrites": [
     { "source": "/vatcalculator/s/:id", "destination": "/vatcalculator" },
+    { "source": "/gpacalculator/s/:id", "destination": "/gpacalculator" },
     { "source": "/mfa", "destination": "https://mes-fm-mfa.vercel.app/mfa" },
     { "source": "/mfa/:path*", "destination": "https://mes-fm-mfa.vercel.app/mfa/:path*" },
     { "source": "/ai", "destination": "https://mes-fm-ai.vercel.app/ai" },

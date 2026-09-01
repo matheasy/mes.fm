@@ -245,7 +245,7 @@ $(document).ready(function(){
 				equation['grades'] = grades;
 
 				if($("#result").val() == '') {
-					$("#url-to-share").val("https://gc.mes.fm");
+					$("#url-to-share").val("https://mes.fm/gpacalculator");
 					return false;
 				}
 
@@ -258,19 +258,19 @@ $(document).ready(function(){
 				$("#url-to-share").val("Loading...");
 
 				// php/createShareUrl.php used to write to a MySQL table (sharecalcdb.gpa)
-				// that doesn't exist on static hosting -- api/share.js replaces it with
-				// an Upstash Redis-backed serverless function (same Redis mes.fm/api's
-				// own pageview tracking already uses). Share links are now
-				// gpacalculator.mes.fm/s/<id>.
+				// that doesn't exist on static hosting -- mes.fm/api/share.js replaces
+				// it with an Upstash Redis-backed serverless function (same Redis
+				// mes.fm/api's own pageview tracking already uses; ?calc=gpa namespaces
+				// the key). Share links are now mes.fm/gpacalculator/s/<id>.
 				$.ajax({
-					url:'/api/share',
+					url:'/api/share?calc=gpa',
 					type:'POST',
 					contentType:'application/json',
-					data: JSON.stringify({data:data})
+					data: JSON.stringify({calc:'gpa', data:data})
 				})
 					.done(
 						function(response) {
-							var url = window.location.origin + '/s/' + response.id;
+							var url = window.location.origin + '/gpacalculator/s/' + response.id;
 							$("#url-to-share").val(url);
 							CALCULATOR.oldShareUrl = url;
 						})
@@ -282,7 +282,7 @@ $(document).ready(function(){
 
 			initializeCustomCalculation: function() {
 
-				var match = window.location.pathname.match(/^\/s\/([A-Za-z0-9]+)\/?$/);
+				var match = window.location.pathname.match(/^\/gpacalculator\/s\/([A-Za-z0-9]+)\/?$/);
 
 				if(!match)
 					return false;
@@ -292,7 +292,7 @@ $(document).ready(function(){
 				$.ajax({
 					url:'/api/share',
 					type:'GET',
-					data:({id:id})
+					data:({calc:'gpa', id:id})
 				})
 				.done(
 					function(data) {
