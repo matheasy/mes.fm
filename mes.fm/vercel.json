@@ -64,6 +64,7 @@
     { "source": "/youtubemoney/s/:id", "destination": "/youtubemoney" },
     { "source": "/inflationcalculator/s/:id", "destination": "/inflationcalculator" },
     { "source": "/mortgagecalculator/s/:id", "destination": "/mortgagecalculator" },
+    { "source": "/percentagecalculator/s/:id", "destination": "/percentagecalculator" },
     { "source": "/mfa", "destination": "https://mes-fm-mfa.vercel.app/mfa" },
     { "source": "/mfa/:path*", "destination": "https://mes-fm-mfa.vercel.app/mfa/:path*" },
     { "source": "/ai", "destination": "https://mes-fm-ai.vercel.app/ai" },
@@ -73,5 +74,10 @@
     { "source": "/crypto/:path+", "destination": "https://mes-fm-crypto.vercel.app/crypto/:path*" },
     { "source": "/sov", "destination": "https://mes-fm-sov.vercel.app/sov" },
     { "source": "/sov/:path*", "destination": "https://mes-fm-sov.vercel.app/sov/:path*" }
+  ],
+  "headers": [
+    { "source": "/percentagecalculator/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800" }] },
+    { "source": "/percentagecalculator/js/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/percentagecalculator/img/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
   ]
 }
