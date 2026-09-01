@@ -1,9 +1,6 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/s/:id",
-      "destination": "/"
-    }
+  "redirects": [
+    { "source": "/", "destination": "https://mes.fm/mortgagecalculator", "permanent": true },
+    { "source": "/(.*)", "destination": "https://mes.fm/mortgagecalculator/$1", "permanent": true }
   ]
 }
