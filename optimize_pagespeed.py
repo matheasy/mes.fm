@@ -44,9 +44,10 @@ Transforms
    (fallback: humanised id, then "Value"). Clears the critical "Form elements must have
    labels" audit and the Agentic Browsing accessibility-tree check.
 
-NOT changed: the #5ea9dd brand blue fails white-on-blue contrast (2.5:1) in the nav,
-footer and buttons -- fixing that means darkening the brand colour site-wide, a visible
-design change left for a human decision.
+8. Brand-colour contrast: the main-site blue (#5ea9dd) and each calculator's theme
+   colour were used for white-on-colour and coloured-link-on-white at ~1.9-3.7:1.
+   Replaced with hue-preserving darker shades at >=4.55:1 (WCAG AA). grade / mortgage /
+   pokemongo themes already passed and are untouched.
 
 Usage:  python3 optimize_pagespeed.py
 """
@@ -383,6 +384,45 @@ def transform_input_labels(html):
     return "".join(out), n
 
 
+# --- 8. Brand-colour contrast --------------------------------------------------
+# The main-site blue and each calculator's theme colour are used for white text
+# on a coloured fill (nav bar, footer, buttons) and as coloured link text on
+# white -- all at ~1.9-3.7:1, well under the WCAG AA 4.5:1 minimum. Replace each
+# with a hue-preserving darker shade at >=4.55:1 (its darker hover/border
+# companion darkened by the same amount). Naturally idempotent: once swapped the
+# old hex is gone. gradecalculator / mortgagecalculator / pokemongocalculator
+# themes already pass and are left alone. Yellow/orange (vat, timer) necessarily
+# darken a lot -- white text on a light warm colour cannot reach AA otherwise.
+
+CONTRAST_COLORS = {
+    "#5ea9dd": "#277bb6",  # MES brand blue (all main-site pages)
+    "#5090bd": "#346689",  #   \- darker/hover companion
+    "#5eaade": "#257bb6",  # shared crypto-box blue (many pages)
+    "#55acee": "#1479c7",  # percentagecalculator
+    "#478fc6": "#2b618b",
+    "#c275b1": "#b3529d",  # bmicalculator
+    "#a76599": "#8f5282",
+    "#84bc41": "#5a812d",  # gpacalculator
+    "#69ac29": "#48761c",
+    "#f0572e": "#da3b10",  # inflationcalculator
+    "#d54716": "#ae3a12",
+    "#dbbd3d": "#8a741a",  # vatcalculator
+    "#c0ad27": "#706517",
+    "#f69b14": "#a86706",  # timer
+    "#e08d12": "#935d0c",
+    "#fc320e": "#e52503",  # speedreader
+    "#db1d0f": "#bf190d",
+}
+
+
+def transform_contrast(html):
+    n = 0
+    for old, new in CONTRAST_COLORS.items():
+        html, c = re.subn(re.escape(old), new, html, flags=re.I)
+        n += c
+    return html, n
+
+
 # --- driver ----------------------------------------------------------------------
 
 def process_file(path):
@@ -417,6 +457,10 @@ def process_file(path):
     html, n = transform_input_labels(html)
     if n:
         notes.append(f"input-labels:{n}")
+
+    html, n = transform_contrast(html)
+    if n:
+        notes.append(f"contrast:{n}")
 
     if html != original:
         with open(path, "w", encoding="utf-8") as f:
