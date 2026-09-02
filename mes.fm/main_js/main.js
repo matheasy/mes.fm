@@ -41,6 +41,38 @@ $(document).ready(function() {
             $(this).find(".dropdown-symbol").html("&#9650;");
     });
 
+    /* Lazy-load the FastComments widget: its embed.min.js used to be a plain
+       render-blocking <script> in every page, initialised immediately. Now the
+       page just carries an empty #fastcomments-widget (marked FASTCOMMENTS-LAZY)
+       and we pull the script only when the comments area nears the viewport
+       (it sits below the fold) or on the first click of the Comments toggle. */
+    (function() {
+        var target = document.getElementById("fastcomments-widget");
+        if(!target || window.__fcLazyInit) return;
+        window.__fcLazyInit = true;
+        var loaded = false;
+        function load() {
+            if(loaded) return;
+            loaded = true;
+            var s = document.createElement("script");
+            s.src = "https://cdn.fastcomments.com/js/embed.min.js";
+            s.onload = function() {
+                if(window.FastCommentsUI)
+                    window.FastCommentsUI(target, { tenantId: "1RGmGBEjdU" });
+            };
+            document.head.appendChild(s);
+        }
+        $("#comments-button").one("click", load);
+        if("IntersectionObserver" in window) {
+            var io = new IntersectionObserver(function(entries) {
+                if(entries[0].isIntersecting) { io.disconnect(); load(); }
+            }, { rootMargin: "600px" });
+            io.observe(target);
+        } else {
+            load();
+        }
+    })();
+
     $(".hide-div-button").click(function() {
         $(this).next().toggleClass("hide");
         $(this).toggleClass("selected");
