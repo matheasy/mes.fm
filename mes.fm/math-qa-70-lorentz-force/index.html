@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MES Math Q/A 70 livestream: what is the Lorentz force? F = q(E + v x B) -- the force on a charged particle from electric and magnetic fields. Mirrored from the Hive blockchain.">
+  <meta name="author" content="MES">
+  <link rel="canonical" href="https://mes.fm/math-qa-70-lorentz-force" />
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>MES Math Q/A 70: What is the Lorentz Force? | Math Easy Solutions</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #1a1a1a; color: #eeeeee; }
+    body.dark a { color: #6cb6f5; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .ad-slot {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
+
+    .site-link {
+      font-size: 0.9em;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin: 0.4em 0 0.1em;
+    }
+
+    .page-subtitle {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin-bottom: 1.4em;
+    }
+
+    article p {
+      margin: 0 0 1em;
+    }
+
+    .source-list {
+      margin: 0 0 1.2em;
+      padding-left: 1.3em;
+    }
+
+    .source-list li {
+      margin: 0 0 0.5em;
+    }
+
+    .source-list li ul {
+      margin: 0.4em 0 0;
+      padding-left: 1.3em;
+    }
+
+    .video-embed {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.6em 0 1.2em;
+      transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
+        height 0.25s ease, padding-top 0.25s ease, border-radius 0.25s ease;
+    }
+
+    .video-embed video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode {
+      width: 100vw;
+      max-width: 100vw;
+      left: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      padding-top: 0;
+      height: min(85vh, 56.25vw);
+      border-radius: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode video {
+      object-fit: contain;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .theater-toggle-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      border: 0;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .theater-toggle-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .video-embed .video-badge,
+    .video-embed .theater-toggle-btn {
+      transition: opacity 0.3s ease;
+    }
+
+    .video-embed.controls-hidden .video-badge,
+    .video-embed.controls-hidden .theater-toggle-btn {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .retrieved-note {
+      font-size: 0.85em;
+      opacity: 0.7;
+      margin-top: 0.4em;
+    }
+
+    hr {
+      margin: 2em 0;
+      opacity: 0.3;
+    }
+
+    .site-footer-note {
+      font-size: 0.8em;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.4em; }
+      body { padding: 0 12px 40px; }
+    }
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+</style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+</head>
+<body class="dark">
+  
+  <div class="container">
+    <div class="top-bar">
+      <a class="site-link" href="https://mes.fm/math">&larr; mes.fm/math</a>
+      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+    </div>
+
+    <h1>MES Math Q/A 70: What is the Lorentz Force?</h1>
+    <div class="page-subtitle">Livestream Q/A &middot; September 2, 2026 &middot; mirrored from the <a href="https://peakd.com/hive-128780/@mes/mes-math-qa-70-what-is-the-851">Hive blockchain</a></div>
+
+    <article>
+      <div class="video-embed" id="videoEmbed" google-side-rail-overlap="false">
+        <video id="m70Video" controls playsinline preload="metadata" poster="https://images.3speak.tv/images/1788374815252-d4c1cea39d2687da.webp"></video>
+        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false">Theater Mode</button>
+        <a class="video-badge" href="https://3speak.tv/watch?v=mes/mes-math-qa-70-what-is-the-851" target="_blank" rel="noopener">View on 3Speak &nearr;</a>
+      </div>
+
+      <p>The Lorentz force is the force exerted on a charged particle by electric and magnetic fields, and is proportional to the signed charge q. The electric force acts in the direction of the electric field for positive charges and opposite the field for negative charges. The magnetic force is perpendicular to both the particle's velocity and the magnetic field (hence the cross product), and also reverses if the charge is negative.</p>
+
+      <p style="text-align:center;font-size:1.15em;"><strong>F</strong> = q(<strong>E</strong> + <strong>v</strong> &times; <strong>B</strong>)</p>
+
+      <p>Livestreamed on Wednesday, August 26, 2026 at 10:00&nbsp;AM PST.</p>
+
+      <img src="https://images.3speak.tv/images/1788374538284-1f5b18eccaee6342.webp" alt="" style="max-width:100%;height:auto;border-radius:4px;display:block;margin:0.6em 0 1.4em;">
+
+      <ul class="source-list">
+        <li>Watch on: <a href="https://3speak.tv/watch?v=mes/mes-math-qa-70-what-is-the-851" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtube.com/live/BJ1zYm_ZCVw" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://www.twitch.tv/matheasysolutions" target="_blank" rel="noopener">Twitch</a></li>
+        <li>See more: <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-" target="_blank" rel="noopener">MES Math Q/A YouTube Playlist</a></li>
+        <li>More math: <a href="https://mes.fm/math">mes.fm/math</a></li>
+      </ul>
+
+      <hr>
+
+      <a class="source-link" href="https://peakd.com/hive-128780/@mes/mes-math-qa-70-what-is-the-851" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
+      <div class="retrieved-note">Text and image retrieved from the Hive blockchain on September 2, 2026.</div>
+    </article>
+
+    <hr>
+
+    <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </div>
+
+  
+  <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = 'Switch to Dark Mode';
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+      }
+    }
+
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    setTheme(saved !== 'light');
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
+  </script>
+
+  <script>
+    // theater-mode: expands the video embed to the full browser width (breaking out of
+    // the .container's 760px max-width), like YouTube's theater mode. Height is capped at
+    // min(85vh, 56.25vw) so ultra-wide viewports don't get a comically tall player.
+    (function () {
+      var embed = document.getElementById('videoEmbed');
+      var toggle = document.getElementById('theaterToggle');
+
+      function setTheater(on) {
+        embed.classList.toggle('theater-mode', on);
+        toggle.textContent = on ? 'Default View' : 'Theater Mode';
+        toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion
+        // zones on scroll/resize, not on a plain class-driven layout change, so nudge
+        // it to recompute once the width/height transition above has settled.
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'));
+        }, 300);
+      }
+
+      toggle.addEventListener('click', function () {
+        setTheater(!embed.classList.contains('theater-mode'));
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && embed.classList.contains('theater-mode')) {
+          setTheater(false);
+        }
+      });
+    })();
+  </script>
+
+  <script>
+    // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
+    // the video is playing and the pointer is idle, like YouTube's own control bar,
+    // so they don't sit on top of the video permanently. Reappear on any mouse
+    // movement over the player, and stay visible whenever the video is paused.
+    (function () {
+      var video = document.getElementById('m70Video');
+      var embed = document.getElementById('videoEmbed');
+      var hideTimer = null;
+
+      function showControls() {
+        embed.classList.remove('controls-hidden');
+      }
+
+      function scheduleHide() {
+        clearTimeout(hideTimer);
+        if (video.paused || video.ended) return;
+        hideTimer = setTimeout(function () {
+          embed.classList.add('controls-hidden');
+        }, 2000);
+      }
+
+      video.addEventListener('play', scheduleHide);
+      video.addEventListener('pause', showControls);
+      video.addEventListener('ended', showControls);
+      embed.addEventListener('mousemove', function () {
+        showControls();
+        scheduleHide();
+      });
+      embed.addEventListener('mouseleave', scheduleHide);
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script>
+    // m70-video: plays the 3Speak-hosted HLS stream for this clip directly (via hls.js),
+    // rather than iframing 3speak.tv -- 3Speak's own /embed route only ships a bare native
+    // <video> with no speed/quality controls, and their full /watch page drags in the whole app
+    // shell (nav, related videos, login prompts) when framed. Playing the manifest directly gives
+    // native browser video controls (speed via the "..." menu in Chromium, fullscreen, PiP)
+    // without a custom player build.
+    //
+    // The manifest URL is resolved at runtime from 3Speak's public embed API
+    // (play.3speak.tv/api/embed, CORS-open) keyed on the video slug, so re-encodes / re-uploads
+    // to the same 3Speak video (which change the underlying IPFS hash but keep the slug) are
+    // picked up automatically. FALLBACK_SRC is the last-known manifest, used only if that fetch
+    // fails -- keep it in sync when you notice the API URL has moved.
+    (function () {
+      var video = document.getElementById('m70Video');
+      var SLUG = 'mes/7aww4q1c';
+      var FALLBACK_SRC = 'https://play.3speak.tv/hls?u=https%3A%2F%2Fipfs.3speak.tv%2Fipfs%2FQmZQTDn67E397eKBaBXBYCJ1AggWMmDojrtx5GBxKtqLwc%2Fmanifest.m3u8';
+
+      function play(src) {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = src;
+        } else if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(video);
+        }
+      }
+
+      fetch('https://play.3speak.tv/api/embed?v=' + SLUG)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { play((d && d.videoUrl) || FALLBACK_SRC); })
+        .catch(function () { play(FALLBACK_SRC); });
+    })();
+  </script>
+
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+</html>

@@ -259,7 +259,7 @@
 <body>
 
   <div class="top-bar">
-    <a class="back-link" href="https://mes.fm/links">&larr; MES Links</a>
+    <span class="back-link">&larr; <a href="https://mes.fm">mes.fm</a> &middot; <a href="https://mes.fm/links">MES Links</a></span>
   </div>
 
   <header class="page-header">
@@ -269,7 +269,14 @@
 
   <div class="content">
     <ul>
-      <li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-">MES Math Q/A Streams ▶️</a></li>
+      <li class="list-container">
+        <h2 class="sub-heading" onclick="toggleSubList('mathQaLivestreams')">MES Math Q/A Livestreams <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-">▶️</a> <span id="arrowIcon-mathQaLivestreams" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+        <ul id="mathQaLivestreams">
+          <li style="margin-left: 20px;"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-">Playlist ▶️</a></li>
+          <li style="margin-left: 20px;"><a href="https://mes.fm/math-qa-70-lorentz-force">70: What is the Lorentz Force?</a> <a href="https://youtube.com/live/BJ1zYm_ZCVw">▶️</a></li>
+        </ul>
+      </li>
+
       <li><a href="https://peakd.com/hive-128780/@mes/dzekfnxh">Cubic Formula Proof</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EF05ExjzLbB64NgUjoV1hl">▶️</a></li>
 
       <li class="list-container">
