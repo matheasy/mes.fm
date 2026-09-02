@@ -486,6 +486,94 @@ def transform_adsense_defer(html):
     return html.replace(ADSENSE_OLD, ADSENSE_NEW, 1), 1
 
 
+# --- 10. Theater mode for the calculator/homepage YouTube embeds ---------------
+# Those pages carry a bare <iframe style="border:none" ...youtube...> with no
+# wrapper. Add a "Theater Mode" toggle (same idea as the 3Speak <video> pages)
+# that expands the player to a full-viewport fixed overlay -- an in-flow 100vw
+# breakout is out because the template's .inner-container is overflow:hidden.
+# The toggle sits in a bar BELOW the video (not over it) so it never collides
+# with YouTube's own chrome -- its title bar spans nearly the full width on a
+# narrow screen, so even a top-right overlay would clash there.
+
+YT_IFRAME_RE = re.compile(
+    r'<iframe (?=[^>]*\bstyle="border:none")(?=[^>]*youtube(?:-nocookie)?\.com/embed)[^>]*></iframe>',
+    re.I,
+)
+
+YT_THEATER_CSS = """<style id="yt-theater-css">
+.yt-embed{margin:0 0 .5em}
+.yt-embed__inner{position:relative}
+.yt-embed__inner>iframe{display:block;width:100%;height:400px;border:0}
+.yt-embed__bar{display:flex;justify-content:flex-end;padding:5px 0}
+.yt-theater-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.78);color:#fff;font-size:.78em;font-weight:700;line-height:1;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+.yt-theater-btn:hover{background:rgba(0,0,0,.92)}
+.yt-embed.theater-mode{min-height:400px}
+.yt-embed.theater-mode .yt-theater-btn{background:rgba(255,255,255,.16)}
+.yt-embed.theater-mode .yt-theater-btn:hover{background:rgba(255,255,255,.28)}
+.yt-embed.theater-mode .yt-embed__inner{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;align-items:center;justify-content:center}
+.yt-embed.theater-mode .yt-embed__inner>iframe{width:100%;height:auto;aspect-ratio:16/9;max-height:100vh;max-width:calc(100vh * 16 / 9)}
+.yt-embed.theater-mode .yt-embed__bar{position:fixed;top:0;right:0;z-index:2147483001;padding:12px}
+</style>
+"""
+
+YT_THEATER_JS = """<script>
+/* YT-THEATER-JS: "Theater Mode" for the YouTube embeds. Expands the player to a
+   full-viewport fixed overlay (the template's .inner-container is overflow:hidden
+   so an in-flow 100vw breakout would be clipped). Esc exits; page scroll is
+   locked while open; a resize event is fired so AdSense re-checks its layout. */
+(function () {
+  var embeds = document.querySelectorAll('.yt-embed');
+  if (!embeds.length) return;
+  function setTheater(embed, on) {
+    embed.classList.toggle('theater-mode', on);
+    document.documentElement.style.overflow = on ? 'hidden' : '';
+    var btn = embed.querySelector('.yt-theater-btn');
+    if (btn) {
+      btn.textContent = on ? 'Exit Theater Mode' : 'Theater Mode';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 260);
+  }
+  Array.prototype.forEach.call(embeds, function (embed) {
+    var btn = embed.querySelector('.yt-theater-btn');
+    if (btn) btn.addEventListener('click', function () {
+      setTheater(embed, !embed.classList.contains('theater-mode'));
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    Array.prototype.forEach.call(embeds, function (embed) {
+      if (embed.classList.contains('theater-mode')) setTheater(embed, false);
+    });
+  });
+})();
+</script>
+"""
+
+
+def transform_yt_theater(html):
+    if "YT-THEATER-JS" in html or not YT_IFRAME_RE.search(html):
+        return html, 0
+    n = [0]
+
+    def wrap(m):
+        n[0] += 1
+        return (
+            '<div class="yt-embed"><div class="yt-embed__inner">'
+            + m.group(0)
+            + '</div><div class="yt-embed__bar"><button class="yt-theater-btn"'
+            ' type="button" aria-pressed="false" aria-label="Toggle theater mode">'
+            "Theater Mode</button></div></div>"
+        )
+
+    html = YT_IFRAME_RE.sub(wrap, html)
+    if "</head>" in html:
+        html = html.replace("</head>", YT_THEATER_CSS + "</head>", 1)
+    if "</body>" in html:
+        html = html.replace("</body>", YT_THEATER_JS + "</body>", 1)
+    return html, n[0]
+
+
 # --- driver ----------------------------------------------------------------------
 
 def process_file(path):
@@ -532,6 +620,10 @@ def process_file(path):
     html, n = transform_adsense_defer(html)
     if n:
         notes.append("adsense-deferred")
+
+    html, n = transform_yt_theater(html)
+    if n:
+        notes.append(f"yt-theater:{n}")
 
     if html != original:
         with open(path, "w", encoding="utf-8") as f:
