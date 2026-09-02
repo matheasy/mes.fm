@@ -35,6 +35,19 @@ Transforms
    loading= attribute: add loading="lazy". The first real <img> in each file is skipped
    so a hero / LCP image is never lazy-loaded.
 
+6. ARIA landmark roles (role=banner / navigation / main / contentinfo) on the shared
+   template's plain <div> wrappers, so Lighthouse stops flagging "no main landmark" /
+   "content not contained by landmarks" (Accessibility + the Agentic Browsing a11y tree).
+
+7. Accessible names for the ~166 calculator <input>s that have no label/aria-label/
+   placeholder: an aria-label derived from the words on either side of the field
+   (fallback: humanised id, then "Value"). Clears the critical "Form elements must have
+   labels" audit and the Agentic Browsing accessibility-tree check.
+
+NOT changed: the #5ea9dd brand blue fails white-on-blue contrast (2.5:1) in the nav,
+footer and buttons -- fixing that means darkening the brand colour site-wide, a visible
+design change left for a human decision.
+
 Usage:  python3 optimize_pagespeed.py
 """
 
@@ -197,15 +210,34 @@ def transform_images(html, html_path):
         tag = m.group(0)
         new = tag
         src = _attr(tag, "src")
+        ref = src or _attr(tag, "data-src")
         has_w = _attr(tag, "width")
         has_h = _attr(tag, "height")
 
-        # 4. stamp intrinsic dimensions on local images that carry neither
-        if src and has_w is None and has_h is None:
-            p = _resolve_local(src, html_path)
+        # 4a. stamp intrinsic dimensions on local images that carry neither
+        if ref and has_w is None and has_h is None:
+            p = _resolve_local(ref, html_path)
             if p:
                 d = _dims(p)
                 if d:
+                    new = re.sub(r"^<img\b", f'<img width="{d[0]}" height="{d[1]}"', new, flags=re.I)
+                    dim_hits += 1
+
+        # 4b. fix a width/height whose ASPECT RATIO is wrong for the real file
+        # (e.g. the site logo declared 88x88 but img/logo.png is 830x190 -- on
+        # mobile `height:auto` makes the browser reserve a square box, then the
+        # real banner loads and collapses it, a big upward layout shift).
+        elif ref and has_w and has_h and not has_w.endswith("%") and not has_h.endswith("%"):
+            try:
+                aw, ah = int(has_w), int(has_h)
+            except ValueError:
+                aw = ah = 0
+            if aw > 0 and ah > 0:
+                p = _resolve_local(ref, html_path)
+                d = _dims(p) if p else None
+                if d and abs((aw / ah) - (d[0] / d[1])) / (d[0] / d[1]) > 0.05:
+                    new = re.sub(r'\s+width\s*=\s*"[^"]*"', "", new, flags=re.I)
+                    new = re.sub(r'\s+height\s*=\s*"[^"]*"', "", new, flags=re.I)
                     new = re.sub(r"^<img\b", f'<img width="{d[0]}" height="{d[1]}"', new, flags=re.I)
                     dim_hits += 1
 
@@ -225,6 +257,130 @@ def transform_images(html, html_path):
         last = m.end()
     pieces.append(html[last:])
     return "".join(pieces), (dim_hits + lazy_hits), dim_hits, lazy_hits
+
+
+# --- 6. ARIA landmark roles -------------------------------------------------------
+# The shared template wraps everything in plain <div>s, so Lighthouse flags
+# "no main landmark" and "content not contained by landmarks". Add the roles
+# (can't safely swap the tags) on the stable template markers.
+
+LANDMARKS = [
+    ('<div id="header" class="header">',
+     '<div id="header" class="header" role="banner">'),
+    ('<div class="info-bar-container">',
+     '<div class="info-bar-container" role="navigation" aria-label="Primary">'),
+    # role=main on .page-content (not #main-content) so it also covers the <h1>,
+    # the page description and the comments toggle, which sit outside #main-content
+    ('<div class="page-content">',
+     '<div class="page-content" role="main">'),
+    ('<div class="navbar-container shadow">',
+     '<div class="navbar-container shadow" role="navigation" aria-label="Site menu">'),
+    ('<div id="footer" class="footer">',
+     '<div id="footer" class="footer" role="contentinfo">'),
+]
+
+
+def transform_landmarks(html):
+    n = 0
+    for old, new in LANDMARKS:
+        if old in html and new not in html:
+            html = html.replace(old, new, 1)
+            n += 1
+    return html, n
+
+
+# --- 7. Accessible names for calculator inputs ----------------------------------
+# ~166 calculator <input>s have no label / aria-label / placeholder -> Lighthouse
+# "Form elements must have labels" (critical) and it fails the Agentic Browsing
+# accessibility-tree check. Derive an aria-label from the words either side of the
+# field, falling back to a humanised id, then to "Value". aria-label has no visual
+# or behavioural effect, so this is safe to apply broadly.
+
+INPUT_RE = re.compile(r"<input\b[^>]*>", re.I)
+_SKIP_INPUT_TYPES = {
+    "hidden", "submit", "button", "image", "checkbox",
+    "radio", "reset", "file", "range", "color",
+}
+
+
+def _humanize(s):
+    s = re.sub(r"[-_]+", " ", s or "")
+    s = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", s)
+    s = re.sub(r"(?<=[A-Za-z])(?=\d)", " ", s)
+    return re.sub(r"\s+", " ", s).strip().lower()
+
+
+_JUNK_WORDS = {
+    "div", "span", "td", "tr", "table", "tbody", "thead", "input", "option",
+    "select", "class", "id", "value", "selected", "type", "text", "img", "src",
+    "href", "style", "width", "height", "nbsp", "quot", "amp", "br", "ul", "li",
+}
+
+
+def _visible_text(fragment):
+    fragment = re.sub(r"<!--.*?-->", " ", fragment, flags=re.DOTALL)
+    # the slice starts/ends mid-tag: drop the leading partial tag (everything up
+    # to the first '>') and the trailing partial tag (from the last '<' on)
+    gt = fragment.find(">")
+    if gt != -1:
+        fragment = fragment[gt + 1:]
+    lt = fragment.rfind("<")
+    if lt != -1:
+        fragment = fragment[:lt]
+    t = re.sub(r"<[^>]*>", " ", fragment)
+    t = t.replace("&nbsp;", " ")
+    t = re.sub(r"&[a-zA-Z#0-9]+;", " ", t)
+    t = re.sub(r"[^A-Za-z0-9%/.\- ]", " ", t)
+    t = re.sub(r"-{2,}", " ", t)
+    return [w for w in t.split() if w.lower().strip("-/.") not in _JUNK_WORDS]
+
+
+def _alnum(s):
+    return re.sub(r"[^A-Za-z0-9]", "", s)
+
+
+def transform_input_labels(html):
+    labels_for = set(re.findall(r'<label[^>]*\bfor="([^"]+)"', html, re.I))
+    comments = [(mm.start(), mm.end()) for mm in re.finditer(r"<!--.*?-->", html, re.DOTALL)]
+    out = []
+    last = 0
+    n = 0
+    for m in INPUT_RE.finditer(html):
+        if any(cs <= m.start() < ce for cs, ce in comments):
+            continue
+        tag = m.group(0)
+        out.append(html[last:m.start()])
+        last = m.end()
+        ty = (_attr(tag, "type") or "text").lower()
+        idv = _attr(tag, "id")
+        if (
+            ty in _SKIP_INPUT_TYPES
+            or _attr(tag, "aria-label") is not None
+            or _attr(tag, "aria-labelledby") is not None
+            or _attr(tag, "title") is not None
+            or _attr(tag, "placeholder") is not None
+            or (idv and idv in labels_for)
+        ):
+            out.append(tag)
+            continue
+        before = _visible_text(html[max(0, m.start() - 120):m.start()])
+        after = _visible_text(html[m.end():m.end() + 120])
+        label = " ".join(before[-4:] + after[:4]).strip()
+        if len(_alnum(label)) < 3:
+            label = _humanize(idv)
+        if len(_alnum(label)) < 3:
+            # fall back to a meaningful-looking class token
+            cls = _humanize(_attr(tag, "class"))
+            cls = " ".join(w for w in cls.split()
+                           if w not in ("input", "saved", "small", "whole", "field", "fraction"))
+            label = cls
+        if len(_alnum(label)) < 2:
+            label = "Value"
+        label = label[:80].strip().replace('"', "&quot;")
+        out.append(re.sub(r"^<input\b", f'<input aria-label="{label}"', tag, flags=re.I))
+        n += 1
+    out.append(html[last:])
+    return "".join(out), n
 
 
 # --- driver ----------------------------------------------------------------------
@@ -253,6 +409,14 @@ def process_file(path):
         notes.append(f"img-dims:{dim_hits}")
     if lazy_hits:
         notes.append(f"img-lazy:{lazy_hits}")
+
+    html, n = transform_landmarks(html)
+    if n:
+        notes.append(f"landmarks:{n}")
+
+    html, n = transform_input_labels(html)
+    if n:
+        notes.append(f"input-labels:{n}")
 
     if html != original:
         with open(path, "w", encoding="utf-8") as f:

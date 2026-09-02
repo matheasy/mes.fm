@@ -249,7 +249,7 @@
     <h2 onclick="toggleList('length', 'arrowIcon1')">Length <span id="arrowIcon1" class="arrow-icon">&#9660;</span></h2>
     <div class="list-container">
         <ul id="length">
-            <input type="number" id="inputLength1" value="1" />
+            <input aria-label="meters" type="number" id="inputLength1" value="1" />
             <select id="inputLengthUnit1">
                 <option value="meters">meters</option>
                 <option value="centimeters">centimeters</option>
@@ -261,7 +261,7 @@
                 <option value="kilometers">kilometers</option>
             </select>
             <div style="display: inline;"> 
-                <input type="number" id="outputLength1" value="0" /> <!-- Changed from <span> to <input> -->
+                <input aria-label="kilometers" type="number" id="outputLength1" value="0" /> <!-- Changed from <span> to <input> -->
             </div>
             <select id="outputLengthUnit1">
                 <option value="meters">meters</option>
@@ -280,7 +280,7 @@
     <h2 onclick="toggleList('mass', 'arrowIcon2')">Mass <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
     <div class="list-container">
         <ul id="mass">
-            <input type="number" id="inputMass1" value="1" />
+            <input aria-label="gram" type="number" id="inputMass1" value="1" />
             <select id="inputMassUnit1">
                 <option value="gram">gram</option>
                 <option value="kilogram" selected>kilogram</option>
@@ -291,7 +291,7 @@
                 <option value="tonne">tonne</option>
             </select>
             <div style="display: inline;"> 
-                <input type="number" id="outputMass1" value="0" /> <!-- Changed from <span> to <input> -->
+                <input aria-label="tonne" type="number" id="outputMass1" value="0" /> <!-- Changed from <span> to <input> -->
             </div>
             <select id="outputMassUnit1">
                 <option value="gram">gram</option>
@@ -309,7 +309,7 @@
     <h2 onclick="toggleList('speed', 'arrowIcon2')">Speed <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
     <div class="list-container">
         <ul id="speed">
-            <input type="number" id="inputSpeed1" value="1" />
+            <input aria-label="miles/hour" type="number" id="inputSpeed1" value="1" />
             <select id="inputSpeedUnit1">
                 <option value="mph" selected>miles/hour</option>
                 <option value="kph">km/hour</option>
@@ -320,7 +320,7 @@
                 <option value="knots">knots</option>
             </select>
             <div style="display: inline;"> 
-                <input type="number" id="outputSpeed1" value="0" /> <!-- Changed from <span> to <input> -->
+                <input aria-label="knots" type="number" id="outputSpeed1" value="0" /> <!-- Changed from <span> to <input> -->
             </div>
             <select id="outputSpeedUnit1">
                 <option value="mph">miles/hour</option>
@@ -337,7 +337,7 @@
         <h2 onclick="toggleList('volume', 'arrowIcon2')">Volume <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
     <div class="list-container">
         <ul id="volume">
-            <input type="number" id="inputVolume1" value="1" />
+            <input aria-label="cubic feet" type="number" id="inputVolume1" value="1" />
             <select id="inputVolumeUnit1">
                 <option value="ft3">cubic feet</option>
                 <option value="m3" selected>cubic meter</option>
@@ -352,7 +352,7 @@
                 <option value="pt">US Pint</option>
             </select>
             <div style="display: inline;"> 
-                <input type="number" id="outputVolume1" value="0" /> <!-- Changed from <span> to <input> -->
+                <input aria-label="US Pint" type="number" id="outputVolume1" value="0" /> <!-- Changed from <span> to <input> -->
             </div>
             <select id="outputVolumeUnit1">
                 <option value="ft3" selected>cubic feet</option>
@@ -373,7 +373,7 @@
         <h2 onclick="toggleList('time', 'arrowIcon2')">Time <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
     <div class="list-container">
         <ul id="time">
-            <input type="number" id="inputTime1" value="1" />
+            <input aria-label="day" type="number" id="inputTime1" value="1" />
             <select id="inputTimeUnit1">
                 <option value="d">day</option>
                 <option value="hr" selected>hour</option>
@@ -384,7 +384,7 @@
                 <option value="month">month</option>
             </select>
             <div style="display: inline;"> 
-                <input type="number" id="outputTime1" value="0" /> <!-- Changed from <span> to <input> -->
+                <input aria-label="month" type="number" id="outputTime1" value="0" /> <!-- Changed from <span> to <input> -->
             </div>
             <select id="outputTimeUnit1">
                 <option value="d">day</option>
@@ -401,7 +401,7 @@
         <h2 onclick="toggleList('pressure', 'arrowIcon2')">Pressure <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
     <div class="list-container">
         <ul id="pressure">
-            <input type="number" id="inputPressure1" value="1" />
+            <input aria-label="atmosphere" type="number" id="inputPressure1" value="1" />
             <select id="inputPressureUnit1">
                 <option value="atm" selected>atmosphere</option>
                 <option value="mmHg">mm of Mercury</option>
@@ -410,7 +410,7 @@
                 <option value="torr">Torr</option>
             </select>
             <div style="display: inline;"> 
-                <input type="number" id="outputPressure1" value="0" /> <!-- Changed from <span> to <input> -->
+                <input aria-label="Torr" type="number" id="outputPressure1" value="0" /> <!-- Changed from <span> to <input> -->
             </div>
             <select id="outputPressureUnit1">
                 <option value="atm">atmosphere</option>
