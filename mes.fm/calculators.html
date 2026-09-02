@@ -401,7 +401,27 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+  <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     scroll / pointer / key interaction, or after 6s, so its ad + consent JS
+     stops blocking the main thread during initial load. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 6000);
+    })();
+    </script>
 </head>
     <body>        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='index.html'><img width="830" height="190" id="logo" class="logo lazyload" alt="Math Easy Solutions logo" data-src="https://mes.fm/img/logo.png"></a>
                             <div class="logo-text-container">

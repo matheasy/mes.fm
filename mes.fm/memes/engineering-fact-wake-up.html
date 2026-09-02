@@ -246,7 +246,27 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         <meta name="twitter:image" content="https://mes.fm/img/memes/m7-engineering-fact-wake-up.jpg">
         <meta name="twitter:image:alt" content="Midnight is not tomorrow for engineers">
 <!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+        <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     scroll / pointer / key interaction, or after 6s, so its ad + consent JS
+     stops blocking the main thread during initial load. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 6000);
+    })();
+    </script>
     <script>
 /* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
    class `google-auto-placed`), plus Google's separate "annotation" text-ad

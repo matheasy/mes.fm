@@ -49,6 +49,11 @@ Transforms
    Replaced with hue-preserving darker shades at >=4.55:1 (WCAG AA). grade / mortgage /
    pokemongo themes already passed and are untouched.
 
+9. Defer AdSense: adsbygoogle.js (which pulls lidar.js + Funding Choices consent +
+   sodar, all main-thread) now loads on the first scroll / pointer / key event, or
+   after 4s, instead of at page load. Ads still render; manual <ins> units keep
+   working via the adsbygoogle push queue. This is the homepage's main TBT cost.
+
 Usage:  python3 optimize_pagespeed.py
 """
 
@@ -423,6 +428,50 @@ def transform_contrast(html):
     return html, n
 
 
+# --- 9. Defer AdSense until interaction --------------------------------------
+# adsbygoogle.js is what drags the homepage down (it's where Google auto ads
+# actually fill): it pulls in lidar.js ~84KB + the Funding Choices consent
+# script ~70KB + sodar + show_ads_impl, all on the main thread during load.
+# Load it on the first scroll / pointer / key event (or after 4s for users who
+# never interact) instead of at page load. Ads still render, just slightly
+# later; the manual <ins class="adsbygoogle"> units on two pages keep working
+# because their `(adsbygoogle = window.adsbygoogle || []).push({})` queues
+# until the script arrives.
+
+ADSENSE_OLD = (
+    '<script async src="https://pagead2.googlesyndication.com/pagead/js/'
+    'adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>'
+)
+
+ADSENSE_NEW = """<!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     scroll / pointer / key interaction, or after 6s, so its ad + consent JS
+     stops blocking the main thread during initial load. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 6000);
+    })();
+    </script>"""
+
+
+def transform_adsense_defer(html):
+    if "ADSENSE-DEFERRED" in html or ADSENSE_OLD not in html:
+        return html, 0
+    return html.replace(ADSENSE_OLD, ADSENSE_NEW, 1), 1
+
+
 # --- driver ----------------------------------------------------------------------
 
 def process_file(path):
@@ -461,6 +510,10 @@ def process_file(path):
     html, n = transform_contrast(html)
     if n:
         notes.append(f"contrast:{n}")
+
+    html, n = transform_adsense_defer(html)
+    if n:
+        notes.append("adsense-deferred")
 
     if html != original:
         with open(path, "w", encoding="utf-8") as f:
