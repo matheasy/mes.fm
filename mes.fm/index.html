@@ -406,6 +406,20 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
+<style id="yt-theater-css">
+.yt-embed{margin:0 0 .5em}
+.yt-embed__inner{position:relative}
+.yt-embed__inner>iframe{display:block;width:100%;height:400px;border:0}
+.yt-embed__bar{display:flex;justify-content:flex-end;padding:5px 0}
+.yt-theater-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.78);color:#fff;font-size:.78em;font-weight:700;line-height:1;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+.yt-theater-btn:hover{background:rgba(0,0,0,.92)}
+.yt-embed.theater-mode{min-height:400px}
+.yt-embed.theater-mode .yt-theater-btn{background:rgba(255,255,255,.16)}
+.yt-embed.theater-mode .yt-theater-btn:hover{background:rgba(255,255,255,.28)}
+.yt-embed.theater-mode .yt-embed__inner{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;align-items:center;justify-content:center}
+.yt-embed.theater-mode .yt-embed__inner>iframe{width:100%;height:auto;aspect-ratio:16/9;max-height:100vh;max-width:calc(100vh * 16 / 9)}
+.yt-embed.theater-mode .yt-embed__bar{position:fixed;top:0;right:0;z-index:2147483001;padding:12px}
+</style>
 </head>
     <body>        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='index.html'><img width="830" height="190" id="logo" class="logo lazyload" alt="Math Easy Solutions logo" data-src="https://mes.fm/img/logo.png"></a>
                             <div class="logo-text-container">
@@ -448,7 +462,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		<h2 class="header2">What is Math Easy Solutions (MES)?</h2>
 		<p class="sentence">MES began as a small YouTube channel and has since expanded into a full platform for learning and enjoying math. Watch the video below for the story of how it started, where it's headed, and the crew behind it all.</p>
 
-		<iframe style="border:none" width="100%" height="400" loading="lazy" title="What is Math Easy Solutions (MES)?" src="https://www.youtube-nocookie.com/embed/8IP0CeNmqDc" allowfullscreen></iframe>
+		<div class="yt-embed"><div class="yt-embed__inner"><iframe style="border:none" width="100%" height="400" loading="lazy" title="What is Math Easy Solutions (MES)?" src="https://www.youtube-nocookie.com/embed/8IP0CeNmqDc" allowfullscreen></iframe></div><div class="yt-embed__bar"><button class="yt-theater-btn" type="button" aria-pressed="false" aria-label="Toggle theater mode">Theater Mode</button></div></div>
 	</div>
                                     <!-- (Responsive) Rectangle Ad -->                                    <!-- PC (Responsive/Rectangle) Matched Content -->                                    <div id="comments-button" class="button" style="position:relative;">Comments<span class="dropdown-symbol" style="color:inherit;position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9650;</span></div>
                                     <div id="comments-box">
@@ -540,7 +554,39 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         }        </script>	                <!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->
                 <script src="main_js/lazysizes.min.js?v=1.0.3" async></script>
             <script src="main_js/main.js?v=1.0.3"></script>
-            <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script></body>
+            <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script>
+/* YT-THEATER-JS: "Theater Mode" for the YouTube embeds. Expands the player to a
+   full-viewport fixed overlay (the template's .inner-container is overflow:hidden
+   so an in-flow 100vw breakout would be clipped). Esc exits; page scroll is
+   locked while open; a resize event is fired so AdSense re-checks its layout. */
+(function () {
+  var embeds = document.querySelectorAll('.yt-embed');
+  if (!embeds.length) return;
+  function setTheater(embed, on) {
+    embed.classList.toggle('theater-mode', on);
+    document.documentElement.style.overflow = on ? 'hidden' : '';
+    var btn = embed.querySelector('.yt-theater-btn');
+    if (btn) {
+      btn.textContent = on ? 'Exit Theater Mode' : 'Theater Mode';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 260);
+  }
+  Array.prototype.forEach.call(embeds, function (embed) {
+    var btn = embed.querySelector('.yt-theater-btn');
+    if (btn) btn.addEventListener('click', function () {
+      setTheater(embed, !embed.classList.contains('theater-mode'));
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    Array.prototype.forEach.call(embeds, function (embed) {
+      if (embed.classList.contains('theater-mode')) setTheater(embed, false);
+    });
+  });
+})();
+</script>
+</body>
 
 <!-- Mirrored from mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:41:28 GMT -->
 </html>
