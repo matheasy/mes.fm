@@ -51,8 +51,17 @@ Transforms
 
 9. Defer AdSense: adsbygoogle.js (which pulls lidar.js + Funding Choices consent +
    sodar, all main-thread) now loads on the first scroll / pointer / key event, or
-   after 4s, instead of at page load. Ads still render; manual <ins> units keep
+   after 15s, instead of at page load. Ads still render; manual <ins> units keep
    working via the adsbygoogle push queue. This is the homepage's main TBT cost.
+
+10. YouTube "Theater Mode": wrap the calculator/homepage YT embeds in a .yt-embed
+    and add a top-right toggle pill that expands the player to a full-viewport
+    fixed overlay (.inner-container is overflow:hidden so an in-flow 100vw
+    breakout is out). Esc / the button exit; scroll locks while open.
+
+11. Move the 3Speak/mirror pages' existing .theater-toggle-btn from top-left to
+    top-right (below the "View on 3Speak/YouTube" badge) so it matches the YT
+    toggle's position -- a CSS-only tweak to their inline per-page rule.
 
 Usage:  python3 optimize_pagespeed.py
 """
@@ -491,33 +500,34 @@ def transform_adsense_defer(html):
 # wrapper. Add a "Theater Mode" toggle (same idea as the 3Speak <video> pages)
 # that expands the player to a full-viewport fixed overlay -- an in-flow 100vw
 # breakout is out because the template's .inner-container is overflow:hidden.
-# The toggle sits in a bar BELOW the video (not over it) so it never collides
-# with YouTube's own chrome -- its title bar spans nearly the full width on a
-# narrow screen, so even a top-right overlay would clash there.
+# The toggle is an overlay pill at the video's top-right, ~46px down so it clears
+# YouTube's title bar -- the same spot the 3Speak pages' toggle now sits (just
+# below their "View on 3Speak" badge), and it stays put in theater mode too.
 
 YT_IFRAME_RE = re.compile(
     r'<iframe (?=[^>]*\bstyle="border:none")(?=[^>]*youtube(?:-nocookie)?\.com/embed)[^>]*></iframe>',
     re.I,
 )
 
+# markers: v1 (shipped) had a bar below the video; v2 puts the pill on the video.
+YT_MARKER = "YT-THEATER-V2"
+
 YT_THEATER_CSS = """<style id="yt-theater-css">
+/* YT-THEATER-V2 */
 .yt-embed{margin:0 0 .5em}
 .yt-embed__inner{position:relative}
 .yt-embed__inner>iframe{display:block;width:100%;height:400px;border:0}
-.yt-embed__bar{display:flex;justify-content:flex-end;padding:5px 0}
-.yt-theater-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.78);color:#fff;font-size:.78em;font-weight:700;line-height:1;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
-.yt-theater-btn:hover{background:rgba(0,0,0,.92)}
+.yt-theater-btn{position:absolute;top:46px;right:10px;z-index:3;display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.75);color:#fff;font-size:.78em;font-weight:700;line-height:1;border:0;border-radius:999px;padding:5px 11px;cursor:pointer}
+.yt-theater-btn:hover{background:rgba(0,0,0,.9)}
 .yt-embed.theater-mode{min-height:400px}
-.yt-embed.theater-mode .yt-theater-btn{background:rgba(255,255,255,.16)}
-.yt-embed.theater-mode .yt-theater-btn:hover{background:rgba(255,255,255,.28)}
 .yt-embed.theater-mode .yt-embed__inner{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;align-items:center;justify-content:center}
 .yt-embed.theater-mode .yt-embed__inner>iframe{width:100%;height:auto;aspect-ratio:16/9;max-height:100vh;max-width:calc(100vh * 16 / 9)}
-.yt-embed.theater-mode .yt-embed__bar{position:fixed;top:0;right:0;z-index:2147483001;padding:12px}
+.yt-embed.theater-mode .yt-theater-btn{position:fixed}
 </style>
 """
 
 YT_THEATER_JS = """<script>
-/* YT-THEATER-JS: "Theater Mode" for the YouTube embeds. Expands the player to a
+/* YT-THEATER-V2: "Theater Mode" for the YouTube embeds. Expands the player to a
    full-viewport fixed overlay (the template's .inner-container is overflow:hidden
    so an in-flow 100vw breakout would be clipped). Esc exits; page scroll is
    locked while open; a resize event is fired so AdSense re-checks its layout. */
@@ -529,7 +539,7 @@ YT_THEATER_JS = """<script>
     document.documentElement.style.overflow = on ? 'hidden' : '';
     var btn = embed.querySelector('.yt-theater-btn');
     if (btn) {
-      btn.textContent = on ? 'Exit Theater Mode' : 'Theater Mode';
+      btn.textContent = on ? 'Exit Theater' : 'Theater Mode';
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     }
     setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 260);
@@ -550,9 +560,25 @@ YT_THEATER_JS = """<script>
 </script>
 """
 
+# strip the v1 markup so the v2 path can re-apply cleanly
+YT_V1_WRAP_RE = re.compile(
+    r'<div class="yt-embed"><div class="yt-embed__inner">(<iframe\b[^>]*></iframe>)</div>'
+    r'<div class="yt-embed__bar"><button class="yt-theater-btn"[^>]*>.*?</button></div></div>',
+    re.S,
+)
+YT_OLD_CSS_RE = re.compile(r'<style id="yt-theater-css">.*?</style>\n?', re.S)
+YT_OLD_JS_RE = re.compile(r'<script>\s*/\* YT-THEATER[^*]*\*/.*?\}\)\(\);\s*</script>\n?', re.S)
+
 
 def transform_yt_theater(html):
-    if "YT-THEATER-JS" in html or not YT_IFRAME_RE.search(html):
+    if YT_MARKER in html:
+        return html, 0
+    # migrate a v1 page back to a bare iframe first
+    if 'class="yt-embed__bar"' in html:
+        html = YT_V1_WRAP_RE.sub(lambda m: m.group(1), html)
+        html = YT_OLD_CSS_RE.sub("", html, count=1)
+        html = YT_OLD_JS_RE.sub("", html, count=1)
+    if not YT_IFRAME_RE.search(html):
         return html, 0
     n = [0]
 
@@ -561,9 +587,8 @@ def transform_yt_theater(html):
         return (
             '<div class="yt-embed"><div class="yt-embed__inner">'
             + m.group(0)
-            + '</div><div class="yt-embed__bar"><button class="yt-theater-btn"'
-            ' type="button" aria-pressed="false" aria-label="Toggle theater mode">'
-            "Theater Mode</button></div></div>"
+            + '<button class="yt-theater-btn" type="button" aria-pressed="false"'
+            ' aria-label="Toggle theater mode">Theater Mode</button></div></div>'
         )
 
     html = YT_IFRAME_RE.sub(wrap, html)
@@ -572,6 +597,22 @@ def transform_yt_theater(html):
     if "</body>" in html:
         html = html.replace("</body>", YT_THEATER_JS + "</body>", 1)
     return html, n[0]
+
+
+# --- 11. Move the 3Speak "Theater Mode" toggle below the video badge ----------
+# On the 3Speak/mirror pages the .theater-toggle-btn sits top-LEFT (10,10),
+# over YouTube-style title chrome and inconsistent with the YT embeds above.
+# Move it to the top-RIGHT, just under the "View on 3Speak" badge (top:10 + its
+# ~28px height + gap => top:46), matching the YT toggle's position.
+
+THEATER_BTN_POS_RE = re.compile(
+    r'(\.theater-toggle-btn\s*\{[^}]*?)\btop:\s*10px;\s*left:\s*10px;', re.S
+)
+
+
+def transform_theater_btn_position(html):
+    new = THEATER_BTN_POS_RE.sub(r"\1top: 46px;\n      right: 10px;", html, count=1)
+    return (new, 1) if new != html else (html, 0)
 
 
 # --- driver ----------------------------------------------------------------------
@@ -624,6 +665,10 @@ def process_file(path):
     html, n = transform_yt_theater(html)
     if n:
         notes.append(f"yt-theater:{n}")
+
+    html, n = transform_theater_btn_position(html)
+    if n:
+        notes.append("3speak-btn-pos")
 
     if html != original:
         with open(path, "w", encoding="utf-8") as f:
