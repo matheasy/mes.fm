@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A live sky dashboard: 9 AM temperature, sunrise, sunset, moonrise, moonset, plus the Sun's and Moon's constellation, distance, coordinates and magnitude for any location (default Richmond, BC, Canada). Computed in your browser, refreshed on demand.">
+  <meta name="description" content="A live sky dashboard for any location (default Richmond, BC): 9 AM temperature, sunrise/sunset/moonrise/moonset, current conditions and air quality, the Sun's and Moon's constellation, distance, coordinates and magnitude, a Moon-phase visual, and charts of today's sky and the Sun's path through the year. Computed in your browser.">
   <meta name="author" content="Mathiew Estepho">
-  <meta name="keywords" content="MES, Moon, Sun, planets, astronomy, sunrise, sunset, moonrise, moonset, location, Richmond BC, constellation, right ascension, declination">
+  <meta name="keywords" content="MES, Moon, Sun, planets, astronomy, sunrise, sunset, moonrise, moonset, moon phase, air quality, AQI, location, Richmond BC, constellation, right ascension, declination">
   <link rel="canonical" href="https://mes.fm/moon" />
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
   <title>MES Moon, Sun, Planets &amp; Astronomy</title>
@@ -21,9 +21,22 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
-    body.light { background-color: #ffffff; color: #222222; }
+    body.light {
+      background-color: #ffffff; color: #222222;
+      --sun: #b9760f; --moon: #3c6ba1;
+      --grid: rgba(50, 60, 80, 0.16); --axis: rgba(40, 50, 70, 0.78);
+      --belowhz: rgba(60, 90, 150, 0.10);
+      --moon-disc: #eef1f5; --moon-shadow: #2b3140;
+    }
     body.light a { color: #1a6fb0; }
-    body.dark { background-color: #0f1420; color: #eef1f6; }
+
+    body.dark {
+      background-color: #0f1420; color: #eef1f6;
+      --sun: #e6a338; --moon: #7ea6d6;
+      --grid: rgba(150, 160, 180, 0.22); --axis: rgba(170, 180, 200, 0.78);
+      --belowhz: rgba(90, 110, 150, 0.18);
+      --moon-disc: #dfe3ea; --moon-shadow: #0c0f16;
+    }
     body.dark a { color: #6cb6f5; }
 
     .container { max-width: 760px; margin: 0 auto; }
@@ -156,6 +169,15 @@
     ul.more-links { margin: 0.4em 0 0; padding-left: 1.3em; }
     ul.more-links li { margin: 0 0 0.4em; }
 
+    figure.viz { margin: 0.2em 0 0.4em; }
+    figure.viz svg { width: 100%; height: auto; display: block; }
+    figure.viz text { font-family: Arial, Helvetica, sans-serif; }
+    figure.viz-wide > .viz-scroll { width: 100%; overflow-x: auto; }
+    figure.viz-wide svg { min-width: 520px; }
+    figure.viz-moon { display: flex; flex-direction: column; align-items: center; }
+    figure.viz-moon > .viz-scroll { width: 100%; max-width: 190px; }
+    .viz-cap { font-size: 0.82em; opacity: 0.78; margin-top: 0.45em; text-align: center; }
+
     hr { margin: 2.4em 0 1.6em; border: 0; border-top: 1px solid rgba(128, 128, 128, 0.3); }
 
     .site-footer-note { font-size: 0.8em; opacity: 0.6; text-align: center; }
@@ -178,8 +200,9 @@
     <h1>MES Moon, Sun, Planets &amp; Astronomy &#127765;&#9728;&#65039;</h1>
     <div class="page-subtitle">A live sky dashboard. It opens on <strong>Richmond, British&nbsp;Columbia,
       Canada</strong> by default &mdash; type another place below, or use your device's location,
-      to switch. Everything is computed in your browser, and your choice is remembered on this
-      device.</div>
+      to switch. Sun &amp; Moon positions, phase, rise/set times and the charts are computed in your
+      browser; conditions and air quality come from Open-Meteo. Your choice of location is remembered
+      on this device.</div>
 
     <div class="location-bar">
       <input id="locInput" type="text" autocomplete="off" spellcheck="false"
@@ -214,6 +237,41 @@
     <p class="source-line">Temperature: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> forecast.
       Rise / set / phase: computed with <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy&nbsp;Engine</a>.</p>
 
+    <h2>Conditions &amp; Air Quality &mdash; <span id="locName2">Richmond, BC</span></h2>
+    <p class="section-note">&ldquo;9&nbsp;AM&rdquo; rows are for 9&nbsp;AM local; the daily high/low, UV and
+    rain chance cover the whole day. Forecast from <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>;
+    air quality from the Copernicus (CAMS) model via Open-Meteo.</p>
+    <table>
+      <tbody>
+        <tr><th>Now</th><td class="big-value" id="wxNow">&mdash;</td></tr>
+        <tr><th>Today's high / low</th><td class="big-value" id="wxHiLo">&mdash;</td></tr>
+        <tr><th>Feels like (9&nbsp;AM)</th><td id="wxFeels">&mdash;</td></tr>
+        <tr><th>Humidity (9&nbsp;AM)</th><td id="wxHum">&mdash;</td></tr>
+        <tr><th>Wind (9&nbsp;AM)</th><td id="wxWind">&mdash;</td></tr>
+        <tr><th>Cloud cover (now)</th><td id="wxCloud">&mdash;</td></tr>
+        <tr><th>Max UV index today</th><td id="wxUv">&mdash;</td></tr>
+        <tr><th>Chance of rain today</th><td id="wxPop">&mdash;</td></tr>
+        <tr><th>Pressure (now)</th><td id="wxPress">&mdash;</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <tbody>
+        <tr><th>Air quality &mdash; US AQI</th><td class="big-value" id="aqUs">&mdash;</td></tr>
+        <tr><th>European AQI</th><td id="aqEu">&mdash;</td></tr>
+        <tr><th>PM2.5 / PM10</th><td id="aqPm">&mdash;</td></tr>
+        <tr><th>Ozone (O&#8323;)</th><td id="aqO3">&mdash;</td></tr>
+        <tr><th>Nitrogen dioxide (NO&#8322;)</th><td id="aqNo2">&mdash;</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Today's Sky &mdash; Sun &amp; Moon Altitude</h2>
+    <p class="section-note">How high the Sun (solid) and Moon (dashed) climb above the horizon over the
+    local day. The shaded band is below the horizon; the vertical line marks now.</p>
+    <figure class="viz viz-wide">
+      <div class="viz-scroll" id="dayViz"></div>
+      <figcaption class="viz-cap" id="dayVizCap">&mdash;</figcaption>
+    </figure>
+
     <h2>The Sun Right Now</h2>
     <p class="section-note">Apparent geocentric coordinates for the moment shown above (the same
     from anywhere on Earth). Compare with <a href="https://theskylive.com/sun-info" target="_blank" rel="noopener">theskylive.com/sun-info</a>.</p>
@@ -228,7 +286,20 @@
       </tbody>
     </table>
 
+    <h2>The Sun's Path This Year</h2>
+    <p class="section-note">The Sun's apparent declination (orange, left axis) and right ascension
+    (blue, right axis) across <span id="yearLabel">the year</span>. Declination swings &plusmn;23.4&deg;
+    between the solstices and is 0&deg; at the equinoxes &mdash; that tilt is what gives us seasons.</p>
+    <figure class="viz viz-wide">
+      <div class="viz-scroll" id="yearViz"></div>
+      <figcaption class="viz-cap" id="yearVizCap">&mdash;</figcaption>
+    </figure>
+
     <h2>The Moon Right Now</h2>
+    <figure class="viz viz-moon">
+      <div class="viz-scroll" id="moonViz"></div>
+      <figcaption class="viz-cap" id="moonVizCap">&mdash;</figcaption>
+    </figure>
     <p class="section-note">Apparent geocentric coordinates for the moment shown above.
     Compare with <a href="https://theskylive.com/moon-info" target="_blank" rel="noopener">theskylive.com/moon-info</a>.</p>
     <table>
@@ -254,13 +325,13 @@
 
     <hr>
 
-    <p class="section-note" id="methodNote" style="margin:0;">The Sun and Moon figures are computed on
-    your device with Astronomy&nbsp;Engine (an offline astronomy library). Place search and
-    time-zone lookup use Open-Meteo's geocoding API; the 9&nbsp;AM temperature comes from
-    Open-Meteo's forecast. Choosing &ldquo;Use my location&rdquo; shares your coordinates with
-    Open-Meteo for the forecast only &mdash; nothing is stored off your device. Values may differ
-    by up to a minute (rise / set) or a degree or two (temperature) from weather.com and
-    TheSkyLive, which use their own models.</p>
+    <p class="section-note" id="methodNote" style="margin:0;">The Sun and Moon figures, the Moon-phase
+    drawing and both charts are computed on your device with Astronomy&nbsp;Engine (an offline
+    astronomy library). Place search and time-zone lookup use Open-Meteo's geocoding API; conditions
+    come from Open-Meteo's forecast and air quality from its Copernicus (CAMS) feed. Choosing
+    &ldquo;Use my location&rdquo; shares your coordinates with Open-Meteo for those lookups only &mdash;
+    nothing is stored off your device. Values may differ by up to a minute (rise / set) or a degree
+    or two (temperature) from weather.com and TheSkyLive, which use their own models.</p>
 
     <hr>
 
@@ -287,6 +358,7 @@
         themeToggle.textContent = 'Switch to Dark Mode';
         try { localStorage.setItem('theme', 'light'); } catch (e) {}
       }
+      if (window.__moonRedraw) window.__moonRedraw();
     }
 
     let saved;
@@ -299,13 +371,14 @@
   <script>
     // Live Sun / Moon dashboard.
     //
-    // Sun & Moon positions, phase and rise/set times are computed on-device with Astronomy
-    // Engine (github.com/cosinekitty/astronomy, MIT), vendored at /moon/js/. Two small
-    // Open-Meteo calls add what maths can't: geocoding a typed place name, and the hourly
-    // temperature forecast (also the authoritative source for the location's time zone).
+    // Sun & Moon positions, phase, rise/set times, the Moon-phase drawing and both SVG charts
+    // are computed on-device with Astronomy Engine (github.com/cosinekitty/astronomy, MIT),
+    // vendored at /moon/js/. Network use is limited to Open-Meteo: geocoding a typed place,
+    // the hourly + daily weather forecast (also the authoritative time zone), and the CAMS
+    // air-quality feed. All are key-less and CORS-open.
     //
     // Default location is Richmond, BC. A different pick (typed place, "lat, lon", or the
-    // device's own geolocation) is applied immediately and remembered in localStorage.
+    // device's geolocation) is applied immediately and remembered in localStorage.
     (function () {
       var DEFAULT_LOC = {
         lat: 49.17, lon: -123.14, elev: 4,
@@ -320,7 +393,7 @@
 
       var A = window.Astronomy;
       var $ = function (id) { return document.getElementById(id); };
-      var state = { loc: DEFAULT_LOC, tz: DEFAULT_LOC.tz };
+      var state = { loc: DEFAULT_LOC, tz: DEFAULT_LOC.tz, last: null };
       var observer;
 
       var refreshBtn = $('refreshBtn');
@@ -330,7 +403,7 @@
       var locResetBtn = $('locResetBtn');
 
       function set(id, text) { var el = $(id); if (el) el.textContent = text; }
-      function status(msg) { set('locStatus', msg || ' '); }
+      function status(msg) { set('locStatus', msg || ' '); }
 
       function validTz(tz) {
         if (!tz) return false;
@@ -340,11 +413,16 @@
 
       // --- formatting helpers ----------------------------------------------
       function pad(n) { return (n < 10 ? '0' : '') + n; }
+      function cOfF(f) { return Math.round((f - 32) / 1.8); }
 
       function fmtClock(date) {
         return date.toLocaleTimeString('en-US', {
           timeZone: state.tz, hour: 'numeric', minute: '2-digit', hour12: true
         });
+      }
+
+      function fmtClockShort(date) {
+        return fmtClock(date).replace(/\s/g, '').replace(':00', '').toLowerCase();
       }
 
       function tzAbbrev(date) {
@@ -393,33 +471,95 @@
         return m + 'm ' + (s - m * 60).toFixed(1) + 's';
       }
 
-      function phaseName(elong) {
-        if (elong < 22.5 || elong >= 337.5) return 'New Moon';
-        if (elong < 67.5) return 'Waxing Crescent';
-        if (elong < 112.5) return 'First Quarter';
-        if (elong < 157.5) return 'Waxing Gibbous';
-        if (elong < 202.5) return 'Full Moon';
-        if (elong < 247.5) return 'Waning Gibbous';
-        if (elong < 292.5) return 'Last Quarter';
-        return 'Waning Crescent';
+      // Named by illuminated fraction + waxing/waning, so "quarter" only shows within
+      // about half a day of the real event (matches how weather.com / timeanddate label it).
+      function phaseName(illum, waxing) {
+        if (illum <= 0.01) return 'New Moon';
+        if (illum >= 0.99) return 'Full Moon';
+        if (Math.abs(illum - 0.5) <= 0.04) return waxing ? 'First Quarter' : 'Last Quarter';
+        if (illum < 0.5) return waxing ? 'Waxing Crescent' : 'Waning Crescent';
+        return waxing ? 'Waxing Gibbous' : 'Waning Gibbous';
+      }
+
+      function compass(deg) {
+        if (deg == null || isNaN(deg)) return '';
+        var d = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+                 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+        return 'from ' + d[Math.round(deg / 22.5) % 16];
+      }
+
+      function wmoText(c) {
+        var m = {
+          0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+          45: 'Fog', 48: 'Depositing rime fog',
+          51: 'Light drizzle', 53: 'Drizzle', 55: 'Dense drizzle',
+          56: 'Freezing drizzle', 57: 'Dense freezing drizzle',
+          61: 'Slight rain', 63: 'Rain', 65: 'Heavy rain',
+          66: 'Freezing rain', 67: 'Heavy freezing rain',
+          71: 'Slight snow', 73: 'Snow', 75: 'Heavy snow', 77: 'Snow grains',
+          80: 'Slight showers', 81: 'Showers', 82: 'Violent showers',
+          85: 'Slight snow showers', 86: 'Heavy snow showers',
+          95: 'Thunderstorm', 96: 'Thunderstorm with hail', 99: 'Thunderstorm with heavy hail'
+        };
+        if (c == null || isNaN(c)) return '—';
+        return m[c] || ('Weather code ' + c);
+      }
+
+      function uvCat(v) {
+        if (v < 3) return 'Low';
+        if (v < 6) return 'Moderate';
+        if (v < 8) return 'High';
+        if (v < 11) return 'Very high';
+        return 'Extreme';
+      }
+
+      function usAqiCat(v) {
+        if (v <= 50) return 'Good';
+        if (v <= 100) return 'Moderate';
+        if (v <= 150) return 'Unhealthy for sensitive groups';
+        if (v <= 200) return 'Unhealthy';
+        if (v <= 300) return 'Very unhealthy';
+        return 'Hazardous';
+      }
+
+      function euAqiCat(v) {
+        if (v <= 20) return 'Good';
+        if (v <= 40) return 'Fair';
+        if (v <= 60) return 'Moderate';
+        if (v <= 80) return 'Poor';
+        if (v <= 100) return 'Very poor';
+        return 'Extremely poor';
+      }
+
+      function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+
+      function localParts(now) {
+        return new Intl.DateTimeFormat('en-CA', {
+          timeZone: state.tz, year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+        }).formatToParts(now).reduce(function (a, p) { a[p.type] = p.value; return a; }, {});
       }
 
       // Start of the chosen location's current calendar day, as a Date (UTC instant).
       function localDayStart(now) {
-        var f = new Intl.DateTimeFormat('en-CA', {
-          timeZone: state.tz, year: 'numeric', month: '2-digit', day: '2-digit',
-          hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
-        }).formatToParts(now).reduce(function (a, p) { a[p.type] = p.value; return a; }, {});
+        var f = localParts(now);
         var asUTC = Date.UTC(+f.year, +f.month - 1, +f.day, +f.hour, +f.minute, +f.second);
         var offsetMs = asUTC - now.getTime();           // local = UTC + offsetMs
         return new Date(Date.UTC(+f.year, +f.month - 1, +f.day, 0, 0, 0) - offsetMs);
       }
 
-      function riseSet(bodyName, dir, dayStart) {
+      function localYear(now) { return +localParts(now).year; }
+
+      function localDayOfYear(now) {
+        var f = localParts(now);
+        return Math.round((Date.UTC(+f.year, +f.month - 1, +f.day) - Date.UTC(+f.year, 0, 1)) / 86400000);
+      }
+
+      function riseSetDate(bodyName, dir, dayStart) {
         try {
           var t = A.SearchRiseSet(bodyName, observer, dir, dayStart, 1);
-          return t ? fmtClock(t.date) : 'none this day';
-        } catch (e) { return '—'; }
+          return t ? t.date : null;
+        } catch (e) { return null; }
       }
 
       // --- sky computation ------------------------------------------------
@@ -442,33 +582,292 @@
           set(p + 'Mag', fmtMag(ill.mag));
         }
 
+        var elong = A.MoonPhase(now);
+        var waxing = elong < 180;
         var moonPct = A.Illumination(A.Body.Moon, now).phase_fraction * 100;
+        var age = null;
+        try { var nm = A.SearchMoonPhase(0, now, -40); if (nm) age = (now - nm.date) / 86400000; } catch (e) {}
+        state.moon = { elong: elong, waxing: waxing, pct: moonPct, age: age };
+
         set('moonIllum', moonPct.toFixed(1) + '% lit');
-        set('moonphase', phaseName(A.MoonPhase(now)) + ' · ' + Math.round(moonPct) + '% lit');
+        set('moonphase', phaseName(moonPct / 100, waxing) + ' · ' + Math.round(moonPct) + '% lit');
 
         var dayStart = localDayStart(now);
-        set('sunrise', riseSet(A.Body.Sun, 1, dayStart));
-        set('sunset', riseSet(A.Body.Sun, -1, dayStart));
-        set('moonrise', riseSet(A.Body.Moon, 1, dayStart));
-        set('moonset', riseSet(A.Body.Moon, -1, dayStart));
+        set('sunrise', fmtOrNone(riseSetDate(A.Body.Sun, 1, dayStart)));
+        set('sunset', fmtOrNone(riseSetDate(A.Body.Sun, -1, dayStart)));
+        set('moonrise', fmtOrNone(riseSetDate(A.Body.Moon, 1, dayStart)));
+        set('moonset', fmtOrNone(riseSetDate(A.Body.Moon, -1, dayStart)));
       }
 
-      // --- Open-Meteo forecast (temperature + authoritative time zone) ----
+      function fmtOrNone(d) { return d ? fmtClock(d) : 'none this day'; }
+
+      // --- Open-Meteo: forecast (temperature, conditions, time zone) ------
       function fetchForecast() {
         var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + state.loc.lat +
           '&longitude=' + state.loc.lon +
-          '&hourly=temperature_2m&temperature_unit=fahrenheit&timezone=auto&forecast_days=1';
+          '&current=temperature_2m,weather_code,cloud_cover,surface_pressure' +
+          '&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_direction_10m' +
+          '&daily=temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max' +
+          '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=1';
         return fetch(url)
           .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
           .then(function (d) {
-            var t = d.hourly.time, v = d.hourly.temperature_2m, f = null;
-            for (var i = 0; i < t.length; i++) {
-              if (t[i].slice(11, 16) === '09:00') { f = v[i]; break; }
+            var t = d.hourly ? d.hourly.time : [];
+            function at9(arr) {
+              if (!arr) return null;
+              for (var i = 0; i < t.length; i++) if (t[i].slice(11, 16) === '09:00') return arr[i];
+              return null;
             }
-            return { tz: d.timezone, tempF: f };
+            var cur = d.current || {}, day = d.daily || {};
+            function d0(a) { return a && a.length ? a[0] : null; }
+            return {
+              ok: true, tz: d.timezone,
+              temp9F: at9(d.hourly && d.hourly.temperature_2m),
+              feels9F: at9(d.hourly && d.hourly.apparent_temperature),
+              hum9: at9(d.hourly && d.hourly.relative_humidity_2m),
+              wind9: at9(d.hourly && d.hourly.wind_speed_10m),
+              windDir9: at9(d.hourly && d.hourly.wind_direction_10m),
+              curTempF: cur.temperature_2m, code: cur.weather_code,
+              cloud: cur.cloud_cover, presshPa: cur.surface_pressure,
+              hiF: d0(day.temperature_2m_max), loF: d0(day.temperature_2m_min),
+              uvMax: d0(day.uv_index_max), popMax: d0(day.precipitation_probability_max)
+            };
           })
-          .catch(function () { return { tz: null, tempF: null }; });
+          .catch(function () { return { ok: false, tz: null, temp9F: null }; });
       }
+
+      function fetchAirQuality() {
+        var url = 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + state.loc.lat +
+          '&longitude=' + state.loc.lon +
+          '&current=us_aqi,european_aqi,pm2_5,pm10,ozone,nitrogen_dioxide&timezone=auto';
+        return fetch(url)
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+          .then(function (d) {
+            var c = d.current || {};
+            return {
+              ok: true, us: c.us_aqi, eu: c.european_aqi,
+              pm25: c.pm2_5, pm10: c.pm10, o3: c.ozone, no2: c.nitrogen_dioxide
+            };
+          })
+          .catch(function () { return { ok: false }; });
+      }
+
+      function fillConditions(fc) {
+        var ids = ['wxNow', 'wxHiLo', 'wxFeels', 'wxHum', 'wxWind', 'wxCloud', 'wxUv', 'wxPop', 'wxPress'];
+        if (!fc.ok) { ids.forEach(function (id) { set(id, 'unavailable — see weather.com'); }); return; }
+        set('wxNow', wmoText(fc.code) +
+          (fc.curTempF != null ? ', ' + Math.round(fc.curTempF) + '°F (' + cOfF(fc.curTempF) + '°C)' : ''));
+        set('wxHiLo', fc.hiF != null
+          ? Math.round(fc.hiF) + '°F / ' + Math.round(fc.loF) + '°F  (' + cOfF(fc.hiF) + '° / ' + cOfF(fc.loF) + '°C)'
+          : '—');
+        set('wxFeels', fc.feels9F != null ? Math.round(fc.feels9F) + '°F (' + cOfF(fc.feels9F) + '°C)' : '—');
+        set('wxHum', fc.hum9 != null ? Math.round(fc.hum9) + '%' : '—');
+        set('wxWind', fc.wind9 != null ? Math.round(fc.wind9) + ' mph ' + compass(fc.windDir9) : '—');
+        set('wxCloud', fc.cloud != null ? Math.round(fc.cloud) + '%' : '—');
+        set('wxUv', fc.uvMax != null ? fc.uvMax.toFixed(1) + '  ' + uvCat(fc.uvMax) : '—');
+        set('wxPop', fc.popMax != null ? Math.round(fc.popMax) + '%' : '—');
+        set('wxPress', fc.presshPa != null
+          ? Math.round(fc.presshPa) + ' hPa (' + (fc.presshPa * 0.02953).toFixed(2) + ' inHg)' : '—');
+      }
+
+      function fillAirQuality(aq) {
+        var ids = ['aqUs', 'aqEu', 'aqPm', 'aqO3', 'aqNo2'];
+        if (!aq.ok) { ids.forEach(function (id) { set(id, 'unavailable'); }); return; }
+        set('aqUs', aq.us != null ? Math.round(aq.us) + ' — ' + usAqiCat(aq.us) : '—');
+        set('aqEu', aq.eu != null ? Math.round(aq.eu) + ' — ' + euAqiCat(aq.eu) : '—');
+        set('aqPm', (aq.pm25 != null ? aq.pm25.toFixed(1) : '—') + ' / ' +
+          (aq.pm10 != null ? aq.pm10.toFixed(1) : '—') + ' µg/m³');
+        set('aqO3', aq.o3 != null ? Math.round(aq.o3) + ' µg/m³' : '—');
+        set('aqNo2', aq.no2 != null ? aq.no2.toFixed(1) + ' µg/m³' : '—');
+      }
+
+      // --- visual 1: Moon-phase disc ------------------------------------
+      function drawMoonPhase(illum, waxing, age) {
+        var el = $('moonViz'); if (!el) return;
+        var S = 168, cx = S / 2, cy = S / 2, r = 66;
+        var k = 2 * Math.min(0.9999, Math.max(0.0001, illum)) - 1;   // -1 new .. +1 full
+        var rx = Math.abs(k) * r, top = cy - r, bot = cy + r;
+        var limbSweep = waxing ? 0 : 1;                 // outer limb is on the dark side
+        var termSweep = waxing ? (k > 0 ? 0 : 1) : (k > 0 ? 1 : 0);
+        var shadow = 'M ' + cx + ' ' + top +
+          ' A ' + r + ' ' + r + ' 0 0 ' + limbSweep + ' ' + cx + ' ' + bot +
+          ' A ' + rx.toFixed(2) + ' ' + r + ' 0 0 ' + termSweep + ' ' + cx + ' ' + top + ' Z';
+        el.innerHTML =
+          '<svg viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="Current Moon phase">' +
+            '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="var(--moon-disc)"/>' +
+            '<path d="' + shadow + '" fill="var(--moon-shadow)"/>' +
+            '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--grid)" stroke-width="1"/>' +
+          '</svg>';
+        var cap = (waxing ? 'Waxing' : 'Waning') + ' · ' + Math.round(illum * 100) + '% illuminated';
+        if (age != null) cap += ' · ' + age.toFixed(1) + ' days since new moon';
+        set('moonVizCap', cap);
+      }
+
+      // --- visual 2: today's Sun & Moon altitude ----------------------
+      function drawDayChart(now, dayStart) {
+        var el = $('dayViz'); if (!el || !observer) return;
+        var W = 720, H = 250, mL = 40, mR = 16, mT = 16, mB = 26;
+        var pw = W - mL - mR, ph = H - mT - mB;
+        var t0 = dayStart.getTime(), span = 86400000;
+        var yMin = -20, yMax = 90;
+        var X = function (fr) { return mL + fr * pw; };
+        var Y = function (a) {
+          var c = Math.max(yMin, Math.min(yMax, a));
+          return mT + (yMax - c) / (yMax - yMin) * ph;
+        };
+
+        var N = 145, sun = [], moon = [];
+        for (var i = 0; i < N; i++) {
+          var fr = i / (N - 1), t = new Date(t0 + fr * span);
+          var es = A.Equator(A.Body.Sun, t, observer, true, true);
+          var em = A.Equator(A.Body.Moon, t, observer, true, true);
+          sun.push([fr, A.Horizon(t, observer, es.ra, es.dec, 'normal').altitude]);
+          moon.push([fr, A.Horizon(t, observer, em.ra, em.dec, 'normal').altitude]);
+        }
+        function poly(arr) {
+          return arr.map(function (p, i) {
+            return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1);
+          }).join(' ');
+        }
+
+        var g = '';
+        [0, 30, 60, 90].forEach(function (a) {
+          g += '<line x1="' + mL + '" y1="' + Y(a) + '" x2="' + (mL + pw) + '" y2="' + Y(a) +
+            '" stroke="var(--grid)" stroke-width="1"/>' +
+            '<text x="' + (mL - 5) + '" y="' + (Y(a) + 3) + '" text-anchor="end" font-size="10" fill="var(--axis)">' + a + '°</text>';
+        });
+        var labels = ['12a', '6a', '12p', '6p', '12a'];
+        [0, 0.25, 0.5, 0.75, 1].forEach(function (fr, i) {
+          g += '<line x1="' + X(fr) + '" y1="' + mT + '" x2="' + X(fr) + '" y2="' + (mT + ph) +
+            '" stroke="var(--grid)" stroke-width="1"/>' +
+            '<text x="' + X(fr) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="var(--axis)">' + labels[i] + '</text>';
+        });
+
+        var below = '<rect x="' + mL + '" y="' + Y(0) + '" width="' + pw + '" height="' + (mT + ph - Y(0)) +
+          '" fill="var(--belowhz)"/>';
+        var horizon = '<line x1="' + mL + '" y1="' + Y(0) + '" x2="' + (mL + pw) + '" y2="' + Y(0) +
+          '" stroke="var(--axis)" stroke-width="1.3"/>';
+
+        var events = [
+          ['Sunrise', 1, A.Body.Sun, 'var(--sun)'],
+          ['Sunset', -1, A.Body.Sun, 'var(--sun)'],
+          ['Moonrise', 1, A.Body.Moon, 'var(--moon)'],
+          ['Moonset', -1, A.Body.Moon, 'var(--moon)']
+        ];
+        var dots = '', capBits = [];
+        events.forEach(function (ev) {
+          var d = riseSetDate(ev[2], ev[1], dayStart);
+          if (!d) { capBits.push(ev[0] + ' none'); return; }
+          capBits.push(ev[0] + ' ' + fmtClock(d));
+          var fr = (d.getTime() - t0) / span;
+          if (fr < 0 || fr > 1) return;
+          dots += '<circle cx="' + X(fr).toFixed(1) + '" cy="' + Y(0) + '" r="3.4" fill="' + ev[3] + '"/>';
+        });
+
+        var nowFr = (now.getTime() - t0) / span;
+        var nowLine = '';
+        if (nowFr >= 0 && nowFr <= 1) {
+          nowLine = '<line x1="' + X(nowFr).toFixed(1) + '" y1="' + mT + '" x2="' + X(nowFr).toFixed(1) +
+            '" y2="' + (mT + ph) + '" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"/>' +
+            '<text x="' + X(nowFr).toFixed(1) + '" y="' + (mT + ph - 4) + '" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">now</text>';
+        }
+
+        el.innerHTML =
+          '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sun and Moon altitude over today">' +
+            below + g + horizon +
+            '<path d="' + poly(moon) + '" fill="none" stroke="var(--moon)" stroke-width="2" stroke-dasharray="5 4"/>' +
+            '<path d="' + poly(sun) + '" fill="none" stroke="var(--sun)" stroke-width="2.5"/>' +
+            dots + nowLine +
+            '<text x="' + (mL + pw) + '" y="' + (mT - 4) + '" text-anchor="end" font-size="11">' +
+              '<tspan fill="var(--sun)">● Sun</tspan>  <tspan fill="var(--moon)">● Moon</tspan></text>' +
+          '</svg>';
+        set('dayVizCap', capBits.join('  ·  '));
+      }
+
+      // --- visual 3: Sun declination + RA through the year ------------
+      function drawYearChart(now) {
+        var el = $('yearViz'); if (!el || !observer) return;
+        var W = 720, H = 230, mL = 42, mR = 46, mT = 26, mB = 20;
+        var pw = W - mL - mR, ph = H - mT - mB;
+        var year = localYear(now);
+        var days = isLeap(year) ? 366 : 365;
+
+        var dec = [], ra = [];
+        for (var i = 0; i <= days; i++) {
+          var d = new Date(Date.UTC(year, 0, 1, 12) + i * 86400000);
+          var e = A.Equator(A.Body.Sun, d, observer, true, true);
+          dec.push(e.dec); ra.push(e.ra);
+        }
+
+        var X = function (i) { return mL + i / days * pw; };
+        var Ydec = function (v) { return mT + (25 - v) / 50 * ph; };
+        var Yra = function (v) { return mT + (24 - v) / 24 * ph; };
+
+        var decP = dec.map(function (v, i) {
+          return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Ydec(v).toFixed(1);
+        }).join(' ');
+
+        var raP = '', pen = false;
+        for (var j = 0; j < ra.length; j++) {
+          if (j > 0 && ra[j] - ra[j - 1] < -12) pen = false;      // wrap 24h -> 0h
+          raP += (pen ? 'L' : 'M') + X(j).toFixed(1) + ' ' + Yra(ra[j]).toFixed(1) + ' ';
+          pen = true;
+        }
+
+        var g = '';
+        [23.4, 0, -23.4].forEach(function (v) {
+          g += '<line x1="' + mL + '" y1="' + Ydec(v) + '" x2="' + (mL + pw) + '" y2="' + Ydec(v) +
+            '" stroke="var(--grid)" stroke-width="' + (v === 0 ? 1.4 : 1) + '"' +
+            (v === 0 ? '' : ' stroke-dasharray="3 3"') + '/>' +
+            '<text x="' + (mL - 5) + '" y="' + (Ydec(v) + 3) + '" text-anchor="end" font-size="10" fill="var(--sun)">' +
+            (v > 0 ? '+' : '') + v.toFixed(0) + '°</text>';
+        });
+        [0, 6, 12, 18, 24].forEach(function (v) {
+          g += '<text x="' + (mL + pw + 6) + '" y="' + (Yra(v) + 3) + '" font-size="10" fill="var(--moon)">' + v + 'h</text>';
+        });
+        var mchars = 'JFMAMJJASOND';
+        for (var m = 0; m < 12; m++) {
+          var di = Math.round((Date.UTC(year, m, 1) - Date.UTC(year, 0, 1)) / 86400000);
+          var dmid = Math.round((Date.UTC(year, m + 1, 1) - Date.UTC(year, m, 1)) / 86400000) / 2;
+          g += '<line x1="' + X(di) + '" y1="' + mT + '" x2="' + X(di) + '" y2="' + (mT + ph) +
+            '" stroke="var(--grid)" stroke-width="1"/>' +
+            '<text x="' + X(di + dmid) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="10" fill="var(--axis)">' + mchars[m] + '</text>';
+        }
+
+        var td = Math.max(0, Math.min(days, localDayOfYear(now)));
+        var tx = X(td);
+        var today = '<line x1="' + tx.toFixed(1) + '" y1="' + mT + '" x2="' + tx.toFixed(1) + '" y2="' + (mT + ph) +
+          '" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"/>' +
+          '<circle cx="' + tx.toFixed(1) + '" cy="' + Ydec(dec[td]).toFixed(1) + '" r="3" fill="var(--sun)"/>' +
+          '<circle cx="' + tx.toFixed(1) + '" cy="' + Yra(ra[td]).toFixed(1) + '" r="3" fill="var(--moon)"/>' +
+          '<text x="' + tx.toFixed(1) + '" y="' + (mT - 12) + '" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">today</text>';
+
+        el.innerHTML =
+          '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sun declination and right ascension through the year">' +
+            g +
+            '<path d="' + decP + '" fill="none" stroke="var(--sun)" stroke-width="2"/>' +
+            '<path d="' + raP.trim() + '" fill="none" stroke="var(--moon)" stroke-width="2" stroke-dasharray="5 4"/>' +
+            today +
+            '<text x="' + mL + '" y="' + (mT - 12) + '" font-size="11">' +
+              '<tspan fill="var(--sun)">● Declination</tspan>  <tspan fill="var(--moon)">● Right ascension</tspan></text>' +
+          '</svg>';
+        set('yearLabel', String(year));
+        set('yearVizCap', 'Today: declination ' + fmtDec(dec[td]) + '  ·  right ascension ' + fmtRA(ra[td]));
+      }
+
+      function drawVisuals(now, dayStart) {
+        try { drawDayChart(now, dayStart); } catch (e) {}
+        try { drawYearChart(now); } catch (e) {}
+        try {
+          if (state.moon) drawMoonPhase(state.moon.pct / 100, state.moon.elong < 180, state.moon.age);
+        } catch (e) {}
+      }
+
+      // Re-render the SVGs on theme switch (colours come from CSS vars).
+      window.__moonRedraw = function () {
+        if (!state.last) return;
+        drawVisuals(state.last.now, state.last.dayStart);
+      };
 
       // --- main refresh --------------------------------------------------
       function refresh() {
@@ -479,10 +878,10 @@
         refreshBtn.disabled = true;
         set('updatedLine', 'Computing…');
 
-        fetchForecast().then(function (res) {
-          var tz = validTz(res.tz) ? res.tz
+        Promise.all([fetchForecast(), fetchAirQuality()]).then(function (r) {
+          var fc = r[0], aq = r[1];
+          state.tz = validTz(fc.tz) ? fc.tz
             : validTz(state.loc.tz) ? state.loc.tz : BROWSER_TZ;
-          state.tz = tz;
 
           var now = new Date();
           set('tempTzLabel', tzAbbrev(now));
@@ -495,13 +894,17 @@
             return;
           }
 
-          if (res.tempF == null) {
-            set('temp9am', 'unavailable — see weather.com');
-          } else {
-            set('temp9am', Math.round(res.tempF) + '°F (' +
-              Math.round((res.tempF - 32) / 1.8) + '°C)');
-          }
+          if (fc.temp9F == null) set('temp9am', 'unavailable — see weather.com');
+          else set('temp9am', Math.round(fc.temp9F) + '°F (' + cOfF(fc.temp9F) + '°C)');
 
+          fillConditions(fc);
+          fillAirQuality(aq);
+
+          var dayStart = localDayStart(now);
+          state.last = { now: now, dayStart: dayStart };
+          drawVisuals(now, dayStart);
+
+          set('locName2', state.loc.label);
           set('updatedLine', 'As of ' + now.toLocaleString('en-US', {
             timeZone: state.tz, dateStyle: 'medium', timeStyle: 'short'
           }) + ' ' + tzAbbrev(now));
@@ -520,6 +923,7 @@
         state.loc = loc;
         state.tz = validTz(loc.tz) ? loc.tz : state.tz;
         set('locName', loc.label);
+        set('locName2', loc.label);
 
         var q = loc.lat + ',' + loc.lon;
         var link;
@@ -551,14 +955,35 @@
         };
       }
 
+      var COUNTRY_ALIAS = {
+        'uk': 'united kingdom', 'u.k.': 'united kingdom', 'gb': 'united kingdom',
+        'usa': 'united states', 'us': 'united states', 'u.s.': 'united states',
+        'u.s.a.': 'united states', 'uae': 'united arab emirates'
+      };
+
       function geocodePlace(q) {
+        // Open-Meteo's geocoder matches on the place NAME only, so "London, UK" must be
+        // split: the part before the first comma is the query, the rest is a country /
+        // region hint used to disambiguate among the results.
+        var bits = q.split(',');
+        var name = bits[0].trim();
+        var hint = bits.slice(1).join(',').trim().toLowerCase();
+        hint = COUNTRY_ALIAS[hint] || hint;
         var url = 'https://geocoding-api.open-meteo.com/v1/search?name=' +
-          encodeURIComponent(q) + '&count=1&language=en&format=json';
+          encodeURIComponent(name) + '&count=' + (hint ? 10 : 1) + '&language=en&format=json';
         return fetch(url)
           .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
           .then(function (d) {
             if (!d.results || !d.results.length) throw new Error('not found');
             var g = d.results[0];
+            if (hint) {
+              var m = d.results.filter(function (x) {
+                var hay = [x.country, x.country_code, x.admin1, x.admin2]
+                  .filter(Boolean).join(' ').toLowerCase();
+                return hay.indexOf(hint) !== -1;
+              })[0];
+              if (m) g = m;
+            }
             var parts = [g.name, g.admin1, g.country].filter(Boolean);
             var seen = {}, label = parts.filter(function (x) {
               var k = x.toLowerCase();
