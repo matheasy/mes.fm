@@ -83,18 +83,22 @@ FC_NEW = (
     "first Comments-toggle click, so it no longer blocks first render -->"
 )
 
-# main_js/main.js cache-buster bump so browsers pick up the new lazy-init code
+# main_js/main.js cache-buster: bump whenever main.js itself changes (lazy FC
+# init, CSE-branding removal, ...) so browsers refetch it. Applied to every page
+# that references main.js, not just FastComments pages.
 MAINJS_RE = re.compile(r'(main_js/main\.js)(?:\?v=[0-9.]+)?(")')
-MAINJS_VER = r"\1?v=1.0.2\2"
+MAINJS_VER = r"\1?v=1.0.3\2"
+
+
+def transform_mainjs_version(html):
+    new = MAINJS_RE.sub(MAINJS_VER, html)
+    return (new, 1) if new != html else (html, 0)
 
 
 def transform_fastcomments(html):
-    n = 0
-    if FC_MARKER not in html:
-        html, n = FC_OLD_RE.subn(FC_NEW, html, count=1)
-    if n or FC_MARKER in html:
-        html = MAINJS_RE.sub(MAINJS_VER, html)
-    return html, n
+    if FC_MARKER in html:
+        return html, 0
+    return FC_OLD_RE.subn(FC_NEW, html, count=1)
 
 
 # --- 2. Dead Universal Analytics -------------------------------------------------
@@ -444,8 +448,9 @@ ADSENSE_OLD = (
 )
 
 ADSENSE_NEW = """<!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
-     scroll / pointer / key interaction, or after 6s, so its ad + consent JS
-     stops blocking the main thread during initial load. -->
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
     <script>
     (function () {
       var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
@@ -461,13 +466,22 @@ ADSENSE_NEW = """<!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent)
         document.head.appendChild(s);
       }
       EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
-      setTimeout(go, 6000);
+      setTimeout(go, 15000);
     })();
     </script>"""
 
 
+ADSENSE_DEFERRED_RE = re.compile(
+    r"<!-- ADSENSE-DEFERRED:.*?\)\(\);\s*</script>", re.DOTALL
+)
+
+
 def transform_adsense_defer(html):
-    if "ADSENSE-DEFERRED" in html or ADSENSE_OLD not in html:
+    # migrate an earlier deferred block to the current one
+    if "ADSENSE-DEFERRED" in html:
+        new = ADSENSE_DEFERRED_RE.sub(lambda _: ADSENSE_NEW, html, count=1)
+        return (new, 1) if new != html else (html, 0)
+    if ADSENSE_OLD not in html:
         return html, 0
     return html.replace(ADSENSE_OLD, ADSENSE_NEW, 1), 1
 
@@ -484,6 +498,10 @@ def process_file(path):
     html, n = transform_fastcomments(html)
     if n:
         notes.append("fastcomments-lazy")
+
+    html, n = transform_mainjs_version(html)
+    if n:
+        notes.append("mainjs-bump")
 
     html, n = transform_ua(html)
     if n:

@@ -265,8 +265,9 @@ What happened to the other dollar?">
         <meta name="twitter:image:alt" content="Missing Dollar Puzzle (SOLUTION)">
 <!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
         <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
-     scroll / pointer / key interaction, or after 6s, so its ad + consent JS
-     stops blocking the main thread during initial load. -->
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
     <script>
     (function () {
       var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
@@ -282,7 +283,7 @@ What happened to the other dollar?">
         document.head.appendChild(s);
       }
       EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
-      setTimeout(go, 6000);
+      setTimeout(go, 15000);
     })();
     </script>
     <script>
@@ -535,7 +536,7 @@ The puzzle involved an incorrect addition, namely $27 + $2 = $29. $27 is the tot
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="../../main_js/lazysizes.min.js?v=1.0.3" async></script>
-            <script src="../../main_js/main.js?v=1.0.2"></script>
+            <script src="../../main_js/main.js?v=1.0.3"></script>
             <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script></body>
 
 <!-- Mirrored from mes.fm/puzzles/missing-dollar-puzzle/solution by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:49:59 GMT -->

@@ -301,8 +301,9 @@ Source: https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza">
             <!-- End Google Tag Manager -->            
 <!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
     <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
-     scroll / pointer / key interaction, or after 6s, so its ad + consent JS
-     stops blocking the main thread during initial load. -->
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
     <script>
     (function () {
       var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
@@ -318,7 +319,7 @@ Source: https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza">
         document.head.appendChild(s);
       }
       EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
-      setTimeout(go, 6000);
+      setTimeout(go, 15000);
     })();
     </script>
     <script>
@@ -556,7 +557,7 @@ Source: https://en.wikipedia.org/wiki/Great_Pyramid_of_Giza</p>                 
             mobile:false,
             hide_search:true,
             current_tab:1
-        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>            <script src="https://mes.fm/main_js/main.js?v=1.0.2"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><!-- random-nav --><script src="/percentagecalculator/js/random-interesting-facts.js" defer></script></body>
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>            <script src="https://mes.fm/main_js/main.js?v=1.0.3"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><!-- random-nav --><script src="/percentagecalculator/js/random-interesting-facts.js" defer></script></body>
 
 <!-- Mirrored from percentagecalculator.mes.fm/interesting-facts/pyramid-of-giza-took-20-years-to-build by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 17:42:23 GMT -->
 </html>

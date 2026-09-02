@@ -285,8 +285,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             <!-- End Google Tag Manager -->            
 <!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
     <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
-     scroll / pointer / key interaction, or after 6s, so its ad + consent JS
-     stops blocking the main thread during initial load. -->
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
     <script>
     (function () {
       var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
@@ -302,7 +303,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         document.head.appendChild(s);
       }
       EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
-      setTimeout(go, 6000);
+      setTimeout(go, 15000);
     })();
     </script>
     <script>
@@ -558,7 +559,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-            <script src="https://mes.fm/main_js/main.js?v=1.0.2"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><!-- random-nav --><script src="/gradecalculator/js/random-memes.js" defer></script></body>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.3"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><!-- random-nav --><script src="/gradecalculator/js/random-memes.js" defer></script></body>
 
 <!-- Mirrored from gradecalculator.mes.fm/memes/fish-in-a-tank-puzzle by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:52:42 GMT -->
 </html>

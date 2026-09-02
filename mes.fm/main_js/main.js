@@ -10,7 +10,10 @@ $(document).ready(function() {
             $("#info-bar .info-bar__item__text:eq("+info_bar_tab+")").addClass("active-tab");
         $("#navbar>.navbar__item").not(".navbar__item--social").eq(MES_Vars.current_tab).children(".navbar__link").addClass("active-tab");
         $(".active-tab .dropdown-symbol").addClass("dropdown-symbol--dark");
-        $.getScript("https://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en");
+        /* The Google CSE branding script used to load here on every desktop page.
+           Only inflationcalculator/money-facts/1.html actually has a #cse-search-box
+           form, and it loads its own copy inline -- so this was a dead ~14KB fetch +
+           Closure-library execute on every other desktop page. Removed. */
     }
         
     if(MES_Vars.mobile && MES_Vars.hide_search == false) {
