@@ -205,6 +205,121 @@
       margin: 0 0 0.35em;
     }
 
+    .written-solution {
+      margin: 0 0 1.6em;
+    }
+
+    .written-solution > summary {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.15em;
+      margin-bottom: 0.4em;
+    }
+
+    .written-solution .ws-note {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin: 0.4em 0 1.2em;
+    }
+
+    .written-solution h3 {
+      font-size: 1.05em;
+      margin: 1.4em 0 0.4em;
+    }
+
+    .written-solution p { margin: 0 0 1em; }
+
+    .sol-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      display: block;
+      margin: 0.6em 0 1.2em;
+      cursor: zoom-in;
+    }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 2147483647;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 120px;
+    }
+
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox-image {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: calc(100vh - 120px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-controls {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lightbox-counter {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.85em;
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .lightbox-close:hover,
+    .lightbox-prev:hover,
+    .lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+    .lightbox-close {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.3em;
+      z-index: 2147483647;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.4em;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-overlay { padding-bottom: 100px; }
+      .lightbox-image { max-height: calc(100vh - 100px); }
+      .lightbox-controls { bottom: 32px; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+      .lightbox-close { width: 36px; height: 36px; }
+    }
+
     .retrieved-note {
       font-size: 0.85em;
       opacity: 0.7;
@@ -314,6 +429,79 @@
         </ul>
       </details>
 
+      <details class="written-solution" open>
+        <summary>Solution to Problem 1</summary>
+        <p class="ws-note">Full written solution to parts (a), (b) and (c) &mdash; mirrored from <a href="https://mes.fm/vector-functions-problems-plus#solution-to-problem-1-projectile-fired-from-origin">Vector Functions: Problems Plus</a>, which also covers Problems 2&ndash;7.</p>
+<p>A projectile is fired from the origin with angle of elevation α and initial speed v<sub>0</sub>.</p>
+<p>Assuming that air resistance is negligible and that the only force acting on the projectile is gravity, g, we showed in my <a href="https://peakd.com/hive-128780/@mes/e443f9d3">earlier video</a> that the position vector of the projectile is:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/EopzC8i9Uij5EWbBtqewY8LR1oRgC2ifN7PBJ4rRNyz2RqPRjcYWxfrUr1cmiLxLTEJ.png" alt="image.png"></p>
+<p>We also showed that the maximum horizontal distance (or range) of the projectile is achieved when α = 45° and in this case the range is R = (v<sub>0</sub>)<sup>2</sup>/ g.</p>
+<p>(a) At what angle should the projectile be fired to achieve maximum height and what is the maximum height?</p>
+<p>(b) Fix the initial speed v0 and consider the parabola x<sup>2</sup> + 2Ry - R<sup>2</sup> = 0, whose graph is shown in the figure below. </p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSyz4YysFEMWUe82mhGn9D98nUgj2suKepX38dXyj1UmFa7HAJgirfSQncvg9qjGp5u.png" alt="image.png"></p>
+<p>Show that the projectile can hit any target inside or on the boundary of the region bounded by the parabola and the x-axis, and that it can&#39;t hit any target outside this region.</p>
+<p>(c) Suppose that the gun is elevated at an angle of inclination α in order to aim at a target that is suspended at a height h directly over a point D units downrange.</p>
+<p>The target is released at the instant the gun is fired.</p>
+<p>Show that the projectile always hits the target, regardless of the value v0, provided the projectile does not hit the ground &quot;before&quot; D.</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHdQDGmprM2vm97yQFRoYtnvb9NSZkcxoP48mV7HTDG9exY8xkfbNLb1JEXzqpzybZ1.png" alt="image.png"></p>
+<h3>Solution to (a)</h3>
+<p>The projectile reaches maximum height when:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHb6kphqavkoboEZnSrt6FwaabUTZxEzRSxakgxr8wyXAB8SLdvGCqyza3eUwGEd1nt.png" alt="image.png"></p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tcNRVyjMyUsmMup9wbCkPQUCTPoS9R3Qxh47ZqHSiwLEJoq7JQUCPnieEQPc75Nd56L.png" alt="image.png"></p>
+<p>This is the maximum height attained when the projectile is fired with an angle of elevation α.</p>
+<p>This maximum height is largest when α = 90°, which makes sense as it means the launch angle is straight up vertically!</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tcNzkBDMavPxocjcnbmBTHoVoCqqRfVBkhiXCugHcck4PjkiKSUmt982LHp7NfF93gd.png" alt="image.png"></p>
+<p>In that case, sin α = 1 and the maximum height is (v<sub>0</sub>)<sup>2</sup>/(2g).</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23twAQDSEDhRAbo5P8tRfow2HC56HCC6A9CntWK9WR3VwbPz8Z6nTXYko2N4qUsM8MXT8.png" alt="image.png"></p>
+<h3>Solution to (b)</h3>
+<p>We are asked to consider the parabola:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHb6kpjJWYpjAMiUA9HT2LfBiUgcHG2GUrw7MhdwDWuuU2ML4sYcLE8G4kU4eSkTCb7.png" alt="image.png"></p>
+<p>We can rearrange the parabola as an equation for y.</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSzLNbh8MVhyWJ6FpWVAiPxEnTDs5ED1FoX9DmUr4BYu2NgMxJ6scPffsmDyV6tQTkP.png" alt="image.png"></p>
+<p>The points on or inside this parabola are those for which:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tcNRVyjPfHH9rH7jAyomHWRMLGd5FG7QbNT8DkcgCVNTxaEnUt1uABqa1nRNWFzSfbo.png" alt="image.png"></p>
+<p>Recall my <a href="https://peakd.com/hive-128780/@mes/e443f9d3">earlier videos</a> on the formula for the position of a projectile:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHbP3h3fqCgJFcmUdkK97qzTpf4mo5D71nZvBL6WhvsABxYypCm6xBePm3DQHe64AxJ.png" alt="image.png"></p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tmmEVQaCP8geTp8tVFz2QNfjxChFLjYefikzUm239rdXwckp2YbN5S1tiaUZCTeNjtb.png" alt="image.png"></p>
+<p>When the projectile is fired at an angle of elevation α, the points (x, y) along its path satisfy the relations:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHb6kphzP9Cb37yP9etY4TEFi8a1Kjmr35ec5g44YzncE6ngzREAtzsyD7Qf9RXetsF.png" alt="image.png"></p>
+<p>Recall the sine double angle identity from my <a href="https://peakd.com/hive-128780/@mes/trigonometric-identity-sin2x-2sinxcosx">earlier video</a>.</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSzLPGGVX2UpJuemNabdELamHHuPGMLyn9TYJKjanMea8d6FzgaTkU6noeoFn7kfaTA.png" alt="image.png"></p>
+<p>For t in the specified range, we also have:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHbKgySLek7JTXJMJiRpBGdFnmLddsv7cxAxyaVyvqpFMmCAwkYmRKw5zrXSdMo2KH5.png" alt="image.png"></p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSzR6hgesJtbhS87atkHPX15j7tqMJf1WcEvnThvNiengxHGDFdwaBiea5m3qja74Cz.png" alt="image.png"></p>
+<p>Now if we subtract this formula for the projectile trajectory by the formula for the parabola, we get:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSzChUM4dWfcMLAEf3TiuKqTTcXJKQAMxfbmJX2xXwequ9dRr5nJmKxDWhtnLHpQk7r.png" alt="image.png"></p>
+<p>Thus we have shown that every target that can be hit by the projectile lies on or inside the parabola.</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23twABpCtJdZFxKsPZQtH1szzvVn3XgYyyTPdXArRJeHMNi94Qq7Ng4XsLV9EDNjmjq8G.png" alt="image.png"></p>
+<p>Recall the <a href="https://peakd.com/hive-128780/@mes/trigonometry-identity-proof-that-sin2x-cos2x-1">Pythagorean Identity</a> and the corresponding <a href="https://peakd.com/mathematics/@mes/trigonometry-identity-tan-2-x-1-sec-2-x">tangent and secant identity</a> from my earlier videos.</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23u6YrBnNpMGNzg8c2yXQSx2pZmA28xGmwGAA1djufS3V4Btsqj5AM3vdiJctwDLxAb44.png" alt="image.png"></p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/Eo8ZaTRBjCe2JxY6kWGn9pYVp9djbbT2hoC3etw87XbdPEdC3MH7FpDP5gvGa5QXgZS.png" alt="image.png"></p>
+<p>Now let (a, b) be any point on or inside the parabola:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHb6kphp396ivoeb2fxJ3oEfHnKyLNAdsoDQosAdGTkmLDTMsafPUakZ65w6ezGPDDz.png" alt="image.png"></p>
+<p>We seek an angle α such that (a, b) lies in the path of the projectile; that is, we wish to find an angle α such that:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23t8CSPFBwwZjwqhtFLz4w1vZi6zfegaGPWPGNLJvJycJeZFhx8qDEMZF2MR6k2isYbvF.png" alt="image.png"></p>
+<p>Rearranging this equation we get:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/EoAgzeXSiwSHVTZdSrNez5mwCZ5RPrCUakvmjZ2ptDPXZraJ8aZBwHgGg9ZFQdqGFxs.png" alt="image.png"></p>
+<p>This quadratic equation for tan α has real solutions exactly when the discriminant is nonnegative.</p>
+<p>Recall my <a href="https://youtu.be/H46ILjs10_c">earlier video</a> on the Quadratic Formula.</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tw7oNjTynsjyB9SdiLehjfFwEkux8jHYJjpyJpbwVX3x89ZUEAbZ8GkMKJUABmkrjZx.png" alt="image.png"></p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSym8QDdU3EUnBvCaD6WdAfTZaCGDvrkRciiwQ2ApKNhZxhEzJRwcSwM32EyT2hGqio.png" alt="image.png"></p>
+<p>This condition is satisfied since (a, b) is on or inside the parabola:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/EoCpSei4SzBdg9CBWyiCs7vJALgCTtJrKFK7Jsy3tockxJpcJapXZGumBZN5tQhH5sq.png" alt="image.png"></p>
+<p>It follows that (a, b) lies in the path of the projectile when tan α satisfies (*), that is, when:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23u6YyrukB8ZqpTr3HJA8DQPie11ddgBn435wHgkXSjPSJFBKtDoVZr8FFEKkpf7Kk7bF.png" alt="image.png"></p>
+<h3>Solution to (c)</h3>
+<p>If the gun is pointed at a target with height h at a distance D downrange, then:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHbkj8AzaLYk3ZgSevRyCRgQoua5zMaQKeNkUoKTfsCNrfNrUYF9FFizfjRh7TpwWcJ.png" alt="image.png"></p>
+<p>When the projectile reaches a distance D downrange (remember we are assuming that it doesn&#39;t hit the ground first), we have:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23t8CSPFCGW5ey4RdRFQToa8EwmzqFDsG2tYFxCscGqKWzqcjhZE2k42qTLu7QbKz2dPn.png" alt="image.png"></p>
+<p>Meanwhile, the target, whose x-coordinate is also D, has fallen from height h to height:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23u6Z4b1jheN92v4fiW3oE13sKQHhe3S5fP6YJdCYSKxi8BtPEx1Rbpdtb2zPjnfUTqSE.png" alt="image.png"></p>
+<p>Thus the projectile hits the target!</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tHb6kphtcykKsRGajcCQsp9GB6kBfvVKEouNbb1yRiJnwBVLdBr3Wkc2w5zdXxMKRzi.png" alt="image.png"></p>
+      </details>
+
       <ul class="source-list">
         <li>Watch on: <a href="https://3speak.tv/watch?v=mes/problems-plus-1-projectile-813" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtu.be/V4Y_5Cp2EAU" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://t.me/meslinks/35459" target="_blank" rel="noopener">Telegram</a></li>
         <li>Playlists: <a href="https://www.youtube.com/playlist?list=PLHNdnBXVWSlo" target="_blank" rel="noopener">Problems Plus</a> &middot; <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HQl7xTQBS_O8Te8PcpNm4U" target="_blank" rel="noopener">Vector Functions</a></li>
@@ -330,6 +518,16 @@
     <hr>
 
     <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-controls" id="lightboxControls">
+      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+    </div>
   </div>
 
   
@@ -458,6 +656,58 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) { play((d && d.videoUrl) || FALLBACK_SRC); })
         .catch(function () { play(FALLBACK_SRC); });
+    })();
+  </script>
+
+  <script>
+    // image-lightbox: click any figure in the written solution (or the thumbnail)
+    // to pop it out full-viewport, with prev/next via on-screen arrows and keys.
+    (function () {
+      var images = Array.prototype.slice.call(document.querySelectorAll('article img'));
+      if (!images.length) return;
+
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
+      var counterEl = document.getElementById('lightboxCounter');
+      var closeBtn = document.getElementById('lightboxClose');
+      var prevBtn = document.getElementById('lightboxPrev');
+      var nextBtn = document.getElementById('lightboxNext');
+      var currentIndex = 0;
+
+      if (images.length < 2) { controlsEl.style.display = 'none'; }
+
+      function show(index) {
+        currentIndex = (index + images.length) % images.length;
+        var img = images[currentIndex];
+        imageEl.src = img.currentSrc || img.src;
+        imageEl.alt = img.alt || '';
+        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      }
+      function open(index) {
+        show(index);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      images.forEach(function (img, index) {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function () { open(index); });
+      });
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+        else if (e.key === 'ArrowRight') show(currentIndex + 1);
+      });
     })();
   </script>
 
