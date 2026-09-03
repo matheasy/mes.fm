@@ -171,6 +171,60 @@
       opacity: 1;
     }
 
+    .expand-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0 0.3em;
+      font-size: 1em;
+      color: inherit;
+      opacity: 0.7;
+    }
+
+    .expand-toggle:hover {
+      opacity: 1;
+    }
+
+    tr.detail-row td {
+      padding: 0.75em 0.75em 1.25em;
+    }
+
+    body.light tr.detail-row td { background-color: rgba(0, 0, 0, 0.03); }
+    body.dark tr.detail-row td { background-color: rgba(255, 255, 255, 0.04); }
+
+    .matrix-wrap {
+      overflow-x: auto;
+    }
+
+    .matrix-table {
+      width: auto;
+      border-collapse: collapse;
+      font-size: 0.85em;
+    }
+
+    .matrix-table th, .matrix-table td {
+      padding: 0.3em 0.6em;
+      text-align: right;
+      white-space: nowrap;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+    }
+
+    .matrix-table th:first-child, .matrix-table td:first-child {
+      text-align: left;
+    }
+
+    .matrix-table th {
+      font-size: 0.85em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .matrix-table tfoot td {
+      font-weight: bold;
+      border-bottom: none;
+      border-top: 2px solid rgba(128, 128, 128, 0.4);
+    }
+
     .show-more-btn {
       display: block;
       margin: 0.8em auto 0;
@@ -208,7 +262,7 @@
         width: auto;
         min-width: 100%;
       }
-      .wide-table td:first-child {
+      .wide-table td.page-cell {
         white-space: nowrap;
       }
       th, td {
@@ -525,6 +579,15 @@
     let deviceSort = { key: 'views', dir: 'desc' };
     let sourceSort = { key: 'views', dir: 'desc' };
 
+    // Which pages currently have their device x source drill-down open,
+    // keyed by "site|path". Persists across re-renders (sort clicks, Show
+    // more) since it's just a Set, not tied to DOM nodes.
+    const expandedPages = new Set();
+
+    function pageKey(p) {
+      return p.site + '|' + p.path;
+    }
+
     // Every subdomain now redirects into mes.fm/<slug>, so "mes.fm" is the
     // overwhelming default -- a dedicated Site column on Most Viewed Pages
     // would be blank repetition. The rare non-mes.fm row (e.g.
@@ -612,12 +675,60 @@
       return '<td class="views">' + breakdownValue(row, key).toLocaleString() + '</td>';
     }
 
+    function matrixValue(matrix, device, source) {
+      return (matrix && matrix[device] && matrix[device][source]) || 0;
+    }
+
+    // The full device x source cross-tab for one page, e.g. exactly "100
+    // desktop which is 90 direct, 0 internal, 1 google, ..." -- flattening
+    // this into columns on the main table would mean 6 devices x 6 sources
+    // = 36 columns per page, which is unreadable, so it lives in a small
+    // per-page table instead, opened on demand. Device rows are limited to
+    // ones with any traffic on this page; source columns always show all of
+    // them (including zeros) since the whole point is seeing the split.
+    function renderMatrixDetail(p) {
+      const matrix = p.deviceSourceMatrix;
+      const rowDevices = DEFAULT_DEVICES.filter(function (d) {
+        return DEFAULT_SOURCES.some(function (s) { return matrixValue(matrix, d, s) > 0; });
+      });
+
+      if (!rowDevices.length) {
+        return '<div class="matrix-wrap"><em>No device/source breakdown recorded for this page yet.</em></div>';
+      }
+
+      const headCells = '<th></th>' + DEFAULT_SOURCES.map(function (s) {
+        return '<th>' + escapeHtml(SOURCE_LABELS[s] || s) + '</th>';
+      }).join('') + '<th>Total</th>';
+
+      const bodyRows = rowDevices.map(function (d) {
+        const cells = DEFAULT_SOURCES.map(function (s) {
+          return '<td>' + matrixValue(matrix, d, s).toLocaleString() + '</td>';
+        }).join('');
+        const rowTotal = DEFAULT_SOURCES.reduce(function (sum, s) { return sum + matrixValue(matrix, d, s); }, 0);
+        return '<tr><td>' + escapeHtml(DEVICE_LABELS[d] || d) + '</td>' + cells + '<td>' + rowTotal.toLocaleString() + '</td></tr>';
+      }).join('');
+
+      const footCells = DEFAULT_SOURCES.map(function (s) {
+        const colTotal = rowDevices.reduce(function (sum, d) { return sum + matrixValue(matrix, d, s); }, 0);
+        return '<td>' + colTotal.toLocaleString() + '</td>';
+      }).join('');
+      const grandTotal = rowDevices.reduce(function (sum, d) {
+        return sum + DEFAULT_SOURCES.reduce(function (s2, s) { return s2 + matrixValue(matrix, d, s); }, 0);
+      }, 0);
+
+      return '<div class="matrix-wrap"><table class="matrix-table">' +
+        '<thead><tr>' + headCells + '</tr></thead>' +
+        '<tbody>' + bodyRows + '</tbody>' +
+        '<tfoot><tr><td>Total</td>' + footCells + '<td>' + grandTotal.toLocaleString() + '</td></tr></tfoot>' +
+        '</table></div>';
+    }
+
     function renderTopPages() {
       const topPagesHead = document.getElementById('topPagesHead');
       const topPagesBody = document.getElementById('topPagesBody');
       const topPagesFoot = document.getElementById('topPagesFoot');
       if (!topPagesData.length) {
-        topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) + thCell('Views', 'views', pagesSort, 'views') + '</tr>';
+        topPagesHead.innerHTML = '<tr><th></th>' + thCell('Page', 'path', pagesSort) + thCell('Views', 'views', pagesSort, 'views') + '</tr>';
         topPagesBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
         topPagesFoot.innerHTML = '';
         showMoreBtn.style.display = 'none';
@@ -630,16 +741,21 @@
       const visible = showAllPages ? sorted : sorted.slice(0, PAGES_PREVIEW_COUNT);
       const breakdownKeys = devices.concat(sources);
 
-      topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) +
+      topPagesHead.innerHTML = '<tr><th></th>' + thCell('Page', 'path', pagesSort) +
         breakdownKeys.map(function (k) { return thCell(DEVICE_LABELS[k] || SOURCE_LABELS[k] || k, k, pagesSort, 'views'); }).join('') +
         thCell('Views', 'views', pagesSort, 'views') + '</tr>';
 
       topPagesBody.innerHTML = visible.map(function (p) {
         const url = 'https://' + p.site + p.path;
         const label = pageLabel(p);
-        return '<tr><td><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(label) + '</a></td>' +
+        const key = pageKey(p);
+        const isExpanded = expandedPages.has(key);
+        const toggle = '<button type="button" class="expand-toggle" data-page-key="' + escapeHtml(key) + '" aria-expanded="' + isExpanded + '" title="Show device × source breakdown">' + (isExpanded ? '▾' : '▸') + '</button>';
+        const row = '<tr><td>' + toggle + '</td><td class="page-cell"><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(label) + '</a></td>' +
           breakdownKeys.map(function (k) { return breakdownCell(p, k); }).join('') +
           '<td class="views">' + p.views.toLocaleString() + '</td></tr>';
+        if (!isExpanded) return row;
+        return row + '<tr class="detail-row"><td colspan="99">' + renderMatrixDetail(p) + '</td></tr>';
       }).join('');
 
       // Totals reflect the full top-N dataset (not just the "Show N" preview
@@ -651,7 +767,7 @@
         const sum = topPagesData.reduce(function (acc, p) { return acc + breakdownValue(p, k); }, 0);
         return '<td class="views">' + sum.toLocaleString() + '</td>';
       }).join('');
-      topPagesFoot.innerHTML = '<tr><td>Total (top ' + topPagesData.length + ')</td>' + breakdownTotals + '<td class="views">' + totalViews.toLocaleString() + '</td></tr>';
+      topPagesFoot.innerHTML = '<tr><td colspan="2">Total (top ' + topPagesData.length + ')</td>' + breakdownTotals + '<td class="views">' + totalViews.toLocaleString() + '</td></tr>';
 
       if (topPagesData.length > PAGES_PREVIEW_COUNT) {
         showMoreBtn.style.display = 'block';
@@ -718,6 +834,18 @@
       const th = e.target.closest('th[data-sort-key]');
       if (!th) return;
       toggleSort(pagesSort, th.dataset.sortKey);
+      renderTopPages();
+    });
+
+    document.getElementById('topPagesBody').addEventListener('click', function (e) {
+      const btn = e.target.closest('.expand-toggle');
+      if (!btn) return;
+      const key = btn.dataset.pageKey;
+      if (expandedPages.has(key)) {
+        expandedPages.delete(key);
+      } else {
+        expandedPages.add(key);
+      }
       renderTopPages();
     });
 

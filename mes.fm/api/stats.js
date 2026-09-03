@@ -56,6 +56,28 @@ function unflattenScores(entityCount, scoresFlat, categories) {
   return perEntity;
 }
 
+// Same idea as unflattenScores but two-dimensional: members were built as
+// devices.length * sources.length scores per entity, iterated device-outer/
+// source-inner, into one { device: { source: n, ... }, ... } object per
+// entity.
+function unflattenMatrix(entityCount, scoresFlat, devices, sources) {
+  const perEntity = [];
+  const cellsPerEntity = devices.length * sources.length;
+  for (let i = 0; i < entityCount; i++) {
+    const matrix = {};
+    devices.forEach((device, di) => {
+      const bySource = {};
+      sources.forEach((source, si) => {
+        const raw = scoresFlat[i * cellsPerEntity + di * sources.length + si];
+        bySource[source] = raw == null ? 0 : Number(raw);
+      });
+      matrix[device] = bySource;
+    });
+    perEntity.push(matrix);
+  }
+  return perEntity;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -148,10 +170,18 @@ module.exports = async (req, res) => {
   // render, just without the breakdown columns.
   const pageDeviceMembers = topPages.flatMap((p) => DEVICES.map((d) => `${p.site}|${p.path}|${d}`));
   const pageSourceMembers = topPages.flatMap((p) => SOURCES.map((s) => `${p.site}|${p.path}|${s}`));
+  // Full cross-tab members (every device x source pair per page) for the
+  // expand-to-drill-down view. Deliberately fetched eagerly for every
+  // top-N page rather than lazily per click: this endpoint is already
+  // response-cached (s-maxage=60), so the cost is paid once per minute
+  // regardless of how many pages get expanded, and it avoids a second
+  // endpoint plus per-row loading states on the client.
+  const pageDeviceSourceMembers = topPages.flatMap((p) => DEVICES.flatMap((d) => SOURCES.map((s) => `${p.site}|${p.path}|${d}|${s}`)));
 
   const commands2 = [];
   let pageDeviceScoreIndex = -1;
   let pageSourceScoreIndex = -1;
+  let pageDeviceSourceScoreIndex = -1;
 
   if (pageDeviceMembers.length) {
     if (!config) {
@@ -181,6 +211,20 @@ module.exports = async (req, res) => {
     }
   }
 
+  if (pageDeviceSourceMembers.length) {
+    if (!config) {
+      commands2.push(['ZMSCORE', 'pageviews:pagedevicesources', ...pageDeviceSourceMembers]);
+      pageDeviceSourceScoreIndex = commands2.length - 1;
+    } else {
+      const pageDeviceSourceKeys = bucketKeys.map((k) => `pageviews:pagedevicesources:${config.unit}:${k}`);
+      const destPageDeviceSources = randomKey('pds');
+      commands2.push(['ZUNIONSTORE', destPageDeviceSources, String(pageDeviceSourceKeys.length), ...pageDeviceSourceKeys]);
+      commands2.push(['ZMSCORE', destPageDeviceSources, ...pageDeviceSourceMembers]);
+      pageDeviceSourceScoreIndex = commands2.length - 1;
+      commands2.push(['DEL', destPageDeviceSources]);
+    }
+  }
+
   if (commands2.length) {
     try {
       const results2 = await runPipeline(commands2);
@@ -196,8 +240,14 @@ module.exports = async (req, res) => {
           topPages[i].sourceViews = sourceViews;
         });
       }
+      if (pageDeviceSourceScoreIndex !== -1) {
+        const scores = results2[pageDeviceSourceScoreIndex]?.result || [];
+        unflattenMatrix(topPages.length, scores, DEVICES, SOURCES).forEach((matrix, i) => {
+          topPages[i].deviceSourceMatrix = matrix;
+        });
+      }
     } catch {
-      // best-effort -- leave deviceViews/sourceViews unset, client falls back to just the Views column
+      // best-effort -- leave deviceViews/sourceViews/deviceSourceMatrix unset, client falls back accordingly
     }
   }
 

@@ -88,6 +88,11 @@ module.exports = async (req, res) => {
   // identity, just not aggregated on its own anymore.)
   const pageDeviceMember = `${site}|${path}|${device}`;
   const pageSourceMember = `${site}|${path}|${source}`;
+  // Full cross-tab member (device AND source together) for the per-page
+  // expand-to-drill-down view -- one write per view either way, the cost is
+  // the same shape as pageDeviceMember/pageSourceMember above, just a
+  // finer-grained key.
+  const pageDeviceSourceMember = `${site}|${path}|${device}|${source}`;
   const now = new Date();
   const hk = hourKey(now);
   const dk = dayKey(now);
@@ -96,11 +101,13 @@ module.exports = async (req, res) => {
   const hourlySourceTotals = `pageviews:sourcetotals:hourly:${hk}`;
   const hourlyPageDevices = `pageviews:pagedevices:hourly:${hk}`;
   const hourlyPageSources = `pageviews:pagesources:hourly:${hk}`;
+  const hourlyPageDeviceSources = `pageviews:pagedevicesources:hourly:${hk}`;
   const dailyLeaderboard = `pageviews:leaderboard:daily:${dk}`;
   const dailyDeviceTotals = `pageviews:devicetotals:daily:${dk}`;
   const dailySourceTotals = `pageviews:sourcetotals:daily:${dk}`;
   const dailyPageDevices = `pageviews:pagedevices:daily:${dk}`;
   const dailyPageSources = `pageviews:pagesources:daily:${dk}`;
+  const dailyPageDeviceSources = `pageviews:pagedevicesources:daily:${dk}`;
 
   const commands = [
     ['ZINCRBY', 'pageviews:leaderboard', '1', member],
@@ -108,6 +115,7 @@ module.exports = async (req, res) => {
     ['HINCRBY', 'pageviews:source-totals', source, '1'],
     ['ZINCRBY', 'pageviews:pagedevices', '1', pageDeviceMember],
     ['ZINCRBY', 'pageviews:pagesources', '1', pageSourceMember],
+    ['ZINCRBY', 'pageviews:pagedevicesources', '1', pageDeviceSourceMember],
     ['ZINCRBY', hourlyLeaderboard, '1', member],
     ['EXPIRE', hourlyLeaderboard, String(HOUR_TTL)],
     ['ZINCRBY', hourlyDeviceTotals, '1', device],
@@ -118,6 +126,8 @@ module.exports = async (req, res) => {
     ['EXPIRE', hourlyPageDevices, String(HOUR_TTL)],
     ['ZINCRBY', hourlyPageSources, '1', pageSourceMember],
     ['EXPIRE', hourlyPageSources, String(HOUR_TTL)],
+    ['ZINCRBY', hourlyPageDeviceSources, '1', pageDeviceSourceMember],
+    ['EXPIRE', hourlyPageDeviceSources, String(HOUR_TTL)],
     ['ZINCRBY', dailyLeaderboard, '1', member],
     ['EXPIRE', dailyLeaderboard, String(DAY_TTL)],
     ['ZINCRBY', dailyDeviceTotals, '1', device],
@@ -128,6 +138,8 @@ module.exports = async (req, res) => {
     ['EXPIRE', dailyPageDevices, String(DAY_TTL)],
     ['ZINCRBY', dailyPageSources, '1', pageSourceMember],
     ['EXPIRE', dailyPageSources, String(DAY_TTL)],
+    ['ZINCRBY', dailyPageDeviceSources, '1', pageDeviceSourceMember],
+    ['EXPIRE', dailyPageDeviceSources, String(DAY_TTL)],
   ];
 
   try {
