@@ -148,6 +148,15 @@
       white-space: nowrap;
     }
 
+    /* Most Viewed Pages can have a dozen device/source columns, where a
+       two-word header like "Other Search" wrapping to two lines shrinks
+       that column to its longest word instead of the whole phrase -- worth
+       doing there specifically, unlike the plain 2-column tables (Views by
+       Device/Source) whose lone "Views" header has no reason to wrap. */
+    .wide-table th.views {
+      white-space: normal;
+    }
+
     .empty-state {
       text-align: center;
       opacity: 0.7;
@@ -163,13 +172,36 @@
     th.sortable {
       cursor: pointer;
       user-select: none;
-      white-space: nowrap;
     }
 
     th.sortable:hover,
     th.active-sort {
       opacity: 1;
     }
+
+    /* Freezes the Page and Views columns of the wide Most Viewed Pages
+       table at either edge, so both stay visible while scrolling through
+       the device/source breakdown columns in between -- on any screen
+       size, not just wide desktops. Needs an opaque background (matching
+       the two themes) since sticky cells sit visually above whatever
+       scrolls underneath them. */
+    .sticky-col {
+      position: sticky;
+      z-index: 1;
+    }
+
+    .sticky-left {
+      left: 0;
+      border-right: 1px solid rgba(128, 128, 128, 0.3);
+    }
+
+    .sticky-right {
+      right: 0;
+      border-left: 1px solid rgba(128, 128, 128, 0.3);
+    }
+
+    body.light .sticky-col { background-color: #ffffff; }
+    body.dark .sticky-col { background-color: #1a1a1a; }
 
     .expand-toggle {
       background: none;
@@ -263,6 +295,17 @@
         min-width: 100%;
       }
       .wide-table td.page-cell {
+        white-space: nowrap;
+      }
+      /* Letting headers wrap (desktop) is a net win when there's room to
+         spare, but on a narrow screen the same allowance -- combined with
+         min-width:100% above pressuring auto layout to shrink whatever it
+         can -- squeezes single-word headers down to one character per line
+         via overflow-wrap:anywhere. Mobile already leans on horizontal
+         scroll (plus the sticky Page/Views columns) to handle a wide table,
+         so there's nothing to gain from letting headers wrap here too --
+         pin them back to one line. */
+      .wide-table th.views {
         white-space: nowrap;
       }
       th, td {
@@ -728,7 +771,7 @@
       const topPagesBody = document.getElementById('topPagesBody');
       const topPagesFoot = document.getElementById('topPagesFoot');
       if (!topPagesData.length) {
-        topPagesHead.innerHTML = '<tr><th></th>' + thCell('Page', 'path', pagesSort) + thCell('Views', 'views', pagesSort, 'views') + '</tr>';
+        topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort, 'sticky-col sticky-left') + thCell('Views', 'views', pagesSort, 'views sticky-col sticky-right') + '</tr>';
         topPagesBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
         topPagesFoot.innerHTML = '';
         showMoreBtn.style.display = 'none';
@@ -741,9 +784,12 @@
       const visible = showAllPages ? sorted : sorted.slice(0, PAGES_PREVIEW_COUNT);
       const breakdownKeys = devices.concat(sources);
 
-      topPagesHead.innerHTML = '<tr><th></th>' + thCell('Page', 'path', pagesSort) +
+      // Page and Views are frozen at either edge (position: sticky) so both
+      // stay visible while scrolling through the device/source columns in
+      // between -- helps on any screen width, not just wide desktops.
+      topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort, 'sticky-col sticky-left') +
         breakdownKeys.map(function (k) { return thCell(DEVICE_LABELS[k] || SOURCE_LABELS[k] || k, k, pagesSort, 'views'); }).join('') +
-        thCell('Views', 'views', pagesSort, 'views') + '</tr>';
+        thCell('Views', 'views', pagesSort, 'views sticky-col sticky-right') + '</tr>';
 
       topPagesBody.innerHTML = visible.map(function (p) {
         const url = 'https://' + p.site + p.path;
@@ -751,9 +797,9 @@
         const key = pageKey(p);
         const isExpanded = expandedPages.has(key);
         const toggle = '<button type="button" class="expand-toggle" data-page-key="' + escapeHtml(key) + '" aria-expanded="' + isExpanded + '" title="Show device × source breakdown">' + (isExpanded ? '▾' : '▸') + '</button>';
-        const row = '<tr><td>' + toggle + '</td><td class="page-cell"><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(label) + '</a></td>' +
+        const row = '<tr><td class="page-cell sticky-col sticky-left">' + toggle + '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(label) + '</a></td>' +
           breakdownKeys.map(function (k) { return breakdownCell(p, k); }).join('') +
-          '<td class="views">' + p.views.toLocaleString() + '</td></tr>';
+          '<td class="views sticky-col sticky-right">' + p.views.toLocaleString() + '</td></tr>';
         if (!isExpanded) return row;
         return row + '<tr class="detail-row"><td colspan="99">' + renderMatrixDetail(p) + '</td></tr>';
       }).join('');
@@ -767,7 +813,7 @@
         const sum = topPagesData.reduce(function (acc, p) { return acc + breakdownValue(p, k); }, 0);
         return '<td class="views">' + sum.toLocaleString() + '</td>';
       }).join('');
-      topPagesFoot.innerHTML = '<tr><td colspan="2">Total (top ' + topPagesData.length + ')</td>' + breakdownTotals + '<td class="views">' + totalViews.toLocaleString() + '</td></tr>';
+      topPagesFoot.innerHTML = '<tr><td class="sticky-col sticky-left">Total (top ' + topPagesData.length + ')</td>' + breakdownTotals + '<td class="views sticky-col sticky-right">' + totalViews.toLocaleString() + '</td></tr>';
 
       if (topPagesData.length > PAGES_PREVIEW_COUNT) {
         showMoreBtn.style.display = 'block';
