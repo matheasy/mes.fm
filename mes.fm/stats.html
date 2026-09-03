@@ -148,12 +148,6 @@
       white-space: nowrap;
     }
 
-    td.site {
-      white-space: nowrap;
-      opacity: 0.75;
-      font-size: 0.9em;
-    }
-
     .empty-state {
       text-align: center;
       opacity: 0.7;
@@ -214,7 +208,6 @@
         width: auto;
         min-width: 100%;
       }
-      .wide-table td.site,
       .wide-table td:first-child {
         white-space: nowrap;
       }
@@ -222,9 +215,6 @@
         padding: 0.4em 0.4em;
         font-size: 0.8em;
         overflow-wrap: anywhere;
-      }
-      td.site {
-        white-space: normal;
       }
       th.views, td.views {
         width: 3.5em;
@@ -423,7 +413,7 @@
       <div class="table-wrap">
         <table class="wide-table">
           <thead id="topPagesHead">
-            <tr><th>Page</th><th class="site">Site</th><th class="views">Views</th></tr>
+            <tr><th>Page</th><th class="views">Views</th></tr>
           </thead>
           <tbody id="topPagesBody">
             <tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
@@ -459,6 +449,21 @@
             <tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
           </tbody>
           <tfoot id="deviceTotalsFoot"></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <section class="stats-section">
+      <h2>Views by Source</h2>
+      <div class="table-wrap">
+        <table>
+          <thead id="sourceTotalsHead">
+            <tr><th>Source</th><th class="views">Views</th></tr>
+          </thead>
+          <tbody id="sourceTotalsBody">
+            <tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
+          </tbody>
+          <tfoot id="sourceTotalsFoot"></tfoot>
         </table>
       </div>
     </section>
@@ -507,6 +512,7 @@
     const RANGE_LABELS = { '24h': '24 hours', '7d': '7 days', '30d': '30 days', '365d': '365 days', all: 'all time' };
     const DEVICE_LABELS = { desktop: 'Desktop', mobile: 'Mobile', tablet: 'Tablet', tv: 'TV', bot: 'Bot', unknown: 'Unknown' };
     const DEFAULT_DEVICES = Object.keys(DEVICE_LABELS);
+    const SOURCE_LABELS = { direct: 'Direct', internal: 'Internal', google: 'Google', search: 'Other Search', social: 'Social', referral: 'Referral' };
     let savedRange;
     try { savedRange = localStorage.getItem('statsRange'); } catch (e) { savedRange = null; }
     let currentRange = savedRange || '7d';
@@ -521,19 +527,33 @@
     let siteTotalsData = [];
     let siteTotalsDevices = [];
     let deviceTotalsData = [];
+    let sourceTotalsData = [];
     let showAllPages = false;
     const showMoreBtn = document.getElementById('showMorePages');
 
-    // Per-table sort state. Text columns (page path, site domain, device
-    // name) default to A-Z; numeric columns (views, and each device's view
-    // count) default to most-first. Clicking the already-active column just
-    // flips its direction instead of picking a new default.
+    // Per-table sort state. Text columns (page path, site domain, device/
+    // source name) default to A-Z; numeric columns (views, and each
+    // device's view count) default to most-first. Clicking the
+    // already-active column just flips its direction instead of picking a
+    // new default.
     let pagesSort = { key: 'views', dir: 'desc' };
     let siteSort = { key: 'views', dir: 'desc' };
     let deviceSort = { key: 'views', dir: 'desc' };
+    let sourceSort = { key: 'views', dir: 'desc' };
+
+    // Every subdomain now redirects into mes.fm/<slug>, so "mes.fm" is the
+    // overwhelming default -- a dedicated Site column on Most Viewed Pages
+    // would be blank repetition. The rare non-mes.fm row (e.g.
+    // youtubemoney.mes.fm, a separate site, not one of the consolidated
+    // subdomains) still needs disambiguating, so its domain is prefixed
+    // right into the page label instead of getting its own column. Used for
+    // both display and the "Page" sort key so the two never disagree.
+    function pageLabel(p) {
+      return p.site === 'mes.fm' ? p.path : (p.site + p.path);
+    }
 
     function isTextSortKey(key) {
-      return key === 'site' || key === 'path' || key === 'device';
+      return key === 'site' || key === 'path' || key === 'device' || key === 'source';
     }
 
     function toggleSort(state, key) {
@@ -548,8 +568,9 @@
     function compareRows(a, b, key) {
       if (key === 'views') return a.views - b.views;
       if (key === 'site') return (a.site || '').localeCompare(b.site || '');
-      if (key === 'path') return (a.path || '').localeCompare(b.path || '');
+      if (key === 'path') return pageLabel(a).localeCompare(pageLabel(b));
       if (key === 'device') return (DEVICE_LABELS[a.device] || a.device || '').localeCompare(DEVICE_LABELS[b.device] || b.device || '');
+      if (key === 'source') return (SOURCE_LABELS[a.source] || a.source || '').localeCompare(SOURCE_LABELS[b.source] || b.source || '');
       // Anything else is a per-device view-count column.
       return ((a.deviceViews && a.deviceViews[key]) || 0) - ((b.deviceViews && b.deviceViews[key]) || 0);
     }
@@ -598,7 +619,7 @@
       const topPagesHead = document.getElementById('topPagesHead');
       const topPagesBody = document.getElementById('topPagesBody');
       if (!topPagesData.length) {
-        topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) + thCell('Site', 'site', pagesSort, 'site') + thCell('Views', 'views', pagesSort, 'views') + '</tr>';
+        topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) + thCell('Views', 'views', pagesSort, 'views') + '</tr>';
         topPagesBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
         showMoreBtn.style.display = 'none';
         return;
@@ -608,14 +629,14 @@
       const sorted = sortRows(topPagesData, pagesSort);
       const visible = showAllPages ? sorted : sorted.slice(0, PAGES_PREVIEW_COUNT);
 
-      topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) + thCell('Site', 'site', pagesSort, 'site') +
+      topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) +
         devices.map(function (d) { return thCell(DEVICE_LABELS[d] || d, d, pagesSort, 'views'); }).join('') +
         thCell('Views', 'views', pagesSort, 'views') + '</tr>';
 
       topPagesBody.innerHTML = visible.map(function (p) {
         const url = 'https://' + p.site + p.path;
-        return '<tr><td><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(p.path) + '</a></td>' +
-          '<td class="site"><a href="https://' + escapeHtml(p.site) + '" target="_blank" rel="noopener">' + escapeHtml(p.site) + '</a></td>' +
+        const label = pageLabel(p);
+        return '<tr><td><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(label) + '</a></td>' +
           devices.map(function (d) { return deviceCell(p, d); }).join('') +
           '<td class="views">' + p.views.toLocaleString() + '</td></tr>';
       }).join('');
@@ -684,6 +705,30 @@
       deviceTotalsFoot.innerHTML = '<tr><td>Total</td><td class="views">' + totalDeviceViews.toLocaleString() + '</td></tr>';
     }
 
+    function renderSourceTotals() {
+      const sourceTotalsHead = document.getElementById('sourceTotalsHead');
+      const sourceTotalsBody = document.getElementById('sourceTotalsBody');
+      const sourceTotalsFoot = document.getElementById('sourceTotalsFoot');
+      if (!sourceTotalsData.length) {
+        sourceTotalsHead.innerHTML = '<tr>' + thCell('Source', 'source', sourceSort) + thCell('Views', 'views', sourceSort, 'views') + '</tr>';
+        sourceTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+        sourceTotalsFoot.innerHTML = '';
+        return;
+      }
+
+      const sorted = sortRows(sourceTotalsData, sourceSort);
+
+      sourceTotalsHead.innerHTML = '<tr>' + thCell('Source', 'source', sourceSort) + thCell('Views', 'views', sourceSort, 'views') + '</tr>';
+
+      sourceTotalsBody.innerHTML = sorted.map(function (s) {
+        const label = SOURCE_LABELS[s.source] || escapeHtml(s.source);
+        return '<tr><td>' + label + '</td><td class="views">' + s.views.toLocaleString() + '</td></tr>';
+      }).join('');
+
+      const totalSourceViews = sourceTotalsData.reduce(function (sum, s) { return sum + s.views; }, 0);
+      sourceTotalsFoot.innerHTML = '<tr><td>Total</td><td class="views">' + totalSourceViews.toLocaleString() + '</td></tr>';
+    }
+
     showMoreBtn.addEventListener('click', function () {
       showAllPages = !showAllPages;
       renderTopPages();
@@ -710,6 +755,13 @@
       renderDeviceTotals();
     });
 
+    document.getElementById('sourceTotalsHead').addEventListener('click', function (e) {
+      const th = e.target.closest('th[data-sort-key]');
+      if (!th) return;
+      toggleSort(sourceSort, th.dataset.sortKey);
+      renderSourceTotals();
+    });
+
     async function loadStats() {
       setActiveTab();
       document.getElementById('topPagesBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
@@ -718,6 +770,8 @@
       document.getElementById('siteTotalsFoot').innerHTML = '';
       document.getElementById('deviceTotalsBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
       document.getElementById('deviceTotalsFoot').innerHTML = '';
+      document.getElementById('sourceTotalsBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
+      document.getElementById('sourceTotalsFoot').innerHTML = '';
       document.getElementById('updatedAt').textContent = 'Loading stats…';
 
       try {
@@ -737,6 +791,9 @@
 
         deviceTotalsData = data.deviceTotals || [];
         renderDeviceTotals();
+
+        sourceTotalsData = data.sourceTotals || [];
+        renderSourceTotals();
 
         document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date(data.updatedAt).toLocaleString();
       } catch (e) {

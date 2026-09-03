@@ -2,8 +2,9 @@ const { lastNDayKeys, lastNHourKeys } = require('./_bucket-keys');
 
 const TOP_N = 50;
 
-// Must match the categories api/track.js's detectDevice() can produce.
+// Must match the categories api/track.js's detectDevice() / detectSource() can produce.
 const DEVICES = ['desktop', 'mobile', 'tablet', 'tv', 'bot', 'unknown'];
+const SOURCES = ['direct', 'internal', 'google', 'search', 'social', 'referral'];
 
 const RANGES = {
   '24h': { unit: 'hourly', count: 24 },
@@ -77,23 +78,28 @@ module.exports = async (req, res) => {
   let leaderboardResultIndex;
   let siteTotalsResultIndex;
   let deviceTotalsResultIndex;
+  let sourceTotalsResultIndex;
 
   if (!config) {
     commands = [
       ['ZREVRANGE', 'pageviews:leaderboard', '0', String(TOP_N - 1), 'WITHSCORES'],
       ['HGETALL', 'pageviews:site-totals'],
       ['HGETALL', 'pageviews:device-totals'],
+      ['HGETALL', 'pageviews:source-totals'],
     ];
     leaderboardResultIndex = 0;
     siteTotalsResultIndex = 1;
     deviceTotalsResultIndex = 2;
+    sourceTotalsResultIndex = 3;
   } else {
     const leaderboardKeys = bucketKeys.map((k) => `pageviews:leaderboard:${config.unit}:${k}`);
     const siteTotalsKeys = bucketKeys.map((k) => `pageviews:sitetotals:${config.unit}:${k}`);
     const deviceTotalsKeys = bucketKeys.map((k) => `pageviews:devicetotals:${config.unit}:${k}`);
+    const sourceTotalsKeys = bucketKeys.map((k) => `pageviews:sourcetotals:${config.unit}:${k}`);
     const destLeaderboard = randomKey('lb');
     const destSiteTotals = randomKey('st');
     const destDeviceTotals = randomKey('dt');
+    const destSourceTotals = randomKey('so');
 
     commands = [
       ['ZUNIONSTORE', destLeaderboard, String(leaderboardKeys.length), ...leaderboardKeys],
@@ -105,10 +111,14 @@ module.exports = async (req, res) => {
       ['ZUNIONSTORE', destDeviceTotals, String(deviceTotalsKeys.length), ...deviceTotalsKeys],
       ['ZREVRANGE', destDeviceTotals, '0', '-1', 'WITHSCORES'],
       ['DEL', destDeviceTotals],
+      ['ZUNIONSTORE', destSourceTotals, String(sourceTotalsKeys.length), ...sourceTotalsKeys],
+      ['ZREVRANGE', destSourceTotals, '0', '-1', 'WITHSCORES'],
+      ['DEL', destSourceTotals],
     ];
     leaderboardResultIndex = 1;
     siteTotalsResultIndex = 4;
     deviceTotalsResultIndex = 7;
+    sourceTotalsResultIndex = 10;
   }
 
   let results;
@@ -122,6 +132,7 @@ module.exports = async (req, res) => {
   const topPagesRaw = results[leaderboardResultIndex]?.result || [];
   const siteTotalsRaw = results[siteTotalsResultIndex]?.result || [];
   const deviceTotalsRaw = results[deviceTotalsResultIndex]?.result || [];
+  const sourceTotalsRaw = results[sourceTotalsResultIndex]?.result || [];
 
   const topPages = [];
   for (let i = 0; i < topPagesRaw.length; i += 2) {
@@ -139,6 +150,12 @@ module.exports = async (req, res) => {
     deviceTotals.push({ device: deviceTotalsRaw[i], views: Number(deviceTotalsRaw[i + 1]) });
   }
   deviceTotals.sort((a, b) => b.views - a.views);
+
+  const sourceTotals = [];
+  for (let i = 0; i < sourceTotalsRaw.length; i += 2) {
+    sourceTotals.push({ source: sourceTotalsRaw[i], views: Number(sourceTotalsRaw[i + 1]) });
+  }
+  sourceTotals.sort((a, b) => b.views - a.views);
 
   // Second round trip: now that we know which pages/sites made the cut, pull
   // their per-device breakdown via ZMSCORE (one command, many members --
@@ -204,9 +221,11 @@ module.exports = async (req, res) => {
   res.status(200).json({
     range,
     devices: DEVICES,
+    sources: SOURCES,
     topPages,
     siteTotals,
     deviceTotals,
+    sourceTotals,
     updatedAt: new Date().toISOString(),
   });
 };
