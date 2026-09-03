@@ -41,17 +41,17 @@ async function runPipeline(commands) {
 
 // Given a list of entities (already in the order the caller wants results
 // attached in) and a flat ZMSCORE result whose members were built as
-// DEVICES.length scores per entity in DEVICES order, unflatten it into one
-// { desktop: n, mobile: n, ... } object per entity.
-function unflattenDeviceScores(entityCount, scoresFlat) {
+// categories.length scores per entity in `categories` order, unflatten it
+// into one { <category>: n, ... } object per entity.
+function unflattenScores(entityCount, scoresFlat, categories) {
   const perEntity = [];
   for (let i = 0; i < entityCount; i++) {
-    const deviceViews = {};
-    DEVICES.forEach((device, j) => {
-      const raw = scoresFlat[i * DEVICES.length + j];
-      deviceViews[device] = raw == null ? 0 : Number(raw);
+    const breakdown = {};
+    categories.forEach((category, j) => {
+      const raw = scoresFlat[i * categories.length + j];
+      breakdown[category] = raw == null ? 0 : Number(raw);
     });
-    perEntity.push(deviceViews);
+    perEntity.push(breakdown);
   }
   return perEntity;
 }
@@ -76,28 +76,23 @@ module.exports = async (req, res) => {
 
   let commands;
   let leaderboardResultIndex;
-  let siteTotalsResultIndex;
   let deviceTotalsResultIndex;
   let sourceTotalsResultIndex;
 
   if (!config) {
     commands = [
       ['ZREVRANGE', 'pageviews:leaderboard', '0', String(TOP_N - 1), 'WITHSCORES'],
-      ['HGETALL', 'pageviews:site-totals'],
       ['HGETALL', 'pageviews:device-totals'],
       ['HGETALL', 'pageviews:source-totals'],
     ];
     leaderboardResultIndex = 0;
-    siteTotalsResultIndex = 1;
-    deviceTotalsResultIndex = 2;
-    sourceTotalsResultIndex = 3;
+    deviceTotalsResultIndex = 1;
+    sourceTotalsResultIndex = 2;
   } else {
     const leaderboardKeys = bucketKeys.map((k) => `pageviews:leaderboard:${config.unit}:${k}`);
-    const siteTotalsKeys = bucketKeys.map((k) => `pageviews:sitetotals:${config.unit}:${k}`);
     const deviceTotalsKeys = bucketKeys.map((k) => `pageviews:devicetotals:${config.unit}:${k}`);
     const sourceTotalsKeys = bucketKeys.map((k) => `pageviews:sourcetotals:${config.unit}:${k}`);
     const destLeaderboard = randomKey('lb');
-    const destSiteTotals = randomKey('st');
     const destDeviceTotals = randomKey('dt');
     const destSourceTotals = randomKey('so');
 
@@ -105,9 +100,6 @@ module.exports = async (req, res) => {
       ['ZUNIONSTORE', destLeaderboard, String(leaderboardKeys.length), ...leaderboardKeys],
       ['ZREVRANGE', destLeaderboard, '0', String(TOP_N - 1), 'WITHSCORES'],
       ['DEL', destLeaderboard],
-      ['ZUNIONSTORE', destSiteTotals, String(siteTotalsKeys.length), ...siteTotalsKeys],
-      ['ZREVRANGE', destSiteTotals, '0', '-1', 'WITHSCORES'],
-      ['DEL', destSiteTotals],
       ['ZUNIONSTORE', destDeviceTotals, String(deviceTotalsKeys.length), ...deviceTotalsKeys],
       ['ZREVRANGE', destDeviceTotals, '0', '-1', 'WITHSCORES'],
       ['DEL', destDeviceTotals],
@@ -116,9 +108,8 @@ module.exports = async (req, res) => {
       ['DEL', destSourceTotals],
     ];
     leaderboardResultIndex = 1;
-    siteTotalsResultIndex = 4;
-    deviceTotalsResultIndex = 7;
-    sourceTotalsResultIndex = 10;
+    deviceTotalsResultIndex = 4;
+    sourceTotalsResultIndex = 7;
   }
 
   let results;
@@ -130,7 +121,6 @@ module.exports = async (req, res) => {
   }
 
   const topPagesRaw = results[leaderboardResultIndex]?.result || [];
-  const siteTotalsRaw = results[siteTotalsResultIndex]?.result || [];
   const deviceTotalsRaw = results[deviceTotalsResultIndex]?.result || [];
   const sourceTotalsRaw = results[sourceTotalsResultIndex]?.result || [];
 
@@ -138,12 +128,6 @@ module.exports = async (req, res) => {
   for (let i = 0; i < topPagesRaw.length; i += 2) {
     topPages.push(parseMember(topPagesRaw[i], topPagesRaw[i + 1]));
   }
-
-  const siteTotals = [];
-  for (let i = 0; i < siteTotalsRaw.length; i += 2) {
-    siteTotals.push({ site: siteTotalsRaw[i], views: Number(siteTotalsRaw[i + 1]) });
-  }
-  siteTotals.sort((a, b) => b.views - a.views);
 
   const deviceTotals = [];
   for (let i = 0; i < deviceTotalsRaw.length; i += 2) {
@@ -157,17 +141,17 @@ module.exports = async (req, res) => {
   }
   sourceTotals.sort((a, b) => b.views - a.views);
 
-  // Second round trip: now that we know which pages/sites made the cut, pull
-  // their per-device breakdown via ZMSCORE (one command, many members --
-  // order-based, so no need to parse composite members back apart). This is
-  // best-effort: if it fails, the tables above still render, just without
-  // the device columns.
+  // Second round trip: now that we know which pages made the cut, pull their
+  // per-device and per-source breakdown via ZMSCORE (one command each, many
+  // members -- order-based, so no need to parse composite members back
+  // apart). This is best-effort: if it fails, the tables above still
+  // render, just without the breakdown columns.
   const pageDeviceMembers = topPages.flatMap((p) => DEVICES.map((d) => `${p.site}|${p.path}|${d}`));
-  const siteDeviceMembers = siteTotals.flatMap((s) => DEVICES.map((d) => `${s.site}|${d}`));
+  const pageSourceMembers = topPages.flatMap((p) => SOURCES.map((s) => `${p.site}|${p.path}|${s}`));
 
   const commands2 = [];
   let pageDeviceScoreIndex = -1;
-  let siteDeviceScoreIndex = -1;
+  let pageSourceScoreIndex = -1;
 
   if (pageDeviceMembers.length) {
     if (!config) {
@@ -183,17 +167,17 @@ module.exports = async (req, res) => {
     }
   }
 
-  if (siteDeviceMembers.length) {
+  if (pageSourceMembers.length) {
     if (!config) {
-      commands2.push(['ZMSCORE', 'pageviews:sitedevices', ...siteDeviceMembers]);
-      siteDeviceScoreIndex = commands2.length - 1;
+      commands2.push(['ZMSCORE', 'pageviews:pagesources', ...pageSourceMembers]);
+      pageSourceScoreIndex = commands2.length - 1;
     } else {
-      const siteDeviceKeys = bucketKeys.map((k) => `pageviews:sitedevices:${config.unit}:${k}`);
-      const destSiteDevices = randomKey('sd');
-      commands2.push(['ZUNIONSTORE', destSiteDevices, String(siteDeviceKeys.length), ...siteDeviceKeys]);
-      commands2.push(['ZMSCORE', destSiteDevices, ...siteDeviceMembers]);
-      siteDeviceScoreIndex = commands2.length - 1;
-      commands2.push(['DEL', destSiteDevices]);
+      const pageSourceKeys = bucketKeys.map((k) => `pageviews:pagesources:${config.unit}:${k}`);
+      const destPageSources = randomKey('ps');
+      commands2.push(['ZUNIONSTORE', destPageSources, String(pageSourceKeys.length), ...pageSourceKeys]);
+      commands2.push(['ZMSCORE', destPageSources, ...pageSourceMembers]);
+      pageSourceScoreIndex = commands2.length - 1;
+      commands2.push(['DEL', destPageSources]);
     }
   }
 
@@ -202,18 +186,18 @@ module.exports = async (req, res) => {
       const results2 = await runPipeline(commands2);
       if (pageDeviceScoreIndex !== -1) {
         const scores = results2[pageDeviceScoreIndex]?.result || [];
-        unflattenDeviceScores(topPages.length, scores).forEach((deviceViews, i) => {
+        unflattenScores(topPages.length, scores, DEVICES).forEach((deviceViews, i) => {
           topPages[i].deviceViews = deviceViews;
         });
       }
-      if (siteDeviceScoreIndex !== -1) {
-        const scores = results2[siteDeviceScoreIndex]?.result || [];
-        unflattenDeviceScores(siteTotals.length, scores).forEach((deviceViews, i) => {
-          siteTotals[i].deviceViews = deviceViews;
+      if (pageSourceScoreIndex !== -1) {
+        const scores = results2[pageSourceScoreIndex]?.result || [];
+        unflattenScores(topPages.length, scores, SOURCES).forEach((sourceViews, i) => {
+          topPages[i].sourceViews = sourceViews;
         });
       }
     } catch {
-      // best-effort -- leave deviceViews unset, client falls back to just the Views column
+      // best-effort -- leave deviceViews/sourceViews unset, client falls back to just the Views column
     }
   }
 
@@ -223,7 +207,6 @@ module.exports = async (req, res) => {
     devices: DEVICES,
     sources: SOURCES,
     topPages,
-    siteTotals,
     deviceTotals,
     sourceTotals,
     updatedAt: new Date().toISOString(),

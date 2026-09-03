@@ -418,24 +418,10 @@
           <tbody id="topPagesBody">
             <tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
           </tbody>
+          <tfoot id="topPagesFoot"></tfoot>
         </table>
       </div>
       <button id="showMorePages" class="show-more-btn" style="display: none;"></button>
-    </section>
-
-    <section class="stats-section">
-      <h2>Views by Site</h2>
-      <div class="table-wrap">
-        <table class="wide-table">
-          <thead id="siteTotalsHead">
-            <tr><th>Site</th><th class="views">Views</th></tr>
-          </thead>
-          <tbody id="siteTotalsBody">
-            <tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
-          </tbody>
-          <tfoot id="siteTotalsFoot"></tfoot>
-        </table>
-      </div>
     </section>
 
     <section class="stats-section">
@@ -513,6 +499,7 @@
     const DEVICE_LABELS = { desktop: 'Desktop', mobile: 'Mobile', tablet: 'Tablet', tv: 'TV', bot: 'Bot', unknown: 'Unknown' };
     const DEFAULT_DEVICES = Object.keys(DEVICE_LABELS);
     const SOURCE_LABELS = { direct: 'Direct', internal: 'Internal', google: 'Google', search: 'Other Search', social: 'Social', referral: 'Referral' };
+    const DEFAULT_SOURCES = Object.keys(SOURCE_LABELS);
     let savedRange;
     try { savedRange = localStorage.getItem('statsRange'); } catch (e) { savedRange = null; }
     let currentRange = savedRange || '7d';
@@ -524,20 +511,17 @@
     const PAGES_PREVIEW_COUNT = 10;
     let topPagesData = [];
     let topPagesDevices = [];
-    let siteTotalsData = [];
-    let siteTotalsDevices = [];
+    let topPagesSources = [];
     let deviceTotalsData = [];
     let sourceTotalsData = [];
     let showAllPages = false;
     const showMoreBtn = document.getElementById('showMorePages');
 
-    // Per-table sort state. Text columns (page path, site domain, device/
-    // source name) default to A-Z; numeric columns (views, and each
-    // device's view count) default to most-first. Clicking the
-    // already-active column just flips its direction instead of picking a
-    // new default.
+    // Per-table sort state. Text columns (page path, device/source name)
+    // default to A-Z; numeric columns (views, and each device/source view
+    // count) default to most-first. Clicking the already-active column just
+    // flips its direction instead of picking a new default.
     let pagesSort = { key: 'views', dir: 'desc' };
-    let siteSort = { key: 'views', dir: 'desc' };
     let deviceSort = { key: 'views', dir: 'desc' };
     let sourceSort = { key: 'views', dir: 'desc' };
 
@@ -553,7 +537,7 @@
     }
 
     function isTextSortKey(key) {
-      return key === 'site' || key === 'path' || key === 'device' || key === 'source';
+      return key === 'path' || key === 'device' || key === 'source';
     }
 
     function toggleSort(state, key) {
@@ -565,14 +549,21 @@
       }
     }
 
+    // Reads a per-device or per-source view count off a row -- the two
+    // breakdowns live in separate objects but their category names never
+    // collide (desktop/mobile/... vs direct/google/...), so one lookup
+    // covers both.
+    function breakdownValue(row, key) {
+      return (row.deviceViews && row.deviceViews[key]) || (row.sourceViews && row.sourceViews[key]) || 0;
+    }
+
     function compareRows(a, b, key) {
       if (key === 'views') return a.views - b.views;
-      if (key === 'site') return (a.site || '').localeCompare(b.site || '');
       if (key === 'path') return pageLabel(a).localeCompare(pageLabel(b));
       if (key === 'device') return (DEVICE_LABELS[a.device] || a.device || '').localeCompare(DEVICE_LABELS[b.device] || b.device || '');
       if (key === 'source') return (SOURCE_LABELS[a.source] || a.source || '').localeCompare(SOURCE_LABELS[b.source] || b.source || '');
-      // Anything else is a per-device view-count column.
-      return ((a.deviceViews && a.deviceViews[key]) || 0) - ((b.deviceViews && b.deviceViews[key]) || 0);
+      // Anything else is a per-device or per-source view-count column.
+      return breakdownValue(a, key) - breakdownValue(b, key);
     }
 
     function sortRows(rows, state) {
@@ -601,45 +592,66 @@
       });
     }
 
-    // Only show a device column if at least one displayed row actually has
-    // views from it -- keeps the table from filling up with all-zero TV/Bot
-    // columns before that kind of traffic has shown up.
+    // Only show a device/source column if at least one displayed row
+    // actually has views from it -- keeps the table from filling up with
+    // all-zero TV/Bot/Referral columns before that kind of traffic has
+    // shown up.
     function visibleDevices(rows, devices) {
       return (devices || DEFAULT_DEVICES).filter(function (d) {
         return rows.some(function (r) { return r.deviceViews && r.deviceViews[d] > 0; });
       });
     }
 
-    function deviceCell(row, device) {
-      const v = (row.deviceViews && row.deviceViews[device]) || 0;
-      return '<td class="views">' + v.toLocaleString() + '</td>';
+    function visibleSources(rows, sources) {
+      return (sources || DEFAULT_SOURCES).filter(function (s) {
+        return rows.some(function (r) { return r.sourceViews && r.sourceViews[s] > 0; });
+      });
+    }
+
+    function breakdownCell(row, key) {
+      return '<td class="views">' + breakdownValue(row, key).toLocaleString() + '</td>';
     }
 
     function renderTopPages() {
       const topPagesHead = document.getElementById('topPagesHead');
       const topPagesBody = document.getElementById('topPagesBody');
+      const topPagesFoot = document.getElementById('topPagesFoot');
       if (!topPagesData.length) {
         topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) + thCell('Views', 'views', pagesSort, 'views') + '</tr>';
         topPagesBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+        topPagesFoot.innerHTML = '';
         showMoreBtn.style.display = 'none';
         return;
       }
 
       const devices = topPagesDevices;
+      const sources = topPagesSources;
       const sorted = sortRows(topPagesData, pagesSort);
       const visible = showAllPages ? sorted : sorted.slice(0, PAGES_PREVIEW_COUNT);
+      const breakdownKeys = devices.concat(sources);
 
       topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort) +
-        devices.map(function (d) { return thCell(DEVICE_LABELS[d] || d, d, pagesSort, 'views'); }).join('') +
+        breakdownKeys.map(function (k) { return thCell(DEVICE_LABELS[k] || SOURCE_LABELS[k] || k, k, pagesSort, 'views'); }).join('') +
         thCell('Views', 'views', pagesSort, 'views') + '</tr>';
 
       topPagesBody.innerHTML = visible.map(function (p) {
         const url = 'https://' + p.site + p.path;
         const label = pageLabel(p);
         return '<tr><td><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(label) + '</a></td>' +
-          devices.map(function (d) { return deviceCell(p, d); }).join('') +
+          breakdownKeys.map(function (k) { return breakdownCell(p, k); }).join('') +
           '<td class="views">' + p.views.toLocaleString() + '</td></tr>';
       }).join('');
+
+      // Totals reflect the full top-N dataset (not just the "Show N" preview
+      // slice), same as Views by Device/Source -- but unlike those tables
+      // this ISN'T every page ever viewed, just the leaderboard's top N, so
+      // the label says so rather than implying a true grand total.
+      const totalViews = topPagesData.reduce(function (sum, p) { return sum + p.views; }, 0);
+      const breakdownTotals = breakdownKeys.map(function (k) {
+        const sum = topPagesData.reduce(function (acc, p) { return acc + breakdownValue(p, k); }, 0);
+        return '<td class="views">' + sum.toLocaleString() + '</td>';
+      }).join('');
+      topPagesFoot.innerHTML = '<tr><td>Total (top ' + topPagesData.length + ')</td>' + breakdownTotals + '<td class="views">' + totalViews.toLocaleString() + '</td></tr>';
 
       if (topPagesData.length > PAGES_PREVIEW_COUNT) {
         showMoreBtn.style.display = 'block';
@@ -647,38 +659,6 @@
       } else {
         showMoreBtn.style.display = 'none';
       }
-    }
-
-    function renderSiteTotals() {
-      const siteTotalsHead = document.getElementById('siteTotalsHead');
-      const siteTotalsBody = document.getElementById('siteTotalsBody');
-      const siteTotalsFoot = document.getElementById('siteTotalsFoot');
-      if (!siteTotalsData.length) {
-        siteTotalsHead.innerHTML = '<tr>' + thCell('Site', 'site', siteSort) + thCell('Views', 'views', siteSort, 'views') + '</tr>';
-        siteTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
-        siteTotalsFoot.innerHTML = '';
-        return;
-      }
-
-      const devices = siteTotalsDevices;
-      const sorted = sortRows(siteTotalsData, siteSort);
-
-      siteTotalsHead.innerHTML = '<tr>' + thCell('Site', 'site', siteSort) +
-        devices.map(function (d) { return thCell(DEVICE_LABELS[d] || d, d, siteSort, 'views'); }).join('') +
-        thCell('Views', 'views', siteSort, 'views') + '</tr>';
-
-      siteTotalsBody.innerHTML = sorted.map(function (s) {
-        return '<tr><td><a href="https://' + escapeHtml(s.site) + '" target="_blank" rel="noopener">' + escapeHtml(s.site) + '</a></td>' +
-          devices.map(function (d) { return deviceCell(s, d); }).join('') +
-          '<td class="views">' + s.views.toLocaleString() + '</td></tr>';
-      }).join('');
-
-      const totalViews = siteTotalsData.reduce(function (sum, s) { return sum + s.views; }, 0);
-      const deviceColumnTotals = devices.map(function (d) {
-        const sum = siteTotalsData.reduce(function (acc, s) { return acc + ((s.deviceViews && s.deviceViews[d]) || 0); }, 0);
-        return '<td class="views">' + sum.toLocaleString() + '</td>';
-      }).join('');
-      siteTotalsFoot.innerHTML = '<tr><td>Total</td>' + deviceColumnTotals + '<td class="views">' + totalViews.toLocaleString() + '</td></tr>';
     }
 
     function renderDeviceTotals() {
@@ -741,13 +721,6 @@
       renderTopPages();
     });
 
-    document.getElementById('siteTotalsHead').addEventListener('click', function (e) {
-      const th = e.target.closest('th[data-sort-key]');
-      if (!th) return;
-      toggleSort(siteSort, th.dataset.sortKey);
-      renderSiteTotals();
-    });
-
     document.getElementById('deviceTotalsHead').addEventListener('click', function (e) {
       const th = e.target.closest('th[data-sort-key]');
       if (!th) return;
@@ -765,9 +738,8 @@
     async function loadStats() {
       setActiveTab();
       document.getElementById('topPagesBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
+      document.getElementById('topPagesFoot').innerHTML = '';
       showMoreBtn.style.display = 'none';
-      document.getElementById('siteTotalsBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
-      document.getElementById('siteTotalsFoot').innerHTML = '';
       document.getElementById('deviceTotalsBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
       document.getElementById('deviceTotalsFoot').innerHTML = '';
       document.getElementById('sourceTotalsBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
@@ -779,15 +751,13 @@
         if (!res.ok) throw new Error('bad response');
         const data = await res.json();
         const devices = data.devices && data.devices.length ? data.devices : DEFAULT_DEVICES;
+        const sources = data.sources && data.sources.length ? data.sources : DEFAULT_SOURCES;
 
         topPagesData = data.topPages || [];
         topPagesDevices = visibleDevices(topPagesData, devices);
+        topPagesSources = visibleSources(topPagesData, sources);
         showAllPages = false;
         renderTopPages();
-
-        siteTotalsData = data.siteTotals || [];
-        siteTotalsDevices = visibleDevices(siteTotalsData, devices);
-        renderSiteTotals();
 
         deviceTotalsData = data.deviceTotals || [];
         renderDeviceTotals();

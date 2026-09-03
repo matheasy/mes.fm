@@ -80,58 +80,54 @@ module.exports = async (req, res) => {
   const member = `${site}|${path}`;
   const device = detectDevice(req.headers['user-agent']);
   const source = detectSource(body.referrer, site);
-  // Composite members so a single sorted set can hold the per-page and
-  // per-site device breakdowns -- same "|"-joined-member trick the plain
-  // leaderboard/site-totals sets already use, just one level deeper.
+  // Composite members so a single sorted set can hold a per-page breakdown --
+  // same "|"-joined-member trick the plain leaderboard already uses, just
+  // one level deeper. (No more per-SITE breakdown: every property lives
+  // under mes.fm/<slug> now, so "site" is no longer a useful dimension --
+  // it's still embedded in `member`/these composite members for page
+  // identity, just not aggregated on its own anymore.)
   const pageDeviceMember = `${site}|${path}|${device}`;
-  const siteDeviceMember = `${site}|${device}`;
+  const pageSourceMember = `${site}|${path}|${source}`;
   const now = new Date();
   const hk = hourKey(now);
   const dk = dayKey(now);
   const hourlyLeaderboard = `pageviews:leaderboard:hourly:${hk}`;
-  const hourlySiteTotals = `pageviews:sitetotals:hourly:${hk}`;
   const hourlyDeviceTotals = `pageviews:devicetotals:hourly:${hk}`;
   const hourlySourceTotals = `pageviews:sourcetotals:hourly:${hk}`;
   const hourlyPageDevices = `pageviews:pagedevices:hourly:${hk}`;
-  const hourlySiteDevices = `pageviews:sitedevices:hourly:${hk}`;
+  const hourlyPageSources = `pageviews:pagesources:hourly:${hk}`;
   const dailyLeaderboard = `pageviews:leaderboard:daily:${dk}`;
-  const dailySiteTotals = `pageviews:sitetotals:daily:${dk}`;
   const dailyDeviceTotals = `pageviews:devicetotals:daily:${dk}`;
   const dailySourceTotals = `pageviews:sourcetotals:daily:${dk}`;
   const dailyPageDevices = `pageviews:pagedevices:daily:${dk}`;
-  const dailySiteDevices = `pageviews:sitedevices:daily:${dk}`;
+  const dailyPageSources = `pageviews:pagesources:daily:${dk}`;
 
   const commands = [
     ['ZINCRBY', 'pageviews:leaderboard', '1', member],
-    ['HINCRBY', 'pageviews:site-totals', site, '1'],
     ['HINCRBY', 'pageviews:device-totals', device, '1'],
     ['HINCRBY', 'pageviews:source-totals', source, '1'],
     ['ZINCRBY', 'pageviews:pagedevices', '1', pageDeviceMember],
-    ['ZINCRBY', 'pageviews:sitedevices', '1', siteDeviceMember],
+    ['ZINCRBY', 'pageviews:pagesources', '1', pageSourceMember],
     ['ZINCRBY', hourlyLeaderboard, '1', member],
     ['EXPIRE', hourlyLeaderboard, String(HOUR_TTL)],
-    ['ZINCRBY', hourlySiteTotals, '1', site],
-    ['EXPIRE', hourlySiteTotals, String(HOUR_TTL)],
     ['ZINCRBY', hourlyDeviceTotals, '1', device],
     ['EXPIRE', hourlyDeviceTotals, String(HOUR_TTL)],
     ['ZINCRBY', hourlySourceTotals, '1', source],
     ['EXPIRE', hourlySourceTotals, String(HOUR_TTL)],
     ['ZINCRBY', hourlyPageDevices, '1', pageDeviceMember],
     ['EXPIRE', hourlyPageDevices, String(HOUR_TTL)],
-    ['ZINCRBY', hourlySiteDevices, '1', siteDeviceMember],
-    ['EXPIRE', hourlySiteDevices, String(HOUR_TTL)],
+    ['ZINCRBY', hourlyPageSources, '1', pageSourceMember],
+    ['EXPIRE', hourlyPageSources, String(HOUR_TTL)],
     ['ZINCRBY', dailyLeaderboard, '1', member],
     ['EXPIRE', dailyLeaderboard, String(DAY_TTL)],
-    ['ZINCRBY', dailySiteTotals, '1', site],
-    ['EXPIRE', dailySiteTotals, String(DAY_TTL)],
     ['ZINCRBY', dailyDeviceTotals, '1', device],
     ['EXPIRE', dailyDeviceTotals, String(DAY_TTL)],
     ['ZINCRBY', dailySourceTotals, '1', source],
     ['EXPIRE', dailySourceTotals, String(DAY_TTL)],
     ['ZINCRBY', dailyPageDevices, '1', pageDeviceMember],
     ['EXPIRE', dailyPageDevices, String(DAY_TTL)],
-    ['ZINCRBY', dailySiteDevices, '1', siteDeviceMember],
-    ['EXPIRE', dailySiteDevices, String(DAY_TTL)],
+    ['ZINCRBY', dailyPageSources, '1', pageSourceMember],
+    ['EXPIRE', dailyPageSources, String(DAY_TTL)],
   ];
 
   try {
