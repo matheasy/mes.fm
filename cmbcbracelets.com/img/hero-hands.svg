@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 220">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#fdece0"/>
+<stop offset="1" stop-color="#f6c6a0"/>
+</linearGradient>
+</defs>
+<rect width="260" height="220" fill="url(#bg)"/>
+<circle cx="178.4" cy="110.0" r="9.1" fill="#f4a261" stroke="#00000022" stroke-width="1"/><circle cx="175.7" cy="107.3" r="1.7" fill="#ffffff88"/><circle cx="154.2" cy="151.9" r="12.0" fill="#f1faee" stroke="#00000022" stroke-width="1"/><circle cx="150.6" cy="148.3" r="2.6" fill="#ffffff88"/><circle cx="105.8" cy="151.9" r="11.0" fill="#e9c46a" stroke="#00000022" stroke-width="1"/><circle cx="102.5" cy="148.6" r="1.8" fill="#ffffff88"/><circle cx="81.6" cy="110.0" r="8.2" fill="#f1faee" stroke="#00000022" stroke-width="1"/><circle cx="79.1" cy="107.5" r="1.8" fill="#ffffff88"/><circle cx="105.8" cy="68.1" r="14.1" fill="#f4a261" stroke="#00000022" stroke-width="1"/><circle cx="101.6" cy="63.9" r="3.6" fill="#ffffff88"/><circle cx="154.2" cy="68.1" r="10.1" fill="#e9c46a" stroke="#00000022" stroke-width="1"/><circle cx="151.2" cy="65.0" r="2.4" fill="#ffffff88"/>
+<rect x="0" y="192" width="260" height="28" fill="#00000055"/>
+<text x="130.0" y="211" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle">Friendship photo</text>
+</svg>
