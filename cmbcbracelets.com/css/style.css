@@ -47,28 +47,12 @@ body {
   margin-bottom: 22px;
 }
 
-.brand {
-  margin: 0 0 18px;
-  line-height: 1;
-}
-
-.brand .cmbc {
+.logo {
   display: block;
-  font-family: 'Baloo 2', sans-serif;
-  font-weight: 800;
-  font-size: clamp(40px, 10vw, 68px);
-  color: var(--teal);
-  -webkit-text-stroke: 1px #0d8b83;
-  letter-spacing: 1px;
-}
-
-.brand .script {
-  display: block;
-  font-family: 'Caveat', cursive;
-  font-weight: 700;
-  font-size: clamp(36px, 9vw, 60px);
-  color: var(--ink);
-  margin-top: -6px;
+  max-width: 340px;
+  width: 80%;
+  height: auto;
+  margin: 0 auto 18px;
 }
 
 .info-boxes {
@@ -105,15 +89,10 @@ body {
   text-align: left;
 }
 
-.hero-images {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-
-.hero-images img {
+.hero-banner img {
   width: 100%;
-  height: auto;
+  max-height: 340px;
+  object-fit: cover;
   border-radius: 10px;
   border: 2px solid var(--box-border);
   display: block;
@@ -215,8 +194,8 @@ body {
 
 /* Mobile */
 @media (max-width: 640px) {
-  .hero-images {
-    grid-template-columns: repeat(2, 1fr);
+  .hero-banner img {
+    max-height: 220px;
   }
 
   .product-row {
