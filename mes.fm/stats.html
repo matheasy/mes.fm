@@ -309,10 +309,14 @@
          breaks mid-word once a single unhyphenated segment (e.g.
          "gradecalculator") is still wider than the cap -- so truncate with
          an ellipsis on an inner span instead, which isn't subject to
-         table-layout quirks. The button stays outside it, always visible. */
+         table-layout quirks. The button stays outside it, always visible.
+         Kept deliberately short (not "as much as fits") -- a page is
+         already identifiable from just its first few characters ("/percent...",
+         "/bmi..."), so there's no reason to spend more of the narrow
+         viewport on it than that. */
       .wide-table .page-path {
         display: inline-block;
-        max-width: 38vw;
+        max-width: 5em;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
