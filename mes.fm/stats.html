@@ -298,6 +298,26 @@
       .wide-table td.page-cell {
         white-space: nowrap;
       }
+      /* The sticky Page column has no natural width limit, and some page
+         paths are long unbroken strings (old subdomain-prefixed ones
+         especially, e.g. "gradecalculator.mes.fm/weighted-average-
+         calculator") -- letting that render on one line balloons the
+         column to the FULL viewport width, leaving zero room for Views or
+         even a peek of the scrollable columns between them despite them
+         technically still being "there". table max-width doesn't reliably
+         constrain a cell in auto layout, and letting it wrap instead just
+         breaks mid-word once a single unhyphenated segment (e.g.
+         "gradecalculator") is still wider than the cap -- so truncate with
+         an ellipsis on an inner span instead, which isn't subject to
+         table-layout quirks. The button stays outside it, always visible. */
+      .wide-table .page-path {
+        display: inline-block;
+        max-width: 38vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: bottom;
+      }
       /* Letting headers wrap (desktop) is a net win when there's room to
          spare, but on a narrow screen the same allowance -- combined with
          min-width:100% above pressuring auto layout to shrink whatever it
@@ -798,7 +818,7 @@
         const key = pageKey(p);
         const isExpanded = expandedPages.has(key);
         const toggle = '<button type="button" class="expand-toggle" data-page-key="' + escapeHtml(key) + '" aria-expanded="' + isExpanded + '" title="Show device × source breakdown">' + (isExpanded ? '▾' : '▸') + '</button>';
-        const row = '<tr><td class="page-cell sticky-col sticky-left">' + toggle + '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(label) + '</a></td>' +
+        const row = '<tr><td class="page-cell sticky-col sticky-left">' + toggle + '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener"><span class="page-path">' + escapeHtml(label) + '</span></a></td>' +
           breakdownKeys.map(function (k) { return breakdownCell(p, k); }).join('') +
           '<td class="views sticky-col sticky-right">' + p.views.toLocaleString() + '</td></tr>';
         if (!isExpanded) return row;
