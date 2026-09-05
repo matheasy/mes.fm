@@ -52,6 +52,14 @@ of HTML files individually:
   If you need to change the responsive rules repo-wide, edit `RESPONSIVE_CSS` in this script and re-run it rather
   than editing pages individually (existing pages already have the marker, so re-running only touches new/reset
   pages — you'd need to strip the marker+block first to refresh already-patched pages).
+- `remove_dead_appstore_links.py` — strips links to dead App Store / Play Store listings (the iOS apps' Apple
+  Developer account lapsed years ago; the matching Android package IDs 404 too). Removes the shared "Mobile Apps"
+  side-nav dropdown repo-wide (leaves a `MOBILE-APPS-DROPDOWN-REMOVED` HTML comment marker in its place), each
+  site's own "iPhone App"/"Android App" top-nav items, the app table on `mes.fm/mobile-apps.html` (swapped for a
+  placeholder message), and the hand-curated dead entries on `mes.fm/links/index.html`. As each app is rebuilt and
+  republished (see `percentagecalculator-app/`), add its real link back by hand next to the marker comment — this
+  script only ever removes, never re-adds, so re-running it after an update is safe (idempotent, no-op on already
+  fixed pages) and won't clobber a link you just restored elsewhere.
 
 Run any of them with `python3 <script>.py` from anywhere (they resolve the repo root themselves). They print a
 per-file report; read the output rather than assuming success.
