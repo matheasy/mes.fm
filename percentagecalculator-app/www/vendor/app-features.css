@@ -1,0 +1,90 @@
+/* app-features.css - app-only enhancements layered on the bundled pages by
+   build-www.py: light/dark theme, per-calculation labels, and saved-
+   calculation chips in the nav bar. Not part of the mes.fm website. */
+
+/* ---------- nav-bar tool buttons + saved-calculation chips ---------- */
+.info-bar__tool .pc-btn,
+.info-bar__saved .pc-open {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background: none;
+    border: 0;
+    margin: 0;
+    font: inherit;
+    font-size: 0.9em;
+    color: #fff;
+    text-align: center;
+    padding: 0.7em 0.9em;
+    cursor: pointer;
+}
+.info-bar__tool { border-left: 1px solid rgba(255, 255, 255, 0.28); }
+.info-bar__tool .pc-btn:hover,
+.info-bar__saved .pc-open:hover { background: #2b618b; }
+.info-bar__tool .pc-btn[aria-pressed="true"] { background: #0f4c74; }
+
+.info-bar__saved { display: flex; align-items: stretch; }
+.info-bar__saved .pc-open { width: auto; padding-right: 0.35em; }
+.info-bar__saved .pc-del {
+    background: none;
+    border: 0;
+    color: #cfe3f1;
+    cursor: pointer;
+    padding: 0 0.7em 0 0.25em;
+    font-size: 1.05em;
+    line-height: 1;
+}
+.info-bar__saved .pc-del:hover { color: #fff; }
+
+/* ---------- per-calculation label fields ---------- */
+.calc-label-field { display: none; margin: 0 0 0.5em; }
+body.pc-show-labels .calc-label-field { display: block; }
+.calc-label-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55em 0.7em;
+    font-size: 0.95em;
+    border: 1px solid #cbcbcb;
+    border-radius: 0.4em;
+    background: #fff;
+    color: #333;
+}
+.calc-label-field input::placeholder { color: #9a9a9a; }
+
+/* ---------- dark theme ---------- */
+html[data-theme="dark"],
+html[data-theme="dark"] body { background-color: #0f1113; }
+html[data-theme="dark"] .inner-container {
+    background-color: #181b1e;
+    box-shadow: 0 0 1em #000;
+}
+html[data-theme="dark"] .page-content,
+html[data-theme="dark"] .page-content * { color: #d7dade; }
+html[data-theme="dark"] .header .calculator-title,
+html[data-theme="dark"] .header .tag-line,
+html[data-theme="dark"] .header p { color: #d7dade; }
+
+html[data-theme="dark"] .input-row {
+    background-color: #23272b;
+    border-color: #3a4045;
+}
+html[data-theme="dark"] .page-content .input,
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] .calc-label-field input,
+html[data-theme="dark"] .share-calc-url {
+    background-color: #12161a;
+    color: #e8eaed;
+    border: 1px solid #3a4045;
+}
+html[data-theme="dark"] .answer {
+    background-color: #12161a;
+    color: #e8eaed;
+    border-color: #3a4045;
+}
+html[data-theme="dark"] .page-content .button,
+html[data-theme="dark"] .button--navbar { color: #5aa9e6; border-color: #5aa9e6; }
+html[data-theme="dark"] .page-content .selected,
+html[data-theme="dark"] .page-content .button--active { color: #fff; }
+html[data-theme="dark"] .page-content a.link { color: #5aa9e6; }
+html[data-theme="dark"] .box-border { border-color: #3a6f96; }
+html[data-theme="dark"] .calc-label-field input::placeholder { color: #7c848c; }
