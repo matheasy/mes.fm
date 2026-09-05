@@ -35,6 +35,13 @@
       "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory cmbcbracelets.com"],
       "port": 8425,
       "autoPort": true
+    },
+    {
+      "name": "wdttg",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory wdttg.mes.fm"],
+      "port": 8426,
+      "autoPort": true
     }
   ]
 }
