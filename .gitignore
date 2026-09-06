@@ -1,6 +1,9 @@
 .DS_Store
 **/.DS_Store
 compilation_cache/
+__pycache__/
+**/__pycache__/
+*.pyc
 error_log
 **/error_log
 node_modules/
