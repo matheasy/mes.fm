@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/:slug/contact", "destination": "/contact", "permanent": true },
+    { "source": "/:slug/contact.html", "destination": "/contact", "permanent": true },
+    { "source": "/:slug/privacy-policy", "destination": "/privacy-policy", "permanent": true },
+    { "source": "/:slug/privacy-policy.html", "destination": "/privacy-policy", "permanent": true },
     { "source": "/log1/tesla-coil", "destination": "/tesla-coil", "permanent": true },
     { "source": "/nano", "destination": "https://shop.ledger.com/pages/ledger-nano-x?r=7d5787f5fd32", "permanent": true },
     { "source": "/somewhere", "destination": "https://gofund.me/a3dae599", "permanent": true },
