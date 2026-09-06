@@ -8,13 +8,18 @@
 <meta name="description" content="Where Did the Towers Go? — Evidence of Directed Free-Energy Technology on 9/11, by Dr. Judy Wood." />
 <link rel="icon" href="/img/2010/12/cropped-bubblerbackground13-32x32.jpg" sizes="32x32" />
 <link rel="apple-touch-icon" href="/img/2010/12/cropped-bubblerbackground13-180x180.jpg" />
-<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/style.css?v=3" />
 </head>
-<body>
+<body class="light">
 <a href="#content" class="skip-link">Skip to content</a>
 <header id="masthead">
+	<div class="top-bar">
+		<button id="themeToggle" class="theme-toggle-btn" type="button">Loading&hellip;</button>
+	</div>
 	<div class="branding">
-		<a href="index.html" class="site-title">Where Did the Towers Go?</a>
+		<a href="index.html" class="site-title">
+			<img class="site-banner" src="/img/header.gif" width="940" height="106" alt="Where Did the Towers Go?" />
+		</a>
 		<p class="site-description">Evidence of Directed Free-Energy Technology on 9/11</p>
 	</div>
 	<nav id="access" aria-label="Primary">
@@ -173,5 +178,22 @@ Ciao for now.</p>
 	</ul>
 	<p class="site-info">Where Did the Towers Go?</p>
 </footer>
+
+<script>
+	(function () {
+		var body = document.body;
+		var btn = document.getElementById('themeToggle');
+		function setTheme(dark) {
+			body.classList.toggle('dark', dark);
+			body.classList.toggle('light', !dark);
+			btn.textContent = dark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+			try { localStorage.setItem('wdttg-theme', dark ? 'dark' : 'light'); } catch (e) {}
+		}
+		var saved;
+		try { saved = localStorage.getItem('wdttg-theme'); } catch (e) { saved = null; }
+		setTheme(saved === 'dark');
+		btn.addEventListener('click', function () { setTheme(!body.classList.contains('dark')); });
+	})();
+</script>
 </body>
 </html>

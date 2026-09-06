@@ -6,7 +6,17 @@
 	--accent: #0645ad;
 	--band: #12151c;
 	--band-ink: #f2f2f2;
+	--note-bg: #f7f7f8;
 	--max: 780px;
+}
+
+body.dark {
+	--ink: #e7e7ea;
+	--muted: #a7abb4;
+	--paper: #17181c;
+	--line: #33353c;
+	--accent: #7db2ff;
+	--note-bg: #202227;
 }
 
 * { box-sizing: border-box; }
@@ -36,10 +46,31 @@ body {
 	color: var(--band-ink);
 }
 
+.top-bar {
+	max-width: var(--max);
+	margin: 0 auto;
+	padding: 0.75rem 1.25rem 0;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.theme-toggle-btn {
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--band-ink);
+	padding: 0.4rem 0.85rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	cursor: pointer;
+}
+.theme-toggle-btn:hover { background: rgba(255, 255, 255, 0.16); }
+
 .branding {
 	max-width: var(--max);
 	margin: 0 auto;
-	padding: 1.75rem 1.25rem 1rem;
+	padding: 0.75rem 1.25rem 1rem;
 	text-align: center;
 }
 
@@ -50,6 +81,14 @@ body {
 	font-size: 1.7rem;
 	font-weight: 700;
 	letter-spacing: -0.01em;
+}
+
+.site-banner {
+	max-width: 100%;
+	width: 480px;
+	height: auto;
+	display: block;
+	margin: 0 auto;
 }
 
 .site-description {
@@ -127,6 +166,15 @@ body {
 	margin: 0 auto 1rem;
 }
 
+.content-image-wrap {
+	text-align: center;
+}
+.content-image-wrap img.content-image {
+	float: none;
+	display: inline-block;
+	margin: 0 auto 1rem;
+}
+
 #content hr {
 	border: none;
 	border-top: 1px solid var(--line);
@@ -141,6 +189,24 @@ body {
 	margin: 0 0 1.25rem;
 }
 
+.video-embed {
+	position: relative;
+	width: 100%;
+	max-width: 560px;
+	padding-bottom: 56.25%;
+	height: 0;
+	margin: 1rem auto;
+	clear: both;
+}
+.video-embed iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
 .notes {
 	display: flex;
 	flex-direction: column;
@@ -150,7 +216,7 @@ body {
 
 .note {
 	padding: 1rem 1.25rem;
-	background: #f7f7f8;
+	background: var(--note-bg);
 	border-left: 3px solid var(--accent);
 	border-radius: 0 6px 6px 0;
 }
@@ -197,6 +263,7 @@ body {
 
 @media (max-width: 600px) {
 	.site-title { font-size: 1.35rem; }
+	.site-banner { width: 100%; max-width: 340px; }
 	#access a { padding: 0.7rem 0.6rem; font-size: 0.75rem; }
 	#content { padding: 1.5rem 1rem 2.5rem; }
 	#content img.alignleft,
