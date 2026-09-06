@@ -153,6 +153,13 @@ def clean(html: str) -> str:
     html = re.sub(r'<a (?![^>]*\btarget=)([^>]*href="https?://[^"]+")',
                   r'<a target="_blank" rel="noopener" \1', html)
 
+    # --- drop the "Share Calculations" feature -------------------------
+    # it POSTs to a relative /api/share that doesn't exist in the app
+    # bundle (always 404s); the app's own Save feature covers this need
+    html = re.sub(r'<div id="share-calc-button"[^>]*>.*?</div>\s*'
+                  r'<div id="share-calc-url-container"[^>]*>.*?</div>\s*',
+                  "", html, flags=re.S)
+
     # --- top nav bar: internal links only -------------------------------
     # keep Home / Tutorial / Percentages How-To; drop every info-bar item
     # that now leaves the app (they stay reachable from the hamburger menu)
