@@ -8,13 +8,13 @@
 <meta name="description" content="Where Did the Towers Go? — Evidence of Directed Free-Energy Technology on 9/11, by Dr. Judy Wood." />
 <link rel="icon" href="/img/2010/12/cropped-bubblerbackground13-32x32.jpg" sizes="32x32" />
 <link rel="apple-touch-icon" href="/img/2010/12/cropped-bubblerbackground13-180x180.jpg" />
-<link rel="stylesheet" href="/css/style.css?v=3" />
+<link rel="stylesheet" href="/css/style.css?v=5" />
 </head>
 <body class="light">
 <a href="#content" class="skip-link">Skip to content</a>
 <header id="masthead">
 	<div class="top-bar">
-		<button id="themeToggle" class="theme-toggle-btn" type="button">Loading&hellip;</button>
+		<button id="themeToggle" class="theme-toggle-btn" type="button" aria-label="Toggle dark mode">&hellip;</button>
 	</div>
 	<div class="branding">
 		<a href="index.html" class="site-title">
@@ -34,6 +34,7 @@
 			<li><a href="buy.html">BUY</a></li>
 			<li><a href="shows.html">SHOWS</a></li>
 			<li><a href="radio.html">RADIO</a></li>
+			<li><a href="http://doctorjudywood.com/towers" target="_blank" rel="noopener">Video site for book</a></li>
 		</ul>
 	</nav>
 </header>
@@ -58,6 +59,11 @@ Thanks to <a href="https://www.youtube.com/user/WAHsu">WAHsu</a> for this video!
 	<p class="site-info">Where Did the Towers Go?</p>
 </footer>
 
+<div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true" aria-label="Image viewer">
+	<button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+	<img class="lightbox-image" id="lightboxImage" src="" alt="" />
+</div>
+
 <script>
 	(function () {
 		var body = document.body;
@@ -65,13 +71,54 @@ Thanks to <a href="https://www.youtube.com/user/WAHsu">WAHsu</a> for this video!
 		function setTheme(dark) {
 			body.classList.toggle('dark', dark);
 			body.classList.toggle('light', !dark);
-			btn.textContent = dark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+			btn.textContent = dark ? '☀️' : '🌙';
+			btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
 			try { localStorage.setItem('wdttg-theme', dark ? 'dark' : 'light'); } catch (e) {}
 		}
 		var saved;
 		try { saved = localStorage.getItem('wdttg-theme'); } catch (e) { saved = null; }
 		setTheme(saved === 'dark');
 		btn.addEventListener('click', function () { setTheme(!body.classList.contains('dark')); });
+	})();
+</script>
+
+<script>
+	// Content images that link straight to their own full-size file (the WP
+	// editor's "click through to full size" pattern) open in a lightbox
+	// overlay instead of navigating to a bare image URL.
+	(function () {
+		var overlay = document.getElementById('lightboxOverlay');
+		var imageEl = document.getElementById('lightboxImage');
+		var closeBtn = document.getElementById('lightboxClose');
+		var links = Array.prototype.slice.call(document.querySelectorAll('#content a')).filter(function (a) {
+			var img = a.querySelector('img');
+			return img && /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(a.getAttribute('href') || '');
+		});
+		if (!links.length) return;
+
+		function open(src, alt) {
+			imageEl.src = src;
+			imageEl.alt = alt || '';
+			overlay.classList.add('open');
+			document.body.style.overflow = 'hidden';
+		}
+		function close() {
+			overlay.classList.remove('open');
+			document.body.style.overflow = '';
+		}
+
+		links.forEach(function (a) {
+			a.addEventListener('click', function (e) {
+				e.preventDefault();
+				var img = a.querySelector('img');
+				open(a.getAttribute('href'), img.alt);
+			});
+		});
+		closeBtn.addEventListener('click', close);
+		overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+		document.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+		});
 	})();
 </script>
 </body>
