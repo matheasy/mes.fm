@@ -40,6 +40,9 @@ END = "<!-- OG-TAGS:END -->"
 # (the directory name), value is an absolute https://mes.fm/... image URL.
 OG_IMAGE_OVERRIDES = {
     "andrew-mason-clown": SITE_ORIGIN + "/andrew-mason-clown/img/andrew-mason-4.jpg",
+    # two screenshots; the Alex Jones "grab your XRP" post is the on-topic one,
+    # not the plain CoinMarketCap phone notification
+    "alex-jones-xrp-bitcoin": SITE_ORIGIN + "/alex-jones-xrp-bitcoin/img/crypto-news-1-10Sz8k.jpg",
 }
 
 _dims_cache = {}
