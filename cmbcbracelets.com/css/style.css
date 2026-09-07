@@ -142,6 +142,17 @@ body {
   display: block;
 }
 
+.product .promo {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  background: #e6faf8;
+  border: 2px dashed var(--teal);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
 .product.image-only {
   display: flex;
   align-items: center;
