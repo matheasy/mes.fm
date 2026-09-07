@@ -342,8 +342,10 @@
 			", " + clockStr(state.from, instant);
 
 		fillAddSelect();
+		// keep the shareable-link box current, but never touch the address bar --
+		// the home URL stays a clean /timezone; a #hash link is only produced when
+		// the visitor clicks "Copy shareable link" (and honoured when one is opened).
 		$("tz-link").value = linkFor();
-		try { history.replaceState(null, "", linkFor()); } catch (e) {}
 		saveStore();
 	}
 
@@ -399,6 +401,7 @@
 	$("tz-copy").addEventListener("click", function () {
 		var link = linkFor();
 		$("tz-link").value = link;
+		try { history.replaceState(null, "", link); } catch (e) {}   // only on explicit share
 		function ok() {
 			var c = $("tz-copied");
 			c.classList.remove("hide");
