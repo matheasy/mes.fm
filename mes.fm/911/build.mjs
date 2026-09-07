@@ -300,6 +300,12 @@ function buildPage(post) {
   const description =
     post.json_metadata?.description ||
     "MES 9/11 Truth -- the full #911Truth video series, observable-evidence clips, livestreams, and links, mirrored from the Hive blockchain.";
+  const ogImage =
+    (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
+    ((String(bodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
+    "";
+  const ogImageTag = ogImage ? `\n  <meta property="og:image" content="${escapeHtml(ogImage)}">` : "";
+  const twitterImageTag = ogImage ? `\n  <meta name="twitter:image" content="${escapeHtml(ogImage)}">` : "";
   const buildDate = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -315,6 +321,17 @@ function buildPage(post) {
   <meta name="keywords" content="MES, 9/11, Truth, Math Easy Solutions">
   <meta name="author" content="MES">
   <link rel="canonical" href="https://mes.fm/911" />
+  <!-- OG-TAGS:START -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MES Truth">
+  <meta property="og:url" content="https://mes.fm/911">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">${ogImageTag}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@MathEasySolns">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">${twitterImageTag}
+  <!-- OG-TAGS:END -->
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
   <title>${escapeHtml(title)} | Math Easy Solutions</title>
   <style>

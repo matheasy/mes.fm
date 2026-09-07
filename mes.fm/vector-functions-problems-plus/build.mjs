@@ -310,6 +310,12 @@ ${leadingHtml}
   const description =
     (post.json_metadata && post.json_metadata.description) ||
     "Review of the Vector Functions chapter from James Stewart's Calculus -- 9 Concept Check questions and a 14-question True-False Quiz, worked through with full solutions and video. Mirrored from the Hive blockchain.";
+  const ogImage =
+    (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
+    ((String(bodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
+    "";
+  const ogImageTag = ogImage ? `\n  <meta property="og:image" content="${escapeHtml(ogImage)}">` : "";
+  const twitterImageTag = ogImage ? `\n  <meta name="twitter:image" content="${escapeHtml(ogImage)}">` : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -319,6 +325,17 @@ ${leadingHtml}
   <meta name="description" content="${escapeHtml(description)}">
   <meta name="author" content="MES">
   <link rel="canonical" href="${CANONICAL}" />
+  <!-- OG-TAGS:START -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MES Truth">
+  <meta property="og:url" content="${CANONICAL}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">${ogImageTag}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@MathEasySolns">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">${twitterImageTag}
+  <!-- OG-TAGS:END -->
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
   <title>${escapeHtml(title)} | Math Easy Solutions</title>
   <style>

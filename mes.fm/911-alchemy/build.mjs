@@ -183,6 +183,12 @@ async function buildPage(post) {
   const description =
     (post.json_metadata && post.json_metadata.description) ||
     "The 3-part 9/11 Alchemy documentary series by Chris Hampton and Mark Conlon of Wolf Clan Media -- Free Energy & Free Thinking, Facing Reality, and A Big Idea -- with embedded videos. Mirrored from the Hive blockchain.";
+  const ogImage =
+    (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
+    ((String(bodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
+    "";
+  const ogImageTag = ogImage ? `\n  <meta property="og:image" content="${escapeHtml(ogImage)}">` : "";
+  const twitterImageTag = ogImage ? `\n  <meta name="twitter:image" content="${escapeHtml(ogImage)}">` : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -192,6 +198,17 @@ async function buildPage(post) {
   <meta name="description" content="${escapeHtml(description)}">
   <meta name="author" content="MES">
   <link rel="canonical" href="${CANONICAL}" />
+  <!-- OG-TAGS:START -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MES Truth">
+  <meta property="og:url" content="${CANONICAL}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">${ogImageTag}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@MathEasySolns">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">${twitterImageTag}
+  <!-- OG-TAGS:END -->
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
   <title>${escapeHtml(title)} | Math Easy Solutions</title>
   <style>
