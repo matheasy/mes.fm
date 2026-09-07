@@ -6,3 +6,5 @@ DerivedData/
 *.log
 .DS_Store
 www/img_*.png
+ios/build-sim/
+ios/*.xcarchive

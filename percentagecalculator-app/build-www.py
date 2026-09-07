@@ -106,6 +106,18 @@ def clean(html: str) -> str:
     html = re.sub(r"<script[^>]*googlesyndication[^>]*>\s*</script>", "", html)
     html = re.sub(r"<!-- PC \([^)]*\)[^>]*-->", "", html)
 
+    # YouTube embeds fail from the capacitor:// origin ("Error 153"); swap the
+    # iframe for a button that opens the video in the system browser
+    html = re.sub(
+        r'<div class="yt-embed">.*?youtube(?:-nocookie)?\.com/embed/'
+        r'([A-Za-z0-9_-]+).*?</div></div>',
+        r'<p class="sentence" style="text-align:center;margin:1.2em 0;">'
+        r'<a class="button" style="display:inline-block;padding:0.6em 1.1em;" '
+        r'target="_blank" rel="noopener" '
+        r'href="https://www.youtube.com/watch?v=\1">'
+        r'&#9654;&nbsp; Watch the Video Tutorial on YouTube</a></p>',
+        html, flags=re.S)
+
     # --- nav: drop the store-link items ------------------------------------
     html = re.sub(r'<li class="navbar__item"><a target="_blank" '
                   r'class="navbar__link" href="https://itunes\.apple\.com[^"]*">'
