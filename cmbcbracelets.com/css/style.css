@@ -156,16 +156,29 @@ body {
 }
 
 .product-cell {
+  display: flex;
+  flex-direction: column;
   text-align: center;
 }
 
-.product-cell img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
+.product-cell .thumb {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 10px;
+}
+
+.product-cell img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
   display: block;
 }
+
 
 .product-cell .price {
   font-size: 36px;
@@ -192,6 +205,101 @@ body {
   color: #6b7a7e;
   font-size: 13px;
   margin-top: 8px;
+}
+
+/* Gallery images open in the lightbox on click */
+.hero-banner img,
+.product img,
+.product-cell img {
+  cursor: zoom-in;
+}
+
+/* Lightbox */
+
+.lightbox-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 120px;
+}
+
+.lightbox-overlay.open {
+  display: flex;
+}
+
+.lightbox-image {
+  width: 100vw;
+  max-width: 100vw;
+  max-height: calc(100vh - 120px);
+  object-fit: contain;
+  display: block;
+}
+
+.lightbox-controls {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lightbox-counter {
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  font-size: 0.85em;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border: 0;
+  cursor: pointer;
+}
+
+.lightbox-close:hover,
+.lightbox-prev:hover,
+.lightbox-next:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.3em;
+  z-index: 10000;
+}
+
+.lightbox-prev,
+.lightbox-next {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.4em;
+}
+
+@media (max-width: 600px) {
+  .lightbox-overlay { padding-bottom: 100px; }
+  .lightbox-image { max-height: calc(100vh - 100px); }
+  .lightbox-controls { bottom: 32px; }
+  .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+  .lightbox-close { width: 36px; height: 36px; }
 }
 
 /* Mobile */
