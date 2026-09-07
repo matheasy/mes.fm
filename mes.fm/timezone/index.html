@@ -1,0 +1,639 @@
+<!DOCTYPE html>    <html lang="en">    
+<!-- MES Timezone Converter -- mes.fm/timezone -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/timezone/img/logo.png" type="image/png" /><link rel="canonical" href="https://mes.fm/timezone/" />                    <title>MES Timezone Converter | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#3d5a80;color:white;}
+        .button {color:#3d5a80;border:0.125em solid#3d5a80;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#3d5a80; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#3d5a80; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#3d5a80;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#3d5a80;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#3d5a80;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#2c4260;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#3d5a80;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:100;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#3d5a80;border:0.125em solid#3d5a80;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#2c4260;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#3d5a80;}
+        .dropdown-symbol--dark {color:#3d5a80;}
+        .button--active {background-color:#3d5a80;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  /* keep only the site-content links in the header row on mobile (Home/
+     Donate/Subscribe/Links live in the hamburger dropdown instead, see
+     the unconditional block below the media query) -- kept mobile-only
+     since the full row already fits fine as a normal top nav on wider
+     screens */
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
+   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
+   panel instead of the always-visible sidebar, at every screen width
+   (not just mobile), so no page reserves a right-hand column for it */
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+/* on narrow screens the title/logo-text can wrap wide enough that its
+   flex-item bounding box runs under the absolutely-positioned hamburger
+   button (out of normal flow, so nothing naturally reserves space for
+   it) -- give the header a bit of right padding on mobile so wrapped
+   title text never renders underneath the button */
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  /* !important: this page loads Bootstrap 3's CSS, whose
+     `.hide { display: none !important }` utility would otherwise
+     keep the menu hidden even with #navbar.hide's higher specificity */
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+/* dropdown polish: fix the icon/logo row overlapping the next nav item
+   (.info-bar__logo-container's global `display: table-cell` doesn't
+   behave without a table/table-row ancestor), and move "Follow us!" to
+   the bottom of the list instead of the top -- via flex order, not an
+   HTML move, since locating the true closing </ul> among the nested
+   .navbar__dropdown-container <ul>s isn't worth the risk */
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+/* now that the sidebar is gone, center the main content column in a
+   narrower page instead of leaving it flush-left in a wide, mostly-empty
+   .outer-container -- matches the plain centered-column layout
+   mes.fm/ufo already uses */
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* Timezone converter tool */
+	.tz {margin:1em 0;--accent:#3d5a80;--accent-dark:#2c4260;}
+	.tz *, .tz *::before, .tz *::after {box-sizing:border-box;}
+	.tz__source {background:#f4f6f9;border:1px solid #dfe4ea;border-radius:0.5em;padding:1em 1.1em;margin-bottom:1.1em;}
+	.tz__row {display:flex;flex-wrap:wrap;gap:0.75em;align-items:flex-end;}
+	.tz__field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 12em;min-width:0;}
+	.tz__field label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tz__field input, .tz__field select {font:inherit;font-size:1em;padding:0.55em 0.6em;border:1px solid #b9c1cc;border-radius:0.35em;background:#fff;color:#222;width:100%;}
+	.tz__field input:focus, .tz__field select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(61,90,128,0.18);}
+	.tz__btns {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.9em;}
+	.tz__btn {font:inherit;font-size:0.9em;cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);line-height:1;display:inline-flex;align-items:center;gap:0.35em;}
+	.tz__btn:hover {background:var(--accent);color:#fff;}
+	.tz__btn--primary {background:var(--accent);color:#fff;}
+	.tz__btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tz__btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tz__btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tz__addrow {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:1.1em 0 0.4em;}
+	.tz__addrow select {font:inherit;font-size:0.95em;padding:0.5em 0.6em;border:1px solid #b9c1cc;border-radius:0.35em;background:#fff;flex:1 1 16em;min-width:0;}
+	.tz__list {list-style:none;margin:0.5em 0 0;padding:0;display:flex;flex-direction:column;gap:0.5em;}
+	.tz__card {display:flex;align-items:center;gap:0.9em;border:1px solid #dfe4ea;border-left:4px solid var(--accent);border-radius:0.4em;padding:0.7em 0.9em;background:#fff;}
+	.tz__card--home {border-left-color:#c9a227;background:#fffdf5;}
+	.tz__card__main {flex:1 1 auto;min-width:0;}
+	.tz__card__place {font-weight:700;font-size:1.02em;color:#1e2733;}
+	.tz__card__place .tz__flag {margin-right:0.4em;}
+	.tz__card__meta {font-size:0.82em;color:#77808c;margin-top:0.15em;}
+	.tz__card__time {flex:0 0 auto;text-align:right;}
+	.tz__card__clock {font-size:1.5em;font-weight:700;color:#1e2733;line-height:1.1;font-variant-numeric:tabular-nums;}
+	.tz__card__date {font-size:0.82em;color:#77808c;margin-top:0.15em;}
+	.tz__card__daydiff {display:inline-block;font-size:0.72em;font-weight:700;padding:0.1em 0.45em;border-radius:0.8em;margin-left:0.35em;background:#eef1f5;color:#5a6572;vertical-align:middle;}
+	.tz__card__daydiff--plus {background:#e6f0e6;color:#2f6d33;}
+	.tz__card__daydiff--minus {background:#f6e6e6;color:#9a3b3b;}
+	.tz__remove {flex:0 0 auto;border:none;background:none;color:#aab2bd;font-size:1.2em;cursor:pointer;padding:0.2em 0.35em;line-height:1;border-radius:0.25em;}
+	.tz__remove:hover {color:#c0392b;background:#f7ecec;}
+	.tz__share {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-top:1.1em;font-size:0.9em;}
+	.tz__share input {font:inherit;font-size:0.85em;flex:1 1 18em;min-width:0;padding:0.5em 0.6em;border:1px solid #b9c1cc;border-radius:0.35em;background:#f7f8fa;color:#333;}
+	.tz__copied {color:#2f6d33;font-weight:700;font-size:0.85em;}
+	.tz__note {font-size:0.82em;color:#77808c;font-style:italic;margin-top:0.6em;}
+	.tz-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	.tz-seo h2 {font-size:1.2em;color:#1e2733;margin:1em 0 0.4em;}
+	.tz-seo h3 {font-size:1.02em;color:#1e2733;margin:1em 0 0.3em;}
+	.tz-seo p {line-height:1.55;margin:0.5em 0;}
+	.tz-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	@media (max-width: 600px) {
+		.tz__card {flex-wrap:wrap;}
+		.tz__card__time {text-align:left;flex-basis:100%;}
+		.tz__field {flex-basis:100%;}
+	}
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box,
+		.tz__btns, .tz__addrow, .tz__share, .tz__remove, .color-box, .tz-seo { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		/* header: stack logo/title and follow-us icons instead of overlapping */
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		/* nav bar: wrap since Donate/Subscribe/Links brings this to 9 items */
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.tz__row { gap: 0.6em; }
+
+		/* footer: stack columns instead of squeezing table-cells side by side */
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/timezone" />            <meta property="og:title" content="MES Timezone Converter | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/timezone/img/logo-big.png" />
+        <meta property="og:description" content="Free online time zone converter. Convert a time between Vancouver / Richmond, BC (Pacific Time) and any city in the world, with daylight saving handled automatically. Detect your own time zone with one click and share a link to the result." />
+
+        <meta name="description" content="Free online time zone converter. Convert a time between Vancouver / Richmond, BC (Pacific Time) and any city in the world, with daylight saving handled automatically. Detect your own time zone with one click and share a link to the result.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Timezone Converter">
+        <meta name="twitter:description" content="Convert a time between Vancouver / Richmond, BC (Pacific Time) and any city in the world. Daylight saving handled automatically.">
+        <meta name="twitter:image" content="https://mes.fm/timezone/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Timezone Converter">
+        <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"WebApplication","name":"MES Timezone Converter","url":"https://mes.fm/timezone","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free online time zone converter. Convert a time between Vancouver / Richmond, BC (Pacific Time) and any city in the world, with daylight saving handled automatically.","publisher":{"@type":"Organization","name":"Math Easy Solutions","url":"https://mes.fm/"}}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->            
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    </head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/timezone'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Timezone Converter logo" data-src="/timezone/img/logo.png"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/timezone'>
+                                    <p class="calculator-title">MES Timezone Converter</p>
+                                </a>
+                                <p class="tag-line">Convert a time across any two cities in the world.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/timezone'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools.html'>Tools</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/links'>Links</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Time Zone Converter</h1>                                        <p class="page-description">Pick a time and a city, and see what that same moment is everywhere else. Daylight saving time is applied automatically for every zone. The starting city defaults to <strong>Richmond / Vancouver, BC (Pacific Time)</strong> at <strong>1:00&nbsp;PM</strong> &mdash; tap <em>Use my location</em> to switch it to wherever you are.</p>                                    	<div id="main-content">
+	<div class="tz" id="tz">
+		<div class="tz__source">
+			<div class="tz__row">
+				<div class="tz__field">
+					<label for="tz-date">Date</label>
+					<input type="date" id="tz-date" autocomplete="off">
+				</div>
+				<div class="tz__field">
+					<label for="tz-time">Time</label>
+					<input type="time" id="tz-time" autocomplete="off" value="13:00">
+				</div>
+				<div class="tz__field" style="flex:2 1 18em;">
+					<label for="tz-from">From city / time zone</label>
+					<select id="tz-from"></select>
+				</div>
+			</div>
+			<div class="tz__btns">
+				<button type="button" class="tz__btn tz__btn--primary" id="tz-now">Set to now</button>
+				<button type="button" class="tz__btn" id="tz-locate">&#128205; Use my location</button>
+				<button type="button" class="tz__btn tz__btn--ghost" id="tz-reset">Reset to 1&nbsp;PM Vancouver</button>
+			</div>
+			<p class="tz__note" id="tz-from-note"></p>
+		</div>
+
+		<div class="tz__addrow">
+			<select id="tz-add" aria-label="Add a city or time zone"><option value="">+ Add a city / time zone&hellip;</option></select>
+			<button type="button" class="tz__btn" id="tz-add-btn">Add</button>
+		</div>
+
+		<ul class="tz__list" id="tz-list"></ul>
+
+		<div class="tz__share">
+			<button type="button" class="tz__btn tz__btn--ghost" id="tz-copy">Copy shareable link</button>
+			<input type="text" id="tz-link" readonly aria-label="Shareable link">
+			<span class="tz__copied hide" id="tz-copied">Copied &#10003;</span>
+		</div>
+		<p class="tz__note">Everything runs in your browser. &ldquo;Use my location&rdquo; reads only your device&rsquo;s time-zone setting &mdash; no GPS prompt, nothing sent anywhere.</p>
+	</div>
+
+	<div class="tz-seo">
+		<h2>How to use the time zone converter</h2>
+		<ul>
+			<li>Set the <strong>date</strong> and <strong>time</strong>, then choose the <strong>city</strong> that time is in (it starts on Pacific Time for Richmond / Vancouver, BC).</li>
+			<li>Every card below updates to show that exact moment in another city, with the weekday, date and a <em>+1 day</em> / <em>&minus;1 day</em> badge when the date rolls over.</li>
+			<li>Use <strong>Add a city / time zone</strong> to track more places, and the <strong>&times;</strong> on a card to remove one. Your list is remembered on this device.</li>
+			<li><strong>Copy shareable link</strong> makes a URL that reopens the converter with the same time and cities &mdash; handy for scheduling calls and meetings.</li>
+		</ul>
+
+		<h2>About Pacific Time (Vancouver &amp; Richmond, BC)</h2>
+		<p>Richmond, British Columbia keeps the same clock as Vancouver, Seattle and Los Angeles: North American <strong>Pacific Time</strong>. From roughly mid-March to early November it observes <strong>Pacific Daylight Time (PDT)</strong>, which is UTC&minus;7; the rest of the year it is <strong>Pacific Standard Time (PST)</strong>, UTC&minus;8. This converter switches between PDT and PST for you based on the date you enter, so a summer conversion and a winter conversion of &ldquo;1:00&nbsp;PM Vancouver&rdquo; give different UTC results &mdash; as they should.</p>
+
+		<h3>Common conversions from 1:00 PM in Vancouver</h3>
+		<p>During PDT (summer), 1:00&nbsp;PM in Vancouver is about 4:00&nbsp;PM in New York and Toronto, 9:00&nbsp;PM in London, 10:00&nbsp;PM in Paris and Berlin, 1:30&nbsp;AM the next day in Mumbai, and 5:00&nbsp;AM the next day in Tokyo. In winter (PST) each of those shifts an hour later. The live cards above always show the exact result for the date you pick.</p>
+
+		<h3>Does this handle daylight saving time?</h3>
+		<p>Yes. All conversions are computed from the official IANA time-zone database that ships with your browser, so DST start/end dates, historical changes and permanent-DST regions are all accounted for automatically.</p>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="button" style="position:relative;">Comments<span class="dropdown-symbol" style="color:inherit;position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>
+                                    <div id="comments-box">
+                                        <div id="fastcomments-widget"></div>                                    </div>                            </div>
+                        </div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/timezone">Home</a></li>    <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Calculators<span class="dropdown-symbol">&#9660;</span></span>
+        <ul class="navbar__dropdown-container hide">
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/bmicalculator">&#9642; <span>BMI Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/gpacalculator">&#9642; <span>GPA Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/gradecalculator">&#9642; <span>Grade Calculator</span></a></li>
+            
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/mortgagecalculator">&#9642; <span>Mortgage Calculator</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/percentagecalculator">&#9642; <span>Percentage Calculator</span></a></li>
+            
+                        <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/calculators.html">&#9642; <span>More...</span></a></li>
+        </ul>
+    </li>
+    <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Tools<span class="dropdown-symbol">&#9660;</span></span>
+        <ul class="navbar__dropdown-container hide">
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/speedreader">&#9642; <span>Speed Reader</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/timer">&#9642; <span>Timer</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/latex">&#9642; <span>LaTeX Render</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/timezone">&#9642; <span>Timezone Converter</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/tools.html">&#9642; <span>More...</span></a></li>
+        </ul>
+    </li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li><li class="navbar__item"><a class="navbar__link" href="https://mes.fm/links">Links</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+                                        
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps.html">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/links">MES Links</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;</span><a class="footer__text" href="https://mes.fm/">Math Easy Solutions</a></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/timezone/js/timezone.js" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.3"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script></body>
+
+</html>
