@@ -43,6 +43,9 @@ OG_IMAGE_OVERRIDES = {
     # two screenshots; the Alex Jones "grab your XRP" post is the on-topic one,
     # not the plain CoinMarketCap phone notification
     "alex-jones-xrp-bitcoin": SITE_ORIGIN + "/alex-jones-xrp-bitcoin/img/crypto-news-1-10Sz8k.jpg",
+    # 10 images; MES's own "Livestream 140" thumbnail (the one Norman is accused
+    # of mimicking) is the most representative and card-friendly
+    "911-revisionist-spammer": "https://img.leopedia.io/DQmbpgZNh1aVMsLjBor5QupBNRbH4wS7ZFmbcoRMmmoPjPh/telegram-cloud-photo-size-1-4969851364699737239-y.jpg",
 }
 
 _dims_cache = {}
