@@ -1,0 +1,83 @@
+/* Overrides for the legacy "Journal" pages (journal/**) -- hand-coded
+   HTML from the Microsoft Word 98 / Adobe GoLive era, table-based layout
+   throughout. Rather than rewriting 500+ pages of bespoke table markup,
+   this neutralizes the old presentational patterns generically so the
+   surviving content reads cleanly on top of the site's shared theme. */
+
+.journal-crumb {
+	max-width: var(--max);
+	margin: 0.75rem auto 0;
+	padding: 0 1.25rem;
+}
+.journal-crumb a {
+	font-size: 0.85rem;
+	color: var(--accent);
+	text-decoration: none;
+}
+.journal-crumb a:hover { text-decoration: underline; }
+
+.journal-content {
+	max-width: var(--max);
+	margin: 0 auto;
+	padding: 1.5rem 1.25rem 3rem;
+	font-size: 16px;
+	line-height: 1.6;
+	overflow-x: auto;
+}
+
+/* Old pages nest table-based layout arbitrarily deep; force every level
+   to behave like ordinary block flow instead of a rigid grid. */
+.journal-content table {
+	width: 100% !important;
+	max-width: 100%;
+	border-collapse: collapse;
+	margin: 0 0 1rem;
+}
+.journal-content td,
+.journal-content th {
+	padding: 0.4rem 0.6rem;
+	vertical-align: top;
+	border: none;
+}
+
+.journal-content img {
+	max-width: 100%;
+	height: auto;
+	cursor: zoom-in;
+}
+
+.journal-content a {
+	color: var(--accent);
+}
+
+.journal-content hr {
+	border: none;
+	border-top: 1px solid var(--line);
+	margin: 1.5rem 0;
+}
+
+.journal-content p {
+	margin: 0 0 1em;
+}
+
+/* The per-page "top nav" table every legacy page carries (links to
+   sibling pages in its own article series) is left in place rather than
+   surgically removed -- 43 differently-authored sections make reliably
+   detecting it unsafe. Once bgcolor/font-size cruft is stripped, it
+   settles into plain, readable secondary navigation instead of a loud
+   colored strip -- functionally redundant with the site's own nav above
+   it, but harmless. */
+.journal-content table table {
+	width: auto !important;
+}
+
+@media (max-width: 700px) {
+	.journal-content { font-size: 15px; padding: 1rem 1rem 2.5rem; }
+	.journal-content table,
+	.journal-content tbody,
+	.journal-content tr,
+	.journal-content td {
+		display: block;
+		width: 100% !important;
+	}
+}

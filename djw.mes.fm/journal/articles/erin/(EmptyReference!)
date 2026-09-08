@@ -1,0 +1,115 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Order Page for Check The Evidence</title>
+</head>
+
+<body>
+
+<div id="header" style="background-origin: initial; background-clip: initial; color: rgb(29, 45, 69); font-family: Arial, Helvetica, sans-serif; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: 17px; orphans: 2; text-align: -webkit-auto; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; background: rgb(86, 112, 161) url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/header-bg.png') repeat no-repeat initial 0px 0px">
+	<div class="rk-1">
+		<div class="rk-2">
+			<p align="center">
+			<FONT SIZE=+1> <a href="http://www.checktheevidence.com/"><img border="0" src="http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/checkevlogo.jpg" width="793" height="97"></a></font></p>
+			<p align="center">&nbsp;</div>
+	</div>
+</div>
+<div id="horiz-menu" style="background-origin: initial; background-clip: initial; height: 33px; color: rgb(29, 45, 69); font-family: Arial, Helvetica, sans-serif; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: 17px; orphans: 2; text-align: -webkit-auto; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-bg.png') no-repeat 0px 0px; ; width:1332px">
+	<ul id="mainlevel-nav" style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 6px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+		<li style="float: left; list-style-type: none; list-style-position: initial; list-style-image: url('http://www.checktheevidence.co.uk/cms/initial'); background-origin: initial; background-clip: initial; margin: 0px; padding-left: 0px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-divider.png') no-repeat repeat initial 100% 0px">
+		<p align="center">
+		<a class="mainlevel-nav" style="color: rgb(255, 255, 255); text-decoration: none; display: block; float: left; padding-top: 0px; padding-right: 25px; padding-bottom: 0px; padding-left: 25px; height: 30px; line-height: 30px; font-weight: bold; " href="http://www.checktheevidence.co.uk/cms/index.php">
+		Home</a></li>
+		<li style="float: left; list-style-type: none; list-style-position: initial; list-style-image: url('http://www.checktheevidence.co.uk/cms/initial'); background-origin: initial; background-clip: initial; margin: 0px; padding-left: 0px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-divider.png') no-repeat repeat initial 100% 0px">
+		<p align="center">
+		<a class="mainlevel-nav" style="color: rgb(255, 255, 255); text-decoration: none; display: block; float: left; padding-top: 0px; padding-right: 25px; padding-bottom: 0px; padding-left: 25px; height: 30px; line-height: 30px; font-weight: bold; " href="http://www.checktheevidence.co.uk/cms/index.php?option=com_weblinks&Itemid=23">
+		Links</a></li>
+		<li style="float: left; list-style-type: none; list-style-position: initial; list-style-image: url('http://www.checktheevidence.co.uk/cms/initial'); background-origin: initial; background-clip: initial; margin: 0px; padding-left: 0px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-divider.png') no-repeat repeat initial 100% 0px">
+		<p align="center">
+		<a class="mainlevel-nav" style="color: rgb(255, 255, 255); text-decoration: none; display: block; float: left; padding-top: 0px; padding-right: 25px; padding-bottom: 0px; padding-left: 25px; height: 30px; line-height: 30px; font-weight: bold; " href="http://www.checktheevidence.co.uk/cms/index.php?option=com_newsfeeds&task=view&feedid=11&Itemid=41">
+		News</a></li>
+		<li style="float: left; list-style-type: none; list-style-position: initial; list-style-image: url('http://www.checktheevidence.co.uk/cms/initial'); background-origin: initial; background-clip: initial; margin: 0px; padding-left: 0px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-divider.png') no-repeat repeat initial 100% 0px">
+		<p align="center">
+		<a class="mainlevel-nav" style="color: rgb(255, 255, 255); text-decoration: none; display: block; float: left; padding-top: 0px; padding-right: 25px; padding-bottom: 0px; padding-left: 25px; height: 30px; line-height: 30px; font-weight: bold; " href="http://www.checktheevidence.co.uk/cms/index.php?option=com_content&task=view&id=40&Itemid=67">
+		Audio</a></li>
+		<li style="float: left; list-style-type: none; list-style-position: initial; list-style-image: url('http://www.checktheevidence.co.uk/cms/initial'); background-origin: initial; background-clip: initial; margin: 0px; padding-left: 0px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-divider.png') no-repeat repeat initial 100% 0px">
+		<p align="center">
+		<a class="mainlevel-nav" style="color: rgb(255, 255, 255); text-decoration: none; display: block; float: left; padding-top: 0px; padding-right: 25px; padding-bottom: 0px; padding-left: 25px; height: 30px; line-height: 30px; font-weight: bold; " href="http://www.checktheevidence.co.uk/cms/index.php?option=com_content&task=view&id=39&Itemid=68">
+		Video</a></li>
+		<li style="float: left; list-style-type: none; list-style-position: initial; list-style-image: url('http://www.checktheevidence.co.uk/cms/initial'); background-origin: initial; background-clip: initial; margin: 0px; padding-left: 0px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-divider.png') no-repeat repeat initial 100% 0px">
+		<p align="center">
+		<a class="mainlevel-nav" style="color: rgb(255, 255, 255); text-decoration: none; display: block; float: left; padding-top: 0px; padding-right: 25px; padding-bottom: 0px; padding-left: 25px; height: 30px; line-height: 30px; font-weight: bold; " href="http://www.checktheevidence.co.uk/cms/index.php?option=com_content&task=view&id=34&Itemid=66">
+		About</a></li>
+		<li style="float: left; list-style-type: none; list-style-position: initial; list-style-image: url('http://www.checktheevidence.co.uk/cms/initial'); background-origin: initial; background-clip: initial; margin: 0px; padding-left: 0px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-divider.png') no-repeat repeat initial 100% 0px">
+		<p align="center">
+		<a target="_blank" class="mainlevel-nav" style="color: rgb(255, 255, 255); text-decoration: none; display: block; float: left; padding-top: 0px; padding-right: 25px; padding-bottom: 0px; padding-left: 25px; height: 30px; line-height: 30px; font-weight: bold; " href="http://www.checktheevidence.com/911/orderpage.html">
+		DVDs</a></li>
+		<li style="float: left; list-style-type: none; list-style-position: initial; list-style-image: url('http://www.checktheevidence.co.uk/cms/initial'); background-origin: initial; background-clip: initial; margin: 0px; padding-left: 0px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-divider.png') no-repeat repeat initial 100% 0px">
+		<p align="center">
+		<a target="_blank" class="mainlevel-nav" style="color: rgb(255, 255, 255); text-decoration: none; display: block; float: left; padding-top: 0px; padding-right: 25px; padding-bottom: 0px; padding-left: 25px; height: 30px; line-height: 30px; font-weight: bold; " href="http://www.checktheevidence.com/cms/contact.htm">
+		Contact</a></li>
+		<li style="float: left; list-style-type: none; list-style-position: initial; list-style-image: url('http://www.checktheevidence.co.uk/cms/initial'); background-origin: initial; background-clip: initial; margin: 0px; padding-left: 0px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px; background: initial url('http://www.checktheevidence.co.uk/cms/templates/rt_rokwebify/images/menu-divider.png') no-repeat repeat initial 100% 0px">
+		<p align="center">
+		<a target="_blank" class="mainlevel-nav" style="color: rgb(255, 255, 255); text-decoration: none; display: block; float: left; padding-top: 0px; padding-right: 25px; padding-bottom: 0px; padding-left: 25px; height: 30px; line-height: 30px; font-weight: bold; " href="http://www.checktheevidence.com/pdf">
+		Docs</a></li>
+	</ul>
+</div>
+<div id="mainbody" style="color: rgb(29, 45, 69); font-family: Arial, Helvetica, sans-serif; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: 17px; orphans: 2; text-align: -webkit-auto; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; background-color: rgb(86, 112, 161); ">
+	<div align="center">
+	<table class="mainbody" cellspacing="0" cellpadding="0" style="width: 868px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; " id="table1">
+		<tr>
+
+    <td width="17%" align="center">
+
+<FONT SIZE=+1>
+
+<img height="118" src="http://www.drjudywood.com/erinthumbs/010911_1867_sss.jpg" width="147" border="0"></font></td>
+
+    <td width="15%" align="center">
+
+<FONT SIZE=+1><img height="119" src="http://www.drjudywood.com/erinthumbs/Erin_2001_track_sss.jpg" width="122" border="0"></font></td>
+
+    <td width="34%" align="center">
+
+<p align="center" style="color: #000000">
+<img border="0" src="http://www.checktheevidence.com/images/stories/chemtrail%20x%204%20(Custom).jpg" width="154" height="115"></td>
+
+    <td width="17%" align="center">
+
+<FONT SIZE=+1><img height="117" src="http://www.checktheevidence.com/cms/mainpics/image008.jpg" width="150" border="0"></font></td>
+
+    <td width="16%" align="center">
+
+<FONT SIZE=+1><img height="115" src="http://www.checktheevidence.com/cms/mainpics/image010.jpg" width="149" border="0"></font></td>
+  		</tr>
+		<tr>
+    <td width="100%" bgcolor="#FFFFFF" colspan="5">&nbsp;</td>
+  		</tr>
+		</table>
+	<p style="line-height: 100%; margin-top: 0; margin-bottom: 0">&nbsp;</p>
+	<p style="line-height: 100%; margin-top: 0; margin-bottom: 0">&nbsp;</p>
+	<p style="line-height: 200%; margin-top: 0; margin-bottom: 0">
+	<font size="5" color="#FFFFFF">Unfortunately, the document or file you were 
+	looking for was not found on this server, perhaps because it has been moved, 
+	or because it was not linked properly from where ever it was referenced...</font></div>
+	<body bgcolor="#008080">
+
+<CENTER>
+<FONT SIZE=+1>
+<a name="address_etc">
+<input type="hidden" name="item" value="Default">
+<input type="hidden" name="total_items" value="0">
+<input type="hidden" name="SEND UK CHEQUES TO" value="Andrew Johnson, 22 Mear Drive, Borrowash, Derbs, DE72 3QW">
+<input type="hidden" name="amount" value="">
+<input type="hidden" name="subject" value="DVD Request">
+<input type="hidden" name="recipient" value="info@checktheevidence.com">
+<input type=hidden name="required" value="PaymentMethod,Country">
+<BR>
+
+	
+</div>
+
+</body>
+
+</html>
