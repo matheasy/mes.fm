@@ -11,7 +11,6 @@
 	var $ = function (id) { return document.getElementById(id); };
 	var STORE = "mes-tz-v1";
 	var HOME = "America/Vancouver";               // Richmond, BC shares Vancouver's zone
-	var DEFAULT_TIME = "13:00";                   // 1:00 PM
 	var DEFAULT_TARGETS = [
 		"America/New_York", "America/Chicago", "America/Toronto",
 		"Europe/London", "Europe/Paris", "Asia/Dubai", "Asia/Kolkata",
@@ -174,13 +173,20 @@
 
 	/* ---- state ------------------------------------------------------- */
 
-	var state = { date: "", time: DEFAULT_TIME, from: HOME, targets: DEFAULT_TARGETS.slice() };
+	var state = { date: "", time: "", from: HOME, targets: DEFAULT_TARGETS.slice() };
 
 	function todayInZone(z) {
 		var p = {};
 		new Intl.DateTimeFormat("en-CA", { timeZone: z, year: "numeric", month: "2-digit", day: "2-digit" })
 			.formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
 		return p.year + "-" + p.month + "-" + p.day;
+	}
+	// current wall-clock "HH:MM" in a zone -- the default the converter opens on
+	function nowTimeInZone(z) {
+		var p = {};
+		new Intl.DateTimeFormat("en-GB", { timeZone: z, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+			.formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+		return p.hour + ":" + p.minute;
 	}
 
 	function loadStore() {
@@ -319,7 +325,7 @@
 
 	function render() {
 		if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date)) state.date = todayInZone(state.from);
-		if (!/^\d{1,2}:\d{2}$/.test(state.time)) state.time = DEFAULT_TIME;
+		if (!/^\d{1,2}:\d{2}$/.test(state.time)) state.time = nowTimeInZone(state.from);
 
 		$("tz-date").value = state.date;
 		$("tz-time").value = state.time.length === 4 ? "0" + state.time : state.time;
@@ -367,12 +373,8 @@
 	addSel.addEventListener("change", function () { if (this.value) $("tz-add-btn").click(); });
 
 	$("tz-now").addEventListener("click", function () {
-		var now = new Date();
 		state.date = todayInZone(state.from);
-		var p = {};
-		new Intl.DateTimeFormat("en-GB", { timeZone: state.from, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
-			.formatToParts(now).forEach(function (x) { p[x.type] = x.value; });
-		state.time = p.hour + ":" + p.minute;
+		state.time = nowTimeInZone(state.from);
 		commit();
 	});
 
@@ -391,8 +393,8 @@
 
 	$("tz-reset").addEventListener("click", function () {
 		state.from = HOME;
-		state.time = DEFAULT_TIME;
 		state.date = todayInZone(HOME);
+		state.time = nowTimeInZone(HOME);
 		state.targets = (loadStore() || DEFAULT_TARGETS).slice();
 		fillFromSelect();
 		commit();
@@ -430,7 +432,9 @@
 		var saved = loadStore();
 		if (saved && saved.length) state.targets = saved;
 	}
-	state.date = /^\d{4}-\d{2}-\d{2}$/.test(state.date) ? state.date : todayInZone(state.from);
+	// no hash -> open on "now" in the starting zone; a shared link keeps its own time
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date)) state.date = todayInZone(state.from);
+	if (!/^\d{1,2}:\d{2}$/.test(state.time)) state.time = nowTimeInZone(state.from);
 
 	fillFromSelect();
 	render();

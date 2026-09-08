@@ -505,7 +505,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Time Zone Converter</h1>                                        <p class="page-description">Pick a time and a city, and see what that same moment is everywhere else. Daylight saving time is applied automatically for every zone. The starting city defaults to <strong>Richmond / Vancouver, BC (Pacific Time)</strong> at <strong>1:00&nbsp;PM</strong> &mdash; tap <em>Use my location</em> to switch it to wherever you are.</p>                                    	<div id="main-content">
+                                    <h1 class="page-title">Time Zone Converter</h1>                                        <p class="page-description">Pick a time and a city, and see what that same moment is everywhere else. Daylight saving time is applied automatically for every zone. It opens on <strong>the current time in Richmond / Vancouver, BC (Pacific Time)</strong> &mdash; tap <em>Use my location</em> to switch to wherever you are, or edit the date and time to plan ahead.</p>                                    	<div id="main-content">
 	<div class="tz" id="tz">
 		<div class="tz__source">
 			<div class="tz__row">
@@ -515,7 +515,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 				</div>
 				<div class="tz__field">
 					<label for="tz-time">Time</label>
-					<input type="time" id="tz-time" autocomplete="off" value="13:00">
+					<input type="time" id="tz-time" autocomplete="off">
 				</div>
 				<div class="tz__field" style="flex:2 1 18em;">
 					<label for="tz-from">From city / time zone</label>
@@ -525,7 +525,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			<div class="tz__btns">
 				<button type="button" class="tz__btn tz__btn--primary" id="tz-now">Set to now</button>
 				<button type="button" class="tz__btn" id="tz-locate">&#128205; Use my location</button>
-				<button type="button" class="tz__btn tz__btn--ghost" id="tz-reset">Reset to 1&nbsp;PM Vancouver</button>
+				<button type="button" class="tz__btn tz__btn--ghost" id="tz-reset">Reset to now in Vancouver</button>
 			</div>
 			<p class="tz__note" id="tz-from-note"></p>
 		</div>
