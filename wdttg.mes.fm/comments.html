@@ -8,7 +8,7 @@
 <meta name="description" content="Where Did the Towers Go? — Evidence of Directed Free-Energy Technology on 9/11, by Dr. Judy Wood." />
 <link rel="icon" href="/img/2010/12/cropped-bubblerbackground13-32x32.jpg" sizes="32x32" />
 <link rel="apple-touch-icon" href="/img/2010/12/cropped-bubblerbackground13-180x180.jpg" />
-<link rel="stylesheet" href="/css/style.css?v=5" />
+<link rel="stylesheet" href="/css/style.css?v=6" />
 </head>
 <body class="light">
 <a href="#content" class="skip-link">Skip to content</a>
@@ -183,6 +183,11 @@ Ciao for now.</p>
 <div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true" aria-label="Image viewer">
 	<button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
 	<img class="lightbox-image" id="lightboxImage" src="" alt="" />
+	<div class="lightbox-controls" id="lightboxControls">
+		<button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+		<div class="lightbox-counter" id="lightboxCounter"></div>
+		<button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+	</div>
 </div>
 
 <script>
@@ -210,16 +215,31 @@ Ciao for now.</p>
 	(function () {
 		var overlay = document.getElementById('lightboxOverlay');
 		var imageEl = document.getElementById('lightboxImage');
+		var controlsEl = document.getElementById('lightboxControls');
+		var counterEl = document.getElementById('lightboxCounter');
 		var closeBtn = document.getElementById('lightboxClose');
+		var prevBtn = document.getElementById('lightboxPrev');
+		var nextBtn = document.getElementById('lightboxNext');
 		var links = Array.prototype.slice.call(document.querySelectorAll('#content a')).filter(function (a) {
 			var img = a.querySelector('img');
 			return img && /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(a.getAttribute('href') || '');
 		});
 		if (!links.length) return;
+		if (links.length < 2) {
+			controlsEl.style.display = 'none';
+		}
 
-		function open(src, alt) {
-			imageEl.src = src;
-			imageEl.alt = alt || '';
+		var currentIndex = 0;
+		function show(index) {
+			currentIndex = (index + links.length) % links.length;
+			var a = links[currentIndex];
+			var img = a.querySelector('img');
+			imageEl.src = a.getAttribute('href');
+			imageEl.alt = img.alt || '';
+			counterEl.textContent = (currentIndex + 1) + ' / ' + links.length;
+		}
+		function open(index) {
+			show(index);
 			overlay.classList.add('open');
 			document.body.style.overflow = 'hidden';
 		}
@@ -228,17 +248,21 @@ Ciao for now.</p>
 			document.body.style.overflow = '';
 		}
 
-		links.forEach(function (a) {
+		links.forEach(function (a, index) {
 			a.addEventListener('click', function (e) {
 				e.preventDefault();
-				var img = a.querySelector('img');
-				open(a.getAttribute('href'), img.alt);
+				open(index);
 			});
 		});
 		closeBtn.addEventListener('click', close);
+		prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+		nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
 		overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
 		document.addEventListener('keydown', function (e) {
-			if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+			if (!overlay.classList.contains('open')) return;
+			if (e.key === 'Escape') close();
+			else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+			else if (e.key === 'ArrowRight') show(currentIndex + 1);
 		});
 	})();
 </script>

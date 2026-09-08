@@ -8,7 +8,7 @@
 <meta name="description" content="The Journal of 9/11 Research and 9/11 Issues -- Dr Judy Wood's original research site, archived and modernized." />
 <link rel="icon" href="/img/2018/08/cropped-1di7_TwinTowers-32x32.jpg" sizes="32x32" />
 <link rel="apple-touch-icon" href="/img/2018/08/cropped-1di7_TwinTowers-180x180.jpg" />
-<link rel="stylesheet" href="/css/style.css?v=1" />
+<link rel="stylesheet" href="/css/style.css?v=2" />
 <link rel="stylesheet" href="/css/journal.css?v=1" />
 </head>
 <body class="light journal-page">
@@ -1380,6 +1380,11 @@
 <div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true" aria-label="Image viewer">
 	<button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
 	<img class="lightbox-image" id="lightboxImage" src="" alt="" />
+	<div class="lightbox-controls" id="lightboxControls">
+		<button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+		<div class="lightbox-counter" id="lightboxCounter"></div>
+		<button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+	</div>
 </div>
 
 <script>
@@ -1423,13 +1428,27 @@
 	(function () {
 		var overlay = document.getElementById('lightboxOverlay');
 		var imageEl = document.getElementById('lightboxImage');
+		var controlsEl = document.getElementById('lightboxControls');
+		var counterEl = document.getElementById('lightboxCounter');
 		var closeBtn = document.getElementById('lightboxClose');
+		var prevBtn = document.getElementById('lightboxPrev');
+		var nextBtn = document.getElementById('lightboxNext');
 		var images = Array.prototype.slice.call(document.querySelectorAll('#content img'));
 		if (!images.length) return;
+		if (images.length < 2) {
+			controlsEl.style.display = 'none';
+		}
 
-		function open(src, alt) {
-			imageEl.src = src;
-			imageEl.alt = alt || '';
+		var currentIndex = 0;
+		function show(index) {
+			currentIndex = (index + images.length) % images.length;
+			var img = images[currentIndex];
+			imageEl.src = img.currentSrc || img.src;
+			imageEl.alt = img.alt || '';
+			counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+		}
+		function open(index) {
+			show(index);
 			overlay.classList.add('open');
 			document.body.style.overflow = 'hidden';
 		}
@@ -1437,17 +1456,22 @@
 			overlay.classList.remove('open');
 			document.body.style.overflow = '';
 		}
-		images.forEach(function (img) {
+		images.forEach(function (img, index) {
 			img.style.cursor = 'zoom-in';
 			img.addEventListener('click', function (e) {
 				e.preventDefault();
-				open(img.currentSrc || img.src, img.alt);
+				open(index);
 			});
 		});
 		closeBtn.addEventListener('click', close);
+		prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+		nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
 		overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
 		document.addEventListener('keydown', function (e) {
-			if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+			if (!overlay.classList.contains('open')) return;
+			if (e.key === 'Escape') close();
+			else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+			else if (e.key === 'ArrowRight') show(currentIndex + 1);
 		});
 	})();
 </script>
