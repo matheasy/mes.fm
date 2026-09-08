@@ -160,10 +160,62 @@ STAGE_HUB_NEW_CSS = """    .theme-toggle-btn {
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     }"""
 
+# Stage 3: white/light-gray icon fills -> a solid slate-navy moon state and
+# a warm cream + gold-ring sun state. A plain light-gray circle left the
+# moon's own pale disk nearly invisible, and plain white left the sun's
+# pale rays washed out and the whole button reading as too faint -- per
+# feedback, twice. Neither glyph's internal coloring can be changed via
+# CSS, so this leans entirely on the button's own background/border to
+# carry the contrast instead.
+STAGE3_OLD_CSS = """    body.light .theme-toggle-btn { background-color: #dddddd; }
+    /* Dark mode shows the sun icon (offering a switch to light) -- give it
+       an actual white/bright circle so it reads as "light mode preview"
+       rather than sitting on the same dark chip the moon uses. A firmer
+       border/shadow than the light-mode state since the sun glyph's own
+       pale rays otherwise wash out against plain white. */
+    body.dark .theme-toggle-btn { background-color: #ffffff; border-color: rgba(0, 0, 0, 0.3); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4); }"""
+
+STAGE3_NEW_CSS = """    body.light .theme-toggle-btn { background-color: #3a3d52; border-color: rgba(255, 255, 255, 0.35); }
+    /* Dark mode shows the sun icon (offering a switch to light). A warm
+       cream fill plus a solid gold ring gives it presence without relying
+       on the glyph's own (inherently light) coloring to carry the
+       contrast. */
+    body.dark .theme-toggle-btn { background-color: #fff3d6; border: 2px solid #e0a940; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4); }"""
+
+STAGE3_HUB_OLD_CSS = """    body.light .theme-toggle-btn {
+      background-color: #dddddd;
+    }
+
+    /* Dark mode shows the sun icon (offering a switch to light) -- give it
+       an actual white/bright circle so it reads as "light mode preview"
+       rather than sitting on the same dark chip the moon uses. */
+    body.dark .theme-toggle-btn {
+      background-color: #ffffff;
+      border-color: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }"""
+
+STAGE3_HUB_NEW_CSS = """    body.light .theme-toggle-btn {
+      background-color: #3a3d52;
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Dark mode shows the sun icon (offering a switch to light). A warm
+       cream fill plus a solid gold ring gives it presence without relying
+       on the glyph's own (inherently light) coloring to carry the
+       contrast. */
+    body.dark .theme-toggle-btn {
+      background-color: #fff3d6;
+      border: 2px solid #e0a940;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }"""
+
 STAGES = [
     (STAGE1_OLD_CSS, STAGE1_NEW_CSS),
     (STAGE2_OLD_CSS, STAGE2_NEW_CSS),
     (STAGE_HUB_OLD_CSS, STAGE_HUB_NEW_CSS),
+    (STAGE3_OLD_CSS, STAGE3_NEW_CSS),
+    (STAGE3_HUB_OLD_CSS, STAGE3_HUB_NEW_CSS),
 ]
 JS_REPLACEMENTS = [
     (STAGE1_OLD_JS_LIGHT, STAGE1_NEW_JS),

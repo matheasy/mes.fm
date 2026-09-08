@@ -55,8 +55,13 @@ body {
 }
 
 .theme-toggle-btn {
-	border: 1.5px solid rgba(255, 255, 255, 0.45);
-	background: rgba(255, 255, 255, 0.18);
+	border: 1.5px solid rgba(255, 255, 255, 0.4);
+	/* Moon state: a solid slate-navy, deliberately lighter than the
+	   header's own near-black background, so the button reads as its own
+	   distinct circle -- and the gold crescent shows up clearly against
+	   it, which a translucent tint over near-black did not give enough
+	   of. */
+	background: #3a3d52;
 	color: var(--band-ink);
 	width: 2.25rem;
 	height: 2.25rem;
@@ -68,22 +73,22 @@ body {
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-}
-.theme-toggle-btn:hover { background: rgba(255, 255, 255, 0.28); }
-
-/* In dark mode the button shows the sun icon (offering a switch to
-   light) -- give it an actual white/bright circle so the sun reads as
-   "light mode preview" rather than sitting on the same dark chip as the
-   moon does. A firmer border/shadow than the light-mode state since the
-   sun glyph's own pale rays otherwise wash out against plain white. */
-body.dark .theme-toggle-btn {
-	background: #fff;
-	border-color: rgba(0, 0, 0, 0.25);
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
+.theme-toggle-btn:hover { background: #45495f; }
+
+/* In dark mode the button shows the sun icon (offering a switch to
+   light). A plain white circle left the sun's own pale rays washed out
+   and the whole button reading as too faint -- a warm cream fill plus a
+   solid gold ring gives it presence without relying on the glyph's own
+   (inherently light) coloring to carry the contrast. */
+body.dark .theme-toggle-btn {
+	background: #fff3d6;
+	border: 2px solid #e0a940;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
 body.dark .theme-toggle-btn:hover {
-	background: #f0f0f0;
+	background: #ffe9b3;
 }
 
 .branding {

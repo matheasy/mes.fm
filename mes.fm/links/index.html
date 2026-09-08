@@ -167,14 +167,18 @@
     }
 
     body.light .theme-toggle-btn {
-      background-color: #dddddd;
+      background-color: #3a3d52;
+      border-color: rgba(255, 255, 255, 0.35);
     }
 
-    /* Dark mode shows the sun icon (offering a switch to light) -- give it
-       an actual white/bright circle so it reads as "light mode preview"
-       rather than sitting on the same dark chip the moon uses. */
+    /* Dark mode shows the sun icon (offering a switch to light). A warm
+       cream fill plus a solid gold ring gives it presence without relying
+       on the glyph's own (inherently light) coloring to carry the
+       contrast. */
     body.dark .theme-toggle-btn {
-      background-color: #ffffff;
+      background-color: #fff3d6;
+      border: 2px solid #e0a940;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     }
 
     /* Quick-links button row, below the title */
