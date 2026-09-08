@@ -206,6 +206,16 @@
     .explainer dt { font-weight: bold; margin-top: 0.6em; }
     .explainer dd { margin: 0.1em 0 0; }
 
+    /* Each <h2> section is a collapsible dropdown (wrapped at load; see the
+       inline script). */
+    h2.sec-toggle-header { cursor: pointer; user-select: none; }
+    h2.sec-toggle-header .arrow-icon {
+      font-size: 0.6em; display: inline-block; vertical-align: middle; opacity: 0.55;
+    }
+    .section-body.collapsed { display: none; }
+    .sections-toolbar { display: flex; justify-content: flex-end; margin: -0.2em 0 0.6em; }
+    .sections-toolbar button { font-size: 0.8em; }
+
     /* "Jump to" navigation: a fixed side column once the window is wide enough to
        clear the centered 760px column, collapsing to a <details> dropdown below. */
     .toc-sidebar { display: none; }
@@ -314,6 +324,10 @@
       <div class="viz-scroll" id="moonViz"></div>
       <figcaption class="viz-cap" id="moonVizCap">&mdash;</figcaption>
     </figure>
+
+    <div class="sections-toolbar">
+      <button id="collapseAllBtn" class="loc-btn" type="button">Collapse all sections</button>
+    </div>
 
     <h2 id="sky-times">Sun &amp; Moon Times &mdash; <span id="locName">Richmond, BC</span></h2>
     <p class="section-note">Rise and set times for the chosen location's local calendar day.
@@ -497,6 +511,79 @@
     try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
     setTheme(saved !== 'light');
     themeToggle.addEventListener('click', () => setTheme(!body.classList.contains('dark')));
+  </script>
+
+  <script>
+    // Make each <h2> section a collapsible dropdown (same idea as mes.fm/hutchison):
+    // wrap everything between one <h2> and the next in a .section-body, and toggle it
+    // from the heading. Runs before the dashboard script; getElementById still finds
+    // the (now nested) chart containers, so nothing else needs to change.
+    (function () {
+      var heads = [].slice.call(document.querySelectorAll('.container h2'));
+
+      function setOpen(head, bodyEl, open) {
+        bodyEl.classList.toggle('collapsed', !open);
+        var ar = head.querySelector('.arrow-icon');
+        if (ar) ar.textContent = open ? '▾' : '▸';   // ▾ / ▸
+        head.setAttribute('aria-expanded', String(open));
+      }
+
+      heads.forEach(function (h) {
+        var bodyEl = document.createElement('div');
+        bodyEl.className = 'section-body';
+        var n = h.nextSibling;
+        while (n && !(n.nodeType === 1 && (n.tagName === 'H2' || n.tagName === 'HR'))) {
+          var next = n.nextSibling;
+          bodyEl.appendChild(n);
+          n = next;
+        }
+        h.parentNode.insertBefore(bodyEl, h.nextSibling);
+
+        h.appendChild(document.createTextNode(' '));
+        var arrow = document.createElement('span');
+        arrow.className = 'arrow-icon';
+        arrow.textContent = '▾';
+        h.appendChild(arrow);
+        h.classList.add('sec-toggle-header');
+        h.setAttribute('role', 'button');
+        h.setAttribute('tabindex', '0');
+        h.setAttribute('aria-expanded', 'true');
+
+        function toggle() { setOpen(h, bodyEl, bodyEl.classList.contains('collapsed')); }
+        h.addEventListener('click', toggle);
+        h.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+        });
+      });
+
+      var allBtn = document.getElementById('collapseAllBtn');
+      if (allBtn) {
+        allBtn.addEventListener('click', function () {
+          var bodies = [].slice.call(document.querySelectorAll('.section-body'));
+          var anyOpen = bodies.some(function (b) { return !b.classList.contains('collapsed'); });
+          bodies.forEach(function (b) {
+            var head = b.previousElementSibling;
+            if (head) setOpen(head, b, !anyOpen);
+          });
+          allBtn.textContent = anyOpen ? 'Expand all sections' : 'Collapse all sections';
+        });
+      }
+
+      // Opening the page at a section anchor (or clicking a "Jump to" link) expands it.
+      function revealHash() {
+        var id = (location.hash || '').replace('#', '');
+        if (!id) return;
+        var t = document.getElementById(id);
+        if (!t || t.tagName !== 'H2') return;
+        var b = t.nextElementSibling;
+        if (b && b.classList.contains('section-body') && b.classList.contains('collapsed')) {
+          setOpen(t, b, true);
+          t.scrollIntoView();
+        }
+      }
+      window.addEventListener('hashchange', revealHash);
+      revealHash();
+    })();
   </script>
 
   <script src="/moon/js/astronomy.browser.min.js"></script>
