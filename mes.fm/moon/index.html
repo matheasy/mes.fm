@@ -48,6 +48,7 @@
       --grid: rgba(50, 60, 80, 0.16); --axis: rgba(40, 50, 70, 0.78);
       --belowhz: rgba(60, 90, 150, 0.10);
       --moon-disc: #eef1f5; --moon-shadow: #2b3140;
+      --equator: #2f9e57; --season: rgba(40, 50, 70, 0.55);
     }
     body.light a { color: #1a6fb0; }
 
@@ -57,6 +58,7 @@
       --grid: rgba(150, 160, 180, 0.22); --axis: rgba(170, 180, 200, 0.78);
       --belowhz: rgba(90, 110, 150, 0.18);
       --moon-disc: #dfe3ea; --moon-shadow: #0c0f16;
+      --equator: #4cc47e; --season: rgba(180, 190, 210, 0.55);
     }
     body.dark a { color: #6cb6f5; }
 
@@ -199,6 +201,48 @@
     figure.viz-moon > .viz-scroll { width: 100%; max-width: 190px; }
     .viz-cap { font-size: 0.82em; opacity: 0.78; margin-top: 0.45em; text-align: center; }
 
+    .explainer p { margin: 0 0 0.8em; font-size: 0.92em; }
+    .explainer dl { margin: 0 0 0.8em; font-size: 0.92em; }
+    .explainer dt { font-weight: bold; margin-top: 0.6em; }
+    .explainer dd { margin: 0.1em 0 0; }
+
+    /* "Jump to" navigation: a fixed side column once the window is wide enough to
+       clear the centered 760px column, collapsing to a <details> dropdown below. */
+    .toc-sidebar { display: none; }
+
+    @media (min-width: 1300px) {
+      .toc-sidebar {
+        display: block;
+        position: fixed;
+        top: 84px;
+        left: calc(50% + 400px);
+        width: 200px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        font-size: 0.85em;
+      }
+      .toc-sidebar .toc-title {
+        font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.05em;
+        opacity: 0.6; margin: 0 0 0.7em;
+      }
+      .toc-sidebar a {
+        display: block; padding: 0.28em 0; opacity: 0.85; text-decoration: none;
+      }
+      .toc-sidebar a:hover { opacity: 1; text-decoration: underline; }
+    }
+
+    .toc-mobile { margin: 0 0 1.6em; }
+    @media (min-width: 1300px) { .toc-mobile { display: none; } }
+    .toc-mobile summary {
+      cursor: pointer; font-weight: bold; padding: 0.55em 0.9em;
+      border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 6px;
+    }
+    .toc-mobile .toc-links {
+      display: flex; flex-direction: column; gap: 0.4em; padding: 0.8em 0.9em 0.2em;
+    }
+    .toc-mobile a { text-decoration: none; opacity: 0.9; }
+    .toc-mobile a:hover { text-decoration: underline; }
+
     hr { margin: 2.4em 0 1.6em; border: 0; border-top: 1px solid rgba(128, 128, 128, 0.3); }
 
     .site-footer-note { font-size: 0.8em; opacity: 0.6; text-align: center; }
@@ -212,6 +256,18 @@
   </style>
 </head>
 <body class="dark">
+  <nav class="toc-sidebar" aria-label="Jump to section">
+    <div class="toc-title">Jump to</div>
+    <a href="#moon-phase">Moon phase</a>
+    <a href="#sky-times">Sun &amp; Moon times</a>
+    <a href="#conditions">Conditions &amp; air quality</a>
+    <a href="#today-sky">Today's sky</a>
+    <a href="#sun-now">The Sun right now</a>
+    <a href="#sun-year">The Sun's path this year</a>
+    <a href="#moon-now">The Moon right now</a>
+    <a href="#more-data">Planets &amp; live data</a>
+    <a href="#coords">Reading the sky</a>
+  </nav>
   <div class="container">
     <div class="top-bar">
       <a class="site-link" href="https://mes.fm/science">&larr; MES Science</a>
@@ -239,12 +295,27 @@
       <span class="updated-line" id="updatedLine">Loading&hellip;</span>
     </div>
 
-    <figure class="viz viz-moon">
+    <details class="toc-mobile">
+      <summary>Jump to section</summary>
+      <nav class="toc-links" aria-label="Jump to section">
+        <a href="#moon-phase">Moon phase</a>
+        <a href="#sky-times">Sun &amp; Moon times</a>
+        <a href="#conditions">Conditions &amp; air quality</a>
+        <a href="#today-sky">Today's sky</a>
+        <a href="#sun-now">The Sun right now</a>
+        <a href="#sun-year">The Sun's path this year</a>
+        <a href="#moon-now">The Moon right now</a>
+        <a href="#more-data">Planets &amp; live data</a>
+        <a href="#coords">Reading the sky</a>
+      </nav>
+    </details>
+
+    <figure class="viz viz-moon" id="moon-phase">
       <div class="viz-scroll" id="moonViz"></div>
       <figcaption class="viz-cap" id="moonVizCap">&mdash;</figcaption>
     </figure>
 
-    <h2>Sun &amp; Moon Times &mdash; <span id="locName">Richmond, BC</span></h2>
+    <h2 id="sky-times">Sun &amp; Moon Times &mdash; <span id="locName">Richmond, BC</span></h2>
     <p class="section-note">Rise and set times for the chosen location's local calendar day.
     Compare with <a id="wxTodayLink" href="https://weather.com/weather/today/l/49.17,-123.14" target="_blank" rel="noopener">weather.com</a>.</p>
     <table>
@@ -263,7 +334,7 @@
     <p class="source-line">Temperature: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> forecast.
       Rise / set / phase: computed with <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy&nbsp;Engine</a>.</p>
 
-    <h2>Conditions &amp; Air Quality &mdash; <span id="locName2">Richmond, BC</span></h2>
+    <h2 id="conditions">Conditions &amp; Air Quality &mdash; <span id="locName2">Richmond, BC</span></h2>
     <p class="section-note">&ldquo;9&nbsp;AM&rdquo; rows are for 9&nbsp;AM local; the daily high/low, UV and
     rain chance cover the whole day. Forecast from <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>;
     air quality from the Copernicus (CAMS) model via Open-Meteo.</p>
@@ -290,7 +361,7 @@
       </tbody>
     </table>
 
-    <h2>Today's Sky &mdash; Sun &amp; Moon Altitude</h2>
+    <h2 id="today-sky">Today's Sky &mdash; Sun &amp; Moon Altitude</h2>
     <p class="section-note">How high the Sun (solid) and Moon (dashed) climb above the horizon over the
     local day. The shaded band is below the horizon; the vertical line marks now.</p>
     <figure class="viz viz-wide">
@@ -298,7 +369,7 @@
       <figcaption class="viz-cap" id="dayVizCap">&mdash;</figcaption>
     </figure>
 
-    <h2>The Sun Right Now</h2>
+    <h2 id="sun-now">The Sun Right Now</h2>
     <p class="section-note">Apparent geocentric coordinates for the moment shown above (the same
     from anywhere on Earth). Compare with <a href="https://theskylive.com/sun-info" target="_blank" rel="noopener">theskylive.com/sun-info</a>.</p>
     <table>
@@ -312,16 +383,18 @@
       </tbody>
     </table>
 
-    <h2>The Sun's Path This Year</h2>
+    <h2 id="sun-year">The Sun's Path This Year</h2>
     <p class="section-note">The Sun's apparent declination (orange, left axis) and right ascension
     (blue, right axis) across <span id="yearLabel">the year</span>. Declination swings &plusmn;23.4&deg;
-    between the solstices and is 0&deg; at the equinoxes &mdash; that tilt is what gives us seasons.</p>
+    between the solstices and is 0&deg; at the equinoxes &mdash; that tilt is what gives us seasons.
+    The four dotted verticals mark this year's equinoxes and solstices; see
+    <a href="#coords">Reading the Sky</a> below for what declination and right ascension mean.</p>
     <figure class="viz viz-wide">
       <div class="viz-scroll" id="yearViz"></div>
       <figcaption class="viz-cap" id="yearVizCap">&mdash;</figcaption>
     </figure>
 
-    <h2>The Moon Right Now</h2>
+    <h2 id="moon-now">The Moon Right Now</h2>
     <p class="section-note">Apparent geocentric coordinates for the moment shown above.
     Compare with <a href="https://theskylive.com/moon-info" target="_blank" rel="noopener">theskylive.com/moon-info</a>.</p>
     <table>
@@ -336,7 +409,7 @@
       </tbody>
     </table>
 
-    <h2>Planets &amp; Live Sky Data</h2>
+    <h2 id="more-data">Planets &amp; Live Sky Data</h2>
     <p class="section-note">External pages that also update in real time &mdash; handy for planning what to observe tonight.</p>
     <ul class="more-links">
       <li><a href="https://theskylive.com/planets" target="_blank" rel="noopener">TheSkyLive &ndash; Planets</a> (positions, rise/set, visibility)</li>
@@ -344,6 +417,43 @@
       <li><a id="tadLink" href="https://www.timeanddate.com/astronomy/@49.17,-123.14" target="_blank" rel="noopener">timeanddate.com &ndash; Sun &amp; Moon for this location</a></li>
       <li><a id="wxTenDayLink" href="https://weather.com/weather/tenday/l/49.17,-123.14" target="_blank" rel="noopener">weather.com &ndash; 10-day forecast for this location</a></li>
     </ul>
+
+    <h2 id="coords">Reading the Sky &mdash; Right Ascension &amp; Declination</h2>
+    <p class="section-note">A short primer on the two numbers used all over this page (and by
+    <a href="https://en.wikipedia.org/wiki/Right_ascension" target="_blank" rel="noopener">Wikipedia</a>,
+    <a href="https://theskylive.com/sun-info" target="_blank" rel="noopener">TheSkyLive</a> and every star atlas).</p>
+    <figure class="viz viz-wide">
+      <div class="viz-scroll" id="coordsViz"></div>
+      <figcaption class="viz-cap">The celestial sphere, flattened. The Sun rides the tilted
+      ecliptic, so over a year it slides along in right ascension and rocks &plusmn;23.4&deg; in
+      declination &mdash; exactly the curves in the chart above.</figcaption>
+    </figure>
+    <div class="explainer">
+      <p>Picture the sky as a giant globe with Earth at the centre. Just as places on Earth are
+      pinned down by latitude and longitude, points on that sky-globe are pinned down by
+      <strong>declination</strong> and <strong>right ascension</strong> &mdash; a grid that is fixed
+      to the stars, not to the spinning Earth.</p>
+      <dl>
+        <dt>Declination (Dec) &mdash; the sky's latitude</dt>
+        <dd>Angle north (+) or south (&minus;) of the <em>celestial equator</em> (Earth's equator
+        projected outward). Runs from +90&deg; at the north celestial pole to &minus;90&deg; at the
+        south. The Sun's declination is what the orange curve above tracks: positive in the northern
+        summer, negative in winter.</dd>
+        <dt>Right ascension (RA) &mdash; the sky's longitude</dt>
+        <dd>Angle measured <em>eastward</em> along the celestial equator, starting from the point
+        where the Sun crosses the equator going north &mdash; the <em>March (vernal) equinox</em>,
+        RA&nbsp;=&nbsp;0h. It is counted in hours: 24h = 360&deg;, so 1h = 15&deg;. The blue curve
+        above is the Sun's RA marching once around the sky per year.</dd>
+        <dt>Equinoxes &amp; solstices</dt>
+        <dd>The <em>ecliptic</em> &mdash; the Sun's yearly path &mdash; is tilted 23.4&deg; to the
+        equator. Where the two cross, the Sun's declination is 0&deg;: the <em>equinoxes</em> (around
+        20&nbsp;March and 23&nbsp;September). Where the ecliptic is farthest from the equator, the Sun
+        reaches &plusmn;23.4&deg;: the <em>solstices</em> (around 21&nbsp;June and 21&nbsp;December).
+        That 23.4&deg; tilt is the whole reason Earth has seasons.</dd>
+      </dl>
+      <p>On this page the Sun and Moon rows list their current apparent RA and Dec; the constellation
+      is just whichever star pattern that RA/Dec falls inside.</p>
+    </div>
 
     <hr>
 
@@ -709,8 +819,12 @@
         var S = 168, cx = S / 2, cy = S / 2, r = 66;
         var k = 2 * Math.min(0.9999, Math.max(0.0001, illum)) - 1;   // -1 new .. +1 full
         var rx = Math.abs(k) * r, top = cy - r, bot = cy + r;
-        var limbSweep = waxing ? 0 : 1;                 // outer limb is on the dark side
-        var termSweep = waxing ? (k > 0 ? 0 : 1) : (k > 0 ? 1 : 0);
+        // Shadow = the un-lit part. Outer limb on the dark side, then the terminator
+        // (a half-ellipse, x-radius |k|·r) back to the top. The sweep flags stay
+        // constant per waxing/waning; only the ellipse width changes with phase, so
+        // crescents and gibbous both come out right.
+        var limbSweep = waxing ? 0 : 1;
+        var termSweep = waxing ? 0 : 1;
         var shadow = 'M ' + cx + ' ' + top +
           ' A ' + r + ' ' + r + ' 0 0 ' + limbSweep + ' ' + cx + ' ' + bot +
           ' A ' + rx.toFixed(2) + ' ' + r + ' 0 0 ' + termSweep + ' ' + cx + ' ' + top + ' Z';
@@ -809,7 +923,7 @@
       // --- visual 3: Sun declination + RA through the year ------------
       function drawYearChart(now) {
         var el = $('yearViz'); if (!el || !observer) return;
-        var W = 720, H = 230, mL = 42, mR = 46, mT = 26, mB = 20;
+        var W = 720, H = 238, mL = 42, mR = 46, mT = 34, mB = 20;
         var pw = W - mL - mR, ph = H - mT - mB;
         var year = localYear(now);
         var days = isLeap(year) ? 366 : 365;
@@ -856,13 +970,27 @@
             '<text x="' + X(di + dmid) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="10" fill="var(--axis)">' + mchars[m] + '</text>';
         }
 
+        // Equinox / solstice markers for this year.
+        var seasons = null;
+        try { seasons = A.Seasons(year); } catch (e) {}
+        if (seasons) {
+          [['mar_equinox', 'Mar equinox'], ['jun_solstice', 'Jun solstice'],
+           ['sep_equinox', 'Sep equinox'], ['dec_solstice', 'Dec solstice']].forEach(function (s) {
+            var sdi = (seasons[s[0]].date.getTime() - Date.UTC(year, 0, 1)) / 86400000;
+            var sx = X(sdi);
+            g += '<line x1="' + sx.toFixed(1) + '" y1="' + mT + '" x2="' + sx.toFixed(1) + '" y2="' + (mT + ph) +
+              '" stroke="var(--season)" stroke-width="1" stroke-dasharray="2 3"/>' +
+              '<text x="' + sx.toFixed(1) + '" y="' + (mT - 6) + '" text-anchor="middle" font-size="9" fill="var(--season)">' + s[1] + '</text>';
+          });
+        }
+
         var td = Math.max(0, Math.min(days, localDayOfYear(now)));
         var tx = X(td);
         var today = '<line x1="' + tx.toFixed(1) + '" y1="' + mT + '" x2="' + tx.toFixed(1) + '" y2="' + (mT + ph) +
           '" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"/>' +
           '<circle cx="' + tx.toFixed(1) + '" cy="' + Ydec(dec[td]).toFixed(1) + '" r="3" fill="var(--sun)"/>' +
           '<circle cx="' + tx.toFixed(1) + '" cy="' + Yra(ra[td]).toFixed(1) + '" r="3" fill="var(--moon)"/>' +
-          '<text x="' + tx.toFixed(1) + '" y="' + (mT - 12) + '" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">today</text>';
+          '<text x="' + tx.toFixed(1) + '" y="' + (mT - 21) + '" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">today</text>';
 
         el.innerHTML =
           '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sun declination and right ascension through the year">' +
@@ -870,16 +998,101 @@
             '<path d="' + decP + '" fill="none" stroke="var(--sun)" stroke-width="2"/>' +
             '<path d="' + raP.trim() + '" fill="none" stroke="var(--moon)" stroke-width="2" stroke-dasharray="5 4"/>' +
             today +
-            '<text x="' + mL + '" y="' + (mT - 12) + '" font-size="11">' +
+            '<text x="' + mL + '" y="' + (mT - 21) + '" font-size="11">' +
               '<tspan fill="var(--sun)">● Declination</tspan>  <tspan fill="var(--moon)">● Right ascension</tspan></text>' +
           '</svg>';
         set('yearLabel', String(year));
         set('yearVizCap', 'Today: declination ' + fmtDec(dec[td]) + '  ·  right ascension ' + fmtRA(ra[td]));
       }
 
+      // --- visual 4: the celestial-sphere coordinate primer (static) --
+      // A flattened 2-D schematic (not a perspective view): the sky-globe as a circle,
+      // the celestial equator as a flat ellipse, the ecliptic as a tilted one. RA is
+      // shown as an arc along the equator from the March equinox; Dec as an upright
+      // bracket from the equator to a star. Labels sit in the margins on leader lines
+      // to keep the busy interior clear.
+      function drawCoordsDiagram() {
+        var el = $('coordsViz'); if (!el) return;
+        var W = 660, H = 432, cx = 300, cy = 206, R = 160;
+        var eqRy = 44, eclRy = 58, tilt = -22;
+
+        function P(rx, ry, deg, rot) {
+          var t = deg * Math.PI / 180, r = (rot || 0) * Math.PI / 180;
+          var x = rx * Math.cos(t), y = ry * Math.sin(t);
+          return [cx + x * Math.cos(r) - y * Math.sin(r), cy + x * Math.sin(r) + y * Math.cos(r)];
+        }
+        function arc(rx, ry, d0, d1, rot) {
+          var step = d0 <= d1 ? 3 : -3, out = [];
+          for (var d = d0; step > 0 ? d <= d1 : d >= d1; d += step) out.push(P(rx, ry, d, rot));
+          out.push(P(rx, ry, d1, rot));
+          return 'M' + out.map(function (q) { return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join(' L');
+        }
+        function ln(a, b, stroke, w, dash) {
+          return '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) +
+            '" y2="' + b[1].toFixed(1) + '" stroke="' + stroke + '" stroke-width="' + w + '"' +
+            (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
+        }
+        function txt(x, y, str, fill, anchor) {
+          return '<text x="' + x + '" y="' + y + '" text-anchor="' + (anchor || 'start') +
+            '" font-size="11" fill="' + fill + '">' + str + '</text>';
+        }
+
+        var eqx = [cx - R, cy];                 // March-equinox point (equator, left)
+        var star = [408, 112];
+        var foot = [408, cy + eqRy * Math.sin(Math.acos((star[0] - cx) / R))];  // on equator, below star
+
+        var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Celestial sphere: right ascension and declination">';
+
+        // sky-globe + polar axis
+        s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="none" stroke="var(--grid)" stroke-width="1"/>';
+        s += ln([cx, cy - R], [cx, cy + R], 'var(--grid)', 1);
+        s += '<circle cx="' + cx + '" cy="' + (cy - R) + '" r="2.6" fill="var(--axis)"/>';
+        s += '<circle cx="' + cx + '" cy="' + (cy + R) + '" r="2.6" fill="var(--axis)"/>';
+        s += txt(cx, cy - R - 12, 'north celestial pole', 'var(--axis)', 'middle');
+        s += txt(cx, cy + R + 20, 'south celestial pole', 'var(--axis)', 'middle');
+
+        // celestial equator (back dashed, front solid) + margin label
+        s += '<path d="' + arc(R, eqRy, 180, 360, 0) + '" fill="none" stroke="var(--equator)" stroke-width="1.3" stroke-dasharray="4 4"/>';
+        s += '<path d="' + arc(R, eqRy, 0, 180, 0) + '" fill="none" stroke="var(--equator)" stroke-width="2"/>';
+        s += ln([cx + R, cy], [cx + R + 14, cy], 'var(--equator)', 1);
+        s += txt(cx + R + 18, cy + 4, 'celestial equator — 0° dec', 'var(--equator)');
+
+        // ecliptic (tilted) + margin label
+        s += '<path d="' + arc(R, eclRy, 180, 360, tilt) + '" fill="none" stroke="var(--sun)" stroke-width="1.3" stroke-dasharray="4 4"/>';
+        s += '<path d="' + arc(R, eclRy, 0, 180, tilt) + '" fill="none" stroke="var(--sun)" stroke-width="2"/>';
+        var eclLo = P(R, eclRy, 132, tilt);
+        s += ln(eclLo, [eclLo[0] - 26, eclLo[1] + 34], 'var(--sun)', 1);
+        s += txt(6, eclLo[1] + 48, 'ecliptic — the Sun’s yearly path (tilted 23.4°)', 'var(--sun)');
+
+        // March equinox marker
+        s += '<circle cx="' + eqx[0] + '" cy="' + eqx[1] + '" r="3.6" fill="var(--axis)"/>';
+        s += ln(eqx, [eqx[0] - 30, eqx[1] - 22], 'var(--axis)', 1.3);
+        s += txt(6, eqx[1] - 28, 'March equinox (♈) — RA 0h', 'var(--axis)');
+
+        // right ascension: thick arc along the equator, eastward from the equinox
+        var footDeg = Math.acos((foot[0] - cx) / R) * 180 / Math.PI;   // ~40°, on the front arc
+        s += '<path d="' + arc(R, eqRy, 180, footDeg, 0) + '" fill="none" stroke="var(--moon)" stroke-width="3.5"/>';
+        s += '<circle cx="' + foot[0].toFixed(1) + '" cy="' + foot[1].toFixed(1) + '" r="3" fill="var(--moon)"/>';
+        var raMid = P(R, eqRy, 116, 0);
+        s += ln([raMid[0], raMid[1]], [raMid[0], H - 40], 'var(--moon)', 1);
+        s += txt(cx, H - 26, 'right ascension — measured eastward along the equator, 0h to 24h', 'var(--moon)', 'middle');
+
+        // declination: upright bracket from the equator to a star
+        s += ln(foot, star, 'var(--moon)', 3);
+        s += '<path d="M' + (star[0] - 5) + ' ' + (star[1] + 8) + ' L' + star[0] + ' ' + star[1] + ' L' + (star[0] + 5) + ' ' + (star[1] + 8) + '" fill="none" stroke="var(--moon)" stroke-width="3"/>';
+        s += '<circle cx="' + star[0] + '" cy="' + star[1] + '" r="4.5" fill="var(--sun)"/>';
+        s += txt(star[0] + 12, star[1] - 2, 'a star', 'var(--axis)');
+        s += ln([star[0], (star[1] + foot[1]) / 2], [cx + R + 14, (star[1] + foot[1]) / 2], 'var(--moon)', 1);
+        s += txt(cx + R + 18, (star[1] + foot[1]) / 2 + 4, 'declination (N / S of equator)', 'var(--moon)');
+
+        s += '</svg>';
+        el.innerHTML = s;
+      }
+
       function drawVisuals(now, dayStart) {
         try { drawDayChart(now, dayStart); } catch (e) {}
         try { drawYearChart(now); } catch (e) {}
+        try { drawCoordsDiagram(); } catch (e) {}
         try {
           if (state.moon) drawMoonPhase(state.moon.pct / 100, state.moon.elong < 180, state.moon.age);
         } catch (e) {}
