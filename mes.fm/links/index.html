@@ -153,19 +153,28 @@
     /* Theme toggle button styles */
     .theme-toggle-btn {
       margin: 10px;
-      padding: 5px 10px;
+      width: 2.25em;
+      height: 2.25em;
+      padding: 0;
       border: none;
+      border-radius: 50%;
       cursor: pointer;
+      font-size: 1.1em;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     body.light .theme-toggle-btn {
       background-color: #dddddd;
-      color: #000000;
     }
 
+    /* Dark mode shows the sun icon (offering a switch to light) -- give it
+       an actual white/bright circle so it reads as "light mode preview"
+       rather than sitting on the same dark chip the moon uses. */
     body.dark .theme-toggle-btn {
-      background-color: #555555;
-      color: #ffffff;
+      background-color: #ffffff;
     }
 
     /* Quick-links button row, below the title */
@@ -928,12 +937,12 @@ function setTheme(isDark) {
   if (isDark) {
     body.classList.add('dark');
     body.classList.remove('light');
-    themeToggle.textContent = 'Switch to Light Mode';
+    themeToggle.textContent = '☀️';
     try { localStorage.setItem('theme', 'dark'); } catch (e) {}
   } else {
     body.classList.add('light');
     body.classList.remove('dark');
-    themeToggle.textContent = 'Switch to Dark Mode';
+    themeToggle.textContent = '🌙';
     try { localStorage.setItem('theme', 'light'); } catch (e) {}
   }
 }

@@ -71,6 +71,18 @@ body {
 }
 .theme-toggle-btn:hover { background: rgba(255, 255, 255, 0.16); }
 
+/* In dark mode the button shows the sun icon (offering a switch to
+   light) -- give it an actual white/bright circle so the sun reads as
+   "light mode preview" rather than sitting on the same dark chip as the
+   moon does. */
+body.dark .theme-toggle-btn {
+	background: #fff;
+	border-color: rgba(0, 0, 0, 0.1);
+}
+body.dark .theme-toggle-btn:hover {
+	background: #f0f0f0;
+}
+
 .branding {
 	max-width: var(--max);
 	margin: 0 auto;
