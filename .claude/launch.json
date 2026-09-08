@@ -42,6 +42,13 @@
       "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory wdttg.mes.fm"],
       "port": 8426,
       "autoPort": true
+    },
+    {
+      "name": "djw",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory djw.mes.fm"],
+      "port": 8427,
+      "autoPort": true
     }
   ]
 }
