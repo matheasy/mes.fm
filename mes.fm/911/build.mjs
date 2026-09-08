@@ -178,6 +178,7 @@ const POSTS_CHAPTER = `<div class="chapter-toggle" id="posts">
 const VIDEOS_CHAPTER = `<div class="chapter-toggle" id="videos">
 <h1 class="chapter-toggle-header" onclick="toggleChapter('videos-list')"><center>Videos <span id="arrowIcon-videos-list" class="arrow-icon">&#9660;</span></center></h1>
 <ul id="videos-list" class="chapter-toggle-list">
+<li><a href="https://mes.fm/curt-weldon-pbd-podcast-dew">Patrick Bet David Asks Former Congressman Curt Weldon About Dr. Judy Wood and Hurricane Erin</a></li>
 <li><a href="https://mes.fm/curt-weldon-jimmy-dore-dew">Former Congressman Curt Weldon Brings Up Dr. Judy Wood and Directed Energy on the Jimmy Dore Show</a></li>
 <li><a href="https://mes.fm/911-coat-jumper">Alleged Launched Person Is Actually a Coat and NOT a 9/11 Jumper</a></li>
 <li><a href="https://mes.fm/richard-gage-flat-earth">Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat</a></li>
