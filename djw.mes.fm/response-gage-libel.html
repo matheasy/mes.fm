@@ -8,7 +8,7 @@
 <meta name="description" content="Dr Judy Wood -- &quot;Know What it is that You Know that You Know!&quot; Evidence of Directed Free-Energy Technology on 9/11." />
 <link rel="icon" href="/img/2018/08/cropped-1di7_TwinTowers-32x32.jpg" sizes="32x32" />
 <link rel="apple-touch-icon" href="/img/2018/08/cropped-1di7_TwinTowers-180x180.jpg" />
-<link rel="stylesheet" href="/css/style.css?v=7" />
+<link rel="stylesheet" href="/css/style.css?v=8" />
 </head>
 <body class="light">
 <a href="#content" class="skip-link">Skip to content</a>
@@ -40,7 +40,15 @@
 
 <main id="content">
 	<h1>Response to Mr. Gage&#x27;s Libellous Article</h1>
-<p class="page-subtitle">Published July 11, 2026 &middot; mirrored from the <a href="https://inleo.io/@drjudywood/response-to-mr-gages-libellous-article-leo" target="_blank" rel="noopener">Hive blockchain</a></p>
+<div class="post-meta">
+	<span>By drjudywood</span>
+	<span>July 11, 2026</span>
+	<span>109 votes</span>
+	<span>4 comments</span>
+	<span>3 reblogs</span>
+</div>
+<div><span class="badge">PeakD Daily Top</span> <span class="badge">PeakD Weekly Top</span></div>
+<a class="source-link" href="https://inleo.io/@drjudywood/response-to-mr-gages-libellous-article-leo" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
 <article class="hive-article">
 <p>Richard Gage asks, <a href="https://richardgage911.substack.com/p/can-directed-energy-weapons-account">“Can Directed Energy Weapons Account for the WTC Destruction on 9/11?”</a></p>
 <p>Someone sent me a link to this latest disinformation piece by Mr. Gage. I don’t discuss “Directed Energy Weapons” in my book. So his obsession with that is telling. It is also apparent that Mr. Gage does not understand how to conduct an investigation.  You must begin with evidence and not a guess at a technology or a scenario. NTSB investigators, when called to study a plane crash, are careful not to look at newspapers, TVs, or listen to radios before arriving at the crash site. They want to begin with the evidence, not theories or speculation.</p>
@@ -343,8 +351,15 @@ If the liquid metal had been hot, it would have burned the paper. That didn’t 
 </script>
 
 <script>
-	// Content images that link straight to their own full-size file open in a
-	// lightbox overlay instead of navigating to a bare image URL.
+	// Two patterns of clickable content image both open in the lightbox
+	// instead of their default behavior: the WP-editor "click through to
+	// full size" pattern (an <a> pointing at the image's own full-size
+	// file, wrapping a smaller inline <img>) used across the /wp/ pages,
+	// and a bare <img> with no wrapping link at all -- e.g. the Blog
+	// section's markdown-rendered article images, which markdown's image
+	// syntax never wraps in a link. One combined, in-document-order list
+	// covers both without double-counting an <img> already inside one of
+	// the self-linking <a>s.
 	(function () {
 		var overlay = document.getElementById('lightboxOverlay');
 		var imageEl = document.getElementById('lightboxImage');
@@ -353,23 +368,29 @@ If the liquid metal had been hot, it would have burned the paper. That didn’t 
 		var closeBtn = document.getElementById('lightboxClose');
 		var prevBtn = document.getElementById('lightboxPrev');
 		var nextBtn = document.getElementById('lightboxNext');
-		var links = Array.prototype.slice.call(document.querySelectorAll('#content a')).filter(function (a) {
-			var img = a.querySelector('img');
-			return img && /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(a.getAttribute('href') || '');
+
+		var items = [];
+		Array.prototype.forEach.call(document.querySelectorAll('#content img'), function (img) {
+			var a = img.closest('a');
+			var selfLink = a && /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(a.getAttribute('href') || '');
+			items.push({
+				el: selfLink ? a : img,
+				src: selfLink ? a.getAttribute('href') : (img.currentSrc || img.src),
+				alt: img.alt || ''
+			});
 		});
-		if (!links.length) return;
-		if (links.length < 2) {
+		if (!items.length) return;
+		if (items.length < 2) {
 			controlsEl.style.display = 'none';
 		}
 
 		var currentIndex = 0;
 		function show(index) {
-			currentIndex = (index + links.length) % links.length;
-			var a = links[currentIndex];
-			var img = a.querySelector('img');
-			imageEl.src = a.getAttribute('href');
-			imageEl.alt = img.alt || '';
-			counterEl.textContent = (currentIndex + 1) + ' / ' + links.length;
+			currentIndex = (index + items.length) % items.length;
+			var item = items[currentIndex];
+			imageEl.src = item.src;
+			imageEl.alt = item.alt;
+			counterEl.textContent = (currentIndex + 1) + ' / ' + items.length;
 		}
 		function open(index) {
 			show(index);
@@ -381,8 +402,8 @@ If the liquid metal had been hot, it would have burned the paper. That didn’t 
 			document.body.style.overflow = '';
 		}
 
-		links.forEach(function (a, index) {
-			a.addEventListener('click', function (e) {
+		items.forEach(function (item, index) {
+			item.el.addEventListener('click', function (e) {
 				e.preventDefault();
 				open(index);
 			});

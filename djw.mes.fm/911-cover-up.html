@@ -8,7 +8,7 @@
 <meta name="description" content="Dr Judy Wood -- &quot;Know What it is that You Know that You Know!&quot; Evidence of Directed Free-Energy Technology on 9/11." />
 <link rel="icon" href="/img/2018/08/cropped-1di7_TwinTowers-32x32.jpg" sizes="32x32" />
 <link rel="apple-touch-icon" href="/img/2018/08/cropped-1di7_TwinTowers-180x180.jpg" />
-<link rel="stylesheet" href="/css/style.css?v=7" />
+<link rel="stylesheet" href="/css/style.css?v=8" />
 </head>
 <body class="light">
 <a href="#content" class="skip-link">Skip to content</a>
@@ -40,7 +40,14 @@
 
 <main id="content">
 	<h1>How has this remained covered up?</h1>
-<p class="page-subtitle">Published May 8, 2026 &middot; mirrored from the <a href="https://inleo.io/@drjudywood/911-cover-up-bje" target="_blank" rel="noopener">Hive blockchain</a></p>
+<div class="post-meta">
+	<span>By drjudywood</span>
+	<span>May 8, 2026</span>
+	<span>101 votes</span>
+	<span>11 comments</span>
+	<span>3 reblogs</span>
+</div>
+<a class="source-link" href="https://inleo.io/@drjudywood/911-cover-up-bje" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
 <article class="hive-article">
 <p>This is an email I recently wrote to <a href="https://truthactionproject.org/chuck-fall/">Chuck Fall of the Truth Action Project</a> regarding his comments about the technology that turned the towers almost completely to dust in mid-air on 9/11.</p>
 <p>Thanks to @mes for getting me on the Hive blockchain!</p>
@@ -164,8 +171,15 @@ The evidence of what happened to the WTC on September 11, 2001, is evidence we c
 </script>
 
 <script>
-	// Content images that link straight to their own full-size file open in a
-	// lightbox overlay instead of navigating to a bare image URL.
+	// Two patterns of clickable content image both open in the lightbox
+	// instead of their default behavior: the WP-editor "click through to
+	// full size" pattern (an <a> pointing at the image's own full-size
+	// file, wrapping a smaller inline <img>) used across the /wp/ pages,
+	// and a bare <img> with no wrapping link at all -- e.g. the Blog
+	// section's markdown-rendered article images, which markdown's image
+	// syntax never wraps in a link. One combined, in-document-order list
+	// covers both without double-counting an <img> already inside one of
+	// the self-linking <a>s.
 	(function () {
 		var overlay = document.getElementById('lightboxOverlay');
 		var imageEl = document.getElementById('lightboxImage');
@@ -174,23 +188,29 @@ The evidence of what happened to the WTC on September 11, 2001, is evidence we c
 		var closeBtn = document.getElementById('lightboxClose');
 		var prevBtn = document.getElementById('lightboxPrev');
 		var nextBtn = document.getElementById('lightboxNext');
-		var links = Array.prototype.slice.call(document.querySelectorAll('#content a')).filter(function (a) {
-			var img = a.querySelector('img');
-			return img && /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(a.getAttribute('href') || '');
+
+		var items = [];
+		Array.prototype.forEach.call(document.querySelectorAll('#content img'), function (img) {
+			var a = img.closest('a');
+			var selfLink = a && /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(a.getAttribute('href') || '');
+			items.push({
+				el: selfLink ? a : img,
+				src: selfLink ? a.getAttribute('href') : (img.currentSrc || img.src),
+				alt: img.alt || ''
+			});
 		});
-		if (!links.length) return;
-		if (links.length < 2) {
+		if (!items.length) return;
+		if (items.length < 2) {
 			controlsEl.style.display = 'none';
 		}
 
 		var currentIndex = 0;
 		function show(index) {
-			currentIndex = (index + links.length) % links.length;
-			var a = links[currentIndex];
-			var img = a.querySelector('img');
-			imageEl.src = a.getAttribute('href');
-			imageEl.alt = img.alt || '';
-			counterEl.textContent = (currentIndex + 1) + ' / ' + links.length;
+			currentIndex = (index + items.length) % items.length;
+			var item = items[currentIndex];
+			imageEl.src = item.src;
+			imageEl.alt = item.alt;
+			counterEl.textContent = (currentIndex + 1) + ' / ' + items.length;
 		}
 		function open(index) {
 			show(index);
@@ -202,8 +222,8 @@ The evidence of what happened to the WTC on September 11, 2001, is evidence we c
 			document.body.style.overflow = '';
 		}
 
-		links.forEach(function (a, index) {
-			a.addEventListener('click', function (e) {
+		items.forEach(function (item, index) {
+			item.el.addEventListener('click', function (e) {
 				e.preventDefault();
 				open(index);
 			});
