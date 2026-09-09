@@ -8,7 +8,7 @@
 <meta name="description" content="The Journal of 9/11 Research and 9/11 Issues -- Dr Judy Wood's original research site, archived and modernized." />
 <link rel="icon" href="/img/2018/08/cropped-1di7_TwinTowers-32x32.jpg" sizes="32x32" />
 <link rel="apple-touch-icon" href="/img/2018/08/cropped-1di7_TwinTowers-180x180.jpg" />
-<link rel="stylesheet" href="/css/style.css?v=5" />
+<link rel="stylesheet" href="/css/style.css?v=7" />
 <link rel="stylesheet" href="/css/journal.css?v=1" />
 </head>
 <body class="light journal-page">
@@ -24,6 +24,7 @@
 		<p class="site-description">&quot;Know What it is that You Know that You Know!&quot;</p>
 	</div>
 	<nav id="access" aria-label="Primary">
+		<button id="navToggle" class="nav-hamburger" type="button" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
 		<ul>
 			<li><a href="/index.html">Home</a></li>
 			<li class="has-dropdown"><button type="button" class="nav-toggle" aria-expanded="false">Evidence in Brief</button><ul class="sub-menu"><li><a href="/dustification.html">Dustification</a></li><li><a href="/toasted-cars.html">Toasted Cars</a></li><li><a href="/energy.html">Energy and Heat</a></li><li><a href="/weather.html">Weather</a></li><li><a href="/seismic.html">Seismic and Bathtub</a></li><li><a href="/fused-bible-and-other-evidence.html">“Fused Bible” and Other Evidence</a></li></ul></li>
@@ -31,6 +32,7 @@
 			<li class="has-dropdown"><button type="button" class="nav-toggle" aria-expanded="false">Book</button><ul class="sub-menu"><li><a href="/foreword-where-did-the-towers-go.html">Foreword – Where Did the Towers Go?</a></li><li><a href="/preface-where-did-the-towers-go.html">Preface – Where Did the Towers Go?</a></li><li><a href="https://www.wheredidthetowersgo.com/buy/" target="_blank" rel="noopener">Buy – USA/Canada/Australia</a></li><li><a href="http://www.checktheevidence.com/wordpress/product/where-did-the-towers-go-by-dr-judy-wood/" target="_blank" rel="noopener">Buy – UK and Europe</a></li><li><a href="https://www.amazon.com/exec/obidos/ASIN/0615412564/" target="_blank" rel="noopener">Buy – Amazon.com</a></li></ul></li>
 			<li class="has-dropdown"><button type="button" class="nav-toggle" aria-expanded="false">About</button><ul class="sub-menu"><li><a href="/dr-judy-wood-biography.html">Dr Judy Wood – Biography</a></li><li><a href="/faq.html">FAQ</a></li><li><a href="/court-case-qui-tam.html">Court Case (Qui Tam)</a></li><li><a href="/the-cover-up.html">The Cover Up</a></li><li><a href="/audio-interviews.html">Audio Interviews</a></li></ul></li>
 			<li class="has-dropdown"><button type="button" class="nav-toggle" aria-expanded="false">Links</button><ul class="sub-menu"><li><a href="http://www.wheredidthetowersgo.com/" target="_blank" rel="noopener">Book Site</a></li><li><a href="http://debamboozled.com/" target="_blank" rel="noopener">Debamboozled</a></li><li><a href="http://www.checktheevidence.com/wordpress" target="_blank" rel="noopener">Check The Evidence</a></li><li><a href="http://www.richplanet.net/" target="_blank" rel="noopener">RichPlanet</a></li></ul></li>
+			<li><a href="/blog.html">Blog</a></li>
 			<li><a href="/contact.html">Contact</a></li>
 			<li class="current"><a href="/journal.html">Journal</a></li>
 		</ul>
@@ -766,6 +768,23 @@
 		});
 		document.addEventListener('click', function () {
 			document.querySelectorAll('#access li.open').forEach(function (o) { o.classList.remove('open'); });
+		});
+	})();
+</script>
+
+<script>
+	// Mobile hamburger: the nav has grown to enough top-level items that a
+	// permanently-visible stacked list is unwieldy on narrow screens -- the
+	// hamburger button (shown only below the CSS breakpoint) toggles the
+	// whole list open/closed instead.
+	(function () {
+		var navToggle = document.getElementById('navToggle');
+		var access = document.getElementById('access');
+		if (!navToggle || !access) return;
+		navToggle.addEventListener('click', function (e) {
+			e.stopPropagation();
+			var open = access.classList.toggle('nav-open');
+			navToggle.setAttribute('aria-expanded', String(open));
 		});
 	})();
 </script>
