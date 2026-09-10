@@ -410,11 +410,18 @@
 		var seg = z.split("/");
 		return seg.slice(0, -1).join(" · ").replace(/_/g, " ");
 	}
-	// text shown in the "from" input for the selected zone
+	// the UTC instant the current date+time+from selection points at
+	function stateInstant() {
+		var d = /^\d{4}-\d{2}-\d{2}$/.test(state.date) ? state.date : todayInZone(state.from);
+		var t = /^\d{1,2}:\d{2}$/.test(state.time) ? state.time : nowTimeInZone(state.from);
+		var dp = d.split("-"), tp = t.split(":");
+		return wallToInstant(+dp[0], +dp[1], +dp[2], +tp[0], +tp[1], state.from);
+	}
+	// text shown in the "from" input for the selected zone (DST name for the chosen date)
 	function fromLabel(z) {
 		if (z === HOME) return "Richmond / Vancouver, BC (Pacific Time)";
 		if (z === "UTC") return "UTC (Coordinated Universal Time)";
-		var long = zoneName(z, new Date(), "long");
+		var long = zoneName(z, stateInstant(), "long");
 		return cityOf(z) + (long ? " (" + long + ")" : "");
 	}
 	// short city name for a result row
