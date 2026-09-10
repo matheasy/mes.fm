@@ -180,7 +180,7 @@ async function resolveAllMeta(entries, concurrency = 6) {
 // Render a link section as a responsive thumbnail-card grid, wrapped in the same
 // collapsible .chapter-toggle markup every other chapter uses (so toggleChapter
 // / toggleAllChapters / the "Jump to" anchors keep working unchanged).
-function buildCardGrid(id, label, entries, meta) {
+function buildCardGrid(id, label, entries, meta, cta = "Read more") {
   const cards = entries
     .map((entry) => {
       const m = meta[entry.href] || {};
@@ -196,7 +196,7 @@ function buildCardGrid(id, label, entries, meta) {
   <span class="link-card-body">
     <span class="link-card-title">${escapeHtml(title)}</span>
     ${excerpt}
-    <span class="link-card-readmore">Read more &rarr;</span>
+    <span class="link-card-readmore">${escapeHtml(cta)} &rarr;</span>
   </span>
 </a>`;
     })
@@ -415,9 +415,9 @@ function buildPage(post, meta) {
   // promoted above the article as the page's homepage feature.
   const featureHtml =
     chaptersToolbar +
-    buildCardGrid("posts", "Posts", POSTS, meta) +
+    buildCardGrid("posts", "Posts", POSTS, meta, "Read more") +
     "<hr>\n" +
-    buildCardGrid("videos", "Videos", VIDEOS, meta);
+    buildCardGrid("videos", "Videos", VIDEOS, meta, "Watch");
 
   // The article's one-line intro sits before the first "# <center>" section --
   // keep it as a plain lead paragraph above the toolbar, not a chapter.
