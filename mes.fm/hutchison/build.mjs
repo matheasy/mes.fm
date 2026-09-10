@@ -4,11 +4,17 @@
 // This is NOT run by Vercel — run it manually (`npm run build`) whenever you want
 // to refresh the vote/comment counts, then commit the regenerated index.html.
 //
+// The hand-maintained "Posts and Updates" and "Videos" sections (not part of the
+// Hive article) render as thumbnail-card grids promoted above the article — edit
+// the POSTS_AND_UPDATES / VIDEOS arrays below (newest first); each card's image +
+// excerpt are scraped from the target page's og: tags at build time and cached
+// in link-meta.json. This mirrors the setup in mes.fm/911/build.mjs.
+//
 // Usage:
 //   npm install
 //   npm run build
 
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { marked } from "marked";
@@ -18,6 +24,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const AUTHOR = "mes";
 const PERMLINK = "hutchisoneffect";
 const PEAKD_URL = `https://peakd.com/science/@${AUTHOR}/${PERMLINK}`;
+
+// Committed cache of link metadata scraped from each Posts/Videos card target
+// (see resolveAllMeta). Kept in git so a later build still has thumbnails and
+// excerpts even if a source host (3speak, leopedia, a mirror page) is briefly
+// unreachable.
+const META_CACHE_PATH = join(__dirname, "link-meta.json");
 
 async function fetchPost() {
   const res = await fetch("https://api.hive.blog", {
@@ -51,6 +63,148 @@ function escapeHtml(str) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+// ---------------------------------------------------------------------------
+// Topic-homepage card grid — shared treatment (fetchMeta / resolveAllMeta /
+// buildCardGrid + the .card-grid/.link-card CSS in buildPage). Kept in sync with
+// the identical block in mes.fm/911/build.mjs; copy into another topic page's
+// build.mjs to give its link sections the same thumbnail-card layout.
+// ---------------------------------------------------------------------------
+
+function loadMetaCache() {
+  if (!existsSync(META_CACHE_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(META_CACHE_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function saveMetaCache(cache) {
+  const sorted = Object.fromEntries(
+    Object.keys(cache).sort().map((k) => [k, cache[k]])
+  );
+  writeFileSync(META_CACHE_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
+}
+
+function decodeEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&rsquo;/g, "’")
+    .replace(/&lsquo;/g, "‘")
+    .replace(/&ldquo;/g, "“")
+    .replace(/&rdquo;/g, "”")
+    .replace(/&mdash;/g, "—")
+    .replace(/&ndash;/g, "–")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+// Pull one <meta property="og:*"> (or name="...") content value out of raw HTML,
+// tolerating either attribute order. Regex-based, matching the repo's other
+// HTML-repair scripts (no DOM parser dependency).
+function readMetaTag(html, prop) {
+  const p = prop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Match each quoted value to its own opening quote (\2 backreference) so a
+  // literal apostrophe inside a double-quoted content="..." doesn't truncate it.
+  const patterns = [
+    new RegExp(`<meta[^>]+(?:property|name)=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"),
+    new RegExp(`<meta[^>]+\\bcontent=(["'])([\\s\\S]*?)\\1[^>]*(?:property|name)=(["'])${p}\\3`, "i"),
+  ];
+  for (let idx = 0; idx < patterns.length; idx++) {
+    const m = html.match(patterns[idx]);
+    if (m) return decodeEntities(idx === 0 ? m[3] : m[2]).trim();
+  }
+  return "";
+}
+
+// Trailing "— Mirrored from the Hive blockchain…" style boilerplate that every
+// mirror page's og:description carries; drop it from the card excerpt.
+function cleanExcerpt(text, maxLen = 150) {
+  let out = text
+    .replace(/\s*[-–—]*\s*mirrored from the hive blockchain.*$/i, "")
+    .replace(/\s*[-–—]*\s*mirrored from hive.*$/i, "")
+    .trim();
+  if (out.length > maxLen) {
+    const slice = out.slice(0, maxLen);
+    const lastSpace = slice.lastIndexOf(" ");
+    out = (lastSpace > 60 ? slice.slice(0, lastSpace) : slice).replace(/[.,;:!?–—-]+$/, "") + "…";
+  }
+  return out;
+}
+
+async function fetchMeta(url) {
+  const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+  return {
+    image: readMetaTag(html, "og:image"),
+    title: readMetaTag(html, "og:title"),
+    excerpt: cleanExcerpt(
+      readMetaTag(html, "og:description") || readMetaTag(html, "description")
+    ),
+  };
+}
+
+// Fetch metadata for every card target with a small concurrency cap. A failed
+// fetch keeps whatever the committed cache already had for that URL.
+async function resolveAllMeta(entries, concurrency = 6) {
+  const cache = loadMetaCache();
+  const urls = entries.map((e) => e.href);
+  let i = 0;
+  async function worker() {
+    while (i < urls.length) {
+      const url = urls[i++];
+      try {
+        cache[url] = await fetchMeta(url);
+        console.log(`  meta ok:   ${url}`);
+      } catch (err) {
+        console.warn(`  meta FAIL: ${url} (${err.message}) — using cached value`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  saveMetaCache(cache);
+  return cache;
+}
+
+// Render a link section as a responsive thumbnail-card grid, wrapped in the same
+// collapsible .chapter-toggle markup every other chapter uses (so toggleChapter
+// / toggleAllChapters / the "Jump to" anchors keep working unchanged).
+function buildCardGrid(id, label, entries, meta, cta = "Read more") {
+  const cards = entries
+    .map((entry) => {
+      const m = meta[entry.href] || {};
+      const title = entry.title || m.title || entry.href;
+      const thumbStyle = m.image
+        ? ` style="background-image:url('${escapeHtml(m.image)}')"`
+        : "";
+      const excerpt = m.excerpt
+        ? `<span class="link-card-excerpt">${escapeHtml(m.excerpt)}</span>`
+        : "";
+      return `<a class="link-card" href="${escapeHtml(entry.href)}">
+  <span class="link-card-thumb"${thumbStyle}></span>
+  <span class="link-card-body">
+    <span class="link-card-title">${escapeHtml(title)}</span>
+    ${excerpt}
+    <span class="link-card-readmore">${escapeHtml(cta)} &rarr;</span>
+  </span>
+</a>`;
+    })
+    .join("\n");
+
+  return `<div class="chapter-toggle" id="${id}">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('${id}-list')"><center>${label} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="${id}-list" class="chapter-toggle-list card-grid">
+${cards}
+</div>
+</div>
+`;
 }
 
 function formatDate(isoString) {
@@ -167,7 +321,27 @@ function wrapChaptersInToggles(html) {
   return out;
 }
 
-function buildPage(post) {
+// "Posts and Updates" and "Videos" aren't part of the Hive article -- they're
+// hand-maintained lists of mirrored mes.fm pages (e.g.
+// mes.fm/hutchison-health-sept6-2026, mes.fm/livestream-66-trailer) that we keep
+// adding to without re-publishing the Hive post. Rendered as thumbnail-card
+// grids by buildCardGrid() and promoted above the article as the page's homepage
+// feature. To add an entry: drop a { href, title } object at the TOP of the list
+// (newest first). The thumbnail + excerpt are scraped from the target page's og:
+// tags at build time (resolveAllMeta) and cached in link-meta.json.
+const POSTS_AND_UPDATES = [
+  { href: "https://mes.fm/hutchison-health-sept6-2026", title: "John Hutchison is coming home — health update" },
+  { href: "https://mes.fm/hutchison-health-sept5-2026", title: "Prayers up for John Hutchison, again — health update" },
+  { href: "https://mes.fm/bought-911-hutchison-shirt", title: "Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt" },
+  { href: "https://mes.fm/hutchison-health-aug22-2026", title: "Prayers up for John Hutchison — health update" },
+];
+
+const VIDEOS = [
+  { href: "https://mes.fm/hutchison-effect-steel-molybdenum", title: "Hutchison Effect: George Hathaway and John Alexander Discuss Crumbling Steel & Bent Molybdenum Rods" },
+  { href: "https://mes.fm/livestream-66-trailer", title: "Trailer for MES Livestream 66: Rare Hutchison Effect Footage" },
+];
+
+function buildPage(post, meta) {
   const title = post.title;
   const preprocessed = embedYoutubeLinks(
     fixTableBoundaries(removeRedundantMesLinksBullet(fixHutchisonDriveLink(post.body)))
@@ -183,44 +357,33 @@ function buildPage(post) {
   // "Videos" is also hand-maintained (not part of the Hive article) -- a place to
   // link mes.fm video-clip mirrors (e.g. mes.fm/livestream-66-trailer). Pinned
   // right after "Posts and Updates".
+  // "Important Links" is the article's intro blurb + reference-link list, turned
+  // into its own collapsible chapter (see importantLinksChapter); it's the first
+  // chapter inside .post-body, below the card grids.
+  toc.unshift({ id: "important-links", label: "Important Links" });
+  // The card-grid sections, in page order (they sit above the article).
   toc.unshift({ id: "videos", label: "Videos" });
   toc.unshift({ id: "posts-and-updates", label: "Posts and Updates" });
-  // "Important Links" is the article's intro blurb + reference-link list, turned
-  // into its own collapsible chapter below (see importantLinksChapter). Pin it
-  // above "Posts and Updates" so it's the first TOC entry.
-  toc.unshift({ id: "important-links", label: "Important Links" });
   const tocLinksHtml = toc
     .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
     .join("\n      ");
 
-  const postsAndUpdatesChapter = `<div class="chapter-toggle" id="posts-and-updates">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('posts-and-updates-list')"><center>Posts and Updates <span id="arrowIcon-posts-and-updates-list" class="arrow-icon">&#9660;</span></center></h1>
-<ul id="posts-and-updates-list" class="chapter-toggle-list">
-<li><a href="https://mes.fm/hutchison-health-sept6-2026">John Hutchison is coming home &mdash; health update</a></li>
-<li><a href="https://mes.fm/hutchison-health-sept5-2026">Prayers up for John Hutchison, again &mdash; health update</a></li>
-<li><a href="https://mes.fm/bought-911-hutchison-shirt">Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</a></li>
-<li><a href="https://mes.fm/hutchison-health-aug22-2026">Prayers up for John Hutchison &mdash; health update</a></li>
-</ul>
-</div>
-<hr>
-`;
-  const videosChapter = `<div class="chapter-toggle" id="videos">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('videos-list')"><center>Videos <span id="arrowIcon-videos-list" class="arrow-icon">&#9660;</span></center></h1>
-<ul id="videos-list" class="chapter-toggle-list">
-<li><a href="https://mes.fm/hutchison-effect-steel-molybdenum">Hutchison Effect: George Hathaway and John Alexander Discuss Crumbling Steel &amp; Bent Molybdenum Rods</a></li>
-<li><a href="https://mes.fm/livestream-66-trailer">Trailer for MES Livestream 66: Rare Hutchison Effect Footage</a></li>
-</ul>
-</div>
-<hr>
-`;
-  // A collapse/expand-all control (see .chapters-toolbar / toggleAllChapters()),
-  // pinned to the very top of the post body so "Collapse All" also folds the
-  // "Important Links" chapter below it. Its top border draws the same divider
-  // line a plain <hr> would.
+  // A collapse/expand-all control (see .chapters-toolbar / toggleAllChapters()).
+  // "Collapse All" folds every chapter on the page including the "Posts and
+  // Updates" / "Videos" card grids and the article sections.
   const chaptersToolbar = `<div class="chapters-toolbar">
 <button id="toggleAllChaptersBtn" class="theme-toggle-btn" onclick="toggleAllChapters()">Collapse All</button>
 </div>
 `;
+
+  // The two hand-maintained link sections, rendered as thumbnail-card grids and
+  // promoted above the article as the page's homepage feature.
+  const featureHtml =
+    chaptersToolbar +
+    buildCardGrid("posts-and-updates", "Posts and Updates", POSTS_AND_UPDATES, meta, "Read more") +
+    "<hr>\n" +
+    buildCardGrid("videos", "Videos", VIDEOS, meta, "Watch");
+
   // Everything before the first Hive-sourced <h1> section (the intro blurb +
   // reference-link list) becomes its own collapsible "Important Links" chapter
   // so it folds along with the rest.
@@ -240,12 +403,10 @@ ${leadingHtml}
 </div>
 <hr>
 `;
-  const bodyHtml =
-    chaptersToolbar +
-    importantLinksChapter +
-    postsAndUpdatesChapter +
-    videosChapter +
-    restChaptersHtml;
+  // Everything inside .post-body: the "Important Links" chapter then the
+  // Hive-sourced chapters. The card grids are in the wider band above
+  // (featureHtml).
+  const articleBodyHtml = importantLinksChapter + restChaptersHtml;
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
   const commentCount = post.children ?? 0;
@@ -255,7 +416,7 @@ ${leadingHtml}
     `${title} — an index of MES Hutchison Effect videos, mirrored from the Hive blockchain.`;
   const ogImage =
     (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
-    ((String(bodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
+    ((String(articleBodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
     "";
   const ogImageTag = ogImage ? `\n  <meta property="og:image" content="${escapeHtml(ogImage)}">` : "";
   const twitterImageTag = ogImage ? `\n  <meta name="twitter:image" content="${escapeHtml(ogImage)}">` : "";
@@ -305,6 +466,107 @@ ${leadingHtml}
     .container {
       max-width: 760px;
       margin: 0 auto;
+    }
+
+    /* Wider band for the homepage header + the card grids. The article prose
+       below stays in .container at a readable measure. */
+    .wide {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .page-lede {
+      max-width: 760px;
+      margin: 0.2em 0 1em;
+      font-size: 1.05em;
+      opacity: 0.8;
+    }
+
+    /* The "Posts and Updates" / "Videos" collapsible headers sit in the .wide
+       band, outside .post-body, so restate the centered section-header look. */
+    .wide .chapter-toggle-header {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.2em 0 0.6em;
+    }
+
+    /* Topic-homepage card grid — see buildCardGrid() in build.mjs. Kept in sync
+       with the identical block in mes.fm/911/build.mjs. */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 0.6em 0 0.4em;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Override the global body.light/body.dark anchor colour (higher specificity
+       than .link-card) so the card title/excerpt read as body text, not link
+       blue. The "Read more" span opts back into the link colour below. */
+    body.light .link-card { background-color: #fafafa; color: #222222; }
+    body.dark .link-card { background-color: #232323; color: #eeeeee; }
+
+    .link-card-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #333333;
+      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .link-card-body {
+      padding: 0.6rem 0.8rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .link-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: inherit;
+    }
+
+    .link-card-excerpt {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      line-height: 1.4;
+      flex: 1;
+      color: inherit;
+    }
+
+    .link-card-readmore {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    body.light .link-card-readmore { color: #1a6fb0; }
+    body.dark .link-card-readmore { color: #6cb6f5; }
+
+    @media (max-width: 900px) {
+      .card-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 560px) {
+      .card-grid { grid-template-columns: 1fr; }
     }
 
     .top-bar {
@@ -550,22 +812,21 @@ ${leadingHtml}
       margin: -0.8em 0 0.4em;
     }
 
-    /* Table of contents: a fixed side column on wide viewports (there's only
-       room beside the centered 760px .container once the window is wide
-       enough not to overlap it), collapsing to a <details> dropdown above
-       the article on anything narrower -- laptops with a non-maximized
-       window, tablets, and phones alike. */
+    /* Table of contents: a fixed side column only once the viewport is wide
+       enough to clear the 1180px .wide band (the card grids), collapsing to a
+       <details> dropdown above the article on anything narrower -- laptops,
+       tablets, and phones alike. */
     .toc-sidebar {
       display: none;
     }
 
-    @media (min-width: 1300px) {
+    @media (min-width: 1600px) {
       .toc-sidebar {
         display: block;
         position: fixed;
         top: 90px;
-        left: calc(50% + 410px);
-        width: 210px;
+        left: calc(50% + 610px);
+        width: 200px;
         max-height: calc(100vh - 120px);
         overflow-y: auto;
         font-size: 0.85em;
@@ -594,9 +855,10 @@ ${leadingHtml}
 
     .toc-mobile {
       margin: 1.2em 0;
+      max-width: 760px;
     }
 
-    @media (min-width: 1300px) {
+    @media (min-width: 1600px) {
       .toc-mobile {
         display: none;
       }
@@ -647,13 +909,14 @@ ${leadingHtml}
     <div class="toc-title">Jump to</div>
       ${tocLinksHtml}
   </nav>
-  <div class="container">
+  <div class="wide">
     <div class="top-bar">
       <a class="site-link" href="https://mes.fm/links">&larr; mes.fm/links</a>
       <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
     </div>
 
     <h1>${escapeHtml(title)}</h1>
+    <p class="page-lede">MES coverage of the Hutchison Effect &mdash; John Hutchison's antigravity and materials-transmutation demonstrations: videos, rare footage, articles, updates, and links. Bookmark this page; it is continually updated.</p>
     <div class="post-meta">
       <span>By ${escapeHtml(AUTHOR)}</span>
       <span>${escapeHtml(publishedDate)}</span>
@@ -669,11 +932,17 @@ ${leadingHtml}
         ${tocLinksHtml}
       </nav>
     </details>
+  </div>
 
-    <hr>
+  <div class="wide">
+${featureHtml}
+  </div>
 
+  <hr>
+
+  <div class="container">
     <div class="post-body">
-${bodyHtml}
+${articleBodyHtml}
     </div>
 
     <hr>
@@ -876,7 +1145,10 @@ async function main() {
   const post = await fetchPost();
   console.log(`Got post: "${post.title}" (${post.stats?.total_votes ?? 0} votes, ${post.children ?? 0} comments, ${post.reblogs ?? 0} reblogs)`);
 
-  const html = buildPage(post);
+  console.log(`Resolving card metadata for ${POSTS_AND_UPDATES.length + VIDEOS.length} links ...`);
+  const meta = await resolveAllMeta([...POSTS_AND_UPDATES, ...VIDEOS]);
+
+  const html = buildPage(post, meta);
   const outPath = join(__dirname, "index.html");
   writeFileSync(outPath, html, "utf8");
   console.log(`Wrote ${outPath}`);
