@@ -6,17 +6,19 @@
 // build`) whenever you want to pull in Hive edits or refresh the vote counts,
 // then commit the regenerated index.html.
 //
-// Two chapters are hand-maintained here (not part of the Hive article) and pinned
-// above the article's own "Important Links" chapter: "Posts" and "Videos". Edit
-// POSTS_CHAPTER / VIDEOS_CHAPTER below to add to them. The old flat link list that
-// used to live on this page is appended into the article's "Important Links"
-// chapter under a "More MES 9/11 Links" sub-heading (OLD_LINKS_HTML).
+// Two link sections are hand-maintained here (not part of the Hive article) and
+// promoted above it as the page's homepage feature: "Posts" and "Videos". Edit
+// the POSTS / VIDEOS arrays below to add to them (newest first); each entry is
+// rendered as a thumbnail card whose image + excerpt are scraped from the target
+// page's og: tags at build time and cached in link-meta.json. The old flat link
+// list that used to live on this page is appended into the article's "Important
+// Links" chapter under a "More MES 9/11 Links" sub-heading (OLD_LINKS_HTML).
 //
 // Usage:
 //   npm install
 //   npm run build
 
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { marked } from "marked";
@@ -26,6 +28,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const AUTHOR = "mes";
 const PERMLINK = "911";
 const PEAKD_URL = `https://peakd.com/truth/@${AUTHOR}/${PERMLINK}`;
+
+// Committed cache of link metadata scraped from each Posts/Videos card target
+// (see resolveAllMeta). Kept in git so a later build still has thumbnails and
+// excerpts even if a source host (3speak, leopedia, a mirror page) is briefly
+// unreachable.
+const META_CACHE_PATH = join(__dirname, "link-meta.json");
 
 async function fetchPost() {
   const res = await fetch("https://api.hive.blog", {
@@ -59,6 +67,148 @@ function escapeHtml(str) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+// ---------------------------------------------------------------------------
+// Topic-homepage card grid — shared treatment (fetchMeta / resolveAllMeta /
+// buildCardGrid + the .card-grid/.link-card CSS in buildPage). Copy this block
+// into another topic page's build.mjs (e.g. mes.fm/hutchison) to give its link
+// sections the same thumbnail-card layout.
+// ---------------------------------------------------------------------------
+
+function loadMetaCache() {
+  if (!existsSync(META_CACHE_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(META_CACHE_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function saveMetaCache(cache) {
+  const sorted = Object.fromEntries(
+    Object.keys(cache).sort().map((k) => [k, cache[k]])
+  );
+  writeFileSync(META_CACHE_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
+}
+
+function decodeEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&rsquo;/g, "’")
+    .replace(/&lsquo;/g, "‘")
+    .replace(/&ldquo;/g, "“")
+    .replace(/&rdquo;/g, "”")
+    .replace(/&mdash;/g, "—")
+    .replace(/&ndash;/g, "–")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+// Pull one <meta property="og:*"> (or name="...") content value out of raw HTML,
+// tolerating either attribute order. Regex-based, matching the repo's other
+// HTML-repair scripts (no DOM parser dependency).
+function readMetaTag(html, prop) {
+  const p = prop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Match each quoted value to its own opening quote (\2 backreference) so a
+  // literal apostrophe inside a double-quoted content="..." doesn't truncate it.
+  const patterns = [
+    new RegExp(`<meta[^>]+(?:property|name)=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"),
+    new RegExp(`<meta[^>]+\\bcontent=(["'])([\\s\\S]*?)\\1[^>]*(?:property|name)=(["'])${p}\\3`, "i"),
+  ];
+  for (let idx = 0; idx < patterns.length; idx++) {
+    const m = html.match(patterns[idx]);
+    if (m) return decodeEntities(idx === 0 ? m[3] : m[2]).trim();
+  }
+  return "";
+}
+
+// Trailing "— Mirrored from the Hive blockchain…" style boilerplate that every
+// mirror page's og:description carries; drop it from the card excerpt.
+function cleanExcerpt(text, maxLen = 150) {
+  let out = text
+    .replace(/\s*[-–—]*\s*mirrored from the hive blockchain.*$/i, "")
+    .replace(/\s*[-–—]*\s*mirrored from hive.*$/i, "")
+    .trim();
+  if (out.length > maxLen) {
+    const slice = out.slice(0, maxLen);
+    const lastSpace = slice.lastIndexOf(" ");
+    out = (lastSpace > 60 ? slice.slice(0, lastSpace) : slice).replace(/[.,;:!?–—-]+$/, "") + "…";
+  }
+  return out;
+}
+
+async function fetchMeta(url) {
+  const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+  return {
+    image: readMetaTag(html, "og:image"),
+    title: readMetaTag(html, "og:title"),
+    excerpt: cleanExcerpt(
+      readMetaTag(html, "og:description") || readMetaTag(html, "description")
+    ),
+  };
+}
+
+// Fetch metadata for every card target with a small concurrency cap. A failed
+// fetch keeps whatever the committed cache already had for that URL.
+async function resolveAllMeta(entries, concurrency = 6) {
+  const cache = loadMetaCache();
+  const urls = entries.map((e) => e.href);
+  let i = 0;
+  async function worker() {
+    while (i < urls.length) {
+      const url = urls[i++];
+      try {
+        cache[url] = await fetchMeta(url);
+        console.log(`  meta ok:   ${url}`);
+      } catch (err) {
+        console.warn(`  meta FAIL: ${url} (${err.message}) — using cached value`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  saveMetaCache(cache);
+  return cache;
+}
+
+// Render a link section as a responsive thumbnail-card grid, wrapped in the same
+// collapsible .chapter-toggle markup every other chapter uses (so toggleChapter
+// / toggleAllChapters / the "Jump to" anchors keep working unchanged).
+function buildCardGrid(id, label, entries, meta) {
+  const cards = entries
+    .map((entry) => {
+      const m = meta[entry.href] || {};
+      const title = entry.title || m.title || entry.href;
+      const thumbStyle = m.image
+        ? ` style="background-image:url('${escapeHtml(m.image)}')"`
+        : "";
+      const excerpt = m.excerpt
+        ? `<span class="link-card-excerpt">${escapeHtml(m.excerpt)}</span>`
+        : "";
+      return `<a class="link-card" href="${escapeHtml(entry.href)}">
+  <span class="link-card-thumb"${thumbStyle}></span>
+  <span class="link-card-body">
+    <span class="link-card-title">${escapeHtml(title)}</span>
+    ${excerpt}
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>`;
+    })
+    .join("\n");
+
+  return `<div class="chapter-toggle" id="${id}">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('${id}-list')"><center>${label} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="${id}-list" class="chapter-toggle-list card-grid">
+${cards}
+</div>
+</div>
+`;
 }
 
 function formatDate(isoString) {
@@ -155,44 +305,37 @@ function wrapChaptersInToggles(html) {
 }
 
 // "Posts" and "Videos" aren't part of the Hive article -- they're hand-maintained
-// chapters of mirrored mes.fm pages (e.g. mes.fm/cat-wdttg-book) that we keep
-// adding to without re-publishing the Hive post. Pinned to the top of the TOC and
-// spliced in as the first two chapters, above the article's "Important Links".
-const POSTS_CHAPTER = `<div class="chapter-toggle" id="posts">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('posts-list')"><center>Posts <span id="arrowIcon-posts-list" class="arrow-icon">&#9660;</span></center></h1>
-<ul id="posts-list" class="chapter-toggle-list">
-<li><a href="https://mes.fm/911-revisionist-spammer">9/11 Revisionist = 9/11 Spammer</a></li>
-<li><a href="https://mes.fm/911revisited-blocks-mes">Norman aka 9/11 Revisited Blocked MES on X</a></li>
-<li><a href="https://mes.fm/andrew-mason-clown">New 9/11 Disinfo Spook Dropped: Andrew Mason</a></li>
-<li><a href="https://mes.fm/911-mystery-plane-photos">Rare Photos of a Mystery White Plane Before the South Tower Hit</a></li>
-<li><a href="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book">Matthew Naus Gave G. Edward Griffin the WDTTTG Book in 2012</a></li>
-<li><a href="https://mes.fm/kj-french-911-100k">French 9/11 Researcher KJ Hits 100k Views in 24 Hours</a></li>
-<li><a href="https://mes.fm/bought-911-hutchison-shirt">Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</a></li>
-<li><a href="https://mes.fm/csis-911-lights">CSIS Posts a Photo of the 9/11 Tribute in Light "Blue Beam" Lights</a></li>
-<li><a href="https://mes.fm/cat-wdttg-book">Story Time with Cat and Dr. Judy Wood's WDTTG Book</a></li>
-</ul>
-</div>
-<hr>
-`;
+// lists of mirrored mes.fm pages (e.g. mes.fm/cat-wdttg-book) that we keep adding
+// to without re-publishing the Hive post. Rendered as thumbnail-card grids by
+// buildCardGrid() and pinned above the article as the page's homepage feature.
+// To add an entry: drop a { href, title } object at the TOP of the list (newest
+// first). The thumbnail + excerpt are scraped from the target page's og: tags at
+// build time (resolveAllMeta) and cached in link-meta.json.
+const POSTS = [
+  { href: "https://mes.fm/911-revisionist-spammer", title: "9/11 Revisionist = 9/11 Spammer" },
+  { href: "https://mes.fm/911revisited-blocks-mes", title: "Norman aka 9/11 Revisited Blocked MES on X" },
+  { href: "https://mes.fm/andrew-mason-clown", title: "New 9/11 Disinfo Spook Dropped: Andrew Mason" },
+  { href: "https://mes.fm/911-mystery-plane-photos", title: "Rare Photos of a Mystery White Plane Before the South Tower Hit" },
+  { href: "https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book", title: "Matthew Naus Gave G. Edward Griffin the WDTTTG Book in 2012" },
+  { href: "https://mes.fm/kj-french-911-100k", title: "French 9/11 Researcher KJ Hits 100k Views in 24 Hours" },
+  { href: "https://mes.fm/bought-911-hutchison-shirt", title: "Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt" },
+  { href: "https://mes.fm/csis-911-lights", title: 'CSIS Posts a Photo of the 9/11 Tribute in Light "Blue Beam" Lights' },
+  { href: "https://mes.fm/cat-wdttg-book", title: "Story Time with Cat and Dr. Judy Wood's WDTTG Book" },
+];
 
-const VIDEOS_CHAPTER = `<div class="chapter-toggle" id="videos">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('videos-list')"><center>Videos <span id="arrowIcon-videos-list" class="arrow-icon">&#9660;</span></center></h1>
-<ul id="videos-list" class="chapter-toggle-list">
-<li><a href="https://mes.fm/nasa-911-fumes-hurricane-erin">NASA Astronaut Frank Culbertson Jr. Saw WTC Fumes on 9/11 but Didn&rsquo;t Mention Hurricane Erin</a></li>
-<li><a href="https://mes.fm/curt-weldon-pbd-podcast-dew">Patrick Bet David Asks Former Congressman Curt Weldon About Dr. Judy Wood and Hurricane Erin</a></li>
-<li><a href="https://mes.fm/curt-weldon-jimmy-dore-dew">Former Congressman Curt Weldon Brings Up Dr. Judy Wood and Directed Energy on the Jimmy Dore Show</a></li>
-<li><a href="https://mes.fm/911-coat-jumper">Alleged Launched Person Is Actually a Coat and NOT a 9/11 Jumper</a></li>
-<li><a href="https://mes.fm/richard-gage-flat-earth">Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat</a></li>
-<li><a href="https://mes.fm/eric-larson-lies">Author Eric Larson Speaks About Our Current Culture and Nation of Lies</a></li>
-<li><a href="https://mes.fm/jerry-leaphart-dew">Attorney Jerry Leaphart on NIST Hiring Military Contractors that Specialize in DEW and PsyOps</a></li>
-<li><a href="https://mes.fm/one-armed-twin">Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix</a></li>
-<li><a href="https://mes.fm/ashton-forbes-letter">Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself</a></li>
-<li><a href="https://mes.fm/stanley-praimnath-jumpers">9/11 Survivor Stanley Praimnath says the jumpers and paper were sucked out from the windows</a></li>
-<li><a href="https://mes.fm/911-jumper-launched">Rare Footage of 9/11 Jumper appears to be Launched Laterally with Great Force from the North Tower</a></li>
-</ul>
-</div>
-<hr>
-`;
+const VIDEOS = [
+  { href: "https://mes.fm/nasa-911-fumes-hurricane-erin", title: "NASA Astronaut Frank Culbertson Jr. Saw WTC Fumes on 9/11 but Didn’t Mention Hurricane Erin" },
+  { href: "https://mes.fm/curt-weldon-pbd-podcast-dew", title: "Patrick Bet David Asks Former Congressman Curt Weldon About Dr. Judy Wood and Hurricane Erin" },
+  { href: "https://mes.fm/curt-weldon-jimmy-dore-dew", title: "Former Congressman Curt Weldon Brings Up Dr. Judy Wood and Directed Energy on the Jimmy Dore Show" },
+  { href: "https://mes.fm/911-coat-jumper", title: "Alleged Launched Person Is Actually a Coat and NOT a 9/11 Jumper" },
+  { href: "https://mes.fm/richard-gage-flat-earth", title: "Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat" },
+  { href: "https://mes.fm/eric-larson-lies", title: "Author Eric Larson Speaks About Our Current Culture and Nation of Lies" },
+  { href: "https://mes.fm/jerry-leaphart-dew", title: "Attorney Jerry Leaphart on NIST Hiring Military Contractors that Specialize in DEW and PsyOps" },
+  { href: "https://mes.fm/one-armed-twin", title: "Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix" },
+  { href: "https://mes.fm/ashton-forbes-letter", title: "Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself" },
+  { href: "https://mes.fm/stanley-praimnath-jumpers", title: "9/11 Survivor Stanley Praimnath says the jumpers and paper were sucked out from the windows" },
+  { href: "https://mes.fm/911-jumper-launched", title: "Rare Footage of 9/11 Jumper appears to be Launched Laterally with Great Force from the North Tower" },
+];
 
 // The flat link list that used to be the bulk of this page, moved verbatim into
 // the article's "Important Links" chapter (see the OLD_LINKS_HTML splice in
@@ -247,7 +390,7 @@ const OLD_LINKS_HTML = `<h2>More MES 9/11 Links</h2>
 </ul>
 `;
 
-function buildPage(post) {
+function buildPage(post, meta) {
   const title = post.title;
   const preprocessed = embedYoutubeLinks(fixTableBoundaries(post.body));
   const { html: parsedBodyHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
@@ -261,12 +404,20 @@ function buildPage(post) {
     .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
     .join("\n      ");
 
-  // A collapse/expand-all control, pinned to the top of the post body so
-  // "Collapse All" folds every chapter including "Posts" and "Videos".
+  // A collapse/expand-all control; "Collapse All" folds every chapter on the
+  // page including the "Posts" / "Videos" card grids and the article sections.
   const chaptersToolbar = `<div class="chapters-toolbar">
 <button id="toggleAllChaptersBtn" class="theme-toggle-btn" onclick="toggleAllChapters()">Collapse All</button>
 </div>
 `;
+
+  // The two hand-maintained link sections, rendered as thumbnail-card grids and
+  // promoted above the article as the page's homepage feature.
+  const featureHtml =
+    chaptersToolbar +
+    buildCardGrid("posts", "Posts", POSTS, meta) +
+    "<hr>\n" +
+    buildCardGrid("videos", "Videos", VIDEOS, meta);
 
   // The article's one-line intro sits before the first "# <center>" section --
   // keep it as a plain lead paragraph above the toolbar, not a chapter.
@@ -290,13 +441,10 @@ function buildPage(post) {
     OLD_LINKS_HTML + boundary
   );
 
-  const bodyHtml =
-    leadingHtml +
-    "\n\n" +
-    chaptersToolbar +
-    POSTS_CHAPTER +
-    VIDEOS_CHAPTER +
-    restWithOldLinks;
+  // Everything inside .post-body: the article's one-line intro then the
+  // Hive-sourced chapters. The Posts/Videos grids are no longer here — they're
+  // in the wider band above (featureHtml).
+  const articleBodyHtml = leadingHtml + "\n\n" + restWithOldLinks;
 
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
@@ -307,7 +455,7 @@ function buildPage(post) {
     "MES 9/11 Truth -- the full #911Truth video series, observable-evidence clips, livestreams, and links, mirrored from the Hive blockchain.";
   const ogImage =
     (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
-    ((String(bodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
+    ((String(articleBodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
     "";
   const ogImageTag = ogImage ? `\n  <meta property="og:image" content="${escapeHtml(ogImage)}">` : "";
   const twitterImageTag = ogImage ? `\n  <meta name="twitter:image" content="${escapeHtml(ogImage)}">` : "";
@@ -358,6 +506,107 @@ function buildPage(post) {
     .container {
       max-width: 760px;
       margin: 0 auto;
+    }
+
+    /* Wider band for the homepage header + the Posts/Videos card grids. The
+       article prose below stays in .container at a readable measure. */
+    .wide {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .page-lede {
+      max-width: 760px;
+      margin: 0.2em 0 1em;
+      font-size: 1.05em;
+      opacity: 0.8;
+    }
+
+    /* The "Posts" / "Videos" collapsible headers sit in the .wide band, outside
+       .post-body, so restate the centered section-header look here. */
+    .wide .chapter-toggle-header {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.2em 0 0.6em;
+    }
+
+    /* Topic-homepage card grid — see buildCardGrid() in build.mjs. Reusable as-is
+       on other topic pages (mes.fm/hutchison, etc.). */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 0.6em 0 0.4em;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Override the global body.light/body.dark anchor colour (higher specificity
+       than .link-card) so the card title/excerpt read as body text, not link
+       blue. The "Read more" span opts back into the link colour below. */
+    body.light .link-card { background-color: #fafafa; color: #222222; }
+    body.dark .link-card { background-color: #232323; color: #eeeeee; }
+
+    .link-card-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #333333;
+      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .link-card-body {
+      padding: 0.6rem 0.8rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .link-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: inherit;
+    }
+
+    .link-card-excerpt {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      line-height: 1.4;
+      flex: 1;
+      color: inherit;
+    }
+
+    .link-card-readmore {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    body.light .link-card-readmore { color: #1a6fb0; }
+    body.dark .link-card-readmore { color: #6cb6f5; }
+
+    @media (max-width: 900px) {
+      .card-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 560px) {
+      .card-grid { grid-template-columns: 1fr; }
     }
 
     .top-bar {
@@ -603,22 +852,21 @@ function buildPage(post) {
       margin: -0.8em 0 0.4em;
     }
 
-    /* Table of contents: a fixed side column on wide viewports (there's only
-       room beside the centered 760px .container once the window is wide
-       enough not to overlap it), collapsing to a <details> dropdown above
-       the article on anything narrower -- laptops with a non-maximized
-       window, tablets, and phones alike. */
+    /* Table of contents: a fixed side column only once the viewport is wide
+       enough to clear the 1180px .wide band (the Posts/Videos grids), collapsing
+       to a <details> dropdown above the article on anything narrower -- laptops,
+       tablets, and phones alike. */
     .toc-sidebar {
       display: none;
     }
 
-    @media (min-width: 1300px) {
+    @media (min-width: 1600px) {
       .toc-sidebar {
         display: block;
         position: fixed;
         top: 90px;
-        left: calc(50% + 410px);
-        width: 210px;
+        left: calc(50% + 610px);
+        width: 200px;
         max-height: calc(100vh - 120px);
         overflow-y: auto;
         font-size: 0.85em;
@@ -647,9 +895,10 @@ function buildPage(post) {
 
     .toc-mobile {
       margin: 1.2em 0;
+      max-width: 760px;
     }
 
-    @media (min-width: 1300px) {
+    @media (min-width: 1600px) {
       .toc-mobile {
         display: none;
       }
@@ -700,13 +949,14 @@ function buildPage(post) {
     <div class="toc-title">Jump to</div>
       ${tocLinksHtml}
   </nav>
-  <div class="container">
+  <div class="wide">
     <div class="top-bar">
       <a class="site-link" href="https://mes.fm/links">&larr; mes.fm/links</a>
       <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
     </div>
 
     <h1>${escapeHtml(title)}</h1>
+    <p class="page-lede">MES 9/11 research &mdash; the full #911Truth video series, observable-evidence clips, livestreams, posts, and links. Bookmark this page; it is continually updated.</p>
     <div class="post-meta">
       <span>By ${escapeHtml(AUTHOR)}</span>
       <span>${escapeHtml(publishedDate)}</span>
@@ -722,11 +972,17 @@ function buildPage(post) {
         ${tocLinksHtml}
       </nav>
     </details>
+  </div>
 
-    <hr>
+  <div class="wide">
+${featureHtml}
+  </div>
 
+  <hr>
+
+  <div class="container">
     <div class="post-body">
-${bodyHtml}
+${articleBodyHtml}
     </div>
 
     <hr>
@@ -929,7 +1185,10 @@ async function main() {
   const post = await fetchPost();
   console.log(`Got post: "${post.title}" (${post.stats?.total_votes ?? 0} votes, ${post.children ?? 0} comments, ${post.reblogs ?? 0} reblogs)`);
 
-  const html = buildPage(post);
+  console.log(`Resolving card metadata for ${POSTS.length + VIDEOS.length} links ...`);
+  const meta = await resolveAllMeta([...POSTS, ...VIDEOS]);
+
+  const html = buildPage(post, meta);
   const outPath = join(__dirname, "index.html");
   writeFileSync(outPath, html, "utf8");
   console.log(`Wrote ${outPath}`);
