@@ -78,6 +78,251 @@
 		"Pacific/Fiji": "🇫🇯"
 	};
 
+	/* ---- search aliases: type "Boston" or "France", get the right zone ----
+	   IANA ids only carry one representative city per zone, so map the common
+	   country names, big cities, US states and zone abbreviations onto them. */
+
+	var COUNTRY_ZONE = {
+		"united states": "America/New_York", "usa": "America/New_York", "us": "America/New_York", "america": "America/New_York",
+		"canada": "America/Toronto", "mexico": "America/Mexico_City",
+		"united kingdom": "Europe/London", "uk": "Europe/London", "britain": "Europe/London", "great britain": "Europe/London",
+		"england": "Europe/London", "scotland": "Europe/London", "wales": "Europe/London", "northern ireland": "Europe/London",
+		"ireland": "Europe/Dublin", "france": "Europe/Paris", "germany": "Europe/Berlin", "deutschland": "Europe/Berlin",
+		"spain": "Europe/Madrid", "espana": "Europe/Madrid", "portugal": "Europe/Lisbon", "italy": "Europe/Rome", "italia": "Europe/Rome",
+		"netherlands": "Europe/Amsterdam", "holland": "Europe/Amsterdam", "belgium": "Europe/Brussels", "luxembourg": "Europe/Luxembourg",
+		"switzerland": "Europe/Zurich", "austria": "Europe/Vienna", "sweden": "Europe/Stockholm", "norway": "Europe/Oslo",
+		"denmark": "Europe/Copenhagen", "finland": "Europe/Helsinki", "iceland": "Atlantic/Reykjavik", "poland": "Europe/Warsaw",
+		"czechia": "Europe/Prague", "czech republic": "Europe/Prague", "slovakia": "Europe/Bratislava", "hungary": "Europe/Budapest",
+		"romania": "Europe/Bucharest", "bulgaria": "Europe/Sofia", "greece": "Europe/Athens", "croatia": "Europe/Zagreb",
+		"serbia": "Europe/Belgrade", "ukraine": "Europe/Kyiv", "russia": "Europe/Moscow", "turkey": "Europe/Istanbul", "turkiye": "Europe/Istanbul",
+		"morocco": "Africa/Casablanca", "algeria": "Africa/Algiers", "tunisia": "Africa/Tunis", "egypt": "Africa/Cairo",
+		"nigeria": "Africa/Lagos", "ghana": "Africa/Accra", "kenya": "Africa/Nairobi", "ethiopia": "Africa/Addis_Ababa",
+		"tanzania": "Africa/Dar_es_Salaam", "south africa": "Africa/Johannesburg",
+		"israel": "Asia/Jerusalem", "palestine": "Asia/Hebron", "lebanon": "Asia/Beirut", "jordan": "Asia/Amman",
+		"saudi arabia": "Asia/Riyadh", "united arab emirates": "Asia/Dubai", "uae": "Asia/Dubai", "qatar": "Asia/Qatar",
+		"kuwait": "Asia/Kuwait", "bahrain": "Asia/Bahrain", "oman": "Asia/Muscat", "iraq": "Asia/Baghdad", "iran": "Asia/Tehran",
+		"afghanistan": "Asia/Kabul", "pakistan": "Asia/Karachi", "india": "Asia/Kolkata", "bharat": "Asia/Kolkata",
+		"nepal": "Asia/Kathmandu", "bangladesh": "Asia/Dhaka", "sri lanka": "Asia/Colombo", "myanmar": "Asia/Yangon", "burma": "Asia/Yangon",
+		"thailand": "Asia/Bangkok", "cambodia": "Asia/Phnom_Penh", "vietnam": "Asia/Ho_Chi_Minh", "laos": "Asia/Vientiane",
+		"malaysia": "Asia/Kuala_Lumpur", "singapore": "Asia/Singapore", "indonesia": "Asia/Jakarta", "philippines": "Asia/Manila",
+		"china": "Asia/Shanghai", "prc": "Asia/Shanghai", "hong kong": "Asia/Hong_Kong", "macau": "Asia/Macau", "taiwan": "Asia/Taipei",
+		"mongolia": "Asia/Ulaanbaatar", "japan": "Asia/Tokyo", "nippon": "Asia/Tokyo", "south korea": "Asia/Seoul", "korea": "Asia/Seoul",
+		"north korea": "Asia/Pyongyang", "kazakhstan": "Asia/Almaty", "uzbekistan": "Asia/Tashkent", "georgia country": "Asia/Tbilisi",
+		"armenia": "Asia/Yerevan", "azerbaijan": "Asia/Baku",
+		"australia": "Australia/Sydney", "new zealand": "Pacific/Auckland", "fiji": "Pacific/Fiji", "papua new guinea": "Pacific/Port_Moresby",
+		"guam": "Pacific/Guam", "samoa": "Pacific/Apia", "tonga": "Pacific/Tongatapu",
+		"brazil": "America/Sao_Paulo", "brasil": "America/Sao_Paulo", "argentina": "America/Argentina/Buenos_Aires",
+		"chile": "America/Santiago", "colombia": "America/Bogota", "peru": "America/Lima", "venezuela": "America/Caracas",
+		"ecuador": "America/Guayaquil", "bolivia": "America/La_Paz", "paraguay": "America/Asuncion", "uruguay": "America/Montevideo",
+		"cuba": "America/Havana", "jamaica": "America/Jamaica", "haiti": "America/Port-au-Prince", "dominican republic": "America/Santo_Domingo",
+		"puerto rico": "America/Puerto_Rico", "panama": "America/Panama", "costa rica": "America/Costa_Rica", "guatemala": "America/Guatemala",
+		"honduras": "America/Tegucigalpa", "el salvador": "America/El_Salvador", "nicaragua": "America/Managua"
+	};
+
+	var CITY_ZONE = {
+		// United States
+		"new york city": "America/New_York", "nyc": "America/New_York", "manhattan": "America/New_York", "brooklyn": "America/New_York",
+		"boston": "America/New_York", "washington": "America/New_York", "washington dc": "America/New_York", "dc": "America/New_York",
+		"philadelphia": "America/New_York", "philly": "America/New_York", "pittsburgh": "America/New_York", "atlanta": "America/New_York",
+		"miami": "America/New_York", "orlando": "America/New_York", "tampa": "America/New_York", "jacksonville": "America/New_York",
+		"charlotte": "America/New_York", "raleigh": "America/New_York", "baltimore": "America/New_York", "richmond va": "America/New_York",
+		"cleveland": "America/New_York", "columbus": "America/New_York", "cincinnati": "America/New_York", "buffalo": "America/New_York",
+		"newark": "America/New_York", "boston ma": "America/New_York",
+		"chicago": "America/Chicago", "houston": "America/Chicago", "dallas": "America/Chicago", "austin": "America/Chicago",
+		"san antonio": "America/Chicago", "fort worth": "America/Chicago", "nashville": "America/Chicago", "memphis": "America/Chicago",
+		"new orleans": "America/Chicago", "kansas city": "America/Chicago", "st louis": "America/Chicago", "saint louis": "America/Chicago",
+		"milwaukee": "America/Chicago", "minneapolis": "America/Chicago", "oklahoma city": "America/Chicago", "omaha": "America/Chicago",
+		"denver": "America/Denver", "salt lake city": "America/Denver", "albuquerque": "America/Denver", "el paso": "America/Denver",
+		"colorado springs": "America/Denver", "boise": "America/Boise",
+		"phoenix": "America/Phoenix", "tucson": "America/Phoenix", "scottsdale": "America/Phoenix", "mesa": "America/Phoenix",
+		"los angeles": "America/Los_Angeles", "la": "America/Los_Angeles", "hollywood": "America/Los_Angeles",
+		"san francisco": "America/Los_Angeles", "sf": "America/Los_Angeles", "bay area": "America/Los_Angeles",
+		"san diego": "America/Los_Angeles", "san jose": "America/Los_Angeles", "sacramento": "America/Los_Angeles",
+		"seattle": "America/Los_Angeles", "portland": "America/Los_Angeles", "las vegas": "America/Los_Angeles", "vegas": "America/Los_Angeles",
+		"oakland": "America/Los_Angeles", "long beach": "America/Los_Angeles", "fresno": "America/Los_Angeles", "silicon valley": "America/Los_Angeles",
+		"honolulu": "Pacific/Honolulu", "hawaii": "Pacific/Honolulu", "anchorage": "America/Anchorage", "alaska": "America/Anchorage",
+		// Canada
+		"toronto": "America/Toronto", "ottawa": "America/Toronto", "montreal": "America/Toronto", "quebec": "America/Toronto",
+		"quebec city": "America/Toronto", "hamilton": "America/Toronto", "mississauga": "America/Toronto", "kitchener": "America/Toronto",
+		"winnipeg": "America/Winnipeg", "regina": "America/Regina", "saskatoon": "America/Regina",
+		"calgary": "America/Edmonton", "edmonton": "America/Edmonton", "vancouver": "America/Vancouver", "victoria": "America/Vancouver",
+		"surrey": "America/Vancouver", "richmond bc": "America/Vancouver", "burnaby": "America/Vancouver", "kelowna": "America/Vancouver",
+		"halifax": "America/Halifax", "st johns": "America/St_Johns",
+		// UK / Ireland
+		"london": "Europe/London", "manchester": "Europe/London", "birmingham": "Europe/London", "leeds": "Europe/London",
+		"glasgow": "Europe/London", "edinburgh": "Europe/London", "liverpool": "Europe/London", "bristol": "Europe/London",
+		"sheffield": "Europe/London", "cardiff": "Europe/London", "belfast": "Europe/London", "dublin": "Europe/Dublin", "cork": "Europe/Dublin",
+		// Germany / Austria / Switzerland
+		"berlin": "Europe/Berlin", "munich": "Europe/Berlin", "munchen": "Europe/Berlin", "frankfurt": "Europe/Berlin",
+		"hamburg": "Europe/Berlin", "cologne": "Europe/Berlin", "koln": "Europe/Berlin", "stuttgart": "Europe/Berlin",
+		"dusseldorf": "Europe/Berlin", "leipzig": "Europe/Berlin", "dortmund": "Europe/Berlin",
+		"vienna": "Europe/Vienna", "wien": "Europe/Vienna", "salzburg": "Europe/Vienna", "graz": "Europe/Vienna",
+		"zurich": "Europe/Zurich", "geneva": "Europe/Zurich", "basel": "Europe/Zurich", "bern": "Europe/Zurich", "lausanne": "Europe/Zurich",
+		// France
+		"paris": "Europe/Paris", "marseille": "Europe/Paris", "lyon": "Europe/Paris", "toulouse": "Europe/Paris",
+		"nice": "Europe/Paris", "bordeaux": "Europe/Paris", "nantes": "Europe/Paris", "strasbourg": "Europe/Paris", "lille": "Europe/Paris",
+		// Iberia / Italy
+		"madrid": "Europe/Madrid", "barcelona": "Europe/Madrid", "valencia": "Europe/Madrid", "seville": "Europe/Madrid",
+		"sevilla": "Europe/Madrid", "bilbao": "Europe/Madrid", "malaga": "Europe/Madrid", "lisbon": "Europe/Lisbon", "porto": "Europe/Lisbon",
+		"rome": "Europe/Rome", "roma": "Europe/Rome", "milan": "Europe/Rome", "milano": "Europe/Rome", "naples": "Europe/Rome",
+		"turin": "Europe/Rome", "florence": "Europe/Rome", "venice": "Europe/Rome", "bologna": "Europe/Rome", "palermo": "Europe/Rome",
+		// Benelux / Nordics / Eastern Europe
+		"amsterdam": "Europe/Amsterdam", "rotterdam": "Europe/Amsterdam", "the hague": "Europe/Amsterdam", "utrecht": "Europe/Amsterdam",
+		"eindhoven": "Europe/Amsterdam", "brussels": "Europe/Brussels", "antwerp": "Europe/Brussels", "ghent": "Europe/Brussels",
+		"stockholm": "Europe/Stockholm", "gothenburg": "Europe/Stockholm", "malmo": "Europe/Stockholm", "oslo": "Europe/Oslo",
+		"bergen": "Europe/Oslo", "copenhagen": "Europe/Copenhagen", "helsinki": "Europe/Helsinki", "reykjavik": "Atlantic/Reykjavik",
+		"warsaw": "Europe/Warsaw", "krakow": "Europe/Warsaw", "cracow": "Europe/Warsaw", "prague": "Europe/Prague", "praha": "Europe/Prague",
+		"budapest": "Europe/Budapest", "bucharest": "Europe/Bucharest", "sofia": "Europe/Sofia", "athens": "Europe/Athens",
+		"thessaloniki": "Europe/Athens", "zagreb": "Europe/Zagreb", "belgrade": "Europe/Belgrade",
+		"istanbul": "Europe/Istanbul", "ankara": "Europe/Istanbul", "izmir": "Europe/Istanbul",
+		"moscow": "Europe/Moscow", "saint petersburg": "Europe/Moscow", "st petersburg": "Europe/Moscow",
+		"kyiv": "Europe/Kyiv", "kiev": "Europe/Kyiv",
+		// Middle East / Africa
+		"dubai": "Asia/Dubai", "abu dhabi": "Asia/Dubai", "sharjah": "Asia/Dubai", "doha": "Asia/Qatar",
+		"riyadh": "Asia/Riyadh", "jeddah": "Asia/Riyadh", "mecca": "Asia/Riyadh", "kuwait city": "Asia/Kuwait",
+		"tel aviv": "Asia/Jerusalem", "jerusalem": "Asia/Jerusalem", "tehran": "Asia/Tehran", "baghdad": "Asia/Baghdad",
+		"beirut": "Asia/Beirut", "amman": "Asia/Amman", "cairo": "Africa/Cairo", "alexandria": "Africa/Cairo",
+		"casablanca": "Africa/Casablanca", "marrakech": "Africa/Casablanca", "rabat": "Africa/Casablanca", "algiers": "Africa/Algiers",
+		"lagos": "Africa/Lagos", "abuja": "Africa/Lagos", "accra": "Africa/Accra", "nairobi": "Africa/Nairobi",
+		"cape town": "Africa/Johannesburg", "johannesburg": "Africa/Johannesburg", "joburg": "Africa/Johannesburg",
+		"durban": "Africa/Johannesburg", "pretoria": "Africa/Johannesburg", "addis ababa": "Africa/Addis_Ababa",
+		// South Asia
+		"delhi": "Asia/Kolkata", "new delhi": "Asia/Kolkata", "mumbai": "Asia/Kolkata", "bombay": "Asia/Kolkata",
+		"bangalore": "Asia/Kolkata", "bengaluru": "Asia/Kolkata", "kolkata": "Asia/Kolkata", "calcutta": "Asia/Kolkata",
+		"chennai": "Asia/Kolkata", "madras": "Asia/Kolkata", "hyderabad": "Asia/Kolkata", "pune": "Asia/Kolkata",
+		"ahmedabad": "Asia/Kolkata", "jaipur": "Asia/Kolkata", "goa": "Asia/Kolkata", "kerala": "Asia/Kolkata",
+		"karachi": "Asia/Karachi", "lahore": "Asia/Karachi", "islamabad": "Asia/Karachi", "dhaka": "Asia/Dhaka",
+		"colombo": "Asia/Colombo", "kathmandu": "Asia/Kathmandu",
+		// SE / East Asia
+		"bangkok": "Asia/Bangkok", "phuket": "Asia/Bangkok", "chiang mai": "Asia/Bangkok", "hanoi": "Asia/Ho_Chi_Minh",
+		"ho chi minh city": "Asia/Ho_Chi_Minh", "saigon": "Asia/Ho_Chi_Minh", "jakarta": "Asia/Jakarta", "bali": "Asia/Makassar",
+		"denpasar": "Asia/Makassar", "kuala lumpur": "Asia/Kuala_Lumpur", "manila": "Asia/Manila", "cebu": "Asia/Manila",
+		"beijing": "Asia/Shanghai", "peking": "Asia/Shanghai", "shanghai": "Asia/Shanghai", "shenzhen": "Asia/Shanghai",
+		"guangzhou": "Asia/Shanghai", "canton": "Asia/Shanghai", "chengdu": "Asia/Shanghai", "wuhan": "Asia/Shanghai",
+		"taipei": "Asia/Taipei", "seoul": "Asia/Seoul", "busan": "Asia/Seoul", "incheon": "Asia/Seoul",
+		"tokyo": "Asia/Tokyo", "osaka": "Asia/Tokyo", "kyoto": "Asia/Tokyo", "yokohama": "Asia/Tokyo",
+		"nagoya": "Asia/Tokyo", "sapporo": "Asia/Tokyo", "fukuoka": "Asia/Tokyo",
+		// Oceania
+		"sydney": "Australia/Sydney", "canberra": "Australia/Sydney", "newcastle au": "Australia/Sydney",
+		"melbourne": "Australia/Melbourne", "brisbane": "Australia/Brisbane", "gold coast": "Australia/Brisbane",
+		"perth": "Australia/Perth", "adelaide": "Australia/Adelaide", "darwin": "Australia/Darwin", "hobart": "Australia/Hobart",
+		"auckland": "Pacific/Auckland", "wellington": "Pacific/Auckland", "christchurch": "Pacific/Auckland", "suva": "Pacific/Fiji",
+		// Latin America
+		"mexico city": "America/Mexico_City", "guadalajara": "America/Mexico_City", "monterrey": "America/Monterrey",
+		"cancun": "America/Cancun", "tijuana": "America/Tijuana", "sao paulo": "America/Sao_Paulo",
+		"rio de janeiro": "America/Sao_Paulo", "rio": "America/Sao_Paulo", "brasilia": "America/Sao_Paulo",
+		"buenos aires": "America/Argentina/Buenos_Aires", "cordoba": "America/Argentina/Cordoba",
+		"santiago": "America/Santiago", "bogota": "America/Bogota", "medellin": "America/Bogota", "lima": "America/Lima",
+		"caracas": "America/Caracas", "quito": "America/Guayaquil", "guayaquil": "America/Guayaquil",
+		"montevideo": "America/Montevideo", "la paz": "America/La_Paz", "asuncion": "America/Asuncion",
+		"havana": "America/Havana", "panama city": "America/Panama", "san juan": "America/Puerto_Rico"
+	};
+
+	var STATE_ZONE = {
+		"alabama": "America/Chicago", "arizona": "America/Phoenix", "arkansas": "America/Chicago",
+		"california": "America/Los_Angeles", "colorado": "America/Denver", "connecticut": "America/New_York",
+		"delaware": "America/New_York", "florida": "America/New_York", "georgia": "America/New_York",
+		"idaho": "America/Boise", "illinois": "America/Chicago", "indiana": "America/Indiana/Indianapolis",
+		"iowa": "America/Chicago", "kansas": "America/Chicago", "kentucky": "America/New_York",
+		"louisiana": "America/Chicago", "maine": "America/New_York", "maryland": "America/New_York",
+		"massachusetts": "America/New_York", "michigan": "America/Detroit", "minnesota": "America/Chicago",
+		"mississippi": "America/Chicago", "missouri": "America/Chicago", "montana": "America/Denver",
+		"nebraska": "America/Chicago", "nevada": "America/Los_Angeles", "new hampshire": "America/New_York",
+		"new jersey": "America/New_York", "new mexico": "America/Denver", "new york state": "America/New_York",
+		"north carolina": "America/New_York", "north dakota": "America/Chicago", "ohio": "America/New_York",
+		"oklahoma": "America/Chicago", "oregon": "America/Los_Angeles", "pennsylvania": "America/New_York",
+		"rhode island": "America/New_York", "south carolina": "America/New_York", "south dakota": "America/Chicago",
+		"tennessee": "America/Chicago", "texas": "America/Chicago", "utah": "America/Denver",
+		"vermont": "America/New_York", "virginia": "America/New_York", "washington state": "America/Los_Angeles",
+		"west virginia": "America/New_York", "wisconsin": "America/Chicago", "wyoming": "America/Denver"
+	};
+
+	var ABBR_ZONE = {
+		"pst": "America/Los_Angeles", "pdt": "America/Los_Angeles", "pt": "America/Los_Angeles",
+		"mst": "America/Denver", "mdt": "America/Denver", "mt": "America/Denver",
+		"cst": "America/Chicago", "cdt": "America/Chicago",
+		"est": "America/New_York", "edt": "America/New_York", "et": "America/New_York",
+		"akst": "America/Anchorage", "akdt": "America/Anchorage", "hst": "Pacific/Honolulu",
+		"gmt": "UTC", "utc": "UTC", "zulu": "UTC", "coordinated universal time": "UTC",
+		"bst": "Europe/London", "wet": "Europe/Lisbon", "cet": "Europe/Paris", "cest": "Europe/Paris",
+		"eet": "Europe/Athens", "eest": "Europe/Athens", "msk": "Europe/Moscow",
+		"ist": "Asia/Kolkata", "gst": "Asia/Dubai", "pkt": "Asia/Karachi", "bst bangladesh": "Asia/Dhaka",
+		"ict": "Asia/Bangkok", "sgt": "Asia/Singapore", "hkt": "Asia/Hong_Kong", "cst china": "Asia/Shanghai",
+		"jst": "Asia/Tokyo", "kst": "Asia/Seoul",
+		"aest": "Australia/Sydney", "aedt": "Australia/Sydney", "acst": "Australia/Adelaide",
+		"awst": "Australia/Perth", "nzst": "Pacific/Auckland", "nzdt": "Pacific/Auckland"
+	};
+
+	function normTerm(s) {
+		return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+			.replace(/[._\/]+/g, " ").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+	}
+
+	var _searchIndex = null;
+	function searchIndex() {
+		if (_searchIndex) return _searchIndex;
+		var m = Object.create(null);
+		function add(term, zone) {
+			var k = normTerm(term);
+			if (!k || !zone) return;
+			var a = m[k] || (m[k] = []);
+			if (a.indexOf(zone) === -1) a.push(zone);
+		}
+		allZones().forEach(function (z) {
+			add(cityOf(z), z);
+			add(z.replace(/[_\/]/g, " "), z);
+			var seg = z.split("/");
+			if (seg.length > 2) add(seg[1], z);
+		});
+		[COUNTRY_ZONE, CITY_ZONE, STATE_ZONE, ABBR_ZONE].forEach(function (map) {
+			Object.keys(map).forEach(function (k) { add(k, map[k]); });
+		});
+		_searchIndex = m;
+		return m;
+	}
+
+	// -> [{zone, via, already}] best matches for a typed query ("" = popular list)
+	function searchZones(query, opts) {
+		opts = opts || {};
+		var limit = opts.limit || 8;
+		var exclude = opts.exclude || {};
+		var nq = normTerm(query);
+		var best = Object.create(null);
+		function consider(zone, score, via) {
+			if (!zone) return;
+			var cur = best[zone];
+			if (!cur || score > cur.score) best[zone] = { score: score, via: via };
+		}
+		if (!nq) {
+			POPULAR.forEach(function (z, i) { if (!exclude[z]) consider(z, 1000 - i, null); });
+		} else {
+			var m = searchIndex();
+			Object.keys(m).forEach(function (k) {
+				var s = 0;
+				if (k === nq) s = 1000;
+				else if (k.indexOf(nq) === 0) s = 700 - k.length;
+				else if ((" " + k).indexOf(" " + nq) !== -1) s = 500 - k.length;
+				else if (k.length >= 3 && (nq + " ").indexOf(k + " ") === 0) s = 400 - k.length; // "paris, france"
+				else if (nq.length >= 3 && k.indexOf(nq) !== -1) s = 250 - k.length;
+				if (s > 0) m[k].forEach(function (z) { consider(z, s, k); });
+			});
+			allZones().forEach(function (z) {
+				var nz = normTerm(z);
+				if (nz.indexOf(nq) !== -1) consider(z, nz.indexOf(nq) === 0 ? 650 : 180, null);
+			});
+		}
+		return Object.keys(best).map(function (z) {
+			return { zone: z, score: best[z].score, via: best[z].via, already: !!exclude[z] };
+		}).sort(function (a, b) {
+			if (a.already !== b.already) return a.already ? 1 : -1;   // "already added" sink to the bottom
+			if (b.score !== a.score) return b.score - a.score;
+			var pa = POPULAR.indexOf(a.zone), pb = POPULAR.indexOf(b.zone);
+			pa = pa < 0 ? 999 : pa; pb = pb < 0 ? 999 : pb;
+			if (pa !== pb) return pa - pb;
+			return a.zone < b.zone ? -1 : 1;
+		}).slice(0, limit);
+	}
+
 	/* ---- zone maths ---------------------------------------------------- */
 
 	function isValidZone(z) {
@@ -165,10 +410,41 @@
 		var seg = z.split("/");
 		return seg.slice(0, -1).join(" · ").replace(/_/g, " ");
 	}
-	function labelOf(z) {
+	// text shown in the "from" input for the selected zone
+	function fromLabel(z) {
 		if (z === HOME) return "Richmond / Vancouver, BC (Pacific Time)";
-		if (z === "UTC") return "UTC — Coordinated Universal Time";
-		return cityOf(z) + " — " + regionOf(z);
+		if (z === "UTC") return "UTC (Coordinated Universal Time)";
+		var long = zoneName(z, new Date(), "long");
+		return cityOf(z) + (long ? " (" + long + ")" : "");
+	}
+	// short city name for a result row
+	function comboLabel(z) {
+		if (z === HOME) return "Richmond / Vancouver, BC";
+		if (z === "UTC") return "UTC";
+		return cityOf(z);
+	}
+	// secondary line for a result row: region + current offset + abbr/long name
+	function comboMeta(z) {
+		if (z === "UTC") return "Coordinated Universal Time · UTC±0";
+		var now = new Date();
+		var bits = [regionOf(z), offsetStr(z, now)];
+		var abbr = zoneName(z, now, "short");
+		var long = zoneName(z, now, "long");
+		if (abbr && !/^(GMT|UTC)[+−-]?/.test(abbr)) bits.push(abbr);
+		else if (long) bits.push(long);
+		return bits.join(" · ");
+	}
+	// how the matched search term is shown ("Boston →"): acronyms upper-case, rest title-case
+	var VIA_UPPER = {
+		uk: 1, us: 1, usa: 1, uae: 1, nyc: 1, la: 1, sf: 1, dc: 1, prc: 1,
+		pst: 1, pdt: 1, pt: 1, mst: 1, mdt: 1, mt: 1, cst: 1, cdt: 1, est: 1, edt: 1, et: 1,
+		gmt: 1, utc: 1, bst: 1, wet: 1, cet: 1, cest: 1, eet: 1, eest: 1, msk: 1,
+		ist: 1, gst: 1, pkt: 1, ict: 1, sgt: 1, hkt: 1, jst: 1, kst: 1,
+		aest: 1, aedt: 1, acst: 1, awst: 1, nzst: 1, nzdt: 1, akst: 1, akdt: 1, hst: 1
+	};
+	function titleVia(s) {
+		if (VIA_UPPER[s] || s.length <= 2) return s.toUpperCase();
+		return s.replace(/\b([a-z])/g, function (_, c) { return c.toUpperCase(); });
 	}
 
 	/* ---- state ------------------------------------------------------- */
@@ -230,53 +506,116 @@
 
 	/* ---- rendering ------------------------------------------------- */
 
-	var fromSel = $("tz-from"), addSel = $("tz-add"), list = $("tz-list");
+	var fromInput = $("tz-from"), addInput = $("tz-add"), list = $("tz-list");
 
-	function fillFromSelect() {
-		var seen = {}, html = "";
-		html += '<optgroup label="Popular">';
-		POPULAR.forEach(function (z) {
-			if (seen[z] || !isValidZone(z)) return;
-			seen[z] = 1;
-			html += '<option value="' + z + '">' + labelOf(z) + "</option>";
-		});
-		html += "</optgroup>";
-		if (!seen[state.from]) {
-			html = '<option value="' + state.from + '">' + labelOf(state.from) + "</option>" + html;
-			seen[state.from] = 1;
+	/* ---- searchable city/zone combobox --------------------------------- */
+
+	function makeCombo(input, listEl, cfg) {
+		var open = false, active = -1, rows = [];
+
+		function close() {
+			open = false; active = -1;
+			listEl.classList.add("hide");
+			input.setAttribute("aria-expanded", "false");
+			input.removeAttribute("aria-activedescendant");
 		}
-		html += '<optgroup label="All time zones">';
-		allZones().forEach(function (z) {
-			if (seen[z]) return;
-			seen[z] = 1;
-			html += '<option value="' + z + '">' + labelOf(z) + "</option>";
+		function draw() {
+			rows = searchZones(input.value, { limit: 8, exclude: cfg.exclude ? cfg.exclude() : {} });
+			if (!rows.length) {
+				listEl.innerHTML = '<li class="tz__combo-empty">No match &mdash; try a city, country or &ldquo;UTC&rdquo;.</li>';
+			} else {
+				listEl.innerHTML = rows.map(function (r, i) {
+					var city = comboLabel(r.zone), via = "";
+					if (r.via && normTerm(r.via) !== normTerm(city) &&
+						city.toLowerCase().indexOf(r.via) === -1) {
+						via = '<span class="tz__combo-opt__via">' + titleVia(r.via) + ' &rarr;</span> ';
+					}
+					var tag = r.already ? ' <span class="tz__combo-opt__via">&middot; already shown</span>' : '';
+					return '<li class="tz__combo-opt' + (r.already ? ' tz__combo-opt--dim' : '') + '" role="option"' +
+						' id="' + listEl.id + '-o' + i + '" data-zone="' + r.zone + '"' +
+						' data-already="' + (r.already ? 1 : 0) + '" aria-selected="' + (i === active) + '">' +
+						via + '<span class="tz__combo-opt__city">' + city + '</span>' + tag +
+						'<span class="tz__combo-opt__meta">' + comboMeta(r.zone) + '</span></li>';
+				}).join("");
+			}
+			listEl.classList.remove("hide");
+			open = true;
+			input.setAttribute("aria-expanded", "true");
+		}
+		function move(d) {
+			if (!open) draw();
+			if (!rows.length) return;
+			active = (active + d + rows.length) % rows.length;
+			Array.prototype.forEach.call(listEl.children, function (li, i) {
+				if (li.setAttribute) li.setAttribute("aria-selected", i === active);
+				if (i === active && li.scrollIntoView) li.scrollIntoView({ block: "nearest" });
+			});
+			input.setAttribute("aria-activedescendant", listEl.id + "-o" + active);
+		}
+		function pick(zone, already) {
+			if (!zone || already) return;
+			close();
+			input.blur();          // so render() can refill the "from" field with the tidy label
+			cfg.onPick(zone);
+		}
+
+		input.addEventListener("focus", function () { draw(); if (input.value) input.select(); });
+		input.addEventListener("input", function () { active = -1; draw(); });
+		input.addEventListener("keydown", function (e) {
+			if (e.key === "ArrowDown") { e.preventDefault(); move(1); }
+			else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }
+			else if (e.key === "Enter") {
+				if (open && rows.length) {
+					e.preventDefault();
+					var r = rows[active] || rows.filter(function (x) { return !x.already; })[0];
+					if (r) pick(r.zone, r.already);
+				}
+			} else if (e.key === "Escape") { close(); }
 		});
-		html += "</optgroup>";
-		fromSel.innerHTML = html;
-		fromSel.value = state.from;
+		listEl.addEventListener("pointerdown", function (e) {
+			var li = e.target.closest ? e.target.closest("[data-zone]") : null;
+			if (li) { e.preventDefault(); pick(li.getAttribute("data-zone"), li.getAttribute("data-already") === "1"); }
+		});
+		input.addEventListener("blur", function () {
+			setTimeout(function () { if (open) close(); if (cfg.onBlur) cfg.onBlur(); }, 120);
+		});
+
+		return {
+			close: close,
+			topMatch: function () {
+				return searchZones(input.value, { limit: 8, exclude: cfg.exclude ? cfg.exclude() : {} })
+					.filter(function (r) { return !r.already; })[0];
+			}
+		};
 	}
 
-	function fillAddSelect() {
-		var used = {};
-		used[state.from] = 1;
-		state.targets.forEach(function (z) { used[z] = 1; });
-		var groups = {};
-		allZones().forEach(function (z) {
-			if (used[z]) return;
-			var g = z === "UTC" ? "UTC" : z.split("/")[0].replace(/_/g, " ");
-			(groups[g] = groups[g] || []).push(z);
-		});
-		var html = '<option value="">+ Add a city / time zone…</option>';
-		Object.keys(groups).sort().forEach(function (g) {
-			html += '<optgroup label="' + g + '">';
-			groups[g].forEach(function (z) {
-				html += '<option value="' + z + '">' + cityOf(z) +
-					(z === "UTC" ? "" : " (" + regionOf(z) + ")") + "</option>";
-			});
-			html += "</optgroup>";
-		});
-		addSel.innerHTML = html;
+	function usedByTargets() {
+		var e = {};
+		e[state.from] = 1;
+		state.targets.forEach(function (z) { e[z] = 1; });
+		return e;
 	}
+
+	var fromCombo = makeCombo(fromInput, $("tz-from-list"), {
+		onPick: function (z) {
+			if (!isValidZone(z)) return;
+			state.targets = state.targets.filter(function (t) { return t !== z; });
+			state.from = z;
+			commit();
+		},
+		onBlur: function () { fromInput.value = fromLabel(state.from); }
+	});
+
+	var addCombo = makeCombo(addInput, $("tz-add-list"), {
+		exclude: usedByTargets,
+		onPick: function (z) {
+			if (isValidZone(z) && state.targets.indexOf(z) === -1 && z !== state.from) {
+				state.targets.push(z);
+				commit();
+			}
+			addInput.value = "";
+		}
+	});
 
 	function card(z, instant, isHome) {
 		var li = document.createElement("li");
@@ -329,7 +668,7 @@
 
 		$("tz-date").value = state.date;
 		$("tz-time").value = state.time.length === 4 ? "0" + state.time : state.time;
-		if (fromSel.value !== state.from) fillFromSelect();
+		if (document.activeElement !== fromInput) fromInput.value = fromLabel(state.from);
 
 		var dp = state.date.split("-"), tp = state.time.split(":");
 		var instant = wallToInstant(+dp[0], +dp[1], +dp[2], +tp[0], +tp[1], state.from);
@@ -347,7 +686,6 @@
 			fmt(state.from, instant, { weekday: "long", month: "long", day: "numeric", year: "numeric" }) +
 			", " + clockStr(state.from, instant);
 
-		fillAddSelect();
 		// keep the shareable-link box current, but never touch the address bar --
 		// the home URL stays a clean /timezone; a #hash link is only produced when
 		// the visitor clicks "Copy shareable link" (and honoured when one is opened).
@@ -361,16 +699,12 @@
 
 	$("tz-date").addEventListener("change", function () { state.date = this.value || state.date; commit(); });
 	$("tz-time").addEventListener("change", function () { state.time = this.value || state.time; commit(); });
-	fromSel.addEventListener("change", function () { if (isValidZone(this.value)) { state.from = this.value; commit(); } });
 
 	$("tz-add-btn").addEventListener("click", function () {
-		var z = addSel.value;
-		if (z && isValidZone(z) && state.targets.indexOf(z) === -1 && z !== state.from) {
-			state.targets.push(z);
-			commit();
-		}
+		if (!addInput.value.trim()) { addInput.focus(); return; }
+		var r = addCombo.topMatch();
+		if (r) { state.targets.push(r.zone); addInput.value = ""; commit(); }
 	});
-	addSel.addEventListener("change", function () { if (this.value) $("tz-add-btn").click(); });
 
 	$("tz-now").addEventListener("click", function () {
 		state.date = todayInZone(state.from);
@@ -387,7 +721,6 @@
 		}
 		state.targets = state.targets.filter(function (t) { return t !== z; });
 		state.from = z;
-		fillFromSelect();
 		commit();
 	});
 
@@ -396,7 +729,6 @@
 		state.date = todayInZone(HOME);
 		state.time = nowTimeInZone(HOME);
 		state.targets = (loadStore() || DEFAULT_TARGETS).slice();
-		fillFromSelect();
 		commit();
 	});
 
@@ -420,7 +752,7 @@
 
 	window.addEventListener("hashchange", function () {
 		var q = readHash();
-		if (q) { applyHash(q); fillFromSelect(); render(); }
+		if (q) { applyHash(q); render(); }
 	});
 
 	/* ---- boot ---------------------------------------------------- */
@@ -436,6 +768,5 @@
 	if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date)) state.date = todayInZone(state.from);
 	if (!/^\d{1,2}:\d{2}$/.test(state.time)) state.time = nowTimeInZone(state.from);
 
-	fillFromSelect();
 	render();
 })();

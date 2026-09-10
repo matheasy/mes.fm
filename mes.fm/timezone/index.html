@@ -239,6 +239,23 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tz__btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
 	.tz__addrow {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:1.1em 0 0.4em;}
 	.tz__addrow select {font:inherit;font-size:0.95em;padding:0.5em 0.6em;border:1px solid #b9c1cc;border-radius:0.35em;background:#fff;flex:1 1 16em;min-width:0;}
+	/* searchable city / country / zone combobox */
+	.tz__combo {position:relative;flex:1 1 16em;min-width:0;}
+	.tz__field .tz__combo {flex:none;}
+	.tz__combo-input {font:inherit;font-size:1em;padding:0.55em 0.6em;border:1px solid #b9c1cc;border-radius:0.35em;background:#fff;color:#222;width:100%;}
+	.tz__addrow .tz__combo-input {font-size:0.95em;padding:0.5em 0.6em;}
+	.tz__combo-input:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(61,90,128,0.18);}
+	.tz__combo-list {position:absolute;z-index:30;left:0;right:0;top:calc(100% + 3px);margin:0;padding:0.25em 0;list-style:none;
+		background:#fff;border:1px solid #b9c1cc;border-radius:0.4em;box-shadow:0 0.5em 1.5em rgba(20,30,50,0.18);
+		max-height:19em;overflow-y:auto;}
+	.tz__combo-opt {padding:0.5em 0.75em;cursor:pointer;line-height:1.3;}
+	.tz__combo-opt[aria-selected="true"], .tz__combo-opt:hover {background:#eef2f8;}
+	.tz__combo-opt--dim {opacity:0.55;cursor:default;}
+	.tz__combo-opt--dim:hover, .tz__combo-opt--dim[aria-selected="true"] {background:transparent;}
+	.tz__combo-opt__city {font-weight:700;color:#1e2733;}
+	.tz__combo-opt__via {color:var(--accent);font-weight:400;}
+	.tz__combo-opt__meta {display:block;font-size:0.8em;color:#77808c;margin-top:0.1em;}
+	.tz__combo-empty {padding:0.6em 0.75em;color:#99a0aa;font-style:italic;}
 	.tz__list {list-style:none;margin:0.5em 0 0;padding:0;display:flex;flex-direction:column;gap:0.5em;}
 	.tz__card {display:flex;align-items:center;gap:0.9em;border:1px solid #dfe4ea;border-left:4px solid var(--accent);border-radius:0.4em;padding:0.7em 0.9em;background:#fff;}
 	.tz__card--home {border-left-color:#c9a227;background:#fffdf5;}
@@ -519,7 +536,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 				</div>
 				<div class="tz__field" style="flex:2 1 18em;">
 					<label for="tz-from">From city / time zone</label>
-					<select id="tz-from"></select>
+					<div class="tz__combo">
+						<input type="text" id="tz-from" class="tz__combo-input" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="tz-from-list" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Search a city, country or zone">
+						<ul class="tz__combo-list hide" id="tz-from-list" role="listbox" aria-label="City / time zone matches"></ul>
+					</div>
 				</div>
 			</div>
 			<div class="tz__btns">
@@ -531,7 +551,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		</div>
 
 		<div class="tz__addrow">
-			<select id="tz-add" aria-label="Add a city or time zone"><option value="">+ Add a city / time zone&hellip;</option></select>
+			<div class="tz__combo">
+				<input type="text" id="tz-add" class="tz__combo-input" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="tz-add-list" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Add a city, country or zone &mdash; try &ldquo;Boston&rdquo; or &ldquo;France&rdquo;">
+				<ul class="tz__combo-list hide" id="tz-add-list" role="listbox" aria-label="City / time zone matches"></ul>
+			</div>
 			<button type="button" class="tz__btn" id="tz-add-btn">Add</button>
 		</div>
 
