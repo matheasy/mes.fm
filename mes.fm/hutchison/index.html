@@ -143,6 +143,51 @@
       .card-grid { grid-template-columns: 1fr; }
     }
 
+    /* Thumbnail View / Grid View toggle for long Hive-sourced chapters that list
+       one entry per video (title + link row + image) -- see enableGridToggle()
+       below. Grid View is the default, built at runtime into the same
+       .card-grid used for the card-grid sections above, using each entry's
+       first link + first image. Thumbnail View is the chapter's own
+       markdown-rendered markup, left untouched, available via the toggle. */
+
+    /* These chapters live in the narrow 760px .container, but Grid View should
+       read as big as the card-grid sections in the 1180px .wide band above.
+       updateBreakout() (below) sizes/positions this wrapper at runtime to
+       exactly match the current .wide element's rect (no static width here --
+       it's set inline in JS), breaking the grid out of the article column
+       without touching the column's own width. */
+
+    /* A chapter's leading reference line (e.g. "Free Energy playlist") that sat
+       before its first entry heading -- pulled out of both views so it's
+       always visible, right above the toggle buttons. */
+    .grid-toggle-lead {
+      margin: 0 0 0.8em;
+      font-size: 0.9em;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 0.5em;
+      margin: 0 0 1em;
+    }
+
+    .view-toggle-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    body.light .view-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .view-toggle-btn { background-color: #444444; color: #ffffff; }
+    body.light .view-toggle-btn.active { background-color: #1a6fb0; color: #ffffff; }
+    body.dark .view-toggle-btn.active { background-color: #6cb6f5; color: #1a1a1a; }
+
+    .view-hidden {
+      display: none;
+    }
+
     .top-bar {
       display: flex;
       align-items: center;
@@ -910,6 +955,190 @@
     themeToggle.addEventListener('click', () => {
       setTheme(!body.classList.contains('dark'));
     });
+  </script>
+
+  <script>
+    // Thumbnail View / Grid View toggle for long Hive-sourced chapters that list
+    // one entry per <h2> heading, followed by a link-row <p> and an image <p>
+    // (Highlights, Articles, News Reels, Unedited Footage, etc.). Grid View is
+    // the default: built once at runtime into the same .card-grid used for the
+    // card-grid sections above, using each entry's first <a> (the leftmost
+    // link) as the card's href and its first <img> as the thumbnail. Thumbnail
+    // View is the chapter's own markdown-rendered markup, left untouched,
+    // available as a fallback via the toggle. Add a chapter's id + heading tag
+    // to GRID_VIEW_CHAPTERS to give it the same toggle. Kept in sync with the
+    // identical mechanism in mes.fm/911/build.mjs.
+    //
+    // These chapters live in the narrow 760px article column (.container), but
+    // Grid View should read as big as the card-grid sections in the 1180px
+    // .wide band above -- so the grid is wrapped in a .card-grid-breakout div
+    // that updateBreakout() sizes/positions (via inline width/margin-left) to
+    // exactly match the current .wide element's rect, on load, on window
+    // resize, and whenever Grid View is switched back on.
+    (function () {
+      var GRID_VIEW_CHAPTERS = [
+        { id: 'highlights', heading: 'H2' },
+        { id: 'articles', heading: 'H2' },
+        { id: 'debunking-debunkers', heading: 'H2' },
+        { id: 'news-reels', heading: 'H2' },
+        { id: 'unedited-footage', heading: 'H2' },
+        { id: 'interviews-and-presentations', heading: 'H2' },
+        { id: 'cold-fusion-low-energy-nuclear-reactions-lenr', heading: 'H2' },
+        { id: 'mes-livestreams', heading: 'H2' },
+      ];
+
+      // Some Hive image URLs carry an unescaped apostrophe in their filename
+      // (a "#filename" fragment some old steemitimages.com uploads use), which
+      // would otherwise prematurely close the quoted url('...') below and drop
+      // the whole background-image. Percent-encode it so the string stays a
+      // valid CSS <url>.
+      function cssUrl(url) {
+        return "url('" + String(url).split("'").join('%27') + "')";
+      }
+
+      var breakouts = [];
+
+      function updateBreakout(el) {
+        var wideEl = document.querySelector('.wide');
+        if (!wideEl) return;
+        el.style.width = '';
+        el.style.marginLeft = '';
+        var wideRect = wideEl.getBoundingClientRect();
+        var selfRect = el.getBoundingClientRect();
+        el.style.width = wideRect.width + 'px';
+        el.style.marginLeft = (wideRect.left - selfRect.left) + 'px';
+      }
+
+      window.addEventListener('resize', function () {
+        breakouts.forEach(updateBreakout);
+      });
+
+      function buildEntries(children, headingTag) {
+        var entries = [];
+        var current = null;
+        children.forEach(function (node) {
+          if (node.tagName === headingTag) {
+            current = { title: node.textContent.trim(), nodes: [] };
+            entries.push(current);
+          } else if (current) {
+            current.nodes.push(node);
+          }
+        });
+        return entries;
+      }
+
+      function firstMatch(nodes, selector) {
+        for (var i = 0; i < nodes.length; i++) {
+          if (!nodes[i].querySelector) continue;
+          var found = nodes[i].querySelector(selector);
+          if (found) return found;
+        }
+        return null;
+      }
+
+      function enableGridToggle(config) {
+        var list = document.getElementById(config.id + '-list');
+        if (!list) return;
+        var headingTag = config.heading || 'H1';
+        var children = Array.prototype.slice.call(list.children);
+        var entries = buildEntries(children, headingTag);
+        if (!entries.length) return;
+
+        // Nodes before the first heading (e.g. a leading "Free Energy
+        // playlist" reference line) -- pulled out into their own block, shown
+        // above the toggle in both views, instead of getting buried inside
+        // whichever view is currently hidden.
+        var firstHeadingIndex = -1;
+        for (var ci = 0; ci < children.length; ci++) {
+          if (children[ci].tagName === headingTag) { firstHeadingIndex = ci; break; }
+        }
+        var leadNodes = firstHeadingIndex > 0 ? children.slice(0, firstHeadingIndex) : [];
+        var restNodes = firstHeadingIndex >= 0 ? children.slice(firstHeadingIndex) : children;
+
+        var thumbView = document.createElement('div');
+        thumbView.className = 'thumb-view view-hidden';
+        restNodes.forEach(function (node) { thumbView.appendChild(node); });
+
+        var gridView = document.createElement('div');
+        gridView.className = 'card-grid';
+        entries.forEach(function (entry) {
+          var link = firstMatch(entry.nodes, 'a');
+          if (!link) return;
+          var img = firstMatch(entry.nodes, 'img');
+          var card = document.createElement('a');
+          card.className = 'link-card';
+          card.href = link.getAttribute('href');
+          var thumb = document.createElement('span');
+          thumb.className = 'link-card-thumb';
+          var src = img && img.getAttribute('src');
+          if (src) thumb.style.backgroundImage = cssUrl(src);
+          var cardBody = document.createElement('span');
+          cardBody.className = 'link-card-body';
+          var titleEl = document.createElement('span');
+          titleEl.className = 'link-card-title';
+          titleEl.textContent = entry.title;
+          var cta = document.createElement('span');
+          cta.className = 'link-card-readmore';
+          cta.textContent = 'Watch →';
+          cardBody.appendChild(titleEl);
+          cardBody.appendChild(cta);
+          card.appendChild(thumb);
+          card.appendChild(cardBody);
+          gridView.appendChild(card);
+        });
+        if (!gridView.children.length) return;
+
+        var gridWrap = document.createElement('div');
+        gridWrap.className = 'card-grid-breakout';
+        gridWrap.appendChild(gridView);
+
+        var toolbar = document.createElement('div');
+        toolbar.className = 'view-toggle';
+        var thumbBtn = document.createElement('button');
+        thumbBtn.type = 'button';
+        thumbBtn.className = 'view-toggle-btn';
+        thumbBtn.textContent = 'Thumbnail View';
+        var gridBtn = document.createElement('button');
+        gridBtn.type = 'button';
+        gridBtn.className = 'view-toggle-btn active';
+        gridBtn.textContent = 'Grid View';
+        toolbar.appendChild(thumbBtn);
+        toolbar.appendChild(gridBtn);
+
+        if (leadNodes.length) {
+          var leadWrap = document.createElement('div');
+          leadWrap.className = 'grid-toggle-lead';
+          leadNodes.forEach(function (node) { leadWrap.appendChild(node); });
+          list.appendChild(leadWrap);
+        }
+        list.appendChild(toolbar);
+        list.appendChild(thumbView);
+        list.appendChild(gridWrap);
+
+        breakouts.push(gridWrap);
+        updateBreakout(gridWrap);
+
+        function showThumb() {
+          thumbBtn.classList.add('active');
+          gridBtn.classList.remove('active');
+          thumbView.classList.remove('view-hidden');
+          gridWrap.classList.add('view-hidden');
+        }
+        function showGrid() {
+          gridBtn.classList.add('active');
+          thumbBtn.classList.remove('active');
+          gridWrap.classList.remove('view-hidden');
+          thumbView.classList.add('view-hidden');
+          // Re-measure: the viewport (or the chapter's own collapsed state)
+          // may have changed while this grid was hidden.
+          updateBreakout(gridWrap);
+        }
+        thumbBtn.addEventListener('click', showThumb);
+        gridBtn.addEventListener('click', showGrid);
+      }
+
+      GRID_VIEW_CHAPTERS.forEach(enableGridToggle);
+    })();
   </script>
 
   <script>
