@@ -1080,21 +1080,25 @@ ${articleBodyHtml}
 
   <script>
     // Thumbnail View / Grid View toggle for long Hive-sourced video-list
-    // chapters (one entry per <h1> title, followed by a link-row <p> and an
-    // image <p> -- e.g. "911Truth Video Series"). Thumbnail View is the
-    // chapter's own markdown-rendered markup, left untouched. Grid View is
-    // built once at runtime into the same .card-grid used for Posts/Videos,
-    // using each entry's first <a> (the leftmost link) as the card's href and
-    // its first <img> as the thumbnail. Add a chapter's id to
-    // GRID_VIEW_CHAPTERS to give it the same toggle.
+    // chapters (one entry per heading, followed by a link-row <p> and an image
+    // <p> -- e.g. "911Truth Video Series" uses <h1> headings, "9/11 Observable
+    // Evidence" uses <h2>). Grid View is the default: built once at runtime
+    // into the same .card-grid used for Posts/Videos, using each entry's first
+    // <a> (the leftmost link) as the card's href and its first <img> as the
+    // thumbnail. Thumbnail View is the chapter's own markdown-rendered markup,
+    // left untouched, available as a fallback via the toggle. Add a chapter's
+    // id + heading tag to GRID_VIEW_CHAPTERS to give it the same toggle.
     (function () {
-      var GRID_VIEW_CHAPTERS = ['911truth-video-series'];
+      var GRID_VIEW_CHAPTERS = [
+        { id: '911truth-video-series', heading: 'H1' },
+        { id: '9-11-observable-evidence', heading: 'H2' },
+      ];
 
-      function buildEntries(children) {
+      function buildEntries(children, headingTag) {
         var entries = [];
         var current = null;
         children.forEach(function (node) {
-          if (node.tagName === 'H1') {
+          if (node.tagName === headingTag) {
             current = { title: node.textContent.trim(), nodes: [] };
             entries.push(current);
           } else if (current) {
@@ -1113,19 +1117,19 @@ ${articleBodyHtml}
         return null;
       }
 
-      function enableGridToggle(chapterId) {
-        var list = document.getElementById(chapterId + '-list');
+      function enableGridToggle(config) {
+        var list = document.getElementById(config.id + '-list');
         if (!list) return;
         var children = Array.prototype.slice.call(list.children);
-        var entries = buildEntries(children);
+        var entries = buildEntries(children, config.heading || 'H1');
         if (!entries.length) return;
 
         var thumbView = document.createElement('div');
-        thumbView.className = 'thumb-view';
+        thumbView.className = 'thumb-view view-hidden';
         children.forEach(function (node) { thumbView.appendChild(node); });
 
         var gridView = document.createElement('div');
-        gridView.className = 'card-grid view-hidden';
+        gridView.className = 'card-grid';
         entries.forEach(function (entry) {
           var link = firstMatch(entry.nodes, 'a');
           if (!link) return;
@@ -1157,11 +1161,11 @@ ${articleBodyHtml}
         toolbar.className = 'view-toggle';
         var thumbBtn = document.createElement('button');
         thumbBtn.type = 'button';
-        thumbBtn.className = 'view-toggle-btn active';
+        thumbBtn.className = 'view-toggle-btn';
         thumbBtn.textContent = 'Thumbnail View';
         var gridBtn = document.createElement('button');
         gridBtn.type = 'button';
-        gridBtn.className = 'view-toggle-btn';
+        gridBtn.className = 'view-toggle-btn active';
         gridBtn.textContent = 'Grid View';
         toolbar.appendChild(thumbBtn);
         toolbar.appendChild(gridBtn);
