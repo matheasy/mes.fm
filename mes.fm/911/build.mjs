@@ -623,6 +623,14 @@ function buildPage(post, meta) {
        -- it's set inline in JS), breaking the grid out of the article column
        without touching the column's own width. */
 
+    /* A chapter's leading reference line (e.g. "Playlist - Notes") that sat
+       before its first entry heading -- pulled out of both views so it's
+       always visible, right above the toggle buttons. */
+    .grid-toggle-lead {
+      margin: 0 0 0.8em;
+      font-size: 0.9em;
+    }
+
     .view-toggle {
       display: flex;
       gap: 0.5em;
@@ -1107,7 +1115,19 @@ ${articleBodyHtml}
       var GRID_VIEW_CHAPTERS = [
         { id: '911truth-video-series', heading: 'H1' },
         { id: '9-11-observable-evidence', heading: 'H2' },
+        { id: '9-11-truth-short-videos', heading: 'H2' },
+        { id: '1109-by-keor-meteor-music-album', heading: 'H2' },
+        { id: 'mes-9-11-livestreams', heading: 'H2' },
       ];
+
+      // Some Hive image URLs carry an unescaped apostrophe in their filename
+      // (a "#filename" fragment some old steemitimages.com uploads use), which
+      // would otherwise prematurely close the quoted url('...') below and drop
+      // the whole background-image. Percent-encode it so the string stays a
+      // valid CSS <url>.
+      function cssUrl(url) {
+        return "url('" + String(url).split("'").join('%27') + "')";
+      }
 
       var breakouts = [];
 
@@ -1152,13 +1172,25 @@ ${articleBodyHtml}
       function enableGridToggle(config) {
         var list = document.getElementById(config.id + '-list');
         if (!list) return;
+        var headingTag = config.heading || 'H1';
         var children = Array.prototype.slice.call(list.children);
-        var entries = buildEntries(children, config.heading || 'H1');
+        var entries = buildEntries(children, headingTag);
         if (!entries.length) return;
+
+        // Nodes before the first heading (e.g. a leading "Playlist - Notes"
+        // reference line) -- pulled out into their own block, shown above the
+        // toggle in both views, instead of getting buried inside whichever
+        // view is currently hidden.
+        var firstHeadingIndex = -1;
+        for (var ci = 0; ci < children.length; ci++) {
+          if (children[ci].tagName === headingTag) { firstHeadingIndex = ci; break; }
+        }
+        var leadNodes = firstHeadingIndex > 0 ? children.slice(0, firstHeadingIndex) : [];
+        var restNodes = firstHeadingIndex >= 0 ? children.slice(firstHeadingIndex) : children;
 
         var thumbView = document.createElement('div');
         thumbView.className = 'thumb-view view-hidden';
-        children.forEach(function (node) { thumbView.appendChild(node); });
+        restNodes.forEach(function (node) { thumbView.appendChild(node); });
 
         var gridView = document.createElement('div');
         gridView.className = 'card-grid';
@@ -1172,7 +1204,7 @@ ${articleBodyHtml}
           var thumb = document.createElement('span');
           thumb.className = 'link-card-thumb';
           var src = img && img.getAttribute('src');
-          if (src) thumb.style.backgroundImage = "url('" + src + "')";
+          if (src) thumb.style.backgroundImage = cssUrl(src);
           var cardBody = document.createElement('span');
           cardBody.className = 'link-card-body';
           var titleEl = document.createElement('span');
@@ -1206,6 +1238,12 @@ ${articleBodyHtml}
         toolbar.appendChild(thumbBtn);
         toolbar.appendChild(gridBtn);
 
+        if (leadNodes.length) {
+          var leadWrap = document.createElement('div');
+          leadWrap.className = 'grid-toggle-lead';
+          leadNodes.forEach(function (node) { leadWrap.appendChild(node); });
+          list.appendChild(leadWrap);
+        }
         list.appendChild(toolbar);
         list.appendChild(thumbView);
         list.appendChild(gridWrap);
