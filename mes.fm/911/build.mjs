@@ -610,6 +610,34 @@ function buildPage(post, meta) {
       .card-grid { grid-template-columns: 1fr; }
     }
 
+    /* Thumbnail View / Grid View toggle for long Hive-sourced chapters that list
+       one entry per video (title + link row + image) -- see enableGridToggle()
+       below. Thumbnail View (the chapter's own markdown-rendered markup) is the
+       default; Grid View replaces it with the same .card-grid used for
+       Posts/Videos, built at runtime from each entry's first link + image. */
+    .view-toggle {
+      display: flex;
+      gap: 0.5em;
+      margin: 0 0 1em;
+    }
+
+    .view-toggle-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    body.light .view-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .view-toggle-btn { background-color: #444444; color: #ffffff; }
+    body.light .view-toggle-btn.active { background-color: #1a6fb0; color: #ffffff; }
+    body.dark .view-toggle-btn.active { background-color: #6cb6f5; color: #1a1a1a; }
+
+    .view-hidden {
+      display: none;
+    }
+
     .top-bar {
       display: flex;
       align-items: center;
@@ -1048,6 +1076,118 @@ ${articleBodyHtml}
     themeToggle.addEventListener('click', () => {
       setTheme(!body.classList.contains('dark'));
     });
+  </script>
+
+  <script>
+    // Thumbnail View / Grid View toggle for long Hive-sourced video-list
+    // chapters (one entry per <h1> title, followed by a link-row <p> and an
+    // image <p> -- e.g. "911Truth Video Series"). Thumbnail View is the
+    // chapter's own markdown-rendered markup, left untouched. Grid View is
+    // built once at runtime into the same .card-grid used for Posts/Videos,
+    // using each entry's first <a> (the leftmost link) as the card's href and
+    // its first <img> as the thumbnail. Add a chapter's id to
+    // GRID_VIEW_CHAPTERS to give it the same toggle.
+    (function () {
+      var GRID_VIEW_CHAPTERS = ['911truth-video-series'];
+
+      function buildEntries(children) {
+        var entries = [];
+        var current = null;
+        children.forEach(function (node) {
+          if (node.tagName === 'H1') {
+            current = { title: node.textContent.trim(), nodes: [] };
+            entries.push(current);
+          } else if (current) {
+            current.nodes.push(node);
+          }
+        });
+        return entries;
+      }
+
+      function firstMatch(nodes, selector) {
+        for (var i = 0; i < nodes.length; i++) {
+          if (!nodes[i].querySelector) continue;
+          var found = nodes[i].querySelector(selector);
+          if (found) return found;
+        }
+        return null;
+      }
+
+      function enableGridToggle(chapterId) {
+        var list = document.getElementById(chapterId + '-list');
+        if (!list) return;
+        var children = Array.prototype.slice.call(list.children);
+        var entries = buildEntries(children);
+        if (!entries.length) return;
+
+        var thumbView = document.createElement('div');
+        thumbView.className = 'thumb-view';
+        children.forEach(function (node) { thumbView.appendChild(node); });
+
+        var gridView = document.createElement('div');
+        gridView.className = 'card-grid view-hidden';
+        entries.forEach(function (entry) {
+          var link = firstMatch(entry.nodes, 'a');
+          if (!link) return;
+          var img = firstMatch(entry.nodes, 'img');
+          var card = document.createElement('a');
+          card.className = 'link-card';
+          card.href = link.getAttribute('href');
+          var thumb = document.createElement('span');
+          thumb.className = 'link-card-thumb';
+          var src = img && img.getAttribute('src');
+          if (src) thumb.style.backgroundImage = "url('" + src + "')";
+          var cardBody = document.createElement('span');
+          cardBody.className = 'link-card-body';
+          var titleEl = document.createElement('span');
+          titleEl.className = 'link-card-title';
+          titleEl.textContent = entry.title;
+          var cta = document.createElement('span');
+          cta.className = 'link-card-readmore';
+          cta.textContent = 'Watch →';
+          cardBody.appendChild(titleEl);
+          cardBody.appendChild(cta);
+          card.appendChild(thumb);
+          card.appendChild(cardBody);
+          gridView.appendChild(card);
+        });
+        if (!gridView.children.length) return;
+
+        var toolbar = document.createElement('div');
+        toolbar.className = 'view-toggle';
+        var thumbBtn = document.createElement('button');
+        thumbBtn.type = 'button';
+        thumbBtn.className = 'view-toggle-btn active';
+        thumbBtn.textContent = 'Thumbnail View';
+        var gridBtn = document.createElement('button');
+        gridBtn.type = 'button';
+        gridBtn.className = 'view-toggle-btn';
+        gridBtn.textContent = 'Grid View';
+        toolbar.appendChild(thumbBtn);
+        toolbar.appendChild(gridBtn);
+
+        list.appendChild(toolbar);
+        list.appendChild(thumbView);
+        list.appendChild(gridView);
+
+        function showThumb() {
+          thumbBtn.classList.add('active');
+          gridBtn.classList.remove('active');
+          thumbView.classList.remove('view-hidden');
+          gridView.classList.add('view-hidden');
+        }
+        function showGrid() {
+          gridBtn.classList.add('active');
+          thumbBtn.classList.remove('active');
+          gridView.classList.remove('view-hidden');
+          thumbView.classList.add('view-hidden');
+        }
+        thumbBtn.addEventListener('click', showThumb);
+        gridBtn.addEventListener('click', showGrid);
+      }
+
+      GRID_VIEW_CHAPTERS.forEach(enableGridToggle);
+    })();
   </script>
 
   <script>
