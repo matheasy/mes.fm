@@ -149,6 +149,14 @@
        below. Thumbnail View (the chapter's own markdown-rendered markup) is the
        default; Grid View replaces it with the same .card-grid used for
        Posts/Videos, built at runtime from each entry's first link + image. */
+
+    /* These chapters live in the narrow 760px .container, but Grid View should
+       read as big as the Posts/Videos card grids in the 1180px .wide band
+       above. updateBreakout() (below) sizes/positions this wrapper at runtime
+       to exactly match the current .wide element's rect (no static width here
+       -- it's set inline in JS), breaking the grid out of the article column
+       without touching the column's own width. */
+
     .view-toggle {
       display: flex;
       gap: 0.5em;
@@ -1370,11 +1378,35 @@
     // thumbnail. Thumbnail View is the chapter's own markdown-rendered markup,
     // left untouched, available as a fallback via the toggle. Add a chapter's
     // id + heading tag to GRID_VIEW_CHAPTERS to give it the same toggle.
+    //
+    // These chapters live in the narrow 760px article column (.container), but
+    // Grid View should read as big as the Posts/Videos grids in the 1180px
+    // .wide band above -- so the grid is wrapped in a .card-grid-breakout div
+    // that updateBreakout() sizes/positions (via inline width/margin-left) to
+    // exactly match the current .wide element's rect, on load, on window
+    // resize, and whenever Grid View is switched back on.
     (function () {
       var GRID_VIEW_CHAPTERS = [
         { id: '911truth-video-series', heading: 'H1' },
         { id: '9-11-observable-evidence', heading: 'H2' },
       ];
+
+      var breakouts = [];
+
+      function updateBreakout(el) {
+        var wideEl = document.querySelector('.wide');
+        if (!wideEl) return;
+        el.style.width = '';
+        el.style.marginLeft = '';
+        var wideRect = wideEl.getBoundingClientRect();
+        var selfRect = el.getBoundingClientRect();
+        el.style.width = wideRect.width + 'px';
+        el.style.marginLeft = (wideRect.left - selfRect.left) + 'px';
+      }
+
+      window.addEventListener('resize', function () {
+        breakouts.forEach(updateBreakout);
+      });
 
       function buildEntries(children, headingTag) {
         var entries = [];
@@ -1439,6 +1471,10 @@
         });
         if (!gridView.children.length) return;
 
+        var gridWrap = document.createElement('div');
+        gridWrap.className = 'card-grid-breakout';
+        gridWrap.appendChild(gridView);
+
         var toolbar = document.createElement('div');
         toolbar.className = 'view-toggle';
         var thumbBtn = document.createElement('button');
@@ -1454,19 +1490,25 @@
 
         list.appendChild(toolbar);
         list.appendChild(thumbView);
-        list.appendChild(gridView);
+        list.appendChild(gridWrap);
+
+        breakouts.push(gridWrap);
+        updateBreakout(gridWrap);
 
         function showThumb() {
           thumbBtn.classList.add('active');
           gridBtn.classList.remove('active');
           thumbView.classList.remove('view-hidden');
-          gridView.classList.add('view-hidden');
+          gridWrap.classList.add('view-hidden');
         }
         function showGrid() {
           gridBtn.classList.add('active');
           thumbBtn.classList.remove('active');
-          gridView.classList.remove('view-hidden');
+          gridWrap.classList.remove('view-hidden');
           thumbView.classList.add('view-hidden');
+          // Re-measure: the viewport (or the chapter's own collapsed state)
+          // may have changed while this grid was hidden.
+          updateBreakout(gridWrap);
         }
         thumbBtn.addEventListener('click', showThumb);
         gridBtn.addEventListener('click', showGrid);
