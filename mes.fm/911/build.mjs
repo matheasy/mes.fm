@@ -927,6 +927,23 @@ function buildPage(post, meta) {
         max-height: calc(100vh - 120px);
         overflow-y: auto;
         font-size: 0.85em;
+        padding-right: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
+      }
+
+      /* toc-sidebar-scrollbar */
+      .toc-sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .toc-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .toc-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(128, 128, 128, 0.4);
+        border-radius: 3px;
       }
 
       .toc-sidebar-header {
