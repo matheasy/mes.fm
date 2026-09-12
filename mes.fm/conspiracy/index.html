@@ -94,6 +94,100 @@
 
     .sub-heading {
       font-size: 1.1em;
+      cursor: pointer;
+    }
+
+    /* Wide band for the Posts/Videos card grids -- reads bigger than the
+       900px flat-link-list column below, same treatment as mes.fm/911 and
+       mes.fm/hutchison. */
+    .wide {
+      max-width: 1180px;
+      margin: 1.5em auto;
+    }
+
+    .collapsible-section {
+      margin-bottom: 1.5em;
+    }
+
+    /* Topic-homepage card grid — see buildCardGrid() in build.mjs. Kept in
+       sync with the identical block in mes.fm/911/build.mjs and
+       mes.fm/hutchison/build.mjs. */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 0.6em 0 0.4em;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Override the global body.light/body.dark anchor colour (higher
+       specificity than .link-card) so the card title/excerpt read as body
+       text, not link blue. The "Read more"/"Watch" span opts back into the
+       link colour below. */
+    body.light .link-card { background-color: #fafafa; color: #000000; }
+    body.dark .link-card { background-color: #232323; color: #ffffff; }
+
+    .link-card-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #333333;
+      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .link-card-body {
+      padding: 0.6rem 0.8rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .link-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: inherit;
+    }
+
+    .link-card-excerpt {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      line-height: 1.4;
+      flex: 1;
+      color: inherit;
+    }
+
+    .link-card-readmore {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    body.light .link-card-readmore { color: #1a6fb0; }
+    body.dark .link-card-readmore { color: #6cb6f5; }
+
+    @media (max-width: 900px) {
+      .card-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 560px) {
+      .card-grid { grid-template-columns: 1fr; }
     }
 
     @media screen and (max-width: 600px) {
@@ -303,30 +397,101 @@
     <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
   </header>
 
+  <div class="wide">
+<div class="collapsible-section">
+<h2 class="sub-heading" onclick="toggleSubList('posts')">Posts <span id="arrowIcon-posts" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+<div id="posts" class="card-grid collapsible">
+<a class="link-card" href="https://mes.fm/eyesiswatchin-donate">
+  <span class="link-card-thumb"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">EyesIsWatchin Health Update</span>
+    <span class="link-card-excerpt">MES shares a health update for his cousin Steve (EyesIsWatchin), who is dealing with multiple traumatic events at once and unable to work or make…</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/debt-military-iran-war">
+  <span class="link-card-thumb" style="background-image:url('https://mes.fm/debt-military-iran-war/img/jpost-iran-debt-forgiveness.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Jerusalem Post: Forgive Debt to Enlist a Million Troops for an Iran Ground War</span>
+    <span class="link-card-excerpt">The Jerusalem Post argues the US military should offer a debt-forgiveness enlistment program to raise the ~1 million extra troops a ground invasion…</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/news-ww3-moon">
+  <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmWFfxcePKNEeB2TgcB9jSPEhw5rMNA21J9NsDzcGgEMTj/telegram-cloud-photo-size-1-4947210105296457170-y.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">MES News Checkup — Has WW3 Started Already?</span>
+    <span class="link-card-excerpt">An MES news checkup: Elon Musk on geoengineering satellites, Lee Wheelbarger says WW3 has started, Netanyahu on Torah study or the draft, the US Army…</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/boy-dress-amputee-ad">
+  <span class="link-card-thumb" style="background-image:url('https://mes.fm/boy-dress-amputee-ad/img/bc-hospital-ad-gradecalculator.png')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">BC Children's Hospital Foundation Ad: A Brown Boy in a Dress with an Amputee Leg</span>
+    <span class="link-card-excerpt">Google served MES a BC Children's Hospital Foundation ad -- a brown boy in a dress with an amputee leg -- on his own Grade Calculator site.</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/bill-gates-ai-warning">
+  <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmX5VtKL31AyGjFaYJsrGM7DexFTarHYZYgeyx5uqsDF1W/telegram-cloud-photo-size-1-4934004137423211687-y.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Jeffrey Epstein's Friend Bill Gates Warns of AI Gettin' Too Powerful</span>
+    <span class="link-card-excerpt">Jeffrey Epstein's friend Bill Gates warns on CNN that as AI models become more powerful they could begin to act against our interests and we could…</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/hyperliquid-flagged-address">
+  <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmNyMvvspTTTFaNxWzjgJDxJ6ZC3fPpsQ3ggDnjGjgToS1/telegram-cloud-photo-size-1-4936468297599880198-y.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">The Hyperliquid Crypto Exchange Flagged My Wallet Address</span>
+    <span class="link-card-excerpt">The Hyperliquid crypto exchange flagged MES's wallet address over a 3-month-old $9 donation linked to the Iran exchange Ompfinex, following Trump's…</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/lightning-forest-fires">
+  <span class="link-card-thumb" style="background-image:url('https://snipboard.io/DaSB6R.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Lightning Causin' Forest Fires</span>
+    <span class="link-card-excerpt">Lightning causin' forest fires -- news coverage of lightning storms sparking dozens of new wildfires across B.C.,</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+</div>
+</div>
+<div class="collapsible-section">
+<h2 class="sub-heading" onclick="toggleSubList('videos')">Videos <span id="arrowIcon-videos" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+<div id="videos" class="card-grid collapsible">
+<a class="link-card" href="https://mes.fm/president-stephen-a-smith">
+  <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1787982626620-c7e5b460a4d1c9f8.webp')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Stephen A. Smith Possibly Alluding to His Presidential Bid</span>
+    <span class="link-card-excerpt">MES clip of ESPN's Stephen A. Smith possibly alluding to a presidential bid.</span>
+    <span class="link-card-readmore">Watch &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/one-armed-twin">
+  <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/DQmTF9X8cxE21iu3rgrFQc9ZYctSoXgEDxt2GyNnR5guvEr/image')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix</span>
+    <span class="link-card-excerpt">BrainGraft traces the recurring &quot;one-armed twin&quot; theme through Star Wars, The Matrix, and other movies -- and even into real-world events like 9/11</span>
+    <span class="link-card-readmore">Watch &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/ashton-forbes-letter">
+  <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/DQmWgwRYxidEYcB19FehHeSFpTgoJFJFFpRxG5CdMsesseq/image')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself</span>
+    <span class="link-card-excerpt">Highlights from the January 2024 letter praising Ashton Forbes for his MH370 work</span>
+    <span class="link-card-readmore">Watch &rarr;</span>
+  </span>
+</a>
+</div>
+</div>
+  </div>
+
   <div class="content">
     <ul>
-      <li class="list-container">
-        <h2 class="sub-heading" onclick="toggleSubList('posts')">Posts <span id="arrowIcon-posts" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-        <ul id="posts">
-          <li style="margin-left: 20px;"><a href="https://mes.fm/eyesiswatchin-donate">EyesIsWatchin Health Update</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/debt-military-iran-war">Jerusalem Post: Forgive Debt to Enlist a Million Troops for an Iran Ground War</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/news-ww3-moon">MES News Checkup &mdash; Has WW3 Started Already?</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/boy-dress-amputee-ad">BC Children's Hospital Foundation Ad: A Brown Boy in a Dress with an Amputee Leg</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/bill-gates-ai-warning">Jeffrey Epstein's Friend Bill Gates Warns of AI Gettin' Too Powerful</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/hyperliquid-flagged-address">The Hyperliquid Crypto Exchange Flagged My Wallet Address</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/lightning-forest-fires">Lightning Causin' Forest Fires</a></li>
-        </ul>
-      </li>
-
-      <li class="list-container">
-        <h2 class="sub-heading" onclick="toggleSubList('videos')">Videos <span id="arrowIcon-videos" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-        <ul id="videos">
-          <li style="margin-left: 20px;"><a href="https://mes.fm/president-stephen-a-smith">Stephen A. Smith Possibly Alluding to His Presidential Bid</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/one-armed-twin">Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/ashton-forbes-letter">Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself</a></li>
-        </ul>
-      </li>
-
       <li><a href="https://peakd.com/c/hive-106474">HIVE community</a></li>
       <li><a href="https://www.reddit.com/r/ConspiracyMES/">Reddit r/ConspiracyMES</a></li>
       <li>X Threads</li>
@@ -340,7 +505,7 @@
 
   <script>
     function toggleAllLists() {
-      const lists = document.querySelectorAll('.list-container ul');
+      const lists = document.querySelectorAll('.collapsible');
       const arrowIconAll = document.getElementById('arrowIconAll');
       lists.forEach(list => list.classList.toggle('hidden'));
       arrowIconAll.textContent = lists.length && lists[0].classList.contains('hidden') ? '▲' : '▼';
@@ -389,7 +554,7 @@
 
   <div style="clear: both;"></div>
 
-  
+
   <footer style="text-align: center;">
     <p>&copy; 2026 Math Easy Solutions (MES). All rights reserved. | <a href="https://mes.fm/contact">Contact Us</a> | <a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
   </footer>

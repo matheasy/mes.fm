@@ -177,6 +177,14 @@ async function resolveAllMeta(entries, concurrency = 6) {
   return cache;
 }
 
+// Some Hive image URLs carry an unescaped apostrophe in their filename (a
+// "#filename" fragment some old steemitimages.com uploads use), which would
+// otherwise prematurely close the quoted url('...') below and drop the whole
+// background-image. Percent-encode it so the string stays a valid CSS <url>.
+function cssSafeUrl(url) {
+  return String(url).split("'").join("%27");
+}
+
 // Render a link section as a responsive thumbnail-card grid, wrapped in the same
 // collapsible .chapter-toggle markup every other chapter uses (so toggleChapter
 // / toggleAllChapters / the "Jump to" anchors keep working unchanged).
@@ -186,7 +194,7 @@ function buildCardGrid(id, label, entries, meta, cta = "Read more") {
       const m = meta[entry.href] || {};
       const title = entry.title || m.title || entry.href;
       const thumbStyle = m.image
-        ? ` style="background-image:url('${escapeHtml(m.image)}')"`
+        ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"`
         : "";
       const excerpt = m.excerpt
         ? `<span class="link-card-excerpt">${escapeHtml(m.excerpt)}</span>`
