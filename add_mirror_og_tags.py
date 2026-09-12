@@ -46,6 +46,9 @@ OG_IMAGE_OVERRIDES = {
     # 10 images; MES's own "Livestream 140" thumbnail (the one Norman is accused
     # of mimicking) is the most representative and card-friendly
     "911-revisionist-spammer": "https://img.leopedia.io/DQmbpgZNh1aVMsLjBor5QupBNRbH4wS7ZFmbcoRMmmoPjPh/telegram-cloud-photo-size-1-4969851364699737239-y.jpg",
+    # many screenshots; the "Buzzword Bobby's Bowl of Babble" word-salad meme
+    # is the representative/card-friendly one, not the first incidental image
+    "bg": "https://files.peakd.com/file/peakd-hive/mes/23w2si519gxiqpjgyH1bCDuidgiCWwf12UQRiPVUr1fRg9Ls7Azy2PvGgMbZUzTAUXy6t.png",
 }
 
 _dims_cache = {}
