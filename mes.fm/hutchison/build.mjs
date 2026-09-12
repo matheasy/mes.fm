@@ -380,7 +380,7 @@ function buildPage(post, meta) {
   // "Collapse All" folds every chapter on the page including the "Posts and
   // Updates" / "Videos" card grids and the article sections.
   const chaptersToolbar = `<div class="chapters-toolbar">
-<button id="toggleAllChaptersBtn" class="theme-toggle-btn" onclick="toggleAllChapters()">Collapse All</button>
+<button id="toggleAllChaptersBtn" class="theme-toggle-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
 </div>
 `;
 
@@ -885,12 +885,38 @@ ${leadingHtml}
         font-size: 0.85em;
       }
 
+      .toc-sidebar-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.6em;
+        margin: 0 0 0.7em;
+      }
+
       .toc-sidebar .toc-title {
         font-size: 0.75em;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         opacity: 0.6;
-        margin: 0 0 0.7em;
+        margin: 0;
+      }
+
+      .toc-collapse-all-btn {
+        font-size: 0.8em;
+        opacity: 0.65;
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        text-decoration: underline;
+        color: inherit;
+        font-family: inherit;
+        white-space: nowrap;
+      }
+
+      .toc-collapse-all-btn:hover {
+        opacity: 1;
       }
 
       .toc-sidebar a {
@@ -959,7 +985,10 @@ ${leadingHtml}
 </head>
 <body class="dark">
   <nav class="toc-sidebar" aria-label="Table of contents">
-    <div class="toc-title">Jump to</div>
+    <div class="toc-sidebar-header">
+      <div class="toc-title">Jump to</div>
+      <button type="button" class="toc-collapse-all-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
+    </div>
       ${tocLinksHtml}
   </nav>
   <div class="wide">
@@ -1027,14 +1056,14 @@ ${articleBodyHtml}
 
     function toggleAllChapters() {
       const lists = document.querySelectorAll('.chapter-toggle-list');
-      const btn = document.getElementById('toggleAllChaptersBtn');
+      const buttons = document.querySelectorAll('.toggle-all-chapters-btn');
       const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
       lists.forEach((list) => {
         list.classList.toggle('hidden', collapse);
         const arrowIcon = document.getElementById('arrowIcon-' + list.id);
         if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
       });
-      btn.textContent = collapse ? 'Expand All' : 'Collapse All';
+      buttons.forEach((btn) => { btn.textContent = collapse ? 'Expand All' : 'Collapse All'; });
     }
 
     const body = document.body;
