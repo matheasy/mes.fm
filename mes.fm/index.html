@@ -202,11 +202,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .navbar__item--social { order: 999; }
 .navbar__item--social .info-bar__logo-container { display: block !important; }
 
-/* now that the sidebar is gone, center the main content column in a
-   narrower page instead of leaving it flush-left in a wide, mostly-empty
-   .outer-container -- matches the plain centered-column layout
-   mes.fm/ufo already uses */
-.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+/* now that the sidebar is gone, center the main content column instead of
+   leaving it flush-left in a wide, mostly-empty .outer-container -- matches
+   the plain centered-column layout mes.fm/ufo already uses. Widened to 75em
+   (was 50em) so the icon-grid below has room for 5 columns on big desktops
+   instead of just 3, moving toward the wider mes.fm/911-style layout. */
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 
@@ -236,10 +237,28 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   #comments-box iframe { display: block; width: 100% !important; }
 }
 </style>	<style>
-	.tbl__btn {height:auto;width:13.75em;display: block;}
-	.tbl__link {display: block;}
-		.tbl__row {border-bottom: 1em solid transparent;}
-	.tbl__img-container:not(:last-child) {border-right:1em solid transparent;}
+	/* icon-grid: replaces the old fixed-3-column <table class="tbl"> icon
+	   layout with a responsive grid -- 3 columns by default, 5 on big
+	   desktops now that .outer-container is wider, narrowing back down on
+	   small screens instead of the old table just shrinking/overflowing. */
+	.icon-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1em;
+		margin: 1em 0;
+	}
+	.icon-grid__link { display: block; }
+	.icon-grid__img { display: block; width: 100%; height: auto; }
+
+	@media (min-width: 1100px) {
+		.icon-grid { grid-template-columns: repeat(5, 1fr); }
+	}
+	@media (max-width: 700px) {
+		.icon-grid { grid-template-columns: repeat(2, 1fr); }
+	}
+	@media (max-width: 420px) {
+		.icon-grid { grid-template-columns: 1fr; }
+	}
 		</style>
             <link rel="publisher" href="https://plus.google.com/+MathEasySolutionsPage">
         <meta property="fb:app_id" content="120877788060946" />
@@ -435,7 +454,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                 <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/puzzles'>Puzzles</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/memes'>Memes</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='https://mes.fm/math'>Math Tutorials</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
                                     <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
                                     <li class="info-bar__item"><a class="info-bar__item__text" href='/mobile-apps'>Mobile Apps</a></li>
-                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='https://mes.fm/links'>Links</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='/donate'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>                            </ul>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='/donate'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>                            </ul>
                         </div>
                         <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->                        <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
@@ -443,19 +462,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		<h2 class="header2">What does MES offer?</h2>
 		<p class="sentence">Over the years MES has grown into a big collection of free math resources: step-by-step video tutorials, interactive calculators and tools, brain-teasing puzzles, math memes, mobile apps, and more. Explore it all through the icons below.</p>
 
-		<table class="tbl">
-			<tr class="tbl__row">
-				<td class="tbl__img-container"><a class="tbl__link" href="/calculators"><img src="img/calculators-icon.jpg" width="600" height="400" class="tbl__btn" alt="calculators icon"></a></td>
-				<td class="tbl__img-container"><a class="tbl__link" href="/puzzles"><img src="img/puzzles-icon.jpg" width="600" height="400" class="tbl__btn" alt="puzzles icon"></a></td>
-				<td class="tbl__img-container"><a class="tbl__link" href="/memes"><img src="img/memes-icon.jpg" width="600" height="400" class="tbl__btn" alt="memes icon"></a></td>
-
-			</tr>
-			<tr class="tbl__row">
-				<td class="tbl__img-container"><a class="tbl__link" href="https://mes.fm/math"><img src="img/videos-icon.jpg" width="600" height="400" class="tbl__btn" alt="math tutorials icon"></a></td>
-				<td class="tbl__img-container"><a class="tbl__link" href="/tools"><img src="img/tools-icon.jpg" width="600" height="400" class="tbl__btn" alt="tools icon"></a></td>
-				<td class="tbl__img-container"><a class="tbl__link" href="/mobile-apps"><img src="img/mobile-apps-icon.jpg" width="600" height="400" class="tbl__btn" alt="mobile apps icon"></a></td>
-			</tr>
-		</table>
+		<div class="icon-grid">
+			<a class="icon-grid__link" href="/calculators"><img src="img/calculators-icon.jpg" width="600" height="400" class="icon-grid__img" alt="calculators icon"></a>
+			<a class="icon-grid__link" href="/puzzles"><img src="img/puzzles-icon.jpg" width="600" height="400" class="icon-grid__img" alt="puzzles icon"></a>
+			<a class="icon-grid__link" href="/memes"><img src="img/memes-icon.jpg" width="600" height="400" class="icon-grid__img" alt="memes icon"></a>
+			<a class="icon-grid__link" href="https://mes.fm/math"><img src="img/videos-icon.jpg" width="600" height="400" class="icon-grid__img" alt="math tutorials icon"></a>
+			<a class="icon-grid__link" href="/tools"><img src="img/tools-icon.jpg" width="600" height="400" class="icon-grid__img" alt="tools icon"></a>
+			<a class="icon-grid__link" href="/mobile-apps"><img src="img/mobile-apps-icon.jpg" width="600" height="400" class="icon-grid__img" alt="mobile apps icon"></a>
+		</div>
 
 		<h2 class="header2">What is Math Easy Solutions (MES)?</h2>
 		<p class="sentence">MES began as a small YouTube channel and has since expanded into a full platform for learning and enjoying math. Watch the video below for the story of how it started, where it's headed, and the crew behind it all.</p>
@@ -499,7 +513,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     </li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
     <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li>
-    <li class="navbar__item"><a class="navbar__link" href="https://mes.fm/links">Links</a></li><li class="navbar__item navbar__item--utility-added"><a target="_blank" rel="nofollow" class="navbar__link" href='https://matheasy.substack.com/'>Subscribe</a></li><li class="navbar__item navbar__item--utility-added"><a target="_blank" class="navbar__link" href='/donate'>Donate</a></li><li class="navbar__item navbar__item--utility-added"><a class="navbar__link" href='/contact'>Contact Us</a></li>
+    <li class="navbar__item navbar__item--utility-added"><a target="_blank" rel="nofollow" class="navbar__link" href='https://matheasy.substack.com/'>Subscribe</a></li><li class="navbar__item navbar__item--utility-added"><a target="_blank" class="navbar__link" href='/donate'>Donate</a></li><li class="navbar__item navbar__item--utility-added"><a class="navbar__link" href='/contact'>Contact Us</a></li>
     </ul>
                                     </div>                                        <!-- (Responsive) Vertical -->
                             </div>                            <!-- (Responsive) Horizontal -->                </div><div id="footer" class="footer" role="contentinfo">
