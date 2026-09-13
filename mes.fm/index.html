@@ -238,27 +238,21 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 }
 </style>	<style>
 	/* icon-grid: replaces the old fixed-3-column <table class="tbl"> icon
-	   layout with a responsive grid -- 3 columns by default, 5 on big
-	   desktops now that .outer-container is wider, narrowing back down on
-	   small screens instead of the old table just shrinking/overflowing. */
+	   layout with a responsive grid. auto-fit + minmax picks the column
+	   count itself from the available width -- 5 columns on big desktops
+	   (now that .outer-container is wider), stepping down through 4, 3, 2
+	   to 1 as the window narrows, one column at a time, instead of a fixed
+	   set of breakpoints that could skip a step. 180px is roughly the
+	   smallest an icon can go before its label starts feeling cramped;
+	   raise/lower it to change where each step falls. */
 	.icon-grid {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 		gap: 1em;
 		margin: 1em 0;
 	}
 	.icon-grid__link { display: block; }
 	.icon-grid__img { display: block; width: 100%; height: auto; }
-
-	@media (min-width: 1100px) {
-		.icon-grid { grid-template-columns: repeat(5, 1fr); }
-	}
-	@media (max-width: 700px) {
-		.icon-grid { grid-template-columns: repeat(2, 1fr); }
-	}
-	@media (max-width: 420px) {
-		.icon-grid { grid-template-columns: 1fr; }
-	}
 		</style>
             <link rel="publisher" href="https://plus.google.com/+MathEasySolutionsPage">
         <meta property="fb:app_id" content="120877788060946" />
