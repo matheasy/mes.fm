@@ -1,4 +1,5 @@
 {
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./",
   "redirects": [
     { "source": "/", "destination": "https://mes.fm/percentagecalculator", "permanent": true },
     { "source": "/(.*)", "destination": "https://mes.fm/percentagecalculator/$1", "permanent": true }
