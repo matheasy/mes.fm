@@ -253,6 +253,35 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	}
 	.icon-grid__link { display: block; }
 	.icon-grid__img { display: block; width: 100%; height: auto; }
+
+	/* icon-grid__link--labeled: the old icons had their caption ("Calculators",
+	   etc.) baked into the bottom of the .jpg itself -- not real text, so it
+	   couldn't be found by in-page search or read by a screen reader/search
+	   engine. As each icon gets re-cut without the baked-in label (starting
+	   with Calculators), it switches to this variant: a plain background-image
+	   thumb plus a real overlaid <span>, styled to match the old bar-at-the-
+	   bottom look so labeled and not-yet-labeled icons still read as one
+	   consistent grid in the meantime. */
+	.icon-grid__link--labeled { position: relative; }
+	.icon-grid__thumb {
+		display: block;
+		width: 100%;
+		aspect-ratio: 3 / 2;
+		background-size: cover;
+		background-position: center;
+	}
+	.icon-grid__label {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		margin: 0;
+		padding: 0.7em 0.5em;
+		background: rgba(51, 51, 51, 0.85);
+		color: #ffffff;
+		text-align: center;
+		font-size: 1.15em;
+	}
 		</style>
             <link rel="publisher" href="https://plus.google.com/+MathEasySolutionsPage">
         <meta property="fb:app_id" content="120877788060946" />
@@ -457,7 +486,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		<p class="sentence">Over the years MES has grown into a big collection of free math resources: step-by-step video tutorials, interactive calculators and tools, brain-teasing puzzles, math memes, mobile apps, and more. Explore it all through the icons below.</p>
 
 		<div class="icon-grid">
-			<a class="icon-grid__link" href="/calculators"><img src="img/calculators-icon.jpg" width="600" height="400" class="icon-grid__img" alt="calculators icon"></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="/calculators"><span class="icon-grid__thumb" style="background-image:url('img/calculators-icon.jpg')"></span><span class="icon-grid__label">Calculators</span></a>
 			<a class="icon-grid__link" href="/puzzles"><img src="img/puzzles-icon.jpg" width="600" height="400" class="icon-grid__img" alt="puzzles icon"></a>
 			<a class="icon-grid__link" href="/memes"><img src="img/memes-icon.jpg" width="600" height="400" class="icon-grid__img" alt="memes icon"></a>
 			<a class="icon-grid__link" href="https://mes.fm/math"><img src="img/videos-icon.jpg" width="600" height="400" class="icon-grid__img" alt="math tutorials icon"></a>
