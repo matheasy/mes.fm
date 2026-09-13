@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Script from 'next/script';
 import SwrProvider from '@/components/SwrProvider';
 import './globals.css';
 
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main>{children}</main>
           </div>
         </SwrProvider>
+        <Script src="https://mes.fm/main_js/track.js" strategy="afterInteractive" />
       </body>
     </html>
   );
