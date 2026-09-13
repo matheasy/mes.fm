@@ -4,9 +4,9 @@ const API_BASE = 'https://api.coingecko.com/api/v3';
 const CHAIN_PLATFORM = 'binance-smart-chain';
 
 /**
- * Only used for the native coin's current price and for historical prices (needed by the
- * cost-basis engine). Current BEP-20 prices come from Moralis's wallet-tokens endpoint instead,
- * which already attaches live USD pricing to each balance - no separate lookup needed.
+ * Current + historical USD pricing for both the native coin (BNB) and BEP-20 tokens. Historical
+ * prices feed the cost-basis engine; current prices are needed for every holding since NodeReal
+ * (unlike Moralis, previously) doesn't attach live USD pricing to its balance/transfer data.
  */
 
 function headers(): HeadersInit {
@@ -37,6 +37,17 @@ export async function getNativeCurrentPrice(): Promise<PricePoint> {
     include_24hr_change: 'true',
   });
   const entry = result.binancecoin;
+  return { usd: entry?.usd ?? 0, usd24hChange: entry?.usd_24h_change ?? null };
+}
+
+/** Current USD price + 24h change for any CoinGecko coin id (BEP-20 tokens, resolved via resolveCoinIdByContract) */
+export async function getCurrentPrice(coinId: string): Promise<PricePoint> {
+  const result = await get<Record<string, { usd: number; usd_24h_change?: number }>>('/simple/price', {
+    ids: coinId,
+    vs_currencies: 'usd',
+    include_24hr_change: 'true',
+  });
+  const entry = result[coinId];
   return { usd: entry?.usd ?? 0, usd24hChange: entry?.usd_24h_change ?? null };
 }
 
