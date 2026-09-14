@@ -338,6 +338,7 @@ function wrapChaptersInToggles(html) {
 // (newest first). The thumbnail + excerpt are scraped from the target page's og:
 // tags at build time (resolveAllMeta) and cached in link-meta.json.
 const POSTS_AND_UPDATES = [
+  { href: "https://mes.fm/hutchison-article-balloons", title: "John Hutchison's First Newspaper Appearance: Balloons Over Grouse Mountain" },
   { href: "https://mes.fm/hutchison-health-sept6-2026", title: "John Hutchison is coming home — health update" },
   { href: "https://mes.fm/hutchison-health-sept5-2026", title: "Prayers up for John Hutchison, again — health update" },
   { href: "https://mes.fm/bought-911-hutchison-shirt", title: "Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt" },
