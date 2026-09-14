@@ -1,4 +1,206 @@
+// Build-time generator for the "Posts" and "Videos" sections of
+// mes.fm/mathiew.
+//
+// Same "topic homepage" pattern as mes.fm/conspiracy (see that build.mjs for
+// the fuller writeup) -- this page is NOT a mirrored Hive post, it's a
+// hand-authored link hub. This script only regenerates the Posts/Videos
+// thumbnail-card grids (scraping each linked page's og: tags); everything
+// else on the page (ad scripts, theme toggle, footer) lives in the
+// STATIC_HTML template below and should be hand-edited directly.
+//
+// This is NOT run by Vercel -- run it manually (`npm run build`) whenever you
+// add a Post/Video or want to refresh thumbnails/excerpts, then commit the
+// regenerated index.html.
+//
+// Usage:
+//   npm install
+//   npm run build
 
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Committed cache of link metadata scraped from each Posts/Videos card target
+// (see resolveAllMeta). Kept in git so a later build still has thumbnails and
+// excerpts even if a source host is briefly unreachable.
+const META_CACHE_PATH = join(__dirname, "link-meta.json");
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ---------------------------------------------------------------------------
+// Topic-homepage card grid — shared treatment (fetchMeta / resolveAllMeta /
+// buildCardGrid + the .card-grid/.link-card CSS in the template below). Kept
+// in sync with the identical block in mes.fm/911/build.mjs, mes.fm/hutchison
+// /build.mjs, and mes.fm/conspiracy/build.mjs.
+// ---------------------------------------------------------------------------
+
+function loadMetaCache() {
+  if (!existsSync(META_CACHE_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(META_CACHE_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function saveMetaCache(cache) {
+  const sorted = Object.fromEntries(
+    Object.keys(cache).sort().map((k) => [k, cache[k]])
+  );
+  writeFileSync(META_CACHE_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
+}
+
+function decodeEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&rsquo;/g, "’")
+    .replace(/&lsquo;/g, "‘")
+    .replace(/&ldquo;/g, "“")
+    .replace(/&rdquo;/g, "”")
+    .replace(/&mdash;/g, "—")
+    .replace(/&ndash;/g, "–")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+// Pull one <meta property="og:*"> (or name="...") content value out of raw HTML,
+// tolerating either attribute order. Regex-based, matching the repo's other
+// HTML-repair scripts (no DOM parser dependency).
+function readMetaTag(html, prop) {
+  const p = prop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Match each quoted value to its own opening quote (\2 backreference) so a
+  // literal apostrophe inside a double-quoted content="..." doesn't truncate it.
+  const patterns = [
+    new RegExp(`<meta[^>]+(?:property|name)=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"),
+    new RegExp(`<meta[^>]+\\bcontent=(["'])([\\s\\S]*?)\\1[^>]*(?:property|name)=(["'])${p}\\3`, "i"),
+  ];
+  for (let idx = 0; idx < patterns.length; idx++) {
+    const m = html.match(patterns[idx]);
+    if (m) return decodeEntities(idx === 0 ? m[3] : m[2]).trim();
+  }
+  return "";
+}
+
+// Trailing "— Mirrored from the Hive blockchain…" style boilerplate that every
+// mirror page's og:description carries; drop it from the card excerpt.
+function cleanExcerpt(text, maxLen = 150) {
+  let out = text
+    .replace(/\s*[-–—]*\s*mirrored from the hive blockchain.*$/i, "")
+    .replace(/\s*[-–—]*\s*mirrored from hive.*$/i, "")
+    .trim();
+  if (out.length > maxLen) {
+    const slice = out.slice(0, maxLen);
+    const lastSpace = slice.lastIndexOf(" ");
+    out = (lastSpace > 60 ? slice.slice(0, lastSpace) : slice).replace(/[.,;:!?–—-]+$/, "") + "…";
+  }
+  return out;
+}
+
+async function fetchMeta(url) {
+  const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+  return {
+    image: readMetaTag(html, "og:image"),
+    title: readMetaTag(html, "og:title"),
+    excerpt: cleanExcerpt(
+      readMetaTag(html, "og:description") || readMetaTag(html, "description")
+    ),
+  };
+}
+
+// Fetch metadata for every card target with a small concurrency cap. A failed
+// fetch keeps whatever the committed cache already had for that URL.
+async function resolveAllMeta(entries, concurrency = 6) {
+  const cache = loadMetaCache();
+  const urls = entries.map((e) => e.href);
+  let i = 0;
+  async function worker() {
+    while (i < urls.length) {
+      const url = urls[i++];
+      try {
+        cache[url] = await fetchMeta(url);
+        console.log(`  meta ok:   ${url}`);
+      } catch (err) {
+        console.warn(`  meta FAIL: ${url} (${err.message}) — using cached value`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  saveMetaCache(cache);
+  return cache;
+}
+
+// Some Hive image URLs carry an unescaped apostrophe in their filename (a
+// "#filename" fragment some old steemitimages.com uploads use), which would
+// otherwise prematurely close the quoted url('...') below and drop the whole
+// background-image. Percent-encode it so the string stays a valid CSS <url>.
+function cssSafeUrl(url) {
+  return String(url).split("'").join("%27");
+}
+
+// Render a link section as a responsive thumbnail-card grid.
+function buildCardGrid(id, label, entries, meta, cta = "Read more") {
+  const cards = entries
+    .map((entry) => {
+      const m = meta[entry.href] || {};
+      const title = entry.title || m.title || entry.href;
+      const thumbStyle = m.image
+        ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"`
+        : "";
+      const excerpt = m.excerpt
+        ? `<span class="link-card-excerpt">${escapeHtml(m.excerpt)}</span>`
+        : "";
+      return `<a class="link-card" href="${escapeHtml(entry.href)}">
+  <span class="link-card-thumb"${thumbStyle}></span>
+  <span class="link-card-body">
+    <span class="link-card-title">${escapeHtml(title)}</span>
+    ${excerpt}
+    <span class="link-card-readmore">${escapeHtml(cta)} &rarr;</span>
+  </span>
+</a>`;
+    })
+    .join("\n");
+
+  return `<div class="collapsible-section">
+<h2 class="sub-heading" onclick="toggleSubList('${id}')">${label} <span id="arrowIcon-${id}" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+<div id="${id}" class="card-grid collapsible">
+${cards}
+</div>
+</div>`;
+}
+
+// "Posts" and "Videos" -- hand-maintained lists of mirrored mes.fm pages that
+// get added to whenever a new one is published. Add a { href, title } entry
+// at the TOP of the relevant list (newest first); the thumbnail + excerpt are
+// scraped from the target page's og: tags at build time and cached in
+// link-meta.json.
+const POSTS = [
+  { href: "https://mes.fm/swim-iran-nukes", title: "MES Goes Undercover to Check If Iran Built Underwater Mini-Nukes" },
+  { href: "https://mes.fm/full-moon-hat", title: "Full Moon Lookin' Like It's Got a Hat On" },
+];
+
+const VIDEOS = [
+  { href: "https://mes.fm/lightning-sky", title: "Lightning Lighting Up the Entire Sky" },
+];
+
+function buildPage(meta) {
+  const postsGridHtml = buildCardGrid("posts", "Posts", POSTS, meta, "Read more");
+  const videosGridHtml = buildCardGrid("videos", "Videos", VIDEOS, meta, "Watch");
+
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -287,40 +489,8 @@
   </header>
 
   <div class="wide">
-<div class="collapsible-section">
-<h2 class="sub-heading" onclick="toggleSubList('posts')">Posts <span id="arrowIcon-posts" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-<div id="posts" class="card-grid collapsible">
-<a class="link-card" href="https://mes.fm/swim-iran-nukes">
-  <span class="link-card-thumb" style="background-image:url('https://snipboard.io/vXIQB0.jpg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">MES Goes Undercover to Check If Iran Built Underwater Mini-Nukes</span>
-    <span class="link-card-excerpt">MES going undercover with new swim gear to check if Iran built underwater cold fusion mini-nukes under the Strait of Hormuz.</span>
-    <span class="link-card-readmore">Read more &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/full-moon-hat">
-  <span class="link-card-thumb" style="background-image:url('https://mes.fm/full-moon-hat/img/full-moon-hat-1.jpg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Full Moon Lookin' Like It's Got a Hat On</span>
-    <span class="link-card-excerpt">The full moon at dusk with a dark band of cloud across the top -- lookin' like it's got a hat on.</span>
-    <span class="link-card-readmore">Read more &rarr;</span>
-  </span>
-</a>
-</div>
-</div>
-<div class="collapsible-section">
-<h2 class="sub-heading" onclick="toggleSubList('videos')">Videos <span id="arrowIcon-videos" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-<div id="videos" class="card-grid collapsible">
-<a class="link-card" href="https://mes.fm/lightning-sky">
-  <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1787466250311-2f93b430cbf2ad0d.webp')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Lightning Lighting Up the Entire Sky</span>
-    <span class="link-card-excerpt">Lightning lighting up the entire sky, filmed in Richmond, BC, Canada</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-</div>
-</div>
+${postsGridHtml}
+${videosGridHtml}
   </div>
 
   <script>
@@ -333,7 +503,7 @@
 
     function toggleSubList(listId) {
       const list = document.getElementById(listId);
-      const arrowIcon = document.getElementById(`arrowIcon-${listId}`);
+      const arrowIcon = document.getElementById(\`arrowIcon-\${listId}\`);
       list.classList.toggle('hidden');
       arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
     }
@@ -380,3 +550,20 @@
 
   <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
 </html>
+`;
+}
+
+async function main() {
+  console.log(`Resolving card metadata for ${POSTS.length + VIDEOS.length} links ...`);
+  const meta = await resolveAllMeta([...POSTS, ...VIDEOS]);
+
+  const html = buildPage(meta);
+  const outPath = join(__dirname, "index.html");
+  writeFileSync(outPath, html, "utf8");
+  console.log(`Wrote ${outPath}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

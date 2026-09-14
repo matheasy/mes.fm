@@ -188,6 +188,7 @@ ${cards}
 // scraped from the target page's og: tags at build time and cached in
 // link-meta.json.
 const POSTS = [
+  { href: "https://mes.fm/swim-iran-nukes", title: "MES Goes Undercover to Check If Iran Built Underwater Mini-Nukes" },
   { href: "https://mes.fm/eyesiswatchin-donate", title: "EyesIsWatchin Health Update" },
   { href: "https://mes.fm/debt-military-iran-war", title: "Jerusalem Post: Forgive Debt to Enlist a Million Troops for an Iran Ground War" },
   { href: "https://mes.fm/news-ww3-moon", title: "MES News Checkup — Has WW3 Started Already?" },
