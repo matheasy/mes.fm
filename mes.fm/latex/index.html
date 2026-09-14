@@ -487,7 +487,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">MES LaTeX Render</h1>                                        <p class="page-description">Paste or type LaTeX in the box on the left and it renders on the right as you go. Handles inline math like <code>$E=mc^2$</code>, display equations, <code>align</code>/<code>matrix</code>/<code>cases</code> environments, <code>\section</code> headings, and even a full <code>\documentclass</code> &hellip; <code>\end{document}</code> source (the preamble is skipped automatically). Rendering happens entirely in your browser &mdash; nothing is uploaded.</p>                                    	<div id="main-content">
+                                    <h1 class="page-title">MES LaTeX Render</h1>                                        <p class="page-description">Paste or type LaTeX in the box on the left and it renders on the right as you go. Handles inline math like <code>$E=mc^2$</code>, display equations, <code>align</code>/<code>matrix</code>/<code>cases</code> environments, <code>\section</code> headings, a full <code>\documentclass</code> &hellip; <code>\end{document}</code> source (the preamble is skipped automatically), and even math pasted straight out of a chat reply with no <code>$</code> signs at all &mdash; a formula-only paragraph, or a bare <code>\boxed{&hellip;}</code>, is detected and rendered anyway. Rendering happens entirely in your browser &mdash; nothing is uploaded.</p>                                    	<div id="main-content">
 	<div class="latex-tool">
 		<div class="latex-tool__examples" id="latex-examples">
 			<button type="button" class="latex-tool__example" data-ex="quadratic">Quadratic formula</button>
@@ -496,6 +496,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			<button type="button" class="latex-tool__example" data-ex="cases">Piecewise</button>
 			<button type="button" class="latex-tool__example" data-ex="integral">Integral &amp; sum</button>
 			<button type="button" class="latex-tool__example" data-ex="doc">Full document</button>
+			<button type="button" class="latex-tool__example" data-ex="bare">Bare paste (no $ signs)</button>
 		</div>
 
 		<div class="latex-tool__grid">

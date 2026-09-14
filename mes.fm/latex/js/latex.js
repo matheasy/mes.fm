@@ -35,7 +35,11 @@
 			"A classic result:\n\n$$\\int_{-\\infty}^{\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}$$\n\n" +
 			"and the Basel sum:\n\n$$\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}$$",
 		doc:
-			"\\documentclass{article}\n\\usepackage{amsmath}\n\n\\title{A Short Note}\n\\author{Math Easy Solutions}\n\\date{}\n\n\\begin{document}\n\\maketitle\n\n\\section{Introduction}\nThis renderer skips the preamble and shows the body. Inline math such as\n$\\nabla \\cdot \\mathbf{E} = \\dfrac{\\rho}{\\varepsilon_0}$ works, and so do\ndisplay equations:\n\n\\begin{equation}\n  \\oint_{\\partial \\Omega} \\mathbf{B} \\cdot d\\mathbf{S} = 0\n\\end{equation}\n\n\\subsection{A list}\n\\begin{itemize}\n  \\item First point with \\textbf{bold} text.\n  \\item Second point with \\emph{emphasis}.\n\\end{itemize}\n\n\\end{document}"
+			"\\documentclass{article}\n\\usepackage{amsmath}\n\n\\title{A Short Note}\n\\author{Math Easy Solutions}\n\\date{}\n\n\\begin{document}\n\\maketitle\n\n\\section{Introduction}\nThis renderer skips the preamble and shows the body. Inline math such as\n$\\nabla \\cdot \\mathbf{E} = \\dfrac{\\rho}{\\varepsilon_0}$ works, and so do\ndisplay equations:\n\n\\begin{equation}\n  \\oint_{\\partial \\Omega} \\mathbf{B} \\cdot d\\mathbf{S} = 0\n\\end{equation}\n\n\\subsection{A list}\n\\begin{itemize}\n  \\item First point with \\textbf{bold} text.\n  \\item Second point with \\emph{emphasis}.\n\\end{itemize}\n\n\\end{document}",
+		bare:
+			"Paste math straight out of an AI chat reply and this still renders, even though the $ delimiters never made it into the clipboard \u2014 a formula-only paragraph like this one is detected automatically:\n\n" +
+			"\\boxed{E = mc^2 = \\int_0^\\infty \\frac{\\hbar\\omega^3}{\\pi^2c^3}\\,\\frac{d\\omega}{e^{\\hbar\\omega/kT}-1}}\n\n" +
+			"A boxed formula dropped into an ordinary sentence, like the Pythagorean theorem \\boxed{a^2+b^2=c^2} right here, gets rescued too even though the rest of this paragraph is plain prose."
 	};
 
 	/* ---- LaTeX -> HTML ------------------------------------------------------ */
@@ -48,6 +52,55 @@
 	function replaceBraced(s, name, open, close) {
 		var re = new RegExp("\\\\" + name + "\\s*\\{([^{}]*)\\}", "g");
 		return s.replace(re, open + "$1" + close);
+	}
+
+	// index just past the '}' matching the '{' at s[i], at any nesting depth
+	function braceEnd(s, i) {
+		var depth = 0;
+		for (var j = i; j < s.length; j++) {
+			if (s[j] === "{") depth++;
+			else if (s[j] === "}") { depth--; if (depth === 0) return j + 1; }
+		}
+		return s.length;
+	}
+
+	// count "real English" words (3+ letters, not a command name) in a block --
+	// used to tell a bare equation apart from an ordinary sentence that just
+	// happens to contain one LaTeX token
+	function proseWordCount(block) {
+		return (block.match(/(^|[^\\])\b[A-Za-z]{3,}\b/g) || []).length;
+	}
+
+	// people very often paste LaTeX straight out of an AI chat reply, where the
+	// $ / \[ \] delimiters never made it into the clipboard even though the
+	// commands themselves (\frac, \boxed, \mathcal, ...) did. If a whole
+	// paragraph is basically bare LaTeX -- it contains a control sequence and
+	// has hardly any real English words -- render it as one display equation
+	// even though nothing marks it as math. Ordinary prose paragraphs (even
+	// ones that mention a stray \command) are left alone.
+	function autoWrapBareFormulaBlocks(src, stash) {
+		var parts = src.split(/(\n[ \t]*\n+)/); // odd indices are the blank-line separators
+		for (var i = 0; i < parts.length; i += 2) {
+			var b = parts[i];
+			if (!b || !/\\[a-zA-Z]/.test(b) || /\u0000M\d+\u0000/.test(b)) continue;
+			if (proseWordCount(b) > 3) continue;
+			parts[i] = stash("\\[" + b.trim() + "\\]");
+		}
+		return parts.join("");
+	}
+
+	// second, narrower pass for a \boxed{...} left stranded inside a paragraph
+	// that had too much real prose to qualify for the whole-block wrap above --
+	// rescue just the boxed formula itself rather than leaving it as raw text
+	function wrapBareBoxed(src, stash) {
+		var out = "", i = 0, idx;
+		while ((idx = src.indexOf("\\boxed{", i)) !== -1) {
+			out += src.slice(i, idx);
+			var end = braceEnd(src, idx + "\\boxed".length);
+			out += stash("\\[" + src.slice(idx, end) + "\\]");
+			i = end;
+		}
+		return out + src.slice(i);
 	}
 
 	function convert(raw) {
@@ -91,6 +144,10 @@
 		src = src.replace(/(^|[^\\$])\$(?!\$)([^\n$]*?[^\\\n$])\$(?!\$)/g, function (_, pre, x) {
 			return pre + stash("\\(" + x + "\\)");
 		});
+		// bare LaTeX with no $ / \[ \] at all -- common when pasting straight out
+		// of an AI chat reply, where the delimiters get lost in the copy
+		src = autoWrapBareFormulaBlocks(src, stash);
+		src = wrapBareBoxed(src, stash);
 
 		// now safe to HTML-escape the prose
 		var s = escapeHtml(src);
@@ -187,8 +244,13 @@
 		}
 
 		var out = header + body;
-		// restore math
-		out = out.replace(/\u0000M(\d+)\u0000/g, function (_, n) { return math[+n] || ""; });
+		// restore math -- looped, since a bare-formula block (or a \boxed{...})
+		// can itself contain an already-stashed environment, i.e. a placeholder
+		// nested inside another placeholder's value
+		var guard = 0;
+		while (/\u0000M\d+\u0000/.test(out) && guard++ < 20) {
+			out = out.replace(/\u0000M(\d+)\u0000/g, function (_, n) { return math[+n] || ""; });
+		}
 		return out;
 	}
 
