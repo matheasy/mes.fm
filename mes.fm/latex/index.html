@@ -233,6 +233,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.latex-tool__example {font:inherit;font-size:0.82em;cursor:pointer;padding:0.35em 0.7em;border-radius:1em;border:1px solid #ccc;background:#f3f3f3;color:#333;}
 	.latex-tool__example:hover {border-color:#137752;color:#137752;}
 	.latex-tool__grid {display:grid;grid-template-columns:1fr 1fr;gap:1em;}
+	/* grid items default to min-width:auto, so a wide unbreakable formula in
+	   #latex-output (long inline math doesn't reflow like text) was pulling that
+	   whole column wider than its 1fr share and squeezing the source textarea
+	   down to a sliver -- this makes the two columns actually split evenly and
+	   pushes overflow onto the scrollbars #latex-output/mjx-container already have */
+	.latex-tool__grid > div {min-width:0;}
 	.latex-tool__pane-label {font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;margin-bottom:0.35em;display:block;}
 	#latex-source {width:100%;min-height:26em;padding:1em;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:14px;line-height:1.5;box-sizing:border-box;border:1px solid #bbb;border-radius:0.35em;background:#fbfbfb;color:#222;resize:vertical;}
 	#latex-source:focus {outline:none;border-color:#137752;box-shadow:0 0 0 2px rgba(19,119,82,0.15);}
@@ -596,7 +602,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			displayMath: [['$$', '$$'], ['\\[', '\\]']],
 			processEnvironments: true,
 			processRefs: true,
-			tags: 'ams'
+			tags: 'ams',
+			// a couple of extensible-arrow commands from the "mathtools" package
+			// (not part of core amsmath, which is all this build loads) that show
+			// up often enough in AI-generated LaTeX to be worth a plain fallback
+			macros: {
+				xleftrightarrow: ['\\overset{#1}{\\longleftrightarrow}', 1],
+				xLeftrightarrow: ['\\overset{#1}{\\Longleftrightarrow}', 1]
+			}
 		},
 		options: { enableMenu: false },
 		startup: { typeset: false }
