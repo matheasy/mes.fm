@@ -247,7 +247,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.sym__recent-list .sym__tile-name {display:none;}
 
 	.sym__category {margin-bottom:1.6em;}
-	.sym__category h2 {font-size:1.05em;color:#1e2733;margin:0 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #eee0fa;}
+	.sym__category h2 {font-size:1.05em;color:#1e2733;margin:0 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #eee0fa;cursor:pointer;user-select:none;}
+	.sym__category h2 .arrow-icon {font-size:0.6em;display:inline-block;vertical-align:middle;opacity:0.55;margin-left:0.4em;}
+	/* collapsed persists (localStorage); a live search force-opens every
+	   category regardless, so results are never hidden behind a collapse */
+	.sym__category--collapsed:not(.sym__category--force-open) .sym__grid {display:none;}
+	.sym__collapse-toolbar {display:flex;justify-content:flex-end;margin:0 0 0.75em;}
+	.sym__collapse-all-btn {font:inherit;font-size:0.82em;cursor:pointer;padding:0.4em 0.9em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.sym__collapse-all-btn:hover {border-color:var(--accent);color:var(--accent);}
 	.sym__grid {display:grid;grid-template-columns:repeat(auto-fill, minmax(4.6em, 1fr));gap:0.5em;}
 	.sym__tile {font:inherit;cursor:pointer;padding:0.55em 0.3em;border:1px solid #dfe4ea;border-radius:0.4em;background:#fff;display:flex;flex-direction:column;align-items:center;gap:0.15em;line-height:1;transition:transform 0.08s, border-color 0.08s, background 0.08s;}
 	.sym__tile[hidden] {display:none;} /* our own `display:flex` above has the same specificity as the
@@ -557,6 +564,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			</div>
 		</div>
 
+		<div class="sym__collapse-toolbar">
+			<button type="button" class="sym__collapse-all-btn" id="sym-collapse-all">Collapse all sections</button>
+		</div>
 		<div id="sym-categories"></div>
 		<p class="sym__no-results hide" id="sym-no-results">No symbols match &ldquo;<span id="sym-no-results-query"></span>&rdquo;.</p>
 	</div>

@@ -12,6 +12,7 @@
 	var $ = function (id) { return document.getElementById(id); };
 	var RECENT_KEY = "mes-symbols-recent-v1";
 	var MAX_RECENT = 14;
+	var COLLAPSE_KEY = "mes-symbols-collapsed-v1";
 
 	var CATEGORIES = [
 		{
@@ -277,12 +278,59 @@
 			'<span class="sym__tile-name">' + esc(item.n) + '</span></button>';
 	}
 
+	// per-category collapsed state, keyed by category NAME (not index) so it
+	// survives the CATEGORIES list being reordered/edited later; remembered
+	// per device, unlike the site's other collapsible-section patterns
+	var collapsedCats = (function () {
+		try { return new Set(JSON.parse(localStorage.getItem(COLLAPSE_KEY) || "[]")); }
+		catch (e) { return new Set(); }
+	})();
+	function saveCollapsed() {
+		try { localStorage.setItem(COLLAPSE_KEY, JSON.stringify(Array.from(collapsedCats))); } catch (e) {}
+	}
+
 	function renderCategories() {
 		catsEl.innerHTML = CATEGORIES.map(function (cat, i) {
-			return '<section class="sym__category" id="sym-cat-' + i + '"><h2>' + esc(cat.name) + '</h2>' +
+			var collapsed = collapsedCats.has(cat.name);
+			return '<section class="sym__category' + (collapsed ? " sym__category--collapsed" : "") + '" id="sym-cat-' + i + '">' +
+				'<h2 role="button" tabindex="0" aria-expanded="' + !collapsed + '" data-cat="' + esc(cat.name) + '">' +
+				esc(cat.name) + ' <span class="arrow-icon">' + (collapsed ? "▸" : "▾") + '</span></h2>' +
 				'<div class="sym__grid">' + cat.items.map(tileHtml).join("") + '</div></section>';
 		}).join("");
 	}
+
+	function setCategoryCollapsed(section, collapsed) {
+		var h2 = section.querySelector("h2");
+		var name = h2.getAttribute("data-cat");
+		section.classList.toggle("sym__category--collapsed", collapsed);
+		h2.setAttribute("aria-expanded", String(!collapsed));
+		h2.querySelector(".arrow-icon").textContent = collapsed ? "▸" : "▾";
+		if (collapsed) collapsedCats.add(name); else collapsedCats.delete(name);
+		saveCollapsed();
+	}
+
+	function toggleCategoryFromEvent(e) {
+		var h2 = e.target.closest ? e.target.closest("h2") : null;
+		if (!h2 || !catsEl.contains(h2)) return;
+		var section = h2.closest(".sym__category");
+		setCategoryCollapsed(section, !section.classList.contains("sym__category--collapsed"));
+	}
+	catsEl.addEventListener("click", toggleCategoryFromEvent);
+	catsEl.addEventListener("keydown", function (e) {
+		if (e.key !== "Enter" && e.key !== " ") return;
+		if (!e.target.closest || !e.target.closest("h2")) return;
+		e.preventDefault();
+		toggleCategoryFromEvent(e);
+	});
+
+	$("sym-collapse-all").addEventListener("click", function () {
+		var sections = document.querySelectorAll(".sym__category");
+		var anyExpanded = Array.prototype.some.call(sections, function (s) {
+			return !s.classList.contains("sym__category--collapsed");
+		});
+		Array.prototype.forEach.call(sections, function (s) { setCategoryCollapsed(s, anyExpanded); });
+		this.textContent = anyExpanded ? "Expand all sections" : "Collapse all sections";
+	});
 
 	function findItem(ch) {
 		for (var i = 0; i < CATEGORIES.length; i++) {
@@ -313,6 +361,9 @@
 				if (match) catHasMatch = true;
 			}
 			section.classList.toggle("sym__category--hide", !catHasMatch);
+			// a live search always shows matches, even inside a collapsed
+			// section -- doesn't touch the underlying remembered collapse state
+			section.classList.toggle("sym__category--force-open", !!q);
 			if (catHasMatch) anyVisible = true;
 		});
 		noResultsEl.classList.toggle("hide", anyVisible || !q);
