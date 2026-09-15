@@ -378,6 +378,171 @@
       display: inline-block;
       margin: 0.5em 0 0;
     }
+
+    /* ---------- Views Over Time (daily/weekly toggle) ---------- */
+
+    .timeseries-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5em;
+    }
+
+    .ts-toggle {
+      display: flex;
+      gap: 0.4em;
+    }
+
+    .ts-toggle-btn {
+      padding: 0.3em 0.8em;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      border-radius: 999px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+
+    body.light .ts-toggle-btn { color: #000000; }
+    body.dark .ts-toggle-btn { color: #ffffff; }
+
+    .ts-toggle-btn.active { font-weight: bold; }
+    body.light .ts-toggle-btn.active { background-color: #dddddd; }
+    body.dark .ts-toggle-btn.active { background-color: #555555; }
+
+    .ts-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 640 / 220;
+      margin-top: 0.75em;
+    }
+    .ts-wrap svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .ts-wrap.hidden { display: none; }
+
+    .ts-axis-label { font-size: 7px; }
+    body.light .ts-axis-label { fill: rgba(0, 0, 0, 0.6); }
+    body.dark .ts-axis-label { fill: rgba(255, 255, 255, 0.6); }
+
+    .ts-gridline { stroke-width: 1; }
+    body.light .ts-gridline { stroke: rgba(0, 0, 0, 0.12); }
+    body.dark .ts-gridline { stroke: rgba(255, 255, 255, 0.12); }
+
+    .ts-area { opacity: 0.12; }
+    body.light .ts-area { fill: #0000ff; }
+    body.dark .ts-area { fill: #4da8ff; }
+
+    .ts-line {
+      fill: none;
+      stroke-width: 2;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+    body.light .ts-line { stroke: #0000ff; }
+    body.dark .ts-line { stroke: #4da8ff; }
+    .ts-line.partial { stroke-dasharray: 4 3; }
+
+    body.light .ts-dot { fill: #0000ff; }
+    body.dark .ts-dot { fill: #4da8ff; }
+    .ts-dot.partial { fill: none; stroke-width: 2; }
+    body.light .ts-dot.partial { stroke: #0000ff; }
+    body.dark .ts-dot.partial { stroke: #4da8ff; }
+
+    .ts-pt {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      margin: -11px;
+      border-radius: 50%;
+    }
+    .ts-pt:focus-visible { outline: none; }
+
+    .ts-tip {
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translate(-50%, -8px);
+      padding: 0.35em 0.6em;
+      border-radius: 6px;
+      font-size: 0.78em;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.1s ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+    body.light .ts-tip { background: #000000; color: #ffffff; }
+    body.dark .ts-tip { background: #ffffff; color: #000000; }
+    .ts-pt:hover .ts-tip, .ts-pt:focus-visible .ts-tip,
+    .ts-col:hover .ts-tip, .ts-col:focus-visible .ts-tip {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .ts-cols {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.9em;
+      height: 190px;
+      margin-top: 0.75em;
+      padding: 0 0.25em;
+    }
+    .ts-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      position: relative;
+      min-width: 0;
+    }
+    .ts-col:focus-visible { outline: none; }
+
+    .ts-col-value {
+      font-size: 0.85em;
+      margin-bottom: 0.4em;
+      white-space: nowrap;
+    }
+
+    .ts-col-bar {
+      width: 100%;
+      max-width: 84px;
+      border-radius: 5px 5px 0 0;
+      min-height: 3px;
+    }
+    body.light .ts-col-bar { background-color: #0000ff; }
+    body.dark .ts-col-bar { background-color: #4da8ff; }
+    body.light .ts-col-bar.partial {
+      background-color: transparent;
+      background-image: repeating-linear-gradient(135deg, #0000ff, #0000ff 4px, transparent 4px, transparent 7px);
+    }
+    body.dark .ts-col-bar.partial {
+      background-color: transparent;
+      background-image: repeating-linear-gradient(135deg, #4da8ff, #4da8ff 4px, transparent 4px, transparent 7px);
+    }
+    .ts-col:hover .ts-col-bar, .ts-col:focus-visible .ts-col-bar { opacity: 0.8; }
+
+    .ts-col-label {
+      font-size: 0.75em;
+      opacity: 0.7;
+      margin-top: 0.5em;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .ts-note {
+      font-size: 0.8em;
+      opacity: 0.7;
+      margin-top: 0.75em;
+    }
+
   /* RESPONSIVE-FIX-INSERTED */
 @media (max-width: 768px) {
   .outer-container { width: 100% !important; margin: 0 !important; }
@@ -544,6 +709,27 @@
   <p class="updated-at" id="updatedAt">Loading stats&hellip;</p>
 
   <div class="content">
+    <section class="stats-section">
+      <div class="timeseries-head">
+        <h2>Views Over Time</h2>
+        <div class="ts-toggle" id="tsToggle">
+          <button type="button" class="ts-toggle-btn active" data-ts="daily">Daily</button>
+          <button type="button" class="ts-toggle-btn" data-ts="weekly">Weekly</button>
+        </div>
+      </div>
+
+      <div class="ts-wrap" id="tsDaily">
+        <svg id="tsDailySvg" viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Daily page views"></svg>
+        <div id="tsDailyPts"></div>
+      </div>
+
+      <div class="ts-wrap hidden" id="tsWeekly">
+        <div class="ts-cols" id="tsWeeklyCols"></div>
+      </div>
+
+      <p class="ts-note" id="tsNote">Loading&hellip;</p>
+    </section>
+
     <section class="stats-section">
       <h2>Most Viewed Pages</h2>
       <div class="table-wrap">
@@ -993,6 +1179,203 @@
     });
 
     loadStats();
+
+    // ---- Views Over Time: independent of the range tabs above (a "24
+    // Hours" bucket makes no sense on a day-by-day chart) -- fetches its
+    // own fixed lookback from /api/stats-series once on load. ----
+
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // Manual Y-M-D split rather than `new Date(iso)` -- sidesteps the
+    // UTC-parse/local-format day-shift entirely instead of fighting it with
+    // getUTC* accessors everywhere a date gets displayed.
+    function fmtDate(iso) {
+      const p = iso.split('-');
+      return MONTHS[parseInt(p[1], 10) - 1] + ' ' + parseInt(p[2], 10);
+    }
+    function mondayOf(iso) {
+      const p = iso.split('-').map(Number);
+      const d = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+      const dow = d.getUTCDay(); // 0 = Sun
+      d.setUTCDate(d.getUTCDate() - (dow === 0 ? 6 : dow - 1));
+      return d.toISOString().slice(0, 10);
+    }
+    function addDaysIso(iso, n) {
+      const p = iso.split('-').map(Number);
+      const d = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+      d.setUTCDate(d.getUTCDate() + n);
+      return d.toISOString().slice(0, 10);
+    }
+
+    // Same tick-picking logic as the sortable tables' bar-chart cousin on
+    // the mes.fm/stats snapshot artifact this page's daily/weekly chart was
+    // prototyped in -- walks up in whole steps until the top tick is >= max,
+    // so a value at the max is never scaled past 100% and drawn over its
+    // own label.
+    function niceTicks(max, targetCount) {
+      const raw = max / (targetCount || 5);
+      const mag = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+      const norm = raw / mag;
+      let step;
+      if (norm < 1.5) step = 1 * mag;
+      else if (norm < 3.5) step = 2 * mag;
+      else if (norm < 7.5) step = 5 * mag;
+      else step = 10 * mag;
+      const ticks = [];
+      let v = 0;
+      while (v < max) { ticks.push(v); v += step; }
+      ticks.push(Math.round(v));
+      return ticks;
+    }
+
+    function renderDailyChart(svg, ptsEl, data) {
+      const W = 640, H = 220, left = 34, right = 6, top = 10, bottom = 26;
+      const innerW = W - left - right, innerH = H - top - bottom;
+      const values = data.map(function (d) { return d.views; });
+      const ticks = niceTicks(Math.max.apply(null, values), 4);
+      const topMax = ticks[ticks.length - 1] || 1;
+
+      function xAt(i) { return left + (data.length === 1 ? 0 : (i / (data.length - 1)) * innerW); }
+      function yAt(v) { return top + innerH - (v / topMax) * innerH; }
+
+      const parts = ['<g>'];
+
+      ticks.forEach(function (t) {
+        const y = yAt(t);
+        parts.push('<line class="ts-gridline" x1="' + left + '" x2="' + (W - right) + '" y1="' + y + '" y2="' + y + '"/>');
+        parts.push('<text class="ts-axis-label" x="' + (left - 6) + '" y="' + (y + 2.5) + '" text-anchor="end">' + t.toLocaleString() + '</text>');
+      });
+
+      const xStep = Math.max(1, Math.ceil(data.length / 6));
+      data.forEach(function (d, i) {
+        if (i % xStep !== 0 && i !== data.length - 1) return;
+        parts.push('<text class="ts-axis-label" x="' + xAt(i) + '" y="' + (H - 6) + '" text-anchor="middle">' + fmtDate(d.date) + '</text>');
+      });
+
+      const linePts = data.map(function (d, i) { return xAt(i) + ',' + yAt(d.views); });
+      const areaPath = 'M' + xAt(0) + ',' + (H - bottom) + ' L' + linePts.join(' L') + ' L' + xAt(data.length - 1) + ',' + (H - bottom) + ' Z';
+      parts.push('<path class="ts-area" d="' + areaPath + '"/>');
+      if (data.length > 2) {
+        parts.push('<path class="ts-line" d="M' + linePts.slice(0, -1).join(' L') + '"/>');
+      }
+      parts.push('<path class="ts-line partial" d="M' + linePts.slice(-2).join(' L') + '"/>');
+      parts.push('<circle class="ts-dot partial" cx="' + xAt(data.length - 1) + '" cy="' + yAt(data[data.length - 1].views) + '" r="4"/>');
+      parts.push('</g>');
+      svg.innerHTML = parts.join('');
+
+      ptsEl.innerHTML = '';
+      data.forEach(function (d, i) {
+        const isPartial = i === data.length - 1;
+        const pt = document.createElement('div');
+        pt.className = 'ts-pt';
+        pt.style.left = (xAt(i) / W * 100) + '%';
+        pt.style.top = (yAt(d.views) / H * 100) + '%';
+        pt.tabIndex = 0;
+        const tip = document.createElement('div');
+        tip.className = 'ts-tip';
+        const strong = document.createElement('strong');
+        strong.textContent = d.views.toLocaleString() + ' views';
+        tip.appendChild(strong);
+        tip.appendChild(document.createTextNode(' — ' + fmtDate(d.date)));
+        if (isPartial) tip.appendChild(document.createTextNode(' (partial, so far)'));
+        pt.appendChild(tip);
+        ptsEl.appendChild(pt);
+      });
+    }
+
+    function renderWeeklyChart(colsEl, data) {
+      const buckets = {};
+      const order = [];
+      data.forEach(function (d) {
+        const wk = mondayOf(d.date);
+        if (!buckets[wk]) { buckets[wk] = { start: wk, views: 0, days: 0 }; order.push(wk); }
+        buckets[wk].views += d.views;
+        buckets[wk].days += 1;
+      });
+      const weeks = order.map(function (k) { return buckets[k]; });
+      const max = Math.max.apply(null, weeks.map(function (w) { return w.views; })) || 1;
+
+      colsEl.innerHTML = '';
+      weeks.forEach(function (w) {
+        const partial = w.days < 7;
+        const endIso = addDaysIso(w.start, 6);
+        const col = document.createElement('div');
+        col.className = 'ts-col';
+        col.tabIndex = 0;
+
+        const val = document.createElement('div');
+        val.className = 'ts-col-value';
+        val.textContent = w.views.toLocaleString();
+        col.appendChild(val);
+
+        const bar = document.createElement('div');
+        bar.className = 'ts-col-bar' + (partial ? ' partial' : '');
+        bar.style.height = Math.max((w.views / max) * 100, 2) + '%';
+        col.appendChild(bar);
+
+        const label = document.createElement('div');
+        label.className = 'ts-col-label';
+        label.textContent = fmtDate(w.start) + '–' + fmtDate(endIso) + (partial ? ' (partial, ' + w.days + '/7 days)' : '');
+        col.appendChild(label);
+
+        const tip = document.createElement('div');
+        tip.className = 'ts-tip';
+        const strong = document.createElement('strong');
+        strong.textContent = w.views.toLocaleString() + ' views';
+        tip.appendChild(strong);
+        tip.appendChild(document.createTextNode(' — ' + w.days + ' day' + (w.days === 1 ? '' : 's') + ' tracked'));
+        col.appendChild(tip);
+
+        colsEl.appendChild(col);
+      });
+    }
+
+    const tsDailyEl = document.getElementById('tsDaily');
+    const tsWeeklyEl = document.getElementById('tsWeekly');
+    const tsNoteEl = document.getElementById('tsNote');
+    let tsDailyNote = '';
+    let tsWeeklyNote = '';
+
+    document.getElementById('tsToggle').addEventListener('click', function (e) {
+      const btn = e.target.closest('.ts-toggle-btn');
+      if (!btn) return;
+      const mode = btn.dataset.ts;
+      document.querySelectorAll('#tsToggle .ts-toggle-btn').forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+      });
+      tsDailyEl.classList.toggle('hidden', mode !== 'daily');
+      tsWeeklyEl.classList.toggle('hidden', mode !== 'weekly');
+      tsNoteEl.textContent = mode === 'daily' ? tsDailyNote : tsWeeklyNote;
+    });
+
+    async function loadTimeSeries() {
+      try {
+        const res = await fetch('/api/stats-series?days=60');
+        if (!res.ok) throw new Error('bad response');
+        const data = await res.json();
+        let days = data.days || [];
+        // Drop a leading run of true zeros -- days before device/source
+        // tracking (and this series) existed, not days with no traffic.
+        const firstNonZero = days.findIndex(function (d) { return d.views > 0; });
+        if (firstNonZero > 0) days = days.slice(firstNonZero);
+
+        if (!days.length) {
+          tsNoteEl.textContent = 'No daily data yet.';
+          return;
+        }
+
+        renderDailyChart(document.getElementById('tsDailySvg'), document.getElementById('tsDailyPts'), days);
+        renderWeeklyChart(document.getElementById('tsWeeklyCols'), days);
+
+        tsDailyNote = 'Daily totals from ' + fmtDate(days[0].date) + ' onward. The dashed segment is today, still filling in.';
+        tsWeeklyNote = 'Monday-start weeks. The first and most recent week are marked partial where fewer than 7 tracked days fall inside them.';
+        tsNoteEl.textContent = tsDailyNote;
+      } catch (e) {
+        tsNoteEl.textContent = 'Daily/weekly data is temporarily unavailable.';
+      }
+    }
+
+    loadTimeSeries();
   </script>
 
   <div style="clear: both;"></div>
