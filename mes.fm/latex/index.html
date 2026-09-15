@@ -242,8 +242,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.latex-tool__pane-label {font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;margin-bottom:0.35em;display:block;}
 	#latex-source {width:100%;min-height:26em;padding:1em;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:14px;line-height:1.5;box-sizing:border-box;border:1px solid #bbb;border-radius:0.35em;background:#fbfbfb;color:#222;resize:vertical;}
 	#latex-source:focus {outline:none;border-color:#137752;box-shadow:0 0 0 2px rgba(19,119,82,0.15);}
-	#latex-output {min-height:26em;padding:1.2em;box-sizing:border-box;border:1px solid #bbb;border-radius:0.35em;background:#fff;overflow:auto;line-height:1.6;}
-	#latex-output h1, #latex-output h2, #latex-output h3 {color:#222;margin:0.6em 0 0.3em;line-height:1.25;}
+	#latex-output {min-height:26em;padding:1.2em;box-sizing:border-box;border:1px solid #bbb;border-radius:0.35em;background:#fff;overflow:auto;line-height:1.6;color:#000;}
+	/* the site-wide reset sets p/h1-h6/li/etc to a #333 grey directly (not just
+	   inherited), which beats the #latex-output rule above on specificity grounds
+	   for every one of those tags -- and MathJax's glyphs inherit whatever color
+	   the surrounding text landed on. Override every descendant explicitly (bar
+	   the intentionally-grey placeholder) so the output is actually #000. */
+	#latex-output *:not(.latex-tool__placeholder) {color:#000;}
+	#latex-output h1, #latex-output h2, #latex-output h3 {margin:0.6em 0 0.3em;line-height:1.25;}
 	#latex-output h1 {font-size:1.5em;} #latex-output h2 {font-size:1.25em;} #latex-output h3 {font-size:1.1em;}
 	#latex-output p {margin:0.6em 0;}
 	#latex-output hr {border:0;border-top:1px solid #ddd;margin:1em 0;}
