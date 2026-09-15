@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="MES Symbol Copier">
+  <rect width="1200" height="630" fill="#f5f2fa"/>
+  <rect x="0" y="0" width="1200" height="12" fill="#6b4fa0"/>
+
+  <g transform="translate(96,150)">
+    <rect width="200" height="200" rx="34" fill="#6b4fa0"/>
+    <text x="100" y="140" font-family="Georgia, 'Times New Roman', serif" font-size="104" fill="#ffffff" text-anchor="middle">&#960;</text>
+  </g>
+
+  <text x="340" y="238" font-family="Georgia, 'Times New Roman', serif" font-size="80" font-weight="bold" fill="#1e2733">MES Symbol Copier</text>
+  <text x="344" y="292" font-family="Helvetica, Arial, sans-serif" font-size="33" fill="#556">Click any symbol to copy it instantly.</text>
+
+  <g font-family="Georgia, 'Times New Roman', serif" font-size="46" fill="#1e2733">
+    <text x="344" y="400">&#945; &#946; &#952; &#966; &#8734; &#8730;</text>
+    <text x="344" y="460">x&#178; a&#8320; &#177; &#8800; &#8804; &#8776;</text>
+  </g>
+
+  <text x="1104" y="586" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#9c8fb8" text-anchor="end">mes.fm/symbols</text>
+</svg>
