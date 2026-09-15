@@ -252,16 +252,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		margin: 1em 0;
 	}
 	.icon-grid__link { display: block; }
-	.icon-grid__img { display: block; width: 100%; height: auto; }
 
-	/* icon-grid__link--labeled: the old icons had their caption ("Calculators",
-	   etc.) baked into the bottom of the .jpg itself -- not real text, so it
-	   couldn't be found by in-page search or read by a screen reader/search
-	   engine. As each icon gets re-cut without the baked-in label (starting
-	   with Calculators), it switches to this variant: a plain background-image
-	   thumb plus a real overlaid <span>, styled to match the old bar-at-the-
-	   bottom look so labeled and not-yet-labeled icons still read as one
-	   consistent grid in the meantime. */
+	/* icon-grid__link--labeled: every icon used to have its caption
+	   ("Calculators", etc.) baked into the bottom of the .jpg itself -- not
+	   real text, so it couldn't be found by in-page search or read by a
+	   screen reader/search engine. All 6 are now re-cut without the
+	   baked-in label and use this variant instead: a plain background-image
+	   thumb plus a real overlaid <span>, styled to match the old
+	   bar-at-the-bottom look. */
 	.icon-grid__link--labeled { position: relative; }
 	.icon-grid__thumb {
 		display: block;
@@ -487,11 +485,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 		<div class="icon-grid">
 			<a class="icon-grid__link icon-grid__link--labeled" href="/calculators"><span class="icon-grid__thumb" style="background-image:url('img/calculators-icon.jpg?v=2')"></span><span class="icon-grid__label">Calculators</span></a>
-			<a class="icon-grid__link" href="/puzzles"><img src="img/puzzles-icon.jpg" width="600" height="400" class="icon-grid__img" alt="puzzles icon"></a>
-			<a class="icon-grid__link" href="/memes"><img src="img/memes-icon.jpg" width="600" height="400" class="icon-grid__img" alt="memes icon"></a>
-			<a class="icon-grid__link" href="https://mes.fm/math"><img src="img/videos-icon.jpg" width="600" height="400" class="icon-grid__img" alt="math tutorials icon"></a>
-			<a class="icon-grid__link" href="/tools"><img src="img/tools-icon.jpg" width="600" height="400" class="icon-grid__img" alt="tools icon"></a>
-			<a class="icon-grid__link" href="/mobile-apps"><img src="img/mobile-apps-icon.jpg" width="600" height="400" class="icon-grid__img" alt="mobile apps icon"></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="/puzzles"><span class="icon-grid__thumb" style="background-image:url('img/puzzles-icon.jpg?v=2')"></span><span class="icon-grid__label">Puzzles</span></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="/memes"><span class="icon-grid__thumb" style="background-image:url('img/memes-icon.jpg?v=2')"></span><span class="icon-grid__label">Memes</span></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="https://mes.fm/math"><span class="icon-grid__thumb" style="background-image:url('img/videos-icon.jpg?v=2')"></span><span class="icon-grid__label">Videos</span></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="/tools"><span class="icon-grid__thumb" style="background-image:url('img/tools-icon.jpg?v=2')"></span><span class="icon-grid__label">Tools</span></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="/mobile-apps"><span class="icon-grid__thumb" style="background-image:url('img/mobile-apps-icon.jpg?v=2')"></span><span class="icon-grid__label">Mobile Apps</span></a>
 		</div>
 
 		<h2 class="header2">What is Math Easy Solutions (MES)?</h2>
