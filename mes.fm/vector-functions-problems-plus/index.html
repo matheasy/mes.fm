@@ -429,10 +429,6 @@
     body.light .view-toggle-btn.active { background-color: #1a6fb0; color: #ffffff; }
     body.dark .view-toggle-btn.active { background-color: #6cb6f5; color: #1a1a1a; }
 
-    .view-hidden {
-      display: none;
-    }
-
     .card-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -495,21 +491,24 @@
       .card-grid { grid-template-columns: 1fr; }
     }
 
+    /* List View -- plain title / links-row / full-thumbnail markup, matching
+       how a Hive-sourced "Thumbnail View" chapter (e.g. mes.fm/hutchison's
+       Cold Fusion section) already renders each entry: <h2> title, a <p> link
+       row, then the full (uncropped) image. */
     .playlist-list-view {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2em;
       margin: 0 0 0.4em;
     }
 
-    .playlist-row {
-      border: 1px solid rgba(128, 128, 128, 0.35);
-      border-radius: 8px;
-      padding: 0.9em 1em;
+    .playlist-list-view h2 {
+      font-size: 1.15em;
+      margin: 1.4em 0 0.3em;
     }
 
-    .playlist-row-title {
-      font-weight: 700;
+    .playlist-list-view h2:first-child {
+      margin-top: 0;
+    }
+
+    .playlist-list-view p {
       margin: 0 0 0.6em;
     }
 
@@ -518,11 +517,13 @@
       max-width: 100%;
       height: auto;
       border-radius: 4px;
-      margin: 0 0 0.6em;
+      margin: 0 0 1.2em;
     }
 
-    .playlist-row-links {
-      font-size: 0.9rem;
+    /* Must come after .card-grid/.playlist-list-view above: same specificity
+       (single class), so source order decides the tie -- this needs to win. */
+    .view-hidden {
+      display: none;
     }
 
     /* Table of contents: a fixed side column on wide viewports, collapsing to a
@@ -766,21 +767,15 @@
 </a>
 </div>
 <div class="playlist-list-view view-hidden" id="playlistList">
-<div class="playlist-row">
-  <div class="playlist-row-title">Problems Plus 1: Projectile Fired from the Origin</div>
-  <img class="playlist-row-thumb" src="https://images.3speak.tv/images/1788413406899-99e6f9413ec1674d.webp" alt="">
-  <div class="playlist-row-links"><a href="https://mes.fm/problems-plus-1-projectile-origin" target="_blank" rel="noopener">MES</a> &middot; <a href="https://3speak.tv/watch?v=mes/problems-plus-1-projectile-813" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtu.be/V4Y_5Cp2EAU" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://t.me/meslinks/35459" target="_blank" rel="noopener">Telegram</a></div>
-</div>
-<div class="playlist-row">
-  <div class="playlist-row-title">Projectile Aimed at a Target Downrange Will Always Hit When Dropped and Fired at the Same Time!</div>
-  <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1789274360087-0f5fe2a3f9dbd45d.webp" alt="">
-  <div class="playlist-row-links"><a href="https://mes.fm/projectile-hits-target" target="_blank" rel="noopener">MES</a> &middot; <a href="https://3speak.tv/watch?v=mes/projectile-aimed-at-a-targe-648" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtu.be/epyX7jZChnU" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://t.me/meslinks/35499" target="_blank" rel="noopener">Telegram</a></div>
-</div>
-<div class="playlist-row">
-  <div class="playlist-row-title">Problems Plus 2: Firing a Projectile Up and Down an Inclined Plane</div>
-  <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1789493218448-388d779a1e159279.webp" alt="">
-  <div class="playlist-row-links"><a href="https://mes.fm/problems-plus-2-projectile-inclined-plane" target="_blank" rel="noopener">MES</a> &middot; <a href="https://3speak.tv/watch?v=mes/problems-plus-2-firing-a-pr-551" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtu.be/q8I-Lpv0zlQ" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://t.me/meslinks/35519" target="_blank" rel="noopener">Telegram</a></div>
-</div>
+<h2>Problems Plus 1: Projectile Fired from the Origin</h2>
+<p><a href="https://mes.fm/problems-plus-1-projectile-origin" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/problems-plus-1-projectile-813" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/V4Y_5Cp2EAU" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35459" target="_blank" rel="noopener">Telegram</a></p>
+<img class="playlist-row-thumb" src="https://images.3speak.tv/images/1788413406899-99e6f9413ec1674d.webp" alt="">
+<h2>Projectile Aimed at a Target Downrange Will Always Hit When Dropped and Fired at the Same Time!</h2>
+<p><a href="https://mes.fm/projectile-hits-target" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/projectile-aimed-at-a-targe-648" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/epyX7jZChnU" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35499" target="_blank" rel="noopener">Telegram</a></p>
+<img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1789274360087-0f5fe2a3f9dbd45d.webp" alt="">
+<h2>Problems Plus 2: Firing a Projectile Up and Down an Inclined Plane</h2>
+<p><a href="https://mes.fm/problems-plus-2-projectile-inclined-plane" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/problems-plus-2-firing-a-pr-551" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/q8I-Lpv0zlQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35519" target="_blank" rel="noopener">Telegram</a></p>
+<img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1789493218448-388d779a1e159279.webp" alt="">
 </div>
 </div>
 </div>

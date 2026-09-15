@@ -195,21 +195,31 @@ function buildPlaylistSection(meta) {
 </a>`;
   }).join("\n");
 
+  // Watch-on links are sorted to this canonical platform order (whichever the
+  // page actually has); anything scraped that isn't in this list (an "etc.")
+  // is kept, appended after the recognized ones in its original order.
+  const PLATFORM_ORDER = ["3Speak", "YouTube", "Telegram", "BitChute", "Odysee", "Rumble"];
+  function sortWatchLinks(links) {
+    const known = PLATFORM_ORDER
+      .map((label) => links.find((l) => l.label === label))
+      .filter(Boolean);
+    const rest = links.filter((l) => !PLATFORM_ORDER.includes(l.label));
+    return [...known, ...rest];
+  }
+
   const rows = PLAYLIST.map((entry) => {
     const m = meta[entry.href] || {};
     const title = m.title || entry.href;
-    const allLinks = [{ label: "MES", href: entry.href }, ...(m.watchLinks || [])];
+    const allLinks = [{ label: "Notes", href: entry.href }, ...sortWatchLinks(m.watchLinks || [])];
     const linksHtml = allLinks
       .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
-      .join(" &middot; ");
+      .join(" - ");
     const imgHtml = m.image
       ? `<img class="playlist-row-thumb" src="${escapeHtml(m.image)}" alt="">`
       : "";
-    return `<div class="playlist-row">
-  <div class="playlist-row-title">${escapeHtml(title)}</div>
-  ${imgHtml}
-  <div class="playlist-row-links">${linksHtml}</div>
-</div>`;
+    return `<h2>${escapeHtml(title)}</h2>
+<p>${linksHtml}</p>
+${imgHtml}`;
   }).join("\n");
 
   return `<div class="view-toggle">
@@ -879,10 +889,6 @@ ${leadingHtml}
     body.light .view-toggle-btn.active { background-color: #1a6fb0; color: #ffffff; }
     body.dark .view-toggle-btn.active { background-color: #6cb6f5; color: #1a1a1a; }
 
-    .view-hidden {
-      display: none;
-    }
-
     .card-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -945,21 +951,24 @@ ${leadingHtml}
       .card-grid { grid-template-columns: 1fr; }
     }
 
+    /* List View -- plain title / links-row / full-thumbnail markup, matching
+       how a Hive-sourced "Thumbnail View" chapter (e.g. mes.fm/hutchison's
+       Cold Fusion section) already renders each entry: <h2> title, a <p> link
+       row, then the full (uncropped) image. */
     .playlist-list-view {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2em;
       margin: 0 0 0.4em;
     }
 
-    .playlist-row {
-      border: 1px solid rgba(128, 128, 128, 0.35);
-      border-radius: 8px;
-      padding: 0.9em 1em;
+    .playlist-list-view h2 {
+      font-size: 1.15em;
+      margin: 1.4em 0 0.3em;
     }
 
-    .playlist-row-title {
-      font-weight: 700;
+    .playlist-list-view h2:first-child {
+      margin-top: 0;
+    }
+
+    .playlist-list-view p {
       margin: 0 0 0.6em;
     }
 
@@ -968,11 +977,13 @@ ${leadingHtml}
       max-width: 100%;
       height: auto;
       border-radius: 4px;
-      margin: 0 0 0.6em;
+      margin: 0 0 1.2em;
     }
 
-    .playlist-row-links {
-      font-size: 0.9rem;
+    /* Must come after .card-grid/.playlist-list-view above: same specificity
+       (single class), so source order decides the tie -- this needs to win. */
+    .view-hidden {
+      display: none;
     }
 
     /* Table of contents: a fixed side column on wide viewports, collapsing to a
