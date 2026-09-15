@@ -250,6 +250,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.sym__category h2 {font-size:1.05em;color:#1e2733;margin:0 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #eee0fa;}
 	.sym__grid {display:grid;grid-template-columns:repeat(auto-fill, minmax(4.6em, 1fr));gap:0.5em;}
 	.sym__tile {font:inherit;cursor:pointer;padding:0.55em 0.3em;border:1px solid #dfe4ea;border-radius:0.4em;background:#fff;display:flex;flex-direction:column;align-items:center;gap:0.15em;line-height:1;transition:transform 0.08s, border-color 0.08s, background 0.08s;}
+	.sym__tile[hidden] {display:none;} /* our own `display:flex` above has the same specificity as the
+		UA [hidden]{display:none} rule but comes later in the cascade, so it silently won HTML's hidden
+		attribute did nothing and the search filter never actually hid a tile */
 	.sym__tile:hover {border-color:var(--accent);background:#faf8fd;}
 	.sym__tile:active {transform:scale(0.94);}
 	.sym__tile--flash {background:var(--accent) !important;border-color:var(--accent) !important;}
