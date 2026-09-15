@@ -16,12 +16,17 @@
 //   npm install
 //   npm run build
 
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { marked } from "marked";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Committed cache of scraped Playlist card data (see resolvePlaylistMeta). Kept
+// in git so a later build still has thumbnails/links even if a target page is
+// briefly unreachable.
+const PLAYLIST_CACHE_PATH = join(__dirname, "playlist-meta.json");
 
 const AUTHOR = "mes";
 const PERMLINK = "vector-functions-problems-p-729";
@@ -73,6 +78,150 @@ async function fetchPost() {
     throw new Error("Hive API returned no post — check author/permlink.");
   }
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// Playlist section — Grid/List toggle of the sibling Problems Plus video
+// pages (mes.fm/problems-plus-1-projectile-origin, mes.fm/projectile-hits-target,
+// mes.fm/problems-plus-2-projectile-inclined-plane, ...). Scrapes each page's
+// own og:title/og:image plus its "Watch on:" source-list row (3Speak, YouTube,
+// Telegram, BitChute, Odysee, Rumble -- whichever it actually links) so the
+// List view can show every platform link that page itself has.
+// ---------------------------------------------------------------------------
+
+const PLAYLIST = [
+  { href: "https://mes.fm/problems-plus-1-projectile-origin" },
+  { href: "https://mes.fm/projectile-hits-target" },
+  { href: "https://mes.fm/problems-plus-2-projectile-inclined-plane" },
+];
+
+function loadPlaylistCache() {
+  if (!existsSync(PLAYLIST_CACHE_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(PLAYLIST_CACHE_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function savePlaylistCache(cache) {
+  const sorted = Object.fromEntries(
+    Object.keys(cache).sort().map((k) => [k, cache[k]])
+  );
+  writeFileSync(PLAYLIST_CACHE_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
+}
+
+function decodePlaylistEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&rsquo;/g, "’")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function readPlaylistMetaTag(html, prop) {
+  const p = prop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const m = html.match(new RegExp(`<meta[^>]+property=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"));
+  return m ? decodePlaylistEntities(m[3]).trim() : "";
+}
+
+// Pull every {label, href} pair out of the page's own `<li>Watch on: <a...>3Speak</a>
+// &middot; <a...>YouTube</a> ...</li>` source-list row -- whatever platforms that
+// specific page actually links to.
+function readWatchOnLinks(html) {
+  const m = html.match(/<li>\s*Watch on:([\s\S]*?)<\/li>/i);
+  if (!m) return [];
+  const linkRe = /<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
+  const links = [];
+  let lm;
+  while ((lm = linkRe.exec(m[1]))) {
+    links.push({ label: decodePlaylistEntities(lm[2]).trim(), href: lm[1] });
+  }
+  return links;
+}
+
+async function fetchPlaylistMeta(url) {
+  const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+  return {
+    title: readPlaylistMetaTag(html, "og:title"),
+    image: readPlaylistMetaTag(html, "og:image"),
+    watchLinks: readWatchOnLinks(html),
+  };
+}
+
+async function resolvePlaylistMeta(entries, concurrency = 6) {
+  const cache = loadPlaylistCache();
+  const urls = entries.map((e) => e.href);
+  let i = 0;
+  async function worker() {
+    while (i < urls.length) {
+      const url = urls[i++];
+      try {
+        cache[url] = await fetchPlaylistMeta(url);
+        console.log(`  playlist meta ok:   ${url}`);
+      } catch (err) {
+        console.warn(`  playlist meta FAIL: ${url} (${err.message}) — using cached value`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  savePlaylistCache(cache);
+  return cache;
+}
+
+function cssSafeUrl(url) {
+  return String(url).split("'").join("%27");
+}
+
+// Renders the Playlist chapter's Grid View (thumbnail cards, default) and List
+// View (title + full thumbnail + row of every platform link that page has).
+function buildPlaylistSection(meta) {
+  const cards = PLAYLIST.map((entry) => {
+    const m = meta[entry.href] || {};
+    const title = m.title || entry.href;
+    const thumbStyle = m.image
+      ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"`
+      : "";
+    return `<a class="link-card" href="${escapeHtml(entry.href)}">
+  <span class="link-card-thumb"${thumbStyle}></span>
+  <span class="link-card-body">
+    <span class="link-card-title">${escapeHtml(title)}</span>
+    <span class="link-card-readmore">Watch &rarr;</span>
+  </span>
+</a>`;
+  }).join("\n");
+
+  const rows = PLAYLIST.map((entry) => {
+    const m = meta[entry.href] || {};
+    const title = m.title || entry.href;
+    const allLinks = [{ label: "MES", href: entry.href }, ...(m.watchLinks || [])];
+    const linksHtml = allLinks
+      .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
+      .join(" &middot; ");
+    const imgHtml = m.image
+      ? `<img class="playlist-row-thumb" src="${escapeHtml(m.image)}" alt="">`
+      : "";
+    return `<div class="playlist-row">
+  <div class="playlist-row-title">${escapeHtml(title)}</div>
+  ${imgHtml}
+  <div class="playlist-row-links">${linksHtml}</div>
+</div>`;
+  }).join("\n");
+
+  return `<div class="view-toggle">
+  <button type="button" class="view-toggle-btn active" id="playlistGridBtn">Grid View</button>
+  <button type="button" class="view-toggle-btn" id="playlistListBtn">List View</button>
+</div>
+<div class="card-grid" id="playlistGrid">
+${cards}
+</div>
+<div class="playlist-list-view view-hidden" id="playlistList">
+${rows}
+</div>`;
 }
 
 function escapeHtml(str) {
@@ -258,7 +407,7 @@ function wrapChaptersInToggles(html) {
   return out;
 }
 
-async function buildPage(post) {
+async function buildPage(post, playlistMeta) {
   const title = post.title;
   const { markdown: withVideos, videos } = await embed3SpeakLinks(post.body);
   const preprocessed = embedYoutubeLinks(withVideos);
@@ -267,8 +416,13 @@ async function buildPage(post) {
 
   // Everything before the first "# " heading (the video, description, "Watch on"
   // row, timestamps, book references, topic list) becomes its own collapsible
-  // "Overview" chapter, pinned above the article's own sections.
-  toc.unshift({ id: "overview", label: "Overview" });
+  // "Full Video" chapter, pinned above the article's own sections. The id stays
+  // "overview" for anchor stability even though the visible label changed.
+  toc.unshift({ id: "overview", label: "Full Video" });
+  // The Playlist chapter (Grid/List of the sibling Problems Plus pages) is a
+  // hand-maintained section, not parsed from the Hive body, so it isn't picked
+  // up by addSectionAnchors -- add it to the TOC manually, first.
+  toc.unshift({ id: "playlist", label: "Playlist" });
   const tocLinksHtml = toc
     .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
     .join("\n      ");
@@ -287,8 +441,17 @@ async function buildPage(post) {
     ? wrappedBodyHtml.slice(firstChapterMatch.index + "<hr>\n".length)
     : "";
 
+  const playlistChapter = `<div class="chapter-toggle" id="playlist">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('playlist-list')"><center>Playlist <span id="arrowIcon-playlist-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="playlist-list" class="chapter-toggle-list">
+${buildPlaylistSection(playlistMeta)}
+</div>
+</div>
+<hr>
+`;
+
   const overviewChapter = `<div class="chapter-toggle" id="overview">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Overview <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
+<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Full Video <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
 <div id="overview-list" class="chapter-toggle-list">
 ${leadingHtml}
 </div>
@@ -296,7 +459,7 @@ ${leadingHtml}
 <hr>
 `;
 
-  const bodyHtml = chaptersToolbar + overviewChapter + restChaptersHtml;
+  const bodyHtml = chaptersToolbar + playlistChapter + overviewChapter + restChaptersHtml;
 
   const publishedDate = formatDate(post.created);
   const voteCount = post.stats?.total_votes ?? 0;
@@ -665,7 +828,7 @@ ${leadingHtml}
       text-align: center;
     }
 
-    /* Every chapter (the leading "Overview" one plus every Hive-sourced "# "
+    /* Every chapter (the leading "Full Video" one plus every Hive-sourced "# "
        section) is a collapsible dropdown -- see wrapChaptersInToggles() in
        build.mjs and toggleChapter() below. */
     .chapter-toggle-header {
@@ -685,11 +848,131 @@ ${leadingHtml}
 
     /* Pinned to the top of the post body, just under the <hr> that follows the
        article meta -- a collapse/expand-all control anchored to the right edge,
-       above the first ("Overview") chapter. */
+       above the first ("Full Video") chapter. */
     .chapters-toolbar {
       display: flex;
       justify-content: flex-end;
       margin: -0.8em 0 0.4em;
+    }
+
+    /* Playlist chapter — Grid View (card-grid, default) / List View toggle for
+       the sibling Problems Plus video pages. See buildPlaylistSection() in
+       build.mjs. Card-grid styling kept in sync with the identical block in
+       mes.fm/911/build.mjs, mes.fm/hutchison/build.mjs, and
+       mes.fm/conspiracy/build.mjs. */
+    .view-toggle {
+      display: flex;
+      gap: 0.5em;
+      margin: 0 0 1em;
+    }
+
+    .view-toggle-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    body.light .view-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .view-toggle-btn { background-color: #444444; color: #ffffff; }
+    body.light .view-toggle-btn.active { background-color: #1a6fb0; color: #ffffff; }
+    body.dark .view-toggle-btn.active { background-color: #6cb6f5; color: #1a1a1a; }
+
+    .view-hidden {
+      display: none;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 0 0 0.4em;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    body.light .link-card { background-color: #fafafa; color: #000000; }
+    body.dark .link-card { background-color: #232323; color: #ffffff; }
+
+    .link-card-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #333333;
+      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .link-card-body {
+      padding: 0.6rem 0.8rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .link-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: inherit;
+    }
+
+    .link-card-readmore {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    body.light .link-card-readmore { color: #1a6fb0; }
+    body.dark .link-card-readmore { color: #6cb6f5; }
+
+    @media (max-width: 560px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+
+    .playlist-list-view {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2em;
+      margin: 0 0 0.4em;
+    }
+
+    .playlist-row {
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      padding: 0.9em 1em;
+    }
+
+    .playlist-row-title {
+      font-weight: 700;
+      margin: 0 0 0.6em;
+    }
+
+    .playlist-row-thumb {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0 0 0.6em;
+    }
+
+    .playlist-row-links {
+      font-size: 0.9rem;
     }
 
     /* Table of contents: a fixed side column on wide viewports, collapsing to a
@@ -928,6 +1211,33 @@ ${bodyHtml}
   </script>
 
   <script>
+    // playlist-view-toggle: switches the Playlist chapter between Grid View
+    // (thumbnail cards, default) and List View (title + full thumbnail + every
+    // platform link) -- both are pre-rendered at build time in
+    // buildPlaylistSection(), so this just toggles which one is visible.
+    (function () {
+      var gridBtn = document.getElementById('playlistGridBtn');
+      var listBtn = document.getElementById('playlistListBtn');
+      var grid = document.getElementById('playlistGrid');
+      var list = document.getElementById('playlistList');
+      if (!gridBtn || !listBtn || !grid || !list) return;
+
+      gridBtn.addEventListener('click', function () {
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+        grid.classList.remove('view-hidden');
+        list.classList.add('view-hidden');
+      });
+      listBtn.addEventListener('click', function () {
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+        list.classList.remove('view-hidden');
+        grid.classList.add('view-hidden');
+      });
+    })();
+  </script>
+
+  <script>
     // theater-mode: expands a video embed to the full browser width (breaking out of
     // the .container's 760px max-width), like YouTube's theater mode. Delegated +
     // per-embed since a page may hold several videos.
@@ -1090,7 +1400,10 @@ async function main() {
 
   checkSlugMatch(post);
 
-  const html = await buildPage(post);
+  console.log(`Resolving Playlist metadata for ${PLAYLIST.length} pages ...`);
+  const playlistMeta = await resolvePlaylistMeta(PLAYLIST);
+
+  const html = await buildPage(post, playlistMeta);
   const outPath = join(__dirname, "index.html");
   writeFileSync(outPath, html, "utf8");
   console.log(`Wrote ${outPath}`);

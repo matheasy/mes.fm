@@ -378,7 +378,7 @@
       text-align: center;
     }
 
-    /* Every chapter (the leading "Overview" one plus every Hive-sourced "# "
+    /* Every chapter (the leading "Full Video" one plus every Hive-sourced "# "
        section) is a collapsible dropdown -- see wrapChaptersInToggles() in
        build.mjs and toggleChapter() below. */
     .chapter-toggle-header {
@@ -398,11 +398,131 @@
 
     /* Pinned to the top of the post body, just under the <hr> that follows the
        article meta -- a collapse/expand-all control anchored to the right edge,
-       above the first ("Overview") chapter. */
+       above the first ("Full Video") chapter. */
     .chapters-toolbar {
       display: flex;
       justify-content: flex-end;
       margin: -0.8em 0 0.4em;
+    }
+
+    /* Playlist chapter — Grid View (card-grid, default) / List View toggle for
+       the sibling Problems Plus video pages. See buildPlaylistSection() in
+       build.mjs. Card-grid styling kept in sync with the identical block in
+       mes.fm/911/build.mjs, mes.fm/hutchison/build.mjs, and
+       mes.fm/conspiracy/build.mjs. */
+    .view-toggle {
+      display: flex;
+      gap: 0.5em;
+      margin: 0 0 1em;
+    }
+
+    .view-toggle-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    body.light .view-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .view-toggle-btn { background-color: #444444; color: #ffffff; }
+    body.light .view-toggle-btn.active { background-color: #1a6fb0; color: #ffffff; }
+    body.dark .view-toggle-btn.active { background-color: #6cb6f5; color: #1a1a1a; }
+
+    .view-hidden {
+      display: none;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 0 0 0.4em;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    body.light .link-card { background-color: #fafafa; color: #000000; }
+    body.dark .link-card { background-color: #232323; color: #ffffff; }
+
+    .link-card-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #333333;
+      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .link-card-body {
+      padding: 0.6rem 0.8rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .link-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: inherit;
+    }
+
+    .link-card-readmore {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    body.light .link-card-readmore { color: #1a6fb0; }
+    body.dark .link-card-readmore { color: #6cb6f5; }
+
+    @media (max-width: 560px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+
+    .playlist-list-view {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2em;
+      margin: 0 0 0.4em;
+    }
+
+    .playlist-row {
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      padding: 0.9em 1em;
+    }
+
+    .playlist-row-title {
+      font-weight: 700;
+      margin: 0 0 0.6em;
+    }
+
+    .playlist-row-thumb {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0 0 0.6em;
+    }
+
+    .playlist-row-links {
+      font-size: 0.9rem;
     }
 
     /* Table of contents: a fixed side column on wide viewports, collapsing to a
@@ -564,9 +684,10 @@
       <div class="toc-title">Jump to</div>
       <button type="button" class="toc-collapse-all-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
     </div>
-      <a href="#overview">Overview</a>
+      <a href="#playlist">Playlist</a>
+      <a href="#overview">Full Video</a>
       <a href="#links-and-calculus-book-chapter">Links and Calculus Book Chapter</a>
-      <a href="#problems-plus">Problems Plus</a>
+      <a href="#problems-plus-notes">Problems Plus – Notes</a>
       <a href="#solution-to-problem-1-projectile-fired-from-origin">Solution to Problem 1: Projectile fired from origin</a>
       <a href="#solution-to-problem-2-projectile-fired-down-inclined-plane">Solution to Problem 2: Projectile fired down inclined plane</a>
       <a href="#solution-to-problem-3-ball-rolls-off-table">Solution to Problem 3: Ball rolls off table</a>
@@ -594,9 +715,10 @@
     <details class="toc-mobile">
       <summary>Jump to section</summary>
       <nav class="toc-links" aria-label="Table of contents">
-        <a href="#overview">Overview</a>
+        <a href="#playlist">Playlist</a>
+      <a href="#overview">Full Video</a>
       <a href="#links-and-calculus-book-chapter">Links and Calculus Book Chapter</a>
-      <a href="#problems-plus">Problems Plus</a>
+      <a href="#problems-plus-notes">Problems Plus – Notes</a>
       <a href="#solution-to-problem-1-projectile-fired-from-origin">Solution to Problem 1: Projectile fired from origin</a>
       <a href="#solution-to-problem-2-projectile-fired-down-inclined-plane">Solution to Problem 2: Projectile fired down inclined plane</a>
       <a href="#solution-to-problem-3-ball-rolls-off-table">Solution to Problem 3: Ball rolls off table</a>
@@ -613,14 +735,64 @@
 <div class="chapters-toolbar">
 <button id="toggleAllChaptersBtn" class="theme-toggle-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
 </div>
+<div class="chapter-toggle" id="playlist">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('playlist-list')"><center>Playlist <span id="arrowIcon-playlist-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="playlist-list" class="chapter-toggle-list">
+<div class="view-toggle">
+  <button type="button" class="view-toggle-btn active" id="playlistGridBtn">Grid View</button>
+  <button type="button" class="view-toggle-btn" id="playlistListBtn">List View</button>
+</div>
+<div class="card-grid" id="playlistGrid">
+<a class="link-card" href="https://mes.fm/problems-plus-1-projectile-origin">
+  <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788413406899-99e6f9413ec1674d.webp')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Problems Plus 1: Projectile Fired from the Origin</span>
+    <span class="link-card-readmore">Watch &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/projectile-hits-target">
+  <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789274360087-0f5fe2a3f9dbd45d.webp')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Projectile Aimed at a Target Downrange Will Always Hit When Dropped and Fired at the Same Time!</span>
+    <span class="link-card-readmore">Watch &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/problems-plus-2-projectile-inclined-plane">
+  <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789493218448-388d779a1e159279.webp')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Problems Plus 2: Firing a Projectile Up and Down an Inclined Plane</span>
+    <span class="link-card-readmore">Watch &rarr;</span>
+  </span>
+</a>
+</div>
+<div class="playlist-list-view view-hidden" id="playlistList">
+<div class="playlist-row">
+  <div class="playlist-row-title">Problems Plus 1: Projectile Fired from the Origin</div>
+  <img class="playlist-row-thumb" src="https://images.3speak.tv/images/1788413406899-99e6f9413ec1674d.webp" alt="">
+  <div class="playlist-row-links"><a href="https://mes.fm/problems-plus-1-projectile-origin" target="_blank" rel="noopener">MES</a> &middot; <a href="https://3speak.tv/watch?v=mes/problems-plus-1-projectile-813" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtu.be/V4Y_5Cp2EAU" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://t.me/meslinks/35459" target="_blank" rel="noopener">Telegram</a></div>
+</div>
+<div class="playlist-row">
+  <div class="playlist-row-title">Projectile Aimed at a Target Downrange Will Always Hit When Dropped and Fired at the Same Time!</div>
+  <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1789274360087-0f5fe2a3f9dbd45d.webp" alt="">
+  <div class="playlist-row-links"><a href="https://mes.fm/projectile-hits-target" target="_blank" rel="noopener">MES</a> &middot; <a href="https://3speak.tv/watch?v=mes/projectile-aimed-at-a-targe-648" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtu.be/epyX7jZChnU" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://t.me/meslinks/35499" target="_blank" rel="noopener">Telegram</a></div>
+</div>
+<div class="playlist-row">
+  <div class="playlist-row-title">Problems Plus 2: Firing a Projectile Up and Down an Inclined Plane</div>
+  <img loading="lazy" class="playlist-row-thumb" src="https://images.3speak.tv/images/1789493218448-388d779a1e159279.webp" alt="">
+  <div class="playlist-row-links"><a href="https://mes.fm/problems-plus-2-projectile-inclined-plane" target="_blank" rel="noopener">MES</a> &middot; <a href="https://3speak.tv/watch?v=mes/problems-plus-2-firing-a-pr-551" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtu.be/q8I-Lpv0zlQ" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://t.me/meslinks/35519" target="_blank" rel="noopener">Telegram</a></div>
+</div>
+</div>
+</div>
+</div>
+<hr>
 <div class="chapter-toggle" id="overview">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Overview <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
+<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Full Video <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
 <div id="overview-list" class="chapter-toggle-list">
 <div class="video-embed" google-side-rail-overlap="false"><video id="speak-video-1" controls playsinline preload="metadata" poster="https://images.hive.blog/DQmaDsV2X5cVwLs4BMAj4Y3zfaLSgE74PV6jydGrGf7hCmr/image"></video><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://3speak.tv/watch?v=mes/f1pdtn54" target="_blank" rel="noopener">View on 3Speak &nearr;</a></div>
 
 <p>In this video, I go over the end-of-chapter Problems Plus questions and solve 7 very advanced problems on vector functions. Three of the questions involve launching a projectile either on a flat, inclined, or declined plane. One question is on curvature, one on finding the equation of a plane, another is on rolling a ball off a table, and my favorite one is on finding the axial distance covered when wrapping a cable of known length around a spool of known diameter. Buckle up for 5 hours of mathematics!</p>
 <p><a href="https://3speak.tv/watch?v=mes/vector-functions-problems-p-729">3Speak</a> - <a href="https://youtu.be/YJRehWJxcEY">YouTube</a> - <a href="https://t.me/meslinks/35445">Telegram</a> - <a href="https://odysee.com/@mes:8/Vector-Functions-Problems-Plus:6">Odysee</a> - <a href="https://www.bitchute.com/video/LCcn2MoQW3ti/">BitChute</a> - <a href="https://rumble.com/v7evawc-vector-functions-problems-plus.html">Rumble</a> - <a href="https://mes.fm/vector-functions-problems-plus">Notes</a> (<a href="https://1drv.ms/b/c/88862ef47bcaf6cd/IQBeffZ0TE-QQ6lmLsyB-FCDAQSzCsLke1J1S4HQcnoIAH4">PDF</a>) - <a href="https://www.youtube.com/playlist?list=PLHNdnBXVWSlo">Problems Plus</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HQl7xTQBS_O8Te8PcpNm4U">Vector Functions</a> - <a href="https://mes.fm/math">mes.fm/math</a></p>
-<p><img src="https://images.hive.blog/DQmaDsV2X5cVwLs4BMAj4Y3zfaLSgE74PV6jydGrGf7hCmr/image" alt="Vector Functions Problems Plus.jpeg"></p>
+<p><img loading="lazy" src="https://images.hive.blog/DQmaDsV2X5cVwLs4BMAj4Y3zfaLSgE74PV6jydGrGf7hCmr/image" alt="Vector Functions Problems Plus.jpeg"></p>
 <p>#math #calculus #vectorfunctions #problemsplus #education</p>
 <h3>Timestamps</h3>
 <ul>
@@ -698,9 +870,9 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="problems-plus">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('problems-plus-list')"><center>Problems Plus <span id="arrowIcon-problems-plus-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="problems-plus-list" class="chapter-toggle-list">
+<div class="chapter-toggle" id="problems-plus-notes">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problems-plus-notes-list')"><center>Problems Plus – Notes <span id="arrowIcon-problems-plus-notes-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problems-plus-notes-list" class="chapter-toggle-list">
 <hr>
 <p><strong>Problem 1: Projectile fired from origin</strong></p>
 <p>A projectile is fired from the origin with angle of elevation α and initial speed v<sub>0</sub>.</p>
@@ -713,7 +885,7 @@
 <p>Show that the projectile can hit any target inside or on the boundary of the region bounded by the parabola and the x-axis, and that it can&#39;t hit any target outside this region.</p>
 <p>(c) Suppose that the gun is elevated at an angle of inclination α in order to aim at a target that is suspended at a height h directly over a point D units downrange.</p>
 <p>The target is released at the instant the gun is fired.</p>
-<p>Show that the projectile always hits the target, regardless of the value v<sub>0</sub>, provided the projectile does not hit the ground &quot;before&quot; D.</p>
+<p>Show that the projectile always hits the target, regardless of the value v0, provided the projectile does not hit the ground &quot;before&quot; D.</p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHdQDGmprM2vm97yQFRoYtnvb9NSZkcxoP48mV7HTDG9exY8xkfbNLb1JEXzqpzybZ1.png" alt="image.png"></p>
 <p><strong>Problem 2: Projectile fired down inclined plane</strong></p>
 <p>(a) A projectile is fired from the origin down an inclined plane that makes an angle θ with the horizontal.</p>
@@ -773,7 +945,7 @@
 <p>Show that the projectile can hit any target inside or on the boundary of the region bounded by the parabola and the x-axis, and that it can&#39;t hit any target outside this region.</p>
 <p>(c) Suppose that the gun is elevated at an angle of inclination α in order to aim at a target that is suspended at a height h directly over a point D units downrange.</p>
 <p>The target is released at the instant the gun is fired.</p>
-<p>Show that the projectile always hits the target, regardless of the value v<sub>0</sub>, provided the projectile does not hit the ground &quot;before&quot; D.</p>
+<p>Show that the projectile always hits the target, regardless of the value v0, provided the projectile does not hit the ground &quot;before&quot; D.</p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHdQDGmprM2vm97yQFRoYtnvb9NSZkcxoP48mV7HTDG9exY8xkfbNLb1JEXzqpzybZ1.png" alt="image.png"></p>
 <h3>Solution to (a)</h3>
 <p>The projectile reaches maximum height when:</p>
@@ -1137,6 +1309,33 @@
     themeToggle.addEventListener('click', () => {
       setTheme(!body.classList.contains('dark'));
     });
+  </script>
+
+  <script>
+    // playlist-view-toggle: switches the Playlist chapter between Grid View
+    // (thumbnail cards, default) and List View (title + full thumbnail + every
+    // platform link) -- both are pre-rendered at build time in
+    // buildPlaylistSection(), so this just toggles which one is visible.
+    (function () {
+      var gridBtn = document.getElementById('playlistGridBtn');
+      var listBtn = document.getElementById('playlistListBtn');
+      var grid = document.getElementById('playlistGrid');
+      var list = document.getElementById('playlistList');
+      if (!gridBtn || !listBtn || !grid || !list) return;
+
+      gridBtn.addEventListener('click', function () {
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+        grid.classList.remove('view-hidden');
+        list.classList.add('view-hidden');
+      });
+      listBtn.addEventListener('click', function () {
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+        list.classList.remove('view-hidden');
+        grid.classList.add('view-hidden');
+      });
+    })();
   </script>
 
   <script>
