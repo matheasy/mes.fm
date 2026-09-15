@@ -262,7 +262,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.sym__category--hide {display:none;}
 	.sym__no-results {color:#99a0aa;font-style:italic;padding:1em 0;}
 
-	.sym__builder {position:sticky;bottom:0;background:#fff;border-top:1px solid #e3e3e3;padding-top:0.9em;margin-top:0.5em;}
+	/* NOT position:sticky -- .inner-container (shared site-wide) sets
+	   overflow:hidden, which breaks sticky positioning for every descendant
+	   on every page, this one included; a plain static block is honest about
+	   what actually happens instead of implying it stays pinned while
+	   scrolling when it doesn't. */
+	.sym__builder {background:#fff;border-bottom:1px solid #e3e3e3;padding-bottom:0.9em;margin-bottom:1em;}
 	.sym__builder-label {display:block;font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;margin-bottom:0.3em;}
 	.sym__builder-label .sym__note {font-weight:400;text-transform:none;letter-spacing:0;color:#99a0aa;}
 	.sym__builder-row {display:flex;flex-wrap:wrap;gap:0.5em;}
@@ -539,9 +544,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			<div class="sym__recent-list" id="sym-recent-list"></div>
 		</div>
 
-		<div id="sym-categories"></div>
-		<p class="sym__no-results hide" id="sym-no-results">No symbols match &ldquo;<span id="sym-no-results-query"></span>&rdquo;.</p>
-
 		<div class="sym__builder">
 			<label class="sym__builder-label" for="sym-builder-input">Your symbols <span class="sym__note">&mdash; click tiles above to add here, then copy the whole string</span></label>
 			<div class="sym__builder-row">
@@ -550,6 +552,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 				<button type="button" class="sym__btn sym__btn--ghost" id="sym-builder-clear">Clear</button>
 			</div>
 		</div>
+
+		<div id="sym-categories"></div>
+		<p class="sym__no-results hide" id="sym-no-results">No symbols match &ldquo;<span id="sym-no-results-query"></span>&rdquo;.</p>
 	</div>
 
 	<span class="sym__toast" id="sym-toast"></span>
