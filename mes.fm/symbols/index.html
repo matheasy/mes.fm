@@ -281,6 +281,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.sym-seo h3 {font-size:1.02em;color:#1e2733;margin:1em 0 0.3em;}
 	.sym-seo p {line-height:1.55;margin:0.5em 0;}
 	.sym-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	/* a bare <a> inherits `a,a:hover{color:white}` from the shared nav-link
+	   rule above -- invisible on this section's white background */
+	.sym-seo a {color:#6b4fa0;text-decoration:underline;}
+	.sym-seo a:hover {color:#4f3878;}
 	@media (max-width: 600px) {
 		.sym__grid {grid-template-columns:repeat(auto-fill, minmax(4em, 1fr));}
 		/* flex-basis is always along the *current* main axis -- switching to

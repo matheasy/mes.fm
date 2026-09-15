@@ -255,6 +255,7 @@
 	var recentBox = $("sym-recent"), recentList = $("sym-recent-list");
 	var builderInput = $("sym-builder-input"), toastEl = $("sym-toast");
 	var mode = "symbol";
+	var builderChars = []; // raw characters clicked, independent of `mode` -- see renderBuilder()
 
 	function htmlEntity(ch) {
 		var cp = ch.codePointAt(0);
@@ -381,6 +382,25 @@
 		setTimeout(function () { tile.classList.remove("sym__tile--flash"); }, 220);
 	}
 
+	// the builder box always shows -- and "Copy all" always copies -- the
+	// SAME format the mode toggle currently selects, not just raw glyphs
+	function renderBuilder() {
+		builderInput.value = builderChars.map(function (ch) {
+			var item = findItem(ch);
+			return item ? copyTextFor(item) : ch;
+		}).join("");
+	}
+
+	// tile subtitles double as a live preview of what a click will copy --
+	// the symbol's name in Symbol mode, the actual LaTeX/HTML code otherwise
+	function refreshTileLabels() {
+		document.querySelectorAll(".sym__tile").forEach(function (tile) {
+			var item = findItem(tile.getAttribute("data-char"));
+			var nameEl = tile.querySelector(".sym__tile-name");
+			if (item && nameEl) nameEl.textContent = mode === "symbol" ? item.n : copyTextFor(item);
+		});
+	}
+
 	function handleTileClick(tile) {
 		var ch = tile.getAttribute("data-char");
 		var item = findItem(ch);
@@ -392,7 +412,8 @@
 			toast("Couldn't copy — press Ctrl/Cmd+C");
 		});
 		flash(tile);
-		builderInput.value += item.c;
+		builderChars.push(item.c);
+		renderBuilder();
 		pushRecent(item.c);
 	}
 
@@ -410,6 +431,8 @@
 		Array.prototype.forEach.call(modesEl.children, function (b) {
 			b.classList.toggle("sym__mode--active", b === btn);
 		});
+		refreshTileLabels();
+		renderBuilder();
 	});
 
 	/* ---- search + builder wiring ---------------------------------------- */
@@ -426,7 +449,8 @@
 		});
 	});
 	$("sym-builder-clear").addEventListener("click", function () {
-		builderInput.value = "";
+		builderChars = [];
+		renderBuilder();
 		builderInput.focus();
 	});
 
