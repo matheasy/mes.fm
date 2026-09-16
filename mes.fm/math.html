@@ -29,6 +29,23 @@
       transform: translateY(-50%);
     }
 
+    /* Logo mark + title, paired like mes.fm's own homepage header
+       (logo-image-container + logo-text-container) instead of the plain
+       text-only heading this page used to have. */
+    .page-header-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+    }
+
+    .page-logo {
+      display: block;
+      height: 2.4em;
+      width: 2.4em;
+      border-radius: 0.35em;
+      flex: 0 0 auto;
+    }
+
     .list-header {
       cursor: pointer;
     }
@@ -95,6 +112,84 @@
     .sub-heading {
       font-size: 1.1em;
     }
+
+    /* Wide band for the topic-card grid -- same "topic homepage" treatment
+       used on mes.fm's own homepage and mes.fm/911, adapted for a page
+       that's really a link directory (no thumbnails to show): every video/
+       article link becomes a small text card instead of a plain bulleted
+       list item, grouped into the same collapsible per-topic sections as
+       before. */
+    .wide {
+      max-width: 1180px;
+      margin: 1.5em auto;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 0.75rem;
+      margin: 0.6em 0 0.4em;
+    }
+
+    .link-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    body.light .link-card { background-color: #fafafa; }
+    body.dark .link-card { background-color: #232323; }
+
+    .link-card-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    /* The title link stretches to cover the whole card (a bigger, easier
+       click target) via the ::after overlay; the separate playlist link
+       sits above that overlay (z-index) so it stays independently
+       clickable without nesting an <a> inside an <a>. */
+    .link-card-title a {
+      text-decoration: none;
+    }
+
+    /* Override the page's global body.light/body.dark anchor colour (higher
+       specificity than a plain :not/inherit rule would beat) so the title
+       reads as body text, not link blue -- the "Watch playlist" link below
+       is what carries the link colour instead. */
+    body.light .link-card-title a { color: #000000; }
+    body.dark .link-card-title a { color: #ffffff; }
+
+    .link-card-title a::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+
+    .link-card-readmore {
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .link-card-readmore a {
+      position: relative;
+      z-index: 1;
+      text-decoration: none;
+    }
+
+    body.light .link-card-readmore a { color: #1a6fb0; }
+    body.dark .link-card-readmore a { color: #6cb6f5; }
 
     @media screen and (max-width: 600px) {
       h1 {
@@ -299,93 +394,222 @@
   </div>
 
   <header class="page-header">
-    <h1 class="list-header" onclick="toggleAllLists()">MES Math Tutorials <span id="arrowIconAll" class="arrow-icon">&#9660;</span></h1>
+    <div class="page-header-brand">
+      <a href="https://mes.fm"><img src="img/logo-mark.png" width="64" height="64" alt="MES logo" class="page-logo"></a>
+      <h1 class="list-header" onclick="toggleAllLists()">MES Math Tutorials <span id="arrowIconAll" class="arrow-icon">&#9660;</span></h1>
+    </div>
     <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
   </header>
 
-  <div class="content">
-    <ul>
-      <li class="list-container">
-        <h2 class="sub-heading" onclick="toggleSubList('mathQaLivestreams')">MES Math Q/A Livestreams <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-">▶️</a> <span id="arrowIcon-mathQaLivestreams" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-        <ul id="mathQaLivestreams">
-          <li style="margin-left: 20px;"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-">Playlist ▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/math-qa-70-lorentz-force">70: What is the Lorentz Force?</a> <a href="https://youtube.com/live/BJ1zYm_ZCVw">▶️</a></li>
-        </ul>
-      </li>
+  <div class="wide">
+<div class="list-container">
+  <h2 id="mathQaLivestreams-heading" class="sub-heading" onclick="toggleSubList('mathQaLivestreams')">MES Math Q/A Livestreams <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-">&#9654;&#65039;</a> <span id="arrowIcon-mathQaLivestreams" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+  <div id="mathQaLivestreams" class="card-grid collapsible">
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-">Playlist</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://mes.fm/math-qa-70-lorentz-force">70: What is the Lorentz Force?</a></span>
+    <span class="link-card-readmore"><a href="https://youtube.com/live/BJ1zYm_ZCVw">Watch playlist &#9654;</a></span>
+  </div>
+  </div>
+</div>
 
-      <li><a href="https://peakd.com/hive-128780/@mes/dzekfnxh">Cubic Formula Proof</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EF05ExjzLbB64NgUjoV1hl">▶️</a></li>
+<div class="list-container">
+  <h2 id="cubicFormula-heading" class="sub-heading" onclick="toggleSubList('cubicFormula')">Cubic Formula Proof <span id="arrowIcon-cubicFormula" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+  <div id="cubicFormula" class="card-grid collapsible">
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/dzekfnxh">Cubic Formula Proof</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EF05ExjzLbB64NgUjoV1hl">Watch playlist &#9654;</a></span>
+  </div>
+  </div>
+</div>
 
-      <li class="list-container">
-        <h2 class="sub-heading" onclick="toggleSubList('infiniteSequence')">Infinite Sequences and Series <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EXHAJ3vRg0T_kKEyPah1Lz">▶️</a> <span id="arrowIcon-infiniteSequence" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-        <ul id="infiniteSequence">
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-limits-squeeze-theorem-fibonacci-sequence-and-golden-ratio-more">Infinite Sequences: Limits, Squeeze Theorem, Fibonacci Sequence & Golden Ratio</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HUgfK34Voi6BvrNqt4X4BV">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/laboratory-project-logistic-sequences">Laboratory Project: Logistic Sequences</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-series-definition-examples-geometric-series-harmonics-series-telescoping-sum-more">Infinite Series: Definition, Examples, Geometric Series, Harmonic Series, Telescoping Sum + MORE</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FfxN_I9trdgSnWtJS-6wK1">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-integral-test-and-estimate-of-sums">The Integral Test and Estimate of Sums</a> <a href="https://www.youtube.com/playlist?list=PLTXCLnbwZspA">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-comparison-tests">The Comparison Tests</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-alternating-tests">Alternating Tests</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-absolute-convergence-and-the-ratio-root-tests">Absolute Convergence and the Ratio/Root Tests</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-strategy-for-testing-series">Strategy for Testing Series</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-power-series">Power Series</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-representations-of-functions-as-power-series">Representations of Functions as Power Series</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-taylor-and-maclaurin-series">Taylor and Maclaurin Series</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/@mes/infinite-sequences-and-series-formulas-for-the-remainder-term-in-taylor-series">Formulas for the Remainder Term in Taylor Series</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-multiplication-and-division-of-power-series">Multiplication and Division of Power Series</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/kummer-s-test-raabe-s-test-and-convergence-of-binomial-series">Kummer's Test, Raabe's Test, and Convergence of Binomial Series</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/laboratory-project-an-elusive-limit">Laboratory Project: An Elusive Limit</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Gzt0ZAIWwnyZr91b7BGoGR">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-applications-of-taylor-polynomials">Applications of Taylor Polynomials</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F76sIU8xm09oqBTq1mlry3">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/applied-project-radiation-from-the-stars">Applied Project: Radiation from the Stars (Blackbody Radiation)</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0H9KtXz4yi98pGrnnbSSYUb">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-review-and-true-false-quiz">Review and True-False Quiz</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FCqXVJv1r7eJvrvphfkr6L">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-problems-plus">Problems Plus</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FQ96Egr5R7fZGeDTIUKz8P">▶️</a></li>
-        </ul>
-      </li>
+<div class="list-container">
+  <h2 id="infiniteSequence-heading" class="sub-heading" onclick="toggleSubList('infiniteSequence')">Infinite Sequences and Series <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EXHAJ3vRg0T_kKEyPah1Lz">&#9654;&#65039;</a> <span id="arrowIcon-infiniteSequence" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+  <div id="infiniteSequence" class="card-grid collapsible">
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-limits-squeeze-theorem-fibonacci-sequence-and-golden-ratio-more">Infinite Sequences: Limits, Squeeze Theorem, Fibonacci Sequence &amp; Golden Ratio</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HUgfK34Voi6BvrNqt4X4BV">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/laboratory-project-logistic-sequences">Laboratory Project: Logistic Sequences</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-series-definition-examples-geometric-series-harmonics-series-telescoping-sum-more">Infinite Series: Definition, Examples, Geometric Series, Harmonic Series, Telescoping Sum + MORE</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FfxN_I9trdgSnWtJS-6wK1">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-integral-test-and-estimate-of-sums">The Integral Test and Estimate of Sums</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLTXCLnbwZspA">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-comparison-tests">The Comparison Tests</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-alternating-tests">Alternating Tests</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-absolute-convergence-and-the-ratio-root-tests">Absolute Convergence and the Ratio/Root Tests</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-strategy-for-testing-series">Strategy for Testing Series</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-power-series">Power Series</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-representations-of-functions-as-power-series">Representations of Functions as Power Series</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-taylor-and-maclaurin-series">Taylor and Maclaurin Series</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/@mes/infinite-sequences-and-series-formulas-for-the-remainder-term-in-taylor-series">Formulas for the Remainder Term in Taylor Series</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-multiplication-and-division-of-power-series">Multiplication and Division of Power Series</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/kummer-s-test-raabe-s-test-and-convergence-of-binomial-series">Kummer&#x27;s Test, Raabe&#x27;s Test, and Convergence of Binomial Series</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/laboratory-project-an-elusive-limit">Laboratory Project: An Elusive Limit</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Gzt0ZAIWwnyZr91b7BGoGR">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-applications-of-taylor-polynomials">Applications of Taylor Polynomials</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F76sIU8xm09oqBTq1mlry3">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/applied-project-radiation-from-the-stars">Applied Project: Radiation from the Stars (Blackbody Radiation)</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0H9KtXz4yi98pGrnnbSSYUb">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-review-and-true-false-quiz">Review and True-False Quiz</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FCqXVJv1r7eJvrvphfkr6L">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-problems-plus">Problems Plus</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FQ96Egr5R7fZGeDTIUKz8P">Watch playlist &#9654;</a></span>
+  </div>
+  </div>
+</div>
 
-      <li><a href="https://peakd.com/hive-128780/@mes/220d6572">Spherical Harmonics</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FHh2kZzebadnPFwO6Yi5qu">▶️</a></li>
+<div class="list-container">
+  <h2 id="sphericalHarmonics-heading" class="sub-heading" onclick="toggleSubList('sphericalHarmonics')">Spherical Harmonics <span id="arrowIcon-sphericalHarmonics" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+  <div id="sphericalHarmonics" class="card-grid collapsible">
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/220d6572">Spherical Harmonics</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FHh2kZzebadnPFwO6Yi5qu">Watch playlist &#9654;</a></span>
+  </div>
+  </div>
+</div>
 
-      <li class="list-container">
-        <h2 class="sub-heading" onclick="toggleSubList('vectors')">Vectors and the Geometry of Space <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FjJpwnxwdrOR7L8Ul8VZoZ">▶️</a> <span id="arrowIcon-vectors" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-        <ul id="vectors">
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems">3D Coordinates Systems</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GiAJeLMzhOsrMliibfce5m">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors">Vectors</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EiRECLVkBCcFhSpbSz8XIw">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices">Complex Numbers as Rotation Matrices</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0E6x0dZEAx77Kqv7LLxYdbx">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product">The Dot Product</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GbHgvpTY1mx61nTNO-Msl8">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product">The Cross Product</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FuRJ8rg-YVQvfPoPOwhuRW">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron">Laboratory Project: The Geometry of a Tetrahedron</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GoEi9wxl8nTFcfw1ay-_1T">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes">Equations of Lines and Planes</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FO3u0IupqllNNkZTsffpIV">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective">Laboratory Project: Putting 3D in Perspective</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0ElsrMs_IBprUoHocIwyAmK">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces">Cylinders and Quadric Surfaces</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EfmYwT81SebJnU1Ny8Fc5u">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review">Review</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EMiATrjv8HH3fPwKVsgU6P">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz">True-False Quiz</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GiYS2qR98dzUjsx-0PRPbC">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/jlgigkdl">Problems Plus</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0G_7Jd6ZORHFQMk8jbwmkos">▶️</a></li>
-        </ul>
-      </li>
+<div class="list-container">
+  <h2 id="vectors-heading" class="sub-heading" onclick="toggleSubList('vectors')">Vectors and the Geometry of Space <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FjJpwnxwdrOR7L8Ul8VZoZ">&#9654;&#65039;</a> <span id="arrowIcon-vectors" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+  <div id="vectors" class="card-grid collapsible">
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems">3D Coordinates Systems</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GiAJeLMzhOsrMliibfce5m">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors">Vectors</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EiRECLVkBCcFhSpbSz8XIw">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices">Complex Numbers as Rotation Matrices</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0E6x0dZEAx77Kqv7LLxYdbx">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product">The Dot Product</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GbHgvpTY1mx61nTNO-Msl8">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product">The Cross Product</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FuRJ8rg-YVQvfPoPOwhuRW">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron">Laboratory Project: The Geometry of a Tetrahedron</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GoEi9wxl8nTFcfw1ay-_1T">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes">Equations of Lines and Planes</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FO3u0IupqllNNkZTsffpIV">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective">Laboratory Project: Putting 3D in Perspective</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0ElsrMs_IBprUoHocIwyAmK">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces">Cylinders and Quadric Surfaces</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EfmYwT81SebJnU1Ny8Fc5u">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review">Review</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EMiATrjv8HH3fPwKVsgU6P">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz">True-False Quiz</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GiYS2qR98dzUjsx-0PRPbC">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/jlgigkdl">Problems Plus</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0G_7Jd6ZORHFQMk8jbwmkos">Watch playlist &#9654;</a></span>
+  </div>
+  </div>
+</div>
 
-      <li class="list-container">
-        <h2 class="sub-heading" onclick="toggleSubList('vectorfunctions')">Vector Functions <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HQl7xTQBS_O8Te8PcpNm4U">▶️</a> <span id="arrowIcon-vectorfunctions" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-        <ul id="vectorfunctions">
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/omhbcxkw">Vector Functions and Space Curves</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GwdMY-E9_4LsmYmO-IxcoX">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/hfsetrue">Derivatives and Integrals of Vector Functions</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FgQ3jBd9IFaWOakOWbHous">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/koxharrd">Arc Length and Curvature</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Gd5OieYiZMaSKw1QfyHbiG">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/e443f9d3">Motion in Space: Velocity and Acceleration</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Hxo8aPU3ezG0tcLvgJnxLB">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/c3b94a80">Applied Project: Kepler's Laws of Planetary Motion</a> <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FSh63mgXOKLQ41H4dkzbaY">▶️</a></li>
-          <li style="margin-left: 20px;"><a href="https://peakd.com/hive-128780/@mes/review-of-vector-functions-138">Review: Concept Check & True-False Quiz</a> <a href="https://www.youtube.com/playlist?list=PLAsz0y2lc-c4">▶️</a></li>
-          <li class="list-container" style="margin-left: 20px;">
-            <h2 class="sub-heading" onclick="toggleSubList('vectorProblemsPlus')">Problems Plus <a href="https://www.youtube.com/playlist?list=PLHNdnBXVWSlo">▶️</a> <span id="arrowIcon-vectorProblemsPlus" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-            <ul id="vectorProblemsPlus">
-              <li style="margin-left: 40px;"><a href="https://mes.fm/vector-functions-problems-plus">Full Written Solutions</a> <a href="https://www.youtube.com/playlist?list=PLHNdnBXVWSlo">▶️</a></li>
-              <li style="margin-left: 40px;"><a href="https://mes.fm/problems-plus-1-projectile-origin">1: Projectile Fired from the Origin</a> <a href="https://youtu.be/V4Y_5Cp2EAU">▶️</a></li>
-              <li style="margin-left: 40px;"><a href="https://mes.fm/projectile-hits-target">1(c): Projectile Aimed at a Target Downrange</a> <a href="https://youtu.be/epyX7jZChnU">▶️</a></li>
-              <li style="margin-left: 40px;"><a href="https://mes.fm/problems-plus-2-projectile-inclined-plane">2: Firing a Projectile Up and Down an Inclined Plane</a> <a href="https://youtu.be/q8I-Lpv0zlQ">▶️</a></li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ul>
+<div class="list-container">
+  <h2 id="vectorfunctions-heading" class="sub-heading" onclick="toggleSubList('vectorfunctions')">Vector Functions <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0HQl7xTQBS_O8Te8PcpNm4U">&#9654;&#65039;</a> <span id="arrowIcon-vectorfunctions" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+  <div id="vectorfunctions" class="card-grid collapsible">
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/omhbcxkw">Vector Functions and Space Curves</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GwdMY-E9_4LsmYmO-IxcoX">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/hfsetrue">Derivatives and Integrals of Vector Functions</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FgQ3jBd9IFaWOakOWbHous">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/koxharrd">Arc Length and Curvature</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Gd5OieYiZMaSKw1QfyHbiG">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/e443f9d3">Motion in Space: Velocity and Acceleration</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Hxo8aPU3ezG0tcLvgJnxLB">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/c3b94a80">Applied Project: Kepler&#x27;s Laws of Planetary Motion</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FSh63mgXOKLQ41H4dkzbaY">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://peakd.com/hive-128780/@mes/review-of-vector-functions-138">Review: Concept Check &amp; True-False Quiz</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLAsz0y2lc-c4">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://mes.fm/vector-functions-problems-plus">Full Written Solutions (Problems Plus)</a></span>
+    <span class="link-card-readmore"><a href="https://www.youtube.com/playlist?list=PLHNdnBXVWSlo">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://mes.fm/problems-plus-1-projectile-origin">1: Projectile Fired from the Origin (Problems Plus)</a></span>
+    <span class="link-card-readmore"><a href="https://youtu.be/V4Y_5Cp2EAU">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://mes.fm/projectile-hits-target">1(c): Projectile Aimed at a Target Downrange (Problems Plus)</a></span>
+    <span class="link-card-readmore"><a href="https://youtu.be/epyX7jZChnU">Watch playlist &#9654;</a></span>
+  </div>
+  <div class="link-card">
+    <span class="link-card-title"><a href="https://mes.fm/problems-plus-2-projectile-inclined-plane">2: Firing a Projectile Up and Down an Inclined Plane (Problems Plus)</a></span>
+    <span class="link-card-readmore"><a href="https://youtu.be/q8I-Lpv0zlQ">Watch playlist &#9654;</a></span>
+  </div>
+  </div>
+</div>
   </div>
 
   <script>
     function toggleAllLists() {
-      const lists = document.querySelectorAll('.list-container ul');
+      const lists = document.querySelectorAll('.collapsible');
       const arrowIconAll = document.getElementById('arrowIconAll');
       lists.forEach(list => list.classList.toggle('hidden'));
       arrowIconAll.textContent = lists.length && lists[0].classList.contains('hidden') ? '▲' : '▼';
