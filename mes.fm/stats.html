@@ -492,9 +492,15 @@
       height: 190px;
       margin-top: 0.75em;
       padding: 0 0.25em;
+      overflow-x: auto;
     }
+    /* Fixed width rather than flex:1 -- a handful of weeks (the common
+       case) still sit comfortably spaced, and MAX_WEEK_COLS worth of them
+       (365d/all) scroll horizontally instead of shrinking to illegible
+       slivers, same pattern the Most Viewed Pages table already uses for
+       its own too-many-columns case. */
     .ts-col {
-      flex: 1;
+      flex: 0 0 60px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1176,19 +1182,30 @@
       currentRange = btn.dataset.range;
       try { localStorage.setItem('statsRange', currentRange); } catch (e) {}
       loadStats();
+      loadTimeSeries();
     });
 
     loadStats();
 
-    // ---- Views Over Time: independent of the range tabs above (a "24
-    // Hours" bucket makes no sense on a day-by-day chart) -- fetches its
-    // own fixed lookback from /api/stats-series once on load. ----
+    // ---- Views Over Time: follows the same range tabs as the tables above
+    // (24h/7d/30d/365d/all), via /api/stats-series?range=... -- 24h gets
+    // hourly points from that endpoint, everything else daily. ----
 
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const MAX_WEEK_COLS = 14; // most recent N weeks shown; older ones scroll into view
 
-    // Manual Y-M-D split rather than `new Date(iso)` -- sidesteps the
-    // UTC-parse/local-format day-shift entirely instead of fighting it with
-    // getUTC* accessors everywhere a date gets displayed.
+    // Manual Y-M-D(-HH) split rather than `new Date(key)` -- sidesteps the
+    // UTC-parse/local-format shift entirely instead of fighting it with
+    // getUTC* accessors everywhere a key gets displayed. Handles both an
+    // hourly key ("2026-09-16T14") and a daily one ("2026-09-16").
+    function fmtPoint(key) {
+      const p = key.split('-');
+      const label = MONTHS[parseInt(p[1], 10) - 1] + ' ' + parseInt(p[2], 10);
+      if (p[2].indexOf('T') === -1) return label;
+      const hh = parseInt(p[2].split('T')[1], 10);
+      const h12 = hh % 12 === 0 ? 12 : hh % 12;
+      return h12 + (hh < 12 ? 'am' : 'pm');
+    }
     function fmtDate(iso) {
       const p = iso.split('-');
       return MONTHS[parseInt(p[1], 10) - 1] + ' ' + parseInt(p[2], 10);
@@ -1228,7 +1245,7 @@
       return ticks;
     }
 
-    function renderDailyChart(svg, ptsEl, data) {
+    function renderLineChart(svg, ptsEl, data) {
       const W = 640, H = 220, left = 34, right = 6, top = 10, bottom = 26;
       const innerW = W - left - right, innerH = H - top - bottom;
       const values = data.map(function (d) { return d.views; });
@@ -1249,7 +1266,7 @@
       const xStep = Math.max(1, Math.ceil(data.length / 6));
       data.forEach(function (d, i) {
         if (i % xStep !== 0 && i !== data.length - 1) return;
-        parts.push('<text class="ts-axis-label" x="' + xAt(i) + '" y="' + (H - 6) + '" text-anchor="middle">' + fmtDate(d.date) + '</text>');
+        parts.push('<text class="ts-axis-label" x="' + xAt(i) + '" y="' + (H - 6) + '" text-anchor="middle">' + fmtPoint(d.key) + '</text>');
       });
 
       const linePts = data.map(function (d, i) { return xAt(i) + ',' + yAt(d.views); });
@@ -1263,7 +1280,12 @@
       parts.push('</g>');
       svg.innerHTML = parts.join('');
 
+      // Hover/focus hit targets are skipped past ~120 points (365d/all can
+      // fetch that many) -- at that density each point is under 5px apart,
+      // so a 22px hit circle per point would mostly overlap its neighbors'
+      // anyway; the gridlines + line shape carry the story at that zoom.
       ptsEl.innerHTML = '';
+      if (data.length > 120) return;
       data.forEach(function (d, i) {
         const isPartial = i === data.length - 1;
         const pt = document.createElement('div');
@@ -1276,7 +1298,7 @@
         const strong = document.createElement('strong');
         strong.textContent = d.views.toLocaleString() + ' views';
         tip.appendChild(strong);
-        tip.appendChild(document.createTextNode(' — ' + fmtDate(d.date)));
+        tip.appendChild(document.createTextNode(' — ' + fmtPoint(d.key)));
         if (isPartial) tip.appendChild(document.createTextNode(' (partial, so far)'));
         pt.appendChild(tip);
         ptsEl.appendChild(pt);
@@ -1287,12 +1309,15 @@
       const buckets = {};
       const order = [];
       data.forEach(function (d) {
-        const wk = mondayOf(d.date);
+        const wk = mondayOf(d.key);
         if (!buckets[wk]) { buckets[wk] = { start: wk, views: 0, days: 0 }; order.push(wk); }
         buckets[wk].views += d.views;
         buckets[wk].days += 1;
       });
-      const weeks = order.map(function (k) { return buckets[k]; });
+      // Long ranges (365d/all) can produce 50+ weeks -- past MAX_WEEK_COLS
+      // that reads better as a scrollable strip of the most recent weeks
+      // than as dozens of slivers squeezed to fit.
+      const weeks = order.map(function (k) { return buckets[k]; }).slice(-MAX_WEEK_COLS);
       const max = Math.max.apply(null, weeks.map(function (w) { return w.views; })) || 1;
 
       colsEl.innerHTML = '';
@@ -1328,50 +1353,83 @@
 
         colsEl.appendChild(col);
       });
+
+      return { shown: weeks.length, total: order.length };
     }
 
     const tsDailyEl = document.getElementById('tsDaily');
     const tsWeeklyEl = document.getElementById('tsWeekly');
     const tsNoteEl = document.getElementById('tsNote');
+    const tsBtnDaily = document.querySelector('#tsToggle [data-ts="daily"]');
+    const tsBtnWeekly = document.querySelector('#tsToggle [data-ts="weekly"]');
     let tsDailyNote = '';
     let tsWeeklyNote = '';
+    let tsMode = 'daily';
+    let tsUnit = 'daily';
+
+    // A single 24h range has no meaningful "week" to bucket into, so the
+    // Weekly button is hidden rather than shown-but-empty for it, and the
+    // Daily button relabels to Hourly since that's what it's actually
+    // showing then.
+    function applyTsMode() {
+      const mode = tsUnit === 'hourly' ? 'daily' : tsMode;
+      tsDailyEl.classList.toggle('hidden', mode !== 'daily');
+      tsWeeklyEl.classList.toggle('hidden', mode !== 'weekly');
+      tsBtnDaily.classList.toggle('active', mode === 'daily');
+      tsBtnWeekly.classList.toggle('active', mode === 'weekly');
+      tsNoteEl.textContent = mode === 'daily' ? tsDailyNote : tsWeeklyNote;
+    }
 
     document.getElementById('tsToggle').addEventListener('click', function (e) {
       const btn = e.target.closest('.ts-toggle-btn');
-      if (!btn) return;
-      const mode = btn.dataset.ts;
-      document.querySelectorAll('#tsToggle .ts-toggle-btn').forEach(function (b) {
-        b.classList.toggle('active', b === btn);
-      });
-      tsDailyEl.classList.toggle('hidden', mode !== 'daily');
-      tsWeeklyEl.classList.toggle('hidden', mode !== 'weekly');
-      tsNoteEl.textContent = mode === 'daily' ? tsDailyNote : tsWeeklyNote;
+      if (!btn || btn.style.display === 'none') return;
+      tsMode = btn.dataset.ts;
+      applyTsMode();
     });
 
     async function loadTimeSeries() {
+      tsNoteEl.textContent = 'Loading…';
       try {
-        const res = await fetch('/api/stats-series?days=60');
+        const res = await fetch('/api/stats-series?range=' + encodeURIComponent(currentRange));
         if (!res.ok) throw new Error('bad response');
         const data = await res.json();
-        let days = data.days || [];
-        // Drop a leading run of true zeros -- days before device/source
-        // tracking (and this series) existed, not days with no traffic.
-        const firstNonZero = days.findIndex(function (d) { return d.views > 0; });
-        if (firstNonZero > 0) days = days.slice(firstNonZero);
+        let points = data.points || [];
+        tsUnit = data.unit || 'daily';
+        tsBtnDaily.textContent = tsUnit === 'hourly' ? 'Hourly' : 'Daily';
+        tsBtnWeekly.style.display = tsUnit === 'hourly' ? 'none' : '';
+        tsMode = 'daily'; // reset on every range switch/reload
 
-        if (!days.length) {
-          tsNoteEl.textContent = 'No daily data yet.';
+        // Drop a leading run of true zeros -- points from before
+        // device/source tracking (and this series) existed, not a real
+        // zero-traffic stretch.
+        const firstNonZero = points.findIndex(function (p) { return p.views > 0; });
+        if (firstNonZero > 0) points = points.slice(firstNonZero);
+
+        if (!points.length) {
+          tsDailyNote = tsWeeklyNote = 'No data yet for ' + RANGE_LABELS[currentRange] + '.';
+          applyTsMode();
           return;
         }
 
-        renderDailyChart(document.getElementById('tsDailySvg'), document.getElementById('tsDailyPts'), days);
-        renderWeeklyChart(document.getElementById('tsWeeklyCols'), days);
+        renderLineChart(document.getElementById('tsDailySvg'), document.getElementById('tsDailyPts'), points);
 
-        tsDailyNote = 'Daily totals from ' + fmtDate(days[0].date) + ' onward. The dashed segment is today, still filling in.';
-        tsWeeklyNote = 'Monday-start weeks. The first and most recent week are marked partial where fewer than 7 tracked days fall inside them.';
-        tsNoteEl.textContent = tsDailyNote;
+        const rangeDesc = currentRange === 'all' ? 'all tracked history' : ('the past ' + RANGE_LABELS[currentRange]);
+        const unitWord = tsUnit === 'hourly' ? 'Hourly' : 'Daily';
+        const partialWord = tsUnit === 'hourly' ? 'the current hour' : 'today';
+        tsDailyNote = unitWord + ' totals for ' + rangeDesc + '. The dashed segment is ' + partialWord + ', still filling in.';
+
+        if (tsUnit === 'hourly') {
+          tsWeeklyNote = '';
+        } else {
+          const weekInfo = renderWeeklyChart(document.getElementById('tsWeeklyCols'), points);
+          tsWeeklyNote = 'Monday-start weeks. The first and most recent week are marked partial where fewer than 7 tracked days fall inside them.' +
+            (weekInfo.total > weekInfo.shown ? ' Showing the most recent ' + weekInfo.shown + ' of ' + weekInfo.total + ' weeks.' : '');
+        }
+
+        applyTsMode();
       } catch (e) {
-        tsNoteEl.textContent = 'Daily/weekly data is temporarily unavailable.';
+        tsDailyNote = tsWeeklyNote = 'Views-over-time data is temporarily unavailable.';
+        applyTsMode();
       }
     }
 
