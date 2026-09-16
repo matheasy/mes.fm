@@ -479,68 +479,9 @@
     }
     body.light .ts-tip { background: #000000; color: #ffffff; }
     body.dark .ts-tip { background: #ffffff; color: #000000; }
-    .ts-pt:hover .ts-tip, .ts-pt:focus-visible .ts-tip,
-    .ts-col:hover .ts-tip, .ts-col:focus-visible .ts-tip {
+    .ts-pt:hover .ts-tip, .ts-pt:focus-visible .ts-tip {
       opacity: 1;
       visibility: visible;
-    }
-
-    .ts-cols {
-      display: flex;
-      align-items: flex-end;
-      gap: 0.9em;
-      height: 190px;
-      margin-top: 0.75em;
-      padding: 0 0.25em;
-      overflow-x: auto;
-    }
-    /* Fixed width rather than flex:1 -- a handful of weeks (the common
-       case) still sit comfortably spaced, and MAX_WEEK_COLS worth of them
-       (365d/all) scroll horizontally instead of shrinking to illegible
-       slivers, same pattern the Most Viewed Pages table already uses for
-       its own too-many-columns case. */
-    .ts-col {
-      flex: 0 0 60px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      height: 100%;
-      position: relative;
-      min-width: 0;
-    }
-    .ts-col:focus-visible { outline: none; }
-
-    .ts-col-value {
-      font-size: 0.85em;
-      margin-bottom: 0.4em;
-      white-space: nowrap;
-    }
-
-    .ts-col-bar {
-      width: 100%;
-      max-width: 84px;
-      border-radius: 5px 5px 0 0;
-      min-height: 3px;
-    }
-    body.light .ts-col-bar { background-color: #0000ff; }
-    body.dark .ts-col-bar { background-color: #4da8ff; }
-    body.light .ts-col-bar.partial {
-      background-color: transparent;
-      background-image: repeating-linear-gradient(135deg, #0000ff, #0000ff 4px, transparent 4px, transparent 7px);
-    }
-    body.dark .ts-col-bar.partial {
-      background-color: transparent;
-      background-image: repeating-linear-gradient(135deg, #4da8ff, #4da8ff 4px, transparent 4px, transparent 7px);
-    }
-    .ts-col:hover .ts-col-bar, .ts-col:focus-visible .ts-col-bar { opacity: 0.8; }
-
-    .ts-col-label {
-      font-size: 0.75em;
-      opacity: 0.7;
-      margin-top: 0.5em;
-      text-align: center;
-      line-height: 1.3;
     }
 
     .ts-note {
@@ -724,13 +665,9 @@
         </div>
       </div>
 
-      <div class="ts-wrap" id="tsDaily">
-        <svg id="tsDailySvg" viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Daily page views"></svg>
-        <div id="tsDailyPts"></div>
-      </div>
-
-      <div class="ts-wrap hidden" id="tsWeekly">
-        <div class="ts-cols" id="tsWeeklyCols"></div>
+      <div class="ts-wrap" id="tsChart">
+        <svg id="tsSvg" viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Page views over time"></svg>
+        <div id="tsPts"></div>
       </div>
 
       <p class="ts-note" id="tsNote">Loading&hellip;</p>
@@ -1192,7 +1129,6 @@
     // hourly points from that endpoint, everything else daily. ----
 
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const MAX_WEEK_COLS = 14; // most recent N weeks shown; older ones scroll into view
 
     // Manual Y-M-D(-HH) split rather than `new Date(key)` -- sidesteps the
     // UTC-parse/local-format shift entirely instead of fighting it with
@@ -1298,14 +1234,24 @@
         const strong = document.createElement('strong');
         strong.textContent = d.views.toLocaleString() + ' views';
         tip.appendChild(strong);
-        tip.appendChild(document.createTextNode(' — ' + fmtPoint(d.key)));
-        if (isPartial) tip.appendChild(document.createTextNode(' (partial, so far)'));
+        tip.appendChild(document.createTextNode(' — ' + (d.tipLabel || fmtPoint(d.key))));
+        // d.partialLabel (weekly points) can flag ANY point partial, e.g.
+        // the first week if tracking started mid-week -- not just the last.
+        // Falls back to the generic label for the one daily/hourly point
+        // that's ever partial: the last (current, still-filling-in) one.
+        if (d.partialLabel) tip.appendChild(document.createTextNode(d.partialLabel));
+        else if (isPartial) tip.appendChild(document.createTextNode(' (partial, so far)'));
         pt.appendChild(tip);
         ptsEl.appendChild(pt);
       });
     }
 
-    function renderWeeklyChart(colsEl, data) {
+    // Weekly is the same line chart as daily/hourly, just fed pre-aggregated
+    // points instead of raw ones -- a trend is a trend regardless of bucket
+    // size, and reusing renderLineChart means one chart implementation
+    // instead of two. Monday-start weeks, summed from whatever daily points
+    // were already fetched (no separate endpoint for a sum-of-sums).
+    function buildWeeklyPoints(data) {
       const buckets = {};
       const order = [];
       data.forEach(function (d) {
@@ -1314,77 +1260,57 @@
         buckets[wk].views += d.views;
         buckets[wk].days += 1;
       });
-      // Long ranges (365d/all) can produce 50+ weeks -- past MAX_WEEK_COLS
-      // that reads better as a scrollable strip of the most recent weeks
-      // than as dozens of slivers squeezed to fit.
-      const weeks = order.map(function (k) { return buckets[k]; }).slice(-MAX_WEEK_COLS);
-      const max = Math.max.apply(null, weeks.map(function (w) { return w.views; })) || 1;
-
-      colsEl.innerHTML = '';
-      weeks.forEach(function (w) {
-        const partial = w.days < 7;
+      return order.map(function (k) {
+        const w = buckets[k];
         const endIso = addDaysIso(w.start, 6);
-        const col = document.createElement('div');
-        col.className = 'ts-col';
-        col.tabIndex = 0;
-
-        const val = document.createElement('div');
-        val.className = 'ts-col-value';
-        val.textContent = w.views.toLocaleString();
-        col.appendChild(val);
-
-        const bar = document.createElement('div');
-        bar.className = 'ts-col-bar' + (partial ? ' partial' : '');
-        bar.style.height = Math.max((w.views / max) * 100, 2) + '%';
-        col.appendChild(bar);
-
-        const label = document.createElement('div');
-        label.className = 'ts-col-label';
-        label.textContent = fmtDate(w.start) + '–' + fmtDate(endIso) + (partial ? ' (partial, ' + w.days + '/7 days)' : '');
-        col.appendChild(label);
-
-        const tip = document.createElement('div');
-        tip.className = 'ts-tip';
-        const strong = document.createElement('strong');
-        strong.textContent = w.views.toLocaleString() + ' views';
-        tip.appendChild(strong);
-        tip.appendChild(document.createTextNode(' — ' + w.days + ' day' + (w.days === 1 ? '' : 's') + ' tracked'));
-        col.appendChild(tip);
-
-        colsEl.appendChild(col);
+        const partial = w.days < 7;
+        return {
+          key: w.start,
+          views: w.views,
+          tipLabel: fmtDate(w.start) + '–' + fmtDate(endIso),
+          partialLabel: partial ? ' (partial, ' + w.days + '/7 days tracked)' : ''
+        };
       });
-
-      return { shown: weeks.length, total: order.length };
     }
 
-    const tsDailyEl = document.getElementById('tsDaily');
-    const tsWeeklyEl = document.getElementById('tsWeekly');
     const tsNoteEl = document.getElementById('tsNote');
+    const tsSvgEl = document.getElementById('tsSvg');
+    const tsPtsEl = document.getElementById('tsPts');
     const tsBtnDaily = document.querySelector('#tsToggle [data-ts="daily"]');
     const tsBtnWeekly = document.querySelector('#tsToggle [data-ts="weekly"]');
-    let tsDailyNote = '';
-    let tsWeeklyNote = '';
+    let tsRawPoints = []; // whatever was fetched: hourly or daily
     let tsMode = 'daily';
     let tsUnit = 'daily';
+
+    // Weekly reuses the exact same line chart as daily/hourly, just fed
+    // buildWeeklyPoints(tsRawPoints) instead -- no refetch, just a
+    // re-aggregate-and-redraw of what's already in hand.
+    function renderTsChart() {
+      const mode = tsUnit === 'hourly' ? 'daily' : tsMode; // no weekly view for a single day
+      tsBtnDaily.classList.toggle('active', mode === 'daily');
+      tsBtnWeekly.classList.toggle('active', mode === 'weekly');
+      const points = mode === 'weekly' ? buildWeeklyPoints(tsRawPoints) : tsRawPoints;
+      renderLineChart(tsSvgEl, tsPtsEl, points);
+
+      const rangeDesc = currentRange === 'all' ? 'all tracked history' : ('the past ' + RANGE_LABELS[currentRange]);
+      if (mode === 'weekly') {
+        tsNoteEl.textContent = 'Monday-start weeks, summed from ' + rangeDesc + '. The first and most recent week are marked partial where fewer than 7 tracked days fall inside them.';
+      } else {
+        const unitWord = tsUnit === 'hourly' ? 'Hourly' : 'Daily';
+        const partialWord = tsUnit === 'hourly' ? 'the current hour' : 'today';
+        tsNoteEl.textContent = unitWord + ' totals for ' + rangeDesc + '. The dashed segment is ' + partialWord + ', still filling in.';
+      }
+    }
 
     // A single 24h range has no meaningful "week" to bucket into, so the
     // Weekly button is hidden rather than shown-but-empty for it, and the
     // Daily button relabels to Hourly since that's what it's actually
     // showing then.
-    function applyTsMode() {
-      const mode = tsUnit === 'hourly' ? 'daily' : tsMode;
-      tsDailyEl.classList.toggle('hidden', mode !== 'daily');
-      tsWeeklyEl.classList.toggle('hidden', mode !== 'weekly');
-      tsBtnDaily.classList.toggle('active', mode === 'daily');
-      tsBtnWeekly.classList.toggle('active', mode === 'weekly');
-      tsNoteEl.textContent = mode === 'daily' ? tsDailyNote : tsWeeklyNote;
-    }
-
     document.getElementById('tsToggle').addEventListener('click', function (e) {
       const btn = e.target.closest('.ts-toggle-btn');
       if (!btn || btn.style.display === 'none') return;
       tsMode = btn.dataset.ts;
-      applyTsMode();
+      renderTsChart();
     });
 
     async function loadTimeSeries() {
@@ -1404,32 +1330,16 @@
         // zero-traffic stretch.
         const firstNonZero = points.findIndex(function (p) { return p.views > 0; });
         if (firstNonZero > 0) points = points.slice(firstNonZero);
+        tsRawPoints = points;
 
         if (!points.length) {
-          tsDailyNote = tsWeeklyNote = 'No data yet for ' + RANGE_LABELS[currentRange] + '.';
-          applyTsMode();
+          tsNoteEl.textContent = 'No data yet for ' + RANGE_LABELS[currentRange] + '.';
           return;
         }
 
-        renderLineChart(document.getElementById('tsDailySvg'), document.getElementById('tsDailyPts'), points);
-
-        const rangeDesc = currentRange === 'all' ? 'all tracked history' : ('the past ' + RANGE_LABELS[currentRange]);
-        const unitWord = tsUnit === 'hourly' ? 'Hourly' : 'Daily';
-        const partialWord = tsUnit === 'hourly' ? 'the current hour' : 'today';
-        tsDailyNote = unitWord + ' totals for ' + rangeDesc + '. The dashed segment is ' + partialWord + ', still filling in.';
-
-        if (tsUnit === 'hourly') {
-          tsWeeklyNote = '';
-        } else {
-          const weekInfo = renderWeeklyChart(document.getElementById('tsWeeklyCols'), points);
-          tsWeeklyNote = 'Monday-start weeks. The first and most recent week are marked partial where fewer than 7 tracked days fall inside them.' +
-            (weekInfo.total > weekInfo.shown ? ' Showing the most recent ' + weekInfo.shown + ' of ' + weekInfo.total + ' weeks.' : '');
-        }
-
-        applyTsMode();
+        renderTsChart();
       } catch (e) {
-        tsDailyNote = tsWeeklyNote = 'Views-over-time data is temporarily unavailable.';
-        applyTsMode();
+        tsNoteEl.textContent = 'Views-over-time data is temporarily unavailable.';
       }
     }
 
