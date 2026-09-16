@@ -268,6 +268,44 @@
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
 }
+    /* TEXT-SIZE-CONTROL-INSERTED */
+    .top-bar-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .text-size-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .text-size-btn {
+      flex: 0 0 auto;
+      width: 2em;
+      height: 2em;
+      padding: 0;
+      border: 1.5px solid rgba(0, 0, 0, 0.15);
+      border-radius: 50%;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8em;
+      font-weight: 700;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .text-size-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    body.light .text-size-btn { background-color: #3a3d52; color: #ffffff; border-color: rgba(255, 255, 255, 0.35); }
+    body.dark .text-size-btn { background-color: #2e2e2e; color: #eeeeee; border-color: rgba(255, 255, 255, 0.25); }
 </style>
   <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -297,7 +335,13 @@
   <div class="container">
     <div class="top-bar">
       <a class="site-link" href="https://mes.fm/crypto">&larr; mes.fm/crypto</a>
-      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+      <div class="top-bar-controls">
+        <div class="text-size-controls">
+          <button id="textSizeDown" class="text-size-btn" type="button" aria-label="Decrease text size">A&minus;</button>
+          <button id="textSizeUp" class="text-size-btn" type="button" aria-label="Increase text size">A+</button>
+        </div>
+        <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+      </div>
     </div>
 
     <h1>The Hyperliquid Crypto Exchange Flagged My Wallet Address &#129313;&#127482;&#127480;&#129313;&#127482;&#127480;</h1>
@@ -498,5 +542,46 @@
       });
     })();
   </script>
-<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+<script>
+    // text-size-control: A-/A+ buttons step the article body through a fixed
+    // set of font-size scales, remembered per-visitor (shared across every
+    // mirror page using this template, same convention as the theme toggle).
+    (function () {
+      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var article = document.querySelector('article');
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!article || !downBtn || !upBtn) return;
+
+      function clampIndex(i) {
+        return Math.max(0, Math.min(STEPS.length - 1, i));
+      }
+
+      var index;
+      try {
+        index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale')));
+      } catch (e) {
+        index = -1;
+      }
+      if (index === -1) index = STEPS.indexOf(100);
+
+      function apply() {
+        article.style.fontSize = STEPS[index] + '%';
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+
+      downBtn.addEventListener('click', function () {
+        index = clampIndex(index - 1);
+        apply();
+      });
+      upBtn.addEventListener('click', function () {
+        index = clampIndex(index + 1);
+        apply();
+      });
+
+      apply();
+    })();
+  </script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
 </html>
