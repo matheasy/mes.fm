@@ -1,0 +1,9 @@
+{
+  "name": "mes-math-tutorials-page-builder",
+  "private": true,
+  "description": "Build-time generator for mes.fm/math -- scrapes each link's og:image/\"Watch on\" row and writes static index.html. Not deployed; run manually before committing.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}
