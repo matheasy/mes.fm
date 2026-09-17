@@ -47,7 +47,7 @@ const SECTIONS = [
     title: "MES Math Q/A Livestreams",
     playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-",
     items: [
-      { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-", title: "Playlist", youtubeIcon: true },
+      { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-", title: "Playlist", standalone: true },
       { href: "https://mes.fm/math-qa-70-lorentz-force", title: "70: What is the Lorentz Force?", playlistHref: "https://youtube.com/live/BJ1zYm_ZCVw" },
     ],
   },
@@ -242,22 +242,8 @@ function buildLinksForItem(item, meta) {
   return [{ label: "Notes", href: item.href }, ...combined];
 }
 
-// Inline YouTube play-button glyph -- used instead of a scraped thumbnail for
-// a whole-channel/whole-playlist link (its own og:image is just a generic
-// channel card, not representative of any one video).
-const YOUTUBE_ICON_SVG = `<svg class="yt-play-icon" viewBox="0 0 68 48" aria-hidden="true"><path d="M66.52 7.74c-.78-2.93-2.49-4.64-5.42-5.42C55.79.9 34 .9 34 .9s-21.79 0-27.1 1.42C3.97 3.1 2.26 4.81 1.48 7.74.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 4.64 5.42 5.42C12.21 47.1 34 47.1 34 47.1s21.79 0 27.1-1.42c2.93-.78 4.64-2.49 5.42-5.42C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="#f00"/><path d="M45 24 27 14v20" fill="#fff"/></svg>`;
-
 function buildCard(item, meta) {
   const m = meta[item.href] || {};
-  if (item.youtubeIcon) {
-    return `<a class="link-card" href="${escapeHtml(item.href)}">
-      <span class="link-card-thumb link-card-thumb--icon">${YOUTUBE_ICON_SVG}</span>
-      <span class="link-card-body">
-        <span class="link-card-title">${escapeHtml(item.title)}</span>
-        <span class="link-card-readmore">View &rarr;</span>
-      </span>
-    </a>`;
-  }
   const thumbStyle = m.image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"` : "";
   return `<a class="link-card" href="${escapeHtml(item.href)}">
       <span class="link-card-thumb"${thumbStyle}></span>
@@ -274,11 +260,7 @@ function buildRow(item, meta) {
   const linksHtml = links
     .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
     .join(" - ");
-  const imgHtml = item.youtubeIcon
-    ? `<span class="list-thumb list-thumb--icon">${YOUTUBE_ICON_SVG}</span>`
-    : m.image
-    ? `<img class="list-thumb" src="${escapeHtml(m.image)}" alt="">`
-    : "";
+  const imgHtml = m.image ? `<img class="list-thumb" src="${escapeHtml(m.image)}" alt="">` : "";
   return `<div class="list-row">
       <h3>${escapeHtml(item.title)}</h3>
       <p>${linksHtml}</p>
@@ -289,17 +271,25 @@ function buildRow(item, meta) {
 // Renders one section's heading row + Grid View (default) / List View toggle.
 // Both views are pre-rendered at build time; the client-side script just
 // shows/hides which one is visible (see the view-toggle script at the bottom
-// of buildPage).
+// of buildPage). Items flagged `standalone` (a whole-channel/whole-playlist
+// link, not a single video/article) are pulled out of the grid/list entirely
+// and rendered as a plain link line above the view-toggle buttons instead.
 function buildSection(section, meta) {
   const playlistLink = section.playlistHref
     ? ` <a href="${escapeHtml(section.playlistHref)}">&#9654;&#65039;</a>`
     : "";
-  const cards = section.items.map((item) => buildCard(item, meta)).join("\n    ");
-  const rows = section.items.map((item) => buildRow(item, meta)).join("\n    ");
+  const standaloneItems = section.items.filter((item) => item.standalone);
+  const cardItems = section.items.filter((item) => !item.standalone);
+  const standaloneHtml = standaloneItems
+    .map((item) => `<p class="section-standalone-link"><a href="${escapeHtml(item.href)}">&#9654;&#65039; ${escapeHtml(item.title)}</a></p>`)
+    .join("\n  ");
+  const cards = cardItems.map((item) => buildCard(item, meta)).join("\n    ");
+  const rows = cardItems.map((item) => buildRow(item, meta)).join("\n    ");
 
   return `<div class="list-container">
   <h2 id="${section.id}-heading" class="sub-heading" onclick="toggleSubList('${section.id}')">${escapeHtml(section.title)}${playlistLink} <span id="arrowIcon-${section.id}" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
   <div id="${section.id}" class="section-body collapsible">
+  ${standaloneHtml}
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
@@ -319,6 +309,9 @@ function buildPage(meta) {
   const viewToggleWiring = SECTIONS.map(
     (s) => `      wireViewToggle('${s.id}');`
   ).join("\n");
+  const tocLinksHtml = SECTIONS.map(
+    (s) => `<a href="#${s.id}-heading">${escapeHtml(s.title)}</a>`
+  ).join("\n  ");
 
   return `
 <!DOCTYPE html>
@@ -559,14 +552,21 @@ sub {vertical-align:sub;}
 
 .card-grid {
   display: grid;
-  /* auto-fill (not auto-fit): unfilled tracks stay reserved instead of
-     collapsing, so a section with only 1-2 items gets cards the exact
-     same width as a section with a full row -- the column count and
-     width are driven only by the container's own size, never by how
-     many items that particular section has. */
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 0.9rem;
+  /* Fixed 3 columns (not auto-fit/auto-fill with a minmax upper bound): every
+     section's cards are the exact same size regardless of how many items
+     that section has -- a 1-item section's card fills 1 of 3 equal columns
+     instead of stretching to fill the row. */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
   margin: 0 0 0.4em;
+}
+
+@media (max-width: 900px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .card-grid { grid-template-columns: 1fr; }
 }
 
 .link-card {
@@ -595,27 +595,6 @@ sub {vertical-align:sub;}
   background-position: center;
 }
 
-.link-card-thumb--icon,
-.list-thumb--icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #111111;
-  background-image: none;
-}
-
-.list-thumb--icon {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 4px;
-  margin: 0 0 1.4em;
-}
-
-.yt-play-icon {
-  width: 28%;
-  height: auto;
-}
-
 .link-card-body {
   padding: 0.6rem 0.8rem 0.8rem;
   display: flex;
@@ -637,22 +616,34 @@ sub {vertical-align:sub;}
   color: #1a6fb0;
 }
 
-/* List View -- title / links row / full (uncropped) thumbnail per item,
-   1 column by default, 2 side-by-side once the wide band has room. */
+/* List View -- title / links row / full (uncropped) thumbnail per item, one
+   big full-width row at a time (matching mes.fm/hutchison's own List/
+   Thumbnail view), not split into side-by-side columns. */
 .list-view {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0 2em;
+  display: block;
 }
 
-@media (min-width: 900px) {
-  .list-view {
-    grid-template-columns: 1fr 1fr;
-  }
+.section-standalone-link {
+  margin: 0 0 0.6em;
+  font-weight: 600;
+}
+
+.section-standalone-link a {
+  color: #1a6fb0;
+}
+
+.list-row {
+  margin: 0 0 2em;
+  padding: 0 0 2em;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.list-row:last-child {
+  border-bottom: none;
 }
 
 .list-row h3 {
-  font-size: 1.05em;
+  font-size: 1.2em;
   margin: 0 0 0.3em;
 }
 
@@ -763,6 +754,225 @@ sub {vertical-align:sub;}
   .lightbox-controls { bottom: 32px; }
   .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
   .lightbox-close { width: 36px; height: 36px; }
+}
+
+/* Table of contents: a fixed side column on very wide viewports (this page's
+   own .outer-container is 75em/1200px wide, so the sidebar needs a lot more
+   clearance than the 760px-article hub pages it's modeled on -- see
+   mes.fm/vector-functions-problems-plus/build.mjs), collapsing to a
+   <details> dropdown above the sections otherwise. */
+.toc-sidebar {
+  display: none;
+}
+
+@media (min-width: 1700px) {
+  .toc-sidebar {
+    display: block;
+    position: fixed;
+    top: 90px;
+    /* rem (not em/px): tracks .outer-container's own em-based max-width at
+       any text-size step (see html.text-sm/text-lg) without compounding
+       against this element's own local 0.85em font-size below. */
+    left: calc(50% + 39.375rem);
+    width: 12.5rem;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    font-size: 0.85em;
+    padding-right: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
+  }
+
+  .toc-sidebar-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6em;
+    margin: 0 0 0.7em;
+  }
+
+  .toc-sidebar .toc-title {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+    margin: 0;
+    color: #333333;
+  }
+
+  .toc-collapse-all-btn {
+    font-size: 0.8em;
+    opacity: 0.65;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    color: inherit;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .toc-collapse-all-btn:hover {
+    opacity: 1;
+  }
+
+  .toc-sidebar a {
+    display: block;
+    padding: 0.3em 0;
+    opacity: 0.85;
+    text-decoration: none;
+    color: #277bb6;
+  }
+
+  .toc-sidebar a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+}
+
+.toc-mobile {
+  margin: 1.2em 0;
+}
+
+@media (min-width: 1700px) {
+  .toc-mobile {
+    display: none;
+  }
+}
+
+.toc-mobile summary {
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0.6em 0.9em;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 6px;
+}
+
+.toc-mobile .toc-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  padding: 0.8em 0.9em 0.2em;
+}
+
+.toc-mobile a {
+  text-decoration: none;
+  opacity: 0.9;
+  color: #277bb6;
+}
+
+.toc-mobile a:hover {
+  text-decoration: underline;
+}
+
+/* Text-size steps -- applied to <html> so every rem/em/percentage-based
+   size on the page scales together (see the header-controls script). */
+html.text-sm { font-size: 87%; }
+html.text-lg { font-size: 118%; }
+
+/* Text-size + dark/light display controls -- sit to the left of the
+   hamburger button (#navbar-button), same corner, at every screen width. */
+#header-controls {
+  position: absolute;
+  top: 16px;
+  right: 68px;
+  z-index: 20;
+  display: flex;
+  gap: 6px;
+}
+
+.header-control-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: 0;
+  border: 1.5px solid rgba(0, 0, 0, 0.25);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.04);
+  color: #333333;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-control-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 12em !important; }
+}
+
+/* Dark mode -- toggled by #themeToggleBtn in #header-controls, saved in
+   localStorage. This classic mes.fm template has no dark mode of its own,
+   so these are page-scoped overrides for what math/index.html itself
+   renders (header/nav/footer are already navy-on-white and need no change). */
+body.dark-mode {
+  background-color: #1a1a1a;
+}
+
+body.dark-mode .inner-container {
+  background-color: #232323;
+  box-shadow: none;
+}
+
+body.dark-mode .calculator-title,
+body.dark-mode .page-title,
+body.dark-mode .page-description,
+body.dark-mode .sub-heading,
+body.dark-mode .arrow-icon,
+body.dark-mode .list-row h3,
+body.dark-mode .list-row p,
+body.dark-mode .link-card-title {
+  color: #eeeeee;
+}
+
+body.dark-mode .link-card {
+  background-color: #2a2a2a;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .link-card-readmore,
+body.dark-mode .section-standalone-link a,
+body.dark-mode .list-row a,
+body.dark-mode .toc-sidebar a,
+body.dark-mode .toc-mobile a {
+  color: #6cb6f5;
+}
+
+body.dark-mode .list-row {
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .view-toggle-btn {
+  background-color: #3a3a3a;
+  color: #ffffff;
+}
+
+body.dark-mode .view-toggle-btn.active {
+  background-color: #4a90d9;
+}
+
+body.dark-mode .button {
+  color: #6cb6f5;
+  border-color: #6cb6f5;
+}
+
+body.dark-mode .header-control-btn {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: #eeeeee;
+}
+
+body.dark-mode .toc-mobile summary {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #eeeeee;
 }
 </style>
 
@@ -913,9 +1123,21 @@ sub {vertical-align:sub;}
 </script>
 </head>
 <body>
+<nav class="toc-sidebar" aria-label="Table of contents">
+  <div class="toc-sidebar-header">
+    <div class="toc-title">Jump to</div>
+    <button type="button" class="toc-collapse-all-btn toggle-all-lists-btn" onclick="toggleAllLists()">Collapse All</button>
+  </div>
+  ${tocLinksHtml}
+</nav>
 <div id="outer-container" class="outer-container">
   <div class="inner-container">
     <div id="header" class="header" role="banner">
+      <div id="header-controls" role="group" aria-label="Display settings">
+        <button type="button" id="textSizeDownBtn" class="header-control-btn" aria-label="Decrease text size" title="Decrease text size">a</button>
+        <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A</button>
+        <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
+      </div>
       <a class="logo-image-container" href='/'><img width="830" height="190" id="logo" class="logo lazyload" alt="Math Easy Solutions logo" data-src="https://mes.fm/img/logo.png"></a>
       <div class="logo-text-container">
         <a class="calculator-title-link" href='/'>
@@ -955,9 +1177,15 @@ sub {vertical-align:sub;}
         <div class="color-box"></div>
         <h1 class="page-title">Math Tutorials</h1>
         <p class="page-description">Free math video/article tutorials on infinite sequences and series, vectors and the geometry of space, vector functions, spherical harmonics, and more.</p>
+        <details class="toc-mobile">
+          <summary>Jump to section</summary>
+          <nav class="toc-links" aria-label="Table of contents">
+            ${tocLinksHtml}
+          </nav>
+        </details>
         <div id="main-content">
           <div class="wide">
-            <div class="button" id="toggleAllListsBtn" onclick="toggleAllLists()" style="display:inline-block;float:right;">Collapse All</div>
+            <div class="button toggle-all-lists-btn" id="toggleAllListsBtn" onclick="toggleAllLists()" style="display:inline-block;float:right;">Collapse All</div>
             <div style="clear:both;"></div>
 
 ${sectionsHtml}
@@ -1042,14 +1270,14 @@ ${sectionsHtml}
 <script>
   function toggleAllLists() {
     const lists = document.querySelectorAll('.collapsible');
-    const btn = document.getElementById('toggleAllListsBtn');
+    const buttons = document.querySelectorAll('.toggle-all-lists-btn');
     const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
     lists.forEach((list) => {
       list.classList.toggle('hidden', collapse);
       const arrowIcon = document.getElementById('arrowIcon-' + list.id);
       if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
     });
-    if (btn) btn.textContent = collapse ? 'Expand All' : 'Collapse All';
+    buttons.forEach((btn) => { btn.textContent = collapse ? 'Expand All' : 'Collapse All'; });
   }
 
   function toggleSubList(listId) {
@@ -1088,6 +1316,58 @@ ${sectionsHtml}
   }
 
 ${viewToggleWiring}
+</script>
+
+<script>
+  // header-controls: text-size (A-/A+, cycles sm/md/lg via a class on
+  // <html>) and dark/light mode (sun/moon, toggles .dark-mode on <body>).
+  // Both persist in localStorage. Lives next to #navbar-button so it's
+  // reachable at every screen width, not just desktop.
+  (function () {
+    var STEPS = ['sm', 'md', 'lg'];
+    var html = document.documentElement;
+    var downBtn = document.getElementById('textSizeDownBtn');
+    var upBtn = document.getElementById('textSizeUpBtn');
+    var current = 'md';
+
+    function applyTextSize(step) {
+      html.classList.remove('text-sm', 'text-lg');
+      if (step === 'sm') html.classList.add('text-sm');
+      if (step === 'lg') html.classList.add('text-lg');
+      current = step;
+      try { localStorage.setItem('mathTextSize', step); } catch (e) {}
+    }
+
+    var savedSize;
+    try { savedSize = localStorage.getItem('mathTextSize'); } catch (e) {}
+    applyTextSize(STEPS.indexOf(savedSize) >= 0 ? savedSize : 'md');
+
+    downBtn.addEventListener('click', function () {
+      applyTextSize(STEPS[Math.max(0, STEPS.indexOf(current) - 1)]);
+    });
+    upBtn.addEventListener('click', function () {
+      applyTextSize(STEPS[Math.min(STEPS.length - 1, STEPS.indexOf(current) + 1)]);
+    });
+  })();
+
+  (function () {
+    var body = document.body;
+    var themeBtn = document.getElementById('themeToggleBtn');
+
+    function applyTheme(isDark) {
+      body.classList.toggle('dark-mode', isDark);
+      themeBtn.textContent = isDark ? '☀️' : '🌙';
+      try { localStorage.setItem('mathTheme', isDark ? 'dark' : 'light'); } catch (e) {}
+    }
+
+    var savedTheme;
+    try { savedTheme = localStorage.getItem('mathTheme'); } catch (e) {}
+    applyTheme(savedTheme === 'dark');
+
+    themeBtn.addEventListener('click', function () {
+      applyTheme(!body.classList.contains('dark-mode'));
+    });
+  })();
 </script>
 
 <div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true" aria-label="Image viewer">
