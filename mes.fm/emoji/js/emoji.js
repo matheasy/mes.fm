@@ -836,8 +836,15 @@
 		return canvas;
 	}
 
+	// the preview's on-screen size scales with the chosen export resolution too --
+	// otherwise the size buttons only change an invisible property (the canvas
+	// pixel dimensions baked into the exported PNG) and clicking them looks like
+	// it does nothing at all
+	var PREVIEW_EM = { 512: 11, 1024: 15, 2048: 19 };
 	function renderZoomPreview() {
 		zoomImg.src = renderEmojiCanvas(currentEmoji, currentSize).toDataURL("image/png");
+		var em = PREVIEW_EM[currentSize] || 15;
+		zoomImg.style.width = zoomImg.style.height = em + "em";
 	}
 
 	function openZoom(emoji, name) {
