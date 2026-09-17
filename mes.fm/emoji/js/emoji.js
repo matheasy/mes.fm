@@ -1,4 +1,4 @@
-/* MES Emoji Copier -- mes.fm/emojis
+/* MES Emoji Copier -- mes.fm/emoji
  *
  * Click a tile, it's copied. Click the small corner button to expand it into
  * a large transparent-background PNG (drawn on a <canvas> using the device's
@@ -10,9 +10,9 @@
 	"use strict";
 
 	var $ = function (id) { return document.getElementById(id); };
-	var RECENT_KEY = "mes-emojis-recent-v1";
+	var RECENT_KEY = "mes-emoji-recent-v1";
 	var MAX_RECENT = 14;
-	var COLLAPSE_KEY = "mes-emojis-collapsed-v1";
+	var COLLAPSE_KEY = "mes-emoji-collapsed-v1";
 
 	var EXPAND_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
 		'<polyline points="9 3 3 3 3 9"></polyline><polyline points="15 3 21 3 21 9"></polyline>' +
