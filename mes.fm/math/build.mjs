@@ -47,10 +47,20 @@ const SECTIONS = [
     title: "MES Math Q/A Livestreams",
     playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-",
     compactList: true,
+    // A third view (its own toggle button, alongside Grid View/List View)
+    // for stats-screen pages that don't belong as a regular episode entry --
+    // never rendered in Grid/List, only in its own compact double-thumbnail
+    // pane. See extraViews handling in buildSection()/buildPage().
+    extraViews: [
+      {
+        id: "stats",
+        label: "Stats",
+        items: [{ href: "https://mes.fm/math-qa-71-stats", title: "71: Stats" }],
+      },
+    ],
     items: [
       { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-", title: "Playlist", standalone: true },
       { href: "https://mes.fm/math-qa-70-lorentz-force", title: "70: What is the Lorentz Force?", playlistHref: "https://youtube.com/live/BJ1zYm_ZCVw" },
-      { href: "https://mes.fm/math-qa-71-stats", title: "71: Stats" },
     ],
   },
   {
@@ -177,6 +187,21 @@ function readWatchOnLinks(html) {
   return links;
 }
 
+// Some mes.fm mirror pages (e.g. math-qa-71-stats, a plain stats-screen
+// post with no "Watch on:" video row at all) instead carry a source link
+// per line: `<li>Hive: <a href="...">...</a></li>`, `<li>Telegram:
+// <a href="...">...</a></li>`. Pulled out generically here; callers filter
+// to whichever labels they care about.
+function readNamedLinks(html) {
+  const re = /<li>\s*([A-Za-z ]+):\s*<a\s+href="([^"]+)"[^>]*>[^<]*<\/a>\s*<\/li>/g;
+  const links = [];
+  let m;
+  while ((m = re.exec(html))) {
+    links.push({ label: m[1].trim(), href: m[2] });
+  }
+  return links;
+}
+
 // peakd.com is a client-rendered SPA -- a plain fetch() only gets its
 // server-rendered <head> (og:image etc.), never the article body, so
 // readWatchOnLinks() above always finds nothing there. The real per-video
@@ -243,12 +268,15 @@ async function fetchLinkMeta(url) {
   return {
     image: readMetaTag(html, "og:image"),
     watchLinks,
+    namedLinks: readNamedLinks(html),
   };
 }
 
 async function resolveAllMeta(sections, concurrency = 8) {
   const cache = loadMetaCache();
-  const urls = sections.flatMap((s) => s.items.map((i) => i.href));
+  const urls = sections.flatMap((s) =>
+    s.items.map((i) => i.href).concat((s.extraViews || []).flatMap((v) => v.items.map((i) => i.href)))
+  );
   let i = 0;
   async function worker() {
     while (i < urls.length) {
@@ -300,6 +328,20 @@ function buildLinksForItem(item, meta) {
   return [{ label: "Notes", href: item.href }, ...sorted];
 }
 
+// For extraViews items (see e.g. MES Math Q/A Livestreams' "Stats" view):
+// these are always mes.fm-hosted pages, so the item's own link is labeled
+// "MES" rather than "Notes", followed by whichever of its own named source
+// links (readNamedLinks -- "Hive:"/"Telegram:" list items, not a "Watch
+// on:" row) match this fixed label set, in this fixed order.
+const EXTRA_VIEW_LINK_ORDER = ["Hive", "Telegram"];
+function buildExtraViewLinksForItem(item, meta) {
+  const m = meta[item.href] || {};
+  const named = EXTRA_VIEW_LINK_ORDER.map((label) => (m.namedLinks || []).find((l) => l.label === label)).filter(
+    Boolean
+  );
+  return [{ label: "MES", href: item.href }, ...named];
+}
+
 function buildCard(item, meta) {
   const m = meta[item.href] || {};
   const thumbStyle = m.image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"` : "";
@@ -312,9 +354,9 @@ function buildCard(item, meta) {
     </a>`;
 }
 
-function buildRow(item, meta) {
+function buildRow(item, meta, linksBuilder) {
   const m = meta[item.href] || {};
-  const links = buildLinksForItem(item, meta);
+  const links = (linksBuilder || buildLinksForItem)(item, meta);
   const linksHtml = links
     .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
     .join(" - ");
@@ -326,12 +368,19 @@ function buildRow(item, meta) {
     </div>`;
 }
 
-// Renders one section's heading row + Grid View (default) / List View toggle.
-// Both views are pre-rendered at build time; the client-side script just
-// shows/hides which one is visible (see the view-toggle script at the bottom
-// of buildPage). Items flagged `standalone` (a whole-channel/whole-playlist
-// link, not a single video/article) are pulled out of the grid/list entirely
-// and rendered as a plain link line above the view-toggle buttons instead.
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Renders one section's heading row + Grid View (default) / List View toggle,
+// plus any extraViews (see e.g. MES Math Q/A Livestreams' "Stats" view) as
+// further toggle buttons/panes. All views are pre-rendered at build time;
+// the client-side script just shows/hides whichever one is active (see the
+// view-toggle script at the bottom of buildPage). Items flagged `standalone`
+// (a whole-channel/whole-playlist link, not a single video/article) are
+// pulled out of the grid/list entirely and rendered as a plain link line
+// above the view-toggle buttons instead. extraViews items never appear in
+// Grid/List at all -- they exist only in their own pane.
 function buildSection(section, meta) {
   const playlistLink = section.playlistHref
     ? ` <a href="${escapeHtml(section.playlistHref)}">&#9654;&#65039;</a>`
@@ -345,6 +394,19 @@ function buildSection(section, meta) {
   const rows = cardItems.map((item) => buildRow(item, meta)).join("\n    ");
   const listViewClass = section.compactList ? "list-view list-view--compact" : "list-view";
 
+  const extraViews = section.extraViews || [];
+  const extraButtons = extraViews
+    .map((view) => `<button type="button" class="view-toggle-btn" id="${section.id}${capitalize(view.id)}Btn">${escapeHtml(view.label)}</button>`)
+    .join("\n      ");
+  const extraPanes = extraViews
+    .map((view) => {
+      const extraRows = view.items.map((item) => buildRow(item, meta, buildExtraViewLinksForItem)).join("\n    ");
+      return `<div class="list-view list-view--compact view-hidden" id="${section.id}${capitalize(view.id)}">
+    ${extraRows}
+    </div>`;
+    })
+    .join("\n");
+
   return `<div class="list-container">
   <h2 id="${section.id}-heading" class="sub-heading" onclick="toggleSubList('${section.id}')">${escapeHtml(section.title)}${playlistLink} <span id="arrowIcon-${section.id}" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
   <div id="${section.id}" class="section-body collapsible">
@@ -352,6 +414,7 @@ function buildSection(section, meta) {
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
+      ${extraButtons}
     </div>
     <div class="card-grid" id="${section.id}Grid">
     ${cards}
@@ -359,15 +422,17 @@ function buildSection(section, meta) {
     <div class="${listViewClass} view-hidden" id="${section.id}List">
     ${rows}
     </div>
+${extraPanes}
   </div>
 </div>`;
 }
 
 function buildPage(meta) {
   const sectionsHtml = SECTIONS.map((s) => buildSection(s, meta)).join("\n\n");
-  const viewToggleWiring = SECTIONS.map(
-    (s) => `      wireViewToggle('${s.id}');`
-  ).join("\n");
+  const viewToggleWiring = SECTIONS.map((s) => {
+    const extraIds = (s.extraViews || []).map((v) => capitalize(v.id));
+    return `      wireViewToggle('${s.id}', ${JSON.stringify(extraIds)});`;
+  }).join("\n");
   const tocLinksHtml = SECTIONS.map(
     (s) => `<a href="#${s.id}-heading">${escapeHtml(s.title)}</a>`
   ).join("\n  ");
@@ -1461,24 +1526,31 @@ ${sectionsHtml}
   // both are pre-rendered at build time in buildSection(), this just
   // toggles which one is visible. One wiring call per section (see
   // buildPage()'s viewToggleWiring).
-  function wireViewToggle(id) {
-    var gridBtn = document.getElementById(id + 'GridBtn');
-    var listBtn = document.getElementById(id + 'ListBtn');
-    var grid = document.getElementById(id + 'Grid');
-    var list = document.getElementById(id + 'List');
-    if (!gridBtn || !listBtn || !grid || !list) return;
+  // id: section id (e.g. 'mathQaLivestreams'). extraIds: capitalized suffixes
+  // beyond 'Grid'/'List' (e.g. ['Stats']) for a section's extraViews -- each
+  // gets its own toggle button (id+suffix+'Btn') and pane (id+suffix),
+  // exactly like Grid/List, so N views can share one toggle group instead of
+  // just two.
+  function wireViewToggle(id, extraIds) {
+    var suffixes = ['Grid', 'List'].concat(extraIds || []);
+    var entries = suffixes
+      .map(function (suffix) {
+        return {
+          btn: document.getElementById(id + suffix + 'Btn'),
+          pane: document.getElementById(id + suffix),
+        };
+      })
+      .filter(function (e) { return e.btn && e.pane; });
+    if (entries.length < 2) return;
 
-    gridBtn.addEventListener('click', function () {
-      gridBtn.classList.add('active');
-      listBtn.classList.remove('active');
-      grid.classList.remove('view-hidden');
-      list.classList.add('view-hidden');
-    });
-    listBtn.addEventListener('click', function () {
-      listBtn.classList.add('active');
-      gridBtn.classList.remove('active');
-      list.classList.remove('view-hidden');
-      grid.classList.add('view-hidden');
+    entries.forEach(function (entry) {
+      entry.btn.addEventListener('click', function () {
+        entries.forEach(function (e) {
+          var active = e === entry;
+          e.btn.classList.toggle('active', active);
+          e.pane.classList.toggle('view-hidden', !active);
+        });
+      });
     });
   }
 

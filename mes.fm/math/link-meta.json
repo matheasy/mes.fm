@@ -14,19 +14,54 @@
         "label": "Twitch",
         "href": "https://www.twitch.tv/matheasysolutions"
       }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
     ]
   },
   "https://mes.fm/math-qa-71-stats": {
     "image": "https://img.leopedia.io/DQmWkDaYKKRygyeMcskvkUXxg39C7YPvnNUhCYZdY2oX8hr/telegram-cloud-photo-size-1-4997088063016078455-y.jpg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mes/re-leothreads-65mktyu4"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35530"
+      },
+      {
+        "label": "More math links",
+        "href": "https://mes.fm/math"
+      }
+    ]
   },
   "https://mes.fm/vector-functions-problems-plus": {
     "image": "https://images.hive.blog/DQmaDsV2X5cVwLs4BMAj4Y3zfaLSgE74PV6jydGrGf7hCmr/image",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "MES Math Tutorials",
+        "href": "https://mes.fm/math"
+      },
+      {
+        "label": "I used the following solution manual for this chapter",
+        "href": "https://web.ma.utexas.edu/users/shirley/a408d/hwlist/1hw/Addendum/Stewart's%20Calculus,%209th%20ed,%20Soln's%20Manuals/Solution%20Manual,%20ch's%2010-16/Stewart_CalcET9e_SAG__CH13.pdf"
+      }
+    ]
   },
   "https://peakd.com/@mes/infinite-sequences-and-series-formulas-for-the-remainder-term-in-taylor-series": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmanrdSZ5cTmeHKtBn97SLKKuAYs3f4WaqXHDD1KbSDNdr/Taylor%20Series%20Remainder%20Term.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/220d6572": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23ydRCbjj1UKSrutn1S2JKNZsySufGoRk4g1qWUFekLJd3CFYjzktYWmdVi2fasLZ7G2D.jpeg",
@@ -55,7 +90,8 @@
         "label": "YouTube",
         "href": "https://youtu.be/p5SdobFPiKY"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/applied-project-radiation-from-the-stars": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23xyvZwzEmngAJah5EGaYxK2wByvL2MowZckpx5tpYRRkSYqaE2M54a5WMgBKbzwKqXxL.jpeg",
@@ -80,7 +116,8 @@
         "label": "YouTube",
         "href": "https://youtu.be/oJpwidXu9Ps"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/c3b94a80": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tSzCaMrsFVRSvCnXc3BNh9xvqpnfw5xaXVjzXE6hcQSyGEFcz8rGPErzbVySN28UZWY.jpeg",
@@ -109,11 +146,13 @@
         "label": "YouTube",
         "href": "https://youtu.be/_HIoMlTPD9Y"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twA7QknK6cdrSeC4PVyzCXDonrhb3uavjJ3qiwMHHfG2azSWeP9LLtBgsmz2YtKsZyd.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23xf4omKKUCp5Dr1yr6TsvK614ZwWCXbBXkHMLTsPGh1iv6dbbdm98fpzb9psDAonhZox.jpeg",
@@ -138,11 +177,13 @@
         "label": "YouTube",
         "href": "https://youtu.be/k4EyLr4uOUA"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wCbb2sbLNyoVuXx3Cy197xPK9VFoBXLUkf2QG1t3xvw9cUAy8e8gwcwEdi1uEAb5zjF.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/dzekfnxh": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23uFwDc96yyuPh1DLzT52FT2d4N56Tx9vJFcgbwkKc95YDGv4Q57zTfdu6vNUNCss5YRi.jpeg",
@@ -167,7 +208,8 @@
         "label": "Rumble",
         "href": "https://rumble.com/v6cselp-cubic-formula-proof.html"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/e443f9d3": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tmmf7kivxaAFF8pc6U9v7rMGfqtFKtJ9bBWeJGbsTVSGbUw6ehx5TDBRLyCvGDhgM5d.png",
@@ -196,11 +238,13 @@
         "label": "YouTube",
         "href": "https://youtu.be/c9wE-BMvaY4"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wr9nrYJqFNc63AfLqHNfuTpWPQGhSRwL8wU1TVSpvtjM4Xq3fja1UuW1t1YAki1ZuJi.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/hfsetrue": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u6YmnLJ5HuZJsL9zGeFu5w3sKts3CN9TX19cRH8EFFWKFT6a4pFvLrpdr63Dy4jN1G8.jpeg",
@@ -225,7 +269,8 @@
         "label": "YouTube",
         "href": "https://youtu.be/YT4QJczx8KI"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-applications-of-taylor-polynomials": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u5vnYV2nmev6TT74jxXSApbMzK1avZEfASBCegSGZNw4SbwSqWYsNWWjLrrpprfK5W1.jpeg",
@@ -250,19 +295,23 @@
         "label": "YouTube",
         "href": "https://youtu.be/Tuh3Ht4XwYI"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-multiplication-and-division-of-power-series": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/pObrnd4v-Multiplication20and20Division20of20Power20Series.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-problems-plus": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wrA5N6Q5FX947db7aGunJpCAaVZnPMWRbfnTWGEYY6176qqgR52f2cqCNdJXCNrbEdj.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-review-and-true-false-quiz": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twAKVLEcemvbKz43bGd4YrAWAUPAKwz2i5dp7XCdN72esnG6XEm35H2xEvxTMYPYsjF.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/jlgigkdl": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u6UDcUEmsFnbSdPFNoPBs8WNJJUtmwfxp5qHQdTDnKLwQpq2XTAX2TS1w1XwNVrDd8E.jpeg",
@@ -287,7 +336,8 @@
         "label": "YouTube",
         "href": "https://youtu.be/4x6uh1zQ-M0"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/koxharrd": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tSzLNbhGqM5G1zjeEEjXjdXVRxbgKNQ5zbjpR8jR9sPua8uHX337jc1FZeRecYcQyug.png",
@@ -316,7 +366,8 @@
         "label": "YouTube",
         "href": "https://youtu.be/i9ForOVH5Bk"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/kummer-s-test-raabe-s-test-and-convergence-of-binomial-series": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/aid1oEzK-Kummer20Raabe20Binomial20Series20Convergence.jpeg",
@@ -341,7 +392,8 @@
         "label": "YouTube",
         "href": "https://youtu.be/LOiRMhv6z8I"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/laboratory-project-an-elusive-limit": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/W6vIJF02-Laboratory20Project20An20Elusive20Limit.jpeg",
@@ -366,7 +418,8 @@
         "label": "YouTube",
         "href": "https://youtu.be/pwcubhBludE"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcNa7q2ZWVgjnvrELxS1DnZAhG4qcaGV4Lz38oQbe3Wj6UKdJYo1hWktVAN2bcgCL8R.jpeg",
@@ -391,7 +444,8 @@
         "label": "YouTube",
         "href": "https://youtu.be/3txedAqdtkQ"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/omhbcxkw": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twA2Y16xtcqTpvsVBPwnPu5oU2tqAinF7TxtAKvn7pDbpRNF9aCrf3R2EDxVi9XSVvz.jpeg",
@@ -416,7 +470,8 @@
         "label": "YouTube",
         "href": "https://youtu.be/Qi2hVnKN-5c"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/review-of-vector-functions-138": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcNnfbkHj6RCZV1KJSU2Ye6EvxtM3CF3avYDfPsVfJ1L7SNmaYLxc2jGqej5CJBYtdv.png",
@@ -445,11 +500,13 @@
         "label": "YouTube",
         "href": "https://youtu.be/qQkC5yM7syM"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23z7bC64o1TcF1G445p3dPi2xRaYuRA7SCnW48zFyfVbXWY9UFAEcBvzsjxN9ZLcNmaHV.jpg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsrFwwAkY5PgSZ7oH3byKBhmjjcbiAdJ7pBXuBvK97cJSMoiK2odHTP7yKVk3s2uZQE.jpeg",
@@ -474,55 +531,68 @@
         "label": "YouTube",
         "href": "https://youtu.be/VMKb69uDVt0"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wgoZnRipYa1SKGoZsn5yPX8UE2S2e5y2CchJHBYDMSTuRNiAEVRmM3xbtKMPUeza4F8.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcP5UHCYrRzMwqZuqgSgCKwzN3chiBwFzsPe9sXXyh3Y5QGQkLk4RCazyW9iKnyp31b.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors": {
     "image": "https://images.hive.blog/1200x630/https:/snipboard.io/2YPoXV.jpg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsqqLYVW31oWxCuTr4WGukQNR5ygKYwCjbCPgDotyT6raUMEBpEfxSbqe2ukUSVFGnQ.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-sequences-and-series-absolute-convergence-and-the-ratio-root-tests": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmQ7XD8SAjA2jzPPAP9eu9PfckWvzcF5hEnsMEfgU5VEQZ/Absolute%20Convergence.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-sequences-and-series-alternating-tests": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmU6oD6PSTnN5hC1zA5PMCu44vEXVbdKkRS3sjLJ38afGE/Alternating%20Series.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-sequences-and-series-power-series": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmTn4sZbo9huGdjGhKHnRLEf6tWasydcX4bBTtjyFQYptp/Power%20Series.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-sequences-and-series-representations-of-functions-as-power-series": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQme6zU4cRko8D4gAEcXmEyg2KJarRhGr7wWLp1YQZbJAZ5/Functions%20as%20Power%20Series.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-sequences-and-series-strategy-for-testing-series": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmXAWFMQW3h1E1ZkinTDKXsMLmkCQSDo1LhsFme6c2iyUU/Strategy%20for%20Series.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-sequences-and-series-taylor-and-maclaurin-series": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmWvczbQayzpM29mcDx379HUcYQmDaiERteUHbARkkqGc6/Taylor%20and%20Maclaurin%20Series.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-comparison-tests": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmbSUbPAqc4xemnAbzpQJeQx9v66xS1wNN966mSFqnKKDp/The%20Comparison%20Tests.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-integral-test-and-estimate-of-sums": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmNvQkR5NzCrZyRTbNPWUxjuDep93hAi9EY6jPDMyGDFuw/The%20Integral%20Test%20and%20Estimates%20of%20Sums.jpeg",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-sequences-limits-squeeze-theorem-fibonacci-sequence-and-golden-ratio-more": {
     "image": "https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/yGr6Lk0g-Infinite20Sequences.jpeg",
@@ -547,7 +617,8 @@
         "label": "Rumble",
         "href": "https://rumble.com/v20tpw2-infinite-sequences-limits-squeeze-theorem-fibonacci-sequence-and-golden-rat.html"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/infinite-series-definition-examples-geometric-series-harmonics-series-telescoping-sum-more": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmQdvWsD465L5NE55PmEQQyacRniVmA11fC1dKsMpMYpkR/Infinite%20Series.jpeg",
@@ -572,7 +643,8 @@
         "label": "Rumble",
         "href": "https://rumble.com/v20tlmu-infinite-series-definition-examples-geometric-series-harmonic-series-telesc.html"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://peakd.com/mathematics/@mes/laboratory-project-logistic-sequences": {
     "image": "https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmSSqFkRvmUxMaz1nwPbMunaXTzHtw8TfKqavKWuJbud7a/Laboratory%20Project%20Logistic%20Sequences.jpeg",
@@ -597,10 +669,12 @@
         "label": "Rumble",
         "href": "https://rumble.com/v20tlra-laboratory-project-logistic-sequences.html"
       }
-    ]
+    ],
+    "namedLinks": []
   },
   "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-": {
     "image": "https://i.ytimg.com/vi/glW2rC5Ew5I/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLArghcB7nIAMFLbqMc9uANIVftiZg&days_since_epoch=20713",
-    "watchLinks": []
+    "watchLinks": [],
+    "namedLinks": []
   }
 }
