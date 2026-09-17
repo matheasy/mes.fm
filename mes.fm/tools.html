@@ -240,6 +240,17 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.calc-link {display: block;border: 0.15em solid #d4d4d4;padding:0.4em;position:relative;}
 	.calc__img-container,.calc__text {display: table-cell;vertical-align: middle;}
 	.calc__img {margin-right: 0.4em;display: block;}
+	/* the site-wide RESPONSIVE-FIX-INSERTED block above forces
+	   img{max-width:100%;height:auto} below 768px, but .tbl--stack's own
+	   fixed-size rescue only kicks in below 600px -- leaving a 601-767px
+	   gap where each card's icon gets whatever width the table-cell
+	   auto-layout happens to hand it (different per row, since it depends
+	   on that row's text length), instead of a consistent size. Pin it
+	   back to the desktop 88px for that gap; .tbl--stack's own
+	   higher-specificity 4.2em rule still takes over below 600px. */
+	@media (max-width: 768px) {
+		.calc__img { width: 88px !important; height: 88px !important; max-width: 88px !important; }
+	}
 	.calc__text--title {display:block;margin-bottom:1em;font-size:1.1em;}
 	.calc__text--desc {font-size:0.9em;color: #666666;}
 		.calc-container:not(:last-child) {border-right:0.4em solid transparent;}
