@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="MES Emoji Copier">
+  <rect width="1200" height="630" fill="#fbeef2"/>
+  <rect x="0" y="0" width="1200" height="12" fill="#e0507a"/>
+
+  <g transform="translate(96,150)">
+    <rect width="200" height="200" rx="34" fill="#e0507a"/>
+    <text x="100" y="142" font-family="Helvetica, Arial, sans-serif" font-size="104" text-anchor="middle">&#128512;</text>
+  </g>
+
+  <text x="340" y="238" font-family="Georgia, 'Times New Roman', serif" font-size="80" font-weight="bold" fill="#1e2733">MES Emoji Copier</text>
+  <text x="344" y="292" font-family="Helvetica, Arial, sans-serif" font-size="33" fill="#556">Click any emoji to copy it instantly.</text>
+
+  <g font-family="Helvetica, Arial, sans-serif" font-size="52">
+    <text x="344" y="400">&#128512; &#128525; &#128557; &#128054; &#127769; &#9728;</text>
+    <text x="344" y="466">&#127756; &#128640; &#9925; &#128293; &#10024; &#127801;</text>
+  </g>
+
+  <text x="1104" y="586" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#c98ba0" text-anchor="end">mes.fm/emojis</text>
+</svg>

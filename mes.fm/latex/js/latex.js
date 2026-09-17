@@ -367,6 +367,46 @@
 		output.scrollIntoView({ block: "nearest" });
 	});
 
+	/* ---- expand / zoom ----------------------------------------------------- */
+
+	var zoom = document.getElementById("latex-zoom");
+	var zoomStage = document.getElementById("latex-zoom-stage");
+	var zoomSizes = document.querySelectorAll(".latex-zoom__size");
+	var lastFocused = null;
+
+	function openZoom() {
+		if (!output.textContent.trim() || output.querySelector(".latex-tool__placeholder")) return;
+		zoomStage.innerHTML = output.innerHTML;
+		var active = document.querySelector(".latex-zoom__size--active");
+		zoomStage.style.fontSize = (active ? active.getAttribute("data-zoom") : "4") + "em";
+		zoom.classList.remove("hide");
+		document.body.style.overflow = "hidden";
+		lastFocused = document.activeElement;
+		document.getElementById("latex-zoom-close").focus();
+	}
+
+	function closeZoom() {
+		zoom.classList.add("hide");
+		document.body.style.overflow = "";
+		zoomStage.innerHTML = "";
+		if (lastFocused && lastFocused.focus) lastFocused.focus();
+	}
+
+	document.getElementById("latex-expand").addEventListener("click", openZoom);
+	document.getElementById("latex-zoom-close").addEventListener("click", closeZoom);
+	zoom.addEventListener("click", function (e) { if (e.target === zoom) closeZoom(); });
+	document.addEventListener("keydown", function (e) {
+		if (e.key === "Escape" && !zoom.classList.contains("hide")) closeZoom();
+	});
+
+	for (var zi = 0; zi < zoomSizes.length; zi++) {
+		zoomSizes[zi].addEventListener("click", function () {
+			for (var j = 0; j < zoomSizes.length; j++) zoomSizes[j].classList.remove("latex-zoom__size--active");
+			this.classList.add("latex-zoom__size--active");
+			zoomStage.style.fontSize = this.getAttribute("data-zoom") + "em";
+		});
+	}
+
 	// restore last session, else seed with a friendly example
 	var saved = "";
 	try { saved = localStorage.getItem(STORAGE_KEY) || ""; } catch (e) {}

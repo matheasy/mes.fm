@@ -240,6 +240,25 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	   pushes overflow onto the scrollbars #latex-output/mjx-container already have */
 	.latex-tool__grid > div {min-width:0;}
 	.latex-tool__pane-label {font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;margin-bottom:0.35em;display:block;}
+	/* full-screen "screenshot me" view: MathJax CHTML output is built entirely
+	   in em units, so bumping .latex-zoom__stage's own font-size scales the
+	   cloned rendered math proportionally -- no re-typesetting needed */
+	.latex-zoom {position:fixed;inset:0;background:#fff;z-index:100;display:flex;flex-direction:column;}
+	.latex-zoom.hide {display:none;}
+	.latex-zoom__bar {display:flex;align-items:center;justify-content:space-between;gap:1em;padding:0.75em 1em;border-bottom:1px solid #e3e3e3;flex:0 0 auto;}
+	.latex-zoom__sizes {display:flex;flex-wrap:wrap;gap:0.4em;}
+	.latex-zoom__size {font:inherit;font-size:0.9em;cursor:pointer;padding:0.4em 0.85em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.latex-zoom__size:hover {border-color:#137752;color:#137752;}
+	.latex-zoom__size--active {background:#137752;border-color:#137752;color:#fff;}
+	.latex-zoom__close {font:inherit;font-size:1.7em;line-height:1;cursor:pointer;border:none;background:none;color:#555;padding:0 0.3em;flex:0 0 auto;}
+	.latex-zoom__close:hover {color:#000;}
+	.latex-zoom__scroll {flex:1 1 auto;overflow:auto;display:flex;align-items:center;justify-content:center;padding:3em 2em;}
+	.latex-zoom__stage {color:#000;font-size:2.5em;}
+	.latex-zoom__hint {text-align:center;font-size:0.8em;color:#999;padding:0.5em;margin:0;flex:0 0 auto;}
+	@media (max-width: 600px) {
+		.latex-zoom__bar {flex-wrap:wrap;}
+		.latex-zoom__scroll {padding:1.5em 1em;}
+	}
 	#latex-source {width:100%;min-height:26em;padding:1em;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:14px;line-height:1.5;box-sizing:border-box;border:1px solid #bbb;border-radius:0.35em;background:#fbfbfb;color:#000;resize:vertical;}
 	#latex-source:focus {outline:none;border-color:#137752;box-shadow:0 0 0 2px rgba(19,119,82,0.15);}
 	#latex-output {min-height:26em;padding:1.2em;box-sizing:border-box;border:1px solid #bbb;border-radius:0.35em;background:#fff;overflow:auto;line-height:1.6;color:#000;}
@@ -527,10 +546,27 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			<button type="button" id="latex-copy" class="latex-tool__btn">Copy source</button>
 			<button type="button" id="latex-clear" class="latex-tool__btn">Clear</button>
 			<button type="button" id="latex-print" class="latex-tool__btn">Print / Save PDF</button>
+			<button type="button" id="latex-expand" class="latex-tool__btn">Expand</button>
 			<span class="latex-tool__hint" id="latex-status">Auto-renders as you type</span>
 		</div>
 
 		<div id="latex-error" class="latex-tool__error hide"></div>
+
+		<div id="latex-zoom" class="latex-zoom hide">
+			<div class="latex-zoom__bar">
+				<div class="latex-zoom__sizes">
+					<button type="button" class="latex-zoom__size" data-zoom="1.5">1.5&times;</button>
+					<button type="button" class="latex-zoom__size" data-zoom="2.5">2.5&times;</button>
+					<button type="button" class="latex-zoom__size latex-zoom__size--active" data-zoom="4">4&times;</button>
+					<button type="button" class="latex-zoom__size" data-zoom="6">6&times;</button>
+				</div>
+				<button type="button" id="latex-zoom-close" class="latex-zoom__close" aria-label="Close">&times;</button>
+			</div>
+			<div class="latex-zoom__scroll">
+				<div id="latex-zoom-stage" class="latex-zoom__stage"></div>
+			</div>
+			<p class="latex-zoom__hint">Screenshot this for thumbnails &mdash; Esc to close</p>
+		</div>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="button" style="position:relative;">Comments<span class="dropdown-symbol" style="color:inherit;position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>
@@ -559,6 +595,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/speedreader">&#9642; <span>Speed Reader</span></a></li>
             <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/timer">&#9642; <span>Timer</span></a></li>
             <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/latex">&#9642; <span>LaTeX Render</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/timezone">&#9642; <span>Timezone Converter</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/symbols">&#9642; <span>Symbol Copier</span></a></li>
+            <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/emojis">&#9642; <span>Emoji Copier</span></a></li>
             <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/tools.html">&#9642; <span>More...</span></a></li>
         </ul>
     </li>
