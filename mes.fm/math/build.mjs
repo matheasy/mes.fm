@@ -61,7 +61,6 @@ const SECTIONS = [
   {
     id: "infiniteSequence",
     title: "Infinite Sequences and Series",
-    playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EXHAJ3vRg0T_kKEyPah1Lz",
     items: [
       { href: "https://peakd.com/mathematics/@mes/infinite-sequences-limits-squeeze-theorem-fibonacci-sequence-and-golden-ratio-more", title: "Infinite Sequences: Limits, Squeeze Theorem, Fibonacci Sequence & Golden Ratio", playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0HUgfK34Voi6BvrNqt4X4BV" },
       { href: "https://peakd.com/mathematics/@mes/laboratory-project-logistic-sequences", title: "Laboratory Project: Logistic Sequences" },
@@ -94,7 +93,6 @@ const SECTIONS = [
   {
     id: "vectors",
     title: "Vectors and the Geometry of Space",
-    playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0FjJpwnxwdrOR7L8Ul8VZoZ",
     items: [
       { href: "https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems", title: "3D Coordinates Systems", playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0GiAJeLMzhOsrMliibfce5m" },
       { href: "https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors", title: "Vectors", playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EiRECLVkBCcFhSpbSz8XIw" },
@@ -113,7 +111,6 @@ const SECTIONS = [
   {
     id: "vectorfunctions",
     title: "Vector Functions",
-    playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0HQl7xTQBS_O8Te8PcpNm4U",
     items: [
       { href: "https://peakd.com/hive-128780/@mes/omhbcxkw", title: "Vector Functions and Space Curves", playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0GwdMY-E9_4LsmYmO-IxcoX" },
       { href: "https://peakd.com/hive-128780/@mes/hfsetrue", title: "Derivatives and Integrals of Vector Functions", playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0FgQ3jBd9IFaWOakOWbHous" },
@@ -657,7 +654,11 @@ sub {vertical-align:sub;}
 
 .list-thumb {
   display: block;
-  max-width: 100%;
+  /* Capped like mes.fm/hutchison's own Thumbnail View images (naturally
+     sized within that page's 760px .container) -- not stretched edge to
+     edge across this page's much wider .outer-container. */
+  max-width: 760px;
+  width: 100%;
   height: auto;
   border-radius: 4px;
   margin: 0 0 1.4em;
@@ -795,27 +796,15 @@ sub {vertical-align:sub;}
     font-size: 0.75em;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    opacity: 0.6;
+    opacity: 0.7;
     margin: 0;
     color: #333333;
   }
 
   .toc-collapse-all-btn {
-    font-size: 0.8em;
-    opacity: 0.65;
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    text-decoration: underline;
-    color: inherit;
-    font-family: inherit;
+    font-size: 0.75em;
+    padding: 3px 8px;
     white-space: nowrap;
-  }
-
-  .toc-collapse-all-btn:hover {
-    opacity: 1;
   }
 
   .toc-sidebar a {
@@ -867,42 +856,47 @@ sub {vertical-align:sub;}
   text-decoration: underline;
 }
 
-/* Text-size steps -- applied to <html> so every rem/em/percentage-based
-   size on the page scales together (see the header-controls script). */
-html.text-sm { font-size: 87%; }
-html.text-lg { font-size: 118%; }
-
 /* Text-size + dark/light display controls -- sit to the left of the
-   hamburger button (#navbar-button), same corner, at every screen width. */
+   hamburger button (#navbar-button), same corner, at every screen width.
+   Styled to match the existing text-size-btn/theme-toggle-btn convention
+   from add_text_size_control.py (e.g. mes.fm/hutchison-article-balloons).
+   Unlike that convention (which scales a whole <article>), these scale
+   only .page-description and the Jump To panel -- see the header-controls
+   script -- leaving headings, card titles, and nav untouched. */
 #header-controls {
   position: absolute;
   top: 16px;
   right: 68px;
   z-index: 20;
   display: flex;
+  align-items: center;
   gap: 6px;
 }
 
 .header-control-btn {
-  width: 32px;
-  height: 32px;
+  flex: 0 0 auto;
+  width: 2em;
+  height: 2em;
   padding: 0;
   margin: 0;
-  border: 1.5px solid rgba(0, 0, 0, 0.25);
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.04);
-  color: #333333;
   cursor: pointer;
-  font-size: 0.8em;
+  font-family: inherit;
+  font-size: 0.9em;
   font-weight: 700;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background-color: #3a3d52;
+  color: #ffffff;
 }
 
-.header-control-btn:hover {
-  background: rgba(0, 0, 0, 0.12);
+.header-control-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 @media (max-width: 768px) {
@@ -965,14 +959,18 @@ body.dark-mode .button {
 }
 
 body.dark-mode .header-control-btn {
-  border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
+  background-color: #2e2e2e;
   color: #eeeeee;
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 body.dark-mode .toc-mobile summary {
   border-color: rgba(255, 255, 255, 0.3);
   color: #eeeeee;
+}
+
+body.dark-mode .toc-sidebar .toc-title {
+  color: #cccccc;
 }
 </style>
 
@@ -1126,7 +1124,7 @@ body.dark-mode .toc-mobile summary {
 <nav class="toc-sidebar" aria-label="Table of contents">
   <div class="toc-sidebar-header">
     <div class="toc-title">Jump to</div>
-    <button type="button" class="toc-collapse-all-btn toggle-all-lists-btn" onclick="toggleAllLists()">Collapse All</button>
+    <button type="button" class="view-toggle-btn toc-collapse-all-btn toggle-all-lists-btn" onclick="toggleAllLists()">Collapse All</button>
   </div>
   ${tocLinksHtml}
 </nav>
@@ -1134,8 +1132,8 @@ body.dark-mode .toc-mobile summary {
   <div class="inner-container">
     <div id="header" class="header" role="banner">
       <div id="header-controls" role="group" aria-label="Display settings">
-        <button type="button" id="textSizeDownBtn" class="header-control-btn" aria-label="Decrease text size" title="Decrease text size">a</button>
-        <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A</button>
+        <button type="button" id="textSizeDownBtn" class="header-control-btn" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
       <a class="logo-image-container" href='/'><img width="830" height="190" id="logo" class="logo lazyload" alt="Math Easy Solutions logo" data-src="https://mes.fm/img/logo.png"></a>
@@ -1185,7 +1183,7 @@ body.dark-mode .toc-mobile summary {
         </details>
         <div id="main-content">
           <div class="wide">
-            <div class="button toggle-all-lists-btn" id="toggleAllListsBtn" onclick="toggleAllLists()" style="display:inline-block;float:right;">Collapse All</div>
+            <button type="button" class="view-toggle-btn toggle-all-lists-btn" id="toggleAllListsBtn" onclick="toggleAllLists()" style="float:right;">Collapse All</button>
             <div style="clear:both;"></div>
 
 ${sectionsHtml}
@@ -1319,35 +1317,55 @@ ${viewToggleWiring}
 </script>
 
 <script>
-  // header-controls: text-size (A-/A+, cycles sm/md/lg via a class on
-  // <html>) and dark/light mode (sun/moon, toggles .dark-mode on <body>).
-  // Both persist in localStorage. Lives next to #navbar-button so it's
-  // reachable at every screen width, not just desktop.
+  // header-controls: text-size (A-/A+) and dark/light mode (sun/moon).
+  // Lives next to #navbar-button so it's reachable at every screen width,
+  // not just desktop. Same STEPS/localStorage-key convention as
+  // add_text_size_control.py (see mes.fm/hutchison-article-balloons) -- but
+  // that control scales a whole <article>; this one deliberately scales
+  // only .page-description and the Jump To panel, leaving headings, card
+  // titles, and nav untouched.
   (function () {
-    var STEPS = ['sm', 'md', 'lg'];
-    var html = document.documentElement;
+    var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+    var TARGETS = [
+      { el: document.querySelector('.page-description'), base: 1 },
+      { el: document.querySelector('.toc-sidebar'), base: 0.85 },
+      { el: document.querySelector('.toc-mobile'), base: 1 },
+    ].filter(function (t) { return t.el; });
     var downBtn = document.getElementById('textSizeDownBtn');
     var upBtn = document.getElementById('textSizeUpBtn');
-    var current = 'md';
+    if (!TARGETS.length || !downBtn || !upBtn) return;
 
-    function applyTextSize(step) {
-      html.classList.remove('text-sm', 'text-lg');
-      if (step === 'sm') html.classList.add('text-sm');
-      if (step === 'lg') html.classList.add('text-lg');
-      current = step;
-      try { localStorage.setItem('mathTextSize', step); } catch (e) {}
+    function clampIndex(i) {
+      return Math.max(0, Math.min(STEPS.length - 1, i));
     }
 
-    var savedSize;
-    try { savedSize = localStorage.getItem('mathTextSize'); } catch (e) {}
-    applyTextSize(STEPS.indexOf(savedSize) >= 0 ? savedSize : 'md');
+    var index;
+    try {
+      index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale')));
+    } catch (e) {
+      index = -1;
+    }
+    if (index === -1) index = STEPS.indexOf(100);
+
+    function apply() {
+      TARGETS.forEach(function (t) {
+        t.el.style.fontSize = (t.base * STEPS[index] / 100) + 'em';
+      });
+      downBtn.disabled = index === 0;
+      upBtn.disabled = index === STEPS.length - 1;
+      try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+    }
 
     downBtn.addEventListener('click', function () {
-      applyTextSize(STEPS[Math.max(0, STEPS.indexOf(current) - 1)]);
+      index = clampIndex(index - 1);
+      apply();
     });
     upBtn.addEventListener('click', function () {
-      applyTextSize(STEPS[Math.min(STEPS.length - 1, STEPS.indexOf(current) + 1)]);
+      index = clampIndex(index + 1);
+      apply();
     });
+
+    apply();
   })();
 
   (function () {
@@ -1357,11 +1375,15 @@ ${viewToggleWiring}
     function applyTheme(isDark) {
       body.classList.toggle('dark-mode', isDark);
       themeBtn.textContent = isDark ? '☀️' : '🌙';
-      try { localStorage.setItem('mathTheme', isDark ? 'dark' : 'light'); } catch (e) {}
+      try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (e) {}
     }
 
+    // Shared 'theme' key (same convention as the rest of the site), but --
+    // unlike those pages, which default new visitors to dark -- this page
+    // defaults to its normal light template unless dark was explicitly
+    // chosen, since math/index.html had no dark mode at all before now.
     var savedTheme;
-    try { savedTheme = localStorage.getItem('mathTheme'); } catch (e) {}
+    try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
     applyTheme(savedTheme === 'dark');
 
     themeBtn.addEventListener('click', function () {
