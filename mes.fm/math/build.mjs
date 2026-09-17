@@ -161,8 +161,8 @@ function readMetaTag(html, prop) {
 
 // Pull every {label, href} pair out of a page's own `<li>Watch on: <a...>3Speak</a>
 // &middot; <a...>YouTube</a> ...</li>` source-list row. Only mes.fm-hosted
-// mirror pages have this markup -- a peakd/Hive article or a raw YouTube
-// playlist page will simply yield [] here, which is expected.
+// mirror pages have this markup -- a raw YouTube playlist page will simply
+// yield [] here, which is expected.
 function readWatchOnLinks(html) {
   const m = html.match(/<li>\s*Watch on:([\s\S]*?)<\/li>/i);
   if (!m) return [];
@@ -175,13 +175,72 @@ function readWatchOnLinks(html) {
   return links;
 }
 
+// peakd.com is a client-rendered SPA -- a plain fetch() only gets its
+// server-rendered <head> (og:image etc.), never the article body, so
+// readWatchOnLinks() above always finds nothing there. The real per-video
+// platform links still exist, in the underlying Hive post's raw markdown
+// (e.g. "[Watch on 3Speak](url) - [YouTube](url) - [Odysee](url) - ..."),
+// fetched straight from the Hive blockchain instead of peakd's own HTML.
+const PEAKD_URL_RE = /^https:\/\/peakd\.com\/(?:[^/]+\/)?@([^/]+)\/([^/?#]+)/;
+
+// Known video platforms -- used both to sort a List View row's links into
+// this canonical order and, below, to filter a Hive post's raw "Watch on"
+// markdown line down to just these (dropping trailing "[PDF notes]"/
+// "[Playlist]"/"[MES Links]" entries on the same line).
+const PLATFORM_ORDER = ["3Speak", "YouTube", "Telegram", "BitChute", "Odysee", "Rumble"];
+
+async function hiveCall(method, params) {
+  const res = await fetch("https://api.hive.blog", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
+  });
+  if (!res.ok) throw new Error(`Hive API request failed: HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(`Hive API error: ${JSON.stringify(data.error)}`);
+  return data.result;
+}
+
+// Matches "[Watch on 3Speak](url) - [YouTube](url) - [Odysee](url) - ..."
+// (MES's standard markdown watch-links line). The label of the first link
+// carries a "Watch on " prefix; every [label](url) pair in the next 900
+// characters is a candidate, filtered down to only the known video
+// platforms so trailing "[PDF notes]"/"[Playlist]"/"[MES Links]" entries on
+// the same line are dropped. A fixed (not paragraph-bounded) window: the
+// full line with every platform plus the PDF/playlist/MES-links extras can
+// run past 700 characters, and anchoring the end to the paragraph's "\n\n"
+// with a *lazy* quantifier made the whole match fail outright whenever that
+// boundary sat beyond the capped length (no shorter position satisfies it,
+// so the lazy expansion just runs out and backtracks to no match).
+function readWatchOnLinksMarkdown(markdown) {
+  const m = markdown.match(/\[Watch on ([^\]]+)\]\(([^)]+)\)([\s\S]{0,900})/i);
+  if (!m) return [];
+  const links = [{ label: m[1].trim(), href: m[2] }];
+  const restRe = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let rm;
+  while ((rm = restRe.exec(m[3]))) {
+    links.push({ label: rm[1].trim(), href: rm[2] });
+  }
+  return links.filter((l) => PLATFORM_ORDER.includes(l.label));
+}
+
+async function fetchPeakdWatchLinks(url) {
+  const m = url.match(PEAKD_URL_RE);
+  if (!m) return [];
+  const [, author, permlink] = m;
+  const post = await hiveCall("bridge.get_post", { author, permlink });
+  if (!post || !post.body) return [];
+  return readWatchOnLinksMarkdown(post.body);
+}
+
 async function fetchLinkMeta(url) {
   const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const html = await res.text();
+  const watchLinks = PEAKD_URL_RE.test(url) ? await fetchPeakdWatchLinks(url) : readWatchOnLinks(html);
   return {
     image: readMetaTag(html, "og:image"),
-    watchLinks: readWatchOnLinks(html),
+    watchLinks,
   };
 }
 
@@ -205,10 +264,6 @@ async function resolveAllMeta(sections, concurrency = 8) {
   return cache;
 }
 
-// Watch-on links are sorted to this canonical platform order (whichever the
-// item actually has); anything scraped that isn't in this list (an "etc.")
-// is kept, appended after the recognized ones in its original order.
-const PLATFORM_ORDER = ["3Speak", "YouTube", "Telegram", "BitChute", "Odysee", "Rumble"];
 function sortWatchLinks(links) {
   const known = PLATFORM_ORDER.map((label) => links.find((l) => l.label === label)).filter(Boolean);
   const rest = links.filter((l) => !PLATFORM_ORDER.includes(l.label));
@@ -230,13 +285,16 @@ function escapeHtml(str) {
 // Notes link first, then every scraped platform link (sorted), falling back
 // to the item's own hand-curated playlistHref as its "YouTube" entry only
 // when the scrape didn't already turn up a YouTube link of its own.
+// Notes link first, then every real per-video platform link the item's own
+// Hive post actually has (scraped by fetchLinkMeta -- from the page's own
+// "Watch on:" HTML row for a mes.fm mirror, or from the underlying Hive
+// post's raw markdown for a peakd article). No more falling back to a
+// hand-curated playlist link mislabeled as "YouTube" -- if the post has no
+// watch-on row, the List View row just shows Notes alone.
 function buildLinksForItem(item, meta) {
   const m = meta[item.href] || {};
-  const scraped = m.watchLinks || [];
-  const hasYoutube = scraped.some((l) => l.label === "YouTube");
-  const extra = !hasYoutube && item.playlistHref ? [{ label: "YouTube", href: item.playlistHref }] : [];
-  const combined = sortWatchLinks([...scraped, ...extra]);
-  return [{ label: "Notes", href: item.href }, ...combined];
+  const sorted = sortWatchLinks(m.watchLinks || []);
+  return [{ label: "Notes", href: item.href }, ...sorted];
 }
 
 function buildCard(item, meta) {
@@ -508,11 +566,16 @@ sub {vertical-align:sub;}
   margin: 0 0 1.5em;
 }
 
+/* Centered like mes.fm/hutchison's own chapter titles (.wide
+   .chapter-toggle-header{text-align:center}) -- the whole per-section block
+   (heading, standalone playlist link, view-toggle buttons, list rows) reads
+   centered rather than left-aligned. */
 .sub-heading {
   font-size: 1.2em;
   font-weight: bold;
   cursor: pointer;
   margin: 0 0 0.3em;
+  text-align: center;
 }
 
 .arrow-icon {
@@ -528,6 +591,7 @@ sub {vertical-align:sub;}
 
 .view-toggle {
   display: flex;
+  justify-content: center;
   gap: 0.5em;
   margin: 0.4em 0 0.8em;
 }
@@ -592,6 +656,14 @@ sub {vertical-align:sub;}
   background-position: center;
 }
 
+/* MES Math Q/A Livestreams' own thumbnails are all the same generic
+   channel card (just a different episode number) -- half height in Grid
+   View so they don't dominate the card the way a real per-video thumbnail
+   would. */
+#mathQaLivestreamsGrid .link-card-thumb {
+  aspect-ratio: 16 / 4.5;
+}
+
 .link-card-body {
   padding: 0.6rem 0.8rem 0.8rem;
   display: flex;
@@ -613,16 +685,25 @@ sub {vertical-align:sub;}
   color: #1a6fb0;
 }
 
-/* List View -- title / links row / full (uncropped) thumbnail per item, one
-   big full-width row at a time (matching mes.fm/hutchison's own List/
-   Thumbnail view), not split into side-by-side columns. */
+/* List View -- title / links row / thumbnail per item, 1 column on narrow
+   screens, 2 side-by-side on big desktop screens (each thumbnail sized to
+   its column, not stretched full-width). */
 .list-view {
-  display: block;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 2em;
+}
+
+@media (min-width: 900px) {
+  .list-view {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .section-standalone-link {
   margin: 0 0 0.6em;
   font-weight: 600;
+  text-align: center;
 }
 
 .section-standalone-link a {
@@ -633,6 +714,7 @@ sub {vertical-align:sub;}
   margin: 0 0 2em;
   padding: 0 0 2em;
   border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+  text-align: center;
 }
 
 .list-row:last-child {
@@ -654,14 +736,10 @@ sub {vertical-align:sub;}
 
 .list-thumb {
   display: block;
-  /* Capped like mes.fm/hutchison's own Thumbnail View images (naturally
-     sized within that page's 760px .container) -- not stretched edge to
-     edge across this page's much wider .outer-container. */
-  max-width: 760px;
-  width: 100%;
+  max-width: 100%;
   height: auto;
   border-radius: 4px;
-  margin: 0 0 1.4em;
+  margin: 0 auto 1.4em;
   cursor: zoom-in;
 }
 
