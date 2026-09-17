@@ -46,6 +46,7 @@ const SECTIONS = [
     id: "mathQaLivestreams",
     title: "MES Math Q/A Livestreams",
     playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-",
+    compactList: true,
     items: [
       { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-", title: "Playlist", standalone: true },
       { href: "https://mes.fm/math-qa-70-lorentz-force", title: "70: What is the Lorentz Force?", playlistHref: "https://youtube.com/live/BJ1zYm_ZCVw" },
@@ -340,6 +341,7 @@ function buildSection(section, meta) {
     .join("\n  ");
   const cards = cardItems.map((item) => buildCard(item, meta)).join("\n    ");
   const rows = cardItems.map((item) => buildRow(item, meta)).join("\n    ");
+  const listViewClass = section.compactList ? "list-view list-view--compact" : "list-view";
 
   return `<div class="list-container">
   <h2 id="${section.id}-heading" class="sub-heading" onclick="toggleSubList('${section.id}')">${escapeHtml(section.title)}${playlistLink} <span id="arrowIcon-${section.id}" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
@@ -352,7 +354,7 @@ function buildSection(section, meta) {
     <div class="card-grid" id="${section.id}Grid">
     ${cards}
     </div>
-    <div class="list-view view-hidden" id="${section.id}List">
+    <div class="${listViewClass} view-hidden" id="${section.id}List">
     ${rows}
     </div>
   </div>
@@ -659,9 +661,12 @@ sub {vertical-align:sub;}
 /* MES Math Q/A Livestreams' own thumbnails are all the same generic
    channel card (just a different episode number) -- half height in Grid
    View so they don't dominate the card the way a real per-video thumbnail
-   would. */
+   would. The episode number sits in the bottom half of the source image, so
+   crop from the top (background-position bottom) instead of the default
+   centered crop, which cut the number off. */
 #mathQaLivestreamsGrid .link-card-thumb {
   aspect-ratio: 16 / 4.5;
+  background-position: center bottom;
 }
 
 .link-card-body {
@@ -689,13 +694,24 @@ sub {vertical-align:sub;}
    screens, 2 side-by-side on big desktop screens (each thumbnail sized to
    its column, not stretched full-width). */
 .list-view {
+  display: block;
+}
+
+/* MES Math Q/A Livestreams only: 2 smaller columns on big desktop screens
+   (its thumbnails are all the same generic card, so a smaller side-by-side
+   pair reads fine) -- every other section stays the single big full-width
+   row (matching mes.fm/hutchison's own List/Thumbnail view). A class (not
+   an #id) so it stays the same specificity as .view-hidden below and the
+   toggle can still hide this view -- an #id selector here would always
+   beat .view-hidden's display:none regardless of source order. */
+.list-view--compact {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0 2em;
 }
 
 @media (min-width: 900px) {
-  .list-view {
+  .list-view--compact {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -736,7 +752,14 @@ sub {vertical-align:sub;}
 
 .list-thumb {
   display: block;
-  max-width: 100%;
+  /* Capped like mes.fm/hutchison's own Thumbnail View images (naturally
+     sized within that page's 760px .container) -- not stretched edge to
+     edge across this page's much wider band. Centered via margin:auto since
+     a single full-width row is wider than this cap. MES Math Q/A
+     Livestreams' own 2-column layout is already narrower than the cap, so
+     this has no effect there. */
+  max-width: 760px;
+  width: 100%;
   height: auto;
   border-radius: 4px;
   margin: 0 auto 1.4em;
