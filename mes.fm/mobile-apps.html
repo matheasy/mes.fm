@@ -242,6 +242,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.calc__img-container,.calc__text {display: table-cell;vertical-align: middle;}
 	.calc__img {margin-right: 0.4em;display: block;}
 	.calc__img--round {border-radius: 0.2em;}
+	/* see tools.html: the site-wide RESPONSIVE-FIX-INSERTED block forces
+	   img{max-width:100%;height:auto} below 768px, but .tbl--stack's own
+	   fixed-size rescue only kicks in below 600px, leaving icons
+	   unconstrained (and inconsistently sized per row) in the 601-767px
+	   gap. Pin them back to 88px there; .tbl--stack takes over below 600px. */
+	@media (max-width: 768px) {
+		.calc__img { width: 88px !important; height: 88px !important; max-width: 88px !important; }
+	}
 	.calc__text--title {display:block;margin-bottom:1em;font-size:1.1em;}
 	.calc__text--small {font-size:1em;}
 	.calc__text--desc {font-size:0.9em;color: #666666;}
