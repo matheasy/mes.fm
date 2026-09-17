@@ -188,6 +188,7 @@ ${cards}
 // scraped from the target page's og: tags at build time and cached in
 // link-meta.json.
 const POSTS = [
+  { href: "https://mes.fm/stock-market-vs-oil", title: "The Top 10 S&P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks" },
   { href: "https://mes.fm/rudy-giuiliani-medal-cross-dress-trump", title: "Trump Gives Cross-Dressing BFF Rudy Giuliani a Presidential Medal of Freedom" },
   { href: "https://mes.fm/swim-iran-nukes", title: "MES Goes Undercover to Check If Iran Built Underwater Mini-Nukes" },
   { href: "https://mes.fm/eyesiswatchin-donate", title: "EyesIsWatchin Health Update" },
