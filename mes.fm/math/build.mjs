@@ -570,9 +570,12 @@ sub {vertical-align:sub;}
 }
 
 /* Centered like mes.fm/hutchison's own chapter titles (.wide
-   .chapter-toggle-header{text-align:center}) -- the whole per-section block
-   (heading, standalone playlist link, view-toggle buttons, list rows) reads
-   centered rather than left-aligned. */
+   .chapter-toggle-header{text-align:center}) -- but, matching that same
+   page, only this section-level heading is centered. The standalone
+   playlist link, view-toggle buttons, and each item's own title/links
+   inside List View stay left-aligned, same as hutchison's per-entry
+   markdown headings/link rows -- only the thumbnail image is centered
+   there (via margin:auto on .list-thumb, independent of text-align). */
 .sub-heading {
   font-size: 1.2em;
   font-weight: bold;
@@ -594,7 +597,6 @@ sub {vertical-align:sub;}
 
 .view-toggle {
   display: flex;
-  justify-content: center;
   gap: 0.5em;
   margin: 0.4em 0 0.8em;
 }
@@ -720,7 +722,6 @@ sub {vertical-align:sub;}
 .section-standalone-link {
   margin: 0 0 0.6em;
   font-weight: 600;
-  text-align: center;
 }
 
 .section-standalone-link a {
@@ -731,7 +732,6 @@ sub {vertical-align:sub;}
   margin: 0 0 2em;
   padding: 0 0 2em;
   border-bottom: 1px solid rgba(128, 128, 128, 0.25);
-  text-align: center;
 }
 
 .list-row:last-child {
