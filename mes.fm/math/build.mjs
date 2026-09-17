@@ -45,7 +45,6 @@ const SECTIONS = [
   {
     id: "mathQaLivestreams",
     title: "MES Math Q/A Livestreams",
-    playlistHref: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-",
     compactList: true,
     // A third view (its own toggle button, alongside Grid View/List View)
     // for stats-screen pages that don't belong as a regular episode entry --
