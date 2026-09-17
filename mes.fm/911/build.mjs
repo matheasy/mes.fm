@@ -320,6 +320,7 @@ function wrapChaptersInToggles(html) {
 // first). The thumbnail + excerpt are scraped from the target page's og: tags at
 // build time (resolveAllMeta) and cached in link-meta.json.
 const POSTS = [
+  { href: "https://mes.fm/peter-baron-ufo-ai-testimony", title: "MES Talks to Peter Baron About His UFO 9/11 Sighting" },
   { href: "https://mes.fm/melissa-doi-voices-bleeped", title: "Melissa Doi and the 1,613 Emergency 9/11 Calls" },
   { href: "https://mes.fm/911-3d-print-pin", title: "Niece Made MES a 9/11 Pin with Her 3D Printing Pen" },
   { href: "https://mes.fm/911-spook-ryan-bannister", title: "9/11 Spooky Drama: Ryan Bannister Wildin'" },
