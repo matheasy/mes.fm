@@ -265,10 +265,11 @@ async function resolveAllMeta(sections, concurrency = 8) {
   return cache;
 }
 
+// Only these platforms, in this order -- anything else scraped (e.g.
+// math-qa-70-lorentz-force's own "Watch on:" row also lists Twitch) is
+// dropped rather than tacked on at the end.
 function sortWatchLinks(links) {
-  const known = PLATFORM_ORDER.map((label) => links.find((l) => l.label === label)).filter(Boolean);
-  const rest = links.filter((l) => !PLATFORM_ORDER.includes(l.label));
-  return [...known, ...rest];
+  return PLATFORM_ORDER.map((label) => links.find((l) => l.label === label)).filter(Boolean);
 }
 
 function cssSafeUrl(url) {
@@ -856,6 +857,72 @@ sub {vertical-align:sub;}
   .lightbox-controls { bottom: 32px; }
   .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
   .lightbox-close { width: 36px; height: 36px; }
+}
+
+/* Lightbox zoom in/out + drag-to-pan -- same add_lightbox_zoom.py pattern
+   used repo-wide (e.g. mes.fm/hutchison), reused directly here rather than
+   run against this page's build output (which npm run build would just
+   overwrite). Sits top-left, mirroring the close button's top-right spot,
+   so it never has to touch the bottom .lightbox-controls bar. */
+.lightbox-zoom-controls {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2147483647;
+}
+
+.lightbox-zoom-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border: 0;
+  cursor: pointer;
+  font-size: 1.2em;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-zoom-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.lightbox-zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.lightbox-zoom-level {
+  min-width: 3.4em;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  font-size: 0.8em;
+  padding: 5px 8px;
+  border-radius: 999px;
+}
+
+.lightbox-image {
+  transition: transform 0.15s ease;
+}
+
+.lightbox-image.zoomed {
+  cursor: grab;
+}
+
+.lightbox-image.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+@media (max-width: 600px) {
+  .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
 }
 
 /* Table of contents: a fixed side column on very wide viewports (this page's
@@ -1494,6 +1561,11 @@ ${viewToggleWiring}
 </script>
 
 <div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <div class="lightbox-zoom-controls" id="lightboxZoomControls">
+    <button class="lightbox-zoom-btn" id="lightboxZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+    <span class="lightbox-zoom-level" id="lightboxZoomLevel">100%</span>
+    <button class="lightbox-zoom-btn" id="lightboxZoomIn" type="button" aria-label="Zoom in">+</button>
+  </div>
   <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
   <img class="lightbox-image" id="lightboxImage" src="" alt="">
   <div class="lightbox-controls" id="lightboxControls">
@@ -1560,6 +1632,110 @@ ${viewToggleWiring}
       else if (e.key === 'ArrowLeft') show(currentIndex - 1);
       else if (e.key === 'ArrowRight') show(currentIndex + 1);
     });
+  })();
+</script>
+
+<script>
+  // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the lightbox
+  // above -- same add_lightbox_zoom.py pattern used repo-wide (e.g.
+  // mes.fm/hutchison). Purely additive: only touches the #lightboxZoom*
+  // elements it creates itself, resetting whenever #lightboxImage's src or
+  // #lightboxOverlay's open state changes, so it works regardless of how
+  // the lightbox's own open/prev/next logic runs.
+  (function () {
+    var overlay = document.getElementById('lightboxOverlay');
+    var imageEl = document.getElementById('lightboxImage');
+    var zoomOutBtn = document.getElementById('lightboxZoomOut');
+    var zoomInBtn = document.getElementById('lightboxZoomIn');
+    var zoomLevelEl = document.getElementById('lightboxZoomLevel');
+    if (!overlay || !imageEl || !zoomOutBtn || !zoomInBtn || !zoomLevelEl) return;
+
+    var ZOOM_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+    var zoomIndex = 0;
+    var panX = 0, panY = 0;
+    var dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+    function applyTransform() {
+      imageEl.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + ZOOM_STEPS[zoomIndex] + ')';
+      imageEl.classList.toggle('zoomed', zoomIndex > 0);
+      zoomLevelEl.textContent = Math.round(ZOOM_STEPS[zoomIndex] * 100) + '%';
+      zoomOutBtn.disabled = zoomIndex === 0;
+      zoomInBtn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
+    }
+
+    function zoomTo(index) {
+      zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index));
+      if (zoomIndex === 0) { panX = 0; panY = 0; }
+      applyTransform();
+    }
+
+    function resetZoom() {
+      dragging = false;
+      imageEl.classList.remove('dragging');
+      zoomTo(0);
+    }
+
+    zoomOutBtn.addEventListener('click', function () { zoomTo(zoomIndex - 1); });
+    zoomInBtn.addEventListener('click', function () { zoomTo(zoomIndex + 1); });
+
+    imageEl.addEventListener('dblclick', function () {
+      zoomTo(zoomIndex > 0 ? 0 : 2);
+    });
+
+    imageEl.addEventListener('mousedown', function (e) {
+      if (zoomIndex === 0) return;
+      dragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      panStartX = panX;
+      panStartY = panY;
+      imageEl.classList.add('dragging');
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', function (e) {
+      if (!dragging) return;
+      panX = panStartX + (e.clientX - dragStartX);
+      panY = panStartY + (e.clientY - dragStartY);
+      applyTransform();
+    });
+
+    window.addEventListener('mouseup', function () {
+      if (!dragging) return;
+      dragging = false;
+      imageEl.classList.remove('dragging');
+    });
+
+    imageEl.addEventListener('touchstart', function (e) {
+      if (zoomIndex === 0 || e.touches.length !== 1) return;
+      dragging = true;
+      dragStartX = e.touches[0].clientX;
+      dragStartY = e.touches[0].clientY;
+      panStartX = panX;
+      panStartY = panY;
+    }, { passive: true });
+
+    imageEl.addEventListener('touchmove', function (e) {
+      if (!dragging || e.touches.length !== 1) return;
+      panX = panStartX + (e.touches[0].clientX - dragStartX);
+      panY = panStartY + (e.touches[0].clientY - dragStartY);
+      applyTransform();
+    }, { passive: true });
+
+    imageEl.addEventListener('touchend', function () { dragging = false; });
+
+    document.addEventListener('keydown', function (e) {
+      if (!overlay.classList.contains('open')) return;
+      if (e.key === '+' || e.key === '=') zoomTo(zoomIndex + 1);
+      else if (e.key === '-' || e.key === '_') zoomTo(zoomIndex - 1);
+    });
+
+    new MutationObserver(resetZoom).observe(imageEl, { attributes: true, attributeFilter: ['src'] });
+    new MutationObserver(function () {
+      if (overlay.classList.contains('open')) resetZoom();
+    }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+
+    applyTransform();
   })();
 </script>
 
