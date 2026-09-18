@@ -252,8 +252,28 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.latex-zoom__size--active {background:#137752;border-color:#137752;color:#fff;}
 	.latex-zoom__close {font:inherit;font-size:1.7em;line-height:1;cursor:pointer;border:none;background:none;color:#555;padding:0 0.3em;flex:0 0 auto;}
 	.latex-zoom__close:hover {color:#000;}
-	.latex-zoom__scroll {flex:1 1 auto;overflow:auto;display:flex;align-items:center;justify-content:center;padding:3em 2em;}
-	.latex-zoom__stage {color:#000;font-size:2.5em;}
+	/* NOT display:flex;align-items:center;justify-content:center -- centering
+	   overflowing content with flex alignment is a well-known browser bug
+	   (the "flexbox centering + overflow" issue): once the zoomed formula is
+	   taller/wider than the scroll area, centered flex alignment splits the
+	   overflow evenly on both sides and clips/strands part of it above or
+	   left of the scrollable viewport instead of just letting you scroll to
+	   it -- exactly the stray-scrollbar-plus-giant-blank-space this caused.
+	   width:max-content + margin:auto is the classic safe alternative: it
+	   centers the formula when it fits, and cleanly left/top-anchors it
+	   (fully scrollable, nothing clipped) when it's too big to fit. */
+	.latex-zoom__scroll {flex:1 1 auto;overflow:auto;padding:3em 2em;}
+	.latex-zoom__stage {display:block;width:max-content;max-width:none;margin:0 auto;color:#000;font-size:2.5em;}
+	/* MathJax's own CHTML stylesheet gives every display-math
+	   <mjx-container> overflow-x:auto so a genuinely too-wide equation can
+	   scroll on its own -- but its scrollWidth ends up a few px larger
+	   than its clientWidth even on equations that fit fine (the hidden
+	   assistive-mml copy still contributes to the box), so a persistent,
+	   pointless horizontal scrollbar shows up under nearly every cloned
+	   equation here. The outer .latex-zoom__scroll already handles
+	   scrolling for a formula too big for the modal, so this nested one
+	   is never needed. */
+	.latex-zoom__stage mjx-container {overflow:visible !important;}
 	.latex-zoom__hint {text-align:center;font-size:0.8em;color:#999;padding:0.5em;margin:0;flex:0 0 auto;}
 	@media (max-width: 600px) {
 		.latex-zoom__bar {flex-wrap:wrap;}
