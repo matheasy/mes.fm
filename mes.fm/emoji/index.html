@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
 <!-- MES Emoji Copier -- mes.fm/emoji -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/emoji/img/logo.png" type="image/png" /><link rel="canonical" href="https://mes.fm/emoji/" />                    <title>MES Emoji Copier | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/emoji/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/emoji/" />                    <title>MES Emoji Copier | Math Easy Solutions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -262,7 +262,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.emo-zoom__close:hover {color:#000;}
 	.emo-zoom__scroll {flex:1 1 auto;overflow:auto;display:flex;align-items:center;justify-content:center;padding:2em;}
 	.emo-zoom__checker {display:inline-block;padding:1.5em;border-radius:0.6em;background-image:conic-gradient(#e2e2e2 90deg, #fafafa 90deg 180deg, #e2e2e2 180deg 270deg, #fafafa 270deg);background-size:28px 28px;box-shadow:0 0.4em 1.5em rgba(0,0,0,0.12);}
-	.emo-zoom__checker img {display:block;max-width:70vw;max-height:50vh;}
+	.emo-zoom__checker img {display:block;max-width:70vw;max-height:50vh;transition:opacity 0.15s ease;}
+	.emo-zoom__checker img.emo-zoom__img--loading {opacity:0.35;}
 	.emo-zoom__actions {display:flex;flex-wrap:wrap;gap:0.6em;justify-content:center;padding:0 1em 0.75em;flex:0 0 auto;}
 	.emo-zoom__hint {text-align:center;font-size:0.8em;color:#999;padding:0 1em 1em;margin:0;flex:0 0 auto;}
 	@media (max-width: 600px) {
@@ -496,7 +497,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/emoji'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/emoji/img/logo.png"></a>
+            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/emoji'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/emoji/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/emoji'>
                                     <p class="calculator-title">MES Emoji Copier</p>
@@ -561,7 +562,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			<button type="button" id="emo-zoom-download" class="emo__btn emo__btn--primary">Download PNG</button>
 			<button type="button" id="emo-zoom-copy" class="emo__btn emo__btn--ghost">Copy image</button>
 		</div>
-		<p class="emo-zoom__hint">Transparent background, rendered using your device's emoji font &mdash; Esc to close</p>
+		<p class="emo-zoom__hint">Transparent background, high-resolution artwork &mdash; Esc to close</p>
 	</div>
 
 	<div class="emo-seo">
@@ -581,7 +582,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		<p>It works the same on any device, lets you search by full name instead of guessing an icon, and lets you build and copy several emojis as one string at once &mdash; plus nothing else offers a one-click large transparent PNG export for thumbnails.</p>
 
 		<h3>Is anything sent to a server?</h3>
-		<p>No. The emoji list lives in this page's own JavaScript, the copy happens via your browser's clipboard API, and the large PNG is drawn locally on a canvas using your device's own emoji font &mdash; nothing leaves your device.</p>
+		<p>Nothing you type or copy ever leaves your device. The emoji list lives in this page's own JavaScript, copying happens via your browser's clipboard API, and the large PNG is drawn locally on a canvas. The one exception: expanding an emoji fetches its high-resolution artwork from the public Twemoji CDN (so the export looks sharp at any size, not just your device's own emoji font) &mdash; that's a request for public emoji artwork, not anything of yours.</p>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="button" style="position:relative;">Comments<span class="dropdown-symbol" style="color:inherit;position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>
@@ -655,6 +656,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@17.0.3/dist/twemoji.min.js" defer></script>
 	<script src="/emoji/js/emoji.js" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.3"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script></body>
 

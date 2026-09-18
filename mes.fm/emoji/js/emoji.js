@@ -1,8 +1,12 @@
 /* MES Emoji Copier -- mes.fm/emoji
  *
  * Click a tile, it's copied. Click the small corner button to expand it into
- * a large transparent-background PNG (drawn on a <canvas> using the device's
- * own emoji font -- nothing uploaded, nothing installed).
+ * a large transparent-background PNG, drawn on a <canvas> from Twemoji's own
+ * vector artwork (crisp at any export size) fetched from a CDN, falling back
+ * to the device's own emoji font (blurry past ~160px -- system color-emoji
+ * fonts are bitmap, not vector, so asking for a bigger font size just
+ * upscales the same fixed-resolution glyph) if that emoji has no Twemoji
+ * artwork or the fetch fails.
  * Each entry: c = emoji character(s), n = display name (also searched),
  * k = extra search keywords (optional).
  */
@@ -821,10 +825,48 @@
 	var currentEmoji = "", currentName = "", currentSize = 1024;
 	var lastFocused = null;
 
-	// draws the emoji onto an offscreen canvas at `size`x`size` using the
-	// browser's own color-emoji font -- canvas has no fill rect, so the PNG
-	// it exports keeps a real alpha-transparent background
-	function renderEmojiCanvas(emoji, size) {
+	// Twemoji's own vector artwork -- true SVG, so drawImage()ing it onto a
+	// canvas rasterizes fresh at whatever size is requested (unlike the OS's
+	// emoji font, which is a *bitmap* font capped around ~160px per glyph;
+	// asking fillText() for a bigger font size just upscales that same fixed
+	// bitmap, which is why 2048px used to look barely different from 512px).
+	// Pinned npm version (not a "@latest" tag) so this doesn't change under
+	// us; jsdelivr serves it with long-lived immutable caching.
+	var TWEMOJI_SVG_BASE = "https://cdn.jsdelivr.net/npm/@twemoji/svg@15.0.0/";
+	var twemojiImageCache = {};
+
+	// Twemoji filenames are the emoji's codepoints (lowercase hex, joined by
+	// "-", variation selectors stripped) -- @twemoji/api's own converter
+	// handles this, including multi-codepoint sequences (ZWJ joins, skin
+	// tone modifiers, flags) correctly. Returns null if that library hasn't
+	// loaded (e.g. its CDN request failed), triggering the font fallback.
+	function twemojiCodePoint(emoji) {
+		try {
+			return window.twemoji && window.twemoji.convert && window.twemoji.convert.toCodePoint
+				? window.twemoji.convert.toCodePoint(emoji)
+				: null;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	function loadTwemojiImage(codepoint) {
+		if (!twemojiImageCache[codepoint]) {
+			twemojiImageCache[codepoint] = new Promise(function (resolve, reject) {
+				var img = new Image();
+				img.crossOrigin = "anonymous";
+				img.onload = function () { resolve(img); };
+				img.onerror = reject;
+				img.src = TWEMOJI_SVG_BASE + codepoint + ".svg";
+			});
+		}
+		return twemojiImageCache[codepoint];
+	}
+
+	// Fallback only: draws the emoji onto an offscreen canvas using the
+	// browser's own color-emoji font. Blurry past ~160px (see above), but
+	// always available with no network round trip.
+	function renderEmojiCanvasFromFont(emoji, size) {
 		var canvas = document.createElement("canvas");
 		canvas.width = size;
 		canvas.height = size;
@@ -836,14 +878,43 @@
 		return canvas;
 	}
 
+	// Canvas has no fill rect either way, so the PNG it exports keeps a real
+	// alpha-transparent background. Returns a Promise<canvas> since loading
+	// the Twemoji SVG is async; falls back to the font-rendered canvas if
+	// this emoji has no Twemoji artwork or the fetch fails.
+	function renderEmojiCanvas(emoji, size) {
+		var codepoint = twemojiCodePoint(emoji);
+		if (!codepoint) return Promise.resolve(renderEmojiCanvasFromFont(emoji, size));
+		return loadTwemojiImage(codepoint).then(
+			function (img) {
+				var canvas = document.createElement("canvas");
+				canvas.width = size;
+				canvas.height = size;
+				canvas.getContext("2d").drawImage(img, 0, 0, size, size);
+				return canvas;
+			},
+			function () {
+				return renderEmojiCanvasFromFont(emoji, size);
+			}
+		);
+	}
+
 	// the preview's on-screen size scales with the chosen export resolution too --
 	// otherwise the size buttons only change an invisible property (the canvas
 	// pixel dimensions baked into the exported PNG) and clicking them looks like
 	// it does nothing at all
 	var PREVIEW_EM = { 512: 11, 1024: 15, 2048: 19 };
+	var zoomRenderGen = 0;
 	function renderZoomPreview() {
-		zoomImg.src = renderEmojiCanvas(currentEmoji, currentSize).toDataURL("image/png");
-		var em = PREVIEW_EM[currentSize] || 15;
+		var gen = ++zoomRenderGen;
+		var emoji = currentEmoji, size = currentSize;
+		zoomImg.classList.add("emo-zoom__img--loading");
+		renderEmojiCanvas(emoji, size).then(function (canvas) {
+			if (gen !== zoomRenderGen) return; // a newer size/emoji was picked meanwhile
+			zoomImg.src = canvas.toDataURL("image/png");
+			zoomImg.classList.remove("emo-zoom__img--loading");
+		});
+		var em = PREVIEW_EM[size] || 15;
 		zoomImg.style.width = zoomImg.style.height = em + "em";
 	}
 
@@ -883,27 +954,29 @@
 	}
 
 	$("emo-zoom-download").addEventListener("click", function () {
-		var canvas = renderEmojiCanvas(currentEmoji, currentSize);
-		var a = document.createElement("a");
-		a.download = "emoji-" + slugify(currentName) + "-" + currentSize + ".png";
-		a.href = canvas.toDataURL("image/png");
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
+		renderEmojiCanvas(currentEmoji, currentSize).then(function (canvas) {
+			var a = document.createElement("a");
+			a.download = "emoji-" + slugify(currentName) + "-" + currentSize + ".png";
+			a.href = canvas.toDataURL("image/png");
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		});
 	});
 
 	$("emo-zoom-copy").addEventListener("click", function () {
-		var canvas = renderEmojiCanvas(currentEmoji, currentSize);
 		if (!navigator.clipboard || !navigator.clipboard.write || typeof ClipboardItem === "undefined") {
 			toast("Copy image isn't supported in this browser — try Download instead");
 			return;
 		}
-		canvas.toBlob(function (blob) {
-			if (!blob) { toast("Couldn't create the image"); return; }
-			navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(function () {
-				toast("Image copied");
-			}, function () {
-				toast("Couldn't copy image — try Download instead");
+		renderEmojiCanvas(currentEmoji, currentSize).then(function (canvas) {
+			canvas.toBlob(function (blob) {
+				if (!blob) { toast("Couldn't create the image"); return; }
+				navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(function () {
+					toast("Image copied");
+				}, function () {
+					toast("Couldn't copy image — try Download instead");
+				});
 			});
 		});
 	});
