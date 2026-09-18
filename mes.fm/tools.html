@@ -237,6 +237,25 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 </style>	<style>
 	.tbl {width:100%;table-layout: fixed;}
 	.calc-row {border-bottom: 0.4em solid transparent;}
+	/* Equal-height cards, take 2: a child's height:100% of a <td> is
+	   real per spec but has long been unreliable across browsers in
+	   practice (notably Safari/WebKit) once box-sizing/position:relative
+	   are layered on top -- which is exactly why the previous fix
+	   (.calc-link{height:100%}) verified fine in one browser but still
+	   shipped ragged card heights for real users. CSS Grid's default
+	   align-items:stretch has none of that ambiguity, so re-flow the
+	   table onto a grid instead: tbody/tr collapse to display:contents
+	   (so their td children become direct grid items) and each row's
+	   two cards stretch to match automatically. Scoped to the same
+	   601px+ range .tbl--stack's own mobile stacking owns below 600px,
+	   so the two never fight over the display property on tr/td. tr's
+	   border-bottom above becomes a no-op under display:contents (a
+	   contents box paints nothing), so row-gap replaces it here. */
+	@media (min-width: 601px) {
+		.tbl { display: grid; grid-template-columns: 1fr 1fr; row-gap: 0.4em; }
+		.tbl tbody, .calc-row { display: contents; }
+		.calc-container { display: block; }
+	}
 	.calc-link {display: block;border: 0.15em solid #d4d4d4;padding:0.4em;position:relative;height:100%;box-sizing:border-box;}
 	.calc__img-container,.calc__text {display: table-cell;vertical-align: middle;}
 	.calc__img {margin-right: 0.4em;display: block;}

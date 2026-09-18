@@ -238,7 +238,18 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tbl {width:100%;table-layout: fixed;}
 	.calc-row {border-bottom: 0.4em solid transparent;}
 	.calc-container:not(:last-child) {border-right:0.4em solid transparent;}
-	.calc-link {display: block;border: 0.15em solid #d4d4d4;padding:0.4em;position:relative;}
+	/* Equal-height cards regardless of description length -- see
+	   tools.html for the full rationale (a child's height:100% of a <td>
+	   is unreliable cross-browser; CSS Grid's align-items:stretch isn't).
+	   Scoped to 601px+ so it never overlaps .tbl--stack's own mobile
+	   stacking below 600px. tr's border-bottom above is a no-op once its
+	   display becomes contents, so row-gap replaces it here. */
+	@media (min-width: 601px) {
+		.tbl { display: grid; grid-template-columns: 1fr 1fr; row-gap: 0.4em; }
+		.tbl tbody, .calc-row { display: contents; }
+		.calc-container { display: block; }
+	}
+	.calc-link {display: block;border: 0.15em solid #d4d4d4;padding:0.4em;position:relative;height:100%;box-sizing:border-box;}
 	.calc__img-container,.calc__text {display: table-cell;vertical-align: middle;}
 	.calc__img {margin-right: 0.4em;display: block;}
 	.calc__img--round {border-radius: 0.2em;}
