@@ -3,6 +3,7 @@
   "cleanUrls": true,
   "redirects": [
     { "source": "/video-thumbnail", "destination": "/youtube-thumbnail", "permanent": true },
+    { "source": "/thumbnail", "destination": "/youtube-thumbnail", "permanent": true },
     { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/:slug/contact", "destination": "/contact", "permanent": true },
     { "source": "/:slug/contact.html", "destination": "/contact", "permanent": true },
