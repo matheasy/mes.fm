@@ -418,7 +418,17 @@ function buildPage(post, meta) {
   const title = post.title;
   const preprocessed = embedYoutubeLinks(fixTableBoundaries(post.body));
   const { html: parsedBodyHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
-  const wrappedBodyHtml = wrapChaptersInToggles(parsedBodyHtml);
+
+  // #911Truth Part 26's "Hive notes" link still points at the raw Hive post;
+  // point it at the mes.fm screenshots mirror instead (this also becomes the
+  // Grid View card's href, since Grid View just reads each entry's first <a>
+  // at runtime -- see enableGridToggle below). Manual patch, not sourced from
+  // Hive, so it's reapplied here on every rebuild until fixed on Hive itself.
+  const patchedBodyHtml = parsedBodyHtml.replace(
+    '<a href="https://peakd.com/hive-113182/@mes/lazaqoat">Hive notes</a>',
+    '<a href="https://mes.fm/911-wtc-vehicle-massacre">Hive notes</a>'
+  );
+  const wrappedBodyHtml = wrapChaptersInToggles(patchedBodyHtml);
 
   // Front of the TOC: the two hand-maintained chapters, then the article's own
   // sections ("Important Links" first, already in `toc` from the Hive body).
