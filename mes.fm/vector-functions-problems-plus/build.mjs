@@ -645,8 +645,13 @@ ${leadingHtml}
       margin: 0.4em 0 0.2em;
     }
 
+    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
+       the byline and the Jump To navigation scale. Uses rem so nested
+       lists/quotes don't compound. Playlist cards/rows are excluded. */
+    .post-body :is(p, li, blockquote, td, th):not(#playlist *) { font-size: calc(1rem * var(--ts, 1)); }
+
     .post-meta {
-      font-size: 0.9em;
+      font-size: calc(0.9rem * var(--ts, 1));
       opacity: 0.85;
       margin-bottom: 0.6em;
     }
@@ -658,7 +663,7 @@ ${leadingHtml}
     .peakd-link {
       display: inline-block;
       margin: 0.6em 0 1.4em;
-      font-size: 0.9em;
+      font-size: calc(0.9rem * var(--ts, 1));
       font-style: italic;
     }
 
@@ -910,7 +915,7 @@ ${leadingHtml}
     }
 
     .retrieved-note {
-      font-size: 0.85em;
+      font-size: calc(0.85rem * var(--ts, 1));
       opacity: 0.7;
       margin-top: 0.4em;
     }
@@ -1084,7 +1089,7 @@ ${leadingHtml}
         width: 210px;
         max-height: calc(100vh - 120px);
         overflow-y: auto;
-        font-size: 0.85em;
+        font-size: calc(0.85rem * var(--ts, 1));
         padding-right: 10px;
         scrollbar-width: thin;
         scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
@@ -1160,6 +1165,8 @@ ${leadingHtml}
         display: none;
       }
     }
+
+    .toc-mobile { font-size: calc(1rem * var(--ts, 1)); }
 
     .toc-mobile summary {
       cursor: pointer;
@@ -1396,10 +1403,13 @@ ${bodyHtml}
 
   <script>
     // text-size control: same STEPS / 'articleFontScale' key as
-    // add_text_size_control.py and mes.fm/math; scales the article body only.
+    // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
+    // which only prose (paragraphs/lists/tables), the byline and the Jump To
+    // navigation multiply into their font-size -- headings, chapter titles
+    // ("Playlist"), cards and buttons stay fixed.
     (function () {
       var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
-      var body = document.querySelector('.post-body');
+      var body = document.body;
       var downBtn = document.getElementById('textSizeDown');
       var upBtn = document.getElementById('textSizeUp');
       if (!body || !downBtn || !upBtn) return;
@@ -1407,7 +1417,7 @@ ${bodyHtml}
       try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
       if (index === -1) index = STEPS.indexOf(100);
       function apply() {
-        body.style.fontSize = STEPS[index] + '%';
+        body.style.setProperty('--ts', String(STEPS[index] / 100));
         downBtn.disabled = index === 0;
         upBtn.disabled = index === STEPS.length - 1;
         try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
