@@ -541,6 +541,26 @@ ${leadingHtml}
       padding-top: 16px;
     }
 
+
+    .site-brand { display: flex; align-items: center; gap: 0.7em; text-decoration: none; min-width: 0; }
+    .site-brand-logo { width: 64px; height: 64px; border-radius: 0.35em; flex: 0 0 auto; }
+    .site-brand-text { display: flex; flex-direction: column; min-width: 0; }
+    .site-brand-title { font-size: 1.5em; font-weight: 700; line-height: 1.15; }
+    .site-brand-tag { font-size: 0.85em; opacity: 0.75; }
+    body.light .site-brand-title { color: #222222; }
+    body.dark .site-brand-title { color: #eeeeee; }
+    .header-controls { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+    .header-icon-btn {
+      flex: 0 0 auto; width: 2.2em; height: 2.2em; padding: 0; border-radius: 50%;
+      cursor: pointer; font-family: inherit; font-size: 0.85em; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .header-icon-btn:disabled { opacity: 0.4; cursor: default; }
+    body.light .header-icon-btn { background-color: #3a3d52; color: #ffffff; border-color: rgba(255, 255, 255, 0.35); }
+    body.dark .header-icon-btn { background-color: #2e2e2e; color: #eeeeee; border-color: rgba(255, 255, 255, 0.25); }
+    @media (max-width: 600px) { .site-brand-tag { display: none; } .site-brand-title { font-size: 1.2em; } }
+
     .theme-toggle-btn {
       flex: 0 0 auto;
       padding: 5px 10px;
@@ -1129,8 +1149,15 @@ ${leadingHtml}
   </nav>
   <div class="container">
     <div class="top-bar">
-      <a class="site-link" href="${BACK_LINK}">&larr; mes.fm/links</a>
-      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+      <a class="site-brand" href="/math">
+        <img class="site-brand-logo" src="https://mes.fm/img/logo-mark.png" width="64" height="64" alt="MES Math Tutorials logo">
+        <span class="site-brand-text"><span class="site-brand-title">MES Math Tutorials</span><span class="site-brand-tag">Free math tutorials by Math Easy Solutions.</span></span>
+      </a>
+      <div class="header-controls">
+        <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button id="textSizeUp" class="header-icon-btn" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
+        <button id="themeToggle" class="header-icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
+      </div>
     </div>
 
     <h1>${escapeHtml(title)}</h1>
@@ -1203,12 +1230,12 @@ ${bodyHtml}
       if (isDark) {
         body.classList.add('dark');
         body.classList.remove('light');
-        themeToggle.textContent = 'Switch to Light Mode';
+        themeToggle.textContent = '\u2600\ufe0f';
         try { localStorage.setItem('theme', 'dark'); } catch (e) {}
       } else {
         body.classList.add('light');
         body.classList.remove('dark');
-        themeToggle.textContent = 'Switch to Dark Mode';
+        themeToggle.textContent = '\ud83c\udf19';
         try { localStorage.setItem('theme', 'light'); } catch (e) {}
       }
     }
@@ -1246,6 +1273,30 @@ ${bodyHtml}
         list.classList.remove('view-hidden');
         grid.classList.add('view-hidden');
       });
+    })();
+  </script>
+
+  <script>
+    // text-size control: same STEPS / 'articleFontScale' key as
+    // add_text_size_control.py and mes.fm/math; scales the article body only.
+    (function () {
+      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var body = document.querySelector('.post-body');
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!body || !downBtn || !upBtn) return;
+      var index;
+      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
+      if (index === -1) index = STEPS.indexOf(100);
+      function apply() {
+        body.style.fontSize = STEPS[index] + '%';
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
+      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
+      apply();
     })();
   </script>
 
