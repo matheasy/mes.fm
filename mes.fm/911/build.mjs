@@ -320,6 +320,7 @@ function wrapChaptersInToggles(html) {
 // first). The thumbnail + excerpt are scraped from the target page's og: tags at
 // build time (resolveAllMeta) and cached in link-meta.json.
 const POSTS = [
+  { href: "https://mes.fm/energy-vampire", title: "Disinfo Agents Literally Are Energy Vampires 😂😅😳" },
   { href: "https://mes.fm/drjudywood-total-disclosure-podcast", title: "Dr. Judy Wood on the Total Disclosure Podcast" },
   { href: "https://mes.fm/911-spammer-dust-baggie", title: "9/11 Revisionist Spammin' Dust Baggie Nonsense" },
   { href: "https://mes.fm/osama-911-plans-parody", title: "BREAKING: CIA Unseals Osama Bin Laden's Writing Pad with His 9/11 Plans" },
