@@ -250,6 +250,34 @@ function fixTableBoundaries(markdown) {
   return out.join("\n");
 }
 
+// Livestream entries not yet on the Hive @mes/911 post are injected here, as the
+// newest entry at the top of the "MES 9/11 Livestreams" section. The mes.fm
+// mirror is the leftmost link so the Grid View card opens it. Drop an entry once
+// its heading appears in the Hive post itself.
+const LOCAL_LIVESTREAMS = [
+  {
+    marker: "MES Livestream 140:",
+    markdown: `## MES Livestream 140: Real 9/11 Avengers Meetup
+
+[Notes](https://mes.fm/livestream-140-real-911-avengers) - [YouTube](https://youtube.com/live/Sde1DG0JhyA) - [Rumble](https://rumble.com/v7fdvnm-mes-livestream-140-real-911-avengers-meetup.html) - [X](https://x.com/i/broadcasts/1qKDzWXWpwDJV) - [Twitch](https://www.twitch.tv/matheasysolutions)
+
+![Real 911 Avengers Thumbnail.jpeg](https://files.peakd.com/file/peakd-hive/mestruth/23uFGqfsTyi3mick1YexhAQ7p3aKakCMYAKDrsM1J4A5CH58ZVhFdduevbVQL2u1FgsSy.jpeg)
+
+- [Trailer 1](https://youtu.be/ddmBEjkVXb0)
+- [Trailer 2](https://youtu.be/PF0kSCXvZwM)
+`,
+  },
+];
+
+function injectLocalLivestreams(markdown) {
+  const anchor = markdown.match(/^## MES Livestream \d+:/m);
+  if (!anchor) return markdown;
+  const missing = LOCAL_LIVESTREAMS.filter((e) => !markdown.includes(e.marker));
+  if (!missing.length) return markdown;
+  const block = missing.map((e) => e.markdown).join("\n") + "\n";
+  return markdown.slice(0, anchor.index) + block + markdown.slice(anchor.index);
+}
+
 // Hive posts often contain a bare YouTube URL on its own line (PeakD renders
 // these as an embedded player). Turn them into a responsive iframe embed
 // before markdown parsing, since marked will otherwise just linkify the URL.
@@ -419,7 +447,7 @@ const OLD_LINKS_HTML = `<h2>More MES 9/11 Links</h2>
 
 function buildPage(post, meta) {
   const title = post.title;
-  const preprocessed = embedYoutubeLinks(fixTableBoundaries(post.body));
+  const preprocessed = embedYoutubeLinks(fixTableBoundaries(injectLocalLivestreams(post.body)));
   const { html: parsedBodyHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
 
   // #911Truth Part 26's "Hive notes" link still points at the raw Hive post;
