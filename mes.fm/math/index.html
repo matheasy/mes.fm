@@ -102,7 +102,8 @@ sub {vertical-align:sub;}
 .dropdown-symbol--dark {color:#277bb6;}
 .button--active {background-color:#277bb6;color:white;}
 .navbar__dropdown-container {color: #222222;background-color:#eef0ff;}
-.logo {height:4em;width:17.375em;}
+.logo {height:88px;width:88px;border-radius:0.35em;}
+.tag-line {font-size:1.2em;}
 .info-bar__logo-container {display: none;}
 /* RESPONSIVE-FIX-INSERTED */
 @media (max-width: 768px) {
@@ -767,6 +768,14 @@ body.dark-mode .toc-mobile summary {
 body.dark-mode .toc-sidebar .toc-title {
   color: #cccccc;
 }
+@media (max-width: 768px) {
+  /* keep logo + title side by side like the tool pages, not stacked/centered */
+  .header { display: flex !important; flex-wrap: wrap; align-items: center; }
+  .logo-image-container { flex: 0 0 auto; width: auto !important; margin: 0 !important; }
+  .logo-text-container { display: block !important; flex: 1 1 0; min-width: 0; width: auto !important; padding-left: 0.75em; text-align: left !important; margin: 0 !important; }
+  .calculator-title { font-size: 1.3em; }
+  .tag-line { font-size: 0.95em; }
+}
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -936,12 +945,12 @@ body.dark-mode .toc-sidebar .toc-title {
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/'><img width="830" height="190" id="logo" class="logo lazyload" alt="Math Easy Solutions logo" data-src="https://mes.fm/img/logo.png"></a>
+      <a class="logo-image-container" href='/math'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Math Tutorials logo" data-src="https://mes.fm/img/logo-mark.png"></a>
       <div class="logo-text-container">
-        <a class="calculator-title-link" href='/'>
-          <p class="calculator-title">Math Easy Solutions</p>
+        <a class="calculator-title-link" href='/math'>
+          <p class="calculator-title">MES Math Tutorials</p>
         </a>
-        <p class="tag-line"></p>
+        <p class="tag-line">Free math tutorials by Math Easy Solutions.</p>
       </div>
 
       <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
