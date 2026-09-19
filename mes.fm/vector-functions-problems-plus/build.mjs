@@ -93,6 +93,7 @@ const PLAYLIST = [
   { href: "https://mes.fm/problems-plus-1-projectile-origin" },
   { href: "https://mes.fm/projectile-hits-target" },
   { href: "https://mes.fm/problems-plus-2-projectile-inclined-plane" },
+  { href: "https://mes.fm/problems-plus-3-ball-rolls-table" },
 ];
 
 function loadPlaylistCache() {
