@@ -1161,6 +1161,10 @@ body.dark-mode .link-card-title {
   color: #eeeeee;
 }
 
+body.dark-mode .tag-line {
+  color: #b8b8b8;
+}
+
 body.dark-mode .link-card {
   background-color: #2a2a2a;
   border-color: rgba(255, 255, 255, 0.15);
