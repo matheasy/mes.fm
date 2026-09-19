@@ -61,6 +61,12 @@ of HTML files individually:
   script only ever removes, never re-adds, so re-running it after an update is safe (idempotent, no-op on already
   fixed pages) and won't clobber a link you just restored elsewhere.
 
+- `add_mes_home_link.py` — appends an always-visible bold "MES.fm" link (to `/`) as the right-most item of the header
+  info-bar on every page except the `mes.fm` homepage (~1,000 pages, incl. calculator mini-sites where the bar's own
+  "Home" goes to that calculator). Not tagged `info-bar__item--utility`, so `main_js/info-bar-fit.js` never hides it;
+  appended last so `main.js`'s `:eq(N)` active-tab index is unaffected. Also patches the `math` and
+  `vector-functions-problems-plus` `build.mjs` templates. Idempotent (`info-bar__item--mes` marker).
+
 Run any of them with `python3 <script>.py` from anywhere (they resolve the repo root themselves). They print a
 per-file report; read the output rather than assuming success.
 

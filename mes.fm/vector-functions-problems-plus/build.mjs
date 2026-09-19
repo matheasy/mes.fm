@@ -1282,6 +1282,7 @@ ${leadingHtml}
         <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="https://teespring.com/stores/mes-store">Store</a></li>
         <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="/donate">Donate</a></li>
         <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href="/contact">Contact Us</a></li>
+        <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
       </ul>
     </div>
 
