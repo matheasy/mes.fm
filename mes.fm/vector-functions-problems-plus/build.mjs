@@ -553,7 +553,7 @@ ${leadingHtml}
     body.dark .site-brand-title { color: #eeeeee; }
     body.light .site-brand-tag { color: #555555; }
     body.dark .site-brand-tag { color: #b8b8b8; }
-    .header-controls { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+    .header-controls { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; margin-left: auto; }
     .header-icon-btn {
       flex: 0 0 auto; width: 2.2em; height: 2.2em; padding: 0; border-radius: 50%;
       cursor: pointer; font-family: inherit; font-size: 0.85em; font-weight: 700; line-height: 1;

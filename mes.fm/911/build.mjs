@@ -579,12 +579,13 @@ function buildPage(post, meta) {
     .wide {
       max-width: 1180px;
       margin: 0 auto;
+      padding: 0 1.25em;
     }
 
     .page-lede {
       max-width: 760px;
       margin: 0.2em 0 1em;
-      font-size: 1.05em;
+      font-size: calc(1.05rem * var(--ts, 1));
       opacity: 0.8;
     }
 
@@ -720,12 +721,95 @@ function buildPage(post, meta) {
     }
 
     .top-bar {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       padding-top: 16px;
     }
+
+
+    .site-brand { display: flex; align-items: center; gap: 1.5em; min-width: 0; }
+    .site-brand-logo-link { display: block; flex: 0 0 auto; }
+    .site-brand-logo { display: block; width: 88px; height: 88px; border-radius: 0.35em; flex: 0 0 auto; }
+    .site-brand-text { min-width: 0; }
+    .site-brand-title { display: block; font-size: 1.8em; font-weight: 400; line-height: 1.15; margin-bottom: 0.3em; text-decoration: none; }
+    .site-brand-tag { font-size: 1.2em; margin: 0; line-height: 1.3; }
+    body.light .site-brand-title { color: #222222; }
+    body.dark .site-brand-title { color: #eeeeee; }
+    body.light .site-brand-tag { color: #555555; }
+    body.dark .site-brand-tag { color: #b8b8b8; }
+    .header-controls { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; margin-left: auto; }
+    .header-icon-btn {
+      flex: 0 0 auto; width: 2.2em; height: 2.2em; padding: 0; border-radius: 50%;
+      cursor: pointer; font-family: inherit; font-size: 0.85em; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .header-icon-btn:disabled { opacity: 0.4; cursor: default; }
+    body.light .header-icon-btn { background-color: #3a3d52; color: #ffffff; border-color: rgba(255, 255, 255, 0.35); }
+    body.dark .header-icon-btn { background-color: #2e2e2e; color: #eeeeee; border-color: rgba(255, 255, 255, 0.25); }
+    @media (max-width: 600px) { .site-brand { gap: 0.75em; } .site-brand-logo { width: 64px; height: 64px; } .site-brand-tag { font-size: 0.95em; } .site-brand-title { font-size: 1.3em; } }
+
+    /* Shared mes.fm site navigation: hamburger + dropdown (#navbar-button /
+       #navbar, toggled by /main_js/main.js) and the blue primary nav bar
+       (#info-bar), same markup/behaviour as mes.fm/math. Colors are set on
+       #id selectors so the body.light/body.dark "a" color rules don't win. */
+    .hamburger-btn {
+      flex: 0 0 auto; width: 44px; height: 44px; padding: 0; margin: 0 0 0 4px;
+      background: transparent; border: none; cursor: pointer; font-size: 0;
+    }
+    .hamburger-btn::before {
+      content: ""; display: block; margin: 0 auto;
+      width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+      box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+    }
+    body.light .hamburger-btn { color: #c9381f; }
+    body.dark .hamburger-btn { color: #ff7a5f; }
+    #navbar { display: none; }
+    #navbar.hide {
+      display: flex; flex-direction: column; box-sizing: border-box;
+      position: absolute; top: 100%; right: 0; z-index: 30;
+      width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+      background-color: #c9381f; border-radius: 0.25em;
+      box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.3);
+      list-style: none; margin: 0; padding: 0;
+    }
+    #navbar li, #info-bar { list-style: none; margin: 0; padding: 0; }
+    #navbar .navbar__item:hover { cursor: pointer; }
+    #navbar .navbar__link { display: block; color: #ffffff; padding: 0.7em 1em 0.7em 1.4em; text-decoration: none; }
+    #navbar .navbar__link--first { padding-top: 0.8em; }
+    #navbar .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab) { background-color: #9d2b17; }
+    #navbar .dropdown-symbol { margin-left: 1em; color: #ffffff; }
+    #navbar .navbar__dropdown-container { background-color: #d8e9f8; margin: 0; padding: 0; }
+    #navbar .navbar__dropdown-container.hide { display: none; }
+    #navbar .navbar__dropdown-item { color: #222222; }
+    #navbar .navbar__dropdown-item:hover { text-decoration: underline; }
+    #navbar .navbar__item--social { order: 999; padding: 1em 1.6em 1em 1.4em; border-top: 1px solid rgba(255, 255, 255, 0.25); }
+    #navbar .social-container { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+    #navbar .social__text { color: #ffffff; margin: 0; font-style: italic; }
+    #navbar .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; list-style: none; }
+    .social__link { height: 2em; width: 2em; display: block; }
+    .social__fb { background: url(/main_img/social-sprites.png) 0 0; }
+    .social__insta { background: url(/main_img/social-sprites.png) -4em 0; }
+    .social__pin { background: url(/main_img/social-sprites.png) -6em 0; }
+    .social__twitter { background: url(/main_img/social-sprites.png) -8em 0; }
+    .social__yt { background: url(/main_img/social-sprites.png) -10em 0; }
+    .social__patreon { background: url(/main_img/social-sprites.png) -12em 0; }
+    .social__hive { background: url(/main_img/social-sprites.png) -16em 0; }
+    .social__telegram { background: url(/main_img/social-sprites.png) -18em 0; }
+    #navbar .navbar__link.active-tab, #info-bar .info-bar__item__text.active-tab { background-color: #d8e9f8; color: #222222; }
+
+    .info-bar-container { margin-top: 12px; }
+    .info-bar { display: flex; flex-wrap: wrap; background-color: #c9381f; box-shadow: 0.2em 0.2em 0.5em rgba(0, 0, 0, 0.35); }
+    #info-bar .info-bar__item__text { display: block; text-align: center; padding: 0.7em 1em; font-size: 0.9em; color: #ffffff; text-decoration: none; }
+    #info-bar .info-bar__item__text:hover:not(.active-tab) { background-color: #9d2b17; }
+    @media (max-width: 600px) {
+      .info-bar { justify-content: center; }
+      #info-bar .info-bar__item__text { min-height: 44px; display: flex; align-items: center; }
+    }
+
 
     .theme-toggle-btn {
       flex: 0 0 auto;
@@ -749,8 +833,13 @@ function buildPage(post, meta) {
       margin: 0.4em 0 0.2em;
     }
 
+    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
+       the lede, byline and Jump To navigation scale; headings, chapter
+       titles, cards and buttons stay fixed. rem so nested lists don't compound. */
+    .post-body :is(p, li, blockquote, td, th):not(.card-grid *) { font-size: calc(1rem * var(--ts, 1)); }
+
     .post-meta {
-      font-size: 0.9em;
+      font-size: calc(0.9rem * var(--ts, 1));
       opacity: 0.85;
       margin-bottom: 0.6em;
     }
@@ -762,7 +851,7 @@ function buildPage(post, meta) {
     .peakd-link {
       display: inline-block;
       margin: 0.6em 0 1.4em;
-      font-size: 0.9em;
+      font-size: calc(0.9rem * var(--ts, 1));
       font-style: italic;
     }
 
@@ -930,7 +1019,7 @@ function buildPage(post, meta) {
     }
 
     .build-note {
-      font-size: 0.8em;
+      font-size: calc(0.8rem * var(--ts, 1));
       opacity: 0.6;
       text-align: center;
     }
@@ -979,7 +1068,7 @@ function buildPage(post, meta) {
         width: 200px;
         max-height: calc(100vh - 120px);
         overflow-y: auto;
-        font-size: 0.85em;
+        font-size: calc(0.85rem * var(--ts, 1));
         padding-right: 10px;
         scrollbar-width: thin;
         scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
@@ -1057,6 +1146,8 @@ function buildPage(post, meta) {
       }
     }
 
+    .toc-mobile { font-size: calc(1rem * var(--ts, 1)); }
+
     .toc-mobile summary {
       cursor: pointer;
       font-weight: bold;
@@ -1107,8 +1198,70 @@ function buildPage(post, meta) {
   </nav>
   <div class="wide">
     <div class="top-bar">
-      <a class="site-link" href="https://mes.fm/links">&larr; mes.fm/links</a>
-      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+      <div class="site-brand">
+        <a class="site-brand-logo-link" href="/911"><img class="site-brand-logo" src="/img/911-truth-logo.jpg" width="88" height="88" alt="MES 9/11 Truth logo"></a>
+        <div class="site-brand-text"><a class="site-brand-title" href="/911">MES 9/11 Truth</a><p class="site-brand-tag">Videos, livestreams and research on 9/11.</p></div>
+      </div>
+      <div class="header-controls">
+        <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button id="textSizeUp" class="header-icon-btn" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
+        <button id="themeToggle" class="header-icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
+      </div>
+      <button id="navbar-button" class="hamburger-btn" type="button" aria-label="Site navigation" aria-haspopup="true"></button>
+      <ul id="navbar" class="navbar" role="navigation" aria-label="Site menu">
+        <li class="navbar__item navbar__item--social"><div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
+            <li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+            <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+            <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>
+            <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>
+            <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>
+            <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
+          </ul></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/911">9/11 Truth</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/conspiracy">Conspiracy</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
+        <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Calculators<span class="dropdown-symbol">&#9660;</span></span>
+            <ul class="navbar__dropdown-container hide">
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/bmicalculator">&#9642; <span>BMI Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/gpacalculator">&#9642; <span>GPA Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/gradecalculator">&#9642; <span>Grade Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/inflationcalculator">&#9642; <span>Inflation Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/mortgagecalculator">&#9642; <span>Mortgage Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/percentagecalculator">&#9642; <span>Percentage Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/pokemongocalculator">&#9642; <span>Pokemon Go Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/vatcalculator">&#9642; <span>VAT Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/youtubemoney/index.html">&#9642; <span>YouTube Money Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/calculators">&#9642; <span>More...</span></a></li>
+            </ul>
+        </li>
+        <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Tools<span class="dropdown-symbol">&#9660;</span></span>
+            <ul class="navbar__dropdown-container hide">
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/speedreader">&#9642; <span>Speed Reader</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/timer">&#9642; <span>Timer</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/tools">&#9642; <span>More...</span></a></li>
+            </ul>
+        </li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/memes">Memes</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="navbar__item"><a target="_blank" rel="nofollow" class="navbar__link" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="/donate">Donate</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/contact">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="info-bar-container" role="navigation" aria-label="Primary">
+      <ul id="info-bar" class="info-bar">
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/911">9/11 Truth</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/conspiracy">Conspiracy</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="/donate">Donate</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href="/contact">Contact Us</a></li>
+        <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
+      </ul>
     </div>
 
     <h1>${escapeHtml(title)}</h1>
@@ -1187,12 +1340,12 @@ ${articleBodyHtml}
       if (isDark) {
         body.classList.add('dark');
         body.classList.remove('light');
-        themeToggle.textContent = 'Switch to Light Mode';
+        themeToggle.textContent = '\u2600\ufe0f';
         localStorage.setItem('theme', 'dark');
       } else {
         body.classList.add('light');
         body.classList.remove('dark');
-        themeToggle.textContent = 'Switch to Dark Mode';
+        themeToggle.textContent = '\ud83c\udf19';
         localStorage.setItem('theme', 'light');
       }
     }
@@ -1511,7 +1664,37 @@ ${articleBodyHtml}
     })();
   </script>
 
-<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+<script>
+    // text-size control: same STEPS / 'articleFontScale' key as
+    // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
+    // which only prose (paragraphs/lists/tables), the byline and the Jump To
+    // navigation multiply into their font-size -- headings, chapter titles
+    // ("Playlist"), cards and buttons stay fixed.
+    (function () {
+      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var body = document.body;
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!body || !downBtn || !upBtn) return;
+      var index;
+      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
+      if (index === -1) index = STEPS.indexOf(100);
+      function apply() {
+        body.style.setProperty('--ts', String(STEPS[index] / 100));
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
+      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
+      apply();
+    })();
+  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
+  <script src="/main_js/main.js?v=1.0.3"></script>
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
+</body>
 </html>
 `;
 }
