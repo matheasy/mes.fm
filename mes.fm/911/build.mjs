@@ -1185,6 +1185,24 @@ function buildPage(post, meta) {
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
 }
+    /* Site footer -- same links/markup as mes.fm/math, in the 9/11 accent. Colors
+       use ".footer .x" (0,2,0) so the body.light/body.dark "a" rules don't win. */
+    .footer { max-width: 1180px; margin: 2.5em auto 0; padding: 2em; background-color: #c9381f; border-radius: 0.35em; }
+    .footer__item-container { display: table; width: 100%; margin-bottom: 1.6em; }
+    .footer__item { display: table-cell; }
+    .footer__item--extra-padding { padding-left: 2.5em; }
+    .footer .footer__text { color: #ffffff; line-height: 1.5; text-decoration: none; }
+    .footer .footer__text--title { display: inline-block; margin-bottom: 1.6em; font-size: 1.3em; font-style: italic; }
+    .footer__text--extra-info { float: right; }
+    .footer .footer__text:not(.footer__text--copyright):hover { text-decoration: underline; cursor: pointer; }
+    .footer__separator, #copyright-year { color: #ffffff; }
+    @media (max-width: 600px) {
+      .footer { padding: 1.25em 0.75em; }
+      .footer__item-container { display: block; }
+      .footer__item { display: block; margin-bottom: 0.75em; }
+      .footer__item--extra-padding { padding-left: 0; }
+      .footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+    }
 </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
 </head>
@@ -1301,6 +1319,27 @@ ${articleBodyHtml}
       Vote/comment/reblog counts and article text were fetched from the Hive blockchain
       at build time (${buildDate}) and are not live.
     </p>
+  </div>
+
+  <div id="footer" class="footer" role="contentinfo">
+    <div class="footer__item-container">
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/calculators">Calculators</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/tools">Tools</a>
+      </div>
+      <div class="footer__item footer__item--extra-padding">
+        <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/links">MES Links</a>
+      </div>
+    </div>
+    <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+    <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+    <a class="footer__text" target='_blank' href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+    <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;</span><a class="footer__text" href="/">Math Easy Solutions</a></div>
   </div>
 
   <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
@@ -1690,6 +1729,7 @@ ${articleBodyHtml}
       apply();
     })();
   </script>
+  <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
   <script src="/main_js/main.js?v=1.0.3"></script>
