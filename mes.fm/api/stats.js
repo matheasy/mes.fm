@@ -142,6 +142,14 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // Upstash answers a rejected pipeline (e.g. monthly command quota hit) with
+  // a non-array body or per-command { error } entries. Treating those as
+  // empty results made the page claim "No data" -- surface it as unavailable.
+  if (!Array.isArray(results) || results.some((r) => r && r.error)) {
+    res.status(502).json({ error: 'stats unavailable' });
+    return;
+  }
+
   const topPagesRaw = results[leaderboardResultIndex]?.result || [];
   const deviceTotalsRaw = results[deviceTotalsResultIndex]?.result || [];
   const sourceTotalsRaw = results[sourceTotalsResultIndex]?.result || [];

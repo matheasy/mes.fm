@@ -56,6 +56,11 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (!Array.isArray(results) || results.some((r) => r && r.error)) {
+    res.status(502).json({ error: 'stats unavailable' });
+    return;
+  }
+
   const points = keys.map((key, i) => {
     const raw = results[i]?.result || [];
     let views = 0;
