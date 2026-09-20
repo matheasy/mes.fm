@@ -906,27 +906,27 @@ body.dark-mode .toc-sidebar .toc-title {
 })();
 </script>
 <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
-     real interaction (scroll / pointer / key), or after a 15s idle fallback,
-     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
-     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
-    <script>
-    (function () {
-      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
-      var done = false;
-      function go() {
-        if (done) return;
-        done = true;
-        EVT.forEach(function (e) { removeEventListener(e, go); });
-        var s = document.createElement('script');
-        s.async = true;
-        s.crossOrigin = 'anonymous';
-        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
-        document.head.appendChild(s);
-      }
-      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
-      setTimeout(go, 15000);
-    })();
-    </script>
+   real interaction (scroll / pointer / key), or after a 15s idle fallback,
+   so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+   sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+<script>
+(function () {
+  var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+  var done = false;
+  function go() {
+    if (done) return;
+    done = true;
+    EVT.forEach(function (e) { removeEventListener(e, go); });
+    var s = document.createElement('script');
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+    document.head.appendChild(s);
+  }
+  EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+  setTimeout(go, 15000);
+})();
+</script>
 </head>
 <body>
 <nav class="toc-sidebar" aria-label="Table of contents">
@@ -1027,14 +1027,14 @@ body.dark-mode .toc-sidebar .toc-title {
     <div class="list-row">
       <h3>70: What is the Lorentz Force?</h3>
       <p><a href="https://mes.fm/math-qa-70-lorentz-force" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/mes-math-qa-70-what-is-the-851" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtube.com/live/BJ1zYm_ZCVw" target="_blank" rel="noopener">YouTube</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1788374815252-d4c1cea39d2687da.webp" alt="">
+      <img class="list-thumb" src="https://images.3speak.tv/images/1788374815252-d4c1cea39d2687da.webp" alt="">
     </div>
     </div>
 <div class="list-view list-view--compact view-hidden" id="mathQaLivestreamsStats">
     <div class="list-row">
       <h3>71: Stats</h3>
       <p><a href="https://mes.fm/math-qa-71-stats" target="_blank" rel="noopener">MES</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-65mktyu4" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35530" target="_blank" rel="noopener">Telegram</a></p>
-      <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmWkDaYKKRygyeMcskvkUXxg39C7YPvnNUhCYZdY2oX8hr/telegram-cloud-photo-size-1-4997088063016078455-y.jpg" alt="">
+      <img class="list-thumb" src="https://img.leopedia.io/DQmWkDaYKKRygyeMcskvkUXxg39C7YPvnNUhCYZdY2oX8hr/telegram-cloud-photo-size-1-4997088063016078455-y.jpg" alt="">
     </div>
     </div>
   </div>
@@ -1062,7 +1062,7 @@ body.dark-mode .toc-sidebar .toc-title {
     <div class="list-row">
       <h3>Cubic Formula Proof</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/dzekfnxh" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/dzekfnxh" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/Ne6ITwP6qg0" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/HSh2xcMLrhpw/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Cubic-Formula:c" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6cselp-cubic-formula-proof.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23uFwDc96yyuPh1DLzT52FT2d4N56Tx9vJFcgbwkKc95YDGv4Q57zTfdu6vNUNCss5YRi.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23uFwDc96yyuPh1DLzT52FT2d4N56Tx9vJFcgbwkKc95YDGv4Q57zTfdu6vNUNCss5YRi.jpeg" alt="">
     </div>
     </div>
 
@@ -1217,97 +1217,97 @@ body.dark-mode .toc-sidebar .toc-title {
     <div class="list-row">
       <h3>Infinite Sequences: Limits, Squeeze Theorem, Fibonacci Sequence &amp; Golden Ratio</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-sequences-limits-squeeze-theorem-fibonacci-sequence-and-golden-ratio-more" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/qqyideze" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/mcefMmb9_rA" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/A8rlBnUHZFWv/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Infinite-Sequences:e" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v20tpw2-infinite-sequences-limits-squeeze-theorem-fibonacci-sequence-and-golden-rat.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/yGr6Lk0g-Infinite20Sequences.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/yGr6Lk0g-Infinite20Sequences.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Laboratory Project: Logistic Sequences</h3>
       <p><a href="https://peakd.com/mathematics/@mes/laboratory-project-logistic-sequences" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/jaeagukv" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/OqP7Gmv96Ec" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/cdcfELetKCUN/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/laboratory-project-logistic-sequences:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v20tlra-laboratory-project-logistic-sequences.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmSSqFkRvmUxMaz1nwPbMunaXTzHtw8TfKqavKWuJbud7a/Laboratory%20Project%20Logistic%20Sequences.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmSSqFkRvmUxMaz1nwPbMunaXTzHtw8TfKqavKWuJbud7a/Laboratory%20Project%20Logistic%20Sequences.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Infinite Series: Definition, Examples, Geometric Series, Harmonic Series, Telescoping Sum + MORE</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-series-definition-examples-geometric-series-harmonics-series-telescoping-sum-more" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/udbkpeeh" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/mgbbAdTcUG8" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/vQVZLk3jy52L/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Infinite-Series-Definition-Examples-Geometric-More:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v20tlmu-infinite-series-definition-examples-geometric-series-harmonic-series-telesc.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmQdvWsD465L5NE55PmEQQyacRniVmA11fC1dKsMpMYpkR/Infinite%20Series.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmQdvWsD465L5NE55PmEQQyacRniVmA11fC1dKsMpMYpkR/Infinite%20Series.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>The Integral Test and Estimate of Sums</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-integral-test-and-estimate-of-sums" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmNvQkR5NzCrZyRTbNPWUxjuDep93hAi9EY6jPDMyGDFuw/The%20Integral%20Test%20and%20Estimates%20of%20Sums.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmNvQkR5NzCrZyRTbNPWUxjuDep93hAi9EY6jPDMyGDFuw/The%20Integral%20Test%20and%20Estimates%20of%20Sums.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>The Comparison Tests</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-the-comparison-tests" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmbSUbPAqc4xemnAbzpQJeQx9v66xS1wNN966mSFqnKKDp/The%20Comparison%20Tests.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmbSUbPAqc4xemnAbzpQJeQx9v66xS1wNN966mSFqnKKDp/The%20Comparison%20Tests.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Alternating Tests</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-alternating-tests" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmU6oD6PSTnN5hC1zA5PMCu44vEXVbdKkRS3sjLJ38afGE/Alternating%20Series.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmU6oD6PSTnN5hC1zA5PMCu44vEXVbdKkRS3sjLJ38afGE/Alternating%20Series.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Absolute Convergence and the Ratio/Root Tests</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-absolute-convergence-and-the-ratio-root-tests" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmQ7XD8SAjA2jzPPAP9eu9PfckWvzcF5hEnsMEfgU5VEQZ/Absolute%20Convergence.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmQ7XD8SAjA2jzPPAP9eu9PfckWvzcF5hEnsMEfgU5VEQZ/Absolute%20Convergence.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Strategy for Testing Series</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-strategy-for-testing-series" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmXAWFMQW3h1E1ZkinTDKXsMLmkCQSDo1LhsFme6c2iyUU/Strategy%20for%20Series.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmXAWFMQW3h1E1ZkinTDKXsMLmkCQSDo1LhsFme6c2iyUU/Strategy%20for%20Series.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Power Series</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-power-series" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmTn4sZbo9huGdjGhKHnRLEf6tWasydcX4bBTtjyFQYptp/Power%20Series.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmTn4sZbo9huGdjGhKHnRLEf6tWasydcX4bBTtjyFQYptp/Power%20Series.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Representations of Functions as Power Series</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-representations-of-functions-as-power-series" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQme6zU4cRko8D4gAEcXmEyg2KJarRhGr7wWLp1YQZbJAZ5/Functions%20as%20Power%20Series.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQme6zU4cRko8D4gAEcXmEyg2KJarRhGr7wWLp1YQZbJAZ5/Functions%20as%20Power%20Series.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Taylor and Maclaurin Series</h3>
       <p><a href="https://peakd.com/mathematics/@mes/infinite-sequences-and-series-taylor-and-maclaurin-series" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmWvczbQayzpM29mcDx379HUcYQmDaiERteUHbARkkqGc6/Taylor%20and%20Maclaurin%20Series.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmWvczbQayzpM29mcDx379HUcYQmDaiERteUHbARkkqGc6/Taylor%20and%20Maclaurin%20Series.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Formulas for the Remainder Term in Taylor Series</h3>
       <p><a href="https://peakd.com/@mes/infinite-sequences-and-series-formulas-for-the-remainder-term-in-taylor-series" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmanrdSZ5cTmeHKtBn97SLKKuAYs3f4WaqXHDD1KbSDNdr/Taylor%20Series%20Remainder%20Term.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/cdn.steemitimages.com/DQmanrdSZ5cTmeHKtBn97SLKKuAYs3f4WaqXHDD1KbSDNdr/Taylor%20Series%20Remainder%20Term.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Multiplication and Division of Power Series</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-multiplication-and-division-of-power-series" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/pObrnd4v-Multiplication20and20Division20of20Power20Series.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/pObrnd4v-Multiplication20and20Division20of20Power20Series.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Kummer's Test, Raabe's Test, and Convergence of Binomial Series</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/kummer-s-test-raabe-s-test-and-convergence-of-binomial-series" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/cfcjcodb" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/LOiRMhv6z8I" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/lsmOLZgcIHva/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/1031-Kummer-Raade-Binomiol-Series-Convergence:2" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1rcb60-infinite-sequences-and-series-kummers-test-raabes-test-and-convergence-of-b.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/aid1oEzK-Kummer20Raabe20Binomial20Series20Convergence.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/aid1oEzK-Kummer20Raabe20Binomial20Series20Convergence.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Laboratory Project: An Elusive Limit</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/laboratory-project-an-elusive-limit" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/mpbajmmt" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/pwcubhBludE" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/PLEhi1Tr1GNG/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/laboratory-project-an-elusive-limit:2" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1rc6d8-laboratory-project-an-elusive-limit.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/W6vIJF02-Laboratory20Project20An20Elusive20Limit.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/W6vIJF02-Laboratory20Project20An20Elusive20Limit.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Applications of Taylor Polynomials</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-applications-of-taylor-polynomials" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/gucinser" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/Tuh3Ht4XwYI" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/szxFhvDiahLL/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/1033-Appliations-of-Taylor-Polynomials:9" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1q7a12-infinite-sequences-and-series-applications-of-taylor-polynomials.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u5vnYV2nmev6TT74jxXSApbMzK1avZEfASBCegSGZNw4SbwSqWYsNWWjLrrpprfK5W1.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u5vnYV2nmev6TT74jxXSApbMzK1avZEfASBCegSGZNw4SbwSqWYsNWWjLrrpprfK5W1.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Applied Project: Radiation from the Stars (Blackbody Radiation)</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/applied-project-radiation-from-the-stars" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/kwtzldbz" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/oJpwidXu9Ps" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/0jxExqvVMHVw/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/applied-project-radiation-from-the-stars:b" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1q6zwc-applied-project-radiation-from-the-stars-blackbody-radiation.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23xyvZwzEmngAJah5EGaYxK2wByvL2MowZckpx5tpYRRkSYqaE2M54a5WMgBKbzwKqXxL.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23xyvZwzEmngAJah5EGaYxK2wByvL2MowZckpx5tpYRRkSYqaE2M54a5WMgBKbzwKqXxL.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Review and True-False Quiz</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-review-and-true-false-quiz" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twAKVLEcemvbKz43bGd4YrAWAUPAKwz2i5dp7XCdN72esnG6XEm35H2xEvxTMYPYsjF.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twAKVLEcemvbKz43bGd4YrAWAUPAKwz2i5dp7XCdN72esnG6XEm35H2xEvxTMYPYsjF.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Problems Plus</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/infinite-sequences-and-series-problems-plus" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wrA5N6Q5FX947db7aGunJpCAaVZnPMWRbfnTWGEYY6176qqgR52f2cqCNdJXCNrbEdj.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wrA5N6Q5FX947db7aGunJpCAaVZnPMWRbfnTWGEYY6176qqgR52f2cqCNdJXCNrbEdj.jpeg" alt="">
     </div>
     </div>
 
@@ -1336,7 +1336,7 @@ body.dark-mode .toc-sidebar .toc-title {
     <div class="list-row">
       <h3>Spherical Harmonics</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/220d6572" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/220d6572" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/p5SdobFPiKY" target="_blank" rel="noopener">YouTube</a> - <a href="https://youtu.be/R7SAhbuZPig" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/gFSCuLXGejxk" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Spherical-Harmonics:b411814bbf4b88a22d2b136854be4c867f77591b" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v76qf26-spherical-harmonics-atomic-orbitals-laplacian-in-polar-and-spherical-coordi.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23ydRCbjj1UKSrutn1S2JKNZsySufGoRk4g1qWUFekLJd3CFYjzktYWmdVi2fasLZ7G2D.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23ydRCbjj1UKSrutn1S2JKNZsySufGoRk4g1qWUFekLJd3CFYjzktYWmdVi2fasLZ7G2D.jpeg" alt="">
     </div>
     </div>
 
@@ -1442,62 +1442,62 @@ body.dark-mode .toc-sidebar .toc-title {
     <div class="list-row">
       <h3>3D Coordinates Systems</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vector-space-and-geometry-3d-coordinate-systems" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23z7bC64o1TcF1G445p3dPi2xRaYuRA7SCnW48zFyfVbXWY9UFAEcBvzsjxN9ZLcNmaHV.jpg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23z7bC64o1TcF1G445p3dPi2xRaYuRA7SCnW48zFyfVbXWY9UFAEcBvzsjxN9ZLcNmaHV.jpg" alt="">
     </div>
     <div class="list-row">
       <h3>Vectors</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-vectors" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/snipboard.io/2YPoXV.jpg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/snipboard.io/2YPoXV.jpg" alt="">
     </div>
     <div class="list-row">
       <h3>Complex Numbers as Rotation Matrices</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twA7QknK6cdrSeC4PVyzCXDonrhb3uavjJ3qiwMHHfG2azSWeP9LLtBgsmz2YtKsZyd.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twA7QknK6cdrSeC4PVyzCXDonrhb3uavjJ3qiwMHHfG2azSWeP9LLtBgsmz2YtKsZyd.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>The Dot Product</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-dot-product" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcP5UHCYrRzMwqZuqgSgCKwzN3chiBwFzsPe9sXXyh3Y5QGQkLk4RCazyW9iKnyp31b.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcP5UHCYrRzMwqZuqgSgCKwzN3chiBwFzsPe9sXXyh3Y5QGQkLk4RCazyW9iKnyp31b.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>The Cross Product</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-the-cross-product" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wgoZnRipYa1SKGoZsn5yPX8UE2S2e5y2CchJHBYDMSTuRNiAEVRmM3xbtKMPUeza4F8.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wgoZnRipYa1SKGoZsn5yPX8UE2S2e5y2CchJHBYDMSTuRNiAEVRmM3xbtKMPUeza4F8.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Laboratory Project: The Geometry of a Tetrahedron</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/discovery-project-geometry-of-a-tetrahedron" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wCbb2sbLNyoVuXx3Cy197xPK9VFoBXLUkf2QG1t3xvw9cUAy8e8gwcwEdi1uEAb5zjF.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wCbb2sbLNyoVuXx3Cy197xPK9VFoBXLUkf2QG1t3xvw9cUAy8e8gwcwEdi1uEAb5zjF.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Equations of Lines and Planes</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/equations-of-lines-and-planes" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wr9nrYJqFNc63AfLqHNfuTpWPQGhSRwL8wU1TVSpvtjM4Xq3fja1UuW1t1YAki1ZuJi.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23wr9nrYJqFNc63AfLqHNfuTpWPQGhSRwL8wU1TVSpvtjM4Xq3fja1UuW1t1YAki1ZuJi.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Laboratory Project: Putting 3D in Perspective</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/laboratory-project-putting-3d-in-perspective" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/iesdwkis" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/3txedAqdtkQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/iOOd0GF7ijSC/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Laboratory-Project-Putting-3D-in-Perspective:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v3q97gl-laboratory-project-putting-3d-in-perspective.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcNa7q2ZWVgjnvrELxS1DnZAhG4qcaGV4Lz38oQbe3Wj6UKdJYo1hWktVAN2bcgCL8R.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcNa7q2ZWVgjnvrELxS1DnZAhG4qcaGV4Lz38oQbe3Wj6UKdJYo1hWktVAN2bcgCL8R.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Cylinders and Quadric Surfaces</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/cylinders-and-quadric-surfaces" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/fzsjbngl" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/k4EyLr4uOUA" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/H4CY92XZojQQ/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Cylinders-and-Quadric-Surfaces:1" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v4jaf73-vectors-and-the-geometry-of-space-cylinders-and-quadric-surfaces.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23xf4omKKUCp5Dr1yr6TsvK614ZwWCXbBXkHMLTsPGh1iv6dbbdm98fpzb9psDAonhZox.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23xf4omKKUCp5Dr1yr6TsvK614ZwWCXbBXkHMLTsPGh1iv6dbbdm98fpzb9psDAonhZox.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Review</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-and-the-geometry-of-space-review" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/gqwfwnst" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/VMKb69uDVt0" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/xjUs0mQfZFdk/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Vectors-Geometry-Review:1" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v52c4v7-vectors-and-the-geometry-of-space-review-of-chapter.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsrFwwAkY5PgSZ7oH3byKBhmjjcbiAdJ7pBXuBvK97cJSMoiK2odHTP7yKVk3s2uZQE.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsrFwwAkY5PgSZ7oH3byKBhmjjcbiAdJ7pBXuBvK97cJSMoiK2odHTP7yKVk3s2uZQE.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>True-False Quiz</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/vectors-geometry-true-false-quiz" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsqqLYVW31oWxCuTr4WGukQNR5ygKYwCjbCPgDotyT6raUMEBpEfxSbqe2ukUSVFGnQ.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23vsqqLYVW31oWxCuTr4WGukQNR5ygKYwCjbCPgDotyT6raUMEBpEfxSbqe2ukUSVFGnQ.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Problems Plus</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/jlgigkdl" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/jlgigkdl" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/4x6uh1zQ-M0" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/fdhjh9vmakKc/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Vectors-Geometry-Problems-Plus:a" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v5gzvcp-vectors-and-the-geometry-of-space-problems-plus.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u6UDcUEmsFnbSdPFNoPBs8WNJJUtmwfxp5qHQdTDnKLwQpq2XTAX2TS1w1XwNVrDd8E.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u6UDcUEmsFnbSdPFNoPBs8WNJJUtmwfxp5qHQdTDnKLwQpq2XTAX2TS1w1XwNVrDd8E.jpeg" alt="">
     </div>
     </div>
 
@@ -1568,37 +1568,37 @@ body.dark-mode .toc-sidebar .toc-title {
     <div class="list-row">
       <h3>Vector Functions and Space Curves</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/omhbcxkw" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/omhbcxkw" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/Qi2hVnKN-5c" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/7mSf3vVgPcMU/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Vector-Functions-Space-Curves:1" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6tpj9r-vector-functions-and-space-curves.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twA2Y16xtcqTpvsVBPwnPu5oU2tqAinF7TxtAKvn7pDbpRNF9aCrf3R2EDxVi9XSVvz.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23twA2Y16xtcqTpvsVBPwnPu5oU2tqAinF7TxtAKvn7pDbpRNF9aCrf3R2EDxVi9XSVvz.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Derivatives and Integrals of Vector Functions</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/hfsetrue" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/hfsetrue" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/YT4QJczx8KI" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/5x5OQBPdmiSY" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Derivatives-Integrals-Vector-Functions:a2b69774b13c4074c7b0c90ec3d2a140f9b5a7d8" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6yvl36-derivatives-and-integrals-of-vector-functions.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u6YmnLJ5HuZJsL9zGeFu5w3sKts3CN9TX19cRH8EFFWKFT6a4pFvLrpdr63Dy4jN1G8.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23u6YmnLJ5HuZJsL9zGeFu5w3sKts3CN9TX19cRH8EFFWKFT6a4pFvLrpdr63Dy4jN1G8.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Arc Length and Curvature</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/koxharrd" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/koxharrd" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/i9ForOVH5Bk" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/32875" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/sPjEJluGS7ZF/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Arc-Length-Curvature:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v73ep28-vector-functions-arc-length-and-curvature.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tSzLNbhGqM5G1zjeEEjXjdXVRxbgKNQ5zbjpR8jR9sPua8uHX337jc1FZeRecYcQyug.png" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tSzLNbhGqM5G1zjeEEjXjdXVRxbgKNQ5zbjpR8jR9sPua8uHX337jc1FZeRecYcQyug.png" alt="">
     </div>
     <div class="list-row">
       <h3>Motion in Space: Velocity and Acceleration</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/e443f9d3" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/e443f9d3" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/c9wE-BMvaY4" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/34385" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/CPs50MTtvaeZ/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Motion-in-Space-Velocity-Acceleration:3" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v78ndae-motion-in-space-velocity-and-acceleration.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tmmf7kivxaAFF8pc6U9v7rMGfqtFKtJ9bBWeJGbsTVSGbUw6ehx5TDBRLyCvGDhgM5d.png" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tmmf7kivxaAFF8pc6U9v7rMGfqtFKtJ9bBWeJGbsTVSGbUw6ehx5TDBRLyCvGDhgM5d.png" alt="">
     </div>
     <div class="list-row">
       <h3>Applied Project: Kepler's Laws of Planetary Motion</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/c3b94a80" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/c3b94a80" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/_HIoMlTPD9Y" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/34878" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/Mc2a6XqUBLyA/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Keplers-Laws:7269ff75c593cfe74c9f233cc13360ee54fab660" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7amb6u-keplers-laws-of-planetary-motion.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tSzCaMrsFVRSvCnXc3BNh9xvqpnfw5xaXVjzXE6hcQSyGEFcz8rGPErzbVySN28UZWY.jpeg" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tSzCaMrsFVRSvCnXc3BNh9xvqpnfw5xaXVjzXE6hcQSyGEFcz8rGPErzbVySN28UZWY.jpeg" alt="">
     </div>
     <div class="list-row">
       <h3>Review: Concept Check &amp; True-False Quiz</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/review-of-vector-functions-138" target="_blank" rel="noopener">Notes</a> - <a href="https://play.3speak.tv/embed?v=mes/2e9u7kyv" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/qQkC5yM7syM" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35175" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/rn9b9lR9jKUY/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Vector-Functions-Review-Quiz:00623b6d1fc96e2bd6f7cc5adf79a76c05b34239" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7coxec-review-of-vector-functions-chapter-concept-check-and-true-false-quiz.html" target="_blank" rel="noopener">Rumble</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcNnfbkHj6RCZV1KJSU2Ye6EvxtM3CF3avYDfPsVfJ1L7SNmaYLxc2jGqej5CJBYtdv.png" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/1200x630/https:/files.peakd.com/file/peakd-hive/mes/23tcNnfbkHj6RCZV1KJSU2Ye6EvxtM3CF3avYDfPsVfJ1L7SNmaYLxc2jGqej5CJBYtdv.png" alt="">
     </div>
     <div class="list-row">
       <h3>Problems Plus</h3>
       <p><a href="https://mes.fm/vector-functions-problems-plus" target="_blank" rel="noopener">Notes</a></p>
-      <img loading="lazy" class="list-thumb" src="https://images.hive.blog/DQmaDsV2X5cVwLs4BMAj4Y3zfaLSgE74PV6jydGrGf7hCmr/image" alt="">
+      <img class="list-thumb" src="https://images.hive.blog/DQmaDsV2X5cVwLs4BMAj4Y3zfaLSgE74PV6jydGrGf7hCmr/image" alt="">
     </div>
     </div>
 
@@ -1659,27 +1659,27 @@ body.dark-mode .toc-sidebar .toc-title {
     </div>
 
   </div>
-</div>
 
-<div id="footer" class="footer" role="contentinfo">
-  <div class="footer__item-container">
-    <div class="footer__item">
-      <a class="footer__text footer__text--title" href="/calculators">Calculators</a>
+  <div id="footer" class="footer" role="contentinfo">
+    <div class="footer__item-container">
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/calculators">Calculators</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/tools">Tools</a>
+      </div>
+      <div class="footer__item footer__item--extra-padding">
+        <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+      </div>
     </div>
-    <div class="footer__item">
-      <a class="footer__text footer__text--title" href="/tools">Tools</a>
-    </div>
-    <div class="footer__item footer__item--extra-padding">
-      <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
-    </div>
-    <div class="footer__item">
-      <a class="footer__text footer__text--title" href="/links">MES Links</a>
-    </div>
+    <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+    <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+    <a class="footer__text" target='_blank' href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+    <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
   </div>
-  <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
-  <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
-  <a class="footer__text" target='_blank' href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
-  <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;</span><a class="footer__text" href="/">Math Easy Solutions</a></div>
 </div>
 
 <script>

@@ -1489,27 +1489,27 @@ ${sectionsHtml}
     </div>
 
   </div>
-</div>
 
-<div id="footer" class="footer" role="contentinfo">
-  <div class="footer__item-container">
-    <div class="footer__item">
-      <a class="footer__text footer__text--title" href="/calculators">Calculators</a>
+  <div id="footer" class="footer" role="contentinfo">
+    <div class="footer__item-container">
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/calculators">Calculators</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/tools">Tools</a>
+      </div>
+      <div class="footer__item footer__item--extra-padding">
+        <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+      </div>
     </div>
-    <div class="footer__item">
-      <a class="footer__text footer__text--title" href="/tools">Tools</a>
-    </div>
-    <div class="footer__item footer__item--extra-padding">
-      <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
-    </div>
-    <div class="footer__item">
-      <a class="footer__text footer__text--title" href="/links">MES Links</a>
-    </div>
+    <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+    <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+    <a class="footer__text" target='_blank' href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+    <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
   </div>
-  <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
-  <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
-  <a class="footer__text" target='_blank' href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
-  <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;</span><a class="footer__text" href="/">Math Easy Solutions</a></div>
 </div>
 
 <script>
