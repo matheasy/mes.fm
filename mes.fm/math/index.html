@@ -809,6 +809,10 @@ body.dark-mode #sticky-bar .sticky-links a { color: #6cb6f5; }
 body.is-stuck #header-controls { position: fixed; top: 13px; right: 60px; }
 body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
 body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #sticky-bar .sticky-title { display: none; }
+  #sticky-bar .sticky-logo { width: 36px; height: 36px; }
+}
 @media (max-width: 480px) {
   #sticky-bar { padding-right: 160px; gap: 8px; }
   body.is-stuck #header-controls { right: 56px; }
