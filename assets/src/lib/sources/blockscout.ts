@@ -1,9 +1,10 @@
-import { BLOCKSCOUT_CHAINS, FETCH_FLOOR_USD, V3_MANAGERS, type BlockscoutChain } from '../config';
+import { BLOCKSCOUT_CHAINS, FETCH_FLOOR_USD, V3_MANAGERS, chainHasV3Farms, type BlockscoutChain } from '../config';
 import { fetchJson } from '../http';
-import { getSpot, getTokenQuotes } from '../prices';
+import { getSpot } from '../prices';
 import { scale } from '../rpc';
 import type { RawHolding, SourceResult } from '../types';
-import { LP_NAME_HINT, detectV2Lp, detectV3Positions, type PriceOf } from './lp';
+import { LP_NAME_HINT, detectV2Lp, detectV3Positions } from './lp';
+import { makePriceOf } from './priceOf';
 
 /**
  * EVM chains that have a public Blockscout indexer (Ethereum, Arbitrum, Polygon, Base, Optimism).
@@ -116,23 +117,14 @@ export async function fetchBlockscoutChain(chain: BlockscoutChain['id'], address
   }
 
   // ---- liquidity pools (only probed when the wallet shows signs of one) ----
-  if (hasV3Position || lpCandidates.length > 0) {
-    const priceOf: PriceOf = async (contract) => {
-      const c = contract.toLowerCase();
-      const hit = known.get(c);
-      if (hit) return hit;
-      const q = (await getTokenQuotes(cfg.coingeckoPlatform, [c]))[c];
-      return q ?? null;
-    };
+  // a farm-staked NFT is not in the wallet's token list, so chains with farms are always probed
+  if (hasV3Position || lpCandidates.length > 0 || chainHasV3Farms(chain)) {
+    const priceOf = makePriceOf(chain, cfg.coingeckoPlatform, known);
 
-    try {
-      if (hasV3Position) rows.push(...(await detectV3Positions(chain, address, priceOf)));
-      for (const c of lpCandidates.slice(0, 10)) {
-        const lp = await detectV2Lp(chain, c, priceOf);
-        if (lp && (lp.valueUsd ?? 0) >= FETCH_FLOOR_USD) rows.push(lp);
-      }
-    } catch (err) {
-      return { holdings: rows, note: `LP scan failed: ${err instanceof Error ? err.message : String(err)}` };
+    if (hasV3Position || chainHasV3Farms(chain)) rows.push(...(await detectV3Positions(chain, address, priceOf)));
+    for (const c of lpCandidates.slice(0, 10)) {
+      const lp = await detectV2Lp(chain, c, priceOf);
+      if (lp && (lp.valueUsd ?? 0) >= FETCH_FLOOR_USD) rows.push(lp);
     }
   }
 

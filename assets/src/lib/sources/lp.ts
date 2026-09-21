@@ -1,5 +1,6 @@
-import { RPC_URLS, V3_MANAGERS } from '../config';
-import { SEL, decodeString, encAddr, encUint, ethCall, rpcBatch, scale, signedWord, word, wordAddress, type RpcCall } from '../rpc';
+import { RPC_URLS, V3_MANAGERS, type FarmConfig } from '../config';
+import { SEL, decodeString, encAddr, encUint, ethCall, rpcBatch, rpcBatchDetailed, scale, signedWord, word, wordAddress, type RpcCall } from '../rpc';
+import { getSpot } from '../prices';
 import type { LpLeg, RawHolding } from '../types';
 import { constantProductValueUsd } from './poolValue';
 
@@ -18,7 +19,7 @@ export type EvmChain = keyof typeof RPC_URLS;
 export type PriceOf = (contract: string) => Promise<{ usd: number; change24h: number | null } | null>;
 
 const MAX_UINT128 = (1n << 128n) - 1n;
-const MAX_POSITIONS_PER_MANAGER = 25;
+const MAX_POSITIONS_PER_HOLDER = 100;
 
 interface TokenMeta {
   symbol: string;
@@ -61,20 +62,32 @@ export async function detectV3Positions(chain: EvmChain, owner: string, priceOf:
   if (managers.length === 0) return [];
   const urls = RPC_URLS[chain];
 
-  const counts = await rpcBatch(urls, managers.map((m) => ethCall(m.address, SEL.balanceOf + encAddr(owner))));
+  // every place an owner's NFTs can sit: the manager itself (unstaked) and each farm (staked)
+  const holders = managers.flatMap((manager) => [
+    { manager, address: manager.address, stakedIn: null as string | null, farm: null as FarmConfig | null },
+    ...(manager.farms ?? []).map((f) => ({ manager, address: f.address, stakedIn: f.name as string | null, farm: f as FarmConfig | null })),
+  ]);
+  const counts = await rpcBatchDetailed(urls, holders.map((h) => ethCall(h.address, SEL.balanceOf + encAddr(owner))));
+  // a revert means "that farm isn't deployed here" (= 0 positions); a call with NO answer is an outage - never let that pass as "no positions"
+  if (counts.some((c) => c.value === null && !c.reverted)) throw new Error(`could not read LP position balances on ${chain} (RPC failed)`);
   const rows: RawHolding[] = [];
 
-  for (let mi = 0; mi < managers.length; mi++) {
-    const count = Number(word(counts[mi] ?? null, 0) ?? 0n);
-    if (count === 0) continue;
-    const manager = managers[mi]!;
-    const n = Math.min(count, MAX_POSITIONS_PER_MANAGER);
+  for (const manager of managers) {
+    const mine = holders.map((h, i) => ({ ...h, count: Number(word(counts[i]?.value ?? null, 0) ?? 0n) })).filter((h) => h.manager === manager && h.count > 0);
+    if (mine.length === 0) continue;
 
-    const idRes = await rpcBatch(urls, Array.from({ length: n }, (_, i) => ethCall(manager.address, SEL.tokenOfOwnerByIndex + encAddr(owner) + encUint(i))));
-    const tokenIds = idRes.map((r) => word(r, 0)).filter((v): v is bigint => v !== null);
+    const found: { id: bigint; stakedIn: string | null; farm: FarmConfig | null }[] = [];
+    for (const h of mine) {
+      const n = Math.min(h.count, MAX_POSITIONS_PER_HOLDER);
+      const idRes = await rpcBatch(urls, Array.from({ length: n }, (_, i) => ethCall(h.address, SEL.tokenOfOwnerByIndex + encAddr(owner) + encUint(i))));
+      for (const r of idRes) {
+        const id = word(r, 0);
+        if (id !== null) found.push({ id, stakedIn: h.stakedIn, farm: h.farm });
+      }
+    }
 
     const [posRes, factoryRes] = await Promise.all([
-      rpcBatch(urls, tokenIds.map((id) => ethCall(manager.address, SEL.positions + encUint(id)))),
+      rpcBatch(urls, found.map((f) => ethCall(manager.address, SEL.positions + encUint(f.id)))),
       rpcBatch(urls, [ethCall(manager.address, SEL.factory)]),
     ]);
     const factory = wordAddress(factoryRes[0] ?? null, 0);
@@ -82,6 +95,8 @@ export async function detectV3Positions(chain: EvmChain, owner: string, priceOf:
 
     interface Pos {
       id: bigint;
+      stakedIn: string | null;
+      farm: FarmConfig | null;
       token0: string;
       token1: string;
       fee: number;
@@ -100,13 +115,17 @@ export async function detectV3Positions(chain: EvmChain, owner: string, priceOf:
       const tu = signedWord(r, 6);
       const liquidity = word(r, 7);
       if (!token0 || !token1 || fee === null || tl === null || tu === null || liquidity === null) return;
-      positions.push({ id: tokenIds[i]!, token0, token1, fee: Number(fee), tickLower: Number(tl), tickUpper: Number(tu), liquidity, owed0: word(r, 10) ?? 0n, owed1: word(r, 11) ?? 0n });
+      const owed0 = word(r, 10) ?? 0n;
+      const owed1 = word(r, 11) ?? 0n;
+      // wallets accumulate dead/airdropped position NFTs - don't spend calls on empty ones
+      if (liquidity === 0n && owed0 === 0n && owed1 === 0n) return;
+      positions.push({ id: found[i]!.id, stakedIn: found[i]!.stakedIn, farm: found[i]!.farm, token0, token1, fee: Number(fee), tickLower: Number(tl), tickUpper: Number(tu), liquidity, owed0, owed1 });
     });
     if (positions.length === 0) continue;
 
     const [poolRes, collectRes, meta] = await Promise.all([
       rpcBatch(urls, positions.map((p) => ethCall(factory, SEL.getPool + encAddr(p.token0) + encAddr(p.token1) + encUint(p.fee)))),
-      // dry-run `collect` from the owner: returns the fees actually claimable right now
+      // dry-run `collect` from the owner: the fees actually claimable right now (reverts for staked NFTs - then tokensOwed is used)
       rpcBatch(
         urls,
         positions.map((p) => ({
@@ -145,7 +164,8 @@ export async function detectV3Positions(chain: EvmChain, owner: string, priceOf:
       const valueUsd = compactUsd(legs);
       if (valueUsd === null) continue;
 
-      const inRange = sqrtPriceX96 > 0n && Number(sqrtPriceX96) / 2 ** 96 >= Math.pow(1.0001, p.tickLower / 2) && Number(sqrtPriceX96) / 2 ** 96 <= Math.pow(1.0001, p.tickUpper / 2);
+      const sqrtP = Number(sqrtPriceX96) / 2 ** 96;
+      const inRange = sqrtP >= Math.pow(1.0001, p.tickLower / 2) && sqrtP <= Math.pow(1.0001, p.tickUpper / 2);
       const poolName = `${m0.symbol}/${m1.symbol}`;
       rows.push({
         symbol: poolName,
@@ -156,9 +176,48 @@ export async function detectV3Positions(chain: EvmChain, owner: string, priceOf:
         priceUsd: null,
         valueUsd,
         change24hPct: null,
-        detail: `position #${p.id} · ${inRange ? 'in range' : 'OUT OF RANGE'}${unclaimed0 + unclaimed1 > 0 ? ' · includes unclaimed fees' : ''}`,
+        detail: [
+          `position #${p.id}`,
+          inRange ? 'in range' : 'OUT OF RANGE',
+          p.stakedIn ? `staked in ${p.stakedIn}` : null,
+          !p.stakedIn && unclaimed0 + unclaimed1 > 0 ? 'includes unclaimed fees' : null,
+        ]
+          .filter(Boolean)
+          .join(' · '),
         lp: { pool: `${manager.name} ${poolName}`, share: null, legs },
       });
+    }
+
+    // unharvested farm rewards (e.g. CAKE) of the staked positions
+    const stakedByFarm = new Map<string, { farm: FarmConfig; ids: bigint[] }>();
+    for (const p of positions) {
+      if (!p.farm?.pendingSelector) continue;
+      const g = stakedByFarm.get(p.farm.address) ?? { farm: p.farm, ids: [] };
+      g.ids.push(p.id);
+      stakedByFarm.set(p.farm.address, g);
+    }
+    for (const { farm, ids } of stakedByFarm.values()) {
+      const token = farm.rewardToken?.[chain];
+      if (!token) continue;
+      const res = await rpcBatch(urls, ids.map((id) => ethCall(farm.address, farm.pendingSelector! + encUint(id))));
+      const pending = res.reduce((sum, r) => sum + (word(r, 0) ?? 0n), 0n);
+      const amount = scale(pending, 18);
+      const spot = amount > 0 ? await getSpot() : null;
+      const spotQuote = spot && farm.rewardCoingeckoId ? (spot as Record<string, { usd: number; change24h: number | null }>)[farm.rewardCoingeckoId] : undefined;
+      const q = amount > 0 ? (spotQuote?.usd ? spotQuote : await priceOf(token)) : null;
+      if (q && amount * q.usd > 0) {
+        rows.push({
+          symbol: farm.rewardSymbol ?? 'REWARD',
+          kind: 'reward',
+          label: `${farm.name} rewards (${farm.rewardSymbol ?? 'reward'})`,
+          contract: token,
+          amount,
+          priceUsd: q.usd,
+          valueUsd: amount * q.usd,
+          change24hPct: q.change24h,
+          detail: `unharvested, from staked position${ids.length > 1 ? 's' : ''} ${ids.map((i) => '#' + i).join(', ')}`,
+        });
+      }
     }
   }
 

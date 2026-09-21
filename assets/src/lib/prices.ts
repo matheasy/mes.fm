@@ -17,7 +17,7 @@ function headers(): Record<string, string> {
 const hasKey = () => Boolean(process.env.COINGECKO_API_KEY);
 
 /** CoinGecko coin ids for every native/base asset this app prices directly */
-export const SPOT_IDS = ['hive', 'hive_dollar', 'bitcoin', 'ethereum', 'binancecoin', 'ripple', 'hyperliquid', 'polygon-ecosystem-token'] as const;
+export const SPOT_IDS = ['hive', 'hive_dollar', 'bitcoin', 'ethereum', 'binancecoin', 'ripple', 'hyperliquid', 'polygon-ecosystem-token', 'pancakeswap-token'] as const;
 export type SpotId = (typeof SPOT_IDS)[number];
 export type Spot = Record<SpotId, Quote>;
 

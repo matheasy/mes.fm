@@ -35,7 +35,7 @@ Addresses live in [`src/lib/config.ts`](src/lib/config.ts) (`GROUPS`), not in en
 | BNB Chain | NodeReal transfer scan **once per 12h** to discover tokens → exact `balanceOf` via one JSON-RPC batch on a public node → CoinGecko by contract | `NODEREAL_API_KEY` |
 | Hyperliquid | public info API: spot (priced from USDC pairs), perps equity, vaults, HYPE staking; native HYPE on HyperEVM via RPC | no |
 | XRP | XRPL `account_info` | no |
-| LPs on EVM | Uniswap-V3-style NFT positions (Uniswap V3, PancakeSwap V3; amounts from liquidity + tick range + pool price, plus unclaimed fees via a `collect` dry-run) and V2-style pair tokens - public RPC, only probed when a wallet shows signs of one | no |
+| LPs on EVM | Uniswap-V3-style NFT positions (Uniswap V3, PancakeSwap V3; amounts from liquidity + tick range + pool price, plus unclaimed fees via a `collect` dry-run) and V2-style pair tokens - public RPC. **Positions staked in PancakeSwap's MasterChef V3 farm** (where the NFT is custodied by the farm, so it never shows in the wallet) are found through the farm's `tokenOfOwnerByIndex`, and their unharvested **CAKE** rewards are added as a separate row (BNB Chain, Ethereum, Arbitrum). Chains with a farm are always probed; others only when a wallet shows signs of an LP | no |
 | Prices | CoinGecko `simple/price` (one call for HIVE, HBD, BTC, ETH, BNB, XRP, HYPE, POL) | `COINGECKO_API_KEY` recommended |
 
 ## The `$10` rule
@@ -121,7 +121,9 @@ those two stop calling NodeReal/Etherscan for history as well.
 
 * BEP-20 tokens on BNB Chain need `NODEREAL_API_KEY`; discovery only looks at tokens *received* by the wallet.
 * Hyperliquid's HyperEVM token balances (beyond native HYPE) and Hive Engine NFTs are not tracked.
-* Pool/LP positions on EVM chains are only detected for Uniswap V3 / PancakeSwap V3 and V2-style pairs;
-  farms/gauges that custody the LP token elsewhere (staked LP) are not followed.
+* EVM LPs: Uniswap V3 / PancakeSwap V3 and V2-style pairs are detected, and PancakeSwap's V3 farm is followed.
+  Other farms/gauges that custody an LP token (MasterChef V2 for V2 pairs, Aerodrome/Velodrome gauges, ...) are not.
+  Farm reward rows cover CAKE only. A staked V3 position's trading fees are harvested with the farm rewards, so
+  they are not counted separately.
 * Lending receipt tokens (aTokens, cTokens) appear only if Blockscout/CoinGecko price them.
 * Not tax or investment advice.

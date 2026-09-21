@@ -85,27 +85,57 @@ export const RPC_URLS: Record<'ethereum' | 'arbitrum' | 'polygon' | 'base' | 'op
   hyperliquid: [process.env.HYPEREVM_RPC_URL, 'https://rpc.hyperliquid.xyz/evm'].filter(Boolean) as string[],
 };
 
-/** Uniswap-V3-style concentrated-liquidity position managers (ERC-721) per chain */
-export const V3_MANAGERS: Record<string, { name: string; address: string }[]> = {
-  ethereum: [
-    { name: 'Uniswap V3', address: '0xc36442b4a4522e871399cd717abdd847ab11fe88' },
-    { name: 'PancakeSwap V3', address: '0x46a15b0b27311cedf172ab29e4f4766fbe7f4364' },
-  ],
-  arbitrum: [
-    { name: 'Uniswap V3', address: '0xc36442b4a4522e871399cd717abdd847ab11fe88' },
-    { name: 'PancakeSwap V3', address: '0x46a15b0b27311cedf172ab29e4f4766fbe7f4364' },
-  ],
+/**
+ * Uniswap-V3-style concentrated-liquidity position managers (ERC-721 per position). A position that is
+ * *staked in a farm* is custodied by the farm contract (the NFT leaves the wallet), so a manager can list
+ * `farms` - contracts that are enumerable ERC-721 holders (`balanceOf` / `tokenOfOwnerByIndex`) of that
+ * manager's NFTs on behalf of the depositor.
+ */
+export interface V3Manager {
+  name: string;
+  address: string;
+  farms?: FarmConfig[];
+}
+
+/** A farm that custodies staked position NFTs and can report unharvested rewards */
+export interface FarmConfig {
+  name: string;
+  address: string;
+  /** 4-byte selector of `pending<Reward>(uint256 tokenId)` */
+  pendingSelector?: string;
+  rewardSymbol?: string;
+  /** CoinGecko coin id (priced in the shared spot call, so a rate limit can't drop the reward) */
+  rewardCoingeckoId?: string;
+  /** reward token contract, by chain */
+  rewardToken?: Record<string, string>;
+}
+
+const PANCAKE_MASTERCHEF_V3: FarmConfig = {
+  name: 'PancakeSwap farm',
+  address: '0x556b9306565093c855aea9ae92a594704c2cd59e',
+  pendingSelector: '0xce5f39c6', // pendingCake(uint256)
+  rewardSymbol: 'CAKE',
+  rewardCoingeckoId: 'pancakeswap-token',
+  rewardToken: {
+    bsc: '0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82',
+    ethereum: '0x152649ea73beab28c5b49b26eb48f7ead6d4c898',
+    arbitrum: '0x1b896893dfc86bb67cf57767298b9073d2c1ba2c',
+  },
+};
+const PANCAKE_V3: V3Manager = { name: 'PancakeSwap V3', address: '0x46a15b0b27311cedf172ab29e4f4766fbe7f4364', farms: [PANCAKE_MASTERCHEF_V3] };
+
+export const V3_MANAGERS: Record<string, V3Manager[]> = {
+  ethereum: [{ name: 'Uniswap V3', address: '0xc36442b4a4522e871399cd717abdd847ab11fe88' }, PANCAKE_V3],
+  arbitrum: [{ name: 'Uniswap V3', address: '0xc36442b4a4522e871399cd717abdd847ab11fe88' }, PANCAKE_V3],
   polygon: [{ name: 'Uniswap V3', address: '0xc36442b4a4522e871399cd717abdd847ab11fe88' }],
   optimism: [{ name: 'Uniswap V3', address: '0xc36442b4a4522e871399cd717abdd847ab11fe88' }],
-  base: [
-    { name: 'Uniswap V3', address: '0x03a520b32c04bf3beef7beb72e919cf822ed34f1' },
-    { name: 'PancakeSwap V3', address: '0x46a15b0b27311cedf172ab29e4f4766fbe7f4364' },
-  ],
-  bsc: [
-    { name: 'PancakeSwap V3', address: '0x46a15b0b27311cedf172ab29e4f4766fbe7f4364' },
-    { name: 'Uniswap V3', address: '0x7b8a01b39d58278b5de7e48c8449c9f4f5170613' },
-  ],
+  // no farm listed on Base: PancakeSwap's MasterChef V3 is not at the shared address there
+  base: [{ name: 'Uniswap V3', address: '0x03a520b32c04bf3beef7beb72e919cf822ed34f1' }, { name: 'PancakeSwap V3', address: PANCAKE_V3.address }],
+  bsc: [PANCAKE_V3, { name: 'Uniswap V3', address: '0x7b8a01b39d58278b5de7e48c8449c9f4f5170613' }],
 };
+
+/** True when a chain has a farm that can hide staked positions from a plain wallet scan */
+export const chainHasV3Farms = (chain: string): boolean => (V3_MANAGERS[chain] ?? []).some((m) => (m.farms?.length ?? 0) > 0);
 
 /** Hive L1 JSON-RPC nodes (tried in order) */
 export const HIVE_RPC_NODES = ['https://api.hive.blog', 'https://api.openhive.network', 'https://api.c0ff33a.uk'];

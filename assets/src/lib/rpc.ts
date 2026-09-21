@@ -13,36 +13,74 @@ export interface RpcCall {
 
 const BATCH_SIZE = 40;
 
-/** Runs `calls` against the first endpoint that answers; results align with `calls` (null = that call errored) */
+/** A deterministic EVM failure (revert etc.) - retrying on another node can't change the answer */
+const DETERMINISTIC = /revert|execution|invalid opcode|out of gas|invalid argument|stack/i;
+
+/** One JSON-RPC batch against one endpoint. `retry` marks calls that failed for transport reasons (rate limit, node hiccup). */
+async function batchOnce(url: string, calls: RpcCall[]): Promise<{ value: string | null; retry: boolean }[]> {
+  const out: { value: string | null; retry: boolean }[] = [];
+  for (let i = 0; i < calls.length; i += BATCH_SIZE) {
+    const slice = calls.slice(i, i + BATCH_SIZE);
+    const res = await fetchJson<{ id: number; result?: string; error?: { message?: string } }[] | { error?: unknown }>(url, {
+      method: 'POST',
+      body: slice.map((c, j) => ({ jsonrpc: '2.0', id: j, method: c.method, params: c.params })),
+      retries: 1,
+      timeoutMs: 15_000,
+    });
+    if (!Array.isArray(res)) throw new Error('RPC endpoint does not support batching');
+    const byId = new Map(res.map((r) => [r.id, r]));
+    for (let j = 0; j < slice.length; j++) {
+      const r = byId.get(j);
+      if (r && typeof r.result === 'string') out.push({ value: r.result, retry: false });
+      else out.push({ value: null, retry: !(r?.error?.message && DETERMINISTIC.test(r.error.message)) });
+    }
+  }
+  return out;
+}
+
+/**
+ * Runs `calls` in JSON-RPC batches. Calls that fail for transport reasons are retried on the next
+ * endpoint; deterministic reverts stay `null`. Results align with `calls`. Throws only if every
+ * endpoint failed outright.
+ */
 export async function rpcBatch(urls: string[], calls: RpcCall[]): Promise<(string | null)[]> {
+  return (await rpcBatchDetailed(urls, calls)).map((r) => r.value);
+}
+
+export interface RpcResult {
+  value: string | null;
+  /** True when the node answered with a deterministic EVM error (revert) - i.e. "no such thing", not an outage */
+  reverted: boolean;
+}
+
+/** Like rpcBatch, but tells a revert apart from a call that never got an answer */
+export async function rpcBatchDetailed(urls: string[], calls: RpcCall[]): Promise<RpcResult[]> {
   if (calls.length === 0) return [];
+  const results: RpcResult[] = calls.map(() => ({ value: null, reverted: false }));
+  let pending = calls.map((_, i) => i);
   let lastErr: unknown;
+  let anyEndpointAnswered = false;
 
   for (const url of urls) {
+    if (pending.length === 0) break;
     try {
-      const results: (string | null)[] = [];
-      for (let i = 0; i < calls.length; i += BATCH_SIZE) {
-        const slice = calls.slice(i, i + BATCH_SIZE);
-        const res = await fetchJson<{ id: number; result?: string; error?: unknown }[] | { error?: unknown }>(url, {
-          method: 'POST',
-          body: slice.map((c, j) => ({ jsonrpc: '2.0', id: j, method: c.method, params: c.params })),
-          retries: 1,
-          timeoutMs: 15_000,
-        });
-        if (!Array.isArray(res)) throw new Error('RPC endpoint does not support batching');
-        const byId = new Map(res.map((r) => [r.id, r]));
-        for (let j = 0; j < slice.length; j++) {
-          const r = byId.get(j);
-          results.push(r && typeof r.result === 'string' ? r.result : null);
-        }
-      }
-      return results;
+      const got = await batchOnce(url, pending.map((i) => calls[i]!));
+      anyEndpointAnswered = true;
+      const still: number[] = [];
+      pending.forEach((idx, j) => {
+        const g = got[j]!;
+        if (g.value !== null) results[idx] = { value: g.value, reverted: false };
+        else if (g.retry) still.push(idx);
+        else results[idx] = { value: null, reverted: true };
+      });
+      pending = still;
     } catch (err) {
       lastErr = err;
     }
   }
 
-  throw lastErr instanceof Error ? lastErr : new Error('all RPC endpoints failed');
+  if (!anyEndpointAnswered) throw lastErr instanceof Error ? lastErr : new Error('all RPC endpoints failed');
+  return results;
 }
 
 export async function rpcOne(urls: string[], call: RpcCall): Promise<string | null> {

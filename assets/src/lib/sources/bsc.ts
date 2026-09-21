@@ -5,7 +5,8 @@ import { fetchJson } from '../http';
 import { getSpot, getTokenQuotes } from '../prices';
 import { SEL, encAddr, ethCall, rpcBatch, scale, word } from '../rpc';
 import type { RawHolding, SourceResult } from '../types';
-import { LP_NAME_HINT, detectV2Lp, detectV3Positions, type PriceOf } from './lp';
+import { LP_NAME_HINT, detectV2Lp, detectV3Positions } from './lp';
+import { makePriceOf } from './priceOf';
 
 /**
  * BNB Chain. No keyless indexer exists for it, so it is the one chain that uses a key:
@@ -123,20 +124,11 @@ export async function fetchBsc(wallet: string): Promise<SourceResult> {
   }
 
   // 4. liquidity pools
-  const priceOf: PriceOf = async (contract) => {
-    const c = contract.toLowerCase();
-    const hit = known.get(c);
-    if (hit) return hit;
-    return (await getTokenQuotes('binance-smart-chain', [c]))[c] ?? null;
-  };
-  try {
-    rows.push(...(await detectV3Positions('bsc', wallet, priceOf)));
-    for (const c of lpCandidates.slice(0, 10)) {
-      const lp = await detectV2Lp('bsc', { address: c.address, balance: c.balance, decimals: c.decimals, symbol: c.symbol }, priceOf);
-      if (lp && (lp.valueUsd ?? 0) >= FETCH_FLOOR_USD) rows.push(lp);
-    }
-  } catch (err) {
-    note = `${note ? note + '; ' : ''}LP scan failed: ${err instanceof Error ? err.message : String(err)}`;
+  const priceOf = makePriceOf('bsc', 'binance-smart-chain', known);
+  rows.push(...(await detectV3Positions('bsc', wallet, priceOf)));
+  for (const c of lpCandidates.slice(0, 10)) {
+    const lp = await detectV2Lp('bsc', { address: c.address, balance: c.balance, decimals: c.decimals, symbol: c.symbol }, priceOf);
+    if (lp && (lp.valueUsd ?? 0) >= FETCH_FLOOR_USD) rows.push(lp);
   }
 
   return { holdings: rows, note };
