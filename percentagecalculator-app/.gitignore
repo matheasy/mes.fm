@@ -8,3 +8,10 @@ DerivedData/
 www/img_*.png
 ios/build-sim/
 ios/*.xcarchive
+android/keystore.properties
+android/local.properties
+android/build/
+android/app/build/
+android/.gradle/
+*.jks
+*.keystore

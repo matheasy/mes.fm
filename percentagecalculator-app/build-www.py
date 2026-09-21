@@ -36,16 +36,24 @@ EXT = "https://mes.fm"
 
 PAGES = ["index.html", "tutorial.html", "how-do-you-calculate-percentages.html"]
 
-SCRIPT_TAIL = (
-    '<script src="vendor/jquery.min.js"></script>\n'
-    "<script>var MES_Vars={mobile:false,hide_search:true,current_tab:0};</script>\n"
-    '<script src="js/calculator.js?v=2.2"></script>\n'
-    '<script src="vendor/app-nav.js"></script>\n'
-    '<script src="vendor/app-features.js"></script>\n'
-    '<script>var _y=document.getElementById("copyright-year");'
-    "if(_y)_y.textContent=new Date().getFullYear();</script>\n"
-    "</body>"
-)
+# index/tutorial/how-to map 1:1 to the three #info-bar tabs (see app-nav.js's
+# active-tab highlight, which reads MES_Vars.current_tab) -- must stay in the
+# same order as PAGES above.
+TAB_INDEX = {name: i for i, name in enumerate(PAGES)}
+
+
+def script_tail(page_name: str) -> str:
+    return (
+        '<script src="vendor/jquery.min.js"></script>\n'
+        "<script>var MES_Vars={mobile:false,hide_search:true,current_tab:%d};"
+        "</script>\n"
+        '<script src="js/calculator.js?v=2.2"></script>\n'
+        '<script src="vendor/app-nav.js"></script>\n'
+        '<script src="vendor/app-features.js"></script>\n'
+        '<script>var _y=document.getElementById("copyright-year");'
+        "if(_y)_y.textContent=new Date().getFullYear();</script>\n"
+        "</body>"
+    ) % TAB_INDEX[page_name]
 
 ROOT_LINKS = ("contact", "privacy-policy", "calculators.html", "tools.html",
               "mobile-apps.html", "links", "donate.html")
@@ -67,7 +75,7 @@ def strip_lazyload(cls: str) -> str:
     return " ".join(parts)
 
 
-def clean(html: str) -> str:
+def clean(html: str, page_name: str) -> str:
     # --- HTTrack cruft -------------------------------------------------------
     html = re.sub(r"<!-- Mirrored from .*?-->\s*", "", html, flags=re.S)
     html = re.sub(r"<!-- Added by HTTrack -->.*?<!-- /Added by HTTrack -->", "",
@@ -183,10 +191,19 @@ def clean(html: str) -> str:
     # just that clause from the hide rule
     html = re.sub(r'#info-bar > \.info-bar__item:has\(a\[href="index\.html"\]\),'
                   r'\s*', "", html)
+    # "Percentages How-To" is long enough that it wraps to 2 lines in the
+    # narrow info-bar tab strip (unlike "Home"/"Tutorial"), making that page's
+    # top bar taller than the other two -- shorten just this tab's label.
+    # The hamburger-menu link and inline body links keep the full text.
+    html = html.replace(
+        '<a class="info-bar__item__text" '
+        'href="how-do-you-calculate-percentages.html">Percentages How-To</a>',
+        '<a class="info-bar__item__text" '
+        'href="how-do-you-calculate-percentages.html">How-To</a>')
 
     # --- script tail ------------------------------------------------------
     html = re.sub(r'<script src="https://ajax\.googleapis\.com/ajax/libs/'
-                  r"jquery.*?</body>", SCRIPT_TAIL, html, flags=re.S)
+                  r"jquery.*?</body>", script_tail(page_name), html, flags=re.S)
 
     return html
 
@@ -210,7 +227,7 @@ def main() -> None:
 
     pages = {}
     for name in PAGES:
-        out = clean((SRC / name).read_text(encoding="utf-8"))
+        out = clean((SRC / name).read_text(encoding="utf-8"), name)
         (WWW / name).write_text(out, encoding="utf-8")
         pages[name] = out
 

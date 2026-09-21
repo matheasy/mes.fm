@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Percent Calc</string>
+    <string name="title_activity_main">Percent Calc</string>
+    <string name="package_name">fm.mes.percentagecalculator</string>
+    <string name="custom_url_scheme">fm.mes.percentagecalculator</string>
+</resources>
