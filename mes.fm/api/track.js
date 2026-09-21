@@ -8,6 +8,9 @@ const SITE_RE = /^([a-z0-9-]+\.)*mes\.fm$/i;
 const HOUR_TTL = 26 * 3600; // covers the rolling 24h window plus buffer
 const DAY_TTL = 366 * 86400; // covers the rolling 365d window plus buffer
 
+// Bucket keys already given a TTL by this (warm) serverless instance.
+const expiredKeys = new Set();
+
 // Device type is classified server-side from the User-Agent header rather than
 // trusting a client-supplied field -- one place to get right, and it can't be
 // spoofed any more easily than the UA itself already can be.
@@ -77,8 +80,15 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const member = `${site}|${path}`;
   const device = detectDevice(req.headers['user-agent']);
+  // Bots are not tracked at all: every counted view costs a dozen Upstash
+  // commands, and crawler traffic is pure quota burn with no analytics value.
+  if (device === 'bot') {
+    res.status(204).end();
+    return;
+  }
+
+  const member = `${site}|${path}`;
   const source = detectSource(body.referrer, site);
   // Composite members so a single sorted set can hold a per-page breakdown --
   // same "|"-joined-member trick the plain leaderboard already uses, just
@@ -88,10 +98,12 @@ module.exports = async (req, res) => {
   // identity, just not aggregated on its own anymore.)
   const pageDeviceMember = `${site}|${path}|${device}`;
   const pageSourceMember = `${site}|${path}|${source}`;
-  // Full cross-tab member (device AND source together) for the per-page
-  // expand-to-drill-down view -- one write per view either way, the cost is
-  // the same shape as pageDeviceMember/pageSourceMember above, just a
-  // finer-grained key.
+  // Full cross-tab member (device AND source together). The hourly/daily
+  // buckets store ONLY this per-page breakdown; api/stats.js sums it back
+  // into per-page device and per-page source marginals, so those two
+  // dimensions no longer need their own hourly/daily sorted sets. (The
+  // all-time pagedevices/pagesources sets are kept because they hold history
+  // from before the cross-tab existed.)
   const pageDeviceSourceMember = `${site}|${path}|${device}|${source}`;
   const now = new Date();
   const hk = hourKey(now);
@@ -99,14 +111,10 @@ module.exports = async (req, res) => {
   const hourlyLeaderboard = `pageviews:leaderboard:hourly:${hk}`;
   const hourlyDeviceTotals = `pageviews:devicetotals:hourly:${hk}`;
   const hourlySourceTotals = `pageviews:sourcetotals:hourly:${hk}`;
-  const hourlyPageDevices = `pageviews:pagedevices:hourly:${hk}`;
-  const hourlyPageSources = `pageviews:pagesources:hourly:${hk}`;
   const hourlyPageDeviceSources = `pageviews:pagedevicesources:hourly:${hk}`;
   const dailyLeaderboard = `pageviews:leaderboard:daily:${dk}`;
   const dailyDeviceTotals = `pageviews:devicetotals:daily:${dk}`;
   const dailySourceTotals = `pageviews:sourcetotals:daily:${dk}`;
-  const dailyPageDevices = `pageviews:pagedevices:daily:${dk}`;
-  const dailyPageSources = `pageviews:pagesources:daily:${dk}`;
   const dailyPageDeviceSources = `pageviews:pagedevicesources:daily:${dk}`;
 
   const commands = [
@@ -117,30 +125,26 @@ module.exports = async (req, res) => {
     ['ZINCRBY', 'pageviews:pagesources', '1', pageSourceMember],
     ['ZINCRBY', 'pageviews:pagedevicesources', '1', pageDeviceSourceMember],
     ['ZINCRBY', hourlyLeaderboard, '1', member],
-    ['EXPIRE', hourlyLeaderboard, String(HOUR_TTL)],
     ['ZINCRBY', hourlyDeviceTotals, '1', device],
-    ['EXPIRE', hourlyDeviceTotals, String(HOUR_TTL)],
     ['ZINCRBY', hourlySourceTotals, '1', source],
-    ['EXPIRE', hourlySourceTotals, String(HOUR_TTL)],
-    ['ZINCRBY', hourlyPageDevices, '1', pageDeviceMember],
-    ['EXPIRE', hourlyPageDevices, String(HOUR_TTL)],
-    ['ZINCRBY', hourlyPageSources, '1', pageSourceMember],
-    ['EXPIRE', hourlyPageSources, String(HOUR_TTL)],
     ['ZINCRBY', hourlyPageDeviceSources, '1', pageDeviceSourceMember],
-    ['EXPIRE', hourlyPageDeviceSources, String(HOUR_TTL)],
     ['ZINCRBY', dailyLeaderboard, '1', member],
-    ['EXPIRE', dailyLeaderboard, String(DAY_TTL)],
     ['ZINCRBY', dailyDeviceTotals, '1', device],
-    ['EXPIRE', dailyDeviceTotals, String(DAY_TTL)],
     ['ZINCRBY', dailySourceTotals, '1', source],
-    ['EXPIRE', dailySourceTotals, String(DAY_TTL)],
-    ['ZINCRBY', dailyPageDevices, '1', pageDeviceMember],
-    ['EXPIRE', dailyPageDevices, String(DAY_TTL)],
-    ['ZINCRBY', dailyPageSources, '1', pageSourceMember],
-    ['EXPIRE', dailyPageSources, String(DAY_TTL)],
     ['ZINCRBY', dailyPageDeviceSources, '1', pageDeviceSourceMember],
-    ['EXPIRE', dailyPageDeviceSources, String(DAY_TTL)],
   ];
+
+  // A bucket's TTL only needs setting once, not on every view. Remember which
+  // keys this warm instance has already expired; a cold instance just sets it
+  // again, which is harmless.
+  const expireOnce = (key, ttl) => {
+    if (expiredKeys.has(key)) return;
+    if (expiredKeys.size > 500) expiredKeys.clear();
+    expiredKeys.add(key);
+    commands.push(['EXPIRE', key, String(ttl)]);
+  };
+  [hourlyLeaderboard, hourlyDeviceTotals, hourlySourceTotals, hourlyPageDeviceSources].forEach((k) => expireOnce(k, HOUR_TTL));
+  [dailyLeaderboard, dailyDeviceTotals, dailySourceTotals, dailyPageDeviceSources].forEach((k) => expireOnce(k, DAY_TTL));
 
   try {
     await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {

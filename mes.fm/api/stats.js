@@ -191,32 +191,17 @@ module.exports = async (req, res) => {
   let pageSourceScoreIndex = -1;
   let pageDeviceSourceScoreIndex = -1;
 
-  if (pageDeviceMembers.length) {
-    if (!config) {
-      commands2.push(['ZMSCORE', 'pageviews:pagedevices', ...pageDeviceMembers]);
-      pageDeviceScoreIndex = commands2.length - 1;
-    } else {
-      const pageDeviceKeys = bucketKeys.map((k) => `pageviews:pagedevices:${config.unit}:${k}`);
-      const destPageDevices = randomKey('pd');
-      commands2.push(['ZUNIONSTORE', destPageDevices, String(pageDeviceKeys.length), ...pageDeviceKeys]);
-      commands2.push(['ZMSCORE', destPageDevices, ...pageDeviceMembers]);
-      pageDeviceScoreIndex = commands2.length - 1;
-      commands2.push(['DEL', destPageDevices]);
-    }
+  // All-time keeps its own page x device / page x source sets (they hold
+  // history from before the cross-tab existed). Ranged buckets only store the
+  // cross-tab, so their marginals are summed from the matrix below instead.
+  if (!config && pageDeviceMembers.length) {
+    commands2.push(['ZMSCORE', 'pageviews:pagedevices', ...pageDeviceMembers]);
+    pageDeviceScoreIndex = commands2.length - 1;
   }
 
-  if (pageSourceMembers.length) {
-    if (!config) {
-      commands2.push(['ZMSCORE', 'pageviews:pagesources', ...pageSourceMembers]);
-      pageSourceScoreIndex = commands2.length - 1;
-    } else {
-      const pageSourceKeys = bucketKeys.map((k) => `pageviews:pagesources:${config.unit}:${k}`);
-      const destPageSources = randomKey('ps');
-      commands2.push(['ZUNIONSTORE', destPageSources, String(pageSourceKeys.length), ...pageSourceKeys]);
-      commands2.push(['ZMSCORE', destPageSources, ...pageSourceMembers]);
-      pageSourceScoreIndex = commands2.length - 1;
-      commands2.push(['DEL', destPageSources]);
-    }
+  if (!config && pageSourceMembers.length) {
+    commands2.push(['ZMSCORE', 'pageviews:pagesources', ...pageSourceMembers]);
+    pageSourceScoreIndex = commands2.length - 1;
   }
 
   if (pageDeviceSourceMembers.length) {
@@ -252,6 +237,16 @@ module.exports = async (req, res) => {
         const scores = results2[pageDeviceSourceScoreIndex]?.result || [];
         unflattenMatrix(topPages.length, scores, DEVICES, SOURCES).forEach((matrix, i) => {
           topPages[i].deviceSourceMatrix = matrix;
+          if (config) {
+            topPages[i].deviceViews = {};
+            topPages[i].sourceViews = {};
+            DEVICES.forEach((d) => { topPages[i].deviceViews[d] = 0; });
+            SOURCES.forEach((s) => { topPages[i].sourceViews[s] = 0; });
+            DEVICES.forEach((d) => SOURCES.forEach((s) => {
+              topPages[i].deviceViews[d] += matrix[d][s];
+              topPages[i].sourceViews[s] += matrix[d][s];
+            }));
+          }
         });
       }
     } catch {
