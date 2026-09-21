@@ -1,7 +1,7 @@
-// Vercel Edge Middleware — light HTTP Basic Auth gate for /portfolio and /sov.
+// Vercel Edge Middleware — light HTTP Basic Auth gate for /portfolio, /sov and /assets.
 //
 // Both paths are proxy rewrites (see vercel.json) to external tracker apps
-// (mes-fm-crypto, mes-fm-sov). Middleware runs before vercel.json rewrites, so
+// (mes-fm-crypto, mes-fm-sov, mes-fm-assets). Middleware runs before vercel.json rewrites, so
 // this challenges for a password first and only lets the proxy through on
 // success. One shared realm + password, so unlocking one unlocks the other.
 //
@@ -10,7 +10,7 @@
 // password must be "mes911".
 
 export const config = {
-  matcher: ['/portfolio', '/portfolio/:path*', '/sov', '/sov/:path*'],
+  matcher: ['/portfolio', '/portfolio/:path*', '/sov', '/sov/:path*', '/assets', '/assets/:path*'],
 };
 
 const PASSWORD = 'mes911';

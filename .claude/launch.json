@@ -30,6 +30,20 @@
       "autoPort": true
     },
     {
+      "name": "sov",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd sov && npm run dev -- -p \"$PORT\""],
+      "port": 8429,
+      "autoPort": true
+    },
+    {
+      "name": "assets",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd assets && npm run dev -- -p \"$PORT\""],
+      "port": 8428,
+      "autoPort": true
+    },
+    {
       "name": "cmbcbracelets",
       "runtimeExecutable": "sh",
       "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory cmbcbracelets.com"],
