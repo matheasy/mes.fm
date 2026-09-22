@@ -197,6 +197,7 @@ ${cards}
 // thumbnail + excerpt are scraped from the target page's og: tags at build
 // time and cached in link-meta.json.
 const POSTS = [
+  { href: "https://mes.fm/mendeleev-chemical-table-dream", title: "Dmitri Mendeleev Said He Came Up With the Periodic Table in a Dream" },
   { href: "https://mes.fm/fleischmann-corn-starch", title: "Is Corn Starch the Key to Martin Fleischmann's Cold Fusion Experiments?" },
   { href: "https://mes.fm/ferrocell-specular-reflection", title: "Demystifying the Ferrocell: Specular Reflection" },
 ];
