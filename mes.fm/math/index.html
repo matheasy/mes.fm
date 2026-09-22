@@ -803,7 +803,12 @@ body.dark-mode .toc-sidebar .toc-title {
   .calculator-title { font-size: 1.05em; }
   .tag-line { font-size: 0.8em; }
   #header-controls { top: 50%; transform: translateY(-50%); right: 56px; }
-  #navbar-button { top: 50% !important; transform: translateY(-50%) !important; }
+  /* #navbar-button lives in .side-bar, not #header -- its containing block
+     for position:absolute is .inner-container (position:relative, height =
+     the WHOLE page), not this row. A percentage top:50% here resolved
+     against that page height and pushed it thousands of pixels offscreen
+     (this broke it in an earlier version). Leave it at its base top:16px
+     (unset here) rather than reintroduce a percentage. */
 }
 
 
@@ -1059,7 +1064,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/mobile-apps'>Mobile Apps</a></li>
         <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/puzzles'>Puzzles</a></li>
-        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/memes'>Memes</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a target="_self" class="info-bar__item__text" href='/memes'>Memes</a></li>
         <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
         <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li>
         <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='/donate'>Donate</a></li>
