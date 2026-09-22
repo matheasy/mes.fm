@@ -1205,17 +1205,30 @@ body.dark-mode .toc-sidebar .toc-title {
 }
 @media (max-width: 768px) {
   /* #header-controls (A-/A+/theme) and #navbar-button (hamburger) are both
-     absolutely positioned in the header's top-right corner, out of flow --
-     an earlier version reserved a full logo-height row for them above the
-     title (to dodge wrapping), but that left most of that row as dead
-     whitespace beside a lone small logo. Instead, reserve just a thin
-     strip (padding-top, tall enough for the controls) above the whole
-     flex row, then let a *smaller* logo sit side by side with the title/
-     tagline in the normal row below -- clear of the controls vertically,
-     and no wasted width. */
-  .header { display: flex !important; flex-wrap: wrap; align-items: center; padding-top: 60px !important; }
+     absolutely positioned, normally pinned to the header's top-right
+     corner. Two earlier versions reserved dedicated vertical space above
+     or beside them for the title/tagline, which left visible dead space
+     since that reserved area was taller/wider than the controls actually
+     needed. Instead: keep everything in a single row (small logo, title/
+     tagline, controls), and re-center the controls vertically on that
+     row via top:50%/transform so they need no reserved height of their
+     own -- just a reserved width on the right (padding-right, sized to
+     the controls' own on-screen width) so the title/tagline column
+     doesn't run underneath them.
+
+     The earlier site-wide responsive-fix pass (add_responsive_css.py)
+     forces ".header { position: static !important }" at this same
+     breakpoint, which would otherwise make top:50% resolve against some
+     far larger ancestor (.inner-container, the height of the whole page)
+     instead of the header itself -- re-assert position:relative here to
+     override it. */
+  .header {
+    display: flex !important; flex-wrap: nowrap; align-items: center;
+    position: relative !important;
+    padding-right: 160px !important; box-sizing: border-box;
+  }
   .logo-image-container { flex: 0 0 auto; width: auto !important; margin: 0 !important; }
-  .logo { height: 56px !important; width: 56px !important; }
+  .logo { height: 48px !important; width: 48px !important; }
   .logo-text-container {
     display: block !important;
     flex: 1 1 0;
@@ -1225,8 +1238,10 @@ body.dark-mode .toc-sidebar .toc-title {
     text-align: left !important;
     margin: 0 !important;
   }
-  .calculator-title { font-size: 1.2em; }
-  .tag-line { font-size: 0.9em; }
+  .calculator-title { font-size: 1.05em; }
+  .tag-line { font-size: 0.8em; }
+  #header-controls { top: 50%; transform: translateY(-50%); right: 56px; }
+  #navbar-button { top: 50% !important; transform: translateY(-50%) !important; }
 }
 
 
