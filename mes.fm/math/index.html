@@ -142,9 +142,6 @@ sub {vertical-align:sub;}
   font-size: 0;
 }
 
-@media (max-width: 768px) {
-  .header { padding-right: 4em !important; box-sizing: border-box; }
-}
 #navbar-button::before {
   content: ""; display: block; margin: 0 auto;
   width: 26px; height: 4px; background: currentColor; border-radius: 1px;
@@ -695,10 +692,6 @@ sub {vertical-align:sub;}
   cursor: default;
 }
 
-@media (max-width: 768px) {
-  .header { padding-right: 12em !important; }
-}
-
 /* Dark mode -- toggled by #themeToggleBtn in #header-controls, saved in
    localStorage. This classic mes.fm template has no dark mode of its own,
    so these are page-scoped overrides for what math/index.html itself
@@ -773,62 +766,72 @@ body.dark-mode .toc-sidebar .toc-title {
   color: #cccccc;
 }
 @media (max-width: 768px) {
-  /* keep logo + title side by side like the tool pages, not stacked/centered */
+  /* #header-controls (A-/A+/theme) and #navbar-button (hamburger) are both
+     absolutely positioned in the header's top-right corner, out of flow.
+     Rather than squeezing the title/tagline into whatever horizontal
+     sliver is left beside them (which wrapped "MES Math Tutorials" one
+     word per line on phones), give the logo+controls their own row and
+     force the title/tagline onto a full-width row below -- clear of the
+     controls both horizontally and vertically. */
   .header { display: flex !important; flex-wrap: wrap; align-items: center; }
   .logo-image-container { flex: 0 0 auto; width: auto !important; margin: 0 !important; }
-  .logo-text-container { display: block !important; flex: 1 1 0; min-width: 0; width: auto !important; padding-left: 0.75em; text-align: left !important; margin: 0 !important; }
+  .logo-text-container {
+    display: block !important;
+    flex: 1 1 100%; /* flex-basis 100% forces this onto its own row */
+    width: 100% !important;
+    min-width: 0;
+    padding-left: 0 !important;
+    text-align: left !important;
+    margin: 0.6em 0 0 0 !important;
+  }
   .calculator-title { font-size: 1.3em; }
   .tag-line { font-size: 0.95em; }
-
-@media (max-width: 480px) {
-  /* At phone widths the 88px logo + 12em space reserved for #header-controls/
-     the hamburger left ~60-70px for the title/tagline column, wrapping
-     "MES Math Tutorials" one word per line. Shrink the logo and the
-     controls, and reclaim some of that reserved space, so the title gets
-     a usable column. */
-  .logo { height: 60px !important; width: 60px !important; }
-  .calculator-title { font-size: 1.15em !important; }
-  .tag-line { font-size: 0.85em !important; }
-  #header-controls { transform: scale(0.82); transform-origin: top right; right: 60px !important; }
-  #navbar-button { width: 38px !important; height: 38px !important; }
-  .header { padding-right: 9em !important; }
 }
 
 
-/* Floating compact bar: once the full header + nav scroll out of view, a slim
-   fixed bar (small logo, title, as many nav links as fit) slides in, and the
-   display controls + hamburger are pinned into its right end. Toggled by
-   body.is-stuck (see the sticky-bar script). */
-#sticky-bar {
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the display controls + hamburger are pinned into its
+   right end. Toggled by the compact-nav-script below.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left this bar's raw unstyled markup visible above the
+   real header. The inline attribute is a fallback the JS clears itself,
+   independent of this stylesheet surviving intact. */
+#compact-nav {
   position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: flex; align-items: center; gap: 12px;
+  display: none; align-items: center; gap: 12px;
   padding: 0 172px 0 12px; box-sizing: border-box;
   background: #ffffff; border-bottom: 3px solid #277bb6;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease; visibility: hidden;
+  transform: translateY(-110%); transition: transform 0.2s ease;
 }
-body.is-stuck #sticky-bar { transform: none; visibility: visible; }
-#sticky-bar .sticky-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#sticky-bar .sticky-title {
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
   flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
   text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-#sticky-bar .sticky-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#sticky-bar .sticky-links li { flex: 0 0 auto; }
-#sticky-bar .sticky-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #277bb6; text-decoration: none; white-space: nowrap; }
-#sticky-bar .sticky-links a:hover { background: rgba(39,123,182,0.12); }
-body.dark-mode #sticky-bar { background: #1a1a1a; }
-body.dark-mode #sticky-bar .sticky-title { color: #eeeeee; }
-body.dark-mode #sticky-bar .sticky-links a { color: #6cb6f5; }
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #277bb6; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(39,123,182,0.12); }
+body.dark-mode #compact-nav { background: #1a1a1a; }
+body.dark-mode #compact-nav .compact-nav-title { color: #eeeeee; }
+body.dark-mode #compact-nav .compact-nav-links a { color: #6cb6f5; }
 body.is-stuck #header-controls { position: fixed; top: 13px; right: 60px; }
 body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
 body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 700px) {
-  #sticky-bar .sticky-title { display: none; }
-  #sticky-bar .sticky-logo { width: 36px; height: 36px; }
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
 }
 @media (max-width: 480px) {
-  #sticky-bar { padding-right: 160px; gap: 8px; }
+  #compact-nav { padding-right: 160px; gap: 8px; }
   body.is-stuck #header-controls { right: 56px; }
 }
 </style>
@@ -992,10 +995,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   <a href="#vectors-heading">Vectors and the Geometry of Space</a>
   <a href="#vectorfunctions-heading">Vector Functions</a>
 </nav>
-<div id="sticky-bar" aria-hidden="true">
-  <a href="/math" tabindex="-1"><img class="sticky-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
-  <a class="sticky-title" href="/math" tabindex="-1">MES Math Tutorials</a>
-  <ul class="sticky-links">
+<div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/math" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
+  <a class="compact-nav-title" href="/math" tabindex="-1">MES Math Tutorials</a>
+  <ul class="compact-nav-links">
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
     <li><a href="/tools" tabindex="-1">Tools</a></li>
     <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
@@ -1809,16 +1812,20 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 </script>
 
 <script>
-  // Floating compact bar (see #sticky-bar CSS): appears once the header + nav
-  // bar have scrolled off the top; nav links that don't fit are dropped from
-  // the right, least important first, rather than wrapping.
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav.
   (function () {
-    var bar = document.getElementById('sticky-bar');
+    var bar = document.getElementById('compact-nav');
     var nav = document.querySelector('.info-bar-container');
-    var links = bar && bar.querySelector('.sticky-links');
+    var links = bar && bar.querySelector('.compact-nav-links');
     if (!bar || !nav || !links) return;
     var items = Array.prototype.slice.call(links.children);
-    var stuck = false, ticking = false;
+    var stuck = false, ticking = false, hideTimer;
 
     function fit() {
       items.forEach(function (li) { li.style.display = ''; });
@@ -1835,12 +1842,24 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
       var now = nav.getBoundingClientRect().bottom < 0;
       if (now === stuck) return;
       stuck = now;
-      document.body.classList.toggle('is-stuck', stuck);
       bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
       Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
         a.tabIndex = stuck ? 0 : -1;
       });
-      if (stuck) fit();
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        // Let the browser register the "flex" state above before adding
+        // the class that animates transform: none, or it'd jump instantly.
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        // Keep display:flex through the slide-up transition, then hide.
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
     }
 
     window.addEventListener('scroll', function () {
