@@ -188,6 +188,7 @@ ${cards}
 // scraped from the target page's og: tags at build time and cached in
 // link-meta.json.
 const POSTS = [
+  { href: "https://mes.fm/tim-pool-flat-earth-dave-clowns", title: "Tim Pool Interviews Flat Earth Dave — Not Even His Lowest Interview" },
   { href: "https://mes.fm/ufo-iran-2026-1976", title: "UFO Spotted in Iran in September 2026 and 1976" },
   { href: "https://mes.fm/bob-greenyer-con-man-subscriber", title: "Bob Greenyer's Subscriber Calls Him a Rich Fake Con Man" },
   { href: "https://mes.fm/stock-market-vs-oil", title: "The Top 10 S&P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks" },
