@@ -1246,8 +1246,11 @@ function buildPage(post, meta) {
     body.dark #compact-nav .compact-nav-title { color: #eeeeee; }
     body.light #compact-nav .compact-nav-links a { color: #c9381f; }
     body.dark #compact-nav .compact-nav-links a { color: #ff7a5f; }
-    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; }
-    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; }
+    /* z-index:20 here (and below) beats #compact-nav's z-index:15 -- without
+       it these fixed-position controls paint (and hit-test) underneath the
+       bar once stuck, making the hamburger both invisible and unclickable. */
+    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; z-index: 20; }
+    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; z-index: 20; }
     body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     @media (max-width: 700px) {
       #compact-nav .compact-nav-title { display: none; }
