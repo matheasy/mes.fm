@@ -1205,25 +1205,28 @@ body.dark-mode .toc-sidebar .toc-title {
 }
 @media (max-width: 768px) {
   /* #header-controls (A-/A+/theme) and #navbar-button (hamburger) are both
-     absolutely positioned in the header's top-right corner, out of flow.
-     Rather than squeezing the title/tagline into whatever horizontal
-     sliver is left beside them (which wrapped "MES Math Tutorials" one
-     word per line on phones), give the logo+controls their own row and
-     force the title/tagline onto a full-width row below -- clear of the
-     controls both horizontally and vertically. */
-  .header { display: flex !important; flex-wrap: wrap; align-items: center; }
+     absolutely positioned in the header's top-right corner, out of flow --
+     an earlier version reserved a full logo-height row for them above the
+     title (to dodge wrapping), but that left most of that row as dead
+     whitespace beside a lone small logo. Instead, reserve just a thin
+     strip (padding-top, tall enough for the controls) above the whole
+     flex row, then let a *smaller* logo sit side by side with the title/
+     tagline in the normal row below -- clear of the controls vertically,
+     and no wasted width. */
+  .header { display: flex !important; flex-wrap: wrap; align-items: center; padding-top: 60px !important; }
   .logo-image-container { flex: 0 0 auto; width: auto !important; margin: 0 !important; }
+  .logo { height: 56px !important; width: 56px !important; }
   .logo-text-container {
     display: block !important;
-    flex: 1 1 100%; /* flex-basis 100% forces this onto its own row */
-    width: 100% !important;
+    flex: 1 1 0;
     min-width: 0;
-    padding-left: 0 !important;
+    width: auto !important;
+    padding-left: 0.6em;
     text-align: left !important;
-    margin: 0.6em 0 0 0 !important;
+    margin: 0 !important;
   }
-  .calculator-title { font-size: 1.3em; }
-  .tag-line { font-size: 0.95em; }
+  .calculator-title { font-size: 1.2em; }
+  .tag-line { font-size: 0.9em; }
 }
 
 
