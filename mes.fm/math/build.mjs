@@ -1217,7 +1217,21 @@ body.dark-mode .toc-sidebar .toc-title {
   .logo-text-container { display: block !important; flex: 1 1 0; min-width: 0; width: auto !important; padding-left: 0.75em; text-align: left !important; margin: 0 !important; }
   .calculator-title { font-size: 1.3em; }
   .tag-line { font-size: 0.95em; }
+
+@media (max-width: 480px) {
+  /* At phone widths the 88px logo + 12em space reserved for #header-controls/
+     the hamburger left ~60-70px for the title/tagline column, wrapping
+     "MES Math Tutorials" one word per line. Shrink the logo and the
+     controls, and reclaim some of that reserved space, so the title gets
+     a usable column. */
+  .logo { height: 60px !important; width: 60px !important; }
+  .calculator-title { font-size: 1.15em !important; }
+  .tag-line { font-size: 0.85em !important; }
+  #header-controls { transform: scale(0.82); transform-origin: top right; right: 60px !important; }
+  #navbar-button { width: 38px !important; height: 38px !important; }
+  .header { padding-right: 9em !important; }
 }
+
 
 /* Floating compact bar: once the full header + nav scroll out of view, a slim
    fixed bar (small logo, title, as many nav links as fit) slides in, and the
