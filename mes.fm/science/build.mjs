@@ -1,4 +1,219 @@
+// Build-time generator for mes.fm/science.
+//
+// Like mes.fm/conspiracy, this page is NOT a mirrored Hive post -- there is no
+// single "@mes/science" article to pull from (checked peakd.com/@mes/science:
+// 404). It's a hand-authored link hub. This script only regenerates the
+// Posts/Videos thumbnail-card grids (scraping each linked page's og: tags,
+// same treatment as mes.fm/911's and mes.fm/conspiracy's Posts/Videos);
+// everything else on the page (the flat link list, header/nav chrome, ad
+// scripts, theme toggle, footer) lives in the STATIC template below and
+// should be hand-edited directly.
+//
+// Page chrome (site-brand logo/title, header-controls A-/A+/theme, hamburger
+// nav, info-bar, footer, floating compact-nav bar) is ported from mes.fm/911
+// and mes.fm/math rather than mes.fm/conspiracy's lighter template, per the
+// "make /science similar to /math & /911" brief -- conspiracy predates the
+// compact-nav bar and never got the full site-brand header. Accent color is
+// science's own amber/orange (#b6570f light / #ffb066 dark), matching the
+// atom-themed logo (img/science-logo.png / img/science-logo-big.png).
+//
+// This is NOT run by Vercel -- run it manually (`npm run build`) whenever you
+// add a Post/Video or want to refresh thumbnails/excerpts, then commit the
+// regenerated index.html.
+//
+// Usage:
+//   npm install
+//   npm run build
 
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Committed cache of link metadata scraped from each Posts/Videos card target
+// (see resolveAllMeta). Kept in git so a later build still has thumbnails and
+// excerpts even if a source host is briefly unreachable.
+const META_CACHE_PATH = join(__dirname, "link-meta.json");
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ---------------------------------------------------------------------------
+// Topic-homepage card grid — shared treatment (fetchMeta / resolveAllMeta /
+// buildCardGrid + the .card-grid/.link-card CSS in the template below). Kept
+// in sync with the identical block in mes.fm/911/build.mjs,
+// mes.fm/hutchison/build.mjs, and mes.fm/conspiracy/build.mjs.
+// ---------------------------------------------------------------------------
+
+function loadMetaCache() {
+  if (!existsSync(META_CACHE_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(META_CACHE_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function saveMetaCache(cache) {
+  const sorted = Object.fromEntries(
+    Object.keys(cache).sort().map((k) => [k, cache[k]])
+  );
+  writeFileSync(META_CACHE_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
+}
+
+function decodeEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&rsquo;/g, "’")
+    .replace(/&lsquo;/g, "‘")
+    .replace(/&ldquo;/g, "“")
+    .replace(/&rdquo;/g, "”")
+    .replace(/&mdash;/g, "—")
+    .replace(/&ndash;/g, "–")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+// Pull one <meta property="og:*"> (or name="...") content value out of raw HTML,
+// tolerating either attribute order. Regex-based, matching the repo's other
+// HTML-repair scripts (no DOM parser dependency).
+function readMetaTag(html, prop) {
+  const p = prop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Match each quoted value to its own opening quote (\2 backreference) so a
+  // literal apostrophe inside a double-quoted content="..." doesn't truncate it.
+  const patterns = [
+    new RegExp(`<meta[^>]+(?:property|name)=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"),
+    new RegExp(`<meta[^>]+\\bcontent=(["'])([\\s\\S]*?)\\1[^>]*(?:property|name)=(["'])${p}\\3`, "i"),
+  ];
+  for (let idx = 0; idx < patterns.length; idx++) {
+    const m = html.match(patterns[idx]);
+    if (m) return decodeEntities(idx === 0 ? m[3] : m[2]).trim();
+  }
+  return "";
+}
+
+// Trailing "— Mirrored from the Hive blockchain…" style boilerplate that every
+// mirror page's og:description carries; drop it from the card excerpt.
+function cleanExcerpt(text, maxLen = 150) {
+  let out = text
+    .replace(/\s*[-–—]*\s*mirrored from the hive blockchain.*$/i, "")
+    .replace(/\s*[-–—]*\s*mirrored from hive.*$/i, "")
+    .trim();
+  if (out.length > maxLen) {
+    const slice = out.slice(0, maxLen);
+    const lastSpace = slice.lastIndexOf(" ");
+    out = (lastSpace > 60 ? slice.slice(0, lastSpace) : slice).replace(/[.,;:!?–—-]+$/, "") + "…";
+  }
+  return out;
+}
+
+async function fetchMeta(url) {
+  const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+  return {
+    image: readMetaTag(html, "og:image"),
+    title: readMetaTag(html, "og:title"),
+    excerpt: cleanExcerpt(
+      readMetaTag(html, "og:description") || readMetaTag(html, "description")
+    ),
+  };
+}
+
+// Fetch metadata for every card target with a small concurrency cap. A failed
+// fetch keeps whatever the committed cache already had for that URL.
+async function resolveAllMeta(entries, concurrency = 6) {
+  const cache = loadMetaCache();
+  const urls = entries.map((e) => e.href);
+  let i = 0;
+  async function worker() {
+    while (i < urls.length) {
+      const url = urls[i++];
+      try {
+        cache[url] = await fetchMeta(url);
+        console.log(`  meta ok:   ${url}`);
+      } catch (err) {
+        console.warn(`  meta FAIL: ${url} (${err.message}) — using cached value`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  saveMetaCache(cache);
+  return cache;
+}
+
+// Some Hive image URLs carry an unescaped apostrophe in their filename (a
+// "#filename" fragment some old steemitimages.com uploads use), which would
+// otherwise prematurely close the quoted url('...') below and drop the whole
+// background-image. Percent-encode it so the string stays a valid CSS <url>.
+function cssSafeUrl(url) {
+  return String(url).split("'").join("%27");
+}
+
+// Render a link section as a responsive thumbnail-card grid.
+function buildCardGrid(id, label, entries, meta, cta = "Read more") {
+  const cards = entries
+    .map((entry) => {
+      const m = meta[entry.href] || {};
+      const title = entry.title || m.title || entry.href;
+      const thumbStyle = m.image
+        ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"`
+        : "";
+      const excerpt = m.excerpt
+        ? `<span class="link-card-excerpt">${escapeHtml(m.excerpt)}</span>`
+        : "";
+      return `<a class="link-card" href="${escapeHtml(entry.href)}">
+  <span class="link-card-thumb"${thumbStyle}></span>
+  <span class="link-card-body">
+    <span class="link-card-title">${escapeHtml(title)}</span>
+    ${excerpt}
+    <span class="link-card-readmore">${escapeHtml(cta)} &rarr;</span>
+  </span>
+</a>`;
+    })
+    .join("\n");
+
+  return `<div class="collapsible-section">
+<h2 class="sub-heading" onclick="toggleSubList('${id}')">${label} <span id="arrowIcon-${id}" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+<div id="${id}" class="card-grid collapsible">
+${cards}
+</div>
+</div>`;
+}
+
+// "Posts" and "Videos" -- hand-maintained lists of mes.fm/Hive posts and
+// YouTube playlists that get added to whenever a new one is published. Add a
+// { href, title } entry at the TOP of the relevant list (newest first); the
+// thumbnail + excerpt are scraped from the target page's og: tags at build
+// time and cached in link-meta.json.
+const POSTS = [
+  { href: "https://mes.fm/fleischmann-corn-starch", title: "Is Corn Starch the Key to Martin Fleischmann's Cold Fusion Experiments?" },
+  { href: "https://mes.fm/ferrocell-specular-reflection", title: "Demystifying the Ferrocell: Specular Reflection" },
+];
+
+const VIDEOS = [
+  { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0GhjCHmTw1XbqMD_EdVKdd9", title: "#MESScience YouTube Playlist" },
+  { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EAUu0aAxoZmkS83RI65m1N", title: "MES Science and Physics Videos Playlist" },
+  { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX", title: "Vortex Math — Sections + BeneficenceTV Playlist" },
+  { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0FYO6bxFbBAtVJ9sDOJnH72", title: "Overview of Biology Playlist" },
+  { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0E4aQ_cq4ZDD2WGiDU5vVgx", title: "Review of COVID-19 \"Virus\" Isolation Paper Playlist" },
+];
+
+function buildPage(meta) {
+  const postsGridHtml = buildCardGrid("posts", "Posts", POSTS, meta, "Read more");
+  const videosGridHtml = buildCardGrid("videos", "Videos", VIDEOS, meta, "Watch");
+
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -317,16 +532,16 @@
     </script>
 <script>
 /* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
-   class `google-auto-placed`), plus a third: Google's separate "annotation"
-   text-ad format (chips styled like `<div class="google-anno-skip
-   google-anno-sc" aria-label="...">`, a different Auto ads mechanism than
+   class \`google-auto-placed\`), plus a third: Google's separate "annotation"
+   text-ad format (chips styled like \`<div class="google-anno-skip
+   google-anno-sc" aria-label="...">\`, a different Auto ads mechanism than
    the in-page blocks above -- rendered as small pill/badge buttons made to
    look like real nav links). 1) Logo header <-> nav bar: on desktop, any
    in-page ad caught here is relocated to just below the whole
    header+nav+logo-badge complex (before .wide's card grids) and allowed to
    show if it fills; on mobile (max-width: 768px, this repo's existing
    responsive breakpoint) it is hidden outright instead -- no ad shows below
-   the nav bar on mobile at all. 2) Annotation chips (`.google-anno-sc`)
+   the nav bar on mobile at all. 2) Annotation chips (\`.google-anno-sc\`)
    anywhere inside .top-bar, #footer, or .info-bar-container: hidden outright
    on every device. Unlike the in-page ad blocks, Google serves many of these
    annotation chips per page load, so removing the ones in these zones
@@ -510,72 +725,8 @@
     <h1>MES Science Tutorials</h1>
     <p class="page-lede">Links, videos, and posts on science topics investigated by MES &mdash; cold fusion, ferrocell optics, vortex math, biology, virology, and astronomy. Bookmark this page; it is continually updated.</p>
 
-<div class="collapsible-section">
-<h2 class="sub-heading" onclick="toggleSubList('posts')">Posts <span id="arrowIcon-posts" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-<div id="posts" class="card-grid collapsible">
-<a class="link-card" href="https://mes.fm/fleischmann-corn-starch">
-  <span class="link-card-thumb" style="background-image:url('https://mes.fm/fleischmann-corn-starch/img/fleischmann-corn-starch-1.jpg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Is Corn Starch the Key to Martin Fleischmann's Cold Fusion Experiments?</span>
-    <span class="link-card-excerpt">A tub of Fleischmann's Canada Corn Starch -- is corn starch the key to Martin Fleischmann's cold fusion experiments?!</span>
-    <span class="link-card-readmore">Read more &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/ferrocell-specular-reflection">
-  <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23vhny5FYdGt5Vi9vRPtqXcPUCNTMTAhM3FtxDNqwoqgWWWmd6Ua5nzvWDPZbD1AZts7y.png')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Demystifying the Ferrocell: Specular Reflection</span>
-    <span class="link-card-excerpt">Demystifying the ferrocell: the holographic colored lines are specular reflection off nanoparticles aligned along the magnetic field, not the field…</span>
-    <span class="link-card-readmore">Read more &rarr;</span>
-  </span>
-</a>
-</div>
-</div>
-<div class="collapsible-section">
-<h2 class="sub-heading" onclick="toggleSubList('videos')">Videos <span id="arrowIcon-videos" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-<div id="videos" class="card-grid collapsible">
-<a class="link-card" href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GhjCHmTw1XbqMD_EdVKdd9">
-  <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6cRkjWN8Uds/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&amp;rs=AOn4CLBmq7kH52NDPrXLmSncLpPSfHuMSQ&amp;days_since_epoch=20718')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">#MESScience YouTube Playlist</span>
-    <span class="link-card-excerpt">Follow along my epic MES Science Tutorials video series which raise the bar on true scientific exploration! Short URL to this playlist…</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EAUu0aAxoZmkS83RI65m1N">
-  <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0c0k3MgFYcQ/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&amp;rs=AOn4CLAxlF0M054ZUfzQxrPlT0v7Y7PUMw&amp;days_since_epoch=20718')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">MES Science and Physics Videos Playlist</span>
-    <span class="link-card-excerpt">Watch some amazing MES Physics and Science videos. Short URL: https://mes.fm/physics-playlist MES Links: https://mes.fm/links</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX">
-  <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mTeZD8rsiTs/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&amp;rs=AOn4CLCbAPEIy1AuT92RhO177yfU513uyw&amp;days_since_epoch=20718')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Vortex Math — Sections + BeneficenceTV Playlist</span>
-    <span class="link-card-excerpt">- Hive notes: https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic - MES Science playlist…</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FYO6bxFbBAtVJ9sDOJnH72">
-  <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/WX_qzT0nZFY/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&amp;rs=AOn4CLBHC-MN2EpufhNcjnyZ9L4wPvBUPA&amp;days_since_epoch=20718')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Overview of Biology Playlist</span>
-    <span class="link-card-excerpt">- HIVE video notes: https://peakd.com/hive-128780/@mes/messcience-3-overview-of-biology - #MESScience playlist…</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://www.youtube.com/playlist?list=PLai3U8-WIK0E4aQ_cq4ZDD2WGiDU5vVgx">
-  <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/cvDO85Rw4d8/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&amp;rs=AOn4CLDdyvc9vqpi1M9m6ddd-yKU9nrNhg&amp;days_since_epoch=20718')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Review of COVID-19 &quot;Virus&quot; Isolation Paper Playlist</span>
-    <span class="link-card-excerpt">These videos are taken from my earlier video listed below: - 🔥#MESScience 4: Review of COVID-19 &quot;Virus&quot; Isolation Paper…</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-</div>
-</div>
+${postsGridHtml}
+${videosGridHtml}
   </div>
 
   <div class="content">
@@ -615,7 +766,7 @@
   <script>
     function toggleSubList(listId) {
       const list = document.getElementById(listId);
-      const arrowIcon = document.getElementById(`arrowIcon-${listId}`);
+      const arrowIcon = document.getElementById(\`arrowIcon-\${listId}\`);
       list.classList.toggle('hidden');
       arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
     }
@@ -736,3 +887,20 @@
   <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
 </body>
 </html>
+`;
+}
+
+async function main() {
+  console.log(`Resolving card metadata for ${POSTS.length + VIDEOS.length} links ...`);
+  const meta = await resolveAllMeta([...POSTS, ...VIDEOS]);
+
+  const html = buildPage(meta);
+  const outPath = join(__dirname, "index.html");
+  writeFileSync(outPath, html, "utf8");
+  console.log(`Wrote ${outPath}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

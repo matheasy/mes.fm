@@ -1,0 +1,9 @@
+{
+  "name": "mes-science-post-builder",
+  "private": true,
+  "description": "Build-time generator for the Posts/Videos card grids on mes.fm/science. Not deployed; run manually before committing.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}
