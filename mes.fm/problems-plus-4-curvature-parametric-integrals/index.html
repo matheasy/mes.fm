@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Problems Plus 4: the curvature of a parametric curve whose position vector comes from integrals, using the Fundamental Theorem of Calculus to find the derivative of the position vector and then the curvature. Mirrored from the Hive blockchain.">
+  <meta name="author" content="MES">
+  <link rel="canonical" href="https://mes.fm/problems-plus-4-curvature-parametric-integrals" />
+  <!-- OG-TAGS:START -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MES Truth">
+  <meta property="og:url" content="https://mes.fm/problems-plus-4-curvature-parametric-integrals">
+  <meta property="og:title" content="Problems Plus 4: Curvature from Parametric Equations that involve Integrals">
+  <meta property="og:description" content="Problems Plus 4: the curvature of a parametric curve whose position vector comes from integrals, using the Fundamental Theorem of Calculus to find the derivative of the position vector and then the curvature. Mirrored from the Hive blockchain.">
+  <meta property="og:image" content="https://images.3speak.tv/images/1790032008106-4188cd9b782a924c.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@MathEasySolns">
+  <meta name="twitter:title" content="Problems Plus 4: Curvature from Parametric Equations that involve Integrals">
+  <meta name="twitter:description" content="Problems Plus 4: the curvature of a parametric curve whose position vector comes from integrals, using the Fundamental Theorem of Calculus to find the derivative of the position vector and then the curvature. Mirrored from the Hive blockchain.">
+  <meta name="twitter:image" content="https://images.3speak.tv/images/1790032008106-4188cd9b782a924c.webp">
+  <!-- OG-TAGS:END -->
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>Problems Plus 4: Curvature from Parametric Equations that involve Integrals | Math Easy Solutions</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #1a1a1a; color: #eeeeee; }
+    body.dark a { color: #6cb6f5; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .ad-slot {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+
+    .site-brand { display: flex; align-items: center; gap: 1.5em; min-width: 0; }
+    .site-brand-logo-link { display: block; flex: 0 0 auto; }
+    .site-brand-logo { display: block; width: 88px; height: 88px; border-radius: 0.35em; flex: 0 0 auto; }
+    .site-brand-text { min-width: 0; }
+    .site-brand-title { display: block; font-size: 1.8em; font-weight: 400; line-height: 1.15; margin-bottom: 0.3em; text-decoration: none; }
+    .site-brand-tag { font-size: 1.2em; margin: 0; line-height: 1.3; }
+    body.light .site-brand-title { color: #222222; }
+    body.dark .site-brand-title { color: #eeeeee; }
+    body.light .site-brand-tag { color: #555555; }
+    body.dark .site-brand-tag { color: #b8b8b8; }
+    .header-controls { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; margin-left: auto; }
+    .header-icon-btn {
+      flex: 0 0 auto; width: 2.2em; height: 2.2em; padding: 0; border-radius: 50%;
+      cursor: pointer; font-family: inherit; font-size: 0.85em; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .header-icon-btn:disabled { opacity: 0.4; cursor: default; }
+    body.light .header-icon-btn { background-color: #3a3d52; color: #ffffff; border-color: rgba(255, 255, 255, 0.35); }
+    body.dark .header-icon-btn { background-color: #2e2e2e; color: #eeeeee; border-color: rgba(255, 255, 255, 0.25); }
+    @media (max-width: 600px) { .site-brand { gap: 0.75em; } .site-brand-logo { width: 64px; height: 64px; } .site-brand-tag { font-size: 0.95em; } .site-brand-title { font-size: 1.3em; } }
+
+    /* Shared mes.fm site navigation: hamburger + dropdown (#navbar-button /
+       #navbar, toggled by /main_js/main.js) and the blue primary nav bar
+       (#info-bar), same markup/behaviour as mes.fm/math. Colors are set on
+       #id selectors so the body.light/body.dark "a" color rules don't win. */
+    .hamburger-btn {
+      flex: 0 0 auto; width: 44px; height: 44px; padding: 0; margin: 0 0 0 4px;
+      background: transparent; border: none; cursor: pointer; font-size: 0;
+    }
+    .hamburger-btn::before {
+      content: ""; display: block; margin: 0 auto;
+      width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+      box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+    }
+    body.light .hamburger-btn { color: #277bb6; }
+    body.dark .hamburger-btn { color: #6cb6f5; }
+    #navbar { display: none; }
+    #navbar.hide {
+      display: flex; flex-direction: column; box-sizing: border-box;
+      position: absolute; top: 100%; right: 0; z-index: 30;
+      width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+      background-color: #277bb6; border-radius: 0.25em;
+      box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.3);
+      list-style: none; margin: 0; padding: 0;
+    }
+    #navbar li, #info-bar { list-style: none; margin: 0; padding: 0; }
+    #navbar .navbar__item:hover { cursor: pointer; }
+    #navbar .navbar__link { display: block; color: #ffffff; padding: 0.7em 1em 0.7em 1.4em; text-decoration: none; }
+    #navbar .navbar__link--first { padding-top: 0.8em; }
+    #navbar .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab) { background-color: #346689; }
+    #navbar .dropdown-symbol { margin-left: 1em; color: #ffffff; }
+    #navbar .navbar__dropdown-container { background-color: #eef0ff; margin: 0; padding: 0; }
+    #navbar .navbar__dropdown-container.hide { display: none; }
+    #navbar .navbar__dropdown-item { color: #222222; }
+    #navbar .navbar__dropdown-item:hover { text-decoration: underline; }
+    #navbar .navbar__item--social { order: 999; padding: 1em 1.6em 1em 1.4em; border-top: 1px solid rgba(255, 255, 255, 0.25); }
+    #navbar .social-container { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+    #navbar .social__text { color: #ffffff; margin: 0; font-style: italic; }
+    #navbar .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; list-style: none; }
+    .social__link { height: 2em; width: 2em; display: block; }
+    .social__fb { background: url(/main_img/social-sprites.png) 0 0; }
+    .social__insta { background: url(/main_img/social-sprites.png) -4em 0; }
+    .social__pin { background: url(/main_img/social-sprites.png) -6em 0; }
+    .social__twitter { background: url(/main_img/social-sprites.png) -8em 0; }
+    .social__yt { background: url(/main_img/social-sprites.png) -10em 0; }
+    .social__patreon { background: url(/main_img/social-sprites.png) -12em 0; }
+    .social__hive { background: url(/main_img/social-sprites.png) -16em 0; }
+    .social__telegram { background: url(/main_img/social-sprites.png) -18em 0; }
+    #navbar .navbar__link.active-tab, #info-bar .info-bar__item__text.active-tab { background-color: #eef0ff; color: #222222; }
+
+    .info-bar-container { margin-top: 12px; }
+    .info-bar { display: flex; flex-wrap: wrap; background-color: #277bb6; box-shadow: 0.2em 0.2em 0.5em rgba(0, 0, 0, 0.35); }
+    #info-bar .info-bar__item__text { display: block; text-align: center; padding: 0.7em 1em; font-size: 0.9em; color: #ffffff; text-decoration: none; }
+    #info-bar .info-bar__item__text:hover:not(.active-tab) { background-color: #346689; }
+    @media (max-width: 600px) {
+      .info-bar { justify-content: center; }
+      #info-bar .info-bar__item__text { min-height: 44px; display: flex; align-items: center; }
+    }
+
+    .site-link {
+      font-size: 0.9em;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin: 0.4em 0 0.1em;
+    }
+
+    .page-subtitle {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin-bottom: 1.4em;
+    }
+
+    article p {
+      margin: 0 0 1em;
+    }
+
+    .source-list {
+      margin: 0 0 1.2em;
+      padding-left: 1.3em;
+    }
+
+    .source-list li {
+      margin: 0 0 0.5em;
+    }
+
+    .source-list li ul {
+      margin: 0.4em 0 0;
+      padding-left: 1.3em;
+    }
+
+    .video-embed {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.6em 0 1.2em;
+      transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
+        height 0.25s ease, padding-top 0.25s ease, border-radius 0.25s ease;
+    }
+
+    .video-embed video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode {
+      width: 100vw;
+      max-width: 100vw;
+      left: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      padding-top: 0;
+      height: min(85vh, 56.25vw);
+      border-radius: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode video {
+      object-fit: contain;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .theater-toggle-btn {
+      position: absolute;
+      top: 46px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      border: 0;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .theater-toggle-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .video-embed .video-badge,
+    .video-embed .theater-toggle-btn {
+      transition: opacity 0.3s ease;
+    }
+
+    .video-embed.controls-hidden .video-badge,
+    .video-embed.controls-hidden .theater-toggle-btn {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .timestamps {
+      margin: 0 0 1.4em;
+      font-size: 0.92em;
+    }
+
+    .timestamps summary {
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 0.6em;
+    }
+
+    .timestamps ul {
+      margin: 0.3em 0;
+      padding-left: 1.3em;
+    }
+
+    .timestamps li {
+      margin: 0 0 0.35em;
+    }
+
+    .written-solution {
+      margin: 0 0 1.6em;
+    }
+
+    .written-solution > summary {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.15em;
+      margin-bottom: 0.4em;
+    }
+
+    .written-solution .ws-note {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin: 0.4em 0 1.2em;
+    }
+
+    .written-solution h3 {
+      font-size: 1.05em;
+      margin: 1.4em 0 0.4em;
+    }
+
+    .written-solution p { margin: 0 0 1em; }
+
+    .sol-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      display: block;
+      margin: 0.6em 0 1.2em;
+      cursor: zoom-in;
+    }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 2147483647;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 120px;
+    }
+
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox-image {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: calc(100vh - 120px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-controls {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lightbox-counter {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.85em;
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .lightbox-close:hover,
+    .lightbox-prev:hover,
+    .lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+    .lightbox-close {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.3em;
+      z-index: 2147483647;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.4em;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-overlay { padding-bottom: 100px; }
+      .lightbox-image { max-height: calc(100vh - 100px); }
+      .lightbox-controls { bottom: 32px; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+      .lightbox-close { width: 36px; height: 36px; }
+    }
+
+    .retrieved-note {
+      font-size: 0.85em;
+      opacity: 0.7;
+      margin-top: 0.4em;
+    }
+
+    hr {
+      margin: 2em 0;
+      opacity: 0.3;
+    }
+
+    .site-footer-note {
+      font-size: 0.8em;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.4em; }
+      body { padding: 0 12px 40px; }
+    }
+
+    .lightbox-zoom-controls {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 2147483647;
+    }
+
+    .lightbox-zoom-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+      font-size: 1.2em;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-zoom-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .lightbox-zoom-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .lightbox-zoom-level {
+      min-width: 3.4em;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      padding: 5px 8px;
+      border-radius: 999px;
+    }
+
+    #lightboxImage {
+      transition: transform 0.15s ease;
+    }
+
+    #lightboxImage.zoomed {
+      cursor: grab;
+    }
+
+    #lightboxImage.dragging {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
+    }
+
+    /* "Part of" strip under the nav bar: links back to the full Problems Plus
+       page (playlist + written notes) at this problem's section. */
+    .part-of { margin: 14px 0 0; padding: 0.55em 0.9em; border-radius: 6px; font-size: 0.9em; border: 1px solid rgba(128, 128, 128, 0.4); }
+    .part-of a { font-weight: bold; }
+
+    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
+       the byline and the video timestamps scale -- headings, buttons and the
+       video stay fixed. rem so nested lists don't compound. */
+    .container article :is(p, li, blockquote):not(.video-embed *) { font-size: calc(1rem * var(--ts, 1)); }
+    .container article .timestamps li { font-size: calc(0.92rem * var(--ts, 1)); }
+    .container article .written-solution .ws-note { font-size: calc(0.85rem * var(--ts, 1)); }
+    .page-subtitle { font-size: calc(0.85rem * var(--ts, 1)); }
+  </style>
+  <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+</head>
+<body class="dark">
+
+  <div class="container">
+    <div class="top-bar">
+      <div class="site-brand">
+        <a class="site-brand-logo-link" href="/math"><img class="site-brand-logo" src="https://mes.fm/img/logo-mark.png" width="88" height="88" alt="MES Math Tutorials logo"></a>
+        <div class="site-brand-text"><a class="site-brand-title" href="/math">MES Math Tutorials</a><p class="site-brand-tag">Free math tutorials by Math Easy Solutions.</p></div>
+      </div>
+      <div class="header-controls">
+        <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button id="textSizeUp" class="header-icon-btn" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
+        <button id="themeToggle" class="header-icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
+      </div>
+      <button id="navbar-button" class="hamburger-btn" type="button" aria-label="Site navigation" aria-haspopup="true"></button>
+      <ul id="navbar" class="navbar" role="navigation" aria-label="Site menu">
+        <li class="navbar__item navbar__item--social"><div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
+            <li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+            <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+            <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>
+            <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>
+            <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>
+            <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
+          </ul></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
+        <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Calculators<span class="dropdown-symbol">&#9660;</span></span>
+            <ul class="navbar__dropdown-container hide">
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/bmicalculator">&#9642; <span>BMI Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/gpacalculator">&#9642; <span>GPA Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/gradecalculator">&#9642; <span>Grade Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/inflationcalculator">&#9642; <span>Inflation Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/mortgagecalculator">&#9642; <span>Mortgage Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/percentagecalculator">&#9642; <span>Percentage Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/pokemongocalculator">&#9642; <span>Pokemon Go Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/vatcalculator">&#9642; <span>VAT Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/youtubemoney/index.html">&#9642; <span>YouTube Money Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/calculators">&#9642; <span>More...</span></a></li>
+            </ul>
+        </li>
+        <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Tools<span class="dropdown-symbol">&#9660;</span></span>
+            <ul class="navbar__dropdown-container hide">
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/speedreader">&#9642; <span>Speed Reader</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/timer">&#9642; <span>Timer</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/tools">&#9642; <span>More...</span></a></li>
+            </ul>
+        </li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/memes">Memes</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="navbar__item"><a target="_blank" rel="nofollow" class="navbar__link" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="/donate">Donate</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/contact">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="info-bar-container" role="navigation" aria-label="Primary">
+      <ul id="info-bar" class="info-bar">
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="https://mes.fm/math">Math Tutorials</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/calculators">Calculators</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/tools">Tools</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/mobile-apps">Mobile Apps</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/puzzles">Puzzles</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/memes">Memes</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="/donate">Donate</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href="/contact">Contact Us</a></li>
+        <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
+      </ul>
+    </div>
+    <div class="part-of">Part of <a href="/vector-functions-problems-plus">Vector Functions: Problems Plus</a> &middot; <a href="/vector-functions-problems-plus#solution-to-problem-4-curvature-from-parametric-equations">Full written notes &amp; video &rarr;</a></div>
+
+    <h1>Problems Plus 4: Curvature from Parametric Equations that involve Integrals</h1>
+    <div class="page-subtitle">Video &middot; September 21, 2026 &middot; mirrored from the <a href="https://peakd.com/hive-128780/@mes/problems-plus-4-curvature-f-765">Hive blockchain</a></div>
+
+    <article>
+      <div class="video-embed" id="videoEmbed" google-side-rail-overlap="false">
+        <video id="pp4Video" controls playsinline preload="metadata" poster="https://images.3speak.tv/images/1790032008106-4188cd9b782a924c.webp"></video>
+        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false">Theater Mode</button>
+        <a class="video-badge" href="https://3speak.tv/watch?v=mes/problems-plus-4-curvature-f-765" target="_blank" rel="noopener">View on 3Speak &nearr;</a>
+      </div>
+
+      <p>In this video, I show how to obtain the curvature of parametric equations that involve integrals, by first utilizing the fundamental theorem of calculus to obtain the derivative of the position vector from the integrands of the integrals. Then we can follow the usual steps to obtain the curvature, which is defined as the magnitude of the unit tangent vector divided by the magnitude of the derivative of the position vector.</p>
+
+      <img loading="lazy" src="https://images.3speak.tv/images/1790031973388-c6c27d60534c9218.webp" alt="" style="max-width:100%;height:auto;border-radius:4px;display:block;margin:0.6em 0 1.4em;">
+
+      <details class="timestamps" open>
+        <summary>Timestamps</summary>
+        <ul>
+          <li>Problem 4: Curvature from Parametric Equations &ndash; 0:00</li>
+          <li>Solution: Recall the definition of curvature as the magnitude of the derivative of the unit tangent vector in terms of arc length &ndash; 0:22</li>
+          <li>Derivative of position vector from the Fundamental Theorem of Calculus (FTC) &ndash; 1:57</li>
+          <li>Unit Tangent Vector becomes the first derivative of position vector &ndash; 5:00</li>
+          <li>Magnitude of derivative of position vector equals &pi;|t| &ndash; 8:30</li>
+          <li>Curvature is also equal to &pi;|t| &ndash; 10:30</li>
+          <li>Recall Parts 1 and 2 of the FTC &ndash; 11:11</li>
+        </ul>
+      </details>
+
+      <details class="written-solution" open>
+        <summary>Solution to Problem 4</summary>
+        <p class="ws-note">Full written solution &mdash; mirrored from <a href="https://mes.fm/vector-functions-problems-plus#solution-to-problem-4-curvature-from-parametric-equations">Vector Functions: Problems Plus</a>, which also covers Problems 1&ndash;3 and 5&ndash;7.</p>
+<p>Find the curvature of the curve with parametric equations:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23wXQmmT6f9uAiufTwNajm4cmXYmEFqT4U9iHB5ty2Li4hPXWR3dPdk1ok2WnMvGyGoKs.png" alt="image.png"></p>
+<p><strong>Solution:</strong></p>
+<p>Recall the equation of curvature and the unit tangent vector from my <a href="https://peakd.com/hive-128780/@mes/koxharrd">earlier video</a>.</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tcNs53sz8fsp9mSSszf1bzNm1f1EfdLEbcWZ5iPowgfUNByebZNyNa1PR3Lzg9WQMWh.png" alt="image.png"></p>
+<p>By the Fundamental Theorem of Calculus:</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSzR6hgesJtbhgLrFa2DBoLukFDhNp99Dot4cR3jE2KpWHGZSHRtUUKKRYp3CKF4mpA.png" alt="image.png"></p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tSzR6hgw7cpHEXxEdN1LYvsDxyniHszmpToh4sajDtZ4i7JQERTPGEapnjBc2cHRFJ2.png" alt="image.png"></p>
+<p>Recall my earlier videos on <a href="https://peakd.com/hive-128780/@mes/fundamental-theorem-of-calculus-introduction-and-part-1-of-the-theorem">Part 1</a> and <a href="https://peakd.com/hive-128780/@mes/fundamental-theorem-of-calculus-intro-and-proof-of-part-2-of-the-theorem">Part 2</a> of the <a href="https://peakd.com/hive-128780/@mes/fundamental-theorem-of-calculus-recap-and-summary">Fundamental Theorem of Calculus</a>.</p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tcNzhmMwSAv4DjGCyB8dQ3n1EsDNS9ZubTboVTVqGJZkQitsvHVmPTkqoE3VC7KcD2q.png" alt="image.png"></p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23tcP54VyrntEbTRtrT83TiE7cH8UbbqGZrnb3ePozUdRxVN6AfBSBxVFcb95fi6UuKZy.png" alt="image.png"></p>
+<p><img loading="lazy" class="sol-image" src="https://files.peakd.com/file/peakd-hive/mes/23twABh6Smi6xwDL8JS7zScQy2CeJdzJ28ykgm7u5B12C2M7Q5GWa8WpMXCLaZCm9QpAt.png" alt="image.png"></p>
+      </details>
+
+      <ul class="source-list">
+        <li>Watch on: <a href="https://3speak.tv/watch?v=mes/problems-plus-4-curvature-f-765" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtu.be/q45sniCahKE" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://t.me/meslinks/35563" target="_blank" rel="noopener">Telegram</a></li>
+        <li>Full written solution: <a href="https://mes.fm/vector-functions-problems-plus">Vector Functions: Problems Plus</a></li>
+        <li>More math: <a href="https://mes.fm/math">mes.fm/math</a></li>
+      </ul>
+
+      <hr>
+
+      <a class="source-link" href="https://peakd.com/hive-128780/@mes/problems-plus-4-curvature-f-765" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
+      <div class="retrieved-note">Text and image retrieved from the Hive blockchain on September 21, 2026.</div>
+    </article>
+
+    <hr>
+
+    <p class="site-footer-note"><a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="lightbox-zoom-controls" id="lightboxZoomControls">
+      <button class="lightbox-zoom-btn" id="lightboxZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+      <span class="lightbox-zoom-level" id="lightboxZoomLevel">100%</span>
+      <button class="lightbox-zoom-btn" id="lightboxZoomIn" type="button" aria-label="Zoom in">+</button>
+    </div>
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-controls" id="lightboxControls">
+      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+    </div>
+  </div>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = '☀️';
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = '🌙';
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+      }
+    }
+
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    setTheme(saved !== 'light');
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
+  </script>
+
+  <script>
+    // theater-mode: expands the video embed to the full browser width (breaking out of
+    // the .container's 760px max-width), like YouTube's theater mode. Height is capped at
+    // min(85vh, 56.25vw) so ultra-wide viewports don't get a comically tall player.
+    (function () {
+      var embed = document.getElementById('videoEmbed');
+      var toggle = document.getElementById('theaterToggle');
+
+      function setTheater(on) {
+        embed.classList.toggle('theater-mode', on);
+        toggle.textContent = on ? 'Default View' : 'Theater Mode';
+        toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion
+        // zones on scroll/resize, not on a plain class-driven layout change, so nudge
+        // it to recompute once the width/height transition above has settled.
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'));
+        }, 300);
+      }
+
+      toggle.addEventListener('click', function () {
+        setTheater(!embed.classList.contains('theater-mode'));
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && embed.classList.contains('theater-mode')) {
+          setTheater(false);
+        }
+      });
+    })();
+  </script>
+
+  <script>
+    // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
+    // the video is playing and the pointer is idle, like YouTube's own control bar,
+    // so they don't sit on top of the video permanently. Reappear on any mouse
+    // movement over the player, and stay visible whenever the video is paused.
+    (function () {
+      var video = document.getElementById('pp4Video');
+      var embed = document.getElementById('videoEmbed');
+      var hideTimer = null;
+
+      function showControls() {
+        embed.classList.remove('controls-hidden');
+      }
+
+      function scheduleHide() {
+        clearTimeout(hideTimer);
+        if (video.paused || video.ended) return;
+        hideTimer = setTimeout(function () {
+          embed.classList.add('controls-hidden');
+        }, 2000);
+      }
+
+      video.addEventListener('play', scheduleHide);
+      video.addEventListener('pause', showControls);
+      video.addEventListener('ended', showControls);
+      embed.addEventListener('mousemove', function () {
+        showControls();
+        scheduleHide();
+      });
+      embed.addEventListener('mouseleave', scheduleHide);
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script>
+    // pp4-video: plays the 3Speak-hosted HLS stream for this clip directly (via hls.js),
+    // rather than iframing 3speak.tv -- 3Speak's own /embed route only ships a bare native
+    // <video> with no speed/quality controls, and their full /watch page drags in the whole app
+    // shell (nav, related videos, login prompts) when framed. Playing the manifest directly gives
+    // native browser video controls (speed via the "..." menu in Chromium, fullscreen, PiP)
+    // without a custom player build.
+    //
+    // The manifest URL is resolved at runtime from 3Speak's public embed API
+    // (play.3speak.tv/api/embed, CORS-open) keyed on the video slug, so re-encodes / re-uploads
+    // to the same 3Speak video (which change the underlying IPFS hash but keep the slug) are
+    // picked up automatically. FALLBACK_SRC is the last-known manifest, used only if that fetch
+    // fails -- keep it in sync when you notice the API URL has moved.
+    (function () {
+      var video = document.getElementById('pp4Video');
+      var SLUG = 'mes/problems-plus-4-curvature-f-765';
+      var FALLBACK_SRC = 'https://play.3speak.tv/hls?u=https%3A%2F%2Fhotipfs-3speak-1.b-cdn.net%2Fipfs%2FQmZh2F58cCA21AmMjHhqQuYxTgAyde678ZgLGB22XeAr1A%2Fmanifest.m3u8';
+
+      function play(src) {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = src;
+        } else if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(video);
+        }
+      }
+
+      fetch('https://play.3speak.tv/api/embed?v=' + SLUG)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { play((d && d.videoUrl) || FALLBACK_SRC); })
+        .catch(function () { play(FALLBACK_SRC); });
+    })();
+  </script>
+
+  <script>
+    // image-lightbox: click any figure in the written solution (or the thumbnail)
+    // to pop it out full-viewport, with prev/next via on-screen arrows and keys.
+    (function () {
+      var images = Array.prototype.slice.call(document.querySelectorAll('article img'));
+      if (!images.length) return;
+
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
+      var counterEl = document.getElementById('lightboxCounter');
+      var closeBtn = document.getElementById('lightboxClose');
+      var prevBtn = document.getElementById('lightboxPrev');
+      var nextBtn = document.getElementById('lightboxNext');
+      var currentIndex = 0;
+
+      if (images.length < 2) { controlsEl.style.display = 'none'; }
+
+      function show(index) {
+        currentIndex = (index + images.length) % images.length;
+        var img = images[currentIndex];
+        imageEl.src = img.currentSrc || img.src;
+        imageEl.alt = img.alt || '';
+        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      }
+      function open(index) {
+        show(index);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      images.forEach(function (img, index) {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function () { open(index); });
+      });
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+        else if (e.key === 'ArrowRight') show(currentIndex + 1);
+      });
+    })();
+  </script>
+
+  <script>
+    // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the existing
+    // image lightbox. Purely additive -- it only touches the #lightboxZoom*
+    // elements it creates itself, resetting whenever #lightboxImage's src
+    // or #lightboxOverlay's open state changes, so it works the same
+    // regardless of how this page's own lightbox open/prev/next logic runs.
+    (function () {
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var zoomOutBtn = document.getElementById('lightboxZoomOut');
+      var zoomInBtn = document.getElementById('lightboxZoomIn');
+      var zoomLevelEl = document.getElementById('lightboxZoomLevel');
+      if (!overlay || !imageEl || !zoomOutBtn || !zoomInBtn || !zoomLevelEl) return;
+
+      var ZOOM_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+      var zoomIndex = 0;
+      var panX = 0, panY = 0;
+      var dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+      function applyTransform() {
+        imageEl.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + ZOOM_STEPS[zoomIndex] + ')';
+        imageEl.classList.toggle('zoomed', zoomIndex > 0);
+        zoomLevelEl.textContent = Math.round(ZOOM_STEPS[zoomIndex] * 100) + '%';
+        zoomOutBtn.disabled = zoomIndex === 0;
+        zoomInBtn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
+      }
+
+      function zoomTo(index) {
+        zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index));
+        if (zoomIndex === 0) { panX = 0; panY = 0; }
+        applyTransform();
+      }
+
+      function resetZoom() {
+        dragging = false;
+        imageEl.classList.remove('dragging');
+        zoomTo(0);
+      }
+
+      zoomOutBtn.addEventListener('click', function () { zoomTo(zoomIndex - 1); });
+      zoomInBtn.addEventListener('click', function () { zoomTo(zoomIndex + 1); });
+
+      imageEl.addEventListener('dblclick', function () {
+        zoomTo(zoomIndex > 0 ? 0 : 2);
+      });
+
+      imageEl.addEventListener('mousedown', function (e) {
+        if (zoomIndex === 0) return;
+        dragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        panStartX = panX;
+        panStartY = panY;
+        imageEl.classList.add('dragging');
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        panX = panStartX + (e.clientX - dragStartX);
+        panY = panStartY + (e.clientY - dragStartY);
+        applyTransform();
+      });
+
+      window.addEventListener('mouseup', function () {
+        if (!dragging) return;
+        dragging = false;
+        imageEl.classList.remove('dragging');
+      });
+
+      imageEl.addEventListener('touchstart', function (e) {
+        if (zoomIndex === 0 || e.touches.length !== 1) return;
+        dragging = true;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        panStartX = panX;
+        panStartY = panY;
+      }, { passive: true });
+
+      imageEl.addEventListener('touchmove', function (e) {
+        if (!dragging || e.touches.length !== 1) return;
+        panX = panStartX + (e.touches[0].clientX - dragStartX);
+        panY = panStartY + (e.touches[0].clientY - dragStartY);
+        applyTransform();
+      }, { passive: true });
+
+      imageEl.addEventListener('touchend', function () { dragging = false; });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === '+' || e.key === '=') zoomTo(zoomIndex + 1);
+        else if (e.key === '-' || e.key === '_') zoomTo(zoomIndex - 1);
+      });
+
+      new MutationObserver(resetZoom).observe(imageEl, { attributes: true, attributeFilter: ['src'] });
+      new MutationObserver(function () {
+        if (overlay.classList.contains('open')) resetZoom();
+      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+
+      applyTransform();
+    })();
+  </script>
+  <script>
+    // text-size control: same STEPS / 'articleFontScale' key as
+    // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
+    // which only prose (paragraphs/lists/tables), the byline and the Jump To
+    // navigation multiply into their font-size -- headings, chapter titles
+    // ("Playlist"), cards and buttons stay fixed.
+    (function () {
+      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var body = document.body;
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!body || !downBtn || !upBtn) return;
+      var index;
+      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
+      if (index === -1) index = STEPS.indexOf(100);
+      function apply() {
+        body.style.setProperty('--ts', String(STEPS[index] / 100));
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
+      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
+      apply();
+    })();
+  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
+  <script src="/main_js/main.js?v=1.0.3"></script>
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
+</body>
+</html>
