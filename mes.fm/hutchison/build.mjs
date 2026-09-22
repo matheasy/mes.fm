@@ -346,6 +346,7 @@ const POSTS_AND_UPDATES = [
 ];
 
 const VIDEOS = [
+  { href: "https://mes.fm/hutchison-levitating-can-live", title: "Hutchison Effect: Plastic Can Levitates and Video is Played Back LIVE" },
   { href: "https://mes.fm/hutchison-effect-steel-molybdenum", title: "Hutchison Effect: George Hathaway and John Alexander Discuss Crumbling Steel & Bent Molybdenum Rods" },
   { href: "https://mes.fm/livestream-66-trailer", title: "Trailer for MES Livestream 66: Rare Hutchison Effect Footage" },
 ];
