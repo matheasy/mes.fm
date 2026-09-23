@@ -125,6 +125,11 @@ be missing the lazy-loading pass -- its List View thumbnails lost `loading="lazy
 `addImageLazyLoading()` back-ported too, and its AdSense block matches the committed `index.html` byte for byte, so
 `npm run build` in `mes.fm/math` now reproduces the committed page exactly, apart from any new entries.)
 
+Note `mes.fm/math/build.mjs` emits **seven** pages, not one: the tile hub `mes.fm/math/index.html` plus
+`mes.fm/{math-qa,cubic-formula,sequences-series,spherical-harmonics,vectors,vector-functions}/index.html` (one
+section each, from its `PAGES` array) — never hand-edit those generated files, and `git status` after a build will
+show all seven.
+
 Before running `npm run build` on any of these pages, `git diff --stat` (or a full diff) the result against the
 previously committed `index.html` and confirm you're not losing lines you don't recognize — don't assume success.
 If a rebuild does drop a patch that isn't back-ported into that page's `build.mjs`, re-run the matching repo-wide
