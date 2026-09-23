@@ -201,6 +201,29 @@ def clean(html: str, page_name: str) -> str:
         '<a class="info-bar__item__text" '
         'href="how-do-you-calculate-percentages.html">How-To</a>')
 
+    # --- drop links to external payment / subscription pages ------------
+    # App Review (Guideline 2.1(b)) flagged the "Subscribe" link (Substack)
+    # as a possible paid-content path outside In-App Purchase. The app has no
+    # paid content at all, so remove every link that leads to a place where
+    # money changes hands: Substack, the merch Store, and Donate.
+    # hamburger-menu <li> items
+    html = re.sub(r'<li class="navbar__item"><a [^>]*href="https://'
+                  r'(?:matheasy\.substack\.com|teespring\.com)[^"]*"[^>]*>'
+                  r'[^<]*</a></li>', "", html)
+    # hidden info-bar Donate item (display:none, but still in the DOM)
+    html = re.sub(r'\s*<li class="info-bar__item[^"]*"[^>]*><a [^>]*href="'
+                  r'https://(?:mes\.fm/donate\.html|matheasy\.substack\.com/)"'
+                  r'[^>]*>[^<]*</a></li>', "", html)
+    # footer links, each with its trailing " | " separator
+    html = re.sub(r'<a class="footer__text"[^>]*href="https://'
+                  r'(?:matheasy\.substack\.com/|mes\.fm/donate\.html)"[^>]*>'
+                  r'[^<]*</a>(?:<span class="footer__separator"> \| </span>)?',
+                  "", html)
+    # the Contact / Privacy row now ends on a dangling separator
+    html = re.sub(r'(Privacy Policy</a>)<span class="footer__separator"> \| '
+                  r'</span>(\s*<div class="footer__text--extra-info">)',
+                  r"\1\2", html)
+
     # --- script tail ------------------------------------------------------
     html = re.sub(r'<script src="https://ajax\.googleapis\.com/ajax/libs/'
                   r"jquery.*?</body>", script_tail(page_name), html, flags=re.S)
