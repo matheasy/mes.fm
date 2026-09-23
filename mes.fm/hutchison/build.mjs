@@ -683,6 +683,7 @@ ${leadingHtml}
     }
 
     .top-bar {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -703,8 +704,162 @@ ${leadingHtml}
     body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
     body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
 
-    .site-link {
-      font-size: 0.9em;
+    /* Site-wide header chrome -- same markup/behaviour as mes.fm/math,
+       mes.fm/911 and mes.fm/science, in Hutchison's own purple accent
+       (#6a3fa0 light / #b98aff dark). */
+    .site-brand { display: flex; align-items: center; gap: 1.5em; min-width: 0; }
+    .site-brand-logo-link { display: block; flex: 0 0 auto; }
+    .site-brand-logo { display: block; width: 88px; height: 88px; border-radius: 0.35em; flex: 0 0 auto; object-fit: cover; }
+    .site-brand-text { min-width: 0; }
+    .site-brand-title { display: block; font-size: 1.8em; font-weight: 400; line-height: 1.15; margin-bottom: 0.3em; text-decoration: none; }
+    .site-brand-tag { font-size: 1.2em; margin: 0; line-height: 1.3; }
+    body.light .site-brand-title { color: #222222; }
+    body.dark .site-brand-title { color: #eeeeee; }
+    body.light .site-brand-tag { color: #555555; }
+    body.dark .site-brand-tag { color: #b8b8b8; }
+    .header-controls { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; margin-left: auto; }
+    .header-icon-btn {
+      flex: 0 0 auto; width: 2.2em; height: 2.2em; padding: 0; border-radius: 50%;
+      cursor: pointer; font-family: inherit; font-size: 0.85em; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .header-icon-btn:disabled { opacity: 0.4; cursor: default; }
+    body.light .header-icon-btn { background-color: #3a3d52; color: #ffffff; border-color: rgba(255, 255, 255, 0.35); }
+    body.dark .header-icon-btn { background-color: #2e2e2e; color: #eeeeee; border-color: rgba(255, 255, 255, 0.25); }
+    @media (max-width: 600px) { .site-brand { gap: 0.75em; } .site-brand-logo { width: 64px; height: 64px; } .site-brand-tag { font-size: 0.95em; } .site-brand-title { font-size: 1.3em; } }
+
+    /* Shared mes.fm site navigation: hamburger + dropdown (#navbar-button /
+       #navbar, toggled by /main_js/main.js) and the primary nav bar
+       (#info-bar), same markup/behaviour as mes.fm/math and mes.fm/911.
+       Colors are set on #id selectors so the body.light/body.dark "a" color
+       rules don't win. */
+    .hamburger-btn {
+      flex: 0 0 auto; width: 44px; height: 44px; padding: 0; margin: 0 0 0 4px;
+      background: transparent; border: none; cursor: pointer; font-size: 0;
+    }
+    .hamburger-btn::before {
+      content: ""; display: block; margin: 0 auto;
+      width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+      box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+    }
+    body.light .hamburger-btn { color: #6a3fa0; }
+    body.dark .hamburger-btn { color: #b98aff; }
+    #navbar { display: none; }
+    #navbar.hide {
+      display: flex; flex-direction: column; box-sizing: border-box;
+      position: absolute; top: 100%; right: 0; z-index: 30;
+      width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+      background-color: #6a3fa0; border-radius: 0.25em;
+      box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.3);
+      list-style: none; margin: 0; padding: 0;
+    }
+    #navbar li, #info-bar { list-style: none; margin: 0; padding: 0; }
+    #navbar .navbar__item:hover { cursor: pointer; }
+    #navbar .navbar__link { display: block; color: #ffffff; padding: 0.7em 1em 0.7em 1.4em; text-decoration: none; }
+    #navbar .navbar__link--first { padding-top: 0.8em; }
+    #navbar .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab) { background-color: #522f80; }
+    #navbar .dropdown-symbol { margin-left: 1em; color: #ffffff; }
+    #navbar .navbar__dropdown-container { background-color: #d8e9f8; margin: 0; padding: 0; }
+    #navbar .navbar__dropdown-container.hide { display: none; }
+    #navbar .navbar__dropdown-item { color: #222222; }
+    #navbar .navbar__dropdown-item:hover { text-decoration: underline; }
+    #navbar .navbar__item--social { order: 999; padding: 1em 1.6em 1em 1.4em; border-top: 1px solid rgba(255, 255, 255, 0.25); }
+    #navbar .social-container { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+    #navbar .social__text { color: #ffffff; margin: 0; font-style: italic; }
+    #navbar .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; list-style: none; }
+    .social__link { height: 2em; width: 2em; display: block; }
+    .social__fb { background: url(/main_img/social-sprites.png) 0 0; }
+    .social__insta { background: url(/main_img/social-sprites.png) -4em 0; }
+    .social__pin { background: url(/main_img/social-sprites.png) -6em 0; }
+    .social__twitter { background: url(/main_img/social-sprites.png) -8em 0; }
+    .social__yt { background: url(/main_img/social-sprites.png) -10em 0; }
+    .social__patreon { background: url(/main_img/social-sprites.png) -12em 0; }
+    .social__hive { background: url(/main_img/social-sprites.png) -16em 0; }
+    .social__telegram { background: url(/main_img/social-sprites.png) -18em 0; }
+    #navbar .navbar__link.active-tab, #info-bar .info-bar__item__text.active-tab { background-color: #d8e9f8; color: #222222; }
+
+    .info-bar-container { margin-top: 12px; }
+    .info-bar { display: flex; flex-wrap: wrap; background-color: #6a3fa0; box-shadow: 0.2em 0.2em 0.5em rgba(0, 0, 0, 0.35); }
+    #info-bar .info-bar__item__text { display: block; text-align: center; padding: 0.7em 1em; font-size: 0.9em; color: #ffffff; text-decoration: none; }
+    #info-bar .info-bar__item__text:hover:not(.active-tab) { background-color: #522f80; }
+    @media (max-width: 600px) {
+      .info-bar { justify-content: center; }
+      #info-bar .info-bar__item__text { min-height: 44px; display: flex; align-items: center; }
+    }
+
+    /* Site footer -- same links/markup as mes.fm/math, in the Hutchison purple
+       accent. Colors use ".footer .x" (0,2,0) so the body.light/body.dark "a"
+       rules don't win. */
+    .footer { max-width: 1180px; margin: 2.5em auto 0; padding: 2em; background-color: #6a3fa0; border-radius: 0.35em; }
+    .footer__item-container { display: table; width: 100%; margin-bottom: 1.6em; }
+    .footer__item { display: table-cell; }
+    .footer__item--extra-padding { padding-left: 2.5em; }
+    .footer .footer__text { color: #ffffff; line-height: 1.5; text-decoration: none; }
+    .footer .footer__text--title { display: inline-block; margin-bottom: 1.6em; font-size: 1.3em; font-style: italic; }
+    .footer__text--extra-info { float: right; }
+    .footer .footer__text:not(.footer__text--copyright):hover { text-decoration: underline; cursor: pointer; }
+    .footer__separator, #copyright-year { color: #ffffff; }
+    @media (max-width: 600px) {
+      .footer { padding: 1.25em 0.75em; }
+      .footer__item-container { display: block; }
+      .footer__item { display: block; margin-bottom: 0.75em; }
+      .footer__item--extra-padding { padding-left: 0; }
+      .footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+    }
+
+    /* Floating compact header bar: once the real top-bar + nav scroll out of
+       view, a slim fixed bar (small logo, title, as many nav links as fit)
+       slides in, and the header-controls + hamburger are pinned into its
+       right end. Ported from mes.fm/911's version (see its build.mjs) --
+       this page's top-bar is already a clean flex row, same as the Vector
+       Functions: Problems Plus family. Uses Hutchison's own purple accent.
+
+       Hidden by default via the inline style="display:none" on the element
+       itself (not just this stylesheet's "display: none" below) -- some
+       browser extensions strip or neutralize cosmetic-looking CSS for
+       elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+       pattern), which left an earlier version's raw unstyled markup visible
+       above the real header on mes.fm/math. The inline attribute is a
+       fallback the JS clears itself, independent of this stylesheet
+       surviving intact. */
+    #compact-nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+      display: none; align-items: center; gap: 12px;
+      padding: 0 172px 0 12px; box-sizing: border-box;
+      background: #ffffff; border-bottom: 3px solid #6a3fa0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      transform: translateY(-110%); transition: transform 0.2s ease;
+    }
+    #compact-nav.is-visible { display: flex; }
+    body.is-stuck #compact-nav { transform: none; }
+    #compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; object-fit: cover; }
+    #compact-nav .compact-nav-title {
+      flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em;
+      text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+    #compact-nav .compact-nav-links li { flex: 0 0 auto; }
+    #compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; text-decoration: none; white-space: nowrap; }
+    #compact-nav .compact-nav-links a:hover { background: rgba(106,63,160,0.12); }
+    body.light #compact-nav .compact-nav-title { color: #1a1a1a; }
+    body.dark #compact-nav { background: #1a1a1a; }
+    body.dark #compact-nav .compact-nav-title { color: #eeeeee; }
+    body.light #compact-nav .compact-nav-links a { color: #6a3fa0; }
+    body.dark #compact-nav .compact-nav-links a { color: #b98aff; }
+    /* z-index:20 here (and below) beats #compact-nav's z-index:15 -- without
+       it these fixed-position controls paint (and hit-test) underneath the
+       bar once stuck, making the hamburger both invisible and unclickable. */
+    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; z-index: 20; }
+    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; z-index: 20; }
+    body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+    @media (max-width: 700px) {
+      #compact-nav .compact-nav-title { display: none; }
+      #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+    }
+    @media (max-width: 480px) {
+      #compact-nav { padding-right: 160px; gap: 8px; }
+      body.is-stuck .header-controls { right: 56px; }
     }
 
     h1 {
@@ -712,8 +867,14 @@ ${leadingHtml}
       margin: 0.4em 0 0.2em;
     }
 
+    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
+       the lede, byline and Jump To navigation scale; headings, chapter
+       titles, cards and buttons stay fixed. rem so nested lists don't
+       compound. */
+    .post-body :is(p, li, blockquote, td, th):not(.card-grid *) { font-size: calc(1rem * var(--ts, 1)); }
+
     .post-meta {
-      font-size: 0.9em;
+      font-size: calc(0.9rem * var(--ts, 1));
       opacity: 0.85;
       margin-bottom: 0.6em;
     }
@@ -725,7 +886,7 @@ ${leadingHtml}
     .peakd-link {
       display: inline-block;
       margin: 0.6em 0 1.4em;
-      font-size: 0.9em;
+      font-size: calc(0.9rem * var(--ts, 1));
       font-style: italic;
     }
 
@@ -1012,6 +1173,7 @@ ${leadingHtml}
     .toc-mobile {
       margin: 1.2em 0;
       max-width: 760px;
+      font-size: calc(1rem * var(--ts, 1));
     }
 
     @media (min-width: 1600px) {
@@ -1143,6 +1305,20 @@ ${leadingHtml}
     </script>
 </head>
 <body class="dark">
+  <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/hutchison" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/hutchison-logo.jpg"></a>
+  <a class="compact-nav-title" href="/hutchison" tabindex="-1">MES Hutchison Effect</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+
   <nav class="toc-sidebar" aria-label="Table of contents">
     <div class="toc-sidebar-header">
       <div class="toc-title">Jump to</div>
@@ -1152,8 +1328,68 @@ ${leadingHtml}
   </nav>
   <div class="wide">
     <div class="top-bar">
-      <a class="site-link" href="https://mes.fm/links">&larr; mes.fm/links</a>
-      <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
+      <div class="site-brand">
+        <a class="site-brand-logo-link" href="/hutchison"><img class="site-brand-logo" src="/img/hutchison-logo.jpg" width="88" height="88" alt="MES Hutchison Effect logo"></a>
+        <div class="site-brand-text"><a class="site-brand-title" href="/hutchison">MES Hutchison Effect</a><p class="site-brand-tag">Antigravity, materials transmutation, and John Hutchison's demonstrations.</p></div>
+      </div>
+      <div class="header-controls">
+        <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button id="textSizeUp" class="header-icon-btn" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
+        <button id="themeToggle" class="header-icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
+      </div>
+      <button id="navbar-button" class="hamburger-btn" type="button" aria-label="Site navigation" aria-haspopup="true"></button>
+      <ul id="navbar" class="navbar" role="navigation" aria-label="Site menu">
+        <li class="navbar__item navbar__item--social"><div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
+            <li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+            <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+            <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>
+            <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>
+            <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>
+            <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
+          </ul></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/hutchison">Hutchison Effect</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
+        <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Calculators<span class="dropdown-symbol">&#9660;</span></span>
+            <ul class="navbar__dropdown-container hide">
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/bmicalculator">&#9642; <span>BMI Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/gpacalculator">&#9642; <span>GPA Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/gradecalculator">&#9642; <span>Grade Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/inflationcalculator">&#9642; <span>Inflation Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/mortgagecalculator">&#9642; <span>Mortgage Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/percentagecalculator">&#9642; <span>Percentage Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/pokemongocalculator">&#9642; <span>Pokemon Go Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/vatcalculator">&#9642; <span>VAT Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/youtubemoney/index.html">&#9642; <span>YouTube Money Calculator</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/calculators">&#9642; <span>More...</span></a></li>
+            </ul>
+        </li>
+        <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Tools<span class="dropdown-symbol">&#9660;</span></span>
+            <ul class="navbar__dropdown-container hide">
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/speedreader">&#9642; <span>Speed Reader</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/timer">&#9642; <span>Timer</span></a></li>
+              <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/tools">&#9642; <span>More...</span></a></li>
+            </ul>
+        </li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/memes">Memes</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="navbar__item"><a target="_blank" rel="nofollow" class="navbar__link" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="/donate">Donate</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/contact">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="info-bar-container" role="navigation" aria-label="Primary">
+      <ul id="info-bar" class="info-bar">
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/hutchison">Hutchison Effect</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="/donate">Donate</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href="/contact">Contact Us</a></li>
+        <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
+      </ul>
     </div>
 
     <h1>${escapeHtml(title)}</h1>
@@ -1193,6 +1429,27 @@ ${articleBodyHtml}
       Vote/comment/reblog counts and article text were fetched from the Hive blockchain
       at build time (${buildDate}) and are not live.
     </p>
+  </div>
+
+  <div id="footer" class="footer" role="contentinfo">
+    <div class="footer__item-container">
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/calculators">Calculators</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/tools">Tools</a>
+      </div>
+      <div class="footer__item footer__item--extra-padding">
+        <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+      </div>
+    </div>
+    <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+    <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+    <a class="footer__text" target='_blank' href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+    <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
   </div>
 
   <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
@@ -1237,12 +1494,12 @@ ${articleBodyHtml}
       if (isDark) {
         body.classList.add('dark');
         body.classList.remove('light');
-        themeToggle.textContent = 'Switch to Light Mode';
+        themeToggle.textContent = '☀️';
         localStorage.setItem('theme', 'dark');
       } else {
         body.classList.add('light');
         body.classList.remove('dark');
-        themeToggle.textContent = 'Switch to Dark Mode';
+        themeToggle.textContent = '🌙';
         localStorage.setItem('theme', 'light');
       }
     }
@@ -1253,6 +1510,33 @@ ${articleBodyHtml}
     themeToggle.addEventListener('click', () => {
       setTheme(!body.classList.contains('dark'));
     });
+  </script>
+
+<script>
+    // text-size control: same STEPS / 'articleFontScale' key as
+    // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
+    // which only prose (paragraphs/lists/tables), the byline and the Jump To
+    // navigation multiply into their font-size -- headings, chapter titles
+    // ("Hutchison Effect Playlist"), cards and buttons stay fixed.
+    (function () {
+      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var body = document.body;
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!body || !downBtn || !upBtn) return;
+      var index;
+      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
+      if (index === -1) index = STEPS.indexOf(100);
+      function apply() {
+        body.style.setProperty('--ts', String(STEPS[index] / 100));
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
+      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
+      apply();
+    })();
   </script>
 
   <script>
@@ -1564,7 +1848,10 @@ ${articleBodyHtml}
       });
     })();
   </script>
-
+  <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
+  <script src="/main_js/main.js?v=1.0.3"></script>
 <script>
     // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the existing
     // image lightbox. Purely additive -- it only touches the #lightboxZoom*
@@ -1666,7 +1953,62 @@ ${articleBodyHtml}
 
       applyTransform();
     })();
-  </script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+  </script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link (MES.fm) is kept longest, so drop from the one
+  // before it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical to mes.fm/math's version.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script>
+</body>
 </html>
 `;
 }
