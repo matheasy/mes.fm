@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A live sky dashboard for any location (default Richmond, BC): 9 AM temperature, sunrise/sunset/moonrise/moonset, current conditions and air quality, the Sun's and Moon's constellation, distance, coordinates and magnitude, a Moon-phase visual, and charts of today's sky and the Sun's path through the year. Computed in your browser.">
+  <meta name="description" content="A live sky dashboard for any location (default Richmond, BC): current and 9 AM temperature, sunrise/sunset/moonrise/moonset, current conditions and air quality, the Sun's and Moon's constellation, distance, coordinates and magnitude, a Moon-phase visual, and charts of today's sky and the Sun's path through the year. Computed in your browser.">
   <meta name="author" content="Mathiew Estepho">
   <meta name="keywords" content="MES, Moon, Sun, planets, astronomy, sunrise, sunset, moonrise, moonset, moon phase, air quality, AQI, location, Richmond BC, constellation, right ascension, declination">
   <link rel="canonical" href="https://mes.fm/moon" />
@@ -344,6 +344,7 @@
     Compare with <a id="wxTodayLink" href="https://weather.com/weather/today/l/49.17,-123.14" target="_blank" rel="noopener">weather.com</a>.</p>
     <table>
       <tbody>
+        <tr><th>Temperature now</th><td class="big-value" id="tempNow">&mdash;</td></tr>
         <tr>
           <th>Temperature at 9&nbsp;AM <span id="tempTzLabel" class="muted">local</span></th>
           <td class="big-value" id="temp9am">&mdash;</td>
@@ -1226,6 +1227,8 @@
             return;
           }
 
+          if (fc.curTempF == null) set('tempNow', 'unavailable — see weather.com');
+          else set('tempNow', Math.round(fc.curTempF) + '°F (' + cOfF(fc.curTempF) + '°C)');
           if (fc.temp9F == null) set('temp9am', 'unavailable — see weather.com');
           else set('temp9am', Math.round(fc.temp9F) + '°F (' + cOfF(fc.temp9F) + '°C)');
 
