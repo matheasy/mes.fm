@@ -120,8 +120,10 @@ explaining this — keep it in sync if you change a source script's template). `
 at all** in `build.mjs` (added straight to `index.html` by `add_image_lightbox.py`/`add_lightbox_zoom.py`); `djw`
 has neither the lightbox nor a color scheme that needs the contrast fix. Both carry a `WARNING:` comment about the
 still-missing lightbox. `conspiracy`, `math`, `mathiew`, and `science` were authored recently enough that their
-`build.mjs` was already in sync with the lightbox/AdSense/contrast patches as of this writing (no lazy-loading gap
-either, so they were untouched by that pass too).
+`build.mjs` was already in sync with the lightbox/AdSense/contrast patches as of this writing. (`math` did turn out to
+be missing the lazy-loading pass -- its List View thumbnails lost `loading="lazy"` on a rebuild -- so it has
+`addImageLazyLoading()` back-ported too, and its AdSense block matches the committed `index.html` byte for byte, so
+`npm run build` in `mes.fm/math` now reproduces the committed page exactly, apart from any new entries.)
 
 Before running `npm run build` on any of these pages, `git diff --stat` (or a full diff) the result against the
 previously committed `index.html` and confirm you're not losing lines you don't recognize — don't assume success.
