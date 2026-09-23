@@ -1,4 +1,1613 @@
 {
+  "https://mes.fm/math-qa-1-special-birthday-stream": {
+    "image": "https://i.ytimg.com/vi/sVbnX7EUVIc/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/cynxddbd"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=sVbnX7EUVIc"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-10-gravity": {
+    "image": "https://i.ytimg.com/vi/-dXBmlUeOtI/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/uiuiragj"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=-dXBmlUeOtI"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-11-tesla-coil": {
+    "image": "https://i.ytimg.com/vi/Okw6JBXlIPY/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/jtqwgzwe"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=Okw6JBXlIPY"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-12-building-demolition-types": {
+    "image": "https://i.ytimg.com/vi/V7yU0HCR38I/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=V7yU0HCR38I"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-13-inertial-propulsion": {
+    "image": "https://i.ytimg.com/vi/FNglvk7FmiQ/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/cxqtanlw"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=FNglvk7FmiQ"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-14-nasa-apollo-photos-composites": {
+    "image": "https://i.ytimg.com/vi/3Rwt49n2kMM/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/ujcgttwp"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=3Rwt49n2kMM"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-15-cold-fusion": {
+    "image": "https://i.ytimg.com/vi/GPaDjuyphuU/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/gmdjlowe"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=GPaDjuyphuU"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-16-van-allen-radiation-belts": {
+    "image": "https://i.ytimg.com/vi/JfLV1bI2T7k/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/tosxhkba"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=JfLV1bI2T7k"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-17-lunar-regolith-moon-dust": {
+    "image": "https://i.ytimg.com/vi/P3glFFIvyUw/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/dfemmymn"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=P3glFFIvyUw"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-18-atwood-machine": {
+    "image": "https://i.ytimg.com/vi/NSauM4n6u-o/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/nalwdbna"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=NSauM4n6u-o"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-19-magnetic-mirror": {
+    "image": "https://i.ytimg.com/vi/D4Z-O1gwZck/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/fwhgutvp"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=D4Z-O1gwZck"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-2-hurricanes": {
+    "image": "https://i.ytimg.com/vi/SsAlh5uXCQQ/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/qydztnhy"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=SsAlh5uXCQQ"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-20-aether": {
+    "image": "https://i.ytimg.com/vi/2tnGtFY03VY/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/hlyveaxr"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=2tnGtFY03VY"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-21-shape-of-the-earth": {
+    "image": "https://i.ytimg.com/vi/LVXr1Aq92DE/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/gydpcbln"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=LVXr1Aq92DE"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-22-focus-fusion": {
+    "image": "https://i.ytimg.com/vi/qkaHLPHB9uE/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/pmjyajvs"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=qkaHLPHB9uE"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-23-grand-unified-theory": {
+    "image": "https://i.ytimg.com/vi/znD7maLqc5M/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/xllajdow"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=znD7maLqc5M"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-24-plane-tires-crash-explosion": {
+    "image": "https://i.ytimg.com/vi/sdWniBAJHZc/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/yvggxylj"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=sdWniBAJHZc"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-25-stern-gerlach-experiment": {
+    "image": "https://i.ytimg.com/vi/KZTyTpUdSPw/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/pmvcjpbv"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=KZTyTpUdSPw"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-26-consciousness": {
+    "image": "https://i.ytimg.com/vi/1njhG7-sEdo/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/ybkcgive"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=1njhG7-sEdo"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-27-ball-lightning": {
+    "image": "https://i.ytimg.com/vi/V1bqAws-5r0/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/ntrpgkmj"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=V1bqAws-5r0"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-28-plasmoid": {
+    "image": "https://i.ytimg.com/vi/Ioy2IIli018/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=Ioy2IIli018"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-29-magnets-attract-repel": {
+    "image": "https://i.ytimg.com/vi/g-cJk0SAhQM/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/pwuntust"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=g-cJk0SAhQM"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-3-how-ai-works": {
+    "image": "https://i.ytimg.com/vi/eNoHKaftMVI/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/rvewcfmu"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=eNoHKaftMVI"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-30-bedini-motor": {
+    "image": "https://i.ytimg.com/vi/hfx14Svd9Y0/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/hgmjyfwz"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=hfx14Svd9Y0"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-31-potentiometer-moon-landing-evidence": {
+    "image": "https://i.ytimg.com/vi/ZGuq_ZRldQQ/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/mikfhxxf"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=ZGuq_ZRldQQ"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-32-joule-thief": {
+    "image": "https://i.ytimg.com/vi/QLSs6Ky-sxc/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/geuklqyc"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=QLSs6Ky-sxc"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-33-antimatter": {
+    "image": "https://i.ytimg.com/vi/BqaoMRMZioQ/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/vnfpyyza"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=BqaoMRMZioQ"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-34-plane-590-mph-steel-columns": {
+    "image": "https://i.ytimg.com/vi/c7dcdMt0uFk/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=c7dcdMt0uFk"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-35-thermite": {
+    "image": "https://i.ytimg.com/vi/LY9fIlEqaDc/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=LY9fIlEqaDc"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-36-atomic-bomb": {
+    "image": "https://i.ytimg.com/vi/7zojWjVDO1o/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/kflsmsmd"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=7zojWjVDO1o"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-37-vortex-math": {
+    "image": "https://i.ytimg.com/vi/4xtTQEIKsjQ/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/blguyhjz"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=4xtTQEIKsjQ"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-38-faraday-cage": {
+    "image": "https://i.ytimg.com/vi/yTX0r5nbuws/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=yTX0r5nbuws"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-39-magnetic-poles": {
+    "image": "https://i.ytimg.com/vi/0Wq7arT-7eM/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=0Wq7arT-7eM"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-4-free-energy-device-claims": {
+    "image": "https://i.ytimg.com/vi/oOSOAwJ5-3Y/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/fpqezonv"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=oOSOAwJ5-3Y"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-40-coral-castle": {
+    "image": "https://i.ytimg.com/vi/MSbHWH5EO8A/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/tozxxnso"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=MSbHWH5EO8A"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-41-back-emf": {
+    "image": "https://i.ytimg.com/vi/ikw_ttKrVCI/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=ikw_ttKrVCI"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-42-lidar": {
+    "image": "https://i.ytimg.com/vi/px8fubzwlpY/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=px8fubzwlpY"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-43-radio-waves": {
+    "image": "https://i.ytimg.com/vi/_xaATiA-b7A/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/ejcariot"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=_xaATiA-b7A"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-44-planck-length": {
+    "image": "https://i.ytimg.com/vi/ZRv0cMHsxH4/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/mvtmiybz"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=ZRv0cMHsxH4"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-45-vacuum-tube": {
+    "image": "https://i.ytimg.com/vi/I4s7ut-Ddwg/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/vaxieesd"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=I4s7ut-Ddwg"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-46-moray-device": {
+    "image": "https://i.ytimg.com/vi/5ojey4ll1LM/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/fczmlbzh"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=5ojey4ll1LM"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-47-fractalwoman-channel": {
+    "image": "https://i.ytimg.com/vi/97DdxdC5wIs/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/ikxcdywk"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=97DdxdC5wIs"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-48-photon": {
+    "image": "https://i.ytimg.com/vi/u_fPl8KFtNQ/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/kpreioky"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=u_fPl8KFtNQ"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-49-ionel-dinu-theory-of-aether": {
+    "image": "https://i.ytimg.com/vi/6mfBM5BecMI/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/vagblitc"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=6mfBM5BecMI"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-5-hutchison-effect": {
+    "image": "https://i.ytimg.com/vi/-sBn4TkmIEM/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/nvgurvwz"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=-sBn4TkmIEM"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-50-ionel-dinu-theory-of-aether": {
+    "image": "https://i.ytimg.com/vi/TAxz_PmNff0/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/yeirzhdn"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=TAxz_PmNff0"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-51-ionel-dinu-theory-of-aether": {
+    "image": "https://i.ytimg.com/vi/lLxgyHSguRs/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/shmsgopg"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=lLxgyHSguRs"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-52-ionel-dinu-theory-of-aether": {
+    "image": "https://i.ytimg.com/vi/OYHplqhAxhU/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/e1dad6de"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=OYHplqhAxhU"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-53-ionel-dinu-theory-of-aether": {
+    "image": "https://i.ytimg.com/vi/7Wn8e--RSn4/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/d45b303b"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=7Wn8e--RSn4"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-54-ionel-dinu-theory-of-aether": {
+    "image": "https://i.ytimg.com/vi/ceN5oKin43M/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/efa1708b"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=ceN5oKin43M"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-55-ionel-dinu-theory-of-aether": {
+    "image": "https://i.ytimg.com/vi/Ds23ilMy3Jw/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/8e11db88"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=Ds23ilMy3Jw"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-56-ionel-dinu-theory-of-aether": {
+    "image": "https://i.ytimg.com/vi/WTEOktsgHOk/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/ddf5a0fb"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=WTEOktsgHOk"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-57-michelson-morley-experiment": {
+    "image": "https://i.ytimg.com/vi/Y_O8ZH4Lsq4/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/ba890213"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=Y_O8ZH4Lsq4"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-58-stellar-aberration": {
+    "image": "https://i.ytimg.com/vi/1aikEXIstdw/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/e60ccee5"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=1aikEXIstdw"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-59-polarization-of-waves": {
+    "image": "https://i.ytimg.com/vi/oWY3vElY8YQ/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/1c1d1436"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=oWY3vElY8YQ"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-6-hutchison-effect-lab-equipment": {
+    "image": "https://i.ytimg.com/vi/uM7u-Bxx1HU/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/issjirxc"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=uM7u-Bxx1HU"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-60-brewster-polarization-angle": {
+    "image": "https://i.ytimg.com/vi/AB-qpNj2jtE/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/3563abbd"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=AB-qpNj2jtE"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-61-hologram": {
+    "image": "https://i.ytimg.com/vi/q2bHAF8hqa0/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/bbc55c29"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=q2bHAF8hqa0"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-62-electrolysis": {
+    "image": "https://i.ytimg.com/vi/GeN1SNV0hUI/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/0664b8eb"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=GeN1SNV0hUI"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-63-aharonov-bohm-effect": {
+    "image": "https://i.ytimg.com/vi/reEByVqyEbs/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/b9057978"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=reEByVqyEbs"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-64-electromagnetic-potentials": {
+    "image": "https://i.ytimg.com/vi/5yDfbyJkkQU/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/electromagnetic-potentials-947"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtube.com/live/5yDfbyJkkQU"
+      },
+      {
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/video/GbG0GLC5mCg5"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mes:8/MES-Math-QA-64-Electromagnetic-Potentials"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/v7aroni-mes-math-qa-64-what-are-electromagnetic-potentials.html"
+      },
+      {
+        "label": "X",
+        "href": "https://x.com/i/broadcasts/1RKjppamvndJw"
+      },
+      {
+        "label": "Twitch",
+        "href": "https://www.twitch.tv/matheasysolutions"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-65-maxwell-equations": {
+    "image": "https://i.ytimg.com/vi/-RC-NpAQbsA/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/crwi7sev"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtube.com/live/-RC-NpAQbsA"
+      },
+      {
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/video/7eAyNHNUhKnG"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mes:8/MES-Math-QA-65-Maxwell-Equations"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/v7bfhpw-mes-math-qa-65-what-are-maxwells-equations.html"
+      },
+      {
+        "label": "X",
+        "href": "https://x.com/i/broadcasts/1NxarrqEyabKj"
+      },
+      {
+        "label": "Twitch",
+        "href": "https://www.twitch.tv/matheasysolutions"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-66-gauss-laws-electricity-magnetism": {
+    "image": "https://i.ytimg.com/vi/kt5cM87cUDE/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/0vkqijjj"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtube.com/live/kt5cM87cUDE"
+      },
+      {
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/video/CL4O7GgG48Ib"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mes:8/MES-Math-QA-66-Gauss%27s-Laws"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/v7c3joc-mes-math-qa-65-what-are-maxwells-equations.html"
+      },
+      {
+        "label": "X",
+        "href": "https://x.com/i/broadcasts/1AKEmmyEyyaKL"
+      },
+      {
+        "label": "Twitch",
+        "href": "https://www.twitch.tv/matheasysolutions"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-67-faraday-law": {
+    "image": "https://i.ytimg.com/vi/3WcNEobSAAg/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/oxkqmz0i"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtube.com/live/3WcNEobSAAg"
+      },
+      {
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/video/hkHBwIljXwEL"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mes:8/MES-Math-QA-67-Faraday-Law"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/v7cr432-mes-math-qa-67-what-is-faradays-law.html"
+      },
+      {
+        "label": "X",
+        "href": "https://x.com/i/broadcasts/1nKOLLqjVlwGR"
+      },
+      {
+        "label": "Twitch",
+        "href": "https://www.twitch.tv/matheasysolutions"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-68-faraday-flux-rule": {
+    "image": "https://i.ytimg.com/vi/PEn5LFJrAUg/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/8k2ag185"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtube.com/live/PEn5LFJrAUg"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-69-electromotive-force-emf": {
+    "image": "https://i.ytimg.com/vi/uj40t_DgiCQ/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/iojtphhs"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtube.com/live/uj40t_DgiCQ"
+      },
+      {
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/video/rrVsqHJlYCzn"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mes:8/MES-Math-QA-69-Electromotive-Force-EMF"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/v7e1dgy-mes-math-qa-69-what-is-electromotive-force-emf.html"
+      },
+      {
+        "label": "X",
+        "href": "https://x.com/i/broadcasts/1qJVmymkpNwGB"
+      },
+      {
+        "label": "Twitch",
+        "href": "https://www.twitch.tv/matheasysolutions"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-7-crop-circles": {
+    "image": "https://i.ytimg.com/vi/agKXLowAR5A/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/gzkyanlh"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=agKXLowAR5A"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
   "https://mes.fm/math-qa-70-lorentz-force": {
     "image": "https://images.3speak.tv/images/1788374815252-d4c1cea39d2687da.webp",
     "watchLinks": [
@@ -79,6 +1688,52 @@
       },
       {
         "label": "More math links",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-8-high-frequency-radio-waves": {
+    "image": "https://i.ytimg.com/vi/lprjXQDvA3I/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/qvtwppdy"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=lprjXQDvA3I"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
+  "https://mes.fm/math-qa-9-opposing-magnets-fall-slower-than-gravity": {
+    "image": "https://i.ytimg.com/vi/tDIMfpt_bk8/maxresdefault.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/thyqqhjc"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://www.youtube.com/watch?v=tDIMfpt_bk8"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
         "href": "https://mes.fm/math"
       }
     ]
@@ -713,351 +2368,6 @@
   },
   "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-": {
     "image": "https://i.ytimg.com/vi/glW2rC5Ew5I/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLArghcB7nIAMFLbqMc9uANIVftiZg&days_since_epoch=20719",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=-RC-NpAQbsA": {
-    "image": "https://i.ytimg.com/vi/-RC-NpAQbsA/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=-dXBmlUeOtI": {
-    "image": "https://i.ytimg.com/vi/-dXBmlUeOtI/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=-sBn4TkmIEM": {
-    "image": "https://i.ytimg.com/vi/-sBn4TkmIEM/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=0Wq7arT-7eM": {
-    "image": "https://i.ytimg.com/vi/0Wq7arT-7eM/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=1aikEXIstdw": {
-    "image": "https://i.ytimg.com/vi/1aikEXIstdw/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=1njhG7-sEdo": {
-    "image": "https://i.ytimg.com/vi/1njhG7-sEdo/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=2tnGtFY03VY": {
-    "image": "https://i.ytimg.com/vi/2tnGtFY03VY/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=3Rwt49n2kMM": {
-    "image": "https://i.ytimg.com/vi/3Rwt49n2kMM/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=3WcNEobSAAg": {
-    "image": "https://i.ytimg.com/vi/3WcNEobSAAg/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=4xtTQEIKsjQ": {
-    "image": "https://i.ytimg.com/vi/4xtTQEIKsjQ/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=5ojey4ll1LM": {
-    "image": "https://i.ytimg.com/vi/5ojey4ll1LM/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=5yDfbyJkkQU": {
-    "image": "https://i.ytimg.com/vi/5yDfbyJkkQU/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=6mfBM5BecMI": {
-    "image": "https://i.ytimg.com/vi/6mfBM5BecMI/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=7Wn8e--RSn4": {
-    "image": "https://i.ytimg.com/vi/7Wn8e--RSn4/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=7zojWjVDO1o": {
-    "image": "https://i.ytimg.com/vi/7zojWjVDO1o/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=97DdxdC5wIs": {
-    "image": "https://i.ytimg.com/vi/97DdxdC5wIs/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=AB-qpNj2jtE": {
-    "image": "https://i.ytimg.com/vi/AB-qpNj2jtE/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=BqaoMRMZioQ": {
-    "image": "https://i.ytimg.com/vi/BqaoMRMZioQ/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=D4Z-O1gwZck": {
-    "image": "https://i.ytimg.com/vi/D4Z-O1gwZck/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=Ds23ilMy3Jw": {
-    "image": "https://i.ytimg.com/vi/Ds23ilMy3Jw/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=FNglvk7FmiQ": {
-    "image": "https://i.ytimg.com/vi/FNglvk7FmiQ/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=GPaDjuyphuU": {
-    "image": "https://i.ytimg.com/vi/GPaDjuyphuU/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=GeN1SNV0hUI": {
-    "image": "https://i.ytimg.com/vi/GeN1SNV0hUI/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=I4s7ut-Ddwg": {
-    "image": "https://i.ytimg.com/vi/I4s7ut-Ddwg/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=Ioy2IIli018": {
-    "image": "https://i.ytimg.com/vi/Ioy2IIli018/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=JfLV1bI2T7k": {
-    "image": "https://i.ytimg.com/vi/JfLV1bI2T7k/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=KZTyTpUdSPw": {
-    "image": "https://i.ytimg.com/vi/KZTyTpUdSPw/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=LVXr1Aq92DE": {
-    "image": "https://i.ytimg.com/vi/LVXr1Aq92DE/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=LY9fIlEqaDc": {
-    "image": "https://i.ytimg.com/vi/LY9fIlEqaDc/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=MSbHWH5EO8A": {
-    "image": "https://i.ytimg.com/vi/MSbHWH5EO8A/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=NSauM4n6u-o": {
-    "image": "https://i.ytimg.com/vi/NSauM4n6u-o/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=OYHplqhAxhU": {
-    "image": "https://i.ytimg.com/vi/OYHplqhAxhU/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=Okw6JBXlIPY": {
-    "image": "https://i.ytimg.com/vi/Okw6JBXlIPY/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=P3glFFIvyUw": {
-    "image": "https://i.ytimg.com/vi/P3glFFIvyUw/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=PEn5LFJrAUg": {
-    "image": "https://i.ytimg.com/vi/PEn5LFJrAUg/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=QLSs6Ky-sxc": {
-    "image": "https://i.ytimg.com/vi/QLSs6Ky-sxc/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=SsAlh5uXCQQ": {
-    "image": "https://i.ytimg.com/vi/SsAlh5uXCQQ/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=TAxz_PmNff0": {
-    "image": "https://i.ytimg.com/vi/TAxz_PmNff0/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=V1bqAws-5r0": {
-    "image": "https://i.ytimg.com/vi/V1bqAws-5r0/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=V7yU0HCR38I": {
-    "image": "https://i.ytimg.com/vi/V7yU0HCR38I/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=WTEOktsgHOk": {
-    "image": "https://i.ytimg.com/vi/WTEOktsgHOk/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=Y_O8ZH4Lsq4": {
-    "image": "https://i.ytimg.com/vi/Y_O8ZH4Lsq4/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=ZGuq_ZRldQQ": {
-    "image": "https://i.ytimg.com/vi/ZGuq_ZRldQQ/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=ZRv0cMHsxH4": {
-    "image": "https://i.ytimg.com/vi/ZRv0cMHsxH4/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=_xaATiA-b7A": {
-    "image": "https://i.ytimg.com/vi/_xaATiA-b7A/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=agKXLowAR5A": {
-    "image": "https://i.ytimg.com/vi/agKXLowAR5A/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=c7dcdMt0uFk": {
-    "image": "https://i.ytimg.com/vi/c7dcdMt0uFk/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=ceN5oKin43M": {
-    "image": "https://i.ytimg.com/vi/ceN5oKin43M/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=eNoHKaftMVI": {
-    "image": "https://i.ytimg.com/vi/eNoHKaftMVI/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=g-cJk0SAhQM": {
-    "image": "https://i.ytimg.com/vi/g-cJk0SAhQM/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=hfx14Svd9Y0": {
-    "image": "https://i.ytimg.com/vi/hfx14Svd9Y0/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=ikw_ttKrVCI": {
-    "image": "https://i.ytimg.com/vi/ikw_ttKrVCI/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=kt5cM87cUDE": {
-    "image": "https://i.ytimg.com/vi/kt5cM87cUDE/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=lLxgyHSguRs": {
-    "image": "https://i.ytimg.com/vi/lLxgyHSguRs/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=lprjXQDvA3I": {
-    "image": "https://i.ytimg.com/vi/lprjXQDvA3I/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=oOSOAwJ5-3Y": {
-    "image": "https://i.ytimg.com/vi/oOSOAwJ5-3Y/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=oWY3vElY8YQ": {
-    "image": "https://i.ytimg.com/vi/oWY3vElY8YQ/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=px8fubzwlpY": {
-    "image": "https://i.ytimg.com/vi/px8fubzwlpY/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=q2bHAF8hqa0": {
-    "image": "https://i.ytimg.com/vi/q2bHAF8hqa0/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=qkaHLPHB9uE": {
-    "image": "https://i.ytimg.com/vi/qkaHLPHB9uE/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=reEByVqyEbs": {
-    "image": "https://i.ytimg.com/vi/reEByVqyEbs/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=sVbnX7EUVIc": {
-    "image": "https://i.ytimg.com/vi/sVbnX7EUVIc/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=sdWniBAJHZc": {
-    "image": "https://i.ytimg.com/vi/sdWniBAJHZc/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=tDIMfpt_bk8": {
-    "image": "https://i.ytimg.com/vi/tDIMfpt_bk8/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=uM7u-Bxx1HU": {
-    "image": "https://i.ytimg.com/vi/uM7u-Bxx1HU/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=u_fPl8KFtNQ": {
-    "image": "https://i.ytimg.com/vi/u_fPl8KFtNQ/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=uj40t_DgiCQ": {
-    "image": "https://i.ytimg.com/vi/uj40t_DgiCQ/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=yTX0r5nbuws": {
-    "image": "https://i.ytimg.com/vi/yTX0r5nbuws/maxresdefault.jpg",
-    "watchLinks": [],
-    "namedLinks": []
-  },
-  "https://www.youtube.com/watch?v=znD7maLqc5M": {
-    "image": "https://i.ytimg.com/vi/znD7maLqc5M/maxresdefault.jpg",
     "watchLinks": [],
     "namedLinks": []
   }
