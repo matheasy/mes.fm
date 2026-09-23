@@ -107,8 +107,8 @@
     { "source": "/crypto/:path+", "destination": "https://mes-fm-crypto.vercel.app/crypto/:path*" },
     { "source": "/sov", "destination": "https://mes-fm-sov.vercel.app/sov" },
     { "source": "/sov/:path*", "destination": "https://mes-fm-sov.vercel.app/sov/:path*" },
-    { "source": "/assets", "destination": "https://mes-fm-assets.vercel.app/assets" },
-    { "source": "/assets/:path*", "destination": "https://mes-fm-assets.vercel.app/assets/:path*" }
+    { "source": "/assets", "destination": "https://assets-iota-seven.vercel.app/assets" },
+    { "source": "/assets/:path*", "destination": "https://assets-iota-seven.vercel.app/assets/:path*" }
   ],
   "headers": [
     { "source": "/percentagecalculator/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800" }] },
