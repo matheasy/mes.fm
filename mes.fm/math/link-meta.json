@@ -26,6 +26,45 @@
       }
     ]
   },
+  "https://mes.fm/math-qa-71-conservation-angular-momentum": {
+    "image": "https://images.3speak.tv/images/1790197710256-ca831a9af0f7b0e4.webp",
+    "namedLinks": [
+      {
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-",
+        "label": "See more"
+      },
+      {
+        "href": "https://mes.fm/math",
+        "label": "More math"
+      }
+    ],
+    "watchLinks": [
+      {
+        "href": "https://3speak.tv/watch?v=mes/mes-math-qa-71-what-is-the-180",
+        "label": "3Speak"
+      },
+      {
+        "href": "https://youtube.com/live/glW2rC5Ew5I",
+        "label": "YouTube"
+      },
+      {
+        "href": "https://rumble.com/v7fkeo6-mes-math-qa-71-what-is-the-conservation-of-angular-momentum.html",
+        "label": "Rumble"
+      },
+      {
+        "href": "https://odysee.com/@mes:8/MES-Math-QA-71-Conservation-Angular-Momentum",
+        "label": "Odysee"
+      },
+      {
+        "href": "https://www.bitchute.com/video/DqrtgmxROkAR",
+        "label": "BitChute"
+      },
+      {
+        "href": "https://x.com/i/broadcasts/1DxLdZkZrZZxm",
+        "label": "X"
+      }
+    ]
+  },
   "https://mes.fm/math-qa-71-stats": {
     "image": "https://img.leopedia.io/DQmWkDaYKKRygyeMcskvkUXxg39C7YPvnNUhCYZdY2oX8hr/telegram-cloud-photo-size-1-4997088063016078455-y.jpg",
     "watchLinks": [],
@@ -673,7 +712,7 @@
     "namedLinks": []
   },
   "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-": {
-    "image": "https://i.ytimg.com/vi/glW2rC5Ew5I/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLArghcB7nIAMFLbqMc9uANIVftiZg&days_since_epoch=20716",
+    "image": "https://i.ytimg.com/vi/glW2rC5Ew5I/hqdefault.jpg?sqp=-oaymwEXCOADEI4CSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLArghcB7nIAMFLbqMc9uANIVftiZg&days_since_epoch=20719",
     "watchLinks": [],
     "namedLinks": []
   }
