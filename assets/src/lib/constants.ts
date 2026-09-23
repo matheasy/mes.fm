@@ -17,4 +17,5 @@ export const SOURCE_LABELS: Record<SourceId, string> = {
   bsc: 'BNB Chain',
   hyperliquid: 'Hyperliquid',
   xrpl: 'XRP Ledger',
+  bitcoin: 'Bitcoin',
 };

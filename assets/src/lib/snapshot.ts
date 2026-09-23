@@ -1,6 +1,7 @@
 import { cachedStale, cacheKey } from './cache';
 import { DEFAULT_MIN_VALUE_USD, GROUPS, GROUP_BY_KEY, HIVE_ACCOUNT, TTL, type GroupConfig } from './config';
 import { RateLimitError } from './errors';
+import { fetchBitcoin } from './sources/bitcoin';
 import { fetchBlockscoutChain } from './sources/blockscout';
 import { fetchBsc } from './sources/bsc';
 import { fetchHiveEngine } from './sources/hiveEngine';
@@ -32,6 +33,8 @@ async function runUnit(group: GroupConfig, source: SourceId): Promise<SourceResu
       return fetchHyperliquid(addr);
     case 'xrpl':
       return fetchXrpl(addr);
+    case 'bitcoin':
+      return fetchBitcoin(addr);
   }
 }
 

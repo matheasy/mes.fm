@@ -1,4 +1,4 @@
-import { FETCH_FLOOR_USD, RPC_URLS, TTL } from '../config';
+import { FETCH_FLOOR_USD, PINNED_BSC_TOKENS, RPC_URLS, TTL } from '../config';
 import { cached, cacheKey } from '../cache';
 import { RateLimitError } from '../errors';
 import { fetchJson } from '../http';
@@ -79,6 +79,10 @@ export async function fetchBsc(wallet: string): Promise<SourceResult> {
     tokens = await cached(cacheKey('discovery', 'bsc', wallet), TTL.bscDiscovery, () => discoverTokens(wallet));
   } else {
     note = 'NODEREAL_API_KEY not set - BNB Chain tokens were not scanned (native BNB and PancakeSwap V3 positions still are)';
+  }
+  // always balance-check the pinned list too - covers holdings NodeReal's discovery lookback misses
+  for (const p of PINNED_BSC_TOKENS) {
+    if (!tokens.some((t) => t.address === p.address)) tokens.push({ address: p.address, symbol: p.symbol, decimals: p.decimals });
   }
 
   // 2. exact balances in one batch: native BNB, then balanceOf per token (+ decimals when discovery didn't carry it)

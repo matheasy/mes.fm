@@ -4,8 +4,8 @@
  * `Holding[]`; snapshot.ts stitches them together.
  */
 
-/** A logical owner: one Hive identity, or one EVM address, or one XRPL address */
-export type GroupKey = 'hive' | 'main' | 'ai' | 'mfa' | 'xrp';
+/** A logical owner: one Hive identity, one EVM address, one XRPL address, or one BTC address */
+export type GroupKey = 'hive' | 'main' | 'ai' | 'mfa' | 'xrp' | 'btc';
 
 /** Where a holding physically lives - one data source / chain */
 export type SourceId =
@@ -19,7 +19,8 @@ export type SourceId =
   | 'optimism'
   | 'bsc'
   | 'hyperliquid'
-  | 'xrpl';
+  | 'xrpl'
+  | 'bitcoin';
 
 export type AssetKind =
   | 'token' // liquid token / coin balance

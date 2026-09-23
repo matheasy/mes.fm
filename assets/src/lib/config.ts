@@ -21,6 +21,8 @@ export const EVM_ADDRESSES = {
 
 export const XRP_ADDRESS = 'rDqSZAsxSEBoTgPGDbSqKEtrEe4JxKkDNh';
 
+export const BTC_ADDRESS = 'bc1q3tet9kazk8v59ptfqr6f0945fvj7g4xwnlyzy8';
+
 export const EVM_SOURCES: SourceId[] = ['ethereum', 'arbitrum', 'polygon', 'base', 'optimism', 'bsc', 'hyperliquid'];
 
 export interface GroupConfig {
@@ -37,6 +39,7 @@ export const GROUPS: GroupConfig[] = [
   { key: 'ai', label: 'AI Trading wallet', link: 'https://mes.fm/ai', address: EVM_ADDRESSES.ai, sources: EVM_SOURCES },
   { key: 'mfa', label: 'MikeFA wallet', link: 'https://mes.fm/mfa', address: EVM_ADDRESSES.mfa, sources: EVM_SOURCES },
   { key: 'xrp', label: 'XRP Ledger', address: XRP_ADDRESS, sources: ['xrpl'] },
+  { key: 'btc', label: 'Bitcoin', link: `https://mempool.space/address/${BTC_ADDRESS}`, address: BTC_ADDRESS, sources: ['bitcoin'] },
 ];
 
 export const GROUP_BY_KEY = Object.fromEntries(GROUPS.map((g) => [g.key, g])) as Record<GroupKey, GroupConfig>;
@@ -150,3 +153,15 @@ export const MAGI_BTC_CONTRACT = 'vsc1BdrQ6EtbQ64rq2PkPd21x4MaLnVRcJj85d';
 
 export const XRPL_RPC = process.env.XRPL_RPC_URL ?? 'https://xrplcluster.com/';
 export const HYPERLIQUID_INFO = 'https://api.hyperliquid.xyz/info';
+
+/** Keyless Esplora-API mirrors for the BTC L1 balance (tried in order) */
+export const ESPLORA_APIS = [process.env.ESPLORA_API_URL, 'https://blockstream.info/api', 'https://mempool.space/api'].filter(Boolean) as string[];
+
+/**
+ * BSC tokens known to be held that NodeReal's `nr_getAssetTransfers` discovery (bsc.ts) can miss -
+ * its free-tier lookback window doesn't reach every past receive. Always balance-checked alongside
+ * whatever discovery finds, so a real holding never silently disappears because of an indexer gap.
+ */
+export const PINNED_BSC_TOKENS: { address: string; symbol: string; decimals: number }[] = [
+  { address: '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c', symbol: 'BTCB', decimals: 18 },
+];
