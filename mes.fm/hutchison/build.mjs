@@ -424,12 +424,13 @@ ${leadingHtml}
   const description =
     post.json_metadata?.description ||
     `${title} — an index of MES Hutchison Effect videos, mirrored from the Hive blockchain.`;
-  const ogImage =
-    (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
-    ((String(articleBodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
-    "";
-  const ogImageTag = ogImage ? `\n  <meta property="og:image" content="${escapeHtml(ogImage)}">` : "";
-  const twitterImageTag = ogImage ? `\n  <meta name="twitter:image" content="${escapeHtml(ogImage)}">` : "";
+  // A curated comparison photo (twisted Hutchison Effect wrench next to the
+  // WTC steel memorial sculpture) rather than the Hive post's own lead
+  // image, so link previews show the page's actual hook instead of
+  // whatever happened to be the first <img> in the article.
+  const ogImage = "https://mes.fm/img/hutchison-logo-big.jpg";
+  const ogImageTag = `\n  <meta property="og:image" content="${ogImage}">`;
+  const twitterImageTag = `\n  <meta name="twitter:image" content="${ogImage}">`;
   const buildDate = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -455,7 +456,7 @@ ${leadingHtml}
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">${twitterImageTag}
   <!-- OG-TAGS:END -->
-  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <link rel="icon" href="https://mes.fm/img/hutchison-logo.jpg?v=1.0" type="image/jpeg" />
   <title>${escapeHtml(title)} | Math Easy Solutions</title>
   <style>
     * { box-sizing: border-box; }
