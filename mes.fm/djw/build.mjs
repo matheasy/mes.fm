@@ -50,6 +50,53 @@ async function fetchPost() {
   return data.result;
 }
 
+// Lazy-load remote post images (mirrors optimize_pagespeed.py's transform_images
+// lazy-loading pass, part 5, applied to the whole generated page here so a
+// rebuild doesn't silently undo it): every <img> whose src is a non-mes.fm
+// http(s) URL gets loading="lazy", except the first "real" (non-data:) image
+// on the page, which stays eager so it doesn't delay LCP.
+const IMG_TAG_RE = /<img\b[^>]*?\/?>/gi;
+
+function imgAttr(tag, name) {
+  const m = tag.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, "i"));
+  return m ? m[1] : null;
+}
+
+function addImageLazyLoading(html) {
+  const imgs = [...html.matchAll(IMG_TAG_RE)];
+  if (imgs.length === 0) return html;
+
+  let firstReal = -1;
+  for (let idx = 0; idx < imgs.length; idx++) {
+    const s = imgAttr(imgs[idx][0], "src");
+    if (s && !s.trim().startsWith("data:")) {
+      firstReal = idx;
+      break;
+    }
+  }
+
+  let out = "";
+  let last = 0;
+  imgs.forEach((m, idx) => {
+    const tag = m[0];
+    let newTag = tag;
+    const src = imgAttr(tag, "src");
+    if (
+      src &&
+      idx !== firstReal &&
+      /^https?:\/\//i.test(src.trim()) &&
+      !src.includes("mes.fm") &&
+      !/\bloading\s*=/i.test(tag)
+    ) {
+      newTag = tag.replace(/^<img\b/i, '<img loading="lazy"');
+    }
+    out += html.slice(last, m.index) + newTag;
+    last = m.index + tag.length;
+  });
+  out += html.slice(last);
+  return out;
+}
+
 function escapeHtml(str) {
   return str
     .replace(/&/g, "&amp;")
@@ -352,7 +399,7 @@ async function main() {
 
   const html = buildPage(post);
   const outPath = join(__dirname, "index.html");
-  writeFileSync(outPath, html, "utf8");
+  writeFileSync(outPath, addImageLazyLoading(html), "utf8");
   console.log(`Wrote ${outPath}`);
 }
 
