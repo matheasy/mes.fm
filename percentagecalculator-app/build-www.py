@@ -224,6 +224,10 @@ def clean(html: str, page_name: str) -> str:
                   r'</span>(\s*<div class="footer__text--extra-info">)',
                   r"\1\2", html)
 
+    # web-only "Android testers wanted" banner (see mes.fm/percentagecalculator)
+    html = re.sub(r"\s*<!-- ANDROID-TESTERS-BANNER -->.*?"
+                  r"<!-- /ANDROID-TESTERS-BANNER -->", "", html, flags=re.S)
+
     # --- script tail ------------------------------------------------------
     html = re.sub(r'<script src="https://ajax\.googleapis\.com/ajax/libs/'
                   r"jquery.*?</body>", script_tail(page_name), html, flags=re.S)
