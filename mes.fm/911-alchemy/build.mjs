@@ -190,6 +190,16 @@ async function buildPage(post) {
   const ogImageTag = ogImage ? `\n  <meta property="og:image" content="${escapeHtml(ogImage)}">` : "";
   const twitterImageTag = ogImage ? `\n  <meta name="twitter:image" content="${escapeHtml(ogImage)}">` : "";
 
+  // WARNING: this template has NO lightbox markup at all -- the image
+  // lightbox (open/close + prev/next) and its zoom/pan enhancement on the
+  // live mes.fm/911-alchemy page were both added directly to index.html by
+  // add_image_lightbox.py / add_lightbox_zoom.py, never back-ported here.
+  // Running `npm run build` will silently DROP that feature entirely from
+  // this page -- diff the rebuilt index.html against the previously
+  // committed version (or re-run add_image_lightbox.py + add_lightbox_zoom.py
+  // afterward) before committing a rebuild. The deferred-AdSense loader
+  // (ADSENSE-DEFERRED) below IS kept in sync with optimize_pagespeed.py.
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -431,7 +441,28 @@ async function buildPage(post) {
   table { max-width: 100% !important; }
 }
 </style>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+  <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
 </head>
 <body class="dark">
   <div class="container">

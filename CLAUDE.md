@@ -93,6 +93,34 @@ Note that other agent sessions sometimes have a repo-wide pass of their own sitt
 tree. Before committing one of these, compare `git status --porcelain | wc -l` against the file count your script
 reported; if there is a large gap, stage only your own paths rather than `git add -A`.
 
+### `build.mjs` pages: never rebuild without diffing first
+
+Several pages (currently `911`, `911-alchemy`, `conspiracy`, `djw`, `ferrocell-specular-reflection`, `hutchison`,
+`hutchison-tom-sky`, `math`, `mathiew`, `norman-patricia-ai-email`, `science`, `vector-functions-problems-plus`, all
+under `mes.fm/`) have their own `build.mjs` (`npm run build`, usually fetching a Hive post) that regenerates
+`index.html` from scratch. The repo-wide scripts above (`add_lightbox_zoom.py`, `add_image_lightbox.py`, and several
+`optimize_pagespeed.py` transforms — the deferred-AdSense loader, the WCAG brand-blue darkening) patch the
+*generated* `index.html` directly; they don't know `build.mjs` exists, so those patches never land back in the
+template. **Running `npm run build` regenerates index.html purely from build.mjs and silently reverts any patch that
+only ever lived in the generated HTML** — this has already happened for real more than once (e.g. commit `cb410eb1`
+had to re-apply a dropped PageSpeed pass to `mes.fm/911`, and `mes.fm/911`'s lightbox-zoom feature was silently lost
+the day after it shipped, by the very next Hive-mirror rebuild, and stayed lost for a week before anyone noticed).
+
+As of this writing, `911`, `ferrocell-specular-reflection`, `hutchison-tom-sky`, `hutchison`,
+`norman-patricia-ai-email`, and `vector-functions-problems-plus` have the lightbox-zoom CSS/JS, the deferred-AdSense
+loader, and the darkened brand-blue back-ported directly into their `build.mjs` (each carries a `NOTE:` comment
+right above its `return \`<!DOCTYPE html>` explaining this — keep it in sync if you change the source script's
+template). `911-alchemy` has the AdSense loader back-ported but has **no lightbox markup at all** in `build.mjs`
+(added straight to `index.html` by `add_image_lightbox.py`/`add_lightbox_zoom.py`); `djw` has **neither** the
+lightbox nor any AdSense loader in `build.mjs`. Both carry a `WARNING:` comment instead. `conspiracy`, `math`,
+`mathiew`, and `science` were authored recently enough that their `build.mjs` was already in sync with everything
+above as of this writing.
+
+Before running `npm run build` on any of these pages, `git diff --stat` (or a full diff) the result against the
+previously committed `index.html` and confirm you're not losing lines you don't recognize — don't assume success.
+If a rebuild does drop a patch that isn't back-ported into that page's `build.mjs`, re-run the matching repo-wide
+script afterward (e.g. `python3 add_lightbox_zoom.py`) rather than hand-editing the generated HTML.
+
 ## Site structure conventions
 
 Within a given subdomain directory:

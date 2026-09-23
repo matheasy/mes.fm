@@ -437,6 +437,16 @@ ${leadingHtml}
     day: "numeric",
   });
 
+  // NOTE: the lightbox-zoom CSS/JS (LIGHTBOX-ZOOM-INSERTED) and the deferred-
+  // AdSense loader (ADSENSE-DEFERRED) below are manually kept in sync with
+  // add_lightbox_zoom.py and optimize_pagespeed.py's transform_adsense_defer,
+  // and the brand-blue accent below matches optimize_pagespeed.py's
+  // transform_contrast (#277bb6/#346689). Those repo-wide scripts patch
+  // generated index.html files directly and never touch build.mjs sources,
+  // so `npm run build` would otherwise silently regress this page back to
+  // unzoomed images, synchronous AdSense, and under-contrast blue. If any of
+  // those scripts' templates change, update the matching block here too.
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -824,7 +834,7 @@ ${leadingHtml}
     }
 
     .post-body blockquote {
-      border-left: 3px solid #5ea9dd;
+      border-left: 3px solid #277bb6;
       margin: 1em 0;
       padding: 0.2em 1em;
       opacity: 0.9;
@@ -1000,8 +1010,90 @@ ${leadingHtml}
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
 }
+    /* LIGHTBOX-ZOOM-INSERTED */
+    .lightbox-zoom-controls {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 2147483647;
+    }
+
+    .lightbox-zoom-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+      font-size: 1.2em;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-zoom-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .lightbox-zoom-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .lightbox-zoom-level {
+      min-width: 3.4em;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      padding: 5px 8px;
+      border-radius: 999px;
+    }
+
+    #lightboxImage {
+      transition: transform 0.15s ease;
+    }
+
+    #lightboxImage.zoomed {
+      cursor: grab;
+    }
+
+    #lightboxImage.dragging {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
+    }
 </style>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369" crossorigin="anonymous"></script>
+  <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
 </head>
 <body class="dark">
   <nav class="toc-sidebar" aria-label="Table of contents">
@@ -1057,6 +1149,11 @@ ${articleBodyHtml}
   </div>
 
   <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="lightbox-zoom-controls" id="lightboxZoomControls">
+      <button class="lightbox-zoom-btn" id="lightboxZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+      <span class="lightbox-zoom-level" id="lightboxZoomLevel">100%</span>
+      <button class="lightbox-zoom-btn" id="lightboxZoomIn" type="button" aria-label="Zoom in">+</button>
+    </div>
     <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
     <img class="lightbox-image" id="lightboxImage" src="" alt="">
     <div class="lightbox-controls" id="lightboxControls">
@@ -1421,7 +1518,108 @@ ${articleBodyHtml}
     })();
   </script>
 
-<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+<script>
+    // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the existing
+    // image lightbox. Purely additive -- it only touches the #lightboxZoom*
+    // elements it creates itself, resetting whenever #lightboxImage's src
+    // or #lightboxOverlay's open state changes, so it works the same
+    // regardless of how this page's own lightbox open/prev/next logic runs.
+    (function () {
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var zoomOutBtn = document.getElementById('lightboxZoomOut');
+      var zoomInBtn = document.getElementById('lightboxZoomIn');
+      var zoomLevelEl = document.getElementById('lightboxZoomLevel');
+      if (!overlay || !imageEl || !zoomOutBtn || !zoomInBtn || !zoomLevelEl) return;
+
+      var ZOOM_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+      var zoomIndex = 0;
+      var panX = 0, panY = 0;
+      var dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+      function applyTransform() {
+        imageEl.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + ZOOM_STEPS[zoomIndex] + ')';
+        imageEl.classList.toggle('zoomed', zoomIndex > 0);
+        zoomLevelEl.textContent = Math.round(ZOOM_STEPS[zoomIndex] * 100) + '%';
+        zoomOutBtn.disabled = zoomIndex === 0;
+        zoomInBtn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
+      }
+
+      function zoomTo(index) {
+        zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index));
+        if (zoomIndex === 0) { panX = 0; panY = 0; }
+        applyTransform();
+      }
+
+      function resetZoom() {
+        dragging = false;
+        imageEl.classList.remove('dragging');
+        zoomTo(0);
+      }
+
+      zoomOutBtn.addEventListener('click', function () { zoomTo(zoomIndex - 1); });
+      zoomInBtn.addEventListener('click', function () { zoomTo(zoomIndex + 1); });
+
+      imageEl.addEventListener('dblclick', function () {
+        zoomTo(zoomIndex > 0 ? 0 : 2);
+      });
+
+      imageEl.addEventListener('mousedown', function (e) {
+        if (zoomIndex === 0) return;
+        dragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        panStartX = panX;
+        panStartY = panY;
+        imageEl.classList.add('dragging');
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        panX = panStartX + (e.clientX - dragStartX);
+        panY = panStartY + (e.clientY - dragStartY);
+        applyTransform();
+      });
+
+      window.addEventListener('mouseup', function () {
+        if (!dragging) return;
+        dragging = false;
+        imageEl.classList.remove('dragging');
+      });
+
+      imageEl.addEventListener('touchstart', function (e) {
+        if (zoomIndex === 0 || e.touches.length !== 1) return;
+        dragging = true;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        panStartX = panX;
+        panStartY = panY;
+      }, { passive: true });
+
+      imageEl.addEventListener('touchmove', function (e) {
+        if (!dragging || e.touches.length !== 1) return;
+        panX = panStartX + (e.touches[0].clientX - dragStartX);
+        panY = panStartY + (e.touches[0].clientY - dragStartY);
+        applyTransform();
+      }, { passive: true });
+
+      imageEl.addEventListener('touchend', function () { dragging = false; });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === '+' || e.key === '=') zoomTo(zoomIndex + 1);
+        else if (e.key === '-' || e.key === '_') zoomTo(zoomIndex - 1);
+      });
+
+      new MutationObserver(resetZoom).observe(imageEl, { attributes: true, attributeFilter: ['src'] });
+      new MutationObserver(function () {
+        if (overlay.classList.contains('open')) resetZoom();
+      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+
+      applyTransform();
+    })();
+  </script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
 </html>
 `;
 }

@@ -121,6 +121,14 @@ function buildPage(post) {
     (b) => `<span class="badge">${escapeHtml(b)}</span>`
   ).join(" ");
 
+  // WARNING: this template has neither the image lightbox (open/close +
+  // zoom/pan, added directly to index.html by add_image_lightbox.py /
+  // add_lightbox_zoom.py) nor any AdSense loader -- both live only in the
+  // committed index.html, never back-ported here. Running `npm run build`
+  // will silently DROP both features from this page -- diff the rebuilt
+  // index.html against the previously committed version (or re-run the
+  // relevant repo-wide scripts afterward) before committing a rebuild.
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -194,7 +202,7 @@ function buildPage(post) {
 
     .badge {
       display: inline-block;
-      background-color: #5ea9dd;
+      background-color: #277bb6;
       color: #ffffff;
       font-size: 0.75em;
       font-weight: bold;
@@ -249,7 +257,7 @@ function buildPage(post) {
     }
 
     .post-body blockquote {
-      border-left: 3px solid #5ea9dd;
+      border-left: 3px solid #277bb6;
       margin: 1em 0;
       padding: 0.2em 1em;
       opacity: 0.9;
