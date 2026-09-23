@@ -99,22 +99,29 @@ Several pages (currently `911`, `911-alchemy`, `conspiracy`, `djw`, `ferrocell-s
 `hutchison-tom-sky`, `math`, `mathiew`, `norman-patricia-ai-email`, `science`, `vector-functions-problems-plus`, all
 under `mes.fm/`) have their own `build.mjs` (`npm run build`, usually fetching a Hive post) that regenerates
 `index.html` from scratch. The repo-wide scripts above (`add_lightbox_zoom.py`, `add_image_lightbox.py`, and several
-`optimize_pagespeed.py` transforms — the deferred-AdSense loader, the WCAG brand-blue darkening) patch the
-*generated* `index.html` directly; they don't know `build.mjs` exists, so those patches never land back in the
-template. **Running `npm run build` regenerates index.html purely from build.mjs and silently reverts any patch that
-only ever lived in the generated HTML** — this has already happened for real more than once (e.g. commit `cb410eb1`
-had to re-apply a dropped PageSpeed pass to `mes.fm/911`, and `mes.fm/911`'s lightbox-zoom feature was silently lost
-the day after it shipped, by the very next Hive-mirror rebuild, and stayed lost for a week before anyone noticed).
+`optimize_pagespeed.py` transforms — the deferred-AdSense loader, the WCAG brand-blue darkening, and the `<img>`
+lazy-loading pass) patch the *generated* `index.html` directly; they don't know `build.mjs` exists, so those patches
+never land back in the template. **Running `npm run build` regenerates index.html purely from build.mjs and
+silently reverts any patch that only ever lived in the generated HTML** — this has already happened for real more
+than once (e.g. commit `cb410eb1` had to re-apply a dropped PageSpeed pass to `mes.fm/911`, and `mes.fm/911`'s
+lightbox-zoom feature was silently lost the day after it shipped, by the very next Hive-mirror rebuild, and stayed
+lost for a week before anyone noticed).
 
-As of this writing, `911`, `ferrocell-specular-reflection`, `hutchison-tom-sky`, `hutchison`,
-`norman-patricia-ai-email`, and `vector-functions-problems-plus` have the lightbox-zoom CSS/JS, the deferred-AdSense
-loader, and the darkened brand-blue back-ported directly into their `build.mjs` (each carries a `NOTE:` comment
-right above its `return \`<!DOCTYPE html>` explaining this — keep it in sync if you change the source script's
-template). `911-alchemy` has the AdSense loader back-ported but has **no lightbox markup at all** in `build.mjs`
-(added straight to `index.html` by `add_image_lightbox.py`/`add_lightbox_zoom.py`); `djw` has **neither** the
-lightbox nor any AdSense loader in `build.mjs`. Both carry a `WARNING:` comment instead. `conspiracy`, `math`,
-`mathiew`, and `science` were authored recently enough that their `build.mjs` was already in sync with everything
-above as of this writing.
+As of this writing, `911`, `911-alchemy`, `djw`, `ferrocell-specular-reflection`, `hutchison-tom-sky`, `hutchison`,
+`norman-patricia-ai-email`, and `vector-functions-problems-plus` all have `addImageLazyLoading()` back-ported into
+`build.mjs`, applied to the whole generated page right before `writeFileSync` — it's a line-for-line JS port of
+`optimize_pagespeed.py`'s `transform_images` lazy-loading rule (skip the first non-`data:` image on the page so LCP
+isn't hurt, lazy-load every other `<img>` whose `src` is an `http(s)` URL not on `mes.fm`), verified by round-
+tripping each page's committed `index.html` (strip `loading="lazy"` back out, rerun the new function, diff against
+the original — all reproduce exactly). `911`, `ferrocell-specular-reflection`, `hutchison-tom-sky`, `hutchison`,
+`norman-patricia-ai-email`, and `vector-functions-problems-plus` additionally have the lightbox-zoom CSS/JS and the
+darkened brand-blue back-ported (each carries a `NOTE:` comment right above its `return \`<!DOCTYPE html>`
+explaining this — keep it in sync if you change a source script's template). `911-alchemy` has **no lightbox markup
+at all** in `build.mjs` (added straight to `index.html` by `add_image_lightbox.py`/`add_lightbox_zoom.py`); `djw`
+has neither the lightbox nor a color scheme that needs the contrast fix. Both carry a `WARNING:` comment about the
+still-missing lightbox. `conspiracy`, `math`, `mathiew`, and `science` were authored recently enough that their
+`build.mjs` was already in sync with the lightbox/AdSense/contrast patches as of this writing (no lazy-loading gap
+either, so they were untouched by that pass too).
 
 Before running `npm run build` on any of these pages, `git diff --stat` (or a full diff) the result against the
 previously committed `index.html` and confirm you're not losing lines you don't recognize — don't assume success.
