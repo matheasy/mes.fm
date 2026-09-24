@@ -1,0 +1,12 @@
+{
+  "name": "mes-vector-functions-problems-plus-post-builder",
+  "private": true,
+  "description": "Build-time generator for mes.fm/vector-functions-problems-plus — fetches a Hive post via the bridge API and writes static index.html. Not deployed; run manually before committing.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "marked": "^15.0.0"
+  }
+}

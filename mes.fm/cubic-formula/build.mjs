@@ -1,26 +1,643 @@
-<!DOCTYPE html>
+// Build-time generator for mes.fm/cubic-formula and its 8 supporting video pages.
+//
+// Fetches @mes/dzekfnxh ("Cubic Formula Proof") from Hive's public bridge API and
+// writes a static index.html, then does the same for each of the 8 sibling
+// video posts in CHILDREN below, writing one mes.fm/<slug>/index.html each
+// (video + description + timestamps, plus the matching section of the main
+// article's written notes, mirrored in). This is NOT run by Vercel -- run it
+// manually (`npm run build`) whenever a Hive article changes, then commit the
+// generated pages.
+//
+// Same architecture as mes.fm/vector-functions-problems-plus/build.mjs (which
+// this was cloned from), except that one also relies on hand-built sibling
+// pages; here the siblings are generated too, from child-template.html (cut
+// from mes.fm/problems-plus-4-curvature-parametric-integrals):
+//   * bare 3Speak / YouTube URLs become Theater-Mode video embeds (3Speak plays
+//     its HLS manifest directly via hls.js, resolved at build time).
+//   * every top-level "# " heading becomes a collapsible chapter with a
+//     "Collapse All" toolbar and a "Jump to" table of contents.
+//   * a Playlist chapter (Grid View / List View) of the sibling video pages.
+//
+// Usage:
+//   npm install
+//   npm run build
+
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { marked } from "marked";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Committed cache of scraped Playlist card data (see resolvePlaylistMeta). Kept
+// in git so a later build still has thumbnails/links even if a target page is
+// briefly unreachable.
+const PLAYLIST_CACHE_PATH = join(__dirname, "playlist-meta.json");
+
+const AUTHOR = "mes";
+const PERMLINK = "dzekfnxh";
+const COMMUNITY = "hive-128780";
+const PEAKD_URL = `https://peakd.com/${COMMUNITY}/@${AUTHOR}/${PERMLINK}`;
+const CANONICAL = "https://mes.fm/cubic-formula";
+const BACK_LINK = "https://mes.fm/links";
+const YT_PLAYLIST = "https://www.youtube.com/playlist?list=PLai3U8-WIK0EF05ExjzLbB64NgUjoV1hl";
+
+// Guard against pointing PERMLINK at the wrong article. MES's Hive posts link
+// back to their own mes.fm page (e.g. "[Notes](https://mes.fm/<slug>)"), so if
+// the fetched article's body never mentions this page's CANONICAL url, PERMLINK
+// and CANONICAL have most likely drifted apart -- warn loudly. Set
+// ALLOW_SLUG_MISMATCH=1 to build anyway (e.g. a brand-new post that doesn't
+// self-reference yet).
+function checkSlugMatch(post) {
+  const slug = CANONICAL.replace(/^https?:\/\//, "");
+  const ok = post.body.includes(CANONICAL) || post.body.includes(slug);
+  console.log(
+    `Slug check: @${AUTHOR}/${PERMLINK} "${post.title}" -> ${CANONICAL} ${
+      ok ? "(OK — article self-references this page)" : "(NO self-reference found)"
+    }`
+  );
+  if (!ok && process.env.ALLOW_SLUG_MISMATCH !== "1") {
+    throw new Error(
+      `\n\n  ⚠  SLUG MISMATCH\n` +
+        `  The article @${AUTHOR}/${PERMLINK} ("${post.title}")\n` +
+        `  does not link back to ${CANONICAL} anywhere in its body.\n` +
+        `  PERMLINK and CANONICAL are probably out of sync -- double-check the Hive URL.\n` +
+        `  Re-run with ALLOW_SLUG_MISMATCH=1 to build anyway.\n`
+    );
+  }
+}
+
+async function hiveCall(method, params) {
+  const res = await fetch("https://api.hive.blog", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
+  });
+  if (!res.ok) throw new Error(`Hive API request failed: HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(`Hive API error: ${JSON.stringify(data.error)}`);
+  return data.result;
+}
+
+async function fetchPost() {
+  const result = await hiveCall("bridge.get_post", { author: AUTHOR, permlink: PERMLINK });
+  if (!result || !result.body) {
+    throw new Error("Hive API returned no post — check author/permlink.");
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Playlist section -- Grid/List toggle of the 8 sibling video pages (see
+// CHILDREN below, which is what generates them). Scrapes each page's own
+// og:title/og:image plus its "Watch on:" source-list row (3Speak, YouTube,
+// Telegram, BitChute, Odysee, Rumble -- whichever it actually links) so the
+// List view can show every platform link that page itself has. Until a page is
+// deployed the live scrape 404s, so buildChildPage()'s own metadata seeds the
+// cache (see resolvePlaylistMeta's `seed`).
+// ---------------------------------------------------------------------------
+
+const PLAYLIST = [
+  { href: "https://mes.fm/quadratic-formula-complete-square" },
+  { href: "https://mes.fm/quadratic-formula-pq-substitution" },
+  { href: "https://mes.fm/cubic-formula-step-1-pq-substitution" },
+  { href: "https://mes.fm/cubic-formula-step-2-vieta-substitution" },
+  { href: "https://mes.fm/cubic-formula-step-3-first-solution-y" },
+  { href: "https://mes.fm/cube-root-unity" },
+  { href: "https://mes.fm/cubic-formula-step-4-solutions-y-cube-root-unity" },
+  { href: "https://mes.fm/cubic-formula-step-5-solve-x" },
+];
+
+function loadPlaylistCache() {
+  if (!existsSync(PLAYLIST_CACHE_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(PLAYLIST_CACHE_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function savePlaylistCache(cache) {
+  const sorted = Object.fromEntries(
+    Object.keys(cache).sort().map((k) => [k, cache[k]])
+  );
+  writeFileSync(PLAYLIST_CACHE_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
+}
+
+function decodePlaylistEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&rsquo;/g, "’")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function readPlaylistMetaTag(html, prop) {
+  const p = prop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const m = html.match(new RegExp(`<meta[^>]+property=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"));
+  return m ? decodePlaylistEntities(m[3]).trim() : "";
+}
+
+// Pull every {label, href} pair out of the page's own `<li>Watch on: <a...>3Speak</a>
+// &middot; <a...>YouTube</a> ...</li>` source-list row -- whatever platforms that
+// specific page actually links to.
+function readWatchOnLinks(html) {
+  const m = html.match(/<li>\s*Watch on:([\s\S]*?)<\/li>/i);
+  if (!m) return [];
+  const linkRe = /<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
+  const links = [];
+  let lm;
+  while ((lm = linkRe.exec(m[1]))) {
+    links.push({ label: decodePlaylistEntities(lm[2]).trim(), href: lm[1] });
+  }
+  return links;
+}
+
+async function fetchPlaylistMeta(url) {
+  const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+  return {
+    title: readPlaylistMetaTag(html, "og:title"),
+    image: readPlaylistMetaTag(html, "og:image"),
+    watchLinks: readWatchOnLinks(html),
+  };
+}
+
+async function resolvePlaylistMeta(entries, seed = {}, concurrency = 6) {
+  const cache = loadPlaylistCache();
+  // Freshly generated child pages aren't deployed yet, so the live scrape below
+  // 404s for them -- start from their own just-built metadata instead. A
+  // successful live scrape (once deployed) overwrites the seed.
+  for (const [url, m] of Object.entries(seed)) cache[url] = m;
+  const urls = entries.map((e) => e.href);
+  let i = 0;
+  async function worker() {
+    while (i < urls.length) {
+      const url = urls[i++];
+      try {
+        cache[url] = await fetchPlaylistMeta(url);
+        console.log(`  playlist meta ok:   ${url}`);
+      } catch (err) {
+        console.warn(`  playlist meta FAIL: ${url} (${err.message}) — using cached value`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  savePlaylistCache(cache);
+  return cache;
+}
+
+function cssSafeUrl(url) {
+  return String(url).split("'").join("%27");
+}
+
+// Renders the Playlist chapter's Grid View (thumbnail cards, default) and List
+// View (title + full thumbnail + row of every platform link that page has).
+function buildPlaylistSection(meta) {
+  const cards = PLAYLIST.map((entry) => {
+    const m = meta[entry.href] || {};
+    const title = m.title || entry.href;
+    const thumbStyle = m.image
+      ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"`
+      : "";
+    return `<a class="link-card" href="${escapeHtml(entry.href)}">
+  <span class="link-card-thumb"${thumbStyle}></span>
+  <span class="link-card-body">
+    <span class="link-card-title">${escapeHtml(title)}</span>
+    <span class="link-card-readmore">Watch &rarr;</span>
+  </span>
+</a>`;
+  }).join("\n");
+
+  // Watch-on links are sorted to this canonical platform order (whichever the
+  // page actually has); anything scraped that isn't in this list (an "etc.")
+  // is kept, appended after the recognized ones in its original order.
+  const PLATFORM_ORDER = ["3Speak", "YouTube", "Telegram", "BitChute", "Odysee", "Rumble"];
+  function sortWatchLinks(links) {
+    const known = PLATFORM_ORDER
+      .map((label) => links.find((l) => l.label === label))
+      .filter(Boolean);
+    const rest = links.filter((l) => !PLATFORM_ORDER.includes(l.label));
+    return [...known, ...rest];
+  }
+
+  const rows = PLAYLIST.map((entry) => {
+    const m = meta[entry.href] || {};
+    const title = m.title || entry.href;
+    const allLinks = [{ label: "Notes", href: entry.href }, ...sortWatchLinks(m.watchLinks || [])];
+    const linksHtml = allLinks
+      .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
+      .join(" - ");
+    const imgHtml = m.image
+      ? `<img class="playlist-row-thumb" src="${escapeHtml(m.image)}" alt="">`
+      : "";
+    return `<h2>${escapeHtml(title)}</h2>
+<p>${linksHtml}</p>
+${imgHtml}`;
+  }).join("\n");
+
+  return `<div class="view-toggle">
+  <button type="button" class="view-toggle-btn active" id="playlistGridBtn">Grid View</button>
+  <button type="button" class="view-toggle-btn" id="playlistListBtn">List View</button>
+</div>
+<div class="card-grid" id="playlistGrid">
+${cards}
+</div>
+<div class="playlist-list-view view-hidden" id="playlistList">
+${rows}
+</div>`;
+}
+
+// Lazy-load remote post images (mirrors optimize_pagespeed.py's transform_images
+// lazy-loading pass, part 5, applied to the whole generated page here so a
+// rebuild doesn't silently undo it): every <img> whose src is a non-mes.fm
+// http(s) URL gets loading="lazy", except the first "real" (non-data:) image
+// on the page, which stays eager so it doesn't delay LCP.
+const IMG_TAG_RE = /<img\b[^>]*?\/?>/gi;
+
+function imgAttr(tag, name) {
+  const m = tag.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, "i"));
+  return m ? m[1] : null;
+}
+
+function addImageLazyLoading(html) {
+  const imgs = [...html.matchAll(IMG_TAG_RE)];
+  if (imgs.length === 0) return html;
+
+  let firstReal = -1;
+  for (let idx = 0; idx < imgs.length; idx++) {
+    const s = imgAttr(imgs[idx][0], "src");
+    if (s && !s.trim().startsWith("data:")) {
+      firstReal = idx;
+      break;
+    }
+  }
+
+  let out = "";
+  let last = 0;
+  imgs.forEach((m, idx) => {
+    const tag = m[0];
+    let newTag = tag;
+    const src = imgAttr(tag, "src");
+    if (
+      src &&
+      idx !== firstReal &&
+      /^https?:\/\//i.test(src.trim()) &&
+      !src.includes("mes.fm") &&
+      !/\bloading\s*=/i.test(tag)
+    ) {
+      newTag = tag.replace(/^<img\b/i, '<img loading="lazy"');
+    }
+    out += html.slice(last, m.index) + newTag;
+    last = m.index + tag.length;
+  });
+  out += html.slice(last);
+  return out;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function formatDate(isoString) {
+  return new Date(isoString + "Z").toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function ipfsToGateway(uri) {
+  if (!uri) return null;
+  if (uri.startsWith("ipfs://")) {
+    return `https://ipfs-3speak.b-cdn.net/ipfs/${uri.slice("ipfs://".length)}`;
+  }
+  return uri;
+}
+
+// A bare 3Speak URL resolves to its direct HLS manifest so we can play it in a
+// plain <video> (native speed/quality/PiP controls) instead of iframing 3speak.tv.
+// Try 3Speak's public embed API first; if that 404s (older permlinks aren't all
+// indexed), fall back to the 3Speak video's own Hive post metadata, which carries
+// the IPFS manifest hash. Re-encodes / re-uploads keep the permlink, so re-running
+// this build picks them up.
+async function resolve3Speak(owner, permlink) {
+  try {
+    const res = await fetch(`https://play.3speak.tv/api/embed?v=${owner}/${permlink}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.videoUrl) {
+        return { src: data.videoUrl, poster: data.thumbnail || null };
+      }
+    }
+  } catch {
+    /* fall through to Hive metadata */
+  }
+
+  try {
+    const post = await hiveCall("condenser_api.get_content", [owner, permlink]);
+    const meta = JSON.parse(post.json_metadata || "{}");
+    const info = (meta.video && meta.video.info) || {};
+    const sourceMap = info.sourceMap || [];
+    const manifest =
+      info.video_v2 ||
+      (sourceMap.find((s) => s.type === "video" && s.format === "m3u8") || {}).url ||
+      null;
+    const thumb = (sourceMap.find((s) => s.type === "thumbnail") || {}).url;
+    const poster =
+      (Array.isArray(meta.image) && meta.image[0]) || ipfsToGateway(thumb) || null;
+
+    if (manifest && manifest.startsWith("ipfs://")) {
+      const gateway = ipfsToGateway(manifest);
+      return {
+        src: `https://play.3speak.tv/hls?u=${encodeURIComponent(gateway)}`,
+        poster,
+      };
+    }
+    if (manifest) return { src: manifest, poster };
+  } catch {
+    /* best effort */
+  }
+
+  return { src: null, poster: null };
+}
+
+// Bare 3Speak URLs on their own line (PeakD renders these as an embedded player).
+// Each becomes a <video> with a unique id; the {id, src} pairs get wired up by a
+// script block once hls.js has loaded. Anchored to a whole line (^...$) so it
+// only touches standalone embeds, never the same URL inside a "[3Speak](...)"
+// link in a link row.
+async function embed3SpeakLinks(markdown) {
+  const pattern =
+    /^[ \t]*https?:\/\/(?:play\.)?3speak\.tv\/(?:watch|embed)\?v=([\w.-]+)\/([\w.-]+)[ \t]*$/gm;
+  const matches = [...markdown.matchAll(pattern)];
+  const resolved = [];
+  const videos = [];
+
+  for (let i = 0; i < matches.length; i++) {
+    const [, owner, permlink] = matches[i];
+    const id = `speak-video-${i + 1}`;
+    const { src, poster } = await resolve3Speak(owner, permlink);
+    resolved.push({ id, owner, permlink, poster });
+    videos.push({ id, src });
+  }
+
+  let idx = 0;
+  const html = markdown.replace(pattern, () => {
+    const { id, owner, permlink, poster } = resolved[idx++];
+    const posterAttr = poster ? ` poster="${escapeHtml(poster)}"` : "";
+    return (
+      `<div class="video-embed" google-side-rail-overlap="false">` +
+      `<video id="${id}" controls playsinline preload="metadata"${posterAttr}></video>` +
+      `<button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button>` +
+      `<a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &nearr;</a>` +
+      `</div>`
+    );
+  });
+
+  return { markdown: html, videos };
+}
+
+// Bare YouTube URLs on their own line become a responsive iframe embed, with the
+// same Theater Mode toggle + badge as the 3Speak embeds above.
+function embedYoutubeLinks(markdown) {
+  return markdown.replace(
+    /^[ \t]*(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)\S*[ \t]*$/gm,
+    (_match, videoId) =>
+      `<div class="video-embed" google-side-rail-overlap="false">` +
+      `<iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>` +
+      `<button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button>` +
+      `<a class="video-badge" href="https://youtu.be/${videoId}" target="_blank" rel="noopener">View on YouTube &nearr;</a>` +
+      `</div>`
+  );
+}
+
+// Give every chapter heading an id and collect a {id, label} list so the
+// table-of-contents can link to it. Chapter headings are every top-level "# "
+// heading (rendered as <h1> by marked) plus any centered "## <center>..." one
+// (MES uses a centered h2 for a few section headers, e.g. "Links and Calculus
+// Book Chapter") -- those get promoted to <h1> first so wrapChaptersInToggles
+// picks them up too. Duplicate slugs/labels get a "(2)"-style suffix.
+function addSectionAnchors(bodyHtml) {
+  const seen = new Map();
+  const toc = [];
+  const promoted = bodyHtml.replace(
+    /<h2><center>([\s\S]*?)<\/center><\/h2>/g,
+    "<h1><center>$1</center></h1>"
+  );
+  const html = promoted.replace(/<h1>([\s\S]*?)<\/h1>/g, (match, inner) => {
+    const plain = inner
+      .replace(/<[^>]+>/g, "")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, "&")
+      .trim();
+    const slug =
+      plain
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "section";
+    const occurrence = (seen.get(slug) || 0) + 1;
+    seen.set(slug, occurrence);
+    const id = occurrence === 1 ? slug : `${slug}-${occurrence}`;
+    const label = occurrence === 1 ? plain : `${plain} (${occurrence})`;
+    toc.push({ id, label });
+    return `<h1 id="${id}">${inner}</h1>`;
+  });
+  return { html, toc };
+}
+
+// Same id scheme as addSectionAnchors, exported as a function so the child pages
+// can deep-link into the written notes ("#step-1-get-rid-of-x2-term-...").
+function headingSlug(innerHtml) {
+  const plain = innerHtml
+    .replace(/<[^>]+>/g, "")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .trim();
+  return (
+    plain
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "section"
+  );
+}
+
+// The "Step N: ..." notes sections are <h2>s inside the "Derivation of Cubic
+// Formula" chapter (and "Recap on the Quadratic Formula" one before it), which
+// addSectionAnchors leaves un-id'd. Give every remaining <h2> an id so
+// mes.fm/cubic-formula#step-1-... works; duplicates get a "-2" suffix.
+function addH2Anchors(html) {
+  const seen = new Map();
+  return html.replace(/<h2>([\s\S]*?)<\/h2>/g, (match, inner) => {
+    const slug = headingSlug(inner);
+    const n = (seen.get(slug) || 0) + 1;
+    seen.set(slug, n);
+    return `<h2 id="${n === 1 ? slug : `${slug}-${n}`}">${inner}</h2>`;
+  });
+}
+
+// The Hive post opens with a <center> block: a linked thumbnail of the 3Speak
+// video and the row of watch links. Rewrite it into what the shared embed
+// pipeline expects (as in the vector-functions-problems-plus post): a bare
+// 3Speak URL on its own line (-> Theater-Mode <video>) first, and the links row
+// (minus its self-referencing "Notes" link) after the description, ahead of the
+// topic image, with the YouTube playlist added.
+function restructureBody(body) {
+  const head = body.match(
+    /<center>\s*\n\s*\[!\[\]\([^)]*\)\]\((https:\/\/3speak\.tv\/watch\?v=[^)]+)\)\s*\n\s*(\[Notes\][^\n]*)\n\s*<\/center>\s*\n\s*---\s*\n/
+  );
+  if (!head) throw new Error("Unexpected Hive post header: <center> video/links block not found.");
+  const embedUrl = head[1];
+  const linksRow = head[2]
+    .replace(/^\[Notes\]\([^)]*\) - /, "")
+    .replace(" - [mes.fm/math]", ` - [Playlist](${YT_PLAYLIST}) - [mes.fm/math]`);
+  let out = body.replace(head[0], `${embedUrl}\n\n`);
+  const img = out.search(/^!\[Cubic Formula\.jpeg\]/m);
+  if (img < 0) throw new Error("Topic image not found -- cannot place the links row.");
+  return out.slice(0, img) + linksRow + "\n\n" + out.slice(img);
+}
+
+// Each chapter is preceded by its own "<hr>\n<h1 id=\"...\">" marker (added by
+// addSectionAnchors) and runs until the next one (or the end of the body). Wrap
+// each chapter's h1 + content in a chapter-toggle div so every chapter can be
+// collapsed via toggleChapter(). The leading <hr> stays outside the div as the
+// visual divider between chapters.
+function wrapChaptersInToggles(html) {
+  const re = /<hr>\n<h1 id="([^"]+)">([\s\S]*?)<\/h1>/g;
+  const matches = [...html.matchAll(re)];
+  if (matches.length === 0) return html;
+
+  let out = html.slice(0, matches[0].index);
+  matches.forEach((m, i) => {
+    const [full, id, titleInner] = m;
+    const contentStart = m.index + full.length;
+    const contentEnd = i + 1 < matches.length ? matches[i + 1].index : html.length;
+    const content = html.slice(contentStart, contentEnd);
+    // Some headings are "# <center>Title</center>" -- strip the wrapper so the
+    // chapter header doesn't end up with a nested <center>.
+    const cleanTitle = titleInner.replace(/^\s*<center>|<\/center>\s*$/g, "").trim();
+    out += `<hr>\n<div class="chapter-toggle" id="${id}">\n`;
+    out += `<h1 class="chapter-toggle-header" onclick="toggleChapter('${id}-list')"><center>${cleanTitle} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></center></h1>\n`;
+    out += `<div id="${id}-list" class="chapter-toggle-list">${content}</div>\n`;
+    out += `</div>\n`;
+  });
+  return out;
+}
+
+async function buildPage(post, playlistMeta) {
+  const title = post.title;
+  const { markdown: withVideos, videos } = await embed3SpeakLinks(post.body);
+  const preprocessed = embedYoutubeLinks(withVideos);
+  const { html: anchoredHtml, toc } = addSectionAnchors(marked.parse(preprocessed));
+  const parsedBodyHtml = addH2Anchors(anchoredHtml);
+  const wrappedBodyHtml = wrapChaptersInToggles(parsedBodyHtml);
+
+  // Everything before the first "# " heading (the video, description, "Watch on"
+  // row, timestamps, book references, topic list) becomes its own collapsible
+  // "Full Video" chapter, pinned above the article's own sections. The id stays
+  // "overview" for anchor stability even though the visible label changed.
+  toc.unshift({ id: "overview", label: "Full Video" });
+  // The Playlist chapter (Grid/List of the sibling Problems Plus pages) is a
+  // hand-maintained section, not parsed from the Hive body, so it isn't picked
+  // up by addSectionAnchors -- add it to the TOC manually, first.
+  toc.unshift({ id: "playlist", label: "Playlist" });
+  const tocLinksHtml = toc
+    .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
+    .join("\n      ");
+
+  const chaptersToolbar = `<div class="chapters-toolbar">
+<button id="toggleAllChaptersBtn" class="theme-toggle-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
+</div>
+`;
+
+  const firstChapterMatch = wrappedBodyHtml.match(/<hr>\n<div class="chapter-toggle" id="/);
+  const leadingHtml = (firstChapterMatch
+    ? wrappedBodyHtml.slice(0, firstChapterMatch.index)
+    : wrappedBodyHtml
+  ).trim();
+  const restChaptersHtml = firstChapterMatch
+    ? wrappedBodyHtml.slice(firstChapterMatch.index + "<hr>\n".length)
+    : "";
+
+  const playlistChapter = `<div class="chapter-toggle" id="playlist">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('playlist-list')"><center>Playlist <span id="arrowIcon-playlist-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="playlist-list" class="chapter-toggle-list">
+${buildPlaylistSection(playlistMeta)}
+</div>
+</div>
+<hr>
+`;
+
+  const overviewChapter = `<div class="chapter-toggle" id="overview">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Full Video <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="overview-list" class="chapter-toggle-list">
+${leadingHtml}
+</div>
+</div>
+<hr>
+`;
+
+  const bodyHtml = chaptersToolbar + playlistChapter + overviewChapter + restChaptersHtml;
+
+  const publishedDate = formatDate(post.created);
+  const voteCount = post.stats?.total_votes ?? 0;
+  const commentCount = post.children ?? 0;
+  const reblogCount = post.reblogs ?? 0;
+  const buildDate = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const description =
+    (post.json_metadata && post.json_metadata.description) ||
+    "A complete video derivation of the cubic formula, with written notes for every step: the PQ substitution, Vieta's substitution, the cube root of unity and the final three solutions. Mirrored from the Hive blockchain.";
+  const ogImage =
+    (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
+    ((String(bodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
+    "";
+  const ogImageTag = ogImage ? `\n  <meta property="og:image" content="${escapeHtml(ogImage)}">` : "";
+  const twitterImageTag = ogImage ? `\n  <meta name="twitter:image" content="${escapeHtml(ogImage)}">` : "";
+
+  // NOTE: the lightbox-zoom CSS/JS (LIGHTBOX-ZOOM-INSERTED) and the deferred-
+  // AdSense loader (ADSENSE-DEFERRED) below are manually kept in sync with
+  // add_lightbox_zoom.py and optimize_pagespeed.py's transform_adsense_defer,
+  // and the brand-blue accent below matches optimize_pagespeed.py's
+  // transform_contrast (#277bb6/#346689). Those repo-wide scripts patch
+  // generated index.html files directly and never touch build.mjs sources,
+  // so `npm run build` would otherwise silently regress this page back to
+  // unzoomed images, synchronous AdSense, and under-contrast blue. If any of
+  // those scripts' templates change, update the matching block here too.
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A complete video derivation of the cubic formula, with written notes for every step: the PQ substitution, Vieta's substitution, the cube root of unity and the final three solutions. Mirrored from the Hive blockchain.">
+  <meta name="description" content="${escapeHtml(description)}">
   <meta name="author" content="MES">
-  <link rel="canonical" href="https://mes.fm/cubic-formula" />
+  <link rel="canonical" href="${CANONICAL}" />
   <!-- OG-TAGS:START -->
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="MES Truth">
-  <meta property="og:url" content="https://mes.fm/cubic-formula">
-  <meta property="og:title" content="Cubic Formula Proof">
-  <meta property="og:description" content="A complete video derivation of the cubic formula, with written notes for every step: the PQ substitution, Vieta's substitution, the cube root of unity and the final three solutions. Mirrored from the Hive blockchain.">
-  <meta property="og:image" content="https://files.peakd.com/file/peakd-hive/mes/23uFwDc96yyuPh1DLzT52FT2d4N56Tx9vJFcgbwkKc95YDGv4Q57zTfdu6vNUNCss5YRi.jpeg">
+  <meta property="og:url" content="${CANONICAL}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">${ogImageTag}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@MathEasySolns">
-  <meta name="twitter:title" content="Cubic Formula Proof">
-  <meta name="twitter:description" content="A complete video derivation of the cubic formula, with written notes for every step: the PQ substitution, Vieta's substitution, the cube root of unity and the final three solutions. Mirrored from the Hive blockchain.">
-  <meta name="twitter:image" content="https://files.peakd.com/file/peakd-hive/mes/23uFwDc96yyuPh1DLzT52FT2d4N56Tx9vJFcgbwkKc95YDGv4Q57zTfdu6vNUNCss5YRi.jpeg">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">${twitterImageTag}
   <!-- OG-TAGS:END -->
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
-  <title>Cubic Formula Proof | Math Easy Solutions</title>
+  <title>${escapeHtml(title)} | Math Easy Solutions</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -166,7 +783,7 @@
     }
 
     .post-meta span:not(:last-child)::after {
-      content: " \00b7 ";
+      content: " \\00b7 ";
     }
 
     .peakd-link {
@@ -891,10 +1508,7 @@
       <div class="toc-title">Jump to</div>
       <button type="button" class="toc-collapse-all-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
     </div>
-      <a href="#playlist">Playlist</a>
-      <a href="#overview">Full Video</a>
-      <a href="#cubic-formula">Cubic Formula</a>
-      <a href="#derivation-of-cubic-formula">Derivation of Cubic Formula</a>
+      ${tocLinksHtml}
   </nav>
   <div class="container">
     <div class="top-bar">
@@ -966,267 +1580,35 @@
       </ul>
     </div>
 
-    <h1>Cubic Formula Proof</h1>
+    <h1>${escapeHtml(title)}</h1>
     <div class="post-meta">
-      <span>By mes</span>
-      <span>January 23, 2025</span>
-      <span>86 votes</span>
-      <span>12 comments</span>
-      <span>2 reblogs</span>
+      <span>By ${escapeHtml(AUTHOR)}</span>
+      <span>${escapeHtml(publishedDate)}</span>
+      <span>${voteCount} votes</span>
+      <span>${commentCount} comments</span>
+      <span>${reblogCount} reblogs</span>
     </div>
-    <a class="peakd-link" href="https://peakd.com/hive-128780/@mes/dzekfnxh" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
+    <a class="peakd-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
 
     <details class="toc-mobile">
       <summary>Jump to section</summary>
       <nav class="toc-links" aria-label="Table of contents">
-        <a href="#playlist">Playlist</a>
-      <a href="#overview">Full Video</a>
-      <a href="#cubic-formula">Cubic Formula</a>
-      <a href="#derivation-of-cubic-formula">Derivation of Cubic Formula</a>
+        ${tocLinksHtml}
       </nav>
     </details>
 
     <hr>
 
     <div class="post-body">
-<div class="chapters-toolbar">
-<button id="toggleAllChaptersBtn" class="theme-toggle-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
-</div>
-<div class="chapter-toggle" id="playlist">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('playlist-list')"><center>Playlist <span id="arrowIcon-playlist-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="playlist-list" class="chapter-toggle-list">
-<div class="view-toggle">
-  <button type="button" class="view-toggle-btn active" id="playlistGridBtn">Grid View</button>
-  <button type="button" class="view-toggle-btn" id="playlistListBtn">List View</button>
-</div>
-<div class="card-grid" id="playlistGrid">
-<a class="link-card" href="https://mes.fm/quadratic-formula-complete-square">
-  <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tw7oNjTynsjyB9SdiLehjfFwEkux8jHYJjqQmtwmehTssKNx5nr1gDz6Jh6E72fNBpG.jpeg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Quadratic Formula by Completing the Square</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/quadratic-formula-pq-substitution">
-  <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uFufP6nksz2a2iygadN3BmoezK1kWzZeTS3ti4xW4LZrXPgYoh3JgmDnUdCPCxH1xoS.jpeg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Quadratic Formula by the PQ Substitution Method</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/cubic-formula-step-1-pq-substitution">
-  <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tSz3RGZTbka19WdmrCffEfxwHod45guRFjhAKtyCFKTpefkHu9o7Nx3gcbuZtPSU8kw.jpeg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Cubic Formula Proof Step 1: Removing x^2 term via PQ Substitution</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/cubic-formula-step-2-vieta-substitution">
-  <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tHbFNg2UMd2QY1DvYQL83JRCTLnUym2azn2EUn5M1fy9ux5PayKtSUAAgxc5PQ3sUbL.jpeg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Cubic Formula Proof Step 2: Applying Vieta's Substitution to Obtain a Quadratic Equation</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/cubic-formula-step-3-first-solution-y">
-  <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tmmEVQaCP7jQ9Q4DmfD2Gi2r8GDA5LUPrn4BsG86Zqr4TdDxDspJ7WBi5812QJoW1z8.jpeg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Cubic Formula Proof Step 3: First Solution of y</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/cube-root-unity">
-  <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tHbP3h3Xf1uaQtH4cpEFxJW6GnwYDbFFgjhyGStEyPzqVxFYJw15DjKRGiQXWVncE6s.jpeg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Square Root of Unity, Cube Root of Unity, and Complex Rotations</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/cubic-formula-step-4-solutions-y-cube-root-unity">
-  <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23t8Cig7Y9x8WbSHEadEVuqsopCiBd46isoyZFAFE2TQkGBgxCyXgQpnWmSiP6rX6gqt2.jpeg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Cubic Formula Proof Step 4: Other Solutions of y using the Cube Root of Unity</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/cubic-formula-step-5-solve-x">
-  <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23t8Cig7Y9x8WbP9WUq6ajPgmxxGAe7BhZxZVj51QqmgAcAQMXgddRk9GSUHG1oDyxkzb.jpeg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Cubic Formula Proof Step 5: Putting it All Together to Solve for x</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-</div>
-<div class="playlist-list-view view-hidden" id="playlistList">
-<h2>Quadratic Formula by Completing the Square</h2>
-<p><a href="https://mes.fm/quadratic-formula-complete-square" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/hxvofldi" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/H46ILjs10_c" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/28513" target="_blank" rel="noopener">Telegram</a></p>
-<img loading="lazy" class="playlist-row-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tw7oNjTynsjyB9SdiLehjfFwEkux8jHYJjqQmtwmehTssKNx5nr1gDz6Jh6E72fNBpG.jpeg" alt="">
-<h2>Quadratic Formula by the PQ Substitution Method</h2>
-<p><a href="https://mes.fm/quadratic-formula-pq-substitution" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/oqzqzhqo" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/tNUp4gi8lxw" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/28534" target="_blank" rel="noopener">Telegram</a></p>
-<img loading="lazy" class="playlist-row-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uFufP6nksz2a2iygadN3BmoezK1kWzZeTS3ti4xW4LZrXPgYoh3JgmDnUdCPCxH1xoS.jpeg" alt="">
-<h2>Cubic Formula Proof Step 1: Removing x^2 term via PQ Substitution</h2>
-<p><a href="https://mes.fm/cubic-formula-step-1-pq-substitution" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/wwtmttrs" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/2OmDtnfdNdc" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/28618" target="_blank" rel="noopener">Telegram</a></p>
-<img loading="lazy" class="playlist-row-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tSz3RGZTbka19WdmrCffEfxwHod45guRFjhAKtyCFKTpefkHu9o7Nx3gcbuZtPSU8kw.jpeg" alt="">
-<h2>Cubic Formula Proof Step 2: Applying Vieta's Substitution to Obtain a Quadratic Equation</h2>
-<p><a href="https://mes.fm/cubic-formula-step-2-vieta-substitution" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/ifdcvhkh" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/zycGv8aRaOA" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/28684" target="_blank" rel="noopener">Telegram</a></p>
-<img loading="lazy" class="playlist-row-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tHbFNg2UMd2QY1DvYQL83JRCTLnUym2azn2EUn5M1fy9ux5PayKtSUAAgxc5PQ3sUbL.jpeg" alt="">
-<h2>Cubic Formula Proof Step 3: First Solution of y</h2>
-<p><a href="https://mes.fm/cubic-formula-step-3-first-solution-y" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/daxjedbu" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/7BAJb1gZ1Tg" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/28709" target="_blank" rel="noopener">Telegram</a></p>
-<img loading="lazy" class="playlist-row-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tmmEVQaCP7jQ9Q4DmfD2Gi2r8GDA5LUPrn4BsG86Zqr4TdDxDspJ7WBi5812QJoW1z8.jpeg" alt="">
-<h2>Square Root of Unity, Cube Root of Unity, and Complex Rotations</h2>
-<p><a href="https://mes.fm/cube-root-unity" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/elspkwga" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/i_LT_0p7K7c" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/28734" target="_blank" rel="noopener">Telegram</a></p>
-<img loading="lazy" class="playlist-row-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tHbP3h3Xf1uaQtH4cpEFxJW6GnwYDbFFgjhyGStEyPzqVxFYJw15DjKRGiQXWVncE6s.jpeg" alt="">
-<h2>Cubic Formula Proof Step 4: Other Solutions of y using the Cube Root of Unity</h2>
-<p><a href="https://mes.fm/cubic-formula-step-4-solutions-y-cube-root-unity" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/kosyfghs" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/D5EQJlzgUlE" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/28792" target="_blank" rel="noopener">Telegram</a></p>
-<img loading="lazy" class="playlist-row-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23t8Cig7Y9x8WbSHEadEVuqsopCiBd46isoyZFAFE2TQkGBgxCyXgQpnWmSiP6rX6gqt2.jpeg" alt="">
-<h2>Cubic Formula Proof Step 5: Putting it All Together to Solve for x</h2>
-<p><a href="https://mes.fm/cubic-formula-step-5-solve-x" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/vgsyxnty" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/ZpYMkiRIbkU" target="_blank" rel="noopener">YouTube</a></p>
-<img loading="lazy" class="playlist-row-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23t8Cig7Y9x8WbP9WUq6ajPgmxxGAe7BhZxZVj51QqmgAcAQMXgddRk9GSUHG1oDyxkzb.jpeg" alt="">
-</div>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="overview">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Full Video <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="overview-list" class="chapter-toggle-list">
-<div class="video-embed" google-side-rail-overlap="false"><video id="speak-video-1" controls playsinline preload="metadata" poster="https://files.peakd.com/file/peakd-hive/mes/23uFwDc96yyuPh1DLzT52FT2d4N56Tx9vJFcgbwkKc95YDGv4Q57zTfdu6vNUNCss5YRi.jpeg"></video><button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button><a class="video-badge" href="https://3speak.tv/watch?v=mes/dzekfnxh" target="_blank" rel="noopener">View on 3Speak &nearr;</a></div>
-
-<p>In this video I go over a complete derivation of the cubic formula, which is a solution to the cubic equation. This proof utilizes the PQ substitution method, which I first demonstrate by solving for the quadratic formula. Using this substitution method, we can write the cubic equation in the form that we can then apply Vieta&#39;s substitution, which converts it into a quadratic equation. Now we can start going backwards and putting our solutions back into the previous substitutions. This involves a cube root, which gives 3 solutions and which we determine via the cube root of unity. Two of the solutions involve complex numbers, but fortunately the resulting 3 solutions in the cubic formula simply interchange the positive and negative signs of the complex numbers. While there is a ton of algebra, many terms repeat themselves so I just copied and pasted to save time. If you like math proofs, you&#39;ll love this one!</p>
-<p>Note that I followed derivation by @blackpenredpen : <a href="https://youtu.be/ULsPhWmqhyc">https://youtu.be/ULsPhWmqhyc</a></p>
-<p><a href="https://3speak.tv/watch?v=mes/dzekfnxh">3Speak</a> - <a href="https://youtu.be/Ne6ITwP6qg0">YouTube</a> - <a href="https://odysee.com/@mes:8/Cubic-Formula:c">Odysee</a> - <a href="https://bitchute.com/video/HSh2xcMLrhpw/">BitChute</a> - <a href="https://rumble.com/v6cselp-cubic-formula-proof.html">Rumble</a> - <a href="https://1drv.ms/b/s!As32ynv0LoaIjYlhWw4dLq59fn0Xwg">PDF notes</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EF05ExjzLbB64NgUjoV1hl">Playlist</a> - <a href="https://mes.fm/math">mes.fm/math</a></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFwDc96yyuPh1DLzT52FT2d4N56Tx9vJFcgbwkKc95YDGv4Q57zTfdu6vNUNCss5YRi.jpeg" alt="Cubic Formula.jpeg"></p>
-<h3>Time stamps</h3>
-<ul>
-<li>Intro: 0:00</li>
-<li>Recap on Quadratic equation and formula: 0:40</li>
-<li>Cubic Formula: 3:58</li>
-<li>Derivation of Cubic Formula: 5:46</li>
-<li>Step 0: Solve Quadratic Formula using PQ Substitution: 6:00</li>
-<li>Step 1: Get rid of square power term using PQ Substitution: 12:44<ul>
-<li>Recap on Pascal&#39;s Triangle: 18:39</li>
-<li>Applying the substitution: 20:22</li>
-</ul>
-</li>
-<li>Step 2: Apply Vieta&#39;s Substitution to obtain a quadratic equation: 28:04</li>
-<li>Step 3: Find First Solution of y: 39:17</li>
-<li>Step 4.1: Cube Root of Unity: 48:24<ul>
-<li>Complex factors are rotations in the complex plane: 1:00:10</li>
-</ul>
-</li>
-<li>Step 4.2: Find the other solutions for y: 1:05:26</li>
-<li>Step 5: Put Everything Together to solve for x: 1:13:31<ul>
-<li>Double check and summary: 1:25:37</li>
-</ul>
-</li>
-<li>Outro: 1:27:27</li>
-</ul>
-<hr>
-<h3>View Video Notes Below!</h3>
-<hr>
-<blockquote>
-<p><a href="https://www.youtube.com/channel/UCUUBq1GPBvvGNz7dpgO14Ow/join">Become a MES Super Fan</a> - <a href="https://mes.fm/donate">Donate</a> - <a href="http://mes.fm/subscribe">Subscribe via email</a> - <a href="https://mes.fm/store">MES merchandise</a> </p>
-<ul>
-<li><a href="https://mes.fm/links">MES Links webpage</a> - <a href="https://t.me/meslinks">MES Links Telegram</a> - <a href="https://mes.fm/truth">MES Truth</a></li>
-</ul>
-<p><strong>Reuse of my videos:</strong></p>
-<ul>
-<li>Feel free to make use of / re-upload / monetize my videos as long as you provide a link to the original video.<blockquote>
-<p><strong>Fight back against censorship:</strong></p>
-</blockquote>
-</li>
-<li>Bookmark sites/channels/accounts and check periodically.</li>
-<li>Remember to always archive website pages in case they get deleted/changed.</li>
-</ul>
-<p><strong>Recommended Books:</strong> <a href="https://mes.fm/judywoodbook">&quot;Where Did the Towers Go?&quot;</a> by Dr. Judy Wood </p>
-<p><strong>Join my forums:</strong> <a href="https://peakd.com/c/hive-128780">Hive community</a> - <a href="https://reddit.com/r/AMAZINGMathStuff">Reddit</a> - <a href="https://mes.fm/chatroom">Discord</a></p>
-<p><strong>Follow along my epic video series:</strong> <a href="https://mes.fm/science-playlist">MES Science</a> - <a href="https://peakd.com/mesexperiments/@mes/list">MES Experiments</a> - <a href="https://peakd.com/antigravity/@mes/series">Anti-Gravity</a> (<a href="https://peakd.com/antigravity/@mes/antigravity-part-6-video-1-objects-in-rotation-defy-mainstream-physics-mes-duality-concept">MES Duality</a>) - <a href="https://mes.fm/freeenergy-playlist">Free Energy</a> - <a href="https://peakd.com/pg/@mes/videos">PG</a></p>
-<hr>
-<p><strong>NOTE 1:</strong> If you don&#39;t have time to watch this whole video:</p>
-<ul>
-<li>Skip to the end for Summary and Conclusions (if available)</li>
-<li>Play this video at a faster speed.
--- TOP SECRET LIFE HACK: Your brain gets used to faster speed!
--- <a href="https://peakd.com/video/@mes/play-videos-at-faster-or-slower-speeds-on-any-website">MES tutorial</a></li>
-<li>Download and read video notes.</li>
-<li>Read notes on the Hive blockchain $HIVE</li>
-<li>Watch the video in parts.
--- Timestamps of all parts are in the description.</li>
-</ul>
-<p><strong>Browser extension recommendations:</strong> <a href="https://mes.fm/videospeed-extension">Increase video speed</a> - <a href="https://mes.fm/volume-extension">Increase video audio</a> - <a href="https://mes.fm/speech-extension">Text to speech</a> (<a href="https://mes.fm/speech-android">Android app</a>) – <a href="https://chrome.google.com/webstore/detail/archive-page/gcaimhkfmliahedmeklebabdgagipbia">Archive webpages</a></p>
-</blockquote>
-<hr>
-<h2 id="recap-on-the-quadratic-formula">Recap on the Quadratic Formula</h2>
-<p>Recall my <a href="https://youtu.be/9eQLZar3g6g">earlier video</a> on the <a href="https://en.wikipedia.org/wiki/Quadratic_formula">Quadratic Formula</a>:</p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFwHvSWwoYYQSJYSpWPWAx5iAmj32CszE35ip17ibuyXRZ8KDtvkDfoRHhEMQhtEBDZ.png" alt="image.png"></p>
-<p>In that video I derived it by Completing the Square.</p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tcNRVyjeyzJjWGsbCoo6DkZFu35swjevo36yeiD16TCZG8yy3wNTe8gr4BMA8sYcrok.png" alt="image.png"></p>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="cubic-formula">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('cubic-formula-list')"><center>Cubic Formula <span id="arrowIcon-cubic-formula-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="cubic-formula-list" class="chapter-toggle-list">
-<p>The <a href="https://youtu.be/ULsPhWmqhyc">cubic formula</a> is the solution to the <a href="https://en.wikipedia.org/wiki/Cubic_equation">cubic equation</a>:</p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wXQhMzzHTzUqAVNLaVpXt9JeAeebTWomQMhoNL1EamErYjv528P3KZpd2NjpNkzr8nk.png" alt="image.png"></p>
-<blockquote>
-<p>where: a ≠ 0</p>
-</blockquote>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFwDbowCRPMqo8uVRQic7kDBFm3XN48E1AYcmW5JwR1Y4oXp8L8bVje2V5TBDvsq1sX.png" alt="image.png"></p>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="derivation-of-cubic-formula">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('derivation-of-cubic-formula-list')"><center>Derivation of Cubic Formula <span id="arrowIcon-derivation-of-cubic-formula-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="derivation-of-cubic-formula-list" class="chapter-toggle-list">
-<p>I will be following the steps done by <a href="https://youtu.be/ULsPhWmqhyc">blackpenredpen&#39;s derivation</a>.</p>
-<h2 id="step-0-solve-quadratic-formula-using-the-pq-substitution-method">Step 0: Solve Quadratic Formula using the PQ Substitution Method</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23t8DBnQFAcQ8tzW9eyuPaWJaWXQSeatcrqLPxXAqajDSNthuedfFKGmxQxkvkgeTYGVR.png" alt="image.png"></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Eo6S9Q1SeQ5HfvsACcZNP2sDSrwhoKNszSWgNTJ9bJ8Mu5TPRamLiJ5ikJvvp2iUC5W.png" alt="image.png"></p>
-<h2 id="step-1-get-rid-of-x2-term-using-pq-substitution">Step 1: Get rid of x<sup>2</sup> term using PQ Substitution</h2>
-<p>Just as in the PQ substitution method for the quadratic equation, we would like to get rid of the x<sup>2</sup> term from the cubic function:</p>
-<blockquote>
-<p>ax<sup>3</sup> + bx<sup>2</sup> + cx + d = 0</p>
-</blockquote>
-<p>It&#39;s possible to solve the equation y3 + py + q = 0 by applying <a href="https://en.wikipedia.org/wiki/Cubic_equation">Vieta&#39;s substitution</a> to obtain a quadratic formula:</p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoAgwnUQnBCvPA7JfsTwCv1W1Kj2kry1emqb1PCMfbAVWT7mfPvj5Bv1ubUvDrQ3SDN.png" alt="image.png"></p>
-<p>Let&#39;s now apply the PQ substitution method to the cubic function.</p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Eo2BJ5b2bynwJ2BbaTLQP7RqG4VVUrZohXAXowX3KZN4hr56pLfvNwS99JnGRTEb7VZ.png" alt="image.png"></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHb6kphwoNfonGa8RQf5nFRK9EMjQAc9KTeF1w8USdrmnAWbaWT7Jzc64rwnMfLpUu7.png" alt="image.png"></p>
-<h2 id="step-2-solve-y3-py-q-0-using-vieta-s-substitution">Step 2: Solve y<sup>3</sup> + py + q = 0 using Vieta&#39;s Substitution</h2>
-<p>Now we can apply <a href="https://en.wikipedia.org/wiki/Cubic_equation">Vieta&#39;s substitution</a> to transform our PQ cubic equation into a quadratic equation.</p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23t8CfKPvYt8fYjrUN1SxNiuGeYfGKwmVRLsdF7kf7z9J3ifKXegi9hj4E9ZRPfkdxM1n.png" alt="image.png"></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tSym8QDdU3EUppArpEU7whXHDCJMTrB1ey185pyxBAx8gKWsF2hPAMFBmKmp7Rz7Kdw.png" alt="image.png"></p>
-<h2 id="step-3-find-first-solution">Step 3: Find First Solution</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tcNzkBDDNbqVn7k4xLewgxktkHJc3rAoNBMbEFVf1u8BKvqfoxcD7sAzfrxQKXuwDvK.png" alt="image.png"></p>
-<p>Note that if we plugged in the negative version of the Vieta quadratic formula, we would just get the positive conjugate, and hence the same solution.</p>
-<h2 id="step-4-1-cube-root-of-unity">Step 4.1: Cube Root of Unity</h2>
-<p>The cube root gives 3 solutions just as the square root gives 2 solutions.</p>
-<p>We can find these solutions by factoring the square and cube root of unity via <a href="https://youtu.be/qFdohskRQB0">difference of squares</a> and <a href="https://peakd.com/hive-128780/@mes/factoring-difference-and-addition-of-cubes">difference of cubes</a> formula, respectively.</p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHbKgySNdxK51VxfRQAu9ttueBWaWHK52UAyfB9DaoYUGkoY1nMqQcQbXrqiW1nn1op.png" alt="image.png"></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23t8CSPFCQM3BquN5LG3EkmDXAqNu2dZwoBLgJL8U8QKsEPRGWDoFARsn9hL5KwTSpgrf.png" alt="image.png">
-	
-Note also that these complex factors are just <a href="https://peakd.com/hive-128780/@mes/complex-numbers-as-rotation-matrices">rotations in the complex plane</a>:</p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tcNRVyjc39qaxDxvMeu8UZryq4jxv2hJUAB6i91Bx8GX4cXMQ38dHhLouB9u4zdtEgZ.png" alt="image.png"></p>
-<h2 id="step-4-2-find-the-other-solutions-for-y">Step 4.2: Find the other Solutions for y</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHbr9ykrH5XwKGvT8uE1KW9TQwd4oHsB97Yc7WfBnsvaX1g97pcqoz42xorJgXAhjS4.png" alt="image.png"></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHbg12BQjmGLubtMFpGWQRAhvRrshUrv5qC8KwftYVdnKrzUhPp2bUmbASQP6CmC37i.png" alt="image.png"></p>
-<h2 id="step-5-put-everything-together">Step 5: Put Everything Together</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tcP5UHCqXB2rW6MriYXJYyEqkQcrCjXsQci31sgdjHr5S5she7LCSAdxM9eQEBdSPPg.png" alt="image.png"></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Eo6SAA89mFst6Quyo13FusTmiMh6JJNdQmJ9oMX2fJhgWjBMHVmdsWtMpMcvM32u9YZ.png" alt="image.png"></p>
-<p><strong>Double check</strong>:</p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoEwkvhxLiyUyrUDJ9JfzU6RZNUaUbKBBjTXUoLGLZETQX2oWgTbUAFnH2vkLExoBSX.png" alt="image.png"></p>
-<hr>
-</div>
-</div>
-
+${bodyHtml}
     </div>
 
     <hr>
 
-    <a class="source-link" href="https://peakd.com/hive-128780/@mes/dzekfnxh" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
+    <a class="source-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
     <div class="retrieved-note">
       Vote/comment/reblog counts and article text were fetched from the Hive blockchain
-      at build time (September 23, 2026) and are not live.
+      at build time (${escapeHtml(buildDate)}) and are not live.
     </div>
     <div id="footer" class="footer" role="contentinfo">
       <div class="footer__item-container">
@@ -1293,12 +1675,12 @@ Note also that these complex factors are just <a href="https://peakd.com/hive-12
       if (isDark) {
         body.classList.add('dark');
         body.classList.remove('light');
-        themeToggle.textContent = '☀️';
+        themeToggle.textContent = '\u2600\ufe0f';
         try { localStorage.setItem('theme', 'dark'); } catch (e) {}
       } else {
         body.classList.add('light');
         body.classList.remove('dark');
-        themeToggle.textContent = '🌙';
+        themeToggle.textContent = '\ud83c\udf19';
         try { localStorage.setItem('theme', 'light'); } catch (e) {}
       }
     }
@@ -1440,7 +1822,7 @@ Note also that these complex factors are just <a href="https://peakd.com/hive-12
     // (via hls.js). Manifest URLs are resolved at build time (see resolve3Speak in
     // build.mjs); re-run the build to refresh them.
     (function () {
-      var videos = [{"id":"speak-video-1","src":"https://play.3speak.tv/hls?u=https%3A%2F%2Fipfs-3speak.b-cdn.net%2Fipfs%2FQmZoU7Jr9p9Z9F4HuCosXoSqqSgfGQEa11npHk5FqZC4id%2Fmanifest.m3u8"}];
+      var videos = ${JSON.stringify(videos)};
       videos.forEach(function (v) {
         if (!v.src) return;
         var video = document.getElementById(v.id);
@@ -1677,3 +2059,341 @@ Note also that these complex factors are just <a href="https://peakd.com/hive-12
 </script>
 </body>
 </html>
+`;
+}
+
+// ---------------------------------------------------------------------------
+// The 8 supporting video pages: mes.fm/<slug> for each Hive video post below.
+// Each page = the video (3Speak HLS via hls.js, YouTube embed as automatic
+// fallback), the post's description and timestamps, and the matching section of
+// THIS page's written notes (`notes` = start of that section's "## " heading in
+// the main article), mirrored in and linked back to it.
+//
+// `youtube` and `telegram` are set here rather than read from the Hive posts,
+// because those posts' link rows are wrong: Step 2's YouTube link is really the
+// Completing-the-Square video's, and every post's Telegram link is the *previous*
+// video's message (each one is off by one). Both were checked against the
+// YouTube playlist (PLai3U8-WIK0EF05ExjzLbB64NgUjoV1hl) and each t.me/meslinks
+// message's own caption. Step 5 has no Telegram post that could be found, so
+// it links none.
+// ---------------------------------------------------------------------------
+
+const CHILD_TEMPLATE_PATH = join(__dirname, "child-template.html");
+const SITE_ROOT = join(__dirname, "..");
+
+const CHILDREN = [
+  { slug: "quadratic-formula-complete-square", permlink: "hxvofldi", youtube: "H46ILjs10_c", telegram: 28513, notes: "Recap on the Quadratic Formula" },
+  { slug: "quadratic-formula-pq-substitution", permlink: "oqzqzhqo", youtube: "tNUp4gi8lxw", telegram: 28534, notes: "Step 0:" },
+  { slug: "cubic-formula-step-1-pq-substitution", permlink: "wwtmttrs", youtube: "2OmDtnfdNdc", telegram: 28618, notes: "Step 1:" },
+  { slug: "cubic-formula-step-2-vieta-substitution", permlink: "ifdcvhkh", youtube: "zycGv8aRaOA", telegram: 28684, notes: "Step 2:" },
+  { slug: "cubic-formula-step-3-first-solution-y", permlink: "daxjedbu", youtube: "7BAJb1gZ1Tg", telegram: 28709, notes: "Step 3:" },
+  { slug: "cube-root-unity", permlink: "elspkwga", youtube: "i_LT_0p7K7c", telegram: 28734, notes: "Step 4.1:" },
+  { slug: "cubic-formula-step-4-solutions-y-cube-root-unity", permlink: "kosyfghs", youtube: "D5EQJlzgUlE", telegram: 28792, notes: "Step 4.2:" },
+  { slug: "cubic-formula-step-5-solve-x", permlink: "vgsyxnty", youtube: "ZpYMkiRIbkU", telegram: null, notes: "Step 5:" },
+];
+
+// The main article's "## <notes>" section: heading + markdown body, up to the
+// next heading or "---" rule.
+function extractNotes(mainBody, notesKey) {
+  const lines = mainBody.split("\n");
+  const start = lines.findIndex((l) => /^##\s/.test(l) && l.replace(/^##\s+/, "").startsWith(notesKey));
+  if (start < 0) throw new Error(`Notes section "${notesKey}" not found in the main article.`);
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (/^#{1,2}\s/.test(lines[i]) || /^---\s*$/.test(lines[i])) {
+      end = i;
+      break;
+    }
+  }
+  return {
+    headingMd: lines[start].replace(/^##\s+/, "").trim(),
+    md: lines.slice(start + 1, end).join("\n").trim(),
+  };
+}
+
+// "Text: 6:30" / "Text 6:00" / "Text: 0" -> <li>Text &ndash; 6:30</li>
+function timestampItem(line) {
+  const m = line.match(/^(.*?)(?::\s*|\s+)(\d{1,2}(?::\d{2}){1,2}|0)\s*$/);
+  if (!m) return `<li>${marked.parseInline(line)}</li>`;
+  const time = m[2] === "0" ? "0:00" : m[2];
+  return `<li>${marked.parseInline(m[1].trim())} &ndash; ${time}</li>`;
+}
+
+async function fetchHivePost(permlink) {
+  const post = await hiveCall("bridge.get_post", { author: AUTHOR, permlink });
+  if (!post || !post.body) throw new Error(`Hive API returned no post for @${AUTHOR}/${permlink}.`);
+  return post;
+}
+
+// Play.3speak.tv's embed API only knows newer videos; older permlinks 404, and
+// those are resolved from the video's own Hive metadata (resolve3Speak). `api`
+// records which, so the page only calls the API at runtime when it can answer.
+async function resolveChildVideo(permlink) {
+  try {
+    const res = await fetch(`https://play.3speak.tv/api/embed?v=${AUTHOR}/${permlink}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.videoUrl) return { src: data.videoUrl, poster: data.thumbnail || null, api: true };
+    }
+  } catch {
+    /* fall through to Hive metadata */
+  }
+  const { src, poster } = await resolve3Speak(AUTHOR, permlink);
+  return { src, poster, api: false };
+}
+
+function childPlayerScripts(child, video) {
+  const slug = video.api ? `'${AUTHOR}/${child.permlink}'` : "null";
+  return `  <script>
+    // auto-hide-controls: fades the theater-mode toggle and video badge out while
+    // the video is playing and the pointer is idle, and shows them again on any
+    // mouse movement or pause. Works on whichever player is current, so it keeps
+    // working if the page falls back to the YouTube embed.
+    (function () {
+      var embed = document.getElementById('videoEmbed');
+      var hideTimer = null;
+      function showControls() { embed.classList.remove('controls-hidden'); }
+      function scheduleHide() {
+        clearTimeout(hideTimer);
+        var v = document.getElementById('qVideo');
+        if (!v || v.paused || v.ended) return;
+        hideTimer = setTimeout(function () { embed.classList.add('controls-hidden'); }, 2000);
+      }
+      var video = document.getElementById('qVideo');
+      video.addEventListener('play', scheduleHide);
+      video.addEventListener('pause', showControls);
+      video.addEventListener('ended', showControls);
+      embed.addEventListener('mousemove', function () { showControls(); scheduleHide(); });
+      embed.addEventListener('mouseleave', scheduleHide);
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script>
+    // q-video: plays the 3Speak-hosted HLS stream for this video directly (via hls.js),
+    // rather than iframing 3speak.tv (whose /embed route has no speed/quality controls and
+    // whose /watch page drags in the whole app shell). Gives native browser video controls
+    // (speed via the "..." menu in Chromium, fullscreen, PiP).
+    //
+    // SLUG (set when 3Speak's public embed API knows this video) is resolved at runtime so
+    // re-encodes / re-uploads are picked up; FALLBACK_SRC is the manifest resolved at build
+    // time from the video's own Hive post, used when the API can't answer (older videos).
+    // If playback fails outright the player swaps itself for the YouTube embed.
+    (function () {
+      var video = document.getElementById('qVideo');
+      var embed = document.getElementById('videoEmbed');
+      var SLUG = ${slug};
+      var FALLBACK_SRC = '${video.src}';
+      var YT_ID = '${child.youtube}';
+      var fellBack = false;
+
+      function toYouTube() {
+        if (fellBack) return;
+        fellBack = true;
+        var frame = document.createElement('iframe');
+        frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID;
+        frame.title = 'YouTube video';
+        frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        frame.allowFullscreen = true;
+        embed.replaceChild(frame, video);
+        var badge = embed.querySelector('.video-badge');
+        badge.href = 'https://youtu.be/' + YT_ID;
+        badge.innerHTML = 'View on YouTube &nearr;';
+        embed.classList.remove('controls-hidden');
+      }
+
+      function play(src) {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = src;
+          video.addEventListener('error', toYouTube);
+        } else if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.ERROR, function (e, data) { if (data && data.fatal) toYouTube(); });
+        } else {
+          toYouTube();
+        }
+      }
+
+      if (!SLUG) { play(FALLBACK_SRC); return; }
+      fetch('https://play.3speak.tv/api/embed?v=' + SLUG)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { play((d && d.videoUrl) || FALLBACK_SRC); })
+        .catch(function () { play(FALLBACK_SRC); });
+    })();
+  </script>`;
+}
+
+// Builds one child page. Returns { html, meta } where meta is the Playlist card
+// data (title / image / watch links) for this page, used to seed playlist-meta.json.
+async function buildChildPage(child, mainBody, template) {
+  const post = await fetchHivePost(child.permlink);
+  const url = `https://mes.fm/${child.slug}`;
+
+  // Same guard as checkSlugMatch: the post links back to its own mes.fm page.
+  const selfLinked = post.body.includes(`mes.fm/${child.slug}`);
+  console.log(`  ${child.slug}: "${post.title}" ${selfLinked ? "(OK — post self-references this slug)" : "(NO self-reference found)"}`);
+  if (!selfLinked && process.env.ALLOW_SLUG_MISMATCH !== "1") {
+    throw new Error(`Post @${AUTHOR}/${child.permlink} does not link to mes.fm/${child.slug} -- permlink/slug out of sync?`);
+  }
+  const postYouTube = (post.body.match(/\[YouTube\]\(https:\/\/youtu\.be\/([\w-]+)\)/) || [])[1];
+  if (postYouTube && postYouTube !== child.youtube) {
+    console.log(`    note: post links YouTube ${postYouTube}, using verified ${child.youtube}`);
+  }
+
+  // ---- parse the post
+  const above = post.body.split(/\n-{10,}\n/)[0];
+  const afterHeader = above.replace(/^<center>[\s\S]*?<\/center>\s*\n\s*---\s*\n/, "");
+  const rowAt = afterHeader.search(/^\[Notes\]\(/m);
+  if (rowAt < 0) throw new Error(`Unexpected layout in @${AUTHOR}/${child.permlink}: links row not found.`);
+  const descHtml = marked
+    .parse(afterHeader.slice(0, rowAt).trim())
+    .trim()
+    .split("\n")
+    .map((l) => `      ${l}`)
+    .join("\n");
+  const rest = afterHeader.slice(rowAt);
+  const topicImage = (rest.match(/^!\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/m) || [])[1];
+  const tsBlock = (rest.match(/###\s*Time\s?stamps\s*\n([\s\S]*?)(?:\n###|$)/i) || [])[1] || "";
+  const tsItems = tsBlock
+    .split("\n")
+    .filter((l) => /^\s*-\s/.test(l))
+    .map((l) => timestampItem(l.replace(/^\s*-\s+/, "").trim()));
+
+  // ---- notes from the main article
+  const { headingMd, md } = extractNotes(mainBody, child.notes);
+  const headingHtml = marked.parseInline(headingMd);
+  const anchor = headingSlug(headingHtml);
+  const notesHtml = marked.parse(md).replace(/<img /g, '<img loading="lazy" class="sol-image" ');
+
+  // ---- video
+  const video = await resolveChildVideo(child.permlink);
+  if (!video.src) throw new Error(`Could not resolve a 3Speak manifest for @${AUTHOR}/${child.permlink}.`);
+  const poster =
+    (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
+    video.poster ||
+    topicImage ||
+    "";
+
+  const threeSpeakUrl = `https://3speak.tv/watch?v=${AUTHOR}/${child.permlink}`;
+  const watchLinks = [
+    { label: "3Speak", href: threeSpeakUrl },
+    { label: "YouTube", href: `https://youtu.be/${child.youtube}` },
+    ...(child.telegram ? [{ label: "Telegram", href: `https://t.me/meslinks/${child.telegram}` }] : []),
+  ];
+  const watchOnHtml = watchLinks
+    .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
+    .join(" &middot; ");
+
+  const firstPara = (marked.parse(afterHeader.slice(0, rowAt).trim()).match(/<p>([\s\S]*?)<\/p>/) || [])[1] || "";
+  const plainFirst = firstPara
+    .replace(/<sup>([^<]*)<\/sup>/g, "^$1")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+  let blurb = plainFirst.length > 190 ? plainFirst.slice(0, 190).replace(/\s+\S*$/, "") : plainFirst;
+  if (blurb.length < plainFirst.length) {
+    const sentenceEnd = Math.max(blurb.lastIndexOf(". "), blurb.lastIndexOf("? "));
+    blurb = sentenceEnd > 80 ? blurb.slice(0, sentenceEnd + 1) : blurb.replace(/[,;:]$/, "") + "...";
+  }
+  const description = `${post.title}. ${blurb} Mirrored from the Hive blockchain.`;
+  const retrieved = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+  const article = `      <div class="video-embed" id="videoEmbed" google-side-rail-overlap="false">
+        <video id="qVideo" controls playsinline preload="metadata" poster="${escapeHtml(poster)}"></video>
+        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false">Theater Mode</button>
+        <a class="video-badge" href="${threeSpeakUrl}" target="_blank" rel="noopener">View on 3Speak &nearr;</a>
+      </div>
+
+${descHtml}
+${
+  topicImage
+    ? `
+      <img loading="lazy" src="${escapeHtml(topicImage)}" alt="" style="max-width:100%;height:auto;border-radius:4px;display:block;margin:0.6em 0 1.4em;">
+`
+    : ""
+}
+      <details class="timestamps" open>
+        <summary>Timestamps</summary>
+        <ul>
+          ${tsItems.join("\n          ")}
+        </ul>
+      </details>
+
+      <details class="written-solution" open>
+        <summary>Notes: ${headingHtml}</summary>
+        <p class="ws-note">Written notes &mdash; mirrored from <a href="${CANONICAL}#${anchor}">Cubic Formula Proof</a>, which walks through the complete derivation.</p>
+${notesHtml}
+      </details>
+
+      <ul class="source-list">
+        <li>Watch on: ${watchOnHtml}</li>
+        <li>Full written notes: <a href="${CANONICAL}">Cubic Formula Proof</a></li>
+        <li>Playlist: <a href="${YT_PLAYLIST}" target="_blank" rel="noopener">Cubic Formula Proof YouTube playlist</a></li>
+        <li>More math: <a href="https://mes.fm/math">mes.fm/math</a></li>
+      </ul>
+
+      <hr>
+
+      <a class="source-link" href="https://peakd.com/${COMMUNITY}/@${AUTHOR}/${child.permlink}" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
+      <div class="retrieved-note">Text and image retrieved from the Hive blockchain on ${retrieved}.</div>`;
+
+  const html = template
+    .replaceAll("@@DESC@@", escapeHtml(description))
+    .replaceAll("@@SLUG@@", child.slug)
+    .replaceAll("@@TITLE@@", escapeHtml(post.title))
+    .replaceAll("@@OGIMAGE@@", escapeHtml(poster))
+    .replaceAll(
+      "@@PARTOF@@",
+      `Part of <a href="/cubic-formula">Cubic Formula Proof</a> &middot; <a href="/cubic-formula#${anchor}">Full written notes &amp; video &rarr;</a>`
+    )
+    .replaceAll(
+      "@@SUBTITLE@@",
+      `Video &middot; ${formatDate(post.created)} &middot; mirrored from the <a href="https://peakd.com/${COMMUNITY}/@${AUTHOR}/${child.permlink}">Hive blockchain</a>`
+    )
+    .replaceAll("@@VIDEO_SCRIPTS@@", childPlayerScripts(child, video))
+    .replaceAll("@@ARTICLE@@", article);
+  if (html.includes("@@")) throw new Error(`Unfilled placeholder left in ${child.slug}`);
+
+  return { html, meta: { title: post.title, image: poster, watchLinks }, url };
+}
+
+async function main() {
+  console.log(`Fetching @${AUTHOR}/${PERMLINK} from api.hive.blog ...`);
+  const post = await fetchPost();
+  console.log(`Got post: "${post.title}"`);
+
+  checkSlugMatch(post);
+
+  // The 8 sibling pages first: their own metadata seeds the Playlist cards
+  // (they aren't deployed yet, so scraping them live would 404).
+  console.log(`Building ${CHILDREN.length} supporting video pages ...`);
+  const template = readFileSync(CHILD_TEMPLATE_PATH, "utf8");
+  const seed = {};
+  for (const child of CHILDREN) {
+    const { html, meta, url } = await buildChildPage(child, post.body, template);
+    const dir = join(SITE_ROOT, child.slug);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "index.html"), addImageLazyLoading(html), "utf8");
+    seed[url] = meta;
+  }
+
+  console.log(`Resolving Playlist metadata for ${PLAYLIST.length} pages ...`);
+  const playlistMeta = await resolvePlaylistMeta(PLAYLIST, seed);
+
+  const html = await buildPage({ ...post, body: restructureBody(post.body) }, playlistMeta);
+  const outPath = join(__dirname, "index.html");
+  writeFileSync(outPath, addImageLazyLoading(html), "utf8");
+  console.log(`Wrote ${outPath}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
