@@ -85,6 +85,14 @@ of HTML files individually:
   `https://mes.fm`), and the company name in the copyright line is plain text instead of a link. Patches every
   `*.html` (and `build.mjs` template) with the shared `<div id="footer">`; idempotent.
 
+- `fix_compact_nav_controls_zindex.py` — the floating compact-nav bar (`#compact-nav`, z-index 15) hid its own
+  A-/A+/theme buttons and hamburger on every page using the class-based `.header-controls` header (Problems Plus,
+  cubic formula and its video pages, ...): the `body.is-stuck` rules that pin those controls into the bar had no
+  z-index, so the bar painted over them. Adds `z-index: 20` (as `911`/`hutchison`/`science` already had, and as the
+  math-hub family's `#header-controls` has in its base CSS) to those pages, the generators' `build.mjs` and
+  `cubic-formula/child-template.html`, so a rebuild can't bring it back. Idempotent; **dry-runs by default, `--apply`
+  writes.** If you clone a new page from one of these templates, run it (or copy the `z-index: 20`).
+
 - `build_math_qa_mirrors.py` — generates the `mes.fm/math-qa-<N>-<slug>/index.html` mirror pages for MES Math Q/A
   livestreams 1–69 from `math_qa_mirrors.json` (one record per stream: Hive post body or, where no Hive post exists,
   the YouTube description; which player to use; the verified 3Speak manifest) and `math_qa_mirror_template.html`
@@ -153,7 +161,9 @@ page mirrors its own Hive video post plus the matching "## Step N" section of th
 edit the notes in the Hive article and rebuild, don't hand-edit. The `youtube`/`telegram` ids in `CHILDREN` are
 deliberate overrides: the Hive posts' link rows are wrong (Step 2's YouTube link is Completing-the-Square's, and
 every Telegram link is the previous video's). Child pages play 3Speak via hls.js and swap themselves for the
-YouTube embed if playback fails. `git status` after a build shows the 9 pages plus `playlist-meta.json`.
+YouTube embed if playback fails. The main page's Jump-to menu also lists the seven `## Step N` headings (nested
+under "Derivation of Cubic Formula"), and Jump-to links expand a collapsed chapter before scrolling. `git status`
+after a build shows the 9 pages plus `playlist-meta.json`.
 
 Before running `npm run build` on any of these pages, `git diff --stat` (or a full diff) the result against the
 previously committed `index.html` and confirm you're not losing lines you don't recognize — don't assume success.

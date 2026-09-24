@@ -550,8 +550,27 @@ async function buildPage(post, playlistMeta) {
   // hand-maintained section, not parsed from the Hive body, so it isn't picked
   // up by addSectionAnchors -- add it to the TOC manually, first.
   toc.unshift({ id: "playlist", label: "Playlist" });
+  // The derivation's "## Step N: ..." sections (Step 0, 1, 2, 3, 4.1, 4.2, 5)
+  // are <h2>s inside the "Derivation of Cubic Formula" chapter, so they aren't
+  // in `toc` either. List them right under that chapter, indented; the label keeps
+  // the heading's own markup (e.g. the x<sup>2</sup> in Step 1).
+  const stepEntries = [...parsedBodyHtml.matchAll(/<h2 id="(step-[^"]+)">([\s\S]*?)<\/h2>/g)].map((m) => ({
+    id: m[1],
+    html: m[2].trim(),
+    sub: true,
+  }));
+  if (stepEntries.length !== 7) {
+    throw new Error(`Expected 7 "Step" headings for the Jump-to menu, found ${stepEntries.length}.`);
+  }
+  const derivationAt = toc.findIndex((t) => t.id === "derivation-of-cubic-formula");
+  if (derivationAt < 0) throw new Error('"Derivation of Cubic Formula" chapter not found for the Jump-to menu.');
+  toc.splice(derivationAt + 1, 0, ...stepEntries);
   const tocLinksHtml = toc
-    .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
+    .map((t) =>
+      t.sub
+        ? `<a class="toc-sub" href="#${escapeHtml(t.id)}">${t.html}</a>`
+        : `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`
+    )
     .join("\n      ");
 
   const chaptersToolbar = `<div class="chapters-toolbar">
@@ -1066,6 +1085,10 @@ ${leadingHtml}
       transition: transform 0.3s ease;
     }
 
+    /* Jump-to / deep links land the heading just below the fixed compact-nav bar
+       (52px) instead of underneath it. */
+    .chapter-toggle[id], h2[id] { scroll-margin-top: 68px; }
+
     .chapter-toggle-list.hidden {
       display: none;
     }
@@ -1280,6 +1303,12 @@ ${leadingHtml}
         opacity: 1;
         text-decoration: underline;
       }
+
+      /* the "Step N" entries nested under "Derivation of Cubic Formula" */
+      .toc-sidebar a.toc-sub {
+        padding-left: 1em;
+        font-size: 0.92em;
+      }
     }
 
     .toc-mobile {
@@ -1316,6 +1345,11 @@ ${leadingHtml}
 
     .toc-mobile a:hover {
       text-decoration: underline;
+    }
+
+    .toc-mobile a.toc-sub {
+      padding-left: 1em;
+      font-size: 0.92em;
     }
 
     @media (max-width: 600px) {
@@ -1391,8 +1425,8 @@ ${leadingHtml}
     body.dark #compact-nav .compact-nav-title { color: #eeeeee; }
     body.light #compact-nav .compact-nav-links a { color: #277bb6; }
     body.dark #compact-nav .compact-nav-links a { color: #6cb6f5; }
-    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; }
-    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; }
+    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; z-index: 20; }
+    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; z-index: 20; }
     body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     @media (max-width: 700px) {
       #compact-nav .compact-nav-title { display: none; }
@@ -1655,6 +1689,30 @@ ${bodyHtml}
       list.classList.toggle('hidden');
       arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
     }
+
+    // A Jump-to link (or a #step-... deep link from one of the video pages) can
+    // target a heading inside a collapsed chapter, which is display:none and so
+    // can't be scrolled to -- expand that chapter first. Runs in the click
+    // handler, before the browser performs the anchor jump, and on hashchange.
+    function revealChapterFor(hash) {
+      if (!hash || hash.length < 2) return;
+      const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      const list = target && target.closest('.chapter-toggle-list');
+      if (list && list.classList.contains('hidden')) {
+        list.classList.remove('hidden');
+        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+        if (arrowIcon) arrowIcon.textContent = '▲';
+      }
+    }
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest && e.target.closest('.toc-sidebar a, .toc-mobile a');
+      if (link) revealChapterFor(link.hash);
+    });
+    window.addEventListener('hashchange', function () {
+      revealChapterFor(location.hash);
+      const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (target) target.scrollIntoView();
+    });
 
     function toggleAllChapters() {
       const lists = document.querySelectorAll('.chapter-toggle-list');

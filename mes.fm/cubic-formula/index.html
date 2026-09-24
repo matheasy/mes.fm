@@ -449,6 +449,10 @@
       transition: transform 0.3s ease;
     }
 
+    /* Jump-to / deep links land the heading just below the fixed compact-nav bar
+       (52px) instead of underneath it. */
+    .chapter-toggle[id], h2[id] { scroll-margin-top: 68px; }
+
     .chapter-toggle-list.hidden {
       display: none;
     }
@@ -663,6 +667,12 @@
         opacity: 1;
         text-decoration: underline;
       }
+
+      /* the "Step N" entries nested under "Derivation of Cubic Formula" */
+      .toc-sidebar a.toc-sub {
+        padding-left: 1em;
+        font-size: 0.92em;
+      }
     }
 
     .toc-mobile {
@@ -699,6 +709,11 @@
 
     .toc-mobile a:hover {
       text-decoration: underline;
+    }
+
+    .toc-mobile a.toc-sub {
+      padding-left: 1em;
+      font-size: 0.92em;
     }
 
     @media (max-width: 600px) {
@@ -774,8 +789,8 @@
     body.dark #compact-nav .compact-nav-title { color: #eeeeee; }
     body.light #compact-nav .compact-nav-links a { color: #277bb6; }
     body.dark #compact-nav .compact-nav-links a { color: #6cb6f5; }
-    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; }
-    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; }
+    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; z-index: 20; }
+    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; z-index: 20; }
     body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     @media (max-width: 700px) {
       #compact-nav .compact-nav-title { display: none; }
@@ -895,6 +910,13 @@
       <a href="#overview">Full Video</a>
       <a href="#cubic-formula">Cubic Formula</a>
       <a href="#derivation-of-cubic-formula">Derivation of Cubic Formula</a>
+      <a class="toc-sub" href="#step-0-solve-quadratic-formula-using-the-pq-substitution-method">Step 0: Solve Quadratic Formula using the PQ Substitution Method</a>
+      <a class="toc-sub" href="#step-1-get-rid-of-x2-term-using-pq-substitution">Step 1: Get rid of x<sup>2</sup> term using PQ Substitution</a>
+      <a class="toc-sub" href="#step-2-solve-y3-py-q-0-using-vieta-s-substitution">Step 2: Solve y<sup>3</sup> + py + q = 0 using Vieta&#39;s Substitution</a>
+      <a class="toc-sub" href="#step-3-find-first-solution">Step 3: Find First Solution</a>
+      <a class="toc-sub" href="#step-4-1-cube-root-of-unity">Step 4.1: Cube Root of Unity</a>
+      <a class="toc-sub" href="#step-4-2-find-the-other-solutions-for-y">Step 4.2: Find the other Solutions for y</a>
+      <a class="toc-sub" href="#step-5-put-everything-together">Step 5: Put Everything Together</a>
   </nav>
   <div class="container">
     <div class="top-bar">
@@ -983,6 +1005,13 @@
       <a href="#overview">Full Video</a>
       <a href="#cubic-formula">Cubic Formula</a>
       <a href="#derivation-of-cubic-formula">Derivation of Cubic Formula</a>
+      <a class="toc-sub" href="#step-0-solve-quadratic-formula-using-the-pq-substitution-method">Step 0: Solve Quadratic Formula using the PQ Substitution Method</a>
+      <a class="toc-sub" href="#step-1-get-rid-of-x2-term-using-pq-substitution">Step 1: Get rid of x<sup>2</sup> term using PQ Substitution</a>
+      <a class="toc-sub" href="#step-2-solve-y3-py-q-0-using-vieta-s-substitution">Step 2: Solve y<sup>3</sup> + py + q = 0 using Vieta&#39;s Substitution</a>
+      <a class="toc-sub" href="#step-3-find-first-solution">Step 3: Find First Solution</a>
+      <a class="toc-sub" href="#step-4-1-cube-root-of-unity">Step 4.1: Cube Root of Unity</a>
+      <a class="toc-sub" href="#step-4-2-find-the-other-solutions-for-y">Step 4.2: Find the other Solutions for y</a>
+      <a class="toc-sub" href="#step-5-put-everything-together">Step 5: Put Everything Together</a>
       </nav>
     </details>
 
@@ -1226,7 +1255,7 @@ Note also that these complex factors are just <a href="https://peakd.com/hive-12
     <a class="source-link" href="https://peakd.com/hive-128780/@mes/dzekfnxh" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
     <div class="retrieved-note">
       Vote/comment/reblog counts and article text were fetched from the Hive blockchain
-      at build time (September 23, 2026) and are not live.
+      at build time (September 24, 2026) and are not live.
     </div>
     <div id="footer" class="footer" role="contentinfo">
       <div class="footer__item-container">
@@ -1273,6 +1302,30 @@ Note also that these complex factors are just <a href="https://peakd.com/hive-12
       list.classList.toggle('hidden');
       arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
     }
+
+    // A Jump-to link (or a #step-... deep link from one of the video pages) can
+    // target a heading inside a collapsed chapter, which is display:none and so
+    // can't be scrolled to -- expand that chapter first. Runs in the click
+    // handler, before the browser performs the anchor jump, and on hashchange.
+    function revealChapterFor(hash) {
+      if (!hash || hash.length < 2) return;
+      const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      const list = target && target.closest('.chapter-toggle-list');
+      if (list && list.classList.contains('hidden')) {
+        list.classList.remove('hidden');
+        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+        if (arrowIcon) arrowIcon.textContent = '▲';
+      }
+    }
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest && e.target.closest('.toc-sidebar a, .toc-mobile a');
+      if (link) revealChapterFor(link.hash);
+    });
+    window.addEventListener('hashchange', function () {
+      revealChapterFor(location.hash);
+      const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (target) target.scrollIntoView();
+    });
 
     function toggleAllChapters() {
       const lists = document.querySelectorAll('.chapter-toggle-list');
