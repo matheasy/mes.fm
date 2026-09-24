@@ -239,7 +239,8 @@ function buildPlaylistSection(meta) {
 ${imgHtml}`;
   }).join("\n");
 
-  return `<div class="view-toggle">
+  return `<p class="section-standalone-link"><a href="${YT_PLAYLIST}" target="_blank" rel="noopener">&#9654;&#65039; Playlist</a></p>
+<div class="view-toggle">
   <button type="button" class="view-toggle-btn active" id="playlistGridBtn">Grid View</button>
   <button type="button" class="view-toggle-btn" id="playlistListBtn">List View</button>
 </div>
@@ -1107,6 +1108,12 @@ ${leadingHtml}
        build.mjs. Card-grid styling kept in sync with the identical block in
        mes.fm/911/build.mjs, mes.fm/hutchison/build.mjs, and
        mes.fm/conspiracy/build.mjs. */
+    /* whole-playlist link above the Grid/List buttons (as on mes.fm/math-qa) */
+    .section-standalone-link {
+      margin: 0 0 0.6em;
+      font-weight: 600;
+    }
+
     .view-toggle {
       display: flex;
       gap: 0.5em;

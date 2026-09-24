@@ -471,6 +471,12 @@
        build.mjs. Card-grid styling kept in sync with the identical block in
        mes.fm/911/build.mjs, mes.fm/hutchison/build.mjs, and
        mes.fm/conspiracy/build.mjs. */
+    /* whole-playlist link above the Grid/List buttons (as on mes.fm/math-qa) */
+    .section-standalone-link {
+      margin: 0 0 0.6em;
+      font-weight: 600;
+    }
+
     .view-toggle {
       display: flex;
       gap: 0.5em;
@@ -1024,6 +1030,7 @@
 <div class="chapter-toggle" id="playlist">
 <h1 class="chapter-toggle-header" onclick="toggleChapter('playlist-list')"><center>Playlist <span id="arrowIcon-playlist-list" class="arrow-icon">&#9660;</span></center></h1>
 <div id="playlist-list" class="chapter-toggle-list">
+<p class="section-standalone-link"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EF05ExjzLbB64NgUjoV1hl" target="_blank" rel="noopener">&#9654;&#65039; Playlist</a></p>
 <div class="view-toggle">
   <button type="button" class="view-toggle-btn active" id="playlistGridBtn">Grid View</button>
   <button type="button" class="view-toggle-btn" id="playlistListBtn">List View</button>
