@@ -118,6 +118,14 @@ of HTML files individually:
   pages whose description is the whole article body (>320 chars; Google truncates, Bing doesn't flag) and the
   `1.html` "Page Not Found" pagination stubs.
 
+- `submit_indexnow.py` — pushes changed URLs to IndexNow (`api.indexnow.org`), so Bing/Yandex/etc. learn about them
+  without waiting for a crawl (Google doesn't support it; it relies on `sitemap.xml` + Search Console). Ownership key
+  is `mes.fm/<32-hex>.txt` (name == contents; committed on purpose, it's not a secret). Run *after* the deploy is live:
+  `python3 build_sitemap.py` (refreshes `<lastmod>` from git), push, wait for Vercel, then `python3
+  submit_indexnow.py` (dry run) / `--send`. Default selection is the sitemap's newest `<lastmod>` date; `--since DATE`,
+  `--all` (one-off after a site-wide pass) and `--url` adjust it. Dry-runs by default. Don't run it on a schedule —
+  IndexNow wants changed URLs only. Set up 2026-09-24 after Bing Webmaster Tools' "Set up IndexNow" recommendation.
+
 Run any of them with `python3 <script>.py` from anywhere (they resolve the repo root themselves). They print a
 per-file report; read the output rather than assuming success — `fix_broken_internal_links.py` additionally needs
 `--apply` to write anything, and reading its dry run first is the point.
