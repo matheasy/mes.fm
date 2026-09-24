@@ -470,7 +470,7 @@ ${leadingHtml}
   const reblogCount = post.reblogs ?? 0;
   const description =
     post.json_metadata?.description ||
-    `${title} — an index of MES Hutchison Effect videos, mirrored from the Hive blockchain.`;
+    `${title} — an index of every MES Hutchison Effect video and article, with thumbnails and links, mirrored from the Hive blockchain.`;
   // A curated comparison photo (twisted Hutchison Effect wrench next to the
   // WTC steel memorial sculpture) rather than the Hive post's own lead
   // image, so link previews show the page's actual hook instead of

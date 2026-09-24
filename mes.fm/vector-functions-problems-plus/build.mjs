@@ -529,9 +529,11 @@ ${leadingHtml}
     month: "long",
     day: "numeric",
   });
-  const description =
+  let description =
     (post.json_metadata && post.json_metadata.description) ||
     "Review of the Vector Functions chapter from James Stewart's Calculus -- 9 Concept Check questions and a 14-question True-False Quiz, worked through with full solutions and video. Mirrored from the Hive blockchain.";
+  // Bing flags meta descriptions under ~120 chars as too short; the Hive post's own is 81.
+  if (description.length < 120) description += " Full video solutions and written notes, mirrored from the Hive blockchain.";
   const ogImage =
     (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
     ((String(bodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||

@@ -286,6 +286,8 @@ def build_page(rec, template):
         n, title if title.endswith("?") else title + ".", blurb, "the Hive blockchain" if hive else "YouTube",
     )
     desc = re.sub(r"\s+", " ", desc).strip()
+    if len(desc) < 120:  # Bing flags meta descriptions this short; pad the stock-blurb pages a little
+        desc = desc.replace(" Mirrored from", " Watch the full livestream here. Mirrored from")
 
     origin = (
         'mirrored from the <a href="%s">Hive blockchain</a>' % esc_attr(hive_url)

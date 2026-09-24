@@ -207,7 +207,7 @@ function buildPage(meta) {
   <link rel="canonical" href="https://mes.fm/mathiew" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Mathiew Personal Content - personal videos and articles by Mathiew Estepho.">
+  <meta name="description" content="Mathiew Personal Content - personal videos and articles by Mathiew Estepho, collected in one place on Math Easy Solutions.">
   <meta name="keywords" content="Mathiew, Personal, Math Easy Solutions">
   <meta name="author" content="Mathiew Estepho">
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />

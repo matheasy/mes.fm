@@ -64,7 +64,7 @@ const PAGES = [
     slug: "spherical-harmonics",
     sectionId: "sphericalHarmonics",
     tileLabel: "Spherical Harmonics",
-    description: "A video tutorial on spherical harmonics, with written notes.",
+    description: "A video tutorial on spherical harmonics, with written notes: atomic orbitals and the Laplacian in polar and spherical coordinates.",
   },
   {
     slug: "vectors",

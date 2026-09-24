@@ -564,9 +564,11 @@ function buildPage(post, meta) {
   const voteCount = post.stats?.total_votes ?? 0;
   const commentCount = post.children ?? 0;
   const reblogCount = post.reblogs ?? 0;
-  const description =
+  // Bing flags meta descriptions under ~120 chars as too short; the Hive post's own is 119.
+  let description =
     post.json_metadata?.description ||
     "MES 9/11 Truth -- the full #911Truth video series, observable-evidence clips, livestreams, and links, mirrored from the Hive blockchain.";
+  if (description.length < 120) description += " Mirrored from the Hive blockchain.";
   const ogImage =
     (post.json_metadata && Array.isArray(post.json_metadata.image) && post.json_metadata.image[0]) ||
     ((String(articleBodyHtml).match(/<img[^>]+src="([^"]+)"/i) || [])[1]) ||
