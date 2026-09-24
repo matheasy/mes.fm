@@ -95,10 +95,12 @@ function readMetaTag(html, prop) {
 
 // Trailing "— Mirrored from the Hive blockchain…" style boilerplate that every
 // mirror page's og:description carries; drop it from the card excerpt.
+// The separator before it can be a dash or a comma ("… bid, mirrored from the
+// Hive blockchain by MES."), so strip either, or a stray comma is left behind.
 function cleanExcerpt(text, maxLen = 150) {
   let out = text
-    .replace(/\s*[-–—]*\s*mirrored from the hive blockchain.*$/i, "")
-    .replace(/\s*[-–—]*\s*mirrored from hive.*$/i, "")
+    .replace(/\s*[-–—,;:]*\s*mirrored from the hive blockchain.*$/i, "")
+    .replace(/\s*[-–—,;:]*\s*mirrored from hive.*$/i, "")
     .trim();
   if (out.length > maxLen) {
     const slice = out.slice(0, maxLen);

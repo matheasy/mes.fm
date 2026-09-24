@@ -97,8 +97,8 @@ function readMetaTag(html, prop) {
 // mirror page's og:description carries; drop it from the card excerpt.
 function cleanExcerpt(text, maxLen = 150) {
   let out = text
-    .replace(/\s*[-–—]*\s*mirrored from the hive blockchain.*$/i, "")
-    .replace(/\s*[-–—]*\s*mirrored from hive.*$/i, "")
+    .replace(/\s*[-–—,;:]*\s*mirrored from the hive blockchain.*$/i, "")
+    .replace(/\s*[-–—,;:]*\s*mirrored from hive.*$/i, "")
     .trim();
   if (out.length > maxLen) {
     const slice = out.slice(0, maxLen);
