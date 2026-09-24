@@ -251,7 +251,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		gap: 1em;
 		margin: 1em 0;
 	}
-	.icon-grid__link { display: block; }
+	.icon-grid__link { display: block; overflow: hidden; border-radius: 4px; }
 
 	/* icon-grid__link--labeled: every icon used to have its caption
 	   ("Calculators", etc.) baked into the bottom of the .jpg itself -- not
@@ -267,7 +267,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		aspect-ratio: 3 / 2;
 		background-size: cover;
 		background-position: center;
+		transition: transform 0.2s ease;
 	}
+	/* same subtle hover zoom as the tiles on mes.fm/math (the label bar stays put) */
+	.icon-grid__link:hover .icon-grid__thumb { transform: scale(1.03); }
 	.icon-grid__label {
 		position: absolute;
 		left: 0;
