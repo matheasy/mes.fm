@@ -178,6 +178,23 @@ of HTML files individually:
   4-column grid so the icons are ~2x bigger, and a `srcset` picking the 432px `-thumbnail.jpeg` where it exists.
   Reuses `widen_hub_pages.py`'s `THUMB_GRID`. Idempotent (`HUB-WIDE-LAYOUT`); **dry-runs by default, `--apply` writes.**
 
+- `convert_mirror_pages.py` — puts the bare Hive-mirror / link-hub pages (dark page, "<- mes.fm/911" back link, plain
+  footer) in the math-hub page format used by `911`/`hutchison`/`science`/the Q/A pages: branded header (logo, title,
+  tagline by hub: 911, hutchison, science, conspiracy, else the MES.fm mark), A-/A+/moon, hamburger nav, blue nav bar,
+  floating compact bar, "Part of <hub>" box, standard footer. Shell = `hive_mirror_template.html` (a copy of
+  `cubic-formula/child-template.html` with `@@BRAND_*@@` tokens). Three modes, picked per page: *standard* (rebuild from the
+  template, lifting h1 / subtitle / `<article>` / video scripts and any page-specific CSS rules out of the old page),
+  *chrome swap* (chaptered / multi-article pages: keep the body, swap only top bar, footer and scripts) and *hub swap*
+  (conspiracy / mathiew / crypto link hubs; also sets the conspiracy favicon + og:image). Never touches `moon` and `bg`;
+  `links`, `911djw`, `chatgpt` and the four tool-ish apps (`earth-curvature-calculator`, `gematria`,
+  `impermanent-loss-calculator`, `unit-conversion`) don't match and are left as they were. **Generators:** `911-alchemy`, `djw`,
+  `ferrocell-specular-reflection`, `hutchison-tom-sky`, `norman-patricia-ai-email`, `conspiracy` and `mathiew` still emit the
+  bare shell from `build.mjs`, so each `build.mjs` now ends by running `convert_mirror_pages.py --apply --only=<slug>` —
+  a rebuild re-applies the shell instead of reverting it (new mirrors cloned from those templates: same one-liner).
+  Idempotent (converted pages have an `#info-bar`); **dry-runs by default, `-v` lists pages, `--apply` writes.**
+  `mes.fm/img/conspiracy-{icon,logo,logo-big}.jpg` (tile 900x600, favicon/brand 512 square, og 1200x630) come from one
+  source image; the conspiracy tile sits last in the homepage `icon-grid`.
+
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3
   columns of taller stacked cards on >=900px; puzzles/memes stay 4 columns but fluid (thumbnails fill the page, `srcset`

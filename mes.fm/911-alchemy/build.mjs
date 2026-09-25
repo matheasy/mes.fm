@@ -15,6 +15,7 @@
 // becomes a direct HLS <video>, each with a theater-mode toggle.
 
 import { writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { marked } from "marked";
@@ -677,6 +678,10 @@ async function main() {
   const html = await buildPage(post);
   const outPath = join(__dirname, "index.html");
   writeFileSync(outPath, addImageLazyLoading(html), "utf8");
+  // This template still emits the bare Hive-mirror shell (top-bar / back link / plain footer). The math-hub page
+  // format (branded header, nav bar, floating bar, footer) is applied afterwards by convert_mirror_pages.py, so a
+  // rebuild never reverts it -- see that script and CLAUDE.md.
+  execFileSync("python3", [join(__dirname, "..", "..", "convert_mirror_pages.py"), "--apply", "--only=911-alchemy"], { stdio: "inherit" });
   console.log(`Wrote ${outPath}`);
 }
 
