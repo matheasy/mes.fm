@@ -47,29 +47,28 @@
 		};
 	}
 
-	function draw(dropTxt, hm) {
-		var svg = $("ec-svg"), cx = 320, r = 780, cy = 60 + r, phi = 0.27;
+	function draw(dropTxt) {
+		// schematic only: a circle of radius 520 (px), observer and object at +-0.22 rad, everything sized to sit inside the 640x260 box
+		var svg = $("ec-svg"), cx = 320, r = 520, cy = 657, phi = 0.22, half = 0.30, eye = 16;
 		function pt(a) { return [cx + r * Math.sin(a), cy - r * Math.cos(a)]; }
-		var o = pt(-phi), tg = pt(phi), tl = 1;
-		// tangent line at the observer
-		var tx = Math.cos(-phi), ty = Math.sin(-phi);         // tangent direction (perpendicular to the radius)
-		var x2 = 600, s = (x2 - o[0]) / tx, y2 = o[1] + s * ty;
-		var sx = tg[0], sy = o[1] + ((sx - o[0]) / tx) * ty;   // tangent line at the target's x position
-		var eye = 34;
-		var arc = "M" + pt(-0.34)[0] + " " + pt(-0.34)[1] + " A " + r + " " + r + " 0 0 1 " + pt(0.34)[0] + " " + pt(0.34)[1];
+		var o = pt(-phi), tg = pt(phi), a0 = pt(-half), a1 = pt(half);
+		var rise = Math.tan(phi) * (tg[0] - o[0]);              // how far the ground tangent climbs above the arc by the object's x
+		var gy = o[1] - rise;                                    // ground tangent height at the object
+		var arc = "M" + a0[0] + " " + a0[1] + " A " + r + " " + r + " 0 0 1 " + a1[0] + " " + a1[1];
 		svg.innerHTML =
-			'<path class="tu-svg-tint" d="' + arc + ' L ' + pt(0.34)[0] + ' 230 L ' + pt(-0.34)[0] + ' 230 Z"/>' +
+			'<path class="tu-svg-tint" d="' + arc + ' L ' + a1[0] + ' 250 L ' + a0[0] + ' 250 Z"/>' +
 			'<path class="tu-svg-line" d="' + arc + '"/>' +
-			'<line class="tu-svg-accent" x1="' + o[0] + '" y1="' + (o[1] - eye) + '" x2="' + sx + '" y2="' + (sy - eye) + '" stroke-dasharray="6 5"/>' +
+			'<line class="tu-svg-grid" x1="' + o[0] + '" y1="' + o[1] + '" x2="' + tg[0] + '" y2="' + gy + '" stroke-dasharray="2 4"/>' +
+			'<line class="tu-svg-accent" x1="' + o[0] + '" y1="' + (o[1] - eye) + '" x2="' + tg[0] + '" y2="' + (gy - eye) + '" stroke-dasharray="7 5"/>' +
 			'<line class="tu-svg-line" x1="' + o[0] + '" y1="' + o[1] + '" x2="' + o[0] + '" y2="' + (o[1] - eye) + '"/>' +
 			'<circle class="tu-svg-fill" cx="' + o[0] + '" cy="' + (o[1] - eye) + '" r="5"/>' +
-			'<line class="tu-svg-line" x1="' + sx + '" y1="' + tg[1] + '" x2="' + sx + '" y2="' + sy + '"/>' +
+			'<line class="tu-svg-line" x1="' + tg[0] + '" y1="' + tg[1] + '" x2="' + tg[0] + '" y2="' + gy + '"/>' +
 			'<circle class="tu-svg-fill" cx="' + tg[0] + '" cy="' + tg[1] + '" r="6"/>' +
-			'<text class="tu-svg-text" x="' + (o[0] - 10) + '" y="' + (o[1] - eye / 2) + '" text-anchor="end">you</text>' +
-			'<text class="tu-svg-text" x="' + (tg[0] - 4) + '" y="' + (tg[1] + 24) + '" text-anchor="end">object</text>' +
-			'<text class="tu-svg-text" x="' + (sx + 8) + '" y="' + ((tg[1] + sy) / 2 + 4) + '">drop: ' + dropTxt + '</text>' +
-			'<text class="tu-svg-text" x="' + ((o[0] + sx) / 2) + '" y="' + (o[1] - eye - 26) + '" text-anchor="middle">straight line of sight</text>' +
-			'<text class="tu-svg-text" x="' + cx + '" y="222" text-anchor="middle">curved surface of the Earth</text>';
+			'<text class="tu-svg-text" x="' + (o[0] - 10) + '" y="' + (o[1] - eye + 4) + '" text-anchor="end">you</text>' +
+			'<text class="tu-svg-text" x="' + (tg[0] + 12) + '" y="' + (tg[1] + 22) + '">object</text>' +
+			'<text class="tu-svg-text" x="' + (tg[0] + 12) + '" y="' + ((tg[1] + gy) / 2 + 4) + '">drop: ' + dropTxt + '</text>' +
+			'<text class="tu-svg-text" x="' + ((o[0] + tg[0]) / 2) + '" y="' + (o[1] - eye - rise / 2 - 18) + '" text-anchor="middle">straight line of sight</text>' +
+			'<text class="tu-svg-text" x="' + cx + '" y="240" text-anchor="middle">curved surface of the Earth</text>';
 	}
 
 	function renderTable(c) {
@@ -112,7 +111,7 @@
 		}
 		$("ec-hidden").textContent = hidTxt;
 		$("ec-hidden-sub").textContent = sub;
-		draw(fmtLen(drop).split(" (")[0], c.hm);
+		draw(fmtLen(drop).split(" (")[0]);
 		renderTable(c);
 	}
 
