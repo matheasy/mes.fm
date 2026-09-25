@@ -137,7 +137,7 @@ of HTML files individually:
   Per-family insertion anchors live in `STRATEGIES`/`SPECIAL`; the same block is patched into every `build.mjs`,
   `cubic-formula/child-template.html` and `math_qa_mirror_template.html`, so a rebuild keeps it (new mirror pages cloned
   from those templates get it for free; for other new pages run the script). Pages no strategy matches (contact,
-  stats, `_https_` captures, pagination stubs) are left comment-free on purpose. Idempotent (`FASTCOMMENTS-BLOCK`
+  `_https_` captures, pagination stubs) are left comment-free on purpose. Idempotent (`FASTCOMMENTS-BLOCK`
   marker); **dry-runs by default, `-v` lists every file, `--apply` writes.**
 
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to

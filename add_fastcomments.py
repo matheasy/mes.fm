@@ -19,7 +19,7 @@ Two jobs, both keyed on the shared markup
    standalone pages that don't load main.js/jQuery). Each page family has its own insertion anchor (see
    STRATEGIES); the generators' templates (`build.mjs`, `cubic-formula/child-template.html`,
    `math_qa_mirror_template.html`) get the same block so a rebuild doesn't drop it. Pages no strategy matches are
-   reported, never touched -- that is how contact/privacy/donate/stats and the HTTrack `_https_` captures stay
+   reported, never touched -- that is how contact/privacy/donate and the HTTrack `_https_` captures stay
    comment-free.
 
 Run `python3 add_fastcomments.py` (dry run, `-v` lists every file) and `--apply` once the report looks right.
