@@ -145,11 +145,16 @@ def chrome_swap(old, template):
     tpl = template
     compact = fill_brand(block(tpl, '<div id="compact-nav"'), b, partof)
     top = fill_brand(block(tpl, '<div class="top-bar">'), b, partof)
-    top = re.sub(r'\s*<button id="textSize(Down|Up)"[^>]*>[^<]*</button>', "", top)   # no text-size handler on these pages
     nav = block(tpl, '<div class="info-bar-container"')
     part = block(tpl, '<div class="part-of">').replace("@@PARTOF@@", partof)
     footer = tpl[tpl.index('<div id="footer"'): tpl.index("getFullYear();</script>") + len("getFullYear();</script>")]
     tail = fill_brand(tpl[tpl.index('<script src="https://ajax.googleapis.com/ajax/libs/jquery'): tpl.index("</body>")], b, partof)
+    # A-/A+ scale the page through zoom-text-size.js (no <article> here); pages with a table of contents also get the
+    # floating bar's "Jump to" button
+    extra = '<script src="/main_js/zoom-text-size.js?v=1" defer></script>'
+    if "toc-mobile" in old:
+        extra += '<script src="/main_js/jump-to.js?v=2" defer></script>'
+    tail = tail.replace('<script src="/main_js/info-bar-fit.js" defer></script>', '<script src="/main_js/info-bar-fit.js" defer></script>' + extra, 1)
     tcss = re.search(r"<style>(.*?)</style>", tpl, re.S).group(1)
     chrome = [txt for sel, txt in css_items(tcss) if CHROME_SEL.search(sel) or (sel.startswith("@media") and CHROME_SEL.search(txt))]
     css = style.group(1).rstrip() + "\n\n    /* site chrome (branded header, nav bar, floating bar, footer) */\n    " + "\n    ".join(chrome) + "\n"

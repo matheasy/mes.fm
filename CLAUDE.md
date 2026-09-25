@@ -205,6 +205,20 @@ of HTML files individually:
   drawn with Pillow** — replace the files, same names, when real (Grok) art exists. `moon` is a card on `tools.html`; the four apps are cards on `calculators.html` (their info-bar section link says Calculators). Moon's real Grok art is in (`moon/img/logo.png`, `img/moon-logo.png`, `moon/img/logo-big.png`); the four apps' art is still placeholder.
   Start a new tool page from `tool_page_template.html` the same way.
 
+- `add_jump_to_bar.py` — two small header-bar features for long pages. (1) **"Jump to" in the floating bar:**
+  `main_js/jump-to.js` adds a list-icon "Jump to" button to `#compact-nav` (label hides under 440px; hidden while the
+  `.toc-sidebar` is visible, i.e. >= 1300px) that opens the page's own `.toc-mobile .toc-links` list as a dropdown under
+  the bar, keeps the `.toc-sub` indentation, and on tap *clicks the original link* so page TOC handlers (cubic-formula's
+  chapter-expand) still run; it also sets `html{scroll-padding-top:64px}` so anchored headings clear the bar. Tags go on
+  every page with a `.toc-mobile .toc-links` list (911, hutchison, moon, ferrocell, hutchison-tom-sky, norman-patricia,
+  vector-functions-problems-plus, cubic-formula) and into the `build.mjs` templates that emit their own shell (911,
+  hutchison, vector-functions-problems-plus, cubic-formula); mirror pages built by `convert_mirror_pages.py` get the tag
+  from it. (2) **A-/A+ on the custom-layout mirrors** (moon, ferrocell, hutchison-tom-sky, norman-patricia, djw, ufo):
+  the buttons are back in the header (so in the floating bar too) and `main_js/zoom-text-size.js` scales the page with
+  CSS `zoom` (they have no `<article>` for the standard text-size script). Idempotent; **dry-runs by default,
+  `--apply` writes.** Bump `?v=` in the script when either JS file changes. To offer "Jump to" on another page family:
+  give it a `.toc-mobile .toc-links` list and a `#compact-nav`, then run it.
+
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3
   columns of taller stacked cards on >=900px; puzzles/memes stay 4 columns but fluid (thumbnails fill the page, `srcset`
