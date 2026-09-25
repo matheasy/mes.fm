@@ -213,6 +213,15 @@ of HTML files individually:
   the corners cut transparent, `<slug>/img/logo-big.png`); all four share images are real Grok art now. Start a new tool
   page from `tool_page_template.html` the same way.
 
+- `organize_hub_cards.py` — organises the card hubs `calculators.html` and `tools.html` into categories with a search
+  box: cards are grouped by the `PAGES` table (calculators: School & Grades, Money & Finance, Everyday Math & Health,
+  Science & Fun; tools: Text & Symbols, Time & Focus, Media & Web, Sky & Space), sorted A-Z inside a category, and emitted
+  as one `<section class="hub-cat">` (heading + its own `.tbl` grid) per category under a search input and category chips
+  (with counts). `main_js/hub-filter.js` filters live (every word must match title + description; `#<category>` in the URL
+  preselects a chip; Esc clears). **To add a calculator or tool:** put its `<td class="calc-container">` card anywhere in
+  the page's last table, add its slug to the right category in `PAGES` (unmapped cards land in a trailing "More" section
+  and are reported) and re-run. Idempotent; **dry-runs by default, `--apply` writes.**
+
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3
   columns of taller stacked cards on >=900px; puzzles/memes stay 4 columns but fluid (thumbnails fill the page, `srcset`

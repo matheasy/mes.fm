@@ -524,6 +524,42 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                         <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->                        <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Tools</h1>                                        <p class="page-description">Free online tools for all your needs.</p>	<div id="main-content">
+		<div class="hub-filter">
+			<input type="search" id="hub-search" placeholder="Search tools&hellip;" aria-label="Search tools" autocomplete="off">
+			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (9)</button><button type="button" data-c="text" aria-pressed="false">Text &amp; Symbols (3)</button><button type="button" data-c="time" aria-pressed="false">Time &amp; Focus (3)</button><button type="button" data-c="media" aria-pressed="false">Media &amp; Web (2)</button><button type="button" data-c="sky" aria-pressed="false">Sky &amp; Space (1)</button></div>
+		</div>
+		<section class="hub-cat" data-cat="text" id="text">
+			<h2 class="hub-cat__title">Text &amp; Symbols</h2>
+		<table class="tbl tbl--stack">
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/emoji">
+					<div class="calc__img-container"><img class="calc__img" src="img/emoji-logo.png?v=2" alt="MES Emoji Copier logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Emoji Copier</span>
+						<span class="calc__text--desc">Click to copy any emoji instantly, or expand it into a large transparent-background PNG for thumbnails.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/latex">
+					<div class="calc__img-container"><img class="calc__img" src="img/latex-logo.png" alt="MES LaTeX Render logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">LaTeX Render</span>
+						<span class="calc__text--desc">Paste LaTeX and see it rendered instantly &mdash; equations, environments and full documents.</span>
+					</div></a>
+		        </td>
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/symbols">
+					<div class="calc__img-container"><img class="calc__img" src="img/symbols-logo.png?v=2" alt="MES Symbol Copier logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Symbol Copier</span>
+						<span class="calc__text--desc">Click to copy &pi;, &deg;, &phi;, &theta;, superscripts, fractions and more &mdash; Greek letters and math symbols, one click each.</span>
+					</div></a>
+		        </td>
+			</tr>
+		</table>
+		</section>
+		<section class="hub-cat" data-cat="time" id="time">
+			<h2 class="hub-cat__title">Time &amp; Focus</h2>
 		<table class="tbl tbl--stack">
 			<tr class="calc-row">
 				<td class="calc-container"><a class="calc-link" href="https://mes.fm/speedreader">
@@ -540,24 +576,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="calc__text--desc">Online timer that also shows up on the browser tab, stopwatch, alarm clock and more!</span>
 					</div></a>
 		        </td>
-		    </tr>
-		    <tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/stats">
-					<div class="calc__img-container"><img class="calc__img" src="img/stats-logo.png" alt="MES Stats logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">MES Stats</span>
-						<span class="calc__text--desc">Most viewed pages across mes.fm and its calculator subdomains, updated live.</span>
-					</div></a>
-		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/latex">
-					<div class="calc__img-container"><img class="calc__img" src="img/latex-logo.png" alt="MES LaTeX Render logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">LaTeX Render</span>
-						<span class="calc__text--desc">Paste LaTeX and see it rendered instantly &mdash; equations, environments and full documents.</span>
-					</div></a>
-		        </td>
-		    </tr>
-		    <tr class="calc-row">
+			</tr>
+			<tr class="calc-row">
 				<td class="calc-container"><a class="calc-link" href="https://mes.fm/timezone">
 					<div class="calc__img-container"><img class="calc__img" src="img/timezone-logo.png" alt="MES Timezone Converter logo" width="88" height="88"></div>
 					<div class="calc__text">
@@ -565,20 +585,18 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="calc__text--desc">Convert a time between Vancouver / Richmond, BC and any city in the world &mdash; daylight saving handled automatically.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/symbols">
-					<div class="calc__img-container"><img class="calc__img" src="img/symbols-logo.png?v=2" alt="MES Symbol Copier logo" width="88" height="88"></div>
+			</tr>
+		</table>
+		</section>
+		<section class="hub-cat" data-cat="media" id="media">
+			<h2 class="hub-cat__title">Media &amp; Web</h2>
+		<table class="tbl tbl--stack">
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/stats">
+					<div class="calc__img-container"><img class="calc__img" src="img/stats-logo.png" alt="MES Stats logo" width="88" height="88"></div>
 					<div class="calc__text">
-						<span class="calc__text--title">Symbol Copier</span>
-						<span class="calc__text--desc">Click to copy &pi;, &deg;, &phi;, &theta;, superscripts, fractions and more &mdash; Greek letters and math symbols, one click each.</span>
-					</div></a>
-		        </td>
-		    </tr>
-		    <tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/emoji">
-					<div class="calc__img-container"><img class="calc__img" src="img/emoji-logo.png?v=2" alt="MES Emoji Copier logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">Emoji Copier</span>
-						<span class="calc__text--desc">Click to copy any emoji instantly, or expand it into a large transparent-background PNG for thumbnails.</span>
+						<span class="calc__text--title">MES Stats</span>
+						<span class="calc__text--desc">Most viewed pages across mes.fm and its calculator subdomains, updated live.</span>
 					</div></a>
 		        </td>
 				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/youtube-thumbnail">
@@ -588,17 +606,24 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="calc__text--desc">Paste a YouTube, 3Speak, BitChute, Odysee, or Rumble video link and instantly get its thumbnail plus a direct link to it.</span>
 					</div></a>
 		        </td>
-		    </tr>
-		    <tr class="calc-row">
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/moon">
+			</tr>
+		</table>
+		</section>
+		<section class="hub-cat" data-cat="sky" id="sky">
+			<h2 class="hub-cat__title">Sky &amp; Space</h2>
+		<table class="tbl tbl--stack">
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/moon">
 					<div class="calc__img-container"><img class="calc__img" src="img/moon-logo.png?v=2" alt="MES Moon logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Moon, Sun &amp; Planets</span>
 						<span class="calc__text--desc">A live sky dashboard for any location: moon phase, sunrise and sunset, moonrise and moonset, planets, air quality and astronomy notes.</span>
 					</div></a>
 		        </td>
-		    </tr>
-		 </table>
+			</tr>
+		</table>
+		</section>
+		<p id="hub-empty" hidden>Nothing matches that search &mdash; try a shorter word.</p>
 	</div>
                                     <!-- (Responsive) Rectangle Ad -->                                    <!-- PC (Responsive/Rectangle) Matched Content -->                                    <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
@@ -731,7 +756,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     window.addEventListener('resize', function () { if (stuck) fit(); });
     update();
   })();
-</script><script src="/main_js/display-controls.js?v=1.6" defer></script>
+</script><script src="/main_js/display-controls.js?v=1.6" defer></script><script src="/main_js/hub-filter.js?v=1" defer></script>
 </body>
 
 <!-- Mirrored from mes.fm/tools by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:42:29 GMT -->

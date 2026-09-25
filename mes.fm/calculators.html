@@ -527,6 +527,95 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                         <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                        <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Calculators</h1>                                        <p class="page-description">Free online calculators for all your needs.</p>	<div id="main-content">
+		<div class="hub-filter">
+			<input type="search" id="hub-search" placeholder="Search calculators&hellip;" aria-label="Search calculators" autocomplete="off">
+			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (15)</button><button type="button" data-c="school" aria-pressed="false">School &amp; Grades (4)</button><button type="button" data-c="money" aria-pressed="false">Money &amp; Finance (5)</button><button type="button" data-c="everyday" aria-pressed="false">Everyday Math &amp; Health (3)</button><button type="button" data-c="fun" aria-pressed="false">Science &amp; Fun (3)</button></div>
+		</div>
+		<section class="hub-cat" data-cat="school" id="school">
+			<h2 class="hub-cat__title">School &amp; Grades</h2>
+		<table class="tbl tbl--stack">
+			<tr class="calc-row">
+		        <td class="calc-container"><a class="calc-link" href="https://mes.fm/gradecalculator/br">
+		            <div class="calc__img-container"><img class="calc__img" src="img/gc-logo.png" alt="logotipo calculadora grau" width="88" height="88"></div>
+		              <div class="calc__text">
+			              <span class="calc__text--title">Calculadora Nota Final</span>
+			              <span class="calc__text--desc">Calcule o que você precisa em seu exame para passar o curso.</span>
+			          </div></a>
+		        </td>
+		        <td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/gpacalculator">
+		            <div class="calc__img-container"><img class="calc__img" src="img/gpa-logo.png" alt="gpa calculator logo" width="88" height="88"></div>
+		            <div class="calc__text">
+			            <span class="calc__text--title">GPA Calculator</span>
+			            <span class="calc__text--desc">Calculate your GPA using your letter grades or percentages.</span>
+			        </div></a>
+		        </td>
+			</tr>
+			<tr class="calc-row">
+		      	<td class="calc-container"><a class="calc-link" href="https://mes.fm/gradecalculator">
+		            <div class="calc__img-container"><img class="calc__img" src="img/gc-logo.png" alt="grade calculator logo" width="88" height="88"></div>
+		              <div class="calc__text">
+			              <span class="calc__text--title">Grade Calculator</span>
+			              <span class="calc__text--desc">Calculate what you need on your exam to to pass the course.</span>
+			          </div></a>
+		    	</td>
+		        <td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/gradecalculator/weighted-average-calculator">
+		            <div class="calc__img-container"><img class="calc__img" src="img/wac-logo.png" alt="weighted average calculator logo" width="88" height="88"></div>
+		              <div class="calc__text">
+			              <span class="calc__text--title">Weighted Average Calculator</span>
+			              <span class="calc__text--desc">Calculate your weighted average course grade.</span>
+			          </div></a>
+		        </td>
+			</tr>
+		</table>
+		</section>
+		<section class="hub-cat" data-cat="money" id="money">
+			<h2 class="hub-cat__title">Money &amp; Finance</h2>
+		<table class="tbl tbl--stack">
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/impermanent-loss-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/impermanent-loss-logo.png?v=2" alt="MES Impermanent Loss Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Impermanent Loss Calculator</span>
+						<span class="calc__text--desc">Work out impermanent loss in a liquidity pool and compare it with simply holding the assets.</span>
+					</div></a>
+		        </td>
+		      	<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/inflationcalculator">
+		            <div class="calc__img-container"><img class="calc__img" src="img/ic-logo.png" alt="inflation calculator logo" width="88" height="88"></div>
+		            <div class="calc__text">
+			            <span class="calc__text--title">Inflation Calculator</span>
+			              <span class="calc__text--desc">Calculate a country's inflation rate within two different years.</span>
+			          </div></a>
+		        </td>
+			</tr>
+			<tr class="calc-row">
+		        <td class="calc-container"><a class="calc-link" href="https://mes.fm/mortgagecalculator">
+		            <div class="calc__img-container"><img class="calc__img" src="img/mc-logo.png" alt="mortgage calculator logo" width="88" height="88"></div>
+		              <div class="calc__text">
+			              <span class="calc__text--title">Mortgage Calculator</span>
+			              <span class="calc__text--desc">Calculate your Monthly Mortgage Payment.</span>
+			          </div></a>
+		        </td>
+		      	<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/vatcalculator">
+		            <div class="calc__img-container"><img class="calc__img" src="img/vat-logo.png" alt="vat calculator logo" width="88" height="88"></div>
+		              <div class="calc__text">
+			              <span class="calc__text--title">VAT Calculator</span>
+			              <span class="calc__text--desc">Calculate a VAT (Value Added Tax) after adding or removing tax.</span>
+			          </div></a>
+		        </td>
+			</tr>
+			<tr class="calc-row">
+		      	<td class="calc-container"><a class="calc-link" href="https://mes.fm/youtubemoney/index.html">
+		            <div class="calc__img-container"><img class="calc__img" src="img/ymc-logo.png" alt="youtube money calculator logo" width="88" height="88"></div>
+		              <div class="calc__text">
+			              <span class="calc__text--title">Youtube Money Calculator</span>
+			              <span class="calc__text--desc">Calculate how much money you can make from YouTube.</span>
+			          </div></a>
+		        </td>
+			</tr>
+		</table>
+		</section>
+		<section class="hub-cat" data-cat="everyday" id="everyday">
+			<h2 class="hub-cat__title">Everyday Math &amp; Health</h2>
 		<table class="tbl tbl--stack">
 			<tr class="calc-row">
 				<td class="calc-container"><a class="calc-link" href="https://mes.fm/bmicalculator">
@@ -536,111 +625,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="calc__text--desc">Calculate your BMI (Body Mass Index) using your height and weight.</span>
 					</div></a>
 		        </td>
-		        <td class="calc-container"><a class="calc-link" href="https://mes.fm/percentagecalculator">
+		        <td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/percentagecalculator">
 		            <div class="calc__img-container"><img class="calc__img" src="img/pc-logo.png" alt="percentage calculator logo" width="88" height="88"></div>
 		            <div class="calc__text">
 			            <span class="calc__text--title">Percentage Calculator</span>
 			            <span class="calc__text--desc">Calculate various percentages and convert ratios to percentages.</span>
 			        </div></a>
 		        </td>
-		    </tr>
-		    <tr class="calc-row">
-		      	<td class="calc-container"><a class="calc-link" href="https://mes.fm/gradecalculator">
-		            <div class="calc__img-container"><img class="calc__img" src="img/gc-logo.png" alt="grade calculator logo" width="88" height="88"></div>
-		              <div class="calc__text">
-			              <span class="calc__text--title">Grade Calculator</span>
-			              <span class="calc__text--desc">Calculate what you need on your exam to to pass the course.</span>
-			          </div></a>
-		    	</td>
-		        <td class="calc-container"><a class="calc-link" href="https://mes.fm/gpacalculator">
-		            <div class="calc__img-container"><img class="calc__img" src="img/gpa-logo.png" alt="gpa calculator logo" width="88" height="88"></div>
-		            <div class="calc__text">
-			            <span class="calc__text--title">GPA Calculator</span>
-			            <span class="calc__text--desc">Calculate your GPA using your letter grades or percentages.</span>
-			        </div></a>
-		        </td>
-		    </tr>
-		    <tr class="calc-row">
-		      	<td class="calc-container"><a class="calc-link" href="https://mes.fm/youtubemoney/index.html">
-		            <div class="calc__img-container"><img class="calc__img" src="img/ymc-logo.png" alt="youtube money calculator logo" width="88" height="88"></div>
-		              <div class="calc__text">
-			              <span class="calc__text--title">Youtube Money Calculator</span>
-			              <span class="calc__text--desc">Calculate how much money you can make from YouTube.</span>
-			          </div></a>
-		        </td>
-		        <td class="calc-container"><a class="calc-link" href="https://mes.fm/mortgagecalculator">
-		            <div class="calc__img-container"><img class="calc__img" src="img/mc-logo.png" alt="mortgage calculator logo" width="88" height="88"></div>
-		              <div class="calc__text">
-			              <span class="calc__text--title">Mortgage Calculator</span>
-			              <span class="calc__text--desc">Calculate your Monthly Mortgage Payment.</span>
-			          </div></a>
-		        </td>
-		   	</tr>
-		    <tr class="calc-row">
-		      	<td class="calc-container"><a class="calc-link" href="https://mes.fm/inflationcalculator">
-		            <div class="calc__img-container"><img class="calc__img" src="img/ic-logo.png" alt="inflation calculator logo" width="88" height="88"></div>
-		            <div class="calc__text">
-			            <span class="calc__text--title">Inflation Calculator</span>
-			              <span class="calc__text--desc">Calculate a country's inflation rate within two different years.</span>
-			          </div></a>
-		        </td>
-		        <td class="calc-container"><a class="calc-link" href="https://mes.fm/gradecalculator/weighted-average-calculator">
-		            <div class="calc__img-container"><img class="calc__img" src="img/wac-logo.png" alt="weighted average calculator logo" width="88" height="88"></div>
-		              <div class="calc__text">
-			              <span class="calc__text--title">Weighted Average Calculator</span>
-			              <span class="calc__text--desc">Calculate your weighted average course grade.</span>
-			          </div></a>
-		        </td>
-		    </tr>
-		    <tr class="calc-row">
-		      	<td class="calc-container"><a class="calc-link" href="https://mes.fm/vatcalculator">
-		            <div class="calc__img-container"><img class="calc__img" src="img/vat-logo.png" alt="vat calculator logo" width="88" height="88"></div>
-		              <div class="calc__text">
-			              <span class="calc__text--title">VAT Calculator</span>
-			              <span class="calc__text--desc">Calculate a VAT (Value Added Tax) after adding or removing tax.</span>
-			          </div></a>
-		        </td>
-		        <td class="calc-container"><a class="calc-link" href="https://mes.fm/gradecalculator/br">
-		            <div class="calc__img-container"><img class="calc__img" src="img/gc-logo.png" alt="logotipo calculadora grau" width="88" height="88"></div>
-		              <div class="calc__text">
-			              <span class="calc__text--title">Calculadora Nota Final</span>
-			              <span class="calc__text--desc">Calcule o que você precisa em seu exame para passar o curso.</span>
-			          </div></a>
-		        </td>
-		    </tr>
-		    <tr class="calc-row">
-	<td class="calc-container"><a class="calc-link" href="https://mes.fm/pokemongocalculator">
-		            <div class="calc__img-container"><img class="calc__img" src="img/pgc-logo.png" alt="pokemon go calculator logo" width="88" height="88"></div>
-		              <div class="calc__text">
-			              <span class="calc__text--title">Pokemon Go Calculator</span>
-			              <span class="calc__text--desc">Calculate how many pokemon you need to transfer before using your lucky egg.</span>
-			          </div></a>
-		        </td>
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/earth-curvature-calculator">
-					<div class="calc__img-container"><img class="calc__img" src="img/earth-curvature-logo.png?v=2" alt="MES Earth Curvature Calculator logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">Earth Curvature Calculator</span>
-						<span class="calc__text--desc">Enter a distance in kilometers or miles and see how much the Earth curves over it.</span>
-					</div></a>
-		        </td>
-		    </tr>
-		    <tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/gematria">
-					<div class="calc__img-container"><img class="calc__img" src="img/gematria-logo.png?v=2" alt="MES Gematria Calculator logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">Gematria Calculator</span>
-						<span class="calc__text--desc">Ordinal and Sumerian gematria values for any word or phrase, with a downloadable spreadsheet.</span>
-					</div></a>
-		        </td>
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/impermanent-loss-calculator">
-					<div class="calc__img-container"><img class="calc__img" src="img/impermanent-loss-logo.png?v=2" alt="MES Impermanent Loss Calculator logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">Impermanent Loss Calculator</span>
-						<span class="calc__text--desc">Work out impermanent loss in a liquidity pool and compare it with simply holding the assets.</span>
-					</div></a>
-		        </td>
-		    </tr>
-		    <tr class="calc-row">
+			</tr>
+			<tr class="calc-row">
 				<td class="calc-container"><a class="calc-link" href="https://mes.fm/unit-conversion">
 					<div class="calc__img-container"><img class="calc__img" src="img/unit-conversion-logo.png?v=2" alt="MES Unit Conversion Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
@@ -648,9 +641,40 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="calc__text--desc">Convert feet to meters, mph to km/h, pounds to kilograms and many more units.</span>
 					</div></a>
 		        </td>
-		    </tr>
+			</tr>
 		</table>
-
+		</section>
+		<section class="hub-cat" data-cat="fun" id="fun">
+			<h2 class="hub-cat__title">Science &amp; Fun</h2>
+		<table class="tbl tbl--stack">
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/earth-curvature-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/earth-curvature-logo.png?v=2" alt="MES Earth Curvature Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Earth Curvature Calculator</span>
+						<span class="calc__text--desc">Enter a distance in kilometers or miles and see how much the Earth curves over it.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/gematria">
+					<div class="calc__img-container"><img class="calc__img" src="img/gematria-logo.png?v=2" alt="MES Gematria Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Gematria Calculator</span>
+						<span class="calc__text--desc">Ordinal and Sumerian gematria values for any word or phrase, with a downloadable spreadsheet.</span>
+					</div></a>
+		        </td>
+			</tr>
+			<tr class="calc-row">
+	<td class="calc-container"><a class="calc-link" href="https://mes.fm/pokemongocalculator">
+		            <div class="calc__img-container"><img class="calc__img" src="img/pgc-logo.png" alt="pokemon go calculator logo" width="88" height="88"></div>
+		              <div class="calc__text">
+			              <span class="calc__text--title">Pokemon Go Calculator</span>
+			              <span class="calc__text--desc">Calculate how many pokemon you need to transfer before using your lucky egg.</span>
+			          </div></a>
+		        </td>
+			</tr>
+		</table>
+		</section>
+		<p id="hub-empty" hidden>Nothing matches that search &mdash; try a shorter word.</p>
 			</div>
                                     <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
@@ -792,7 +816,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     window.addEventListener('resize', function () { if (stuck) fit(); });
     update();
   })();
-</script><script src="/main_js/display-controls.js?v=1.6" defer></script>
+</script><script src="/main_js/display-controls.js?v=1.6" defer></script><script src="/main_js/hub-filter.js?v=1" defer></script>
 </body>
 
 <!-- Mirrored from mes.fm/calculators by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:42:27 GMT -->
