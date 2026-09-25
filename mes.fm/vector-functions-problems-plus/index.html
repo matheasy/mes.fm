@@ -785,6 +785,67 @@
       #compact-nav { padding-right: 160px; gap: 8px; }
       body.is-stuck .header-controls { right: 56px; }
     }
+    /* LIGHTBOX-ZOOM-INSERTED */
+    .lightbox-zoom-controls {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 2147483647;
+    }
+
+    .lightbox-zoom-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+      font-size: 1.2em;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-zoom-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .lightbox-zoom-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .lightbox-zoom-level {
+      min-width: 3.4em;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      padding: 5px 8px;
+      border-radius: 999px;
+    }
+
+    #lightboxImage {
+      transition: transform 0.15s ease;
+    }
+
+    #lightboxImage.zoomed {
+      cursor: grab;
+    }
+
+    #lightboxImage.dragging {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
+    }
 </style>
   <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -833,14 +894,15 @@
       <a href="#playlist">Playlist</a>
       <a href="#overview">Full Video</a>
       <a href="#links-and-calculus-book-chapter">Links and Calculus Book Chapter</a>
-      <a href="#problems-plus-notes">Problems Plus – Notes</a>
-      <a href="#solution-to-problem-1-projectile-fired-from-origin">Solution to Problem 1: Projectile fired from origin</a>
-      <a href="#solution-to-problem-2-projectile-fired-down-inclined-plane">Solution to Problem 2: Projectile fired down inclined plane</a>
-      <a href="#solution-to-problem-3-ball-rolls-off-table">Solution to Problem 3: Ball rolls off table</a>
-      <a href="#solution-to-problem-4-curvature-from-parametric-equations">Solution to Problem 4: Curvature from Parametric Equations</a>
-      <a href="#solution-to-problem-5-total-distance-traveled-by-projectile">Solution to Problem 5: Total distance traveled by projectile</a>
-      <a href="#solution-to-problem-6-cable-wound-around-a-spool">Solution to Problem 6: Cable wound around a spool</a>
-      <a href="#solution-to-problem-7-vector-equation-on-a-plane">Solution to Problem 7: Vector equation on a plane</a>
+      <a href="#problems-plus-questions">Problems Plus – Questions</a>
+      <a href="#problems-plus-solutions">Problems Plus - Solutions</a>
+      <a href="#problem-1-projectile-fired-from-origin">Problem 1: Projectile fired from origin</a>
+      <a href="#problem-2-projectile-fired-down-inclined-plane">Problem 2: Projectile fired down inclined plane</a>
+      <a href="#problem-3-ball-rolls-off-table">Problem 3: Ball rolls off table</a>
+      <a href="#problem-4-curvature-from-parametric-equations">Problem 4: Curvature from Parametric Equations</a>
+      <a href="#problem-5-total-distance-traveled-by-projectile">Problem 5: Total distance traveled by projectile</a>
+      <a href="#problem-6-cable-wound-around-a-spool">Problem 6: Cable wound around a spool</a>
+      <a href="#problem-7-vector-equation-on-a-plane">Problem 7: Vector equation on a plane</a>
   </nav>
   <div class="container">
     <div class="top-bar">
@@ -928,14 +990,15 @@
         <a href="#playlist">Playlist</a>
       <a href="#overview">Full Video</a>
       <a href="#links-and-calculus-book-chapter">Links and Calculus Book Chapter</a>
-      <a href="#problems-plus-notes">Problems Plus – Notes</a>
-      <a href="#solution-to-problem-1-projectile-fired-from-origin">Solution to Problem 1: Projectile fired from origin</a>
-      <a href="#solution-to-problem-2-projectile-fired-down-inclined-plane">Solution to Problem 2: Projectile fired down inclined plane</a>
-      <a href="#solution-to-problem-3-ball-rolls-off-table">Solution to Problem 3: Ball rolls off table</a>
-      <a href="#solution-to-problem-4-curvature-from-parametric-equations">Solution to Problem 4: Curvature from Parametric Equations</a>
-      <a href="#solution-to-problem-5-total-distance-traveled-by-projectile">Solution to Problem 5: Total distance traveled by projectile</a>
-      <a href="#solution-to-problem-6-cable-wound-around-a-spool">Solution to Problem 6: Cable wound around a spool</a>
-      <a href="#solution-to-problem-7-vector-equation-on-a-plane">Solution to Problem 7: Vector equation on a plane</a>
+      <a href="#problems-plus-questions">Problems Plus – Questions</a>
+      <a href="#problems-plus-solutions">Problems Plus - Solutions</a>
+      <a href="#problem-1-projectile-fired-from-origin">Problem 1: Projectile fired from origin</a>
+      <a href="#problem-2-projectile-fired-down-inclined-plane">Problem 2: Projectile fired down inclined plane</a>
+      <a href="#problem-3-ball-rolls-off-table">Problem 3: Ball rolls off table</a>
+      <a href="#problem-4-curvature-from-parametric-equations">Problem 4: Curvature from Parametric Equations</a>
+      <a href="#problem-5-total-distance-traveled-by-projectile">Problem 5: Total distance traveled by projectile</a>
+      <a href="#problem-6-cable-wound-around-a-spool">Problem 6: Cable wound around a spool</a>
+      <a href="#problem-7-vector-equation-on-a-plane">Problem 7: Vector equation on a plane</a>
       </nav>
     </details>
 
@@ -1094,9 +1157,9 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="problems-plus-notes">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('problems-plus-notes-list')"><center>Problems Plus – Notes <span id="arrowIcon-problems-plus-notes-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="problems-plus-notes-list" class="chapter-toggle-list">
+<div class="chapter-toggle" id="problems-plus-questions">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problems-plus-questions-list')"><center>Problems Plus – Questions <span id="arrowIcon-problems-plus-questions-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problems-plus-questions-list" class="chapter-toggle-list">
 <hr>
 <p><strong>Problem 1: Projectile fired from origin</strong></p>
 <p>A projectile is fired from the origin with angle of elevation α and initial speed v<sub>0</sub>.</p>
@@ -1156,9 +1219,15 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="solution-to-problem-1-projectile-fired-from-origin">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('solution-to-problem-1-projectile-fired-from-origin-list')"><center>Solution to Problem 1: Projectile fired from origin <span id="arrowIcon-solution-to-problem-1-projectile-fired-from-origin-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="solution-to-problem-1-projectile-fired-from-origin-list" class="chapter-toggle-list">
+<div class="chapter-toggle" id="problems-plus-solutions">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problems-plus-solutions-list')"><center>Problems Plus - Solutions <span id="arrowIcon-problems-plus-solutions-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problems-plus-solutions-list" class="chapter-toggle-list">
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="problem-1-projectile-fired-from-origin">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-1-projectile-fired-from-origin-list')"><center>Problem 1: Projectile fired from origin <span id="arrowIcon-problem-1-projectile-fired-from-origin-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problem-1-projectile-fired-from-origin-list" class="chapter-toggle-list">
 <p>A projectile is fired from the origin with angle of elevation α and initial speed v<sub>0</sub>.</p>
 <p>Assuming that air resistance is negligible and that the only force acting on the projectile is gravity, g, we showed in my <a href="https://peakd.com/hive-128780/@mes/e443f9d3">earlier video</a> that the position vector of the projectile is:</p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EopzC8i9Uij5EWbBtqewY8LR1oRgC2ifN7PBJ4rRNyz2RqPRjcYWxfrUr1cmiLxLTEJ.png" alt="image.png"></p>
@@ -1230,9 +1299,9 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="solution-to-problem-2-projectile-fired-down-inclined-plane">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('solution-to-problem-2-projectile-fired-down-inclined-plane-list')"><center>Solution to Problem 2: Projectile fired down inclined plane <span id="arrowIcon-solution-to-problem-2-projectile-fired-down-inclined-plane-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="solution-to-problem-2-projectile-fired-down-inclined-plane-list" class="chapter-toggle-list">
+<div class="chapter-toggle" id="problem-2-projectile-fired-down-inclined-plane">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-2-projectile-fired-down-inclined-plane-list')"><center>Problem 2: Projectile fired down inclined plane <span id="arrowIcon-problem-2-projectile-fired-down-inclined-plane-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problem-2-projectile-fired-down-inclined-plane-list" class="chapter-toggle-list">
 <p>(a) A projectile is fired from the origin down an inclined plane that makes an angle θ with the horizontal.</p>
 <p>The angle of elevation of the gun and initial speed of the projectile are α and v<sub>0</sub>, respectively.</p>
 <p>Find the position vector of the projectile and the parametric equations of the path of the projectile as functions of time t. </p>
@@ -1289,9 +1358,9 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="solution-to-problem-3-ball-rolls-off-table">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('solution-to-problem-3-ball-rolls-off-table-list')"><center>Solution to Problem 3: Ball rolls off table <span id="arrowIcon-solution-to-problem-3-ball-rolls-off-table-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="solution-to-problem-3-ball-rolls-off-table-list" class="chapter-toggle-list">
+<div class="chapter-toggle" id="problem-3-ball-rolls-off-table">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-3-ball-rolls-off-table-list')"><center>Problem 3: Ball rolls off table <span id="arrowIcon-problem-3-ball-rolls-off-table-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problem-3-ball-rolls-off-table-list" class="chapter-toggle-list">
 <p>A ball rolls off a table with a speed of 2 ft/s.</p>
 <p>The table is 3.5 ft high.</p>
 <p>(a) Determine the point at which the ball hits the floor and find its speed at the instant of impact.</p>
@@ -1353,9 +1422,9 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="solution-to-problem-4-curvature-from-parametric-equations">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('solution-to-problem-4-curvature-from-parametric-equations-list')"><center>Solution to Problem 4: Curvature from Parametric Equations <span id="arrowIcon-solution-to-problem-4-curvature-from-parametric-equations-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="solution-to-problem-4-curvature-from-parametric-equations-list" class="chapter-toggle-list">
+<div class="chapter-toggle" id="problem-4-curvature-from-parametric-equations">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-4-curvature-from-parametric-equations-list')"><center>Problem 4: Curvature from Parametric Equations <span id="arrowIcon-problem-4-curvature-from-parametric-equations-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problem-4-curvature-from-parametric-equations-list" class="chapter-toggle-list">
 <p>Find the curvature of the curve with parametric equations:</p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wXQmmT6f9uAiufTwNajm4cmXYmEFqT4U9iHB5ty2Li4hPXWR3dPdk1ok2WnMvGyGoKs.png" alt="image.png"></p>
 <p><strong>Solution:</strong></p>
@@ -1371,9 +1440,9 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="solution-to-problem-5-total-distance-traveled-by-projectile">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('solution-to-problem-5-total-distance-traveled-by-projectile-list')"><center>Solution to Problem 5: Total distance traveled by projectile <span id="arrowIcon-solution-to-problem-5-total-distance-traveled-by-projectile-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="solution-to-problem-5-total-distance-traveled-by-projectile-list" class="chapter-toggle-list">
+<div class="chapter-toggle" id="problem-5-total-distance-traveled-by-projectile">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-5-total-distance-traveled-by-projectile-list')"><center>Problem 5: Total distance traveled by projectile <span id="arrowIcon-problem-5-total-distance-traveled-by-projectile-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problem-5-total-distance-traveled-by-projectile-list" class="chapter-toggle-list">
 <p>If a projectile is fired with angle of elevation α and initial speed v, then parametric equations for its trajectory are, as per my <a href="https://peakd.com/hive-128780/@mes/e443f9d3">earlier video</a>:</p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wCdahRRYhCCigf1SuoBq82sboYsLxiX9DLK3kKA8HUdVwF4bMfyqwigEyBviV4U2VY8.png" alt="image.png"></p>
 <p>We know that the range (horizontal distance traveled) is maximized when α = 45°.</p>
@@ -1415,9 +1484,9 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="solution-to-problem-6-cable-wound-around-a-spool">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('solution-to-problem-6-cable-wound-around-a-spool-list')"><center>Solution to Problem 6: Cable wound around a spool <span id="arrowIcon-solution-to-problem-6-cable-wound-around-a-spool-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="solution-to-problem-6-cable-wound-around-a-spool-list" class="chapter-toggle-list">
+<div class="chapter-toggle" id="problem-6-cable-wound-around-a-spool">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-6-cable-wound-around-a-spool-list')"><center>Problem 6: Cable wound around a spool <span id="arrowIcon-problem-6-cable-wound-around-a-spool-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problem-6-cable-wound-around-a-spool-list" class="chapter-toggle-list">
 <p>A cable has radius r and length L and is wound around a spool with radius R without overlapping.</p>
 <p>What is the shortest length along the spool that is covered by the cable?</p>
 <p><strong>Solution:</strong></p>
@@ -1441,9 +1510,9 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="solution-to-problem-7-vector-equation-on-a-plane">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('solution-to-problem-7-vector-equation-on-a-plane-list')"><center>Solution to Problem 7: Vector equation on a plane <span id="arrowIcon-solution-to-problem-7-vector-equation-on-a-plane-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="solution-to-problem-7-vector-equation-on-a-plane-list" class="chapter-toggle-list">
+<div class="chapter-toggle" id="problem-7-vector-equation-on-a-plane">
+<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-7-vector-equation-on-a-plane-list')"><center>Problem 7: Vector equation on a plane <span id="arrowIcon-problem-7-vector-equation-on-a-plane-list" class="arrow-icon">&#9660;</span></center></h1>
+<div id="problem-7-vector-equation-on-a-plane-list" class="chapter-toggle-list">
 <p>Show that the vector equation below lies in a plane and find the equation of the plane:</p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wXQmmT6db5R9LAw8su6LL2DfeWjCJj6J78P4LGP1B5yRGYp5J6hopiW3LGDx3LZVNm9.png" alt="image.png"></p>
 <p><strong>Solution:</strong></p>
@@ -1479,7 +1548,7 @@
     <a class="source-link" href="https://peakd.com/hive-128780/@mes/vector-functions-problems-p-729" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
     <div class="retrieved-note">
       Vote/comment/reblog counts and article text were fetched from the Hive blockchain
-      at build time (September 19, 2026) and are not live.
+      at build time (September 25, 2026) and are not live.
     </div>
     <div id="footer" class="footer" role="contentinfo">
       <div class="footer__item-container">
@@ -1505,6 +1574,11 @@
   </div>
 
   <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="lightbox-zoom-controls" id="lightboxZoomControls">
+      <button class="lightbox-zoom-btn" id="lightboxZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+      <span class="lightbox-zoom-level" id="lightboxZoomLevel">100%</span>
+      <button class="lightbox-zoom-btn" id="lightboxZoomIn" type="button" aria-label="Zoom in">+</button>
+    </div>
     <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
     <img class="lightbox-image" id="lightboxImage" src="" alt="">
     <div class="lightbox-controls" id="lightboxControls">
@@ -1767,7 +1841,108 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
   <script src="/main_js/main.js?v=1.0.3"></script>
-  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/jump-to.js?v=2" defer></script><script>
+  <script>
+    // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the existing
+    // image lightbox. Purely additive -- it only touches the #lightboxZoom*
+    // elements it creates itself, resetting whenever #lightboxImage's src
+    // or #lightboxOverlay's open state changes, so it works the same
+    // regardless of how this page's own lightbox open/prev/next logic runs.
+    (function () {
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var zoomOutBtn = document.getElementById('lightboxZoomOut');
+      var zoomInBtn = document.getElementById('lightboxZoomIn');
+      var zoomLevelEl = document.getElementById('lightboxZoomLevel');
+      if (!overlay || !imageEl || !zoomOutBtn || !zoomInBtn || !zoomLevelEl) return;
+
+      var ZOOM_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+      var zoomIndex = 0;
+      var panX = 0, panY = 0;
+      var dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+      function applyTransform() {
+        imageEl.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + ZOOM_STEPS[zoomIndex] + ')';
+        imageEl.classList.toggle('zoomed', zoomIndex > 0);
+        zoomLevelEl.textContent = Math.round(ZOOM_STEPS[zoomIndex] * 100) + '%';
+        zoomOutBtn.disabled = zoomIndex === 0;
+        zoomInBtn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
+      }
+
+      function zoomTo(index) {
+        zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index));
+        if (zoomIndex === 0) { panX = 0; panY = 0; }
+        applyTransform();
+      }
+
+      function resetZoom() {
+        dragging = false;
+        imageEl.classList.remove('dragging');
+        zoomTo(0);
+      }
+
+      zoomOutBtn.addEventListener('click', function () { zoomTo(zoomIndex - 1); });
+      zoomInBtn.addEventListener('click', function () { zoomTo(zoomIndex + 1); });
+
+      imageEl.addEventListener('dblclick', function () {
+        zoomTo(zoomIndex > 0 ? 0 : 2);
+      });
+
+      imageEl.addEventListener('mousedown', function (e) {
+        if (zoomIndex === 0) return;
+        dragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        panStartX = panX;
+        panStartY = panY;
+        imageEl.classList.add('dragging');
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        panX = panStartX + (e.clientX - dragStartX);
+        panY = panStartY + (e.clientY - dragStartY);
+        applyTransform();
+      });
+
+      window.addEventListener('mouseup', function () {
+        if (!dragging) return;
+        dragging = false;
+        imageEl.classList.remove('dragging');
+      });
+
+      imageEl.addEventListener('touchstart', function (e) {
+        if (zoomIndex === 0 || e.touches.length !== 1) return;
+        dragging = true;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        panStartX = panX;
+        panStartY = panY;
+      }, { passive: true });
+
+      imageEl.addEventListener('touchmove', function (e) {
+        if (!dragging || e.touches.length !== 1) return;
+        panX = panStartX + (e.touches[0].clientX - dragStartX);
+        panY = panStartY + (e.touches[0].clientY - dragStartY);
+        applyTransform();
+      }, { passive: true });
+
+      imageEl.addEventListener('touchend', function () { dragging = false; });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === '+' || e.key === '=') zoomTo(zoomIndex + 1);
+        else if (e.key === '-' || e.key === '_') zoomTo(zoomIndex - 1);
+      });
+
+      new MutationObserver(resetZoom).observe(imageEl, { attributes: true, attributeFilter: ['src'] });
+      new MutationObserver(function () {
+        if (overlay.classList.contains('open')) resetZoom();
+      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+
+      applyTransform();
+    })();
+  </script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/jump-to.js?v=2" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
   // are dropped from the right, least important first, rather than

@@ -849,8 +849,8 @@ ${leadingHtml}
 
     .theater-toggle-btn {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      top: 46px;
+      right: 10px;
       display: inline-flex;
       align-items: center;
       gap: 5px;
