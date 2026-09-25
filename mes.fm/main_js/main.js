@@ -73,7 +73,36 @@ $(document).ready(function() {
         }
     })();
 
-    $(".hide-div-button").click(function() {
+/* Comment count on the Comments bar: the bar starts collapsed, so the widget (and its
+       count) isn't loaded until a click -- fetch just the count from FastComments' public
+       count endpoint (what its own Comment Count widget calls) once the bar nears the
+       viewport, and show "Comments (N)" when there is at least one. Same urlId the widget
+       uses by default (the page URL), so it counts the same thread. Fails silently. Also
+       in comments.js (pages without jQuery); window.__fcCountInit keeps it to one run. */
+    (function() {
+        var btn = document.getElementById("comments-button");
+        if(!btn || window.__fcCountInit || !window.fetch) return;
+        window.__fcCountInit = true;
+        var base = btn.textContent;
+        function show() {
+            fetch("https://fastcomments.com/widgets/comment-count/1RGmGBEjdU?urlId=" + encodeURIComponent(location.href.split("#")[0]))
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(d) {
+                    if(d && d.count > 0) btn.textContent = base + " (" + Number(d.count).toLocaleString() + ")";
+                })
+                .catch(function() {});
+        }
+        if("IntersectionObserver" in window) {
+            var cio = new IntersectionObserver(function(entries) {
+                if(entries[0].isIntersecting) { cio.disconnect(); show(); }
+            }, { rootMargin: "400px" });
+            cio.observe(btn);
+        } else {
+            show();
+        }
+    })();
+
+        $(".hide-div-button").click(function() {
         $(this).next().toggleClass("hide");
         $(this).toggleClass("selected");
     });

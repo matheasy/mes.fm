@@ -148,6 +148,10 @@ of HTML files individually:
   `math_qa_mirror_template.html`; `add_fastcomments.py`'s block() and `percentagecalculator-app/build-www.py`'s
   comment-stripper (now `[^>]*` on the box tag) were updated to match. Idempotent; **dry-runs by default, `--apply`
   writes.** New pages: use the collapsed markup above.
+  Because a collapsed widget never loads, the bar shows the count itself: `main.js` / `comments.js` fetch
+  `fastcomments.com/widgets/comment-count/<tenant>?urlId=<page URL>` (the endpoint FastComments' own count widget uses,
+  CORS-open, ~100 bytes) when the bar nears the viewport and turn "Comments" into "Comments (N)" when N > 0 (nothing
+  shown for 0; fails silently). `main.js?v=1.0.5` / `comments.js?v=1.0.1` carry it, bumped on every page that loads them.
 
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3

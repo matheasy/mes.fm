@@ -41,7 +41,7 @@ OLD_BAR = re.compile(
     r'<div id="comments-button" class="button(?: button--active)?"(?: style="position:relative;")?>'
     r'([^<]*)(?:<span class="dropdown-symbol"[^>]*>(?:&#9660;|&#9650;)</span>)?</div>')
 NEW_BAR = r'<div id="comments-button" class="hide-div-button button">\1</div>'
-MAIN_JS_OLD, MAIN_JS_NEW = "main_js/main.js?v=1.0.3", "main_js/main.js?v=1.0.4"
+MAIN_JS_OLD, MAIN_JS_NEW = "main_js/main.js?v=1.0.3", "main_js/main.js?v=1.0.5"
 
 
 def convert(text):
@@ -56,7 +56,7 @@ def block(indent, wrap=False):
     inner = [
         '<div id="comments-button" class="mes-comments-toggle">Comments</div>',
         '<div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>',
-        '<script src="/main_js/comments.js?v=1.0.0" defer></script>',
+        '<script src="/main_js/comments.js?v=1.0.1" defer></script>',
     ]
     lines = ["<!-- %s: Comments toggle + lazy FastComments widget, see main_js/comments.js -->" % MARKER]
     if wrap:

@@ -750,7 +750,7 @@ ${videosGridHtml}
   <div class="mes-comments-wrap">
     <div id="comments-button" class="mes-comments-toggle">Comments</div>
     <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
-    <script src="/main_js/comments.js?v=1.0.0" defer></script>
+    <script src="/main_js/comments.js?v=1.0.1" defer></script>
   </div>
 
   <div id="footer" class="footer" role="contentinfo">

@@ -62,6 +62,30 @@
         sync();
     }
 
+    /* Comment count on the bar (mirrors main.js; the bar starts collapsed so the widget is
+       not loaded yet): fetch just the count from FastComments' public count endpoint when
+       the bar nears the viewport and show "Comments (N)" if N > 0. Fails silently. */
+    if (!window.__fcCountInit && window.fetch) {
+        window.__fcCountInit = true;
+        var base = button.textContent;
+        var showCount = function () {
+            fetch("https://fastcomments.com/widgets/comment-count/" + TENANT_ID + "?urlId=" + encodeURIComponent(location.href.split("#")[0]))
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (d) {
+                    if (d && d.count > 0) button.textContent = base + " (" + Number(d.count).toLocaleString() + ")";
+                })
+                .catch(function () {});
+        };
+        if ("IntersectionObserver" in window) {
+            var cio = new IntersectionObserver(function (entries) {
+                if (entries[0].isIntersecting) { cio.disconnect(); showCount(); }
+            }, { rootMargin: "400px" });
+            cio.observe(button);
+        } else {
+            showCount();
+        }
+    }
+
     if (window.__fcLazyInit) return;
     window.__fcLazyInit = true;
     var loaded = false;
