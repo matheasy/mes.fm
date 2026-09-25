@@ -207,7 +207,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
    narrower page instead of leaving it flush-left in a wide, mostly-empty
    .outer-container -- matches the plain centered-column layout
    mes.fm/ufo already uses */
-.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 /* MOBILE-FIX-INSERTED */
@@ -465,6 +465,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
+<style>
+/* HUB-WIDE-LAYOUT: 3-col cards / fluid 4-col thumbnails on the wider page */
+@media (min-width: 601px) {
+  table.memes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; width: 100%; margin: 0; }
+  table.memes > tbody { display: contents; }
+  .memes__row { display: contents; border-bottom: none; }
+  .memes__img-container { display: block; border-right: none !important; }
+  .memes__img { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+}
+</style>
 </head>
     <body>        <div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/memes" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
@@ -498,68 +508,68 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<table class="memes">
 			<tr class="memes__row">
 							<td class="memes__img-container"><a class="memes__link" href="/memes/pringles-potato-chip--hyperbolic-paraboloid-" title="Pringles Potato Chip = Hyperbolic Paraboloid 🤓😋">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/pringles-potato-chip--hyperbolic-paraboloid--thumbnail-2.jpeg" alt="Pringles Potato Chip = Hyperbolic Paraboloid 🤓😋">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/pringles-potato-chip--hyperbolic-paraboloid--thumbnail-2.jpeg" alt="Pringles Potato Chip = Hyperbolic Paraboloid 🤓😋" data-srcset="https://mes.fm/img/memes-thumbnail/pringles-potato-chip--hyperbolic-paraboloid--thumbnail-2.jpeg 161w, https://mes.fm/img/memes-thumbnail/pringles-potato-chip--hyperbolic-paraboloid--thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/happy-tetrahedral-2024-new-year-2024" title="Happy Tetrahedral 2024 New Year!!! 🤯📐2️⃣0️⃣2️⃣4️⃣🎉🎊🤓">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/happy-tetrahedral-2024-new-year-2024-thumbnail-2.jpeg" alt="Happy Tetrahedral 2024 New Year!!! 🤯📐2️⃣0️⃣2️⃣4️⃣🎉🎊🤓">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/happy-tetrahedral-2024-new-year-2024-thumbnail-2.jpeg" alt="Happy Tetrahedral 2024 New Year!!! 🤯📐2️⃣0️⃣2️⃣4️⃣🎉🎊🤓" data-srcset="https://mes.fm/img/memes-thumbnail/happy-tetrahedral-2024-new-year-2024-thumbnail-2.jpeg 161w, https://mes.fm/img/memes-thumbnail/happy-tetrahedral-2024-new-year-2024-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/jayz-in-3d-coordinates" title="Jay-Z in 3D Coordinates">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/jayz-in-3d-coordinates-thumbnail-2.jpeg" alt="Jay-Z in 3D Coordinates">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/jayz-in-3d-coordinates-thumbnail-2.jpeg" alt="Jay-Z in 3D Coordinates" data-srcset="https://mes.fm/img/memes-thumbnail/jayz-in-3d-coordinates-thumbnail-2.jpeg 161w, https://mes.fm/img/memes-thumbnail/jayz-in-3d-coordinates-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/christmas-tree-graph" title="Christmas Tree Graph">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/christmas-tree-graph-thumbnail-2.jpeg" alt="Christmas Tree Graph">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/christmas-tree-graph-thumbnail-2.jpeg" alt="Christmas Tree Graph" data-srcset="https://mes.fm/img/memes-thumbnail/christmas-tree-graph-thumbnail-2.jpeg 161w, https://mes.fm/img/memes-thumbnail/christmas-tree-graph-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 									</tr><tr class="memes__row">
 											<td class="memes__img-container"><a class="memes__link" href="/memes/half-off-hair-cut-hamsters" title="Hamster getting infinite hair cuts">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m136-half-off-hair-cut-hamsters-thumbnail-2.jpg" alt="Hamster getting infinite hair cuts">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m136-half-off-hair-cut-hamsters-thumbnail-2.jpg" alt="Hamster getting infinite hair cuts" data-srcset="https://mes.fm/img/memes-thumbnail/m136-half-off-hair-cut-hamsters-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m136-half-off-hair-cut-hamsters-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/sine-cosine-tang" title="Turning math into Tang">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m135-sine-cosine-tang-thumbnail-2.jpg" alt="Turning math into Tang">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m135-sine-cosine-tang-thumbnail-2.jpg" alt="Turning math into Tang" data-srcset="https://mes.fm/img/memes-thumbnail/m135-sine-cosine-tang-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m135-sine-cosine-tang-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/2-plus-2-equals-5" title="Apparently 2 plus 2 equals 5">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m134-2-plus-2-equals-5-thumbnail-2.jpg" alt="Apparently 2 plus 2 equals 5">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m134-2-plus-2-equals-5-thumbnail-2.jpg" alt="Apparently 2 plus 2 equals 5" data-srcset="https://mes.fm/img/memes-thumbnail/m134-2-plus-2-equals-5-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m134-2-plus-2-equals-5-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/birthday-puzzle-math" title="Can you solve this puzzle">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m133-birthday-puzzle-math-thumbnail-2.jpg" alt="Can you solve this puzzle">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m133-birthday-puzzle-math-thumbnail-2.jpg" alt="Can you solve this puzzle" data-srcset="https://mes.fm/img/memes-thumbnail/m133-birthday-puzzle-math-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m133-birthday-puzzle-math-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 									</tr><tr class="memes__row">
 											<td class="memes__img-container"><a class="memes__link" href="/memes/justin-bieber-math-question" title="Can you find out how fast Justin Bieber is falling">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m132-justin-bieber-math-question-thumbnail-2.jpg" alt="Can you find out how fast Justin Bieber is falling">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m132-justin-bieber-math-question-thumbnail-2.jpg" alt="Can you find out how fast Justin Bieber is falling" data-srcset="https://mes.fm/img/memes-thumbnail/m132-justin-bieber-math-question-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m132-justin-bieber-math-question-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/algebra-not-used-once-shirt" title="Is algebra never used in real life">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m131-algebra-not-used-once-shirt-thumbnail-2.jpg" alt="Is algebra never used in real life">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m131-algebra-not-used-once-shirt-thumbnail-2.jpg" alt="Is algebra never used in real life" data-srcset="https://mes.fm/img/memes-thumbnail/m131-algebra-not-used-once-shirt-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m131-algebra-not-used-once-shirt-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/einstein-mc2-problems-squared" title="Even Albert Einstein has learning problems">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m130-einstein-mc2-problems-squared-thumbnail-2.jpg" alt="Even Albert Einstein has learning problems">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m130-einstein-mc2-problems-squared-thumbnail-2.jpg" alt="Even Albert Einstein has learning problems" data-srcset="https://mes.fm/img/memes-thumbnail/m130-einstein-mc2-problems-squared-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m130-einstein-mc2-problems-squared-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/pyramid-1-ones-math" title="Awesome math trick with ones">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m129-pyramid-1-ones-math-thumbnail-2.jpg" alt="Awesome math trick with ones">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m129-pyramid-1-ones-math-thumbnail-2.jpg" alt="Awesome math trick with ones" data-srcset="https://mes.fm/img/memes-thumbnail/m129-pyramid-1-ones-math-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m129-pyramid-1-ones-math-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 									</tr><tr class="memes__row">
 											<td class="memes__img-container"><a class="memes__link" href="/memes/root-beer-square-cup-meme" title="Root beer in a square cup becomes beer">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m128-root-beer-square-cup-meme-thumbnail-2.jpg" alt="Root beer in a square cup becomes beer">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m128-root-beer-square-cup-meme-thumbnail-2.jpg" alt="Root beer in a square cup becomes beer" data-srcset="https://mes.fm/img/memes-thumbnail/m128-root-beer-square-cup-meme-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m128-root-beer-square-cup-meme-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/bane-final-exams-die" title="Bane tells you to finish your exam">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m127-bane-final-exams-die-thumbnail-2.jpg" alt="Bane tells you to finish your exam">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m127-bane-final-exams-die-thumbnail-2.jpg" alt="Bane tells you to finish your exam" data-srcset="https://mes.fm/img/memes-thumbnail/m127-bane-final-exams-die-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m127-bane-final-exams-die-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/automatic-lawn-mower-meme-math" title="Sweet automatic lawn mower">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m126-automatic-lawn-mower-meme-math-thumbnail-2.jpg" alt="Sweet automatic lawn mower">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m126-automatic-lawn-mower-meme-math-thumbnail-2.jpg" alt="Sweet automatic lawn mower" data-srcset="https://mes.fm/img/memes-thumbnail/m126-automatic-lawn-mower-meme-math-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m126-automatic-lawn-mower-meme-math-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/y-x-where-were-you-math-meme" title="Y getting interrogated">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m125-y-x-where-were-you-math-meme-thumbnail-2.jpg" alt="Y getting interrogated">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m125-y-x-where-were-you-math-meme-thumbnail-2.jpg" alt="Y getting interrogated" data-srcset="https://mes.fm/img/memes-thumbnail/m125-y-x-where-were-you-math-meme-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m125-y-x-where-were-you-math-meme-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 									</tr><tr class="memes__row">
 											<td class="memes__img-container"><a class="memes__link" href="/memes/life-complex-conjugate-math" title="When life gets complex">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m124-life-complex-conjugate-math-thumbnail-2.jpg" alt="When life gets complex">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m124-life-complex-conjugate-math-thumbnail-2.jpg" alt="When life gets complex" data-srcset="https://mes.fm/img/memes-thumbnail/m124-life-complex-conjugate-math-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m124-life-complex-conjugate-math-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/pi-stones-stonehenge" title="Awesome stone pi">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m123-pi-stones-stonehenge-thumbnail-2.jpg" alt="Awesome stone pi">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m123-pi-stones-stonehenge-thumbnail-2.jpg" alt="Awesome stone pi" data-srcset="https://mes.fm/img/memes-thumbnail/m123-pi-stones-stonehenge-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m123-pi-stones-stonehenge-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/merry-x-mas-math-equation" title="Merry Christmas equation">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m122-merry-x-mas-math-equation-thumbnail-2.jpg" alt="Merry Christmas equation">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m122-merry-x-mas-math-equation-thumbnail-2.jpg" alt="Merry Christmas equation" data-srcset="https://mes.fm/img/memes-thumbnail/m122-merry-x-mas-math-equation-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m122-merry-x-mas-math-equation-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/memes/cool-math-trick-pyramid" title="Cool math trick pyramid">
-											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m121-cool-math-trick-pyramid-thumbnail-2.jpg" alt="Cool math trick pyramid">
+											<img height="161" width="161" class="memes__img lazyload" data-src="https://mes.fm/img/memes-thumbnail/m121-cool-math-trick-pyramid-thumbnail-2.jpg" alt="Cool math trick pyramid" data-srcset="https://mes.fm/img/memes-thumbnail/m121-cool-math-trick-pyramid-thumbnail-2.jpg 161w, https://mes.fm/img/memes-thumbnail/m121-cool-math-trick-pyramid-thumbnail.jpg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 										</tr>
 		</table>
@@ -708,7 +718,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     window.addEventListener('resize', function () { if (stuck) fit(); });
     update();
   })();
-</script></body>
+</script><script src="/main_js/display-controls.js?v=1.0.0" defer></script>
+</body>
 
 <!-- Mirrored from mes.fm/memes by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:42:15 GMT -->
 </html>

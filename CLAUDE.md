@@ -140,6 +140,15 @@ of HTML files individually:
   stats, `_https_` captures, pagination stubs) are left comment-free on purpose. Idempotent (`FASTCOMMENTS-BLOCK`
   marker); **dry-runs by default, `-v` lists every file, `--apply` writes.**
 
+- `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
+  the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3
+  columns of taller stacked cards on >=900px; puzzles/memes stay 4 columns but fluid (thumbnails fill the page, `srcset`
+  picks the 432px `-thumbnail.jpeg` over the 161px `-thumbnail-2.jpeg`). Also adds
+  `main_js/display-controls.js` to those pages **and `index.html`**: it injects the A-/A+/moon controls (left of the
+  hamburger, pinned into the floating compact bar), the text-size handlers and page-scoped dark mode, sharing the
+  `articleFontScale`/`theme` localStorage keys with `mes.fm/math` (whose build.mjs has its own inline copy — keep the two
+  visually in step). Idempotent; **dry-runs by default, `--apply` writes.**
+
 Run any of them with `python3 <script>.py` from anywhere (they resolve the repo root themselves). They print a
 per-file report; read the output rather than assuming success — `fix_broken_internal_links.py` additionally needs
 `--apply` to write anything, and reading its dry run first is the point.

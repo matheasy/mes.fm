@@ -218,7 +218,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
    narrower page instead of leaving it flush-left in a wide, mostly-empty
    .outer-container -- matches the plain centered-column layout
    mes.fm/ufo already uses */
-.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 /* MOBILE-FIX-INSERTED */
@@ -485,6 +485,18 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
       setTimeout(go, 15000);
     })();
     </script>
+<style>
+/* HUB-WIDE-LAYOUT: 3-col cards / fluid 4-col thumbnails on the wider page */
+@media (min-width: 900px) {
+  .tbl { grid-template-columns: repeat(3, 1fr); gap: 0.9em; }
+  .calc-container:not(:last-child) { border-right: 0; }
+  .calc-link { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1.4em 1em 1.2em; }
+  .calc__img-container { display: block; }
+  .calc__img { width: 120px; height: 120px; margin: 0 0 1em; }
+  .calc__text { display: block; }
+  .calc__text--title { margin-bottom: 0.5em; }
+}
+</style>
 </head>
     <body>        <div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/calculators" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
@@ -749,7 +761,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     window.addEventListener('resize', function () { if (stuck) fit(); });
     update();
   })();
-</script></body>
+</script><script src="/main_js/display-controls.js?v=1.0.0" defer></script>
+</body>
 
 <!-- Mirrored from mes.fm/calculators by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:42:27 GMT -->
 </html>
