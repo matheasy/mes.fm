@@ -164,6 +164,20 @@ of HTML files individually:
   re-run it after editing a tool's CSS to refresh the block. Idempotent; **dry-runs by default, `--apply` writes.** New
   tool pages: add them to `TOOLS` and run it. `display-controls.js?v=` is bumped in the script's `DC_TAG` when the JS changes.
 
+- `add_floating_bar_everywhere.py` — loads `main_js/display-controls.js` (with `data-scale="main" data-dark="derive"`) on the
+  ~1,000 classic-shell calculator / meme / quote / dream-home / tip / puzzle pages that had no floating bar. That one script
+  builds the floating compact bar at runtime (title from `.calculator-title` minus "by MES", logo from `#logo`, colour
+  from the computed `#info-bar` background, home link from the logo's link), adds A-/A+/moon, scales `#main-content`, and
+  **derives the dark theme from the page's own stylesheets** (CSSOM walk: every colour rule gets a mapped `body.dark-mode`
+  twin; `style=""` attributes are mapped in place and restored for light mode) so calculator widgets go dark without a
+  hand-written rule per site. Bump `VERSION` (and `DC_TAG` in `add_tool_page_controls.py`, the hubs' tags) when the JS
+  changes and run with `--refresh --apply`. Idempotent; **dry-runs by default, `--apply` writes.**
+
+- `widen_gallery_pages.py` — the `<table class="memes">` thumbnail-gallery list pages (dream homes, grade/percent/bmi
+  memes, quotes, interesting facts, tips, money facts; 57 pages) get the wide hub look: `.outer-container` 75em, a fluid
+  4-column grid so the icons are ~2x bigger, and a `srcset` picking the 432px `-thumbnail.jpeg` where it exists.
+  Reuses `widen_hub_pages.py`'s `THUMB_GRID`. Idempotent (`HUB-WIDE-LAYOUT`); **dry-runs by default, `--apply` writes.**
+
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3
   columns of taller stacked cards on >=900px; puzzles/memes stay 4 columns but fluid (thumbnails fill the page, `srcset`

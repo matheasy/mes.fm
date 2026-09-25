@@ -210,7 +210,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
    narrower page instead of leaving it flush-left in a wide, mostly-empty
    .outer-container -- matches the plain centered-column layout
    mes.fm/ufo already uses */
-.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 
@@ -447,7 +447,17 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    </head>
+    <style>
+/* HUB-WIDE-LAYOUT: fluid 4-col thumbnails on the wider page */
+@media (min-width: 601px) {
+  table.memes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; width: 100%; margin: 0; }
+  table.memes > tbody { display: contents; }
+  .memes__row { display: contents; border-bottom: none; }
+  .memes__img-container { display: block; border-right: none !important; }
+  .memes__img { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+}
+</style>
+</head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K28F7WZ"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -472,8 +482,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Health Tips</h1>                                        <p class="page-description">Check out these amazing health tips and advice that are sure to help you be a healthier and more vibrant you!</p>                                    	<div id="main-content">
 		<table class="memes">
-			<tr class="memes__row"><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/the-danger-of-sitting-down" title="The Danger of Sitting Down"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/the-danger-of-sitting-down-thumbnail-2.jpeg" alt="The Danger of Sitting Down"></a></td><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/the-importance-of-ab-workouts" title="The Importance of Ab Workouts"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/the-importance-of-ab-workouts-thumbnail-2.jpeg" alt="The Importance of Ab Workouts"></a></td><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/what-low-fat-foods-are-hiding-from-you" title="What Low Fat Foods Are Hiding From You"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/what-low-fat-foods-are-hiding-from-you-thumbnail-2.jpeg" alt="What Low Fat Foods Are Hiding From You"></a></td><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/you-cant-outexercise-a-bad-diet" title="You Can&#039;t Out-Exercise a Bad Diet"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/you-cant-outexercise-a-bad-diet-thumbnail-2.jpeg" alt="You Can&#039;t Out-Exercise a Bad Diet"></a></td></tr>
-			<tr class="memes__row"><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/your-body-is-the-best-bodyweight" title="Your Body is the Best Bodyweight"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/your-body-is-the-best-bodyweight-thumbnail-2.jpeg" alt="Your Body is the Best Bodyweight"></a></td></tr>
+			<tr class="memes__row"><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/the-danger-of-sitting-down" title="The Danger of Sitting Down"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/the-danger-of-sitting-down-thumbnail-2.jpeg" alt="The Danger of Sitting Down" data-srcset="/bmicalculator/img/memes-thumbnail/the-danger-of-sitting-down-thumbnail-2.jpeg 161w, /bmicalculator/img/memes-thumbnail/the-danger-of-sitting-down-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px"></a></td><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/the-importance-of-ab-workouts" title="The Importance of Ab Workouts"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/the-importance-of-ab-workouts-thumbnail-2.jpeg" alt="The Importance of Ab Workouts" data-srcset="/bmicalculator/img/memes-thumbnail/the-importance-of-ab-workouts-thumbnail-2.jpeg 161w, /bmicalculator/img/memes-thumbnail/the-importance-of-ab-workouts-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px"></a></td><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/what-low-fat-foods-are-hiding-from-you" title="What Low Fat Foods Are Hiding From You"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/what-low-fat-foods-are-hiding-from-you-thumbnail-2.jpeg" alt="What Low Fat Foods Are Hiding From You" data-srcset="/bmicalculator/img/memes-thumbnail/what-low-fat-foods-are-hiding-from-you-thumbnail-2.jpeg 161w, /bmicalculator/img/memes-thumbnail/what-low-fat-foods-are-hiding-from-you-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px"></a></td><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/you-cant-outexercise-a-bad-diet" title="You Can&#039;t Out-Exercise a Bad Diet"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/you-cant-outexercise-a-bad-diet-thumbnail-2.jpeg" alt="You Can&#039;t Out-Exercise a Bad Diet" data-srcset="/bmicalculator/img/memes-thumbnail/you-cant-outexercise-a-bad-diet-thumbnail-2.jpeg 161w, /bmicalculator/img/memes-thumbnail/you-cant-outexercise-a-bad-diet-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px"></a></td></tr>
+			<tr class="memes__row"><td class="memes__img-container"><a class="memes__link" href="/bmicalculator/health-tips/your-body-is-the-best-bodyweight" title="Your Body is the Best Bodyweight"><img height="161" width="161" class="memes__img lazyload" data-src="/bmicalculator/img/memes-thumbnail/your-body-is-the-best-bodyweight-thumbnail-2.jpeg" alt="Your Body is the Best Bodyweight" data-srcset="/bmicalculator/img/memes-thumbnail/your-body-is-the-best-bodyweight-thumbnail-2.jpeg 161w, /bmicalculator/img/memes-thumbnail/your-body-is-the-best-bodyweight-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px"></a></td></tr>
 		</table>
 		<div class="btn-container"><a class="button btn-link" href="/bmicalculator/health-tips/1">&#9668;&nbsp;&nbsp;Previous</a><div class="page-numbers"><a class="page-link" href="/bmicalculator/health-tips/1">1</a><a class="page-link" href="/bmicalculator/health-tips/2">2</a></div></div>
 	</div>
@@ -565,7 +575,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		}
 	});
 	</script>
-            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.6" data-scale="main" data-dark="derive" defer></script></body>
 
 <!-- Mirrored from bmicalculator.mes.fm/health-tips/1 by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:50:57 GMT -->
 </html>

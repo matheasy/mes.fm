@@ -206,7 +206,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
    narrower page instead of leaving it flush-left in a wide, mostly-empty
    .outer-container -- matches the plain centered-column layout
    mes.fm/ufo already uses */
-.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 /* COMMENTS-BUTTON-MOBILE-FIX-INSERTED */
@@ -412,6 +412,16 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
+<style>
+/* HUB-WIDE-LAYOUT: fluid 4-col thumbnails on the wider page */
+@media (min-width: 601px) {
+  table.memes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; width: 100%; margin: 0; }
+  table.memes > tbody { display: contents; }
+  .memes__row { display: contents; border-bottom: none; }
+  .memes__img-container { display: block; border-right: none !important; }
+  .memes__img { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+}
+</style>
 </head>
     <body>        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/'><img width="830" height="190" id="logo" class="logo lazyload" alt="Math Easy Solutions logo" data-src="https://mes.fm/img/logo.png"></a>
                             <div class="logo-text-container">
@@ -553,7 +563,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	});
 	</script>
             <script src="../main_js/main.js?v=1.0.5"></script>
-            <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script></body>
+            <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.6" data-scale="main" data-dark="derive" defer></script></body>
 
 <!-- Mirrored from mes.fm/puzzles/2 by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:44:43 GMT -->
 </html>

@@ -19,7 +19,7 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parent / "mes.fm"
 APPLY = "--apply" in sys.argv
-SCRIPT_TAG = '<script src="/main_js/display-controls.js?v=1.0.0" defer></script>'
+SCRIPT_TAG = '<script src="/main_js/display-controls.js?v=1.6" defer></script>'
 WIDE_MARK = "HUB-WIDE-LAYOUT"
 
 CARD_GRID = """

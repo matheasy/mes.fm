@@ -210,7 +210,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
    narrower page instead of leaving it flush-left in a wide, mostly-empty
    .outer-container -- matches the plain centered-column layout
    mes.fm/ufo already uses */
-.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 
@@ -446,7 +446,17 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    </head>
+    <style>
+/* HUB-WIDE-LAYOUT: fluid 4-col thumbnails on the wider page */
+@media (min-width: 601px) {
+  table.memes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; width: 100%; margin: 0; }
+  table.memes > tbody { display: contents; }
+  .memes__row { display: contents; border-bottom: none; }
+  .memes__img-container { display: block; border-right: none !important; }
+  .memes__img { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+}
+</style>
+</head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NV2HK8C"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -474,55 +484,55 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		<table class="memes">
 			<tr class="memes__row">
 							<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/jeff-bezos-amazon-cia-and-the-washington-post" title="Jeff Bezos, Amazon, CIA, and The Washington Post">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/jeff-bezos-amazon-cia-and-the-washington-post-thumbnail-2.jpeg" alt="Jeff Bezos, Amazon, CIA, and The Washington Post">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/jeff-bezos-amazon-cia-and-the-washington-post-thumbnail-2.jpeg" alt="Jeff Bezos, Amazon, CIA, and The Washington Post" data-srcset="/inflationcalculator/img/memes-thumbnail/jeff-bezos-amazon-cia-and-the-washington-post-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/jeff-bezos-amazon-cia-and-the-washington-post-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/the-iraq-war-cost-usa-2-trillion" title="The Iraq War Cost USA $2 Trillion">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-iraq-war-cost-usa-2-trillion-thumbnail-2.jpeg" alt="The Iraq War Cost USA $2 Trillion">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-iraq-war-cost-usa-2-trillion-thumbnail-2.jpeg" alt="The Iraq War Cost USA $2 Trillion" data-srcset="/inflationcalculator/img/memes-thumbnail/the-iraq-war-cost-usa-2-trillion-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/the-iraq-war-cost-usa-2-trillion-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/153-million-in-hillary-and-bill-clinton-paid-speeches-" title="$153 Million in Hillary and Bill Clinton Paid Speeches ">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/153-million-in-hillary-and-bill-clinton-paid-speeches--thumbnail-2.jpeg" alt="$153 Million in Hillary and Bill Clinton Paid Speeches ">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/153-million-in-hillary-and-bill-clinton-paid-speeches--thumbnail-2.jpeg" alt="$153 Million in Hillary and Bill Clinton Paid Speeches " data-srcset="/inflationcalculator/img/memes-thumbnail/153-million-in-hillary-and-bill-clinton-paid-speeches--thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/153-million-in-hillary-and-bill-clinton-paid-speeches--thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/the-us-bank-bailout-is-a-total-of-168-trillion" title="The US Bank Bailout Is a Total of $16.8 Trillion">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-us-bank-bailout-is-a-total-of-168-trillion-thumbnail-2.jpeg" alt="The US Bank Bailout Is a Total of $16.8 Trillion">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-us-bank-bailout-is-a-total-of-168-trillion-thumbnail-2.jpeg" alt="The US Bank Bailout Is a Total of $16.8 Trillion" data-srcset="/inflationcalculator/img/memes-thumbnail/the-us-bank-bailout-is-a-total-of-168-trillion-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/the-us-bank-bailout-is-a-total-of-168-trillion-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 									</tr><tr class="memes__row">
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/the-governments-of-the-world-are-in-debt" title="The governments of the world are in debt">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-governments-of-the-world-are-in-debt-thumbnail-2.jpeg" alt="The governments of the world are in debt">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-governments-of-the-world-are-in-debt-thumbnail-2.jpeg" alt="The governments of the world are in debt" data-srcset="/inflationcalculator/img/memes-thumbnail/the-governments-of-the-world-are-in-debt-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/the-governments-of-the-world-are-in-debt-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/the-first-speeding-ticket-cost-1-shilling-in-1896" title="The First Speeding Ticket Cost 1 Shilling in 1896">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-first-speeding-ticket-cost-1-shilling-in-1896-thumbnail-2.jpeg" alt="The First Speeding Ticket Cost 1 Shilling in 1896">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-first-speeding-ticket-cost-1-shilling-in-1896-thumbnail-2.jpeg" alt="The First Speeding Ticket Cost 1 Shilling in 1896" data-srcset="/inflationcalculator/img/memes-thumbnail/the-first-speeding-ticket-cost-1-shilling-in-1896-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/the-first-speeding-ticket-cost-1-shilling-in-1896-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/cost-of-tuition-then-and-now" title="Cost of Tuition Then and Now">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/cost-of-tuition-then-and-now-thumbnail-2.jpeg" alt="Cost of Tuition Then and Now">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/cost-of-tuition-then-and-now-thumbnail-2.jpeg" alt="Cost of Tuition Then and Now" data-srcset="/inflationcalculator/img/memes-thumbnail/cost-of-tuition-then-and-now-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/cost-of-tuition-then-and-now-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/the-cost-of-the-first-cell-phone" title="The cost of the first cell phone">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-cost-of-the-first-cell-phone-thumbnail-2.jpeg" alt="The cost of the first cell phone">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-cost-of-the-first-cell-phone-thumbnail-2.jpeg" alt="The cost of the first cell phone" data-srcset="/inflationcalculator/img/memes-thumbnail/the-cost-of-the-first-cell-phone-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/the-cost-of-the-first-cell-phone-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 									</tr><tr class="memes__row">
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/the-cost-of-the-first-personal-computer" title="The Cost of the First Personal Computer">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-cost-of-the-first-personal-computer-thumbnail-2.jpeg" alt="The Cost of the First Personal Computer">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/the-cost-of-the-first-personal-computer-thumbnail-2.jpeg" alt="The Cost of the First Personal Computer" data-srcset="/inflationcalculator/img/memes-thumbnail/the-cost-of-the-first-personal-computer-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/the-cost-of-the-first-personal-computer-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/median-house-price-in-1970-vs-2010" title="Median house price in 1970 vs. 2010">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/median-house-price-in-1970-vs-2010-thumbnail-2.jpeg" alt="Median house price in 1970 vs. 2010">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/median-house-price-in-1970-vs-2010-thumbnail-2.jpeg" alt="Median house price in 1970 vs. 2010" data-srcset="/inflationcalculator/img/memes-thumbnail/median-house-price-in-1970-vs-2010-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/median-house-price-in-1970-vs-2010-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/cost-of-a-penny" title="Cost of a penny">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/cost-of-a-penny-thumbnail-2.jpeg" alt="Cost of a penny">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/cost-of-a-penny-thumbnail-2.jpeg" alt="Cost of a penny" data-srcset="/inflationcalculator/img/memes-thumbnail/cost-of-a-penny-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/cost-of-a-penny-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/michael-jordan-made-double-what-lebron-james-makes" title="Michael Jordan made double what LeBron James makes">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/michael-jordan-made-double-what-lebron-james-makes-thumbnail-2.jpeg" alt="Michael Jordan made double what LeBron James makes">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/michael-jordan-made-double-what-lebron-james-makes-thumbnail-2.jpeg" alt="Michael Jordan made double what LeBron James makes" data-srcset="/inflationcalculator/img/memes-thumbnail/michael-jordan-made-double-what-lebron-james-makes-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/michael-jordan-made-double-what-lebron-james-makes-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 									</tr><tr class="memes__row">
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/a-loaf-of-bread-100-years-ago" title="A Loaf of Bread 100 Years Ago">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/a-loaf-of-bread-100-years-ago-thumbnail-2.jpeg" alt="A Loaf of Bread 100 Years Ago">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/a-loaf-of-bread-100-years-ago-thumbnail-2.jpeg" alt="A Loaf of Bread 100 Years Ago" data-srcset="/inflationcalculator/img/memes-thumbnail/a-loaf-of-bread-100-years-ago-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/a-loaf-of-bread-100-years-ago-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/cost-to-fill-up-gasoline-in-1915" title="Cost to Fill Up Gasoline in 1915">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/cost-to-fill-up-gasoline-in-1915-thumbnail-2.jpeg" alt="Cost to Fill Up Gasoline in 1915">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/cost-to-fill-up-gasoline-in-1915-thumbnail-2.jpeg" alt="Cost to Fill Up Gasoline in 1915" data-srcset="/inflationcalculator/img/memes-thumbnail/cost-to-fill-up-gasoline-in-1915-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/cost-to-fill-up-gasoline-in-1915-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/average-household-income-in-1915" title="Average Household Income in 1915">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/average-household-income-in-1915-thumbnail-2.jpeg" alt="Average Household Income in 1915">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/average-household-income-in-1915-thumbnail-2.jpeg" alt="Average Household Income in 1915" data-srcset="/inflationcalculator/img/memes-thumbnail/average-household-income-in-1915-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/average-household-income-in-1915-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/inflationcalculator/money-facts/campbells-soup-can-in-1957" title="Campbell&#039;s Soup Can in 1957">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/campbells-soup-can-in-1957-thumbnail-2.jpeg" alt="Campbell&#039;s Soup Can in 1957">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/inflationcalculator/img/memes-thumbnail/campbells-soup-can-in-1957-thumbnail-2.jpeg" alt="Campbell&#039;s Soup Can in 1957" data-srcset="/inflationcalculator/img/memes-thumbnail/campbells-soup-can-in-1957-thumbnail-2.jpeg 161w, /inflationcalculator/img/memes-thumbnail/campbells-soup-can-in-1957-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 										</tr>
 		</table>
@@ -616,7 +626,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		}
 	});
 	</script>
-            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.6" data-scale="main" data-dark="derive" defer></script></body>
 
 <!-- Mirrored from inflationcalculator.mes.fm/money-facts by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:48:05 GMT -->
 </html>

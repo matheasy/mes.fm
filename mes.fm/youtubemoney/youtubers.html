@@ -226,7 +226,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
    narrower page instead of leaving it flush-left in a wide, mostly-empty
    .outer-container -- matches the plain centered-column layout
    mes.fm/ufo already uses */
-.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 
@@ -306,7 +306,17 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             })(window,document,'script','dataLayer','GTM-MR4PFN3');</script>
             <!-- End Google Tag Manager -->            <script type="text/javascript" src="https://static.addtoany.com/menu/page.js" async></script>
 <!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
-    </head>
+    <style>
+/* HUB-WIDE-LAYOUT: fluid 4-col thumbnails on the wider page */
+@media (min-width: 601px) {
+  table.memes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; width: 100%; margin: 0; }
+  table.memes > tbody { display: contents; }
+  .memes__row { display: contents; border-bottom: none; }
+  .memes__img-container { display: block; border-right: none !important; }
+  .memes__img { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+}
+</style>
+</head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MR4PFN3"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -466,7 +476,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		}
 	});
 	</script>
-            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script></body>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.6" data-scale="main" data-dark="derive" defer></script></body>
 
 <!-- Mirrored from youtubemoney.mes.fm/youtubers by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:50:55 GMT -->
 </html>

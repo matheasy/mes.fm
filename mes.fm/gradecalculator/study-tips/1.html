@@ -205,7 +205,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
    narrower page instead of leaving it flush-left in a wide, mostly-empty
    .outer-container -- matches the plain centered-column layout
    mes.fm/ufo already uses */
-.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 
@@ -442,7 +442,17 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    </head>
+    <style>
+/* HUB-WIDE-LAYOUT: fluid 4-col thumbnails on the wider page */
+@media (min-width: 601px) {
+  table.memes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; width: 100%; margin: 0; }
+  table.memes > tbody { display: contents; }
+  .memes__row { display: contents; border-bottom: none; }
+  .memes__img-container { display: block; border-right: none !important; }
+  .memes__img { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+}
+</style>
+</head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WZZ5V5G"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -469,13 +479,13 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		<table class="memes">
 			<tr class="memes__row">
 							<td class="memes__img-container"><a class="memes__link" href="/gradecalculator/study-tips/spread-your-studying-evenly" title="Spread Your Studying Evenly">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/gradecalculator/img/memes-thumbnail/spread-your-studying-evenly-thumbnail-2.jpeg" alt="Spread Your Studying Evenly">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/gradecalculator/img/memes-thumbnail/spread-your-studying-evenly-thumbnail-2.jpeg" alt="Spread Your Studying Evenly" data-srcset="/gradecalculator/img/memes-thumbnail/spread-your-studying-evenly-thumbnail-2.jpeg 161w, /gradecalculator/img/memes-thumbnail/spread-your-studying-evenly-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/gradecalculator/study-tips/mistakes-grow-your-brain" title="Mistakes Grow Your Brain">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/gradecalculator/img/memes-thumbnail/mistakes-grow-your-brain-thumbnail-2.jpeg" alt="Mistakes Grow Your Brain">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/gradecalculator/img/memes-thumbnail/mistakes-grow-your-brain-thumbnail-2.jpeg" alt="Mistakes Grow Your Brain" data-srcset="/gradecalculator/img/memes-thumbnail/mistakes-grow-your-brain-thumbnail-2.jpeg 161w, /gradecalculator/img/memes-thumbnail/mistakes-grow-your-brain-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 											<td class="memes__img-container"><a class="memes__link" href="/gradecalculator/study-tips/studying-is-like-working-out" title="Studying Is Like Working Out">
-											<img height="161" width="161" class="memes__img lazyload" data-src="/gradecalculator/img/memes-thumbnail/studying-is-like-working-out-thumbnail-2.jpeg" alt="Studying Is Like Working Out">
+											<img height="161" width="161" class="memes__img lazyload" data-src="/gradecalculator/img/memes-thumbnail/studying-is-like-working-out-thumbnail-2.jpeg" alt="Studying Is Like Working Out" data-srcset="/gradecalculator/img/memes-thumbnail/studying-is-like-working-out-thumbnail-2.jpeg 161w, /gradecalculator/img/memes-thumbnail/studying-is-like-working-out-thumbnail.jpeg 432w" sizes="(max-width: 600px) 46vw, (max-width: 1240px) 22vw, 272px">
 									</a></td>
 										</tr>
 		</table>
@@ -574,7 +584,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		}
 	});
 	</script>
-            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.6" data-scale="main" data-dark="derive" defer></script></body>
 
 <!-- Mirrored from gradecalculator.mes.fm/study-tips/1 by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:53:57 GMT -->
 </html>
