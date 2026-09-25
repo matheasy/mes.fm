@@ -175,7 +175,7 @@ of HTML files individually:
 
 - `widen_gallery_pages.py` — the `<table class="memes">` thumbnail-gallery list pages (dream homes, grade/percent/bmi
   memes, quotes, interesting facts, tips, money facts; 57 pages) get the wide hub look: `.outer-container` 75em, a fluid
-  4-column grid so the icons are ~2x bigger, and a `srcset` picking the 432px `-thumbnail.jpeg` where it exists.
+  4-column grid so the icons are ~2x bigger, and a `srcset` picking the 432px `-thumbnail.jpeg` where it exists. Below 600px the grid is 2 columns (`GALLERY-MOBILE-2COL`, same rule as `mes.fm/memes`) instead of four tiny thumbnails.
   Reuses `widen_hub_pages.py`'s `THUMB_GRID`. Idempotent (`HUB-WIDE-LAYOUT`); **dry-runs by default, `--apply` writes.**
 
 - `convert_mirror_pages.py` — puts the bare Hive-mirror / link-hub pages (dark page, "<- mes.fm/911" back link, plain
