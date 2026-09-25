@@ -16,16 +16,19 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parent / "mes.fm"
 APPLY = "--apply" in sys.argv
-TAG = '<script src="/main_js/hub-filter.js?v=1" defer></script>'
+TAG = '<script src="/main_js/hub-filter.js?v=2" defer></script>'
 
+# "popular": slugs shown first, in this order, as a duplicate "Popular" section (only while no search / category is active).
+# Picked from mes.fm/stats (curl "https://mes.fm/api/stats?range=30d"): 30-day views Grade 4.8k, Percentage 3.7k,
+# Weighted Average 2.4k (then GPA 1.7k, BMI 1.6k); tools: Timer (45 views/7d) clearly ahead, then Speed Reader and Moon.
 PAGES = {
-    "calculators.html": dict(noun="calculators", cats=[
+    "calculators.html": dict(noun="calculators", popular=["gradecalculator", "percentagecalculator", "gradecalculator/weighted-average-calculator"], cats=[
         ("school", "School &amp; Grades", ["gradecalculator", "gpacalculator", "gradecalculator/weighted-average-calculator", "gradecalculator/br"]),
         ("money", "Money &amp; Finance", ["mortgagecalculator", "inflationcalculator", "vatcalculator", "youtubemoney/index.html", "impermanent-loss-calculator"]),
         ("everyday", "Everyday Math &amp; Health", ["percentagecalculator", "unit-conversion", "bmicalculator"]),
         ("fun", "Science &amp; Fun", ["earth-curvature-calculator", "gematria", "pokemongocalculator"]),
     ]),
-    "tools.html": dict(noun="tools", cats=[
+    "tools.html": dict(noun="tools", popular=["timer", "speedreader", "moon"], cats=[
         ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols"]),
         ("time", "Time &amp; Focus", ["speedreader", "timer", "timezone"]),
         ("media", "Media &amp; Web", ["youtube-thumbnail", "stats"]),
@@ -79,6 +82,10 @@ def build(text, cfg):
     cats = list(cfg["cats"]) + ([("more", "More", extra)] if extra else [])
     missing = [s for s in known if s not in cards]
     out, chips, total = [], ['<button type="button" data-c="all" aria-pressed="true">All (%d)</button>' % len(cards)], 0
+    pop = [cards[s] for s in cfg.get("popular", []) if s in cards]
+    if pop:
+        chips.append('<button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (%d)</button>' % len(pop))
+        out.append('\t\t<section class="hub-cat hub-cat--popular" data-cat="popular" id="popular">\n\t\t\t<h2 class="hub-cat__title">&#9733; Popular</h2>\n\t\t<table class="tbl tbl--stack">\n%s\t\t</table>\n\t\t</section>\n' % pairs(pop))
     for cid, name, slugs in cats:
         tds = sorted([cards[s] for s in slugs if s in cards], key=title_of)
         if not tds:

@@ -25,7 +25,7 @@
         ".hub-cat{margin:0 0 1.6em}" +
         ".hub-cat__title{font-size:1.15em;font-weight:700;margin:0 0 .6em;padding-bottom:.3em;border-bottom:2px solid #dbe9f8;color:#1e2733}" +
         ".hub-cat__count{font-size:.75em;font-weight:400;color:#8a93a0;margin-left:.4em}" +
-        ".hub-cat[hidden],.hub-cat td[hidden],#hub-empty[hidden]{display:none !important}" +
+        ".hub-cat--popular .hub-cat__title{color:#b25e00}body.dark-mode .hub-cat--popular .hub-cat__title{color:#ffb454}.hub-cat[hidden],.hub-cat td[hidden],#hub-empty[hidden]{display:none !important}" +
         "#hub-empty{color:#6a7280;font-style:italic;padding:1em 0}" +
         "body.dark-mode .hub-filter input{background:#2a2a2a;color:#eee;border-color:#555}" +
         "body.dark-mode .hub-chips button{background:#2a2a2a;color:#ddd;border-color:#555}" +
@@ -41,7 +41,9 @@
         var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean), any = false;
         cards.forEach(function (td, i) {
             var sec = td.closest(".hub-cat");
-            var ok = (cat === "all" || sec.getAttribute("data-cat") === cat) && words.every(function (w) { return texts[i].indexOf(w) !== -1; });
+            var ok;
+            if (sec.getAttribute("data-cat") === "popular") ok = cat === "popular" || (cat === "all" && !words.length);   /* duplicates: only on the plain overview */
+            else ok = cat !== "popular" && (cat === "all" || sec.getAttribute("data-cat") === cat) && words.every(function (w) { return texts[i].indexOf(w) !== -1; });
             td.hidden = !ok;
             if (ok) any = true;
         });
