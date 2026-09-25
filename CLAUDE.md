@@ -210,8 +210,7 @@ of HTML files individually:
   break-even, IL curve, scenario table), Unit Conversion (15 categories, "10 miles to km" search, all-units table, `?c=&v=&f=&t=`).
   The original apps' spreadsheet links are kept (gematria, impermanent-loss, unit-conversion each have their own).
   Artwork: Grok icons/share images from `~/Downloads` (`<slug>/img/logo.png` + `img/<short>-logo.png` at 90% fill with
-  the corners cut transparent, `<slug>/img/logo-big.png`); **`unit-conversion/img/logo-big.png` is still a placeholder**
-  (the supplied `unit-conversion-share.png` was a duplicate of the gematria image — re-request it). Start a new tool
+  the corners cut transparent, `<slug>/img/logo-big.png`); all four share images are real Grok art now. Start a new tool
   page from `tool_page_template.html` the same way.
 
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
