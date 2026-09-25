@@ -217,7 +217,7 @@ function renderTopPages() {
     const key = pageKey(p);
     const isExpanded = expandedPages.has(key);
     const toggle = '<button type="button" class="expand-toggle" data-page-key="' + escapeHtml(key) + '" aria-expanded="' + isExpanded + '" title="Show device × source breakdown">' + (isExpanded ? '▾' : '▸') + '</button>';
-    const row = '<tr><td class="page-cell sticky-col sticky-left">' + toggle + '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener"><span class="page-path">' + escapeHtml(label) + '</span></a></td>' +
+    const row = '<tr><td class="page-cell sticky-col sticky-left">' + toggle + '<a href="' + escapeHtml(url) + '" title="' + escapeHtml(label) + '" target="_blank" rel="noopener"><span class="page-path">' + escapeHtml(label) + '</span></a></td>' +
       breakdownKeys.map(function (k) { return breakdownCell(p, k); }).join('') +
       '<td class="views sticky-col sticky-right">' + p.views.toLocaleString() + '</td></tr>';
     if (!isExpanded) return row;
