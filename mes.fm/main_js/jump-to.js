@@ -3,7 +3,8 @@
    Wide screens (>= 1300px) show the TOC as a fixed sidebar (.toc-sidebar); below that the page only has the
    "Jump to section" <details> near the top, which scrolls out of reach on a long page. This adds a "Jump to" button
    (list icon + label) to the floating bar -- i.e. once you have scrolled away from the top -- that opens the same
-   list as a dropdown panel under the bar. It is hidden whenever the sidebar is visible.
+   list as a dropdown panel under the bar. It is hidden whenever the sidebar is visible, unless the script tag
+   carries `data-always` (then it shows at every width).
 
    Source of truth is the page's own `.toc-mobile .toc-links a` list: the panel copies the labels (and the
    `.toc-sub` indentation) and, on tap, *clicks the original link*, so any page handler on the TOC (e.g. expanding a
@@ -12,6 +13,9 @@
    Load with: <script src="/main_js/jump-to.js" defer></script> (see add_jump_to_bar.py). */
 (function () {
     "use strict";
+    /* <script data-always> keeps the button in the bar even on wide screens where the sidebar TOC is showing
+       (pages with a long, nested TOC, e.g. vector-functions-problems-plus) */
+    var always = !!(document.currentScript && document.currentScript.hasAttribute("data-always"));
     var bar = document.getElementById("compact-nav");
     var links = Array.prototype.slice.call(document.querySelectorAll(".toc-mobile .toc-links a"));
     if (!bar || !links.length || document.getElementById("compact-jump")) return;
@@ -85,7 +89,7 @@
     /* only while the floating bar is showing, and only when the sidebar TOC isn't */
     var sidebar = document.querySelector(".toc-sidebar");
     function sync() {
-        var sidebarShown = sidebar && getComputedStyle(sidebar).display !== "none";
+        var sidebarShown = !always && sidebar && getComputedStyle(sidebar).display !== "none";
         btn.style.display = sidebarShown ? "none" : "";
         btn.tabIndex = document.body.classList.contains("is-stuck") && !sidebarShown ? 0 : -1;
         if (sidebarShown || !document.body.classList.contains("is-stuck")) close();
