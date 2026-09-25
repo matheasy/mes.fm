@@ -95,6 +95,7 @@ const PLAYLIST = [
   { href: "https://mes.fm/problems-plus-2-projectile-inclined-plane" },
   { href: "https://mes.fm/problems-plus-3-ball-rolls-table" },
   { href: "https://mes.fm/problems-plus-4-curvature-parametric-integrals" },
+  { href: "https://mes.fm/problems-plus-5-projectile-total-distance" },
 ];
 
 function loadPlaylistCache() {
