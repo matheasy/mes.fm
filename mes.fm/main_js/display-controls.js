@@ -11,13 +11,22 @@
    Text size scales only running text (page description, intro paragraphs and
    headings, calculator/tool card text), leaving nav, logos and thumbnails
    alone. Dark mode is page-scoped overrides on top of the template's own
-   navy-on-white header/nav/footer, which need no change. */
+   navy-on-white header/nav/footer, which need no change.
+
+   Tool pages (mes.fm/emoji, /latex, /timezone, ... -- see add_tool_page_controls.py)
+   opt in with <div id="main-content" data-tool data-text-scale>: the whole tool area is
+   scaled by text size, <body> gets .tool-page, the hub-specific dark text/link rules
+   below are skipped for it, and each tool page carries its own generated
+   `body.dark-mode ...` block for its widgets (between TOOL-DARK markers). */
 (function () {
     "use strict";
 
     var header = document.getElementById("header");
     var host = header || document.querySelector(".inner-container");
     if (!host || document.getElementById("header-controls")) return;
+
+    var isTool = !!document.querySelector("#main-content[data-tool]");
+    if (isTool) document.body.classList.add("tool-page");
 
     var css = document.createElement("style");
     css.id = "mes-display-controls-css";
@@ -37,9 +46,15 @@
         "body.dark-mode{background-color:#1a1a1a}",
         "body.dark-mode .inner-container{background-color:#232323;box-shadow:none}",
         "body.dark-mode .calculator-title,body.dark-mode .page-title,body.dark-mode .page-description,",
-        "body.dark-mode .page-content :is(h1,h2,h3,p,span,b,strong,li){color:#eee}",
+        "body.dark-mode:not(.tool-page) .page-content :is(h1,h2,h3,p,span,b,strong,li){color:#eee}",
+        "body.dark-mode.tool-page{color-scheme:dark}",
+        /* long tool titles (e.g. "MES YouTube Thumbnail Grabber") must wrap before the controls, not run under them */
+        "body.tool-page .logo-text-container{padding-right:175px}",
+        "@media (max-width:768px){body.tool-page .logo-text-container{padding-right:0}}",
+        "body.dark-mode.tool-page .page-title,body.dark-mode.tool-page .page-description{color:#eee}",
+        "body.dark-mode.tool-page .page-description a{color:#6cb6f5}",
         "body.dark-mode .tag-line,body.dark-mode .page-content .calc__text--desc{color:#b8b8b8}",
-        "body.dark-mode .page-content a:not(.icon-grid__link):not(.calc-link):not(.memes__link):not(.btn-link){color:#6cb6f5}",
+        "body.dark-mode:not(.tool-page) .page-content a:not(.icon-grid__link):not(.calc-link):not(.memes__link):not(.btn-link){color:#6cb6f5}",
         "body.dark-mode .page-content .icon-grid__label{color:#fff}",
         "body.dark-mode .calc-link,body.dark-mode .memes__img{border-color:rgba(255,255,255,.2)}",
         "body.dark-mode .calc-link:hover,body.dark-mode .memes__img:hover{border-color:#6cb6f5}",
@@ -64,7 +79,7 @@
     /* text size */
     var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
     var targets = [];
-    document.querySelectorAll(".page-description, .page-content .sentence, .page-content .header2, .calc__text").forEach(function (el) {
+    document.querySelectorAll(".page-description, .page-content .sentence, .page-content .header2, .calc__text, [data-text-scale]").forEach(function (el) {
         targets.push(el);
     });
     var downBtn = document.getElementById("textSizeDownBtn");

@@ -153,6 +153,17 @@ of HTML files individually:
   CORS-open, ~100 bytes) when the bar nears the viewport and turn "Comments" into "Comments (N)" when N > 0 (nothing
   shown for 0; fails silently). `main.js?v=1.0.5` / `comments.js?v=1.0.1` carry it, bumped on every page that loads them.
 
+- `add_tool_page_controls.py` — gives the eight tools-hub pages (`emoji`, `latex`, `timezone`, `symbols`, `speedreader`,
+  `timer`, `youtube-thumbnail`, `stats`) the same floating header bar and A-/A+/moon controls as the hub pages and
+  `mes.fm/math`: the `#compact-nav` CSS/markup/JS is imported from `add_compact_nav_bar.py` (hub blue swapped for the
+  tool's own shell colour, tool logo + title), `main_js/display-controls.js` is loaded, and `#main-content` becomes
+  `data-tool data-text-scale` (text size scales the whole tool area; `<body>` gets `.tool-page`, which switches off the
+  hub-specific dark text/link rules in display-controls.js). Each tool's widget is light-only CSS, so the dark theme is
+  *derived* from that page's own tool `<style>` into a `TOOL-DARK` block (every colour-setting rule gets a mapped
+  `body.dark-mode ...` twin: neutrals lightness-inverted, pastels darkened, accents lightened; near-white text kept) —
+  re-run it after editing a tool's CSS to refresh the block. Idempotent; **dry-runs by default, `--apply` writes.** New
+  tool pages: add them to `TOOLS` and run it. `display-controls.js?v=` is bumped in the script's `DC_TAG` when the JS changes.
+
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3
   columns of taller stacked cards on >=900px; puzzles/memes stay 4 columns but fluid (thumbnails fill the page, `srcset`
