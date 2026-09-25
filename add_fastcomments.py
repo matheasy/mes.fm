@@ -8,7 +8,7 @@ Two jobs, both keyed on the shared markup
 
 1. CONVERT -- the ~1,017 calculator / meme / tool pages that already carry a Comments toggle used a
    `class="button"` bar with a rotating up/down arrow (&#9660;/&#9650;) that main.js flipped. They now use the same
-   `hide-div-button button selected` bar as "Important Notes" / "more calculations" on
+   `hide-div-button button` bar as "Important Notes" / "more calculations" on
    mes.fm/percentagecalculator: a filled blue bar while the comments are shown, outlined while collapsed, no
    arrows, toggled by main.js's generic `.hide-div-button` handler (the arrow-only handler was removed from
    main.js). `main.js?v=1.0.3` is bumped to `1.0.4` on those pages so a cached copy of the old handler can't
@@ -40,7 +40,7 @@ MARKER = "FASTCOMMENTS-BLOCK"
 OLD_BAR = re.compile(
     r'<div id="comments-button" class="button(?: button--active)?"(?: style="position:relative;")?>'
     r'([^<]*)(?:<span class="dropdown-symbol"[^>]*>(?:&#9660;|&#9650;)</span>)?</div>')
-NEW_BAR = r'<div id="comments-button" class="hide-div-button button selected">\1</div>'
+NEW_BAR = r'<div id="comments-button" class="hide-div-button button">\1</div>'
 MAIN_JS_OLD, MAIN_JS_NEW = "main_js/main.js?v=1.0.3", "main_js/main.js?v=1.0.4"
 
 
@@ -54,8 +54,8 @@ def convert(text):
 # ---------------------------------------------------------------- 2. ADD
 def block(indent, wrap=False):
     inner = [
-        '<div id="comments-button" class="mes-comments-toggle selected">Comments</div>',
-        '<div id="comments-box"><div id="fastcomments-widget"></div></div>',
+        '<div id="comments-button" class="mes-comments-toggle">Comments</div>',
+        '<div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>',
         '<script src="/main_js/comments.js?v=1.0.0" defer></script>',
     ]
     lines = ["<!-- %s: Comments toggle + lazy FastComments widget, see main_js/comments.js -->" % MARKER]

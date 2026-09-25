@@ -128,17 +128,26 @@ of HTML files individually:
 
 - `add_fastcomments.py` — FastComments pass, two jobs. (1) The ~1,017 calculator/meme/tool pages that already had a
   Comments toggle used a `class="button"` bar with a rotating up/down arrow; they now use the same
-  `hide-div-button button selected` bar as "Important Notes" / "more calculations" on `mes.fm/percentagecalculator`
+  `hide-div-button button` bar as "Important Notes" / "more calculations" on `mes.fm/percentagecalculator`
   (filled blue while shown, outlined while collapsed, no arrows), toggled by `main.js`'s generic `.hide-div-button`
   handler (its arrow-only `#comments-button` handler was removed) — `main.js?v=` is bumped to `1.0.4` on those pages so
   a cached old handler can't double-toggle. (2) The Hive-mirror / math-hub / list / tool pages that had no comments now
-  carry `<div id="comments-button" class="mes-comments-toggle selected">` + `#comments-box` + `/main_js/comments.js`
+  carry `<div id="comments-button" class="mes-comments-toggle">` + `<div id="comments-box" class="hide">` + `/main_js/comments.js`
   (self-contained, works without jQuery/main.js; injects its own CSS; lazy-loads FastComments tenant `1RGmGBEjdU`).
   Per-family insertion anchors live in `STRATEGIES`/`SPECIAL`; the same block is patched into every `build.mjs`,
   `cubic-formula/child-template.html` and `math_qa_mirror_template.html`, so a rebuild keeps it (new mirror pages cloned
   from those templates get it for free; for other new pages run the script). Pages no strategy matches (contact,
   `_https_` captures, pagination stubs) are left comment-free on purpose. Idempotent (`FASTCOMMENTS-BLOCK`
   marker); **dry-runs by default, `-v` lists every file, `--apply` writes.**
+
+- `collapse_comments_default.py` — the Comments block now starts **collapsed** on every page (decided 2026-09-24): bar
+  outlined (`hide-div-button button` / `mes-comments-toggle`, no `selected`) and `<div id="comments-box" class="hide">`.
+  Collapsed means FastComments' embed + iframe load only on the first click of the bar (the IntersectionObserver in
+  `main.js`/`comments.js` can't fire on a `display:none` target), so readers who never comment don't download it, and
+  there's no layout shift at the footer. Patched across ~1,220 pages, every `build.mjs`, `child-template.html` and
+  `math_qa_mirror_template.html`; `add_fastcomments.py`'s block() and `percentagecalculator-app/build-www.py`'s
+  comment-stripper (now `[^>]*` on the box tag) were updated to match. Idempotent; **dry-runs by default, `--apply`
+  writes.** New pages: use the collapsed markup above.
 
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3

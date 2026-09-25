@@ -103,8 +103,8 @@ def clean(html: str, page_name: str) -> str:
                   html, flags=re.S)
     # Comments toggle button + FastComments box
     html = re.sub(r'<div id="comments-button"[^>]*>.*?</div>\s*'
-                  r'(?=<div id="comments-box">)', "", html, flags=re.S)
-    html = re.sub(r'<div id="comments-box">\s*'
+                  r'(?=<div id="comments-box"[^>]*>)', "", html, flags=re.S)
+    html = re.sub(r'<div id="comments-box"[^>]*>\s*'
                   r'<div id="fastcomments-widget"></div>\s*</div>', "",
                   html, flags=re.S)
     # inline AdSense units (tutorial / how-to carry manual <ins> slots)

@@ -2,18 +2,21 @@
    jQuery-based toggle -- the standalone Hive-mirror pages, the math hub, list
    pages and so on. Markup (see add_fastcomments.py):
 
-       <div id="comments-button" class="mes-comments-toggle selected" ...>Comments</div>
-       <div id="comments-box"><div id="fastcomments-widget"></div></div>
+       <div id="comments-button" class="mes-comments-toggle" ...>Comments</div>
+       <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
 
    The bar looks and behaves like the "Important Notes" / "more calculations"
    bars on mes.fm/percentagecalculator (a filled blue bar while the section is
    open, an outlined one while it is collapsed, no up/down arrows). The
-   calculator pages themselves use those same `hide-div-button button selected`
+   calculator pages themselves use those same `hide-div-button button`
    classes and let main.js toggle them, so this file leaves any button carrying
    `hide-div-button` alone and only lazy-loads the widget for it.
 
-   FastComments' embed.min.js is pulled in only when the box nears the viewport
-   or on the first click of the bar, so it never blocks first render. The
+   The block starts COLLAPSED on every page (bar outlined, #comments-box `hide`), see
+   collapse_comments_default.py -- the widget then loads on the first click of the bar,
+   since the observer below can never fire on a display:none target. If a page ever
+   ships it open, embed.min.js is pulled in once the box nears the viewport instead.
+   Either way it never blocks first render. The
    window.__fcLazyInit flag is shared with main.js so a page that loads both
    only initialises the widget once. */
 (function () {
