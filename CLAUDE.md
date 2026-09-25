@@ -126,6 +126,20 @@ of HTML files individually:
   `--all` (one-off after a site-wide pass) and `--url` adjust it. Dry-runs by default. Don't run it on a schedule —
   IndexNow wants changed URLs only. Set up 2026-09-24 after Bing Webmaster Tools' "Set up IndexNow" recommendation.
 
+- `add_fastcomments.py` — FastComments pass, two jobs. (1) The ~1,017 calculator/meme/tool pages that already had a
+  Comments toggle used a `class="button"` bar with a rotating up/down arrow; they now use the same
+  `hide-div-button button selected` bar as "Important Notes" / "more calculations" on `mes.fm/percentagecalculator`
+  (filled blue while shown, outlined while collapsed, no arrows), toggled by `main.js`'s generic `.hide-div-button`
+  handler (its arrow-only `#comments-button` handler was removed) — `main.js?v=` is bumped to `1.0.4` on those pages so
+  a cached old handler can't double-toggle. (2) The Hive-mirror / math-hub / list / tool pages that had no comments now
+  carry `<div id="comments-button" class="mes-comments-toggle selected">` + `#comments-box` + `/main_js/comments.js`
+  (self-contained, works without jQuery/main.js; injects its own CSS; lazy-loads FastComments tenant `1RGmGBEjdU`).
+  Per-family insertion anchors live in `STRATEGIES`/`SPECIAL`; the same block is patched into every `build.mjs`,
+  `cubic-formula/child-template.html` and `math_qa_mirror_template.html`, so a rebuild keeps it (new mirror pages cloned
+  from those templates get it for free; for other new pages run the script). Pages no strategy matches (contact,
+  stats, `_https_` captures, pagination stubs) are left comment-free on purpose. Idempotent (`FASTCOMMENTS-BLOCK`
+  marker); **dry-runs by default, `-v` lists every file, `--apply` writes.**
+
 Run any of them with `python3 <script>.py` from anywhere (they resolve the repo root themselves). They print a
 per-file report; read the output rather than assuming success — `fix_broken_internal_links.py` additionally needs
 `--apply` to write anything, and reading its dry run first is the point.

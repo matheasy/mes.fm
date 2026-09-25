@@ -36,13 +36,10 @@ $(document).ready(function() {
         });
     }
 
-    $("#comments-button").click(function() {
-        $("#comments-box").toggleClass("hide");
-        if($("#comments-box").hasClass("hide"))
-            $(this).find(".dropdown-symbol").html("&#9660;");
-        else
-            $(this).find(".dropdown-symbol").html("&#9650;");
-    });
+    /* The Comments bar (#comments-button) is a plain `hide-div-button button
+       selected` bar like "Important Notes" / "more calculations": the generic
+       .hide-div-button handler below collapses/expands #comments-box, so it no
+       longer needs its own up/down-arrow toggle. */
 
     /* Lazy-load the FastComments widget: its embed.min.js used to be a plain
        render-blocking <script> in every page, initialised immediately. Now the
@@ -61,7 +58,7 @@ $(document).ready(function() {
             s.src = "https://cdn.fastcomments.com/js/embed.min.js";
             s.onload = function() {
                 if(window.FastCommentsUI)
-                    window.FastCommentsUI(target, { tenantId: "1RGmGBEjdU" });
+                    window.FastCommentsUI(target, { tenantId: "1RGmGBEjdU", hasDarkBackground: /(^|\s)dark(-mode)?(\s|$)/.test(document.body.className) });
             };
             document.head.appendChild(s);
         }

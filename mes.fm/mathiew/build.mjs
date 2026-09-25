@@ -544,6 +544,13 @@ ${videosGridHtml}
 
   <div style="clear: both;"></div>
 
+  <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
+  <div class="mes-comments-wrap">
+    <div id="comments-button" class="mes-comments-toggle selected">Comments</div>
+    <div id="comments-box"><div id="fastcomments-widget"></div></div>
+    <script src="/main_js/comments.js?v=1.0.0" defer></script>
+  </div>
+
   <footer style="text-align: center;">
     <p>&copy; 2026 Math Easy Solutions (MES). All rights reserved. | <a href="https://mes.fm/contact">Contact Us</a> | <a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
   </footer>

@@ -528,6 +528,11 @@ ${bodyHtml}
       <a class="source-link" href="${PEAKD_URL}" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
       <div class="retrieved-note">Text retrieved from the Hive blockchain on ${escapeHtml(buildDate)}.</div>
     </article>
+    <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
+    <div id="comments-button" class="mes-comments-toggle selected">Comments</div>
+    <div id="comments-box"><div id="fastcomments-widget"></div></div>
+    <script src="/main_js/comments.js?v=1.0.0" defer></script>
+
 
     <hr>
 
