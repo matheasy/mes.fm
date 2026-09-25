@@ -201,8 +201,8 @@ of HTML files individually:
   body (inputs / tables / inline calculator scripts kept in order); the old ad divs, h1, "MES Links" and footer are
   dropped. Run once per app (converted pages have an `#info-bar` and are skipped), then
   `python3 add_tool_page_controls.py --apply` (they're in its `TOOLS` list) for the floating bar, controls and dark mode.
-  Their logos and `moon`'s (`<slug>/img/logo.png`, `img/<slug>-logo.png`, `moon/img/logo-big.png`) are **placeholder art
-  drawn with Pillow** — replace the files, same names, when real (Grok) art exists. `moon` is also a card on `tools.html`.
+  The four apps' logos (`<slug>/img/logo.png`, `img/<slug>-logo.png`, `<slug>/img/logo-big.png`) are **placeholder art
+  drawn with Pillow** — replace the files, same names, when real (Grok) art exists. `moon` is a card on `tools.html`; the four apps are cards on `calculators.html` (their info-bar section link says Calculators). Moon's real Grok art is in (`moon/img/logo.png`, `img/moon-logo.png`, `moon/img/logo-big.png`); the four apps' art is still placeholder.
   Start a new tool page from `tool_page_template.html` the same way.
 
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to

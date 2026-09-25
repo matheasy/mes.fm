@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild the four stand-alone calculator apps (earth-curvature-calculator, gematria, impermanent-loss-calculator,
+"""Rebuild the four stand-alone calculator apps (listed on calculators.html) (earth-curvature-calculator, gematria, impermanent-loss-calculator,
 unit-conversion) as proper tools-hub pages, like mes.fm/emoji, /latex, /stats: logo header + tool-coloured nav bar,
 Site Navigation menu, standard footer, FastComments bar, and (via add_tool_page_controls.py) the floating header bar,
 A-/A+/moon controls and derived dark mode. Before, they were bare pages with no header at all, so a floating bar had
@@ -105,6 +105,8 @@ def build(slug, cfg, old, tpl):
     for k, v in fills.items():
         if k not in ("@@TOOL_CSS@@", "@@CONTENT@@", "@@LDJSON@@"):
             page = page.replace(k, v)
+    # these are calculators, not tools-hub tools: the info-bar's section link goes to the calculators page
+    page = page.replace("href='https://mes.fm/tools.html'>Tools</a>", "href='https://mes.fm/calculators.html'>Calculators</a>")
     return page
 
 
