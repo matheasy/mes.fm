@@ -26,7 +26,7 @@ TEMPLATE = ROOT / "hive_mirror_template.html"
 APPLY = "--apply" in sys.argv
 VERBOSE = "-v" in sys.argv
 # custom apps with their own theme/layout logic -- left alone
-NEVER = {"moon", "bg"}
+NEVER = {"bg"}
 ONLY = {a.split("=", 1)[1] for a in sys.argv if a.startswith("--only=")}
 
 GENERIC = dict(logo="/img/logo-mark.png", title="MES.fm", tag="Videos, tutorials, calculators and research by Math Easy Solutions.", href="/")
@@ -35,6 +35,11 @@ BRANDS = {
     "/hutchison": dict(logo="/img/hutchison-logo.jpg", title="MES Hutchison Effect", tag="Antigravity, materials transmutation, and John Hutchison's demonstrations.", href="/hutchison", label="MES Hutchison Effect"),
     "/science": dict(logo="/img/science-logo.png", title="MES Science", tag="Links, videos and posts on science topics.", href="/science", label="MES Science"),
     "/conspiracy": dict(logo="/img/conspiracy-logo.jpg", title="MES Conspiracy", tag="Alt-news checkups, videos and posts on conspiracies.", href="/conspiracy", label="MES Conspiracy"),
+}
+# pages that get their own brand / "Part of" box instead of the one implied by their back link
+PAGE_BRANDS = {
+    "moon": (dict(logo="/moon/img/logo.png", title="MES Moon", tag="Live sky dashboard: moon phase, sun, planets and astronomy.", href="/moon"),
+             'Part of <a href="/tools">MES Tools</a> &middot; <a href="/science">MES Science</a>'),
 }
 LEGACY = re.compile(r"theme-toggle-btn|text-size|top-bar-controls|^\.outer-|\.page-box|\.side-bar|^img$|^table$|site-footer-note|^hr$")
 
@@ -134,6 +139,9 @@ def chrome_swap(old, template):
     if not (links and style and 'class="top-bar"' in old and "const themeToggle" in old):
         return None, "no standard chrome to swap"
     b, partof = brand_and_partof(links)
+    cm = re.search(r'<link rel="canonical" href="https://mes\.fm/([^"/]*)', old)
+    if cm and cm.group(1) in PAGE_BRANDS:
+        b, partof = PAGE_BRANDS[cm.group(1)]
     tpl = template
     compact = fill_brand(block(tpl, '<div id="compact-nav"'), b, partof)
     top = fill_brand(block(tpl, '<div class="top-bar">'), b, partof)
@@ -147,6 +155,14 @@ def chrome_swap(old, template):
     css = style.group(1).rstrip() + "\n\n    /* site chrome (branded header, nav bar, floating bar, footer) */\n    " + "\n    ".join(chrome) + "\n"
 
     new = old[: style.start()] + "<style>" + css + "</style>" + old[style.end():]
+    if cm and cm.group(1) in PAGE_BRANDS:  # own artwork: favicon + social preview image
+        big = "https://mes.fm%s-big.png" % b["logo"][:-4]
+        new = re.sub(r'<link rel="icon"[^>]*>', '<link rel="icon" href="https://mes.fm%s?v=1.0" type="image/png" />' % b["logo"], new, count=1)
+        if "og:image" in new:
+            new = re.sub(r'(<meta property="og:image" content=")[^"]*', lambda mm: mm.group(1) + big, new, count=1)
+            new = re.sub(r'(<meta name="twitter:image" content=")[^"]*', lambda mm: mm.group(1) + big, new, count=1)
+        else:
+            new = new.replace("</head>", '  <meta property="og:image" content="%s">\n  <meta name="twitter:card" content="summary_large_image">\n  <meta name="twitter:image" content="%s">\n</head>' % (big, big), 1)
     new = new.replace(block(new, '<div class="top-bar">'), top + "\n    " + nav + "\n    " + part, 1)
     new = new.replace('<div class="container">', compact + '\n\n  <div class="container">', 1)
     new, n = re.subn(r'(<hr>\s*)?<p class="site-footer-note">.*?</p>', lambda mm: footer, new, count=1, flags=re.S)

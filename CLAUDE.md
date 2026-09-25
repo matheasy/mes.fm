@@ -185,15 +185,25 @@ of HTML files individually:
   `cubic-formula/child-template.html` with `@@BRAND_*@@` tokens). Three modes, picked per page: *standard* (rebuild from the
   template, lifting h1 / subtitle / `<article>` / video scripts and any page-specific CSS rules out of the old page),
   *chrome swap* (chaptered / multi-article pages: keep the body, swap only top bar, footer and scripts) and *hub swap*
-  (conspiracy / mathiew / crypto link hubs; also sets the conspiracy favicon + og:image). Never touches `moon` and `bg`;
-  `links`, `911djw`, `chatgpt` and the four tool-ish apps (`earth-curvature-calculator`, `gematria`,
-  `impermanent-loss-calculator`, `unit-conversion`) don't match and are left as they were. **Generators:** `911-alchemy`, `djw`,
+  (conspiracy / mathiew / crypto link hubs; also sets the conspiracy favicon + og:image). `moon` gets its own brand (`PAGE_BRANDS`: moon logo, "Part of MES Tools · MES Science", favicon + og image from
+  `moon/img/`); never touches `bg`; `links`, `911djw` and `chatgpt` don't match and are left as they were. **Generators:** `911-alchemy`, `djw`,
   `ferrocell-specular-reflection`, `hutchison-tom-sky`, `norman-patricia-ai-email`, `conspiracy` and `mathiew` still emit the
   bare shell from `build.mjs`, so each `build.mjs` now ends by running `convert_mirror_pages.py --apply --only=<slug>` —
   a rebuild re-applies the shell instead of reverting it (new mirrors cloned from those templates: same one-liner).
   Idempotent (converted pages have an `#info-bar`); **dry-runs by default, `-v` lists pages, `--apply` writes.**
   `mes.fm/img/conspiracy-{icon,logo,logo-big}.jpg` (tile 900x600, favicon/brand 512 square, og 1200x630) come from one
   source image; the conspiracy tile sits last in the homepage `icon-grid`.
+
+- `build_tool_apps.py` — the four stand-alone calculator apps (`earth-curvature-calculator`, `gematria`,
+  `impermanent-loss-calculator`, `unit-conversion`) were bare pages with no header, so a floating bar had nothing to
+  float away from. This rebuilds each as a tools-hub page from `tool_page_template.html` (the emoji page's shell with
+  `@@tokens@@`), lifting the app's meta description, its `<style>` rules (re-scoped under `#main-content`) and its
+  body (inputs / tables / inline calculator scripts kept in order); the old ad divs, h1, "MES Links" and footer are
+  dropped. Run once per app (converted pages have an `#info-bar` and are skipped), then
+  `python3 add_tool_page_controls.py --apply` (they're in its `TOOLS` list) for the floating bar, controls and dark mode.
+  Their logos and `moon`'s (`<slug>/img/logo.png`, `img/<slug>-logo.png`, `moon/img/logo-big.png`) are **placeholder art
+  drawn with Pillow** — replace the files, same names, when real (Grok) art exists. `moon` is also a card on `tools.html`.
+  Start a new tool page from `tool_page_template.html` the same way.
 
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3
