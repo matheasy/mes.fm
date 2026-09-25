@@ -143,7 +143,9 @@ def build_from_source(slug, cfg, tpl):
                  "@@TAGLINE@@": cfg["tag"], "@@PAGE_TITLE@@": cfg["page_title"], "@@PAGE_DESC@@": desc,
                  "@@ACCENT@@": cfg["accent"], "@@ACCENT_DARK@@": cfg["dark"]}.items():
         page = page.replace(k, v)
-    page = page.replace("href='https://mes.fm/tools.html'>Tools</a>", "href='https://mes.fm/calculators.html'>Calculators</a>")
+    # these are calculators: the info bar reads Home | Calculators | Tools (cross-link both ways, see add_cross_links.py)
+    tools_li = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/tools.html'>Tools</a></li>"
+    page = page.replace(tools_li, "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/calculators'>Calculators</a></li>" + tools_li.replace("tools.html", "tools"))
     js_dir = SITE / slug / "js"
     js_dir.mkdir(parents=True, exist_ok=True)
     return page, (d / "app.js").read_text(encoding="utf-8"), js_dir / (slug + ".js")

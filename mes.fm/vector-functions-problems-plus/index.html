@@ -663,6 +663,12 @@
         opacity: 1;
         text-decoration: underline;
       }
+
+      /* "## " sub-chapters (e.g. each Problem) nested under their chapter */
+      .toc-sidebar a.toc-sub {
+        padding-left: 1em;
+        font-size: 0.92em;
+      }
     }
 
     .toc-mobile {
@@ -699,6 +705,11 @@
 
     .toc-mobile a:hover {
       text-decoration: underline;
+    }
+
+    .toc-mobile a.toc-sub {
+      padding-left: 1em;
+      font-size: 0.92em;
     }
 
     @media (max-width: 600px) {
@@ -896,13 +907,13 @@
       <a href="#links-and-calculus-book-chapter">Links and Calculus Book Chapter</a>
       <a href="#problems-plus-questions">Problems Plus – Questions</a>
       <a href="#problems-plus-solutions">Problems Plus - Solutions</a>
-      <a href="#problem-1-projectile-fired-from-origin">Problem 1: Projectile fired from origin</a>
-      <a href="#problem-2-projectile-fired-down-inclined-plane">Problem 2: Projectile fired down inclined plane</a>
-      <a href="#problem-3-ball-rolls-off-table">Problem 3: Ball rolls off table</a>
-      <a href="#problem-4-curvature-from-parametric-equations">Problem 4: Curvature from Parametric Equations</a>
-      <a href="#problem-5-total-distance-traveled-by-projectile">Problem 5: Total distance traveled by projectile</a>
-      <a href="#problem-6-cable-wound-around-a-spool">Problem 6: Cable wound around a spool</a>
-      <a href="#problem-7-vector-equation-on-a-plane">Problem 7: Vector equation on a plane</a>
+      <a class="toc-sub" href="#problem-1-projectile-fired-from-origin">Problem 1: Projectile fired from origin</a>
+      <a class="toc-sub" href="#problem-2-projectile-fired-down-inclined-plane">Problem 2: Projectile fired down inclined plane</a>
+      <a class="toc-sub" href="#problem-3-ball-rolls-off-table">Problem 3: Ball rolls off table</a>
+      <a class="toc-sub" href="#problem-4-curvature-from-parametric-equations">Problem 4: Curvature from Parametric Equations</a>
+      <a class="toc-sub" href="#problem-5-total-distance-traveled-by-projectile">Problem 5: Total distance traveled by projectile</a>
+      <a class="toc-sub" href="#problem-6-cable-wound-around-a-spool">Problem 6: Cable wound around a spool</a>
+      <a class="toc-sub" href="#problem-7-vector-equation-on-a-plane">Problem 7: Vector equation on a plane</a>
   </nav>
   <div class="container">
     <div class="top-bar">
@@ -992,13 +1003,13 @@
       <a href="#links-and-calculus-book-chapter">Links and Calculus Book Chapter</a>
       <a href="#problems-plus-questions">Problems Plus – Questions</a>
       <a href="#problems-plus-solutions">Problems Plus - Solutions</a>
-      <a href="#problem-1-projectile-fired-from-origin">Problem 1: Projectile fired from origin</a>
-      <a href="#problem-2-projectile-fired-down-inclined-plane">Problem 2: Projectile fired down inclined plane</a>
-      <a href="#problem-3-ball-rolls-off-table">Problem 3: Ball rolls off table</a>
-      <a href="#problem-4-curvature-from-parametric-equations">Problem 4: Curvature from Parametric Equations</a>
-      <a href="#problem-5-total-distance-traveled-by-projectile">Problem 5: Total distance traveled by projectile</a>
-      <a href="#problem-6-cable-wound-around-a-spool">Problem 6: Cable wound around a spool</a>
-      <a href="#problem-7-vector-equation-on-a-plane">Problem 7: Vector equation on a plane</a>
+      <a class="toc-sub" href="#problem-1-projectile-fired-from-origin">Problem 1: Projectile fired from origin</a>
+      <a class="toc-sub" href="#problem-2-projectile-fired-down-inclined-plane">Problem 2: Projectile fired down inclined plane</a>
+      <a class="toc-sub" href="#problem-3-ball-rolls-off-table">Problem 3: Ball rolls off table</a>
+      <a class="toc-sub" href="#problem-4-curvature-from-parametric-equations">Problem 4: Curvature from Parametric Equations</a>
+      <a class="toc-sub" href="#problem-5-total-distance-traveled-by-projectile">Problem 5: Total distance traveled by projectile</a>
+      <a class="toc-sub" href="#problem-6-cable-wound-around-a-spool">Problem 6: Cable wound around a spool</a>
+      <a class="toc-sub" href="#problem-7-vector-equation-on-a-plane">Problem 7: Vector equation on a plane</a>
       </nav>
     </details>
 
@@ -1222,11 +1233,9 @@
 <div class="chapter-toggle" id="problems-plus-solutions">
 <h1 class="chapter-toggle-header" onclick="toggleChapter('problems-plus-solutions-list')"><center>Problems Plus - Solutions <span id="arrowIcon-problems-plus-solutions-list" class="arrow-icon">&#9660;</span></center></h1>
 <div id="problems-plus-solutions-list" class="chapter-toggle-list">
-</div>
-</div>
 <hr>
-<div class="chapter-toggle" id="problem-1-projectile-fired-from-origin">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-1-projectile-fired-from-origin-list')"><center>Problem 1: Projectile fired from origin <span id="arrowIcon-problem-1-projectile-fired-from-origin-list" class="arrow-icon">&#9660;</span></center></h1>
+<div class="chapter-toggle chapter-sub" id="problem-1-projectile-fired-from-origin">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('problem-1-projectile-fired-from-origin-list')">Problem 1: Projectile fired from origin <span id="arrowIcon-problem-1-projectile-fired-from-origin-list" class="arrow-icon">&#9660;</span></h2>
 <div id="problem-1-projectile-fired-from-origin-list" class="chapter-toggle-list">
 <p>A projectile is fired from the origin with angle of elevation α and initial speed v<sub>0</sub>.</p>
 <p>Assuming that air resistance is negligible and that the only force acting on the projectile is gravity, g, we showed in my <a href="https://peakd.com/hive-128780/@mes/e443f9d3">earlier video</a> that the position vector of the projectile is:</p>
@@ -1299,8 +1308,8 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="problem-2-projectile-fired-down-inclined-plane">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-2-projectile-fired-down-inclined-plane-list')"><center>Problem 2: Projectile fired down inclined plane <span id="arrowIcon-problem-2-projectile-fired-down-inclined-plane-list" class="arrow-icon">&#9660;</span></center></h1>
+<div class="chapter-toggle chapter-sub" id="problem-2-projectile-fired-down-inclined-plane">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('problem-2-projectile-fired-down-inclined-plane-list')">Problem 2: Projectile fired down inclined plane <span id="arrowIcon-problem-2-projectile-fired-down-inclined-plane-list" class="arrow-icon">&#9660;</span></h2>
 <div id="problem-2-projectile-fired-down-inclined-plane-list" class="chapter-toggle-list">
 <p>(a) A projectile is fired from the origin down an inclined plane that makes an angle θ with the horizontal.</p>
 <p>The angle of elevation of the gun and initial speed of the projectile are α and v<sub>0</sub>, respectively.</p>
@@ -1358,8 +1367,8 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="problem-3-ball-rolls-off-table">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-3-ball-rolls-off-table-list')"><center>Problem 3: Ball rolls off table <span id="arrowIcon-problem-3-ball-rolls-off-table-list" class="arrow-icon">&#9660;</span></center></h1>
+<div class="chapter-toggle chapter-sub" id="problem-3-ball-rolls-off-table">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('problem-3-ball-rolls-off-table-list')">Problem 3: Ball rolls off table <span id="arrowIcon-problem-3-ball-rolls-off-table-list" class="arrow-icon">&#9660;</span></h2>
 <div id="problem-3-ball-rolls-off-table-list" class="chapter-toggle-list">
 <p>A ball rolls off a table with a speed of 2 ft/s.</p>
 <p>The table is 3.5 ft high.</p>
@@ -1422,8 +1431,8 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="problem-4-curvature-from-parametric-equations">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-4-curvature-from-parametric-equations-list')"><center>Problem 4: Curvature from Parametric Equations <span id="arrowIcon-problem-4-curvature-from-parametric-equations-list" class="arrow-icon">&#9660;</span></center></h1>
+<div class="chapter-toggle chapter-sub" id="problem-4-curvature-from-parametric-equations">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('problem-4-curvature-from-parametric-equations-list')">Problem 4: Curvature from Parametric Equations <span id="arrowIcon-problem-4-curvature-from-parametric-equations-list" class="arrow-icon">&#9660;</span></h2>
 <div id="problem-4-curvature-from-parametric-equations-list" class="chapter-toggle-list">
 <p>Find the curvature of the curve with parametric equations:</p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wXQmmT6f9uAiufTwNajm4cmXYmEFqT4U9iHB5ty2Li4hPXWR3dPdk1ok2WnMvGyGoKs.png" alt="image.png"></p>
@@ -1440,8 +1449,8 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="problem-5-total-distance-traveled-by-projectile">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-5-total-distance-traveled-by-projectile-list')"><center>Problem 5: Total distance traveled by projectile <span id="arrowIcon-problem-5-total-distance-traveled-by-projectile-list" class="arrow-icon">&#9660;</span></center></h1>
+<div class="chapter-toggle chapter-sub" id="problem-5-total-distance-traveled-by-projectile">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('problem-5-total-distance-traveled-by-projectile-list')">Problem 5: Total distance traveled by projectile <span id="arrowIcon-problem-5-total-distance-traveled-by-projectile-list" class="arrow-icon">&#9660;</span></h2>
 <div id="problem-5-total-distance-traveled-by-projectile-list" class="chapter-toggle-list">
 <p>If a projectile is fired with angle of elevation α and initial speed v, then parametric equations for its trajectory are, as per my <a href="https://peakd.com/hive-128780/@mes/e443f9d3">earlier video</a>:</p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wCdahRRYhCCigf1SuoBq82sboYsLxiX9DLK3kKA8HUdVwF4bMfyqwigEyBviV4U2VY8.png" alt="image.png"></p>
@@ -1484,8 +1493,8 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="problem-6-cable-wound-around-a-spool">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-6-cable-wound-around-a-spool-list')"><center>Problem 6: Cable wound around a spool <span id="arrowIcon-problem-6-cable-wound-around-a-spool-list" class="arrow-icon">&#9660;</span></center></h1>
+<div class="chapter-toggle chapter-sub" id="problem-6-cable-wound-around-a-spool">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('problem-6-cable-wound-around-a-spool-list')">Problem 6: Cable wound around a spool <span id="arrowIcon-problem-6-cable-wound-around-a-spool-list" class="arrow-icon">&#9660;</span></h2>
 <div id="problem-6-cable-wound-around-a-spool-list" class="chapter-toggle-list">
 <p>A cable has radius r and length L and is wound around a spool with radius R without overlapping.</p>
 <p>What is the shortest length along the spool that is covered by the cable?</p>
@@ -1510,8 +1519,8 @@
 </div>
 </div>
 <hr>
-<div class="chapter-toggle" id="problem-7-vector-equation-on-a-plane">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('problem-7-vector-equation-on-a-plane-list')"><center>Problem 7: Vector equation on a plane <span id="arrowIcon-problem-7-vector-equation-on-a-plane-list" class="arrow-icon">&#9660;</span></center></h1>
+<div class="chapter-toggle chapter-sub" id="problem-7-vector-equation-on-a-plane">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('problem-7-vector-equation-on-a-plane-list')">Problem 7: Vector equation on a plane <span id="arrowIcon-problem-7-vector-equation-on-a-plane-list" class="arrow-icon">&#9660;</span></h2>
 <div id="problem-7-vector-equation-on-a-plane-list" class="chapter-toggle-list">
 <p>Show that the vector equation below lies in a plane and find the equation of the plane:</p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wXQmmT6db5R9LAw8su6LL2DfeWjCJj6J78P4LGP1B5yRGYp5J6hopiW3LGDx3LZVNm9.png" alt="image.png"></p>
@@ -1533,6 +1542,8 @@
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23twA7Qkn1q6vxRTu8fMn3E4JarrGVG86kjqBAqbWAoc3o3S2pQhs7SesGoNECL1Bftn6.png" alt="image.png"></p>
 <hr>
 <h3>MES Math Tutorials: <a href="https://mes.fm/math">https://mes.fm/math</a></h3>
+</div>
+</div>
 </div>
 </div>
 
@@ -1595,6 +1606,35 @@
       list.classList.toggle('hidden');
       arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
     }
+
+    // A Jump-to link (or a deep link such as #problem-3-...) can target a
+    // heading inside a collapsed chapter or sub-chapter, which is display:none
+    // and so can't be scrolled to -- expand every collapsed ancestor first.
+    // Runs in the click handler, before the browser performs the anchor jump,
+    // and on hashchange / page load.
+    function revealChapterFor(hash) {
+      if (!hash || hash.length < 2) return;
+      let target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      let list;
+      while (target && (list = target.closest('.chapter-toggle-list'))) {
+        if (list.classList.contains('hidden')) {
+          list.classList.remove('hidden');
+          const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+          if (arrowIcon) arrowIcon.textContent = '▲';
+        }
+        target = list.parentElement;
+      }
+    }
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest && e.target.closest('.toc-sidebar a, .toc-mobile a');
+      if (link) revealChapterFor(link.hash);
+    });
+    window.addEventListener('hashchange', function () {
+      revealChapterFor(location.hash);
+      const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (target) target.scrollIntoView();
+    });
+    revealChapterFor(location.hash);
 
     function toggleAllChapters() {
       const lists = document.querySelectorAll('.chapter-toggle-list');

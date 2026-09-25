@@ -409,7 +409,14 @@ function embedYoutubeLinks(markdown) {
 // heading (rendered as <h1> by marked) plus any centered "## <center>..." one
 // (MES uses a centered h2 for a few section headers, e.g. "Links and Calculus
 // Book Chapter") -- those get promoted to <h1> first so wrapChaptersInToggles
-// picks them up too. Duplicate slugs/labels get a "(2)"-style suffix.
+// picks them up too. Inside the chapters listed in SUB_CHAPTER_PARENTS, every
+// plain "## " heading (e.g. "Problem 1: ..." under "Problems Plus - Solutions")
+// is a collapsible sub-chapter: it gets an id and a {sub: true} TOC entry
+// (indented under its chapter). "## " headings elsewhere (e.g. "Topics to
+// Cover" in the leading chapter) stay ordinary headings. Duplicate slugs/labels
+// get a "(2)"-style suffix.
+const SUB_CHAPTER_PARENTS = new Set(["problems-plus-solutions"]);
+
 function addSectionAnchors(bodyHtml) {
   const seen = new Map();
   const toc = [];
@@ -417,7 +424,9 @@ function addSectionAnchors(bodyHtml) {
     /<h2><center>([\s\S]*?)<\/center><\/h2>/g,
     "<h1><center>$1</center></h1>"
   );
-  const html = promoted.replace(/<h1>([\s\S]*?)<\/h1>/g, (match, inner) => {
+  let parentId = null;
+  const html = promoted.replace(/<h([12])>([\s\S]*?)<\/h\1>/g, (match, level, inner) => {
+    if (level === "2" && !SUB_CHAPTER_PARENTS.has(parentId)) return match;
     const plain = inner
       .replace(/<[^>]+>/g, "")
       .replace(/&quot;/g, '"')
@@ -433,8 +442,9 @@ function addSectionAnchors(bodyHtml) {
     seen.set(slug, occurrence);
     const id = occurrence === 1 ? slug : `${slug}-${occurrence}`;
     const label = occurrence === 1 ? plain : `${plain} (${occurrence})`;
-    toc.push({ id, label });
-    return `<h1 id="${id}">${inner}</h1>`;
+    if (level === "1") parentId = id;
+    toc.push({ id, label, sub: level === "2" });
+    return `<h${level} id="${id}">${inner}</h${level}>`;
   });
   return { html, toc };
 }
@@ -444,6 +454,27 @@ function addSectionAnchors(bodyHtml) {
 // each chapter's h1 + content in a chapter-toggle div so every chapter can be
 // collapsed via toggleChapter(). The leading <hr> stays outside the div as the
 // visual divider between chapters.
+// Inside a chapter, each "<h2 id>" section (up to the next h2) becomes its own
+// nested chapter-toggle, collapsible independently of the chapter around it.
+function wrapSubChaptersInToggles(content) {
+  const re = /(?:<hr>\n)?<h2 id="([^"]+)">([\s\S]*?)<\/h2>/g;
+  const matches = [...content.matchAll(re)];
+  if (matches.length === 0) return content;
+
+  let out = content.slice(0, matches[0].index);
+  matches.forEach((m, i) => {
+    const [full, id, titleInner] = m;
+    const contentStart = m.index + full.length;
+    const contentEnd = i + 1 < matches.length ? matches[i + 1].index : content.length;
+    const hr = full.startsWith("<hr>") ? "<hr>\n" : "";
+    out += `${hr}<div class="chapter-toggle chapter-sub" id="${id}">\n`;
+    out += `<h2 class="chapter-toggle-header" onclick="toggleChapter('${id}-list')">${titleInner.trim()} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></h2>\n`;
+    out += `<div id="${id}-list" class="chapter-toggle-list">${content.slice(contentStart, contentEnd)}</div>\n`;
+    out += `</div>\n`;
+  });
+  return out;
+}
+
 function wrapChaptersInToggles(html) {
   const re = /<hr>\n<h1 id="([^"]+)">([\s\S]*?)<\/h1>/g;
   const matches = [...html.matchAll(re)];
@@ -454,7 +485,7 @@ function wrapChaptersInToggles(html) {
     const [full, id, titleInner] = m;
     const contentStart = m.index + full.length;
     const contentEnd = i + 1 < matches.length ? matches[i + 1].index : html.length;
-    const content = html.slice(contentStart, contentEnd);
+    const content = wrapSubChaptersInToggles(html.slice(contentStart, contentEnd));
     // Some headings are "# <center>Title</center>" -- strip the wrapper so the
     // chapter header doesn't end up with a nested <center>.
     const cleanTitle = titleInner.replace(/^\s*<center>|<\/center>\s*$/g, "").trim();
@@ -483,7 +514,7 @@ async function buildPage(post, playlistMeta) {
   // up by addSectionAnchors -- add it to the TOC manually, first.
   toc.unshift({ id: "playlist", label: "Playlist" });
   const tocLinksHtml = toc
-    .map((t) => `<a href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
+    .map((t) => `<a${t.sub ? ' class="toc-sub"' : ""} href="#${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`)
     .join("\n      ");
 
   const chaptersToolbar = `<div class="chapters-toolbar">
@@ -1214,6 +1245,12 @@ ${leadingHtml}
         opacity: 1;
         text-decoration: underline;
       }
+
+      /* "## " sub-chapters (e.g. each Problem) nested under their chapter */
+      .toc-sidebar a.toc-sub {
+        padding-left: 1em;
+        font-size: 0.92em;
+      }
     }
 
     .toc-mobile {
@@ -1250,6 +1287,11 @@ ${leadingHtml}
 
     .toc-mobile a:hover {
       text-decoration: underline;
+    }
+
+    .toc-mobile a.toc-sub {
+      padding-left: 1em;
+      font-size: 0.92em;
     }
 
     @media (max-width: 600px) {
@@ -1594,6 +1636,35 @@ ${bodyHtml}
       list.classList.toggle('hidden');
       arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
     }
+
+    // A Jump-to link (or a deep link such as #problem-3-...) can target a
+    // heading inside a collapsed chapter or sub-chapter, which is display:none
+    // and so can't be scrolled to -- expand every collapsed ancestor first.
+    // Runs in the click handler, before the browser performs the anchor jump,
+    // and on hashchange / page load.
+    function revealChapterFor(hash) {
+      if (!hash || hash.length < 2) return;
+      let target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      let list;
+      while (target && (list = target.closest('.chapter-toggle-list'))) {
+        if (list.classList.contains('hidden')) {
+          list.classList.remove('hidden');
+          const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+          if (arrowIcon) arrowIcon.textContent = '▲';
+        }
+        target = list.parentElement;
+      }
+    }
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest && e.target.closest('.toc-sidebar a, .toc-mobile a');
+      if (link) revealChapterFor(link.hash);
+    });
+    window.addEventListener('hashchange', function () {
+      revealChapterFor(location.hash);
+      const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (target) target.scrollIntoView();
+    });
+    revealChapterFor(location.hash);
 
     function toggleAllChapters() {
       const lists = document.querySelectorAll('.chapter-toggle-list');

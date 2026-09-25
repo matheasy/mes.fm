@@ -222,6 +222,16 @@ of HTML files individually:
   the page's last table, add its slug to the right category in `PAGES` (unmapped cards land in a trailing "More" section
   and are reported) and re-run. Idempotent; **dry-runs by default, `--apply` writes.**
 
+- `add_cross_links.py` — cross-links calculators and tools in the horizontal info bar: calculator pages (the calculator
+  mini-sites and the four rebuilt apps) get a **Tools** item (-> `/tools`), tool pages (timer incl. its quote galleries,
+  speedreader, emoji, latex, timezone, symbols, youtube-thumbnail, stats) get **Calculators** (and Tools where missing),
+  so the apps and tools read `Home | Calculators | Tools | ...`. The item is inserted in front of the first Donate /
+  Subscribe / Contact Us item (MES.fm stays last); `main.js` highlights the active tab by position, so pages whose active
+  index is at/after the insertion point get an explicit `info_bar_tab` one higher. `build_tool_apps.py` /
+  `tool_page_template.html` emit both links for the apps; `percentagecalculator-app/build-www.py` strips the Tools item
+  from the app build. Idempotent; **dry-runs by default, `--apply` writes.** New calculator / tool directories: add them to
+  `CALC_DIRS` / `TOOL_DIRS`.
+
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3
   columns of taller stacked cards on >=900px; puzzles/memes stay 4 columns but fluid (thumbnails fill the page, `srcset`
