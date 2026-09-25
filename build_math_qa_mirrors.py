@@ -36,6 +36,7 @@ ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "mes.fm"
 DATA = ROOT / "math_qa_mirrors.json"
 TEMPLATE = ROOT / "math_qa_mirror_template.html"
+PART_OF = 'Part of <a href="/math-qa">MES Math Q/A Livestreams</a> &middot; <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-" target="_blank" rel="noopener">YouTube playlist &rarr;</a>'
 LINK_META = SITE / "math" / "link-meta.json"
 
 RETRIEVED = "September 23, 2026"
@@ -364,6 +365,7 @@ def build_page(rec, template):
         .replace("@@TITLE@@", esc_attr(full_title))
         .replace("@@OGIMAGE@@", esc_attr(thumb))
         .replace("@@SUBTITLE@@", subtitle)
+        .replace("@@PARTOF@@", PART_OF)
         .replace("@@VIDEO_SCRIPTS@@", video_player_scripts(rec))
         .replace("@@ARTICLE@@", "\n".join(parts))
     )
