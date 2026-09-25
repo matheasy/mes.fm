@@ -91,7 +91,21 @@
 			["Pool value", usd(c.lp)], ["Value if held", usd(c.held) + " (" + usd(c.heldA) + " " + esc(an) + " + " + usd(c.heldB) + " " + esc(bn) + ")"],
 			["Impermanent loss", usd(c.il) + " (" + pct(c.ilPct) + ")"], ["Hold only " + esc(an), usd(c.holdAOnly)], ["Hold only " + esc(bn), usd(c.holdBOnly)]];
 		$("il-full").querySelector("tbody").innerHTML = f.map(function (r) { return "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>"; }).join("");
-		try { history.replaceState(null, "", "?" + ["aa", "pa", "na", "pb", "nb", "fee"].map(function (k) { return k + "=" + encodeURIComponent($("il-" + k).value); }).join("&")); } catch (e) {}
+	}
+
+	function shareUrl() {   // the address bar is never touched while you type; only "Copy link" builds a ?query
+		return location.origin + location.pathname + "?" + ["aa", "pa", "na", "pb", "nb", "fee"].map(function (k) { return k + "=" + encodeURIComponent($("il-" + k).value); }).join("&");
+	}
+	function toast(msg) {
+		var t = document.getElementById("tu-toast-x");
+		if (!t) { t = document.createElement("div"); t.id = "tu-toast-x"; t.className = "tu-toast"; document.body.appendChild(t); }
+		t.textContent = msg; t.classList.add("tu-toast--show");
+		clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 1300);
+	}
+	function copyText(text, msg) {
+		function done() { toast(msg); }
+		function fb() { var ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} document.body.removeChild(ta); }
+		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fb); else fb();
 	}
 
 	function init() {
@@ -105,6 +119,7 @@
 			$("il-nb").value = Number((pb * parseFloat(b.getAttribute("data-nb"))).toPrecision(8));
 			update();
 		});
+		$("il-link").addEventListener("click", function () { copyText(shareUrl(), "Link copied"); });
 		update();
 	}
 	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();

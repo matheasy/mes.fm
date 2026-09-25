@@ -114,7 +114,22 @@
 		$("ec-hidden-sub").textContent = sub;
 		draw(fmtLen(drop).split(" (")[0], c.hm);
 		renderTable(c);
-		try { history.replaceState(null, "", "?d=" + $("ec-d").value + state.du + "&h=" + $("ec-h").value + state.hu + ($("ec-ref").checked ? "&r=1" : "")); } catch (e) {}
+	}
+
+	function shareUrl() {   // the address bar is never touched while you type; only "Copy link" builds a ?query
+		return location.origin + location.pathname + "?d=" + $("ec-d").value + state.du + "&h=" + $("ec-h").value + state.hu + ($("ec-ref").checked ? "&r=1" : "");
+	}
+
+	function toast(msg) {
+		var t = document.getElementById("tu-toast-x");
+		if (!t) { t = document.createElement("div"); t.id = "tu-toast-x"; t.className = "tu-toast"; document.body.appendChild(t); }
+		t.textContent = msg; t.classList.add("tu-toast--show");
+		clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 1300);
+	}
+	function copyText(text, msg) {
+		function done() { toast(msg); }
+		function fb() { var ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} document.body.removeChild(ta); }
+		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fb); else fb();
 	}
 
 	function setSeg(id, val) {
@@ -144,6 +159,7 @@
 		$("ec-hu").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { setHeightUnit(b.getAttribute("data-u"), true); update(); } });
 		["ec-d", "ec-h", "ec-t"].forEach(function (id) { $(id).addEventListener("input", function () { if (id === "ec-d") syncSlider(); update(); }); });
 		$("ec-ref").addEventListener("change", update);
+		$("ec-link").addEventListener("click", function () { copyText(shareUrl(), "Link copied"); });
 		$("ec-slider").addEventListener("input", function () { $("ec-d").value = $("ec-slider").value; update(); });
 		$("ec-presets").addEventListener("click", function (e) {
 			var b = e.target.closest("button");

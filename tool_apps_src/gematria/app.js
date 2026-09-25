@@ -98,7 +98,6 @@
 			$("gm-words").innerHTML = head + "<tbody>" + body + foot + "</tbody>";
 			$("gm-words-wrap").style.display = "";
 		} else $("gm-words-wrap").style.display = "none";
-		try { var q = text ? "?q=" + encodeURIComponent(text) : location.pathname; history.replaceState(null, "", q); } catch (e) {}
 		return systems;
 	}
 
@@ -126,7 +125,7 @@
 			var systems = hasHeb ? [HEBSYS].concat(SYSTEMS) : SYSTEMS;
 			copy('"' + text + '"\n' + systems.map(function (s) { return s.name + ": " + total(toks, s); }).join("\n"), "Values copied");
 		});
-		$("gm-link").addEventListener("click", function () { copy(location.href, "Link copied"); });
+		$("gm-link").addEventListener("click", function () { copy(location.origin + location.pathname + ($("gm-in").value ? "?q=" + encodeURIComponent($("gm-in").value) : ""), "Link copied"); });
 		render();
 	}
 	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();

@@ -159,7 +159,6 @@
 			var val = isNaN(v) ? NaN : convert(v, from, u);
 			return '<tr data-u="' + u.id + '"' + (u.id === state.to ? ' class="is-active"' : "") + "><td>" + esc(u.name.charAt(0).toUpperCase() + u.name.slice(1)) + "<small>" + esc(u.sym) + '</small></td><td class="uc-val">' + fmt(val, state.dec) + "</td></tr>";
 		}).join("");
-		if (!skipUrl) { try { history.replaceState(null, "", "?c=" + state.cat.id + "&v=" + encodeURIComponent(state.val) + "&f=" + state.from + "&t=" + state.to); } catch (e) {} }
 	}
 	function selectCat(cat, from, to, val) {
 		state.cat = cat;
@@ -255,7 +254,7 @@
 		$("uc-dec").addEventListener("change", function () { state.dec = $("uc-dec").value; update(); });
 		$("uc-common").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { state.from = b.getAttribute("data-f"); state.to = b.getAttribute("data-t"); $("uc-from").value = state.from; $("uc-to").value = state.to; update(); } });
 		$("uc-copy").addEventListener("click", function () { copy($("uc-formula").textContent, "Result copied"); });
-		$("uc-link").addEventListener("click", function () { copy(location.href, "Link copied"); });
+		$("uc-link").addEventListener("click", function () { copy(location.origin + location.pathname + "?c=" + state.cat.id + "&v=" + encodeURIComponent(state.val) + "&f=" + state.from + "&t=" + state.to, "Link copied"); });
 		$("uc-all").addEventListener("click", function (e) {
 			var tr = e.target.closest("tr[data-u]");
 			if (!tr) return;
