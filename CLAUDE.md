@@ -93,6 +93,16 @@ of HTML files individually:
   `cubic-formula/child-template.html`, so a rebuild can't bring it back. Idempotent; **dry-runs by default, `--apply`
   writes.** If you clone a new page from one of these templates, run it (or copy the `z-index: 20`).
 
+- `fix_mobile_header_controls.py` — phone-width header fixes for the math-hub page family (2026-09-25). (1) At <=480px the
+  A-/A+/moon controls take their own row under the brand (`position:absolute; bottom:0`, header/top-bar reserves the space
+  with padding-bottom so sticking into the floating bar doesn't reflow) so the title/tagline get the full width instead of
+  a ~130px sliver ("MES / Math / Tutorials"). (2) `mes.fm/math` and its five sibling hubs: stuck controls kept the 768px
+  rule's `transform: translateY(-50%)`, lifting the A-/A+/moon buttons ~14px so their tops were clipped — stuck state now
+  resets it. (3) `article { overflow-wrap: anywhere }` — a long unbroken URL (Problems Plus 5's grok.com link) made the page
+  scroll sideways on phones. Patches ~175 generated pages plus every generator/template carrying the 480px compact-nav block
+  (`build.mjs`, `child-template.html`, mirror templates, `add_compact_nav_bar_911.py`, ...). Idempotent
+  (`MOBILE-HEADER-CONTROLS-ROW`); **dry-runs by default, `--apply` writes.** New pages cloned from those templates get it free.
+
 - `build_math_qa_mirrors.py` — generates the `mes.fm/math-qa-<N>-<slug>/index.html` mirror pages for MES Math Q/A
   livestreams 1–69 from `math_qa_mirrors.json` (one record per stream: Hive post body or, where no Hive post exists,
   the YouTube description; which player to use; the verified 3Speak manifest) and `math_qa_mirror_template.html`

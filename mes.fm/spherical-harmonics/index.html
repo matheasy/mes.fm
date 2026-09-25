@@ -913,6 +913,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   #compact-nav { padding-right: 160px; gap: 8px; }
   body.is-stuck #header-controls { right: 56px; }
 }
+/* MOBILE-HEADER-CONTROLS-ROW: (1) stuck controls drop the 768px rule's translateY(-50%),
+   which was lifting them ~14px so the top of the A-/A+/moon buttons was clipped; (2) on
+   phones the controls take their own row under the brand (absolute, so sticking into the
+   floating bar doesn't reflow) and the title/tagline get the full width. */
+body.is-stuck #header-controls { transform: none; bottom: auto; }
+@media (max-width: 480px) {
+  .header { padding-right: 56px !important; padding-bottom: 44px !important; }
+  #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
+  body.is-stuck #header-controls { top: 13px; bottom: auto; }
+}
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />

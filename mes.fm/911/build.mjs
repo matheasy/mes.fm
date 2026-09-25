@@ -1319,6 +1319,17 @@ function buildPage(post, meta) {
       #compact-nav { padding-right: 160px; gap: 8px; }
       body.is-stuck .header-controls { right: 56px; }
     }
+    /* MOBILE-HEADER-CONTROLS-ROW: on phones the A-/A+/moon controls sit on their own row
+       under the brand (absolute, so sticking into the floating bar doesn't reflow), which
+       leaves the title/tagline the full width instead of a ~130px sliver. */
+    /* Also: a long unbroken URL in the article text (e.g. a 70-char grok.com share link on
+       Problems Plus 5) made the whole page wider than a phone, so it scrolled sideways. */
+    article { overflow-wrap: anywhere; }
+    @media (max-width: 480px) {
+      .top-bar { padding-bottom: 44px; }
+      .header-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
+      body.is-stuck .header-controls { bottom: auto; }
+    }
     /* LIGHTBOX-ZOOM-INSERTED */
     .lightbox-zoom-controls {
       position: fixed;
