@@ -26,6 +26,7 @@
         ".hub-cat__title{font-size:1.15em;font-weight:700;margin:0 0 .6em;padding-bottom:.3em;border-bottom:2px solid #dbe9f8;color:#1e2733}" +
         ".hub-cat__count{font-size:.75em;font-weight:400;color:#8a93a0;margin-left:.4em}" +
         ".hub-cat--popular .hub-cat__title{color:#b25e00}body.dark-mode .hub-cat--popular .hub-cat__title{color:#ffb454}.hub-cat[hidden],.hub-cat td[hidden],#hub-empty[hidden]{display:none !important}" +
+        "@media (min-width:900px){.hub-cat--popular td.hub-pop-extra{display:none !important}}" +   /* 4th popular card only fills the 2-column layout */
         "#hub-empty{color:#6a7280;font-style:italic;padding:1em 0}" +
         "body.dark-mode .hub-filter input{background:#2a2a2a;color:#eee;border-color:#555}" +
         "body.dark-mode .hub-chips button{background:#2a2a2a;color:#ddd;border-color:#555}" +
