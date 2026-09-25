@@ -1,0 +1,58 @@
+	<div class="tu" id="gm">
+		<div class="tu-card">
+			<div class="tu-row">
+				<div class="tu-field" style="flex-basis:100%;">
+					<label for="gm-in">Type a word or phrase</label>
+					<input id="gm-in" class="tu-input tu-input--big" type="text" value="gematria" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. gematria, Math Easy Solutions, שלום">
+				</div>
+			</div>
+			<div class="tu-row" style="margin-top:0.7em;">
+				<label style="display:flex;align-items:center;gap:0.5em;cursor:pointer;font-size:0.9em;">
+					<input type="checkbox" id="gm-digits" style="width:1.1em;height:1.1em;accent-color:var(--accent);"> Count digits (0&ndash;9) at face value
+				</label>
+				<div style="margin-left:auto;display:flex;gap:0.5em;flex-wrap:wrap;">
+					<button type="button" class="tu-btn" id="gm-copy">Copy all values</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="gm-link">Copy link</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="gm-clear">Clear</button>
+				</div>
+			</div>
+			<div class="tu-chips" id="gm-examples" aria-label="Examples">
+				<button type="button" class="tu-chip">gematria</button>
+				<button type="button" class="tu-chip">Math Easy Solutions</button>
+				<button type="button" class="tu-chip">Hive blockchain</button>
+				<button type="button" class="tu-chip">moon</button>
+				<button type="button" class="tu-chip">truth</button>
+				<button type="button" class="tu-chip">שלום</button>
+			</div>
+		</div>
+
+		<h2>Values <span class="tu-note" style="font-weight:400;text-transform:none;">&mdash; click a card to see its letter-by-letter breakdown</span></h2>
+		<div class="tu-stats" id="gm-cards" aria-live="polite"></div>
+
+		<div class="tu-card" id="gm-break-card">
+			<div class="tu-label" id="gm-break-title">Breakdown</div>
+			<div id="gm-break" class="gm-break"></div>
+			<p class="tu-note" id="gm-sum" style="margin-top:0.8em;"></p>
+			<p class="tu-note" id="gm-facts"></p>
+		</div>
+
+		<div id="gm-words-wrap" style="display:none;">
+			<h2>Word by word</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="gm-words"></table></div></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What is gematria?</h2>
+			<p>Gematria assigns a number to every letter, so any word or phrase adds up to a value. This calculator shows the most popular English cipher systems side by side &mdash; and Hebrew if you type Hebrew letters &mdash; so you can compare them at a glance.</p>
+			<h3>The systems</h3>
+			<ul>
+				<li><strong>Ordinal</strong> &mdash; A = 1 through Z = 26. <strong>Reverse Ordinal</strong> &mdash; A = 26 through Z = 1.</li>
+				<li><strong>Reduction</strong> (Pythagorean) &mdash; letters cycle through 1&ndash;9 (A = 1 &hellip; I = 9, J = 1 &hellip;). <strong>Reverse Reduction</strong> counts the cycle from Z.</li>
+				<li><strong>Standard</strong> (English / Jewish-style) &mdash; A&ndash;I are 1&ndash;9, J&ndash;R are 10&ndash;90, S&ndash;Z are 100&ndash;800.</li>
+				<li><strong>Sumerian</strong> &mdash; the ordinal value &times; 6. <strong>Reverse Sumerian</strong> &mdash; the reverse ordinal value &times; 6.</li>
+				<li><strong>Hebrew</strong> (Mispar Hechrachi) &mdash; the traditional values, with final letters counted the same as their normal forms.</li>
+			</ul>
+			<p>Only letters are counted (spaces, punctuation and accents are ignored). Tick <em>Count digits</em> to add 0&ndash;9 at face value. Nothing you type leaves your browser.</p>
+			<p><a href="https://1drv.ms/x/s!As32ynv0LoaIiKto0HBi5417FpcFqg">Excel spreadsheet</a> &middot; <a href="/calculators">More MES calculators</a></p>
+		</div>
+	</div>

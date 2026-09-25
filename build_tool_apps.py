@@ -10,7 +10,11 @@ page: meta description, the <style> rules (re-scoped under #main-content so they
 body between the ad block and the "MES Links" link (inputs, tables, inline calculator scripts stay in place, in order).
 The old page's own ad divs / h1 / MES Links / footer are dropped -- the shell provides those.
 
-Run it *once* per app: it recognises an already-converted page (`#info-bar`) and skips it. Afterwards run
+Two modes per app. *Legacy*: convert the old ChatGPT-era page in place (run once; converted pages, which have an
+`#info-bar`, are skipped). *Source* (preferred, used by all four now): if `tool_apps_src/<slug>/content.html` exists the
+page is rebuilt from it -- `_shared.css` (the `.tu-*` widget kit, filled with the app's colours) + optional `app.css`,
+`content.html` for the body and `app.js` copied to `mes.fm/<slug>/js/<slug>.js`. Source-mode apps are rebuilt every
+run (`--rebuild` is implied), so edit the sources and re-run both scripts. Afterwards run
 `python3 add_tool_page_controls.py --apply` (these slugs are in its TOOLS list) for the floating bar + controls + dark.
 The per-app logos are placeholder artwork (mes.fm/<slug>/img/logo.png, img/<slug>-logo.png) -- replace the files, same
 names, when real art exists. **Dry-runs by default; `--apply` writes.**
@@ -25,15 +29,24 @@ SITE = ROOT / "mes.fm"
 TEMPLATE = ROOT / "tool_page_template.html"
 APPLY = "--apply" in sys.argv
 
+SRC = ROOT / "tool_apps_src"
 APPS = {
     "earth-curvature-calculator": dict(title="MES Earth Curvature Calculator", page_title="Earth Curvature Calculator",
-                                       tag="How much does the Earth curve over a distance?", accent="#0e7c66", dark="#0a5c4c"),
+                                       tag="How much does the Earth curve over a distance?", accent="#0b6f6d", dark="#075250", tint="#e2f3f2",
+                                       desc="Free Earth curvature calculator: enter a distance to see the curvature drop, your horizon distance and how much of a far-away object is hidden behind the curve, with optional atmospheric refraction.",
+                                       js_v="1"),
     "gematria": dict(title="MES Gematria Calculator", page_title="Gematria Calculator",
-                     tag="Ordinal and Sumerian gematria for any word.", accent="#3f51b5", dark="#2c3a86"),
+                     tag="Ordinal, reduction, Sumerian and more.", accent="#3538ab", dark="#262a80", tint="#e8e9f8",
+                     desc="Free gematria calculator: type a word or phrase and get its Ordinal, Reverse, Reduction, Standard and Sumerian gematria values with a letter-by-letter breakdown.",
+                     js_v="1"),
     "impermanent-loss-calculator": dict(title="MES Impermanent Loss Calculator", page_title="Impermanent Loss Calculator",
-                                        tag="Impermanent loss vs. simply holding.", accent="#b8620f", dark="#8a4a0b"),
+                                        tag="Impermanent loss vs. simply holding.", accent="#c2500e", dark="#933b08", tint="#fbece1",
+                                        desc="Free impermanent loss calculator for constant-product liquidity pools: see your loss versus holding, the pool token amounts, break-even fees and an impermanent loss chart for any price change.",
+                                        js_v="1"),
     "unit-conversion": dict(title="MES Unit Conversion Calculator", page_title="Unit Conversion Calculator",
-                            tag="Feet, meters, mph, pounds and many more.", accent="#00838f", dark="#005f68"),
+                            tag="Convert length, weight, temperature, speed and more.", accent="#00838f", dark="#005f68", tint="#dff2f4",
+                            desc="Free unit converter with search: type “10 miles to km” or pick a category to convert length, mass, temperature, area, volume, speed, time, pressure, energy, power, data and more.",
+                            js_v="1"),
 }
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
@@ -110,10 +123,43 @@ def build(slug, cfg, old, tpl):
     return page
 
 
+def build_from_source(slug, cfg, tpl):
+    d = SRC / slug
+    css = (SRC / "_shared.css").read_text(encoding="utf-8")
+    if (d / "app.css").exists():
+        css += "\n" + (d / "app.css").read_text(encoding="utf-8")
+    css = (css.replace("@@ACCENT@@", cfg["accent"]).replace("@@ACCENT_DARK@@", cfg["dark"]).replace("@@TINT@@", cfg["tint"])
+           .replace("var(--tint)", cfg["tint"]))
+    content = (d / "content.html").read_text(encoding="utf-8")
+    desc = cfg["desc"]
+    ld = json.dumps({"@context": "https://schema.org", "@type": "WebApplication", "name": cfg["title"],
+                     "url": "https://mes.fm/" + slug, "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any",
+                     "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": desc}, ensure_ascii=False)
+    scripts = '<script src="/%s/js/%s.js?v=%s" defer></script>' % (slug, slug, cfg["js_v"])
+    page = tpl
+    for k, v in (("@@TOOL_CSS@@", css), ("@@CONTENT@@", content.strip("\n")), ("@@LDJSON@@", ld)):
+        page = page.replace(k, v)
+    for k, v in {"@@SCRIPTS@@": scripts, "@@DESC@@": desc.replace('"', "&quot;"), "@@TITLE@@": cfg["title"], "@@SLUG@@": slug,
+                 "@@TAGLINE@@": cfg["tag"], "@@PAGE_TITLE@@": cfg["page_title"], "@@PAGE_DESC@@": desc,
+                 "@@ACCENT@@": cfg["accent"], "@@ACCENT_DARK@@": cfg["dark"]}.items():
+        page = page.replace(k, v)
+    page = page.replace("href='https://mes.fm/tools.html'>Tools</a>", "href='https://mes.fm/calculators.html'>Calculators</a>")
+    js_dir = SITE / slug / "js"
+    js_dir.mkdir(parents=True, exist_ok=True)
+    return page, (d / "app.js").read_text(encoding="utf-8"), js_dir / (slug + ".js")
+
+
 def main():
     tpl = TEMPLATE.read_text(encoding="utf-8")
     for slug, cfg in APPS.items():
         p = SITE / slug / "index.html"
+        if (SRC / slug / "content.html").exists():
+            new, js, jsp = build_from_source(slug, cfg, tpl)
+            print("%-30s source mode -> %d bytes html, %d bytes js" % (slug, len(new), len(js)))
+            if APPLY:
+                p.write_text(new, encoding="utf-8")
+                jsp.write_text(js, encoding="utf-8")
+            continue
         old = p.read_text(encoding="utf-8")
         if 'id="info-bar"' in old:
             print("%-30s already converted" % slug)

@@ -194,30 +194,25 @@ of HTML files individually:
   `mes.fm/img/conspiracy-{icon,logo,logo-big}.jpg` (tile 900x600, favicon/brand 512 square, og 1200x630) come from one
   source image; the conspiracy tile sits last in the homepage `icon-grid`.
 
-- `build_tool_apps.py` — the four stand-alone calculator apps (`earth-curvature-calculator`, `gematria`,
-  `impermanent-loss-calculator`, `unit-conversion`) were bare pages with no header, so a floating bar had nothing to
-  float away from. This rebuilds each as a tools-hub page from `tool_page_template.html` (the emoji page's shell with
-  `@@tokens@@`), lifting the app's meta description, its `<style>` rules (re-scoped under `#main-content`) and its
-  body (inputs / tables / inline calculator scripts kept in order); the old ad divs, h1, "MES Links" and footer are
-  dropped. Run once per app (converted pages have an `#info-bar` and are skipped), then
-  `python3 add_tool_page_controls.py --apply` (they're in its `TOOLS` list) for the floating bar, controls and dark mode.
-  The four apps' logos (`<slug>/img/logo.png`, `img/<slug>-logo.png`, `<slug>/img/logo-big.png`) are **placeholder art
-  drawn with Pillow** — replace the files, same names, when real (Grok) art exists. `moon` is a card on `tools.html`; the four apps are cards on `calculators.html` (their info-bar section link says Calculators). Moon's real Grok art is in (`moon/img/logo.png`, `img/moon-logo.png`, `moon/img/logo-big.png`); the four apps' art is still placeholder.
-  Start a new tool page from `tool_page_template.html` the same way.
-
-- `add_jump_to_bar.py` — two small header-bar features for long pages. (1) **"Jump to" in the floating bar:**
-  `main_js/jump-to.js` adds a list-icon "Jump to" button to `#compact-nav` (label hides under 440px; hidden while the
-  `.toc-sidebar` is visible, i.e. >= 1300px) that opens the page's own `.toc-mobile .toc-links` list as a dropdown under
-  the bar, keeps the `.toc-sub` indentation, and on tap *clicks the original link* so page TOC handlers (cubic-formula's
-  chapter-expand) still run; it also sets `html{scroll-padding-top:64px}` so anchored headings clear the bar. Tags go on
-  every page with a `.toc-mobile .toc-links` list (911, hutchison, moon, ferrocell, hutchison-tom-sky, norman-patricia,
-  vector-functions-problems-plus, cubic-formula) and into the `build.mjs` templates that emit their own shell (911,
-  hutchison, vector-functions-problems-plus, cubic-formula); mirror pages built by `convert_mirror_pages.py` get the tag
-  from it. (2) **A-/A+ on the custom-layout mirrors** (moon, ferrocell, hutchison-tom-sky, norman-patricia, djw, ufo):
-  the buttons are back in the header (so in the floating bar too) and `main_js/zoom-text-size.js` scales the page with
-  CSS `zoom` (they have no `<article>` for the standard text-size script). Idempotent; **dry-runs by default,
-  `--apply` writes.** Bump `?v=` in the script when either JS file changes. To offer "Jump to" on another page family:
-  give it a `.toc-mobile .toc-links` list and a `#compact-nav`, then run it.
+- `build_tool_apps.py` — builds the four stand-alone calculators (`earth-curvature-calculator`, `gematria`,
+  `impermanent-loss-calculator`, `unit-conversion`; cards on `calculators.html`) as tools-hub pages from
+  `tool_page_template.html` (the emoji page's shell with `@@tokens@@`). They were bare ChatGPT-era pages pasted into
+  GoDaddy, so they were **rewritten from scratch** (2026-09-25): sources live in `tool_apps_src/<slug>/` —
+  `content.html` (body), `app.js` (copied to `mes.fm/<slug>/js/<slug>.js`, cache-busted by `js_v` in the script's `APPS`
+  table), optional `app.css`, plus `tool_apps_src/_shared.css`, the `.tu-*` widget kit (cards, fields, chips, stat tiles,
+  tables, toast; `@@ACCENT@@`/`@@TINT@@` filled from `APPS`). Edit the sources, then run **both** `python3
+  build_tool_apps.py --apply` (source-mode apps are rebuilt every run) and `python3 add_tool_page_controls.py --apply`
+  (floating bar, A-/A+/moon, derived dark block; the four are in its `TOOLS` list). Dark-mode gotchas: colours must be
+  literals (the derive step skips `var(--tint)`, so the builder inlines it) and *selected* states (`aria-pressed` /
+  `aria-selected`) need hand-written `body.dark-mode` rules — see the end of `_shared.css`. What each app does: Earth
+  Curvature (drop, horizon, hidden height, refraction, diagram, table), Gematria (7 English ciphers + Hebrew, letter
+  breakdown, per-word table, `?q=` links), Impermanent Loss (same maths as before: IL vs hold / hold-A / hold-B, fee
+  break-even, IL curve, scenario table), Unit Conversion (15 categories, "10 miles to km" search, all-units table, `?c=&v=&f=&t=`).
+  The original apps' spreadsheet links are kept (gematria, impermanent-loss, unit-conversion each have their own).
+  Artwork: Grok icons/share images from `~/Downloads` (`<slug>/img/logo.png` + `img/<short>-logo.png` at 90% fill with
+  the corners cut transparent, `<slug>/img/logo-big.png`); **`unit-conversion/img/logo-big.png` is still a placeholder**
+  (the supplied `unit-conversion-share.png` was a duplicate of the gematria image — re-request it). Start a new tool
+  page from `tool_page_template.html` the same way.
 
 - `widen_hub_pages.py` — brings `calculators.html`, `tools.html`, `mobile-apps.html`, `puzzles.html` and `memes.html` up to
   the wide `mes.fm` / `mes.fm/math` page format (`.outer-container` 50em -> 75em). Calculators/tools/mobile-apps become 3

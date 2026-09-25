@@ -1,0 +1,66 @@
+	<div class="tu" id="il">
+		<div class="tu-card">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm"><label for="il-an">Token A</label><input id="il-an" class="tu-input" type="text" value="A" maxlength="12"></div>
+				<div class="tu-field"><label for="il-aa">Amount deposited</label><input id="il-aa" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="1000"></div>
+				<div class="tu-field"><label for="il-pa">Price at deposit</label><div class="tu-suffix"><input id="il-pa" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="1"><span>USD</span></div></div>
+				<div class="tu-field"><label for="il-na">Price now / later</label><div class="tu-suffix"><input id="il-na" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="1"><span>USD</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field tu-field--sm"><label for="il-bn">Token B</label><input id="il-bn" class="tu-input" type="text" value="B" maxlength="12"></div>
+				<div class="tu-field"><label>Amount deposited</label><div class="tu-input il-derived" id="il-bamt">&mdash;</div></div>
+				<div class="tu-field"><label for="il-pb">Price at deposit</label><div class="tu-suffix"><input id="il-pb" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="1"><span>USD</span></div></div>
+				<div class="tu-field"><label for="il-nb">Price now / later</label><div class="tu-suffix"><input id="il-nb" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="2"><span>USD</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field"><label for="il-fee">Fees earned (optional)</label><div class="tu-suffix"><input id="il-fee" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="0"><span>%</span></div></div>
+				<div class="tu-field" style="flex:3 1 18em;"><span class="tu-note">You deposit equal dollar values of both tokens into a 50/50 constant-product pool (Uniswap v2 style), so the Token B amount is worked out for you.</span></div>
+			</div>
+			<div class="tu-chips" id="il-presets" aria-label="Scenarios">
+				<button type="button" class="tu-chip" data-na="1" data-nb="2">B doubles (2&times;)</button>
+				<button type="button" class="tu-chip" data-na="1" data-nb="1.5">B +50%</button>
+				<button type="button" class="tu-chip" data-na="1" data-nb="0.5">B &minus;50%</button>
+				<button type="button" class="tu-chip" data-na="2" data-nb="0.5">A 2&times;, B halves</button>
+				<button type="button" class="tu-chip" data-na="1" data-nb="10">B 10&times;</button>
+				<button type="button" class="tu-chip" data-na="1" data-nb="1">No change</button>
+			</div>
+		</div>
+
+		<div class="tu-stats" id="il-stats" aria-live="polite">
+			<div class="tu-stat tu-stat--hero"><div class="tu-stat__label">Impermanent loss</div><div class="tu-stat__value" id="il-pct">&mdash;</div><div class="tu-stat__sub" id="il-usd"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Value if you had held</div><div class="tu-stat__value" id="il-held">&mdash;</div><div class="tu-stat__sub" id="il-held-sub"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Value in the pool</div><div class="tu-stat__value" id="il-lp">&mdash;</div><div class="tu-stat__sub" id="il-lp-sub"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Fees needed to break even</div><div class="tu-stat__value" id="il-be">&mdash;</div><div class="tu-stat__sub" id="il-be-sub"></div></div>
+		</div>
+
+		<h2>How the pool compares</h2>
+		<div class="tu-card">
+			<div class="tu-table-wrap"><table class="tu-table" id="il-cmp"><thead><tr><th>Strategy</th><th>Value now</th><th>vs. deposit</th><th>vs. pool</th></tr></thead><tbody></tbody></table></div>
+		</div>
+
+		<h2>Impermanent loss by price change</h2>
+		<div class="tu-card">
+			<svg id="il-svg" viewBox="0 0 640 250" role="img" aria-label="Impermanent loss as a function of the price ratio change" style="width:100%;height:auto;display:block;"></svg>
+			<p class="tu-note">Horizontal axis: how much the price ratio B &divide; A has changed since you deposited (log scale). The dot marks your scenario. Loss is the same whichever token moves &mdash; and the same for a 2&times; rise as for a halving.</p>
+			<div class="tu-table-wrap"><table class="tu-table" id="il-scen"><thead><tr><th>Price ratio changes by</th><th>Impermanent loss</th></tr></thead><tbody></tbody></table></div>
+		</div>
+
+		<details class="tu-card" style="margin-top:1em;" id="il-details">
+			<summary style="cursor:pointer;font-weight:700;">Show the full calculation</summary>
+			<div class="tu-table-wrap" style="margin-top:0.8em;"><table class="tu-table" id="il-full"><tbody></tbody></table></div>
+		</details>
+
+		<div class="tu-seo">
+			<h2>What is impermanent loss?</h2>
+			<p>When you supply two tokens to an automated market maker such as Uniswap, the pool rebalances as prices move, so you end up with more of the token that fell and less of the one that rose. Compared with simply holding the two tokens, the pool position is worth less &mdash; that gap is <strong>impermanent loss</strong>. It is &ldquo;impermanent&rdquo; because it disappears if the price ratio returns to where it started.</p>
+			<h3>How this calculator works</h3>
+			<ul>
+				<li>You deposit equal dollar values of Token A and Token B. The pool keeps <em>k = A &times; B</em> constant, so when the price ratio becomes <em>r</em> the pool holds &radic;(k&nbsp;&times;&nbsp;r) of A and &radic;(k&nbsp;&divide;&nbsp;r) of B.</li>
+				<li>Impermanent loss = pool value &divide; held value &minus; 1, which equals 2&radic;<em>r</em> &divide; (1 + <em>r</em>) &minus; 1 for a price-ratio change of <em>r</em> (about &minus;5.7% at 2&times;, &minus;20% at 4&times;, &minus;25.5% at 5&times;).</li>
+				<li>Enter the <strong>fees earned</strong> (as a percent of the pool value) to see whether trading fees cover the loss, and how much fee income you would need to break even.</li>
+				<li>The comparison table also shows what you would have if you had swapped everything into just Token A or just Token B on day one.</li>
+			</ul>
+			<p>This ignores gas costs, taxes and concentrated-liquidity ranges (Uniswap v3), where losses can be larger. Nothing is sent to a server, and none of this is financial advice.</p>
+			<p><a href="https://1drv.ms/x/s!As32ynv0LoaIisMDKnAmCMwfUFzs6w">Excel spreadsheet version</a> &middot; <a href="https://chainbulletin.com/impermanent-loss-explained-with-examples-math">Constant Product Automated Market Maker explained</a> &middot; <a href="/calculators">More MES calculators</a></p>
+		</div>
+	</div>

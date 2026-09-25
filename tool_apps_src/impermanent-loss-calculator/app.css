@@ -1,0 +1,8 @@
+	/* impermanent loss */
+	.tu #il-cmp tr.is-active td {background:var(--tint);font-weight:700;}
+	.tu .il-derived {background:#f7f8fa;color:#556;}
+	.tu .il-line {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu .il-dot {fill:var(--accent);stroke:#fff;stroke-width:2;}
+	.tu #il-full td:last-child {font-weight:700;}
+	.tu #il-full td:first-child {color:#556;font-weight:400;}
+	.tu details summary {color:#1e2733;}

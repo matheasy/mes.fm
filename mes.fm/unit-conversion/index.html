@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
 <!-- MES Unit Conversion Calculator -- mes.fm/unit-conversion -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/unit-conversion/img/logo.png?v=1" type="image/png" /><link rel="canonical" href="https://mes.fm/unit-conversion" />                    <title>MES Unit Conversion Calculator | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/unit-conversion/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/unit-conversion" />                    <title>MES Unit Conversion Calculator | Math Easy Solutions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -195,52 +195,105 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.navbar {border:none;}
 
 	/* the tool itself (scoped to #main-content) */
-	#main-content {overflow-x: auto;}   /* wide tables / big inputs scroll inside the tool instead of the page */
-	#main-content a {color: #00838f; text-decoration: underline !important;}
-	#main-content a:hover {color: #005f68;}
-	#main-content h1 {text-align: center; font-size: 3em;}
-	#main-content h2 {text-align: center; font-size: 2em;}
-	@media screen and (max-width: 600px) {
-	#main-content h1 {font-size: 2.5em;}
-	#main-content h2 {font-size: 1.85em;}
-	#main-content #wordInput {width: 100%; max-width: none;}
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#00838f;--accent-dark:#005f68;--tint:#dff2f4;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #dff2f4;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#dff2f4;border-color:#dff2f4;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #dff2f4;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#dff2f4;border-color:#dff2f4;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#dff2f4;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#dff2f4;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
 	}
-	#main-content input,
-	#main-content select,
-	#main-content button,
-	#main-content label {text-align: center; width: 40%; margin: 10px auto; max-width: 800px; font-size: 2em; margin-bottom: 10px;}
-	#main-content button {width: 30%;}
-	#main-content .calculator {text-align: center;}
-	#main-content {font-family: Arial, sans-serif; text-align: center; font-size: 1em; margin: 50px; white-space: nowrap;}
-	#main-content .hidden {display: none;}
-	#main-content .arrow-icon {font-size: 20px; display: inline-block; vertical-align: middle; transition: transform 0.3s ease;}
-	#main-content #inputLength1,
-	#main-content #outputLength1,
-	#main-content #inputMass1,
-	#main-content #outputMass1,
-	#main-content #inputSpeed1,
-	#main-content #outputSpeed1,
-	#main-content #outputVolume1,
-	#main-content #inputVolume1,
-	#main-content #inputTime1,
-	#main-content #outputTime1,
-	#main-content #inputPressure1,
-	#main-content #outputPressure1 {width: 200px;}
-	#main-content #inputLengthUnit1,
-	#main-content #outputLengthUnit1,
-	#main-content #inputMassUnit1,
-	#main-content #outputMassUnit1,
-	#main-content #inputTimeUnit1,
-	#main-content #outputTimeUnit1 {width: 200px;}
-	#main-content #inputSpeedUnit1,
-	#main-content #outputSpeedUnit1,
-	#main-content #inputVolumeUnit1,
-	#main-content #outputVolumeUnit1,
-	#main-content #inputPressureUnit1,
-	#main-content #outputPressureUnit1 {width: 200px;}
-	#main-content #inputPressureUnit1,
-	#main-content #outputPressureUnit1 {width: 250px;}
-	#main-content #resultContainer {display: inline-block; margin-left: 100px;}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+	/* unit conversion */
+	.tu .uc-cats {display:grid;grid-template-columns:repeat(auto-fill,minmax(8.6em,1fr));gap:0.5em;}
+	.tu .uc-cat {cursor:pointer;display:flex;align-items:center;gap:0.5em;padding:0.6em 0.75em;border:1px solid #dfe4ea;border-radius:0.45em;background:#fff;color:#1e2733;text-align:left;font-size:0.95em;line-height:1.15;}
+	.tu .uc-cat:hover {border-color:var(--accent);}
+	.tu .uc-cat[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu .uc-cat[hidden] {display:none;}
+	.tu .uc-cat__icon {font-size:1.35em;flex:0 0 auto;}
+	.tu .uc-conv {display:flex;flex-wrap:wrap;gap:0.8em;align-items:flex-end;margin:0.6em 0 1em;}
+	.tu .uc-conv .tu-field {flex:1 1 11em;}
+	.tu .uc-conv .tu-field:first-child {flex:1 1 9em;}
+	.tu .uc-swap {font-size:1.4em;padding:0.35em 0.7em;margin-bottom:0.1em;}
+	.tu .uc-result {display:flex;flex-wrap:wrap;gap:0.9em;align-items:stretch;}
+	.tu .uc-result .tu-stat__value {font-size:1.6em;}
+	.tu .uc-quick {margin-top:0.9em;padding:0.8em 1em;border-radius:0.5em;background:#dff2f4;display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:center;justify-content:space-between;}
+	.tu .uc-quick[hidden], .tu #uc-matches[hidden], .tu #uc-nomatch[hidden] {display:none;}
+	.tu .uc-quick__text {font-size:1.35em;font-weight:700;color:#1e2733;}
+	.tu .uc-quick__text small {display:block;font-size:0.6em;font-weight:400;color:#667;}
+	.tu #uc-all tbody tr {cursor:pointer;}
+	.tu #uc-all tbody tr:hover td {background:#f4f8f9;}
+	.tu #uc-all td:last-child {font-variant-numeric:tabular-nums;}
+	.tu #uc-all td small {color:#8a93a0;margin-left:0.4em;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -284,8 +337,43 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
 	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
 	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode #main-content a{color:#5cf1ff}
-	body.dark-mode #main-content a:hover{color:#5cf1ff}
+	body.dark-mode .tu{--accent:#0aeaff;--accent-dark:#0aeaff}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #184246}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1d2b2d;border-color:#184246}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1d2b2d;border-color:#184246}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1d2b2d}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu .uc-cat{border:1px solid #28323e;background:#1a1a1a;color:#d1d6dc}
+	body.dark-mode .tu .uc-quick{background:#1d2b2d}
+	body.dark-mode .tu .uc-quick__text{color:#d1d6dc}
+	body.dark-mode .tu .uc-quick__text small{color:#9a9aa2}
+	body.dark-mode .tu #uc-all tbody tr:hover td{background:#161c1d}
+	body.dark-mode .tu #uc-all td small{color:#999da3}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -334,15 +422,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/unit-conversion" />            <meta property="og:title" content="MES Unit Conversion Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/unit-conversion/img/logo-big.png" />
-        <meta property="og:description" content="MES Unit Conversion Calculator: convert feet to meters, mph to km/h, pounds to kilograms and many more units quickly and accurately." />
+        <meta property="og:description" content="Free unit converter with search: type “10 miles to km” or pick a category to convert length, mass, temperature, area, volume, speed, time, pressure, energy, power, data and more." />
 
-        <meta name="description" content="MES Unit Conversion Calculator: convert feet to meters, mph to km/h, pounds to kilograms and many more units quickly and accurately.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="description" content="Free unit converter with search: type “10 miles to km” or pick a category to convert length, mass, temperature, area, volume, speed, time, pressure, energy, power, data and more.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="MES Unit Conversion Calculator">
-        <meta name="twitter:description" content="MES Unit Conversion Calculator: convert feet to meters, mph to km/h, pounds to kilograms and many more units quickly and accurately.">
+        <meta name="twitter:description" content="Free unit converter with search: type “10 miles to km” or pick a category to convert length, mass, temperature, area, volume, speed, time, pressure, energy, power, data and more.">
         <meta name="twitter:image" content="https://mes.fm/unit-conversion/img/logo-big.png">
         <meta name="twitter:image:alt" content="MES Unit Conversion Calculator">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Unit Conversion Calculator", "url": "https://mes.fm/unit-conversion", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "MES Unit Conversion Calculator: convert feet to meters, mph to km/h, pounds to kilograms and many more units quickly and accurately."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Unit Conversion Calculator", "url": "https://mes.fm/unit-conversion", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free unit converter with search: type “10 miles to km” or pick a category to convert length, mass, temperature, area, volume, speed, time, pressure, energy, power, data and more."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -507,7 +595,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/unit-conversion" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/unit-conversion/img/logo.png?v=1"></a>
+  <a href="/unit-conversion" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/unit-conversion/img/logo.png?v=2"></a>
   <a class="compact-nav-title" href="/unit-conversion" tabindex="-1">Unit Conversion Calculator</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
@@ -519,12 +607,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/unit-conversion'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/unit-conversion/img/logo.png?v=1"></a>
+<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/unit-conversion'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/unit-conversion/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/unit-conversion'>
                                     <p class="calculator-title">MES Unit Conversion Calculator</p>
                                 </a>
-                                <p class="tag-line">Feet, meters, mph, pounds and many more.</p>                            </div>
+                                <p class="tag-line">Convert length, weight, temperature, speed and more.</p>                            </div>
 
                             <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
@@ -537,502 +625,63 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Unit Conversion Calculator</h1>                                        <p class="page-description">MES Unit Conversion Calculator: convert feet to meters, mph to km/h, pounds to kilograms and many more units quickly and accurately.</p>                                    	<div id="main-content" data-tool data-text-scale>
-    
+                                    <h1 class="page-title">Unit Conversion Calculator</h1>                                        <p class="page-description">Free unit converter with search: type “10 miles to km” or pick a category to convert length, mass, temperature, area, volume, speed, time, pressure, energy, power, data and more.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="uc">
+		<div class="tu-card">
+			<label class="tu-label" for="uc-q">Search or type a conversion</label>
+			<input id="uc-q" class="tu-input tu-input--big" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Try &ldquo;10 miles to km&rdquo;, &ldquo;72 F to C&rdquo; or just &ldquo;pressure&rdquo;" style="margin-top:0.35em;">
+			<div id="uc-quick" class="uc-quick" hidden aria-live="polite"></div>
+			<div id="uc-matches" class="tu-chips" hidden></div>
+		</div>
 
- <div class="calculator">
-    <h2 class="list-header" onclick="toggleAllLists()">All converters <span id="arrowIconAll" class="arrow-icon">&#9660;</span></h2>
-    
-    
-    <h2 onclick="toggleList('length', 'arrowIcon1')">Length <span id="arrowIcon1" class="arrow-icon">&#9660;</span></h2>
-    <div class="list-container">
-        <ul id="length">
-            <input aria-label="meters" type="number" id="inputLength1" value="1" />
-            <select id="inputLengthUnit1">
-                <option value="meters">meters</option>
-                <option value="centimeters">centimeters</option>
-                <option value="millimeters">millimeters</option>
-                <option value="feet">feet</option>
-                <option value="inches">inches</option>
-                <option value="yards">yards</option>
-                <option value="miles">miles</option>
-                <option value="kilometers">kilometers</option>
-            </select>
-            <div style="display: inline;"> 
-                <input aria-label="kilometers" type="number" id="outputLength1" value="0" /> <!-- Changed from <span> to <input> -->
-            </div>
-            <select id="outputLengthUnit1">
-                <option value="meters">meters</option>
-                <option value="centimeters">centimeters</option>
-                <option value="millimeters">millimeters</option>
-                <option value="feet" selected>feet</option>
-                <option value="inches">inches</option>
-                <option value="yards">yards</option>
-                <option value="miles">miles</option>
-                <option value="kilometers">kilometers</option>
-            </select>
-        </ul>
-    </div>
-    
-    
-    <h2 onclick="toggleList('mass', 'arrowIcon2')">Mass <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
-    <div class="list-container">
-        <ul id="mass">
-            <input aria-label="gram" type="number" id="inputMass1" value="1" />
-            <select id="inputMassUnit1">
-                <option value="gram">gram</option>
-                <option value="kilogram" selected>kilogram</option>
-                <option value="uk_ton">UK ton</option>
-                <option value="us_ton">US ton</option>
-                <option value="pounds">pounds</option>
-                <option value="slug">slug</option>
-                <option value="tonne">tonne</option>
-            </select>
-            <div style="display: inline;"> 
-                <input aria-label="tonne" type="number" id="outputMass1" value="0" /> <!-- Changed from <span> to <input> -->
-            </div>
-            <select id="outputMassUnit1">
-                <option value="gram">gram</option>
-                <option value="kilogram">kilogram</option>
-                <option value="uk_ton">UK ton</option>
-                <option value="us_ton">US ton</option>
-                <option value="pounds" selected>pounds</option>
-                <option value="slug">slug</option>
-                <option value="tonne">tonne</option>
-            </select>
-        </ul>
-    </div>
-    
+		<h2>Categories</h2>
+		<div class="uc-cats" id="uc-cats" role="tablist" aria-label="Conversion categories"></div>
+		<p class="tu-note" id="uc-nomatch" hidden>No category matches that search &mdash; try a unit name such as &ldquo;kg&rdquo;, &ldquo;gallon&rdquo; or &ldquo;knots&rdquo;.</p>
 
-    <h2 onclick="toggleList('speed', 'arrowIcon2')">Speed <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
-    <div class="list-container">
-        <ul id="speed">
-            <input aria-label="miles/hour" type="number" id="inputSpeed1" value="1" />
-            <select id="inputSpeedUnit1">
-                <option value="mph" selected>miles/hour</option>
-                <option value="kph">km/hour</option>
-                <option value="metersps">meters/s</option>
-                <option value="metersph">meters/h</option>
-                <option value="fps">ft/s</option>
-                <option value="fph">ft/h</option>
-                <option value="knots">knots</option>
-            </select>
-            <div style="display: inline;"> 
-                <input aria-label="knots" type="number" id="outputSpeed1" value="0" /> <!-- Changed from <span> to <input> -->
-            </div>
-            <select id="outputSpeedUnit1">
-                <option value="mph">miles/hour</option>
-                <option value="kph" selected>Km/hour</option>
-                <option value="metersps">meters/s</option>
-                <option value="metersph">meters/h</option>
-                <option value="fps">ft/s</option>
-                <option value="fph">ft/h</option>
-                <option value="knots">knots</option>
-            </select>
-        </ul>
-    </div>
-    
-        <h2 onclick="toggleList('volume', 'arrowIcon2')">Volume <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
-    <div class="list-container">
-        <ul id="volume">
-            <input aria-label="cubic feet" type="number" id="inputVolume1" value="1" />
-            <select id="inputVolumeUnit1">
-                <option value="ft3">cubic feet</option>
-                <option value="m3" selected>cubic meter</option>
-                <option value="cup">cups</option>
-                <option value="oz">fluid ounce</option>
-                <option value="gal">gallon</option>
-                <option value="L">liters</option>
-                <option value="qt">quart</option>
-                <option value="tbs">tablespoons</option>
-                <option value="tsp">teaspoons</option>
-                <option value="uk_pt">UK pint</option>
-                <option value="pt">US Pint</option>
-            </select>
-            <div style="display: inline;"> 
-                <input aria-label="US Pint" type="number" id="outputVolume1" value="0" /> <!-- Changed from <span> to <input> -->
-            </div>
-            <select id="outputVolumeUnit1">
-                <option value="ft3" selected>cubic feet</option>
-                <option value="m3">cubic meter</option>
-                <option value="cup">cups</option>
-                <option value="oz">fluid ounce</option>
-                <option value="gal">gallon</option>
-                <option value="L">liters</option>
-                <option value="qt">quart</option>
-                <option value="tbs">tablespoons</option>
-                <option value="tsp">teaspoons</option>
-                <option value="uk_pt">UK pint</option>
-                <option value="pt">US Pint</option>
-            </select>
-        </ul>
-    </div>
-    
-        <h2 onclick="toggleList('time', 'arrowIcon2')">Time <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
-    <div class="list-container">
-        <ul id="time">
-            <input aria-label="day" type="number" id="inputTime1" value="1" />
-            <select id="inputTimeUnit1">
-                <option value="d">day</option>
-                <option value="hr" selected>hour</option>
-                <option value="min">minute</option>
-                <option value="s">second</option>
-                <option value="yr">year</option>
-                <option value="week">week</option>
-                <option value="month">month</option>
-            </select>
-            <div style="display: inline;"> 
-                <input aria-label="month" type="number" id="outputTime1" value="0" /> <!-- Changed from <span> to <input> -->
-            </div>
-            <select id="outputTimeUnit1">
-                <option value="d">day</option>
-                <option value="hr">hour</option>
-                <option value="min">minute</option>
-                <option value="s" selected>second</option>
-                <option value="yr">year</option>
-                <option value="week">week</option>
-                <option value="month">month</option>
-            </select>
-        </ul>
-    </div>
-    
-        <h2 onclick="toggleList('pressure', 'arrowIcon2')">Pressure <span id="arrowIcon2" class="arrow-icon">&#9660;</span></h2>
-    <div class="list-container">
-        <ul id="pressure">
-            <input aria-label="atmosphere" type="number" id="inputPressure1" value="1" />
-            <select id="inputPressureUnit1">
-                <option value="atm" selected>atmosphere</option>
-                <option value="mmHg">mm of Mercury</option>
-                <option value="pa">pascal</option>
-                <option value="psi">PSI</option>
-                <option value="torr">Torr</option>
-            </select>
-            <div style="display: inline;"> 
-                <input aria-label="Torr" type="number" id="outputPressure1" value="0" /> <!-- Changed from <span> to <input> -->
-            </div>
-            <select id="outputPressureUnit1">
-                <option value="atm">atmosphere</option>
-                <option value="mmHg">mm of Mercury</option>
-                <option value="pa">pascal</option>
-                <option value="psi" selected>PSI</option>
-                <option value="torr">Torr</option>
-            </select>
-        </ul>
-    </div>
-    
-</div>
+		<div class="tu-card" id="uc-panel" style="margin-top:1em;">
+			<h3 id="uc-title" style="margin-top:0;">Length converter</h3>
+			<div class="uc-conv">
+				<div class="tu-field"><label for="uc-val">Value</label><input id="uc-val" class="tu-input tu-input--big" type="text" inputmode="decimal" value="1" autocomplete="off"></div>
+				<div class="tu-field"><label for="uc-from">From</label><select id="uc-from" class="tu-select tu-input--big"></select></div>
+				<button type="button" class="tu-btn uc-swap" id="uc-swap" aria-label="Swap the two units" title="Swap units">&#8646;</button>
+				<div class="tu-field"><label for="uc-to">To</label><select id="uc-to" class="tu-select tu-input--big"></select></div>
+			</div>
+			<div class="uc-result">
+				<div class="tu-stat tu-stat--hero" style="flex:1 1 16em;margin:0;">
+					<div class="tu-stat__label">Result</div>
+					<div class="tu-stat__value" id="uc-out">&mdash;</div>
+					<div class="tu-stat__sub" id="uc-formula"></div>
+				</div>
+				<div style="display:flex;flex-direction:column;gap:0.5em;">
+					<button type="button" class="tu-btn tu-btn--primary" id="uc-copy">Copy result</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="uc-link">Copy link</button>
+					<label class="tu-note" style="display:flex;align-items:center;gap:0.4em;">Decimals
+						<select id="uc-dec" class="tu-select" style="width:auto;padding:0.25em 0.4em;font-size:0.95em;"><option value="auto">Auto</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select>
+					</label>
+				</div>
+			</div>
+			<div class="tu-chips" id="uc-common" aria-label="Common conversions"></div>
+		</div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const inputLength1 = document.getElementById('inputLength1');
-    const inputLengthUnit1 = document.getElementById('inputLengthUnit1');
-    const outputLengthUnit1 = document.getElementById('outputLengthUnit1');
-    const outputLength1 = document.getElementById('outputLength1'); // Updated to target the input element
+		<h2 id="uc-all-title">All length units</h2>
+		<div class="tu-card">
+			<div class="tu-table-wrap"><table class="tu-table" id="uc-all"><thead><tr><th>Unit</th><th>Value</th></tr></thead><tbody></tbody></table></div>
+			<p class="tu-note">Click a row to convert to that unit, or its value to copy it.</p>
+		</div>
 
-    // Conversion factors relative to meter
-    const conversionFactors = {
-        meters: 1,
-        centimeters: 0.01,
-        millimeters: 0.001,
-        feet: 0.3048,
-        inches: 0.0254,
-        yards: 0.9144,
-        miles: 1609.34,
-        kilometers: 1000,
-    };
-
-    function convertUnits() {
-        const value = parseFloat(inputLength1.value);
-        const inputConversionFactor = conversionFactors[inputLengthUnit1.value];
-        const outputConversionFactor = conversionFactors[outputLengthUnit1.value];
-        const resultInMeters = value * inputConversionFactor;
-        const result = resultInMeters / outputConversionFactor;
-        outputLength1.value = result.toFixed(3); // Update to set the value of the input field
-    }
-
-    function convertUnitsBackward() {
-        const result = parseFloat(outputLength1.value);
-        const outputConversionFactor = conversionFactors[outputLengthUnit1.value];
-        const inputConversionFactor = conversionFactors[inputLengthUnit1.value];
-        const inputInMeters = result * outputConversionFactor;
-        const inputLength1Calc = inputInMeters / inputConversionFactor;
-        inputLength1.value = inputLength1Calc.toFixed(3); // Update the input field based on the result
-    }
-
-    // Event listeners to update the conversion automatically
-    inputLength1.addEventListener('input', convertUnits);
-    inputLengthUnit1.addEventListener('change', convertUnits);
-    outputLengthUnit1.addEventListener('change', convertUnits);
-    outputLength1.addEventListener('input', convertUnitsBackward); // New event listener for the result input field
-
-    // Initialize with default values
-    convertUnits();
-});
-</script>
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const inputMass1 = document.getElementById('inputMass1');
-    const inputMassUnit1 = document.getElementById('inputMassUnit1');
-    const outputMassUnit1 = document.getElementById('outputMassUnit1');
-    const outputMass1 = document.getElementById('outputMass1'); // Updated to target the input element
-
-    // Conversion factors relative to kilogram
-    const conversionFactors = {
-        kilogram: 1,
-        pounds: 0.45359237,
-        slug: 14.5939,
-        gram: 0.001,
-        uk_ton: 1016.0469,
-        us_ton: 907.18475,
-        tonne: 1000,
-    };
-
-    function convertUnits() {
-        const value = parseFloat(inputMass1.value);
-        const inputConversionFactor = conversionFactors[inputMassUnit1.value];
-        const outputConversionFactor = conversionFactors[outputMassUnit1.value];
-        const resultInMeters = value * inputConversionFactor;
-        const result = resultInMeters / outputConversionFactor;
-        outputMass1.value = result.toFixed(3); // Update to set the value of the input field
-    }
-
-    function convertUnitsBackward() {
-        const result = parseFloat(outputMass1.value);
-        const outputConversionFactor = conversionFactors[outputMassUnit1.value];
-        const inputConversionFactor = conversionFactors[inputMassUnit1.value];
-        const inputInMeters = result * outputConversionFactor;
-        const inputMass1Calc = inputInMeters / inputConversionFactor;
-        inputMass1.value = inputMass1Calc.toFixed(3); // Update the input field based on the result
-    }
-
-    // Event listeners to update the conversion automatically
-    inputMass1.addEventListener('input', convertUnits);
-    inputMassUnit1.addEventListener('change', convertUnits);
-    outputMassUnit1.addEventListener('change', convertUnits);
-    outputMass1.addEventListener('input', convertUnitsBackward); // New event listener for the result input field
-
-    // Initialize with default values
-    convertUnits();
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const inputSpeed1 = document.getElementById('inputSpeed1');
-    const inputSpeedUnit1 = document.getElementById('inputSpeedUnit1');
-    const outputSpeedUnit1 = document.getElementById('outputSpeedUnit1');
-    const outputSpeed1 = document.getElementById('outputSpeed1'); // Updated to target the input element
-
-    // Conversion factors relative to mph
-    const conversionFactors = {
-        mph: 1,
-        kph: 0.621371,
-        metersps: 2.23694,
-        metersph: 2236.94,
-        fps: 0.681818,
-        fph: 40.909,
-        knots: 1.1507791,
-    };
-
-    function convertUnits() {
-        const value = parseFloat(inputSpeed1.value);
-        const inputConversionFactor = conversionFactors[inputSpeedUnit1.value];
-        const outputConversionFactor = conversionFactors[outputSpeedUnit1.value];
-        const resultInMeters = value * inputConversionFactor;
-        const result = resultInMeters / outputConversionFactor;
-        outputSpeed1.value = result.toFixed(3); // Update to set the value of the input field
-    }
-
-    function convertUnitsBackward() {
-        const result = parseFloat(outputSpeed1.value);
-        const outputConversionFactor = conversionFactors[outputSpeedUnit1.value];
-        const inputConversionFactor = conversionFactors[inputSpeedUnit1.value];
-        const inputInMeters = result * outputConversionFactor;
-        const inputSpeed1Calc = inputInMeters / inputConversionFactor;
-        inputSpeed1.value = inputSpeed1Calc.toFixed(3); // Update the input field based on the result
-    }
-
-    // Event listeners to update the conversion automatically
-    inputSpeed1.addEventListener('input', convertUnits);
-    inputSpeedUnit1.addEventListener('change', convertUnits);
-    outputSpeedUnit1.addEventListener('change', convertUnits);
-    outputSpeed1.addEventListener('input', convertUnitsBackward); // New event listener for the result input field
-
-    // Initialize with default values
-    convertUnits();
-});
-</script>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const inputVolume1 = document.getElementById('inputVolume1');
-    const inputVolumeUnit1 = document.getElementById('inputVolumeUnit1');
-    const outputVolumeUnit1 = document.getElementById('outputVolumeUnit1');
-    const outputVolume1 = document.getElementById('outputVolume1'); // Updated to target the input element
-
-    // Conversion factors relative to cubic feet
-    const conversionFactors = {
-        ft3: 1,
-        m3: 35.3147,
-        cup: 0.00835503,
-        oz: 0.00104438,
-        gal: 0.133681,
-        L: 0.0353147,
-        qt: 0.0334201,
-        tbs: 0.00052219,
-        tsp: 0.000174063,
-        uk_pt: 0.020068,
-        pt: 0.0167101,
-    };
-
-    function convertUnits() {
-        const value = parseFloat(inputVolume1.value);
-        const inputConversionFactor = conversionFactors[inputVolumeUnit1.value];
-        const outputConversionFactor = conversionFactors[outputVolumeUnit1.value];
-        const resultInMeters = value * inputConversionFactor;
-        const result = resultInMeters / outputConversionFactor;
-        outputVolume1.value = result.toFixed(3); // Update to set the value of the input field
-    }
-
-    function convertUnitsBackward() {
-        const result = parseFloat(outputVolume1.value);
-        const outputConversionFactor = conversionFactors[outputVolumeUnit1.value];
-        const inputConversionFactor = conversionFactors[inputVolumeUnit1.value];
-        const inputInMeters = result * outputConversionFactor;
-        const inputVolume1Calc = inputInMeters / inputConversionFactor;
-        inputVolume1.value = inputVolume1Calc.toFixed(3); // Update the input field based on the result
-    }
-
-    // Event listeners to update the conversion automatically
-    inputVolume1.addEventListener('input', convertUnits);
-    inputVolumeUnit1.addEventListener('change', convertUnits);
-    outputVolumeUnit1.addEventListener('change', convertUnits);
-    outputVolume1.addEventListener('input', convertUnitsBackward); // New event listener for the result input field
-
-    // Initialize with default values
-    convertUnits();
-});
-</script>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const inputTime1 = document.getElementById('inputTime1');
-    const inputTimeUnit1 = document.getElementById('inputTimeUnit1');
-    const outputTimeUnit1 = document.getElementById('outputTimeUnit1');
-    const outputTime1 = document.getElementById('outputTime1'); // Updated to target the input element
-
-    // Conversion factors relative to hr
-    const conversionFactors = {
-        hr: 1,
-        d: 24,
-        s: 0.00027777777,
-        min: 0.0166667,
-        yr: 8760,
-        week: 168,
-        month: 730.001,
-    };
-
-    function convertUnits() {
-        const value = parseFloat(inputTime1.value);
-        const inputConversionFactor = conversionFactors[inputTimeUnit1.value];
-        const outputConversionFactor = conversionFactors[outputTimeUnit1.value];
-        const resultInMeters = value * inputConversionFactor;
-        const result = resultInMeters / outputConversionFactor;
-        outputTime1.value = result.toFixed(3); // Update to set the value of the input field
-    }
-
-    function convertUnitsBackward() {
-        const result = parseFloat(outputTime1.value);
-        const outputConversionFactor = conversionFactors[outputTimeUnit1.value];
-        const inputConversionFactor = conversionFactors[inputTimeUnit1.value];
-        const inputInMeters = result * outputConversionFactor;
-        const inputTime1Calc = inputInMeters / inputConversionFactor;
-        inputTime1.value = inputTime1Calc.toFixed(3); // Update the input field based on the result
-    }
-
-    // Event listeners to update the conversion automatically
-    inputTime1.addEventListener('input', convertUnits);
-    inputTimeUnit1.addEventListener('change', convertUnits);
-    outputTimeUnit1.addEventListener('change', convertUnits);
-    outputTime1.addEventListener('input', convertUnitsBackward); // New event listener for the result input field
-
-    // Initialize with default values
-    convertUnits();
-});
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const inputPressure1 = document.getElementById('inputPressure1');
-    const inputPressureUnit1 = document.getElementById('inputPressureUnit1');
-    const outputPressureUnit1 = document.getElementById('outputPressureUnit1');
-    const outputPressure1 = document.getElementById('outputPressure1'); // Updated to target the input element
-
-    // Conversion factors relative to psi
-    const conversionFactors = {
-        pa: 1,
-        psi: 6894.757293168,
-        atm: 101325,
-        mmHg: 133.322,
-        torr: 133.3223684,
-    };
-
-    function convertUnits() {
-        const value = parseFloat(inputPressure1.value);
-        const inputConversionFactor = conversionFactors[inputPressureUnit1.value];
-        const outputConversionFactor = conversionFactors[outputPressureUnit1.value];
-        const resultInMeters = value * inputConversionFactor;
-        const result = resultInMeters / outputConversionFactor;
-        outputPressure1.value = result.toFixed(3); // Update to set the value of the input field
-    }
-
-    function convertUnitsBackward() {
-        const result = parseFloat(outputPressure1.value);
-        const outputConversionFactor = conversionFactors[outputPressureUnit1.value];
-        const inputConversionFactor = conversionFactors[inputPressureUnit1.value];
-        const inputInMeters = result * outputConversionFactor;
-        const inputPressure1Calc = inputInMeters / inputConversionFactor;
-        inputPressure1.value = inputPressure1Calc.toFixed(3); // Update the input field based on the result
-    }
-
-    // Event listeners to update the conversion automatically
-    inputPressure1.addEventListener('input', convertUnits);
-    inputPressureUnit1.addEventListener('change', convertUnits);
-    outputPressureUnit1.addEventListener('change', convertUnits);
-    outputPressure1.addEventListener('input', convertUnitsBackward); // New event listener for the result input field
-
-    // Initialize with default values
-    convertUnits();
-});
-</script>
-
-    <script>
-        function toggleAllLists() {
-            const lists = document.querySelectorAll('.list-container ul');
-            const arrowIconAll = document.getElementById('arrowIconAll');
-    
-            lists.forEach(list => {
-                list.classList.toggle('hidden');
-            });
-    
-            arrowIconAll.textContent = lists[0].classList.contains('hidden') ? '\u25B2' : '\u25BC';
-        }
-    
-    function toggleList(listId, arrowId) {
-        const list = document.getElementById(listId);
-        const arrowIcon = document.getElementById(arrowId);
-    
-        list.classList.toggle('hidden');
-        arrowIcon.textContent = list.classList.contains('hidden') ? '\u25B2' : '\u25BC';
-    }
-
-    </script>
-
-
-    <h2><a href="https://1drv.ms/x/s!As32ynv0LoaIitQGxsm3eL9utxlPRw">Excel Spreadsheet Version</a></h2>
-    
+		<div class="tu-seo">
+			<h2>How to use the unit converter</h2>
+			<ul>
+				<li><strong>Type a conversion</strong> in the search box &mdash; &ldquo;5 ft to cm&rdquo;, &ldquo;100 km/h in mph&rdquo;, &ldquo;350 F to C&rdquo; &mdash; and the answer appears instantly. Press <em>Open in converter</em> to keep working with it.</li>
+				<li>Or <strong>pick a category</strong> (length, mass, temperature, area, volume, speed, time, pressure, energy, power, force, data, angle, frequency or fuel economy), choose the two units and enter a value. The table underneath shows the same value in <strong>every unit</strong> of that category.</li>
+				<li>Search also works on a single unit (&ldquo;knots&rdquo;, &ldquo;psi&rdquo;, &ldquo;gallon&rdquo;) &mdash; it filters the categories down to the ones that contain it.</li>
+				<li>Use <strong>Copy link</strong> to share the exact conversion you have on screen.</li>
+			</ul>
+			<h3>Accuracy</h3>
+			<p>Conversions use exact or internationally agreed factors (for example 1 inch = 25.4 mm, 1 mile = 1,609.344 m, 1 US gallon = 3.785411784 L). Months are 30.4375 days and years 365.25 days; Mach is taken at sea level (340.29 m/s). Everything is calculated in your browser and nothing is sent to a server.</p>
+			<p><a href="https://1drv.ms/x/s!As32ynv0LoaIitQGxsm3eL9utxlPRw">Excel spreadsheet version</a> &middot; <a href="/calculators">More MES calculators</a></p>
+		</div>
+	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
@@ -1106,7 +755,7 @@ document.addEventListener('DOMContentLoaded', function () {
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	
+	<script src="/unit-conversion/js/unit-conversion.js?v=1" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

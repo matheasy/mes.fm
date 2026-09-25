@@ -1,0 +1,77 @@
+	<div class="tu" id="ec">
+		<div class="tu-card">
+			<div class="tu-row">
+				<div class="tu-field">
+					<label for="ec-d">Distance to the object</label>
+					<div class="tu-suffix"><input id="ec-d" class="tu-input tu-input--big" type="number" inputmode="decimal" min="0" step="any" value="22"><span id="ec-d-unit">km</span></div>
+				</div>
+				<div class="tu-field tu-field--sm">
+					<span class="tu-label">Unit</span>
+					<div class="tu-seg" id="ec-du" role="group" aria-label="Distance unit"><button type="button" data-u="km" aria-pressed="true">km</button><button type="button" data-u="mi" aria-pressed="false">miles</button></div>
+				</div>
+				<div class="tu-field">
+					<label for="ec-h">Your eye height</label>
+					<div class="tu-suffix"><input id="ec-h" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="1.7"><span id="ec-h-unit">m</span></div>
+				</div>
+				<div class="tu-field tu-field--sm">
+					<span class="tu-label">Height unit</span>
+					<div class="tu-seg" id="ec-hu" role="group" aria-label="Height unit"><button type="button" data-u="m" aria-pressed="true">m</button><button type="button" data-u="ft" aria-pressed="false">ft</button></div>
+				</div>
+			</div>
+			<div class="tu-row" style="margin-top:0.9em;">
+				<div class="tu-field" style="flex-basis:100%;">
+					<label for="ec-slider">Slide the distance</label>
+					<input id="ec-slider" type="range" min="0" max="100" step="0.5" value="22" style="width:100%;accent-color:var(--accent);">
+				</div>
+			</div>
+			<div class="tu-row" style="margin-top:0.4em;">
+				<div class="tu-field">
+					<label for="ec-t">Object height (optional)</label>
+					<div class="tu-suffix"><input id="ec-t" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="0"><span id="ec-t-unit">m</span></div>
+				</div>
+				<label class="tu-field" style="flex:2 1 16em;flex-direction:row;align-items:center;gap:0.5em;cursor:pointer;">
+					<input type="checkbox" id="ec-ref" style="width:1.1em;height:1.1em;accent-color:var(--accent);">
+					<span style="font-size:0.9em;line-height:1.3;">Include standard atmospheric refraction (k = 0.13)</span>
+				</label>
+			</div>
+			<div class="tu-chips" id="ec-presets" aria-label="Examples">
+				<button type="button" class="tu-chip" data-d="5" data-du="km" data-h="1.7" data-hu="m">Beach horizon</button>
+				<button type="button" class="tu-chip" data-d="6" data-du="mi" data-h="0.3" data-hu="m" data-t="1" data-tu="m">Bedford Level (6 mi)</button>
+				<button type="button" class="tu-chip" data-d="30" data-du="km" data-h="2" data-hu="m">Strait of Georgia</button>
+				<button type="button" class="tu-chip" data-d="60" data-du="mi" data-h="6" data-hu="ft" data-t="1450" data-tu="ft">Chicago skyline from Michigan</button>
+				<button type="button" class="tu-chip" data-d="100" data-du="mi" data-h="30000" data-hu="ft">Airliner horizon</button>
+			</div>
+		</div>
+
+		<div class="tu-stats" id="ec-stats" aria-live="polite">
+			<div class="tu-stat tu-stat--hero"><div class="tu-stat__label">Curvature drop</div><div class="tu-stat__value" id="ec-drop">&mdash;</div><div class="tu-stat__sub" id="ec-drop-sub"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Horizon distance</div><div class="tu-stat__value" id="ec-horizon">&mdash;</div><div class="tu-stat__sub" id="ec-horizon-sub"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Hidden behind the curve</div><div class="tu-stat__value" id="ec-hidden">&mdash;</div><div class="tu-stat__sub" id="ec-hidden-sub"></div></div>
+		</div>
+
+		<h2>Diagram (not to scale)</h2>
+		<div class="tu-card">
+			<svg id="ec-svg" viewBox="0 0 640 230" role="img" aria-label="Diagram of an observer, a distant object, the curved Earth and the straight line of sight" style="width:100%;height:auto;display:block;"></svg>
+		</div>
+
+		<h2>Curvature at common distances</h2>
+		<div class="tu-card">
+			<div class="tu-table-wrap"><table class="tu-table" id="ec-table"><thead><tr><th>Distance</th><th>Curvature drop</th><th>Hidden from your eye height</th></tr></thead><tbody></tbody></table></div>
+			<p class="tu-note">Drop = how far the surface falls below a perfectly straight line that starts level at your feet. Hidden = the part of a distant object below the horizon line as seen from your eye height.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the Earth curvature calculator works</h2>
+			<ul>
+				<li>Enter the <strong>distance</strong> in kilometers or miles. The calculator uses the Earth's mean radius of 6,371 km (3,958.8 miles) and shows the <strong>curvature drop</strong>: how far the surface curves away beneath a straight line. For short distances this is very close to d&sup2; &divide; 2R.</li>
+				<li>Add your <strong>eye height</strong> to see the <strong>horizon distance</strong> and how much of a far-away object is <strong>hidden behind the curve</strong>. Add the object's own height to see how much of it you can still see.</li>
+				<li>Tick <strong>atmospheric refraction</strong> to model the small bending of light in the air (a standard coefficient of 0.13). It lets you see slightly farther than pure geometry says.</li>
+				<li>The <em>8 inches per mile squared</em> rule of thumb you may have seen is the same parabola: at 1 mile the drop is about 7.98 inches, and it grows with the square of the distance (about 32 inches at 2 miles, 72 inches at 3 miles).</li>
+			</ul>
+			<h3>Formulas used</h3>
+			<p>Drop = R &times; (1 &divide; cos(d &divide; R) &minus; 1) &asymp; d&sup2; &divide; (2R). Horizon distance = &radic;(2Rh + h&sup2;). Hidden height = (d &minus; horizon)&sup2; &divide; (2R) once the object is beyond your horizon. With refraction, R is replaced by R &divide; (1 &minus; k).</p>
+			<h3>Is anything sent to a server?</h3>
+			<p>No &mdash; everything is computed in your browser. The Earth is modelled as a perfect sphere, so real-world results (terrain, waves, temperature layers) will vary a little.</p>
+			<p><a href="/calculators">More MES calculators</a></p>
+		</div>
+	</div>

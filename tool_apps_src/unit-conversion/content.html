@@ -1,0 +1,56 @@
+	<div class="tu" id="uc">
+		<div class="tu-card">
+			<label class="tu-label" for="uc-q">Search or type a conversion</label>
+			<input id="uc-q" class="tu-input tu-input--big" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Try &ldquo;10 miles to km&rdquo;, &ldquo;72 F to C&rdquo; or just &ldquo;pressure&rdquo;" style="margin-top:0.35em;">
+			<div id="uc-quick" class="uc-quick" hidden aria-live="polite"></div>
+			<div id="uc-matches" class="tu-chips" hidden></div>
+		</div>
+
+		<h2>Categories</h2>
+		<div class="uc-cats" id="uc-cats" role="tablist" aria-label="Conversion categories"></div>
+		<p class="tu-note" id="uc-nomatch" hidden>No category matches that search &mdash; try a unit name such as &ldquo;kg&rdquo;, &ldquo;gallon&rdquo; or &ldquo;knots&rdquo;.</p>
+
+		<div class="tu-card" id="uc-panel" style="margin-top:1em;">
+			<h3 id="uc-title" style="margin-top:0;">Length converter</h3>
+			<div class="uc-conv">
+				<div class="tu-field"><label for="uc-val">Value</label><input id="uc-val" class="tu-input tu-input--big" type="text" inputmode="decimal" value="1" autocomplete="off"></div>
+				<div class="tu-field"><label for="uc-from">From</label><select id="uc-from" class="tu-select tu-input--big"></select></div>
+				<button type="button" class="tu-btn uc-swap" id="uc-swap" aria-label="Swap the two units" title="Swap units">&#8646;</button>
+				<div class="tu-field"><label for="uc-to">To</label><select id="uc-to" class="tu-select tu-input--big"></select></div>
+			</div>
+			<div class="uc-result">
+				<div class="tu-stat tu-stat--hero" style="flex:1 1 16em;margin:0;">
+					<div class="tu-stat__label">Result</div>
+					<div class="tu-stat__value" id="uc-out">&mdash;</div>
+					<div class="tu-stat__sub" id="uc-formula"></div>
+				</div>
+				<div style="display:flex;flex-direction:column;gap:0.5em;">
+					<button type="button" class="tu-btn tu-btn--primary" id="uc-copy">Copy result</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="uc-link">Copy link</button>
+					<label class="tu-note" style="display:flex;align-items:center;gap:0.4em;">Decimals
+						<select id="uc-dec" class="tu-select" style="width:auto;padding:0.25em 0.4em;font-size:0.95em;"><option value="auto">Auto</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select>
+					</label>
+				</div>
+			</div>
+			<div class="tu-chips" id="uc-common" aria-label="Common conversions"></div>
+		</div>
+
+		<h2 id="uc-all-title">All length units</h2>
+		<div class="tu-card">
+			<div class="tu-table-wrap"><table class="tu-table" id="uc-all"><thead><tr><th>Unit</th><th>Value</th></tr></thead><tbody></tbody></table></div>
+			<p class="tu-note">Click a row to convert to that unit, or its value to copy it.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How to use the unit converter</h2>
+			<ul>
+				<li><strong>Type a conversion</strong> in the search box &mdash; &ldquo;5 ft to cm&rdquo;, &ldquo;100 km/h in mph&rdquo;, &ldquo;350 F to C&rdquo; &mdash; and the answer appears instantly. Press <em>Open in converter</em> to keep working with it.</li>
+				<li>Or <strong>pick a category</strong> (length, mass, temperature, area, volume, speed, time, pressure, energy, power, force, data, angle, frequency or fuel economy), choose the two units and enter a value. The table underneath shows the same value in <strong>every unit</strong> of that category.</li>
+				<li>Search also works on a single unit (&ldquo;knots&rdquo;, &ldquo;psi&rdquo;, &ldquo;gallon&rdquo;) &mdash; it filters the categories down to the ones that contain it.</li>
+				<li>Use <strong>Copy link</strong> to share the exact conversion you have on screen.</li>
+			</ul>
+			<h3>Accuracy</h3>
+			<p>Conversions use exact or internationally agreed factors (for example 1 inch = 25.4 mm, 1 mile = 1,609.344 m, 1 US gallon = 3.785411784 L). Months are 30.4375 days and years 365.25 days; Mach is taken at sea level (340.29 m/s). Everything is calculated in your browser and nothing is sent to a server.</p>
+			<p><a href="https://1drv.ms/x/s!As32ynv0LoaIitQGxsm3eL9utxlPRw">Excel spreadsheet version</a> &middot; <a href="/calculators">More MES calculators</a></p>
+		</div>
+	</div>

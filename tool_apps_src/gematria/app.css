@@ -1,0 +1,11 @@
+	/* gematria */
+	.tu .gm-card {cursor:pointer;text-align:left;font:inherit;width:100%;}
+	.tu .gm-card:hover {border-color:var(--accent);}
+	.tu .gm-card[aria-pressed="true"] {border:2px solid var(--accent);background:var(--tint);}
+	.tu .gm-break {display:flex;flex-wrap:wrap;gap:0.35em;margin-top:0.5em;}
+	.tu .gm-letter {min-width:2.6em;text-align:center;border:1px solid #dfe4ea;border-radius:0.4em;padding:0.3em 0.35em;background:#fff;}
+	.tu .gm-letter b {display:block;font-size:1.25em;color:#1e2733;line-height:1.15;}
+	.tu .gm-letter span {display:block;font-size:0.8em;color:var(--accent);font-weight:700;}
+	.tu .gm-letter--other {opacity:0.5;background:#f7f8fa;}
+	.tu .gm-space {width:0.9em;}
+	.tu .gm-hebrew b {font-size:1.35em;}
