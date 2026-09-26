@@ -207,8 +207,9 @@ of HTML files individually:
   `mes.fm/img/conspiracy-{icon,logo,logo-big}.jpg` (tile 900x600, favicon/brand 512 square, og 1200x630) come from one
   source image; the conspiracy tile sits last in the homepage `icon-grid`. `mes.fm/crypto` (2026-09-25) is the same kind of
   hub (own `build.mjs`, Posts card grid, `BRANDS['/crypto']`, `img/crypto-{icon,logo,logo-big}.jpg`; its tile sits between Science
-  and Hutchison Effect, and its five post mirrors carry the Crypto brand + "Part of MES Crypto"). The three images were
-  generated as placeholders (orange bitcoin disc) until the Grok art is dropped in over the same filenames.
+  and Hutchison Effect, and its five post mirrors carry the Crypto brand + "Part of MES Crypto"). The art is one ChatGPT-made
+  scene (a Bitcoin coin beside a red Hive-hexagon coin over a blockchain-node network), cut three ways: the 3:2 image resized
+  to the 900x600 tile, a square crop around the coins for the logo, and a second wide render cropped to 1200x630 for og:image.
 
 - `build_tool_apps.py` — builds the four stand-alone calculators (`earth-curvature-calculator`, `gematria`,
   `impermanent-loss-calculator`, `unit-conversion`; cards on `calculators.html`) as tools-hub pages from
