@@ -293,6 +293,13 @@ of HTML files individually:
   pagination stubs (`1.html`) are skipped too. Add a family to `FAMILIES` to roll out. Idempotent, `--remove` restores the pages
   byte-for-byte; **dry-runs by default (`-v` lists pages), `--apply` writes.**
 
+- `remove_gtm.py` — removes the dead Google Tag Manager container (`GTM-T7H6J87`) from the 140 `mes.fm/percentagecalculator` pages that still
+  loaded it (head snippet + body `<noscript>`). The container only held a Universal Analytics event tag (`UA-18189318-5`, dead since 2023), a
+  scroll-depth listener and a custom-HTML tag pushing a `calculation` dataLayer event that only fed that dead tag: a ~390 KB `gtm.js` per page
+  (and a "tracker" flag in Brave/uBlock) for no data; page views come from `main_js/track.js`. `percentagecalculator-app/build-www.py` now
+  anchors its head-strip on the "Legacy Universal Analytics removed" comment that follows the old snippet (app output unchanged apart from
+  whitespace). Idempotent; **dry-runs by default (`-v` lists pages), `--apply` writes.**
+
 Run any of them with `python3 <script>.py` from anywhere (they resolve the repo root themselves). They print a
 per-file report; read the output rather than assuming success — `fix_broken_internal_links.py` additionally needs
 `--apply` to write anything, and reading its dry run first is the point.

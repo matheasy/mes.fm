@@ -103,7 +103,8 @@ def clean(html: str, page_name: str) -> str:
 
     # --- ads / analytics / comments --------------------------------------
     # everything from the GTM comment to </head> is ad/analytics JS
-    html = re.sub(r"<!-- Google Tag Manager -->.*?</head>", lambda m: HEAD_EXTRA,
+    # (GTM was removed from the web pages by remove_gtm.py; the "Legacy Universal Analytics removed" comment that followed it is the anchor now)
+    html = re.sub(r"(?:<!-- Google Tag Manager -->|<!-- Legacy Universal Analytics removed).*?</head>", lambda m: HEAD_EXTRA,
                   html, count=1, flags=re.S)
     html = re.sub(r"<!-- Google Tag Manager \(noscript\) -->.*?"
                   r"<!-- End Google Tag Manager \(noscript\) -->", "",
