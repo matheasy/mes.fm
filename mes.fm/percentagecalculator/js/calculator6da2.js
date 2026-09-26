@@ -105,6 +105,24 @@ $(document).ready(function(){
 				}
 			},
 
+			// percentage difference between A and B (symmetric: relative to the average of the two)
+			calcAnswerDiff: function (inputs) {
+				var input1 = inputs[0];
+				var input2 = inputs[1];
+				var answer = Math.abs(input1-input2)/((input1+input2)/2)*100;
+				var a = inputs['answer'];
+				var f = inputs['formula'];
+
+				if(isNaN(answer) || typeof answer === "undefined" || !isFinite(answer)) {
+				    a.html("");
+				    f.html("|A - B| / ((A + B) / 2) * 100");
+				} else {
+					answer = CALCULATOR.preciseAnswer(answer);
+					a.html(answer+"%");
+					f.html("|"+input1+" - "+input2+"| / (("+input1+" + "+input2+") / 2) * 100 = "+answer+"%");
+				}
+			},
+
 			calcAnswer5: function (inputs) {
 				var input1 = inputs[0];
 				var input2 = inputs[1];
@@ -282,6 +300,11 @@ $(document).ready(function(){
 
 						var decodedDataArray = (typeof data === 'string') ? JSON.parse(data) : data;
 
+						// links saved before the percentage-difference row was added (row 5) hold 9 equations: slot in an empty one
+						if(decodedDataArray.length === 9) {
+							decodedDataArray.splice(4, 0, [["", ""]]);
+						}
+
 						//open all duplicate equations
 						for(i = 0; i < decodedDataArray.length; i++ ) {
 							for(x = 1; x < decodedDataArray[i].length; x++) {
@@ -393,34 +416,18 @@ $(document).ready(function(){
 					        //CALCULATOR.calcAnswer1(inputs);
 					        if(!CALCULATOR.createNewUrl) CALCULATOR.createNewUrl = true;
 
+					        // rows in page order: 1-4, 5 = percentage difference, then the old 5-9 (mixed fraction, more calculations) as 6-10
 					        switch(equation) {
-					        	case 1:
-					        		CALCULATOR.calcAnswer1(inputs);
-					        	break;
-					        	case 2:
-					        		CALCULATOR.calcAnswer2(inputs);
-					        	break;
-					        	case 3:
-					        		CALCULATOR.calcAnswer3(inputs);
-					        	break;
-					        	case 4:
-					        		CALCULATOR.calcAnswer4(inputs);
-					        	break;
-					        	case 5:
-					        		CALCULATOR.calcAnswer5(inputs);
-					        	break;
-					        	case 6:
-					        		CALCULATOR.calcAnswer6(inputs);
-					        	break;
-					        	case 7:
-					        		CALCULATOR.calcAnswer7(inputs);
-					        	break;
-					        	case 8:
-					        		CALCULATOR.calcAnswer8(inputs);
-					        	break;
-					        	case 9:
-					        		CALCULATOR.calcAnswer9(inputs);
-					        	break;
+					        	case 1: CALCULATOR.calcAnswer1(inputs); break;
+					        	case 2: CALCULATOR.calcAnswer2(inputs); break;
+					        	case 3: CALCULATOR.calcAnswer3(inputs); break;
+					        	case 4: CALCULATOR.calcAnswer4(inputs); break;
+					        	case 5: CALCULATOR.calcAnswerDiff(inputs); break;
+					        	case 6: CALCULATOR.calcAnswer5(inputs); break;
+					        	case 7: CALCULATOR.calcAnswer6(inputs); break;
+					        	case 8: CALCULATOR.calcAnswer7(inputs); break;
+					        	case 9: CALCULATOR.calcAnswer8(inputs); break;
+					        	case 10: CALCULATOR.calcAnswer9(inputs); break;
 					        }
 					    }
 					});
