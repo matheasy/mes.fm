@@ -9,7 +9,7 @@ after a new stream / trailer goes up:
     python3 update_livestreams_playlist.py      # refresh playlist.json (needs yt-dlp)
     cd mes.fm/livestreams && npm run build      # regenerate index.html; diff before committing
 
-Per video it stores id, title, duration (seconds), live status and the best thumbnail that
+Per video it stores id, title, duration (seconds), live status, uploader channel and the best thumbnail that
 actually exists (maxresdefault where YouTube has one, else mqdefault -- older streams and some
 trailers have no 1280x720 image, and a missing one would show as a grey card). Thumbnail lookups are
 cached from the previous snapshot, so a refresh only checks new videos.
@@ -67,6 +67,9 @@ def main():
             "title": title,
             "duration": r.get("duration"),
             "status": "upcoming" if r.get("live_status") == "is_upcoming" else "public",
+            # uploader handle: "@mestruth" (MES Truth channel) or "@mes" (Math Easy Solutions) --
+            # build.mjs's "MES Truth" filter chip is a channel filter, not a title match
+            "channel": r.get("uploader_id"),
         })
 
     todo = [e for e in entries if e["id"] not in old]

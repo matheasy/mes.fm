@@ -401,6 +401,24 @@ sub {vertical-align:sub;}
   display: none;
 }
 
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
 /* Full-viewport image lightbox for List View thumbnails -- click to
    zoom, prev/next via on-screen arrows or keyboard, same pattern used
    across the repo (e.g. mes.fm/vector-functions-problems-plus). */
@@ -746,6 +764,12 @@ body.dark-mode .view-toggle-btn {
   color: #ffffff;
 }
 
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
+
 body.dark-mode .view-toggle-btn.active {
   background-color: #4a90d9;
 }
@@ -1086,6 +1110,11 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="livestreams" class="section-body">
   
+    <div class="ls-filter" id="livestreamsFilter">
+      <input type="search" id="livestreamsSearch" placeholder="Search livestreams&hellip;" aria-label="Search livestreams" autocomplete="off">
+      <div class="ls-chips" id="livestreamsChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (142)</button><button type="button" data-c="hutchison" data-label="Hutchison Effect" aria-pressed="false">Hutchison Effect (16)</button><button type="button" data-c="911" data-label="9/11 Truth" aria-pressed="false">9/11 Truth (50)</button><button type="button" data-c="beneficence" data-label="BeneficenceTV" aria-pressed="false">BeneficenceTV (6)</button><button type="button" data-c="mestruth" data-label="MES Truth" aria-pressed="false">MES Truth (6)</button></div>
+    </div>
+    <p class="ls-empty" id="livestreamsEmpty" hidden>No livestreams match. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="livestreamsGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="livestreamsListBtn">List View</button>
@@ -1093,994 +1122,994 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       <button type="button" class="view-toggle-btn" id="livestreamsTrailersBtn">Trailers</button>
     </div>
     <div class="card-grid" id="livestreamsGrid">
-    <a class="link-card" href="https://www.youtube.com/watch?v=Bzxr55VZ6OI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=Bzxr55VZ6OI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Bzxr55VZ6OI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">141: John Hutchison &amp; &quot;Test Subject&quot; Tom Sky Join the Show! (upcoming)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/livestream-140-real-911-avengers">
+    <a class="link-card" data-cats="911 mestruth" href="https://mes.fm/livestream-140-real-911-avengers">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Sde1DG0JhyA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">140: Real 9/11 Avengers Meetup</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=3ThCGaJwVE8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="beneficence" href="https://www.youtube.com/watch?v=3ThCGaJwVE8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/3ThCGaJwVE8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">139: BeneficenceTV gives updates on his radiant energy research</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=gwjOnGmthgQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=gwjOnGmthgQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/gwjOnGmthgQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">138: Chris Shak examines the 9/11 Memorial Museum</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=g1ZNVUp6m8Y" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=g1ZNVUp6m8Y" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/g1ZNVUp6m8Y/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">137: 50 Shades of 9/11 Disinfo Clowns</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=bzSV49z7s-M" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=bzSV49z7s-M" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/bzSV49z7s-M/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">136: Dr. Judy Wood Discusses Anomalies in Hurricanes and Tornadoes</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=6ypM75R8CiU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=6ypM75R8CiU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6ypM75R8CiU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">135: Chris Shak on 9/11 Predictive and Post-Predictive Programming Part 2</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=DzufFp9JbnU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mestruth" href="https://www.youtube.com/watch?v=DzufFp9JbnU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/DzufFp9JbnU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">134: Trump Moonchild Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=EmQ4W_Nidl8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="beneficence" href="https://www.youtube.com/watch?v=EmQ4W_Nidl8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/EmQ4W_Nidl8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">133: BeneficenceTV discusses his recent Breakthrough Energy Research</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Q8HTcSFqUsI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=Q8HTcSFqUsI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Q8HTcSFqUsI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">132: Chris Shak discusses 9/11 Predictive and Post-Predictive Programming</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=RhNqdPhEYz0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=RhNqdPhEYz0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/RhNqdPhEYz0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">131: Dr. Judy Wood Discusses Evidence vs Theory on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=ksIm6wr68J8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=ksIm6wr68J8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ksIm6wr68J8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">130: 9/11 Planes Research Discusses the &quot;Planes&quot; Technology</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=xi4Xspdzs3s" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="beneficence" href="https://www.youtube.com/watch?v=xi4Xspdzs3s" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/xi4Xspdzs3s/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">129: BeneficenceTV Discusses Wireless Radiant Energy</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=JFz3Q5d2Kog" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=JFz3Q5d2Kog" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/JFz3Q5d2Kog/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">128: Mystic Bazaar Actually Joins to Discuss the Technology used on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=OTFowoua_Kg" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=OTFowoua_Kg" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/OTFowoua_Kg/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">127: Mystic Bazaar Discusses the Technology used on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=ase_TNhcNok" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=ase_TNhcNok" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ase_TNhcNok/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">126: Apollo, Artemis Moon Missions and Black Budget Technology</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=ofbzawNUZXQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=ofbzawNUZXQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ofbzawNUZXQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">125: Identifying the UFOs on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=0DPGKgUFmws" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=0DPGKgUFmws" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0DPGKgUFmws/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">124: Renee Good ICE Shooting Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=vQId0wq9CTE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=vQId0wq9CTE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/vQId0wq9CTE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">123: Examining January 6th Insurrection Footage</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=sDg72xxdu6s" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=sDg72xxdu6s" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sDg72xxdu6s/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">122: Epstein Files Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=gf-cAIxVhek" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=gf-cAIxVhek" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/gf-cAIxVhek/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">121: Dr. Judy Wood Discusses 9/11 Evidence</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Kt8XFEPC0tA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=Kt8XFEPC0tA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Kt8XFEPC0tA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">120: John Hutchison and Kerry Cassidy on the Show!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=TtBt5Cl38c8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=TtBt5Cl38c8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/TtBt5Cl38c8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">119: JFK, RFK, CK Assassinations Deep Dive with Allen Forrest</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Elux1MyqJzo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=Elux1MyqJzo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Elux1MyqJzo/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">118: Hutchison Effect Zero Point Harmonics</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=9ppSvb0N6lc" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="beneficence" href="https://www.youtube.com/watch?v=9ppSvb0N6lc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/9ppSvb0N6lc/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">117: BeneficenceTV Demonstrates Heating Induction and Power Reduction Experiments</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=3Q1Xl_QgsKI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=3Q1Xl_QgsKI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/3Q1Xl_QgsKI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">116: OKC Bombing 1995 Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Jn38lxj3ebU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=Jn38lxj3ebU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Jn38lxj3ebU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">115: John Hutchison Joins the Show Again!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=1HrScoyaH6Q" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=1HrScoyaH6Q" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/1HrScoyaH6Q/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">114: Halloween Emergency Broadcast</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=yBfFAkZp4nI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="beneficence" href="https://www.youtube.com/watch?v=yBfFAkZp4nI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/yBfFAkZp4nI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">113: BeneficenceTV Demonstrates Vortex Coil Experiments Live</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Fg8iCfZ5AzQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=Fg8iCfZ5AzQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Fg8iCfZ5AzQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">112: 9/11 Spooks Database</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=kfBw2wfmuFo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="beneficence" href="https://www.youtube.com/watch?v=kfBw2wfmuFo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/kfBw2wfmuFo/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">111: BeneficenceTV Discusses Energy Recycling (Free Energy)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=qRz7CcgXwng" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=qRz7CcgXwng" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/qRz7CcgXwng/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">110: Charlie Kirk Assassination Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=EcFzFZjam-c" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=EcFzFZjam-c" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/EcFzFZjam-c/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">109: Explaining How the Towers Went Poof for the PBD Podcast</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=1z-OrtI-rzI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=1z-OrtI-rzI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/1z-OrtI-rzI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">108: Turning the Tide on 9/11 Disinformation Agents</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=EiQHuRoZpEw" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=EiQHuRoZpEw" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/EiQHuRoZpEw/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">107: Where Did the Planes Go on 9/11?</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=gwyKv42EvPE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=gwyKv42EvPE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/gwyKv42EvPE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">106: Dr. Tony Cicoria Discusses his Near Death Experience (NDE) Lightning Strike</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=EUm2oD5xXNk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=EUm2oD5xXNk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/EUm2oD5xXNk/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">105: Bart Sibrel Discusses the Moon Landing</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=--WPVYhR4Jw" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=--WPVYhR4Jw" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/--WPVYhR4Jw/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">104: Evidence for Moon Landing</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=6EhUhuXnqcc" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=6EhUhuXnqcc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6EhUhuXnqcc/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">103: Taxation Deep Dive (and Hive Easy Guide)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=gBXCVIC3AGQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=gBXCVIC3AGQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/gBXCVIC3AGQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">102: Eddie Kuberski, Carmen Miller, and John Hutchison Join the Show!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=i_HtRJ06hig" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=i_HtRJ06hig" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/i_HtRJ06hig/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">101: How Controlled Opposition Works</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=HKH91H2oP88" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=HKH91H2oP88" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/HKH91H2oP88/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">100: Paul Stoichevski and John Hutchison Join the Show!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=x8HQfz6HgYw" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=x8HQfz6HgYw" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/x8HQfz6HgYw/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">99: Dr. Charles Hoffe and Dr. Stephen Malthouse Join the Show!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=D0OrF2PCkco" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=D0OrF2PCkco" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/D0OrF2PCkco/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">98: Buga Sphere Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=-jH3bghGBZ4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=-jH3bghGBZ4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/-jH3bghGBZ4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">97: Jeane Manning and John Hutchison Join the Show!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Ds_n7cE4d34" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=Ds_n7cE4d34" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Ds_n7cE4d34/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">96: Who Runs the World Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=IWlAJSS3pJs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=IWlAJSS3pJs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/IWlAJSS3pJs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">95: Debunking 9/11 Myths with 9/11 Revisited and Field Interference</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=dfrCkqmInN8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=dfrCkqmInN8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/dfrCkqmInN8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">94: Trump Moon Child WW3 Birthday Special</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=u6WmczyK1mk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=u6WmczyK1mk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/u6WmczyK1mk/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">93: Clown World News Recap</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=ieFB3r79J0A" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=ieFB3r79J0A" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ieFB3r79J0A/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">92: Engineer Discusses Impossible Physics of MH370 Teleportation Cartoons</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=0XwNXzBKnh0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=0XwNXzBKnh0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0XwNXzBKnh0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">91: Lapu-Lapu Day Festival Vancouver Car Attack Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=8NA_3fm9XLQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=8NA_3fm9XLQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/8NA_3fm9XLQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">90: Discussing 9/11 and Translating Truth to French with Jeanne Traduction</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=XxTb_4BnIj0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=XxTb_4BnIj0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/XxTb_4BnIj0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">89: Biodigital Convergence with InfoCrypt</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=SLTPLyJbQfA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=SLTPLyJbQfA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/SLTPLyJbQfA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">88: Vancouver Freedom Rally with the BC Strong Political Party</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=KafqXK5zqOs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=KafqXK5zqOs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/KafqXK5zqOs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">87: Decolonizing MCFD &amp; Preserving Family Unity Protest Rally</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Cob8QGBJB2I" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=Cob8QGBJB2I" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Cob8QGBJB2I/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">86: Debunking Ashton Forbes and the MH370 Teleportation Scam</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=4ldp6epD2Qs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=4ldp6epD2Qs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/4ldp6epD2Qs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">85: Exploring Psychedelics on Bicycle Day with Methyl Miner</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=XTdf-53GwHY" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=XTdf-53GwHY" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/XTdf-53GwHY/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">84: Moon Landing Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Ic_LJPmJLgs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=Ic_LJPmJLgs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Ic_LJPmJLgs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">83: John Hutchison and Paul Mueller Discuss Experimental Science</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=E7XHUqTnPMk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=E7XHUqTnPMk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/E7XHUqTnPMk/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">82: Dr. Daniel Nagase Discusses the Theo Lim Amber Alert SWAT Team Arrest</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=z3jmk_DYmVo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=z3jmk_DYmVo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/z3jmk_DYmVo/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">81: Dr. Daniel Nagase Discusses COVID Tyranny and the Theo Lim Case</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=t_Jq2u6J36o" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=t_Jq2u6J36o" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/t_Jq2u6J36o/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">80: Exterior Lobby Columns were still Standing on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=IeGIXELJehc" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=IeGIXELJehc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/IeGIXELJehc/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">79: Epstein and Pizzagate Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=VlhZWsmGwdU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=VlhZWsmGwdU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/VlhZWsmGwdU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">78: Crop Circles Emergency Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=eLGLb8g0ImY" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=eLGLb8g0ImY" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/eLGLb8g0ImY/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">77: Dr. Judy Wood's Qui Tam 9/11 Whistleblower Case Against NIST Military Contractors</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=sCIsRzk4mIQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=sCIsRzk4mIQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sCIsRzk4mIQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">76: John Hutchison Discusses Hutchison Effect Replication</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=UhEDQvWYiBc" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=UhEDQvWYiBc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/UhEDQvWYiBc/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">75: Mystery Objects on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=WxmKxrdYWn4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=WxmKxrdYWn4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/WxmKxrdYWn4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">74: Revisiting Disinfo Agent Blue Bacon with 9/11 Revisited</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=sTes_bE-di0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=sTes_bE-di0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sTes_bE-di0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">73: Agenda 2030 Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=PB-btg_tjuo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=PB-btg_tjuo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/PB-btg_tjuo/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">72: Blockchain - The Big Picture: Architecture of World Control</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=TVWpL6TBMPI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=TVWpL6TBMPI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/TVWpL6TBMPI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">71: Artificial Intelligence (AI) Deep Dive with Andrew Johnson and Allen Forrest</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=VbFIHmsWciI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=VbFIHmsWciI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/VbFIHmsWciI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">70: January 6 Simulated Insurrection Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=kQD_NZMRDPI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=kQD_NZMRDPI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/kQD_NZMRDPI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">69: New Year 2025 Emergency Broadcast</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=7fJBGyZLf7w" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=7fJBGyZLf7w" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/7fJBGyZLf7w/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">68: Debunking Blue Bacon's 9/11 Disinfo Nonsense</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=JTpokZzTWBA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=JTpokZzTWBA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/JTpokZzTWBA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">67: MH370 Teleportation Video Creator Joins the Show!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=PFKteWK2H5I" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=PFKteWK2H5I" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/PFKteWK2H5I/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">66: Never Before Seen Hutchison Effect Footage</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=9UToRSJjyus" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=9UToRSJjyus" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/9UToRSJjyus/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">65: &quot;Debate&quot; with Blue Bacon about the Tiny WTC Rubble Pile on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=ABibblNSeNg" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=ABibblNSeNg" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ABibblNSeNg/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">64: JFK Assassination Deep Dive with Allen Forrest</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=mP5DLMH54LM" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=mP5DLMH54LM" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mP5DLMH54LM/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">63: Tour of John Hutchison's Lab</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=2_qOG4KDfE8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=2_qOG4KDfE8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/2_qOG4KDfE8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">62: Nancy and John Hutchison Frequency Cannabis</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=s4my7pSygjY" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=s4my7pSygjY" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/s4my7pSygjY/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">61: America's Last Election Predictive Programming</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=RoD-XzGmVxQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=RoD-XzGmVxQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/RoD-XzGmVxQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">60: 9/11 Disinfo Agents, MH370 Debunking, and Richard Hall Verdict</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=q2bA0VPryjA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=q2bA0VPryjA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/q2bA0VPryjA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">59: Health Hacks with Methylminer</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=GSiOvaS4-s0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=GSiOvaS4-s0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/GSiOvaS4-s0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">58: Impossible Cell Phone Calls on 9/11 (and more MH370 Teleportation Hoax News)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=DJb3-FqAGRc" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=DJb3-FqAGRc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/DJb3-FqAGRc/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">57: Electrogravitics with Amaterasu Solar</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=UsF1nQNarkY" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=UsF1nQNarkY" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/UsF1nQNarkY/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">56: Electromagnetic Field Interference on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=JSoCmEEObnU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=JSoCmEEObnU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/JSoCmEEObnU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">55: 9/11 Planes Research Discusses the Passengers on Flights 11, 175, 77, and 93</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=D3a1z6_SScE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=D3a1z6_SScE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/D3a1z6_SScE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">54: UPDATE – Adam Eisenberg and Norman are 9/11 disinfo clowns (See Livestream 137)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=I-7tA8zMpGY" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=I-7tA8zMpGY" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/I-7tA8zMpGY/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">53: Summary of Evidence of What Did (and Didn't) Happen on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=RBWMOYUqt-w" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=RBWMOYUqt-w" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/RBWMOYUqt-w/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">52: 9/11 War Games and Military Exercises</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=CXUcJD38bPQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=CXUcJD38bPQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/CXUcJD38bPQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">51: 9/11 Avengers Emergency Chat</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=k7tXz_lLDf4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=k7tXz_lLDf4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/k7tXz_lLDf4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">INTERVIEW: All Things 9/11 with TLBNAWKI</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=yXXeQsjRHiI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=yXXeQsjRHiI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/yXXeQsjRHiI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">50: Boston 9/11 Truth Recap</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=JjtsAKtrA_Y" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=JjtsAKtrA_Y" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/JjtsAKtrA_Y/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">49: Sonya Massey Shooting, Elisa Lam Case, and Classified Technology</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=3xcEnFzY4iw" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=3xcEnFzY4iw" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/3xcEnFzY4iw/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">48: Voice to Skull Technology and Targeted Individuals</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Inv5vYgQ-Hs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=Inv5vYgQ-Hs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Inv5vYgQ-Hs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">47: 2025 Predictive Programming</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=93wsyTbIUbo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=93wsyTbIUbo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/93wsyTbIUbo/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">46: Trump Shooting PsyOp with 9/11 Revisionist</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=BzJmBKk1mhA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=BzJmBKk1mhA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/BzJmBKk1mhA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">45: 90 Seconds Until Doomsday</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=XBkraQr_o_g" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=XBkraQr_o_g" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/XBkraQr_o_g/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">44: Methylminer Presents Evidence of a Hollow and Expanding Earth</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=YtMNbVhRkV0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=YtMNbVhRkV0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/YtMNbVhRkV0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">43: Investigating MH370x Origins</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=xLe2uhz4ANs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=xLe2uhz4ANs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/xLe2uhz4ANs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=hrhpo2AWr-g" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=hrhpo2AWr-g" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/hrhpo2AWr-g/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">41: Trump (Fake) Assassination Predictive Programming</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=f5GJiAUhr9c" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=f5GJiAUhr9c" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/f5GJiAUhr9c/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">40: John Hutchison Joins the Show!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=I3kJHcmpy4k" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=I3kJHcmpy4k" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/I3kJHcmpy4k/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">39: Dr. Morgan Reynolds Discusses 9/11, Legal Case against NIST, Economics, and More</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=C3dzSKosvHE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=C3dzSKosvHE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/C3dzSKosvHE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">38: Mystery Flashes on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=EOfO1VcGXCA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=EOfO1VcGXCA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/EOfO1VcGXCA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">37: The Hutchison Effect is Real (Debunking the &quot;Debunkers&quot;)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=0XDfcd76bRg" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=0XDfcd76bRg" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0XDfcd76bRg/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">36: UFO Media's No-Go Zone with 9/11 Revisionist</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=TfRr7kx3ipQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=TfRr7kx3ipQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/TfRr7kx3ipQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">35: Geoengineering Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=QzxFHzQWE1Q" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=QzxFHzQWE1Q" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/QzxFHzQWE1Q/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">34: 9/11 Truth's Protective Layers with 9/11 Revisionist</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=tBWFVtdRYNs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=tBWFVtdRYNs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/tBWFVtdRYNs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">33: War with Iran Predictive Programming</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=pPQvYWTc2Xo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=pPQvYWTc2Xo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/pPQvYWTc2Xo/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">32: Predictive Programming, AI Deep Fakes, and 9/11 with TLBNAWKI</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=aGU6QJyryM0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=aGU6QJyryM0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/aGU6QJyryM0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">31: Solar Eclipse Emergency Broadcast</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=qWnFRti4UU0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=qWnFRti4UU0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/qWnFRti4UU0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">30: Toasted Cars and Mystery Planes with 9/11 Revisionist</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=89RZiow_Ga0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=89RZiow_Ga0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/89RZiow_Ga0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">29: Disappearing Wings on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=6TOMyJj8T-Q" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=6TOMyJj8T-Q" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6TOMyJj8T-Q/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">28: Searching for Planes on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=LMTliyTpP38" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=LMTliyTpP38" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LMTliyTpP38/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">27: 9/11 Revisionist Sets the Record Straight on Building 7</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=PZlmKRvZJJg" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=PZlmKRvZJJg" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/PZlmKRvZJJg/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">26: Project Blue Beam Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=sx1PEDrAtZE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=sx1PEDrAtZE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sx1PEDrAtZE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">25: 9/11 Planes Research Joins the Show</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=KxZSpjAOMJw" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=KxZSpjAOMJw" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/KxZSpjAOMJw/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">24: Clown World Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=EbWDk3E3UIA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=EbWDk3E3UIA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/EbWDk3E3UIA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">23: Refutation of Explosive Demolition by 9/11 Revisionist</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=S75hzrFra1A" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=S75hzrFra1A" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/S75hzrFra1A/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">22: Exotic Vacuum Objects (EVOs) Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=wK4QLT3MqM0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=wK4QLT3MqM0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/wK4QLT3MqM0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">21: Matthew Naus - The Making of a Truth Activist 50 Years and Counting</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=FHU3nq8oL04" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=FHU3nq8oL04" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/FHU3nq8oL04/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">20: Hutchison Effect Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=_WswUSEoyVs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=_WswUSEoyVs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/_WswUSEoyVs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">19: Flat Earth PsyOp, Giza Pyramid Geometry, 1109 Music Album, Trump, WW3 Incoming</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Rhoo74vpLGg" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=Rhoo74vpLGg" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Rhoo74vpLGg/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">18: January 6 Emergency Broadcast</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=K-ghjtaG104" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=K-ghjtaG104" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/K-ghjtaG104/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">17: New Year Emergency Broadcast</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=x9tU8bXrvDk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=x9tU8bXrvDk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/x9tU8bXrvDk/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">16: Debunking Flat Earth</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=0JdOpCkhCJU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=0JdOpCkhCJU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0JdOpCkhCJU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">15: Ramifications of Free Energy Disclosure</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=fc0jkD7SmIg" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=fc0jkD7SmIg" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/fc0jkD7SmIg/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">14: Discussing Wilhelm Reich, Orgone Energy, Chi Gong with Allen Forrest</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=-5caOw4rUx8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=-5caOw4rUx8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/-5caOw4rUx8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">13: MH370 Occult Deep Dive</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=lyCriIlcI3A" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=lyCriIlcI3A" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/lyCriIlcI3A/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">12: Dr. Andrew Kaufman Talks Virology and Germ Theory</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=C2vv4FjSh6o" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=C2vv4FjSh6o" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/C2vv4FjSh6o/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">11: Emergency MH370 Broadcast</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=U6d0Err8tjU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=U6d0Err8tjU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/U6d0Err8tjU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">10: FractalWoman Joins the Show!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=jzEPBduFa90" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=jzEPBduFa90" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/jzEPBduFa90/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9: Freedom Activist Allen Forrest Joins the Show (Audio Fixed at 8:28)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=kOQwcVlvelo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=kOQwcVlvelo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/kOQwcVlvelo/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">8: Halloween Special Edition</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=MSpwdr86RVk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=MSpwdr86RVk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/MSpwdr86RVk/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">7: 9/11 Avengers Emergency Hangout (Audio works at 5:26)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=qvxOBwx-gtI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=qvxOBwx-gtI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/qvxOBwx-gtI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">6: ☢️ WW3 Emergency Broadcast ☢️ (Audio Works at 3:13)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=twX_2xNB7QI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=twX_2xNB7QI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/twX_2xNB7QI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">5: LEGENDARY 9/11 Researcher Andrew Johnson Joins the Show</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=gYgp0Uqn42Q" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=gYgp0Uqn42Q" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/gYgp0Uqn42Q/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">4: Exploring Gyroscopes and Bruce DePalma's N-Machine</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=KHNWVFAzDUA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=KHNWVFAzDUA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/KHNWVFAzDUA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">3: ⚠️ Reading 9/11 Comments ☢️</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=y9nC1IKuaPk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=y9nC1IKuaPk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/y9nC1IKuaPk/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">2: 🚨 9/11 Emergency Broadcast 🚨 (Skip to 15:00)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=LIWMBPE6KAI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=LIWMBPE6KAI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LIWMBPE6KAI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">1: Face Reveal + Answering Subscriber Comments (Skip to 3:33)</span>
@@ -2089,712 +2118,712 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view list-view--compact view-hidden" id="livestreamsList">
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>141: John Hutchison &amp; &quot;Test Subject&quot; Tom Sky Join the Show! (upcoming)</h3>
       <p><a href="https://www.youtube.com/watch?v=Bzxr55VZ6OI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Bzxr55VZ6OI/maxresdefault.jpg" alt="141: John Hutchison &amp; &quot;Test Subject&quot; Tom Sky Join the Show! (upcoming)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911 mestruth">
       <h3>140: Real 9/11 Avengers Meetup</h3>
       <p><a href="https://mes.fm/livestream-140-real-911-avengers" target="_blank" rel="noopener">Notes</a> - <a href="https://peakd.com/hive-113182/@mestruth/livestream-140-real-911-avengers-89c" target="_blank" rel="noopener">Hive</a> - <a href="https://www.youtube.com/watch?v=Sde1DG0JhyA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Sde1DG0JhyA/maxresdefault.jpg" alt="140: Real 9/11 Avengers Meetup">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="beneficence">
       <h3>139: BeneficenceTV gives updates on his radiant energy research</h3>
       <p><a href="https://www.youtube.com/watch?v=3ThCGaJwVE8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/3ThCGaJwVE8/maxresdefault.jpg" alt="139: BeneficenceTV gives updates on his radiant energy research">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911 mestruth">
       <h3>138: Chris Shak examines the 9/11 Memorial Museum</h3>
       <p><a href="https://www.youtube.com/watch?v=gwjOnGmthgQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/gwjOnGmthgQ/maxresdefault.jpg" alt="138: Chris Shak examines the 9/11 Memorial Museum">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911 mestruth">
       <h3>137: 50 Shades of 9/11 Disinfo Clowns</h3>
       <p><a href="https://www.youtube.com/watch?v=g1ZNVUp6m8Y" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/g1ZNVUp6m8Y/maxresdefault.jpg" alt="137: 50 Shades of 9/11 Disinfo Clowns">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>136: Dr. Judy Wood Discusses Anomalies in Hurricanes and Tornadoes</h3>
       <p><a href="https://www.youtube.com/watch?v=bzSV49z7s-M" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/bzSV49z7s-M/maxresdefault.jpg" alt="136: Dr. Judy Wood Discusses Anomalies in Hurricanes and Tornadoes">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911 mestruth">
       <h3>135: Chris Shak on 9/11 Predictive and Post-Predictive Programming Part 2</h3>
       <p><a href="https://www.youtube.com/watch?v=6ypM75R8CiU" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/6ypM75R8CiU/maxresdefault.jpg" alt="135: Chris Shak on 9/11 Predictive and Post-Predictive Programming Part 2">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mestruth">
       <h3>134: Trump Moonchild Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=DzufFp9JbnU" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/DzufFp9JbnU/maxresdefault.jpg" alt="134: Trump Moonchild Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="beneficence">
       <h3>133: BeneficenceTV discusses his recent Breakthrough Energy Research</h3>
       <p><a href="https://www.youtube.com/watch?v=EmQ4W_Nidl8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/EmQ4W_Nidl8/maxresdefault.jpg" alt="133: BeneficenceTV discusses his recent Breakthrough Energy Research">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911 mestruth">
       <h3>132: Chris Shak discusses 9/11 Predictive and Post-Predictive Programming</h3>
       <p><a href="https://www.youtube.com/watch?v=Q8HTcSFqUsI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Q8HTcSFqUsI/maxresdefault.jpg" alt="132: Chris Shak discusses 9/11 Predictive and Post-Predictive Programming">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>131: Dr. Judy Wood Discusses Evidence vs Theory on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=RhNqdPhEYz0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/RhNqdPhEYz0/maxresdefault.jpg" alt="131: Dr. Judy Wood Discusses Evidence vs Theory on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>130: 9/11 Planes Research Discusses the &quot;Planes&quot; Technology</h3>
       <p><a href="https://www.youtube.com/watch?v=ksIm6wr68J8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ksIm6wr68J8/maxresdefault.jpg" alt="130: 9/11 Planes Research Discusses the &quot;Planes&quot; Technology">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="beneficence">
       <h3>129: BeneficenceTV Discusses Wireless Radiant Energy</h3>
       <p><a href="https://www.youtube.com/watch?v=xi4Xspdzs3s" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/xi4Xspdzs3s/maxresdefault.jpg" alt="129: BeneficenceTV Discusses Wireless Radiant Energy">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>128: Mystic Bazaar Actually Joins to Discuss the Technology used on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=JFz3Q5d2Kog" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/JFz3Q5d2Kog/maxresdefault.jpg" alt="128: Mystic Bazaar Actually Joins to Discuss the Technology used on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>127: Mystic Bazaar Discusses the Technology used on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=OTFowoua_Kg" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/OTFowoua_Kg/maxresdefault.jpg" alt="127: Mystic Bazaar Discusses the Technology used on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>126: Apollo, Artemis Moon Missions and Black Budget Technology</h3>
       <p><a href="https://www.youtube.com/watch?v=ase_TNhcNok" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ase_TNhcNok/maxresdefault.jpg" alt="126: Apollo, Artemis Moon Missions and Black Budget Technology">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>125: Identifying the UFOs on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=ofbzawNUZXQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ofbzawNUZXQ/maxresdefault.jpg" alt="125: Identifying the UFOs on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>124: Renee Good ICE Shooting Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=0DPGKgUFmws" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/0DPGKgUFmws/maxresdefault.jpg" alt="124: Renee Good ICE Shooting Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>123: Examining January 6th Insurrection Footage</h3>
       <p><a href="https://www.youtube.com/watch?v=vQId0wq9CTE" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/vQId0wq9CTE/maxresdefault.jpg" alt="123: Examining January 6th Insurrection Footage">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>122: Epstein Files Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=sDg72xxdu6s" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/sDg72xxdu6s/maxresdefault.jpg" alt="122: Epstein Files Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>121: Dr. Judy Wood Discusses 9/11 Evidence</h3>
       <p><a href="https://www.youtube.com/watch?v=gf-cAIxVhek" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/gf-cAIxVhek/maxresdefault.jpg" alt="121: Dr. Judy Wood Discusses 9/11 Evidence">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>120: John Hutchison and Kerry Cassidy on the Show!</h3>
       <p><a href="https://www.youtube.com/watch?v=Kt8XFEPC0tA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Kt8XFEPC0tA/maxresdefault.jpg" alt="120: John Hutchison and Kerry Cassidy on the Show!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>119: JFK, RFK, CK Assassinations Deep Dive with Allen Forrest</h3>
       <p><a href="https://www.youtube.com/watch?v=TtBt5Cl38c8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/TtBt5Cl38c8/maxresdefault.jpg" alt="119: JFK, RFK, CK Assassinations Deep Dive with Allen Forrest">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>118: Hutchison Effect Zero Point Harmonics</h3>
       <p><a href="https://www.youtube.com/watch?v=Elux1MyqJzo" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Elux1MyqJzo/maxresdefault.jpg" alt="118: Hutchison Effect Zero Point Harmonics">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="beneficence">
       <h3>117: BeneficenceTV Demonstrates Heating Induction and Power Reduction Experiments</h3>
       <p><a href="https://www.youtube.com/watch?v=9ppSvb0N6lc" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/9ppSvb0N6lc/maxresdefault.jpg" alt="117: BeneficenceTV Demonstrates Heating Induction and Power Reduction Experiments">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>116: OKC Bombing 1995 Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=3Q1Xl_QgsKI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/3Q1Xl_QgsKI/maxresdefault.jpg" alt="116: OKC Bombing 1995 Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>115: John Hutchison Joins the Show Again!</h3>
       <p><a href="https://www.youtube.com/watch?v=Jn38lxj3ebU" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Jn38lxj3ebU/maxresdefault.jpg" alt="115: John Hutchison Joins the Show Again!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>114: Halloween Emergency Broadcast</h3>
       <p><a href="https://www.youtube.com/watch?v=1HrScoyaH6Q" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/1HrScoyaH6Q/maxresdefault.jpg" alt="114: Halloween Emergency Broadcast">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="beneficence">
       <h3>113: BeneficenceTV Demonstrates Vortex Coil Experiments Live</h3>
       <p><a href="https://www.youtube.com/watch?v=yBfFAkZp4nI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/yBfFAkZp4nI/maxresdefault.jpg" alt="113: BeneficenceTV Demonstrates Vortex Coil Experiments Live">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>112: 9/11 Spooks Database</h3>
       <p><a href="https://www.youtube.com/watch?v=Fg8iCfZ5AzQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Fg8iCfZ5AzQ/maxresdefault.jpg" alt="112: 9/11 Spooks Database">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="beneficence">
       <h3>111: BeneficenceTV Discusses Energy Recycling (Free Energy)</h3>
       <p><a href="https://www.youtube.com/watch?v=kfBw2wfmuFo" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/kfBw2wfmuFo/maxresdefault.jpg" alt="111: BeneficenceTV Discusses Energy Recycling (Free Energy)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>110: Charlie Kirk Assassination Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=qRz7CcgXwng" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/qRz7CcgXwng/maxresdefault.jpg" alt="110: Charlie Kirk Assassination Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>109: Explaining How the Towers Went Poof for the PBD Podcast</h3>
       <p><a href="https://www.youtube.com/watch?v=EcFzFZjam-c" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/EcFzFZjam-c/maxresdefault.jpg" alt="109: Explaining How the Towers Went Poof for the PBD Podcast">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>108: Turning the Tide on 9/11 Disinformation Agents</h3>
       <p><a href="https://www.youtube.com/watch?v=1z-OrtI-rzI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/1z-OrtI-rzI/maxresdefault.jpg" alt="108: Turning the Tide on 9/11 Disinformation Agents">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>107: Where Did the Planes Go on 9/11?</h3>
       <p><a href="https://www.youtube.com/watch?v=EiQHuRoZpEw" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/EiQHuRoZpEw/maxresdefault.jpg" alt="107: Where Did the Planes Go on 9/11?">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>106: Dr. Tony Cicoria Discusses his Near Death Experience (NDE) Lightning Strike</h3>
       <p><a href="https://www.youtube.com/watch?v=gwyKv42EvPE" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/gwyKv42EvPE/maxresdefault.jpg" alt="106: Dr. Tony Cicoria Discusses his Near Death Experience (NDE) Lightning Strike">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>105: Bart Sibrel Discusses the Moon Landing</h3>
       <p><a href="https://www.youtube.com/watch?v=EUm2oD5xXNk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/EUm2oD5xXNk/maxresdefault.jpg" alt="105: Bart Sibrel Discusses the Moon Landing">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>104: Evidence for Moon Landing</h3>
       <p><a href="https://www.youtube.com/watch?v=--WPVYhR4Jw" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/--WPVYhR4Jw/maxresdefault.jpg" alt="104: Evidence for Moon Landing">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>103: Taxation Deep Dive (and Hive Easy Guide)</h3>
       <p><a href="https://www.youtube.com/watch?v=6EhUhuXnqcc" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/6EhUhuXnqcc/maxresdefault.jpg" alt="103: Taxation Deep Dive (and Hive Easy Guide)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>102: Eddie Kuberski, Carmen Miller, and John Hutchison Join the Show!</h3>
       <p><a href="https://www.youtube.com/watch?v=gBXCVIC3AGQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/gBXCVIC3AGQ/maxresdefault.jpg" alt="102: Eddie Kuberski, Carmen Miller, and John Hutchison Join the Show!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>101: How Controlled Opposition Works</h3>
       <p><a href="https://www.youtube.com/watch?v=i_HtRJ06hig" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/i_HtRJ06hig/maxresdefault.jpg" alt="101: How Controlled Opposition Works">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>100: Paul Stoichevski and John Hutchison Join the Show!</h3>
       <p><a href="https://www.youtube.com/watch?v=HKH91H2oP88" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/HKH91H2oP88/maxresdefault.jpg" alt="100: Paul Stoichevski and John Hutchison Join the Show!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>99: Dr. Charles Hoffe and Dr. Stephen Malthouse Join the Show!</h3>
       <p><a href="https://www.youtube.com/watch?v=x8HQfz6HgYw" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/x8HQfz6HgYw/maxresdefault.jpg" alt="99: Dr. Charles Hoffe and Dr. Stephen Malthouse Join the Show!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>98: Buga Sphere Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=D0OrF2PCkco" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/D0OrF2PCkco/maxresdefault.jpg" alt="98: Buga Sphere Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>97: Jeane Manning and John Hutchison Join the Show!</h3>
       <p><a href="https://www.youtube.com/watch?v=-jH3bghGBZ4" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/-jH3bghGBZ4/maxresdefault.jpg" alt="97: Jeane Manning and John Hutchison Join the Show!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>96: Who Runs the World Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=Ds_n7cE4d34" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Ds_n7cE4d34/maxresdefault.jpg" alt="96: Who Runs the World Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>95: Debunking 9/11 Myths with 9/11 Revisited and Field Interference</h3>
       <p><a href="https://www.youtube.com/watch?v=IWlAJSS3pJs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/IWlAJSS3pJs/maxresdefault.jpg" alt="95: Debunking 9/11 Myths with 9/11 Revisited and Field Interference">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>94: Trump Moon Child WW3 Birthday Special</h3>
       <p><a href="https://www.youtube.com/watch?v=dfrCkqmInN8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/dfrCkqmInN8/maxresdefault.jpg" alt="94: Trump Moon Child WW3 Birthday Special">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>93: Clown World News Recap</h3>
       <p><a href="https://www.youtube.com/watch?v=u6WmczyK1mk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/u6WmczyK1mk/maxresdefault.jpg" alt="93: Clown World News Recap">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>92: Engineer Discusses Impossible Physics of MH370 Teleportation Cartoons</h3>
       <p><a href="https://www.youtube.com/watch?v=ieFB3r79J0A" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ieFB3r79J0A/maxresdefault.jpg" alt="92: Engineer Discusses Impossible Physics of MH370 Teleportation Cartoons">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>91: Lapu-Lapu Day Festival Vancouver Car Attack Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=0XwNXzBKnh0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/0XwNXzBKnh0/maxresdefault.jpg" alt="91: Lapu-Lapu Day Festival Vancouver Car Attack Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>90: Discussing 9/11 and Translating Truth to French with Jeanne Traduction</h3>
       <p><a href="https://www.youtube.com/watch?v=8NA_3fm9XLQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/8NA_3fm9XLQ/maxresdefault.jpg" alt="90: Discussing 9/11 and Translating Truth to French with Jeanne Traduction">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>89: Biodigital Convergence with InfoCrypt</h3>
       <p><a href="https://www.youtube.com/watch?v=XxTb_4BnIj0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/XxTb_4BnIj0/maxresdefault.jpg" alt="89: Biodigital Convergence with InfoCrypt">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>88: Vancouver Freedom Rally with the BC Strong Political Party</h3>
       <p><a href="https://www.youtube.com/watch?v=SLTPLyJbQfA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/SLTPLyJbQfA/maxresdefault.jpg" alt="88: Vancouver Freedom Rally with the BC Strong Political Party">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>87: Decolonizing MCFD &amp; Preserving Family Unity Protest Rally</h3>
       <p><a href="https://www.youtube.com/watch?v=KafqXK5zqOs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/KafqXK5zqOs/maxresdefault.jpg" alt="87: Decolonizing MCFD &amp; Preserving Family Unity Protest Rally">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>86: Debunking Ashton Forbes and the MH370 Teleportation Scam</h3>
       <p><a href="https://www.youtube.com/watch?v=Cob8QGBJB2I" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Cob8QGBJB2I/maxresdefault.jpg" alt="86: Debunking Ashton Forbes and the MH370 Teleportation Scam">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>85: Exploring Psychedelics on Bicycle Day with Methyl Miner</h3>
       <p><a href="https://www.youtube.com/watch?v=4ldp6epD2Qs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/4ldp6epD2Qs/maxresdefault.jpg" alt="85: Exploring Psychedelics on Bicycle Day with Methyl Miner">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>84: Moon Landing Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=XTdf-53GwHY" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/XTdf-53GwHY/maxresdefault.jpg" alt="84: Moon Landing Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>83: John Hutchison and Paul Mueller Discuss Experimental Science</h3>
       <p><a href="https://www.youtube.com/watch?v=Ic_LJPmJLgs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Ic_LJPmJLgs/maxresdefault.jpg" alt="83: John Hutchison and Paul Mueller Discuss Experimental Science">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>82: Dr. Daniel Nagase Discusses the Theo Lim Amber Alert SWAT Team Arrest</h3>
       <p><a href="https://www.youtube.com/watch?v=E7XHUqTnPMk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/E7XHUqTnPMk/maxresdefault.jpg" alt="82: Dr. Daniel Nagase Discusses the Theo Lim Amber Alert SWAT Team Arrest">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>81: Dr. Daniel Nagase Discusses COVID Tyranny and the Theo Lim Case</h3>
       <p><a href="https://www.youtube.com/watch?v=z3jmk_DYmVo" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/z3jmk_DYmVo/maxresdefault.jpg" alt="81: Dr. Daniel Nagase Discusses COVID Tyranny and the Theo Lim Case">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>80: Exterior Lobby Columns were still Standing on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=t_Jq2u6J36o" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/t_Jq2u6J36o/maxresdefault.jpg" alt="80: Exterior Lobby Columns were still Standing on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>79: Epstein and Pizzagate Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=IeGIXELJehc" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/IeGIXELJehc/maxresdefault.jpg" alt="79: Epstein and Pizzagate Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>78: Crop Circles Emergency Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=VlhZWsmGwdU" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/VlhZWsmGwdU/maxresdefault.jpg" alt="78: Crop Circles Emergency Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>77: Dr. Judy Wood's Qui Tam 9/11 Whistleblower Case Against NIST Military Contractors</h3>
       <p><a href="https://www.youtube.com/watch?v=eLGLb8g0ImY" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/eLGLb8g0ImY/maxresdefault.jpg" alt="77: Dr. Judy Wood's Qui Tam 9/11 Whistleblower Case Against NIST Military Contractors">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>76: John Hutchison Discusses Hutchison Effect Replication</h3>
       <p><a href="https://www.youtube.com/watch?v=sCIsRzk4mIQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/sCIsRzk4mIQ/maxresdefault.jpg" alt="76: John Hutchison Discusses Hutchison Effect Replication">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>75: Mystery Objects on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=UhEDQvWYiBc" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/UhEDQvWYiBc/maxresdefault.jpg" alt="75: Mystery Objects on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>74: Revisiting Disinfo Agent Blue Bacon with 9/11 Revisited</h3>
       <p><a href="https://www.youtube.com/watch?v=WxmKxrdYWn4" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/WxmKxrdYWn4/maxresdefault.jpg" alt="74: Revisiting Disinfo Agent Blue Bacon with 9/11 Revisited">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>73: Agenda 2030 Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=sTes_bE-di0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/sTes_bE-di0/maxresdefault.jpg" alt="73: Agenda 2030 Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>72: Blockchain - The Big Picture: Architecture of World Control</h3>
       <p><a href="https://www.youtube.com/watch?v=PB-btg_tjuo" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/PB-btg_tjuo/maxresdefault.jpg" alt="72: Blockchain - The Big Picture: Architecture of World Control">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>71: Artificial Intelligence (AI) Deep Dive with Andrew Johnson and Allen Forrest</h3>
       <p><a href="https://www.youtube.com/watch?v=TVWpL6TBMPI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/TVWpL6TBMPI/maxresdefault.jpg" alt="71: Artificial Intelligence (AI) Deep Dive with Andrew Johnson and Allen Forrest">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>70: January 6 Simulated Insurrection Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=VbFIHmsWciI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/VbFIHmsWciI/maxresdefault.jpg" alt="70: January 6 Simulated Insurrection Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>69: New Year 2025 Emergency Broadcast</h3>
       <p><a href="https://www.youtube.com/watch?v=kQD_NZMRDPI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/kQD_NZMRDPI/maxresdefault.jpg" alt="69: New Year 2025 Emergency Broadcast">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>68: Debunking Blue Bacon's 9/11 Disinfo Nonsense</h3>
       <p><a href="https://www.youtube.com/watch?v=7fJBGyZLf7w" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/7fJBGyZLf7w/maxresdefault.jpg" alt="68: Debunking Blue Bacon's 9/11 Disinfo Nonsense">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>67: MH370 Teleportation Video Creator Joins the Show!</h3>
       <p><a href="https://www.youtube.com/watch?v=JTpokZzTWBA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/JTpokZzTWBA/maxresdefault.jpg" alt="67: MH370 Teleportation Video Creator Joins the Show!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>66: Never Before Seen Hutchison Effect Footage</h3>
       <p><a href="https://www.youtube.com/watch?v=PFKteWK2H5I" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/PFKteWK2H5I/maxresdefault.jpg" alt="66: Never Before Seen Hutchison Effect Footage">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>65: &quot;Debate&quot; with Blue Bacon about the Tiny WTC Rubble Pile on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=9UToRSJjyus" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/9UToRSJjyus/maxresdefault.jpg" alt="65: &quot;Debate&quot; with Blue Bacon about the Tiny WTC Rubble Pile on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>64: JFK Assassination Deep Dive with Allen Forrest</h3>
       <p><a href="https://www.youtube.com/watch?v=ABibblNSeNg" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ABibblNSeNg/maxresdefault.jpg" alt="64: JFK Assassination Deep Dive with Allen Forrest">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>63: Tour of John Hutchison's Lab</h3>
       <p><a href="https://www.youtube.com/watch?v=mP5DLMH54LM" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/mP5DLMH54LM/maxresdefault.jpg" alt="63: Tour of John Hutchison's Lab">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>62: Nancy and John Hutchison Frequency Cannabis</h3>
       <p><a href="https://www.youtube.com/watch?v=2_qOG4KDfE8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/2_qOG4KDfE8/maxresdefault.jpg" alt="62: Nancy and John Hutchison Frequency Cannabis">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>61: America's Last Election Predictive Programming</h3>
       <p><a href="https://www.youtube.com/watch?v=s4my7pSygjY" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/s4my7pSygjY/maxresdefault.jpg" alt="61: America's Last Election Predictive Programming">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>60: 9/11 Disinfo Agents, MH370 Debunking, and Richard Hall Verdict</h3>
       <p><a href="https://www.youtube.com/watch?v=RoD-XzGmVxQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/RoD-XzGmVxQ/maxresdefault.jpg" alt="60: 9/11 Disinfo Agents, MH370 Debunking, and Richard Hall Verdict">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>59: Health Hacks with Methylminer</h3>
       <p><a href="https://www.youtube.com/watch?v=q2bA0VPryjA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/q2bA0VPryjA/maxresdefault.jpg" alt="59: Health Hacks with Methylminer">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>58: Impossible Cell Phone Calls on 9/11 (and more MH370 Teleportation Hoax News)</h3>
       <p><a href="https://www.youtube.com/watch?v=GSiOvaS4-s0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/GSiOvaS4-s0/maxresdefault.jpg" alt="58: Impossible Cell Phone Calls on 9/11 (and more MH370 Teleportation Hoax News)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>57: Electrogravitics with Amaterasu Solar</h3>
       <p><a href="https://www.youtube.com/watch?v=DJb3-FqAGRc" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/DJb3-FqAGRc/maxresdefault.jpg" alt="57: Electrogravitics with Amaterasu Solar">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>56: Electromagnetic Field Interference on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=UsF1nQNarkY" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/UsF1nQNarkY/maxresdefault.jpg" alt="56: Electromagnetic Field Interference on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>55: 9/11 Planes Research Discusses the Passengers on Flights 11, 175, 77, and 93</h3>
       <p><a href="https://www.youtube.com/watch?v=JSoCmEEObnU" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/JSoCmEEObnU/maxresdefault.jpg" alt="55: 9/11 Planes Research Discusses the Passengers on Flights 11, 175, 77, and 93">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>54: UPDATE – Adam Eisenberg and Norman are 9/11 disinfo clowns (See Livestream 137)</h3>
       <p><a href="https://www.youtube.com/watch?v=D3a1z6_SScE" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/D3a1z6_SScE/maxresdefault.jpg" alt="54: UPDATE – Adam Eisenberg and Norman are 9/11 disinfo clowns (See Livestream 137)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>53: Summary of Evidence of What Did (and Didn't) Happen on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=I-7tA8zMpGY" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/I-7tA8zMpGY/maxresdefault.jpg" alt="53: Summary of Evidence of What Did (and Didn't) Happen on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>52: 9/11 War Games and Military Exercises</h3>
       <p><a href="https://www.youtube.com/watch?v=RBWMOYUqt-w" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/RBWMOYUqt-w/maxresdefault.jpg" alt="52: 9/11 War Games and Military Exercises">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>51: 9/11 Avengers Emergency Chat</h3>
       <p><a href="https://www.youtube.com/watch?v=CXUcJD38bPQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/CXUcJD38bPQ/maxresdefault.jpg" alt="51: 9/11 Avengers Emergency Chat">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>INTERVIEW: All Things 9/11 with TLBNAWKI</h3>
       <p><a href="https://www.youtube.com/watch?v=k7tXz_lLDf4" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/k7tXz_lLDf4/maxresdefault.jpg" alt="INTERVIEW: All Things 9/11 with TLBNAWKI">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>50: Boston 9/11 Truth Recap</h3>
       <p><a href="https://www.youtube.com/watch?v=yXXeQsjRHiI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/yXXeQsjRHiI/maxresdefault.jpg" alt="50: Boston 9/11 Truth Recap">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>49: Sonya Massey Shooting, Elisa Lam Case, and Classified Technology</h3>
       <p><a href="https://www.youtube.com/watch?v=JjtsAKtrA_Y" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/JjtsAKtrA_Y/maxresdefault.jpg" alt="49: Sonya Massey Shooting, Elisa Lam Case, and Classified Technology">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>48: Voice to Skull Technology and Targeted Individuals</h3>
       <p><a href="https://www.youtube.com/watch?v=3xcEnFzY4iw" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/3xcEnFzY4iw/maxresdefault.jpg" alt="48: Voice to Skull Technology and Targeted Individuals">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>47: 2025 Predictive Programming</h3>
       <p><a href="https://www.youtube.com/watch?v=Inv5vYgQ-Hs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Inv5vYgQ-Hs/maxresdefault.jpg" alt="47: 2025 Predictive Programming">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>46: Trump Shooting PsyOp with 9/11 Revisionist</h3>
       <p><a href="https://www.youtube.com/watch?v=93wsyTbIUbo" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/93wsyTbIUbo/maxresdefault.jpg" alt="46: Trump Shooting PsyOp with 9/11 Revisionist">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>45: 90 Seconds Until Doomsday</h3>
       <p><a href="https://www.youtube.com/watch?v=BzJmBKk1mhA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/BzJmBKk1mhA/maxresdefault.jpg" alt="45: 90 Seconds Until Doomsday">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>44: Methylminer Presents Evidence of a Hollow and Expanding Earth</h3>
       <p><a href="https://www.youtube.com/watch?v=XBkraQr_o_g" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/XBkraQr_o_g/maxresdefault.jpg" alt="44: Methylminer Presents Evidence of a Hollow and Expanding Earth">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>43: Investigating MH370x Origins</h3>
       <p><a href="https://www.youtube.com/watch?v=YtMNbVhRkV0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/YtMNbVhRkV0/maxresdefault.jpg" alt="43: Investigating MH370x Origins">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect</h3>
       <p><a href="https://www.youtube.com/watch?v=xLe2uhz4ANs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/xLe2uhz4ANs/maxresdefault.jpg" alt="42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>41: Trump (Fake) Assassination Predictive Programming</h3>
       <p><a href="https://www.youtube.com/watch?v=hrhpo2AWr-g" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/hrhpo2AWr-g/maxresdefault.jpg" alt="41: Trump (Fake) Assassination Predictive Programming">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>40: John Hutchison Joins the Show!</h3>
       <p><a href="https://www.youtube.com/watch?v=f5GJiAUhr9c" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/f5GJiAUhr9c/maxresdefault.jpg" alt="40: John Hutchison Joins the Show!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>39: Dr. Morgan Reynolds Discusses 9/11, Legal Case against NIST, Economics, and More</h3>
       <p><a href="https://www.youtube.com/watch?v=I3kJHcmpy4k" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/I3kJHcmpy4k/maxresdefault.jpg" alt="39: Dr. Morgan Reynolds Discusses 9/11, Legal Case against NIST, Economics, and More">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>38: Mystery Flashes on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=C3dzSKosvHE" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/C3dzSKosvHE/maxresdefault.jpg" alt="38: Mystery Flashes on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>37: The Hutchison Effect is Real (Debunking the &quot;Debunkers&quot;)</h3>
       <p><a href="https://www.youtube.com/watch?v=EOfO1VcGXCA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/EOfO1VcGXCA/maxresdefault.jpg" alt="37: The Hutchison Effect is Real (Debunking the &quot;Debunkers&quot;)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>36: UFO Media's No-Go Zone with 9/11 Revisionist</h3>
       <p><a href="https://www.youtube.com/watch?v=0XDfcd76bRg" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/0XDfcd76bRg/maxresdefault.jpg" alt="36: UFO Media's No-Go Zone with 9/11 Revisionist">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>35: Geoengineering Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=TfRr7kx3ipQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/TfRr7kx3ipQ/maxresdefault.jpg" alt="35: Geoengineering Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>34: 9/11 Truth's Protective Layers with 9/11 Revisionist</h3>
       <p><a href="https://www.youtube.com/watch?v=QzxFHzQWE1Q" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/QzxFHzQWE1Q/maxresdefault.jpg" alt="34: 9/11 Truth's Protective Layers with 9/11 Revisionist">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>33: War with Iran Predictive Programming</h3>
       <p><a href="https://www.youtube.com/watch?v=tBWFVtdRYNs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/tBWFVtdRYNs/maxresdefault.jpg" alt="33: War with Iran Predictive Programming">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>32: Predictive Programming, AI Deep Fakes, and 9/11 with TLBNAWKI</h3>
       <p><a href="https://www.youtube.com/watch?v=pPQvYWTc2Xo" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/pPQvYWTc2Xo/maxresdefault.jpg" alt="32: Predictive Programming, AI Deep Fakes, and 9/11 with TLBNAWKI">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>31: Solar Eclipse Emergency Broadcast</h3>
       <p><a href="https://www.youtube.com/watch?v=aGU6QJyryM0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/aGU6QJyryM0/maxresdefault.jpg" alt="31: Solar Eclipse Emergency Broadcast">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>30: Toasted Cars and Mystery Planes with 9/11 Revisionist</h3>
       <p><a href="https://www.youtube.com/watch?v=qWnFRti4UU0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/qWnFRti4UU0/maxresdefault.jpg" alt="30: Toasted Cars and Mystery Planes with 9/11 Revisionist">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>29: Disappearing Wings on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=89RZiow_Ga0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/89RZiow_Ga0/maxresdefault.jpg" alt="29: Disappearing Wings on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>28: Searching for Planes on 9/11</h3>
       <p><a href="https://www.youtube.com/watch?v=6TOMyJj8T-Q" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/6TOMyJj8T-Q/maxresdefault.jpg" alt="28: Searching for Planes on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>27: 9/11 Revisionist Sets the Record Straight on Building 7</h3>
       <p><a href="https://www.youtube.com/watch?v=LMTliyTpP38" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/LMTliyTpP38/maxresdefault.jpg" alt="27: 9/11 Revisionist Sets the Record Straight on Building 7">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>26: Project Blue Beam Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=PZlmKRvZJJg" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/PZlmKRvZJJg/maxresdefault.jpg" alt="26: Project Blue Beam Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>25: 9/11 Planes Research Joins the Show</h3>
       <p><a href="https://www.youtube.com/watch?v=sx1PEDrAtZE" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/sx1PEDrAtZE/maxresdefault.jpg" alt="25: 9/11 Planes Research Joins the Show">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>24: Clown World Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=KxZSpjAOMJw" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/KxZSpjAOMJw/maxresdefault.jpg" alt="24: Clown World Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>23: Refutation of Explosive Demolition by 9/11 Revisionist</h3>
       <p><a href="https://www.youtube.com/watch?v=EbWDk3E3UIA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/EbWDk3E3UIA/maxresdefault.jpg" alt="23: Refutation of Explosive Demolition by 9/11 Revisionist">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>22: Exotic Vacuum Objects (EVOs) Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=S75hzrFra1A" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/S75hzrFra1A/maxresdefault.jpg" alt="22: Exotic Vacuum Objects (EVOs) Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>21: Matthew Naus - The Making of a Truth Activist 50 Years and Counting</h3>
       <p><a href="https://www.youtube.com/watch?v=wK4QLT3MqM0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/wK4QLT3MqM0/maxresdefault.jpg" alt="21: Matthew Naus - The Making of a Truth Activist 50 Years and Counting">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>20: Hutchison Effect Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=FHU3nq8oL04" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/FHU3nq8oL04/maxresdefault.jpg" alt="20: Hutchison Effect Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>19: Flat Earth PsyOp, Giza Pyramid Geometry, 1109 Music Album, Trump, WW3 Incoming</h3>
       <p><a href="https://www.youtube.com/watch?v=_WswUSEoyVs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/_WswUSEoyVs/maxresdefault.jpg" alt="19: Flat Earth PsyOp, Giza Pyramid Geometry, 1109 Music Album, Trump, WW3 Incoming">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>18: January 6 Emergency Broadcast</h3>
       <p><a href="https://www.youtube.com/watch?v=Rhoo74vpLGg" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Rhoo74vpLGg/maxresdefault.jpg" alt="18: January 6 Emergency Broadcast">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>17: New Year Emergency Broadcast</h3>
       <p><a href="https://www.youtube.com/watch?v=K-ghjtaG104" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/K-ghjtaG104/maxresdefault.jpg" alt="17: New Year Emergency Broadcast">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>16: Debunking Flat Earth</h3>
       <p><a href="https://www.youtube.com/watch?v=x9tU8bXrvDk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/x9tU8bXrvDk/maxresdefault.jpg" alt="16: Debunking Flat Earth">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>15: Ramifications of Free Energy Disclosure</h3>
       <p><a href="https://www.youtube.com/watch?v=0JdOpCkhCJU" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/0JdOpCkhCJU/maxresdefault.jpg" alt="15: Ramifications of Free Energy Disclosure">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>14: Discussing Wilhelm Reich, Orgone Energy, Chi Gong with Allen Forrest</h3>
       <p><a href="https://www.youtube.com/watch?v=fc0jkD7SmIg" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/fc0jkD7SmIg/maxresdefault.jpg" alt="14: Discussing Wilhelm Reich, Orgone Energy, Chi Gong with Allen Forrest">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>13: MH370 Occult Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=-5caOw4rUx8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/-5caOw4rUx8/maxresdefault.jpg" alt="13: MH370 Occult Deep Dive">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>12: Dr. Andrew Kaufman Talks Virology and Germ Theory</h3>
       <p><a href="https://www.youtube.com/watch?v=lyCriIlcI3A" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/lyCriIlcI3A/maxresdefault.jpg" alt="12: Dr. Andrew Kaufman Talks Virology and Germ Theory">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>11: Emergency MH370 Broadcast</h3>
       <p><a href="https://www.youtube.com/watch?v=C2vv4FjSh6o" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/C2vv4FjSh6o/maxresdefault.jpg" alt="11: Emergency MH370 Broadcast">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>10: FractalWoman Joins the Show!</h3>
       <p><a href="https://www.youtube.com/watch?v=U6d0Err8tjU" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/U6d0Err8tjU/maxresdefault.jpg" alt="10: FractalWoman Joins the Show!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>9: Freedom Activist Allen Forrest Joins the Show (Audio Fixed at 8:28)</h3>
       <p><a href="https://www.youtube.com/watch?v=jzEPBduFa90" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/jzEPBduFa90/maxresdefault.jpg" alt="9: Freedom Activist Allen Forrest Joins the Show (Audio Fixed at 8:28)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>8: Halloween Special Edition</h3>
       <p><a href="https://www.youtube.com/watch?v=kOQwcVlvelo" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/kOQwcVlvelo/maxresdefault.jpg" alt="8: Halloween Special Edition">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>7: 9/11 Avengers Emergency Hangout (Audio works at 5:26)</h3>
       <p><a href="https://www.youtube.com/watch?v=MSpwdr86RVk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/MSpwdr86RVk/maxresdefault.jpg" alt="7: 9/11 Avengers Emergency Hangout (Audio works at 5:26)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>6: ☢️ WW3 Emergency Broadcast ☢️ (Audio Works at 3:13)</h3>
       <p><a href="https://www.youtube.com/watch?v=qvxOBwx-gtI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/qvxOBwx-gtI/maxresdefault.jpg" alt="6: ☢️ WW3 Emergency Broadcast ☢️ (Audio Works at 3:13)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>5: LEGENDARY 9/11 Researcher Andrew Johnson Joins the Show</h3>
       <p><a href="https://www.youtube.com/watch?v=twX_2xNB7QI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/twX_2xNB7QI/maxresdefault.jpg" alt="5: LEGENDARY 9/11 Researcher Andrew Johnson Joins the Show">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>4: Exploring Gyroscopes and Bruce DePalma's N-Machine</h3>
       <p><a href="https://www.youtube.com/watch?v=gYgp0Uqn42Q" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/gYgp0Uqn42Q/maxresdefault.jpg" alt="4: Exploring Gyroscopes and Bruce DePalma's N-Machine">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>3: ⚠️ Reading 9/11 Comments ☢️</h3>
       <p><a href="https://www.youtube.com/watch?v=KHNWVFAzDUA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/KHNWVFAzDUA/maxresdefault.jpg" alt="3: ⚠️ Reading 9/11 Comments ☢️">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911">
       <h3>2: 🚨 9/11 Emergency Broadcast 🚨 (Skip to 15:00)</h3>
       <p><a href="https://www.youtube.com/watch?v=y9nC1IKuaPk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/y9nC1IKuaPk/maxresdefault.jpg" alt="2: 🚨 9/11 Emergency Broadcast 🚨 (Skip to 15:00)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="">
       <h3>1: Face Reveal + Answering Subscriber Comments (Skip to 3:33)</h3>
       <p><a href="https://www.youtube.com/watch?v=LIWMBPE6KAI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/LIWMBPE6KAI/maxresdefault.jpg" alt="1: Face Reveal + Answering Subscriber Comments (Skip to 3:33)">
@@ -2808,322 +2837,322 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </div>
     </div>
 <div class="card-grid view-hidden" id="livestreamsTrailers">
-    <a class="link-card" href="https://mes.fm/livestream-140-trailer-dust-plumes-911">
+    <a class="link-card" data-cats="911 mestruth" href="https://mes.fm/livestream-140-trailer-dust-plumes-911">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789150788329-0a3a782670335f45.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">140: Massive Dust Plumes on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/livestream-140-trailer-911-real-avengers">
+    <a class="link-card" data-cats="911 mestruth" href="https://mes.fm/livestream-140-trailer-911-real-avengers">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789191820268-4c739a0e69e89fb1.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">140: 9/11 – The Real Avengers by Chris Shak</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=KDuz-0bSba4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=KDuz-0bSba4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/KDuz-0bSba4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">138: Final Destination – 9/11 Memorial Museum</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=nChW7VGGb9U" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=nChW7VGGb9U" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/nChW7VGGb9U/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">138: Final Destination – 9/11 Museum 360 Tour</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=7ZzSGG0wwso" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=7ZzSGG0wwso" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/7ZzSGG0wwso/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">137: Send in the 9/11 Disinfo Clowns</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=6t0XM1R42DQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=6t0XM1R42DQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6t0XM1R42DQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">136: Dr. Judy Wood discusses field effects during hurricanes</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=B4U-m61_-jE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=B4U-m61_-jE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/B4U-m61_-jE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">135: 9/11 Predictive Programming in Movies</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=3ELZsKMcgks" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mestruth" href="https://www.youtube.com/watch?v=3ELZsKMcgks" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/3ELZsKMcgks/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">134: Trump forgot a comma – &quot;No, More Wars!&quot;</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=9eBWxyFFU_M" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=9eBWxyFFU_M" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/9eBWxyFFU_M/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">132: DEW in 1976 Pink Panther Movie vs 9/11 Memorial Lights</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=ruo3zAibwhU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=ruo3zAibwhU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ruo3zAibwhU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">131: Dr. Judy Wood's &quot;Theory&quot; is to Look at the Evidence</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=PiJhwXKbRNU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=PiJhwXKbRNU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/PiJhwXKbRNU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">130: Impossible Crash Physics on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=zTrLmG2VRbY" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="beneficence" href="https://www.youtube.com/watch?v=zTrLmG2VRbY" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/zTrLmG2VRbY/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">129: Wireless Radiant Energy with Only 9 Volts | BeneficenceTV</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=a5KPPCKQY-g" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=a5KPPCKQY-g" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/a5KPPCKQY-g/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">127: Lamp Post at Ground Level on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=4vnvM6kkgUM" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=4vnvM6kkgUM" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/4vnvM6kkgUM/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">126: Highlights from Apollo 16 Moon Landing (Day 6 Moon Walk 1)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=BA2OcVNNGno" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=BA2OcVNNGno" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/BA2OcVNNGno/mqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">125: UA 175 &quot;Plane&quot; Footage</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=fCUk_LElaMs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=fCUk_LElaMs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/fCUk_LElaMs/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">118: Visual of Hutchison Effect on the Hydrogen Line</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=lsctbaYFk9U" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="beneficence" href="https://www.youtube.com/watch?v=lsctbaYFk9U" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/lsctbaYFk9U/mqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">113: Music of the Spheres | BeneficenceTV</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=xvx-ZCkB9es" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=xvx-ZCkB9es" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/xvx-ZCkB9es/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">112: AI 9/11 Spooks</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=LrNCIOOT8Do" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=LrNCIOOT8Do" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LrNCIOOT8Do/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">111: AI Joe Rogan and AI Elon Musk discussing Ben Factor</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=6jRbE6BT3K8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=6jRbE6BT3K8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6jRbE6BT3K8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">109: Patrick Bet David asks ChatGPT about DEW</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=LAJ2vzyZjnM" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=LAJ2vzyZjnM" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LAJ2vzyZjnM/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">108: 9/11 Avengers Reveal the True Story of 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=xJT-L39qOEU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911 mestruth" href="https://www.youtube.com/watch?v=xJT-L39qOEU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/xJT-L39qOEU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">108: Disinfo Agents Triggered by Dr. Judy Wood</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=X0uvKKxzon8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=X0uvKKxzon8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/X0uvKKxzon8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">107: Info Proving Planes Airborne on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=xEd535aEMu4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=xEd535aEMu4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/xEd535aEMu4/mqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">104: Apollo 16 Astronaut flicks a bag in low gravity</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=mZYpBHLmIj8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mestruth" href="https://www.youtube.com/watch?v=mZYpBHLmIj8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mZYpBHLmIj8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">103: Simpsons - The Finger Thing Means the Taxes</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=LWLgZopXcz4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=LWLgZopXcz4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LWLgZopXcz4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">101: MES vs Wayne Coste and Richard Gage</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=j3ci2ALYCNU" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=j3ci2ALYCNU" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/j3ci2ALYCNU/mqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">99: Dr. Charles Hoffe and Dr. Stephen Malthouse at the BC Strong Rally</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=OiUX2_ivhp4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=OiUX2_ivhp4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/OiUX2_ivhp4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">98: Buga Sphere and Steven Greer</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=O-KoQ3_Drag" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=O-KoQ3_Drag" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/O-KoQ3_Drag/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">97: Hutchison Effect 1988 to 1989 Compilation</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=f4RucRjtKbg" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mestruth" href="https://www.youtube.com/watch?v=f4RucRjtKbg" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/f4RucRjtKbg/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">96: Bill Cooper on Silent Weapons for Quiet War</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=mGAWOTwDhIk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=mGAWOTwDhIk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mGAWOTwDhIk/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">95: 9/11 Buildings Turned to Dust</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=0H9KNQzfDXE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=0H9KNQzfDXE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0H9KNQzfDXE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">92: Ashton Forbes on MH370 Cartoons require a PhD in Butt Physics</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=w_d8vtxvTQM" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=w_d8vtxvTQM" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/w_d8vtxvTQM/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Jeanne Traduction Trailer</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=nqd-gAPBtMw" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=nqd-gAPBtMw" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/nqd-gAPBtMw/mqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Biodigital Convergence Trailer</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=dId0ynOEHOo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=dId0ynOEHOo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/dId0ynOEHOo/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">MCFD Protest Trailer</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=v6NAh7Pr5-4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=v6NAh7Pr5-4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/v6NAh7Pr5-4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">86: Ashton Forbes Debunks MH370 Debunkers</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=mFR2qwtaEOE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=mFR2qwtaEOE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mFR2qwtaEOE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Moon Landing Trailer</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=0xyH_TMubqI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hutchison" href="https://www.youtube.com/watch?v=0xyH_TMubqI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0xyH_TMubqI/mqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Inventor3 Trailer</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=RUTjaDEWE2I" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=RUTjaDEWE2I" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/RUTjaDEWE2I/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Trailer Dr. Daniel Nagase Theo Lim Amber Alert</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=44AX8WdyyCI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=44AX8WdyyCI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/44AX8WdyyCI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Trailer for MES Livestream BLANK: MH370 Teleportation Video Fakery</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=g8XbA5Yp-Vc" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=g8XbA5Yp-Vc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/g8XbA5Yp-Vc/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Trailer They Live 2025</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=jYeLDx7QDxE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="911" href="https://www.youtube.com/watch?v=jYeLDx7QDxE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/jYeLDx7QDxE/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">68: Blue Bacon confuses Building 3 for the Twin Towers and a Hockey Puck</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/livestream-66-trailer">
+    <a class="link-card" data-cats="hutchison" href="https://mes.fm/livestream-66-trailer">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788025782654-abd7668a2f2b9cb7.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">66: Rare Hutchison Effect Footage</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=rUV2rhPhjcg" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=rUV2rhPhjcg" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/rUV2rhPhjcg/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">UPCOMING LIVESTREAM Nov. 18, 2024 ... 6:30 PM Pacific Time</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=wu1WcibGW5s" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mestruth" href="https://www.youtube.com/watch?v=wu1WcibGW5s" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/wu1WcibGW5s/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">61: THIS election is the most important election of our lifetimes!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=lRxpPXnrLgo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=lRxpPXnrLgo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/lRxpPXnrLgo/mqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">55: Husband of UA93 flight attendant Debbie Welsh doubts &quot;heroic&quot; story</span>
@@ -3274,6 +3303,69 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('livestreams', ["Stats","Trailers"]);
+
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. The Stats tab has nothing to filter, so
+  // the filter bar hides there. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return (t ? t.textContent : el.textContent).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    var h = (location.hash || '').slice(1);
+    if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    apply();
+  }
+  wireFilter('livestreams');
 </script>
 
 <script>

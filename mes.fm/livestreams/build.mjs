@@ -61,6 +61,18 @@ const MIRRORS = {
 // Stats-screen pages (the Stats tab), newest first.
 const STATS = [{ href: "https://mes.fm/livestream-140-stats", title: "140: Stats" }];
 
+// Filter chips above the tabs (same idea as the chips on mes.fm/calculators). A video can be in
+// several (a 9/11 stream on the MES Truth channel is in both); "All" is implicit. The first three
+// are title matches; "MES Truth" is a channel filter (videos uploaded to youtube.com/@mestruth --
+// the rest of the playlist is on the Math Easy Solutions channel). To add a chip, add an entry here.
+const CATEGORIES = [
+  { id: "hutchison", label: "Hutchison Effect", test: (v) => /hutchison/i.test(v.title) },
+  { id: "911", label: "9/11 Truth", test: (v) => /9\/11|\bWTC\b|towers|judy wood/i.test(v.title) },
+  { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title) },
+  { id: "mestruth", label: "MES Truth", test: (v) => v.channel === "@mestruth" },
+];
+const catsOf = (v) => CATEGORIES.filter((c) => c.test(v)).map((c) => c.id).join(" ");
+
 const YT = (id) => `https://www.youtube.com/watch?v=${id}`;
 
 // "livestream" (main tab), "trailer" (Trailers tab) or "skip". The playlist also holds a few short
@@ -84,9 +96,10 @@ function shortTitle(v) {
 function toItem(v) {
   const title = shortTitle(v);
   const mirror = MIRRORS[v.id];
-  if (mirror && mirror.scrape) return { href: mirror.href, title };
+  const cats = catsOf(v);
+  if (mirror && mirror.scrape) return { href: mirror.href, title, cats };
   const links = [...(mirror ? [["Notes", mirror.href], ...(mirror.extra || [])] : []), ["YouTube", YT(v.id)]];
-  return { title, image: v.thumb, links };
+  return { title, image: v.thumb, links, cats };
 }
 
 const livestreamItems = playlist.filter((v) => classify(v) === "livestream").map(toItem);
@@ -98,6 +111,7 @@ const SECTIONS = [
     id: "livestreams",
     title: "MES Livestreams",
     compactList: true,
+    filter: CATEGORIES,
     extraViews: [
       { id: "stats", label: "Stats", items: STATS },
       { id: "trailers", label: "Trailers", kind: "grid", items: trailerItems },
@@ -390,7 +404,8 @@ function buildCard(item, meta) {
   const href = itemHref(item);
   const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(href);
   const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
-  return `<a class="link-card" href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
+  const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
+  return `<a class="link-card"${catsAttr} href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
       <span class="link-card-thumb"${thumbStyle}></span>
       <span class="link-card-body">
         <span class="link-card-title">${escapeHtml(item.title)}</span>
@@ -406,7 +421,8 @@ function buildRow(item, meta, linksBuilder) {
     .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
     .join(" - ");
   const imgHtml = image ? `<img class="list-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}">` : "";
-  return `<div class="list-row">
+  const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
+  return `<div class="list-row"${catsAttr}>
       <h3>${escapeHtml(item.title)}</h3>
       <p>${linksHtml}</p>
       ${imgHtml}
@@ -431,6 +447,20 @@ function capitalize(str) {
 // <h2> heading is dropped (the page's own <h1> already names it). A section
 // flagged `single` (one video/article only) skips the Grid/List toggle
 // entirely and renders just the List View row as a featured item.
+// Search box + category chips above the view tabs. Counts here are for the default (Grid/List)
+// view; the client script recomputes them for whichever view is showing (Trailers has its own).
+function buildFilter(section) {
+  const count = (id) => section.items.filter((i) => i.id === undefined && (id === "all" || (i.cats || "").split(" ").includes(id))).length;
+  const chips = [{ id: "all", label: "All" }, ...section.filter]
+    .map((c) => `<button type="button" data-c="${c.id}" data-label="${escapeHtml(c.label)}" aria-pressed="${c.id === "all"}">${escapeHtml(c.label)} (${count(c.id)})</button>`)
+    .join("");
+  return `<div class="ls-filter" id="${section.id}Filter">
+      <input type="search" id="${section.id}Search" placeholder="Search livestreams&hellip;" aria-label="Search livestreams" autocomplete="off">
+      <div class="ls-chips" id="${section.id}Chips">${chips}</div>
+    </div>
+    <p class="ls-empty" id="${section.id}Empty" hidden>No livestreams match. Try fewer words or a different filter.</p>`;
+}
+
 function buildSection(section, meta) {
   const standaloneItems = section.items.filter((item) => item.standalone);
   const cardItems = section.items.filter((item) => !item.standalone);
@@ -474,6 +504,7 @@ function buildSection(section, meta) {
   return `<div class="list-container">
   <div id="${section.id}" class="section-body">
   ${standaloneHtml}
+    ${section.filter ? buildFilter(section) : ""}
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
@@ -911,6 +942,24 @@ sub {vertical-align:sub;}
   display: none;
 }
 
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
 /* Full-viewport image lightbox for List View thumbnails -- click to
    zoom, prev/next via on-screen arrows or keyboard, same pattern used
    across the repo (e.g. mes.fm/vector-functions-problems-plus). */
@@ -1255,6 +1304,12 @@ body.dark-mode .view-toggle-btn {
   background-color: #3a3a3a;
   color: #ffffff;
 }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 
 body.dark-mode .view-toggle-btn.active {
   background-color: #4a90d9;
@@ -1735,6 +1790,69 @@ ${sectionsHtml}
   }
 
 ${viewToggleWiring}
+
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. The Stats tab has nothing to filter, so
+  // the filter bar hides there. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return (t ? t.textContent : el.textContent).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    var h = (location.hash || '').slice(1);
+    if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    apply();
+  }
+  wireFilter('livestreams');
 </script>
 
 <script>

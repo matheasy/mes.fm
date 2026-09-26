@@ -370,6 +370,10 @@ run that, then `npm run build` in `mes.fm/livestreams` and diff. `classify()` in
 (livestream 140 and its two trailers, livestream 66's trailer); those mirrors' "Part of" boxes link back to `/livestreams`. The
 unnumbered "INTERVIEW: All Things 9/11 with TLBNAWKI" is on the main tab by id. Stats-page thumbnails/links are scraped from the live page,
 so a *new* stats page must be seeded by hand in `livestreams/link-meta.json` (image + Hive/Telegram `namedLinks`) until it is deployed.
+Above the tabs is a search box + category chips with counts (like `/calculators`): `CATEGORIES` in build.mjs (Hutchison Effect, 9/11 Truth and
+BeneficenceTV are title regexes; "MES Truth" is a *channel* filter on `playlist.json`'s `channel` = `@mestruth`, i.e. videos uploaded to
+youtube.com/@mestruth, the rest being on Math Easy Solutions). Items carry `data-cats`; the inline `wireFilter()` filters Grid, List and
+Trailers together, recounts the chips for the showing tab, hides itself on Stats, honours `#<category>` and Esc. To add a chip add one entry.
 Titles are shortened to "N: rest" like math-qa. No per-stream mirror pages are generated (unlike `build_math_qa_mirrors.py`).
 
 `mes.fm/cubic-formula/build.mjs` (cloned from `vector-functions-problems-plus/build.mjs`, so it carries the same
