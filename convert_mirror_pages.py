@@ -89,6 +89,13 @@ def scripts(body):
 STANDARD = ("const themeToggle", "theater-mode:", "image-lightbox:", "lightbox-zoom:", "text-size-control:")
 
 
+# The hubs' own `li { margin-bottom: 10px }` and the mirror shell's 1.6 body line-height made the blue nav bar ~53px tall
+# (mes.fm/math's is ~35px): reset both for the bar so it matches.
+NAV_BAR_FIX = ("    /* blue nav bar: same height as mes.fm/math (hub li margin + 1.6 body line-height made it ~53px) */\n"
+               "    .info-bar-container li { margin-bottom: 0; }\n"
+               "    .info-bar { line-height: 16px; }\n")
+
+
 CHROME_SEL = re.compile(r"\.top-bar|\.site-brand|\.header-|\.hamburger|#navbar|\.navbar|\.info-bar|#info-bar|\.social|\.part-of|\.footer|#footer|#copyright|compact-nav|is-stuck|is-visible|\.dropdown")
 
 
@@ -211,7 +218,8 @@ def hub_swap(old, template):
     tcss = re.search(r"<style>(.*?)</style>", tpl, re.S).group(1)
     chrome = [txt for sel, txt in css_items(tcss) if CHROME_SEL.search(sel) or (sel.startswith("@media") and CHROME_SEL.search(txt))]
     css = (style.group(1).rstrip() + "\n\n    /* site chrome (branded header, nav bar, floating bar, footer) */\n    " + "\n    ".join(chrome)
-           + "\n    /* the hub pages predate the sans-serif mirror shell; match it */\n    body { font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }\n")
+           + "\n    /* the hub pages predate the sans-serif mirror shell; match it */\n    body { font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }\n"
+           + NAV_BAR_FIX)
     new = old[: style.start()] + "<style>" + css + "</style>" + old[style.end():]
     if "/" + (slug or "") in BRANDS:  # topic hub with its own artwork: favicon + social preview image
         big = "https://mes.fm/img/%s-logo-big.jpg" % slug
