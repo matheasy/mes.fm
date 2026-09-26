@@ -8,7 +8,7 @@
   <meta name="description" content="MES Crypto - Blockchain and cryptocurrency links, notes, and mirrored posts from MES, including Hive, blockchain tutorials, portfolio tracking, and more.">
   <meta name="keywords" content="MES, Crypto, Blockchain, Cryptocurrency, Math Easy Solutions">
   <meta name="author" content="Mathiew Estepho">
-  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <link rel="icon" href="https://mes.fm/img/crypto-logo.jpg?v=1.0" type="image/jpeg" />
   <title>MES Crypto</title>
   <style>
     h1 {
@@ -29,10 +29,6 @@
       transform: translateY(-50%);
     }
 
-    .list-header {
-      cursor: pointer;
-    }
-
     .arrow-icon {
       font-size: 20px;
       display: inline-block;
@@ -40,9 +36,52 @@
       transition: transform 0.3s ease;
     }
 
-    .hidden {
+    /* .card-grid (display:grid, defined further down) has the same specificity
+       as a bare .hidden and wins on source order, so the Posts grid never
+       actually collapsed. Two classes beat it. */
+    .hidden,
+    .collapsible.hidden {
       display: none;
     }
+
+    /* Section headers, as on mes.fm/hutchison and mes.fm/911: centred, click to
+       fold; the arrow shows the state (see toggleSubList() below). */
+    .chapter-toggle-header {
+      cursor: pointer;
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.2em 0 0.6em;
+    }
+
+    .chapter-toggle-header .arrow-icon {
+      font-size: 0.6em;
+    }
+
+    /* Collapse/Expand All button, same look and place as mes.fm/hutchison's
+       .chapters-toolbar: right-aligned above the first section. */
+    .chapters-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin: 0 0 0.4em;
+    }
+
+    .toggle-all-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .toggle-all-btn { background-color: #dddddd; color: #000000; }
+    body.dark .toggle-all-btn { background-color: #444444; color: #ffffff; }
+
+    /* Text-size control (--ts, set by the header A-/A+ buttons; same steps and
+       'articleFontScale' key as mes.fm/math and the other hubs): scales the card
+       text and the link list, leaves headings and buttons alone. */
+    .content li { font-size: calc(1rem * var(--ts, 1)); }
 
     .top-bar {
       max-width: 900px;
@@ -92,8 +131,97 @@
       margin-bottom: 1.5em;
     }
 
-    .sub-heading {
-      font-size: 1.1em;
+    /* Wide band for the Posts card grid -- reads bigger than the
+       900px flat-link-list column below, same treatment as mes.fm/911 and
+       mes.fm/hutchison. */
+    .wide {
+      max-width: 1180px;
+      margin: 1.5em auto;
+    }
+
+    .collapsible-section {
+      margin-bottom: 1.5em;
+    }
+
+    /* Topic-homepage card grid — see buildCardGrid() in build.mjs. Kept in
+       sync with the identical block in mes.fm/911/build.mjs and
+       mes.fm/hutchison/build.mjs. */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 0.6em 0 0.4em;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Override the global body.light/body.dark anchor colour (higher
+       specificity than .link-card) so the card title/excerpt read as body
+       text, not link blue. The "Read more"/"Watch" span opts back into the
+       link colour below. */
+    body.light .link-card { background-color: #fafafa; color: #000000; }
+    body.dark .link-card { background-color: #232323; color: #ffffff; }
+
+    .link-card-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #333333;
+      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .link-card-body {
+      padding: 0.6rem 0.8rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .link-card-title {
+      font-size: calc(0.95rem * var(--ts, 1));
+      font-weight: 700;
+      line-height: 1.3;
+      color: inherit;
+    }
+
+    .link-card-excerpt {
+      font-size: calc(0.8rem * var(--ts, 1));
+      opacity: 0.7;
+      line-height: 1.4;
+      flex: 1;
+      color: inherit;
+    }
+
+    .link-card-readmore {
+      font-size: calc(0.8rem * var(--ts, 1));
+      font-weight: 600;
+    }
+
+    body.light .link-card-readmore { color: #1a6fb0; }
+    body.dark .link-card-readmore { color: #6cb6f5; }
+
+    @media (max-width: 900px) {
+      .card-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 560px) {
+      .card-grid { grid-template-columns: 1fr; }
     }
 
     @media screen and (max-width: 600px) {
@@ -304,6 +432,11 @@
       .header-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
       body.is-stuck .header-controls { bottom: auto; }
     }
+    @media (max-width: 480px) {
+      .top-bar { padding-bottom: 44px; }
+      .header-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
+      body.is-stuck .header-controls { bottom: auto; }
+    }
     /* the hub pages predate the sans-serif mirror shell; match it */
     body { font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }
 </style>
@@ -440,14 +573,17 @@
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
+  <meta property="og:image" content="https://mes.fm/img/crypto-logo-big.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://mes.fm/img/crypto-logo-big.jpg">
 </head>
 <body>
 
   
 
   <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
-  <a class="compact-nav-title" href="/" tabindex="-1">MES.fm</a>
+  <a href="/crypto" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/crypto-logo.jpg"></a>
+  <a class="compact-nav-title" href="/crypto" tabindex="-1">MES Crypto</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
@@ -462,10 +598,12 @@
   <div class="container">
     <div class="top-bar">
       <div class="site-brand">
-        <a class="site-brand-logo-link" href="/"><img class="site-brand-logo" src="/img/logo-mark.png" width="88" height="88" alt="MES.fm logo"></a>
-        <div class="site-brand-text"><a class="site-brand-title" href="/">MES.fm</a><p class="site-brand-tag">Videos, tutorials, calculators and research by Math Easy Solutions.</p></div>
+        <a class="site-brand-logo-link" href="/crypto"><img class="site-brand-logo" src="/img/crypto-logo.jpg" width="88" height="88" alt="MES Crypto logo"></a>
+        <div class="site-brand-text"><a class="site-brand-title" href="/crypto">MES Crypto</a><p class="site-brand-tag">Blockchain and crypto: news, tutorials, Hive, tools and posts.</p></div>
       </div>
       <div class="header-controls">
+        <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button id="textSizeUp" class="header-icon-btn" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
         <button id="themeToggle" class="header-icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
       <button id="navbar-button" class="hamburger-btn" type="button" aria-label="Site navigation" aria-haspopup="true"></button>
@@ -528,52 +666,131 @@
     </div>
     <div class="part-of">Part of <a href="https://mes.fm/links">MES Links</a></div>
     <header class="page-header">
-      <h1 class="list-header" onclick="toggleAllLists()">MES Crypto <span id="arrowIconAll" class="arrow-icon">&#9660;</span></h1>
+      <h1>MES Crypto</h1>
     </header>
+  </div>
+
+  <div class="wide">
+    <div class="chapters-toolbar">
+      <button id="toggleAllBtn" class="toggle-all-btn" type="button" onclick="toggleAllLists()">Collapse All</button>
+    </div>
+<div class="collapsible-section">
+<h2 class="chapter-toggle-header" onclick="toggleSubList('posts')">Posts <span id="arrowIcon-posts" class="arrow-icon">&#9660;</span></h2>
+<div id="posts" class="card-grid collapsible">
+<a class="link-card" href="https://mes.fm/cadd-stablecoin-solana">
+  <span class="link-card-thumb" style="background-image:url('https://mes.fm/cadd-stablecoin-solana/img/cadd-stablecoin-solana.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Canada's First Stablecoin $CADD Is Live on Solana</span>
+    <span class="link-card-excerpt">Canada's first ever stablecoin is live on Solana as $CADD. Read the announcement</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/3speak-ad-revenue-sharing">
+  <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmYC1gpEkjBkby4mqB1xU2SP5Cnv1bvohTQtKzD1kGPjWk/telegram-cloud-photo-size-1-4999448963589021590-y.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">3Speak Now Pays Users a 10% Share of Ad Revenue for Watching</span>
+    <span class="link-card-excerpt">3Speak now pays users that watch videos a 10% share of the ad revenue, plus a bonus 10% from MES videos.</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/stock-market-vs-oil">
+  <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmdvuyozcMSZ2zM1rVXEqXz7Q2YosiM3Gq5Dog4FQGsdSc/telegram-cloud-photo-size-1-4999448963589020306-y.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">The Top 10 S&amp;P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks</span>
+    <span class="link-card-excerpt">The top 10 S&amp;P 500 stocks make up 41% of the total US stock market, bigger than the dot-com bubble. Meanwhile oil prices are still at record lows…</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/alex-jones-xrp-bitcoin">
+  <span class="link-card-thumb" style="background-image:url('https://mes.fm/alex-jones-xrp-bitcoin/img/crypto-news-1-10Sz8k.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">Crypto News: Alex Jones on Your $XRP and a $320M $BTC Hack</span>
+    <span class="link-card-excerpt">Crypto news checkup: Alex Jones warns the government will seize your $XRP, and $320 million in $BTC is drained by self-styled &quot;white hat&quot; hackers.</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+<a class="link-card" href="https://mes.fm/hyperliquid-flagged-address">
+  <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmNyMvvspTTTFaNxWzjgJDxJ6ZC3fPpsQ3ggDnjGjgToS1/telegram-cloud-photo-size-1-4936468297599880198-y.jpg')"></span>
+  <span class="link-card-body">
+    <span class="link-card-title">The Hyperliquid Crypto Exchange Flagged My Wallet Address</span>
+    <span class="link-card-excerpt">The Hyperliquid crypto exchange flagged MES's wallet address over a 3-month-old $9 donation linked to the Iran exchange Ompfinex, following Trump's…</span>
+    <span class="link-card-readmore">Read more &rarr;</span>
+  </span>
+</a>
+</div>
+</div>
   </div>
 
   <div class="content">
     <ul>
-      <li class="list-container">
-        <h2 class="sub-heading" onclick="toggleSubList('posts')">Posts <span id="arrowIcon-posts" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
-        <ul id="posts">
-          <li style="margin-left: 20px;"><a href="https://mes.fm/cadd-stablecoin-solana">Canada's First Stablecoin $CADD Is Live on Solana</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/3speak-ad-revenue-sharing">3Speak Now Pays Users a 10% Share of Ad Revenue for Watching</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/stock-market-vs-oil">The Top 10 S&amp;P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/alex-jones-xrp-bitcoin">Crypto News: Alex Jones on Your $XRP and a $320M $BTC Hack</a></li>
-          <li style="margin-left: 20px;"><a href="https://mes.fm/hyperliquid-flagged-address">The Hyperliquid Crypto Exchange Flagged My Wallet Address</a></li>
-        </ul>
-      </li>
-
       <li><a href="https://peakd.com/hive-181335/@mes/tdvxnmej">Hive Overview and How to Sign Up</a></li>
       <li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Fgp_lR0a0rscxWYrHARtkN">Blockchain Tutorials</a></li>
       <li style="margin-left: 20px;">The Big Picture: <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own">Part 1</a> - <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization">Part 2</a></li>
       <li style="margin-left: 20px;"><a href="https://mes.fm/blockchain-playlist">mes.fm/blockchain</a></li>
       <li><a href="https://mes.fm/impermanent-loss-calculator">Impermanent Loss Calculator</a></li>
       <li style="margin-left: 20px;"><a href="https://1drv.ms/x/s!As32ynv0LoaIisMDKnAmCMwfUFzs6w">Excel spreadsheet</a></li>
-      <li><a href="https://mes.fm/portfolio">Crypto Portfolio & Gains Tracker</a></li>
-      <li class="list-header" onclick="toggleSubList('hive')">Hive Dapps <span id="arrowIcon-hive" class="arrow-icon" style="font-size: 75%;">&#9660;</span></li>
-      <ul id="hive">
-        <li style="margin-left: 20px;"><a href="https://whosaidwhat.snapie.io/">WhoSaidWhat</a></li>
-        <li style="margin-left: 20px;"><a href="https://mywalletshistory.vercel.app/">Hive Wallet History (Tax helper tool)</a></li>
-      </ul>
+      <li><a href="https://mes.fm/portfolio">Crypto Portfolio &amp; Gains Tracker</a></li>
+      <li>Hive Dapps</li>
+      <li style="margin-left: 20px;"><a href="https://whosaidwhat.snapie.io/">WhoSaidWhat</a></li>
+      <li style="margin-left: 20px;"><a href="https://mywalletshistory.vercel.app/">Hive Wallet History (Tax helper tool)</a></li>
     </ul>
   </div>
 
   <script>
-    function toggleAllLists() {
-      const lists = document.querySelectorAll('.list-container ul');
-      const arrowIconAll = document.getElementById('arrowIconAll');
-      lists.forEach(list => list.classList.toggle('hidden'));
-      arrowIconAll.textContent = lists.length && lists[0].classList.contains('hidden') ? '▲' : '▼';
+    function setSectionState(list, collapsed) {
+      list.classList.toggle('hidden', collapsed);
+      const arrow = document.getElementById('arrowIcon-' + list.id);
+      if (arrow) arrow.innerHTML = collapsed ? '&#9654;' : '&#9660;';
     }
 
     function toggleSubList(listId) {
       const list = document.getElementById(listId);
-      const arrowIcon = document.getElementById(`arrowIcon-${listId}`);
-      list.classList.toggle('hidden');
-      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+      setSectionState(list, !list.classList.contains('hidden'));
+      syncToggleAll();
     }
+
+    // "Collapse All" folds every section; once they are all folded it reads
+    // "Expand All" (and the label also follows manual toggles, see syncToggleAll).
+    function toggleAllLists() {
+      const lists = document.querySelectorAll('.collapsible');
+      const collapse = Array.from(lists).some(list => !list.classList.contains('hidden'));
+      lists.forEach(list => setSectionState(list, collapse));
+      syncToggleAll();
+    }
+
+    function syncToggleAll() {
+      const lists = document.querySelectorAll('.collapsible');
+      const btn = document.getElementById('toggleAllBtn');
+      if (!btn) return;
+      const allHidden = lists.length > 0 && Array.from(lists).every(list => list.classList.contains('hidden'));
+      btn.textContent = allHidden ? 'Expand All' : 'Collapse All';
+    }
+  </script>
+
+  <script>
+    // text-size control: same STEPS / 'articleFontScale' key as mes.fm/math and
+    // the other hubs. Drives the --ts CSS variable used by the card text and
+    // link list above. The A-/A+ buttons live in the header (convert_mirror_pages.py
+    // keeps them for pages that carry this script).
+    (function () {
+      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var body = document.body;
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!body || !downBtn || !upBtn) return;
+      var index;
+      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
+      if (index === -1) index = STEPS.indexOf(100);
+      function apply() {
+        body.style.setProperty('--ts', String(STEPS[index] / 100));
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
+      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
+      apply();
+    })();
   </script>
 
   <script>
@@ -611,7 +828,7 @@
 
   <div style="clear: both;"></div>
 
-  
+
   <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
   <div class="mes-comments-wrap">
     <div id="comments-button" class="mes-comments-toggle">Comments</div>

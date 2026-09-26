@@ -195,9 +195,9 @@ of HTML files individually:
   `cubic-formula/child-template.html` with `@@BRAND_*@@` tokens). Three modes, picked per page: *standard* (rebuild from the
   template, lifting h1 / subtitle / `<article>` / video scripts and any page-specific CSS rules out of the old page),
   *chrome swap* (chaptered / multi-article pages: keep the body, swap only top bar, footer and scripts) and *hub swap*
-  (conspiracy / mathiew / crypto link hubs; also sets the conspiracy favicon + og:image). `moon` gets its own brand (`PAGE_BRANDS`: moon logo, "Part of MES Tools · MES Science", favicon + og image from
+  (conspiracy / mathiew / crypto link hubs; also sets the favicon + og:image for hubs with a `BRANDS` entry -- conspiracy, crypto). `moon` gets its own brand (`PAGE_BRANDS`: moon logo, "Part of MES Tools · MES Science", favicon + og image from
   `moon/img/`); never touches `bg`; `links`, `911djw` and `chatgpt` don't match and are left as they were. **Generators:** `911-alchemy`, `djw`,
-  `ferrocell-specular-reflection`, `hutchison-tom-sky`, `norman-patricia-ai-email`, `conspiracy` and `mathiew` still emit the
+  `ferrocell-specular-reflection`, `hutchison-tom-sky`, `norman-patricia-ai-email`, `conspiracy`, `crypto` and `mathiew` still emit the
   bare shell from `build.mjs`, so each `build.mjs` now ends by running `convert_mirror_pages.py --apply --only=<slug>` —
   a rebuild re-applies the shell instead of reverting it (new mirrors cloned from those templates: same one-liner).
   Idempotent (converted pages have an `#info-bar`); **dry-runs by default, `-v` lists pages, `--apply` writes.**
@@ -205,7 +205,10 @@ of HTML files individually:
   does, and also has Collapse All / per-section fold buttons (a bare `.hidden` lost to `.card-grid`'s `display:grid`, so folds never worked
   until it became `.collapsible.hidden`) and re-runs `fix_mobile_header_controls.py` after converting, since that patch only lives in the output.
   `mes.fm/img/conspiracy-{icon,logo,logo-big}.jpg` (tile 900x600, favicon/brand 512 square, og 1200x630) come from one
-  source image; the conspiracy tile sits last in the homepage `icon-grid`.
+  source image; the conspiracy tile sits last in the homepage `icon-grid`. `mes.fm/crypto` (2026-09-25) is the same kind of
+  hub (own `build.mjs`, Posts card grid, `BRANDS['/crypto']`, `img/crypto-{icon,logo,logo-big}.jpg`; its tile sits between Science
+  and Hutchison Effect, and its five post mirrors carry the Crypto brand + "Part of MES Crypto"). The three images were
+  generated as placeholders (orange bitcoin disc) until the Grok art is dropped in over the same filenames.
 
 - `build_tool_apps.py` — builds the four stand-alone calculators (`earth-curvature-calculator`, `gematria`,
   `impermanent-loss-calculator`, `unit-conversion`; cards on `calculators.html`) as tools-hub pages from
@@ -295,7 +298,7 @@ reported; if there is a large gap, stage only your own paths rather than `git ad
 
 ### `build.mjs` pages: never rebuild without diffing first
 
-Several pages (currently `911`, `911-alchemy`, `conspiracy`, `cubic-formula`, `djw`, `ferrocell-specular-reflection`,
+Several pages (currently `911`, `911-alchemy`, `conspiracy`, `crypto`, `cubic-formula`, `djw`, `ferrocell-specular-reflection`,
 `hutchison`, `hutchison-tom-sky`, `math`, `mathiew`, `norman-patricia-ai-email`, `science`, `vector-functions-problems-plus`, all
 under `mes.fm/`) have their own `build.mjs` (`npm run build`, usually fetching a Hive post) that regenerates
 `index.html` from scratch. The repo-wide scripts above (`add_lightbox_zoom.py`, `add_image_lightbox.py`, and several

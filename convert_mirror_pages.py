@@ -34,6 +34,7 @@ BRANDS = {
     "/911": dict(logo="/img/911-truth-logo.jpg", title="MES 9/11 Truth", tag="Videos, livestreams and research on 9/11.", href="/911", label="MES 9/11 Truth"),
     "/hutchison": dict(logo="/img/hutchison-logo.jpg", title="MES Hutchison Effect", tag="Antigravity, materials transmutation, and John Hutchison's demonstrations.", href="/hutchison", label="MES Hutchison Effect"),
     "/science": dict(logo="/img/science-logo.png", title="MES Science", tag="Links, videos and posts on science topics.", href="/science", label="MES Science"),
+    "/crypto": dict(logo="/img/crypto-logo.jpg", title="MES Crypto", tag="Blockchain and crypto: news, tutorials, Hive, tools and posts.", href="/crypto", label="MES Crypto"),
     "/conspiracy": dict(logo="/img/conspiracy-logo.jpg", title="MES Conspiracy", tag="Alt-news checkups, videos and posts on conspiracies.", href="/conspiracy", label="MES Conspiracy"),
 }
 # pages that get their own brand / "Part of" box instead of the one implied by their back link
