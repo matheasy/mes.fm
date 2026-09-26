@@ -83,6 +83,13 @@ def clean(html: str, page_name: str) -> str:
     html = re.sub(r"<base\b[^>]*>", "", html)
     html = re.sub(r'<link rel="canonical"[^>]*>', "", html)
 
+    # the web's "More like this" side column (add_sidebar.py): ad slot + links to
+    # web-only pages, none of which belongs in the app
+    html = re.sub(r"<!-- MES-ASIDE -->.*?<!-- /MES-ASIDE -->\s*", "", html, flags=re.S)
+    html = re.sub(r"<!-- MES-ASIDE-HEAD -->.*?<!-- /MES-ASIDE-HEAD -->", "", html, flags=re.S)
+    html = re.sub(r"<!-- MES-ASIDE-JS -->.*?<!-- /MES-ASIDE-JS -->", "", html, flags=re.S)
+    html = html.replace(" has-aside", "")
+
     # the removed HTTrack block carried the only charset declaration; the app
     # WebView has no HTTP charset header, so without this it decodes UTF-8 as
     # latin-1 and mangles curly quotes / dashes in the page copy

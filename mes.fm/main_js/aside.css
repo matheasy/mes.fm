@@ -1,0 +1,62 @@
+/* "More like this" side column for individual calculator / article / meme / fact pages (see add_sidebar.py).
+
+   >= 1200px : the page becomes two columns -- content (the same 46em as before) + a 300px aside holding a
+               300x250 ad slot and a short list of related pages. The aside is sticky under the floating bar.
+               `html.aside-left` (the reader's A/B "move sidebar" button, remembered in localStorage) swaps sides.
+   <  1200px : no ad, no columns -- the related-pages list simply sits under the content (2 columns from 600px). */
+
+.mes-aside { margin: 1.5em 0 1em; font-family: Helvetica, Arial, sans-serif; }
+.mes-aside__sticky { display: block; }
+
+.mes-aside__head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 .6em; }
+.mes-aside__title-h { margin: 0; font-size: 1.05em; font-weight: 700; color: #222; }
+.mes-aside__flip { display: none; width: 2em; height: 2em; padding: 0; border: 1px solid #b9c2cc; border-radius: 50%; background: #fff; color: #1479c7; font-size: .9em; line-height: 1; cursor: pointer; }
+.mes-aside__flip:hover { background: #1479c7; color: #fff; }
+
+.mes-aside__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: .5em; }
+.mes-aside__card { display: flex; align-items: center; gap: .75em; padding: .5em; border: 1px solid #d7dee5; border-radius: .5em; background: #fff; color: #222; text-decoration: none; }
+.mes-aside__card:hover, .mes-aside__card:focus-visible { border-color: #1479c7; box-shadow: 0 0 0 .15em rgba(20, 121, 199, .2); }
+.mes-aside__img { flex: 0 0 56px; width: 56px; height: 56px; object-fit: cover; border-radius: .35em; background: #ededed; }
+.mes-aside__img--logo { object-fit: contain; background: transparent; }
+.mes-aside__text { min-width: 0; display: block; }
+.mes-aside__name { display: block; font-size: .92em; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
+.mes-aside__tag { display: block; margin-top: .2em; font-size: .75em; letter-spacing: .04em; text-transform: uppercase; color: #667; }
+
+/* the ad slot: hidden until a real data-ad-slot is set (add_sidebar.py --ad-slot), and never on narrow screens */
+.mes-aside__ad { display: none; }
+.mes-aside__ad:not([data-ad-slot=""]) { display: block; width: 300px; height: 250px; margin: 0 auto 1em; overflow: hidden; }
+html.aside-debug .mes-aside__ad { box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: 300px; height: 250px; margin: 0 auto 1em; border: 2px dashed #9aa7b4; color: #667; font-size: .9em; text-align: center; }
+html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (placeholder)"; }
+
+@media (min-width: 600px) and (max-width: 1199px) {
+  .mes-aside__list { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 1199px) {
+  .mes-aside__ad, .mes-aside__ad:not([data-ad-slot=""]), html.aside-debug .mes-aside__ad { display: none; }
+}
+
+@media (min-width: 1200px) {
+  .outer-container.has-aside { max-width: calc(50em + 332px) !important; }
+  /* the template's overflow:hidden (a float clearfix) would make .inner-container the sticky container, so nothing could stick */
+  .outer-container.has-aside .inner-container { overflow: clip; }
+  .has-aside .outer-page-content { display: grid !important; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 32px; align-items: start; }
+  .has-aside .page-content { grid-column: 1; grid-row: 1; }
+  .has-aside .mes-aside { grid-column: 2; grid-row: 1; margin: 1.2em 0 1em; align-self: stretch; } /* full-height track so the sticky child has room to travel */
+  .has-aside .mes-aside__sticky { position: sticky; top: 64px; }
+  .has-aside .mes-aside__flip { display: block; }
+  html.aside-left .has-aside .outer-page-content { grid-template-columns: 300px minmax(0, 1fr); }
+  html.aside-left .has-aside .page-content { grid-column: 2; }
+  html.aside-left .has-aside .mes-aside { grid-column: 1; }
+}
+
+/* dark theme (display-controls.js puts .dark-mode on <body>) */
+body.dark-mode .mes-aside__title-h { color: #eee; }
+body.dark-mode .mes-aside__card { background: #2a2a2a; border-color: #444; color: #eee; }
+body.dark-mode .mes-aside__card:hover, body.dark-mode .mes-aside__card:focus-visible { border-color: #6cb6f5; box-shadow: 0 0 0 .15em rgba(108, 182, 245, .25); }
+body.dark-mode .mes-aside__img { background: #3a3a3a; }
+body.dark-mode .mes-aside__img--logo { background: transparent; }
+body.dark-mode .mes-aside__tag { color: #aab; }
+body.dark-mode .mes-aside__flip { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
+body.dark-mode .mes-aside__flip:hover { background: #6cb6f5; color: #111; }
+body.dark-mode .mes-aside__name { color: #eee; }

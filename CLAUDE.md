@@ -254,6 +254,23 @@ of HTML files individually:
   `articleFontScale`/`theme` localStorage keys with `mes.fm/math` (whose build.mjs has its own inline copy — keep the two
   visually in step). Idempotent; **dry-runs by default, `--apply` writes.**
 
+- `add_sidebar.py` — the "More like this" side column (pilot 2026-09-25: the `percentagecalculator` family only — calculator,
+  tutorial/how-to, 95 memes, 33 facts = 131 pages; not the gallery/hub pages). At >=1200px `.outer-page-content` becomes a
+  grid: the usual 46em content column + a 300px sticky `<aside id="mes-aside">` (300x250 ad slot + 4 related-page cards + 1
+  random card from `main_js/aside-random.json`), with a button to move it to the other side (`html.aside-left`, localStorage
+  `asideSide`). Below 1200px there is no ad and no columns — the cards just sit under the content. Assets: `main_js/aside.css`,
+  `main_js/aside.js`. Per page, marker-delimited: `MES-ASIDE-HEAD` (css link + saved-side script), `has-aside` on
+  `#outer-container`, `MES-ASIDE` (the aside, inserted before the `</div>` that closes `.outer-page-content`), `MES-ASIDE-JS`.
+  Cards are static links (crawlable internal links), picked by rotating through the family list so inbound links spread evenly.
+  **Ad slot is a placeholder until you pass `--ad-slot <id>`** (a 300x250 AdSense display unit); re-runs without the flag keep each
+  page's slot, and with no slot the box is hidden and no ad is requested (`?aside-debug` shows where it will sit). `.inner-container`
+  gets `overflow: clip` at >=1200px because its template `overflow:hidden` would otherwise stop `position: sticky` working. To
+  roll out to another family add it to `FAMILIES` (needs the same `<!-- side bar -->` + `outer-page-content` markup). Keep the
+  ad off `youtubemoney`, contact/privacy/donate and the graphic 9/11 mirrors. `percentagecalculator-app/build-www.py` strips the
+  aside from the app build. `--remove` strips it again. Idempotent; **dry-runs by default (`-v` lists pages), `--apply` writes.**
+  Same session: the percentage calculator's equation rows became wrapping flex lines (`.eq-text` sentence + Answer box) so the
+  Answer no longer overlaps the inputs at larger A+ sizes.
+
 Run any of them with `python3 <script>.py` from anywhere (they resolve the repo root themselves). They print a
 per-file report; read the output rather than assuming success — `fix_broken_internal_links.py` additionally needs
 `--apply` to write anything, and reading its dry run first is the point.
