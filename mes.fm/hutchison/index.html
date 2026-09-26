@@ -1,733 +1,111 @@
+
 <!DOCTYPE html>
 <html lang="en">
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
+  <link rel="icon" href="https://mes.fm/img/hutchison-logo.jpg?v=1.0" type="image/jpeg" />
+  <link rel="canonical" href="https://mes.fm/hutchison" />
+  <title>Hutchison Effect | Math Easy Solutions</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Hutchison Effect Playlist — an index of every MES Hutchison Effect video and article, with thumbnails and links, mirrored from the Hive blockchain.">
-  <meta name="author" content="MES">
-  <link rel="canonical" href="https://mes.fm/hutchison" />
-  <!-- OG-TAGS:START -->
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="MES Truth">
-  <meta property="og:url" content="https://mes.fm/hutchison">
-  <meta property="og:title" content="Hutchison Effect Playlist">
-  <meta property="og:description" content="Hutchison Effect Playlist — an index of every MES Hutchison Effect video and article, with thumbnails and links, mirrored from the Hive blockchain.">
-  <meta property="og:image" content="https://mes.fm/img/hutchison-logo-big.jpg">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@MathEasySolns">
-  <meta name="twitter:title" content="Hutchison Effect Playlist">
-  <meta name="twitter:description" content="Hutchison Effect Playlist — an index of every MES Hutchison Effect video and article, with thumbnails and links, mirrored from the Hive blockchain.">
-  <meta name="twitter:image" content="https://mes.fm/img/hutchison-logo-big.jpg">
-  <!-- OG-TAGS:END -->
-  <link rel="icon" href="https://mes.fm/img/hutchison-logo.jpg?v=1.0" type="image/jpeg" />
-  <title>Hutchison Effect Playlist | Math Easy Solutions</title>
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      line-height: 1.6;
-      margin: 0;
-      padding: 0 20px 60px;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    body.light { background-color: #ffffff; color: #222222; }
-    body.light a { color: #1a6fb0; }
-    body.dark { background-color: #1a1a1a; color: #eeeeee; }
-    body.dark a { color: #6cb6f5; }
-
-    .container {
-      max-width: 760px;
-      margin: 0 auto;
-    }
-
-    /* Wider band for the homepage header + the card grids. The article prose
-       below stays in .container at a readable measure. */
-    .wide {
-      max-width: 1180px;
-      margin: 0 auto;
-    }
-
-    .page-lede {
-      max-width: 760px;
-      margin: 0.2em 0 1em;
-      font-size: 1.05em;
-      opacity: 0.8;
-    }
-
-    /* The "Posts and Updates" / "Videos" collapsible headers sit in the .wide
-       band, outside .post-body, so restate the centered section-header look. */
-    .wide .chapter-toggle-header {
-      text-align: center;
-      font-size: 1.5em;
-      margin: 1.2em 0 0.6em;
-    }
-
-    /* Topic-homepage card grid — see buildCardGrid() in build.mjs. Kept in sync
-       with the identical block in mes.fm/911/build.mjs. */
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin: 0.6em 0 0.4em;
-    }
-
-    .link-card {
-      display: flex;
-      flex-direction: column;
-      border: 1px solid rgba(128, 128, 128, 0.35);
-      border-radius: 8px;
-      overflow: hidden;
-      text-decoration: none;
-      color: inherit;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .link-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-    }
-
-    /* Override the global body.light/body.dark anchor colour (higher specificity
-       than .link-card) so the card title/excerpt read as body text, not link
-       blue. The "Read more" span opts back into the link colour below. */
-    body.light .link-card { background-color: #fafafa; color: #222222; }
-    body.dark .link-card { background-color: #232323; color: #eeeeee; }
-
-    .link-card-thumb {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background-color: #333333;
-      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
-      background-size: cover;
-      background-position: center;
-    }
-
-    .link-card-body {
-      padding: 0.6rem 0.8rem 0.8rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      flex: 1;
-    }
-
-    .link-card-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      line-height: 1.3;
-      color: inherit;
-    }
-
-    .link-card-excerpt {
-      font-size: 0.8rem;
-      opacity: 0.7;
-      line-height: 1.4;
-      flex: 1;
-      color: inherit;
-    }
-
-    .link-card-readmore {
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    body.light .link-card-readmore { color: #1a6fb0; }
-    body.dark .link-card-readmore { color: #6cb6f5; }
-
-    @media (max-width: 900px) {
-      .card-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (max-width: 560px) {
-      .card-grid { grid-template-columns: 1fr; }
-    }
-
-    /* Thumbnail View / Grid View toggle for long Hive-sourced chapters that list
-       one entry per video (title + link row + image) -- see enableGridToggle()
-       below. Grid View is the default, built at runtime into the same
-       .card-grid used for the card-grid sections above, using each entry's
-       first link + first image. Thumbnail View is the chapter's own
-       markdown-rendered markup, left untouched, available via the toggle. */
-
-    /* These chapters live in the narrow 760px .container, but Grid View should
-       read as big as the card-grid sections in the 1180px .wide band above.
-       updateBreakout() (below) sizes/positions this wrapper at runtime to
-       exactly match the current .wide element's rect (no static width here --
-       it's set inline in JS), breaking the grid out of the article column
-       without touching the column's own width. */
-
-    /* A chapter's leading reference line (e.g. "Free Energy playlist") that sat
-       before its first entry heading -- pulled out of both views so it's
-       always visible, right above the toggle buttons. */
-    .grid-toggle-lead {
-      margin: 0 0 0.8em;
-      font-size: 0.9em;
-    }
-
-    .view-toggle {
-      display: flex;
-      gap: 0.5em;
-      margin: 0 0 1em;
-    }
-
-    .view-toggle-btn {
-      padding: 5px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85em;
-    }
-
-    body.light .view-toggle-btn { background-color: #dddddd; color: #000000; }
-    body.dark .view-toggle-btn { background-color: #444444; color: #ffffff; }
-    body.light .view-toggle-btn.active { background-color: #1a6fb0; color: #ffffff; }
-    body.dark .view-toggle-btn.active { background-color: #6cb6f5; color: #1a1a1a; }
-
-    .view-hidden {
-      display: none;
-    }
-
-    .top-bar {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding-top: 16px;
-    }
-
-    .theme-toggle-btn {
-      flex: 0 0 auto;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85em;
-      white-space: nowrap;
-    }
-
-    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
-    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
-
-    /* Site-wide header chrome -- same markup/behaviour as mes.fm/math,
-       mes.fm/911 and mes.fm/science, in Hutchison's own purple accent
-       (#6a3fa0 light / #b98aff dark). */
-    .site-brand { display: flex; align-items: center; gap: 1.5em; min-width: 0; }
-    .site-brand-logo-link { display: block; flex: 0 0 auto; }
-    .site-brand-logo { display: block; width: 88px; height: 88px; border-radius: 0.35em; flex: 0 0 auto; object-fit: cover; }
-    .site-brand-text { min-width: 0; }
-    .site-brand-title { display: block; font-size: 1.8em; font-weight: 400; line-height: 1.15; margin-bottom: 0.3em; text-decoration: none; }
-    .site-brand-tag { font-size: 1.2em; margin: 0; line-height: 1.3; }
-    body.light .site-brand-title { color: #222222; }
-    body.dark .site-brand-title { color: #eeeeee; }
-    body.light .site-brand-tag { color: #555555; }
-    body.dark .site-brand-tag { color: #b8b8b8; }
-    .header-controls { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; margin-left: auto; }
-    .header-icon-btn {
-      flex: 0 0 auto; width: 2.2em; height: 2.2em; padding: 0; border-radius: 50%;
-      cursor: pointer; font-family: inherit; font-size: 0.85em; font-weight: 700; line-height: 1;
-      display: flex; align-items: center; justify-content: center;
-      border: 1.5px solid rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    }
-    .header-icon-btn:disabled { opacity: 0.4; cursor: default; }
-    body.light .header-icon-btn { background-color: #3a3d52; color: #ffffff; border-color: rgba(255, 255, 255, 0.35); }
-    body.dark .header-icon-btn { background-color: #2e2e2e; color: #eeeeee; border-color: rgba(255, 255, 255, 0.25); }
-    @media (max-width: 600px) { .site-brand { gap: 0.75em; } .site-brand-logo { width: 64px; height: 64px; } .site-brand-tag { font-size: 0.95em; } .site-brand-title { font-size: 1.3em; } }
-
-    /* Shared mes.fm site navigation: hamburger + dropdown (#navbar-button /
-       #navbar, toggled by /main_js/main.js) and the primary nav bar
-       (#info-bar), same markup/behaviour as mes.fm/math and mes.fm/911.
-       Colors are set on #id selectors so the body.light/body.dark "a" color
-       rules don't win. */
-    .hamburger-btn {
-      flex: 0 0 auto; width: 44px; height: 44px; padding: 0; margin: 0 0 0 4px;
-      background: transparent; border: none; cursor: pointer; font-size: 0;
-    }
-    .hamburger-btn::before {
-      content: ""; display: block; margin: 0 auto;
-      width: 26px; height: 4px; background: currentColor; border-radius: 1px;
-      box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
-    }
-    body.light .hamburger-btn { color: #6a3fa0; }
-    body.dark .hamburger-btn { color: #b98aff; }
-    #navbar { display: none; }
-    #navbar.hide {
-      display: flex; flex-direction: column; box-sizing: border-box;
-      position: absolute; top: 100%; right: 0; z-index: 30;
-      width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
-      background-color: #6a3fa0; border-radius: 0.25em;
-      box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.3);
-      list-style: none; margin: 0; padding: 0;
-    }
-    #navbar li, #info-bar { list-style: none; margin: 0; padding: 0; }
-    #navbar .navbar__item:hover { cursor: pointer; }
-    #navbar .navbar__link { display: block; color: #ffffff; padding: 0.7em 1em 0.7em 1.4em; text-decoration: none; }
-    #navbar .navbar__link--first { padding-top: 0.8em; }
-    #navbar .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab) { background-color: #522f80; }
-    #navbar .dropdown-symbol { margin-left: 1em; color: #ffffff; }
-    #navbar .navbar__dropdown-container { background-color: #d8e9f8; margin: 0; padding: 0; }
-    #navbar .navbar__dropdown-container.hide { display: none; }
-    #navbar .navbar__dropdown-item { color: #222222; }
-    #navbar .navbar__dropdown-item:hover { text-decoration: underline; }
-    #navbar .navbar__item--social { order: 999; padding: 1em 1.6em 1em 1.4em; border-top: 1px solid rgba(255, 255, 255, 0.25); }
-    #navbar .social-container { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
-    #navbar .social__text { color: #ffffff; margin: 0; font-style: italic; }
-    #navbar .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; list-style: none; }
-    .social__link { height: 2em; width: 2em; display: block; }
-    .social__fb { background: url(/main_img/social-sprites.png) 0 0; }
-    .social__insta { background: url(/main_img/social-sprites.png) -4em 0; }
-    .social__pin { background: url(/main_img/social-sprites.png) -6em 0; }
-    .social__twitter { background: url(/main_img/social-sprites.png) -8em 0; }
-    .social__yt { background: url(/main_img/social-sprites.png) -10em 0; }
-    .social__patreon { background: url(/main_img/social-sprites.png) -12em 0; }
-    .social__hive { background: url(/main_img/social-sprites.png) -16em 0; }
-    .social__telegram { background: url(/main_img/social-sprites.png) -18em 0; }
-    #navbar .navbar__link.active-tab, #info-bar .info-bar__item__text.active-tab { background-color: #d8e9f8; color: #222222; }
-
-    .info-bar-container { margin-top: 12px; }
-    .info-bar { display: flex; flex-wrap: wrap; background-color: #6a3fa0; box-shadow: 0.2em 0.2em 0.5em rgba(0, 0, 0, 0.35); }
-    #info-bar .info-bar__item__text { display: block; text-align: center; padding: 0.7em 1em; font-size: 0.9em; color: #ffffff; text-decoration: none; }
-    #info-bar .info-bar__item__text:hover:not(.active-tab) { background-color: #522f80; }
-    @media (max-width: 600px) {
-      .info-bar { justify-content: center; }
-      #info-bar .info-bar__item__text { min-height: 44px; display: flex; align-items: center; }
-    }
-
-    /* Site footer -- same links/markup as mes.fm/math, in the Hutchison purple
-       accent. Colors use ".footer .x" (0,2,0) so the body.light/body.dark "a"
-       rules don't win. */
-    .footer { max-width: 1180px; margin: 2.5em auto 0; padding: 2em; background-color: #6a3fa0; border-radius: 0.35em; }
-    .footer__item-container { display: table; width: 100%; margin-bottom: 1.6em; }
-    .footer__item { display: table-cell; }
-    .footer__item--extra-padding { padding-left: 2.5em; }
-    .footer .footer__text { color: #ffffff; line-height: 1.5; text-decoration: none; }
-    .footer .footer__text--title { display: inline-block; margin-bottom: 1.6em; font-size: 1.3em; font-style: italic; }
-    .footer__text--extra-info { float: right; }
-    .footer .footer__text:not(.footer__text--copyright):hover { text-decoration: underline; cursor: pointer; }
-    .footer__separator, #copyright-year { color: #ffffff; }
-    @media (max-width: 600px) {
-      .footer { padding: 1.25em 0.75em; }
-      .footer__item-container { display: block; }
-      .footer__item { display: block; margin-bottom: 0.75em; }
-      .footer__item--extra-padding { padding-left: 0; }
-      .footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
-    }
-
-    /* Floating compact header bar: once the real top-bar + nav scroll out of
-       view, a slim fixed bar (small logo, title, as many nav links as fit)
-       slides in, and the header-controls + hamburger are pinned into its
-       right end. Ported from mes.fm/911's version (see its build.mjs) --
-       this page's top-bar is already a clean flex row, same as the Vector
-       Functions: Problems Plus family. Uses Hutchison's own purple accent.
-
-       Hidden by default via the inline style="display:none" on the element
-       itself (not just this stylesheet's "display: none" below) -- some
-       browser extensions strip or neutralize cosmetic-looking CSS for
-       elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-       pattern), which left an earlier version's raw unstyled markup visible
-       above the real header on mes.fm/math. The inline attribute is a
-       fallback the JS clears itself, independent of this stylesheet
-       surviving intact. */
-    #compact-nav {
-      position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-      display: none; align-items: center; gap: 12px;
-      padding: 0 172px 0 12px; box-sizing: border-box;
-      background: #ffffff; border-bottom: 3px solid #6a3fa0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-      transform: translateY(-110%); transition: transform 0.2s ease;
-    }
-    #compact-nav.is-visible { display: flex; }
-    body.is-stuck #compact-nav { transform: none; }
-    #compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; object-fit: cover; }
-    #compact-nav .compact-nav-title {
-      flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em;
-      text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    #compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-    #compact-nav .compact-nav-links li { flex: 0 0 auto; }
-    #compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; text-decoration: none; white-space: nowrap; }
-    #compact-nav .compact-nav-links a:hover { background: rgba(106,63,160,0.12); }
-    body.light #compact-nav .compact-nav-title { color: #1a1a1a; }
-    body.dark #compact-nav { background: #1a1a1a; }
-    body.dark #compact-nav .compact-nav-title { color: #eeeeee; }
-    body.light #compact-nav .compact-nav-links a { color: #6a3fa0; }
-    body.dark #compact-nav .compact-nav-links a { color: #b98aff; }
-    /* z-index:20 here (and below) beats #compact-nav's z-index:15 -- without
-       it these fixed-position controls paint (and hit-test) underneath the
-       bar once stuck, making the hamburger both invisible and unclickable. */
-    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; z-index: 20; }
-    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; z-index: 20; }
-    body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-    @media (max-width: 700px) {
-      #compact-nav .compact-nav-title { display: none; }
-      #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-    }
-    @media (max-width: 480px) {
-      #compact-nav { padding-right: 160px; gap: 8px; }
-      body.is-stuck .header-controls { right: 56px; }
-    }
-    /* MOBILE-HEADER-CONTROLS-ROW: on phones the A-/A+/moon controls sit on their own row
-       under the brand (absolute, so sticking into the floating bar doesn't reflow), which
-       leaves the title/tagline the full width instead of a ~130px sliver. */
-    /* Also: a long unbroken URL in the article text (e.g. a 70-char grok.com share link on
-       Problems Plus 5) made the whole page wider than a phone, so it scrolled sideways. */
-    article { overflow-wrap: anywhere; }
-    @media (max-width: 480px) {
-      .top-bar { padding-bottom: 44px; }
-      .header-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
-      body.is-stuck .header-controls { bottom: auto; }
-    }
-
-    h1 {
-      font-size: 2em;
-      margin: 0.4em 0 0.2em;
-    }
-
-    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
-       the lede, byline and Jump To navigation scale; headings, chapter
-       titles, cards and buttons stay fixed. rem so nested lists don't
-       compound. */
-    .post-body :is(p, li, blockquote, td, th):not(.card-grid *) { font-size: calc(1rem * var(--ts, 1)); }
-
-    .post-meta {
-      font-size: calc(0.9rem * var(--ts, 1));
-      opacity: 0.85;
-      margin-bottom: 0.6em;
-    }
-
-    .post-meta span:not(:last-child)::after {
-      content: " \00b7 ";
-    }
-
-    .peakd-link {
-      display: inline-block;
-      margin: 0.6em 0 1.4em;
-      font-size: calc(0.9rem * var(--ts, 1));
-      font-style: italic;
-    }
-
-    .post-body {
-      word-wrap: break-word;
-    }
-
-    .post-body h1 {
-      text-align: center;
-      font-size: 1.5em;
-      margin: 1.8em 0 0.8em;
-    }
-
-    .post-body h2 {
-      font-size: 1.15em;
-      margin: 1.6em 0 0.5em;
-    }
-
-    .post-body img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-      cursor: zoom-in;
-    }
-
-    .lightbox-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.96);
-      /* Max signed 32-bit z-index: AdSense's own overlay/side-rail formats are
-         known to use this same value, so anything lower can end up rendering
-         underneath them. Matching it guarantees the lightbox -- and its opaque
-         backdrop -- always wins the stacking order, hiding any ad behind it
-         (belt-and-suspenders alongside the JS ad guard, which does the actual
-         reliable hiding -- see adGuard below). */
-      z-index: 2147483647;
-      align-items: center;
-      justify-content: center;
-      /* Reserve room for the fixed bottom control bar (see .lightbox-controls)
-         so it never overlaps the image, and so the image is centered in the
-         space above it rather than the full viewport. */
-      padding-bottom: 120px;
-    }
-
-    .lightbox-overlay.open {
-      display: flex;
-    }
-
-    .lightbox-image {
-      width: 100vw;
-      max-width: 100vw;
-      max-height: calc(100vh - 120px);
-      object-fit: contain;
-      display: block;
-    }
-
-    .lightbox-controls {
-      /* Fixed to the viewport, not stacked under the image in normal flow --
-         so it stays in the exact same spot no matter the image's aspect
-         ratio/rendered height, letting you click through images rapidly
-         without re-aiming the mouse. */
-      position: fixed;
-      left: 50%;
-      bottom: 40px;
-      transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .lightbox-counter {
-      background: rgba(0, 0, 0, 0.7);
-      color: #ffffff;
-      font-size: 0.85em;
-      padding: 5px 12px;
-      border-radius: 999px;
-    }
-
-    .lightbox-close,
-    .lightbox-prev,
-    .lightbox-next {
-      position: fixed;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.7);
-      color: #ffffff;
-      border: 0;
-      cursor: pointer;
-    }
-
-    .lightbox-close:hover,
-    .lightbox-prev:hover,
-    .lightbox-next:hover {
-      background: rgba(0, 0, 0, 0.85);
-    }
-
-    .lightbox-close {
-      top: 16px;
-      right: 16px;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      font-size: 1.3em;
-      z-index: 2147483647;
-    }
-
-    .lightbox-prev,
-    .lightbox-next {
-      position: static;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      font-size: 1.4em;
-    }
-
-    @media (max-width: 600px) {
-      .lightbox-overlay { padding-bottom: 100px; }
-      .lightbox-image { max-height: calc(100vh - 100px); }
-      .lightbox-controls { bottom: 32px; }
-      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
-      .lightbox-close { width: 36px; height: 36px; }
-    }
-
-    .post-body table {
-      border-collapse: collapse;
-      max-width: 100%;
-      margin: 1.5em 0;
-    }
-
-    .post-body td,
-    .post-body th {
-      border: 1px solid;
-      border-color: inherit;
-      padding: 6px 10px;
-    }
-
-    .video-embed {
-      position: relative;
-      width: 100%;
-      padding-bottom: 56.25%;
-      margin: 1.2em 0;
-    }
-
-    .video-embed iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
-    }
-
-    .post-body blockquote {
-      border-left: 3px solid #277bb6;
-      margin: 1em 0;
-      padding: 0.2em 1em;
-      opacity: 0.9;
-    }
-
-    hr {
-      margin: 2em 0;
-      opacity: 0.3;
-    }
-
-    .build-note {
-      font-size: 0.8em;
-      opacity: 0.6;
-      text-align: center;
-    }
-
-    /* Every chapter (the hand-maintained "Posts and Updates" one plus every
-       Hive-sourced <h1> section) is a collapsible dropdown -- see
-       wrapChaptersInToggles() in build.mjs and toggleChapter() below. */
-    .chapter-toggle-header {
-      cursor: pointer;
-    }
-
-    .chapter-toggle-header .arrow-icon {
-      font-size: 0.6em;
-      display: inline-block;
-      vertical-align: middle;
-      transition: transform 0.3s ease;
-    }
-
-    .chapter-toggle-list.hidden {
-      display: none;
-    }
-
-    /* Pinned to the top of the post body, just under the <hr> that follows the
-       article meta -- a collapse/expand-all control anchored to the right edge,
-       above the first ("Important Links") chapter. */
-    .chapters-toolbar {
-      display: flex;
-      justify-content: flex-end;
-      margin: -0.8em 0 0.4em;
-    }
-
-    /* Table of contents: a fixed side column only once the viewport is wide
-       enough to clear the 1180px .wide band (the card grids), collapsing to a
-       <details> dropdown above the article on anything narrower -- laptops,
-       tablets, and phones alike. */
-    .toc-sidebar {
-      display: none;
-    }
-
-    @media (min-width: 1600px) {
-      .toc-sidebar {
-        display: block;
-        position: fixed;
-        top: 90px;
-        left: calc(50% + 610px);
-        width: 200px;
-        max-height: calc(100vh - 120px);
-        overflow-y: auto;
-        font-size: 0.85em;
-        padding-right: 10px;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
-      }
-
-      /* toc-sidebar-scrollbar */
-      .toc-sidebar::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      .toc-sidebar::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      .toc-sidebar::-webkit-scrollbar-thumb {
-        background: rgba(128, 128, 128, 0.4);
-        border-radius: 3px;
-      }
-
-      .toc-sidebar-header {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 0.6em;
-        margin: 0 0 0.7em;
-      }
-
-      .toc-sidebar .toc-title {
-        font-size: 0.75em;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        opacity: 0.6;
-        margin: 0;
-      }
-
-      .toc-collapse-all-btn {
-        font-size: 0.8em;
-        opacity: 0.65;
-        background: none;
-        border: none;
-        padding: 0;
-        margin: 0;
-        cursor: pointer;
-        text-decoration: underline;
-        color: inherit;
-        font-family: inherit;
-        white-space: nowrap;
-      }
-
-      .toc-collapse-all-btn:hover {
-        opacity: 1;
-      }
-
-      .toc-sidebar a {
-        display: block;
-        padding: 0.3em 0;
-        opacity: 0.85;
-        text-decoration: none;
-      }
-
-      .toc-sidebar a:hover {
-        opacity: 1;
-        text-decoration: underline;
-      }
-    }
-
-    .toc-mobile {
-      margin: 1.2em 0;
-      max-width: 760px;
-      font-size: calc(1rem * var(--ts, 1));
-    }
-
-    @media (min-width: 1600px) {
-      .toc-mobile {
-        display: none;
-      }
-    }
-
-    .toc-mobile summary {
-      cursor: pointer;
-      font-weight: bold;
-      padding: 0.6em 0.9em;
-      border: 1px solid rgba(128, 128, 128, 0.4);
-      border-radius: 6px;
-    }
-
-    .toc-mobile .toc-links {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4em;
-      padding: 0.8em 0.9em 0.2em;
-    }
-
-    .toc-mobile a {
-      text-decoration: none;
-      opacity: 0.9;
-    }
-
-    .toc-mobile a:hover {
-      text-decoration: underline;
-    }
-
-    @media (max-width: 600px) {
-      h1 { font-size: 1.5em; }
-      body { padding: 0 12px 40px; }
-    }
-  /* RESPONSIVE-FIX-INSERTED */
+  <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}
+.hide {display:none;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#346689;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#277bb6;}
+.social__text {display:block;margin-bottom:0.5em;}
+.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(/main_img/social-sprites.png) -18em 0;}
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:100;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#277bb6;border:0.125em solid #277bb6;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color: #eef0ff;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color: #346689;}
+
+.info-bar,.color-box,.navbar,.footer {background-color:#277bb6;}
+.dropdown-symbol--dark {color:#277bb6;}
+.button--active {background-color:#277bb6;color:white;}
+.navbar__dropdown-container {color: #222222;background-color:#eef0ff;}
+.logo {height:88px;width:88px;border-radius:0.35em;}
+.tag-line {font-size:1.2em;}
+.info-bar__logo-container {display: none;}
+/* RESPONSIVE-FIX-INSERTED */
 @media (max-width: 768px) {
   .outer-container { width: 100% !important; margin: 0 !important; }
   .outer-page-content { width: 100% !important; display: block !important; }
@@ -735,70 +113,957 @@
   .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
+  .header { position: static !important; }
+  .logo-image-container, .logo-text-container, .social-container, .social-container--bottom { display: block !important; position: static !important; width: 100% !important; text-align: center !important; margin: 0 auto 0.5em auto !important; }
+  .social-container ul.social, .social__text { display: block !important; margin: 0 auto 0.3em auto !important; }
+  .social__logo { display: inline-block !important; float: none !important; }
+  .info-bar-container { display: block !important; width: 100% !important; text-align: center !important; }
+  .info-bar__logo-container { display: none !important; }
+  .info-bar { margin-left: 0 !important; padding-left: 0 !important; display: block !important; }
+  .info-bar__item { float: none !important; display: inline-block !important; }
 }
-    /* LIGHTBOX-ZOOM-INSERTED */
-    .lightbox-zoom-controls {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      z-index: 2147483647;
-    }
 
-    .lightbox-zoom-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.7);
-      color: #ffffff;
-      border: 0;
-      cursor: pointer;
-      font-size: 1.2em;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
+/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
+   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
+   panel instead of the always-visible sidebar, at every screen width
+   (not just mobile), so no page reserves a right-hand column for it */
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
 
-    .lightbox-zoom-btn:hover {
-      background: rgba(0, 0, 0, 0.85);
-    }
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+#navbar.hide { display: flex; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
 
-    .lightbox-zoom-btn:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
+/* Math Tutorials needs more width than the site's default narrowed
+   centered column (the calculators.html-style pages cap at 50em once
+   their sidebar becomes a hamburger) -- same widening mes.fm/index.html
+   itself got (50em -> 75em) so the card grid below has room for 4-5
+   columns. */
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+@media (max-width: 600px) {
+  .footer { padding: 1.25em 0.75em; }
+  .footer__item-container { display: block; }
+  .footer__item { display: block; margin-bottom: 0.75em; }
+  .footer__item--extra-padding { padding-left: 0; }
+  .footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 
-    .lightbox-zoom-level {
-      min-width: 3.4em;
-      text-align: center;
-      background: rgba(0, 0, 0, 0.7);
-      color: #ffffff;
-      font-size: 0.8em;
-      padding: 5px 8px;
-      border-radius: 999px;
-    }
+  .inner-container { padding: 1em 0.75em; }
+  .page-content { padding-right: 0; }
 
-    #lightboxImage {
-      transition: transform 0.15s ease;
-    }
+  .info-bar__item__text { min-height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+}
 
-    #lightboxImage.zoomed {
-      cursor: grab;
-    }
+/* Page content -- wide topic-card grid with a Grid View / List View toggle
+   per section, same architecture as
+   mes.fm/vector-functions-problems-plus/build.mjs: up to 5 cards/row in
+   Grid View, up to 2 full-thumbnail rows/row in List View on wide screens. */
+.wide {
+  max-width: 75em;
+  margin: 0 auto;
+}
 
-    #lightboxImage.dragging {
-      cursor: grabbing;
-      transition: none;
-    }
+.list-container {
+  margin: 0 0 1.5em;
+}
 
-    @media (max-width: 600px) {
-      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
-    }
+/* Hub page (mes.fm/hutchison): one icon tile per section, label overlaid as real
+   text on a text-free thumbnail -- same look as mes.fm's homepage
+   .icon-grid. Fixed 3 columns (6 tiles = 3x2, no orphan row), stepping down
+   to 2 then 1 on narrow screens. */
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1em;
+  margin: 1em 0;
+}
+@media (max-width: 720px) {
+  .icon-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 420px) {
+  .icon-grid { grid-template-columns: 1fr; }
+}
+.icon-grid__link { display: block; position: relative; overflow: hidden; border-radius: 4px; }
+/* Ten tiles = three full rows of 3 plus one orphan: centre the orphan in the
+   3-column layout (generic -- applies whenever the last tile starts a row). */
+@media (min-width: 721px) {
+  .icon-grid__link:last-child:nth-child(3n + 1) { grid-column: 2; }
+}
+.icon-grid__thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  background-size: cover;
+  background-position: center;
+  background-color: #0a1024;
+  transition: transform 0.2s ease;
+}
+.icon-grid__link:hover .icon-grid__thumb { transform: scale(1.03); }
+.icon-grid__label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0.7em 0.5em;
+  background: rgba(51, 51, 51, 0.85);
+  color: #ffffff;
+  text-align: center;
+  font-size: 1.15em;
+  font-weight: bold;
+}
+
+.page-breadcrumb {
+  margin: 0 0 0.6em;
+  font-size: 0.95em;
+}
+.page-breadcrumb a {
+  color: #1a6fb0;
+}
+
+/* A section with a single item (no Grid/List toggle): one featured row,
+   thumbnail capped like List View's. */
+.list-view--single .list-row {
+  border-bottom: none;
+}
+
+/* Centered like mes.fm/hutchison's own chapter titles (.wide
+   .chapter-toggle-header{text-align:center}) -- but, matching that same
+   page, only this section-level heading is centered. The standalone
+   playlist link, view-toggle buttons, and each item's own title/links
+   inside List View stay left-aligned, same as hutchison's per-entry
+   markdown headings/link rows -- only the thumbnail image is centered
+   there (via margin:auto on .list-thumb, independent of text-align). */
+.sub-heading {
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 0 0 0.3em;
+  text-align: center;
+}
+
+.arrow-icon {
+  font-size: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform 0.3s ease;
+}
+
+.hidden {
+  display: none;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.5em;
+  margin: 0.4em 0 0.8em;
+}
+
+.view-toggle-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  background-color: #dddddd;
+  color: #000000;
+}
+
+.view-toggle-btn.active {
+  background-color: #277bb6;
+  color: #ffffff;
+}
+
+.card-grid {
+  display: grid;
+  /* Fixed 3 columns (not auto-fit/auto-fill with a minmax upper bound): every
+     section's cards are the exact same size regardless of how many items
+     that section has -- a 1-item section's card fills 1 of 3 equal columns
+     instead of stretching to fill the row. */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 0 0 0.4em;
+}
+
+@media (max-width: 900px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+.link-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  background-color: #fafafa;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.link-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.link-card-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #333333;
+  background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+  background-size: cover;
+  background-position: center;
+}
+
+.link-card-body {
+  padding: 0.6rem 0.8rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.link-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #000000;
+}
+
+.link-card-readmore {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1a6fb0;
+}
+
+/* List View -- title / links row / thumbnail per item, 1 column on narrow
+   screens, 2 side-by-side on big desktop screens (each thumbnail sized to
+   its column, not stretched full-width). */
+.list-view {
+  display: block;
+}
+
+/* MES Math Q/A Livestreams only: 2 smaller columns on big desktop screens
+   (its thumbnails are all the same generic card, so a smaller side-by-side
+   pair reads fine) -- every other section stays the single big full-width
+   row (matching mes.fm/hutchison's own List/Thumbnail view). A class (not
+   an #id) so it stays the same specificity as .view-hidden below and the
+   toggle can still hide this view -- an #id selector here would always
+   beat .view-hidden's display:none regardless of source order. */
+.list-view--compact {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 2em;
+}
+
+@media (min-width: 900px) {
+  .list-view--compact {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.section-standalone-link {
+  margin: 0 0 0.6em;
+  font-weight: 600;
+}
+
+.section-standalone-link a,
+.hub-links a {
+  color: #1a6fb0;
+}
+
+.hub-links {
+  margin: 1.8em 0 0.5em;
+}
+.hub-links h2 {
+  font-size: 1.2em;
+  margin: 0 0 0.5em;
+}
+.hub-links ul {
+  list-style: disc;
+  padding-left: 1.4em;
+}
+.hub-links li {
+  margin: 0 0 0.4em;
+  line-height: 1.4;
+}
+
+.list-row {
+  margin: 0 0 2em;
+  padding: 0 0 2em;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.list-row h3 {
+  font-size: 1.2em;
+  margin: 0 0 0.3em;
+}
+
+.list-row p {
+  margin: 0 0 0.6em;
+}
+
+.list-row a {
+  color: #1a6fb0;
+}
+
+.list-thumb {
+  display: block;
+  /* Capped like mes.fm/hutchison's own Thumbnail View images (naturally
+     sized within that page's 760px .container) -- not stretched edge to
+     edge across this page's much wider band. Centered via margin:auto since
+     a single full-width row is wider than this cap. MES Math Q/A
+     Livestreams' own 2-column layout is already narrower than the cap, so
+     this has no effect there. */
+  max-width: 760px;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 0 auto 1.4em;
+  cursor: zoom-in;
+}
+
+/* Must come after .card-grid/.list-view above: same specificity (single
+   class), so source order decides the tie -- this needs to win. */
+.view-hidden {
+  display: none;
+}
+
+/* Full-viewport image lightbox for List View thumbnails -- click to
+   zoom, prev/next via on-screen arrows or keyboard, same pattern used
+   across the repo (e.g. mes.fm/vector-functions-problems-plus). */
+.lightbox-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.96);
+  z-index: 2147483647;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 120px;
+}
+
+.lightbox-overlay.open { display: flex; }
+
+.lightbox-image {
+  width: 100vw;
+  max-width: 100vw;
+  max-height: calc(100vh - 120px);
+  object-fit: contain;
+  display: block;
+}
+
+.lightbox-controls {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lightbox-counter {
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  font-size: 0.85em;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next {
+  position: fixed;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border: 0;
+  cursor: pointer;
+}
+
+.lightbox-close:hover,
+.lightbox-prev:hover,
+.lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+.lightbox-close {
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.3em;
+  z-index: 2147483647;
+}
+
+.lightbox-prev,
+.lightbox-next {
+  position: static;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.4em;
+}
+
+@media (max-width: 600px) {
+  .lightbox-overlay { padding-bottom: 100px; }
+  .lightbox-image { max-height: calc(100vh - 100px); }
+  .lightbox-controls { bottom: 32px; }
+  .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+  .lightbox-close { width: 36px; height: 36px; }
+}
+
+/* Lightbox zoom in/out + drag-to-pan -- same add_lightbox_zoom.py pattern
+   used repo-wide (e.g. mes.fm/hutchison), reused directly here rather than
+   run against this page's build output (which npm run build would just
+   overwrite). Sits top-left, mirroring the close button's top-right spot,
+   so it never has to touch the bottom .lightbox-controls bar. */
+.lightbox-zoom-controls {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2147483647;
+}
+
+.lightbox-zoom-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border: 0;
+  cursor: pointer;
+  font-size: 1.2em;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-zoom-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.lightbox-zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.lightbox-zoom-level {
+  min-width: 3.4em;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  font-size: 0.8em;
+  padding: 5px 8px;
+  border-radius: 999px;
+}
+
+.lightbox-image {
+  transition: transform 0.15s ease;
+}
+
+.lightbox-image.zoomed {
+  cursor: grab;
+}
+
+.lightbox-image.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+@media (max-width: 600px) {
+  .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
+}
+
+/* Table of contents: a fixed side column on very wide viewports (this page's
+   own .outer-container is 75em/1200px wide, so the sidebar needs a lot more
+   clearance than the 760px-article hub pages it's modeled on -- see
+   mes.fm/vector-functions-problems-plus/build.mjs), collapsing to a
+   <details> dropdown above the sections otherwise. */
+.toc-sidebar {
+  display: none;
+}
+
+@media (min-width: 1700px) {
+  .toc-sidebar {
+    display: block;
+    position: fixed;
+    top: 90px;
+    /* rem (not em/px): tracks .outer-container's own em-based max-width at
+       any text-size step (see html.text-sm/text-lg) without compounding
+       against this element's own local 0.85em font-size below. */
+    left: calc(50% + 39.375rem);
+    width: 12.5rem;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    font-size: 0.85em;
+    padding-right: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
+  }
+
+  .toc-sidebar-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6em;
+    margin: 0 0 0.7em;
+  }
+
+  .toc-sidebar .toc-title {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    margin: 0;
+    color: #333333;
+  }
+
+  .toc-collapse-all-btn {
+    font-size: 0.75em;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+
+  .toc-sidebar a {
+    display: block;
+    padding: 0.3em 0;
+    opacity: 0.85;
+    text-decoration: none;
+    color: #277bb6;
+  }
+
+  .toc-sidebar a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+}
+
+.toc-mobile {
+  margin: 1.2em 0;
+}
+
+@media (min-width: 1700px) {
+  .toc-mobile {
+    display: none;
+  }
+}
+
+.toc-mobile summary {
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0.6em 0.9em;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 6px;
+}
+
+.toc-mobile .toc-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  padding: 0.8em 0.9em 0.2em;
+}
+
+.toc-mobile a {
+  text-decoration: none;
+  opacity: 0.9;
+  color: #277bb6;
+}
+
+.toc-mobile a:hover {
+  text-decoration: underline;
+}
+
+/* Text-size + dark/light display controls -- sit to the left of the
+   hamburger button (#navbar-button), same corner, at every screen width.
+   Styled to match the existing text-size-btn/theme-toggle-btn convention
+   from add_text_size_control.py (e.g. mes.fm/hutchison-article-balloons).
+   Unlike that convention (which scales a whole <article>), these scale
+   only .page-description and the Jump To panel -- see the header-controls
+   script -- leaving headings, card titles, and nav untouched. */
+#header-controls {
+  position: absolute;
+  top: 16px;
+  right: 68px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-control-btn {
+  flex: 0 0 auto;
+  width: 2em;
+  height: 2em;
+  padding: 0;
+  margin: 0;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9em;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background-color: #3a3d52;
+  color: #ffffff;
+}
+
+.header-control-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Dark mode -- toggled by #themeToggleBtn in #header-controls, saved in
+   localStorage. This classic mes.fm template has no dark mode of its own,
+   so these are page-scoped overrides for what math/index.html itself
+   renders (header/nav/footer are already navy-on-white and need no change). */
+body.dark-mode {
+  background-color: #1a1a1a;
+}
+
+body.dark-mode .inner-container {
+  background-color: #232323;
+  box-shadow: none;
+}
+
+body.dark-mode .calculator-title,
+body.dark-mode .page-title,
+body.dark-mode .page-description,
+body.dark-mode .sub-heading,
+body.dark-mode .arrow-icon,
+body.dark-mode .list-row h3,
+body.dark-mode .list-row p,
+body.dark-mode .hub-links h2,
+body.dark-mode .hub-links li,
+body.dark-mode .link-card-title {
+  color: #eeeeee;
+}
+
+body.dark-mode .tag-line {
+  color: #b8b8b8;
+}
+
+body.dark-mode .link-card {
+  background-color: #2a2a2a;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .link-card-readmore,
+body.dark-mode .section-standalone-link a,
+body.dark-mode .hub-links a,
+body.dark-mode .list-row a,
+body.dark-mode .page-breadcrumb a,
+body.dark-mode .toc-sidebar a,
+body.dark-mode .toc-mobile a {
+  color: #6cb6f5;
+}
+
+body.dark-mode .list-row {
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .view-toggle-btn {
+  background-color: #3a3a3a;
+  color: #ffffff;
+}
+
+body.dark-mode .view-toggle-btn.active {
+  background-color: #4a90d9;
+}
+
+body.dark-mode .button {
+  color: #6cb6f5;
+  border-color: #6cb6f5;
+}
+
+body.dark-mode .header-control-btn {
+  background-color: #2e2e2e;
+  color: #eeeeee;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+body.dark-mode .toc-mobile summary {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #eeeeee;
+}
+
+body.dark-mode .toc-sidebar .toc-title {
+  color: #cccccc;
+}
+@media (max-width: 768px) {
+  /* #header-controls (A-/A+/theme) and #navbar-button (hamburger) are both
+     absolutely positioned, normally pinned to the header's top-right
+     corner. Two earlier versions reserved dedicated vertical space above
+     or beside them for the title/tagline, which left visible dead space
+     since that reserved area was taller/wider than the controls actually
+     needed. Instead: keep everything in a single row (small logo, title/
+     tagline, controls), and re-center the controls vertically on that
+     row via top:50%/transform so they need no reserved height of their
+     own -- just a reserved width on the right (padding-right, sized to
+     the controls' own on-screen width) so the title/tagline column
+     doesn't run underneath them.
+
+     The earlier site-wide responsive-fix pass (add_responsive_css.py)
+     forces ".header { position: static !important }" at this same
+     breakpoint, which would otherwise make top:50% resolve against some
+     far larger ancestor (.inner-container, the height of the whole page)
+     instead of the header itself -- re-assert position:relative here to
+     override it. */
+  .header {
+    display: flex !important; flex-wrap: nowrap; align-items: center;
+    position: relative !important;
+    padding-right: 160px !important; box-sizing: border-box;
+  }
+  .logo-image-container { flex: 0 0 auto; width: auto !important; margin: 0 !important; }
+  .logo { height: 48px !important; width: 48px !important; }
+  .logo-text-container {
+    display: block !important;
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto !important;
+    padding-left: 0.6em;
+    text-align: left !important;
+    margin: 0 !important;
+  }
+  .calculator-title { font-size: 1.05em; }
+  .tag-line { font-size: 0.8em; }
+  #header-controls { top: 50%; transform: translateY(-50%); right: 56px; }
+  /* #navbar-button lives in .side-bar, not #header -- its containing block
+     for position:absolute is .inner-container (position:relative, height =
+     the WHOLE page), not this row. A percentage top:50% here resolved
+     against that page height and pushed it thousands of pixels offscreen
+     (this broke it in an earlier version). Leave it at its base top:16px
+     (unset here) rather than reintroduce a percentage. */
+}
+
+
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the display controls + hamburger are pinned into its
+   right end. Toggled by the compact-nav-script below.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left this bar's raw unstyled markup visible above the
+   real header. The inline attribute is a fallback the JS clears itself,
+   independent of this stylesheet surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 172px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #277bb6;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #277bb6; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(39,123,182,0.12); }
+body.dark-mode #compact-nav { background: #1a1a1a; }
+body.dark-mode #compact-nav .compact-nav-title { color: #eeeeee; }
+body.dark-mode #compact-nav .compact-nav-links a { color: #6cb6f5; }
+body.is-stuck #header-controls { position: fixed; top: 13px; right: 60px; }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 160px; gap: 8px; }
+  body.is-stuck #header-controls { right: 56px; }
+}
+/* MOBILE-HEADER-CONTROLS-ROW: (1) stuck controls drop the 768px rule's translateY(-50%),
+   which was lifting them ~14px so the top of the A-/A+/moon buttons was clipped; (2) on
+   phones the controls take their own row under the brand (absolute, so sticking into the
+   floating bar doesn't reflow) and the title/tagline get the full width. */
+body.is-stuck #header-controls { transform: none; bottom: auto; }
+@media (max-width: 480px) {
+  .header { padding-right: 56px !important; padding-bottom: 44px !important; }
+  #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
+  body.is-stuck #header-controls { top: 13px; bottom: auto; }
+}
 </style>
-  <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+
+<meta property="fb:app_id" content="120877788060946" />
+<meta name="author" content="MES">
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="MES Truth" />
+<meta property="og:url" content="https://mes.fm/hutchison" />
+<meta property="og:title" content="Hutchison Effect" />
+<meta property="og:image" content="https://mes.fm/img/hutchison-logo-big.jpg" />
+<meta property="og:description" content="MES coverage of the Hutchison Effect: John Hutchison's antigravity and materials-transmutation demonstrations. Videos, rare unedited footage, interviews, news reels, articles, updates and links." />
+<meta name="description" content="MES coverage of the Hutchison Effect: John Hutchison's antigravity and materials-transmutation demonstrations. Videos, rare unedited footage, interviews, news reels, articles, updates and links.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@MathEasySolns">
+<meta name="twitter:title" content="Hutchison Effect">
+<meta name="twitter:description" content="MES coverage of the Hutchison Effect: John Hutchison's antigravity and materials-transmutation demonstrations. Videos, rare unedited footage, interviews, news reels, articles, updates and links.">
+<meta name="twitter:image" content="https://mes.fm/img/hutchison-logo-big.jpg">
+<meta name="twitter:image:alt" content="Hutchison Effect">
+<script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class -- and 3) in-text link ads (`<a class="google-anno">`
+   wrapping a `<span class="google-anno-t">` around an ordinary word): both are
+   only guarded inside #header, #footer, the top .info-bar-container nav, or
+   the .side-bar "Site Navigation" widget -- chips are hidden outright there,
+   and in-text links are unwrapped back to plain text there, so the word
+   stays readable without the ad behavior. Elsewhere in the actual page
+   content both are left alone on purpose.
+   Google's own placeholder-collapse doesn't reliably fire once we've moved
+   the node, so we poll it: if no real ad iframe shows up within ~2s, we
+   force the reserved space to 0 ourselves, so an unfilled slot never
+   leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            handleHeaderNavZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                handleHeaderNavZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+<!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
      so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
      sodar, osd) never runs during the page-load / Lighthouse trace window. -->
@@ -821,12 +1086,11 @@
     })();
     </script>
 </head>
-<body class="dark">
-  <div id="compact-nav" aria-hidden="true" style="display:none">
+<body>
+<div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/hutchison" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/hutchison-logo.jpg"></a>
   <a class="compact-nav-title" href="/hutchison" tabindex="-1">MES Hutchison Effect</a>
   <ul class="compact-nav-links">
-    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
     <li><a href="/tools" tabindex="-1">Tools</a></li>
     <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
@@ -835,38 +1099,96 @@
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
+<div id="outer-container" class="outer-container">
+  <div class="inner-container">
+    <div id="header" class="header" role="banner">
+      <div id="header-controls" role="group" aria-label="Display settings">
+        <button type="button" id="textSizeDownBtn" class="header-control-btn" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
+        <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
+      </div>
+      <a class="logo-image-container" href='/hutchison'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Hutchison Effect logo" data-src="https://mes.fm/img/hutchison-logo.jpg"></a>
+      <div class="logo-text-container">
+        <a class="calculator-title-link" href='/hutchison'>
+          <p class="calculator-title">MES Hutchison Effect</p>
+        </a>
+        <p class="tag-line">Antigravity, materials transmutation, and John Hutchison's demonstrations.</p>
+      </div>
 
-  <nav class="toc-sidebar" aria-label="Table of contents">
-    <div class="toc-sidebar-header">
-      <div class="toc-title">Jump to</div>
-      <button type="button" class="toc-collapse-all-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
+      <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
+        <li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+        <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+        <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>
+        <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>
+        <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>
+        <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>
+        <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>
+        <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
+      </ul></div>
     </div>
-      <a href="#posts-and-updates">Posts and Updates</a>
-      <a href="#videos">Videos</a>
-      <a href="#important-links">Important Links</a>
-      <a href="#highlights">Highlights</a>
-      <a href="#articles">Articles</a>
-      <a href="#debunking-debunkers">Debunking &quot;Debunkers&quot;</a>
-      <a href="#news-reels">News Reels</a>
-      <a href="#unedited-footage">Unedited Footage</a>
-      <a href="#interviews-and-presentations">Interviews and Presentations</a>
-      <a href="#cold-fusion-low-energy-nuclear-reactions-lenr">Cold Fusion / Low Energy Nuclear Reactions (LENR)</a>
-      <a href="#mes-livestreams">MES Livestreams</a>
-  </nav>
-  <div class="wide">
-    <div class="top-bar">
-      <div class="site-brand">
-        <a class="site-brand-logo-link" href="/hutchison"><img class="site-brand-logo" src="/img/hutchison-logo.jpg" width="88" height="88" alt="MES Hutchison Effect logo"></a>
-        <div class="site-brand-text"><a class="site-brand-title" href="/hutchison">MES Hutchison Effect</a><p class="site-brand-tag">Antigravity, materials transmutation, and John Hutchison's demonstrations.</p></div>
+    <div class="info-bar-container" role="navigation" aria-label="Primary">
+      <ul id="info-bar" class="info-bar shadow">
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/hutchison'>Hutchison Effect</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/mobile-apps'>Mobile Apps</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/puzzles'>Puzzles</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a target="_self" class="info-bar__item__text" href='/memes'>Memes</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='/donate'>Donate</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+        <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
+      </ul>
+    </div>
+    <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>
+    <div class="outer-page-content">
+      <div class="page-content" role="main">
+        <div class="color-box"></div>
+        <h1 class="page-title">Hutchison Effect</h1>
+        <p class="page-description">MES coverage of the Hutchison Effect: John Hutchison's antigravity and materials-transmutation demonstrations. Videos, rare unedited footage, interviews, news reels, articles, updates and links.</p>
+        <div id="main-content">
+          <div class="wide">
+<div class="icon-grid">
+<a class="icon-grid__link icon-grid__link--labeled" href="/hutchison-posts"><span class="icon-grid__thumb" style="background-image:url('/img/hutchison-posts-icon.jpg')"></span><span class="icon-grid__label">Posts and Updates</span></a>
+<a class="icon-grid__link icon-grid__link--labeled" href="/hutchison-videos"><span class="icon-grid__thumb" style="background-image:url('/img/hutchison-videos-icon.jpg')"></span><span class="icon-grid__label">Videos</span></a>
+<a class="icon-grid__link icon-grid__link--labeled" href="/highlights"><span class="icon-grid__thumb" style="background-image:url('/img/highlights-icon.jpg')"></span><span class="icon-grid__label">Highlights</span></a>
+<a class="icon-grid__link icon-grid__link--labeled" href="/articles"><span class="icon-grid__thumb" style="background-image:url('/img/articles-icon.jpg')"></span><span class="icon-grid__label">Articles</span></a>
+<a class="icon-grid__link icon-grid__link--labeled" href="/hutchison-debunking-debunkers"><span class="icon-grid__thumb" style="background-image:url('/img/hutchison-debunking-debunkers-icon.jpg')"></span><span class="icon-grid__label">Debunking “Debunkers”</span></a>
+<a class="icon-grid__link icon-grid__link--labeled" href="/hutchison-news"><span class="icon-grid__thumb" style="background-image:url('/img/hutchison-news-icon.jpg')"></span><span class="icon-grid__label">News Reels</span></a>
+<a class="icon-grid__link icon-grid__link--labeled" href="/hutchison-unedited-footage"><span class="icon-grid__thumb" style="background-image:url('/img/hutchison-unedited-footage-icon.jpg')"></span><span class="icon-grid__label">Unedited Footage</span></a>
+<a class="icon-grid__link icon-grid__link--labeled" href="/hutchison-interviews"><span class="icon-grid__thumb" style="background-image:url('/img/hutchison-interviews-icon.jpg')"></span><span class="icon-grid__label">Interviews and Presentations</span></a>
+<a class="icon-grid__link icon-grid__link--labeled" href="/cold-fusion-lenr"><span class="icon-grid__thumb" style="background-image:url('/img/cold-fusion-lenr-icon.jpg')"></span><span class="icon-grid__label">Cold Fusion / LENR</span></a>
+<a class="icon-grid__link icon-grid__link--labeled" href="/hutchison-livestreams"><span class="icon-grid__thumb" style="background-image:url('/img/hutchison-livestreams-icon.jpg')"></span><span class="icon-grid__label">MES Livestreams</span></a>
+</div>
+<div class="hub-links">
+  <h2>Important Links</h2>
+  <ul>
+    <li><a href="https://peakd.com/science/@mes/hutchisoneffect" target="_blank" rel="noopener">This playlist on Hive</a></li>
+    <li><a href="https://mes.fm/hutchison-playlist">MES Hutchison Effect YouTube playlist</a></li>
+    <li><a href="https://www.youtube.com/@HutchisonEffect" target="_blank" rel="noopener">John Hutchison's official YouTube channel (@HutchisonEffect)</a></li>
+    <li><a href="https://www.youtube.com/playlist?list=PLEhIw6_wPHOjQExywKSeKFVLYSKu2JCY-" target="_blank" rel="noopener">John Hutchison's YouTube playlist</a></li>
+    <li><a href="https://mes.fm/hutchison-drive">3 TB hard drive of uncompressed footage (Google Drive)</a></li>
+    <li><a href="https://x.com/MathEasySolns/status/1752373887814521142" target="_blank" rel="noopener">X thread of the Hutchison Effect</a></li>
+    <li><a href="https://www.youtube.com/playlist?list=PLBgQorZu_mLnIFxSsX4zDPJ314MCR9AuN" target="_blank" rel="noopener">Bob Greenyer's Hutchison YouTube playlist</a></li>
+  </ul>
+</div>
+          </div>
+        </div>
+        <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
+        <div id="comments-button" class="mes-comments-toggle">Comments</div>
+        <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
+        <script src="/main_js/comments.js?v=1.0.1" defer></script>
+
       </div>
-      <div class="header-controls">
-        <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
-        <button id="textSizeUp" class="header-icon-btn" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
-        <button id="themeToggle" class="header-icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
-      </div>
-      <button id="navbar-button" class="hamburger-btn" type="button" aria-label="Site navigation" aria-haspopup="true"></button>
-      <ul id="navbar" class="navbar" role="navigation" aria-label="Site menu">
-        <li class="navbar__item navbar__item--social"><div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
+    </div>
+
+    <!-- side bar -->
+    <div class="side-bar">
+      <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>
+        <ul id="navbar" class="navbar">
+          <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><p class="social__text">Follow us!</p><ul class="social">
             <li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
             <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
             <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>
@@ -876,10 +1198,10 @@
             <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>
             <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
           </ul></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
-        <li class="navbar__item"><a target="_self" class="navbar__link" href="/hutchison">Hutchison Effect</a></li>
-        <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
-        <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Calculators<span class="dropdown-symbol">&#9660;</span></span>
+          <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/hutchison">Hutchison Effect</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
+          <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Calculators<span class="dropdown-symbol">&#9660;</span></span>
             <ul class="navbar__dropdown-container hide">
               <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/bmicalculator">&#9642; <span>BMI Calculator</span></a></li>
               <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/gpacalculator">&#9642; <span>GPA Calculator</span></a></li>
@@ -892,413 +1214,25 @@
               <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/youtubemoney/index.html">&#9642; <span>YouTube Money Calculator</span></a></li>
               <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/calculators">&#9642; <span>More...</span></a></li>
             </ul>
-        </li>
-        <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Tools<span class="dropdown-symbol">&#9660;</span></span>
+          </li>
+          <li class="navbar__item"><span class="navbar__link navbar__link--dropdown">Tools<span class="dropdown-symbol">&#9660;</span></span>
             <ul class="navbar__dropdown-container hide">
               <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/speedreader">&#9642; <span>Speed Reader</span></a></li>
               <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="https://mes.fm/timer">&#9642; <span>Timer</span></a></li>
               <li class="navbar__item"><a class="navbar__link navbar__dropdown-item" href="/tools">&#9642; <span>More...</span></a></li>
             </ul>
-        </li>
-        <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
-        <li class="navbar__item"><a target="_self" class="navbar__link" href="/memes">Memes</a></li>
-        <li class="navbar__item"><a target="_blank" class="navbar__link" href="https://teespring.com/stores/mes-store">Store</a></li>
-        <li class="navbar__item"><a target="_blank" rel="nofollow" class="navbar__link" href="https://matheasy.substack.com/">Subscribe</a></li>
-        <li class="navbar__item"><a target="_blank" class="navbar__link" href="/donate">Donate</a></li>
-        <li class="navbar__item"><a class="navbar__link" href="/contact">Contact Us</a></li>
-      </ul>
-    </div>
-    <div class="info-bar-container" role="navigation" aria-label="Primary">
-      <ul id="info-bar" class="info-bar">
-        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/hutchison">Hutchison Effect</a></li>
-        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li>
-        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="https://teespring.com/stores/mes-store">Store</a></li>
-        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="/donate">Donate</a></li>
-        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href="/contact">Contact Us</a></li>
-        <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
-      </ul>
+          </li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/memes">Memes</a></li>
+          <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+          <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li>
+          <li class="navbar__item navbar__item--utility-added"><a target="_blank" rel="nofollow" class="navbar__link" href='https://matheasy.substack.com/'>Subscribe</a></li>
+          <li class="navbar__item navbar__item--utility-added"><a target="_blank" class="navbar__link" href='/donate'>Donate</a></li>
+          <li class="navbar__item navbar__item--utility-added"><a class="navbar__link" href='/contact'>Contact Us</a></li>
+        </ul>
+      </div>
     </div>
 
-    <h1>Hutchison Effect Playlist</h1>
-    <p class="page-lede">MES coverage of the Hutchison Effect &mdash; John Hutchison's antigravity and materials-transmutation demonstrations: videos, rare footage, articles, updates, and links. Bookmark this page; it is continually updated.</p>
-    <div class="post-meta">
-      <span>By mes</span>
-      <span>December 11, 2025</span>
-      <span>10 votes</span>
-      <span>0 comments</span>
-      <span>2 reblogs</span>
-    </div>
-    <a class="peakd-link" href="https://peakd.com/science/@mes/hutchisoneffect" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
-
-    <details class="toc-mobile">
-      <summary>Jump to section</summary>
-      <nav class="toc-links" aria-label="Table of contents">
-        <a href="#posts-and-updates">Posts and Updates</a>
-      <a href="#videos">Videos</a>
-      <a href="#important-links">Important Links</a>
-      <a href="#highlights">Highlights</a>
-      <a href="#articles">Articles</a>
-      <a href="#debunking-debunkers">Debunking &quot;Debunkers&quot;</a>
-      <a href="#news-reels">News Reels</a>
-      <a href="#unedited-footage">Unedited Footage</a>
-      <a href="#interviews-and-presentations">Interviews and Presentations</a>
-      <a href="#cold-fusion-low-energy-nuclear-reactions-lenr">Cold Fusion / Low Energy Nuclear Reactions (LENR)</a>
-      <a href="#mes-livestreams">MES Livestreams</a>
-      </nav>
-    </details>
-  </div>
-
-  <div class="wide">
-<div class="chapters-toolbar">
-<button id="toggleAllChaptersBtn" class="theme-toggle-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
-</div>
-<div class="chapter-toggle" id="posts-and-updates">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('posts-and-updates-list')"><center>Posts and Updates <span id="arrowIcon-posts-and-updates-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="posts-and-updates-list" class="chapter-toggle-list card-grid">
-<a class="link-card" href="https://mes.fm/hutchison-article-balloons">
-  <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmSw8U4EWvGRQ3CgPB46TU5snJHDK5vUWqo7iHtWEYSfvv/telegram-cloud-photo-size-1-4974466818160397159-y.jpg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">John Hutchison's First Newspaper Appearance: Balloons Over Grouse Mountain</span>
-    <span class="link-card-excerpt">John Hutchison's first newspaper appearance was in 1965 or 1966, when he was 20 and flew hydrogen balloons wrapped in aluminum foil over Grouse…</span>
-    <span class="link-card-readmore">Read more &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/hutchison-health-sept6-2026">
-  <span class="link-card-thumb" style="background-image:url('https://mes.fm/hutchison-health-sept6-2026/img/hutchison-health-sept6-2026.jpg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">John Hutchison is coming home — health update</span>
-    <span class="link-card-excerpt">A September 6, 2026 update: John Hutchison's bowel obstruction has cleared and he is being discharged.</span>
-    <span class="link-card-readmore">Read more &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/hutchison-health-sept5-2026">
-  <span class="link-card-thumb" style="background-image:url('https://mes.fm/hutchison-health-sept5-2026/img/hutchison-health-sept5-2026.jpg')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Prayers up for John Hutchison, again — health update</span>
-    <span class="link-card-excerpt">John Hutchison is back in the hospital -- a bowel obstruction, admitted overnight after a CT scan. A September 2026 health update</span>
-    <span class="link-card-readmore">Read more &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/bought-911-hutchison-shirt">
-  <span class="link-card-thumb" style="background-image:url('https://mes.fm/bought-911-hutchison-shirt/img/djw-book-shirt-sold.png')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</span>
-    <span class="link-card-excerpt">Someone bought a 9/11 Where Did the Towers Go? book shirt and a 9/11 Hutchison Effect shirt from the MES store.</span>
-    <span class="link-card-readmore">Read more &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/hutchison-health-aug22-2026">
-  <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmXjYf5Z8gDTCpQJioXxtAeRgu6QZaxeBVkvn2f49xn5V9/image.png')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Prayers up for John Hutchison — health update</span>
-    <span class="link-card-excerpt">Prayers up for John Hutchison — health update,</span>
-    <span class="link-card-readmore">Read more &rarr;</span>
-  </span>
-</a>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="videos">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('videos-list')"><center>Videos <span id="arrowIcon-videos-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="videos-list" class="chapter-toggle-list card-grid">
-<a class="link-card" href="https://mes.fm/hutchison-levitating-can-live">
-  <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1790118548890-1d8dd8147a5fa027.webp')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Hutchison Effect: Plastic Can Levitates and Video is Played Back LIVE</span>
-    <span class="link-card-excerpt">Rare footage of John Hutchison playing back live camera footage of a levitating plastic can that Tom Sky's 2007 recording missed, plus bonus footage…</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/hutchison-effect-steel-molybdenum">
-  <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788298005278-e3f791efc2c0562c.webp')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Hutchison Effect: George Hathaway and John Alexander Discuss Crumbling Steel &amp; Bent Molybdenum Rods</span>
-    <span class="link-card-excerpt">Rare video and photos of George Hathaway and Col. John Alexander discussing steel samples that crumbled and dustified, and super-strong molybdenum…</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-<a class="link-card" href="https://mes.fm/livestream-66-trailer">
-  <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788025782654-abd7668a2f2b9cb7.webp')"></span>
-  <span class="link-card-body">
-    <span class="link-card-title">Trailer for MES Livestream 66: Rare Hutchison Effect Footage</span>
-    <span class="link-card-excerpt">A trailer for MES Livestream 66, featuring rare Hutchison Effect footage from the 1988 unedited archive.</span>
-    <span class="link-card-readmore">Watch &rarr;</span>
-  </span>
-</a>
-</div>
-</div>
-
-  </div>
-
-  <hr>
-
-  <div class="container">
-    <div class="post-body">
-<div class="chapter-toggle" id="important-links">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('important-links-list')"><center>Important Links <span id="arrowIcon-important-links-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="important-links-list" class="chapter-toggle-list">
-<p>For reference, here are the thumbnails and links to the main videos in the MES Hutchison Effect playlist.</p>
-<ul>
-<li>This Hive playlist: <a href="https://peakd.com/science/@mes/hutchisoneffect">peakd.com/science/@mes/hutchisoneffect</a><ul>
-<li><a href="mes.fm/hutchison">https://mes.fm/hutchison</a></li>
-</ul>
-</li>
-<li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X">YouTube playlist</a> (<a href="http://mes.fm/hutchison-playlist">mes.fm/hutchison-playlist</a>) </li>
-<li>John Hutchison official YouTube: <a href="https://www.youtube.com/@HutchisonEffect">@HutchisonEffect</a><ul>
-<li>John Hutchison&#39;s <a href="https://www.youtube.com/playlist?list=PLEhIw6_wPHOjQExywKSeKFVLYSKu2JCY-">YouTube playlist</a></li>
-</ul>
-</li>
-<li><a href="https://drive.google.com/drive/folders/1_F1gU5ir6U7QebvXPKWxJiT0hLXgHK8j">3 TB hard drive</a> of uncompressed footage: <a href="https://mes.fm/hutchison-drive">mes.fm/hutchison-drive</a></li>
-<li><a href="https://x.com/MathEasySolns/status/1752373887814521142">X Thread</a> of the Hutchison Effect</li>
-<li>Bob Greenyer&#39;s Hutchison <a href="https://www.youtube.com/playlist?list=PLBgQorZu_mLnIFxSsX4zDPJ314MCR9AuN">YouTube playlist</a></li>
-</ul>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="highlights">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('highlights-list')"><center>Highlights <span id="arrowIcon-highlights-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="highlights-list" class="chapter-toggle-list">
-<hr>
-<h2>Hutchison Effect: Plastic Can Levitates and Video is Played Back LIVE</h2>
-<p><a href="https://mes.fm/hutchison-levitating-can-live">Screenshots</a> - <a href="https://3speak.tv/watch?v=mes/hutchison-effect-plastic-ca-593">3Speak</a> - <a href="https://youtu.be/84_R56cjqMQ">YouTube</a> - <a href="https://t.me/meslinks/35568">Telegram</a> - <a href="https://www.bitchute.com/video/8jwVZeAXX9pO/">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Can-Levitates-Live-Playback:a">Odysee</a> - <a href="https://rumble.com/v7fv5tq-hutchison-effect-plastic-can-levitates-and-video-is-played-back-live.html">Rumble</a></p>
-<p><img loading="lazy" src="https://images.3speak.tv/images/1790118173447-fc686c3b9719153c.webp" alt="1 John Hutchison Levitating Can.jpeg"></p>
-<h2>Hutchison Effect: 19 lb bushing levitates with linearly increasing acceleration – &quot;Hyperforce”</h2>
-<p><a href="https://3speak.tv/watch?v=mes/hutchison-effect-19-lb-bush-939">3Speak</a> - <a href="https://youtu.be/7v_AYRCw5nU">YouTube</a> - <a href="https://t.me/meslinks/35272">Telegram</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-3rd-derivative-Hyperforce:b">Odysee</a> - <a href="https://www.bitchute.com/video/H9mhJfY5p8Pj/">BitChute</a> - <a href="https://rumble.com/v7dp0c0-hutchison-effect-19-lb-bushing-levitates-with-linearly-increasing-accelerat.html">Rumble</a> - <a href="https://1drv.ms/x/c/88862ef47bcaf6cd/IQB9ztjdln5gQ5CzQ_P6ynxXAdUBzocWCAOwM83kiw03sAo">Excel file</a> - <a href="https://peakd.com/hive-128780/@mes/hutchison-effect-19-lb-bush-939">Screenshots</a></p>
-<p><img loading="lazy" src="https://images.3speak.tv/images/1785445828290-a0571387cad1a33c.webp" alt="Third Derivative Jolt Thumbnail.jpeg"></p>
-<h2>Hutchison Effect Compilation from 1988 to 1989</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tmFRQJwjwVwhFCsH1aBV5igGtMKokxPw4yNokw66Zz4KKuttWGYqCMiP7T9cZPbfMPP.jpeg" alt="Compilation 1988 1989.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/lwjfblia">Hive</a> - <a href="https://3speak.tv/watch?v=mes/lwjfblia">3Speak</a> - <a href="https://youtu.be/ZWHTIA1eL5k">YouTube</a> - <a href="https://odysee.com/Hutchison-Effect-Compilation-1988-1989:a06d346f96f2af32a903ad10eb5e345aae599ed4">Odysee</a> - <a href="https://old.bitchute.com/video/DkkgeRlT671w/">BitChute</a> - <a href="https://rumble.com/v6vj2rz-hutchison-effect-compilation-from-1988-to-1989.html">Rumble</a></p>
-<h2>Hutchison Effect: Timelapse of 5 Hours of Footage into 5 Minutes Reveals RARE Effects</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wgKzP3nSVbCHkzPbgkpbHx3DY3gaVAjzNMEvY9vXL8JqVz2eTtH5XPkjfiDwDCZSSqy.jpeg" alt="Jack Houck Timelapse.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/tznpkpee">Hive</a> - <a href="https://3speak.tv/watch?v=mes/tznpkpee">3Speak</a> - <a href="https://youtu.be/zmdVFzpOFhs">YouTube</a> - <a href="https://odysee.com/Hutchison-Effect-Timelapse-Jack-Houck:b75de0b42b89ab87c0f4acc79403ce518e96d8de">Odysee</a> - <a href="https://old.bitchute.com/video/0JWzR6mH2E76/">BitChute</a> - <a href="https://rumble.com/v6s7uuv-hutchison-effect-timelapse-of-5-hours-of-footage-into-5-minutes-reveals-rar.html">Rumble</a></p>
-<h2>Hutchison Effect: Clorox Bottle Compresses and Decompresses</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFPdq8y2bqcMTiDiwZ6FpHeRZZWtPz3DKtwHmJRBXruGq94WeCP2TYpGWKk58hHb5Rb.jpeg" alt="Bottle Compressing.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/wpjnaiyq">Hive</a> - <a href="https://3speak.tv/watch?v=mes/wpjnaiyq">3Speak</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Bottle-Compresses:b">Odysee</a> - <a href="https://old.bitchute.com/video/cq4iUEcp9cTk/">Bitchute</a> - <a href="https://rumble.com/v6rjddd-hutchison-effect-clorox-bottle-compresses-and-decompresses.html">Rumble</a> - <a href="https://youtu.be/amENrIgtHvg">YouTube</a></p>
-<h2>Hutchison Effect: Steel Rod Bends, Levitates, and Flies Upwards</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wMaSH2ej21cjpqZJXK79eBg2zdBQQVsRugnAd3MmbLs8CwBJGSmw8NAcJm7sYbGWNkA.jpeg" alt="Steel Rod Bending.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/zmxodcgi">Hive</a> - <a href="https://3speak.tv/watch?v=mes/zmxodcgi">3Speak</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Steel-Rod-Bends:a">Odysee</a> - <a href="https://www.bitchute.com/video/lWVyczVeeKcc">BitChute</a> - <a href="https://rumble.com/v6qlgcw-hutchison-effect-steel-rod-bends-levitates-and-flies-upwards.html">Rumble</a> - <a href="https://youtu.be/Q5HLI2HjsB0">YouTube</a></p>
-<h2>Hutchison Effect: Solid Stainless Steel Cylinder splits apart like Jelly</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wgHvq5dWdTN6wx7AT2zRXoXAxStMUCPKY5FBira2X4jbPQRzeur5jeGKvX12Asx1JsG.jpeg" alt="Jellification 2.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/egladafi">Hive</a> - <a href="https://3speak.tv/watch?v=mes/egladafi">3Speak</a> - <a href="https://odysee.com/Hutchison-Effect-Steel-Cylinder-Jelly:5f91144f604af55ce042ff4e886bd508b25c5f61">Odysee</a> - <a href="http://bitchute.com/video/Pd0H23GYigww/">BitChute</a> - <a href="https://rumble.com/v6jso6s-hutchison-effect-solid-stainless-steel-cylinder-splits-apart-like-jelly.html">Rumble</a> - <a href="https://youtu.be/TtqWmVWZ8Us">YouTube</a></p>
-<h2>Hutchison Effect: High Frequency Electrical Discharge Fires on Plastic Boat</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23y94QLvgQBm5e6yC4V1zQ1gJLEPPtKy8iGVrUXYNx2TDje6aZXijKxadTwMNoKsyBbWB.jpeg" alt="Plastic Boat Fires.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/sbjduqfl">Hive</a> - <a href="https://3speak.tv/watch?v=mes/sbjduqfl">3Speak</a> - <a href="https://odysee.com/Hutchison-Effect-Electrical-Fires-Boat:0229255436dee7944186fb0a00b20661e23c093d">Odysee</a> - <a href="https://old.bitchute.com/video/hTU6E3I4WsMz/">BitChute</a> - <a href="https://rumble.com/v6q31wc-hutchison-effect-high-frequency-electrical-discharge-fires-on-plastic-boat.html">Rumble</a> - <a href="https://youtu.be/E_AiyTHmonA">YouTube</a> - <a href="https://peakd.com/hive-128780/@mes/okvxltmy">screenshots</a></p>
-<h2>Hutchison Effect: High Frequency Radio Waves Cause Water to Foam Up</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xAbqQxHtTXL1m1gUwHnAYuzjcqRh555LQSbjez2vJfQ55y3q5cjjVX9RFEY9N49hKu7.JPEG" alt="Plastic Boat Foaming.JPEG"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/pirokkna">Hive</a> - <a href="https://3speak.tv/watch?v=mes/pirokkna">3Speak</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Water-Foam-Boat:3">Odysee</a> - <a href="https://old.bitchute.com/video/KM1D29sR0ken/">BitChute</a> - <a href="https://rumble.com/v6q5i1o-hutchison-effect-high-frequency-radio-waves-cause-water-to-foam-up.html">Rumble</a> - <a href="https://youtu.be/iWd_ubhsGoU">YouTube</a> - <a href="https://peakd.com/hive-128780/@mes/okvxltmy">screenshots</a></p>
-<h2>Hutchison Effect: 1 Hour of the Famous Plastic Boat on Water Experiment</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tvgSmo4ftvmvKDHcKhcsCTkxE66kd1WJJ8HvtGpwXWDkZ4egPJs5vsq43g41Qgchmx1.jpeg" alt="Plastic Boat.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/okvxltmy">Hive</a> - <a href="https://3speak.tv/watch?v=mes/okvxltmy">3Speak</a> - <a href="https://odysee.com/Hutchison-Effect-Plastic-Boat:9d7d735e43e9583286ff8c7f1045fe2d497cf63e">Odysee</a> - <a href="https://old.bitchute.com/video/ihVuR4bq2FiD/">BitChute</a> - <a href="https://rumble.com/v6pdyix-hutchison-effect-1-hour-of-the-famous-plastic-boat-on-water-experiment.html">Rumble</a> - <a href="https://youtu.be/hBfqjBSItj0">YouTube</a></p>
-<h2>Hutchison Effect: Solid Metal Rod Splits apart like Jelly</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tmDmV9k9nW3wyjjJ6xVUJyqmmJC7tZD4v5odbeqLDsa9nyj7JR4oBtvmePb8mPyW1YN.jpeg" alt="Jellification.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/qvqnthrh">Hive</a> - <a href="https://3speak.tv/watch?v=mes/qvqnthrh">3Speak</a> - <a href="https://youtu.be/BWCuM4GQlgc">YouTube</a> - <a href="https://odysee.com/Hutchison-Effect-Metal-Jelly:38ff0793c1ba57548ea206f857f215a68a915d06">Odysee</a> - <a href="https://rumble.com/v6i5q9m-hutchison-effect-solid-metal-rod-splits-apart-like-jelly.html">Rumble</a> - <a href="https://bitchute.com/video/fwO5FhtuXy7t/">BitChute</a></p>
-<h2>Hutchison Effect: 80-pound Mill Ball Levitating Up and Down for 10 Minutes</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23u5tdp4wQogynKFRjke6sZayQuD2NNH3z7ihjXpcpy87zFdzCcZacRmVfQiCcmHpCXEM.jpeg" alt="Mill Ball.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/nnxpbnke">Hive</a> - <a href="https://3speak.tv/watch?v=mes/nnxpbnke">3Speak</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Mill-Ball-Levitation:4">Odysee</a> - <a href="https://bitchute.com/video/Rd6p8wkhx4id/">BitChute</a> - <a href="https://rumble.com/v6bvved-hutchison-effect-80-pound-mill-ball-levitating-up-and-down-for-10-minutes.html">Rumble</a> - <a href="https://youtu.be/C2FbX_xWXaQ">YouTube</a></p>
-<h2>Hutchison Effect: Steel Rubber Composite Cold Melting (180X Speed)</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23x12vcay9VBFqmJcL1ejVrXcUrCXZ5jMbhYsbstFTrYvURRdTb3hV68aGQCuRDtfuWfi.jpeg" alt="Steel Melting Timelapse Short.jpeg"></p>
-<p><a href="https://peakd.com/hutchisoneffect/@mes/hutchison-effect-steel-rubber-melting-short">Hive</a> - 3Speak - <a href="https://odysee.com/Hutchison-Effect-Steel-Rubber-Cold-Melting-Short:135cd57ce78c8540e0fa21cabdb68d95bdd421b4">Odysee</a> - <a href="https://bitchute.com/video/aYKuNdDrrlRl/">BitChute</a> - <a href="https://rumble.com/v5yes8q-hutchison-effect-steel-rubber-composite-cold-melting-180x-speed.html">Rumble</a> - <a href="https://youtu.be/o90ylugSL_M">YouTube</a></p>
-<h2>Hutchison Effect: Steel Rubber Composite Cold Melting</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wgFPodnECy1f1zMCY7if4Mbe1BD5FsnzcGk2B3KhNThcFdfJqSAhL46KJbqFGrcfWxf.jpeg" alt="Steel Melting Timelapse.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/hutchison-effect-steel-rubber-cold-melting">Hive</a> - 3Speak - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Steel-Rubber-Composite:c">Odysee</a> - <a href="https://bitchute.com/video/8TzJPaNzCEM1/">BitChute</a> - <a href="https://rumble.com/v5y2z1n-hutchison-effect-steel-rubber-composite-cold-melting.html">Rumble</a> - <a href="https://youtu.be/tBTzf_WEuME">YouTube</a></p>
-<h2>Hutchison Effect: Solid Block of Iron Warping and Twisting (Two Experiments)</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23u67TyDiLoRNjSSrjgpXuKbYf8ogHYr3kYirR3iLiDU67vECxwLH7bomGGck2ECwaxiy.jpeg" alt="Solid Block of Iron.jpeg"></p>
-<p><a href="https://peakd.com/@mes/dnqjqhjn">Hive</a> - <a href="https://3speak.tv/watch?v=mes/dnqjqhjn">3Speak</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Iron-Block-Two-Experiments:c">Odysee</a> - <a href="https://www.bitchute.com/video/c6Hd3QRO1YD3/">BitChute</a> - <a href="https://rumble.com/v4x67l5-hutchison-effect-solid-block-of-iron-warping-and-twisting-two-experiments.html">Rumble</a> - <a href="https://youtu.be/HGMdOk5a9Vk">YouTube</a></p>
-<h2>1109 by Keor Meteor: Intro: The Hutchison Effect</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/244AAhPLEBCofvkWTk3e6W2Wui7yqxN4stRB3z1aoPMoGsLhu8d8nhqiM1EqSGzuf3BY9.jpeg" alt="Intro.jpeg"></p>
-<p><a href="https://peakd.com/hive-113182/@mes/wmyovlcv">Hive</a> - <a href="https://3speak.tv/watch?v=mes/wmyovlcv">3Speak</a> - <a href="https://youtu.be/hQlPItudSSQ">YouTube</a></p>
-<h2>Trailer for Livestream 97: Hutchison Effect 1988 to 1989 Compilation</h2>
-<p><a href="https://youtu.be/O-KoQ3_Drag">YouTube</a></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tbkoYJYUK6N1HtzHbdEfEn8puHKDkm9qaRkMTWyi5dPruAEduDGEuBqDCvFMFMs5ixw.png" alt="image.png"></p>
-<h2>Trailer for Livestream 66: Rare Hutchison Effect Footage</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/244oWj3p8Ybu9EoydUnAB6yi9d7ZLgN7yEbEEtprH6DWb7a6fA6TZUKnCK5dyXnnmoc9j.jpeg" alt="Trailer.jpeg"></p>
-<p><a href="https://youtu.be/WbvO8BbKIP0">YouTube</a></p>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="articles">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('articles-list')"><center>Articles <span id="arrowIcon-articles-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="articles-list" class="chapter-toggle-list">
-<h2>Hutchison Effect: Stop Motion Photos of Levitating WATER</h2>
-<p><a href="https://peakd.com/hive-128780/@mes/hutchison-effect-levitating-water-37i">Hive</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-yfh4z4mf">InLeo</a> - <a href="https://t.me/meslinks/29910">Telegram</a></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Eos1McX1hDrTwP8GUx8GhY7VsBhufMNgUygaCrcZY3W6ihMnwByRBQBKiWWfKyfBoit.png" alt="image.png"></p>
-<h2>Photos of John Hutchison&#39;s parents and grandparents!! 👫👼</h2>
-<p><a href="https://peakd.com/hive-128780/@mes/photos-of-john-hutchisons-parents--5aq">Hive</a></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wMYNDAw3oQpaPk3gkp4zyd4mwq6hstkAoZCNUmFUBu9Hpj5CG9ojCpfnNdrmToHHKua.png" alt="image.png"></p>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="debunking-debunkers">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('debunking-debunkers-list')"><center>Debunking &quot;Debunkers&quot; <span id="arrowIcon-debunking-debunkers-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="debunking-debunkers-list" class="chapter-toggle-list">
-<hr>
-<h2>Hutchison Effect: Debunking the &quot;Debunkers&quot; (Liars) Robert Murray-Smith and Ace Baker</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/242Nktq4gBzhMiryTReQ8hCXywwgpx1obUvGhBiyLQKFyH6ebN46yGnUY1LCYoEqNL7qb.jpeg" alt="Debunkers.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/wbvdabyb">Hive</a> - <a href="https://3speak.tv/watch?v=mes/wbvdabyb">3Speak</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Debunking-Liars-Robert-Murray-Smith-Ace-Baker:f">Odysee</a> - <a href="https://bitchute.com/video/DP7JfOptA756/">BitChute</a> - <a href="https://rumble.com/v5bupqs-hutchison-effect-debunking-the-debunkers-liars-robert-murray-smith-and-ace-.html">Rumble</a> - <a href="https://youtu.be/Po0vWGJDu6M">YouTube</a></p>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="news-reels">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('news-reels-list')"><center>News Reels <span id="arrowIcon-news-reels-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="news-reels-list" class="chapter-toggle-list">
-<hr>
-<h2>Hutchison Effect featured on Japanese TV Asahi UFO Special (1993)</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xATtygCai5N7PHru9VAwE1QuA4TwpZEymHPaXWyRAJHoJn19h8jdfj2KxWhpBfNZnHm.jpeg" alt="Japan UFO TV 1993.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/fzwbhfmi">Hive</a> - <a href="https://3speak.tv/watch?v=mes/fzwbhfmi">3Speak</a> - <a href="https://youtu.be/8vDV_ao6LmQ">YouTube</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Japan-UFO-TV-1993:7">Odysee</a> - <a href="https://rumble.com/v6y5z72-hutchison-effect-featured-on-japanese-tv-asahi-ufo-special-1993.html">Rumble</a> - <a href="https://www.bitchute.com/video/9jnlTU8citpM/">BitChute</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2aa5ywpq7">Summary</a></p>
-<h2>Hutchison Effect featured on Japanese TV News (1994)</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wCJNGynEWvNECQihzX8JX5bUtmJZWter8Mo9LMbf2RusyadPcVPtFnHNAQJxN5KVRFQ.jpeg" alt="Japan TV 1994.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/ziububjd">Hive</a> - <a href="https://3speak.tv/watch?v=mes/ziububjd">3Speak</a> - <a href="https://odysee.com/Hutchison-Effect-Japan-1994:b2abbebe0015caf560018b81707ef64273a9ebd8">Odysee</a> - <a href="https://rumble.com/v6zheck-hutchison-effect-featured-on-japanese-tv-news-1994.html">Rumble</a> - <a href="https://www.bitchute.com/video/zelXNmIDj1Cj">BitChute</a> - <a href="https://t.me/meslinks/31871">Telegram</a> - <a href="https://youtu.be/9Ky12K9jETI">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2nbr8qde">Summary</a></p>
-<h2>BCIT Magazine Visits John Hutchison&#39;s New Westminster Apartment (2007)</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tvefZmYrPzZChNWJRAmntVTURrVjNfsbF28HcwauvySUPqrShHRAo3kizXSmqshsVpH.jpeg" alt="BCIT Magazine.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/vtfyegru">Hive</a> - <a href="https://3speak.tv/watch?v=mes/vtfyegru">3Speak</a> - <a href="https://odysee.com/@mes:8/BCIT-Magazine-Hutchison-Apartment-2007:0">Odysee</a> - <a href="https://old.bitchute.com/video/o8jUPDot7GSx/">BitChute</a> - <a href="https://rumble.com/v6t53xx-bcit-magazine-visits-john-hutchisons-new-westminster-apartment-2007.html">Rumble</a> - <a href="https://youtu.be/-nvVEOed2SU">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-238qzfwve">Summary</a></p>
-<h2>Rare Footage of the Hutchison Effect inside John&#39;s Vancouver Apartment (2007)</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tmDmbgyv1LY3k8wTyjK7GrHPWrXg1qTKniFjcwRGgLDxc8Y8oYEhyFzNA7mL6EURtyC.jpeg" alt="1 John Hutchison.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/yonwvsmo">Hive</a> - <a href="https://3speak.tv/watch?v=mes/yonwvsmo">3Speak</a> - <a href="https://rumble.com/v4qbi69-rare-footage-of-the-hutchison-effect-inside-johns-vancouver-apartment-2007.html">Rumble</a> - <a href="https://www.bitchute.com/video/Dp4w2N4gakCE">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Vancouver-2007:9">Odysse</a></p>
-<h2>Thomas Bearden explains the Hutchison Effect via Scalar Interferometry</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Ep5oc2Fz96HEDqCL67g6QFCAFBFWVbA8L1Qk3RazjrwYGTcbezwqktSdt2acDWZuy3Y.png" alt="image.png"></p>
-<p><a href="https://inleo.io/@mes/amazing-1984-report-by-thomas-bearden-star-wars-now-jel">Hive article</a> - <a href="https://3speak.tv/watch?v=mes/3speak-1780351388637">3Speak</a> - <a href="https://youtu.be/BGoYWuo5tOU">YouTube</a> - <a href="https://t.me/meslinks/29310">Telegram</a></p>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="unedited-footage">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('unedited-footage-list')"><center>Unedited Footage <span id="arrowIcon-unedited-footage-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="unedited-footage-list" class="chapter-toggle-list">
-<hr>
-<h2>Unedited Hutchison Effect: 5 Hours of 1985 Footage Filmed by Jack Houck</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wqbqanr7gZBSavserMjJZPWtzcPm7oeDMfasPGxmiBh5kXjwt5CDRMen4uQ9tWEHbAw.jpeg" alt="1985 Jack Houck.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/oqetactn">Hive</a> - <a href="https://3speak.tv/watch?v=mes/oqetactn">3Speak</a> - <a href="https://odysee.com/Unedited-Hutchison-Effect-1985-Jack-Houck:ba32c47e44ea9fe718c21d2cfd17913e340b9c60">Odysee</a> - <a href="https://old.bitchute.com/video/vCxjyeTq7aKy/">BitChute</a> - <a href="https://rumble.com/v6rxnpn-unedited-hutchison-effect-5-hours-of-1985-footage-filmed-by-jack-houck.html">Rumble</a> - <a href="https://youtu.be/YGBreLhxSmE">YouTube</a></p>
-<h2>Unedited Hutchison Effect: 2 Hours of Rare 1988 Footage</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFRQAP4eGkVCSwz6dRvHBMpy7nN6nyzo3wd9nUkfJu66i62JTDcMdKBCyXBZJS1e2nt.jpeg" alt="1988 Hutchison Effect.jpeg"></p>
-<p><a href="https://peakd.com/hive-181335/@mes/kzvdtzom">Hive</a> - <a href="https://3speak.tv/watch?v=mes/kzvdtzom">3Speak</a> - <a href="https://odysee.com/Unedited-Hutchison-Effect-1988:51a537c5e56cd0b42c9f24354f03eaac36bc9897">Odysee</a> - <a href="https://bitchute.com/video/czQeATk2pRrz/">Bitchute</a> - <a href="https://rumble.com/v69fius-unedited-hutchison-effect-2-hours-of-rare-1988-footage.html">Rumble</a> - <a href="https://youtu.be/KXTigZDG3cI">YouTube</a></p>
-<h2>Unedited Hutchison Effect: 4 Hours of Rare 1989 Footage</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23t7azvxeVt8Mvj7nRFSTB1vE79cqmEDnyWfrva8q7swUUH9xarLvJE3wfc75feCU5wiK.jpeg" alt="1989 Hutchison Effect.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/yysmsumd">Hive</a> - <a href="https://3speak.tv/watch?v=mes/yysmsumd">3Speak</a> - <a href="https://odysee.com/Unedited-Hutchison-Effect-1989:abaab4e798fd072ce8793344c9f94c2551512811">Odysee</a> - <a href="https://bitchute.com/video/UbjApFbLdPDi/">BitChute</a> - <a href="https://rumble.com/v6h0ffs-unedited-hutchison-effect-4-hours-of-rare-1989-footage.html">Rumble</a> - <a href="https://youtu.be/P-5_t_A3jnY">YouTube</a></p>
-<h2>Unedited Hutchison Effect: 5 Hours of Rare 2006 Footage</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wC5hB1xkajdvjroYPB3WULEY33NJU8uDodZgwNNrANfrkFrmcaDW5UXGf56j4yozVHR.jpeg" alt="2006 Hutchison Effect.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/nwaqszyo">Hive</a> - <a href="https://3speak.tv/watch?v=mes/nwaqszyo">3Speak</a> - <a href="https://odysee.com/@mes:8/Unedited-Hutchison-Effect-2006:7">Odysee</a> - <a href="https://bitchute.com/video/P6ob1SBuXRDu/">BitChute</a> - <a href="https://rumble.com/v60rh0k-unedited-hutchison-effect-5-hours-of-rare-2006-footage.html">Rumble</a> - <a href="https://youtu.be/uEgV3587IDI">YouTube</a></p>
-<h2>Unedited Hutchison Effect: 6 Hours of Rare 2007 Footage</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xVPAAe9crRUa2hGLQbt65Qb8SCAEDAqGhYoPBgGLcQgvdtwYYEyh7CRphsBQHrQKih3.jpeg" alt="2007 Hutchison Effect.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/blmbleww">Hive</a> - <a href="https://3speak.tv/watch?v=mes/blmbleww">3Speak</a> - <a href="https://odysee.com/@mes:8/Unedited-Hutchison-Effect-2007-Footage:b">Odysee</a> - <a href="https://bitchute.com/video/BkgRyL1zqAYX/">BitChute</a> - <a href="https://rumble.com/v62w0ih-unedited-hutchison-effect-6-hours-of-rare-2007-footage.html">Rumble</a> - <a href="https://youtu.be/CbiHmfWoExM">YouTube</a></p>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="interviews-and-presentations">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('interviews-and-presentations-list')"><center>Interviews and Presentations <span id="arrowIcon-interviews-and-presentations-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="interviews-and-presentations-list" class="chapter-toggle-list">
-<hr>
-<h2>Overview of the Hutchison Effect by George Hathaway in 1993</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFRQ9rBT8SgFqiZKinXqjUi8eACNQSQopk5DCk5XjwfUShqNuZrHgHqY322g51Y1dSx.jpeg" alt="1993 George Hathaway.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/ikarokgh">Hive</a> - <a href="https://3speak.tv/watch?v=mes/ikarokgh">3Speak</a> - <a href="https://odysee.com/Hutchison-Effect-George-Hathaway-1993:ccfb717bd02f8275e222b8ac2e5c7ff13133cd30">Odysee</a> - <a href="https://old.bitchute.com/video/7bJmwjkRI9Jg/">BitChute</a> - <a href="">Rumble</a> - <a href="https://youtu.be/tppQ1i8gkZo">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-fm5gwvqm">Summary</a></p>
-<h2>John Hutchison Interviewed by Tom Sky in his Vancouver Lab (2007)</h2>
-<p><a href="https://3speak.tv/watch?v=mes/john-hutchison-interviewed-224">3Speak</a> - <a href="https://youtu.be/eEBDSRqCkYk">YouTube</a> - <a href="https://t.me/meslinks/35399">Telegram</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Tom-Sky">Odysee</a> - <a href="https://www.bitchute.com/update_video/qv45ur4O6CGk">BitChute</a> - <a href="https://rumble.com/v7ehiuw-john-hutchison-interviewed-by-tom-sky-in-his-vancouver-lab-2007.html">Rumble</a> - <a href="https://mes.fm/hutchison-tom-sky">Screenshots</a></p>
-<p><img loading="lazy" src="https://images.3speak.tv/images/1787348035470-17ce55ab8e527dfd.webp" alt="Tom Sky 2007 Thumbnail.jpeg"></p>
-<h2>John Hutchison Interview on Journey with Brenda Roberts (1997): Crystal Energy</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFMmtFRLjwaohg4RpM84UAuvuZuGEjGjvBj2NJvkDDJjo1eU6YiKvJvc3xH4Xj1G5rc.jpeg" alt="Brenda Roberts 1997 Energy.jpeg"></p>
-<p><a href="https://3speak.tv/watch?v=mes/8a64c253">3Speak</a> - <a href="https://t.me/meslinks/34025">Telegram</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Journey-Brenda-Roberts-1997-Energy:0">Odysee</a> - <a href="https://www.bitchute.com/video/HiCHEmoPD25a/">BitChute</a> - <a href="https://rumble.com/v775mve-john-hutchison-interview-on-journey-with-brenda-roberts-1997-crystal-energy.html">Rumble</a> - <a href="https://youtu.be/VPcmKJx-zBs">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2swnudmnr">Summary</a></p>
-<h2>John Hutchison Interview on Journey with Brenda Roberts (1997): The Hutchison Effect</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uQjgw2MJwQvKPcy5sZGUGbF61eaGNP6V8NKRT7eYqqdxn2FxDeXUeNXFyc4DC8eQ5NA.jpeg" alt="Brenda Roberts 1997.jpeg"></p>
-<p><a href="https://3speak.tv/watch?v=mes/dd842563">3Speak</a> - <a href="https://t.me/meslinks/33992">Telegram</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Journey-Brenda-Roberts-1997:6">Odysee</a> - <a href="https://www.bitchute.com/video/iEWOOUlHunjp/">BitChute</a> - <a href="https://rumble.com/v770udg-john-hutchison-interview-on-journey-with-brenda-roberts-1997-the-hutchison-.html">Rumble</a> - <a href="https://youtu.be/rTTxmLyjpFQ">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2wlaau9mq">Summary</a></p>
-<h2>MES Hanging out with John Hutchison in the Lab!</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xp3xvJntnHm8hnDkvKRUHVPZLQ6MnJqe7bSY8uQk3Fc3gBM2ApR7VMhNH6AT7ewABe4.jpeg" alt="MES Hutchison Lab 2025.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/dywbmnes">Hive</a> - <a href="https://3speak.tv/watch?v=mes/dywbmnes">3Speak</a> - <a href="https://odysee.com/@mes:8/MES-John-Hutchison-Lab:9">Odysee</a> - <a href="https://rumble.com/v72nhrg-mes-hanging-out-with-john-hutchison-in-the-lab.html">Rumble</a> - <a href="https://www.bitchute.com/video/EhNItFSxG5Pk">BitChute</a> - <a href="https://t.me/meslinks/32679">Telegram</a> - <a href="https://youtu.be/CH3zDeHiswM">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2cctrhdpd">Summary</a></p>
-<h2>MES Livestream 120: John Hutchison and Kerry Cassidy on the Show!</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tm7U9QaoFXTqwfnqtzHwJ2D1gWufgMxocGXTQm81MCXrSrdiPKpLWHNsPS6fcCZqfqF.jpeg" alt="Kerry Cassidy 2025.jpeg"></p>
-<p><a href="https://youtube.com/live/Kt8XFEPC0tA">YouTube</a> - <a href="https://3speak.tv/watch?v=mes/zqgeijqo">Hive</a> - <a href="https://3speak.tv/watch?v=mes/zqgeijqo">3Speak</a> - <a href="https://rumble.com/v730vdy-mes-livestream-120-john-hutchison-and-kerry-cassidy-on-the-show.html">Rumble</a> (<a href="https://rumble.com/v72y83k-john-huthison-free-energy-portal-tech-and-time-travel.html">Kerry Cassidy Show</a> - <a href="https://projectcamelotportal.com/2025/12/13/john-hutchison-free-energy-portal-tech-and-time-travel/">Project Camelot article</a>) - <a href="https://odysee.com/@mes:8/MES-Livestream-120-John-Hutchison-Kerry-Cassidy:2">Odysee</a> - <a href="https://www.bitchute.com/video/tHlTtW40zEv2/">BitChute</a> - <a href="https://x.com/MathEasySolns/status/2000336497103220860">X</a> - <a href="https://t.me/meslinks/32755">Telegram</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2yxxfoerj">Summary</a></p>
-<h2>John Hutchison Interview on the Elaine Smitha Show (1994): The Hutchison Effect</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tbrij4LhcjoC8vZTX69q7ZidGBR1i2Nbxx1mpf2q82LNCtcjJL6VYnU65tYZrrmWr63.jpeg" alt="Elaine Smitha 1994.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/hdnytaio">Hive</a> - <a href="https://3speak.tv/watch?v=mes/hdnytaio">3Speak</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Elaine-Smitha-1994-Hutchison-Effect:2">Odysee</a> - <a href="https://old.bitchute.com/video/XMN76wcuH0CS/">BitChute</a> - <a href="https://rumble.com/v6rqvdd-john-hutchison-interview-on-the-elaine-smitha-show-1994-the-hutchison-effec.html">Rumble</a> - <a href="https://youtu.be/izpD1jonySI">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2z9zrgwej">Summary</a></p>
-<h2>John Hutchison Interview on the Elaine Smitha Show (2000): Levitation</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xATjo4sfsJvzMiEwYyFembNHLLfi12WkLGoovdVy16MZuQZjVaMF4q1cfqMDdLAoL9R.jpeg" alt="Elaine Smitha 2000 Levitation.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/tmfowznk">Hive</a> - <a href="https://3speak.tv/watch?v=mes/tmfowznk">3Speak</a> - <a href="https://odysee.com/John-Hutchison-Interview-Elaine-Smitha-2000-Levitation:10f3a825d23bd52300fe4fbb7a45374c0961347c">Odysee</a> - <a href="https://rumble.com/v6eu8zs-john-hutchison-interview-on-the-elaine-smitha-show-2000-levitation.html">Rumble</a> - <a href="http://bitchute.com/video/2MRiKnexZgQS/">BitChute</a> - <a href="https://youtu.be/3lriJ-i1UcU">YouTube</a></p>
-<h2>John Hutchison Interview on the Elaine Smitha Show (2000): Discoveries in Zero Point Energy</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uQtscz75HzYZsBhWm9C4ssAJKnaNGKNvVebGX1bxPCgctmFneFYkK6zAftUP47fU25H.JPEG" alt="Elaine Smitha 2000 Zero Point Energy.JPEG"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/mywbvjww">Hive</a> - <a href="https://3speak.tv/watch?v=mes/mywbvjww">3Speak</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Interview-Elaine-Smitha-2000-ZPE:5">Odysee</a> - <a href="https://www.bitchute.com/video/pEjfJM7gR2So">BitChute</a> - <a href="https://rumble.com/v67d34s-john-hutchison-interview-on-the-elaine-smitha-show-2000-discoveries-in-zero.html">Rumble</a> - <a href="https://youtu.be/H8krEbwntmc">YouTube</a></p>
-<h2>John Hutchison Interview on the Elaine Smitha Show (2000): What&#39;s New in Free Energy?</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23zS5715FWbR8X6wLbSCMUzu92fZrBiKLfieMGeDfvyrdWuoZmdW1ZPB66f9H4YWEb9SU.jpeg" alt="Elaine Smitha 2000 New Energy.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/wyinhvtd">Hive</a> - <a href="https://3speak.tv/watch?v=mes/wyinhvtd">3Speak</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Elaine-Smitha-2000-Free-Energy:5">Odysee</a> - <a href="https://bitchute.com/video/4pvfdWk3NA4w/">BitChute</a> - <a href="https://rumble.com/v6l5sag-john-hutchison-interview-on-the-elaine-smitha-show-2000-whats-new-in-free-e.html">Rumble</a> - <a href="https://youtu.be/Xvm16xyYxrQ">YouTube</a></p>
-<h2>John Hutchison Interview on the Elaine Smitha Show (2000): Skunk Works</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23x17DtHfjfNRm6hpXMAzg3Lohx1N9c6KRP9gdZubRav9uo8myRs1EgSif88M5bKr9fNG.jpeg" alt="Elaine Smitha 2000 Skunk Works.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/dezouman">Hive</a> - <a href="https://3speak.tv/watch?v=mes/dezouman">3Speak</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Elaine-Smitha-2000-Skunk-Works:3">Odysee</a> - <a href="https://www.bitchute.com/video/OKQCJJprP91Y/">BitChute</a> - <a href="https://rumble.com/v6qdxum-john-hutchison-interview-on-the-elaine-smitha-show-2000-skunk-works.html">Rumble</a> - <a href="https://youtu.be/PQ9w5BxIWoA">YouTube</a></p>
-<h2>Jeane Manning 1996 Presentation: The Coming Energy Revolution</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vi3sKhKSjErXdiDL2yukpxqnbxrUd3zbxExPpBZxfbyQwHCq7LDdca7SGBLN3xd4PJo.jpeg" alt="Jeane Manning 1996.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/jasrjvwl">Hive</a> - <a href="https://3speak.tv/watch?v=mes/jasrjvwl">3Speak</a> - <a href="https://odysee.com/@mes:8/Jeane-Manning-1996-Energy-Revolution:0">Odysee</a> - <a href="https://old.bitchute.com/video/cbl0ulz1iXGg/">BitChute</a> - <a href="https://rumble.com/v6vvja7-jeane-manning-1996-presentation-the-coming-energy-revolution.html">Rumble</a> - <a href="https://youtu.be/i_8FKS3VC0E">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-crkq7ua6">Summary</a></p>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="cold-fusion-low-energy-nuclear-reactions-lenr">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('cold-fusion-low-energy-nuclear-reactions-lenr-list')"><center>Cold Fusion / Low Energy Nuclear Reactions (LENR) <span id="arrowIcon-cold-fusion-low-energy-nuclear-reactions-lenr-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="cold-fusion-low-energy-nuclear-reactions-lenr-list" class="chapter-toggle-list">
-<p><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FKVpHL_onhaqBeVP-8qJXV">Free Energy playlist</a></p>
-<hr>
-<h2>RARE Steven Krivit Interview with Martin Fleischmann discussing Cold Fusion (2003)</h2>
-<p><a href="https://peakd.com/hive-128780/@mes/0838bf62">Hive</a> - <a href="https://3speak.tv/watch?v=mes/0838bf62">3Speak</a> - <a href="https://odysee.com/@mes:8/Martin-Fleischmann-Steven-Krivit-2003:b">Odysee</a> - <a href="https://www.bitchute.com/video/4oHDcWTjL8yr/">BitChute</a> - <a href="https://rumble.com/v78qu6m-rare-steven-krivit-interview-with-martin-fleischmann-discussing-cold-fusion.html">Rumble</a> - <a href="https://youtu.be/kMnY9TX06kw">YouTube</a> - <a href="https://t.me/meslinks/34417">Telegram</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-xvinzwe">Summary</a></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xKvVLKmjjLcTPfGnpz4auLqBhhX4EQwzC7EcUq5XBmz3Y5SE4WpMm5RGWoavY7yiB1M.jpeg" alt="Martin Fleischmann Steven Krivit 2003.jpeg"></p>
-<h2>Martin Fleischmann Recounts the 1985 &quot;Hole in the Floor&quot; Palladium Electrolysis Experiment</h2>
-<p><a href="https://peakd.com/hive-128780/@mes/31739ef7">Screenshots</a> - <a href="https://3speak.tv/watch?v=mes/31739ef7">3Speak</a> - <a href="https://odysee.com/Martin-Fleischmann-1985-Hole-Floor-Palladium-Electrolysis:874dff2e462b7d6d5de34860f984c2cc99d62e7b">Odysee</a> - <a href="https://www.bitchute.com/video/vwRVnzyObLdv/">BitChute</a> - <a href="https://rumble.com/v797vl2-martin-fleischmann-recounts-the-1985-hole-in-the-floor-palladium-electrolys.html">Rumble</a> - <a href="https://youtu.be/VaWSwxzCyCg">YouTube</a> - <a href="https://t.me/meslinks/34559">Telegram</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-ihyg2xjk">Summary</a>  </p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23y9AsJGvSeFwcyfCvm96ChMNfETJAVrfifK1n5BXTCQijLFi7HrtZJ4vFyfLkxNkNGWm.jpeg" alt="1 Martin Fleischmann Hole in the Floor.jpeg"></p>
-</div>
-</div>
-<hr>
-<div class="chapter-toggle" id="mes-livestreams">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('mes-livestreams-list')"><center>MES Livestreams <span id="arrowIcon-mes-livestreams-list" class="arrow-icon">&#9660;</span></center></h1>
-<div id="mes-livestreams-list" class="chapter-toggle-list">
-<hr>
-<h2>MES Livestream 118: Hutchison Effect Zero Point Harmonics</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wC5Fdv3oj2nmTFSFCxRo9QnUsZv3qtcsaYvHSdd9pXn8V3EvdtDdPbiyWn2ejWTYH2Y.jpeg" alt="Nancy Hutchison.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/odmoypqh">Hive</a> - <a href="https://youtube.com/live/Elux1MyqJzo">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-ma71wv1s">Summary</a></p>
-<h2>MES Livestream 115: John Hutchison Joins the Show Again!</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23z7N18ufyj8prPjVNSJg1UcfDT7bQCnrexxKjNUXVHHTMfgjm29Vt55Jq5h29etRkbmR.jpeg" alt="John Hutchison.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-115-john-hutchison-7fp">Hive</a> - <a href="https://youtube.com/live/Jn38lxj3ebU">YouTube</a> - <a href="https://rumble.com/v7138mq-mes-livestream-115-john-hutchison-joins-the-show-again.html">Rumble</a> - <a href="https://odysee.com/MES-Livestream-115-John-Hutchison:e9351e4a758b2d5b679d58b718963455927882c9">Odysee</a> - <a href="https://www.bitchute.com/video/x1ZPf5Gpp3Y8">BitChute</a> - <a href="https://x.com/i/broadcasts/1YqKDNjZrNNJV">X</a> - <a href="https://peakd.com/hive-128780/@mes/livestream-115-john-hutchison-7fp">Notes</a> - <a href="https://youtu.be/o90ylugSL_M">Trailer</a></p>
-<h2>MES Livestream 102: Eddie Kuberski, Carmen Miller, and John Hutchison Join the Show!</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vsQY66pj5pjkRbsUMq5AjvsARGoKwQvSfPrhZk6rADVM8s61GTTWNtd2ds2518DPyTK.jpeg" alt="Tesla.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-102-kuberski-miller-hutchison-l7w">Hive</a> - <a href="https://youtube.com/live/gBXCVIC3AGQ">YouTube</a> - <a href="https://rumble.com/v6xd1bg-mes-livestream-102-eddie-kuberski-carmen-miller-and-john-hutchison-join-the.html">Rumble</a> - <a href="https://odysee.com/@mes:8/MES-Livestream-102-Kuberski-Miller-Hutchison:b">Odysee</a> - <a href="https://www.bitchute.com/video/b7FMKsSPHGN7">BitChute</a> - <a href="https://x.com/i/broadcasts/1BdGYqZoaeBGX">X</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2hzr6da7w">Summary</a></p>
-<h2>MES Livestream 100: Paul Stoichevski and John Hutchison Join the Show!</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vhwxccJLjgDb8WtLnpiRTiJXCZdVpk8K9mSskm9rUT6KtLr779d9uat2zJehapLhgDb.jpeg" alt="Stoichevski Hutchison.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-100-stoichevski-hutchison-exm">Hive</a> - <a href="https://youtube.com/live/HKH91H2oP88">YouTube</a> - <a href="https://rumble.com/v6wptlw-mes-livestream-100-paul-stoichevski-and-john-hutchison-join-the-show.html">Rumble</a> - <a href="https://odysee.com/@mes:8/MES-Livestream-100-Stoichevski-Hutchison:d">Odysee</a> - <a href="https://www.bitchute.com/video/YOl1HjVH3IQl">BitChute</a> - <a href="https://x.com/i/broadcasts/1eaJbWadmXQxX">X</a> - <a href="https://youtu.be/8dL7KQUEeOI">Trailer</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-sebn3xkt">Summary</a></p>
-<h2>MES Livestream 97: Jeane Manning and John Hutchison Join the Show!</h2>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-97-jeane-manning-john-hutchison-8rr">Hive</a> - <a href="https://youtube.com/live/-jH3bghGBZ4">YouTube</a> - <a href="https://rumble.com/v6vrf0t-mes-livestream-97-jeane-manning-and-john-hutchison-join-the-show.html">Rumble</a> - <a href="https://odysee.com/MES-Livestream-97-Jeane-Manning-John-Hutchison:a010f9c4f5061a6a24b50c4b31235fa145cfc7bb">Odysee</a> - <a href="https://www.bitchute.com/video/G1thPRejEUhs">BitChute</a> - <a href="https://x.com/i/broadcasts/1DXxyqRPLWVxM">X</a> - <a href="https://youtu.be/O-KoQ3_Drag">Trailer</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-21lqcpdq4">Summary</a></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uQrDEJGrTAdc4yK6GPedULYPMnR4cF5zBzMmMaGNnZbnrh8SAXDfWtra96sK5dzX3Pr.jpeg" alt="Jeane Manning.jpeg"></p>
-<h2>MES Livestream 83: John Hutchison and Paul Mueller Discuss Experimental Science</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xAdqb6tDkF8CXKPxi7ZLHzfikqrut5yzGAg5WdJ557LmzZ35soCaBriRjFi7cbz21x7.jpeg" alt="Hutchison Inventor3.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-83-hutchison-inventor3-383e">Hive</a> - <a href="https://youtube.com/live/Ic_LJPmJLgs">YouTube</a> - <a href="https://odysee.com/MES-Livestream-83-Hutchison-Inventor3:fb17fda3d0b6cbf10ecb6bfbb07a98a9cd608878">Odysee</a> - <a href="https://youtu.be/0xyH_TMubqI">Trailer</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-33kbyncej">Summary</a></p>
-<h2>MES Livestream 76: John Hutchison Discusses Hutchison Effect Replication</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vi1YoCB55gE6FjakGFyB7a2T14gJHpxjNBUV2fNDKjtsPWBt7VtM6hnnqevK1jjrr8u.jpeg" alt="Hutchison Effect Replication.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-76-john-hutchison-replication-4oh">Hive</a> - <a href="https://rumble.com/v6kzsu7-mes-livestream-76-john-hutchison-discusses-hutchison-effect-replication.html">Rumble</a> - <a href="https://odysee.com/MES-Livestream-76-John-Hutchison-Replication:964bdf6a506a3d0acf644d7ba84c34a59dec69ef">Odysee</a> - <a href="https://www.bitchute.com/video/xZ8uHjOQd0vM">BitChute</a> - <a href="https://inleo.io/threads/view/mes/re-mes-sru6dd">Summary</a></p>
-<h2>MES Livestream 66: Never Before Seen Hutchison Effect Footage</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xyV9Hor2t4ePKj52tdRRYfVJ16hPEU2dtTWBfL8qyjWqD2gS6QL6NvPwh8PK2VpYHWA.jpeg" alt="Hutchison Effect Hard Drive.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/ivestream-66-rare-hutchison-effect-footage">Hive</a> - <a href="https://youtube.com/live/PFKteWK2H5I">YouTube</a> - <a href="https://rumble.com/v5witow-mes-livestream-66-never-before-seen-hutchison-effect-footage.html">Rumble</a> - <a href="https://odysee.com/MES-Livestream-66-Rare-Hutchison-Effect-Footage:4bdee40ad91af371dafc365b897fa58e6cdfc662">Odysee</a> - <a href="https://youtu.be/WbvO8BbKIP0">Trailer</a> - <a href="https://inleo.io/threads/view/mes/re-mes-2yabgvh9a">Summary</a></p>
-<h2>MES Livestream 63: Tour of John Hutchison&#39;s Lab</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23xKvA2EGsAom9jmYdH2nL8Cwh5Sr5QRZm1ESviqN41LaK59nUnY6jaMp7ciHvYJd5Gs1.jpeg" alt="Hutchison Lab.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/fsjbtemx">Hive</a> - <a href="https://youtube.com/live/mP5DLMH54LM">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-mes-2xm8eper2">Summary</a></p>
-<h2>MES Livestream 62: Nancy and John Hutchison Frequency Cannabis</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vi8AU4pN5yMg6woLKPAoQRQhFy2htg2EGiMmZQzeFcDcZ2WDuAhqGjkqvhTyizJzmPt.jpeg" alt="Hutchison Harmonics.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-62-hutchison-harmonics">Hive</a> - <a href="https://youtube.com/live/2_qOG4KDfE8">YouTube</a> - <a href="https://rumble.com/v5p11mb-mes-livestream-62-nancy-and-john-hutchison-frequency-cannabis.html">Rumble</a> - <a href="https://odysee.com/MES-Livestream-62-Hutchison-Harmonics:87a790fac4202a031a291244654e54bcf7d1019c">Odysee</a> - <a href="https://youtu.be/rUV2rhPhjcg">Trailer</a> - <a href="https://inleo.io/threads/view/mes/re-mes-udwbykry">Summary</a></p>
-<h2>MES Livestream 40: John Hutchison Joins the Show!</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vsFeLaUQbZrQWSwpZ6v4XEqHDgoMfyKNroH4kF6QwVk8zdL41ZTA9vAxiimoo2ameTz.jpeg" alt="John Hutchison.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-40-john-hutchison">Hive</a> - <a href="https://youtube.com/live/f5GJiAUhr9c">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-mes-36sucyha8">Summary</a></p>
-<h2>MES Livestream 37: The Hutchison Effect is Real (Debunking the &quot;Debunkers&quot;)</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wCBnShS1n3PurdLXVAWeqtBYCPVnkHPVvZYH7LnWuM4gQLgpDCgiMtdkjmPJGt9xFPx.jpeg" alt="Hutchison Effect Real.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-37-hutchison-effect">Hive</a> - <a href="https://youtube.com/live/EOfO1VcGXCA">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-mes-dg6cn4fb">Summary</a></p>
-<h2>MES Livestream 20: Hutchison Effect Deep Dive</h2>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23ywnoW9bh8WHa8cMpr89CkdVfs2JcLxCJrZ46DH7cC5xHDERRsrfakVCngCfuimW2Mp4.jpeg" alt="Hutchison Effect.jpeg"></p>
-<p><a href="https://peakd.com/hive-128780/@mes/livestream-20-hutchison-effect">Hive</a> - <a href="https://youtube.com/live/FHU3nq8oL04">YouTube</a> - <a href="https://inleo.io/threads/view/mes/re-mes-2kwjhdig6">Summary</a></p>
-</div>
-</div>
-
-    </div>
-    <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
-    <div id="comments-button" class="mes-comments-toggle">Comments</div>
-    <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
-    <script src="/main_js/comments.js?v=1.0.1" defer></script>
-
-
-    <hr>
-
-    <a class="peakd-link" href="https://peakd.com/science/@mes/hutchisoneffect" target="_blank" rel="noopener">Originally published on Hive &rarr;</a>
-    <p class="build-note">
-      Vote/comment/reblog counts and article text were fetched from the Hive blockchain
-      at build time (September 22, 2026) and are not live.
-    </p>
   </div>
 
   <div id="footer" class="footer" role="contentinfo">
@@ -1321,517 +1255,74 @@
     <a class="footer__text" target='_blank' href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
     <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
   </div>
+</div>
 
-  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
-    <div class="lightbox-zoom-controls" id="lightboxZoomControls">
-      <button class="lightbox-zoom-btn" id="lightboxZoomOut" type="button" aria-label="Zoom out">&minus;</button>
-      <span class="lightbox-zoom-level" id="lightboxZoomLevel">100%</span>
-      <button class="lightbox-zoom-btn" id="lightboxZoomIn" type="button" aria-label="Zoom in">+</button>
-    </div>
-    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
-    <img class="lightbox-image" id="lightboxImage" src="" alt="">
-    <div class="lightbox-controls" id="lightboxControls">
-      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
-      <div class="lightbox-counter" id="lightboxCounter"></div>
-      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
-    </div>
-  </div>
-
-  <script>
-    function toggleChapter(listId) {
-      const list = document.getElementById(listId);
-      const arrowIcon = document.getElementById('arrowIcon-' + listId);
-      list.classList.toggle('hidden');
-      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
-    }
-
-    function toggleAllChapters() {
-      const lists = document.querySelectorAll('.chapter-toggle-list');
-      const buttons = document.querySelectorAll('.toggle-all-chapters-btn');
-      const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
-      lists.forEach((list) => {
-        list.classList.toggle('hidden', collapse);
-        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
-        if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
-      });
-      buttons.forEach((btn) => { btn.textContent = collapse ? 'Expand All' : 'Collapse All'; });
-    }
-
-    const body = document.body;
-    const themeToggle = document.getElementById('themeToggle');
-
-    function setTheme(isDark) {
-      if (isDark) {
-        body.classList.add('dark');
-        body.classList.remove('light');
-        themeToggle.textContent = '☀️';
-        localStorage.setItem('theme', 'dark');
-      } else {
-        body.classList.add('light');
-        body.classList.remove('dark');
-        themeToggle.textContent = '🌙';
-        localStorage.setItem('theme', 'light');
-      }
-    }
-
-    const saved = localStorage.getItem('theme');
-    setTheme(saved !== 'light');
-
-    themeToggle.addEventListener('click', () => {
-      setTheme(!body.classList.contains('dark'));
+<script>
+  function toggleAllLists() {
+    const lists = document.querySelectorAll('.collapsible');
+    const buttons = document.querySelectorAll('.toggle-all-lists-btn');
+    const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
+    lists.forEach((list) => {
+      list.classList.toggle('hidden', collapse);
+      const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+      if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
     });
-  </script>
+    buttons.forEach((btn) => { btn.textContent = collapse ? 'Expand All' : 'Collapse All'; });
+  }
+
+  function toggleSubList(listId) {
+    const list = document.getElementById(listId);
+    const arrowIcon = document.getElementById(`arrowIcon-${listId}`);
+    list.classList.toggle('hidden');
+    arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+  }
+</script>
 
 <script>
-    // text-size control: same STEPS / 'articleFontScale' key as
-    // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
-    // which only prose (paragraphs/lists/tables), the byline and the Jump To
-    // navigation multiply into their font-size -- headings, chapter titles
-    // ("Hutchison Effect Playlist"), cards and buttons stay fixed.
-    (function () {
-      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
-      var body = document.body;
-      var downBtn = document.getElementById('textSizeDown');
-      var upBtn = document.getElementById('textSizeUp');
-      if (!body || !downBtn || !upBtn) return;
-      var index;
-      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
-      if (index === -1) index = STEPS.indexOf(100);
-      function apply() {
-        body.style.setProperty('--ts', String(STEPS[index] / 100));
-        downBtn.disabled = index === 0;
-        upBtn.disabled = index === STEPS.length - 1;
-        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
-      }
-      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
-      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
-      apply();
-    })();
-  </script>
+  // view-toggle: switches a section between Grid View (thumbnail cards,
+  // default) and List View (title + full thumbnail + platform links) --
+  // both are pre-rendered at build time in buildSection(), this just
+  // toggles which one is visible. One wiring call per section (see
+  // buildPage()'s viewToggleWiring).
+  // id: section id (e.g. 'mathQaLivestreams'). extraIds: capitalized suffixes
+  // beyond 'Grid'/'List' (e.g. ['Stats']) for a section's extraViews -- each
+  // gets its own toggle button (id+suffix+'Btn') and pane (id+suffix),
+  // exactly like Grid/List, so N views can share one toggle group instead of
+  // just two.
+  function wireViewToggle(id, extraIds) {
+    var suffixes = ['Grid', 'List'].concat(extraIds || []);
+    var entries = suffixes
+      .map(function (suffix) {
+        return {
+          btn: document.getElementById(id + suffix + 'Btn'),
+          pane: document.getElementById(id + suffix),
+        };
+      })
+      .filter(function (e) { return e.btn && e.pane; });
+    if (entries.length < 2) return;
 
-  <script>
-    // Thumbnail View / Grid View toggle for long Hive-sourced chapters that list
-    // one entry per <h2> heading, followed by a link-row <p> and an image <p>
-    // (Highlights, Articles, News Reels, Unedited Footage, etc.). Grid View is
-    // the default: built once at runtime into the same .card-grid used for the
-    // card-grid sections above, using each entry's first <a> (the leftmost
-    // link) as the card's href and its first <img> as the thumbnail. Thumbnail
-    // View is the chapter's own markdown-rendered markup, left untouched,
-    // available as a fallback via the toggle. Add a chapter's id + heading tag
-    // to GRID_VIEW_CHAPTERS to give it the same toggle. Kept in sync with the
-    // identical mechanism in mes.fm/911/build.mjs.
-    //
-    // These chapters live in the narrow 760px article column (.container), but
-    // Grid View should read as big as the card-grid sections in the 1180px
-    // .wide band above -- so the grid is wrapped in a .card-grid-breakout div
-    // that updateBreakout() sizes/positions (via inline width/margin-left) to
-    // exactly match the current .wide element's rect, on load, on window
-    // resize, and whenever Grid View is switched back on.
-    (function () {
-      var GRID_VIEW_CHAPTERS = [
-        { id: 'highlights', heading: 'H2' },
-        { id: 'articles', heading: 'H2' },
-        { id: 'debunking-debunkers', heading: 'H2' },
-        { id: 'news-reels', heading: 'H2' },
-        { id: 'unedited-footage', heading: 'H2' },
-        { id: 'interviews-and-presentations', heading: 'H2' },
-        { id: 'cold-fusion-low-energy-nuclear-reactions-lenr', heading: 'H2' },
-        { id: 'mes-livestreams', heading: 'H2' },
-      ];
-
-      // Some Hive image URLs carry an unescaped apostrophe in their filename
-      // (a "#filename" fragment some old steemitimages.com uploads use), which
-      // would otherwise prematurely close the quoted url('...') below and drop
-      // the whole background-image. Percent-encode it so the string stays a
-      // valid CSS <url>.
-      function cssUrl(url) {
-        return "url('" + String(url).split("'").join('%27') + "')";
-      }
-
-      var breakouts = [];
-
-      function updateBreakout(el) {
-        var wideEl = document.querySelector('.wide');
-        if (!wideEl) return;
-        el.style.width = '';
-        el.style.marginLeft = '';
-        var wideRect = wideEl.getBoundingClientRect();
-        var selfRect = el.getBoundingClientRect();
-        el.style.width = wideRect.width + 'px';
-        el.style.marginLeft = (wideRect.left - selfRect.left) + 'px';
-      }
-
-      window.addEventListener('resize', function () {
-        breakouts.forEach(updateBreakout);
-      });
-
-      function buildEntries(children, headingTag) {
-        var entries = [];
-        var current = null;
-        children.forEach(function (node) {
-          if (node.tagName === headingTag) {
-            current = { title: node.textContent.trim(), nodes: [] };
-            entries.push(current);
-          } else if (current) {
-            current.nodes.push(node);
-          }
+    entries.forEach(function (entry) {
+      entry.btn.addEventListener('click', function () {
+        entries.forEach(function (e) {
+          var active = e === entry;
+          e.btn.classList.toggle('active', active);
+          e.pane.classList.toggle('view-hidden', !active);
         });
-        return entries;
-      }
-
-      function firstMatch(nodes, selector) {
-        for (var i = 0; i < nodes.length; i++) {
-          if (!nodes[i].querySelector) continue;
-          var found = nodes[i].querySelector(selector);
-          if (found) return found;
-        }
-        return null;
-      }
-
-      function enableGridToggle(config) {
-        var list = document.getElementById(config.id + '-list');
-        if (!list) return;
-        var headingTag = config.heading || 'H1';
-        var children = Array.prototype.slice.call(list.children);
-        var entries = buildEntries(children, headingTag);
-        if (!entries.length) return;
-
-        // Nodes before the first heading (e.g. a leading "Free Energy
-        // playlist" reference line) -- pulled out into their own block, shown
-        // above the toggle in both views, instead of getting buried inside
-        // whichever view is currently hidden.
-        var firstHeadingIndex = -1;
-        for (var ci = 0; ci < children.length; ci++) {
-          if (children[ci].tagName === headingTag) { firstHeadingIndex = ci; break; }
-        }
-        var leadNodes = firstHeadingIndex > 0 ? children.slice(0, firstHeadingIndex) : [];
-        var restNodes = firstHeadingIndex >= 0 ? children.slice(firstHeadingIndex) : children;
-
-        var thumbView = document.createElement('div');
-        thumbView.className = 'thumb-view view-hidden';
-        restNodes.forEach(function (node) { thumbView.appendChild(node); });
-
-        var gridView = document.createElement('div');
-        gridView.className = 'card-grid';
-        entries.forEach(function (entry) {
-          var link = firstMatch(entry.nodes, 'a');
-          if (!link) return;
-          var img = firstMatch(entry.nodes, 'img');
-          var card = document.createElement('a');
-          card.className = 'link-card';
-          card.href = link.getAttribute('href');
-          var thumb = document.createElement('span');
-          thumb.className = 'link-card-thumb';
-          var src = img && img.getAttribute('src');
-          if (src) thumb.style.backgroundImage = cssUrl(src);
-          var cardBody = document.createElement('span');
-          cardBody.className = 'link-card-body';
-          var titleEl = document.createElement('span');
-          titleEl.className = 'link-card-title';
-          titleEl.textContent = entry.title;
-          var cta = document.createElement('span');
-          cta.className = 'link-card-readmore';
-          cta.textContent = 'Watch →';
-          cardBody.appendChild(titleEl);
-          cardBody.appendChild(cta);
-          card.appendChild(thumb);
-          card.appendChild(cardBody);
-          gridView.appendChild(card);
-        });
-        if (!gridView.children.length) return;
-
-        var gridWrap = document.createElement('div');
-        gridWrap.className = 'card-grid-breakout';
-        gridWrap.appendChild(gridView);
-
-        var toolbar = document.createElement('div');
-        toolbar.className = 'view-toggle';
-        var thumbBtn = document.createElement('button');
-        thumbBtn.type = 'button';
-        thumbBtn.className = 'view-toggle-btn';
-        thumbBtn.textContent = 'Thumbnail View';
-        var gridBtn = document.createElement('button');
-        gridBtn.type = 'button';
-        gridBtn.className = 'view-toggle-btn active';
-        gridBtn.textContent = 'Grid View';
-        toolbar.appendChild(thumbBtn);
-        toolbar.appendChild(gridBtn);
-
-        if (leadNodes.length) {
-          var leadWrap = document.createElement('div');
-          leadWrap.className = 'grid-toggle-lead';
-          leadNodes.forEach(function (node) { leadWrap.appendChild(node); });
-          list.appendChild(leadWrap);
-        }
-        list.appendChild(toolbar);
-        list.appendChild(thumbView);
-        list.appendChild(gridWrap);
-
-        breakouts.push(gridWrap);
-        updateBreakout(gridWrap);
-
-        function showThumb() {
-          thumbBtn.classList.add('active');
-          gridBtn.classList.remove('active');
-          thumbView.classList.remove('view-hidden');
-          gridWrap.classList.add('view-hidden');
-        }
-        function showGrid() {
-          gridBtn.classList.add('active');
-          thumbBtn.classList.remove('active');
-          gridWrap.classList.remove('view-hidden');
-          thumbView.classList.add('view-hidden');
-          // Re-measure: the viewport (or the chapter's own collapsed state)
-          // may have changed while this grid was hidden.
-          updateBreakout(gridWrap);
-        }
-        thumbBtn.addEventListener('click', showThumb);
-        gridBtn.addEventListener('click', showGrid);
-      }
-
-      GRID_VIEW_CHAPTERS.forEach(enableGridToggle);
-    })();
-  </script>
-
-  <script>
-    // image-lightbox: click any post-body image to pop it out spanning the full browser
-    // width, with prev/next navigation via on-screen arrows and keyboard arrow keys. This
-    // is a fixed full-viewport overlay (not an in-flow width breakout), so it always sits
-    // on top of the page -- no AdSense placement can end up sandwiched above or below it
-    // while it's open.
-    (function () {
-      var images = Array.prototype.slice.call(document.querySelectorAll('.post-body img'));
-      if (!images.length) return;
-
-      var overlay = document.getElementById('lightboxOverlay');
-      var imageEl = document.getElementById('lightboxImage');
-      var controlsEl = document.getElementById('lightboxControls');
-      var counterEl = document.getElementById('lightboxCounter');
-      var closeBtn = document.getElementById('lightboxClose');
-      var prevBtn = document.getElementById('lightboxPrev');
-      var nextBtn = document.getElementById('lightboxNext');
-      var currentIndex = 0;
-
-      if (images.length < 2) {
-        controlsEl.style.display = 'none';
-      }
-
-      function show(index) {
-        currentIndex = (index + images.length) % images.length;
-        var img = images[currentIndex];
-        imageEl.src = img.currentSrc || img.src;
-        imageEl.alt = img.alt || '';
-        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
-      }
-
-      function nudgeSideRail() {
-        // Same trick as the video theater-mode toggle: AdSense only re-checks
-        // google-side-rail-overlap exclusion zones on scroll/resize, not on a
-        // plain class-driven visibility change.
-        setTimeout(function () {
-          window.dispatchEvent(new Event('resize'));
-        }, 50);
-      }
-
-      // adGuard: the z-index/exclusion-zone approach above doesn't reliably
-      // keep AdSense's side-rail Auto ads format off the lightbox in practice
-      // -- Google appears to re-append that ad node later in the DOM, which
-      // wins the stacking-order tie even against a matching max z-index. So
-      // while the lightbox is open, directly hide any Auto ads in-page block
-      // (the same google-auto-placed class the other mirrored-article pages'
-      // header/comments guard watches for) and restore it on close. A
-      // MutationObserver catches one that gets (re)inserted while the
-      // lightbox is already open.
-      var AD_SELECTOR = '.google-auto-placed';
-      var adGuardObserver = null;
-
-      function hideAd(el) {
-        if (el.dataset.lbPrevDisplay === undefined) {
-          el.dataset.lbPrevDisplay = el.style.display || '';
-        }
-        el.style.setProperty('display', 'none', 'important');
-      }
-
-      function restoreAds() {
-        document.querySelectorAll(AD_SELECTOR).forEach(function (el) {
-          if (el.dataset.lbPrevDisplay !== undefined) {
-            el.style.display = el.dataset.lbPrevDisplay;
-            delete el.dataset.lbPrevDisplay;
-          }
-        });
-      }
-
-      function startAdGuard() {
-        document.querySelectorAll(AD_SELECTOR).forEach(hideAd);
-        adGuardObserver = new MutationObserver(function (mutations) {
-          mutations.forEach(function (m) {
-            m.addedNodes.forEach(function (node) {
-              if (node.nodeType !== 1) return;
-              if (node.matches && node.matches(AD_SELECTOR)) hideAd(node);
-              if (node.querySelectorAll) node.querySelectorAll(AD_SELECTOR).forEach(hideAd);
-            });
-          });
-        });
-        adGuardObserver.observe(document.body, { childList: true, subtree: true });
-      }
-
-      function stopAdGuard() {
-        if (adGuardObserver) {
-          adGuardObserver.disconnect();
-          adGuardObserver = null;
-        }
-        restoreAds();
-      }
-
-      function open(index) {
-        show(index);
-        overlay.classList.add('open');
-        document.body.style.overflow = 'hidden';
-        nudgeSideRail();
-        startAdGuard();
-      }
-
-      function close() {
-        overlay.classList.remove('open');
-        document.body.style.overflow = '';
-        nudgeSideRail();
-        stopAdGuard();
-      }
-
-      images.forEach(function (img, index) {
-        img.addEventListener('click', function () { open(index); });
       });
+    });
+  }
 
-      closeBtn.addEventListener('click', close);
-      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
-      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
 
-      overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) close();
-      });
+</script>
 
-      document.addEventListener('keydown', function (e) {
-        if (!overlay.classList.contains('open')) return;
-        if (e.key === 'Escape') close();
-        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
-        else if (e.key === 'ArrowRight') show(currentIndex + 1);
-      });
-    })();
-  </script>
-  <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
-  <script src="/main_js/main.js?v=1.0.3"></script>
 <script>
-    // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the existing
-    // image lightbox. Purely additive -- it only touches the #lightboxZoom*
-    // elements it creates itself, resetting whenever #lightboxImage's src
-    // or #lightboxOverlay's open state changes, so it works the same
-    // regardless of how this page's own lightbox open/prev/next logic runs.
-    (function () {
-      var overlay = document.getElementById('lightboxOverlay');
-      var imageEl = document.getElementById('lightboxImage');
-      var zoomOutBtn = document.getElementById('lightboxZoomOut');
-      var zoomInBtn = document.getElementById('lightboxZoomIn');
-      var zoomLevelEl = document.getElementById('lightboxZoomLevel');
-      if (!overlay || !imageEl || !zoomOutBtn || !zoomInBtn || !zoomLevelEl) return;
-
-      var ZOOM_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
-      var zoomIndex = 0;
-      var panX = 0, panY = 0;
-      var dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
-
-      function applyTransform() {
-        imageEl.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + ZOOM_STEPS[zoomIndex] + ')';
-        imageEl.classList.toggle('zoomed', zoomIndex > 0);
-        zoomLevelEl.textContent = Math.round(ZOOM_STEPS[zoomIndex] * 100) + '%';
-        zoomOutBtn.disabled = zoomIndex === 0;
-        zoomInBtn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
-      }
-
-      function zoomTo(index) {
-        zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index));
-        if (zoomIndex === 0) { panX = 0; panY = 0; }
-        applyTransform();
-      }
-
-      function resetZoom() {
-        dragging = false;
-        imageEl.classList.remove('dragging');
-        zoomTo(0);
-      }
-
-      zoomOutBtn.addEventListener('click', function () { zoomTo(zoomIndex - 1); });
-      zoomInBtn.addEventListener('click', function () { zoomTo(zoomIndex + 1); });
-
-      imageEl.addEventListener('dblclick', function () {
-        zoomTo(zoomIndex > 0 ? 0 : 2);
-      });
-
-      imageEl.addEventListener('mousedown', function (e) {
-        if (zoomIndex === 0) return;
-        dragging = true;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        panStartX = panX;
-        panStartY = panY;
-        imageEl.classList.add('dragging');
-        e.preventDefault();
-      });
-
-      window.addEventListener('mousemove', function (e) {
-        if (!dragging) return;
-        panX = panStartX + (e.clientX - dragStartX);
-        panY = panStartY + (e.clientY - dragStartY);
-        applyTransform();
-      });
-
-      window.addEventListener('mouseup', function () {
-        if (!dragging) return;
-        dragging = false;
-        imageEl.classList.remove('dragging');
-      });
-
-      imageEl.addEventListener('touchstart', function (e) {
-        if (zoomIndex === 0 || e.touches.length !== 1) return;
-        dragging = true;
-        dragStartX = e.touches[0].clientX;
-        dragStartY = e.touches[0].clientY;
-        panStartX = panX;
-        panStartY = panY;
-      }, { passive: true });
-
-      imageEl.addEventListener('touchmove', function (e) {
-        if (!dragging || e.touches.length !== 1) return;
-        panX = panStartX + (e.touches[0].clientX - dragStartX);
-        panY = panStartY + (e.touches[0].clientY - dragStartY);
-        applyTransform();
-      }, { passive: true });
-
-      imageEl.addEventListener('touchend', function () { dragging = false; });
-
-      document.addEventListener('keydown', function (e) {
-        if (!overlay.classList.contains('open')) return;
-        if (e.key === '+' || e.key === '=') zoomTo(zoomIndex + 1);
-        else if (e.key === '-' || e.key === '_') zoomTo(zoomIndex - 1);
-      });
-
-      new MutationObserver(resetZoom).observe(imageEl, { attributes: true, attributeFilter: ['src'] });
-      new MutationObserver(function () {
-        if (overlay.classList.contains('open')) resetZoom();
-      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
-
-      applyTransform();
-    })();
-  </script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/jump-to.js?v=2" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
   // are dropped from the right, least important first, rather than
-  // wrapping. The last link (MES.fm) is kept longest, so drop from the one
-  // before it first. Visibility is driven from here via the inline style
+  // wrapping. Visibility is driven from here via the inline style
   // attribute (not just a CSS class) so the bar stays hidden even if the
   // stylesheet rules for it get stripped -- see the CSS comment above
-  // #compact-nav. Identical to mes.fm/math's version.
+  // #compact-nav.
   (function () {
     var bar = document.getElementById('compact-nav');
     var nav = document.querySelector('.info-bar-container');
@@ -1842,6 +1333,7 @@
 
     function fit() {
       items.forEach(function (li) { li.style.display = ''; });
+      // MES.fm is the most important link, so drop from the one before it first
       var order = items.slice(0, -1).reverse();
       for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
         order[i].style.display = 'none';
@@ -1862,11 +1354,14 @@
         clearTimeout(hideTimer);
         bar.style.display = 'flex';
         fit();
+        // Let the browser register the "flex" state above before adding
+        // the class that animates transform: none, or it'd jump instantly.
         requestAnimationFrame(function () {
           requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
         });
       } else {
         document.body.classList.remove('is-stuck');
+        // Keep display:flex through the slide-up transition, then hide.
         hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
       }
     }
@@ -1878,5 +1373,274 @@
     update();
   })();
 </script>
+
+<script>
+  // header-controls: text-size (A-/A+) and dark/light mode (sun/moon).
+  // Lives next to #navbar-button so it's reachable at every screen width,
+  // not just desktop. Same STEPS/localStorage-key convention as
+  // add_text_size_control.py (see mes.fm/hutchison-article-balloons) -- but
+  // that control scales a whole <article>; this one deliberately scales
+  // only .page-description and the Jump To panel, leaving headings, card
+  // titles, and nav untouched.
+  (function () {
+    var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+    var TARGETS = [
+      { el: document.querySelector('.page-description'), base: 1 },
+      { el: document.querySelector('.toc-sidebar'), base: 0.85 },
+      { el: document.querySelector('.toc-mobile'), base: 1 },
+    ].filter(function (t) { return t.el; });
+    var downBtn = document.getElementById('textSizeDownBtn');
+    var upBtn = document.getElementById('textSizeUpBtn');
+    if (!TARGETS.length || !downBtn || !upBtn) return;
+
+    function clampIndex(i) {
+      return Math.max(0, Math.min(STEPS.length - 1, i));
+    }
+
+    var index;
+    try {
+      index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale')));
+    } catch (e) {
+      index = -1;
+    }
+    if (index === -1) index = STEPS.indexOf(100);
+
+    function apply() {
+      TARGETS.forEach(function (t) {
+        t.el.style.fontSize = (t.base * STEPS[index] / 100) + 'em';
+      });
+      downBtn.disabled = index === 0;
+      upBtn.disabled = index === STEPS.length - 1;
+      try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+    }
+
+    downBtn.addEventListener('click', function () {
+      index = clampIndex(index - 1);
+      apply();
+    });
+    upBtn.addEventListener('click', function () {
+      index = clampIndex(index + 1);
+      apply();
+    });
+
+    apply();
+  })();
+
+  (function () {
+    var body = document.body;
+    var themeBtn = document.getElementById('themeToggleBtn');
+
+    function applyTheme(isDark) {
+      body.classList.toggle('dark-mode', isDark);
+      themeBtn.textContent = isDark ? '☀️' : '🌙';
+      try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (e) {}
+    }
+
+    // Shared 'theme' key (same convention as the rest of the site), but --
+    // unlike those pages, which default new visitors to dark -- this page
+    // defaults to its normal light template unless dark was explicitly
+    // chosen, since math/index.html had no dark mode at all before now.
+    var savedTheme;
+    try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
+    applyTheme(savedTheme === 'dark');
+
+    themeBtn.addEventListener('click', function () {
+      applyTheme(!body.classList.contains('dark-mode'));
+    });
+  })();
+</script>
+
+<div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <div class="lightbox-zoom-controls" id="lightboxZoomControls">
+    <button class="lightbox-zoom-btn" id="lightboxZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+    <span class="lightbox-zoom-level" id="lightboxZoomLevel">100%</span>
+    <button class="lightbox-zoom-btn" id="lightboxZoomIn" type="button" aria-label="Zoom in">+</button>
+  </div>
+  <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+  <img class="lightbox-image" id="lightboxImage" src="" alt="">
+  <div class="lightbox-controls" id="lightboxControls">
+    <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+    <div class="lightbox-counter" id="lightboxCounter"></div>
+    <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+  </div>
+</div>
+
+<script>
+  // image-lightbox: click any List View thumbnail to pop it out
+  // full-viewport, with prev/next via on-screen arrows and keyboard arrows.
+  (function () {
+    var images = Array.prototype.slice.call(document.querySelectorAll('.list-thumb'));
+    if (!images.length) return;
+
+    var overlay = document.getElementById('lightboxOverlay');
+    var imageEl = document.getElementById('lightboxImage');
+    var controlsEl = document.getElementById('lightboxControls');
+    var counterEl = document.getElementById('lightboxCounter');
+    var closeBtn = document.getElementById('lightboxClose');
+    var prevBtn = document.getElementById('lightboxPrev');
+    var nextBtn = document.getElementById('lightboxNext');
+    var currentIndex = 0;
+
+    if (images.length < 2) {
+      controlsEl.style.display = 'none';
+    }
+
+    function show(index) {
+      currentIndex = (index + images.length) % images.length;
+      var img = images[currentIndex];
+      imageEl.src = img.currentSrc || img.src;
+      imageEl.alt = img.alt || '';
+      counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+    }
+
+    function open(index) {
+      show(index);
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    images.forEach(function (img, index) {
+      img.addEventListener('click', function () { open(index); });
+    });
+
+    closeBtn.addEventListener('click', close);
+    prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+    nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) close();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (!overlay.classList.contains('open')) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+      else if (e.key === 'ArrowRight') show(currentIndex + 1);
+    });
+  })();
+</script>
+
+<script>
+  // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the lightbox
+  // above -- same add_lightbox_zoom.py pattern used repo-wide (e.g.
+  // mes.fm/hutchison). Purely additive: only touches the #lightboxZoom*
+  // elements it creates itself, resetting whenever #lightboxImage's src or
+  // #lightboxOverlay's open state changes, so it works regardless of how
+  // the lightbox's own open/prev/next logic runs.
+  (function () {
+    var overlay = document.getElementById('lightboxOverlay');
+    var imageEl = document.getElementById('lightboxImage');
+    var zoomOutBtn = document.getElementById('lightboxZoomOut');
+    var zoomInBtn = document.getElementById('lightboxZoomIn');
+    var zoomLevelEl = document.getElementById('lightboxZoomLevel');
+    if (!overlay || !imageEl || !zoomOutBtn || !zoomInBtn || !zoomLevelEl) return;
+
+    var ZOOM_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+    var zoomIndex = 0;
+    var panX = 0, panY = 0;
+    var dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+    function applyTransform() {
+      imageEl.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + ZOOM_STEPS[zoomIndex] + ')';
+      imageEl.classList.toggle('zoomed', zoomIndex > 0);
+      zoomLevelEl.textContent = Math.round(ZOOM_STEPS[zoomIndex] * 100) + '%';
+      zoomOutBtn.disabled = zoomIndex === 0;
+      zoomInBtn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
+    }
+
+    function zoomTo(index) {
+      zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index));
+      if (zoomIndex === 0) { panX = 0; panY = 0; }
+      applyTransform();
+    }
+
+    function resetZoom() {
+      dragging = false;
+      imageEl.classList.remove('dragging');
+      zoomTo(0);
+    }
+
+    zoomOutBtn.addEventListener('click', function () { zoomTo(zoomIndex - 1); });
+    zoomInBtn.addEventListener('click', function () { zoomTo(zoomIndex + 1); });
+
+    imageEl.addEventListener('dblclick', function () {
+      zoomTo(zoomIndex > 0 ? 0 : 2);
+    });
+
+    imageEl.addEventListener('mousedown', function (e) {
+      if (zoomIndex === 0) return;
+      dragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      panStartX = panX;
+      panStartY = panY;
+      imageEl.classList.add('dragging');
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', function (e) {
+      if (!dragging) return;
+      panX = panStartX + (e.clientX - dragStartX);
+      panY = panStartY + (e.clientY - dragStartY);
+      applyTransform();
+    });
+
+    window.addEventListener('mouseup', function () {
+      if (!dragging) return;
+      dragging = false;
+      imageEl.classList.remove('dragging');
+    });
+
+    imageEl.addEventListener('touchstart', function (e) {
+      if (zoomIndex === 0 || e.touches.length !== 1) return;
+      dragging = true;
+      dragStartX = e.touches[0].clientX;
+      dragStartY = e.touches[0].clientY;
+      panStartX = panX;
+      panStartY = panY;
+    }, { passive: true });
+
+    imageEl.addEventListener('touchmove', function (e) {
+      if (!dragging || e.touches.length !== 1) return;
+      panX = panStartX + (e.touches[0].clientX - dragStartX);
+      panY = panStartY + (e.touches[0].clientY - dragStartY);
+      applyTransform();
+    }, { passive: true });
+
+    imageEl.addEventListener('touchend', function () { dragging = false; });
+
+    document.addEventListener('keydown', function (e) {
+      if (!overlay.classList.contains('open')) return;
+      if (e.key === '+' || e.key === '=') zoomTo(zoomIndex + 1);
+      else if (e.key === '-' || e.key === '_') zoomTo(zoomIndex - 1);
+    });
+
+    new MutationObserver(resetZoom).observe(imageEl, { attributes: true, attributeFilter: ['src'] });
+    new MutationObserver(function () {
+      if (overlay.classList.contains('open')) resetZoom();
+    }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+
+    applyTransform();
+  })();
+</script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+var MES_Vars = {
+    mobile:false,
+    hide_search:false,
+    current_tab:1,
+    info_bar_tab:0
+}
+</script>
+<script src="/main_js/lazysizes.min.js?v=1.0.3" async></script>
+<script src="/main_js/main.js?v=1.0.3"></script>
+<script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
+<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
 </body>
 </html>

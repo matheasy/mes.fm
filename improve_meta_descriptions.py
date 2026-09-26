@@ -41,6 +41,10 @@ GENERATED = {
     "911", "911-alchemy", "conspiracy", "cubic-formula", "djw", "ferrocell-specular-reflection", "hutchison",
     "hutchison-tom-sky", "math", "mathiew", "norman-patricia-ai-email", "science", "vector-functions-problems-plus",
     "spherical-harmonics", "math-qa", "sequences-series", "vectors", "vector-functions",
+    # emitted by mes.fm/hutchison/build.mjs (hub + section pages)
+    "hutchison-posts", "hutchison-videos", "highlights", "articles", "hutchison-debunking-debunkers",
+    "hutchison-news", "hutchison-unedited-footage", "hutchison-interviews", "cold-fusion-lenr",
+    "hutchison-livestreams",
 }
 
 # site dir -> (site label, tail options longest -> shortest)
