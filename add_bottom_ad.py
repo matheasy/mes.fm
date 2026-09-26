@@ -44,8 +44,8 @@ JS_BLOCK = '<!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v={v}" d
 
 
 def block(slot, responsive=False):
-    if responsive:  # rectangle-shaped responsive unit: up to ~280px tall, reserved so the footer doesn't jump
-        attrs, outer_h, holder = ' data-ad-mode="rect"', "300", "width:100%;min-height:280px;margin:0 auto;"
+    if responsive:  # rectangle-shaped responsive unit: seen ~810x308 live, so 310px is reserved (+20 for the label) and the footer doesn't jump
+        attrs, outer_h, holder = ' data-ad-mode="rect"', "330", "width:100%;min-height:310px;margin:0 auto;"
     else:
         attrs, outer_h, holder = "", "270", "width:300px;height:250px;margin:0 auto;"
     return (
