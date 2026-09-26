@@ -442,7 +442,8 @@ $(document).ready(function(){
 	});
 
 	$(".question-mark-button").click(function() {
-		$(this).nextAll(".box-container").toggleClass("hide");
+		// the "?" sits inside the row's .eq-text wrapper, so the formula box is a sibling of the wrapper, not of the button
+		$(this).closest(".input-row").children(".box-container").toggleClass("hide");
 		$(this).toggleClass("selected");
 	});
 

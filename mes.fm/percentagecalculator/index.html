@@ -221,6 +221,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	   positioned on top of the fractions/inputs. */
 	.input {height:2.3em;width:4.5em;font-size: 1em;text-align: center;box-sizing:border-box;padding:0 0.3em;border:1px solid #9aa7b4;border-radius:0.4em;background-color:#ffffff;}
 	body.dark-mode .input, body.dark-mode .answer {color:#eeeeee;}
+	body.dark-mode .box-border__inside {background-color:#1a1a1a;color:#eeeeee;}
+	body.dark-mode .box-border__inside span {color:#eeeeee;}
 	.input:focus {outline:none;border-color:#1479c7;box-shadow:0 0 0 0.2em rgba(20,121,199,0.25);}
 	.input-row {margin:0 0 1em 0; padding:1em 0.8em; position: relative;background-color: #ededed;border: 1px solid #cbcbcb;border-radius: 0.5em;display:flex;flex-wrap:wrap;align-items:center;row-gap:0.6em;}
 	.input-row > .box-container {flex:0 0 100%;}
@@ -241,7 +243,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.fraction-line {display:block;height:0.15em;background-color:#333333;width:3.4em;margin:0.25em 0;}
 	.input-container {display:flex;align-items:center;margin-left:auto;padding-left:1em;}
 	.text--answer {display:block;}
-	.answer {background-color: #ffffff;border: 1px #9aa7b4 solid;border-radius:0.4em;width:5em;padding:0 0.3em;height:2.3em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;font-weight: normal;}
+	.answer {background-color: #ffffff;border: 1px #9aa7b4 solid;border-radius:0.4em;min-width:5em;max-width:12em;padding:0 0.5em;height:2.3em;box-sizing:border-box;white-space:nowrap;display:flex;align-items:center;justify-content:center;text-align:center;font-weight: normal;}
 	.hover:hover {background-color: #1479c7;color:white;cursor: pointer;}
 	.button-icon {height:0.6em;width:0.6em;line-height:0.6em;padding:0.35em;border-radius:0.8em;border: 0.125em solid #1479c7;display:inline-block;font-weight:700;color:#1479c7;-webkit-touch-callout: none;-webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;cursor: pointer;margin-right:0.8em;}
 	.button-icon--off {cursor:default; margin-right:0;}
@@ -695,7 +697,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             hide_search:true,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script>$.getScript("/percentagecalculator/js/calculator6da2.js?v=2.2");</script>            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.6" data-scale="main" data-dark="derive" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=1" defer></script><!-- /MES-ASIDE-JS --></body>
+	<script>$.getScript("/percentagecalculator/js/calculator6da2.js?v=2.3");</script>            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.6" data-scale="main" data-dark="derive" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=1" defer></script><!-- /MES-ASIDE-JS --></body>
 
 <!-- Mirrored from percentagecalculator.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:43:44 GMT -->
 </html>
