@@ -238,7 +238,7 @@
 	};
 
 	var ABBR_ZONE = {
-		"pst": "America/Los_Angeles", "pdt": "America/Los_Angeles", "pt": "America/Los_Angeles",
+		"pst": "America/Los_Angeles", "pdt": "America/Los_Angeles", "pt": "America/Los_Angeles", "pct": "America/Vancouver",
 		"mst": "America/Denver", "mdt": "America/Denver", "mt": "America/Denver",
 		"cst": "America/Chicago", "cdt": "America/Chicago",
 		"est": "America/New_York", "edt": "America/New_York", "et": "America/New_York",
@@ -341,8 +341,21 @@
 		return FALLBACK_ZONES.slice().sort();
 	}
 
+	/* British Columbia: the last spring-forward was 2026-03-08 02:00 PST (10:00 UTC). B.C. now stays on UTC-7 all year and calls it
+	 * Pacific Time, abbreviated PCT (news.gov.bc.ca/releases/2026CITZ0009-001073) -- no "fall back" on 1 Nov 2026. Browsers ship a
+	 * tz database that may pre-date this and would still switch Vancouver to PST in November, so from that instant the zone is pinned
+	 * to a fixed UTC-7 here (Etc/GMT+7 is POSIX-inverted, i.e. UTC-7) and named PCT, rather than trusted to Intl. Earlier dates keep the
+	 * historical PST/PDT rules. Seattle / Los Angeles are unaffected. Once every browser's data agrees this override is a harmless no-op. */
+	var BC_ZONE = "America/Vancouver";
+	var BC_FIXED_FROM = Date.UTC(2026, 2, 8, 10, 0, 0);
+	var BC_FIXED_ZONE = "Etc/GMT+7";
+	function tzAt(timeZone, instant) {
+		return timeZone === BC_ZONE && instant.getTime() >= BC_FIXED_FROM ? BC_FIXED_ZONE : timeZone;
+	}
+
 	// minutes that `timeZone` is ahead of UTC at `date`
 	function offsetMin(timeZone, date) {
+		timeZone = tzAt(timeZone, date);
 		var dtf = new Intl.DateTimeFormat("en-US", {
 			timeZone: timeZone, hourCycle: "h23",
 			year: "numeric", month: "2-digit", day: "2-digit",
@@ -366,7 +379,7 @@
 
 	function fmt(timeZone, instant, opts) {
 		opts = opts || {};
-		opts.timeZone = timeZone;
+		opts.timeZone = tzAt(timeZone, instant);
 		return new Intl.DateTimeFormat("en-US", opts).format(instant);
 	}
 	function clockStr(timeZone, instant) {
@@ -378,7 +391,7 @@
 	function ymd(timeZone, instant) {
 		// en-CA renders ISO-ish YYYY-MM-DD
 		var p = {};
-		new Intl.DateTimeFormat("en-CA", { timeZone: timeZone, year: "numeric", month: "2-digit", day: "2-digit" })
+		new Intl.DateTimeFormat("en-CA", { timeZone: tzAt(timeZone, instant), year: "numeric", month: "2-digit", day: "2-digit" })
 			.formatToParts(instant).forEach(function (x) { p[x.type] = x.value; });
 		return p.year + "-" + p.month + "-" + p.day;
 	}
@@ -386,6 +399,7 @@
 		return Math.round((Date.parse(a + "T00:00:00Z") - Date.parse(b + "T00:00:00Z")) / 86400000);
 	}
 	function zoneName(timeZone, instant, style) {
+		if (tzAt(timeZone, instant) === BC_FIXED_ZONE) return style === "long" ? "Pacific Time" : "PCT";
 		try {
 			var part = new Intl.DateTimeFormat("en-US", { timeZone: timeZone, timeZoneName: style, hour: "numeric" })
 				.formatToParts(instant).find(function (x) { return x.type === "timeZoneName"; });
@@ -444,7 +458,7 @@
 	// how the matched search term is shown ("Boston →"): acronyms upper-case, rest title-case
 	var VIA_UPPER = {
 		uk: 1, us: 1, usa: 1, uae: 1, nyc: 1, la: 1, sf: 1, dc: 1, prc: 1,
-		pst: 1, pdt: 1, pt: 1, mst: 1, mdt: 1, mt: 1, cst: 1, cdt: 1, est: 1, edt: 1, et: 1,
+		pst: 1, pdt: 1, pt: 1, pct: 1, mst: 1, mdt: 1, mt: 1, cst: 1, cdt: 1, est: 1, edt: 1, et: 1,
 		gmt: 1, utc: 1, bst: 1, wet: 1, cet: 1, cest: 1, eet: 1, eest: 1, msk: 1,
 		ist: 1, gst: 1, pkt: 1, ict: 1, sgt: 1, hkt: 1, jst: 1, kst: 1,
 		aest: 1, aedt: 1, acst: 1, awst: 1, nzst: 1, nzdt: 1, akst: 1, akdt: 1, hst: 1
@@ -460,15 +474,17 @@
 
 	function todayInZone(z) {
 		var p = {};
-		new Intl.DateTimeFormat("en-CA", { timeZone: z, year: "numeric", month: "2-digit", day: "2-digit" })
-			.formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+		var now = new Date();
+		new Intl.DateTimeFormat("en-CA", { timeZone: tzAt(z, now), year: "numeric", month: "2-digit", day: "2-digit" })
+			.formatToParts(now).forEach(function (x) { p[x.type] = x.value; });
 		return p.year + "-" + p.month + "-" + p.day;
 	}
 	// current wall-clock "HH:MM" in a zone -- the default the converter opens on
 	function nowTimeInZone(z) {
 		var p = {};
-		new Intl.DateTimeFormat("en-GB", { timeZone: z, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
-			.formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+		var now = new Date();
+		new Intl.DateTimeFormat("en-GB", { timeZone: tzAt(z, now), hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+			.formatToParts(now).forEach(function (x) { p[x.type] = x.value; });
 		return p.hour + ":" + p.minute;
 	}
 
