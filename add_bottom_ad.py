@@ -26,6 +26,10 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(ROOT, "mes.fm")
 ASSET_V = "1"  # bump when main_js/bottom-ad.js changes
 DEFAULT_SLOT = "8852646945"  # AdSense display unit "Bottom 300x250" (fixed 300x250)
+# AdSense display unit "Bottom Square Responsive" (responsive; bottom-ad.js asks for the rectangle shape, so it serves rectangles that fit the
+# column instead of banners). Tried on the core calculators first; the other families keep the fixed unit so the two can be compared in AdSense.
+RESPONSIVE_SLOT = "1532113018"
+RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator"}
 FAMILIES = ["percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator",
             "inflationcalculator", "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles"]
 
@@ -39,15 +43,19 @@ COMMENTS_RE = re.compile(r'<div id="comments-box"[^>]*>\s*<div id="fastcomments-
 JS_BLOCK = '<!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v={v}" defer></script><!-- /MES-BOTTOM-AD-JS -->'
 
 
-def block(slot):
+def block(slot, responsive=False):
+    if responsive:  # rectangle-shaped responsive unit: up to ~280px tall, reserved so the footer doesn't jump
+        attrs, outer_h, holder = ' data-ad-mode="rect"', "300", "width:100%;min-height:280px;margin:0 auto;"
+    else:
+        attrs, outer_h, holder = "", "270", "width:300px;height:250px;margin:0 auto;"
     return (
         "\n<!-- MES-BOTTOM-AD -->\n"
-        '<div class="mes-bottom-ad" data-ad-slot="{slot}" style="clear:both;text-align:center;margin:1.5em auto 1.75em;'
-        'min-height:270px;">'
+        '<div class="mes-bottom-ad" data-ad-slot="{slot}"{attrs} style="clear:both;text-align:center;margin:1.5em auto 1.75em;'
+        'min-height:{oh}px;">'
         '<span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span>'
-        '<div class="mes-bottom-ad__slot" style="width:300px;height:250px;margin:0 auto;"></div></div>\n'
+        '<div class="mes-bottom-ad__slot" style="{holder}"></div></div>\n'
         "<!-- /MES-BOTTOM-AD -->\n"
-    ).format(slot=html.escape(slot, quote=True))
+    ).format(slot=html.escape(slot, quote=True), attrs=attrs, oh=outer_h, holder=holder)
 
 
 def read(path):
@@ -55,7 +63,7 @@ def read(path):
         return f.read()
 
 
-def patch(text, slot, remove):
+def patch(text, slot, remove, responsive=False):
     """(new_text, reason). new_text is None when the page is skipped; reason says why."""
     text = BLOCK_RE.sub("", text)
     text = JS_RE.sub("", text)
@@ -70,7 +78,7 @@ def patch(text, slot, remove):
     m = COMMENTS_RE.search(text)
     if not m:
         return None, "no comments block to anchor on"
-    new = text[: m.end()] + block(slot) + text[m.end():]
+    new = text[: m.end()] + block(slot, responsive) + text[m.end():]
     return new.replace("</body>", JS_BLOCK.format(v=ASSET_V) + "</body>", 1), None
 
 
@@ -79,7 +87,7 @@ def main():
     ap.add_argument("--apply", action="store_true", help="write changes (default: dry run)")
     ap.add_argument("-v", "--verbose", action="store_true", help="list every page")
     ap.add_argument("--family", action="append", help="only this family (repeatable); default all in FAMILIES")
-    ap.add_argument("--ad-slot", default=DEFAULT_SLOT, help="AdSense data-ad-slot (default: the Bottom 300x250 unit)")
+    ap.add_argument("--ad-slot", default=None, help="AdSense data-ad-slot for every family (default: the responsive unit for RESPONSIVE_FAMILIES, else the fixed Bottom 300x250 unit)")
     ap.add_argument("--remove", action="store_true", help="strip the bottom ad from the selected families")
     args = ap.parse_args()
 
@@ -95,7 +103,9 @@ def main():
                 continue
             total += 1
             old = read(path)
-            new, reason = patch(old, args.ad_slot, args.remove)
+            resp = family in RESPONSIVE_FAMILIES and args.ad_slot is None
+            slot = args.ad_slot or (RESPONSIVE_SLOT if resp else DEFAULT_SLOT)
+            new, reason = patch(old, slot, args.remove, resp)
             if new is None:
                 skipped.setdefault(reason, []).append(path)
                 continue

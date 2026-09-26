@@ -290,7 +290,7 @@ of HTML files individually:
   viewport, so an unscrolled bottom ad never counts as an unseen impression). Both ad boxes (this and the sidebar's, `aside.js`) collapse
   themselves when the ad is blocked (ad blocker) or unfilled, so no empty hole is left (`watchAd()` polls ~30s). **Only pages that already carry the AdSense loader are
   touched**, which keeps it off the ad-free pages (youtubemoney, contact/privacy/donate, graphic 9/11 mirrors); numeric
-  pagination stubs (`1.html`) are skipped too. Add a family to `FAMILIES` to roll out. Idempotent, `--remove` restores the pages
+  pagination stubs (`1.html`) are skipped too. Add a family to `FAMILIES` to roll out. **Two units:** the fixed "Bottom 300x250" (`8852646945`) everywhere, and "Bottom Square Responsive" (`1532113018`, responsive unit asked for `data-ad-format="rectangle"` / `data-full-width-responsive="false"` by `bottom-ad.js` via `data-ad-mode="rect"`, 280px reserved) on `RESPONSIVE_FAMILIES` (percentage, grade, gpa) so the two can be compared per ad unit in AdSense. Idempotent, `--remove` restores the pages
   byte-for-byte; **dry-runs by default (`-v` lists pages), `--apply` writes.**
 
 - `remove_gtm.py` — removes the dead Google Tag Manager container (`GTM-T7H6J87`) from the 140 `mes.fm/percentagecalculator` pages that still

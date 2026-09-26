@@ -18,7 +18,14 @@
         box.setAttribute("data-loaded", "1");
         var ins = document.createElement("ins");
         ins.className = "adsbygoogle";
-        ins.style.cssText = "display:inline-block;width:300px;height:250px";
+        if (box.getAttribute("data-ad-mode") === "rect") {
+            /* responsive unit, rectangle shapes only (never banners / tall units), sized to the column */
+            ins.style.cssText = "display:block";
+            ins.setAttribute("data-ad-format", "rectangle");
+            ins.setAttribute("data-full-width-responsive", "false");
+        } else {
+            ins.style.cssText = "display:inline-block;width:300px;height:250px";
+        }
         ins.setAttribute("data-ad-client", AD_CLIENT);
         ins.setAttribute("data-ad-slot", slot);
         holder.appendChild(ins);
