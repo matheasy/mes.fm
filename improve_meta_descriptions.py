@@ -45,6 +45,8 @@ GENERATED = {
     "hutchison-posts", "hutchison-videos", "highlights", "articles", "hutchison-debunking-debunkers",
     "hutchison-news", "hutchison-unedited-footage", "hutchison-interviews", "cold-fusion-lenr",
     "hutchison-livestreams",
+    # emitted by mes.fm/livestreams/build.mjs
+    "livestreams",
 }
 
 # site dir -> (site label, tail options longest -> shortest)

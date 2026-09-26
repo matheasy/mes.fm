@@ -311,7 +311,7 @@ reported; if there is a large gap, stage only your own paths rather than `git ad
 ### `build.mjs` pages: never rebuild without diffing first
 
 Several pages (currently `911`, `911-alchemy`, `conspiracy`, `crypto`, `cubic-formula`, `djw`, `ferrocell-specular-reflection`,
-`hutchison`, `hutchison-tom-sky`, `math`, `mathiew`, `norman-patricia-ai-email`, `science`, `vector-functions-problems-plus`, all
+`hutchison`, `hutchison-tom-sky`, `livestreams`, `math`, `mathiew`, `norman-patricia-ai-email`, `science`, `vector-functions-problems-plus`, all
 under `mes.fm/`) have their own `build.mjs` (`npm run build`, usually fetching a Hive post) that regenerates
 `index.html` from scratch. The repo-wide scripts above (`add_lightbox_zoom.py`, `add_image_lightbox.py`, and several
 `optimize_pagespeed.py` transforms — the deferred-AdSense loader, the WCAG brand-blue darkening, and the `<img>`
@@ -358,6 +358,19 @@ overwrite the file with custom art (same name) any time, no rebuild needed. Neve
 `improve_meta_descriptions.py`'s `GENERATED` set. "MES Livestreams" (`hutchison-livestreams`) was the one Hive section not in the original
 brief; it got its own page rather than being dropped. The lightbox/PageSpeed back-ports listed below describe the *old* mirror build.mjs;
 the new one has `math`'s shell (and `addImageLazyLoading()`).
+
+`mes.fm/livestreams/build.mjs` (2026-09-26) is the `math-qa` idea for *all* MES livestreams: one page, Grid View / List View of every
+numbered stream (newest first) plus two more tabs -- **Stats** (the stats-screen pages, now `mes.fm/livestream-140-stats`, mirrored from the
+Hive/Telegram post; add new ones to `STATS`) and **Trailers** (card grid). Cloned from `hutchison/build.mjs`. The list comes from
+`livestreams/playlist.json`, a snapshot of the YouTube livestreams playlist written by `python3 update_livestreams_playlist.py --apply`
+(needs yt-dlp; also picks each video's best existing thumbnail, maxres else mqdefault, caching earlier lookups) -- after a new stream/trailer:
+run that, then `npm run build` in `mes.fm/livestreams` and diff. `classify()` in build.mjs sorts playlist entries into livestream
+(`MES Livestream N`, plus `EXTRA_LIVESTREAM_IDS`), trailer (title has "trailer", or "UPCOMING LIVESTREAM") or skipped (short clips and the
+"BLANK" placeholder -- each build prints what it left out). Cards go to YouTube (new tab) unless the video has a mes.fm mirror in `MIRRORS`
+(livestream 140 and its two trailers, livestream 66's trailer); those mirrors' "Part of" boxes link back to `/livestreams`. The
+unnumbered "INTERVIEW: All Things 9/11 with TLBNAWKI" is on the main tab by id. Stats-page thumbnails/links are scraped from the live page,
+so a *new* stats page must be seeded by hand in `livestreams/link-meta.json` (image + Hive/Telegram `namedLinks`) until it is deployed.
+Titles are shortened to "N: rest" like math-qa. No per-stream mirror pages are generated (unlike `build_math_qa_mirrors.py`).
 
 `mes.fm/cubic-formula/build.mjs` (cloned from `vector-functions-problems-plus/build.mjs`, so it carries the same
 lazy-loading / lightbox / AdSense / contrast back-ports) emits **nine** pages: `mes.fm/cubic-formula/index.html`

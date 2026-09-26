@@ -1,0 +1,9 @@
+{
+  "name": "mes-livestreams-page-builder",
+  "private": true,
+  "description": "Build-time generator for mes.fm/livestreams -- reads playlist.json (python3 update_livestreams_playlist.py) and writes static index.html. Not deployed; run manually before committing.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}
