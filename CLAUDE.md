@@ -357,7 +357,7 @@ Hive/peakd, else the first link) or `{ href, title }` for a mes.fm mirror page (
 overwrite the file with custom art (same name) any time, no rebuild needed. Never hand-edit the generated pages; their slugs are in
 `improve_meta_descriptions.py`'s `GENERATED` set. The tenth tile, "MES Livestreams", is **tile-only** (`tileOnly` + `href` in `PAGES`): it
 links to `/livestreams#hutchison` (the Hutchison Effect chip of mes.fm/livestreams) -- the separate `hutchison-livestreams` page was folded
-into `/livestreams` (2026-09-26) and `vercel.json` 301s the old URL there; its per-stream Hive/Rumble/Odysee/Summary links live on in
+into `/livestreams` (2026-09-26) and `vercel.json` permanently (308) redirects the old URL there, fragment kept; its per-stream Hive/Rumble/Odysee/Summary links live on in
 `livestreams/extra-links.json`. Its icon is a hand-made crop of the newest Hutchison Effect livestream thumbnail (bump `iconVersion` when
 you refresh it). The lightbox/PageSpeed back-ports listed below describe the *old* mirror build.mjs;
 the new one has `math`'s shell (and `addImageLazyLoading()`).
