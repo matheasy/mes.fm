@@ -189,6 +189,25 @@ def chrome_swap(old, template):
     return new, "ok (chrome swap)"
 
 
+def social_tags(html, slug, big):
+    """Open Graph / Twitter card tags for a branded hub: image plus type, url, title and description (taken from the
+    page's own <title> and meta description) so shares and search snippets aren't image-only."""
+    title = re.search(r"<title>(.*?)</title>", html, re.S).group(1).strip()
+    m = re.search(r'<meta name="description" content="([^"]*)"', html)
+    desc = m.group(1) if m else ""
+    tags = ['<meta property="og:type" content="website">', '<meta property="og:site_name" content="MES.fm">',
+            '<meta property="og:url" content="https://mes.fm/%s">' % slug, '<meta property="og:title" content="%s">' % title]
+    if desc:
+        tags.append('<meta property="og:description" content="%s">' % desc)
+    tags += ['<meta property="og:image" content="%s">' % big, '<meta property="og:image:width" content="1200">',
+             '<meta property="og:image:height" content="630">', '<meta name="twitter:card" content="summary_large_image">',
+             '<meta name="twitter:title" content="%s">' % title]
+    if desc:
+        tags.append('<meta name="twitter:description" content="%s">' % desc)
+    tags.append('<meta name="twitter:image" content="%s">' % big)
+    return "".join("  %s\n" % t for t in tags)
+
+
 def hub_swap(old, template):
     """Hand-authored link hubs (conspiracy, mathiew, crypto): '<- MES Links' top bar + centred collapsible <h1> header +
     plain <footer>. Same chrome swap as chrome_swap(), inside a .container so the page's own wide card grid / link lists
@@ -225,7 +244,7 @@ def hub_swap(old, template):
         big = "https://mes.fm/img/%s-logo-big.jpg" % slug
         new = re.sub(r'<link rel="icon"[^>]*>', '<link rel="icon" href="https://mes.fm%s?v=1.0" type="image/jpeg" />' % b["logo"], new, count=1)
         if "og:image" not in new:
-            new = new.replace("</head>", '  <meta property="og:image" content="%s">\n  <meta name="twitter:card" content="summary_large_image">\n  <meta name="twitter:image" content="%s">\n</head>' % (big, big), 1)
+            new = new.replace("</head>", social_tags(new, slug, big) + "</head>", 1)
     head_block = block(new, '<div class="top-bar">')
     new = new.replace(head_block, "", 1)
     new = re.sub(r'<header class="page-header">.*?</header>', lambda mm: compact + '\n\n  <div class="container">\n    ' + top + "\n    " + nav + "\n    " + part

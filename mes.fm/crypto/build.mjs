@@ -208,11 +208,11 @@ function buildPage(meta) {
   <link rel="canonical" href="https://mes.fm/crypto" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="MES Crypto - Blockchain and cryptocurrency links, notes, and mirrored posts from MES, including Hive, blockchain tutorials, portfolio tracking, and more.">
-  <meta name="keywords" content="MES, Crypto, Blockchain, Cryptocurrency, Math Easy Solutions">
+  <meta name="description" content="Crypto posts, tutorials and tools by MES: Bitcoin, XRP, Hive and stablecoin news, blockchain how-tos, an impermanent loss calculator and a portfolio tracker.">
+  <meta name="keywords" content="MES, Crypto, Bitcoin, Hive, XRP, Blockchain, Cryptocurrency, Math Easy Solutions">
   <meta name="author" content="Mathiew Estepho">
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
-  <title>MES Crypto</title>
+  <title>MES Crypto: Bitcoin, Hive &amp; Blockchain Posts and Tools</title>
   <style>
     h1 {
       text-align: center;
