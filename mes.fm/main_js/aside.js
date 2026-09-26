@@ -31,19 +31,25 @@
        errors / never sets adsbygoogle.loaded) or hides the <ins> (zero size); AdSense marks a no-fill with
        data-ad-status="unfilled". The page's deferred loader can take up to 15s to start, hence the long deadline. */
     function watchAd(ins, setCollapsed) {
-        var tries = 0, wired = false, timer;
+        var tries = 0, libTicks = 0, wired = false, timer;
         function tick() {
             tries++;
             var st = ins.getAttribute("data-ad-status");
-            var lib = window.adsbygoogle && window.adsbygoogle.loaded === true;
+            var lib = !!(window.adsbygoogle && window.adsbygoogle.loaded === true);
+            if (lib) libTicks++;
             var el = document.querySelector('script[src*="adsbygoogle.js"]');
             if (el && !wired) { wired = true; el.addEventListener("error", function () { setCollapsed(true); }); }
-            var hidden = ins.offsetHeight === 0 || window.getComputedStyle(ins).display === "none";
+            var cs = window.getComputedStyle(ins);
+            var hidden = ins.offsetHeight === 0 || cs.display === "none" || cs.visibility === "hidden";
             if (st === "filled") { setCollapsed(false); if (tries > 3) return clearInterval(timer); return; }
             if (st === "unfilled") { setCollapsed(true); return clearInterval(timer); }
-            if (tries >= 6 && hidden && (lib || tries >= 25)) setCollapsed(true);
+            /* No verdict from AdSense. A real adsbygoogle.js answers within a second or two of starting, so silence after it
+               has "loaded" means it is a blocker's stand-in (uBlock swaps in a stub that sets adsbygoogle.loaded and adds 1px
+               iframes but never sets data-ad-status); silence without it means it was blocked outright or the <ins> was hidden. */
+            if (lib && libTicks >= 6) setCollapsed(true);
+            else if (tries >= 25 && hidden) setCollapsed(true);
             else if (tries >= 30 && !lib) setCollapsed(true);
-            if (tries >= 40) clearInterval(timer);
+            if (tries >= 45) clearInterval(timer);
         }
         timer = setInterval(tick, 1000);
     }
