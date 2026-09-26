@@ -201,6 +201,9 @@ of HTML files individually:
   bare shell from `build.mjs`, so each `build.mjs` now ends by running `convert_mirror_pages.py --apply --only=<slug>` —
   a rebuild re-applies the shell instead of reverting it (new mirrors cloned from those templates: same one-liner).
   Idempotent (converted pages have an `#info-bar`); **dry-runs by default, `-v` lists pages, `--apply` writes.**
+  `hub_swap` strips the header's A-/A+ buttons unless the page carries its own text-size script (`articleFontScale`); `conspiracy/build.mjs`
+  does, and also has Collapse All / per-section fold buttons (a bare `.hidden` lost to `.card-grid`'s `display:grid`, so folds never worked
+  until it became `.collapsible.hidden`) and re-runs `fix_mobile_header_controls.py` after converting, since that patch only lives in the output.
   `mes.fm/img/conspiracy-{icon,logo,logo-big}.jpg` (tile 900x600, favicon/brand 512 square, og 1200x630) come from one
   source image; the conspiracy tile sits last in the homepage `icon-grid`.
 

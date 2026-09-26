@@ -178,7 +178,7 @@ function buildCardGrid(id, label, entries, meta, cta = "Read more") {
     .join("\n");
 
   return `<div class="collapsible-section">
-<h2 class="sub-heading" onclick="toggleSubList('${id}')">${label} <span id="arrowIcon-${id}" class="arrow-icon" style="font-size: 75%;">&#9660;</span></h2>
+<h2 class="chapter-toggle-header" onclick="toggleSubList('${id}')">${label} <span id="arrowIcon-${id}" class="arrow-icon">&#9660;</span></h2>
 <div id="${id}" class="card-grid collapsible">
 ${cards}
 </div>
@@ -191,6 +191,7 @@ ${cards}
 // scraped from the target page's og: tags at build time and cached in
 // link-meta.json.
 const POSTS = [
+  { href: "https://mes.fm/hands-dan-dicks-carney-bloomberg-connolly", title: "Illuminati Hands: Dan Dicks, Mark Carney, Mike Bloomberg, Catherine Connolly" },
   { href: "https://mes.fm/trump-aliens-war-moon", title: "MES Alt-News Checkup — Trump Teaming Up with Aliens to Fight a War on the Moon?" },
   { href: "https://mes.fm/alex-jones-ashton-forbes-clowns", title: "Ashton Forbes and Alex Jones Team Up to Become the Most Unstoppable Clownish Force" },
   { href: "https://mes.fm/tim-pool-flat-earth-dave-clowns", title: "Tim Pool Interviews Flat Earth Dave — Not Even His Lowest Interview" },
@@ -250,10 +251,6 @@ function buildPage(meta) {
       transform: translateY(-50%);
     }
 
-    .list-header {
-      cursor: pointer;
-    }
-
     .arrow-icon {
       font-size: 20px;
       display: inline-block;
@@ -261,9 +258,52 @@ function buildPage(meta) {
       transition: transform 0.3s ease;
     }
 
-    .hidden {
+    /* .card-grid (display:grid, defined further down) has the same specificity
+       as a bare .hidden and wins on source order, so the Posts/Videos grids never
+       actually collapsed. Two classes beat it. */
+    .hidden,
+    .collapsible.hidden {
       display: none;
     }
+
+    /* Section headers, as on mes.fm/hutchison and mes.fm/911: centred, click to
+       fold; the arrow shows the state (see toggleSubList() below). */
+    .chapter-toggle-header {
+      cursor: pointer;
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.2em 0 0.6em;
+    }
+
+    .chapter-toggle-header .arrow-icon {
+      font-size: 0.6em;
+    }
+
+    /* Collapse/Expand All button, same look and place as mes.fm/hutchison's
+       .chapters-toolbar: right-aligned above the first section. */
+    .chapters-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin: 0 0 0.4em;
+    }
+
+    .toggle-all-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .toggle-all-btn { background-color: #dddddd; color: #000000; }
+    body.dark .toggle-all-btn { background-color: #444444; color: #ffffff; }
+
+    /* Text-size control (--ts, set by the header A-/A+ buttons; same steps and
+       'articleFontScale' key as mes.fm/math and the other hubs): scales the card
+       text and the link list, leaves headings and buttons alone. */
+    .content li { font-size: calc(1rem * var(--ts, 1)); }
 
     .top-bar {
       max-width: 900px;
@@ -311,11 +351,6 @@ function buildPage(meta) {
 
     .list-container {
       margin-bottom: 1.5em;
-    }
-
-    .sub-heading {
-      font-size: 1.1em;
-      cursor: pointer;
     }
 
     /* Wide band for the Posts/Videos card grids -- reads bigger than the
@@ -381,14 +416,14 @@ function buildPage(meta) {
     }
 
     .link-card-title {
-      font-size: 0.95rem;
+      font-size: calc(0.95rem * var(--ts, 1));
       font-weight: 700;
       line-height: 1.3;
       color: inherit;
     }
 
     .link-card-excerpt {
-      font-size: 0.8rem;
+      font-size: calc(0.8rem * var(--ts, 1));
       opacity: 0.7;
       line-height: 1.4;
       flex: 1;
@@ -396,7 +431,7 @@ function buildPage(meta) {
     }
 
     .link-card-readmore {
-      font-size: 0.8rem;
+      font-size: calc(0.8rem * var(--ts, 1));
       font-weight: 600;
     }
 
@@ -614,11 +649,14 @@ function buildPage(meta) {
   </div>
 
   <header class="page-header">
-    <h1 class="list-header" onclick="toggleAllLists()">MES Conspiracy <span id="arrowIconAll" class="arrow-icon">&#9660;</span></h1>
+    <h1>MES Conspiracy</h1>
     <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
   </header>
 
   <div class="wide">
+    <div class="chapters-toolbar">
+      <button id="toggleAllBtn" class="toggle-all-btn" type="button" onclick="toggleAllLists()">Collapse All</button>
+    </div>
 ${postsGridHtml}
 ${videosGridHtml}
   </div>
@@ -637,19 +675,60 @@ ${videosGridHtml}
   </div>
 
   <script>
-    function toggleAllLists() {
-      const lists = document.querySelectorAll('.collapsible');
-      const arrowIconAll = document.getElementById('arrowIconAll');
-      lists.forEach(list => list.classList.toggle('hidden'));
-      arrowIconAll.textContent = lists.length && lists[0].classList.contains('hidden') ? '▲' : '▼';
+    function setSectionState(list, collapsed) {
+      list.classList.toggle('hidden', collapsed);
+      const arrow = document.getElementById('arrowIcon-' + list.id);
+      if (arrow) arrow.innerHTML = collapsed ? '&#9654;' : '&#9660;';
     }
 
     function toggleSubList(listId) {
       const list = document.getElementById(listId);
-      const arrowIcon = document.getElementById(\`arrowIcon-\${listId}\`);
-      list.classList.toggle('hidden');
-      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+      setSectionState(list, !list.classList.contains('hidden'));
+      syncToggleAll();
     }
+
+    // "Collapse All" folds every section; once they are all folded it reads
+    // "Expand All" (and the label also follows manual toggles, see syncToggleAll).
+    function toggleAllLists() {
+      const lists = document.querySelectorAll('.collapsible');
+      const collapse = Array.from(lists).some(list => !list.classList.contains('hidden'));
+      lists.forEach(list => setSectionState(list, collapse));
+      syncToggleAll();
+    }
+
+    function syncToggleAll() {
+      const lists = document.querySelectorAll('.collapsible');
+      const btn = document.getElementById('toggleAllBtn');
+      if (!btn) return;
+      const allHidden = lists.length > 0 && Array.from(lists).every(list => list.classList.contains('hidden'));
+      btn.textContent = allHidden ? 'Expand All' : 'Collapse All';
+    }
+  </script>
+
+  <script>
+    // text-size control: same STEPS / 'articleFontScale' key as mes.fm/math and
+    // the other hubs. Drives the --ts CSS variable used by the card text and
+    // link list above. The A-/A+ buttons live in the header (convert_mirror_pages.py
+    // keeps them for pages that carry this script).
+    (function () {
+      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var body = document.body;
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!body || !downBtn || !upBtn) return;
+      var index;
+      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
+      if (index === -1) index = STEPS.indexOf(100);
+      function apply() {
+        body.style.setProperty('--ts', String(STEPS[index] / 100));
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
+      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
+      apply();
+    })();
   </script>
 
   <script>
@@ -715,6 +794,9 @@ async function main() {
   // format (branded header, nav bar, floating bar, footer) is applied afterwards by convert_mirror_pages.py, so a
   // rebuild never reverts it -- see that script and CLAUDE.md.
   execFileSync("python3", [join(__dirname, "..", "..", "convert_mirror_pages.py"), "--apply", "--only=conspiracy"], { stdio: "inherit" });
+  // The phone-width header fixes (A-/A+/moon on their own row, no sideways scroll) are patched into generated pages by
+  // fix_mobile_header_controls.py, so a rebuild would silently drop them; re-apply (idempotent, only touches pages lacking them).
+  execFileSync("python3", [join(__dirname, "..", "..", "fix_mobile_header_controls.py"), "--apply"], { stdio: "inherit" });
   console.log(`Wrote ${outPath}`);
 }
 

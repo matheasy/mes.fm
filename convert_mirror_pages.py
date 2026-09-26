@@ -201,7 +201,8 @@ def hub_swap(old, template):
     tpl = template
     compact = fill_brand(block(tpl, '<div id="compact-nav"'), b, partof)
     top = fill_brand(block(tpl, '<div class="top-bar">'), b, partof)
-    top = re.sub(r'\s*<button id="textSize(Down|Up)"[^>]*>[^<]*</button>', "", top)
+    if "articleFontScale" not in old:  # hubs that carry their own text-size script (conspiracy) keep the A-/A+ buttons
+        top = re.sub(r'\s*<button id="textSize(Down|Up)"[^>]*>[^<]*</button>', "", top)
     nav = block(tpl, '<div class="info-bar-container"')
     part = block(tpl, '<div class="part-of">').replace("@@PARTOF@@", partof)
     footer = tpl[tpl.index('<div id="footer"'): tpl.index("getFullYear();</script>") + len("getFullYear();</script>")]
