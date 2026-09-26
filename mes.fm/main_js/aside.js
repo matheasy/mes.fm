@@ -25,6 +25,29 @@
         });
     }
 
+
+    /* Collapse the box when the ad can't show (ad blocker, or AdSense answered "unfilled") instead of leaving a blank hole,
+       and bring it back if a fill arrives late. Polls for up to ~30s: an ad blocker either kills adsbygoogle.js (the script
+       errors / never sets adsbygoogle.loaded) or hides the <ins> (zero size); AdSense marks a no-fill with
+       data-ad-status="unfilled". The page's deferred loader can take up to 15s to start, hence the long deadline. */
+    function watchAd(ins, setCollapsed) {
+        var tries = 0, wired = false, timer;
+        function tick() {
+            tries++;
+            var st = ins.getAttribute("data-ad-status");
+            var lib = window.adsbygoogle && window.adsbygoogle.loaded === true;
+            var el = document.querySelector('script[src*="adsbygoogle.js"]');
+            if (el && !wired) { wired = true; el.addEventListener("error", function () { setCollapsed(true); }); }
+            var hidden = ins.offsetHeight === 0 || window.getComputedStyle(ins).display === "none";
+            if (st === "filled") { setCollapsed(false); if (tries > 3) return clearInterval(timer); return; }
+            if (st === "unfilled") { setCollapsed(true); return clearInterval(timer); }
+            if (tries >= 6 && hidden && (lib || tries >= 25)) setCollapsed(true);
+            else if (tries >= 30 && !lib) setCollapsed(true);
+            if (tries >= 40) clearInterval(timer);
+        }
+        timer = setInterval(tick, 1000);
+    }
+
     /* 2. ad */
     var ad = aside.querySelector(".mes-aside__ad");
     var adDone = false;
@@ -40,6 +63,7 @@
         ins.setAttribute("data-ad-slot", slot);
         ad.appendChild(ins);
         try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+        watchAd(ins, function (gone) { ad.style.display = gone ? "none" : ""; });
     }
     if (ad && ad.getAttribute("data-ad-slot")) {
         loadAd();
