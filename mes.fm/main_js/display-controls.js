@@ -117,6 +117,11 @@
         derived = true;
         var SKIP = /(info-bar|navbar|footer|social|active-tab|compact-nav|header-control|dropdown|hamburger|lazyload|mes-comments|comments|\bbutton\b)/;
         function parse(v) {
+            /* the CSSOM keeps keyword colours as typed (`sup { color: black }` in the pages' reset CSS), and they'd be skipped:
+               that is why superscripts such as 2.7x10^-5 stayed black on the dark background */
+            var kw = String(v || "").trim().toLowerCase();
+            if (kw === "black") return { r: 0, g: 0, b: 0, a: 1 };
+            if (kw === "white") return { r: 255, g: 255, b: 255, a: 1 };
             var m = /rgba?\(([^)]*)\)/.exec(v || "");
             if (!m) return null;
             var p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
