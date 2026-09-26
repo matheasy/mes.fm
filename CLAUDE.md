@@ -271,6 +271,15 @@ of HTML files individually:
   Same session: the percentage calculator's equation rows became wrapping flex lines (`.eq-text` sentence + Answer box) so the
   Answer no longer overlaps the inputs at larger A+ sizes.
 
+- `add_bottom_ad.py` — a fixed 300x250 AdSense unit ("Bottom 300x250", slot `8852646945`) after the Comments block, just above the
+  footer, on individual pages (pilot 2026-09-25: the `gradecalculator` family, 159 pages, compared against the percentagecalculator
+  sidebar pilot). Per page: `MES-BOTTOM-AD` (an "Advertisement" label + a reserved 250px holder, so no layout shift) and
+  `MES-BOTTOM-AD-JS` (`main_js/bottom-ad.js`: creates the `<ins>` and requests the ad only when the box is within ~300px of the
+  viewport, so an unscrolled bottom ad never counts as an unseen impression). **Only pages that already carry the AdSense loader are
+  touched**, which keeps it off the ad-free pages (youtubemoney, contact/privacy/donate, graphic 9/11 mirrors); numeric
+  pagination stubs (`1.html`) are skipped too. Add a family to `FAMILIES` to roll out. Idempotent, `--remove` restores the pages
+  byte-for-byte; **dry-runs by default (`-v` lists pages), `--apply` writes.**
+
 Run any of them with `python3 <script>.py` from anywhere (they resolve the repo root themselves). They print a
 per-file report; read the output rather than assuming success — `fix_broken_internal_links.py` additionally needs
 `--apply` to write anything, and reading its dry run first is the point.
