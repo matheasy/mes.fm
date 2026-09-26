@@ -31,7 +31,27 @@
        and bring it back if a fill arrives late. Polls for up to ~30s: an ad blocker either kills adsbygoogle.js (the script
        errors / never sets adsbygoogle.loaded) or hides the <ins> (zero size); AdSense marks a no-fill with
        data-ad-status="unfilled". The page's deferred loader can take up to 15s to start, hence the long deadline. */
+    /* Blocker detection that doesn't wait for the (deferred) AdSense loader: (1) a capture-phase listener sees the loader <script>
+       fail, however fast that happens (a poll can miss the error event); (2) a bait <div> carrying the classes ad-block cosmetic
+       filters hide (Brave Shields, uBlock, AdGuard) -- if it is hidden after a moment, ads are blocked. */
+    function watchBlocked(setCollapsed) {
+        window.addEventListener("error", function (e) {
+            var t = e.target;
+            if (t && t.tagName === "SCRIPT" && /adsbygoogle\.js/.test(t.src || "")) setCollapsed(true);
+        }, true);
+        var bait = document.createElement("div");
+        bait.className = "adsbox ad-banner ad-placement textAd pub_300x250 pub_728x90";
+        bait.style.cssText = "position:absolute;left:-9999px;top:-9999px;width:10px;height:10px;";
+        document.body.appendChild(bait);
+        setTimeout(function () {
+            var cs = window.getComputedStyle(bait);
+            if (bait.offsetHeight === 0 || cs.display === "none" || cs.visibility === "hidden") setCollapsed(true);
+            if (bait.parentNode) bait.parentNode.removeChild(bait);
+        }, 400);
+    }
+
     function watchAd(ins, setCollapsed) {
+        watchBlocked(setCollapsed);
         var tries = 0, libTicks = 0, wired = false, timer;
         function tick() {
             tries++;
@@ -49,7 +69,7 @@
                iframes but never sets data-ad-status); silence without it means it was blocked outright or the <ins> was hidden. */
             if (lib && libTicks >= 6) setCollapsed(true);
             else if (tries >= 25 && hidden) setCollapsed(true);
-            else if (tries >= 30 && !lib) setCollapsed(true);
+            else if (tries >= 20 && !lib) setCollapsed(true);
             if (tries >= 45) clearInterval(timer);
         }
         timer = setInterval(tick, 1000);
