@@ -27,7 +27,7 @@ SITE = os.path.join(ROOT, "mes.fm")
 ASSET_V = "1"  # bump when main_js/bottom-ad.js changes
 DEFAULT_SLOT = "8852646945"  # AdSense display unit "Bottom 300x250" (fixed 300x250)
 FAMILIES = ["percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator",
-            "inflationcalculator", "timer"]
+            "inflationcalculator", "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles"]
 
 LOADER = "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
 NUMERIC_STUB = re.compile(r"^\d+\.html$")  # 1.html, 2.html ... are "Page Not Found" pagination stubs

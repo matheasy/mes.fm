@@ -82,6 +82,24 @@ FAMILIES = {
         "article_kind": "Guide",
         "sections": [("money-facts", "Money fact", None)],
     },
+    # mes.fm-level galleries: no calculator of their own -- the "calc" card is the gallery hub, thumbnails live in mes.fm/img/
+    "memes": {
+        "name": "MES Memes",
+        "hub": {"url": "/memes", "title": "More Math Memes", "kind": "Gallery", "img": "/img/memes-icon.jpg"},
+        "thumb_dir": "img/memes-thumbnail",
+        "articles": False,
+        "sections": [("", "Meme", None)],
+    },
+    "puzzles": {
+        "name": "MES Puzzles",
+        "hub": {"url": "/puzzles", "title": "More Math Puzzles", "kind": "Gallery", "img": "/img/puzzles-icon.jpg"},
+        "thumb_dir": "img/memes-thumbnail",  # puzzle thumbnails share the memes folder
+        "articles": False,
+        "hide_files": ["solution.html"],  # solution pages get the aside but are never recommended
+        "sections": [("", "Puzzle", None)],
+    },
+    "vatcalculator": {"name": "VAT Calculator", "article_kind": "Guide", "sections": []},
+    "pokemongocalculator": {"name": "Pokemon Go Calculator", "article_kind": "Guide", "sections": []},
     "timer": {  # only the inspirational-quotes pages: the Timer page itself is a tool shell
         "name": "Timer",
         "calc_title": "Timer",
@@ -105,6 +123,7 @@ JS_RE = re.compile(r"<!-- MES-ASIDE-JS -->.*?<!-- /MES-ASIDE-JS -->", re.S)
 SLOT_RE = re.compile(r'class="mes-aside__ad" data-ad-slot="([^"]*)"')
 OUTER_RE = re.compile(r'(<div id="outer-container" class="outer-container)( has-aside)?(")')
 TITLE_RE = re.compile(r'<h1 class="page-title">(.*?)</h1>', re.S)
+MAIN_IMG_RE = re.compile(r'data-src="[^"]*/img/memes/([^"/]+)\.[A-Za-z]+"')
 NUMERIC_STUB = re.compile(r"^\d+\.html$")  # 1.html, 2.html ... are "Page Not Found" pagination stubs
 
 
@@ -123,13 +142,16 @@ def is_gallery(text):
     return "HUB-WIDE-LAYOUT" in text
 
 
-def thumb_index(fam_dir):
-    """{stem: url} of every *-thumbnail(-2) image under the family's img/ folder."""
-    fam = os.path.basename(fam_dir)
+def thumb_index(fam_dir, thumb_dir=None):
+    """{stem: url} of every *-thumbnail(-2) image under the family's img/ folder (or under SITE/<thumb_dir>)."""
+    if thumb_dir:
+        base, prefix = os.path.join(SITE, thumb_dir), "/" + thumb_dir
+    else:
+        base, prefix = os.path.join(fam_dir, "img"), "/%s/img" % os.path.basename(fam_dir)
     idx = {}
-    for p in glob.glob(os.path.join(fam_dir, "img", "**", "*-thumbnail*.*"), recursive=True):
+    for p in glob.glob(os.path.join(base, "**", "*-thumbnail*.*"), recursive=True):
         stem = os.path.splitext(os.path.basename(p))[0]
-        idx.setdefault(stem, "/%s/%s" % (fam, os.path.relpath(p, fam_dir).replace(os.sep, "/")))
+        idx.setdefault(stem, prefix + "/" + os.path.relpath(p, base).replace(os.sep, "/"))
     return idx
 
 
@@ -141,19 +163,25 @@ def page_url(family, path):
 def build_catalog(family, cfg):
     fam_dir = os.path.join(SITE, family)
     logo = "/%s/img/logo.png" % family
-    thumbs = thumb_index(fam_dir)
-    index_path = os.path.join(fam_dir, "index.html")
-    cat = {"calc": {"path": index_path, "url": "/" + family, "title": cfg.get("calc_title") or title_of(read(index_path), cfg["name"]),
-                    "img": logo, "logo": True, "kind": cfg.get("calc_kind", "Calculator"), "patch": cfg.get("calc_patch", True)},
-           "articles": [], "sections": []}
-    section_dirs = {d for d, _, _ in cfg["sections"]}
-    for path in sorted(glob.glob(os.path.join(fam_dir, "*.html"))):
-        fn = os.path.basename(path)
-        text = read(path)
-        if fn == "index.html" or fn in cfg.get("skip", []) or NUMERIC_STUB.match(fn) or is_gallery(text) or "data-tool" in text:
-            continue
-        cat["articles"].append({"path": path, "url": page_url(family, path), "title": title_of(text, fn[:-5]),
-                                "img": logo, "logo": True, "kind": cfg["article_kind"]})
+    thumbs = thumb_index(fam_dir, cfg.get("thumb_dir"))
+    if cfg.get("hub"):  # no calculator page: the "calc" card is a gallery hub and nothing is patched for it
+        h = cfg["hub"]
+        calc = {"path": None, "url": h["url"], "title": h["title"], "img": h["img"], "logo": False, "kind": h["kind"], "patch": False}
+        logo = h["img"]
+    else:
+        index_path = os.path.join(fam_dir, "index.html")
+        calc = {"path": index_path, "url": "/" + family, "title": cfg.get("calc_title") or title_of(read(index_path), cfg["name"]),
+                "img": logo, "logo": True, "kind": cfg.get("calc_kind", "Calculator"), "patch": cfg.get("calc_patch", True)}
+    cat = {"calc": calc, "articles": [], "sections": []}
+    hide_files = cfg.get("hide_files", [])
+    if cfg.get("articles", True):
+        for path in sorted(glob.glob(os.path.join(fam_dir, "*.html"))):
+            fn = os.path.basename(path)
+            text = read(path)
+            if fn == "index.html" or fn in cfg.get("skip", []) or NUMERIC_STUB.match(fn) or is_gallery(text) or "data-tool" in text:
+                continue
+            cat["articles"].append({"path": path, "url": page_url(family, path), "title": title_of(text, fn[:-5]),
+                                    "img": logo, "logo": True, "kind": cfg["article_kind"]})
     for d, kind, _ in cfg["sections"]:
         items = []
         for path in sorted(glob.glob(os.path.join(fam_dir, d, "**", "*.html"), recursive=True)):
@@ -163,8 +191,13 @@ def build_catalog(family, cfg):
                 continue
             slug = fn[:-5]
             img = thumbs.get(slug + "-thumbnail-2") or thumbs.get(slug + "-thumbnail")
+            if not img:  # slug differs from the image name (double hyphens ...): go by the page's own main image
+                m = MAIN_IMG_RE.search(text)
+                if m:
+                    img = thumbs.get(m.group(1) + "-thumbnail-2") or thumbs.get(m.group(1) + "-thumbnail")
             items.append({"path": path, "url": page_url(family, path), "title": title_of(text, slug),
-                          "img": img or logo, "logo": img is None, "kind": kind, "section": len(cat["sections"])})
+                          "img": img or logo, "logo": img is None, "kind": kind, "section": len(cat["sections"]),
+                          "hide": fn in hide_files})
         cat["sections"].append(items)
     return cat
 
@@ -197,17 +230,17 @@ def recs_for(family, page, cat, cfg):
     calc = cat["calc"]
     self_url = page["url"]
     if page.get("section") is not None:
-        items = cat["sections"][page["section"]]
+        items = [it for it in cat["sections"][page["section"]] if not it.get("hide")]
         offs = cfg["sections"][page["section"]][2] or (1, max(2, len(items) // 7))
-        i = items.index(page)
+        i = items.index(page) if page in items else len(self_url)  # hidden (e.g. solution) pages: stable spread
         cards = rot(items, i, offs, (self_url,)) + [calc] + other_calc(family, i, 1)
     else:  # the calculator itself, or a tutorial/article page
         arts = cat["articles"]
         j = arts.index(page) if page in arts else -1
         ordered = arts[j + 1:] + arts[:j] if j >= 0 else arts
         base = len(self_url)  # arbitrary but stable spread for the few pages of this kind
-        cards = ordered[:2] + ([calc] if page is not calc else []) + other_calc(family, base, 1)
-        first = next((it for it in cat["sections"] if it), [])
+        first = [it for it in next((sec for sec in cat["sections"] if sec), []) if not it.get("hide")]
+        cards = ordered[:2] + ([calc] if page is not calc else []) + other_calc(family, base, 1 if first else 3)
         cards += rot(first, base, (0,))
     seen, out = set(), []
     for c in cards:
@@ -290,7 +323,7 @@ def main():
             continue
         cat = build_catalog(family, cfg)
         items = [it for sec in cat["sections"] for it in sec]
-        random_json[family] = [{"u": c["url"], "t": c["title"], "i": c["img"], "k": c["kind"]} for c in items]
+        random_json[family] = [{"u": c["url"], "t": c["title"], "i": c["img"], "k": c["kind"]} for c in items if not c.get("hide")]
         pages = ([cat["calc"]] if cat["calc"]["patch"] else []) + cat["articles"] + items
         print("%s: %d pages (%s; %d articles), %d section items without a thumbnail" % (
             family, len(pages), ", ".join("%d %s" % (len(sec), cfg["sections"][n][0]) for n, sec in enumerate(cat["sections"])) or "no sections",

@@ -259,9 +259,12 @@ of HTML files individually:
   visually in step). Idempotent; **dry-runs by default, `--apply` writes.**
 
 - `add_sidebar.py` — the "More like this" side column (2026-09-25: piloted on `percentagecalculator`, then rolled out the same day to
-  `gradecalculator`, `gpacalculator`, `bmicalculator`, `mortgagecalculator`, `inflationcalculator` and the `timer` quote pages = 722 pages;
-  never the gallery/hub pages, numeric pagination pages or tool-shell pages; `vatcalculator`, `pokemongocalculator`, timer/speedreader
-  tool pages, youtubemoney and the build.mjs / Hive-mirror pages are deliberately left out). `FAMILIES` is config-driven: per family its
+  `gradecalculator`, `gpacalculator`, `bmicalculator`, `mortgagecalculator`, `inflationcalculator`, the `timer` quote pages, then
+  `vatcalculator`, `pokemongocalculator` and the mes.fm-level `memes/` and `puzzles/` galleries = 925 pages; the two galleries have no
+  calculator, so their `hub` card links the gallery and thumbnails come from `mes.fm/img/memes-thumbnail` (found via each page's main image when
+  the slug differs); puzzle `solution.html` pages get the aside but are never recommended (`hide_files`); never the gallery/hub pages,
+  numeric pagination pages or tool-shell pages; timer/speedreader/emoji/... tool pages, youtubemoney and the build.mjs / Hive-mirror
+  pages are deliberately left out). `FAMILIES` is config-driven: per family its
   gallery-item `sections` (folder, card label), tutorial-type top-level pages become the articles; thumbnails are found by
   `<slug>-thumbnail[-2]` anywhere under the family's `img/`. At >=1200px `.outer-page-content` becomes a
   grid: the usual 46em content column + a 300px sticky `<aside id="mes-aside">` (300x250 ad slot + 4 related-page cards + 1
@@ -281,10 +284,11 @@ of HTML files individually:
 
 - `add_bottom_ad.py` — a fixed 300x250 AdSense unit ("Bottom 300x250", slot `8852646945`) after the Comments block, just above the
   footer, on individual pages (started on `gradecalculator`, then rolled out 2026-09-25 to percentage, gpa, bmi,
-  mortgage, inflation and the timer quote pages = 729 pages; sidebar + bottom ad share a page, the two scripts keep their `<script>` tags in a
+  mortgage, inflation, the timer quote pages, vat, pokemongo and the mes.fm `memes/` + `puzzles/` galleries = 936 pages; sidebar + bottom ad share a page, the two scripts keep their `<script>` tags in a
   fixed order so either can be re-run). Per page: `MES-BOTTOM-AD` (an "Advertisement" label + a reserved 250px holder, so no layout shift) and
   `MES-BOTTOM-AD-JS` (`main_js/bottom-ad.js`: creates the `<ins>` and requests the ad only when the box is within ~300px of the
-  viewport, so an unscrolled bottom ad never counts as an unseen impression). **Only pages that already carry the AdSense loader are
+  viewport, so an unscrolled bottom ad never counts as an unseen impression). Both ad boxes (this and the sidebar's, `aside.js`) collapse
+  themselves when the ad is blocked (ad blocker) or unfilled, so no empty hole is left (`watchAd()` polls ~30s). **Only pages that already carry the AdSense loader are
   touched**, which keeps it off the ad-free pages (youtubemoney, contact/privacy/donate, graphic 9/11 mirrors); numeric
   pagination stubs (`1.html`) are skipped too. Add a family to `FAMILIES` to roll out. Idempotent, `--remove` restores the pages
   byte-for-byte; **dry-runs by default (`-v` lists pages), `--apply` writes.**
