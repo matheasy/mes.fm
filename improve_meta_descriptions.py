@@ -44,7 +44,6 @@ GENERATED = {
     # emitted by mes.fm/hutchison/build.mjs (hub + section pages)
     "hutchison-posts", "hutchison-videos", "highlights", "articles", "hutchison-debunking-debunkers",
     "hutchison-news", "hutchison-unedited-footage", "hutchison-interviews", "cold-fusion-lenr",
-    "hutchison-livestreams",
     # emitted by mes.fm/livestreams/build.mjs
     "livestreams",
 }

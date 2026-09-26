@@ -8,7 +8,9 @@
 // Pages written (see PAGES): the hub mes.fm/hutchison/index.html, plus
 // mes.fm/{hutchison-posts,hutchison-videos,highlights,articles,hutchison-debunking-debunkers,
 // hutchison-news,hutchison-unedited-footage,hutchison-interviews,cold-fusion-lenr,
-// hutchison-livestreams}/index.html. Never hand-edit those generated files.
+// }/index.html (9 pages). Never hand-edit those generated files. The hub's tenth tile, MES
+// Livestreams, is tile-only: it links to mes.fm/livestreams#hutchison (the Hutchison Effect
+// filter of the all-livestreams page) instead of having a page of its own.
 //
 // Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600). Until a custom icon is made, that file
 // is a crop of the section's newest thumbnail -- replace the file (same name) with custom art
@@ -56,7 +58,7 @@ const PAGES = [
     tileLabel: "Videos",
     title: "Hutchison Effect Videos",
     description:
-      "Recent Hutchison Effect videos from MES: levitation captured and played back live, George Hathaway and John Alexander on crumbling steel and bent molybdenum rods, and more.",
+      "Recent Hutchison Effect videos from MES: a trailer for Livestream 141 with John Hutchison showing Tom Sky levitation footage he missed, George Hathaway and John Alexander on crumbling steel and bent molybdenum rods, and more.",
   },
   {
     slug: "highlights",
@@ -115,12 +117,14 @@ const PAGES = [
       "Cold fusion and low energy nuclear reactions (LENR): Martin Fleischmann's rare interviews, including the 1985 “hole in the floor” palladium electrolysis experiment, plus a free energy playlist.",
   },
   {
+    // Tile only: no page is written. Its icon (img/hutchison-livestreams-icon.jpg) is a crop of the
+    // newest Hutchison Effect livestream's thumbnail on mes.fm/livestreams -- refresh it by hand
+    // (and bump iconVersion) when a newer Hutchison stream goes up.
     slug: "hutchison-livestreams",
-    sectionId: "hutchison-livestreams",
+    href: "/livestreams#hutchison",
+    iconVersion: 2,
+    tileOnly: true,
     tileLabel: "MES Livestreams",
-    title: "Hutchison Effect Livestreams",
-    description:
-      "MES livestreams featuring John Hutchison and the Hutchison Effect: guests including Jeane Manning, Paul Mueller and Kerry Cassidy, a tour of John's lab, and never-before-seen footage.",
   },
 ];
 
@@ -510,7 +514,8 @@ ${extraPanes}
 // Icon tile for the hub page: text-free thumbnail + real overlaid label,
 // same .icon-grid markup/CSS as mes.fm's homepage.
 function buildTile(page) {
-  return `<a class="icon-grid__link icon-grid__link--labeled" href="/${page.slug}"><span class="icon-grid__thumb" style="background-image:url('/img/${page.slug}-icon.jpg')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
+  const icon = `/img/${page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}`;
+  return `<a class="icon-grid__link icon-grid__link--labeled" href="${page.href || `/${page.slug}`}"><span class="icon-grid__thumb" style="background-image:url('${icon}')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
 }
 
 function buildImportantLinks() {
@@ -2179,7 +2184,7 @@ async function main() {
   const meta = await resolveAllMeta(SECTIONS);
 
   const pages = [{ hub: true, slug: "hutchison", outDir: __dirname }].concat(
-    PAGES.map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
+    PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
   );
   for (const page of pages) {
     mkdirSync(page.outDir, { recursive: true });

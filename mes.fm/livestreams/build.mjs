@@ -56,6 +56,7 @@ const MIRRORS = {
   PF0kSCXvZwM: { href: "https://mes.fm/livestream-140-trailer-911-real-avengers", scrape: true },
   ddmBEjkVXb0: { href: "https://mes.fm/livestream-140-trailer-dust-plumes-911", scrape: true },
   WbvO8BbKIP0: { href: "https://mes.fm/livestream-66-trailer", scrape: true },
+  XXeHqPUgbLU: { href: "https://mes.fm/livestream-141-trailer-hutchison-tom-sky-levitation", scrape: true },
 };
 
 // Stats-screen pages (the Stats tab), newest first.
@@ -68,10 +69,18 @@ const STATS = [{ href: "https://mes.fm/livestream-140-stats", title: "140: Stats
 const CATEGORIES = [
   { id: "hutchison", label: "Hutchison Effect", test: (v) => /hutchison/i.test(v.title) },
   { id: "911", label: "9/11 Truth", test: (v) => /9\/11|\bWTC\b|towers|judy wood/i.test(v.title) },
+  { id: "planes", label: "9/11 Planes Research", test: (v) => /planes research/i.test(v.title) },
   { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title) },
   { id: "mestruth", label: "MES Truth", test: (v) => v.channel === "@mestruth" },
 ];
 const catsOf = (v) => CATEGORIES.filter((c) => c.test(v)).map((c) => c.id).join(" ");
+
+// Extra platform links per stream number (Hive, Rumble, Odysee, BitChute, X, Summary, Trailer, ...),
+// shown after the YouTube link in List View. Carried over from the old mes.fm/hutchison-livestreams
+// page (13 Hutchison streams) when that page was folded into this one; add more entries by hand.
+const EXTRA_LINKS = existsSync(join(__dirname, "extra-links.json"))
+  ? JSON.parse(readFileSync(join(__dirname, "extra-links.json"), "utf8"))
+  : {};
 
 const YT = (id) => `https://www.youtube.com/watch?v=${id}`;
 
@@ -98,12 +107,31 @@ function toItem(v) {
   const mirror = MIRRORS[v.id];
   const cats = catsOf(v);
   if (mirror && mirror.scrape) return { href: mirror.href, title, cats };
-  const links = [...(mirror ? [["Notes", mirror.href], ...(mirror.extra || [])] : []), ["YouTube", YT(v.id)]];
+  const number = (v.title.match(/^MES Livestream (\d+)/) || [])[1];
+  const links = [
+    ...(mirror ? [["Notes", mirror.href], ...(mirror.extra || [])] : []),
+    ["YouTube", YT(v.id)],
+    ...(EXTRA_LINKS[number] || []),
+  ];
   return { title, image: v.thumb, links, cats };
 }
 
-const livestreamItems = playlist.filter((v) => classify(v) === "livestream").map(toItem);
-const trailerItems = playlist.filter((v) => classify(v) === "trailer").map(toItem);
+// Newest first by stream number. YouTube appends new playlist videos at the END, so playlist order
+// can't be trusted for "newest first" (the trailer for 141 was added after streams 1-140). A video with
+// no number in its title (the TLBNAWKI interview, "Moon Landing Trailer", ...) takes the number of the
+// numbered video before it in the playlist, so it stays next to its neighbours; ties keep playlist order.
+function newestFirst(videos) {
+  let carried = 0;
+  const keyed = videos.map((v, i) => {
+    const m = v.title.match(/Livestream (\d+)/i);
+    if (m) carried = Number(m[1]);
+    return { v, i, key: carried };
+  });
+  return keyed.sort((a, b) => b.key - a.key || a.i - b.i).map((k) => k.v);
+}
+
+const livestreamItems = newestFirst(playlist.filter((v) => classify(v) === "livestream")).map(toItem);
+const trailerItems = newestFirst(playlist.filter((v) => classify(v) === "trailer")).map(toItem);
 const skipped = playlist.filter((v) => classify(v) === "skip");
 
 const SECTIONS = [
@@ -1848,8 +1876,14 @@ ${viewToggleWiring}
     Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
       b.addEventListener('click', function () { setTimeout(apply, 0); });
     });
-    var h = (location.hash || '').slice(1);
-    if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
     apply();
   }
   wireFilter('livestreams');

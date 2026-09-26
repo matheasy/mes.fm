@@ -122,6 +122,29 @@
     ],
     "namedLinks": []
   },
+  "https://mes.fm/livestream-141-trailer-hutchison-tom-sky-levitation": {
+    "image": "https://images.3speak.tv/images/1790463348035-7542bd8045bc9d7a.webp",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/trailer-for-mes-livestream-384"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtu.be/XXeHqPUgbLU"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35594"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0FqwyUa_ICwTlqO0S6Y3kAn"
+      }
+    ]
+  },
   "https://mes.fm/livestream-66-trailer": {
     "image": "https://images.3speak.tv/images/1788025782654-abd7668a2f2b9cb7.webp",
     "watchLinks": [
