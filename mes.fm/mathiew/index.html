@@ -403,6 +403,10 @@
     /* blue nav bar: same height as mes.fm/math (hub li margin + 1.6 body line-height made it ~53px) */
     .info-bar-container li { margin-bottom: 0; }
     .info-bar { line-height: 16px; }
+    /* header + nav bar: same 1180px band as the card grids, not a 900px logo row over a full-width bar */
+    .container { max-width: 1180px; margin: 0 auto; }
+    .container .top-bar { max-width: none; }
+    .footer { max-width: 1180px; box-sizing: border-box; }
 </style>
   <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,

@@ -96,6 +96,15 @@ NAV_BAR_FIX = ("    /* blue nav bar: same height as mes.fm/math (hub li margin +
                "    .info-bar { line-height: 16px; }\n")
 
 
+# The hubs' base CSS caps .top-bar at 900px but nothing capped the nav bar / "Part of" box, so on a wide window the header
+# was a narrow logo row over an edge-to-edge blue bar. Cap the whole chrome to the same 1180px band as the card grids
+# (.wide), footer included, like mes.fm/hutchison.
+HUB_WIDTH_FIX = ("    /* header + nav bar: same 1180px band as the card grids, not a 900px logo row over a full-width bar */\n"
+                 "    .container { max-width: 1180px; margin: 0 auto; }\n"
+                 "    .container .top-bar { max-width: none; }\n"
+                 "    .footer { max-width: 1180px; box-sizing: border-box; }\n")
+
+
 CHROME_SEL = re.compile(r"\.top-bar|\.site-brand|\.header-|\.hamburger|#navbar|\.navbar|\.info-bar|#info-bar|\.social|\.part-of|\.footer|#footer|#copyright|compact-nav|is-stuck|is-visible|\.dropdown")
 
 
@@ -238,7 +247,7 @@ def hub_swap(old, template):
     chrome = [txt for sel, txt in css_items(tcss) if CHROME_SEL.search(sel) or (sel.startswith("@media") and CHROME_SEL.search(txt))]
     css = (style.group(1).rstrip() + "\n\n    /* site chrome (branded header, nav bar, floating bar, footer) */\n    " + "\n    ".join(chrome)
            + "\n    /* the hub pages predate the sans-serif mirror shell; match it */\n    body { font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }\n"
-           + NAV_BAR_FIX)
+           + NAV_BAR_FIX + HUB_WIDTH_FIX)
     new = old[: style.start()] + "<style>" + css + "</style>" + old[style.end():]
     if "/" + (slug or "") in BRANDS:  # topic hub with its own artwork: favicon + social preview image
         big = "https://mes.fm/img/%s-logo-big.jpg" % slug
