@@ -11,8 +11,8 @@ Only pages that already carry the AdSense loader are touched -- pages that must 
 privacy / donate, the graphic 9/11 mirrors) don't have it, so they are skipped automatically; "Page Not Found" pagination
 stubs (1.html, 2.html ...) are skipped too. Comment-less pages (no #comments-box) are skipped and reported.
 
-Pilot family: gradecalculator (2026-09-25), to be compared against the percentagecalculator sidebar pilot; add a family to
-FAMILIES to roll it out. The slot id is the AdSense unit "Bottom 300x250" created for this; --ad-slot overrides it.
+Started on gradecalculator (2026-09-25), then rolled out to the other calculator sites (percentage, gpa, bmi, mortgage,
+inflation, timer quotes); add a family to FAMILIES to roll it out further. The slot id is the AdSense unit "Bottom 300x250" created for this; --ad-slot overrides it.
 Idempotent; **dry-runs by default (-v lists every page), --apply writes.**  --remove strips it again.
 """
 import argparse
@@ -26,7 +26,8 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(ROOT, "mes.fm")
 ASSET_V = "1"  # bump when main_js/bottom-ad.js changes
 DEFAULT_SLOT = "8852646945"  # AdSense display unit "Bottom 300x250" (fixed 300x250)
-FAMILIES = ["gradecalculator"]
+FAMILIES = ["percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator",
+            "inflationcalculator", "timer"]
 
 LOADER = "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
 NUMERIC_STUB = re.compile(r"^\d+\.html$")  # 1.html, 2.html ... are "Page Not Found" pagination stubs
@@ -62,6 +63,8 @@ def patch(text, slot, remove):
         return text, None
     if LOADER not in text:
         return None, "no AdSense loader (ad-free page)"
+    if "data-tool" in text:
+        return None, "tool-shell page"
     if "</body>" not in text:
         return None, "no </body>"
     m = COMMENTS_RE.search(text)

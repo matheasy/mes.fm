@@ -254,16 +254,20 @@ of HTML files individually:
   `articleFontScale`/`theme` localStorage keys with `mes.fm/math` (whose build.mjs has its own inline copy — keep the two
   visually in step). Idempotent; **dry-runs by default, `--apply` writes.**
 
-- `add_sidebar.py` — the "More like this" side column (pilot 2026-09-25: the `percentagecalculator` family only — calculator,
-  tutorial/how-to, 95 memes, 33 facts = 131 pages; not the gallery/hub pages). At >=1200px `.outer-page-content` becomes a
+- `add_sidebar.py` — the "More like this" side column (2026-09-25: piloted on `percentagecalculator`, then rolled out the same day to
+  `gradecalculator`, `gpacalculator`, `bmicalculator`, `mortgagecalculator`, `inflationcalculator` and the `timer` quote pages = 722 pages;
+  never the gallery/hub pages, numeric pagination pages or tool-shell pages; `vatcalculator`, `pokemongocalculator`, timer/speedreader
+  tool pages, youtubemoney and the build.mjs / Hive-mirror pages are deliberately left out). `FAMILIES` is config-driven: per family its
+  gallery-item `sections` (folder, card label), tutorial-type top-level pages become the articles; thumbnails are found by
+  `<slug>-thumbnail[-2]` anywhere under the family's `img/`. At >=1200px `.outer-page-content` becomes a
   grid: the usual 46em content column + a 300px sticky `<aside id="mes-aside">` (300x250 ad slot + 4 related-page cards + 1
   random card from `main_js/aside-random.json`), with a button to move it to the other side (`html.aside-left`, localStorage
   `asideSide`). Below 1200px there is no ad and no columns — the cards just sit under the content. Assets: `main_js/aside.css`,
   `main_js/aside.js`. Per page, marker-delimited: `MES-ASIDE-HEAD` (css link + saved-side script), `has-aside` on
   `#outer-container`, `MES-ASIDE` (the aside, inserted before the `</div>` that closes `.outer-page-content`), `MES-ASIDE-JS`.
   Cards are static links (crawlable internal links), picked by rotating through the family list so inbound links spread evenly.
-  **Ad slot is a placeholder until you pass `--ad-slot <id>`** (a 300x250 AdSense display unit); re-runs without the flag keep each
-  page's slot, and with no slot the box is hidden and no ad is requested (`?aside-debug` shows where it will sit). `.inner-container`
+  The ad slot is AdSense unit "Sidebar 300x250" (`8429975111`, `DEFAULT_SLOT`; `--ad-slot` overrides, re-runs keep each page's own slot);
+  with an empty slot the box is hidden and no ad is requested (`?aside-debug` shows where it will sit). `.inner-container`
   gets `overflow: clip` at >=1200px because its template `overflow:hidden` would otherwise stop `position: sticky` working. To
   roll out to another family add it to `FAMILIES` (needs the same `<!-- side bar -->` + `outer-page-content` markup). Keep the
   ad off `youtubemoney`, contact/privacy/donate and the graphic 9/11 mirrors. `percentagecalculator-app/build-www.py` strips the
@@ -272,8 +276,9 @@ of HTML files individually:
   Answer no longer overlaps the inputs at larger A+ sizes.
 
 - `add_bottom_ad.py` — a fixed 300x250 AdSense unit ("Bottom 300x250", slot `8852646945`) after the Comments block, just above the
-  footer, on individual pages (pilot 2026-09-25: the `gradecalculator` family, 159 pages, compared against the percentagecalculator
-  sidebar pilot). Per page: `MES-BOTTOM-AD` (an "Advertisement" label + a reserved 250px holder, so no layout shift) and
+  footer, on individual pages (started on `gradecalculator`, then rolled out 2026-09-25 to percentage, gpa, bmi,
+  mortgage, inflation and the timer quote pages = 729 pages; sidebar + bottom ad share a page, the two scripts keep their `<script>` tags in a
+  fixed order so either can be re-run). Per page: `MES-BOTTOM-AD` (an "Advertisement" label + a reserved 250px holder, so no layout shift) and
   `MES-BOTTOM-AD-JS` (`main_js/bottom-ad.js`: creates the `<ins>` and requests the ad only when the box is within ~300px of the
   viewport, so an unscrolled bottom ad never counts as an unseen impression). **Only pages that already carry the AdSense loader are
   touched**, which keeps it off the ad-free pages (youtubemoney, contact/privacy/donate, graphic 9/11 mirrors); numeric
