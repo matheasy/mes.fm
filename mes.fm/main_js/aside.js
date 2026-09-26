@@ -51,7 +51,7 @@
 
     function watchAd(ins, setCollapsed) {
         watchBlocked(setCollapsed);
-        var tries = 0, libTicks = 0, wired = false, timer;
+        var tries = 0, libTicks = 0, fakeTicks = 0, wired = false, timer;
         function tick() {
             tries++;
             var st = ins.getAttribute("data-ad-status");
@@ -61,7 +61,12 @@
             if (el && !wired) { wired = true; el.addEventListener("error", function () { setCollapsed(true); }); }
             var cs = window.getComputedStyle(ins);
             var hidden = ins.offsetHeight === 0 || cs.display === "none" || cs.visibility === "hidden";
-            if (st === "filled") { setCollapsed(false); if (tries > 3) return clearInterval(timer); return; }
+            /* Brave Shields / uBlock answer with a stand-in that sets data-ad-status="filled" and adds an EMPTY <iframe>
+               (no src, default 300x150) to look like a served ad, so "filled" only counts when the iframe is a real ad frame. */
+            var fr = ins.querySelector("iframe");
+            var real = st === "filled" && fr && (fr.getAttribute("src") || fr.getAttribute("srcdoc") || fr.hasAttribute("data-google-container-id"));
+            if (real) { fakeTicks = 0; setCollapsed(false); if (tries > 3) return clearInterval(timer); return; }
+            if (st === "filled" && ++fakeTicks >= 3) { setCollapsed(true); return; }
             if (st === "unfilled") { setCollapsed(true); return clearInterval(timer); }
             /* No verdict from AdSense. A real adsbygoogle.js answers within a second or two of starting, so silence after it
                has "loaded" means it is a blocker's stand-in (uBlock swaps in a stub that sets adsbygoogle.loaded and adds 1px
