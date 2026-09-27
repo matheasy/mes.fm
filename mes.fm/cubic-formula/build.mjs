@@ -397,7 +397,8 @@ async function embed3SpeakLinks(markdown) {
     return (
       `<div class="video-embed" google-side-rail-overlap="false">` +
       `<video id="${id}" controls playsinline preload="metadata"${posterAttr}></video>` +
-      `<button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button>` +
+      `<button class="theater-toggle-btn wide-toggle-btn" type="button" aria-pressed="false" style="top:46px;">Wide View</button>` +
+      `<button class="theater-toggle-btn" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button>` +
       `<a class="video-badge" href="https://3speak.tv/watch?v=${owner}/${permlink}" target="_blank" rel="noopener">View on 3Speak &nearr;</a>` +
       `</div>`
     );
@@ -414,7 +415,8 @@ function embedYoutubeLinks(markdown) {
     (_match, videoId) =>
       `<div class="video-embed" google-side-rail-overlap="false">` +
       `<iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>` +
-      `<button class="theater-toggle-btn" type="button" aria-pressed="false">Theater Mode</button>` +
+      `<button class="theater-toggle-btn wide-toggle-btn" type="button" aria-pressed="false" style="top:46px;">Wide View</button>` +
+      `<button class="theater-toggle-btn" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button>` +
       `<a class="video-badge" href="https://youtu.be/${videoId}" target="_blank" rel="noopener">View on YouTube &nearr;</a>` +
       `</div>`
   );
@@ -1830,32 +1832,58 @@ ${bodyHtml}
   </script>
 
   <script>
-    // theater-mode: expands a video embed to the full browser width (breaking out of
-    // the .container's 760px max-width), like YouTube's theater mode. Delegated +
-    // per-embed since a page may hold several videos.
+    // view-mode: Default / Wide (fills the page width -- the "More like this" sidebar moves below, see
+    // main_js/aside.css) / Theater (fills the browser width, like YouTube's theater mode; also moves the
+    // sidebar below). Delegated + per-embed since a page may hold several videos; only one mode per embed.
     (function () {
-      function setTheater(embed, toggle, on) {
-        embed.classList.toggle('theater-mode', on);
-        toggle.textContent = on ? 'Default View' : 'Theater Mode';
-        toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+      function refreshBody() {
+        document.body.classList.toggle('video-wide', !!document.querySelector('.video-embed.wide-mode'));
+        document.body.classList.toggle('video-theater', !!document.querySelector('.video-embed.theater-mode'));
+      }
+
+      function modeOf(embed) {
+        if (embed.classList.contains('theater-mode')) return 'theater';
+        if (embed.classList.contains('wide-mode')) return 'wide';
+        return 'default';
+      }
+
+      function setEmbedMode(embed, wideBtn, theaterBtn, mode) {
+        embed.classList.toggle('wide-mode', mode === 'wide');
+        embed.classList.toggle('theater-mode', mode === 'theater');
+        if (wideBtn) {
+          wideBtn.textContent = mode === 'wide' ? 'Default View' : 'Wide View';
+          wideBtn.setAttribute('aria-pressed', mode === 'wide' ? 'true' : 'false');
+        }
+        if (theaterBtn) {
+          theaterBtn.textContent = mode === 'theater' ? 'Default View' : 'Theater Mode';
+          theaterBtn.setAttribute('aria-pressed', mode === 'theater' ? 'true' : 'false');
+        }
+        refreshBody();
+        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion zones on
+        // scroll/resize, not on a plain class-driven layout change, so nudge it to recompute
+        // once the width/height transition above has settled.
         setTimeout(function () {
           window.dispatchEvent(new Event('resize'));
         }, 300);
       }
 
       document.addEventListener('click', function (e) {
-        var toggle = e.target.closest('.theater-toggle-btn');
+        var wideBtn = e.target.closest('.wide-toggle-btn');
+        var theaterBtn = !wideBtn && e.target.closest('.theater-toggle-btn');
+        var toggle = wideBtn || theaterBtn;
         if (!toggle) return;
         var embed = toggle.closest('.video-embed');
         if (!embed) return;
-        setTheater(embed, toggle, !embed.classList.contains('theater-mode'));
+        var wanted = wideBtn ? 'wide' : 'theater';
+        var embedWideBtn = embed.querySelector('.wide-toggle-btn');
+        var embedTheaterBtn = embed.querySelector('.theater-toggle-btn:not(.wide-toggle-btn)');
+        setEmbedMode(embed, embedWideBtn, embedTheaterBtn, modeOf(embed) === wanted ? 'default' : wanted);
       });
 
       document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
-        document.querySelectorAll('.video-embed.theater-mode').forEach(function (embed) {
-          var toggle = embed.querySelector('.theater-toggle-btn');
-          if (toggle) setTheater(embed, toggle, false);
+        document.querySelectorAll('.video-embed.wide-mode, .video-embed.theater-mode').forEach(function (embed) {
+          setEmbedMode(embed, embed.querySelector('.wide-toggle-btn'), embed.querySelector('.theater-toggle-btn:not(.wide-toggle-btn)'), 'default');
         });
       });
     })();
@@ -2388,7 +2416,8 @@ async function buildChildPage(child, mainBody, template) {
 
   const article = `      <div class="video-embed" id="videoEmbed" google-side-rail-overlap="false">
         <video id="qVideo" controls playsinline preload="metadata" poster="${escapeHtml(poster)}"></video>
-        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false">Theater Mode</button>
+        <button class="theater-toggle-btn" id="wideToggle" type="button" aria-pressed="false" style="top:46px;">Wide View</button>
+        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button>
         <a class="video-badge" href="${threeSpeakUrl}" target="_blank" rel="noopener">View on 3Speak &nearr;</a>
       </div>
 

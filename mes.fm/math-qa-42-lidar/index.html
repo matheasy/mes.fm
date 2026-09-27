@@ -603,7 +603,7 @@
       setTimeout(go, 15000);
     })();
     </script>
-<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=1"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
 <body class="dark">
 
   <div id="compact-nav" aria-hidden="true" style="display:none">
@@ -698,7 +698,8 @@
     <article>
       <div class="video-embed" id="videoEmbed" google-side-rail-overlap="false">
         <iframe src="https://www.youtube-nocookie.com/embed/px8fubzwlpY" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false">Theater Mode</button>
+        <button class="theater-toggle-btn" id="wideToggle" type="button" aria-pressed="false" style="top:46px;">Wide View</button>
+        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button>
         <a class="video-badge" href="https://www.youtube.com/watch?v=px8fubzwlpY" target="_blank" rel="noopener">View on YouTube &nearr;</a>
       </div>
 
@@ -797,17 +798,25 @@
   </script>
 
   <script>
-    // theater-mode: expands the video embed to the full browser width (breaking out of
-    // the .container's 760px max-width), like YouTube's theater mode. Height is capped at
-    // min(85vh, 56.25vw) so ultra-wide viewports don't get a comically tall player.
+    // view-mode: Default / Wide (fills the page width -- the "More like this" sidebar moves below,
+    // see main_js/aside.css) / Theater (fills the browser width, like YouTube's theater mode; also
+    // moves the sidebar below). Height is capped at min(85vh, 56.25vw) in theater mode so ultra-wide
+    // viewports don't get a comically tall player. Only one mode is active at a time.
     (function () {
       var embed = document.getElementById('videoEmbed');
-      var toggle = document.getElementById('theaterToggle');
+      var wideBtn = document.getElementById('wideToggle');
+      var theaterBtn = document.getElementById('theaterToggle');
+      if (!embed || !wideBtn || !theaterBtn) return;
+      var mode = 'default';
 
-      function setTheater(on) {
-        embed.classList.toggle('theater-mode', on);
-        toggle.textContent = on ? 'Default View' : 'Theater Mode';
-        toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+      function apply() {
+        embed.classList.toggle('theater-mode', mode === 'theater');
+        document.body.classList.toggle('video-wide', mode === 'wide');
+        document.body.classList.toggle('video-theater', mode === 'theater');
+        wideBtn.textContent = mode === 'wide' ? 'Default View' : 'Wide View';
+        wideBtn.setAttribute('aria-pressed', mode === 'wide' ? 'true' : 'false');
+        theaterBtn.textContent = mode === 'theater' ? 'Default View' : 'Theater Mode';
+        theaterBtn.setAttribute('aria-pressed', mode === 'theater' ? 'true' : 'false');
         // AdSense's side rail ads only re-check google-side-rail-overlap exclusion
         // zones on scroll/resize, not on a plain class-driven layout change, so nudge
         // it to recompute once the width/height transition above has settled.
@@ -816,14 +825,16 @@
         }, 300);
       }
 
-      toggle.addEventListener('click', function () {
-        setTheater(!embed.classList.contains('theater-mode'));
-      });
+      function setMode(next) {
+        mode = mode === next ? 'default' : next;
+        apply();
+      }
+
+      wideBtn.addEventListener('click', function () { setMode('wide'); });
+      theaterBtn.addEventListener('click', function () { setMode('theater'); });
 
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && embed.classList.contains('theater-mode')) {
-          setTheater(false);
-        }
+        if (e.key === 'Escape' && mode !== 'default') setMode(mode);
       });
     })();
   </script>

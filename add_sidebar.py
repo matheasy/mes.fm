@@ -36,7 +36,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(ROOT, "mes.fm")
-ASSET_V = "1"  # bump when aside.css / aside.js change (cache-busting ?v=)
+ASSET_V = "2"  # bump when aside.css / aside.js change (cache-busting ?v=)
 
 DEFAULT_SLOT = "8429975111"  # AdSense display unit "Sidebar 300x250" (fixed 300x250)
 

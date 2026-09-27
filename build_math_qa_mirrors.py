@@ -302,7 +302,8 @@ def build_page(rec, template):
         video_box = (
             '      <div class="video-embed" id="videoEmbed" google-side-rail-overlap="false">\n'
             '        <video id="qVideo" controls playsinline preload="metadata" poster="%s"></video>\n'
-            '        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false">Theater Mode</button>\n'
+            '        <button class="theater-toggle-btn" id="wideToggle" type="button" aria-pressed="false" style="top:46px;">Wide View</button>\n'
+            '        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button>\n'
             '        <a class="video-badge" href="https://3speak.tv/watch?v=mes/%s" target="_blank" rel="noopener">View on 3Speak &nearr;</a>\n'
             "      </div>"
         ) % (esc_attr(thumb), esc_attr(rec["threespeak_slug"]))
@@ -312,7 +313,8 @@ def build_page(rec, template):
             '        <iframe src="https://www.youtube-nocookie.com/embed/%s" title="YouTube video" '
             'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" '
             'allowfullscreen loading="lazy"></iframe>\n'
-            '        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false">Theater Mode</button>\n'
+            '        <button class="theater-toggle-btn" id="wideToggle" type="button" aria-pressed="false" style="top:46px;">Wide View</button>\n'
+            '        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button>\n'
             '        <a class="video-badge" href="%s" target="_blank" rel="noopener">View on YouTube &nearr;</a>\n'
             "      </div>"
         ) % (esc_attr(rec["youtube_id"]), esc_attr(yt_url))

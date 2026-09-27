@@ -75,3 +75,44 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
 }
 .mes-cols > .mes-aside { margin-top: 1.5em; }
 @media (min-width: 1200px) { .mes-cols > .mes-aside { margin-top: 14px; } }
+
+/* Wide / Theater video view modes (see each page's own "view-mode:" script): while either is on, the video's
+   own width/breakout would otherwise paint over the sidebar's grid column (reported live on a 9/11 mirror
+   page in theater mode), so both column layouts above collapse to one and the aside drops below the content
+   instead -- the same shape the <1200px layout already uses. Wide's width comes for free once that happens
+   (the video is already width:100% of its now-full-width column); Theater's own 100vw breakout is unaffected.
+   Declared after the html.aside-left overrides above so it wins on specificity ties. No-op on a page with no
+   sidebar (nothing here to collapse). */
+@media (min-width: 1200px) {
+  body.video-wide .has-aside .outer-page-content,
+  body.video-theater .has-aside .outer-page-content,
+  body.video-wide .mes-cols,
+  body.video-theater .mes-cols {
+    grid-template-columns: 1fr;
+  }
+  body.video-wide .has-aside .page-content,
+  body.video-theater .has-aside .page-content,
+  body.video-wide .mes-col-main,
+  body.video-theater .mes-col-main {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  body.video-wide .has-aside .mes-aside,
+  body.video-theater .has-aside .mes-aside,
+  body.video-wide .mes-cols > .mes-aside,
+  body.video-theater .mes-cols > .mes-aside {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  body.video-wide .mes-aside__sticky,
+  body.video-theater .mes-aside__sticky {
+    position: static;
+  }
+  body.video-wide .mes-aside__list,
+  body.video-theater .mes-aside__list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

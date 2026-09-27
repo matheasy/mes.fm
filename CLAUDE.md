@@ -298,6 +298,31 @@ of HTML files individually:
   and the four rebuilt calculators, each recommending the others + the All Tools hub + a calculator) and `add_bottom_ad.py`'s `TOOL_DIRS`
   cover the tool-shell pages. `build_tool_apps.py` regenerates four of them: re-run both scripts after it.
 
+- `fix_video_view_modes.py` — every video-embed page's single "Theater Mode" button becomes a Default / Wide /
+  Theater trio (2026-09-27). Wide fills the page's own width (the article column, or the article+sidebar width
+  on a page with the "More like this" sidebar); Theater is the existing 100vw browser-width breakout. Bug this
+  fixed: Wide/Theater used to paint the widened video straight over a sticky sidebar (`.has-aside`/`.mes-cols`),
+  since the video's breakout isn't in the same stacking context -- reported live on a 9/11 mirror page in
+  theater mode. Fix has two parts: **(1)** this script duplicates the single `#theaterToggle` button into
+  `#wideToggle` + `#theaterToggle` (stacked via inline `top:46px`/`82px`, same `.theater-toggle-btn` pill style,
+  no new CSS) and replaces the boolean theater-mode IIFE with a 3-state one -- `body.video-wide` /
+  `body.video-theater` track which mode is active, `.theater-mode` stays on the video itself for its existing
+  CSS; **(2)** `main_js/aside.css` (hand-edited, `?v=2`, bumped repo-wide + in `add_sidebar.py`'s `ASSET_V`)
+  collapses `.has-aside`/`.mes-cols` to one column whenever either body class is set, so the sidebar drops below
+  the content instead of sharing a row with the widened video -- exactly the page's own <1200px shape. Wide's
+  width comes free once that collapse happens (the video is already `width:100%` of its now-full-width column);
+  a page with no sidebar has nothing to collapse, so Wide there just matches the page's own width. Only the
+  single-video, ID-based pages (`#videoEmbed`/`#theaterToggle`) go through this script -- idempotent (checks for
+  `#wideToggle` first), covers ~120 already-generated pages plus `hive_mirror_template.html`,
+  `math_qa_mirror_template.html`, `cubic-formula/child-template.html` and `cubic-formula/build.mjs`'s child-page
+  button. `build_math_qa_mirrors.py`'s two button-generating lines needed a hand fix instead (they live inside a
+  Python string literal; the script's HTML replacement text would have broken that syntax). The handful of
+  multi-video, class-delegated pages (`cubic-formula/index.html`, `vector-functions-problems-plus/index.html` +
+  its `build.mjs`, `ferrocell-specular-reflection`, `hutchison-tom-sky`, `norman-patricia-ai-email`) use a
+  different no-id, `.closest('.theater-toggle-btn')`-delegated JS shape (one video-embed can hold several
+  players) and were fixed by hand the same way, each embed independently Default/Wide/Theater. Dry-runs by
+  default, `--apply` writes.
+
 - `add_bottom_ad.py` — a fixed 300x250 AdSense unit ("Bottom 300x250", slot `8852646945`) after the Comments block, just above the
   footer, on individual pages (started on `gradecalculator`, then rolled out 2026-09-25 to percentage, gpa, bmi,
   mortgage, inflation, the timer quote pages, vat, pokemongo and the mes.fm `memes/` + `puzzles/` galleries = 936 pages; sidebar + bottom ad share a page, the two scripts keep their `<script>` tags in a
