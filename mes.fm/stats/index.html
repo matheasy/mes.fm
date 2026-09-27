@@ -232,6 +232,20 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	   ellipsize -- the full URL is in the link's title tooltip and is what the link opens */
 	.st td.page-cell {white-space:nowrap;}
 	.st .page-path {display:inline-block;max-width:min(26em,40vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;}
+	/* Draggable Page column: the handle sits on the Page header's right edge; stats.js sets --page-col-w on the table once the
+	   column has been dragged (remembered in localStorage) and these rules turn it into the column width + path-ellipsis cap. */
+	.st .col-resizer {position:absolute;top:0;right:-1px;bottom:0;width:10px;cursor:col-resize;touch-action:none;user-select:none;-webkit-user-select:none;z-index:2;}
+	.st .col-resizer::after {content:"";position:absolute;top:22%;bottom:22%;right:3px;width:3px;border-radius:2px;background:currentColor;opacity:0.28;}
+	.st .col-resizer:hover::after, .st .col-resizer:focus-visible::after, .st .col-resizer.dragging::after {background:var(--accent);opacity:1;}
+	.st .col-resizer:focus {outline:none;}
+	body.col-resizing {cursor:col-resize;user-select:none;-webkit-user-select:none;}
+	.st .wide-table.page-w-set th.sticky-left, .st .wide-table.page-w-set td.sticky-left {width:var(--page-col-w);min-width:var(--page-col-w);max-width:var(--page-col-w);box-sizing:border-box;}
+	.st .wide-table.page-w-set td.page-cell {overflow:hidden;}
+	.st .wide-table.page-w-set .page-path {max-width:max(2em, calc(var(--page-col-w) - 3.6em));}
+	@media (pointer:coarse) {
+		.st .col-resizer {width:24px;right:-9px;}
+		.st .col-resizer::after {right:10px;width:4px;}
+	}
 	.st .expand-toggle {background:none;border:none;cursor:pointer;padding:0 0.3em;font-size:1em;color:var(--muted);}
 	.st .expand-toggle:hover {color:var(--accent);}
 	.st tr.detail-row td {padding:0.75em 0.75em 1.25em;background:#f6f9fd;}
@@ -766,7 +780,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=2" defer></script>
+	<script src="/stats/js/stats.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

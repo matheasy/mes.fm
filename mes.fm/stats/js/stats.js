@@ -186,12 +186,98 @@ function renderMatrixDetail(p) {
     '</table></div>';
 }
 
+// --- Draggable Page column ---------------------------------------------------------------------------------------------
+// A handle on the Page header's right edge resizes the frozen Page column (mouse, touch and pen via Pointer Events; arrow
+// keys when focused; double-click / double-tap resets). The width lives in the --page-col-w CSS variable on the table,
+// which the .page-w-set rules in the page CSS turn into the column width and the path-ellipsis cap, and is remembered in
+// localStorage. The header row is rebuilt on every render, so the handle is re-attached each time; the table itself
+// (and so the width) persists.
+const PAGE_COL_KEY = 'statsPageColW';
+const PAGE_COL_MIN = 90;
+let pageColRestored = false;
+let lastHandleTap = 0;
+
+function setPageColWidth(px, save) {
+  const table = document.getElementById('topPagesHead').closest('table');
+  if (px == null) {
+    table.classList.remove('page-w-set');
+    table.style.removeProperty('--page-col-w');
+    if (save) { try { localStorage.removeItem(PAGE_COL_KEY); } catch (e) { /* private mode */ } }
+    return null;
+  }
+  const max = Math.max(PAGE_COL_MIN + 40, table.parentElement.clientWidth - 160);
+  const w = Math.round(Math.min(max, Math.max(PAGE_COL_MIN, px)));
+  table.style.setProperty('--page-col-w', w + 'px');
+  table.classList.add('page-w-set');
+  if (save) { try { localStorage.setItem(PAGE_COL_KEY, String(w)); } catch (e) { /* private mode */ } }
+  return w;
+}
+
+function attachPageColResizer() {
+  const th = document.querySelector('#topPagesHead th.sticky-left');
+  if (!th) return;
+  if (!pageColRestored) {
+    pageColRestored = true;
+    try {
+      const saved = parseInt(localStorage.getItem(PAGE_COL_KEY), 10);
+      if (saved > 0) setPageColWidth(saved, false);
+    } catch (e) { /* private mode */ }
+  }
+  const handle = document.createElement('span');
+  handle.className = 'col-resizer';
+  handle.tabIndex = 0;
+  handle.setAttribute('role', 'separator');
+  handle.setAttribute('aria-orientation', 'vertical');
+  handle.setAttribute('aria-label', 'Resize the Page column (double-click to reset)');
+  handle.title = 'Drag to resize the Page column. Double-click to reset.';
+  th.appendChild(handle);
+
+  // a drag ends in a click on the handle; without this it would bubble to the header's sort handler
+  handle.addEventListener('click', function (e) { e.stopPropagation(); });
+  handle.addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    e.stopPropagation();
+    setPageColWidth(th.getBoundingClientRect().width + (e.key === 'ArrowRight' ? 16 : -16), true);
+  });
+  handle.addEventListener('pointerdown', function (e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startW = th.getBoundingClientRect().width;
+    try { handle.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
+    document.body.classList.add('col-resizing');
+    handle.classList.add('dragging');
+    function move(ev) { setPageColWidth(startW + ev.clientX - startX, false); }
+    function up(ev) {
+      handle.removeEventListener('pointermove', move);
+      handle.removeEventListener('pointerup', up);
+      handle.removeEventListener('pointercancel', up);
+      try { handle.releasePointerCapture(ev.pointerId); } catch (err) { /* already released */ }
+      document.body.classList.remove('col-resizing');
+      handle.classList.remove('dragging');
+      if (Math.abs(ev.clientX - startX) < 4) {  // a tap, not a drag: two quick taps reset (works for mouse and touch)
+        const now = Date.now();
+        if (now - lastHandleTap < 400) { lastHandleTap = 0; setPageColWidth(null, true); return; }
+        lastHandleTap = now;
+        return;
+      }
+      setPageColWidth(th.getBoundingClientRect().width, true);
+    }
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', up);
+    handle.addEventListener('pointercancel', up);
+  });
+}
+
 function renderTopPages() {
   const topPagesHead = document.getElementById('topPagesHead');
   const topPagesBody = document.getElementById('topPagesBody');
   const topPagesFoot = document.getElementById('topPagesFoot');
   if (!topPagesData.length) {
     topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort, 'sticky-col sticky-left') + thCell('Views', 'views', pagesSort, 'views sticky-col sticky-right') + '</tr>';
+    attachPageColResizer();
     topPagesBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
     topPagesFoot.innerHTML = '';
     showMoreBtn.style.display = 'none';
@@ -210,6 +296,7 @@ function renderTopPages() {
   topPagesHead.innerHTML = '<tr>' + thCell('Page', 'path', pagesSort, 'sticky-col sticky-left') +
     breakdownKeys.map(function (k) { return thCell(DEVICE_LABELS[k] || SOURCE_LABELS[k] || k, k, pagesSort, 'views'); }).join('') +
     thCell('Views', 'views', pagesSort, 'views sticky-col sticky-right') + '</tr>';
+  attachPageColResizer();
 
   topPagesBody.innerHTML = visible.map(function (p) {
     const url = 'https://' + p.site + p.path;
