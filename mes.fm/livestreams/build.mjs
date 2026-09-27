@@ -140,6 +140,11 @@ const SECTIONS = [
     title: "MES Livestreams",
     compactList: true,
     filter: CATEGORIES,
+    // Whole-playlist / reference links: one line above the search box (see buildSection's standalone row).
+    standalone: [
+      { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0FqwyUa_ICwTlqO0S6Y3kAn", title: "Playlist" },
+      { href: "https://mes.fm/troubleshooting", title: "Troubleshooting Notes", icon: "&#128736;&#65039;" },
+    ],
     extraViews: [
       { id: "stats", label: "Stats", items: STATS },
       { id: "trailers", label: "Trailers", kind: "grid", items: trailerItems },
@@ -465,10 +470,9 @@ function capitalize(str) {
 // plus any extraViews (see e.g. MES Math Q/A Livestreams' "Stats" view) as
 // further toggle buttons/panes. All views are pre-rendered at build time;
 // the client-side script just shows/hides whichever one is active (see the
-// view-toggle script at the bottom of buildPage). Items flagged `standalone`
-// (a whole-channel/whole-playlist link, not a single video/article) are
-// pulled out of the grid/list entirely and rendered as a plain link line
-// above the view-toggle buttons instead. extraViews items never appear in
+// view-toggle script at the bottom of buildPage). The section's `standalone`
+// links (the playlist, the troubleshooting notes: not single videos) are
+// rendered as one plain link line above the search box and view-toggle buttons. extraViews items never appear in
 // Grid/List at all -- they exist only in their own pane.
 //
 // The section renders on its own page (see PAGE), so the collapsible
@@ -490,11 +494,18 @@ function buildFilter(section) {
 }
 
 function buildSection(section, meta) {
-  const standaloneItems = section.items.filter((item) => item.standalone);
-  const cardItems = section.items.filter((item) => !item.standalone);
-  const standaloneHtml = standaloneItems
-    .map((item) => `<p class="section-standalone-link"><a href="${escapeHtml(item.href)}">&#9654;&#65039; ${escapeHtml(item.title)}</a></p>`)
-    .join("\n  ");
+  const standaloneItems = section.standalone || [];
+  const cardItems = section.items;
+  // One line of links (icon + label, separated by dots) rather than one paragraph each, so the playlist and
+  // the troubleshooting notes sit side by side; external links open in a new tab.
+  const standaloneHtml = standaloneItems.length
+    ? `<p class="section-standalone-link">${standaloneItems
+        .map((item) => {
+          const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(item.href);
+          return `<a href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>${item.icon || "&#9654;&#65039;"} ${escapeHtml(item.title)}</a>`;
+        })
+        .join('<span class="standalone-sep">&middot;</span>')}</p>`
+    : "";
   const cards = cardItems.map((item) => buildCard(item, meta)).join("\n    ");
   const rows = cardItems.map((item) => buildRow(item, meta)).join("\n    ");
   const listViewClass = section.compactList ? "list-view list-view--compact" : "list-view";
@@ -923,6 +934,10 @@ sub {vertical-align:sub;}
 
 .section-standalone-link a {
   color: #1a6fb0;
+}
+.standalone-sep {
+  color: #8a93a0;
+  margin: 0 0.7em;
 }
 
 .list-row {
