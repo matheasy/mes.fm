@@ -596,6 +596,18 @@
     article img {
       cursor: zoom-in;
     }
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 0.6em 0 1.4em;
+    }
+    .screenshot-grid img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      display: block;
+    }
 </style>
   <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
