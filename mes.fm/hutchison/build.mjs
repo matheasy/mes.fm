@@ -1920,6 +1920,7 @@ ${viewToggleWiring}
       { el: document.querySelector('.page-description'), base: 1 },
       { el: document.querySelector('.toc-sidebar'), base: 0.85 },
       { el: document.querySelector('.toc-mobile'), base: 1 },
+      { el: document.querySelector('.hub-links'), base: 1 },
     ].filter(function (t) { return t.el; });
     var downBtn = document.getElementById('textSizeDownBtn');
     var upBtn = document.getElementById('textSizeUpBtn');
