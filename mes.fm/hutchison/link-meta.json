@@ -31,6 +31,20 @@
       }
     ]
   },
+  "https://mes.fm/hutchison-cancer-treatment": {
+    "image": "https://mes.fm/hutchison-cancer-treatment/img/hutchison-cancer-treatment.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mes/re-leothreads-jfpc522m"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35595"
+      }
+    ]
+  },
   "https://mes.fm/hutchison-effect-steel-molybdenum": {
     "image": "https://images.3speak.tv/images/1788298005278-e3f791efc2c0562c.webp",
     "watchLinks": [
@@ -142,6 +156,10 @@
       {
         "label": "See more",
         "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0FqwyUa_ICwTlqO0S6Y3kAn"
+      },
+      {
+        "label": "All Hutchison Effect links",
+        "href": "https://mes.fm/hutchison"
       }
     ]
   },
