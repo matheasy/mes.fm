@@ -188,7 +188,7 @@ def main():
         out = os.path.join(SITE, "main_js", "aside-random.json")
         rj = {}
         for g, peers in groups.items():
-            rj[g.strip("/") or "home"] = [{"u": p["url"], "t": p["title"], "k": p["kind"]} for p in peers]
+            rj[g.strip("/") or "home"] = [{"u": p["url"], "t": html.unescape(p["title"]), "k": p["kind"]} for p in peers]  # aside.js sets textContent: decode entities
         merged = json.loads(base.read(out)) if os.path.exists(out) else {}
         merged.update(rj)
         payload = json.dumps(merged, ensure_ascii=False, separators=(",", ":"))

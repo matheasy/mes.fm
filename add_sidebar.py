@@ -344,7 +344,7 @@ def main():
             continue
         cat = build_catalog(family, cfg)
         items = [it for sec in cat["sections"] for it in sec]
-        random_json[family] = [{"u": c["url"], "t": c["title"], "i": c["img"], "k": c["kind"]} for c in items if not c.get("hide")]
+        random_json[family] = [{"u": c["url"], "t": html.unescape(c["title"]), "i": c["img"], "k": c["kind"]} for c in items if not c.get("hide")]  # aside.js sets textContent: decode &#039; / &quot; / emoji entities
         pages = ([cat["calc"]] if cat["calc"]["patch"] else []) + cat["articles"] + items
         print("%s: %d pages (%s; %d articles), %d section items without a thumbnail" % (
             family, len(pages), ", ".join("%d %s" % (len(sec), cfg["sections"][n][0]) for n, sec in enumerate(cat["sections"])) or "no sections",

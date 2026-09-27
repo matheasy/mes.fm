@@ -272,7 +272,7 @@ of HTML files individually:
   `asideSide`). Below 1200px there is no ad and no columns — the cards just sit under the content. Assets: `main_js/aside.css`,
   `main_js/aside.js`. Per page, marker-delimited: `MES-ASIDE-HEAD` (css link + saved-side script), `has-aside` on
   `#outer-container`, `MES-ASIDE` (the aside, inserted before the `</div>` that closes `.outer-page-content`), `MES-ASIDE-JS`.
-  Cards are static links (crawlable internal links), picked by rotating through the family list so inbound links spread evenly.
+  Cards are static links (crawlable internal links), picked by rotating through the family list so inbound links spread evenly. The random card's title comes from `aside-random.json` and is set with `textContent`, so both generators store it HTML-*decoded* (`html.unescape`); the static cards keep the page's encoded title, which the browser decodes (a title with `&#128591;` / `&#039;` used to show the raw code in the random card).
   The ad slot is AdSense unit "Sidebar 300x250" (`8429975111`, `DEFAULT_SLOT`; `--ad-slot` overrides, re-runs keep each page's own slot);
   with an empty slot the box is hidden and no ad is requested (`?aside-debug` shows where it will sit). `.inner-container`
   gets `overflow: clip` at >=1200px because its template `overflow:hidden` would otherwise stop `position: sticky` working. To
