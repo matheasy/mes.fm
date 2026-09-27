@@ -30,6 +30,9 @@ DEFAULT_SLOT = "8852646945"  # AdSense display unit "Bottom 300x250" (fixed 300x
 # column instead of banners). Tried on the core calculators first; the other families keep the fixed unit so the two can be compared in AdSense.
 RESPONSIVE_SLOT = "1532113018"
 RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator"}
+# stand-alone tool / rebuilt-calculator pages (tool shell, one index.html per folder): included on purpose, unlike the timer etc. skip below
+TOOL_DIRS = ["emoji", "latex", "timezone", "symbols", "stats", "speedreader", "timer", "youtube-thumbnail", "unit-conversion",
+             "gematria", "impermanent-loss-calculator", "earth-curvature-calculator"]
 FAMILIES = ["percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator",
             "inflationcalculator", "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles"]
 
@@ -63,7 +66,7 @@ def read(path):
         return f.read()
 
 
-def patch(text, slot, remove, responsive=False):
+def patch(text, slot, remove, responsive=False, allow_tool=False):
     """(new_text, reason). new_text is None when the page is skipped; reason says why."""
     text = BLOCK_RE.sub("", text)
     text = JS_RE.sub("", text)
@@ -71,7 +74,7 @@ def patch(text, slot, remove, responsive=False):
         return text, None
     if LOADER not in text:
         return None, "no AdSense loader (ad-free page)"
-    if "data-tool" in text:
+    if "data-tool" in text and not allow_tool:
         return None, "tool-shell page"
     if "</body>" not in text:
         return None, "no </body>"
@@ -93,29 +96,38 @@ def main():
 
     total = changed = 0
     skipped = {}
+    jobs = []  # (path, family, allow_tool) -- tool pages first, so timer/index.html is taken as a tool page, not skipped as one
+    if not args.family or "tools" in args.family:
+        for d in TOOL_DIRS:
+            jobs.append((os.path.join(SITE, d, "index.html"), "tools", True))
     for family in FAMILIES:
         if args.family and family not in args.family:
             continue
-        pages = sorted(glob.glob(os.path.join(SITE, family, "**", "*.html"), recursive=True))
-        for path in pages:
-            if NUMERIC_STUB.match(os.path.basename(path)):
-                skipped.setdefault("pagination stub", []).append(path)
-                continue
-            total += 1
-            old = read(path)
-            resp = family in RESPONSIVE_FAMILIES and args.ad_slot is None
-            slot = args.ad_slot or (RESPONSIVE_SLOT if resp else DEFAULT_SLOT)
-            new, reason = patch(old, slot, args.remove, resp)
-            if new is None:
-                skipped.setdefault(reason, []).append(path)
-                continue
-            if new != old:
-                changed += 1
-                if args.verbose:
-                    print("  %s %s" % ("write" if args.apply else "would write", os.path.relpath(path, ROOT)))
-                if args.apply:
-                    with open(path, "w", encoding="utf-8", newline="") as f:
-                        f.write(new)
+        for path in sorted(glob.glob(os.path.join(SITE, family, "**", "*.html"), recursive=True)):
+            jobs.append((path, family, False))
+    seen = set()
+    for path, family, allow_tool in jobs:
+        if path in seen:
+            continue
+        seen.add(path)
+        if NUMERIC_STUB.match(os.path.basename(path)):
+            skipped.setdefault("pagination stub", []).append(path)
+            continue
+        total += 1
+        old = read(path)
+        resp = family in RESPONSIVE_FAMILIES and args.ad_slot is None
+        slot = args.ad_slot or (RESPONSIVE_SLOT if resp else DEFAULT_SLOT)
+        new, reason = patch(old, slot, args.remove, resp, allow_tool)
+        if new is None:
+            skipped.setdefault(reason, []).append(path)
+            continue
+        if new != old:
+            changed += 1
+            if args.verbose:
+                print("  %s %s" % ("write" if args.apply else "would write", os.path.relpath(path, ROOT)))
+            if args.apply:
+                with open(path, "w", encoding="utf-8", newline="") as f:
+                    f.write(new)
     print("%s: %d of %d pages %s" % ("APPLIED" if args.apply else "DRY RUN", changed, total,
                                      "changed" if args.apply else "would change"))
     for reason, paths in skipped.items():

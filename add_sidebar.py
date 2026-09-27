@@ -98,6 +98,18 @@ FAMILIES = {
         "hide_files": ["solution.html"],  # solution pages get the aside but are never recommended
         "sections": [("", "Puzzle", None)],
     },
+    # the stand-alone tools and rebuilt calculators (separate folders, tool-shell pages): one collection, each recommends the others
+    "tools": {
+        "name": "MES Tools",
+        "hub": {"url": "/tools", "title": "All MES Tools", "kind": "Gallery", "img": "/img/tools-icon.jpg"},
+        "collection": [
+            ("emoji", "Tool"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"), ("stats", "Tool"),
+            ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("unit-conversion", "Calculator"),
+            ("gematria", "Calculator"), ("impermanent-loss-calculator", "Calculator"), ("earth-curvature-calculator", "Calculator"),
+        ],
+        "articles": False,
+        "sections": [("", "Tool", None)],
+    },
     "vatcalculator": {"name": "VAT Calculator", "article_kind": "Guide", "sections": []},
     "pokemongocalculator": {"name": "Pokemon Go Calculator", "article_kind": "Guide", "sections": []},
     "timer": {  # only the inspirational-quotes pages: the Timer page itself is a tool shell
@@ -163,7 +175,7 @@ def page_url(family, path):
 def build_catalog(family, cfg):
     fam_dir = os.path.join(SITE, family)
     logo = "/%s/img/logo.png" % family
-    thumbs = thumb_index(fam_dir, cfg.get("thumb_dir"))
+    thumbs = {} if cfg.get("collection") else thumb_index(fam_dir, cfg.get("thumb_dir"))
     if cfg.get("hub"):  # no calculator page: the "calc" card is a gallery hub and nothing is patched for it
         h = cfg["hub"]
         calc = {"path": None, "url": h["url"], "title": h["title"], "img": h["img"], "logo": False, "kind": h["kind"], "patch": False}
@@ -182,6 +194,15 @@ def build_catalog(family, cfg):
                 continue
             cat["articles"].append({"path": path, "url": page_url(family, path), "title": title_of(text, fn[:-5]),
                                     "img": logo, "logo": True, "kind": cfg["article_kind"]})
+    if cfg.get("collection"):
+        items = []
+        for slug, kind in cfg["collection"]:
+            path = os.path.join(SITE, slug, "index.html")
+            logo_url = "/%s/img/logo.png" % slug
+            items.append({"path": path, "url": "/" + slug, "title": title_of(read(path), slug), "img": logo_url, "logo": True,
+                          "kind": kind, "section": 0, "hide": False})
+        cat["sections"].append(items)
+        return cat
     for d, kind, _ in cfg["sections"]:
         items = []
         for path in sorted(glob.glob(os.path.join(fam_dir, d, "**", "*.html"), recursive=True)):
