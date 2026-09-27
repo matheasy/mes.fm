@@ -319,6 +319,23 @@ def convert(old, template):
     return page, "ok%s%s" % (" +video" if has_video else "", " +%d css" % len(extras) if extras else "")
 
 
+HUTCH_MARK = 'class="site-brand-title" href="/hutchison"'
+
+
+def hutchison_nav(s):
+    """Hutchison-branded pages: "Hutchison Effect" is the first, highlighted tab of the blue bar (and the second item of the
+    hamburger menu), like mes.fm/hutchison and its section pages -- not "Math Tutorials" with nothing highlighted, which is what
+    the shared mirror template ships. Idempotent; other brands are returned untouched."""
+    if HUTCH_MARK not in s:
+        return s
+    s = s.replace('<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="https://mes.fm/math">Math Tutorials</a></li>',
+                  '<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/hutchison">Hutchison Effect</a></li>', 1)
+    if 'class="navbar__link" href="/hutchison">Hutchison Effect' not in s:
+        s = re.sub(r'([ \t]*)(<li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>)',
+                   lambda m: m.group(1) + '<li class="navbar__item"><a target="_self" class="navbar__link" href="/hutchison">Hutchison Effect</a></li>\n' + m.group(1) + m.group(2), s, count=1)
+    return s.replace("current_tab: 99, info_bar_tab: -1", "current_tab: 1, info_bar_tab: 0", 1)
+
+
 def main():
     template = TEMPLATE.read_text(encoding="utf-8")
     files = subprocess.run(["git", "ls-files", "mes.fm/*/index.html"], cwd=ROOT, capture_output=True, text=True).stdout.split()
@@ -338,6 +355,7 @@ def main():
                 print("SKIPPED %-45s %s" % (name, why))
             continue
         done += 1
+        new = hutchison_nav(new)
         if VERBOSE:
             print("convert %-45s %s" % (name, why))
         if APPLY:
