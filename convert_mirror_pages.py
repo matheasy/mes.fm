@@ -319,21 +319,31 @@ def convert(old, template):
     return page, "ok%s%s" % (" +video" if has_video else "", " +%d css" % len(extras) if extras else "")
 
 
-HUTCH_MARK = 'class="site-brand-title" href="/hutchison"'
+# Topic-branded pages: the topic hub is the first, highlighted tab of the blue bar (and the second item of the hamburger menu),
+# like the hub pages themselves -- not "Math Tutorials" with nothing highlighted, which is what the shared mirror template ships.
+BRAND_TABS = {
+    'class="site-brand-title" href="/hutchison"': ("/hutchison", "Hutchison Effect"),
+    'class="site-brand-title" href="/911"': ("/911", "9/11 Truth"),
+}
+HUTCH_MARK = 'class="site-brand-title" href="/hutchison"'  # kept for callers that import it
 
 
-def hutchison_nav(s):
-    """Hutchison-branded pages: "Hutchison Effect" is the first, highlighted tab of the blue bar (and the second item of the
-    hamburger menu), like mes.fm/hutchison and its section pages -- not "Math Tutorials" with nothing highlighted, which is what
-    the shared mirror template ships. Idempotent; other brands are returned untouched."""
-    if HUTCH_MARK not in s:
-        return s
-    s = s.replace('<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="https://mes.fm/math">Math Tutorials</a></li>',
-                  '<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/hutchison">Hutchison Effect</a></li>', 1)
-    if 'class="navbar__link" href="/hutchison">Hutchison Effect' not in s:
-        s = re.sub(r'([ \t]*)(<li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>)',
-                   lambda m: m.group(1) + '<li class="navbar__item"><a target="_self" class="navbar__link" href="/hutchison">Hutchison Effect</a></li>\n' + m.group(1) + m.group(2), s, count=1)
-    return s.replace("current_tab: 99, info_bar_tab: -1", "current_tab: 1, info_bar_tab: 0", 1)
+def brand_nav(s):
+    """Idempotent; pages of other brands are returned untouched."""
+    for mark, (href, label) in BRAND_TABS.items():
+        if mark not in s:
+            continue
+        s = s.replace('<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="https://mes.fm/math">Math Tutorials</a></li>',
+                      '<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="%s">%s</a></li>' % (href, label), 1)
+        if 'class="navbar__link" href="%s">%s' % (href, label) not in s:
+            s = re.sub(r'([ \t]*)(<li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>)',
+                       lambda m: m.group(1) + '<li class="navbar__item"><a target="_self" class="navbar__link" href="%s">%s</a></li>\n' % (href, label) + m.group(1) + m.group(2),
+                       s, count=1)
+        s = s.replace("current_tab: 99, info_bar_tab: -1", "current_tab: 1, info_bar_tab: 0", 1)
+    return s
+
+
+hutchison_nav = brand_nav  # old name
 
 
 def main():
@@ -355,7 +365,7 @@ def main():
                 print("SKIPPED %-45s %s" % (name, why))
             continue
         done += 1
-        new = hutchison_nav(new)
+        new = brand_nav(new)
         if VERBOSE:
             print("convert %-45s %s" % (name, why))
         if APPLY:

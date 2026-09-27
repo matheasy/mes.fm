@@ -338,13 +338,13 @@ than once (e.g. commit `cb410eb1` had to re-apply a dropped PageSpeed pass to `m
 lightbox-zoom feature was silently lost the day after it shipped, by the very next Hive-mirror rebuild, and stayed
 lost for a week before anyone noticed).
 
-As of this writing, `911`, `911-alchemy`, `djw`, `ferrocell-specular-reflection`, `hutchison-tom-sky`,
+As of this writing, `911-alchemy`, `djw`, `ferrocell-specular-reflection`, `hutchison-tom-sky`,
 `norman-patricia-ai-email`, and `vector-functions-problems-plus` all have `addImageLazyLoading()` back-ported into
 `build.mjs`, applied to the whole generated page right before `writeFileSync` — it's a line-for-line JS port of
 `optimize_pagespeed.py`'s `transform_images` lazy-loading rule (skip the first non-`data:` image on the page so LCP
 isn't hurt, lazy-load every other `<img>` whose `src` is an `http(s)` URL not on `mes.fm`), verified by round-
 tripping each page's committed `index.html` (strip `loading="lazy"` back out, rerun the new function, diff against
-the original — all reproduce exactly). `911`, `ferrocell-specular-reflection`, `hutchison-tom-sky`,
+the original — all reproduce exactly). `ferrocell-specular-reflection`, `hutchison-tom-sky`,
 `norman-patricia-ai-email`, and `vector-functions-problems-plus` additionally have the lightbox-zoom CSS/JS and the
 darkened brand-blue back-ported (each carries a `NOTE:` comment right above its `return \`<!DOCTYPE html>`
 explaining this — keep it in sync if you change a source script's template). `911-alchemy` has **no lightbox markup
@@ -381,6 +381,18 @@ into `/livestreams` (2026-09-26) and `vercel.json` permanently (308) redirects t
 `livestreams/extra-links.json`. Its icon is a hand-made crop of the newest Hutchison Effect livestream thumbnail (bump `iconVersion` when
 you refresh it). The lightbox/PageSpeed back-ports listed below describe the *old* mirror build.mjs;
 the new one has `math`'s shell (and `addImageLazyLoading()`).
+
+`mes.fm/911/build.mjs` (2026-09-26) got the same treatment as `hutchison` and is **no longer a Hive mirror** (the old lightbox / PageSpeed back-port
+notes for it no longer apply): a tile hub (7 tiles + an "Important Links" block) cloned from `hutchison/build.mjs`, emitting the hub plus
+`mes.fm/{911-posts,911-videos,911-truth,911-observable-evidence,911-short-videos,1109-keo-meteor-music}/index.html`, from `sections.mjs` (same item
+shapes as hutchison's; hand-maintained, newest first; `standalone` = the reference-links line above the Grid/List buttons). The Hive post `@mes/911`
+is not fetched any more. "Observable Evidence" was the one chapter not in the original brief; it got its own page rather than being dropped (its
+Parts 20-22 are part of the numbered series). The last tile, MES 9/11 Livestreams, is tile-only -> `/livestreams#911`; the old section's per-stream
+Hive / Rumble / Odysee / BitChute / X / Twitch / trailer links were merged into `livestreams/extra-links.json`. `PAGES[].icon` overrides the icon
+filename because `img/911-truth-icon.jpg` is the *homepage's* 9/11 tile (the series tile uses `911-truth-series-icon.jpg`; don't reuse a slug's
+default icon name without checking). The slug `1109-keo-meteor-music` is as requested (the artist is spelled Keor). The 43 911-branded mirror pages
+got the highlighted "9/11 Truth" tab and section links in their "Part of" boxes (`brand_nav()` in `convert_mirror_pages.py`, which now handles
+both the Hutchison and 9/11 brands).
 
 `mes.fm/livestreams/build.mjs` (2026-09-26) is the `math-qa` idea for *all* MES livestreams: one page, Grid View / List View of every
 numbered stream (newest first) plus two more tabs -- **Stats** (the stats-screen pages, now `mes.fm/livestream-140-stats`, mirrored from the
