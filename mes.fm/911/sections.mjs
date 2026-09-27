@@ -49,6 +49,7 @@ export const SECTIONS = [
     id: "911-videos",
     title: "Videos",
     items: [
+      { href: "https://mes.fm/911-naudet-first-plane", title: "Jules Naudet Footage of the First \"Plane\" on 9/11 + Slow / Fast Motion Analysis" },
       { href: "https://mes.fm/bernie-kerik-911-jumpers-evaporated", title: "NYPD Commissioner Bernie Kerik says 9/11 Jumpers \"Evaporated\" and most of bodies disintegrated" },
       { href: "https://mes.fm/saudi-911-calculations", title: "Saudi Arabia \"Intelligence Asset\" Showed 9/11 \"Hijackers\" Hand-Drawn Plane Calculations" },
       { href: "https://mes.fm/peter-baron-ufo-911", title: "Peter Baron's UFO Sighting on 9/11" },

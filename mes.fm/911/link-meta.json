@@ -87,6 +87,24 @@
       }
     ]
   },
+  "https://mes.fm/911-naudet-first-plane": {
+    "image": "https://images.3speak.tv/images/1790536014367-9502261d26a5ea70.webp",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mestruth/fb4flx5z"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtu.be/oQvAkD0DTEE"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35596"
+      }
+    ],
+    "namedLinks": []
+  },
   "https://mes.fm/911-revisionist-spammer": {
     "image": "https://img.leopedia.io/DQmbpgZNh1aVMsLjBor5QupBNRbH4wS7ZFmbcoRMmmoPjPh/telegram-cloud-photo-size-1-4969851364699737239-y.jpg",
     "watchLinks": [],
