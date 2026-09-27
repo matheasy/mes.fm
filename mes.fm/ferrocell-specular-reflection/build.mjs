@@ -770,7 +770,7 @@ ${leadingHtml}
         width: 210px;
         max-height: calc(100vh - 120px);
         overflow-y: auto;
-        font-size: 0.85em;
+        font-size: calc(0.85rem * var(--ts, 1));
         padding-right: 10px;
         scrollbar-width: thin;
         scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
