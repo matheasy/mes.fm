@@ -5,7 +5,7 @@
 // tile per section, each linking to its own page with the Grid View / List View toggle. The content lives in
 // sections.mjs (hand-maintained, newest first) -- the Hive post is no longer fetched.
 //
-// Pages written (see PAGES): the hub mes.fm/911/index.html plus mes.fm/{911-posts,911-videos,911-truth,
+// Pages written (see PAGES): the hub mes.fm/911/index.html plus mes.fm/{911-posts,911-videos,911truth,
 // 911-observable-evidence,911-short-videos,1109-keo-meteor-music}/index.html. Never hand-edit those
 // generated files. The hub's last tile, MES 9/11 Livestreams, is tile-only: it links to
 // mes.fm/livestreams#911 (the 9/11 Truth chip of the all-livestreams page).
@@ -53,7 +53,7 @@ const PAGES = [
       "9/11 videos from MES: NYPD Commissioner Bernie Kerik on jumpers who evaporated, Peter Baron's UFO sighting, Dr. Judy Wood on toasted cars, Curt Weldon on directed energy, and more.",
   },
   {
-    slug: "911-truth",
+    slug: "911truth",
     sectionId: "911-truth",
     icon: "911-truth-series", // img/911-truth-icon.jpg is the homepage's 9/11 tile, so this one gets its own file
     tileLabel: "9/11 Truth Video Series",

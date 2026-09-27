@@ -384,7 +384,7 @@ the new one has `math`'s shell (and `addImageLazyLoading()`).
 
 `mes.fm/911/build.mjs` (2026-09-26) got the same treatment as `hutchison` and is **no longer a Hive mirror** (the old lightbox / PageSpeed back-port
 notes for it no longer apply): a tile hub (7 tiles + an "Important Links" block) cloned from `hutchison/build.mjs`, emitting the hub plus
-`mes.fm/{911-posts,911-videos,911-truth,911-observable-evidence,911-short-videos,1109-keo-meteor-music}/index.html`, from `sections.mjs` (same item
+`mes.fm/{911-posts,911-videos,911truth,911-observable-evidence,911-short-videos,1109-keo-meteor-music}/index.html`, from `sections.mjs` (same item
 shapes as hutchison's; hand-maintained, newest first; `standalone` = the reference-links line above the Grid/List buttons). The Hive post `@mes/911`
 is not fetched any more. "Observable Evidence" was the one chapter not in the original brief; it got its own page rather than being dropped (its
 Parts 20-22 are part of the numbered series). The last tile, MES 9/11 Livestreams, is tile-only -> `/livestreams#911`; the old section's per-stream

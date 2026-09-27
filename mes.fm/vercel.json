@@ -35,7 +35,7 @@
     { "source": "/pizzagate-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0EixsL8XC7xkfGi6Moxlk8Z", "permanent": true },
     { "source": "/pizzagate-videos", "destination": "https://1drv.ms/u/s!As32ynv0LoaIh6UQ7UY1QjSjhbZDXw?e=A6GpgM", "permanent": true },
     { "source": "/judywoodbook", "destination": "http://wheredidthetowersgo.com/buy/", "permanent": true },
-    { "source": "/911truth", "destination": "https://1drv.ms/f/s!As32ynv0LoaIhvJ2emGRcJ07wORKAw", "permanent": true },
+    { "source": "/911truth-onedrive", "destination": "https://1drv.ms/f/s!As32ynv0LoaIhvJ2emGRcJ07wORKAw", "permanent": true },
     { "source": "/911truth-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0EzqTamtIXtgX8QudQSxuxh", "permanent": true },
     { "source": "/freeenergy", "destination": "https://1drv.ms/f/s!As32ynv0LoaIhvxz75CajpbMoyUzKA", "permanent": true },
     { "source": "/freeenergy-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0FKVpHL_onhaqBeVP-8qJXV", "permanent": true },

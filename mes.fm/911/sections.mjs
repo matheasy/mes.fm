@@ -311,7 +311,7 @@ export const SECTIONS = [
 
 // Rendered under the hub tiles as "Important Links" (the old page's Important Links chapter + its "More MES 9/11 Links" list).
 export const IMPORTANT_LINKS_HTML = `<h3>Links to All Notes and Playlists</h3>
-<p><a href="https://mes.fm/911truth">MES OneDrive files</a> - <a href="https://odysee.com/$/playlist/a4981c9731bec068847fd370b593769304b0b181">Odysee playlist</a> - <a href="https://mes.fm/911truth-bitchute">BitChute playlist</a> - <a href="https://mes.fm/911truth-playlist">YouTube playlist</a> (Parts 2, 7, and 31 deleted by YT) - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh">9/11 Observable Evidence playlist</a></p>
+<p><a href="https://mes.fm/911truth-onedrive">MES OneDrive files</a> - <a href="https://odysee.com/$/playlist/a4981c9731bec068847fd370b593769304b0b181">Odysee playlist</a> - <a href="https://mes.fm/911truth-bitchute">BitChute playlist</a> - <a href="https://mes.fm/911truth-playlist">YouTube playlist</a> (Parts 2, 7, and 31 deleted by YT) - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh">9/11 Observable Evidence playlist</a></p>
 <h3>Key Links</h3>
 <p><a href="https://mes.fm/judywoodbook">&quot;Where Did the Towers Go?&quot; by Dr. Judy Wood</a> - <a href="https://www.facebook.com/groups/911TruthMovement">9/11 Forensic Evidence Facebook Group</a> - <a href="https://www.reddit.com/r/911TruthMES">Reddit r/911TruthMES</a> - <a href="https://peakd.com/c/hive-113182">MES 9/11 Truth Hive community</a> - <a href="https://peakd.com/hive-113182/@mes/499-first-responders-witness-testimonies-911-8pz">499 First Responders Witness Testimonies</a></p>
 <h3>Links to X Threads</h3>
@@ -334,7 +334,7 @@ export const IMPORTANT_LINKS_HTML = `<h3>Links to All Notes and Playlists</h3>
 <li><a href="https://peakd.com/c/hive-113182">HIVE Community</a></li>
 <li><a href="https://www.reddit.com/r/911TruthMES/">Reddit r/911TruthMES</a></li>
 <li><a href="https://peakd.com/truth/@mes/911">HIVE Links and Notes</a></li>
-<li>9/11 Truth files: <a href="https://mes.fm/911truth">mes.fm/911truth</a></li>
+<li>9/11 Truth files: <a href="https://mes.fm/911truth-onedrive">mes.fm/911truth-onedrive</a></li>
 <li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EzqTamtIXtgX8QudQSxuxh">YouTube Playlist</a></li>
 <li style="margin-left: 20px;"><a href="https://mes.fm/911truth-playlist">mes.fm/911truth-playlist</a></li>
 <li style="margin-left: 20px;"><a href="https://peakd.com/hive-113182/@mes/deja-vu2-youtube-removes-my-911truth-part-2-video">YouTube removes Part 2</a></li>
