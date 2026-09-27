@@ -28,9 +28,11 @@ SITE = os.path.join(ROOT, "mes.fm")
 ASSET_V = "1"  # bump when main_js/bottom-ad.js changes
 DEFAULT_SLOT = "8852646945"  # AdSense display unit "Bottom 300x250" (fixed 300x250)
 # AdSense display unit "Bottom Square Responsive" (responsive; bottom-ad.js asks for the rectangle shape, so it serves rectangles that fit the
-# column instead of banners). Tried on the core calculators first; the other families keep the fixed unit so the two can be compared in AdSense.
+# column instead of banners). Tried on the core calculators first; the narrow calculator / tool families keep the fixed unit so the two can be
+# compared in AdSense. "math" (2026-09-26) = the article pages in the wide math-hub shell (Problems Plus, Math Q/A, Hive mirrors, troubleshooting,
+# livestream pages): a fixed 300x250 looked lost in that column, so they use the responsive unit too.
 RESPONSIVE_SLOT = "1532113018"
-RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator"}
+RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator", "math"}
 # stand-alone tool / rebuilt-calculator pages (tool shell, one index.html per folder): included on purpose, unlike the timer etc. skip below
 TOOL_DIRS = ["emoji", "latex", "timezone", "symbols", "stats", "speedreader", "timer", "youtube-thumbnail", "unit-conversion",
              "gematria", "impermanent-loss-calculator", "earth-curvature-calculator"]
