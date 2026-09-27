@@ -50,13 +50,28 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   html.aside-left .has-aside .mes-aside { grid-column: 1; }
 }
 
-/* dark theme (display-controls.js puts .dark-mode on <body>) */
-body.dark-mode .mes-aside__title-h { color: #eee; }
-body.dark-mode .mes-aside__card { background: #2a2a2a; border-color: #444; color: #eee; }
-body.dark-mode .mes-aside__card:hover, body.dark-mode .mes-aside__card:focus-visible { border-color: #6cb6f5; box-shadow: 0 0 0 .15em rgba(108, 182, 245, .25); }
-body.dark-mode .mes-aside__img { background: #3a3a3a; }
-body.dark-mode .mes-aside__img--logo { background: transparent; }
-body.dark-mode .mes-aside__tag { color: #aab; }
-body.dark-mode .mes-aside__flip { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
-body.dark-mode .mes-aside__flip:hover { background: #6cb6f5; color: #111; }
-body.dark-mode .mes-aside__name { color: #eee; }
+/* dark theme (display-controls.js puts .dark-mode on <body>; the math-hub shell uses body.dark) */
+:is(body.dark-mode, body.dark) .mes-aside__title-h { color: #eee; }
+:is(body.dark-mode, body.dark) .mes-aside__card { background: #2a2a2a; border-color: #444; color: #eee; }
+:is(body.dark-mode, body.dark) .mes-aside__card:hover, :is(body.dark-mode, body.dark) .mes-aside__card:focus-visible { border-color: #6cb6f5; box-shadow: 0 0 0 .15em rgba(108, 182, 245, .25); }
+:is(body.dark-mode, body.dark) .mes-aside__img { background: #3a3a3a; }
+:is(body.dark-mode, body.dark) .mes-aside__img--logo { background: transparent; }
+:is(body.dark-mode, body.dark) .mes-aside__tag { color: #aab; }
+:is(body.dark-mode, body.dark) .mes-aside__flip { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
+:is(body.dark-mode, body.dark) .mes-aside__flip:hover { background: #6cb6f5; color: #111; }
+:is(body.dark-mode, body.dark) .mes-aside__name { color: #eee; }
+
+/* math-hub shell (add_sidebar_math.py): the page's main blocks live in .mes-col-main, the aside next to them in .mes-cols;
+   below 1200px both simply stack (cards under the comments, no ad) */
+@media (min-width: 1200px) {
+  .container.has-aside { max-width: calc(760px + 332px); }
+  .container.has-aside .footer { max-width: none; }
+  .mes-cols { display: grid; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 32px; align-items: start; }
+  .mes-col-main { grid-column: 1; grid-row: 1; min-width: 0; }
+  .mes-cols > .mes-aside { grid-column: 2; grid-row: 1; margin: 14px 0 1em; align-self: stretch; }
+  html.aside-left .mes-cols { grid-template-columns: 300px minmax(0, 1fr); }
+  html.aside-left .mes-col-main { grid-column: 2; }
+  html.aside-left .mes-cols > .mes-aside { grid-column: 1; }
+}
+.mes-cols > .mes-aside { margin-top: 1.5em; }
+@media (min-width: 1200px) { .mes-cols > .mes-aside { margin-top: 14px; } }

@@ -23,6 +23,7 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ROOT)
 SITE = os.path.join(ROOT, "mes.fm")
 ASSET_V = "1"  # bump when main_js/bottom-ad.js changes
 DEFAULT_SLOT = "8852646945"  # AdSense display unit "Bottom 300x250" (fixed 300x250)
@@ -105,6 +106,10 @@ def main():
             continue
         for path in sorted(glob.glob(os.path.join(SITE, family, "**", "*.html"), recursive=True)):
             jobs.append((path, family, False))
+    if not args.family or "math" in args.family:  # article pages in the math-hub shell (same page set as add_sidebar_math.py)
+        import add_sidebar_math
+        for it in add_sidebar_math.catalog()[0]:
+            jobs.append((it["path"], "math", False))
     seen = set()
     for path, family, allow_tool in jobs:
         if path in seen:
