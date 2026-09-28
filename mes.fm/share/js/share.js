@@ -35,21 +35,30 @@
 	function slugify(t) { return (t || "").replace(/[^\p{L}\p{N}\s-]+/gu, "").trim().replace(/\s+/g, "-").replace(/-+/g, "-"); }
 	var enc = encodeURIComponent;
 
-	// head + as many description sentences as fit + tail, within limit
+	// head + as many complete description sentences as fit + tail, within limit.
+	// Never cuts a sentence mid-way (the old fallback sliced the first sentence
+	// to fit, e.g. "...when the laun..." -- jarring and unreadable). Instead,
+	// a graceful chain: complete sentences with the head, then without it (the
+	// title is the more expendable of the two on a tight limit), then the head
+	// alone, then just the tail.
 	function fit(head, desc, tail, limit, len) {
 		len = len || glen;
-		var body = "", ss = sentences(desc);
-		for (var i = 0; i < ss.length; i++) {
-			var next = body ? body + " " + ss[i] : ss[i];
-			if (len(join([head, next, tail])) > limit) break;
-			body = next;
+		var ss = sentences(desc);
+		function build(h) {
+			var body = "";
+			for (var i = 0; i < ss.length; i++) {
+				var next = body ? body + " " + ss[i] : ss[i];
+				if (len(join([h, next, tail])) > limit) break;
+				body = next;
+			}
+			return body;
 		}
-		if (!body && ss.length) {
-			var room = limit - len(join([head, "x", tail])) - 2;
-			if (room > 40) body = Array.from(ss[0]).slice(0, room).join("").trim() + "…";
-		}
-		var out = join([head, body, tail]);
-		return len(out) > limit ? join([head, tail]) : out;
+		var body = build(head);
+		if (body) return join([head, body, tail]);
+		body = build("");
+		if (body) return join([body, tail]);
+		if (len(join([head, tail])) <= limit) return join([head, tail]);
+		return tail || "";
 	}
 
 	/* ---------- parse the pasted post ---------- */
@@ -251,6 +260,7 @@
 	/* ---------- state ---------- */
 	var F = ["title", "link", "desc", "tags", "video", "thumb", "slug", "links"];
 	var urls = store.get("urls", {}), hidden = store.get("hidden", {});
+	var searchQuery = "";  // not persisted -- a fresh search each visit, unlike hidden/urls
 	var inleoPremium = store.get("inleoPremium", false);  // removes InLeo's 240-char thread cap
 	function data() {
 		var d = {};
@@ -288,7 +298,10 @@
 		var html = "", shown = 0, nDone = 0, anyOpen = false;
 		$("sl-warn").textContent = checks(d);
 		GROUPS.forEach(function (g) {
-			var list = SITES.filter(function (s) { return s.g === g[0] && !hidden[s.id]; });
+			var list = SITES.filter(function (s) {
+				return s.g === g[0] && !hidden[s.id] &&
+					(!searchQuery || s.name.toLowerCase().indexOf(searchQuery) !== -1);
+			});
 			if (!list.length) return;
 			var gDone = list.filter(function (s) { return done[s.id]; }).length, gf = !!gfold[g[0]];
 			html += '<section class="sl-group' + (gf ? " is-folded" : "") + (gDone === list.length ? " is-done" : "") + '" data-g="' + g[0] + '">' +
@@ -391,6 +404,7 @@
 		store.set(foldKey(), fold); render();
 	};
 	$("sl-hidedone").onchange = function () { store.set("hidedone", this.checked); render(); };
+	$("sl-search").addEventListener("input", function () { searchQuery = this.value.trim().toLowerCase(); render(); });
 
 	function fill(p) { F.forEach(function (k) { if (k in p) $("sl-" + k).value = p[k]; }); }
 	function save() { var d = data(); d.blob = $("sl-blob").value; store.set("post", d); store.set("label", d.label); }
