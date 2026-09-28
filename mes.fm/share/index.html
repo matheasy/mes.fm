@@ -289,7 +289,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .sl-group p {font-size:0.85em;color:#6a7280;margin:0 0 0.6em;}
 	.tu .sl-cards {display:grid;grid-template-columns:repeat(auto-fill,minmax(19em,1fr));gap:0.8em;}
 	.tu .sl-card {display:flex;flex-direction:column;gap:0.55em;background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em;min-width:0;}
-	.tu .sl-card.is-done {opacity:0.5;}
 	.tu .sl-head {display:flex;align-items:center;gap:0.45em;}
 	.tu .sl-head b {font-size:1em;color:#1e2733;}
 	.tu .sl-head .sl-sp {flex:1;}
@@ -306,7 +305,25 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .sl-tips b {color:#1e2733;}
 	.tu .sl-foot {display:flex;gap:0.4em;flex-wrap:wrap;margin-top:auto;}
 	.tu .sl-foot .sl-edit {margin-left:auto;}
+	/* folding: section and card headers are buttons; done shows as a green check + border, folded or not */
+	.tu .sl-gh {margin:0 0 0.4em;}
+	.tu .sl-gtoggle, .tu .sl-toggle {display:flex;align-items:center;gap:0.4em;cursor:pointer;background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;}
+	.tu .sl-gtoggle {width:100%;font-weight:700;color:#1e2733;}
+	.tu .sl-toggle {min-width:0;}
+	.tu .sl-arrow {display:inline-block;font-size:0.7em;color:#6a7280;transition:transform 0.15s;}
+	.tu .is-folded > .sl-gh .sl-arrow, .tu .sl-card.is-folded .sl-toggle .sl-arrow {transform:rotate(-90deg);}
+	.tu .sl-gcount {margin-left:auto;font-size:0.75em;font-weight:400;color:#6a7280;white-space:nowrap;}
+	.tu .sl-group.is-done .sl-gcount {color:#1f7a3d;font-weight:700;}
+	.tu .sl-group.is-folded .sl-gbody {display:none;}
+	.tu .sl-body {display:flex;flex-direction:column;gap:0.55em;flex:1;}
+	.tu .sl-card.is-folded {padding:0.5em 0.8em;}
+	.tu .sl-card.is-folded .sl-body {display:none;}
+	.tu .sl-card.is-done {border-color:#1f7a3d;border-left-width:4px;background:#f1f8f3;}
+	.tu .sl-check-mark {color:#1f7a3d;font-weight:700;}
 	.tu .sl-empty {padding:1em;text-align:center;color:#6a7280;}
+	body.dark-mode .tu .sl-card.is-done {background:#15241a;border-color:#4caf6e;}
+	body.dark-mode .tu .sl-check-mark, body.dark-mode .tu .sl-group.is-done .sl-gcount {color:#7dde9d;}
+	body.dark-mode .tu .sl-gtoggle {color:#d1d6dc;}
 	body.dark-mode .tu .sl-blk pre {background:transparent;color:#dddddd;}
 	body.dark-mode .tu .sl-picker .tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
 	@media (max-width:600px) {
@@ -402,6 +419,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .sl-blk pre{color:#dddddd}
 	body.dark-mode .tu .sl-tips{color:#aaaaaa}
 	body.dark-mode .tu .sl-tips b{color:#d1d6dc}
+	body.dark-mode .tu .sl-gtoggle{color:#d1d6dc}
+	body.dark-mode .tu .sl-arrow{color:#9a9da3}
+	body.dark-mode .tu .sl-gcount{color:#9a9da3}
+	body.dark-mode .tu .sl-group.is-done .sl-gcount{color:#7dde9d}
+	body.dark-mode .tu .sl-card.is-done{border-color:#34cb66;background:#161e18}
+	body.dark-mode .tu .sl-check-mark{color:#7dde9d}
 	body.dark-mode .tu .sl-empty{color:#9a9da3}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
@@ -689,6 +712,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<div class="sl-bar">
 			<button type="button" class="tu-btn" id="sl-pick">Choose my sites</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="sl-foldall">Collapse all</button>
 			<button type="button" class="tu-btn tu-btn--ghost" id="sl-untick">Untick all Done</button>
 			<label class="sl-check"><input type="checkbox" id="sl-hidedone"> Hide done</label>
 			<span class="sl-progress" id="sl-progress"></span>
@@ -717,7 +741,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<ul>
 				<li>Upload the video natively where you can; it reaches far more people than a link to it.</li>
 				<li>Use <strong>Choose my sites</strong> to keep only the sites you use, and <strong>✎ URL</strong> on a card to make Open go to your own channel or server.</li>
-				<li>Tick <strong>Done</strong> as you go. Ticks are remembered per link, so your next post starts with a fresh list.</li>
+				<li>Tick <strong>Done</strong> as you go: the card folds to one line with a green check. Click a site or section name to fold or unfold it, or use <strong>Collapse all</strong> for a compact checklist. Ticks are remembered per link, so your next post starts with a fresh list.</li>
 				<li>Give it a few posts, then check your analytics and drop the sites that never send visitors.</li>
 			</ul>
 			<p>Everything runs in your browser. Your text, choices and ticks are stored only in this browser (localStorage); nothing is sent to any server. <a href="/tools">More MES tools</a></p>
@@ -804,7 +828,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/share/js/share.js?v=1" defer></script>
+	<script src="/share/js/share.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

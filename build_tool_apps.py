@@ -51,7 +51,7 @@ APPS = {
     "share": dict(title="MES Share Launcher", page_title="Share Launcher",
                   tag="Cross-post one video or link to 30+ sites.", accent="#5b3cc4", dark="#43299a", tint="#eeeafb",
                   desc="Free social media share launcher: paste your post once and get ready-to-paste text for X, Facebook, Instagram, TikTok, YouTube, Threads, Bluesky, Reddit and 20+ more sites, with the link placed where each site wants it.",
-                  js_v="1"),
+                  js_v="2"),
 }
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 

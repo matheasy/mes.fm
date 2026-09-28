@@ -249,20 +249,33 @@
 	}
 
 	/* ---------- render ---------- */
+	// Folding: a group (section) fold is a layout preference, kept across posts; a card fold is per link like the Done ticks.
+	// A card with no explicit fold follows its Done tick (ticking Done folds it), so a finished site shrinks to one line.
+	function foldKey() { return "fold:" + (data().link || "nolink"); }
+	var gfold = store.get("gfold", {});
+	function cardFolded(fold, done, id) { return id in fold ? !!fold[id] : !!done[id]; }
 	function render() {
-		var d = data(), done = store.get(doneKey(), {}), hide = $("sl-hidedone").checked, html = "", shown = 0, nDone = 0;
+		var d = data(), done = store.get(doneKey(), {}), fold = store.get(foldKey(), {}), hide = $("sl-hidedone").checked;
+		var html = "", shown = 0, nDone = 0, anyOpen = false;
 		$("sl-warn").textContent = checks(d);
 		GROUPS.forEach(function (g) {
 			var list = SITES.filter(function (s) { return s.g === g[0] && !hidden[s.id]; });
 			if (!list.length) return;
-			html += '<section class="sl-group"><h2>' + g[1] + "</h2><p>" + g[2] + '</p><div class="sl-cards">';
+			var gDone = list.filter(function (s) { return done[s.id]; }).length, gf = !!gfold[g[0]];
+			html += '<section class="sl-group' + (gf ? " is-folded" : "") + (gDone === list.length ? " is-done" : "") + '" data-g="' + g[0] + '">' +
+				'<h2 class="sl-gh"><button type="button" class="sl-gtoggle" aria-expanded="' + !gf + '"><span class="sl-arrow" aria-hidden="true">▼</span>' + g[1] +
+				'<span class="sl-gcount">' + (gDone ? "✓ " : "") + gDone + "/" + list.length + " done</span></button></h2>" +
+				'<div class="sl-gbody"><p>' + g[2] + '</p><div class="sl-cards">';
 			list.forEach(function (s) {
-				var bl = blocksOf(s, d), isDone = !!done[s.id];
+				var bl = blocksOf(s, d), isDone = !!done[s.id], cf = cardFolded(fold, done, s.id);
 				shown++; if (isDone) nDone++;
 				if (isDone && hide) return;
-				html += '<div class="sl-card' + (isDone ? " is-done" : "") + '" data-id="' + s.id + '"><div class="sl-head"><b>' + esc(s.name) + "</b>" +
+				if (!gf && !cf) anyOpen = true;
+				html += '<div class="sl-card' + (isDone ? " is-done" : "") + (cf ? " is-folded" : "") + '" data-id="' + s.id + '"><div class="sl-head">' +
+					'<button type="button" class="sl-toggle" aria-expanded="' + !cf + '"><span class="sl-arrow" aria-hidden="true">▼</span>' +
+					(isDone ? '<span class="sl-check-mark" aria-label="done">✓</span>' : "") + "<b>" + esc(s.name) + "</b></button>" +
 					(s.prefill ? '<span class="sl-badge">pre-fills</span>' : "") + '<span class="sl-sp"></span>' +
-					'<label class="sl-done">Done <input type="checkbox" class="sl-tick"' + (isDone ? " checked" : "") + "></label></div>";
+					'<label class="sl-done">Done <input type="checkbox" class="sl-tick"' + (isDone ? " checked" : "") + '></label></div><div class="sl-body">';
 				bl.forEach(function (b, i) {
 					var n = (b[3] || glen)(b[1]);
 					html += '<div class="sl-blk"><div class="sl-bh">' + esc(b[0]) + '<span class="sl-sp"></span><span' + (b[2] && n > b[2] ? ' class="sl-over"' : "") + ">" +
@@ -270,13 +283,14 @@
 				});
 				html += '<ul class="sl-tips"><li>' + s.tips.join("</li><li>") + "</li></ul>" +
 					'<div class="sl-foot"><button type="button" class="tu-btn tu-btn--primary sl-open">' + (bl.length ? "Copy + open" : "Open") + "</button>" +
-					'<button type="button" class="tu-btn tu-btn--ghost sl-edit" title="Change where Open goes (saved in this browser)">✎ URL</button></div></div>';
+					'<button type="button" class="tu-btn tu-btn--ghost sl-edit" title="Change where Open goes (saved in this browser)">✎ URL</button></div></div></div>';
 			});
-			html += "</div></section>";
+			html += "</div></div></section>";
 		});
 		if (!shown) html = '<div class="sl-empty">No sites selected. Use <b>Choose my sites</b>.</div>';
 		$("sl-out").innerHTML = html;
 		$("sl-progress").textContent = nDone + " / " + shown + " done";
+		$("sl-foldall").textContent = anyOpen ? "Collapse all" : "Expand all";
 	}
 	function renderPicker() {
 		$("sl-picker-chips").innerHTML = SITES.map(function (s) {
@@ -286,7 +300,18 @@
 
 	/* ---------- events ---------- */
 	$("sl-out").addEventListener("click", function (e) {
+		var gt = e.target.closest(".sl-gtoggle");
+		if (gt) {
+			var g = gt.closest(".sl-group").dataset.g;
+			if (gfold[g]) delete gfold[g]; else gfold[g] = 1;
+			store.set("gfold", gfold); render(); return;
+		}
 		var card = e.target.closest(".sl-card"); if (!card) return;
+		if (e.target.closest(".sl-toggle")) {
+			var fold = store.get(foldKey(), {}), id = card.dataset.id;
+			fold[id] = !card.classList.contains("is-folded");
+			store.set(foldKey(), fold); render(); return;
+		}
 		var s = SITES.filter(function (x) { return x.id === card.dataset.id; })[0], d = data(), bl = blocksOf(s, d), btn = e.target.closest("button");
 		if (!btn) return;
 		if (btn.classList.contains("sl-copy")) {
@@ -308,6 +333,7 @@
 		if (!e.target.classList.contains("sl-tick")) return;
 		var id = e.target.closest(".sl-card").dataset.id, done = store.get(doneKey(), {});
 		if (e.target.checked) done[id] = 1; else delete done[id];
+		var fold = store.get(foldKey(), {}); delete fold[id]; store.set(foldKey(), fold);
 		store.set(doneKey(), done); render();
 	});
 	$("sl-picker-chips").addEventListener("click", function (e) {
@@ -319,7 +345,14 @@
 	$("sl-all").onclick = function () { hidden = {}; store.set("hidden", hidden); renderPicker(); render(); };
 	$("sl-none").onclick = function () { SITES.forEach(function (s) { hidden[s.id] = 1; }); store.set("hidden", hidden); renderPicker(); render(); };
 	$("sl-pick").onclick = function () { var p = $("sl-picker"); p.hidden = !p.hidden; if (!p.hidden) renderPicker(); };
-	$("sl-untick").onclick = function () { store.set(doneKey(), {}); render(); };
+	$("sl-untick").onclick = function () { store.set(doneKey(), {}); store.set(foldKey(), {}); render(); };
+	// Collapse all folds every card (one line per site, Done ticks still showing); Expand all opens every card and section
+	$("sl-foldall").onclick = function () {
+		var collapse = this.textContent === "Collapse all", fold = {};
+		SITES.forEach(function (x) { fold[x.id] = collapse; });
+		if (!collapse) { gfold = {}; store.set("gfold", gfold); }
+		store.set(foldKey(), fold); render();
+	};
 	$("sl-hidedone").onchange = function () { store.set("hidedone", this.checked); render(); };
 
 	function fill(p) { F.forEach(function (k) { if (k in p) $("sl-" + k).value = p[k]; }); }
