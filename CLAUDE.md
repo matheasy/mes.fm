@@ -235,6 +235,24 @@ of HTML files individually:
   `share/img/logo.png` + `img/share-logo.png` at 90% fill with transparent corners, and the 1200x630 `share/img/logo-big.png`). The `tools` sidebar family no
   longer lists `stats` (its wide table has no sidebar, commit 7d9da3f98), so `add_sidebar.py --family tools` can't re-add it.
 
+- **Site search** (2026-09-28, `mes.fm/search` + a magnifier button left of A-/A+/moon on every page). Three parts:
+  `build_search_index.py` writes `mes.fm/search/index.json` (~405 KB, ~90 KB gzipped) from the pages in `sitemap.xml`: title
+  (before the first " | "), "where" (rest of the title), meta description (cut to ~220 chars), a category (the chips: Calculators,
+  Tools, Math, Memes & Fun, Puzzles, 9/11, Hutchison Effect, Livestreams, Articles, More -- the "Part of" box decides for mirror pages,
+  else the path) and a thumbnail (the gallery `-thumbnail-2` twin of og:image, a site's square `img/logo.png` instead of its
+  `logo-big`, YouTube `mqdefault`, Hive images via the 320px resizer). **Re-run it after `build_sitemap.py`** whenever pages are
+  added/removed/retitled. `main_js/site-search.js` = the engine (`window.MESSearch`: every word must match, word-prefix, title >
+  where > URL > description, calculators/tools boosted, falls back to closest partial matches) + the header button + quick-search
+  overlay (↑/↓/Enter/Esc, "/" or Ctrl/Cmd+K anywhere); the index is fetched only when search is opened. It widens the headers'
+  reserved `padding-right` (header / floating bar) by the button's width at runtime. Loading: `display-controls.js` appends it on
+  its ~1,000 pages; the ~207 inline-controls pages (math-hub shell, mirrors, Q/A, cubic formula, 9/11 / Hutchison / livestreams hubs)
+  carry the tag, added by `add_site_search.py` (also patches the ten generators/templates, so rebuilds keep it; re-run it after
+  `convert_mirror_pages.py` or any new shell page -- idempotent, dry-runs by default, `--apply` writes). The page itself is a
+  `build_tool_apps.py` app (`tool_apps_src/search/`, teal `#0f766e`, `pre_js` loads site-search.js first): chips with counts, `?q=`
+  / `&c=` in the URL, empty query + chip browses a section A-Z. Wired in like `share` (tools.html Media & Web card, Tools dropdown,
+  cross-links, tools sidebar family, bottom ad). No `?v=` bump of display-controls.js was needed: Vercel serves `main_js/` with
+  `max-age=0, must-revalidate`. Not covered: the 4 pages with no header controls (`links`, `bg`, `911djw`, `chatgpt/calculator`).
+
 - `organize_hub_cards.py` — organises the card hubs `calculators.html` and `tools.html` into categories with a search
   box: cards are grouped by the `PAGES` table (calculators: School & Grades, Money & Finance, Everyday Math & Health,
   Science & Fun; tools: Text & Symbols, Time & Focus, Media & Web, Sky & Space), sorted A-Z inside a category, and emitted

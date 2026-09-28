@@ -1,0 +1,39 @@
+	<div class="tu" id="ss">
+		<form class="tu-card ss-form" id="ss-form" role="search" action="/search" method="get">
+			<label for="ss-q" class="tu-label">Search every page on mes.fm</label>
+			<div class="ss-row">
+				<input id="ss-q" name="q" type="search" class="tu-input tu-input--big" placeholder="e.g. percentage, cubic formula, 9/11 dust" autocomplete="off" spellcheck="false">
+				<button class="tu-btn tu-btn--primary ss-go" type="submit">Search</button>
+			</div>
+			<div class="tu-chips" id="ss-cats" role="group" aria-label="Filter by section"></div>
+		</form>
+
+		<p class="ss-status" id="ss-status" role="status" aria-live="polite"></p>
+		<div class="ss-try" id="ss-try">
+			<span class="tu-label">Try</span>
+			<div class="tu-chips">
+				<a class="tu-chip" href="?q=percentage">percentage</a>
+				<a class="tu-chip" href="?q=grade">grade</a>
+				<a class="tu-chip" href="?q=gpa">GPA</a>
+				<a class="tu-chip" href="?q=cubic+formula">cubic formula</a>
+				<a class="tu-chip" href="?q=aether">aether</a>
+				<a class="tu-chip" href="?q=9%2F11">9/11</a>
+				<a class="tu-chip" href="?q=hutchison">Hutchison</a>
+				<a class="tu-chip" href="?q=timer">timer</a>
+				<a class="tu-chip" href="?q=pie+chart">pie chart</a>
+			</div>
+		</div>
+		<ol class="ss-results" id="ss-results"></ol>
+		<p class="ss-more-wrap"><button type="button" class="tu-btn" id="ss-more" hidden>Show more</button></p>
+
+		<div class="tu-seo">
+			<h2>About MES Site Search</h2>
+			<ul>
+				<li>Searches the titles, descriptions and sections of every page on mes.fm: the calculators and tools, math tutorials and Math Q/A livestreams, memes, quotes and dream homes, puzzles, and the 9/11, Hutchison Effect, science and crypto posts.</li>
+				<li>Every word has to match (the start of a word is enough, so <i>calc</i> finds <i>calculator</i>). If no page has all of them, the closest matches are shown instead.</li>
+				<li>Pick a section above to narrow the results, or pick one with an empty search box to browse everything in it.</li>
+				<li>On any mes.fm page, the magnifier button next to A-/A+ (or the <b>/</b> key, or Ctrl/Cmd+K) opens a quick search.</li>
+				<li>Results are shareable: the address bar keeps your search, e.g. <a href="/search?q=cubic+formula">mes.fm/search?q=cubic+formula</a>. The search runs in your browser; what you type isn't sent anywhere.</li>
+			</ul>
+		</div>
+	</div>

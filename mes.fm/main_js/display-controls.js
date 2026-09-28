@@ -23,6 +23,8 @@
    add_tool_page_controls.py's build-time TOOL-DARK block -- so calculator widgets, answer
    boxes, tables etc. go dark without a hand-written rule per site).
 
+   Also loads main_js/site-search.js (the header magnifier / quick search) once the controls exist.
+
    Tool pages (mes.fm/emoji, /latex, /timezone, ... -- see add_tool_page_controls.py)
    opt in with <div id="main-content" data-tool data-text-scale>: the whole tool area is
    scaled by text size, <body> gets .tool-page, the hub-specific dark text/link rules
@@ -323,4 +325,12 @@
         window.addEventListener("resize", function () { if (stuck) fit(); });
         update();
     })();
+
+    /* site search: magnifier button left of A-/A+/moon + quick-search overlay (main_js/site-search.js) */
+    if (!document.querySelector('script[src*="site-search.js"]')) {
+        var ss = document.createElement("script");
+        ss.src = "/main_js/site-search.js?v=1";
+        ss.defer = true;
+        document.body.appendChild(ss);
+    }
 })();

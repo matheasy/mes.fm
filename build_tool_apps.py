@@ -52,6 +52,12 @@ APPS = {
                   tag="Cross-post one video or link to 30+ sites.", accent="#5b3cc4", dark="#43299a", tint="#eeeafb",
                   desc="Free social media share launcher: paste your post once and get ready-to-paste text for X, Facebook, Instagram, TikTok, YouTube, Threads, Bluesky, Reddit and 20+ more sites, with the link placed where each site wants it.",
                   js_v="2"),
+    # site search: the page is only the results UI; the engine + index loader is /main_js/site-search.js (also the header
+    # magnifier on every page), loaded first via pre_js. The index itself comes from build_search_index.py.
+    "search": dict(title="MES Site Search", page_title="Site Search",
+                   tag="Search every page on mes.fm.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
+                   desc="Search all of mes.fm in one place: calculators, tools, math tutorials and Math Q/A livestreams, memes, quotes, puzzles, and the 9/11, Hutchison Effect, science and crypto posts, with section filters and shareable results.",
+                   js_v="1", pre_js=["/main_js/site-search.js?v=1"]),
 }
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
@@ -140,7 +146,8 @@ def build_from_source(slug, cfg, tpl):
     ld = json.dumps({"@context": "https://schema.org", "@type": "WebApplication", "name": cfg["title"],
                      "url": "https://mes.fm/" + slug, "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any",
                      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": desc}, ensure_ascii=False)
-    scripts = '<script src="/%s/js/%s.js?v=%s" defer></script>' % (slug, slug, cfg["js_v"])
+    scripts = "".join('<script src="%s" defer></script>' % u for u in cfg.get("pre_js", []))
+    scripts += '<script src="/%s/js/%s.js?v=%s" defer></script>' % (slug, slug, cfg["js_v"])
     page = tpl
     for k, v in (("@@TOOL_CSS@@", css), ("@@CONTENT@@", content.strip("\n")), ("@@LDJSON@@", ld)):
         page = page.replace(k, v)

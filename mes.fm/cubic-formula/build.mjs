@@ -2166,7 +2166,7 @@ ${bodyHtml}
     update();
   })();
 </script>
-</body>
+<script src="/main_js/site-search.js?v=1" defer></script></body>
 </html>
 `;
 }
