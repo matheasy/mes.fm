@@ -75,7 +75,8 @@
     // same steps/behavior as the website's A-/A+ (main_js/display-controls.js),
     // scaling #main-content plus the header tagline (like the site's own
     // .page-description -- the site scales description/body text but not the
-    // big bold title, so .tag-line scales here but .calculator-title doesn't)
+    // header text (title, tagline) is deliberately left out -- kept fixed
+    // size on purpose, not scaled by A-/A+
     // -- works on every bundled page, not just the calculator, so it runs
     // before the calculator-only early return below
     var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
@@ -83,7 +84,7 @@
     // sibling of it in .page-content, on all 3 bundled pages -- everything
     // else worth scaling (Tutorial/How-To's own .sentence/.header2 body
     // text, the calculator's own rows) is already inside #main-content
-    var scaleTargets = [document.getElementById("main-content"), document.querySelector(".tag-line"),
+    var scaleTargets = [document.getElementById("main-content"),
         document.querySelector(".page-description")].filter(Boolean);
     var scaleIndex = STEPS.indexOf(read(TEXT_SCALE_KEY, 100));
     if (scaleIndex === -1) scaleIndex = STEPS.indexOf(100);
@@ -94,9 +95,6 @@
         if (textDownBtn) textDownBtn.disabled = scaleIndex === 0;
         if (textUpBtn) textUpBtn.disabled = scaleIndex === STEPS.length - 1;
         write(TEXT_SCALE_KEY, STEPS[scaleIndex]);
-        // the tagline scaling just changed #header's height -> the button
-        // row (positioned off that height) needs to be re-measured too
-        positionControlRow();
     }
     if (burger && burger.parentNode) {
         textDownBtn = button("pc-textsize-btn pc-textsize-down", "A−", function () {
@@ -130,9 +128,7 @@
             themeBtn.offsetParent.getBoundingClientRect().top) + 8;
         [themeBtn, textDownBtn, textUpBtn].forEach(function (b) { if (b) b.style.top = y + "px"; });
     }
-    // applyTextSize() above already calls this once (it must -- the tagline
-    // scaling it does changes the header height every time, not just at
-    // load), so the only case left uncovered is a viewport-size change
+    positionControlRow();
     window.addEventListener("resize", positionControlRow);
 
     /* --------------------------------------------- calculator-only features */
