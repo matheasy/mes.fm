@@ -1,13 +1,14 @@
 /* app-features.js - app-only enhancements for the bundled Percentage
-   Calculator: light/dark theme toggle (in the nav bar, every page), plus a
-   "Labels" toggle and a "Save" button in a compact toolbar above the
-   calculators. Save snapshots the current inputs + labels under a short
-   name shown as a chip. All state is per-device in localStorage.
-   Loaded after jquery + calculator.js. */
+   Calculator: light/dark theme toggle + A-/A+ text size (in the nav bar,
+   every page), plus a "Labels" toggle and a "Save" button in a compact
+   toolbar above the calculators. Save snapshots the current inputs + labels
+   under a short name shown as a chip. All state is per-device in
+   localStorage. Loaded after jquery + calculator.js. */
 (function () {
     "use strict";
 
     var THEME_KEY = "pc-theme";
+    var TEXT_SCALE_KEY = "pc-text-scale";
     var LABELS_KEY = "pc-eq-labels";       // { "1": "Personal Taxes", ... }
     var LABELS_SHOWN_KEY = "pc-labels-shown";
     var SAVED_KEY = "pc-saved";            // { name: {inputs:[], labels:{}, ts} }
@@ -69,6 +70,36 @@
         burger.parentNode.appendChild(themeBtn);
         syncThemeButton();
     }
+
+    /* ----------------------------------------------------------- text size */
+    // same steps/behavior as the website's A-/A+ (main_js/display-controls.js),
+    // scaling the whole #main-content -- works on every bundled page, not just
+    // the calculator, so it runs before the calculator-only early return below
+    var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+    var scaleTarget = document.getElementById("main-content");
+    var scaleIndex = STEPS.indexOf(read(TEXT_SCALE_KEY, 100));
+    if (scaleIndex === -1) scaleIndex = STEPS.indexOf(100);
+
+    var textDownBtn, textUpBtn;
+    function applyTextSize() {
+        if (scaleTarget) scaleTarget.style.fontSize = (STEPS[scaleIndex] / 100) + "em";
+        if (textDownBtn) textDownBtn.disabled = scaleIndex === 0;
+        if (textUpBtn) textUpBtn.disabled = scaleIndex === STEPS.length - 1;
+        write(TEXT_SCALE_KEY, STEPS[scaleIndex]);
+    }
+    if (burger && burger.parentNode) {
+        textDownBtn = button("pc-textsize-btn pc-textsize-down", "A−", function () {
+            scaleIndex = Math.max(0, scaleIndex - 1); applyTextSize();
+        });
+        textDownBtn.setAttribute("aria-label", "Decrease text size");
+        textUpBtn = button("pc-textsize-btn pc-textsize-up", "A+", function () {
+            scaleIndex = Math.min(STEPS.length - 1, scaleIndex + 1); applyTextSize();
+        });
+        textUpBtn.setAttribute("aria-label", "Increase text size");
+        burger.parentNode.appendChild(textDownBtn);
+        burger.parentNode.appendChild(textUpBtn);
+    }
+    applyTextSize();
 
     /* --------------------------------------------- calculator-only features */
     var equations = document.querySelectorAll(".equation");

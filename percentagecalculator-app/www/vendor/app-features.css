@@ -3,25 +3,40 @@
    (Labels + Save), saved-calculation chips, and per-calculation labels.
    Not part of the mes.fm website. */
 
-/* ---------- theme toggle: icon-only button under the hamburger ---------- */
-.pc-theme-toggle {
+/* reserve room for the theme + text-size button row so the title/tagline
+   wrap before it instead of running under the buttons -- the site's own
+   header has no equivalent row here, so this is app-only, not something
+   build-www.py carries over. 104px (not the row's full ~164px footprint)
+   verified in-browser: the title/tagline already wrap short of the row's
+   left edge on their own at that width, with a 16px margin to spare, and
+   going wider adds an extra wrapped line for no benefit. */
+.logo-text-container { padding-right: 104px; }
+
+/* ---------- theme toggle + text size: icon-only buttons under the hamburger,
+   left to right "A- A+ [moon/sun]", same row, 4px below the 44px hamburger */
+.pc-theme-toggle,
+.pc-textsize-btn {
     position: absolute;
-    top: 64px;      /* hamburger is top:16px, 44px tall -> 4px below it */
-    right: 16px;
+    top: 64px;
     width: 44px;
     height: 44px;
     padding: 0;
     margin: 0;
     background: none;
     border: 0;
-    font-size: 22px;
     line-height: 44px;
     text-align: center;
     cursor: pointer;
     z-index: 20;
 }
-/* hide it while the hamburger menu (#navbar gains .hide when open) is up */
-#navbar.hide ~ .pc-theme-toggle { display: none; }
+.pc-theme-toggle { right: 16px; font-size: 22px; }
+.pc-textsize-btn { font: inherit; font-size: 0.95em; font-weight: 700; color: #1479c7; }
+.pc-textsize-btn:disabled { opacity: 0.4; cursor: default; }
+.pc-textsize-up { right: 68px; }     /* 16 + 44 + 8 gap */
+.pc-textsize-down { right: 120px; }  /* 68 + 44 + 8 gap */
+/* hide them while the hamburger menu (#navbar gains .hide when open) is up */
+#navbar.hide ~ .pc-theme-toggle,
+#navbar.hide ~ .pc-textsize-btn { display: none; }
 
 /* ---------- tool row above the calculators ---------- */
 .pc-toolbar {
@@ -128,6 +143,7 @@ html[data-theme="dark"] .page-content a.link { color: #5aa9e6; }
 html[data-theme="dark"] .box-border { border-color: #3a6f96; }
 html[data-theme="dark"] .calc-label-field input::placeholder { color: #7c848c; }
 
+html[data-theme="dark"] .pc-textsize-btn { color: #5aa9e6; }
 html[data-theme="dark"] .pc-tool-btn { background: #12161a; color: #5aa9e6; border-color: #5aa9e6; }
 html[data-theme="dark"] .pc-tool-btn:hover { background: #1b2228; }
 html[data-theme="dark"] .pc-tool-btn[aria-pressed="true"] { background: #1479c7; color: #fff; }
