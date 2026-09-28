@@ -27,6 +27,8 @@
 	function hashes(t, n) { return tagWords(t).slice(0, n).map(function (w) { return "#" + w; }).join(" "); }
 	function plainTags(t, n) { return tagWords(t).slice(0, n).map(function (w) { return w.toLowerCase(); }); }
 	function join(parts) { return parts.filter(Boolean).join("\n\n"); }
+	// Odysee's own auto-slug: sanitize punctuation, spaces to dashes, word casing kept as typed
+	function slugify(t) { return (t || "").replace(/[^\p{L}\p{N}\s-]+/gu, "").trim().replace(/\s+/g, "-").replace(/-+/g, "-"); }
 	var enc = encodeURIComponent;
 
 	// head + as many description sentences as fit + tail, within limit
@@ -63,7 +65,7 @@
 		var tags = tagWords(t).map(function (w) { return "#" + w; }).filter(function (w, i, a) { return a.indexOf(w) === i; }).join(" ");
 		var link = urls.filter(function (u) { return !VIDEO.test(u); })[0] || urls[0] || "";
 		var video = urls.filter(function (u) { return VIDEO.test(u) && u !== link; })[0] || "";
-		return { title: title, desc: desc, tags: tags, link: link, video: video };
+		return { title: title, desc: desc, tags: tags, link: link, video: video, slug: slugify(title) };
 	}
 
 	function checks(d) {
@@ -104,11 +106,11 @@
 			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 10).join(", ")]]; },
 			tips: ["Links in the description are fine.", "Pick a category and upload a custom thumbnail."] },
 		{ id: "odysee", name: "Odysee", g: "video", open: "https://odysee.com/$/upload",
-			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(", ")]]; },
-			tips: ["Links in the description are fine.", "Tags go in the tag box (about 5)."] },
+			blocks: function (d) { return [["Title", d.title], ["URL slug", d.slug || slugify(d.title)], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(", ")]]; },
+			tips: ["Links in the description are fine.", "Paste the URL slug into the box under Title — odysee.com/@you/&lt;slug&gt;. Shorten it if you like; Odysee just needs it unique.", "Tags go in the tag box (about 5)."] },
 		{ id: "bitchute", name: "BitChute", g: "video", open: "https://www.bitchute.com/",
-			blocks: function (d) { return [["Title", d.title, 100], ["Description", uploadDesc(d, 0)], ["Hashtags", plainTags(d.tags, 5).join(" ")]]; },
-			tips: ["Links in the description are fine.", "Set the thumbnail yourself."] },
+			blocks: function (d) { return [["Title", d.title, 100], ["Description", uploadDesc(d, 0)], ["Search terms", plainTags(d.tags, 3).join(" ")]]; },
+			tips: ["Links in the description are fine.", "Search Terms box: max 3, space-separated.", "Set the thumbnail yourself."] },
 		{ id: "blurtmedia", name: "Blurt media", g: "video", open: "https://blurt.media/",
 			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(" ")]]; },
 			tips: ["Upload the video; the link in the description is fine."] },
@@ -149,9 +151,9 @@
 		{ id: "substacknote", name: "Substack Note", g: "link", open: "https://substack.com/home",
 			blocks: function (d) { return [["Note", join([fit(d.title, d.desc, "", 700), d.link])]]; },
 			tips: ["Post as a Note; the link card is fine.", "Attach the thumbnail if no preview appears."] },
-		{ id: "ytcommunity", name: "YouTube post", g: "link", open: "https://www.youtube.com/",
+		{ id: "ytcommunity", name: "YouTube Community Post", g: "link", open: "https://www.youtube.com/",
 			blocks: function (d) { return [["Post", join([fit(d.title, d.desc, "", 600), lk(d), d.video])]]; },
-			tips: ["Channel → Posts tab. Post once the video is live; add the video or an image.", "Links are fine in posts."] },
+			tips: ["YouTube Studio → Posts tab (Community). Post once the video is live; add the video or an image.", "Links are fine in posts."] },
 		{ id: "gab", name: "Gab", g: "link", open: "https://gab.com/",
 			prefill: function (d, m) { return "https://gab.com/compose?text=" + enc(m); },
 			blocks: function (d) { return [["Post", shortPost(d, 3000, { link: true, tags: 3 }), 3000]]; },
@@ -221,7 +223,7 @@
 		"#math #calculus #physics #vectors #projectilemotion";
 
 	/* ---------- state ---------- */
-	var F = ["title", "link", "desc", "tags", "video", "thumb"];
+	var F = ["title", "link", "desc", "tags", "video", "thumb", "slug"];
 	var urls = store.get("urls", {}), hidden = store.get("hidden", {});
 	function data() {
 		var d = {};
@@ -361,6 +363,8 @@
 		var p = parse($("sl-blob").value), keep = data();
 		if (!p.link) p.link = keep.link;
 		if (!p.video) p.video = keep.video;
+		// slug auto-follows the title until hand-edited away from its own auto value
+		if (keep.slug && keep.slug !== slugify(keep.title)) p.slug = keep.slug;
 		fill(p); save(); render();
 	}
 	$("sl-blob").addEventListener("input", fromBlob);
