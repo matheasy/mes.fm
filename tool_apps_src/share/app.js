@@ -133,7 +133,7 @@
 		{ id: "x", name: "X", g: "reply", open: "https://x.com/compose/post",
 			prefill: function (d, m) { return "https://x.com/intent/post?text=" + enc(m); },
 			blocks: function (d) { return [["Post (no link)", shortPost(d, 280, { tags: 2, len: xlen }), 280, xlen], ["Reply", lk(d), 280, xlen]]; },
-			tips: ["Attach the video, <b>no link in the post</b>.", "Right after posting, <b>reply with the link</b>.", "1–2 hashtags."] },
+			tips: ["Attach the video, <b>no link in the post</b>.", "X allows a video <b>or</b> up to 4 images, never both — don't also attach the thumbnail; the video's own poster frame already shows in the feed.", "Right after posting, <b>reply with the link</b>.", "1–2 hashtags."] },
 		{ id: "mbs", name: "Meta Business Suite", g: "reply", open: "https://business.facebook.com/latest/composer",
 			blocks: function (d) { return [["Post (no link)", inReply(d, 1500, 3, "Link in the first comment 👇")], ["First comment", lk(d)]]; },
 			tips: ["Tick both your Facebook Page and Instagram to post to both at once.", "Upload the video natively; <b>link in the first comment</b>."] },
