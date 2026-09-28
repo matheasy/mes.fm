@@ -79,7 +79,12 @@
     // -- works on every bundled page, not just the calculator, so it runs
     // before the calculator-only early return below
     var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
-    var scaleTargets = [document.getElementById("main-content"), document.querySelector(".tag-line")].filter(Boolean);
+    // .page-description (the intro paragraph) sits outside #main-content, a
+    // sibling of it in .page-content, on all 3 bundled pages -- everything
+    // else worth scaling (Tutorial/How-To's own .sentence/.header2 body
+    // text, the calculator's own rows) is already inside #main-content
+    var scaleTargets = [document.getElementById("main-content"), document.querySelector(".tag-line"),
+        document.querySelector(".page-description")].filter(Boolean);
     var scaleIndex = STEPS.indexOf(read(TEXT_SCALE_KEY, 100));
     if (scaleIndex === -1) scaleIndex = STEPS.indexOf(100);
 
