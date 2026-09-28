@@ -91,6 +91,14 @@
 	function blogBody(d) { return join([d.desc, lk(d), d.video]); }
 	function inReply(d, limit, tagN, note) { return join([fit(d.title, d.desc, "", limit), note, hashes(d.tags, tagN)]); }
 	function hostPath(u) { return u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""); }
+	// a small bullet-list comment to paste under the upload once it's live: "- Notes: <link>" then any
+	// extra reference links typed in Parsed fields, one per line, each becoming its own "- " bullet
+	function refComment(d) {
+		var lines = [];
+		if (d.link) lines.push("Notes: " + d.link);
+		(d.links || "").split("\n").forEach(function (l) { l = l.trim(); if (l) lines.push(l); });
+		return lines.map(function (l) { return "- " + l; }).join("\n");
+	}
 
 	/* ---------- the sites ---------- */
 	// g: group; open: default page; prefill(d, main): intent URL with text filled in; blocks(d): [label, text, limit?, lenFn?]
@@ -100,23 +108,23 @@
 			blocks: function (d) { return [["Title", d.title, 100], ["Description", uploadDesc(d, 3), 5000], ["Tags", plainTags(d.tags, 15).join(", "), 500], ["Pinned comment", lk(d)]]; },
 			tips: ["Links in the description are clickable.", "The first 3 hashtags in the description show above the title.", "After publishing, post the pinned comment and <b>pin it</b>.", "Add an end screen to a related video."] },
 		{ id: "3speak", name: "3Speak", g: "video", open: "https://3speak.tv/",
-			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 5)], ["Tags", plainTags(d.tags, 8).join(" ")]]; },
-			tips: ["Upload video + thumbnail. It becomes a Hive post, so the link is fine.", "First tag is the category."] },
+			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 5)], ["Tags", plainTags(d.tags, 8).join(" ")], ["Comment", refComment(d)]]; },
+			tips: ["Upload video + thumbnail. It becomes a Hive post, so the link is fine.", "First tag is the category.", "Post the comment after publishing and pin it if you can."] },
 		{ id: "rumble", name: "Rumble", g: "video", open: "https://rumble.com/upload.php",
-			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 10).join(", ")]]; },
-			tips: ["Links in the description are fine.", "Pick a category and upload a custom thumbnail."] },
+			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 10).join(", ")], ["Comment", refComment(d)]]; },
+			tips: ["Links in the description are fine.", "Pick a category and upload a custom thumbnail.", "Post the comment after publishing and pin it."] },
 		{ id: "odysee", name: "Odysee", g: "video", open: "https://odysee.com/$/upload",
-			blocks: function (d) { return [["Title", d.title], ["URL slug", d.slug || slugify(d.title)], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(", ")]]; },
-			tips: ["Links in the description are fine.", "Paste the URL slug into the box under Title — odysee.com/@you/&lt;slug&gt;. Shorten it if you like; Odysee just needs it unique.", "Tags go in the tag box (about 5)."] },
+			blocks: function (d) { return [["Title", d.title], ["URL slug", d.slug || slugify(d.title)], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(", ")], ["Comment", refComment(d)]]; },
+			tips: ["Links in the description are fine.", "Paste the URL slug into the box under Title — odysee.com/@you/&lt;slug&gt;. Shorten it if you like; Odysee just needs it unique.", "Tags go in the tag box (about 5).", "Post the comment after publishing and pin it."] },
 		{ id: "bitchute", name: "BitChute", g: "video", open: "https://www.bitchute.com/",
-			blocks: function (d) { return [["Title", d.title, 100], ["Description", uploadDesc(d, 0)], ["Search terms", plainTags(d.tags, 3).join(" ")]]; },
-			tips: ["Links in the description are fine.", "Search Terms box: max 3, space-separated.", "Set the thumbnail yourself."] },
+			blocks: function (d) { return [["Title", d.title, 100], ["Description", uploadDesc(d, 0)], ["Search terms", plainTags(d.tags, 3).join(" ")], ["Comment", refComment(d)]]; },
+			tips: ["Links in the description are fine.", "Search Terms box: max 3, space-separated.", "Set the thumbnail yourself.", "Post the comment after publishing and pin it."] },
 		{ id: "blurtmedia", name: "Blurt media", g: "video", open: "https://blurt.media/",
-			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(" ")]]; },
-			tips: ["Upload the video; the link in the description is fine."] },
+			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(" ")], ["Comment", refComment(d)]]; },
+			tips: ["Upload the video; the link in the description is fine.", "Post the comment after publishing."] },
 		{ id: "paychute", name: "PayChute", g: "video", open: "https://paychute.com/",
-			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(", ")]]; },
-			tips: ["Upload the video; the link in the description is fine."] },
+			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(", ")], ["Comment", refComment(d)]]; },
+			tips: ["Upload the video; the link in the description is fine.", "Post the comment after publishing."] },
 		{ id: "tiktok", name: "TikTok", g: "video", open: "https://www.tiktok.com/tiktokstudio/upload",
 			blocks: function (d) { return [["Caption", join([fit(d.title, d.desc, "", 600), "Link in bio", hashes(d.tags, 5)]), 4000], ["On-screen text", d.link ? hostPath(d.link) : ""]]; },
 			tips: ["Links are <b>not clickable</b>: say “link in bio” and check your bio link.", "Vertical 9:16; a 30–90 s clip of a long video works best.", "3–5 hashtags."] },
@@ -223,7 +231,7 @@
 		"#math #calculus #physics #vectors #projectilemotion";
 
 	/* ---------- state ---------- */
-	var F = ["title", "link", "desc", "tags", "video", "thumb", "slug"];
+	var F = ["title", "link", "desc", "tags", "video", "thumb", "slug", "links"];
 	var urls = store.get("urls", {}), hidden = store.get("hidden", {});
 	function data() {
 		var d = {};
