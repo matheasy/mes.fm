@@ -93,7 +93,11 @@
 	}
 	function uploadDesc(d, n) { return join([d.desc, lk(d), hashes(d.tags, n)]); }
 	function blogBody(d) { return join([d.desc, lk(d), d.video]); }
-	function inReply(d, limit, tagN, note) { return join([fit(d.title, d.desc, "", limit), note, hashes(d.tags, tagN)]); }
+	// note + hashtags go in fit()'s own tail slot, not appended after it, so the
+	// description-fitting budget actually reserves room for them within `limit`
+	// (appending them afterward -- the old bug -- let the total run over `limit`,
+	// worst on a tight cap like InLeo's 240: consistently ~10% over)
+	function inReply(d, limit, tagN, note) { return fit(d.title, d.desc, join([note, hashes(d.tags, tagN)]), limit); }
 	function hostPath(u) { return u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""); }
 	// a small bullet-list comment to paste under the upload once it's live: "- Notes: <link>" then any
 	// extra reference links typed in Parsed fields, one per line, each becoming its own "- " bullet
@@ -180,9 +184,13 @@
 			prefill: function (d, m) { return "https://truthsocial.com/share?text=" + enc(m); },
 			blocks: function (d) { return [["Post", shortPost(d, 500, { link: true, tags: 2 }), 500]]; },
 			tips: ["A link in the post is fine."] },
-		{ id: "inleo", name: "InLeo thread", g: "link", open: "https://inleo.io/threads",
-			blocks: function (d) { return [["Thread", shortPost(d, 240, { link: true, tags: 2 }), 240]]; },
-			tips: ["Hive-based, so the link is fine.", "240 characters."] },
+		{ id: "inleo", name: "InLeo thread", g: "reply", open: "https://inleo.io/threads",
+			blocks: function (d) {
+				var limit = inleoPremium ? 20000 : 240;
+				var thread = inReply(d, limit, 2, "Link in a reply thread 👇");
+				return [["Thread (no link)", thread].concat(inleoPremium ? [] : [240]), ["Reply thread", lk(d)]];
+			},
+			tips: ["Hive-based, but InLeo's own composer warns against a link in the top-level thread: “please post the top-level thread and then make a reply thread to it with the link.”", "240 characters, unless you tick InLeo Premium above — Premium removes the cap."] },
 		{ id: "snaps", name: "Snaps (PeakD)", g: "link", open: "https://peakd.com/snaps",
 			blocks: function (d) { return [["Snap", shortPost(d, 280, { link: true, tags: 2 }), 280]]; },
 			tips: ["Hive-based, so the link is fine. Short and punchy."] },
@@ -243,6 +251,7 @@
 	/* ---------- state ---------- */
 	var F = ["title", "link", "desc", "tags", "video", "thumb", "slug", "links"];
 	var urls = store.get("urls", {}), hidden = store.get("hidden", {});
+	var inleoPremium = store.get("inleoPremium", false);  // removes InLeo's 240-char thread cap
 	function data() {
 		var d = {};
 		F.forEach(function (k) { d[k] = $("sl-" + k).value.trim(); });
@@ -295,7 +304,9 @@
 					'<button type="button" class="sl-toggle" aria-expanded="' + !cf + '"><span class="sl-arrow" aria-hidden="true">▼</span>' +
 					(isDone ? '<span class="sl-check-mark" aria-label="done">✓</span>' : "") + "<b>" + esc(s.name) + "</b></button>" +
 					(s.prefill ? '<span class="sl-badge">pre-fills</span>' : "") + '<span class="sl-sp"></span>' +
-					'<label class="sl-done">Done <input type="checkbox" class="sl-tick"' + (isDone ? " checked" : "") + '></label></div><div class="sl-body">';
+					'<label class="sl-done">Done <input type="checkbox" class="sl-tick"' + (isDone ? " checked" : "") + '></label></div><div class="sl-body">' +
+					(s.id === "inleo" ? '<label class="sl-done" style="margin:0 0 0.6em;"><input type="checkbox" class="sl-inleo-premium"' +
+						(inleoPremium ? " checked" : "") + '> InLeo Premium (no 240-char cap)</label>' : "");
 				bl.forEach(function (b, i) {
 					var n = (b[3] || glen)(b[1]);
 					html += '<div class="sl-blk"><div class="sl-bh">' + esc(b[0]) + '<span class="sl-sp"></span><span' + (b[2] && n > b[2] ? ' class="sl-over"' : "") + ">" +
@@ -350,6 +361,12 @@
 		}
 	});
 	$("sl-out").addEventListener("change", function (e) {
+		if (e.target.classList.contains("sl-inleo-premium")) {
+			inleoPremium = e.target.checked;
+			store.set("inleoPremium", inleoPremium);
+			render();
+			return;
+		}
 		if (!e.target.classList.contains("sl-tick")) return;
 		var id = e.target.closest(".sl-card").dataset.id, done = store.get(doneKey(), {});
 		if (e.target.checked) done[id] = 1; else delete done[id];
