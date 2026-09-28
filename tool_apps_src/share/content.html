@@ -1,0 +1,68 @@
+	<div class="tu" id="sl">
+		<div class="tu-card">
+			<div class="tu-field">
+				<label for="sl-blob">Your post</label>
+				<textarea id="sl-blob" class="tu-input sl-blob" rows="7" spellcheck="true" placeholder="Title of your video https://example.com/your-page&#10;&#10;One or two paragraphs describing it.&#10;&#10;#hashtag #another"></textarea>
+			</div>
+			<p class="tu-note">Title and link on the first line, then the description, then the hashtags. The fields below fill themselves; edit them if needed. Nothing you type leaves your browser.</p>
+			<div class="tu-chips">
+				<button type="button" class="tu-chip" id="sl-example">Load an example</button>
+				<button type="button" class="tu-chip" id="sl-clear">Clear</button>
+			</div>
+
+			<div class="sl-warn" id="sl-warn" role="status"></div>
+
+			<details class="sl-fields" id="sl-fields">
+				<summary>Parsed fields</summary>
+				<div class="tu-row">
+					<div class="tu-field"><label for="sl-title">Title</label><input id="sl-title" class="tu-input" type="text"></div>
+					<div class="tu-field"><label for="sl-link">Link</label><input id="sl-link" class="tu-input" type="text" placeholder="https://..."></div>
+				</div>
+				<div class="tu-field" style="margin-top:0.8em;"><label for="sl-desc">Description</label><textarea id="sl-desc" class="tu-input" rows="4"></textarea></div>
+				<div class="tu-row" style="margin-top:0.8em;">
+					<div class="tu-field"><label for="sl-tags">Hashtags (most important first)</label><input id="sl-tags" class="tu-input" type="text" placeholder="#math #calculus"></div>
+					<div class="tu-field"><label for="sl-video">Video link (optional)</label><input id="sl-video" class="tu-input" type="text" placeholder="https://youtu.be/..."></div>
+				</div>
+				<div class="tu-row" style="margin-top:0.8em;">
+					<div class="tu-field"><label for="sl-thumb">Thumbnail image URL (optional, pre-fills Pinterest)</label><input id="sl-thumb" class="tu-input" type="text" placeholder="https://...jpg"></div>
+					<div class="tu-field"><label for="sl-label">Text in front of your link (saved)</label><input id="sl-label" class="tu-input" type="text" placeholder="🔗 Full post:"></div>
+				</div>
+			</details>
+		</div>
+
+		<div class="sl-bar">
+			<button type="button" class="tu-btn" id="sl-pick">Choose my sites</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="sl-untick">Untick all Done</button>
+			<label class="sl-check"><input type="checkbox" id="sl-hidedone"> Hide done</label>
+			<span class="sl-progress" id="sl-progress"></span>
+		</div>
+		<div class="tu-card sl-picker" id="sl-picker" hidden>
+			<p class="tu-note" style="margin-top:0;">Tap a site to hide or show it. Saved in this browser.</p>
+			<div class="tu-chips" id="sl-picker-chips"></div>
+			<div class="tu-chips"><button type="button" class="tu-chip" id="sl-all">Show all</button><button type="button" class="tu-chip" id="sl-none">Hide all</button></div>
+		</div>
+
+		<div id="sl-out" aria-live="polite"></div>
+		<div class="tu-toast" id="sl-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>What is the Share Launcher?</h2>
+			<p>Posting one new video or article to 30 social sites usually means opening every site and rewriting the same text again and again. Paste your post once and the Share Launcher writes a version for each site: sized to its character limit, with the right number of hashtags, and with the link where that site wants it. <strong>Open</strong> copies the text and opens the site's compose or upload page, pre-filled where the site allows it (X, Threads, Bluesky, Gab, Reddit, Truth Social, Pinterest). You still review and press Post yourself.</p>
+			<h3>Where should the link go?</h3>
+			<ul>
+				<li><strong>In a reply or first comment:</strong> X, Facebook and LinkedIn-style feeds show posts with outside links to fewer people. Post the video or text, then reply with the link straight away.</li>
+				<li><strong>Not clickable at all:</strong> Instagram and TikTok captions. Say &ldquo;link in bio&rdquo;, or use an Instagram Story link sticker.</li>
+				<li><strong>In the post:</strong> Threads, Bluesky, Gab, Minds, Truth Social, Discord, Reddit and the Hive / Blurt / Steem sites have no link penalty.</li>
+				<li><strong>In the description:</strong> YouTube, Rumble, Odysee, BitChute and 3Speak. On YouTube, also pin a comment with the link.</li>
+				<li><strong>The whole point:</strong> Pinterest pins link to your page, so always set the destination link.</li>
+			</ul>
+			<h3>Tips</h3>
+			<ul>
+				<li>Upload the video natively where you can; it reaches far more people than a link to it.</li>
+				<li>Use <strong>Choose my sites</strong> to keep only the sites you use, and <strong>✎ URL</strong> on a card to make Open go to your own channel or server.</li>
+				<li>Tick <strong>Done</strong> as you go. Ticks are remembered per link, so your next post starts with a fresh list.</li>
+				<li>Give it a few posts, then check your analytics and drop the sites that never send visitors.</li>
+			</ul>
+			<p>Everything runs in your browser. Your text, choices and ticks are stored only in this browser (localStorage); nothing is sent to any server. <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

@@ -35,7 +35,7 @@ RESPONSIVE_SLOT = "1532113018"
 RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator", "math"}
 # stand-alone tool / rebuilt-calculator pages (tool shell, one index.html per folder): included on purpose, unlike the timer etc. skip below
 TOOL_DIRS = ["emoji", "latex", "timezone", "symbols", "stats", "speedreader", "timer", "youtube-thumbnail", "unit-conversion",
-             "gematria", "impermanent-loss-calculator", "earth-curvature-calculator"]
+             "gematria", "impermanent-loss-calculator", "earth-curvature-calculator", "share"]
 FAMILIES = ["percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator",
             "inflationcalculator", "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles"]
 

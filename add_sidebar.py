@@ -98,13 +98,14 @@ FAMILIES = {
         "hide_files": ["solution.html"],  # solution pages get the aside but are never recommended
         "sections": [("", "Puzzle", None)],
     },
-    # the stand-alone tools and rebuilt calculators (separate folders, tool-shell pages): one collection, each recommends the others
+    # the stand-alone tools and rebuilt calculators (separate folders, tool-shell pages): one collection, each recommends the others.
+    # Not "stats": its wide table needs the full 75em, so it has no sidebar (commit 7d9da3f98) and must not be re-added.
     "tools": {
         "name": "MES Tools",
         "hub": {"url": "/tools", "title": "All MES Tools", "kind": "Gallery", "img": "/img/tools-icon.jpg"},
         "collection": [
-            ("emoji", "Tool"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"), ("stats", "Tool"),
-            ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("unit-conversion", "Calculator"),
+            ("emoji", "Tool"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
+            ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("share", "Tool"), ("unit-conversion", "Calculator"),
             ("gematria", "Calculator"), ("impermanent-loss-calculator", "Calculator"), ("earth-curvature-calculator", "Calculator"),
         ],
         "articles": False,

@@ -33,7 +33,7 @@ PAGES = {
     "tools.html": dict(noun="tools", popular=["timer", "speedreader", "moon", "emoji"], cats=[
         ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols"]),
         ("time", "Time &amp; Focus", ["speedreader", "timer", "timezone"]),
-        ("media", "Media &amp; Web", ["youtube-thumbnail", "stats"]),
+        ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share"]),
         ("sky", "Sky &amp; Space", ["moon"]),
     ]),
 }
