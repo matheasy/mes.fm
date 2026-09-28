@@ -103,7 +103,12 @@
         "href": "https://t.me/meslinks/35596"
       }
     ],
-    "namedLinks": []
+    "namedLinks": [
+      {
+        "label": "More links",
+        "href": "https://mes.fm/911"
+      }
+    ]
   },
   "https://mes.fm/911-revisionist-spammer": {
     "image": "https://img.leopedia.io/DQmbpgZNh1aVMsLjBor5QupBNRbH4wS7ZFmbcoRMmmoPjPh/telegram-cloud-photo-size-1-4969851364699737239-y.jpg",

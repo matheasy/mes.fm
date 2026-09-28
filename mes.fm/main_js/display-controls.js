@@ -165,6 +165,16 @@
         var PROPS = [["color", "text", "color"], ["backgroundColor", "bg", "background-color"],
             ["borderTopColor", "border", "border-top-color"], ["borderRightColor", "border", "border-right-color"],
             ["borderBottomColor", "border", "border-bottom-color"], ["borderLeftColor", "border", "border-left-color"]];
+        /* A rule's selector list is split and filtered one selector at a time (below), so a bare
+           structural/typography selector like `span` or `li` -- part of the page's own HTML5 reset,
+           nowhere near "navbar"/"dropdown"/etc. in its own text -- passes the SKIP-keyword filter even
+           though it also matches elements that happen to sit *inside* an intentionally-skipped
+           container (e.g. a <span> inside the hamburger menu's Calculators dropdown). Since an
+           explicitly-matched dark-mode color always wins over an inherited one regardless of
+           specificity, that turned dropdown item text unreadable against its own (untouched, still
+           light) background. Structurally exclude descendants of every such container so no derived
+           rule can paint into them, on top of the keyword-based SKIP above. */
+        var SKIP_ZONES = ":not(#navbar *):not(#footer *):not(#info-bar *):not(#compact-nav *)";
         var out = [], seen = {};
         function walk(rules) {
             for (var i = 0; i < rules.length; i++) {
@@ -183,7 +193,7 @@
                     return s && !SKIP.test(s) && !/^(a|body|html|\*)(?![\w-])/.test(s) && s.indexOf("dark-mode") === -1;
                 });
                 if (!sels.length) continue;
-                var rule = sels.map(function (s) { return "body.dark-mode " + s; }).join(",") + "{" + decl.join(";") + "}";
+                var rule = sels.map(function (s) { return "body.dark-mode " + s + SKIP_ZONES; }).join(",") + "{" + decl.join(";") + "}";
                 if (!seen[rule]) { seen[rule] = 1; out.push(rule); }
             }
         }

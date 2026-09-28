@@ -335,6 +335,14 @@ def brand_nav(s):
             continue
         s = s.replace('<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="https://mes.fm/math">Math Tutorials</a></li>',
                       '<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="%s">%s</a></li>' % (href, label), 1)
+        if href == "/911" and 'href="/conspiracy">Conspiracy</a></li>' not in s:
+            # Conspiracy is more relevant to 9/11-family pages than the generic Calculators/Tools
+            # links that follow it, so it goes right after the 9/11 Truth tab in the info-bar.
+            s = s.replace(
+                '<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/911">9/11 Truth</a></li>',
+                '<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/911">9/11 Truth</a></li>\n'
+                '        <li class="info-bar__item"><a class="info-bar__item__text" href="/conspiracy">Conspiracy</a></li>',
+                1)
         if 'class="navbar__link" href="%s">%s' % (href, label) not in s:
             s = re.sub(r'([ \t]*)(<li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>)',
                        lambda m: m.group(1) + '<li class="navbar__item"><a target="_self" class="navbar__link" href="%s">%s</a></li>\n' % (href, label) + m.group(1) + m.group(2),

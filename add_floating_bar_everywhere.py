@@ -21,7 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 APPLY = "--apply" in sys.argv
 REFRESH = "--refresh" in sys.argv
-VERSION = "1.6"
+VERSION = "1.7"
 ANCHOR = '<script src="/main_js/info-bar-fit.js" defer></script>'
 TAG = '<script src="/main_js/display-controls.js?v=%s" data-scale="main" data-dark="derive" defer></script>' % VERSION
 TAG_RE = re.compile(r'<script src="/main_js/display-controls\.js[^"]*"[^>]*data-scale="main"[^>]*></script>')
