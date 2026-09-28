@@ -224,7 +224,10 @@
 			tips: ["Upload the thumbnail as the photo. Hive-based, so links are fine."] },
 		{ id: "pixagram", name: "Pixagram", g: "image", open: "https://pixagram.io/",
 			blocks: function (d) { return [["Caption", join([d.title, fit("", d.desc, "", 600), lk(d), hashes(d.tags, 5)])]]; },
-			tips: ["Upload the thumbnail as the image. Hive-based, so links are fine."] }
+			tips: ["Upload the thumbnail as the image. Hive-based, so links are fine."] },
+		{ id: "tiktokphoto", name: "TikTok Photo", g: "image", open: "https://www.tiktok.com/tiktokstudio/upload",
+			blocks: function (d) { return [["Caption", join([fit(d.title, d.desc, "", 600), "Link in bio", hashes(d.tags, 5)]), 4000]]; },
+			tips: ["TikTok Studio's upload now offers Photos as well as Video — good for posting a standalone derivation image on its own.", "Same composer as the video upload; pick Photos instead of Video.", "Links are <b>not clickable</b>: say “link in bio” and check your bio link.", "3–5 hashtags."] }
 	];
 	var GROUPS = [
 		["video", "Video uploads", "Upload the video itself. Links in the description are fine everywhere except TikTok."],
