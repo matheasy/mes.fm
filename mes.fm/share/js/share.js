@@ -26,6 +26,10 @@
 	function tagWords(t) { return (t.match(/#[\p{L}\p{N}_]+/gu) || []).map(function (x) { return x.slice(1); }); }
 	function hashes(t, n) { return tagWords(t).slice(0, n).map(function (w) { return "#" + w; }).join(" "); }
 	function plainTags(t, n) { return tagWords(t).slice(0, n).map(function (w) { return w.toLowerCase(); }); }
+	// same, but splits a TitleCase hashtag into words -- "#ProjectileMotion" -> "projectile motion" -- for
+	// sites whose tag/keyword field takes proper phrases (a lowercase hashtag like "#projectilemotion" has
+	// no case boundary to split on, so write multi-word hashtags in TitleCase to get this)
+	function spacedTags(t, n) { return tagWords(t).slice(0, n).map(function (w) { return w.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase(); }); }
 	function join(parts) { return parts.filter(Boolean).join("\n\n"); }
 	// Odysee's own auto-slug: sanitize punctuation, spaces to dashes, word casing kept as typed
 	function slugify(t) { return (t || "").replace(/[^\p{L}\p{N}\s-]+/gu, "").trim().replace(/\s+/g, "-").replace(/-+/g, "-"); }
@@ -114,8 +118,8 @@
 			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 10).join(", ")], ["Comment", refComment(d)]]; },
 			tips: ["Links in the description are fine.", "Pick a category and upload a custom thumbnail.", "Post the comment after publishing and pin it."] },
 		{ id: "odysee", name: "Odysee", g: "video", open: "https://odysee.com/$/upload",
-			blocks: function (d) { return [["Title", d.title], ["URL slug", d.slug || slugify(d.title)], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(", ")], ["Comment", refComment(d)]]; },
-			tips: ["Links in the description are fine.", "Paste the URL slug into the box under Title — odysee.com/@you/&lt;slug&gt;. Shorten it if you like; Odysee just needs it unique.", "Tags go in the tag box (about 5).", "Post the comment after publishing and pin it."] },
+			blocks: function (d) { return [["Title", d.title], ["URL slug", d.slug || slugify(d.title)], ["Description", uploadDesc(d, 0)], ["Tags", spacedTags(d.tags, 5).join(", ")], ["Comment", refComment(d)]]; },
+			tips: ["Links in the description are fine.", "Paste the URL slug into the box under Title — odysee.com/@you/&lt;slug&gt;. Shorten it if you like; Odysee just needs it unique.", "Tags go in the tag box (about 5) — proper phrases are fine, e.g. “projectile motion”.", "Post the comment after publishing and pin it."] },
 		{ id: "bitchute", name: "BitChute", g: "video", open: "https://www.bitchute.com/",
 			blocks: function (d) { return [["Title", d.title, 100], ["Description", uploadDesc(d, 0)], ["Search terms", plainTags(d.tags, 3).join(" ")], ["Comment", refComment(d)]]; },
 			tips: ["Links in the description are fine.", "Search Terms box: max 3, space-separated.", "Set the thumbnail yourself.", "Post the comment after publishing and pin it."] },
@@ -123,8 +127,11 @@
 			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(" ")], ["Comment", refComment(d)]]; },
 			tips: ["Upload the video; the link in the description is fine.", "Post the comment after publishing."] },
 		{ id: "paychute", name: "PayChute", g: "video", open: "https://paychute.com/",
-			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", plainTags(d.tags, 5).join(", ")], ["Comment", refComment(d)]]; },
-			tips: ["Upload the video; the link in the description is fine.", "Post the comment after publishing."] },
+			blocks: function (d) { return [["Title", d.title], ["Description", uploadDesc(d, 0)], ["Tags", spacedTags(d.tags, 5).join(", ")], ["Comment", refComment(d)]]; },
+			tips: ["Upload the video; the link in the description is fine.", "Tags take proper phrases, e.g. “projectile motion”.", "Post the comment after publishing."] },
+		{ id: "fbreels", name: "Facebook Reels", g: "video", open: "https://www.facebook.com/reels/create/",
+			blocks: function (d) { return [["Caption", inReply(d, 2200, 5, "Link in the first comment 👇")], ["Tags (keywords)", spacedTags(d.tags, 8).join(", ")], ["Comment", refComment(d)]]; },
+			tips: ["Upload the video alone — attaching a photo turns the post into a carousel and it loses Reels-specific distribution.", "Links aren't clickable in the caption; post the <b>Comment</b> block (with the link) as the first comment.", "Fill in the Tags box — Facebook says it's how people find your reel. Proper phrases are fine, e.g. “projectile motion”."] },
 		{ id: "tiktok", name: "TikTok", g: "video", open: "https://www.tiktok.com/tiktokstudio/upload",
 			blocks: function (d) { return [["Caption", join([fit(d.title, d.desc, "", 600), "Link in bio", hashes(d.tags, 5)]), 4000], ["On-screen text", d.link ? hostPath(d.link) : ""]]; },
 			tips: ["Links are <b>not clickable</b>: say “link in bio” and check your bio link.", "Vertical 9:16; a 30–90 s clip of a long video works best.", "3–5 hashtags."] },
@@ -228,7 +235,7 @@
 	];
 	var EXAMPLE = "Problems Plus 5: Launch Angle of 56° maximizes TOTAL distance a projectile travels https://mes.fm/problems-plus-5-projectile-total-distance\n\n" +
 		"In this video, I show that firing a projectile has a maximum total distance traveled in the air when the launch angle is approximately 56°. This is 11° higher than the 45° angle needed to maximize the total horizontal distance. I derive this from the arc length integral of the velocity vector, maximized at a critical point. Fascinating stuff!\n\n" +
-		"#math #calculus #physics #vectors #projectilemotion";
+		"#math #calculus #physics #vectors #ProjectileMotion";
 
 	/* ---------- state ---------- */
 	var F = ["title", "link", "desc", "tags", "video", "thumb", "slug", "links"];
