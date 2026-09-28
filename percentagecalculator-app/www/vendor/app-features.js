@@ -101,6 +101,27 @@
     }
     applyTextSize();
 
+    // the button row is positioned absolute, but NOT relative to #header --
+    // its actual offsetParent (walking up from .navbar-container, which is
+    // position:static) is .inner-container, the whole page shell, so a fixed
+    // "top" guess only happens to land under the header by coincidence and
+    // breaks the moment header height differs (a longer/shorter tagline: the
+    // 3 bundled pages each have their own). Measure the real gap instead.
+    function positionControlRow() {
+        var header = document.getElementById("header");
+        if (!header || !themeBtn || !themeBtn.offsetParent) return;
+        // margin (unlike padding) sits outside the box getBoundingClientRect
+        // measures, so this reserves flow space below the header -- pushing
+        // the nav bar down so the absolutely-positioned row below has clear
+        // room -- without moving the "bottom" this function measures from
+        header.style.marginBottom = "60px";
+        var y = Math.round(header.getBoundingClientRect().bottom -
+            themeBtn.offsetParent.getBoundingClientRect().top) + 8;
+        [themeBtn, textDownBtn, textUpBtn].forEach(function (b) { if (b) b.style.top = y + "px"; });
+    }
+    positionControlRow();
+    window.addEventListener("resize", positionControlRow);
+
     /* --------------------------------------------- calculator-only features */
     var equations = document.querySelectorAll(".equation");
     var mainContent = document.getElementById("main-content");
