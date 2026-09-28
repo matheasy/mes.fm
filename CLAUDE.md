@@ -231,8 +231,8 @@ of HTML files individually:
   page from `tool_page_template.html` the same way.
   **`share`** (2026-09-28, `mes.fm/share`, the MES Share Launcher) is built the same way but is a *tool* (card on `tools.html`,
   Media & Web): paste a post once and get per-site text for ~33 social sites (link in post / in reply / in description / "link in
-  bio"), Open copies + opens the compose page. All state is localStorage (`mes-share:*`). Its logo files are placeholders until
-  Grok art replaces them (`share/img/logo.png`, `img/share-logo.png`, `share/img/logo-big.png`). The `tools` sidebar family no
+  bio"), Open copies + opens the compose page. All state is localStorage (`mes-share:*`). Its art is Grok's (one combined image cut into
+  `share/img/logo.png` + `img/share-logo.png` at 90% fill with transparent corners, and the 1200x630 `share/img/logo-big.png`). The `tools` sidebar family no
   longer lists `stats` (its wide table has no sidebar, commit 7d9da3f98), so `add_sidebar.py --family tools` can't re-add it.
 
 - `organize_hub_cards.py` — organises the card hubs `calculators.html` and `tools.html` into categories with a search
