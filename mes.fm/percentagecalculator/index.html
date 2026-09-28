@@ -320,6 +320,29 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	@media (max-width: 700px) {
 		.input-container { flex: 0 0 100%; margin-left: 0; padding-left: 0; }
 	}
+
+	/* Android beta-tester CTA (ANDROID-TESTERS-BANNER): a solid filled button,
+	   not the shared outlined .button style, so it reads as the call to
+	   action it is -- the outlined style was reported too small/low-contrast
+	   in dark mode. Hand-authored light/dark colors instead of leaning on
+	   display-controls.js's automatic dark derivation, since that only
+	   remaps colors it finds on the element itself (inline styles or its own
+	   stylesheet rules) and this button had neither -- .button's dark-mode
+	   twin lives in display-controls.js's own injected CSS, several files
+	   away, out of reach of the derive pass here. */
+	#beta-tester-submit {
+		padding: 0.75em 1.4em;
+		font-size: 1.05em;
+		font-weight: 700;
+		color: #fff;
+		background-color: #1479c7;
+		border: 0.125em solid #1479c7;
+		border-radius: 0.3em;
+		cursor: pointer;
+	}
+	#beta-tester-submit:hover { background-color: #0f5ea3; border-color: #0f5ea3; }
+	body.dark-mode #beta-tester-submit { background-color: #5aa9e6; border-color: #5aa9e6; color: #0f1113; }
+	body.dark-mode #beta-tester-submit:hover { background-color: #7cbdf0; border-color: #7cbdf0; }
 </style>
         <meta property="fb:app_id" content="1398196443773284" />
         <meta name="author" content="Percentage Calculator Staff">
@@ -510,7 +533,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			<strong>Want early access to our new Android app? &#127881;</strong> We're looking for beta testers for the Percentage Calculator Android app before its public launch &mdash; it's free and takes a few seconds.
 			<div style="display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.6em;">
 				<input type="email" id="beta-tester-email" placeholder="you@example.com" required style="flex:1 1 12em;min-width:0;padding:0.5em 0.6em;border:0.0625em solid #1479c7;border-radius:0.25em;font-size:1em;">
-				<button type="button" id="beta-tester-submit" class="button" style="white-space:nowrap;">Become a Tester</button>
+				<button type="button" id="beta-tester-submit" style="white-space:nowrap;">Become a Tester</button>
 			</div>
 		</div>
 		<script>
