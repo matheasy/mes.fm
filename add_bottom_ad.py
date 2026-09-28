@@ -32,7 +32,10 @@ DEFAULT_SLOT = "8852646945"  # AdSense display unit "Bottom 300x250" (fixed 300x
 # compared in AdSense. "math" (2026-09-26) = the article pages in the wide math-hub shell (Problems Plus, Math Q/A, Hive mirrors, troubleshooting,
 # livestream pages): a fixed 300x250 looked lost in that column, so they use the responsive unit too.
 RESPONSIVE_SLOT = "1532113018"
-RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator", "math"}
+# 2026-09-28: the user chose the responsive unit everywhere (every family below + "tools" + "math"), matching mes.fm/percentagecalculator.
+# The fixed "Bottom 300x250" unit (DEFAULT_SLOT) is now only used via --ad-slot.
+RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator", "inflationcalculator",
+                       "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles", "tools", "math"}
 # stand-alone tool / rebuilt-calculator pages (tool shell, one index.html per folder): included on purpose, unlike the timer etc. skip below
 TOOL_DIRS = ["emoji", "latex", "timezone", "symbols", "stats", "speedreader", "timer", "youtube-thumbnail", "unit-conversion",
              "gematria", "impermanent-loss-calculator", "earth-curvature-calculator", "share", "search"]
