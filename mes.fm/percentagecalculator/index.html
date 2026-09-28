@@ -507,8 +507,31 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	<div id="main-content">
 		<!-- ANDROID-TESTERS-BANNER -->
 		<div class="android-testers" style="border:0.125em solid #1479c7;background-color:#daf1fd;padding:0.8em 1em;margin:0.7em 0;line-height:1.4;">
-			<strong>Android testers wanted!</strong> Our Percentage Calculator Android app is almost ready, but Google requires 12 people to test it for 14 days first. If you have an Android phone, <a class="link" href="mailto:contact@mes.fm?subject=Android%20tester%20for%20Percent%20Calc&amp;body=Please%20add%20me%20as%20an%20Android%20tester.%0D%0A%0D%0AMy%20Google%20account%20email%20(the%20one%20used%20in%20Google%20Play)%3A%20">email us your Google account address</a> (or use our <a class="link" href="/contact">contact page</a>) and we&rsquo;ll add you as a tester. It&rsquo;s free and takes about a minute.
+			<strong>Want early access to our new Android app? &#127881;</strong> We're looking for beta testers for the Percentage Calculator Android app before its public launch &mdash; it's free and takes a few seconds.
+			<div style="display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.6em;">
+				<input type="email" id="beta-tester-email" placeholder="you@example.com" required style="flex:1 1 12em;min-width:0;padding:0.5em 0.6em;border:0.0625em solid #1479c7;border-radius:0.25em;font-size:1em;">
+				<button type="button" id="beta-tester-submit" class="button" style="white-space:nowrap;">Become a Tester</button>
+			</div>
 		</div>
+		<script>
+		(function () {
+			var btn = document.getElementById('beta-tester-submit');
+			var input = document.getElementById('beta-tester-email');
+			if (!btn || !input) return;
+			function go() {
+				if (!input.checkValidity()) { input.reportValidity(); return; }
+				var params = new URLSearchParams({
+					name: 'Tester',
+					email: input.value.trim(),
+					subject: 'Android App Tester',
+					message: 'I want to test out the Percentage Calculator app on Android! Give me the link.'
+				});
+				location.href = '/contact?' + params.toString();
+			}
+			btn.addEventListener('click', go);
+			input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+		})();
+		</script>
 		<!-- /ANDROID-TESTERS-BANNER -->
 		<div id="share-calc-button" class="button button--share-calc">Share Calculations</div>
 		<div id="share-calc-url-container" class="share-calc-url-container hide">
