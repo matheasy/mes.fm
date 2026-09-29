@@ -1,11 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Script from 'next/script';
+import SiteChrome from '@/components/SiteChrome';
+import SiteFooter from '@/components/SiteFooter';
 import SwrProvider from '@/components/SwrProvider';
 import './globals.css';
 
+const TITLE = 'MikeFA Trading';
+const TAGLINE = 'Read-only MikeFA wallet tracker on BSC.';
+
 export const metadata: Metadata = {
-  title: 'MikeFA Trading',
+  title: TITLE,
   description: 'Read-only BSC wallet portfolio, transaction, and capital gains tracker',
 };
 
@@ -14,27 +19,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="dark">
       <body>
         <SwrProvider>
-          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-            <div className="mb-2 text-sm">
-              <a href="https://mes.fm/crypto" className="text-gray-400 hover:text-accent">
-                &larr; mes.fm/crypto
-              </a>
-            </div>
-            <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h1 className="text-lg font-semibold text-gray-100">MikeFA Trading</h1>
-              <nav className="flex gap-4 text-sm">
-                <Link href="/" className="text-gray-300 hover:text-accent">
-                  Overview
-                </Link>
-                <Link href="/transactions" className="text-gray-300 hover:text-accent">
-                  Transactions
-                </Link>
-                <Link href="/gains" className="text-gray-300 hover:text-accent">
-                  Gains
-                </Link>
-              </nav>
-            </header>
+          <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6">
+            <SiteChrome title={TITLE} tagline={TAGLINE} />
+            <nav className="mb-6 flex gap-4 text-sm">
+              <Link href="/" className="text-gray-300 hover:text-accent">
+                Overview
+              </Link>
+              <Link href="/transactions" className="text-gray-300 hover:text-accent">
+                Transactions
+              </Link>
+              <Link href="/gains" className="text-gray-300 hover:text-accent">
+                Gains
+              </Link>
+            </nav>
             <main>{children}</main>
+            <SiteFooter />
           </div>
         </SwrProvider>
         <Script src="https://mes.fm/main_js/track.js" strategy="afterInteractive" />

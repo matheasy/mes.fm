@@ -1,9 +1,14 @@
 import type { Metadata } from 'next';
+import SiteChrome from '@/components/SiteChrome';
+import SiteFooter from '@/components/SiteFooter';
 import SwrProvider from '@/components/SwrProvider';
 import './globals.css';
 
+const TITLE = 'MES Assets';
+const TAGLINE = 'Every asset worth $10+ across Hive, EVM chains, Hyperliquid and XRP.';
+
 export const metadata: Metadata = {
-  title: 'MES Assets',
+  title: TITLE,
   description: 'Every asset worth $10+ across Hive, Hive Engine, Magi, EVM chains, Hyperliquid and XRP - fetched once, shared with the other dashboards',
   robots: { index: false, follow: false },
 };
@@ -13,16 +18,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="dark">
       <body>
         <SwrProvider>
-          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-            <div className="mb-2 text-sm">
-              <a href="https://mes.fm/portfolio" className="text-gray-400 hover:text-accent">
-                &larr; mes.fm/portfolio
-              </a>
-            </div>
-            <header className="mb-6">
-              <h1 className="text-lg font-semibold text-gray-100">MES Assets</h1>
-            </header>
+          <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6">
+            <SiteChrome title={TITLE} tagline={TAGLINE} />
             <main>{children}</main>
+            <SiteFooter />
           </div>
         </SwrProvider>
       </body>
