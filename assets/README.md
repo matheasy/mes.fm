@@ -1,5 +1,9 @@
 # MES Assets
 
+> **Merged 2026-09-29 - not deployed from here any more.** This app is now a section of `../crypto`
+> (pages/API in `crypto/src/app/assets`, code in `crypto/src/apps/assets`), served at the same mes.fm/assets
+> URL. Edit it there. This directory is kept only until the combined app is confirmed live, then removed.
+
 One page for **everything the owner holds** - Hive, Hive Engine, Magi, the three EVM wallets
 (Ethereum / Arbitrum / Polygon / Base / Optimism / BNB Chain / Hyperliquid) and XRP - showing every
 asset worth **$10 or more**, liquidity-pool positions included. Deployed to **mes.fm/assets**

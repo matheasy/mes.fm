@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SwrProvider>
           <div className="mx-auto max-w-[1180px] px-4 pb-6 sm:px-6">
-            {/* no `active`: Portfolio / Transactions / Taxes / Store of Value follow the URL (this one app serves all four) */}
+            {/* no `active`: the tab follows the URL - this one app serves Portfolio, Transactions, Taxes, Store of Value, Assets, AI Trading and MikeFA */}
             <SiteChrome
               title={TITLE}
               tagline={TAGLINE}
@@ -36,6 +36,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   title: 'MES Store of Value',
                   tagline: 'Long-term holdings: Bitcoin, XRP and TGLD, across every wallet.',
                   homeHref: 'https://mes.fm/sov',
+                },
+                assets: {
+                  title: 'MES Assets',
+                  tagline: 'Every asset worth $10+ across Hive, EVM chains, Hyperliquid and XRP.',
+                  homeHref: 'https://mes.fm/assets',
+                },
+                ai: {
+                  title: 'MES AI Trading',
+                  tagline: 'Read-only AI wallet tracker across BSC, Ethereum, Arbitrum, Polygon and Hyperliquid.',
+                  homeHref: 'https://mes.fm/ai',
+                  wallet: 'ai',
+                },
+                mfa: {
+                  title: 'MikeFA Trading',
+                  tagline: 'Read-only MikeFA wallet tracker on BSC.',
+                  homeHref: 'https://mes.fm/mfa',
+                  wallet: 'mfa',
                 },
               }}
             />

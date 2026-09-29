@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { cached, cacheKey } from '@/lib/cache';
 import { apiErrorResponse } from '@/lib/errors';
+import { getSnapshot } from '@/apps/assets/lib/snapshot';
 import type { ApiResult, AssetsTotal } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-/** mes.fm/assets' own production API (see ../mes.fm/vercel.json's /assets rewrite) */
-const ASSETS_SOURCE_URL = process.env.ASSETS_SOURCE_URL ?? 'https://mes-fm-assets.vercel.app/assets';
 
 interface UpstreamGroup {
   key: string;
@@ -32,13 +31,8 @@ interface UpstreamSnapshot {
 export async function GET() {
   try {
     const data = await cached<AssetsTotal>(cacheKey('assets-total'), async () => {
-      const res = await fetch(`${ASSETS_SOURCE_URL}/api/holdings`, { cache: 'no-store' });
-      if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) {
-        throw new Error(`mes.fm/assets did not answer (HTTP ${res.status})`);
-      }
-      const json = (await res.json()) as ApiResult<UpstreamSnapshot>;
-      if (!json.data) throw new Error(json.error ?? 'mes.fm/assets returned no data');
-      const s = json.data;
+      // the Assets section of this same app, called directly (it was a separate app until 2026-09-29)
+      const s: UpstreamSnapshot = await getSnapshot();
       return {
         fetchedAt: s.fetchedAt,
         totalUsd: s.totalUsd,

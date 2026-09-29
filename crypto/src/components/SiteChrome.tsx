@@ -29,7 +29,7 @@ interface SiteChromeProps {
   /** Inside one wallet's dashboard: the Transactions / Taxes tabs open pre-filtered to it */
   wallet?: 'ai' | 'mfa' | 'sov';
   /** An app serving several dashboards (crypto/: portfolio, taxes, sov) can title some tabs differently */
-  pageTitles?: Partial<Record<DashboardTab, { title: string; tagline: string; homeHref: string }>>;
+  pageTitles?: Partial<Record<DashboardTab, { title: string; tagline: string; homeHref: string; wallet?: 'ai' | 'mfa' }>>;
 }
 
 const CRYPTO_HUB = 'https://mes.fm/crypto';
@@ -164,17 +164,21 @@ function openSearch() {
 }
 
 function activeFromPath(path: string): DashboardTab {
-  if (/(^|\/)sov(\/|$)/.test(path)) return 'sov';
+  for (const tab of ['sov', 'ai', 'mfa', 'assets'] as const) {
+    if (new RegExp(`(^|/)${tab}(/|$)`).test(path)) return tab;
+  }
   if (path.includes('taxes')) return 'taxes';
   if (path.includes('transactions')) return 'transactions';
   return 'portfolio';
 }
 
 export default function SiteChrome(props: SiteChromeProps) {
-  const { active, wallet, pageTitles } = props;
+  const { active, pageTitles } = props;
   const pathname = usePathname() ?? '';
   const current = active ?? activeFromPath(pathname);
-  const { title, tagline, homeHref } = pageTitles?.[current] ?? props;
+  const page = pageTitles?.[current];
+  const { title, tagline, homeHref } = page ?? props;
+  const wallet = page ? page.wallet : props.wallet;
   const scale = useTextScale();
   const theme = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);

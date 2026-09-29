@@ -1,5 +1,9 @@
 # MikeFA Trading
 
+> **Merged 2026-09-29 - not deployed from here any more.** This app is now a section of `../crypto`
+> (pages/API in `crypto/src/app/mfa`, code in `crypto/src/apps/mfa`), served at the same mes.fm/mfa
+> URL. Edit it there. This directory is kept only until the combined app is confirmed live, then removed.
+
 Read-only portfolio, transaction history, and capital-gains dashboard for a single BNB Smart
 Chain (BSC) wallet. Deployed to production at **mes.fm/mfa**.
 

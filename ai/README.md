@@ -1,5 +1,9 @@
 # MES AI Trading
 
+> **Merged 2026-09-29 - not deployed from here any more.** This app is now a section of `../crypto`
+> (pages/API in `crypto/src/app/ai`, code in `crypto/src/apps/ai`), served at the same mes.fm/ai
+> URL. Edit it there. This directory is kept only until the combined app is confirmed live, then removed.
+
 Read-only portfolio, transaction history, and capital-gains dashboard for one wallet address
 across **four networks**: BNB Smart Chain (BSC), Ethereum Mainnet, Arbitrum One, and Hyperliquid
 (HyperCore spot + perps, and HyperEVM). Deployed to production at **mes.fm/ai**.

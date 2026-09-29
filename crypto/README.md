@@ -1,21 +1,37 @@
-# MES Crypto Portfolio
+# MES Crypto (one app for every finance dashboard)
+
+**Since 2026-09-29 this is the only finance app.** One Next.js app / one Vercel project
+(`mes-fm-crypto`, basePath `/crypto`) serves every finance dashboard on mes.fm, each through a
+rewrite in `../mes.fm/vercel.json`:
+
+| mes.fm URL | here | password |
+| --- | --- | --- |
+| /portfolio, /portfolio/transactions | `src/app/page.tsx`, `src/app/transactions` | yes |
+| /taxes | `src/app/taxes` (+ `src/lib/tax/`) | yes |
+| /sov | `src/app/sov` | yes |
+| /assets | `src/app/assets` (code in `src/apps/assets`) | yes |
+| /ai | `src/app/ai` (code in `src/apps/ai`; also serves the Main wallet via `?wallet=main`) | no (Main wallet data: yes) |
+| /mfa | `src/app/mfa` (code in `src/apps/mfa`) | no |
+
+`ai/`, `mfa/`, `assets/` and `sov/` at the repo root were separate apps and Vercel projects; their
+code now lives in `src/apps/<name>` (its own `lib/`, `components/`, `hooks/`, imported as
+`@/apps/<name>/...`), their pages and API routes in `src/app/<name>`. Each section keeps its own
+cache/throttle/accounting code as it was. The portfolio/taxes views still call the AI Trading and
+MikeFA sections' APIs over HTTP (`src/lib/sources.ts`, `https://mes-fm-crypto.vercel.app/crypto/...`)
+so a long history read gets its own request and 60s; the Assets section is called in-process
+(`getSnapshot`). The password gate is `../mes.fm/middleware.js` (it also covers `/crypto/...`
+except the public ai/mfa sections and `_next`).
+
+Environment variables (Vercel project `mes-fm-crypto`): `NODEREAL_API_KEY`, `ETHERSCAN_API_KEY`,
+`COINGECKO_API_KEY`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`; optional `AI_WALLET_ADDRESS` /
+`MFA_WALLET_ADDRESS` (default to the real addresses) and the Assets section's optional RPC
+overrides (`BSC_RPC_URL`, `ETHEREUM_RPC_URL`, ... see `src/apps/assets/lib/config.ts`).
+
+### History of this app (before the merge)
 
 Combined read-only portfolio, transaction history, and tax report across every wallet tracked by
 the `sov/`, `ai/`, and `mfa/` trackers. Deployed to production at **mes.fm/portfolio** (Overview,
-Transactions) and **mes.fm/taxes** (the tax report) - two public URLs, one Vercel deployment.
-
-This app has **no wallet, private key, or seed phrase of its own** - it doesn't talk to any chain
-API, Moralis, CoinGecko, or NodeReal directly. It fetches the already-computed, already-cached
-data from the `sov/`, `ai/`, and `mfa/` apps' own production APIs and combines it: total value,
-24h change, merged holdings, merged transaction history, and a merged FIFO/LIFO/average tax
-report, with links out to each wallet's full dashboard.
-
-`sov/`, `ai/`, and `mfa/` each used to have their own Transactions and Gains pages too. Those pages
-are gone (2026-09-29) - each app's `/api/transactions` and `/api/gains` routes are unchanged and
-still power the combined views here, but the redundant per-wallet UI is retired in favor of one
-place to look. Their own nav now links "Transactions" and "Taxes" out to
-`mes.fm/portfolio/transactions?wallet=<key>` and `mes.fm/taxes?wallet=<key>`, pre-filtered to that
-wallet.
+Transactions) and **mes.fm/taxes** (the tax report).
 
 ## Stack
 
