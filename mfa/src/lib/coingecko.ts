@@ -69,7 +69,7 @@ function toCoingeckoDate(date: Date): string {
 }
 
 /**
- * DefiLlama's keyless price API, looked up by the same CoinGecko coin id, at 00:00 UTC of the day (the
+ * DefiLlama's keyless price API, looked up by CoinGecko coin id, at 00:00 UTC of the day (the
  * moment CoinGecko's own daily /history price is taken). Full history, unlike CoinGecko's free plan.
  * Returns null if DefiLlama has no price for that coin near that time; throws if it can't be reached.
  */
@@ -84,31 +84,39 @@ async function getDefiLlamaDailyPrice(coinId: string, date: Date): Promise<numbe
 }
 
 /**
- * Historical USD price for a coin on a given date (day granularity). CoinGecko first; DefiLlama when
- * CoinGecko can't answer - its free/demo plan refuses anything older than 365 days, and it rate
- * limits. (The two agree to ~0.1%: 2025-12-01 BNB $875.51 vs $875.78, BTC $90,360 vs $90,392.)
+ * Historical USD price for a coin on a given date (day granularity) - feeds mes.fm/taxes, so accuracy
+ * matters more than anything else here. DefiLlama first, CoinGecko only as a fallback, because checked
+ * against Binance's own daily open (2026-09-29):
+ *  - DefiLlama: BNB/ETH/BTC/CAKE/XRP within 0.2% on every sampled day; HIVE within ~2.5% back to 2020.
+ *  - CoinGecko: fine for the majors when it answers, but its free plan refuses anything older than 365
+ *    days, rate-limits after a handful of calls, and its /history for HIVE on 2026-03-01 said $0.0929
+ *    when Binance traded $0.0641-0.0659 (DefiLlama $0.0641) - 40% off.
+ * Coins are still identified by CoinGecko id (resolveCoinIdByContract), which keeps unlisted spam
+ * tokens unpriced.
  *
- * This feeds mes.fm/taxes, so it never quietly returns null for a price it merely failed to fetch -
- * a skipped purchase would make a later sale look like it cost $0. null only means neither source
- * has a price for this coin that day; if both are unreachable it throws, and the page shows the error.
+ * Never quietly returns null for a price it merely failed to fetch - a skipped purchase would make a
+ * later sale look like it cost $0. null only means neither source has a price for this coin that day;
+ * if both are unreachable it throws, and the Taxes page shows the error.
  */
 export async function getHistoricalPrice(coinId: string, date: Date): Promise<number | null> {
-  let coingeckoError: unknown = null;
+  let llamaError: unknown = null;
+  try {
+    const price = await getDefiLlamaDailyPrice(coinId, date);
+    if (price !== null) return price;
+  } catch (err) {
+    llamaError = err;
+  }
+
   try {
     const result = await get<{ market_data?: { current_price?: { usd?: number } } }>(`/coins/${coinId}/history`, {
       date: toCoingeckoDate(date),
       localization: 'false',
     });
     const usd = result.market_data?.current_price?.usd;
-    if (typeof usd === 'number' && usd > 0) return usd;
-  } catch (err) {
-    coingeckoError = err;
-  }
-
-  try {
-    return await getDefiLlamaDailyPrice(coinId, date);
-  } catch (llamaError) {
-    if (coingeckoError instanceof RateLimitError) throw coingeckoError;
-    throw coingeckoError ?? llamaError;
+    return typeof usd === 'number' && usd > 0 ? usd : null;
+  } catch (coingeckoError) {
+    // CoinGecko's "older than 365 days" refusal isn't worth surfacing when DefiLlama simply had no price
+    if (llamaError === null) return null;
+    throw coingeckoError instanceof RateLimitError ? coingeckoError : llamaError;
   }
 }

@@ -116,7 +116,7 @@ function toTransactions(moves: TgldMove[]): Transaction[] {
 
 function hiveUsdOn(isoTimestamp: string): Promise<number | null> {
   const dateStr = new Date(isoTimestamp).toISOString().slice(0, 10);
-  return cached(cacheKey('histprice', COINGECKO_IDS.hive, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
+  return cached(cacheKey('histprice-v2', COINGECKO_IDS.hive, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
     coingecko.getHistoricalPrice(COINGECKO_IDS.hive, new Date(isoTimestamp)),
   );
 }

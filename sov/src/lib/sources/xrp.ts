@@ -75,7 +75,7 @@ function normalize(txs: xrpl.NormalizedXrplTx[]): Transaction[] {
 
 export async function resolveHistoricalPrice(_token: Transaction['token'], isoTimestamp: string): Promise<number | null> {
   const dateStr = new Date(isoTimestamp).toISOString().slice(0, 10);
-  return cached(cacheKey('histprice', COINGECKO_IDS.xrp, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
+  return cached(cacheKey('histprice-v2', COINGECKO_IDS.xrp, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
     coingecko.getHistoricalPrice(COINGECKO_IDS.xrp, new Date(isoTimestamp)),
   );
 }

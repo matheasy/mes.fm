@@ -177,7 +177,7 @@ export async function getHistoricalPriceForToken(token: Transaction['token'], is
 
   const date = new Date(isoTimestamp);
   const dateStr = date.toISOString().slice(0, 10);
-  return cached(cacheKey('histprice', coinId, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
+  return cached(cacheKey('histprice-v2', coinId, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
     coingecko.getHistoricalPrice(coinId, date),
   );
 }
