@@ -5,7 +5,7 @@
  */
 
 /** A logical owner: one Hive identity, one EVM address, one XRPL address, or one BTC address */
-export type GroupKey = 'hive' | 'main' | 'ai' | 'mfa' | 'xrp' | 'btc';
+export type GroupKey = 'hive' | 'mestruth' | 'mathiew' | 'artgrafiken' | 'main' | 'ai' | 'mfa' | 'xrp' | 'btc';
 
 /** Where a holding physically lives - one data source / chain */
 export type SourceId =

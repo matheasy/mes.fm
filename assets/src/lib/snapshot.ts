@@ -1,5 +1,5 @@
 import { cachedStale, cacheKey } from './cache';
-import { DEFAULT_MIN_VALUE_USD, GROUPS, GROUP_BY_KEY, HIVE_ACCOUNT, TTL, type GroupConfig } from './config';
+import { DEFAULT_MIN_VALUE_USD, GROUPS, GROUP_BY_KEY, TTL, type GroupConfig } from './config';
 import { RateLimitError } from './errors';
 import { fetchBitcoin } from './sources/bitcoin';
 import { fetchBlockscoutChain } from './sources/blockscout';
@@ -16,11 +16,11 @@ async function runUnit(group: GroupConfig, source: SourceId): Promise<SourceResu
   const addr = group.address ?? '';
   switch (source) {
     case 'hive-l1':
-      return fetchHiveL1(HIVE_ACCOUNT);
+      return fetchHiveL1(addr);
     case 'hive-engine':
-      return fetchHiveEngine(HIVE_ACCOUNT);
+      return fetchHiveEngine(addr);
     case 'magi':
-      return fetchMagi(HIVE_ACCOUNT);
+      return fetchMagi(addr);
     case 'ethereum':
     case 'arbitrum':
     case 'polygon':

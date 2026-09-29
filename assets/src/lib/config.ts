@@ -6,7 +6,11 @@ import type { GroupKey, SourceId } from './types';
  * upstream API is only hit by this one app.
  */
 
-/** Hive account name - one identity spanning Hive L1, Hive Engine (layer 2) and Magi (altera.magi.eco) */
+/**
+ * Hive account name - one identity spanning Hive L1, Hive Engine (layer 2) and Magi (altera.magi.eco).
+ * Other Hive accounts tracked the same way (mestruth, mathiew, artgrafiken) have their own GROUPS
+ * entry below instead of a named constant - the group's own `address` field is the source of truth.
+ */
 export const HIVE_ACCOUNT = 'mes';
 
 /** EVM wallets (lowercased). The same address exists on every EVM chain + Hyperliquid. */
@@ -35,6 +39,9 @@ export interface GroupConfig {
 
 export const GROUPS: GroupConfig[] = [
   { key: 'hive', label: 'Hive @mes', link: 'https://peakd.com/@mes/wallet', address: HIVE_ACCOUNT, sources: ['hive-l1', 'hive-engine', 'magi'] },
+  { key: 'mestruth', label: 'Hive @mestruth', link: 'https://peakd.com/@mestruth/wallet', address: 'mestruth', sources: ['hive-l1', 'hive-engine', 'magi'] },
+  { key: 'mathiew', label: 'Hive @mathiew', link: 'https://peakd.com/@mathiew/wallet', address: 'mathiew', sources: ['hive-l1', 'hive-engine', 'magi'] },
+  { key: 'artgrafiken', label: 'Hive @artgrafiken', link: 'https://peakd.com/@artgrafiken/wallet', address: 'artgrafiken', sources: ['hive-l1', 'hive-engine', 'magi'] },
   { key: 'main', label: 'Main wallet', address: EVM_ADDRESSES.main, sources: EVM_SOURCES },
   { key: 'ai', label: 'AI Trading wallet', link: 'https://mes.fm/ai', address: EVM_ADDRESSES.ai, sources: EVM_SOURCES },
   { key: 'mfa', label: 'MikeFA wallet', link: 'https://mes.fm/mfa', address: EVM_ADDRESSES.mfa, sources: EVM_SOURCES },
