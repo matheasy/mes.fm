@@ -158,7 +158,7 @@ mes.fm/X" section for background):
    defaults in [`.env.example`](.env.example).
 2. **Rewrites in the main site**: `../mes.fm/vercel.json` already has entries for both
    `/portfolio` and `/taxes` pointing at this deployment (`/taxes` maps to this app's own
-   `/crypto/taxes` route - it's one page inside this app, not a separate project). If your
+   `/finance/taxes` route - it's one page inside this app, not a separate project). If your
    deployment URL differs from `mes-fm-crypto.vercel.app`, update both sets of rewrites.
 3. **Password gate**: `../mes.fm/middleware.js`'s matcher already includes `/portfolio` and
    `/taxes` (shared realm with `/sov` and `/assets`, username `mes`, password `911`) - `/taxes`
