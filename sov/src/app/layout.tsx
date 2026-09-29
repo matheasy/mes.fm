@@ -25,12 +25,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/" className="text-gray-300 hover:text-accent">
                 Overview
               </Link>
-              <Link href="/transactions" className="text-gray-300 hover:text-accent">
+              <a href="https://mes.fm/portfolio/transactions?wallet=sov" className="text-gray-300 hover:text-accent">
                 Transactions
-              </Link>
-              <Link href="/gains" className="text-gray-300 hover:text-accent">
-                Gains
-              </Link>
+              </a>
+              <a href="https://mes.fm/taxes?wallet=sov" className="text-gray-300 hover:text-accent">
+                Taxes
+              </a>
             </nav>
             <main>{children}</main>
             <SiteFooter />

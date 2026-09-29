@@ -30,9 +30,9 @@ export default function SiteChrome({ title, tagline, partOfLabel = 'MES Portfoli
   return (
     <div className="mb-6 overflow-hidden rounded-xl border border-bg-border">
       <div className="flex items-center gap-4 bg-gray-100 px-4 py-4 sm:px-6">
-        <a href="https://mes.fm" className="shrink-0">
+        <a href="https://mes.fm/crypto" className="shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element -- external mes.fm asset, not part of this app's own build */}
-          <img src="https://mes.fm/img/logo-mark.png" alt="MES.fm" width={56} height={56} className="rounded-md" />
+          <img src="https://mes.fm/img/crypto-logo.jpg" alt="MES Crypto" width={56} height={56} className="rounded-md" />
         </a>
         <div className="min-w-0">
           <h1 className="truncate text-xl font-semibold text-gray-900">{title}</h1>

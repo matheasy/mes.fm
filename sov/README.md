@@ -14,6 +14,11 @@ tracks three specific assets from three hardcoded addresses:
 
 It's **read-only** and never handles a private key or seed phrase.
 
+This app's own Transactions and Gains pages were retired 2026-09-29 in favor of the combined
+versions in `../crypto` (`mes.fm/portfolio/transactions`, `mes.fm/taxes`) - this app's own nav
+links straight there, pre-filtered to `?wallet=sov`. The `/api/transactions` and `/api/gains`
+routes are unchanged and still power those combined pages, so don't remove them.
+
 ## Stack
 
 Next.js 14 (App Router) + TypeScript + Tailwind CSS + Recharts, deployed to Vercel as its own

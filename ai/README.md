@@ -6,6 +6,14 @@ across **four networks**: BNB Smart Chain (BSC), Ethereum Mainnet, Arbitrum One,
 
 This is a **read-only** tracker. It never asks for or handles a private key or seed phrase.
 
+This app's own Transactions and Gains pages (and the standalone Hyperliquid perps summary that
+lived on the Gains page) were retired 2026-09-29 in favor of the combined versions in `../crypto`
+(`mes.fm/portfolio/transactions`, `mes.fm/taxes`) - this app's own nav links straight there,
+pre-filtered to `?wallet=ai`. The `/api/transactions` and `/api/gains` routes are unchanged and
+still power those combined pages, so don't remove them. The Hyperliquid perps summary isn't
+ported into the combined Taxes page yet - flagged as a follow-up, since it's informational-only
+(mark-to-market, not a FIFO disposal event) and not itself part of the tax report.
+
 ## Stack
 
 Next.js 14 (App Router) + TypeScript + Tailwind CSS + Recharts, deployed to Vercel as its own

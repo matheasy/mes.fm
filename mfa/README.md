@@ -5,6 +5,11 @@ Chain (BSC) wallet. Deployed to production at **mes.fm/mfa**.
 
 This is a **read-only** tracker. It never asks for or handles a private key or seed phrase.
 
+This app's own Transactions and Gains pages were retired 2026-09-29 in favor of the combined
+versions in `../crypto` (`mes.fm/portfolio/transactions`, `mes.fm/taxes`) - this app's own nav
+links straight there, pre-filtered to `?wallet=mfa`. The `/api/transactions` and `/api/gains`
+routes are unchanged and still power those combined pages, so don't remove them.
+
 ## Stack
 
 Next.js 14 (App Router) + TypeScript + Tailwind CSS + Recharts, deployed to Vercel as its own
