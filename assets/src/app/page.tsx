@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import BitcoinSummary from '@/components/BitcoinSummary';
 import Breakdown from '@/components/Breakdown';
 import GroupCards from '@/components/GroupCards';
 import HoldingsTable from '@/components/HoldingsTable';
@@ -36,6 +37,7 @@ export default function OverviewPage() {
         {snapshot && (
           <div className="flex flex-col gap-6">
             <TotalCard snapshot={snapshot} showDust={showDust} onToggleDust={() => setShowDust(!showDust)} />
+            <BitcoinSummary holdings={holdings} groups={snapshot.groups} />
             <GroupCards groups={snapshot.groups} selected={group} onSelect={setGroup} showDust={showDust} />
             <Breakdown holdings={holdings} groups={snapshot.groups} />
             <HoldingsTable holdings={holdings} groups={snapshot.groups} />
