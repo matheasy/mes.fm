@@ -45,6 +45,18 @@ export async function getValue<T>(key: string): Promise<T | null> {
   return v ?? null;
 }
 
+/** Several keys in one round trip (missing keys come back null) */
+export async function getValues<T>(keys: string[]): Promise<(T | null)[]> {
+  const redis = getClient();
+  if (!redis || keys.length === 0) return keys.map(() => null);
+  const out: (T | null)[] = [];
+  for (let i = 0; i < keys.length; i += 500) {
+    const chunk = await redis.mget<(T | null)[]>(...keys.slice(i, i + 500));
+    out.push(...chunk.map((v) => v ?? null));
+  }
+  return out;
+}
+
 export async function setValue<T>(key: string, value: T): Promise<void> {
   const redis = getClient();
   if (!redis) return; // local dev without Redis configured: writes are accepted but not persisted

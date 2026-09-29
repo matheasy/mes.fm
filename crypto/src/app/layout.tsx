@@ -7,7 +7,7 @@ import ThemeScript from '@/components/ThemeScript';
 import './globals.css';
 
 const TITLE = 'MES Crypto Portfolio';
-const TAGLINE = 'Every mes.fm wallet in one place: AI Trading, MikeFA Trading, Store of Value and all other assets.';
+const TAGLINE = 'Every wallet in one place: Main, AI Trading, MikeFA Trading, Store of Value and all other assets.';
 
 export const metadata: Metadata = {
   title: TITLE,

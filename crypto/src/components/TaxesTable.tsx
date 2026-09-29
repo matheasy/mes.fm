@@ -2,88 +2,122 @@
 
 import { Fragment, useState } from 'react';
 import LabelEditor from '@/components/LabelEditor';
-import { WALLET_LINKS } from '@/lib/wallets';
+import { money } from '@/components/TaxSummary';
 import type { LabelRecord, TaxRow } from '@/lib/types';
+import { WALLET_LINKS } from '@/lib/wallets';
 
-function fmt(value: number, currency: 'USD' | 'CAD'): string {
-  return value.toLocaleString('en-US', { style: 'currency', currency });
+/** Explorer link per network, as the source apps report them (sov's combined BTC spans chains, so it searches) */
+function explorerTx(network: string, hash: string): string | null {
+  switch (network) {
+    case 'bsc':
+      return `https://bscscan.com/tx/${hash}`;
+    case 'ethereum':
+      return `https://etherscan.io/tx/${hash}`;
+    case 'arbitrum':
+      return `https://arbiscan.io/tx/${hash}`;
+    case 'hyperliquid':
+      return hash.startsWith('0x') ? `https://app.hyperliquid.xyz/explorer/tx/${hash}` : null;
+    case 'bitcoin':
+      return `https://blockchair.com/search?q=${hash}`;
+    case 'xrp':
+      return `https://xrpscan.com/tx/${hash}`;
+    case 'tgld':
+      return `https://he.dtools.dev/tx/${hash}`;
+    default:
+      return null;
+  }
 }
+
+const qty = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 8 });
 
 interface TaxesTableProps {
   rows: TaxRow[];
-  showCad: boolean;
+  currency: 'USD' | 'CAD';
   onSaveLabel: (id: string, record: { tag: string; notes: string; screenshotUrls: string[] }) => Promise<void>;
 }
 
-export default function TaxesTable({ rows, showCad, onSaveLabel }: TaxesTableProps) {
+export default function TaxesTable({ rows, currency, onSaveLabel }: TaxesTableProps) {
   const [editing, setEditing] = useState<string | null>(null);
+  const cad = currency === 'CAD';
 
   return (
     <div className="panel overflow-x-auto">
       <table>
         <thead>
           <tr>
+            <th>Date</th>
             <th>Wallet</th>
-            <th>Disposed</th>
-            <th>Acquired</th>
-            <th>Network</th>
             <th>Asset</th>
             <th>Quantity</th>
             <th>Proceeds</th>
-            <th>Cost Basis</th>
-            <th>Gain/Loss</th>
-            <th>Term</th>
-            <th>Tax Year</th>
+            <th>ACB</th>
+            <th>Gain / loss</th>
             <th>Label</th>
             <th />
           </tr>
         </thead>
         <tbody>
-          {rows.map((g) => {
-            const proceeds = showCad ? g.proceedsCad : g.proceedsUsd;
-            const costBasis = showCad ? g.costBasisCad : g.costBasisUsd;
-            const gain = showCad ? g.gainCad : g.gainUsd;
-            const currency = showCad ? 'CAD' : 'USD';
-            const cadUnavailable = showCad && (g.proceedsCad === null || g.costBasisCad === null);
+          {rows.map((r) => {
+            const proceeds = cad ? r.proceedsCad : r.proceedsUsd;
+            const cost = cad ? r.costCad : r.costUsd;
+            const gain = cad ? r.gainCad : r.gainUsd;
+            const url = explorerTx(r.network, r.hash);
+            const uncovered = r.uncoveredQuantity > 1e-9;
 
             return (
-              <Fragment key={g.id}>
-                <tr>
-                  <td>
-                    <a href={WALLET_LINKS[g.wallet]} className="text-accent hover:underline">
-                      {g.walletLabel}
-                    </a>
+              <Fragment key={r.id}>
+                <tr className={r.isTransfer ? 'opacity-60' : undefined}>
+                  <td className="whitespace-nowrap">
+                    {url ? (
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline">
+                        {new Date(r.disposedAt).toLocaleDateString('en-CA')}
+                      </a>
+                    ) : (
+                      new Date(r.disposedAt).toLocaleDateString('en-CA')
+                    )}
                   </td>
-                  <td>{new Date(g.disposedAt).toLocaleDateString()}</td>
-                  <td>{new Date(g.acquiredAt).toLocaleDateString()}</td>
-                  <td className="capitalize text-gray-400">{g.network}</td>
-                  <td className="font-medium text-gray-100">{g.tokenSymbol}</td>
-                  <td>{g.quantity.toLocaleString('en-US', { maximumFractionDigits: 6 })}</td>
-                  <td>{cadUnavailable ? '—' : fmt(proceeds ?? 0, currency)}</td>
-                  <td>{cadUnavailable ? '—' : fmt(costBasis ?? 0, currency)}</td>
-                  <td className={(gain ?? 0) >= 0 ? 'text-gain' : 'text-loss'}>{cadUnavailable ? '—' : fmt(gain ?? 0, currency)}</td>
-                  <td className="capitalize">{g.term}</td>
-                  <td>{g.taxYear}</td>
-                  <td>{g.label?.tag || <span className="text-gray-500">—</span>}</td>
                   <td>
-                    <button
-                      type="button"
-                      onClick={() => setEditing(editing === g.id ? null : g.id)}
-                      className="text-xs text-accent hover:underline"
-                    >
-                      {g.label ? 'Edit' : 'Label'}
+                    <a href={WALLET_LINKS[r.wallet]} className="text-accent hover:underline">
+                      {r.walletLabel}
+                    </a>
+                    <span className="block text-xs capitalize text-gray-500">{r.network}</span>
+                  </td>
+                  <td className="font-medium text-gray-100">
+                    {r.symbol}
+                    {r.asset !== r.symbol.toUpperCase() && <span className="block text-xs font-normal text-gray-500">pooled as {r.asset}</span>}
+                  </td>
+                  <td>{qty(r.quantity)}</td>
+                  <td>{proceeds === null ? '—' : money(proceeds, currency)}</td>
+                  <td>
+                    {cost === null ? '—' : money(cost, currency)}
+                    {uncovered && (
+                      <span
+                        className="block text-xs text-yellow-300"
+                        title="The tracked history never shows these units arriving (bought before tracking, or on an exchange), so their cost is counted as 0. Add the real cost in a note."
+                      >
+                        cost unknown for {qty(r.uncoveredQuantity)}
+                      </span>
+                    )}
+                  </td>
+                  <td className={r.isTransfer ? 'text-gray-400' : (gain ?? 0) >= 0 ? 'text-gain' : 'text-loss'}>
+                    {r.isTransfer ? 'transfer, not taxable' : gain === null ? '—' : money(gain, currency)}
+                  </td>
+                  <td>{r.label?.tag || <span className="text-gray-500">—</span>}</td>
+                  <td>
+                    <button type="button" onClick={() => setEditing(editing === r.id ? null : r.id)} className="text-xs text-accent hover:underline">
+                      {r.label ? 'Edit' : 'Label'}
                     </button>
                   </td>
                 </tr>
-                {editing === g.id && (
+                {editing === r.id && (
                   <tr>
-                    <td colSpan={13} className="!border-b-0 !p-0">
+                    <td colSpan={9} className="!border-b-0 !p-0">
                       <div className="px-3 pb-3">
                         <LabelEditor
-                          initial={g.label}
+                          initial={r.label}
                           onCancel={() => setEditing(null)}
                           onSave={async (record: Omit<LabelRecord, 'updatedAt'>) => {
-                            await onSaveLabel(g.id, record);
+                            await onSaveLabel(r.id, record);
                             setEditing(null);
                           }}
                         />

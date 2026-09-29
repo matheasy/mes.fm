@@ -51,8 +51,10 @@ on the `mes-fm-sov` Vercel project's settings.
 
 ## Architecture
 
-- `src/lib/wallets.ts` + `src/lib/sources.ts` - the three upstream wallet sources (`sov`, `ai`,
-  `mfa`): each one's label, dashboard link, and production API base URL.
+- `src/lib/wallets.ts` + `src/lib/sources.ts` - the four upstream wallet sources: `main` (the Main
+  wallet, 0xe6c0..., served by the `ai/` app via `?wallet=main` - see ai/src/lib/walletContext.ts;
+  its BTCB/WBTC are left out there because `sov` counts them), `ai`, `mfa`, `sov`: each one's label,
+  dashboard link, production API base URL and optional extra query string (`sourceUrl()`).
 - `src/lib/combine.ts` - `fetchSource()`/`fetchAllSources()`, the shared fetch-and-settle helper
   every API route uses. A single wallet's fetch failing (rate limit, outage, or Vercel deployment
   protection - see above) never throws - it comes back as a per-source result with `data: null`,
@@ -68,12 +70,8 @@ on the `mes-fm-sov` Vercel project's settings.
   - **transactions**: concatenates all three wallets' lists, each item tagged with which wallet it
     came from (`SourcedTransaction` in `src/lib/types.ts`), sorted/filterable across all three
     (including by `?wallet=`, which the Transactions page seeds from the URL on load).
-  - **taxes** (was `gains`): concatenates all three wallets' FIFO/LIFO/average results
-    (`SourcedGainResult` in `src/lib/types.ts`), then enriches each row into a `TaxRow`: CAD
-    amounts (`src/lib/cadRate.ts`) and a label if one has been set (`src/lib/labels.ts`). Supports
-    `?wallet=` the same way.
-  - **taxes/export**: CSV with both USD and CAD columns plus the label/notes/screenshot-links
-    columns, sorted by disposal date.
+  - **taxes** / **taxes/export**: see "Taxes" below - built by `src/lib/tax/report.ts` from every
+    source's `/api/ledger`, so the page and the CSV always agree.
   - **taxes/labels**: `GET` lists every label, `PUT` upserts one (`{id, tag, notes,
     screenshotUrls}`), `DELETE` removes one.
   - **refresh**: POSTs to all three upstream apps' own `/api/refresh` (which invalidate *their*
@@ -85,41 +83,37 @@ on the `mes-fm-sov` Vercel project's settings.
 
 ### Taxes (`mes.fm/taxes`)
 
-The one genuinely new feature here, and the actual point of this page: replacing a hand-kept Excel
-sheet for personal tax-time bookkeeping.
+Replaces a hand-kept Excel sheet for Canadian tax-time bookkeeping. **Rebuilt 2026-09-29** around the
+CRA's actual rule instead of per-wallet FIFO/LIFO:
 
-- **CAD conversion** (`src/lib/cadRate.ts`): CRA's own guidance (Income Tax Folio S5-F4-C1) is to
-  convert each transaction at the exchange rate in effect *on that transaction's own date*, not one
-  blended annual average - so a disposal's proceeds are converted at its disposition-date rate, and
-  its cost basis at its own acquisition-date rate, independently. Rates come from the Bank of
-  Canada's free, keyless Valet API and are cached forever once resolved (a published historical
-  rate never changes) - a business-day fallback (up to 10 days back) covers weekends/holidays, per
-  the Bank of Canada's own recommendation for a day with no published rate.
-- **Labels, notes, and screenshot links** (`src/lib/labels.ts`): free-text tag (a few presets are
-  offered - Trade, Gift, Personal transfer, Income, Other - but it's never a closed enum), a notes
-  field, and a list of URLs, keyed per disposal row (`gainRowId()` in `src/lib/types.ts` - a
-  disposal tx hash alone isn't unique, since one swap can dispose several lots/symbols in one
-  hash). Stored in the same Upstash Redis every other app here uses for caching, but **without a
-  TTL** - this is hand-entered data, not a re-fetchable cache entry, so nothing here ever expires.
-  Upstash Redis is RDB-persistent by default, so this is a durable store, not just a cache; a real
-  database (e.g. Vercel Postgres) would give stronger guarantees (backups, relational queries) at
-  the cost of a new piece of infrastructure to provision - worth revisiting if this data becomes
-  precious enough to want that.
-- **Not included yet**: Hive accounts (`mes`, `mestruth`, `mathiew`, `artgrafiken`, tracked for
-  balances in `mes.fm/assets`). No app in this repo has a cost-basis engine for Hive - curation
-  rewards, HP delegation, and Hive Engine's internal market don't map onto the buy/sell model
-  `sov`/`ai`/`mfa` use, so it needs its own design pass rather than a bolt-on here. When it is
-  added, note that BTCB, WBTC, and Hive Engine's SWAP.BTC are all just wrapped Bitcoin and should
-  pool into the same cost-basis key `sov` already uses for BTCB/WBTC, not be treated as separate
-  assets.
-- **Not tax advice.** This computes a mechanical FIFO/LIFO/average report from on-chain data; it
-  doesn't know about gifts, personal transfers between your own wallets, or anything else that
-  needs a human judgment call - that's what the labels are for, and a real accountant is still the
-  right call at filing time.
+- **One adjusted-cost-base (ACB) calculation across every wallet** (`src/lib/tax/acb.ts`). The CRA
+  treats all units of the same crypto you own as identical property: one pool per asset, average
+  cost, whatever wallet or chain holds it; FIFO/LIFO aren't allowed. So each source app now exposes
+  `GET /api/ledger` (every priced transfer leg with from/to, unpaginated) and this app runs the
+  accounting itself over the merged timeline. The per-app `/api/gains` routes (per-wallet FIFO/LIFO/
+  average) still exist for those apps' own use, but the Taxes page no longer reads them.
+- **Own-wallet transfers are skipped** (`src/lib/tax/ownAddresses.ts` - every address/account on
+  mes.fm/assets; keep the two lists in step). Same-asset legs inside one transaction are netted
+  (a BNB->WBNB wrap isn't a sale). Pools by asset, not contract (`src/lib/tax/assetKey.ts`):
+  BTCB/WBTC/SWAP.BTC -> BTC, WETH/bridged ETH -> ETH, WBNB -> BNB.
+- **CAD throughout** (`src/lib/cadRate.ts`): every leg converted at the Bank of Canada rate of its
+  own date (CRA, Income Tax Folio S5-F4-C1), and the pools themselves kept in CAD - ACB is a CAD
+  figure. Rates are cached forever once resolved (one Redis `mget` per page load).
+- **Labels, notes, and screenshot links** (`src/lib/labels.ts`): keyed per disposition row
+  (`disposalId()` in acb.ts), stored in Upstash Redis **without a TTL** (hand-entered data, the only
+  copy). A row labelled **Personal transfer** (e.g. XRP sent to the owner's own Shakepay account,
+  whose deposit address can't be recognised as theirs) leaves the pool at cost with no gain.
+- Units disposed that the tracked history never shows arriving get a cost of 0 and are flagged on
+  the page (`uncoveredQuantity`).
+- **Not included yet**: Hive accounts (HIVE/HBD, Hive Engine tokens other than sov's TGLD), the
+  native Bitcoin address, Hyperliquid perpetuals, rewards as *income* (they only set the cost of
+  what was received), gas fees in cost/proceeds, the superficial-loss rule. When Hive is added,
+  SWAP.BTC / SWAP.HIVE / SWAP.HBD already pool with BTC / HIVE / HBD via assetKey.ts.
+- **Not tax advice** - a record-keeping aid; an accountant should check it before filing.
 
 ### Known simplifications
 
-- If **all three** upstream sources fail, the combined route returns a hard error; if only some
+- If **every** upstream source fails, the combined route returns a hard error; if only some
   fail, the combined view still renders with that wallet's card/section showing its error and
   excluded from the totals.
 - Merged holdings sum `valueUsd` and `balanceFormatted` per token symbol across wallets, but keep

@@ -1,4 +1,4 @@
-import type { GainResult } from './accounting/types';
+import type { AcbDisposal, AcbHolding, AcbStats } from './tax/acb';
 import type { WalletKey } from './wallets';
 
 export interface Token {
@@ -88,16 +88,6 @@ export interface CombinedPortfolio {
   holdings: Holding[];
 }
 
-export interface SourcedGainResult extends GainResult {
-  wallet: WalletKey;
-}
-
-/** A gains row's stable identity for labels (see lib/labels.ts) - a disposal tx hash alone can
- * cover several rows (one swap disposing several lots/symbols), so all of these together are needed. */
-export function gainRowId(g: SourcedGainResult): string {
-  return [g.wallet, g.network, g.disposalTxHash, g.tokenSymbol, g.disposedAt].join(':');
-}
-
 export interface LabelRecord {
   /** Free text - the UI offers a few common presets (Trade, Gift, Personal transfer, Income, Other) but this is never a closed enum */
   tag: string;
@@ -106,19 +96,63 @@ export interface LabelRecord {
   updatedAt: string;
 }
 
-/** One realized-gain row for the Taxes page: tagged with its wallet/group, its own row id, CAD
- * amounts (see lib/cadRate.ts), and its label if one has been set (see lib/labels.ts) */
-export interface TaxRow extends SourcedGainResult {
-  id: string;
+/** Label tags that mean "this left for another account of mine", not a sale - see lib/tax/acb.ts */
+export const TRANSFER_TAGS = ['personal transfer'];
+
+export function isTransferLabel(label: LabelRecord | null | undefined): boolean {
+  return !!label && TRANSFER_TAGS.includes(label.tag.trim().toLowerCase());
+}
+
+/** One disposition row on the Taxes page: the ACB calculation's result plus its wallet name and label */
+export interface TaxRow extends AcbDisposal {
   walletLabel: string;
-  /** Bank of Canada USD/CAD rate on acquiredAt's date (or the nearest earlier business day) */
-  cadRateAcquired: number | null;
-  /** Bank of Canada USD/CAD rate on disposedAt's date (or the nearest earlier business day) */
-  cadRateDisposed: number | null;
-  costBasisCad: number | null;
-  proceedsCad: number | null;
-  gainCad: number | null;
   label: LabelRecord | null;
+}
+
+export interface TaxAssetSummary {
+  asset: string;
+  count: number;
+  quantity: number;
+  proceedsCad: number;
+  costCad: number;
+  gainCad: number;
+}
+
+/** One tax year's totals (transfers excluded) - what goes on Schedule 3 */
+export interface TaxYearSummary {
+  year: number;
+  count: number;
+  proceedsCad: number;
+  costCad: number;
+  gainCad: number;
+  proceedsUsd: number;
+  costUsd: number;
+  gainUsd: number;
+  /** Rows with units the history never shows arriving (their cost counted as 0) */
+  uncoveredCount: number;
+  byAsset: TaxAssetSummary[];
+}
+
+export interface TaxSourceStatus {
+  key: WalletKey;
+  label: string;
+  entries: number;
+  error: string | null;
+}
+
+export interface TaxesResponse {
+  /** Tax years that have dispositions, newest first */
+  years: number[];
+  /** The year the rows below are for */
+  year: number;
+  summary: TaxYearSummary;
+  rows: TaxRow[];
+  /** Units and ACB left in each pool today, across all wallets */
+  holdings: AcbHolding[];
+  stats: AcbStats;
+  sources: TaxSourceStatus[];
+  /** False when a Bank of Canada rate couldn't be found for some date (CAD figures then partly missing) */
+  cadComplete: boolean;
 }
 
 /** mes.fm/assets' totals, as passed on by /api/assets (groups' totals include dust) */

@@ -1,4 +1,4 @@
-import { cacheKey, getValue, setValue } from './cache';
+import { cacheKey, getValues, setValue } from './cache';
 
 /**
  * USD/CAD conversion for the Taxes page. CRA's own guidance (Income Tax Folio S5-F4-C1) is to
@@ -64,11 +64,13 @@ export async function getCadRates(dates: string[]): Promise<Map<string, number |
   const result = new Map<string, number | null>();
   const uncached: string[] = [];
 
-  for (const d of dateOnlySet) {
-    const hit = await getValue<number>(cacheKey('cad-rate', d));
-    if (hit !== null) result.set(d, hit);
+  const wanted = [...dateOnlySet];
+  const hits = await getValues<number>(wanted.map((d) => cacheKey('cad-rate', d)));
+  wanted.forEach((d, i) => {
+    const hit = hits[i];
+    if (hit !== null && hit !== undefined) result.set(d, hit);
     else uncached.push(d);
-  }
+  });
 
   if (uncached.length > 0) {
     const sorted = [...uncached].sort();
@@ -81,6 +83,7 @@ export async function getCadRates(dates: string[]): Promise<Map<string, number |
       series = new Map();
     }
 
+    const writes: Promise<void>[] = [];
     for (const d of uncached) {
       let probe = d;
       let rate: number | null = null;
@@ -93,8 +96,9 @@ export async function getCadRates(dates: string[]): Promise<Map<string, number |
         probe = addDays(probe, -1);
       }
       result.set(d, rate);
-      if (rate !== null) await setValue(cacheKey('cad-rate', d), rate);
+      if (rate !== null) writes.push(setValue(cacheKey('cad-rate', d), rate));
     }
+    await Promise.all(writes);
   }
 
   return result;

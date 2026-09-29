@@ -9,7 +9,7 @@ export default function PortfolioSummary({ summary }: { summary: CombinedPortfol
 
   return (
     <div className="panel">
-      <p className="stat-label">Trading wallets total</p>
+      <p className="stat-label">Wallet groups total</p>
       <p className="mt-1 text-3xl font-semibold">{formatUsd(summary.totalValueUsd)}</p>
       <p className={`mt-1 text-sm ${isPositive ? 'text-gain' : 'text-loss'}`}>
         {isPositive ? '+' : ''}

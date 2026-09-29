@@ -1,4 +1,4 @@
-import { WALLET_SOURCES, type WalletSource } from './sources';
+import { WALLET_SOURCES, sourceUrl, type WalletSource } from './sources';
 import type { ApiResult } from './types';
 
 export interface SourceResult<T> {
@@ -15,7 +15,7 @@ export interface SourceResult<T> {
  */
 export async function fetchSource<T>(source: WalletSource, path: string): Promise<SourceResult<T>> {
   try {
-    const res = await fetch(`${source.apiBaseUrl}${path}`, { cache: 'no-store' });
+    const res = await fetch(sourceUrl(source, path), { cache: 'no-store' });
     // A missing deployment answers with a plain-text/HTML page, not our JSON: say so plainly
     // instead of surfacing JSON.parse's "Unexpected token" message.
     if (!(res.headers.get('content-type') ?? '').includes('json')) {

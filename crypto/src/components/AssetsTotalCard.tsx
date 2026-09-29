@@ -26,7 +26,7 @@ export default function AssetsTotalCard() {
         <>
           <p className="mt-1 text-3xl font-semibold">{formatUsd(assets.totalAllUsd)}</p>
           <p className="mt-1 text-xs text-gray-500">
-            Includes the three trading wallets above &middot; {formatUsd(assets.totalUsd)} in holdings worth $10+ &middot; updated{' '}
+            Includes the wallets above &middot; {formatUsd(assets.totalUsd)} in holdings worth $10+ &middot; updated{' '}
             {new Date(assets.fetchedAt).toLocaleTimeString()}
           </p>
           <ul className="mt-4 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2 lg:grid-cols-3">

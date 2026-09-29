@@ -45,6 +45,11 @@ export default function LabelEditor({ initial, onSave, onCancel }: LabelEditorPr
             key={p}
             type="button"
             onClick={() => setTag(p)}
+            title={
+              p === 'Personal transfer'
+                ? 'Sent to another account of yours (e.g. your exchange account): not a sale, so no gain or loss is counted'
+                : undefined
+            }
             className={`rounded-full border px-2.5 py-1 text-xs ${
               tag === p ? 'border-accent bg-accent/20 text-accent' : 'border-bg-border text-gray-300 hover:border-accent'
             }`}
