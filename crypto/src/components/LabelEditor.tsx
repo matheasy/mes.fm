@@ -87,7 +87,7 @@ export default function LabelEditor({ initial, uncoveredQuantity = 0, symbol, on
             className="w-60 rounded-md border border-bg-border bg-bg-panel px-2 py-1 text-gray-100"
           />
           <span className="text-xs text-gray-500">
-            From your exchange records or old receipts. Total for these units, not per unit. Left empty, they count at $0 cost.
+            From your exchange or SimpleSwap records (e.g. the CAD value of the XRP/BTC you swapped for them). Total for these units, not per unit. Left empty, they count at $0 cost.
           </span>
         </label>
       )}

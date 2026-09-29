@@ -3,7 +3,9 @@ import { fetchSource } from '../combine';
 import { WALLET_SOURCES } from '../sources';
 import { listLabels } from '../labels';
 import {
+  custodyLabelId,
   isTransferLabel,
+  NOT_ROUND_TRIP,
   type LabelRecord,
   type TaxIncomeSummary,
   type TaxReceiptsSummary,
@@ -12,7 +14,11 @@ import {
   type TaxYearSummary,
   type TaxesResponse,
 } from '../types';
-import { computeAcb, disposalId, type AcbDisposal, type AcbIncome, type AcbReceipt, type TaxEntry } from './acb';
+import { computeAcb, custodyKey, disposalId, type AcbDisposal, type AcbIncome, type AcbReceipt, type TaxEntry } from './acb';
+import { assetKey } from './assetKey';
+import { contractsAmong, EVM_NETWORKS } from './contracts';
+import { isLpContract } from '../lp';
+import { isOwnAddress } from './ownAddresses';
 import { getBitcoinEntries } from './sources/bitcoin';
 import { getHiveEntries } from './sources/hive';
 import { getTgldEntries } from './sources/tgld';
@@ -68,6 +74,10 @@ function summarize(year: number, rows: AcbDisposal[]): TaxYearSummary {
     count: taxable.length,
     ...sum,
     uncoveredCount: taxable.filter((r) => r.uncoveredQuantity > 1e-9 && !r.costOverridden).length,
+    // proceeds of the units counted at $0 cost = how much of the gain rests on that assumption
+    zeroCostGainCad: taxable
+      .filter((r) => r.uncoveredQuantity > 1e-9 && !r.costOverridden && r.cadRate !== null)
+      .reduce((s, r) => s + r.uncoveredQuantity * r.priceUsd * (r.cadRate ?? 0), 0),
     byAsset: [...byAsset.values()].sort((a, b) => Math.abs(b.gainCad) - Math.abs(a.gainCad)),
   };
 }
@@ -103,6 +113,27 @@ function summarizeReceipts(items: AcbReceipt[]): TaxReceiptsSummary {
     bySender.set(k, e);
   }
   return { totalCad, bySender: [...bySender.values()].sort((a, b) => b.cad - a.cad) };
+}
+
+/**
+ * Round-trip candidates: EVM addresses the owner both sent a coin to and got the same coin back from
+ * (not their own, not the PancakeSwap LP contracts), confirmed to be smart contracts - a person's or
+ * an exchange's wallet is left alone, since the owner may have sold in between (see AcbCustody).
+ */
+async function findCustodyContracts(entries: TaxEntry[]): Promise<Set<string>> {
+  const seen = new Map<string, { network: string; address: string; out: boolean; in: boolean }>();
+  for (const e of entries) {
+    if (!EVM_NETWORKS.has(e.network) || e.income || e.amount === 0) continue;
+    const cp = e.amount > 0 ? e.from : e.to;
+    if (!cp || isOwnAddress(cp) || isLpContract(cp)) continue;
+    const k = `${custodyKey(e.network, cp)}|${assetKey(e.symbol)}`;
+    const s = seen.get(k) ?? { network: e.network, address: cp.toLowerCase(), out: false, in: false };
+    if (e.amount < 0) s.out = true;
+    else s.in = true;
+    seen.set(k, s);
+  }
+  const both = [...seen.values()].filter((s) => s.out && s.in);
+  return contractsAmong(both.map((s) => ({ network: s.network, address: s.address })));
 }
 
 function needsInput(d: AcbDisposal, label: LabelRecord | null): TaxRow['needsInput'] {
@@ -199,7 +230,14 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
     const c = labels[id]?.costCad;
     if (typeof c === 'number') costOverrides.set(id, c);
   }
-  const { disposals, income, receipts, holdings, stats } = computeAcb(entries, cadRates, transferIds, costOverrides);
+  // detected round-trip contracts, minus any the owner switched off on the Taxes page
+  const detected = await findCustodyContracts(entries);
+  const disabled = new Set([...detected].filter((k) => {
+    const [network, address] = k.split(':') as [string, string];
+    return labels[custodyLabelId(network, address)]?.tag === NOT_ROUND_TRIP;
+  }));
+  const custodyContracts = new Set([...detected].filter((k) => !disabled.has(k)));
+  const { disposals, income, receipts, custody, holdings, stats } = computeAcb(entries, cadRates, transferIds, costOverrides, custodyContracts);
 
   const years = [...new Set([...disposals, ...income].map((d) => d.taxYear))].sort((a, b) => b - a);
   const year = opts.year ?? years[0] ?? new Date().getUTCFullYear();
@@ -228,6 +266,14 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
     },
     holdings,
     stats,
+    // the ones in use, plus the switched-off ones (as zero rows) so they can be switched back on
+    custody: [
+      ...custody.map((c) => ({ ...c, disabled: false })),
+      ...[...disabled].map((k) => {
+        const [network, address] = k.split(':') as [string, string];
+        return { network, address, asset: '—', matched: 0, notReturned: 0, extra: 0, disabled: true };
+      }),
+    ].sort((a, b) => a.network.localeCompare(b.network) || a.address.localeCompare(b.address) || a.asset.localeCompare(b.asset)),
     sources,
     cadComplete,
   };

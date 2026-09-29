@@ -143,12 +143,42 @@ export interface AcbStats {
   netted: number;
   /** Legs skipped for having no price */
   unpriced: number;
+  /** Legs skipped as deposits into / withdrawals from a custody contract (see AcbCustody) */
+  custody: number;
+}
+
+/**
+ * A contract the owner deposited a coin into and *later* got the same coin back from (a staking
+ * vault, farm, launchpad lock...). The matched amount - what went in and afterwards came back - is
+ * treated like a move between the owner's own wallets: no sale going in, no purchase coming out, the
+ * coins keep their ACB. Matching is first-in-first-out per contract and coin, deposit before
+ * withdrawal only: a deposit that never comes back stays a sale (a bridge, or a DEX pool that also
+ * happens to have paid the owner once), and a receipt with no earlier deposit stays a receipt (a loan
+ * being borrowed, a reward). What comes back above the matched deposits (yield) is an ordinary
+ * receipt. Which contracts qualify is decided by the caller (lib/tax/report.ts: both directions
+ * seen, and the address really is a contract).
+ */
+export interface AcbCustody {
+  network: string;
+  address: string;
+  asset: string;
+  /** Went in and later came back - not a sale */
+  matched: number;
+  /** Went in and never came back - still counted as sold */
+  notReturned: number;
+  /** Came back with no earlier deposit to match, or above it - counted as received */
+  extra: number;
+}
+
+export function custodyKey(network: string, address: string): string {
+  return `${network}:${address.toLowerCase()}`;
 }
 
 export interface AcbResult {
   disposals: AcbDisposal[];
   income: AcbIncome[];
   receipts: AcbReceipt[];
+  custody: AcbCustody[];
   /** What's left in each pool after the last transaction: units and their ACB */
   holdings: AcbHolding[];
   stats: AcbStats;
@@ -201,8 +231,10 @@ export function computeAcb(
   cadRates: Map<string, number>,
   transferIds: ReadonlySet<string> = new Set(),
   costOverridesCad: ReadonlyMap<string, number> = new Map(),
+  /** custodyKey(network, address) of the contracts to treat as custody (see AcbCustody) */
+  custodyContracts: ReadonlySet<string> = new Set(),
 ): AcbResult {
-  const stats: AcbStats = { legs: 0, ownTransfers: 0, netted: 0, unpriced: 0 };
+  const stats: AcbStats = { legs: 0, ownTransfers: 0, netted: 0, unpriced: 0, custody: 0 };
 
   const external: TaxEntry[] = [];
   for (const e of entries) {
@@ -246,13 +278,60 @@ export function computeAcb(
   let cadComplete = true;
 
   const pools = new Map<string, { qty: number; costUsd: number; costCad: number }>();
+  // Round trips: FIFO-match plain deposits into each custody contract with later plain withdrawals
+  // of the same coin from it (nothing else moving in either transaction, so not swaps).
+  const custodyMatched = new Map<TaxEntry, number>();
+  const custody = new Map<string, AcbCustody>();
+  const queues = new Map<string, { leg: TaxEntry; left: number }[]>();
+  for (const leg of legs) {
+    if (leg.income || leg.amount === 0) continue;
+    const counterparty = leg.amount > 0 ? leg.from : leg.to;
+    const contract = custodyKey(leg.network, counterparty);
+    if (!custodyContracts.has(contract) || isLpContract(counterparty)) continue;
+    const plain = leg.amount < 0 ? !hasIn.has(leg.hash) : !hasOut.has(leg.hash);
+    if (!plain) continue;
+    const asset = assetKey(leg.symbol);
+    const k = `${contract}|${asset}`;
+    const c = custody.get(k) ?? { network: leg.network, address: counterparty.toLowerCase(), asset, matched: 0, notReturned: 0, extra: 0 };
+    custody.set(k, c);
+    const queue = queues.get(k) ?? [];
+    queues.set(k, queue);
+    if (leg.amount < 0) {
+      queue.push({ leg, left: -leg.amount });
+      continue;
+    }
+    let incoming = leg.amount;
+    while (incoming > EPS && queue.length) {
+      const dep = queue[0]!;
+      const take = Math.min(dep.left, incoming);
+      dep.left -= take;
+      incoming -= take;
+      c.matched += take;
+      custodyMatched.set(dep.leg, (custodyMatched.get(dep.leg) ?? 0) + take);
+      custodyMatched.set(leg, (custodyMatched.get(leg) ?? 0) + take);
+      if (dep.left <= EPS) queue.shift();
+    }
+    c.extra += incoming;
+  }
+  for (const [k, queue] of queues) custody.get(k)!.notReturned += queue.reduce((sum, d) => sum + d.left, 0);
+
   const disposals: AcbDisposal[] = [];
   const income: AcbIncome[] = [];
   const receipts: AcbReceipt[] = [];
 
   for (const leg of legs) {
     // CAKE harvested from the PancakeSwap farm is income, like Hive rewards
-    const e = leg.amount > 0 && !leg.income && isFarmReward(leg.symbol, leg.from) ? { ...leg, income: 'PancakeSwap farm rewards (CAKE)' } : leg;
+    let e = leg.amount > 0 && !leg.income && isFarmReward(leg.symbol, leg.from) ? { ...leg, income: 'PancakeSwap farm rewards (CAKE)' } : leg;
+
+    // the part of this leg matched as a round trip through a custody contract (see AcbCustody)
+    const matched = custodyMatched.get(leg) ?? 0;
+    if (matched > EPS) {
+      stats.custody += 1;
+      const rest = Math.abs(e.amount) - matched;
+      if (rest <= EPS) continue;
+      e = { ...e, amount: Math.sign(e.amount) * rest };
+    }
+
     if (e.priceUsd === null || !Number.isFinite(e.priceUsd)) {
       stats.unpriced += 1;
       continue;
@@ -332,5 +411,5 @@ export function computeAcb(
     .map(([asset, p]) => ({ asset, quantity: p.qty, acbUsd: p.costUsd, acbCad: cadComplete ? p.costCad : null }))
     .sort((a, b) => b.acbUsd - a.acbUsd);
 
-  return { disposals, income, receipts, holdings, stats };
+  return { disposals, income, receipts, custody: [...custody.values()].filter((c) => c.matched > EPS), holdings, stats };
 }

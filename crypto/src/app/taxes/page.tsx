@@ -10,10 +10,17 @@ import TaxSummary, { money } from '@/components/TaxSummary';
 import { useTaxes } from '@/hooks/useTaxes';
 import { BASE_PATH } from '@/lib/basePath';
 import { TAX_GROUPS, TAX_GROUP_LABELS, sourceLabel, type TaxGroup } from '@/lib/tax/taxSources';
-import type { LabelRecord } from '@/lib/types';
+import { custodyLabelId, NOT_ROUND_TRIP, type LabelRecord } from '@/lib/types';
 
 function initialGroup(param: string | null): TaxGroup | undefined {
   return TAX_GROUPS.includes(param as TaxGroup) ? (param as TaxGroup) : undefined;
+}
+
+const amt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 4 });
+
+function contractUrl(network: string, address: string): string {
+  const host = { bsc: 'bscscan.com', ethereum: 'etherscan.io', polygon: 'polygonscan.com', arbitrum: 'arbiscan.io' }[network] ?? 'bscscan.com';
+  return `https://${host}/address/${address}`;
 }
 
 const chip = (on: boolean) => `rounded px-2.5 py-1 text-sm ${on ? 'bg-accent text-bg' : 'text-gray-300 hover:text-accent'}`;
@@ -26,7 +33,21 @@ function TaxesPageInner() {
   });
   const [wallet, setWallet] = useState<TaxGroup | undefined>(() => initialGroup(searchParams.get('wallet')));
   const [currency, setCurrency] = useState<'CAD' | 'USD'>('CAD');
+  const [onlyNeedsInput, setOnlyNeedsInput] = useState(false);
   const { taxes, isLoading, error, rateLimited, refresh } = useTaxes(year, wallet);
+
+  /** Switch a detected round-trip contract off / back on (stored like a row label) */
+  async function setRoundTrip(network: string, address: string, on: boolean) {
+    const id = custodyLabelId(network, address);
+    if (on) await fetch(`${BASE_PATH}/api/taxes/labels?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    else
+      await fetch(`${BASE_PATH}/api/taxes/labels`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, tag: NOT_ROUND_TRIP, notes: '', screenshotUrls: [] }),
+      });
+    refresh();
+  }
 
   async function saveLabel(id: string, record: Omit<LabelRecord, 'updatedAt'>) {
     await fetch(`${BASE_PATH}/api/taxes/labels`, {
@@ -108,7 +129,10 @@ function TaxesPageInner() {
                     <strong className="text-gray-100">{taxes.needsInput.unknownCost}</strong> row{taxes.needsInput.unknownCost === 1 ? '' : 's'} marked{' '}
                     <span className="text-yellow-300">cost unknown</span>: coins sold that the history never shows arriving (bought on an exchange,
                     before a wallet was tracked, or held when Hive launched in March 2020). They count at a cost of $0 for now, which makes the gain
-                    look bigger than it was. If you know what they cost, click <em>Label</em> on the row and enter it.
+                    look bigger than it was - <strong className="text-gray-100">{money(taxes.summary.zeroCostGainCad, 'CAD')}</strong> of this
+                    year&apos;s gain rests on that. Common cause: coins you got through SimpleSwap or an exchange (e.g. HIVE bought with XRP or BTC)
+                    that were then sold or swapped here. If you know what they cost, click <em>Label</em> on the row and enter it (in CAD) - the
+                    XRP/BTC you sent to SimpleSwap is already counted as a sale on its own row.
                   </p>
                 )}
                 {taxes.needsInput.sends > 0 && (
@@ -120,6 +144,10 @@ function TaxesPageInner() {
                     clears the flag.
                   </p>
                 )}
+                <label className="flex items-center gap-2 text-sm text-gray-200">
+                  <input type="checkbox" checked={onlyNeedsInput} onChange={(e) => setOnlyNeedsInput(e.target.checked)} />
+                  Show only the rows that need my input
+                </label>
                 <p className="text-xs text-gray-500">Highlighted rows below. Everything you enter is saved with the row and goes into the CSV.</p>
               </div>
             )}
@@ -148,7 +176,7 @@ function TaxesPageInner() {
             {taxes.rows.length === 0 ? (
               <div className="panel py-12 text-center text-gray-400">Nothing sold or swapped in {taxes.year}.</div>
             ) : (
-              <TaxesTable rows={taxes.rows} currency={currency} onSaveLabel={saveLabel} />
+              <TaxesTable rows={onlyNeedsInput ? taxes.rows.filter((r) => r.needsInput.length > 0) : taxes.rows} currency={currency} onSaveLabel={saveLabel} />
             )}
 
             <div className="panel flex flex-col gap-3">
@@ -199,6 +227,8 @@ function TaxesPageInner() {
                 </summary>
                 <p className="mt-2 text-xs text-gray-500">
                   Coins that arrived from someone else with nothing sent back: delegation payouts (reward.app, actifit.pay, hivestudents …),
+                  what SimpleSwap or an exchange sent you for coins you sold there (a purchase, not income - the coins you sent are a sale on
+                  their own row),
                   tips, airdrops, or withdrawals from your own exchange account. They&apos;re counted at their value on arrival (which becomes their
                   cost) but are <strong>not</strong> added to the income above, since only you know which were earnings. Payouts for delegating
                   or curating are usually income; withdrawals from your own exchange account are not.
@@ -222,6 +252,59 @@ function TaxesPageInner() {
                           <td>{r.asset}</td>
                           <td>{r.count}</td>
                           <td>{money(r.cad, 'CAD')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            )}
+
+            {taxes.custody.length > 0 && (
+              <details className="panel">
+                <summary className="cursor-pointer text-sm font-medium text-gray-200">
+                  Round trips: coins you deposited into {taxes.custody.length} contract{taxes.custody.length === 1 ? '' : 's'} and later got back -
+                  not counted as sales
+                </summary>
+                <p className="mt-2 text-xs text-gray-500">
+                  Coins sent to a smart contract (a staking vault, farm, launchpad lock ...) that later came back from that same contract are
+                  treated like moves between your own wallets: no sale going in, no purchase coming out, they keep their original cost. Only the
+                  amount that actually came back counts - coins that never came back stay sales (label them Personal transfer if they&apos;re still
+                  in a vault), and anything that came back above what went in is counted as received. Your accountant may treat vault deposits
+                  as taxable swaps (especially if you got a receipt token back). Untick <em>Round trip?</em> for a contract that was really a
+                  sale, a bridge or a token migration - e.g. one that sent back far more than went in.
+                </p>
+                <div className="mt-3 overflow-x-auto">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Contract</th>
+                        <th>Coin</th>
+                        <th>Went in and came back</th>
+                        <th>Never came back (sold)</th>
+                        <th>Came back extra (received)</th>
+                        <th>Round trip?</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {taxes.custody.map((c) => (
+                        <tr key={`${c.network}-${c.address}-${c.asset}`}>
+                          <td className="whitespace-nowrap">
+                            <a href={contractUrl(c.network, c.address)} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+                              {c.address.slice(0, 8)}…{c.address.slice(-6)}
+                            </a>
+                            <span className="block text-xs capitalize text-gray-500">{c.network}</span>
+                          </td>
+                          <td className="font-medium text-gray-100">{c.asset}</td>
+                          <td>{amt(c.matched)}</td>
+                          <td>{c.notReturned > 1e-9 ? amt(c.notReturned) : '—'}</td>
+                          <td>{c.extra > 1e-9 ? amt(c.extra) : '—'}</td>
+                          <td>
+                            <label className="flex items-center gap-1.5 whitespace-nowrap text-xs">
+                              <input type="checkbox" checked={!c.disabled} onChange={(ev) => setRoundTrip(c.network, c.address, ev.target.checked)} />
+                              {c.disabled ? 'no - counted as sales' : 'yes'}
+                            </label>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

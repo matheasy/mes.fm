@@ -1,5 +1,5 @@
 import type { WalletKey } from './wallets';
-import type { AcbDisposal, AcbHolding, AcbStats } from './tax/acb';
+import type { AcbCustody, AcbDisposal, AcbHolding, AcbStats } from './tax/acb';
 
 export interface Token {
   /** 'BNB' for the native coin, otherwise the checksummed BEP-20 contract address */
@@ -98,6 +98,12 @@ export interface LabelRecord {
   updatedAt: string;
 }
 
+/** Label id under which the owner switches a detected round-trip contract off (value: tag NOT_ROUND_TRIP) */
+export function custodyLabelId(network: string, address: string): string {
+  return `custody:${network}:${address.toLowerCase()}`;
+}
+export const NOT_ROUND_TRIP = 'Not a round trip';
+
 /** Label tags that mean "this left for another account of mine", not a sale - see lib/tax/acb.ts */
 export const TRANSFER_TAGS = ['personal transfer'];
 
@@ -148,6 +154,8 @@ export interface TaxYearSummary {
   gainUsd: number;
   /** Rows with units the history never shows arriving (their cost counted as 0) */
   uncoveredCount: number;
+  /** How much of the year's gain comes from those $0-cost units (their proceeds, CAD) */
+  zeroCostGainCad: number;
   byAsset: TaxAssetSummary[];
 }
 
@@ -172,6 +180,8 @@ export interface TaxesResponse {
   /** Units and ACB left in each pool today, across all wallets */
   holdings: AcbHolding[];
   stats: AcbStats;
+  /** Contracts treated as custody - coins deposited and got back, not sold (see AcbCustody) */
+  custody: (AcbCustody & { disabled: boolean })[];
   sources: TaxSourceStatus[];
   /** False when a Bank of Canada rate couldn't be found for some date (CAD figures then partly missing) */
   cadComplete: boolean;

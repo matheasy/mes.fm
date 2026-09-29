@@ -122,7 +122,7 @@ export default function TaxesTable({ rows, currency, onSaveLabel }: TaxesTablePr
                     {unknownCost && (
                       <span
                         className="block text-xs text-yellow-300"
-                        title="The history never shows these units arriving (bought before tracking, on an exchange, or held at the Hive fork), so their cost is $0. Enter what they cost you, if you know."
+                        title="The history never shows these units arriving (bought on an exchange or through SimpleSwap, before a wallet was tracked, or held at the Hive fork), so their cost is $0. Enter what they cost you (CAD) with Label, if you know."
                       >
                         cost unknown for {qty(r.uncoveredQuantity)}
                       </span>
