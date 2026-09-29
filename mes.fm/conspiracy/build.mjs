@@ -191,6 +191,7 @@ ${cards}
 // scraped from the target page's og: tags at build time and cached in
 // link-meta.json.
 const POSTS = [
+  { href: "https://mes.fm/humanoid-robot-soldiers-ukraine", title: "USA Delivers Humanoid Robot Soldiers to Ukraine" },
   { href: "https://mes.fm/hands-dan-dicks-carney-bloomberg-connolly", title: "Illuminati Hands: Dan Dicks, Mark Carney, Mike Bloomberg, Catherine Connolly" },
   { href: "https://mes.fm/trump-aliens-war-moon", title: "MES Alt-News Checkup — Trump Teaming Up with Aliens to Fight a War on the Moon?" },
   { href: "https://mes.fm/alex-jones-ashton-forbes-clowns", title: "Ashton Forbes and Alex Jones Team Up to Become the Most Unstoppable Clownish Force" },
