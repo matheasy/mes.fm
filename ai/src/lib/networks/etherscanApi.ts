@@ -24,7 +24,22 @@ function apiKey(): string {
  */
 const throttle = createThrottle('etherscan', 500);
 
+/** Etherscan rate-limits in short bursts (the AI Trading and Main wallets now share one key): wait and retry
+ * rather than dropping a whole network's history from the tax report for this request. */
+const RATE_LIMIT_RETRIES = 4;
+
 async function get<T>(chainId: number, params: Record<string, string>): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await getOnce<T>(chainId, params);
+    } catch (err) {
+      if (!(err instanceof RateLimitError) || attempt >= RATE_LIMIT_RETRIES) throw err;
+      await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+    }
+  }
+}
+
+async function getOnce<T>(chainId: number, params: Record<string, string>): Promise<T> {
   return throttle(async () => {
     const url = new URL(API_BASE);
     url.searchParams.set('chainid', String(chainId));

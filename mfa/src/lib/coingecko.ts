@@ -84,6 +84,25 @@ async function getDefiLlamaDailyPrice(coinId: string, date: Date): Promise<numbe
 }
 
 /**
+ * A token's USD price on a day by its contract address, straight from DefiLlama ("bsc:0x...") -
+ * no CoinGecko id lookup needed, which CoinGecko's rate limit used to turn into "no price" for real
+ * tokens (BTCB, ETH on BNB Chain). Only accepted when DefiLlama marks it confident (>= 0.9; absent
+ * means it comes from CoinGecko's own listing), which keeps spam airdrop tokens with a sliver of fake
+ * liquidity unpriced. null = no confident price; throws only if DefiLlama can't be reached.
+ */
+export async function getTokenDailyPriceByContract(chain: 'bsc' | 'ethereum' | 'arbitrum', contract: string, date: Date): Promise<number | null> {
+  const midnight = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / 1000;
+  const key = `${chain}:${contract.toLowerCase()}`;
+  const res = await fetch(`https://coins.llama.fi/prices/historical/${midnight}/${key}?searchWidth=12h`, { next: { revalidate: 0 } });
+  if (!res.ok) throw new Error(`DefiLlama price request failed: ${res.status}`);
+  const json = (await res.json()) as { coins?: Record<string, { price?: number; confidence?: number }> };
+  const coin = json.coins?.[key];
+  if (!coin || typeof coin.price !== 'number' || !(coin.price > 0)) return null;
+  if (coin.confidence !== undefined && coin.confidence < 0.9) return null;
+  return coin.price;
+}
+
+/**
  * Historical USD price for a coin on a given date (day granularity) - feeds mes.fm/taxes, so accuracy
  * matters more than anything else here. DefiLlama first, CoinGecko only as a fallback, because checked
  * against Binance's own daily open (2026-09-29):

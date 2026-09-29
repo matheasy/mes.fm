@@ -45,14 +45,16 @@ function withoutContracts(d: NetworkLedgerData, exclude: ReadonlySet<string>): N
   };
 }
 
-export async function getAggregatedNetworkData(network?: NetworkId): Promise<AggregatedNetworkData> {
+export async function getAggregatedNetworkData(network?: NetworkId, opts: { includeExcluded?: boolean } = {}): Promise<AggregatedNetworkData> {
   const targets = networksToFetch(network);
   const settled = await Promise.allSettled(targets.map((n) => NETWORK_MODULES[n].getNetworkLedgerData()));
 
   const byNetwork: Partial<Record<NetworkId, NetworkLedgerData>> = {};
   const networkErrors: Partial<Record<NetworkId, NetworkError>> = {};
 
-  const exclude = currentWallet().excludeContracts;
+  // excluded tokens are left out of holdings/gains (the overview would double them with mes.fm/sov), but
+  // the tax ledger asks for everything: see ai/src/app/api/ledger/route.ts
+  const exclude = opts.includeExcluded ? new Set<string>() : currentWallet().excludeContracts;
   settled.forEach((result, i) => {
     const n = targets[i]!; // settled is mapped 1:1 from targets, so every index is in bounds
     if (result.status === 'fulfilled') {

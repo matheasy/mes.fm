@@ -29,20 +29,22 @@ async function getRawWalletData(): Promise<RawWalletData> {
   });
 }
 
-function decodeDecimals(hex: string | null | undefined): number {
-  if (!hex) return 18;
-  return hex.startsWith('0x') ? parseInt(hex, 16) : Number(hex);
+function decodeDecimals(d: string | null | undefined): number {
+  if (!d) return 18;
+  const n = d.startsWith('0x') ? parseInt(d, 16) : Number(d);
+  return Number.isFinite(n) ? n : 18;
 }
 
-/**
- * nr_getAssetTransfers's `value` is raw integer units (confirmed live: a 0.00166 BNB transfer
- * came back as `1660000000000000`), not decimal-adjusted like Alchemy's `alchemy_getAssetTransfers`
- * - despite this API's request params closely mirroring Alchemy's, its response convention
- * differs here. Always scale by decimals (18 for native, rawContract.decimal for BEP-20).
- */
+/** nr_getAssetTransfers' `value` is hex, in raw integer units: scale by decimals (18 for BNB, `decimal` for BEP-20) */
 function transferAmount(t: nodeReal.AssetTransfer, isNative: boolean): number {
-  const decimals = isNative ? 18 : decodeDecimals(t.rawContract?.decimal);
-  return formatUnits(String(t.value), decimals);
+  const decimals = isNative ? 18 : decodeDecimals(t.decimal);
+  let raw: bigint;
+  try {
+    raw = BigInt(t.value);
+  } catch {
+    return 0;
+  }
+  return formatUnits(raw.toString(), decimals);
 }
 
 /**
@@ -60,17 +62,19 @@ export function normalizeTransactions(raw: RawWalletData): Transaction[] {
   const byHash = new Map<string, { timestamp: string; legs: Leg[] }>();
 
   for (const t of raw.transfers) {
-    if (t.value === null || Number(t.value) === 0) continue;
-    const timestamp = t.metadata?.blockTimestamp ?? new Date().toISOString();
+    if (!t.blockTimeStamp) continue;
+    const timestamp = new Date(t.blockTimeStamp * 1000).toISOString();
     const entry = byHash.get(t.hash) ?? { timestamp, legs: [] };
     const direction = (t.to ?? '').toLowerCase() === wallet ? 1 : -1;
     const isNative = t.category !== '20';
 
     const token: Transaction['token'] = isNative
       ? nativeTokenPick
-      : { symbol: t.asset ?? '???', contractAddress: (t.rawContract?.address ?? '').toLowerCase(), isNative: false };
+      : { symbol: t.asset ?? '???', contractAddress: (t.contractAddress ?? '').toLowerCase(), isNative: false };
 
-    entry.legs.push({ token, from: t.from, to: t.to ?? wallet, amount: direction * transferAmount(t, isNative) });
+    const amount = transferAmount(t, isNative);
+    if (amount === 0) continue;
+    entry.legs.push({ token, from: t.from, to: t.to ?? wallet, amount: direction * amount });
     byHash.set(t.hash, entry);
   }
 
@@ -104,9 +108,10 @@ export async function getTransactions(): Promise<Transaction[]> {
 export async function getCurrentHoldings(): Promise<Holding[]> {
   const raw = await getRawWalletData();
 
+  // a current price that can't be fetched leaves that holding's value unknown rather than failing the page
   const nativePrice = await cached(cacheKey('price', 'native'), CACHE_TTL_SECONDS.currentPrice, () =>
     coingecko.getNativeCurrentPrice(),
-  );
+  ).catch(() => null);
 
   const holdings: Holding[] = [];
   const nativeBalance = weiToBnb(raw.nativeBalanceWei);
@@ -114,15 +119,15 @@ export async function getCurrentHoldings(): Promise<Holding[]> {
     token: NATIVE_TOKEN,
     balance: raw.nativeBalanceWei,
     balanceFormatted: nativeBalance,
-    priceUsd: nativePrice.usd,
-    valueUsd: nativeBalance * nativePrice.usd,
-    change24hPct: nativePrice.usd24hChange,
+    priceUsd: nativePrice?.usd ?? null,
+    valueUsd: nativePrice ? nativeBalance * nativePrice.usd : null,
+    change24hPct: nativePrice?.usd24hChange ?? null,
   });
 
   const balances = new Map<string, { token: Token; balance: number }>();
   for (const t of raw.transfers) {
-    if (t.category !== '20' || t.value === null || !t.rawContract?.address) continue;
-    const contractAddress = t.rawContract.address.toLowerCase();
+    if (t.category !== '20' || !t.contractAddress) continue;
+    const contractAddress = t.contractAddress.toLowerCase();
     const direction = (t.to ?? '').toLowerCase() === WALLET_ADDRESS ? 1 : -1;
     const amount = direction * transferAmount(t, false);
     const existing = balances.get(contractAddress);
@@ -134,7 +139,7 @@ export async function getCurrentHoldings(): Promise<Holding[]> {
           contractAddress,
           symbol: t.asset ?? '???',
           name: t.asset ?? '???',
-          decimals: decodeDecimals(t.rawContract.decimal),
+          decimals: decodeDecimals(t.decimal),
           isNative: false,
           coingeckoId: null,
         },
@@ -146,9 +151,9 @@ export async function getCurrentHoldings(): Promise<Holding[]> {
   for (const { token, balance } of balances.values()) {
     if (balance <= 1e-12) continue; // filters out both zero and floating-point dust from summation
 
-    const coinId = await resolveCoinId(token as Transaction['token']);
+    const coinId = await resolveCoinId(token as Transaction['token']).catch(() => null);
     const price = coinId
-      ? await cached(cacheKey('price', coinId), CACHE_TTL_SECONDS.currentPrice, () => coingecko.getCurrentPrice(coinId))
+      ? await cached(cacheKey('price', coinId), CACHE_TTL_SECONDS.currentPrice, () => coingecko.getCurrentPrice(coinId)).catch(() => null)
       : null;
 
     holdings.push({
@@ -171,15 +176,20 @@ async function resolveCoinId(token: Transaction['token']): Promise<string | null
   );
 }
 
+/** BNB by its CoinGecko id; a BEP-20 token by its contract on DefiLlama first (see getTokenDailyPriceByContract), then by CoinGecko id */
 export async function getHistoricalPriceForToken(token: Transaction['token'], isoTimestamp: string): Promise<number | null> {
-  const coinId = await resolveCoinId(token);
-  if (!coinId) return null;
-
   const date = new Date(isoTimestamp);
   const dateStr = date.toISOString().slice(0, 10);
-  return cached(cacheKey('histprice-v2', coinId, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
-    coingecko.getHistoricalPrice(coinId, date),
-  );
+  if (!token.isNative && token.contractAddress) {
+    const byContract = await cached(cacheKey('histprice-v2', `bsc:${token.contractAddress}`, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
+      coingecko.getTokenDailyPriceByContract('bsc', token.contractAddress, date),
+    );
+    if (byContract !== null) return byContract;
+  }
+
+  const coinId = await resolveCoinId(token);
+  if (!coinId) return null;
+  return cached(cacheKey('histprice-v2', coinId, dateStr), CACHE_TTL_SECONDS.historicalPrice, () => coingecko.getHistoricalPrice(coinId, date));
 }
 
 export interface PricedTransaction extends Transaction {

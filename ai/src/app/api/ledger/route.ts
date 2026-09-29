@@ -25,7 +25,10 @@ export interface LedgerResponse {
 export async function GET(request: Request) {
   return withWallet(request, async () => {
     try {
-      const { byNetwork, networkErrors } = await getAggregatedNetworkData();
+      // Everything, including the tokens this wallet's config excludes (the Main wallet's BTCB/WBTC, which
+      // mes.fm/sov also reports): the tax report must see both sides of e.g. a BNB -> BTCB swap from one
+      // source, and drops sov's copies of those same BTC legs itself (crypto/src/lib/tax/report.ts).
+      const { byNetwork, networkErrors } = await getAggregatedNetworkData(undefined, { includeExcluded: true });
       const entries = Object.values(byNetwork)
         .flatMap((d) => d!.pricedTransactions)
         .filter((t) => t.amount !== 0)

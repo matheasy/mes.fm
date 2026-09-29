@@ -196,14 +196,20 @@ export function createEtherscanNetwork(network: EtherscanNetworkId) {
     );
   }
 
+  /** The native coin by its CoinGecko id; an ERC-20 by its contract on DefiLlama first (see getTokenDailyPriceByContract), then by CoinGecko id */
   async function resolveHistoricalPrice(token: Transaction['token'], isoTimestamp: string): Promise<number | null> {
+    const date = new Date(isoTimestamp);
+    const dateStr = date.toISOString().slice(0, 10);
+    if (!token.isNative && token.contractAddress) {
+      const byContract = await cached(cacheKey('histprice-v2', `${network}:${token.contractAddress}`, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
+        coingecko.getTokenDailyPriceByContract(network, token.contractAddress, date),
+      );
+      if (byContract !== null) return byContract;
+    }
+
     const coinId = await resolveCoinId(token);
     if (!coinId) return null;
-
-    const dateStr = new Date(isoTimestamp).toISOString().slice(0, 10);
-    return cached(cacheKey('histprice-v2', coinId, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
-      coingecko.getHistoricalPrice(coinId, new Date(isoTimestamp)),
-    );
+    return cached(cacheKey('histprice-v2', coinId, dateStr), CACHE_TTL_SECONDS.historicalPrice, () => coingecko.getHistoricalPrice(coinId, date));
   }
 
   async function getNetworkLedgerData(): Promise<NetworkLedgerData> {
