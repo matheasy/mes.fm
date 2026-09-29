@@ -165,6 +165,25 @@
     body.dark .refresh-btn { background-color: #2a6fb0; color: #ffffff; }
     .refresh-btn:disabled { opacity: 0.55; cursor: default; }
 
+    .row-builder { margin: 0 0 1.6em; padding: 10px 14px; border: 1px solid rgba(128,128,128,0.4); border-radius: 6px; }
+    .row-builder > summary { cursor: pointer; font-weight: bold; }
+    .row-cols { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 0.7em; }
+    .row-chip { display: inline-flex; align-items: center; gap: 2px; padding: 3px 4px 3px 9px; border-radius: 14px;
+      font-size: 0.82em; cursor: grab; background: rgba(128,128,128,0.18); border: 1px solid rgba(128,128,128,0.35); }
+    .row-chip.drag-over { outline: 2px solid #1a6fb0; }
+    .row-chip button { border: none; background: transparent; color: inherit; cursor: pointer; padding: 2px 5px; font-size: 1em; opacity: 0.75; }
+    .row-chip button:hover { opacity: 1; }
+    .row-add { margin: 0 0 0.7em; font-size: 0.88em; }
+    .row-add select { padding: 5px 8px; font-size: 1em; max-width: 100%; background: transparent; color: inherit;
+      border: 1px solid rgba(128,128,128,0.5); border-radius: 4px; }
+    .row-add select option { color: #000; }
+    .row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 0.7em; }
+    .row-check { font-size: 0.85em; }
+    .row-preview-wrap { overflow-x: auto; }
+    .row-preview { width: auto; font-size: 0.85em; margin: 0; }
+    .row-preview th, .row-preview td { width: auto; white-space: nowrap; padding: 5px 10px; border: 1px solid rgba(128,128,128,0.3); }
+    .row-preview tbody tr:nth-child(odd) { background: transparent !important; }
+
     .updated-line { font-size: 0.85em; opacity: 0.75; }
 
     h2 { font-size: 1.25em; margin: 1.8em 0 0.2em; }
@@ -525,6 +544,22 @@
       <span class="updated-line" id="updatedLine">Loading&hellip;</span>
     </div>
 
+    <details class="row-builder" id="rowBuilder" open>
+      <summary>My Row &mdash; copy your daily numbers straight into Excel</summary>
+      <p class="section-note">Pick the data points and their order, then press <strong>Copy row</strong> and paste into a
+      spreadsheet: every value lands in its own cell. Your choice is remembered on this device.</p>
+      <div class="row-cols" id="rowCols" aria-label="Selected columns, in order"></div>
+      <div class="row-add"><label for="rowAdd">Add a column:</label> <select id="rowAdd"></select></div>
+      <div class="row-actions">
+        <button id="rowCopy" class="refresh-btn" type="button">Copy row</button>
+        <button id="rowCopyHdr" class="loc-btn" type="button">Copy headers only</button>
+        <label class="row-check"><input type="checkbox" id="rowHdrOn" /> Include header row when copying</label>
+        <button id="rowReset" class="loc-btn" type="button">Reset to default</button>
+        <span class="updated-line" id="rowMsg" role="status"></span>
+      </div>
+      <div class="row-preview-wrap"><table class="row-preview" id="rowPreview"></table></div>
+    </details>
+
     <details class="toc-mobile">
       <summary>Jump to section</summary>
       <nav class="toc-links" aria-label="Jump to section">
@@ -561,8 +596,10 @@
         </tr>
         <tr><th>Sunrise</th><td class="big-value" id="sunrise">&mdash;</td></tr>
         <tr><th>Sunset</th><td class="big-value" id="sunset">&mdash;</td></tr>
+        <tr><th>Sun duration <span class="muted">(daylight)</span></th><td class="big-value" id="sunDuration">&mdash;</td></tr>
         <tr><th>Moonrise</th><td class="big-value" id="moonrise">&mdash;</td></tr>
         <tr><th>Moonset</th><td class="big-value" id="moonset">&mdash;</td></tr>
+        <tr><th>Moon duration <span class="muted">(above horizon)</span></th><td class="big-value" id="moonDuration">&mdash;</td></tr>
         <tr><th>Moon phase</th><td class="big-value" id="moonphase">&mdash;</td></tr>
       </tbody>
     </table>
@@ -828,6 +865,7 @@
   </script>
 
   <script src="/moon/js/astronomy.browser.min.js"></script>
+  <script src="/moon/js/moon-row.js?v=1" defer></script>
   <script>
     // Live Sun / Moon dashboard.
     //
@@ -1057,6 +1095,18 @@
         set('sunset', fmtOrNone(riseSetDate(A.Body.Sun, -1, dayStart)));
         set('moonrise', fmtOrNone(riseSetDate(A.Body.Moon, 1, dayStart)));
         set('moonset', fmtOrNone(riseSetDate(A.Body.Moon, -1, dayStart)));
+        set('sunDuration', fmtHM(upFor(A.Body.Sun, riseSetDate(A.Body.Sun, 1, dayStart))));
+        set('moonDuration', fmtHM(upFor(A.Body.Moon, riseSetDate(A.Body.Moon, 1, dayStart))));
+      }
+
+      // Time from a body's rise to its next set, e.g. "11h 53m" (null if either is missing).
+      function upFor(body, rise) {
+        if (!rise) return null;
+        var st = riseSetDate(body, -1, rise);
+        return st ? Math.round((st - rise) / 60000) : null;
+      }
+      function fmtHM(mins) {
+        return mins == null ? 'none this day' : Math.floor(mins / 60) + 'h ' + pad(mins % 60) + 'm';
       }
 
       function fmtOrNone(d) { return d ? fmtClock(d) : 'none this day'; }
@@ -1433,6 +1483,47 @@
       };
 
       // --- main refresh --------------------------------------------------
+      // --- raw values for the "My Row" copy builder (js/moon-row.js) ----------
+      function collectRaw(now, fc, aq) {
+        var raw = {};
+        var ds = localDayStart(now);
+        var sr = riseSetDate(A.Body.Sun, 1, ds), ss = riseSetDate(A.Body.Sun, -1, ds);
+        var mr = riseSetDate(A.Body.Moon, 1, ds), ms = riseSetDate(A.Body.Moon, -1, ds);
+        raw.date = new Intl.DateTimeFormat('en-CA', { timeZone: state.tz }).format(now);
+        raw.sunrise = sr ? fmtClock(sr) : '';
+        raw.sunset = ss ? fmtClock(ss) : '';
+        raw.moonrise = mr ? fmtClock(mr) : '';
+        raw.moonset = ms ? fmtClock(ms) : '';
+        function hhmm(m) { return m == null ? '' : Math.floor(m / 60) + ':' + pad(m % 60); }
+        raw.sunDuration = hhmm(upFor(A.Body.Sun, sr));
+        raw.moonDuration = hhmm(upFor(A.Body.Moon, mr));
+        var ill = A.Illumination(A.Body.Moon, now);
+        var elong = A.MoonPhase(now), waxing = elong < 180;
+        raw.moonPhasePct = (ill.phase_fraction * 100).toFixed(1);
+        raw.moonPhaseName = phaseName(ill.phase_fraction, waxing);
+        [['sun', A.Body.Sun], ['moon', A.Body.Moon]].forEach(function (b) {
+          var p = b[0], app = A.Equator(b[1], now, observer, true, true);
+          var j2k = A.Equator(b[1], now, observer, false, true);
+          var mag = A.Illumination(b[1], now).mag;
+          var h = app.ra * 3600, hh = Math.floor(h / 3600), mm = Math.floor((h % 3600) / 60), sec = Math.round(h % 60);
+          if (sec === 60) { sec = 0; mm++; } if (mm === 60) { mm = 0; hh++; } hh = (hh % 24 + 24) % 24;
+          raw[p + 'Ra'] = hh + ':' + pad(mm) + ':' + pad(sec);
+          raw[p + 'Dec'] = app.dec.toFixed(2);
+          raw[p + 'Mag'] = mag.toFixed(2);
+          raw[p + 'DistKm'] = (app.dist * AU_KM).toFixed(2);
+          raw[p + 'DistAu'] = app.dist.toFixed(6);
+          raw[p + 'Const'] = A.Constellation(j2k.ra, j2k.dec).name;
+        });
+        function c1(f) { return f == null ? '' : ((f - 32) / 1.8).toFixed(1); }
+        function f0(f) { return f == null ? '' : String(Math.round(f)); }
+        raw.tempNowC = c1(fc.curTempF); raw.tempNowF = f0(fc.curTempF);
+        raw.temp9C = c1(fc.temp9F); raw.temp9F = f0(fc.temp9F);
+        raw.tempHiC = c1(fc.hiF); raw.tempLoC = c1(fc.loF);
+        raw.aqiUs = aq && aq.us != null ? String(Math.round(aq.us)) : '';
+        raw.uvMax = fc.uvMax != null ? fc.uvMax.toFixed(1) : '';
+        return raw;
+      }
+
       function refresh() {
         if (!A) {
           set('updatedLine', 'Astronomy library did not load — use the source links below.');
@@ -1468,6 +1559,10 @@
           var dayStart = localDayStart(now);
           state.last = { now: now, dayStart: dayStart };
           drawVisuals(now, dayStart);
+          try {
+            window.MES_MOON_RAW = collectRaw(now, fc, aq);
+            document.dispatchEvent(new CustomEvent('moon-data'));
+          } catch (e) {}
 
           set('locName2', state.loc.label);
           set('updatedLine', 'As of ' + now.toLocaleString('en-US', {
