@@ -1,6 +1,8 @@
 export type CostBasisMethod = 'fifo' | 'lifo' | 'average';
 
 export interface GainResult {
+  /** sov/ai/mfa's own NetworkId, as a plain string - this app only ever displays it, never branches on it */
+  network: string;
   tokenSymbol: string;
   disposalTxHash: string;
   disposedAt: string;

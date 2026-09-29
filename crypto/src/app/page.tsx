@@ -31,8 +31,8 @@ export default function OverviewPage() {
           Transactions
         </Link>{' '}
         and{' '}
-        <Link href="/gains" className="text-accent hover:underline">
-          Gains
+        <Link href="/taxes" className="text-accent hover:underline">
+          Taxes
         </Link>{' '}
         pages above.
       </p>

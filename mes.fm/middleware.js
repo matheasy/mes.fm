@@ -1,15 +1,26 @@
-// Vercel Edge Middleware — light HTTP Basic Auth gate for /portfolio, /sov and /assets.
+// Vercel Edge Middleware — light HTTP Basic Auth gate for /portfolio, /taxes, /sov and /assets.
 //
-// Both paths are proxy rewrites (see vercel.json) to external tracker apps
-// (mes-fm-crypto, mes-fm-sov, mes-fm-assets). Middleware runs before vercel.json rewrites, so
-// this challenges for a password first and only lets the proxy through on
-// success. One shared realm + username/password, so unlocking one unlocks the other.
+// All four paths are proxy rewrites (see vercel.json) to external tracker apps (mes-fm-crypto -
+// /portfolio and /taxes both live in that one deployment, plus mes-fm-sov, mes-fm-assets).
+// Middleware runs before vercel.json rewrites, so this challenges for a password first and only
+// lets the proxy through on success. One shared realm + username/password, so unlocking one
+// unlocks the others - note /taxes needs its own matcher entry even though it's served by the
+// same mes-fm-crypto deployment as /portfolio, since the matcher is path-based, not deployment-based.
 //
 // This is only meant to keep the pages out of the hands of the general public /
 // search crawlers — it is not a hardened secret. Username must be "mes", password "911".
 
 export const config = {
-  matcher: ['/portfolio', '/portfolio/:path*', '/sov', '/sov/:path*', '/assets', '/assets/:path*'],
+  matcher: [
+    '/portfolio',
+    '/portfolio/:path*',
+    '/taxes',
+    '/taxes/:path*',
+    '/sov',
+    '/sov/:path*',
+    '/assets',
+    '/assets/:path*',
+  ],
 };
 
 const USERNAME = 'mes';

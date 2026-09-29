@@ -1,15 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
 import RefreshButton from '@/components/RefreshButton';
 import StateView from '@/components/StateView';
 import TransactionFilters from '@/components/TransactionFilters';
 import TransactionsTable from '@/components/TransactionsTable';
 import { useTransactions } from '@/hooks/useTransactions';
 import type { TransactionFilters as Filters } from '@/lib/types';
+import { WALLET_KEYS, type WalletKey } from '@/lib/wallets';
 
-export default function TransactionsPage() {
-  const [filters, setFilters] = useState<Filters>({});
+function initialWallet(param: string | null): WalletKey | undefined {
+  return WALLET_KEYS.includes(param as WalletKey) ? (param as WalletKey) : undefined;
+}
+
+function TransactionsPageInner() {
+  const searchParams = useSearchParams();
+  // Seeded once from ?wallet= (e.g. the "Transactions" link on mes.fm/sov, /ai, /mfa's own nav) -
+  // after that the dropdown owns it, same as every other filter here.
+  const [filters, setFilters] = useState<Filters>(() => ({ wallet: initialWallet(searchParams.get('wallet')) }));
   const { transactions, isLoading, error, rateLimited, refresh } = useTransactions(filters);
 
   return (
@@ -31,5 +40,13 @@ export default function TransactionsPage() {
         <TransactionsTable transactions={transactions} />
       </StateView>
     </div>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={null}>
+      <TransactionsPageInner />
+    </Suspense>
   );
 }

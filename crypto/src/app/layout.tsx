@@ -28,8 +28,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/transactions" className="text-gray-300 hover:text-accent">
                 Transactions
               </Link>
-              <Link href="/gains" className="text-gray-300 hover:text-accent">
-                Gains
+              <Link href="/taxes" className="text-gray-300 hover:text-accent">
+                Taxes
               </Link>
             </nav>
             <main>{children}</main>
