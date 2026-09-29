@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SwrProvider>
           <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6">
-            <SiteChrome title={TITLE} tagline={TAGLINE} partOfLabel="MES Links" partOfHref="https://mes.fm/links" />
+            <SiteChrome title={TITLE} tagline={TAGLINE} partOfLabel="MES Crypto" partOfHref="https://mes.fm/crypto" />
             <nav className="mb-6 flex gap-4 text-sm">
               <Link href="/" className="text-gray-300 hover:text-accent">
                 Overview
