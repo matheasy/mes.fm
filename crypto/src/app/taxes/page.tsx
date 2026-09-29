@@ -7,10 +7,12 @@ import RefreshButton from '@/components/RefreshButton';
 import StateView from '@/components/StateView';
 import TaxesTable from '@/components/TaxesTable';
 import TaxSummary, { money } from '@/components/TaxSummary';
+import YearNotes from '@/components/YearNotes';
 import { useTaxes } from '@/hooks/useTaxes';
 import { BASE_PATH } from '@/lib/basePath';
 import { TAX_GROUPS, TAX_GROUP_LABELS, sourceLabel, type TaxGroup } from '@/lib/tax/taxSources';
-import { custodyLabelId, NOT_ROUND_TRIP, type LabelRecord } from '@/lib/types';
+import { custodyLabelId, NOT_ROUND_TRIP, yearNotesId, type LabelRecord } from '@/lib/types';
+import { knownName } from '@/lib/tax/knownAddresses';
 
 function initialGroup(param: string | null): TaxGroup | undefined {
   return TAX_GROUPS.includes(param as TaxGroup) ? (param as TaxGroup) : undefined;
@@ -154,12 +156,18 @@ function TaxesPageInner() {
 
             {(failed.length > 0 || !taxes.cadComplete) && (
               <div className="panel flex flex-col gap-2 border-yellow-500/40 text-sm">
-                {failed.map((s) => (
-                  <p key={s.key} className="text-yellow-300">
-                    <strong>{s.label}</strong> couldn&apos;t be loaded ({s.error}), so its transactions are missing from everything below - the
-                    totals will change once it&apos;s back.
-                  </p>
-                ))}
+                {failed.map((s) =>
+                  s.key.startsWith('check:') ? (
+                    <p key={s.key} className="text-yellow-300">
+                      <strong>{s.label}</strong>: {s.error}.
+                    </p>
+                  ) : (
+                    <p key={s.key} className="text-yellow-300">
+                      <strong>{s.label}</strong> couldn&apos;t be loaded ({s.error}), so its transactions are missing from everything below - the
+                      totals will change once it&apos;s back.
+                    </p>
+                  ),
+                )}
                 {!taxes.cadComplete && (
                   <p className="text-yellow-300">Some Bank of Canada rates couldn&apos;t be loaded; those CAD amounts use the nearest earlier rate.</p>
                 )}
@@ -172,6 +180,8 @@ function TaxesPageInner() {
                 Totals are for all wallets; the list below shows only {TAX_GROUP_LABELS[wallet]}&apos;s rows.
               </p>
             )}
+
+            <YearNotes year={taxes.year} notes={taxes.yearNotes} onSave={(record) => saveLabel(yearNotesId(taxes.year), record)} />
 
             {taxes.rows.length === 0 ? (
               <div className="panel py-12 text-center text-gray-400">Nothing sold or swapped in {taxes.year}.</div>
@@ -294,6 +304,7 @@ function TaxesPageInner() {
                               {c.address.slice(0, 8)}…{c.address.slice(-6)}
                             </a>
                             <span className="block text-xs capitalize text-gray-500">{c.network}</span>
+                            {knownName(c.address) && <span className="block text-xs text-gray-400">{knownName(c.address)}</span>}
                           </td>
                           <td className="font-medium text-gray-100">{c.asset}</td>
                           <td>{amt(c.matched)}</td>

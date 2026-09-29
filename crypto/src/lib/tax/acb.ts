@@ -64,6 +64,12 @@ export interface TaxEntry {
   bridge?: boolean;
   /** A market trade whose other side isn't tracked (a Hive Engine fill): a disposal is a swap, not a send */
   market?: boolean;
+  /**
+   * A Hive Engine peg deposit/withdrawal: the same coin's other side is on this chain (HIVE sent to
+   * honey-swap, BTC arriving from btc-swap...). lib/tax/report.ts gives the two legs one hash, so they
+   * net to the gateway's fee - an own move, not a sale.
+   */
+  peg?: 'hive' | 'bitcoin' | 'ethereum';
 }
 
 export type DisposalKind = 'swap' | 'send' | 'lp' | 'bridge';

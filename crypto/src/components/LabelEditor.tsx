@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { LabelRecord } from '@/lib/types';
 
-const PRESETS = ['Trade', 'Payment', 'Gift', 'Personal transfer', 'Income', 'Other'];
+const PRESETS = ['Trade', 'SimpleSwap', 'Payment', 'Gift', 'Personal transfer', 'Bridge to my own wallet', 'Income', 'Other'];
 
 interface LabelEditorProps {
   initial: LabelRecord | null;
@@ -53,7 +53,9 @@ export default function LabelEditor({ initial, uncoveredQuantity = 0, symbol, on
             title={
               p === 'Personal transfer'
                 ? 'Sent to another account of yours (e.g. your exchange account): not a sale, so no gain or loss is counted'
-                : undefined
+                : p === 'Bridge to my own wallet'
+                  ? 'Bridged to your own wallet on another chain, as the same coin: not a sale, so no gain or loss is counted'
+                  : undefined
             }
             className={`rounded-full border px-2.5 py-1 text-xs ${
               tag === p ? 'border-accent bg-accent/20 text-accent' : 'border-bg-border text-gray-300 hover:border-accent'
@@ -70,8 +72,9 @@ export default function LabelEditor({ initial, uncoveredQuantity = 0, symbol, on
         />
       </div>
       <p className="-mt-1 text-xs text-gray-500">
-        <strong className="text-gray-400">Personal transfer</strong> = it went to another account of yours (e.g. your exchange account), so it
-        isn&apos;t a sale and no gain or loss is counted. Every other label is a note for your records - the row still counts as a sale.
+        <strong className="text-gray-400">Personal transfer</strong> (another account of yours, e.g. your exchange) and{' '}
+        <strong className="text-gray-400">Bridge to my own wallet</strong> (the same coin, on another chain) aren&apos;t sales - no gain or loss is
+        counted. Every other label (Trade, SimpleSwap, Payment...) is a note for your records - the row still counts as a sale.
       </p>
 
       {uncoveredQuantity > 0 && (

@@ -6,7 +6,7 @@
  *    owner's instruction ("BTCB and SWAP.BTC are just wrapped Bitcoin"), and how mes.fm/sov
  *    already accounts for them.
  *  - Ether is one ETH pool (native ETH on Ethereum/Arbitrum, WETH, BNB Chain's Binance-Peg ETH,
- *    Hyperliquid's UETH); Hyperliquid's UBTC is BTC.
+ *    Hyperliquid's UETH, Hive Engine's SWAP.ETH); Hyperliquid's UBTC is BTC.
  *  - BNB and WBNB are one BNB pool.
  *  - Everything else pools by upper-case symbol. Unpriced lookalikes (scam airdrops reusing a real
  *    symbol) never reach a pool - the calculation skips any leg without a price.
@@ -24,6 +24,7 @@ const ALIASES: Record<string, string> = {
   ETH: 'ETH',
   UETH: 'ETH', // Hyperliquid spot's bridged ETH
   WETH: 'ETH',
+  'SWAP.ETH': 'ETH',
   BNB: 'BNB',
   WBNB: 'BNB',
   HIVE: 'HIVE',

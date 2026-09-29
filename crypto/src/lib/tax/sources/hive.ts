@@ -28,8 +28,9 @@ const FILTER_LOW = [2, 39, 50, 55, 56, 57].reduce((m, i) => m | (1n << BigInt(i)
 const FILTER_HIGH = [64, 66, 77, 81, 83].reduce((m, i) => m | (1n << BigInt(i - 64)), 0n).toString();
 
 /** Accounts on the other end of a move between the owner's own holdings that aren't tracked yet: Hive
- * Engine's HIVE peg (HIVE sent here becomes SWAP.HIVE on Hive Engine) */
-const BRIDGES = new Set(['honey-swap']);
+ * Engine's HIVE peg (HIVE sent here becomes SWAP.HIVE on Hive Engine) and Magi's gateway (HBD sent here
+ * is the owner's HBD on Magi - mes.fm/assets lists it) */
+const BRIDGES = new Set(['honey-swap', 'vsc.gateway']);
 
 type Asset = { amount: string; precision: number; nai: string };
 type HistoryItem = [number, { trx_id: string; op_in_trx: number; block: number; timestamp: string; op: { type: string; value: Record<string, unknown> } }];

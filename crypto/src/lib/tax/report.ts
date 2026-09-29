@@ -13,6 +13,7 @@ import {
   type TaxSourceStatus,
   type TaxYearSummary,
   type TaxesResponse,
+  yearNotesId,
 } from '../types';
 import { computeAcb, custodyKey, disposalId, type AcbDisposal, type AcbIncome, type AcbReceipt, type TaxEntry } from './acb';
 import { assetKey } from './assetKey';
@@ -22,6 +23,7 @@ import { isOwnAddress } from './ownAddresses';
 import { getBitcoinEntries } from './sources/bitcoin';
 import { getHiveEntries } from './sources/hive';
 import { getTgldEntries } from './sources/tgld';
+import { getHiveEngineEntries, swapHiveGaps } from './sources/hiveEngine';
 import { getXrpEntries } from './sources/xrp';
 import { groupOf, sourceLabel, sourceLink, type TaxGroup } from './taxSources';
 
@@ -120,7 +122,7 @@ function summarizeReceipts(items: AcbReceipt[]): TaxReceiptsSummary {
  * (not their own, not the PancakeSwap LP contracts), confirmed to be smart contracts - a person's or
  * an exchange's wallet is left alone, since the owner may have sold in between (see AcbCustody).
  */
-async function findCustodyContracts(entries: TaxEntry[]): Promise<Set<string>> {
+async function findCustodyContracts(entries: TaxEntry[]): Promise<{ found: Set<string>; failed: string[] }> {
   const seen = new Map<string, { network: string; address: string; out: boolean; in: boolean }>();
   for (const e of entries) {
     if (!EVM_NETWORKS.has(e.network) || e.income || e.amount === 0) continue;
@@ -165,12 +167,57 @@ function settle(load: () => Promise<TaxEntry[]>) {
  */
 const LEDGER_SOURCES = WALLET_SOURCES.filter((s) => s.key !== 'sov');
 
+const PEG_NETWORKS: Record<NonNullable<TaxEntry['peg']>, (network: string) => boolean> = {
+  hive: (n) => n === 'hive',
+  bitcoin: (n) => n === 'bitcoin-l1',
+  ethereum: (n) => n === 'ethereum',
+};
+/** How long a gateway may take to deliver, and how much of the coin it may keep as its fee */
+const PEG_WINDOW_MS = 3 * 86_400_000;
+const PEG_MAX_FEE = 0.05;
+
+/**
+ * Pairs every Hive Engine peg deposit/withdrawal (TaxEntry.peg) with the same coin's other side on its
+ * own chain - HIVE sent to honey-swap with the SWAP.HIVE it became, SWAP.BTC withdrawn to the owner's
+ * BTC address with the BTC that arrived - by giving both legs one hash: the calculation then nets them
+ * to the gateway's fee, which leaves at cost (bridge). The other side is the closest leg in time, in
+ * the right direction (sent before a deposit / received after a withdrawal, within 3 days), of the
+ * same ACB pool and no more than 5% apart; the Hive side of a honey-swap deposit shares the
+ * transaction id, so it's matched exactly. Unpaired legs keep their bridge treatment. Mutates `entries`.
+ */
+function pairPegMoves(entries: TaxEntry[]): void {
+  const used = new Set<TaxEntry>();
+  const pegs = entries.filter((e) => e.peg).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  for (const a of pegs) {
+    const onChain = PEG_NETWORKS[a.peg!];
+    const pool = assetKey(a.symbol);
+    const t = Date.parse(a.timestamp);
+    const deposit = a.amount > 0;
+    const candidates = entries.filter((b) => {
+      if (b.peg || used.has(b) || !onChain(b.network) || assetKey(b.symbol) !== pool) return false;
+      if (Math.sign(b.amount) !== -Math.sign(a.amount)) return false;
+      const dt = Date.parse(b.timestamp) - t;
+      if (deposit ? dt > 60_000 || dt < -PEG_WINDOW_MS : dt < -60_000 || dt > PEG_WINDOW_MS) return false;
+      const sent = Math.abs(deposit ? b.amount : a.amount);
+      const got = Math.abs(deposit ? a.amount : b.amount);
+      return got <= sent * 1.000001 && got >= sent * (1 - PEG_MAX_FEE);
+    });
+    const exact = candidates.find((b) => b.hash.split(':')[0] === a.hash);
+    const best = exact ?? candidates.sort((x, y) => Math.abs(Date.parse(x.timestamp) - t) - Math.abs(Date.parse(y.timestamp) - t))[0];
+    if (!best) continue;
+    used.add(best);
+    best.hash = a.hash;
+    best.bridge = true;
+  }
+}
+
 export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }): Promise<TaxesResponse> {
-  const [upstream, bitcoin, xrp, tgld, hive, labels] = await Promise.all([
+  const [upstream, bitcoin, xrp, tgld, hiveEngine, hive, labels] = await Promise.all([
     Promise.all(LEDGER_SOURCES.map((s) => fetchSource<UpstreamLedger>(s, '/api/ledger'))),
     settle(getBitcoinEntries),
     settle(getXrpEntries),
     settle(getTgldEntries),
+    settle(getHiveEngineEntries),
     getHiveEntries().catch((err: unknown) => ({
       entries: [] as TaxEntry[],
       errors: [{ account: 'all accounts', error: err instanceof Error ? err.message : 'failed to load' }],
@@ -196,8 +243,10 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
     ...bitcoin.entries,
     ...xrp.entries,
     ...tgld.entries,
+    ...hiveEngine.entries,
     ...hive.entries,
   ];
+  pairPegMoves(entries);
 
   const hiveBySource = new Map<string, number>();
   for (const e of hive.entries) hiveBySource.set(e.source, (hiveBySource.get(e.source) ?? 0) + 1);
@@ -206,6 +255,7 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
     { key: 'bitcoin', label: 'Bitcoin', entries: bitcoin.entries.length, error: bitcoin.error },
     { key: 'xrp', label: 'XRP', entries: xrp.entries.length, error: xrp.error },
     { key: 'tgld', label: 'TGLD (Hive Engine)', entries: tgld.entries.length, error: tgld.error },
+    { key: 'hive-engine', label: 'Hive Engine (SWAP.HIVE, LEO, SWAP.BTC...)', entries: hiveEngine.entries.length, error: hiveEngine.error },
     ...Object.keys(hive.counts).map((account) => ({
       key: `hive:${account}`,
       label: `Hive @${account}`,
@@ -231,7 +281,23 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
     if (typeof c === 'number') costOverrides.set(id, c);
   }
   // detected round-trip contracts, minus any the owner switched off on the Taxes page
-  const detected = await findCustodyContracts(entries);
+  // SWAP.HIVE counted on Hive Engine but no longer there: spent in a way not tracked yet - say so
+  const gaps = await swapHiveGaps(entries).catch(() => []);
+  for (const g of gaps)
+    sources.push({
+      key: `check:hive-engine:${g.account}`,
+      label: `Hive Engine @${g.account}`,
+      entries: 0,
+      error: `${g.missing.toLocaleString('en-US', { maximumFractionDigits: 0 })} SWAP.HIVE counted as still held left the account through trades not tracked yet (a token not on the list, liquidity added to a pool...). They stay in the HIVE pool, lowering its average cost a little; tell me which token and it gets added`,
+    });
+  const { found: detected, failed: uncheckedNetworks } = await findCustodyContracts(entries);
+  for (const network of uncheckedNetworks)
+    sources.push({
+      key: `check:contracts:${network}`,
+      label: `Round-trip check (${network})`,
+      entries: 0,
+      error: `couldn't ask the ${network} network which addresses are contracts, so some round trips there count as sales for now - press Refresh Data in a minute`,
+    });
   const disabled = new Set([...detected].filter((k) => {
     const [network, address] = k.split(':') as [string, string];
     return labels[custodyLabelId(network, address)]?.tag === NOT_ROUND_TRIP;
@@ -276,5 +342,6 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
     ].sort((a, b) => a.network.localeCompare(b.network) || a.address.localeCompare(b.address) || a.asset.localeCompare(b.asset)),
     sources,
     cadComplete,
+    yearNotes: labels[yearNotesId(year)] ?? null,
   };
 }

@@ -76,7 +76,14 @@ export async function GET(request: Request) {
         .join(','),
     );
 
-  const csv = [HEADERS.join(','), ...csvRows].join('\n');
+  const lines = [HEADERS.join(','), ...csvRows];
+  // the owner's notes for the year go at the bottom, after an empty line
+  const notes = report.yearNotes;
+  if (notes && (notes.notes.trim() || notes.screenshotUrls.length)) {
+    lines.push('', escapeCsvField(`Notes for ${report.year}`), escapeCsvField(notes.notes.trim()));
+    if (notes.screenshotUrls.length) lines.push(escapeCsvField(notes.screenshotUrls.join(' ')));
+  }
+  const csv = lines.join('\n');
   return new Response(csv, {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',

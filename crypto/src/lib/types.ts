@@ -99,13 +99,17 @@ export interface LabelRecord {
 }
 
 /** Label id under which the owner switches a detected round-trip contract off (value: tag NOT_ROUND_TRIP) */
+export function yearNotesId(year: number): string {
+  return `year:${year}`;
+}
+
 export function custodyLabelId(network: string, address: string): string {
   return `custody:${network}:${address.toLowerCase()}`;
 }
 export const NOT_ROUND_TRIP = 'Not a round trip';
 
 /** Label tags that mean "this left for another account of mine", not a sale - see lib/tax/acb.ts */
-export const TRANSFER_TAGS = ['personal transfer'];
+export const TRANSFER_TAGS = ['personal transfer', 'bridge to my own wallet'];
 
 export function isTransferLabel(label: LabelRecord | null | undefined): boolean {
   return !!label && TRANSFER_TAGS.includes(label.tag.trim().toLowerCase());
@@ -185,6 +189,8 @@ export interface TaxesResponse {
   sources: TaxSourceStatus[];
   /** False when a Bank of Canada rate couldn't be found for some date (CAD figures then partly missing) */
   cadComplete: boolean;
+  /** The owner's own notes for this tax year (label id yearNotesId(year)) */
+  yearNotes: LabelRecord | null;
 }
 
 /** mes.fm/assets' totals, as passed on by /api/assets (groups' totals include dust) */

@@ -3,6 +3,7 @@
 import { Fragment, useState } from 'react';
 import LabelEditor from '@/components/LabelEditor';
 import { money } from '@/components/TaxSummary';
+import { knownName } from '@/lib/tax/knownAddresses';
 import type { LabelRecord, TaxRow } from '@/lib/types';
 
 /** Explorer link per network, as the sources report them (sov's combined BTC spans chains, so it searches) */
@@ -67,7 +68,7 @@ export default function TaxesTable({ rows, currency, onSaveLabel }: TaxesTablePr
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => {
+          {rows.map((r, i) => {
             const proceeds = cad ? r.proceedsCad : r.proceedsUsd;
             const cost = cad ? r.costCad : r.costUsd;
             const gain = cad ? r.gainCad : r.gainUsd;
@@ -76,7 +77,7 @@ export default function TaxesTable({ rows, currency, onSaveLabel }: TaxesTablePr
             const reviewSend = r.needsInput.includes('send');
 
             return (
-              <Fragment key={r.id}>
+              <Fragment key={`${r.id}-${i}`}>
                 <tr className={r.isTransfer ? 'opacity-60' : r.needsInput.length ? 'bg-yellow-500/[0.06]' : undefined}>
                   <td className="whitespace-nowrap">
                     {url ? (
@@ -103,6 +104,7 @@ export default function TaxesTable({ rows, currency, onSaveLabel }: TaxesTablePr
                     <span className="block text-gray-500" title={r.counterparty}>
                       to {short(r.counterparty)}
                     </span>
+                    {knownName(r.counterparty) && <span className="block text-gray-400">{knownName(r.counterparty)}</span>}
                   </td>
                   <td>{proceeds === null ? '—' : money(proceeds, currency)}</td>
                   <td>

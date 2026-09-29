@@ -2,6 +2,7 @@ import { cached, cacheKey } from '../../cache';
 import type { TaxEntry } from '../acb';
 import { HIVE_ACCOUNTS } from '../accounts';
 import { getDailySeries, priceOn } from '../dailyPrices';
+import { getJson } from './hiveEngine';
 
 const HISTORY = 'https://history.hive-engine.com';
 const SYMBOL = 'TGLD';
@@ -26,12 +27,6 @@ interface DayRow {
   timestamp: number;
   volumeHive: string;
   volumeToken: string;
-}
-
-async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Hive Engine history answered ${res.status}`);
-  return (await res.json()) as T;
 }
 
 async function accountHistory(account: string): Promise<HeRow[]> {
@@ -70,9 +65,8 @@ async function hivePerTgld(): Promise<(iso: string) => number | null> {
 /**
  * TGLD on Hive Engine for every Hive account, as tax legs. Transfers in/out and market fills change
  * what's owned; staking doesn't. A market fill is valued at the HIVE actually paid or received;
- * anything else at that day's traded HIVE-per-TGLD. Both then x HIVE/USD that day. The SWAP.HIVE side
- * of a fill isn't tracked (Hive Engine's other tokens aren't yet), so a fill is one TGLD leg marked
- * as a market trade.
+ * anything else at that day's traded HIVE-per-TGLD. Both then x HIVE/USD that day. A fill is the TGLD
+ * leg plus the SWAP.HIVE paid/received; pool swaps involving TGLD come from hiveEngine.ts.
  */
 export async function getTgldEntries(): Promise<TaxEntry[]> {
   const rows = await cached(
@@ -107,6 +101,8 @@ export async function getTgldEntries(): Promise<TaxEntry[]> {
         from: r.from ?? 'hive-engine',
         to: r.to ?? account,
         income: incoming && r.from && YIELD_ACCOUNTS.has(r.from) ? 'TGLD yield' : undefined,
+        // dswap answers a transfer (SwapRequest) with another token: a trade, not a payment
+        market: (incoming ? r.from : r.to) === 'dswap' || undefined,
       });
     } else if (r.operation === 'market_buy' || r.operation === 'market_sell') {
       const tokens = Number(r.quantityTokens ?? 0);
@@ -122,6 +118,17 @@ export async function getTgldEntries(): Promise<TaxEntry[]> {
         to: buy ? account : 'hive-engine-market',
         market: true,
       });
+      // the SWAP.HIVE paid or received (SWAP.HIVE is tracked since hiveEngine.ts - it's the owner's HIVE)
+      if (hivePaid > 0)
+        entries.push({
+          ...base,
+          symbol: 'SWAP.HIVE',
+          amount: buy ? -hivePaid : hivePaid,
+          priceUsd: hiveUsd,
+          from: buy ? account : 'hive-engine-market',
+          to: buy ? 'hive-engine-market' : account,
+          market: true,
+        });
     }
   }
   return entries;
