@@ -121,6 +121,16 @@ export interface TaxRow extends SourcedGainResult {
   label: LabelRecord | null;
 }
 
+/** mes.fm/assets' totals, as passed on by /api/assets (groups' totals include dust) */
+export interface AssetsTotal {
+  fetchedAt: string;
+  /** Everything worth $10+ (mes.fm/assets' default view) */
+  totalUsd: number;
+  /** Everything, dust included */
+  totalAllUsd: number;
+  groups: { key: string; label: string; totalUsd: number }[];
+}
+
 export type ApiResult<T> =
   | { data: T; error?: never; rateLimited?: never }
   | { data?: never; error: string; rateLimited?: boolean };

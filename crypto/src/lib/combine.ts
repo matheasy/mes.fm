@@ -16,6 +16,13 @@ export interface SourceResult<T> {
 export async function fetchSource<T>(source: WalletSource, path: string): Promise<SourceResult<T>> {
   try {
     const res = await fetch(`${source.apiBaseUrl}${path}`, { cache: 'no-store' });
+    // A missing deployment answers with a plain-text/HTML page, not our JSON: say so plainly
+    // instead of surfacing JSON.parse's "Unexpected token" message.
+    if (!(res.headers.get('content-type') ?? '').includes('json')) {
+      const notDeployed = res.headers.get('x-vercel-error') === 'DEPLOYMENT_NOT_FOUND';
+      const msg = notDeployed ? `${source.label} is not deployed right now` : `${source.label} did not answer (HTTP ${res.status})`;
+      return { source, data: null, error: msg, rateLimited: false };
+    }
     const json = (await res.json()) as ApiResult<T>;
     if ('error' in json && json.error) {
       return { source, data: null, error: json.error, rateLimited: Boolean(json.rateLimited) };

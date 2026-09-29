@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import AssetsTotalCard from '@/components/AssetsTotalCard';
 import PortfolioSummary from '@/components/PortfolioSummary';
 import RefreshButton from '@/components/RefreshButton';
 import StateView from '@/components/StateView';
@@ -13,31 +13,29 @@ export default function OverviewPage() {
   return (
     <div className="flex flex-col gap-6">
       <p className="text-sm text-gray-400">
-        Group totals across every wallet tracked by{' '}
+        The three trading wallets (
         <a href="https://mes.fm/ai" className="text-accent hover:underline">
-          mes.fm/ai
+          AI Trading
         </a>
         ,{' '}
         <a href="https://mes.fm/mfa" className="text-accent hover:underline">
-          mes.fm/mfa
+          MikeFA Trading
         </a>
-        , and{' '}
+        ,{' '}
         <a href="https://mes.fm/sov" className="text-accent hover:underline">
-          mes.fm/sov
-        </a>{' '}
-        — click any group below for its full dashboard. Combined holdings, history and transactions
-        moved to those dashboards and to the{' '}
-        <Link href="/transactions" className="text-accent hover:underline">
-          Transactions
-        </Link>{' '}
-        and{' '}
-        <Link href="/taxes" className="text-accent hover:underline">
-          Taxes
-        </Link>{' '}
-        pages above. For every asset held anywhere - these three groups plus Hive, Hive Engine, and
-        Magi - see{' '}
+          Store of Value
+        </a>
+        ) and, below them, everything held anywhere from{' '}
         <a href="https://mes.fm/assets" className="text-accent hover:underline">
           mes.fm/assets
+        </a>
+        . Every trade from the three wallets is on{' '}
+        <a href="https://mes.fm/portfolio/transactions" className="text-accent hover:underline">
+          Transactions
+        </a>
+        , with FIFO/LIFO/average gains in USD and CAD on{' '}
+        <a href="https://mes.fm/taxes" className="text-accent hover:underline">
+          mes.fm/taxes
         </a>
         .
       </p>
@@ -51,16 +49,11 @@ export default function OverviewPage() {
           <div className="flex flex-col gap-6">
             <PortfolioSummary summary={portfolio} />
             <WalletBreakdown wallets={portfolio.wallets} />
-            <a href="https://mes.fm/assets" className="panel flex items-center justify-between transition hover:border-accent">
-              <div>
-                <p className="stat-label">Every asset, everywhere</p>
-                <p className="mt-1 text-sm text-gray-300">Hive, Hive Engine, Magi, and every EVM/XRP/BTC wallet - fetched once, shown in one place.</p>
-              </div>
-              <span className="text-sm text-accent">mes.fm/assets &rarr;</span>
-            </a>
           </div>
         )}
       </StateView>
+
+      <AssetsTotalCard />
     </div>
   );
 }
