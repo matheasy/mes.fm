@@ -16,9 +16,9 @@ export interface WalletConfig {
  * The wallets this app can report on - pick one per request with `?wallet=` (src/lib/walletContext.ts).
  * `ai` is the default and the only one the mes.fm/ai pages themselves show.
  * `main` (the Main wallet) is read by mes.fm/portfolio and mes.fm/taxes. Its BTC-pegged tokens
- * are excluded because mes.fm/sov already tracks exactly these two contracts on this address
- * (sov/src/lib/config.ts BTC_TOKENS, pooled as one BTC position) - counting them here as well
- * would double them in the combined views. Arbitrum WBTC isn't in sov, so it stays in.
+ * are left out of its holdings because the Store of Value view shows them (as one BTC position)
+ * - counting them here as well would double them on the portfolio overview. The tax ledger
+ * (/api/ledger) still includes them. Arbitrum WBTC isn't in Store of Value, so it stays in.
  */
 export const WALLETS: Record<WalletKey, WalletConfig> = {
   ai: {
@@ -32,32 +32,37 @@ export const WALLETS: Record<WalletKey, WalletConfig> = {
     excludeContracts: new Set([
       '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c', // BTCB, BNB Chain
       '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // WBTC, Ethereum
+      '0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6', // WBTC, Polygon
     ]),
   },
 };
 
-export type NetworkId = 'bsc' | 'ethereum' | 'arbitrum' | 'hyperliquid';
+export type NetworkId = 'bsc' | 'ethereum' | 'arbitrum' | 'polygon' | 'hyperliquid';
 
 /** Iteration order used for "All Networks" aggregation and the network tab selector */
-export const NETWORKS: NetworkId[] = ['bsc', 'ethereum', 'arbitrum', 'hyperliquid'];
+export const NETWORKS: NetworkId[] = ['bsc', 'ethereum', 'arbitrum', 'polygon', 'hyperliquid'];
 
 export const NETWORK_LABELS: Record<NetworkId, string> = {
   bsc: 'BSC',
   ethereum: 'Ethereum',
   arbitrum: 'Arbitrum',
+  polygon: 'Polygon',
   hyperliquid: 'Hyperliquid',
 };
 
 /** Etherscan's unified V2 API selects the chain via `chainid` on one shared API key */
-export const ETHERSCAN_CHAIN_IDS: Record<'ethereum' | 'arbitrum', number> = {
+export const ETHERSCAN_CHAIN_IDS: Record<'ethereum' | 'arbitrum' | 'polygon', number> = {
   ethereum: 1,
   arbitrum: 42161,
+  polygon: 137,
 };
 
 export const NATIVE_TOKENS: Record<NetworkId, Token> = {
   bsc: { contractAddress: 'BNB', symbol: 'BNB', name: 'BNB', decimals: 18, isNative: true, coingeckoId: 'binancecoin', network: 'bsc' },
   ethereum: { contractAddress: 'ETH', symbol: 'ETH', name: 'Ethereum', decimals: 18, isNative: true, coingeckoId: 'ethereum', network: 'ethereum' },
   arbitrum: { contractAddress: 'ETH', symbol: 'ETH', name: 'Ethereum', decimals: 18, isNative: true, coingeckoId: 'ethereum', network: 'arbitrum' },
+  // POL since the 2024-09-04 migration (1:1 from MATIC) - older native amounts are priced as MATIC, see etherscanNetwork.ts
+  polygon: { contractAddress: 'POL', symbol: 'POL', name: 'Polygon', decimals: 18, isNative: true, coingeckoId: 'polygon-ecosystem-token', network: 'polygon' },
   // Represents the HyperEVM native gas token (HYPE), not a HyperCore asset - HyperCore itself has
   // no "native coin" balance in the EVM sense, see src/lib/networks/hyperevm.ts.
   hyperliquid: { contractAddress: 'HYPE', symbol: 'HYPE', name: 'Hyperliquid', decimals: 18, isNative: true, coingeckoId: 'hyperliquid', network: 'hyperliquid' },
@@ -67,6 +72,7 @@ export const EXPLORER_TX_URL: Record<NetworkId, (hash: string) => string> = {
   bsc: (hash) => `https://bscscan.com/tx/${hash}`,
   ethereum: (hash) => `https://etherscan.io/tx/${hash}`,
   arbitrum: (hash) => `https://arbiscan.io/tx/${hash}`,
+  polygon: (hash) => `https://polygonscan.com/tx/${hash}`,
   hyperliquid: (hash) => `https://app.hyperliquid.xyz/explorer/tx/${hash}`,
 };
 

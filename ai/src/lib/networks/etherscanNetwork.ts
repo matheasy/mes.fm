@@ -8,7 +8,7 @@ import * as etherscan from './etherscanApi';
 import { buildLotsAndDisposals, priceTransactions } from './evmLedger';
 import type { NetworkLedgerData } from './types';
 
-type EtherscanNetworkId = 'ethereum' | 'arbitrum';
+type EtherscanNetworkId = 'ethereum' | 'arbitrum' | 'polygon';
 
 interface RawWalletData {
   nativeBalanceWei: string;
@@ -191,9 +191,11 @@ export function createEtherscanNetwork(network: EtherscanNetworkId) {
 
   async function resolveCoinId(token: Transaction['token']): Promise<string | null> {
     if (token.isNative) return nativeToken.coingeckoId;
-    return cached(cacheKey('coinid', token.contractAddress, network), CACHE_TTL_SECONDS.historicalPrice, () =>
-      coingecko.resolveCoinIdByContract(token.contractAddress, platform),
-    );
+    // wrapped so "not listed" (null) is cached too - spam tokens aren't looked up again every request
+    const hit = await cached(cacheKey('coinid-v2', token.contractAddress, network), CACHE_TTL_SECONDS.historicalPrice, async () => ({
+      id: await coingecko.resolveCoinIdByContract(token.contractAddress, platform),
+    }));
+    return hit.id;
   }
 
   /** The native coin by its CoinGecko id; an ERC-20 by its contract on DefiLlama first (see getTokenDailyPriceByContract), then by CoinGecko id */
@@ -201,13 +203,15 @@ export function createEtherscanNetwork(network: EtherscanNetworkId) {
     const date = new Date(isoTimestamp);
     const dateStr = date.toISOString().slice(0, 10);
     if (!token.isNative && token.contractAddress) {
-      const byContract = await cached(cacheKey('histprice-v2', `${network}:${token.contractAddress}`, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
-        coingecko.getTokenDailyPriceByContract(network, token.contractAddress, date),
-      );
-      if (byContract !== null) return byContract;
+      // { p } so a "no confident price" answer (spam) is cached as well, not re-asked every request
+      const byContract = await cached(cacheKey('ctprice', `${network}:${token.contractAddress}`, dateStr), CACHE_TTL_SECONDS.historicalPrice, async () => ({
+        p: await coingecko.getTokenDailyPriceByContract(network, token.contractAddress, date),
+      }));
+      if (byContract.p !== null) return byContract.p;
     }
 
-    const coinId = await resolveCoinId(token);
+    // Polygon's native coin was MATIC until the 1:1 POL migration on 2024-09-04 - price earlier amounts as MATIC
+    const coinId = token.isNative && network === 'polygon' && dateStr < '2024-09-04' ? 'matic-network' : await resolveCoinId(token);
     if (!coinId) return null;
     return cached(cacheKey('histprice-v2', coinId, dateStr), CACHE_TTL_SECONDS.historicalPrice, () => coingecko.getHistoricalPrice(coinId, date));
   }

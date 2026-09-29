@@ -15,7 +15,7 @@ export async function priceTransactions(
   // A few lookups at a time rather than strictly one by one: a long history (the Main wallet) has
   // hundreds of coin-days to price and a serverless function has 60s. Results come back in the
   // original order; repeated coin-days are shared through cache.ts's in-flight de-dup.
-  const CONCURRENCY = 6;
+  const CONCURRENCY = 3;
   const priced: PricedTransaction[] = new Array(transactions.length);
   let next = 0;
   async function worker() {

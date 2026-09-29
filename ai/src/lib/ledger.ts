@@ -5,6 +5,7 @@ import * as arbitrum from './networks/arbitrum';
 import * as bsc from './networks/bsc';
 import * as ethereum from './networks/ethereum';
 import * as hyperliquid from './networks/hyperliquid';
+import * as polygon from './networks/polygon';
 import type { NetworkLedgerData, PricedTransaction } from './networks/types';
 import type { Holding, NetworkError, Transaction } from './types';
 import { currentWallet } from './walletContext';
@@ -13,6 +14,7 @@ const NETWORK_MODULES: Record<NetworkId, { getNetworkLedgerData: () => Promise<N
   bsc,
   ethereum,
   arbitrum,
+  polygon,
   hyperliquid,
 };
 

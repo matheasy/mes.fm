@@ -172,9 +172,11 @@ async function getCurrentHoldings(raw: RawWalletData): Promise<Holding[]> {
 
 async function resolveCoinId(token: Transaction['token']): Promise<string | null> {
   if (token.isNative) return NATIVE_TOKEN.coingeckoId;
-  return cached(cacheKey('coinid', token.contractAddress, NETWORK), CACHE_TTL_SECONDS.historicalPrice, () =>
-    coingecko.resolveCoinIdByContract(token.contractAddress, coingecko.COINGECKO_PLATFORM.bsc),
-  );
+  // wrapped in an object so "not listed" (null) is cached too - otherwise every spam token is looked up again on every request
+  const hit = await cached(cacheKey('coinid-v2', token.contractAddress, NETWORK), CACHE_TTL_SECONDS.historicalPrice, async () => ({
+    id: await coingecko.resolveCoinIdByContract(token.contractAddress, coingecko.COINGECKO_PLATFORM.bsc),
+  }));
+  return hit.id;
 }
 
 /** BNB by its CoinGecko id; a BEP-20 token by its contract on DefiLlama first (see getTokenDailyPriceByContract), then by CoinGecko id */
@@ -182,10 +184,11 @@ export async function resolveHistoricalPrice(token: Transaction['token'], isoTim
   const date = new Date(isoTimestamp);
   const dateStr = date.toISOString().slice(0, 10);
   if (!token.isNative && token.contractAddress) {
-    const byContract = await cached(cacheKey('histprice-v2', `bsc:${token.contractAddress}`, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
-      coingecko.getTokenDailyPriceByContract('bsc', token.contractAddress, date),
-    );
-    if (byContract !== null) return byContract;
+    // { p } so a "no confident price" answer (spam airdrops) is cached as well, not re-asked every request
+    const byContract = await cached(cacheKey('ctprice', `bsc:${token.contractAddress}`, dateStr), CACHE_TTL_SECONDS.historicalPrice, async () => ({
+      p: await coingecko.getTokenDailyPriceByContract('bsc', token.contractAddress, date),
+    }));
+    if (byContract.p !== null) return byContract.p;
   }
 
   const coinId = await resolveCoinId(token);

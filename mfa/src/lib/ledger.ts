@@ -171,9 +171,11 @@ export async function getCurrentHoldings(): Promise<Holding[]> {
 
 async function resolveCoinId(token: Transaction['token']): Promise<string | null> {
   if (token.isNative) return 'binancecoin';
-  return cached(cacheKey('coinid', token.contractAddress), CACHE_TTL_SECONDS.historicalPrice, () =>
-    coingecko.resolveCoinIdByContract(token.contractAddress),
-  );
+  // wrapped so "not listed" (null) is cached too - spam tokens aren't looked up again every request
+  const hit = await cached(cacheKey('coinid-v2', token.contractAddress), CACHE_TTL_SECONDS.historicalPrice, async () => ({
+    id: await coingecko.resolveCoinIdByContract(token.contractAddress),
+  }));
+  return hit.id;
 }
 
 /** BNB by its CoinGecko id; a BEP-20 token by its contract on DefiLlama first (see getTokenDailyPriceByContract), then by CoinGecko id */
@@ -181,10 +183,11 @@ export async function getHistoricalPriceForToken(token: Transaction['token'], is
   const date = new Date(isoTimestamp);
   const dateStr = date.toISOString().slice(0, 10);
   if (!token.isNative && token.contractAddress) {
-    const byContract = await cached(cacheKey('histprice-v2', `bsc:${token.contractAddress}`, dateStr), CACHE_TTL_SECONDS.historicalPrice, () =>
-      coingecko.getTokenDailyPriceByContract('bsc', token.contractAddress, date),
-    );
-    if (byContract !== null) return byContract;
+    // { p } so a "no confident price" answer (spam) is cached as well, not re-asked every request
+    const byContract = await cached(cacheKey('ctprice', `bsc:${token.contractAddress}`, dateStr), CACHE_TTL_SECONDS.historicalPrice, async () => ({
+      p: await coingecko.getTokenDailyPriceByContract('bsc', token.contractAddress, date),
+    }));
+    if (byContract.p !== null) return byContract.p;
   }
 
   const coinId = await resolveCoinId(token);

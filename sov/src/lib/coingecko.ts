@@ -47,6 +47,17 @@ function toCoingeckoDate(date: Date): string {
   return `${dd}-${mm}-${yyyy}`;
 }
 
+/** DefiLlama rate-limits bursts (429): wait (Retry-After, else backing off) and retry, then give up as a RateLimitError */
+async function llamaFetch(url: string): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url, { next: { revalidate: 0 } });
+    if (res.status !== 429) return res;
+    if (attempt >= 5) throw new RateLimitError('DefiLlama price API rate limit reached');
+    const retryAfter = Number(res.headers.get('retry-after'));
+    await new Promise((r) => setTimeout(r, Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1500 * (attempt + 1)));
+  }
+}
+
 /**
  * DefiLlama's keyless price API, looked up by CoinGecko coin id, at 00:00 UTC of the day (the
  * moment CoinGecko's own daily /history price is taken). Full history, unlike CoinGecko's free plan.
@@ -55,7 +66,7 @@ function toCoingeckoDate(date: Date): string {
 async function getDefiLlamaDailyPrice(coinId: string, date: Date): Promise<number | null> {
   const midnight = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / 1000;
   const key = `coingecko:${coinId}`;
-  const res = await fetch(`https://coins.llama.fi/prices/historical/${midnight}/${key}?searchWidth=12h`, { next: { revalidate: 0 } });
+  const res = await llamaFetch(`https://coins.llama.fi/prices/historical/${midnight}/${key}?searchWidth=12h`);
   if (!res.ok) throw new Error(`DefiLlama price request failed: ${res.status}`);
   const json = (await res.json()) as { coins?: Record<string, { price?: number }> };
   const price = json.coins?.[key]?.price;
