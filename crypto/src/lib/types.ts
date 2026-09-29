@@ -205,6 +205,37 @@ export interface SovSnapshot {
   assets: SovAsset[];
 }
 
+/** mes.fm/lp: the Main wallet's liquidity positions (PancakeSwap), pending farm rewards and LP history */
+export interface LpPosition {
+  label: string;
+  detail: string | null;
+  valueUsd: number | null;
+  legs: { symbol: string; amount: number; valueUsd: number | null }[];
+}
+
+export interface LpEvent {
+  hash: string;
+  timestamp: string;
+  /** added = liquidity in; removed = liquidity out; harvest = only farm rewards paid */
+  type: 'added' | 'removed' | 'harvest';
+  /** signed from the wallet's point of view: negative = went into the pool */
+  legs: { symbol: string; amount: number; valueUsd: number | null }[];
+  /** CAKE rewards paid in the same transaction (a removal from a staked position pays them too) */
+  rewardsUsd: number;
+}
+
+export interface LpSnapshot {
+  fetchedAt: string;
+  cadRate: number | null;
+  positions: LpPosition[];
+  pendingRewards: { symbol: string; amount: number; valueUsd: number | null; detail: string | null }[];
+  totalUsd: number;
+  history: LpEvent[];
+  /** value when it went in / came out, from the history (USD at each day's price) */
+  totals: { addedUsd: number; removedUsd: number; rewardsUsd: number };
+  historyError: string | null;
+}
+
 export type ApiResult<T> =
   | { data: T; error?: never; rateLimited?: never }
   | { data?: never; error: string; rateLimited?: boolean };

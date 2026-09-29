@@ -1,4 +1,5 @@
 import { assetKey } from './assetKey';
+import { isFarmReward, isLpContract } from '../lp';
 import { isOwnAddress } from './ownAddresses';
 
 /**
@@ -37,10 +38,9 @@ import { isOwnAddress } from './ownAddresses';
  *    isn't applied; Hyperliquid perpetuals aren't included.
  */
 
-/** Liquidity-pool contracts: sending into one is an LP deposit, receiving from one an LP withdrawal */
-const LP_CONTRACTS = new Set([
-  '0x46a15b0b27311cedf172ab29e4f4766fbe7f4364', // PancakeSwap V3 NonfungiblePositionManager, BNB Chain
-]);
+// Liquidity-pool contracts (PancakeSwap V3 position manager + its MasterChef V3 farm): sending into one
+// is an LP deposit, receiving from one an LP withdrawal - except CAKE from the farm, which is a reward
+const LP_CONTRACTS = { has: isLpContract };
 
 export interface TaxEntry {
   /** Which tracked wallet/account reported this leg: main | ai | mfa | sov | bitcoin | hive:<account> */
@@ -250,7 +250,9 @@ export function computeAcb(
   const income: AcbIncome[] = [];
   const receipts: AcbReceipt[] = [];
 
-  for (const e of legs) {
+  for (const leg of legs) {
+    // CAKE harvested from the PancakeSwap farm is income, like Hive rewards
+    const e = leg.amount > 0 && !leg.income && isFarmReward(leg.symbol, leg.from) ? { ...leg, income: 'PancakeSwap farm rewards (CAKE)' } : leg;
     if (e.priceUsd === null || !Number.isFinite(e.priceUsd)) {
       stats.unpriced += 1;
       continue;
@@ -261,6 +263,7 @@ export function computeAcb(
     const rate = rateOn(e.timestamp);
     if (rate === null) cadComplete = false;
     const valueUsd = Math.abs(e.amount) * e.priceUsd;
+
 
     if (e.amount > 0) {
       pool.qty += e.amount;

@@ -7,7 +7,7 @@ import ThemeScript from '@/components/ThemeScript';
 import './globals.css';
 
 const TITLE = 'MES Crypto Portfolio';
-const TAGLINE = 'Every wallet in one place: Main, AI Trading, MikeFA Trading, Store of Value and all other assets.';
+const TAGLINE = 'Every wallet in one place: Main, AI Trading, MikeFA Trading, Store of Value, Liquidity and all other assets.';
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -36,6 +36,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   title: 'MES Store of Value',
                   tagline: 'Long-term holdings: Bitcoin, XRP and TGLD, across every wallet.',
                   homeHref: 'https://mes.fm/sov',
+                },
+                lp: {
+                  title: 'MES Liquidity',
+                  tagline: 'Liquidity providing: the Main wallet\'s PancakeSwap position and rewards.',
+                  homeHref: 'https://mes.fm/lp',
                 },
                 assets: {
                   title: 'MES Assets',

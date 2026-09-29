@@ -3,6 +3,7 @@
 import AssetsTotalCard from '@/components/AssetsTotalCard';
 import PortfolioSummary from '@/components/PortfolioSummary';
 import RefreshButton from '@/components/RefreshButton';
+import LpCard from '@/components/LpCard';
 import SovCard from '@/components/SovCard';
 import StateView from '@/components/StateView';
 import WalletBreakdown from '@/components/WalletBreakdown';
@@ -21,10 +22,14 @@ export default function OverviewPage() {
         ,{' '}
         <a href="https://mes.fm/mfa" className="text-accent hover:underline">
           MikeFA Trading
-        </a>{' '}
-        and{' '}
+        </a>
+        ,{' '}
         <a href="https://mes.fm/sov" className="text-accent hover:underline">
           Store of Value
+        </a>{' '}
+        and{' '}
+        <a href="https://mes.fm/lp" className="text-accent hover:underline">
+          Liquidity
         </a>{' '}
         - and, below them, everything held anywhere from{' '}
         <a href="https://mes.fm/assets" className="text-accent hover:underline">
@@ -54,7 +59,10 @@ export default function OverviewPage() {
         )}
       </StateView>
 
-      <SovCard />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <SovCard />
+        <LpCard />
+      </div>
 
       <AssetsTotalCard />
     </div>

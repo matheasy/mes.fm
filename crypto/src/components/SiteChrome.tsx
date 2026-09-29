@@ -17,7 +17,7 @@ import './SiteChrome.css';
  * leaving the app (see crypto/src/lib/wallets.ts for the same note).
  */
 
-export type DashboardTab = 'portfolio' | 'assets' | 'transactions' | 'taxes' | 'ai' | 'mfa' | 'sov';
+export type DashboardTab = 'portfolio' | 'assets' | 'transactions' | 'taxes' | 'ai' | 'mfa' | 'sov' | 'lp';
 
 interface SiteChromeProps {
   title: string;
@@ -84,6 +84,7 @@ function dashboardTabs(wallet?: string) {
       { key: 'ai', label: 'AI Trading', href: 'https://mes.fm/ai' },
       { key: 'mfa', label: 'MikeFA Trading', href: 'https://mes.fm/mfa' },
       { key: 'sov', label: 'Store of Value', href: 'https://mes.fm/sov' },
+      { key: 'lp', label: 'Liquidity', href: 'https://mes.fm/lp' },
     ],
   };
 }
@@ -164,7 +165,7 @@ function openSearch() {
 }
 
 function activeFromPath(path: string): DashboardTab {
-  for (const tab of ['sov', 'ai', 'mfa', 'assets'] as const) {
+  for (const tab of ['sov', 'lp', 'ai', 'mfa', 'assets'] as const) {
     if (new RegExp(`(^|/)${tab}(/|$)`).test(path)) return tab;
   }
   if (path.includes('taxes')) return 'taxes';
