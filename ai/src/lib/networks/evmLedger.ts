@@ -12,16 +12,20 @@ export async function priceTransactions(
   transactions: Transaction[],
   resolveHistoricalPrice: (token: Transaction['token'], isoTimestamp: string) => Promise<number | null>,
 ): Promise<PricedTransaction[]> {
-  const priced: PricedTransaction[] = [];
-
-  for (const tx of transactions) {
-    if (tx.amount === 0) {
-      priced.push({ ...tx, priceUsd: null });
-      continue;
+  // A few lookups at a time rather than strictly one by one: a long history (the Main wallet) has
+  // hundreds of coin-days to price and a serverless function has 60s. Results come back in the
+  // original order; repeated coin-days are shared through cache.ts's in-flight de-dup.
+  const CONCURRENCY = 6;
+  const priced: PricedTransaction[] = new Array(transactions.length);
+  let next = 0;
+  async function worker() {
+    while (next < transactions.length) {
+      const i = next++;
+      const tx = transactions[i]!;
+      priced[i] = { ...tx, priceUsd: tx.amount === 0 ? null : await resolveHistoricalPrice(tx.token, tx.timestamp) };
     }
-    priced.push({ ...tx, priceUsd: await resolveHistoricalPrice(tx.token, tx.timestamp) });
   }
-
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, transactions.length) }, worker));
   return priced;
 }
 

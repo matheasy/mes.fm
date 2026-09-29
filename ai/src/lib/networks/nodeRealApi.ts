@@ -80,7 +80,9 @@ interface AssetTransfersResult {
 }
 
 const PAGE_SIZE = 100;
-const MAX_PAGES = 5;
+/** 5,000 transfers per direction. mes.fm/taxes needs the *whole* history (a dropped early purchase makes
+ * a later sale look like it cost $0), so hitting this cap is an error, not a silent cut-off. */
+const MAX_PAGES = 50;
 
 /** Spacing between pages comes from the shared throttle in rpc() now - no need to sleep here too */
 async function paginateTransfers(direction: 'fromAddress' | 'toAddress', address: string): Promise<AssetTransfer[]> {
@@ -104,11 +106,11 @@ async function paginateTransfers(direction: 'fromAddress' | 'toAddress', address
     }
 
     out.push(...result.transfers);
-    if (!result.pageToken || result.transfers.length < PAGE_SIZE) break;
+    if (!result.pageToken || result.transfers.length < PAGE_SIZE) return out;
     pageToken = result.pageToken;
   }
 
-  return out;
+  throw new Error(`BNB Chain history for ${address} has more than ${MAX_PAGES * PAGE_SIZE} ${direction === 'fromAddress' ? 'outgoing' : 'incoming'} transfers - raise MAX_PAGES in nodeRealApi.ts`);
 }
 
 /** Fetches both directions (fromAddress and toAddress calls are separate per NodeReal/Alchemy-style APIs) and dedupes */

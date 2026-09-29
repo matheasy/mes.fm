@@ -100,6 +100,13 @@ export interface AcbResult {
 
 const EPS = 1e-12;
 
+/** Calendar year in the owner's own time zone (Vancouver): a trade at 8pm Pacific on Dec 31 is still in
+ * that tax year, although it's already Jan 1 in UTC. */
+const YEAR_FMT = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Vancouver', year: 'numeric' });
+function taxYearOf(iso: string): number {
+  return Number(YEAR_FMT.format(new Date(iso)));
+}
+
 export function disposalId(e: Pick<TaxEntry, 'source' | 'network' | 'hash' | 'symbol' | 'timestamp'>): string {
   return [e.source, e.network, e.hash, e.symbol, e.timestamp].join(':');
 }
@@ -220,7 +227,7 @@ export function computeAcb(
       network: e.network,
       hash: e.hash,
       disposedAt: e.timestamp,
-      taxYear: new Date(e.timestamp).getUTCFullYear(),
+      taxYear: taxYearOf(e.timestamp),
       asset,
       symbol: e.symbol,
       quantity: qty,
