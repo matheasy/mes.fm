@@ -50,14 +50,23 @@ function summarize(year: number, rows: AcbDisposal[]): TaxYearSummary {
   };
 }
 
+/** Every source failed - carries each one's reason so the page can say which and why */
+export class NoWalletLoadedError extends Error {
+  constructor(readonly reasons: string[]) {
+    super(`No wallet could be loaded. ${reasons.join(' · ')}`);
+  }
+}
+
 /**
  * The whole Taxes report: fetches every wallet's ledger, runs one ACB calculation across all of
- * them (acb.ts), then picks out one tax year's rows. Returns null only if no wallet at all could be
- * loaded. Shared by /api/taxes and /api/taxes/export so the page and the CSV always agree.
+ * them (acb.ts), then picks out one tax year's rows. Throws NoWalletLoadedError if no wallet at all
+ * could be loaded. Shared by /api/taxes and /api/taxes/export so the page and the CSV always agree.
  */
-export async function buildTaxReport(opts: { wallet?: WalletKey; year?: number }): Promise<TaxesResponse | null> {
+export async function buildTaxReport(opts: { wallet?: WalletKey; year?: number }): Promise<TaxesResponse> {
   const [results, labels] = await Promise.all([fetchAllSources<UpstreamLedger>('/api/ledger'), listLabels()]);
-  if (results.every((r) => r.data === null)) return null;
+  if (results.every((r) => r.data === null)) {
+    throw new NoWalletLoadedError(results.map((r) => r.error ?? `${r.source.label} returned no data`));
+  }
 
   const entries: TaxEntry[] = results.flatMap((r) =>
     (r.data?.entries ?? []).map((e) => ({

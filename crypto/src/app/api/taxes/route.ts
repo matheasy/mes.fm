@@ -22,11 +22,11 @@ export async function GET(request: Request) {
   const yearParam = Number(searchParams.get('year'));
   const year = Number.isInteger(yearParam) && yearParam > 2000 ? yearParam : undefined;
 
-  const report = await buildTaxReport({ wallet, year });
-  if (!report) {
-    return NextResponse.json({ error: 'No wallet could be loaded - try again in a minute' } satisfies ApiResult<TaxesResponse>, {
-      status: 502,
-    });
+  try {
+    const report = await buildTaxReport({ wallet, year });
+    return NextResponse.json({ data: report } satisfies ApiResult<TaxesResponse>);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to build the tax report';
+    return NextResponse.json({ error: message } satisfies ApiResult<TaxesResponse>, { status: 502 });
   }
-  return NextResponse.json({ data: report } satisfies ApiResult<TaxesResponse>);
 }

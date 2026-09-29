@@ -41,8 +41,12 @@ export async function GET(request: Request) {
   const yearParam = Number(searchParams.get('year'));
   const year = Number.isInteger(yearParam) && yearParam > 2000 ? yearParam : undefined;
 
-  const report = await buildTaxReport({ wallet, year });
-  if (!report) return new Response('No wallet could be loaded - try again in a minute', { status: 502 });
+  let report;
+  try {
+    report = await buildTaxReport({ wallet, year });
+  } catch (err) {
+    return new Response(err instanceof Error ? err.message : 'Failed to build the tax report', { status: 502 });
+  }
 
   const csvRows = [...report.rows]
     .sort((a, b) => new Date(a.disposedAt).getTime() - new Date(b.disposedAt).getTime())
