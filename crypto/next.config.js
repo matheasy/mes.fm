@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: '/crypto',
+  basePath: '/finance',
   reactStrictMode: true,
 };
 

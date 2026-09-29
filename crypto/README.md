@@ -1,8 +1,15 @@
 # MES Crypto (one app for every finance dashboard)
 
 **Since 2026-09-29 this is the only finance app.** One Next.js app / one Vercel project
-(`mes-fm-crypto`, basePath `/crypto`) serves every finance dashboard on mes.fm, each through a
-rewrite in `../mes.fm/vercel.json`:
+(`mes-fm-crypto`, basePath `/finance`) serves every finance dashboard on mes.fm, each through a
+rewrite in `../mes.fm/vercel.json`.
+
+**Not the same thing as mes.fm/crypto.** That's the static MES Crypto hub page (`../mes.fm/crypto/`,
+served by the main `mes-fm` project). This app used to live at mes.fm/crypto and kept the name
+(folder `crypto/`, project `mes-fm-crypto`); its path was renamed from `/crypto` to `/finance` on
+2026-09-29 so nothing under mes.fm/crypto/... belongs to it any more. The folder and Vercel
+project names were left alone (the project's address, mes-fm-crypto.vercel.app, is what the
+rewrites and the app's own server-side calls use).
 
 | mes.fm URL | here | password |
 | --- | --- | --- |
@@ -17,9 +24,9 @@ rewrite in `../mes.fm/vercel.json`:
 code now lives in `src/apps/<name>` (its own `lib/`, `components/`, `hooks/`, imported as
 `@/apps/<name>/...`), their pages and API routes in `src/app/<name>`. Each section keeps its own
 cache/throttle/accounting code as it was. The portfolio/taxes views still call the AI Trading and
-MikeFA sections' APIs over HTTP (`src/lib/sources.ts`, `https://mes-fm-crypto.vercel.app/crypto/...`)
+MikeFA sections' APIs over HTTP (`src/lib/sources.ts`, `https://mes-fm-crypto.vercel.app/finance/...`)
 so a long history read gets its own request and 60s; the Assets section is called in-process
-(`getSnapshot`). The password gate is `../mes.fm/middleware.js` (it also covers `/crypto/...`
+(`getSnapshot`). The password gate is `../mes.fm/middleware.js` (it also covers `/finance/...`
 except the public ai/mfa sections and `_next`).
 
 Environment variables (Vercel project `mes-fm-crypto`): `NODEREAL_API_KEY`, `ETHERSCAN_API_KEY`,

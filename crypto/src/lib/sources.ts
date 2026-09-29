@@ -32,7 +32,7 @@ export function sourceUrl(source: WalletSource, path: string): string {
  * serverless request and 60s rather than eating into the Taxes request's. No env override on
  * purpose: the old AI_SOURCE_URL / MFA_SOURCE_URL values pointed at the retired projects.
  */
-const SELF = 'https://mes-fm-crypto.vercel.app/crypto';
+const SELF = 'https://mes-fm-crypto.vercel.app/finance';
 
 export const WALLET_SOURCES: WalletSource[] = [
   {
