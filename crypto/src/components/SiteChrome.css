@@ -158,10 +158,15 @@ html.light .mes-compact-links a { color: #277bb6; }
 @media (max-width: 480px) {
   .mes-compact-nav { padding-right: 204px; gap: 8px; }
   .mes-chrome.is-stuck .mes-controls { right: 56px; }
-  /* phones: the controls get their own row under the brand, so the title/tagline keep the full width */
-  .mes-top-bar { padding-bottom: 44px; }
-  .mes-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
-  .mes-chrome.is-stuck .mes-controls { bottom: auto; }
+}
+/* Narrow screens: the buttons + hamburger take their own row at the top right and the logo, title and
+   tagline the full width under them - the calculator pages' header (e.g. mes.fm/percentagecalculator).
+   Side by side, the title/tagline got squeezed into a narrow column. */
+@media (max-width: 760px) {
+  .mes-top-bar { flex-wrap: wrap; row-gap: 6px; }
+  .mes-controls { order: 1; margin-left: auto; }
+  .mes-hamburger { order: 2; }
+  .mes-brand { order: 3; flex: 1 1 100%; }
 }
 
 /* ---------- footer ---------- */
