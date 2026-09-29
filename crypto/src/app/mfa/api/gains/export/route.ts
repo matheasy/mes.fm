@@ -4,6 +4,7 @@ import { buildLotsAndDisposals } from '@/apps/mfa/lib/ledger';
 import { buildGainsCsv } from '@/apps/mfa/lib/csv';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 const METHODS: CostBasisMethod[] = ['fifo', 'lifo', 'average'];
 

@@ -5,6 +5,7 @@ import type { ApiResult, SourcedTransaction, Transaction, TransactionType } from
 import type { WalletKey } from '@/lib/wallets';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 const TX_TYPES: TransactionType[] = ['send', 'receive', 'swap', 'contract'];
 

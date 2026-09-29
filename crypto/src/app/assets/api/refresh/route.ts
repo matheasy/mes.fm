@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { invalidateForRefresh } from '@/apps/assets/lib/cache';
 import type { ApiResult } from '@/apps/assets/lib/types';
 
+export const maxDuration = 300;
+
 export async function POST() {
   try {
     await invalidateForRefresh();

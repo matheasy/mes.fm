@@ -5,6 +5,7 @@ import { getCurrentHoldings } from '@/apps/mfa/lib/ledger';
 import type { ApiResult, PortfolioSummary } from '@/apps/mfa/lib/types';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 export async function GET() {
   try {

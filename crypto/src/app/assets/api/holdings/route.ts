@@ -5,7 +5,7 @@ import { getSnapshot } from '@/apps/assets/lib/snapshot';
 import type { ApiResult, AssetsSnapshot, GroupKey, SourceId } from '@/apps/assets/lib/types';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 /**
  * GET /api/holdings?minValueUsd=10&group=main&source=ethereum

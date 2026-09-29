@@ -3,6 +3,7 @@ import { fetchAllSources } from '@/lib/combine';
 import type { ApiResult, CombinedPortfolio, Holding, PortfolioSummary, WalletPortfolio } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 export async function GET() {
   const results = await fetchAllSources<PortfolioSummary>('/api/portfolio');

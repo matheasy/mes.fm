@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { WALLET_SOURCES, sourceUrl } from '@/lib/sources';
 import type { ApiResult } from '@/lib/types';
 
+export const maxDuration = 300;
+
 export async function POST() {
   const results = await Promise.allSettled(
     WALLET_SOURCES.map((source) => fetch(sourceUrl(source, '/api/refresh'), { method: 'POST' })),

@@ -2,7 +2,7 @@ import { buildTaxReport } from '@/lib/tax/report';
 import { TAX_GROUPS, type TaxGroup } from '@/lib/tax/taxSources';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const HEADERS = [
   'Date',

@@ -3,6 +3,7 @@ import { deleteLabel, listLabels, setLabel } from '@/lib/labels';
 import type { ApiResult, LabelRecord } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 export async function GET() {
   const labels = await listLabels();

@@ -6,6 +6,7 @@ import { buildGainsCsv } from '@/apps/ai/lib/csv';
 import { withWallet } from '@/apps/ai/lib/walletContext';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 const METHODS: CostBasisMethod[] = ['fifo', 'lifo', 'average'];
 

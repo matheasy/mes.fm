@@ -6,6 +6,7 @@ import type { ApiResult, Transaction, TransactionType } from '@/apps/ai/lib/type
 import { withWallet } from '@/apps/ai/lib/walletContext';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 const TX_TYPES: TransactionType[] = ['send', 'receive', 'swap', 'contract'];
 

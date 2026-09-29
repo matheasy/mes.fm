@@ -6,6 +6,7 @@ import type { ApiResult } from '@/apps/ai/lib/types';
 import { withWallet } from '@/apps/ai/lib/walletContext';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 export async function GET(request: Request) {
   return withWallet(request, async () => {

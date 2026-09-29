@@ -4,7 +4,7 @@ import type { ApiResult, TaxesResponse } from '@/lib/types';
 import { TAX_GROUPS, type TaxGroup } from '@/lib/tax/taxSources';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 /**
  * GET /api/taxes?year=2026&wallet=hive

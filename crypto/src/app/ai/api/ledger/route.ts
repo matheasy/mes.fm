@@ -6,7 +6,7 @@ import type { ApiResult } from '@/apps/ai/lib/types';
 import { currentWallet, withWallet } from '@/apps/ai/lib/walletContext';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export interface LedgerResponse {
   /** The wallet these entries belong to (lowercase) */

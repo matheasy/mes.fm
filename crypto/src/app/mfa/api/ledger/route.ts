@@ -5,7 +5,7 @@ import { getPricedTransactions } from '@/apps/mfa/lib/ledger';
 import type { ApiResult } from '@/apps/mfa/lib/types';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 /** Same shape as ai/'s /api/ledger (this app is BNB Chain only, so every entry gets network 'bsc') */
 interface LedgerEntry {

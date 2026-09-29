@@ -4,6 +4,7 @@ import { getHistoricalPriceForToken, getTransactions } from '@/apps/mfa/lib/ledg
 import type { ApiResult, Transaction, TransactionType } from '@/apps/mfa/lib/types';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 const TX_TYPES: TransactionType[] = ['send', 'receive', 'swap', 'contract'];
 

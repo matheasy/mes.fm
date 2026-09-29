@@ -3,6 +3,8 @@ import { invalidateByWallet } from '@/apps/mfa/lib/cache';
 import { WALLET_ADDRESS } from '@/apps/mfa/lib/config';
 import type { ApiResult } from '@/apps/mfa/lib/types';
 
+export const maxDuration = 300;
+
 export async function POST() {
   try {
     await invalidateByWallet(WALLET_ADDRESS);

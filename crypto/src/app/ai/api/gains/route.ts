@@ -9,6 +9,7 @@ import type { ApiResult, NetworkError } from '@/apps/ai/lib/types';
 import { withWallet } from '@/apps/ai/lib/walletContext';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 const METHODS: CostBasisMethod[] = ['fifo', 'lifo', 'average'];
 

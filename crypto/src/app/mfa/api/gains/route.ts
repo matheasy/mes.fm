@@ -6,6 +6,7 @@ import { getCurrentHoldings, buildLotsAndDisposals } from '@/apps/mfa/lib/ledger
 import type { ApiResult } from '@/apps/mfa/lib/types';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 const METHODS: CostBasisMethod[] = ['fifo', 'lifo', 'average'];
 

@@ -6,6 +6,7 @@ import type { ApiResult, PortfolioSummary } from '@/apps/ai/lib/types';
 import { currentWallet, withWallet } from '@/apps/ai/lib/walletContext';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 function parseNetwork(request: Request): NetworkId | undefined {
   const param = new URL(request.url).searchParams.get('network');

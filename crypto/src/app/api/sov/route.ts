@@ -6,7 +6,7 @@ import { getSnapshot } from '@/apps/assets/lib/snapshot';
 import type { ApiResult, SovAsset, SovSnapshot } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const HE_RPC = 'https://api.hive-engine.com/rpc/contracts';
 const HIVE_ACCOUNTS = ['mes', 'mestruth', 'mathiew', 'artgrafiken'];

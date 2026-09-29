@@ -29,6 +29,10 @@ so a long history read gets its own request and 60s; the Assets section is calle
 (`getSnapshot`). The password gate is `../mes.fm/middleware.js` (it also covers `/finance/...`
 except the public ai/mfa sections and `_next`).
 
+Every API route runs up to 300 seconds (`maxDuration = 300`, the Vercel Pro limit): a wallet's first
+full history read (the Main wallet's BNB Chain windows, then pricing every token-day) takes longer
+than a minute; after that it's cached and fast.
+
 Environment variables (Vercel project `mes-fm-crypto`): `NODEREAL_API_KEY`, `ETHERSCAN_API_KEY`,
 `COINGECKO_API_KEY`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`; optional `AI_WALLET_ADDRESS` /
 `MFA_WALLET_ADDRESS` (default to the real addresses) and the Assets section's optional RPC

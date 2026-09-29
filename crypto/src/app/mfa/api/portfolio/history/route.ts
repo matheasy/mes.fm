@@ -4,6 +4,7 @@ import { getPortfolioValueHistory, type PortfolioValuePoint } from '@/apps/mfa/l
 import type { ApiResult } from '@/apps/mfa/lib/types';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 export async function GET() {
   try {

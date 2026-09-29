@@ -3,6 +3,8 @@ import { invalidateByWallet } from '@/apps/ai/lib/cache';
 import type { ApiResult } from '@/apps/ai/lib/types';
 import { currentWallet, withWallet } from '@/apps/ai/lib/walletContext';
 
+export const maxDuration = 300;
+
 export async function POST(request: Request) {
   return withWallet(request, async () => {
     try {
