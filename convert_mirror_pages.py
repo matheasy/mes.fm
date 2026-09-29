@@ -217,6 +217,11 @@ def social_tags(html, slug, big):
     return "".join("  %s\n" % t for t in tags)
 
 
+# Top-level topic hubs, like /math, /911 and /hutchison (none of which carry a "Part of" box): the old "<- MES Links"
+# back link is not turned into "Part of MES Links" for these.
+HUBS_WITHOUT_PARTOF = {"crypto"}
+
+
 def hub_swap(old, template):
     """Hand-authored link hubs (conspiracy, mathiew, crypto): '<- MES Links' top bar + centred collapsible <h1> header +
     plain <footer>. Same chrome swap as chrome_swap(), inside a .container so the page's own wide card grid / link lists
@@ -241,6 +246,8 @@ def hub_swap(old, template):
         top = re.sub(r'\s*<button id="textSize(Down|Up)"[^>]*>[^<]*</button>', "", top)
     nav = block(tpl, '<div class="info-bar-container"')
     part = block(tpl, '<div class="part-of">').replace("@@PARTOF@@", partof)
+    if slug in HUBS_WITHOUT_PARTOF:
+        part = ""
     footer = tpl[tpl.index('<div id="footer"'): tpl.index("getFullYear();</script>") + len("getFullYear();</script>")]
     tail = fill_brand(tpl[tpl.index('<script src="https://ajax.googleapis.com/ajax/libs/jquery'): tpl.index("</body>")], b, partof)
     tcss = re.search(r"<style>(.*?)</style>", tpl, re.S).group(1)
@@ -324,6 +331,7 @@ def convert(old, template):
 BRAND_TABS = {
     'class="site-brand-title" href="/hutchison"': ("/hutchison", "Hutchison Effect"),
     'class="site-brand-title" href="/911"': ("/911", "9/11 Truth"),
+    'class="site-brand-title" href="/crypto"': ("/crypto", "MES Crypto"),
 }
 HUTCH_MARK = 'class="site-brand-title" href="/hutchison"'  # kept for callers that import it
 
@@ -361,7 +369,7 @@ def main():
     for rel in files:
         p = ROOT / rel
         old = p.read_text(encoding="utf-8")
-        if 'class="site-link"' not in old and 'class="back-link"' not in old:
+        if 'class="site-link"' not in old and 'class="back-link"' not in old and 'class="site-brand-title"' not in old:
             continue
         new, why = convert(old, template)
         name = rel.split("/")[1]
@@ -371,6 +379,15 @@ def main():
             if why != "already converted":
                 skipped += 1
                 print("SKIPPED %-45s %s" % (name, why))
+                continue
+            # already in the shell: still (re)apply the brand tab, so adding a BRAND_TABS entry reaches existing pages
+            branded = brand_nav(old)
+            if branded != old:
+                done += 1
+                if VERBOSE:
+                    print("brand   %-45s" % name)
+                if APPLY:
+                    p.write_text(branded, encoding="utf-8")
             continue
         done += 1
         new = brand_nav(new)
