@@ -56,9 +56,15 @@ export interface TaxEntry {
   to: string;
   /** Set for income (e.g. 'Hive rewards (claimed)'): acquired at its value, which is also income */
   income?: string;
+  /**
+   * A move to/from one of the owner's own holdings that isn't tracked (e.g. HIVE sent to Hive Engine's
+   * peg): leaving, it exits the pool at cost with no gain, like a Personal-transfer label; arriving, it's
+   * acquired at its value on the day and not treated as income.
+   */
+  bridge?: boolean;
 }
 
-export type DisposalKind = 'swap' | 'send' | 'lp';
+export type DisposalKind = 'swap' | 'send' | 'lp' | 'bridge';
 
 export interface AcbDisposal {
   /** Stable row id - also the key labels are stored under (lib/labels.ts) */
@@ -260,7 +266,7 @@ export function computeAcb(
       pool.costCad += valueUsd * (rate ?? 0);
       const base = { source: e.source, timestamp: e.timestamp, taxYear: taxYearOf(e.timestamp), asset, quantity: e.amount, usd: valueUsd, cad: rate === null ? null : valueUsd * rate };
       if (e.income) income.push({ ...base, kind: e.income });
-      else if (!hasOut.has(e.hash)) receipts.push({ ...base, counterparty: e.from, fromLp: LP_CONTRACTS.has(e.from.toLowerCase()) });
+      else if (!hasOut.has(e.hash)) receipts.push({ ...base, counterparty: e.from, fromLp: !!e.bridge || LP_CONTRACTS.has(e.from.toLowerCase()) });
       continue;
     }
 
@@ -280,7 +286,7 @@ export function computeAcb(
     }
 
     const id = disposalId(e);
-    const isTransfer = transferIds.has(id);
+    const isTransfer = transferIds.has(id) || !!e.bridge;
     // the owner's own figure for what the uncovered units cost (CAD), entered on the row's label
     const override = qty - covered > 1e-12 ? costOverridesCad.get(id) : undefined;
     if (override !== undefined && Number.isFinite(override) && override >= 0) {
@@ -310,7 +316,7 @@ export function computeAcb(
       gainCad: proceedsCad === null ? null : proceedsCad - costCad,
       uncoveredQuantity: qty - covered,
       isTransfer,
-      kind: LP_CONTRACTS.has(e.to.toLowerCase()) ? 'lp' : hasIn.has(e.hash) ? 'swap' : 'send',
+      kind: e.bridge ? 'bridge' : LP_CONTRACTS.has(e.to.toLowerCase()) ? 'lp' : hasIn.has(e.hash) ? 'swap' : 'send',
       counterparty: e.to,
       costOverridden: override !== undefined,
     });

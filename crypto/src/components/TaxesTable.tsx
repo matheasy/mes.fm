@@ -33,7 +33,7 @@ function explorerTx(network: string, hash: string): string | null {
   }
 }
 
-const KIND_LABELS: Record<TaxRow['kind'], string> = { swap: 'Swap', send: 'Sent', lp: 'Into LP' };
+const KIND_LABELS: Record<TaxRow['kind'], string> = { swap: 'Swap', send: 'Sent', lp: 'Into LP', bridge: 'To Hive Engine' };
 
 const qty = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 8 });
 const short = (s: string) => (s.length > 18 ? `${s.slice(0, 8)}…${s.slice(-6)}` : s);

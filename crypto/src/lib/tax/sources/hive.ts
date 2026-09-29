@@ -27,8 +27,8 @@ const NODES = ['https://api.hive.blog', 'https://api.deathwing.me', 'https://api
 const FILTER_LOW = [2, 39, 50, 55, 56, 57].reduce((m, i) => m | (1n << BigInt(i)), 0n).toString();
 const FILTER_HIGH = [64, 66, 77, 81, 83].reduce((m, i) => m | (1n << BigInt(i - 64)), 0n).toString();
 
-/** Accounts on the other end of a move between the owner's own holdings: Hive Engine's HIVE peg
- * (HIVE sent here comes back as SWAP.HIVE, the same coin) */
+/** Accounts on the other end of a move between the owner's own holdings that aren't tracked yet: Hive
+ * Engine's HIVE peg (HIVE sent here becomes SWAP.HIVE on Hive Engine) */
 const BRIDGES = new Set(['honey-swap']);
 
 type Asset = { amount: string; precision: number; nai: string };
@@ -279,23 +279,21 @@ export async function getHiveEntries(): Promise<HiveResult> {
   const legs = accounts.flatMap(([, d]) => d.legs).map((l) => (l.vests ? { ...l, amount: l.amount + l.vests * rateAt(Date.parse(l.timestamp)) } : l));
   const [hive, hbd] = await Promise.all([getDailySeries('hive', HIVE_FORK), getDailySeries('hive_dollar', HIVE_FORK)]);
 
-  const entries: TaxEntry[] = legs.map((l) => {
-    const bridged = BRIDGES.has(l.from) || BRIDGES.has(l.to);
-    return {
-      source: `hive:${l.account}`,
-      hash: l.hash,
-      network: 'hive',
-      timestamp: l.timestamp,
-      symbol: l.symbol,
-      amount: l.amount,
-      priceUsd: priceOn(l.symbol === 'HIVE' ? hive : hbd, l.timestamp),
-      // a move to/from Hive Engine's peg stays within the owner's holdings (HIVE <-> SWAP.HIVE): mark the
-      // other side as the owner's own account so acb.ts skips it like any other self-transfer
-      from: bridged && l.amount > 0 ? l.account : l.from,
-      to: bridged && l.amount < 0 ? l.account : l.to,
-      income: l.income,
-    };
-  });
+  const entries: TaxEntry[] = legs.map((l) => ({
+    source: `hive:${l.account}`,
+    hash: l.hash,
+    network: 'hive',
+    timestamp: l.timestamp,
+    symbol: l.symbol,
+    amount: l.amount,
+    priceUsd: priceOn(l.symbol === 'HIVE' ? hive : hbd, l.timestamp),
+    from: l.from,
+    to: l.to,
+    income: l.income,
+    // HIVE <-> Hive Engine's peg is the owner's own coin changing ledger, but Hive Engine isn't tracked
+    // yet: it leaves at cost (no gain) and comes back at the day's value - see TaxEntry.bridge
+    bridge: BRIDGES.has(l.from) || BRIDGES.has(l.to) || undefined,
+  }));
 
   const counts: Record<string, number> = {};
   for (const [account, d] of accounts) counts[account] = d.operations;
