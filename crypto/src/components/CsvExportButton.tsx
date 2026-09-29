@@ -1,8 +1,8 @@
 import { taxesQuery } from '@/hooks/useTaxes';
 import { BASE_PATH } from '@/lib/basePath';
-import type { WalletKey } from '@/lib/wallets';
+import type { TaxGroup } from '@/lib/tax/taxSources';
 
-export default function CsvExportButton({ year, wallet }: { year?: number; wallet?: WalletKey }) {
+export default function CsvExportButton({ year, wallet }: { year?: number; wallet?: TaxGroup }) {
   return (
     <a
       href={`${BASE_PATH}/api/taxes/export${taxesQuery(year, wallet)}`}

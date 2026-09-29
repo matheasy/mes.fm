@@ -32,8 +32,13 @@ export async function cached<T>(key: string, fetcher: () => Promise<T>, ttlSecon
   if (hit !== null && hit !== undefined) return hit;
 
   const value = await fetcher();
-  if (ttlSeconds) await redis.set(key, value, { ex: ttlSeconds });
-  else await redis.set(key, value);
+  try {
+    if (ttlSeconds) await redis.set(key, value, { ex: ttlSeconds });
+    else await redis.set(key, value);
+  } catch (err) {
+    // a failed save (e.g. a value over Upstash's request size) must not fail the page - it's only a cache
+    console.warn(`cache: could not store ${key}:`, err instanceof Error ? err.message : err);
+  }
   return value;
 }
 

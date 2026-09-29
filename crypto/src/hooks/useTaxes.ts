@@ -4,9 +4,9 @@ import useSWR from 'swr';
 import { ApiError, fetchApiResult } from '@/lib/apiFetcher';
 import { BASE_PATH } from '@/lib/basePath';
 import type { TaxesResponse } from '@/lib/types';
-import type { WalletKey } from '@/lib/wallets';
+import type { TaxGroup } from '@/lib/tax/taxSources';
 
-export function taxesQuery(year?: number, wallet?: WalletKey): string {
+export function taxesQuery(year?: number, wallet?: TaxGroup): string {
   const qs = new URLSearchParams();
   if (year) qs.set('year', String(year));
   if (wallet) qs.set('wallet', wallet);
@@ -14,7 +14,7 @@ export function taxesQuery(year?: number, wallet?: WalletKey): string {
   return s ? `?${s}` : '';
 }
 
-export function useTaxes(year?: number, wallet?: WalletKey) {
+export function useTaxes(year?: number, wallet?: TaxGroup) {
   const { data, error, isLoading, mutate } = useSWR(
     `${BASE_PATH}/api/taxes${taxesQuery(year, wallet)}`,
     (url: string) => fetchApiResult<TaxesResponse>(url),

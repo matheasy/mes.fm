@@ -1,4 +1,3 @@
-import type { WalletKey } from '../wallets';
 import { assetKey } from './assetKey';
 import { isOwnAddress } from './ownAddresses';
 
@@ -26,14 +25,26 @@ import { isOwnAddress } from './ownAddresses';
  *    or on an untracked exchange) get a cost of 0 and are flagged (`uncoveredQuantity`).
  *  - A disposal labelled as a personal transfer (e.g. to the owner's own exchange account) leaves
  *    the pool at cost with no gain (`transferIds`).
- *  - Gas fees are neither added to cost nor deducted from proceeds; income (staking/farming
- *    rewards, airdrops) is only used as the cost of what was received, not reported as income;
- *    the superficial-loss rule isn't applied. Hyperliquid perpetuals aren't included.
+ *  - Income the data can recognise (claimed Hive rewards, HBD savings interest, witness and DHF
+ *    pay - `TaxEntry.income`) is recorded as income at its value when received, which is also its
+ *    cost. Other receipts from outside accounts (delegation payouts, airdrops, exchange
+ *    withdrawals) are acquired at their value too and listed separately for the owner to decide.
+ *  - A disposition with nothing coming back in the same transaction is a *send* (payment, gift,
+ *    or a deposit to an exchange account) and is flagged for review; one with something coming
+ *    back is a swap; one into a known liquidity-pool contract is an LP deposit.
+ *  - The owner can enter the real cost of units the history doesn't cover (`costOverridesCad`).
+ *  - Gas fees are neither added to cost nor deducted from proceeds; the superficial-loss rule
+ *    isn't applied; Hyperliquid perpetuals aren't included.
  */
 
+/** Liquidity-pool contracts: sending into one is an LP deposit, receiving from one an LP withdrawal */
+const LP_CONTRACTS = new Set([
+  '0x46a15b0b27311cedf172ab29e4f4766fbe7f4364', // PancakeSwap V3 NonfungiblePositionManager, BNB Chain
+]);
+
 export interface TaxEntry {
-  /** Which tracked wallet reported this leg */
-  source: WalletKey;
+  /** Which tracked wallet/account reported this leg: main | ai | mfa | sov | bitcoin | hive:<account> */
+  source: string;
   hash: string;
   network: string;
   timestamp: string;
@@ -43,12 +54,16 @@ export interface TaxEntry {
   priceUsd: number | null;
   from: string;
   to: string;
+  /** Set for income (e.g. 'Hive rewards (claimed)'): acquired at its value, which is also income */
+  income?: string;
 }
+
+export type DisposalKind = 'swap' | 'send' | 'lp';
 
 export interface AcbDisposal {
   /** Stable row id - also the key labels are stored under (lib/labels.ts) */
   id: string;
-  wallet: WalletKey;
+  source: string;
   network: string;
   hash: string;
   disposedAt: string;
@@ -71,6 +86,37 @@ export interface AcbDisposal {
   uncoveredQuantity: number;
   /** Labelled as a transfer to the owner's own account elsewhere: no gain, not a disposition */
   isTransfer: boolean;
+  /** swap = something came back in the same transaction; lp = into a liquidity pool; send = nothing came back */
+  kind: DisposalKind;
+  /** Where it went (address / account / 'hive-market' ...) */
+  counterparty: string;
+  /** The owner entered the real cost of the uncovered units (label field) */
+  costOverridden: boolean;
+}
+
+export interface AcbIncome {
+  source: string;
+  timestamp: string;
+  taxYear: number;
+  asset: string;
+  kind: string;
+  quantity: number;
+  usd: number;
+  cad: number | null;
+}
+
+/** Something received from an outside account that isn't recognisable income - acquired at its value; listed for review */
+export interface AcbReceipt {
+  source: string;
+  timestamp: string;
+  taxYear: number;
+  asset: string;
+  counterparty: string;
+  quantity: number;
+  usd: number;
+  cad: number | null;
+  /** Came out of a liquidity-pool contract (an LP withdrawal), so not income */
+  fromLp: boolean;
 }
 
 export interface AcbHolding {
@@ -93,6 +139,8 @@ export interface AcbStats {
 
 export interface AcbResult {
   disposals: AcbDisposal[];
+  income: AcbIncome[];
+  receipts: AcbReceipt[];
   /** What's left in each pool after the last transaction: units and their ACB */
   holdings: AcbHolding[];
   stats: AcbStats;
@@ -144,6 +192,7 @@ export function computeAcb(
   entries: TaxEntry[],
   cadRates: Map<string, number>,
   transferIds: ReadonlySet<string> = new Set(),
+  costOverridesCad: ReadonlyMap<string, number> = new Map(),
 ): AcbResult {
   const stats: AcbStats = { legs: 0, ownTransfers: 0, netted: 0, unpriced: 0 };
 
@@ -152,7 +201,7 @@ export function computeAcb(
     if (e.amount === 0) continue;
     stats.legs += 1;
     const counterparty = e.amount > 0 ? e.from : e.to;
-    if (isOwnAddress(counterparty)) {
+    if (!e.income && isOwnAddress(counterparty)) {
       stats.ownTransfers += 1;
       continue;
     }
@@ -161,6 +210,15 @@ export function computeAcb(
 
   const { legs, netted } = netWithinTransactions(external);
   stats.netted = netted;
+
+  // what each transaction did overall, to tell a swap (something came back) from a send
+  const hasIn = new Set<string>();
+  const hasOut = new Set<string>();
+  for (const e of legs) {
+    if (e.income) continue;
+    if (e.amount > 0) hasIn.add(e.hash);
+    else hasOut.add(e.hash);
+  }
 
   // oldest first; within the same moment receipts before disposals, so a same-block buy-then-sell
   // doesn't read as selling units that aren't there yet
@@ -181,6 +239,8 @@ export function computeAcb(
 
   const pools = new Map<string, { qty: number; costUsd: number; costCad: number }>();
   const disposals: AcbDisposal[] = [];
+  const income: AcbIncome[] = [];
+  const receipts: AcbReceipt[] = [];
 
   for (const e of legs) {
     if (e.priceUsd === null || !Number.isFinite(e.priceUsd)) {
@@ -198,6 +258,9 @@ export function computeAcb(
       pool.qty += e.amount;
       pool.costUsd += valueUsd;
       pool.costCad += valueUsd * (rate ?? 0);
+      const base = { source: e.source, timestamp: e.timestamp, taxYear: taxYearOf(e.timestamp), asset, quantity: e.amount, usd: valueUsd, cad: rate === null ? null : valueUsd * rate };
+      if (e.income) income.push({ ...base, kind: e.income });
+      else if (!hasOut.has(e.hash)) receipts.push({ ...base, counterparty: e.from, fromLp: LP_CONTRACTS.has(e.from.toLowerCase()) });
       continue;
     }
 
@@ -205,8 +268,8 @@ export function computeAcb(
     const held = Math.max(pool.qty, 0);
     const covered = Math.min(qty, held);
     const share = held > EPS ? covered / held : 0;
-    const costUsd = pool.costUsd * share;
-    const costCad = pool.costCad * share;
+    let costUsd = pool.costUsd * share;
+    let costCad = pool.costCad * share;
     pool.qty -= covered;
     pool.costUsd -= costUsd;
     pool.costCad -= costCad;
@@ -218,12 +281,18 @@ export function computeAcb(
 
     const id = disposalId(e);
     const isTransfer = transferIds.has(id);
+    // the owner's own figure for what the uncovered units cost (CAD), entered on the row's label
+    const override = qty - covered > 1e-12 ? costOverridesCad.get(id) : undefined;
+    if (override !== undefined && Number.isFinite(override) && override >= 0) {
+      costCad += override;
+      if (rate) costUsd += override / rate;
+    }
     const proceedsUsd = isTransfer ? costUsd : valueUsd;
     const proceedsCad = rate === null ? null : isTransfer ? costCad : valueUsd * rate;
 
     disposals.push({
       id,
-      wallet: e.source,
+      source: e.source,
       network: e.network,
       hash: e.hash,
       disposedAt: e.timestamp,
@@ -241,6 +310,9 @@ export function computeAcb(
       gainCad: proceedsCad === null ? null : proceedsCad - costCad,
       uncoveredQuantity: qty - covered,
       isTransfer,
+      kind: LP_CONTRACTS.has(e.to.toLowerCase()) ? 'lp' : hasIn.has(e.hash) ? 'swap' : 'send',
+      counterparty: e.to,
+      costOverridden: override !== undefined,
     });
   }
 
@@ -249,5 +321,5 @@ export function computeAcb(
     .map(([asset, p]) => ({ asset, quantity: p.qty, acbUsd: p.costUsd, acbCad: cadComplete ? p.costCad : null }))
     .sort((a, b) => b.acbUsd - a.acbUsd);
 
-  return { disposals, holdings, stats };
+  return { disposals, income, receipts, holdings, stats };
 }

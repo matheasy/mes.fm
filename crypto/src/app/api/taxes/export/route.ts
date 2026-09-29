@@ -1,5 +1,5 @@
 import { buildTaxReport } from '@/lib/tax/report';
-import { WALLET_KEYS, type WalletKey } from '@/lib/wallets';
+import { TAX_GROUPS, type TaxGroup } from '@/lib/tax/taxSources';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -33,17 +33,17 @@ function escapeCsvField(value: string): string {
 
 const fmt = (n: number | null) => (n === null ? '' : n.toFixed(2));
 
-/** GET /api/taxes/export?year=2026&wallet=main - the same rows as the Taxes page, as CSV */
+/** GET /api/taxes/export?year=2026&wallet=hive - the same rows as the Taxes page, as CSV */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const walletParam = searchParams.get('wallet');
-  const wallet = WALLET_KEYS.includes(walletParam as WalletKey) ? (walletParam as WalletKey) : undefined;
+  const group = TAX_GROUPS.includes(walletParam as TaxGroup) ? (walletParam as TaxGroup) : undefined;
   const yearParam = Number(searchParams.get('year'));
   const year = Number.isInteger(yearParam) && yearParam > 2000 ? yearParam : undefined;
 
   let report;
   try {
-    report = await buildTaxReport({ wallet, year });
+    report = await buildTaxReport({ group, year });
   } catch (err) {
     return new Response(err instanceof Error ? err.message : 'Failed to build the tax report', { status: 502 });
   }
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
     .map((r) =>
       [
         r.disposedAt.slice(0, 10),
-        r.walletLabel,
+        r.sourceLabel,
         r.network,
         r.asset,
         r.symbol,
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
   return new Response(csv, {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="mes-crypto-taxes-${report.year}${wallet ? `-${wallet}` : ''}.csv"`,
+      'Content-Disposition': `attachment; filename="mes-crypto-taxes-${report.year}${group ? `-${group}` : ''}.csv"`,
     },
   });
 }

@@ -14,6 +14,7 @@ interface PutBody {
   tag: string;
   notes: string;
   screenshotUrls: string[];
+  costCad?: number | null;
 }
 
 export async function PUT(request: Request) {
@@ -31,6 +32,7 @@ export async function PUT(request: Request) {
     tag: typeof body.tag === 'string' ? body.tag : '',
     notes: typeof body.notes === 'string' ? body.notes : '',
     screenshotUrls: Array.isArray(body.screenshotUrls) ? body.screenshotUrls.filter((u) => typeof u === 'string') : [],
+    costCad: typeof body.costCad === 'number' && Number.isFinite(body.costCad) && body.costCad >= 0 ? body.costCad : null,
   });
 
   return NextResponse.json({ data: record } satisfies ApiResult<LabelRecord>);

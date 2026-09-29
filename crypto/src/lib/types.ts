@@ -1,5 +1,5 @@
-import type { AcbDisposal, AcbHolding, AcbStats } from './tax/acb';
 import type { WalletKey } from './wallets';
+import type { AcbDisposal, AcbHolding, AcbStats } from './tax/acb';
 
 export interface Token {
   /** 'BNB' for the native coin, otherwise the checksummed BEP-20 contract address */
@@ -93,6 +93,8 @@ export interface LabelRecord {
   tag: string;
   notes: string;
   screenshotUrls: string[];
+  /** Taxes page only: what the units with unknown cost on this row actually cost you, in CAD (overrides the $0) */
+  costCad?: number | null;
   updatedAt: string;
 }
 
@@ -103,10 +105,26 @@ export function isTransferLabel(label: LabelRecord | null | undefined): boolean 
   return !!label && TRANSFER_TAGS.includes(label.tag.trim().toLowerCase());
 }
 
-/** One disposition row on the Taxes page: the ACB calculation's result plus its wallet name and label */
+/** One disposition row on the Taxes page: the ACB calculation's result plus its source's name/link and label */
 export interface TaxRow extends AcbDisposal {
-  walletLabel: string;
+  sourceLabel: string;
+  sourceLink: string;
   label: LabelRecord | null;
+  /** Still needs the owner: a send nobody has labelled yet, or units at an unknown ($0) cost with no cost entered */
+  needsInput: ('send' | 'unknown-cost')[];
+}
+
+/** Income for the year by kind (claimed Hive rewards, HBD interest, ...) */
+export interface TaxIncomeSummary {
+  totalCad: number;
+  totalUsd: number;
+  byKind: { kind: string; asset: string; count: number; quantity: number; cad: number; usd: number }[];
+}
+
+/** Receipts from outside accounts that aren't recognisable income, by sender - for the owner to judge */
+export interface TaxReceiptsSummary {
+  totalCad: number;
+  bySender: { counterparty: string; source: string; asset: string; count: number; cad: number }[];
 }
 
 export interface TaxAssetSummary {
@@ -134,7 +152,7 @@ export interface TaxYearSummary {
 }
 
 export interface TaxSourceStatus {
-  key: WalletKey;
+  key: string;
   label: string;
   entries: number;
   error: string | null;
@@ -147,6 +165,10 @@ export interface TaxesResponse {
   year: number;
   summary: TaxYearSummary;
   rows: TaxRow[];
+  income: TaxIncomeSummary;
+  receipts: TaxReceiptsSummary;
+  /** Rows of the year still needing the owner (see TaxRow.needsInput) */
+  needsInput: { sends: number; unknownCost: number };
   /** Units and ACB left in each pool today, across all wallets */
   holdings: AcbHolding[];
   stats: AcbStats;

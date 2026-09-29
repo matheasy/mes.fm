@@ -9,10 +9,11 @@ import TaxesTable from '@/components/TaxesTable';
 import TaxSummary, { money } from '@/components/TaxSummary';
 import { useTaxes } from '@/hooks/useTaxes';
 import { BASE_PATH } from '@/lib/basePath';
-import { WALLET_KEYS, WALLET_LABELS, type WalletKey } from '@/lib/wallets';
+import { TAX_GROUPS, TAX_GROUP_LABELS, sourceLabel, type TaxGroup } from '@/lib/tax/taxSources';
+import type { LabelRecord } from '@/lib/types';
 
-function initialWallet(param: string | null): WalletKey | undefined {
-  return WALLET_KEYS.includes(param as WalletKey) ? (param as WalletKey) : undefined;
+function initialGroup(param: string | null): TaxGroup | undefined {
+  return TAX_GROUPS.includes(param as TaxGroup) ? (param as TaxGroup) : undefined;
 }
 
 const chip = (on: boolean) => `rounded px-2.5 py-1 text-sm ${on ? 'bg-accent text-bg' : 'text-gray-300 hover:text-accent'}`;
@@ -23,11 +24,11 @@ function TaxesPageInner() {
     const y = Number(searchParams.get('year'));
     return Number.isInteger(y) && y > 2000 ? y : undefined;
   });
-  const [wallet, setWallet] = useState<WalletKey | undefined>(() => initialWallet(searchParams.get('wallet')));
+  const [wallet, setWallet] = useState<TaxGroup | undefined>(() => initialGroup(searchParams.get('wallet')));
   const [currency, setCurrency] = useState<'CAD' | 'USD'>('CAD');
   const { taxes, isLoading, error, rateLimited, refresh } = useTaxes(year, wallet);
 
-  async function saveLabel(id: string, record: { tag: string; notes: string; screenshotUrls: string[] }) {
+  async function saveLabel(id: string, record: Omit<LabelRecord, 'updatedAt'>) {
     await fetch(`${BASE_PATH}/api/taxes/labels`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -42,8 +43,9 @@ function TaxesPageInner() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2 text-sm text-gray-400">
         <p>
-          Your capital gains and losses for Canadian taxes, across <strong className="text-gray-200">every wallet at once</strong> (Main,
-          AI Trading, MikeFA Trading and Store of Value are just groupings - they&apos;re all yours, so they&apos;re all counted together).
+          Your capital gains, losses and crypto income for Canadian taxes, across <strong className="text-gray-200">every wallet and account at
+          once</strong>: the Main, AI Trading, MikeFA Trading and Store of Value wallets, your Bitcoin address and your Hive accounts (@mes,
+          @mestruth, @mathiew, @artgrafiken). The groupings are just for you - it&apos;s all yours, so it&apos;s all counted together.
         </p>
         <p>
           A row appears whenever you <strong className="text-gray-200">got rid of</strong> a coin: sold it, swapped it for another, or added it to a
@@ -73,9 +75,9 @@ function TaxesPageInner() {
             <button type="button" onClick={() => setWallet(undefined)} className={chip(!wallet)}>
               All wallets
             </button>
-            {WALLET_KEYS.map((k) => (
+            {TAX_GROUPS.map((k) => (
               <button key={k} type="button" onClick={() => setWallet(k)} className={chip(wallet === k)}>
-                {WALLET_LABELS[k]}
+                {TAX_GROUP_LABELS[k]}
               </button>
             ))}
           </div>
@@ -98,7 +100,31 @@ function TaxesPageInner() {
       <StateView loading={isLoading && !taxes} error={rateLimited && taxes ? null : error} onRetry={refresh}>
         {taxes && (
           <div className="flex flex-col gap-6">
-            {(failed.length > 0 || !taxes.cadComplete || taxes.summary.uncoveredCount > 0) && (
+            {(taxes.needsInput.sends > 0 || taxes.needsInput.unknownCost > 0) && (
+              <div className="panel flex flex-col gap-2 border-yellow-500/40 text-sm text-gray-300">
+                <p className="font-semibold text-yellow-300">Needs your input ({taxes.year})</p>
+                {taxes.needsInput.unknownCost > 0 && (
+                  <p>
+                    <strong className="text-gray-100">{taxes.needsInput.unknownCost}</strong> row{taxes.needsInput.unknownCost === 1 ? '' : 's'} marked{' '}
+                    <span className="text-yellow-300">cost unknown</span>: coins sold that the history never shows arriving (bought on an exchange,
+                    before a wallet was tracked, or held when Hive launched in March 2020). They count at a cost of $0 for now, which makes the gain
+                    look bigger than it was. If you know what they cost, click <em>Label</em> on the row and enter it.
+                  </p>
+                )}
+                {taxes.needsInput.sends > 0 && (
+                  <p>
+                    <strong className="text-gray-100">{taxes.needsInput.sends}</strong> row{taxes.needsInput.sends === 1 ? '' : 's'} marked{' '}
+                    <span className="text-yellow-300">needs a label</span>: coins sent out with nothing coming back (a payment, a gift, or a deposit to
+                    an exchange). They count as sales at that day&apos;s price. If one went to your own exchange account, label it{' '}
+                    <strong className="text-gray-100">Personal transfer</strong> and it stops counting; otherwise any label (Payment, Gift, Trade)
+                    clears the flag.
+                  </p>
+                )}
+                <p className="text-xs text-gray-500">Highlighted rows below. Everything you enter is saved with the row and goes into the CSV.</p>
+              </div>
+            )}
+
+            {(failed.length > 0 || !taxes.cadComplete) && (
               <div className="panel flex flex-col gap-2 border-yellow-500/40 text-sm">
                 {failed.map((s) => (
                   <p key={s.key} className="text-yellow-300">
@@ -106,13 +132,6 @@ function TaxesPageInner() {
                     totals will change once it&apos;s back.
                   </p>
                 ))}
-                {taxes.summary.uncoveredCount > 0 && (
-                  <p className="text-yellow-300">
-                    {taxes.summary.uncoveredCount} row{taxes.summary.uncoveredCount === 1 ? '' : 's'} sold coins that the tracked history never shows
-                    arriving (bought before tracking started, or on an exchange). Their cost is counted as $0, which overstates the gain - note the
-                    real cost on those rows.
-                  </p>
-                )}
                 {!taxes.cadComplete && (
                   <p className="text-yellow-300">Some Bank of Canada rates couldn&apos;t be loaded; those CAD amounts use the nearest earlier rate.</p>
                 )}
@@ -122,7 +141,7 @@ function TaxesPageInner() {
             <TaxSummary summary={taxes.summary} currency={currency} />
             {wallet && (
               <p className="-mt-2 text-xs text-gray-500">
-                Totals are for all wallets; the list below shows only {WALLET_LABELS[wallet]}&apos;s rows.
+                Totals are for all wallets; the list below shows only {TAX_GROUP_LABELS[wallet]}&apos;s rows.
               </p>
             )}
 
@@ -130,6 +149,85 @@ function TaxesPageInner() {
               <div className="panel py-12 text-center text-gray-400">Nothing sold or swapped in {taxes.year}.</div>
             ) : (
               <TaxesTable rows={taxes.rows} currency={currency} onSaveLabel={saveLabel} />
+            )}
+
+            <div className="panel flex flex-col gap-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="stat-label">Crypto income, {taxes.year}</p>
+                <p className="text-xl font-semibold">{money(currency === 'CAD' ? taxes.income.totalCad : taxes.income.totalUsd, currency)}</p>
+              </div>
+              {taxes.income.byKind.length === 0 ? (
+                <p className="text-sm text-gray-500">No rewards or interest recorded for {taxes.year}.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Kind</th>
+                        <th>Paid in</th>
+                        <th>Times</th>
+                        <th>Amount</th>
+                        <th>Value (CAD, on the day received)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {taxes.income.byKind.map((k) => (
+                        <tr key={`${k.kind}-${k.asset}`}>
+                          <td className="text-gray-100">{k.kind}</td>
+                          <td>{k.asset}</td>
+                          <td>{k.count}</td>
+                          <td>{k.quantity.toLocaleString('en-US', { maximumFractionDigits: 3 })}</td>
+                          <td>{money(k.cad, 'CAD')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p className="text-xs text-gray-500">
+                Hive author/curation rewards count when you claimed them; the Hive Power part is converted to HIVE at the chain&apos;s own rate
+                that day. HBD savings interest counts when paid. Each is valued in CAD on the day received, and that value is also its cost (ACB)
+                when you later sell. Income is reported separately from capital gains - ask your accountant whether it&apos;s business or
+                property income for you.
+              </p>
+            </div>
+
+            {taxes.receipts.bySender.length > 0 && (
+              <details className="panel">
+                <summary className="cursor-pointer text-sm font-medium text-gray-200">
+                  Received from other accounts in {taxes.year}: {money(taxes.receipts.totalCad, 'CAD')} - may be income, needs your judgment
+                </summary>
+                <p className="mt-2 text-xs text-gray-500">
+                  Coins that arrived from someone else with nothing sent back: delegation payouts (reward.app, actifit.pay, hivestudents …),
+                  tips, airdrops, or withdrawals from your own exchange account. They&apos;re counted at their value on arrival (which becomes their
+                  cost) but are <strong>not</strong> added to the income above, since only you know which were earnings. Payouts for delegating
+                  or curating are usually income; withdrawals from your own exchange account are not.
+                </p>
+                <div className="mt-3 overflow-x-auto">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Coin</th>
+                        <th>Times</th>
+                        <th>Value (CAD)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {taxes.receipts.bySender.slice(0, 60).map((r) => (
+                        <tr key={`${r.counterparty}-${r.source}-${r.asset}`}>
+                          <td className="text-gray-100">{r.counterparty}</td>
+                          <td>{sourceLabel(r.source)}</td>
+                          <td>{r.asset}</td>
+                          <td>{r.count}</td>
+                          <td>{money(r.cad, 'CAD')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
             )}
 
             <details className="panel">
@@ -171,8 +269,8 @@ function TaxesPageInner() {
                       {s.label} ({s.error ? 'not loaded' : `${s.entries} transfers`})
                     </span>
                   ))}
-                  . {taxes.stats.ownTransfers} transfers between your own wallets were left out, and {taxes.stats.unpriced} with no market price
-                  (mostly spam airdrops) were ignored.
+                  . {taxes.stats.ownTransfers} transfers between your own wallets and accounts were left out, and {taxes.stats.unpriced} with no
+                  market price (mostly spam airdrops) were ignored. Prices: DefiLlama daily (checked against Binance), CoinGecko as a backup.
                 </li>
                 <li>BTCB, WBTC and other wrapped Bitcoin count as Bitcoin; WETH and bridged ETH as ETH; WBNB as BNB.</li>
                 <li>
@@ -181,12 +279,18 @@ function TaxesPageInner() {
                 </li>
                 <li>
                   Sending coins to your own exchange account (Shakepay etc.) looks like a sale here, since the deposit address isn&apos;t known to
-                  be yours: label those rows <strong className="text-gray-200">Personal transfer</strong> and they stop counting.
+                  be yours: label those rows <strong className="text-gray-200">Personal transfer</strong> and they stop counting. Sales you then
+                  made <em>on</em> the exchange come from the exchange&apos;s own reports.
                 </li>
                 <li>
-                  Not yet included: your Hive accounts (HIVE/HBD and Hive Engine tokens other than TGLD), the Bitcoin address, Hyperliquid
-                  perpetuals, and staking/farming rewards as income (they&apos;re counted at their value when received, as their cost). Gas fees
-                  aren&apos;t added to costs, and the superficial-loss rule isn&apos;t applied.
+                  Hive: only money moves are read - transfers, internal-market trades, HBD/HIVE conversions, reward claims, HBD savings interest
+                  (never votes, posts or comments). Powering up/down and savings are your own HIVE/HBD changing form, so they&apos;re skipped, as are
+                  transfers between your four accounts and to/from Hive Engine&apos;s peg (@honey-swap). History starts when Hive launched on
+                  2020-03-20; what you held then counts at $0 cost.
+                </li>
+                <li>
+                  Not yet included: Hive Engine tokens (LEO, SWAP.BTC …) other than TGLD, Magi, Hyperliquid perpetuals. Gas fees aren&apos;t added
+                  to costs, and the superficial-loss rule isn&apos;t applied.
                 </li>
                 <li>
                   Only half of a net capital gain is taxable (the inclusion rate). This page is a record-keeping aid, not tax advice - have an
