@@ -1,6 +1,9 @@
 interface SiteChromeProps {
   title: string;
   tagline: string;
+  /** The "Part of ..." box below the nav bar - defaults to this dashboard family's own hub. */
+  partOfLabel?: string;
+  partOfHref?: string;
 }
 
 /** The rest of mes.fm's info-bar nav, minus Home/Subscribe/Store/Donate/Contact Us - those are
@@ -23,7 +26,7 @@ const NAV_LINKS = [
  * separate Vercel deployment, so a relative href would get that basePath prepended instead of
  * leaving the app (see crypto/src/lib/wallets.ts for the same note).
  */
-export default function SiteChrome({ title, tagline }: SiteChromeProps) {
+export default function SiteChrome({ title, tagline, partOfLabel = 'MES Portfolio', partOfHref = 'https://mes.fm/portfolio' }: SiteChromeProps) {
   return (
     <div className="mb-6 overflow-hidden rounded-xl border border-bg-border">
       <div className="flex items-center gap-4 bg-gray-100 px-4 py-4 sm:px-6">
@@ -48,8 +51,8 @@ export default function SiteChrome({ title, tagline }: SiteChromeProps) {
       </nav>
       <div className="border-t border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 sm:px-6">
         Part of{' '}
-        <a href="https://mes.fm/portfolio" className="font-semibold text-[#277bb6] hover:underline">
-          MES Portfolio
+        <a href={partOfHref} className="font-semibold text-[#277bb6] hover:underline">
+          {partOfLabel}
         </a>
       </div>
     </div>
