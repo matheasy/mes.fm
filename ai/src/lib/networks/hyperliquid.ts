@@ -1,5 +1,6 @@
 import { cached, cacheKey } from '../cache';
-import { CACHE_TTL_SECONDS, NATIVE_TOKENS, WALLET_ADDRESS } from '../config';
+import { CACHE_TTL_SECONDS, NATIVE_TOKENS } from '../config';
+import { currentWallet } from '../walletContext';
 import * as coingecko from '../coingecko';
 import type { Disposal, Lot } from '../accounting/types';
 import type { Holding, Token, Transaction } from '../types';
@@ -62,15 +63,15 @@ function priceSpotHolding(symbol: string, meta: api.SpotMeta, mids: Record<strin
 
 /** Single cached fetch of everything Hyperliquid-related, shared by getNetworkLedgerData() and getPerpSummary() so both draw from one set of upstream calls */
 async function getRawData() {
-  const key = cacheKey('rawwallet', WALLET_ADDRESS, NETWORK);
+  const key = cacheKey('rawwallet', currentWallet().address, NETWORK);
   return cached(key, CACHE_TTL_SECONDS.transactions, async () => {
     const [spot, meta, mids, fills, hyperEvmBalanceWei, clearinghouseState] = await Promise.all([
-      api.getSpotClearinghouseState(WALLET_ADDRESS),
+      api.getSpotClearinghouseState(currentWallet().address),
       api.getSpotMeta(),
       api.getAllMids(),
-      api.getFillsSince(WALLET_ADDRESS, Date.now() - FILL_LOOKBACK_MS),
-      hyperevm.getNativeBalanceWei(WALLET_ADDRESS),
-      api.getClearinghouseState(WALLET_ADDRESS),
+      api.getFillsSince(currentWallet().address, Date.now() - FILL_LOOKBACK_MS),
+      hyperevm.getNativeBalanceWei(currentWallet().address),
+      api.getClearinghouseState(currentWallet().address),
     ]);
     return { spot, meta, mids, fills, hyperEvmBalanceWei, clearinghouseState };
   });
@@ -157,8 +158,8 @@ function buildSpotLedger(fills: api.Fill[], meta: api.SpotMeta): { transactions:
       timestamp,
       type: 'swap',
       token,
-      from: side === 'buy' ? 'USDC' : WALLET_ADDRESS,
-      to: side === 'buy' ? WALLET_ADDRESS : 'USDC',
+      from: side === 'buy' ? 'USDC' : currentWallet().address,
+      to: side === 'buy' ? currentWallet().address : 'USDC',
       amount,
       gasUsedNative: 0,
       gasUsedUsd: null,

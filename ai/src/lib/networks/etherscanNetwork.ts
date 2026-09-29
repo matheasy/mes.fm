@@ -1,5 +1,6 @@
 import { cached, cacheKey } from '../cache';
-import { CACHE_TTL_SECONDS, ETHERSCAN_CHAIN_IDS, NATIVE_TOKENS, WALLET_ADDRESS } from '../config';
+import { CACHE_TTL_SECONDS, ETHERSCAN_CHAIN_IDS, NATIVE_TOKENS } from '../config';
+import { currentWallet } from '../walletContext';
 import * as coingecko from '../coingecko';
 import type { Holding, Token, Transaction } from '../types';
 import { formatUnits, gasFeeBnb } from '../units';
@@ -39,12 +40,12 @@ export function createEtherscanNetwork(network: EtherscanNetworkId) {
   };
 
   async function getRawWalletData(): Promise<RawWalletData> {
-    const key = cacheKey('rawwallet', WALLET_ADDRESS, network);
+    const key = cacheKey('rawwallet', currentWallet().address, network);
     return cached(key, CACHE_TTL_SECONDS.transactions, async () => {
       const [nativeBalanceWei, normalTxs, tokenTxs] = await Promise.all([
-        etherscan.getNativeBalanceWei(chainId, WALLET_ADDRESS),
-        etherscan.getNormalTxList(chainId, WALLET_ADDRESS),
-        etherscan.getTokenTxList(chainId, WALLET_ADDRESS),
+        etherscan.getNativeBalanceWei(chainId, currentWallet().address),
+        etherscan.getNormalTxList(chainId, currentWallet().address),
+        etherscan.getTokenTxList(chainId, currentWallet().address),
       ]);
       return { nativeBalanceWei, normalTxs, tokenTxs };
     });
@@ -57,7 +58,7 @@ export function createEtherscanNetwork(network: EtherscanNetworkId) {
    * else sent costs us no gas, unlike this wallet's own sends/swaps).
    */
   function normalizeTransactions(raw: RawWalletData): Transaction[] {
-    const wallet = WALLET_ADDRESS;
+    const wallet = currentWallet().address;
     const byHash = new Map<string, { timestamp: string; gasUsedNative: number; legs: Leg[]; methodLabel: string | null }>();
 
     for (const t of raw.normalTxs) {
@@ -146,7 +147,7 @@ export function createEtherscanNetwork(network: EtherscanNetworkId) {
     const balances = new Map<string, { token: Token; balance: number }>();
     for (const t of raw.tokenTxs) {
       const contractAddress = t.contractAddress.toLowerCase();
-      const direction = t.to.toLowerCase() === WALLET_ADDRESS ? 1 : -1;
+      const direction = t.to.toLowerCase() === currentWallet().address ? 1 : -1;
       const amount = direction * formatUnits(t.value, Number(t.tokenDecimal));
       const existing = balances.get(contractAddress);
       if (existing) {

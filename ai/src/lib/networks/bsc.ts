@@ -1,5 +1,6 @@
 import { cached, cacheKey } from '../cache';
-import { CACHE_TTL_SECONDS, NATIVE_TOKENS, WALLET_ADDRESS } from '../config';
+import { CACHE_TTL_SECONDS, NATIVE_TOKENS } from '../config';
+import { currentWallet } from '../walletContext';
 import * as coingecko from '../coingecko';
 import type { Holding, Token, Transaction } from '../types';
 import { formatUnits } from '../units';
@@ -23,11 +24,11 @@ interface RawWalletData {
 }
 
 async function getRawWalletData(): Promise<RawWalletData> {
-  const key = cacheKey('rawwallet', WALLET_ADDRESS, NETWORK);
+  const key = cacheKey('rawwallet', currentWallet().address, NETWORK);
   return cached(key, CACHE_TTL_SECONDS.transactions, async () => {
     const [nativeBalanceWei, transfers] = await Promise.all([
-      nodeReal.getNativeBalanceWei(WALLET_ADDRESS),
-      nodeReal.getAssetTransfers(WALLET_ADDRESS),
+      nodeReal.getNativeBalanceWei(currentWallet().address),
+      nodeReal.getAssetTransfers(currentWallet().address),
     ]);
     return { nativeBalanceWei, transfers };
   });
@@ -58,7 +59,7 @@ function transferAmount(t: nodeReal.AssetTransfer, isNative: boolean): number {
  * tier; a documented regression vs. the old Moralis-based BSC gas display, not silently dropped.
  */
 function normalizeTransactions(raw: RawWalletData): Transaction[] {
-  const wallet = WALLET_ADDRESS;
+  const wallet = currentWallet().address;
   const nativeTokenPick: Transaction['token'] = { symbol: 'BNB', contractAddress: 'BNB', isNative: true };
   const byHash = new Map<string, { timestamp: string; legs: Leg[] }>();
 
@@ -121,7 +122,7 @@ async function getCurrentHoldings(raw: RawWalletData): Promise<Holding[]> {
   for (const t of raw.transfers) {
     if (t.category !== '20' || t.value === null || !t.rawContract?.address) continue;
     const contractAddress = t.rawContract.address.toLowerCase();
-    const direction = (t.to ?? '').toLowerCase() === WALLET_ADDRESS ? 1 : -1;
+    const direction = (t.to ?? '').toLowerCase() === currentWallet().address ? 1 : -1;
     const amount = direction * transferAmount(t, false);
     const existing = balances.get(contractAddress);
     if (existing) {

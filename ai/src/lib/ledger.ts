@@ -7,6 +7,7 @@ import * as ethereum from './networks/ethereum';
 import * as hyperliquid from './networks/hyperliquid';
 import type { NetworkLedgerData, PricedTransaction } from './networks/types';
 import type { Holding, NetworkError, Transaction } from './types';
+import { currentWallet } from './walletContext';
 
 const NETWORK_MODULES: Record<NetworkId, { getNetworkLedgerData: () => Promise<NetworkLedgerData>; resolveHistoricalPrice: (token: Transaction['token'], isoTimestamp: string) => Promise<number | null> }> = {
   bsc,
@@ -32,6 +33,18 @@ export interface AggregatedNetworkData {
  * `byNetwork` (whatever succeeded) with `networkErrors` (per-network failure reasons) to render
  * partial results instead of an all-or-nothing failure.
  */
+/** Drops a wallet's excluded tokens (WalletConfig.excludeContracts) from every part of its ledger */
+function withoutContracts(d: NetworkLedgerData, exclude: ReadonlySet<string>): NetworkLedgerData {
+  const keep = (contract: string) => !exclude.has(contract.toLowerCase());
+  return {
+    holdings: d.holdings.filter((h) => keep(h.token.contractAddress)),
+    transactions: d.transactions.filter((t) => keep(t.token.contractAddress)),
+    pricedTransactions: d.pricedTransactions.filter((t) => keep(t.token.contractAddress)),
+    lots: d.lots.filter((l) => keep(l.contractAddress)),
+    disposals: d.disposals.filter((x) => keep(x.contractAddress)),
+  };
+}
+
 export async function getAggregatedNetworkData(network?: NetworkId): Promise<AggregatedNetworkData> {
   const targets = networksToFetch(network);
   const settled = await Promise.allSettled(targets.map((n) => NETWORK_MODULES[n].getNetworkLedgerData()));
@@ -39,10 +52,11 @@ export async function getAggregatedNetworkData(network?: NetworkId): Promise<Agg
   const byNetwork: Partial<Record<NetworkId, NetworkLedgerData>> = {};
   const networkErrors: Partial<Record<NetworkId, NetworkError>> = {};
 
+  const exclude = currentWallet().excludeContracts;
   settled.forEach((result, i) => {
     const n = targets[i]!; // settled is mapped 1:1 from targets, so every index is in bounds
     if (result.status === 'fulfilled') {
-      byNetwork[n] = result.value;
+      byNetwork[n] = exclude.size ? withoutContracts(result.value, exclude) : result.value;
     } else {
       networkErrors[n] = describeNetworkError(result.reason, `Failed to load ${n} data`);
     }

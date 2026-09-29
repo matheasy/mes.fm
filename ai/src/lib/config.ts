@@ -2,7 +2,39 @@ import type { Token } from './types';
 
 const DEFAULT_WALLET = '0x89aC35e57216A51Cf08f1c14B3Ce19D6813ee492';
 
-export const WALLET_ADDRESS = (process.env.WALLET_ADDRESS ?? DEFAULT_WALLET).toLowerCase();
+export type WalletKey = 'ai' | 'main';
+
+export interface WalletConfig {
+  key: WalletKey;
+  /** Lowercase EVM address (also used on Hyperliquid / HyperEVM) */
+  address: string;
+  /** Lowercase contract addresses left out of this wallet's holdings and ledger entirely */
+  excludeContracts: ReadonlySet<string>;
+}
+
+/**
+ * The wallets this app can report on - pick one per request with `?wallet=` (src/lib/walletContext.ts).
+ * `ai` is the default and the only one the mes.fm/ai pages themselves show.
+ * `main` (the Main wallet) is read by mes.fm/portfolio and mes.fm/taxes. Its BTC-pegged tokens
+ * are excluded because mes.fm/sov already tracks exactly these two contracts on this address
+ * (sov/src/lib/config.ts BTC_TOKENS, pooled as one BTC position) - counting them here as well
+ * would double them in the combined views. Arbitrum WBTC isn't in sov, so it stays in.
+ */
+export const WALLETS: Record<WalletKey, WalletConfig> = {
+  ai: {
+    key: 'ai',
+    address: (process.env.WALLET_ADDRESS ?? DEFAULT_WALLET).toLowerCase(),
+    excludeContracts: new Set(),
+  },
+  main: {
+    key: 'main',
+    address: '0xe6c0634d02ae5f136500ac9428ed5d9576695ef9',
+    excludeContracts: new Set([
+      '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c', // BTCB, BNB Chain
+      '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // WBTC, Ethereum
+    ]),
+  },
+};
 
 export type NetworkId = 'bsc' | 'ethereum' | 'arbitrum' | 'hyperliquid';
 

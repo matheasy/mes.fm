@@ -182,12 +182,12 @@ export async function getHistoricalPriceForToken(token: Transaction['token'], is
   );
 }
 
-interface PricedTransaction extends Transaction {
+export interface PricedTransaction extends Transaction {
   priceUsd: number | null;
 }
 
 /** Attaches each non-zero transaction's historical USD price - shared by the gains engine and the value-history chart */
-async function getPricedTransactions(): Promise<PricedTransaction[]> {
+export async function getPricedTransactions(): Promise<PricedTransaction[]> {
   const transactions = await getTransactions();
   const priced: PricedTransaction[] = [];
 
