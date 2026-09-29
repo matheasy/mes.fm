@@ -98,7 +98,7 @@ Same multi-zones pattern as `ai/` / `mfa/` / `sov/` / `crypto/`:
    [`.env.example`](.env.example): `COINGECKO_API_KEY`, `NODEREAL_API_KEY`, `KV_REST_API_URL`,
    `KV_REST_API_TOKEN` (mark the keys **Secret**; give them Production **and** Preview).
 2. The `/assets` + `/assets/:path*` rewrites are already in `../mes.fm/vercel.json` and the
-   password gate in `../mes.fm/middleware.js` (username: anything; password `mes911`).
+   password gate in `../mes.fm/middleware.js` (username `mes`, password `911`).
 3. Redeploy `mes.fm`.
 
 `vercel.json` here carries the `ignoreCommand` that keeps this project from rebuilding on commits

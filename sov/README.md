@@ -74,7 +74,7 @@ Same multi-zones pattern as `ai/` / `mfa/` / `crypto/`:
    ```
 
 3. **Password gate**: `../mes.fm/middleware.js`'s matcher already includes `/sov` and
-   `/sov/:path*` (shared realm with `/portfolio`, password `mes911`).
+   `/sov/:path*` (shared realm with `/portfolio`, username `mes`, password `911`).
 4. **Fold into mes.fm/portfolio**: set `SOV_SOURCE_URL=https://mes-fm-sov.vercel.app/sov` on the
    existing `mes-fm-crypto` Vercel project so the combined portfolio view includes this basket.
 
