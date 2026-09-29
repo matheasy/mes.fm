@@ -4,7 +4,7 @@ export const WALLET_KEYS: WalletKey[] = ['ai', 'mfa', 'sov'];
 
 export const WALLET_LABELS: Record<WalletKey, string> = {
   ai: 'AI Trading',
-  mfa: 'MFA Trading',
+  mfa: 'MikeFA Trading',
   sov: 'Store of Value',
 };
 
