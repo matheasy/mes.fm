@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import SiteChrome from '@/components/SiteChrome';
 import SiteFooter from '@/components/SiteFooter';
 import SwrProvider from '@/components/SwrProvider';
+import ThemeScript from '@/components/ThemeScript';
 import './globals.css';
 
 const TITLE = 'MES Store of Value';
@@ -12,26 +12,21 @@ export const metadata: Metadata = {
   title: TITLE,
   description:
     'Read-only tracker for a fixed set of long-term holdings — Bitcoin (BTCB + WBTC), XRP, and TGLD — with combined value, transactions, and capital gains.',
+  icons: { icon: 'https://mes.fm/img/crypto-logo.jpg' },
+  // password-protected (mes.fm/middleware.js): kept out of search engines, like mes.fm/assets
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body>
         <SwrProvider>
-          <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6">
-            <SiteChrome title={TITLE} tagline={TAGLINE} />
-            <nav className="mb-6 flex gap-4 text-sm">
-              <Link href="/" className="text-gray-300 hover:text-accent">
-                Overview
-              </Link>
-              <a href="https://mes.fm/portfolio/transactions?wallet=sov" className="text-gray-300 hover:text-accent">
-                Transactions
-              </a>
-              <a href="https://mes.fm/taxes?wallet=sov" className="text-gray-300 hover:text-accent">
-                Taxes
-              </a>
-            </nav>
+          <div className="mx-auto max-w-[1180px] px-4 pb-6 sm:px-6">
+            <SiteChrome title={TITLE} tagline={TAGLINE} homeHref="https://mes.fm/sov" active="sov" wallet="sov" />
             <main>{children}</main>
             <SiteFooter />
           </div>

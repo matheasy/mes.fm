@@ -2,12 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme tokens (see tailwind.config.ts). Dark is the default, as on the static mes.fm pages;
+   html.light is set by the header's theme button and, before first paint, by ThemeScript. */
+:root {
+  --c-bg: 11 14 20;
+  --c-panel: 19 23 34;
+  --c-border: 35 40 56;
+  --c-accent: 240 185 11;
+  --c-accent-muted: 138 109 0;
+  --c-gain: 34 197 94;
+  --c-loss: 239 68 68;
+  /* Tailwind's own gray scale */
+  --g-50: 249 250 251;
+  --g-100: 243 244 246;
+  --g-200: 229 231 235;
+  --g-300: 209 213 219;
+  --g-400: 156 163 175;
+  --g-500: 107 114 128;
+  --g-600: 75 85 99;
+  --g-700: 55 65 81;
+  --g-800: 31 41 55;
+  --g-900: 17 24 39;
+  --g-950: 3 7 18;
+}
+
+html.light {
+  --c-bg: 243 244 246;
+  --c-panel: 255 255 255;
+  --c-border: 222 226 232;
+  /* the dashboards' yellow is unreadable as text on white; a darker gold works both as text and
+     behind the black text of the selected tab buttons */
+  --c-accent: 168 107 0;
+  --c-accent-muted: 214 170 60;
+  --c-gain: 21 128 61;
+  --c-loss: 200 30 30;
+  /* the scale flipped end for end: light text on dark becomes dark text on light */
+  --g-50: 3 7 18;
+  --g-100: 17 24 39;
+  --g-200: 31 41 55;
+  --g-300: 55 65 81;
+  --g-400: 75 85 99;
+  --g-500: 107 114 128;
+  --g-600: 156 163 175;
+  --g-700: 209 213 219;
+  --g-800: 229 231 235;
+  --g-900: 243 244 246;
+  --g-950: 249 250 251;
+}
+
 html {
   color-scheme: dark;
 }
 
+html.light {
+  color-scheme: light;
+}
+
 body {
   @apply bg-bg text-gray-100;
+}
+
+/* Recharts tooltips carry inline dark colours; the few Tailwind palette tints used for badges are
+   pale-on-dark shades. Light-theme versions of both: */
+html.light .recharts-default-tooltip {
+  background: #ffffff !important;
+  border-color: rgb(var(--c-border)) !important;
+}
+html.light .text-yellow-300,
+html.light .text-yellow-300\/80 {
+  color: #a16207;
+}
+html.light .text-green-300 {
+  color: #15803d;
+}
+html.light .text-blue-300 {
+  color: #1d4ed8;
+}
+html.light .text-purple-300 {
+  color: #7e22ce;
+}
+html.light .text-orange-300 {
+  color: #c2410c;
+}
+html.light .text-teal-300 {
+  color: #0f766e;
 }
 
 .panel {

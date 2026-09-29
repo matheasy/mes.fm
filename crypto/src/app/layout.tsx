@@ -1,37 +1,33 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import Script from 'next/script';
 import SiteChrome from '@/components/SiteChrome';
 import SiteFooter from '@/components/SiteFooter';
 import SwrProvider from '@/components/SwrProvider';
+import ThemeScript from '@/components/ThemeScript';
 import './globals.css';
 
 const TITLE = 'MES Crypto Portfolio';
-const TAGLINE = 'Group totals across every mes.fm wallet: AI Trading, MikeFA Trading and Store of Value.';
+const TAGLINE = 'Every mes.fm wallet in one place: AI Trading, MikeFA Trading, Store of Value and all other assets.';
 
 export const metadata: Metadata = {
   title: TITLE,
   description: 'Combined read-only portfolio, transaction, and capital gains dashboard across every tracked BSC wallet',
+  icons: { icon: 'https://mes.fm/img/crypto-logo.jpg' },
+  // password-protected (mes.fm/middleware.js): kept out of search engines, like mes.fm/assets
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body>
         <SwrProvider>
-          <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6">
-            <SiteChrome title={TITLE} tagline={TAGLINE} partOfLabel="MES Crypto" partOfHref="https://mes.fm/crypto" />
-            <nav className="mb-6 flex gap-4 text-sm">
-              <Link href="/" className="text-gray-300 hover:text-accent">
-                Overview
-              </Link>
-              <Link href="/transactions" className="text-gray-300 hover:text-accent">
-                Transactions
-              </Link>
-              <Link href="/taxes" className="text-gray-300 hover:text-accent">
-                Taxes
-              </Link>
-            </nav>
+          <div className="mx-auto max-w-[1180px] px-4 pb-6 sm:px-6">
+            {/* no `active`: Portfolio / Transactions / Taxes follow the URL (this one app serves all three) */}
+            <SiteChrome title={TITLE} tagline={TAGLINE} homeHref="https://mes.fm/portfolio" />
             <main>{children}</main>
             <SiteFooter />
           </div>

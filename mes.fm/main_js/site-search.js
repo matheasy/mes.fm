@@ -102,7 +102,8 @@
         }
         return out + esc(text.slice(last));
     }
-    window.MESSearch = { load: load, search: search, highlight: highlight, esc: esc, norm: norm, cats: function () { return data ? data.cats : []; } };
+    /* open: lets pages that draw their own search button (the Next.js dashboards at mes.fm/portfolio, /assets, ...) open the same overlay */
+    window.MESSearch = { load: load, search: search, highlight: highlight, esc: esc, norm: norm, open: open, cats: function () { return data ? data.cats : []; } };
 
     /* ---------- header button + overlay ---------- */
     var group = null;
