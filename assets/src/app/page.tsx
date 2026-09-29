@@ -4,6 +4,7 @@ import { useState } from 'react';
 import BitcoinSummary from '@/components/BitcoinSummary';
 import Breakdown from '@/components/Breakdown';
 import GroupCards from '@/components/GroupCards';
+import HiveSummary from '@/components/HiveSummary';
 import HoldingsTable from '@/components/HoldingsTable';
 import RefreshButton from '@/components/RefreshButton';
 import SourceStatus from '@/components/SourceStatus';
@@ -38,6 +39,7 @@ export default function OverviewPage() {
           <div className="flex flex-col gap-6">
             <TotalCard snapshot={snapshot} showDust={showDust} onToggleDust={() => setShowDust(!showDust)} />
             <BitcoinSummary holdings={holdings} groups={snapshot.groups} />
+            <HiveSummary holdings={holdings} groups={snapshot.groups} />
             <GroupCards groups={snapshot.groups} selected={group} onSelect={setGroup} showDust={showDust} />
             <Breakdown holdings={holdings} groups={snapshot.groups} />
             <HoldingsTable holdings={holdings} groups={snapshot.groups} />
