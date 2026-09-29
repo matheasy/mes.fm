@@ -4,63 +4,50 @@
     {
       "name": "mes-fm",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory mes.fm"],
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory mes.fm"
+      ],
       "port": 8420,
-      "autoPort": true
-    },
-    {
-      "name": "mfa",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "cd mfa && npm run dev -- -p \"$PORT\""],
-      "port": 8422,
-      "autoPort": true
-    },
-    {
-      "name": "ai",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "cd ai && npm run dev -- -p \"$PORT\""],
-      "port": 8423,
       "autoPort": true
     },
     {
       "name": "crypto",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "cd crypto && npm run dev -- -p \"$PORT\""],
+      "runtimeArgs": [
+        "-c",
+        "cd crypto && npm run dev -- -p \"$PORT\""
+      ],
       "port": 8424,
-      "autoPort": true
-    },
-    {
-      "name": "sov",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "cd sov && npm run dev -- -p \"$PORT\""],
-      "port": 8429,
-      "autoPort": true
-    },
-    {
-      "name": "assets",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "cd assets && npm run dev -- -p \"$PORT\""],
-      "port": 8428,
       "autoPort": true
     },
     {
       "name": "cmbcbracelets",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory cmbcbracelets.com"],
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory cmbcbracelets.com"
+      ],
       "port": 8425,
       "autoPort": true
     },
     {
       "name": "wdttg",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory wdttg.mes.fm"],
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory wdttg.mes.fm"
+      ],
       "port": 8426,
       "autoPort": true
     },
     {
       "name": "djw",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "python3 -m http.server \"$PORT\" --directory djw.mes.fm"],
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory djw.mes.fm"
+      ],
       "port": 8427,
       "autoPort": true
     }
