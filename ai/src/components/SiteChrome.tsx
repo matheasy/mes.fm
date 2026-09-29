@@ -28,6 +28,8 @@ interface SiteChromeProps {
   active?: DashboardTab;
   /** Inside one wallet's dashboard: the Transactions / Taxes tabs open pre-filtered to it */
   wallet?: 'ai' | 'mfa' | 'sov';
+  /** An app serving several dashboards (crypto/: portfolio, taxes, sov) can title some tabs differently */
+  pageTitles?: Partial<Record<DashboardTab, { title: string; tagline: string; homeHref: string }>>;
 }
 
 const CRYPTO_HUB = 'https://mes.fm/crypto';
@@ -162,14 +164,17 @@ function openSearch() {
 }
 
 function activeFromPath(path: string): DashboardTab {
+  if (/(^|\/)sov(\/|$)/.test(path)) return 'sov';
   if (path.includes('taxes')) return 'taxes';
   if (path.includes('transactions')) return 'transactions';
   return 'portfolio';
 }
 
-export default function SiteChrome({ title, tagline, homeHref, active, wallet }: SiteChromeProps) {
+export default function SiteChrome(props: SiteChromeProps) {
+  const { active, wallet, pageTitles } = props;
   const pathname = usePathname() ?? '';
   const current = active ?? activeFromPath(pathname);
+  const { title, tagline, homeHref } = pageTitles?.[current] ?? props;
   const scale = useTextScale();
   const theme = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);

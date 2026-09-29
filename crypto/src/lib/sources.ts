@@ -21,7 +21,8 @@ export function sourceUrl(source: WalletSource, path: string): string {
 
 /**
  * This app has no Moralis/CoinGecko keys or wallet address of its own - it aggregates the
- * ai/ (AI Trading + Main wallet), mfa/ and sov/ trackers' own production APIs, which already fetch, cache, and account for their
+ * ai/ (AI Trading + Main wallet) and mfa/ trackers' own production APIs (mes.fm/sov is a page of
+ * this app now, built from mes.fm/assets - see src/app/sov), which already fetch, cache, and account for their
  * respective wallets. Defaults match the destinations in ../mes.fm/vercel.json's rewrites.
  */
 export const WALLET_SOURCES: WalletSource[] = [
@@ -45,11 +46,5 @@ export const WALLET_SOURCES: WalletSource[] = [
     label: WALLET_LABELS.mfa,
     apiBaseUrl: process.env.MFA_SOURCE_URL ?? 'https://mes-fm-mfa.vercel.app/mfa',
     linkPath: WALLET_LINKS.mfa,
-  },
-  {
-    key: 'sov',
-    label: WALLET_LABELS.sov,
-    apiBaseUrl: process.env.SOV_SOURCE_URL ?? 'https://mes-fm-sov.vercel.app/sov',
-    linkPath: WALLET_LINKS.sov,
   },
 ];

@@ -1,5 +1,12 @@
 # MES Store of Value
 
+> **Retired 2026-09-29 - not deployed.** mes.fm/sov is now a page of the `../crypto` app
+> (`crypto/src/app/sov`, rewritten in `../mes.fm/vercel.json`): balances from mes.fm/assets, cost
+> (ACB) from the mes.fm/taxes calculation, which reads XRP and TGLD itself and the Main wallet's
+> BTCB/WBTC through `../ai` (`?wallet=main`). The `mes-fm-sov` Vercel project never had a live
+> deployment and isn't needed. This directory is kept for reference only.
+
+
 Read-only tracker for a **fixed set of long-term holdings**, deployed to production at
 **mes.fm/sov** (behind a light password gate - see the root `mes.fm/middleware.js`).
 

@@ -3,6 +3,7 @@
 import AssetsTotalCard from '@/components/AssetsTotalCard';
 import PortfolioSummary from '@/components/PortfolioSummary';
 import RefreshButton from '@/components/RefreshButton';
+import SovCard from '@/components/SovCard';
 import StateView from '@/components/StateView';
 import WalletBreakdown from '@/components/WalletBreakdown';
 import { usePortfolio } from '@/hooks/usePortfolio';
@@ -52,6 +53,8 @@ export default function OverviewPage() {
           </div>
         )}
       </StateView>
+
+      <SovCard />
 
       <AssetsTotalCard />
     </div>

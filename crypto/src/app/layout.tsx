@@ -26,8 +26,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SwrProvider>
           <div className="mx-auto max-w-[1180px] px-4 pb-6 sm:px-6">
-            {/* no `active`: Portfolio / Transactions / Taxes follow the URL (this one app serves all three) */}
-            <SiteChrome title={TITLE} tagline={TAGLINE} homeHref="https://mes.fm/portfolio" />
+            {/* no `active`: Portfolio / Transactions / Taxes / Store of Value follow the URL (this one app serves all four) */}
+            <SiteChrome
+              title={TITLE}
+              tagline={TAGLINE}
+              homeHref="https://mes.fm/portfolio"
+              pageTitles={{
+                sov: {
+                  title: 'MES Store of Value',
+                  tagline: 'Long-term holdings: Bitcoin, XRP and TGLD, across every wallet.',
+                  homeHref: 'https://mes.fm/sov',
+                },
+              }}
+            />
             <main>{children}</main>
             <SiteFooter />
           </div>

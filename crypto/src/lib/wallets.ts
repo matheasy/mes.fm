@@ -1,6 +1,7 @@
 export type WalletKey = 'main' | 'ai' | 'mfa' | 'sov';
 
-export const WALLET_KEYS: WalletKey[] = ['main', 'ai', 'mfa', 'sov'];
+/** The wallets with a transaction-tracking app behind them (Store of Value is a view over mes.fm/assets now, not a source) */
+export const WALLET_KEYS: WalletKey[] = ['main', 'ai', 'mfa'];
 
 export const WALLET_LABELS: Record<WalletKey, string> = {
   main: 'Main Wallet',

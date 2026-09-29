@@ -187,6 +187,24 @@ export interface AssetsTotal {
   groups: { key: string; label: string; totalUsd: number }[];
 }
 
+/** mes.fm/sov: one Store of Value asset summed across every wallet/account, with where it sits */
+export interface SovAsset {
+  asset: 'BTC' | 'XRP' | 'TGLD';
+  amount: number;
+  valueUsd: number;
+  /** No real buyers (TGLD): valueUsd is 0 and it's left out of the total; the cheapest offer to sell, in HIVE */
+  noMarket?: { lowestAskHive: number | null };
+  lines: { where: string; source: string; symbol: string; label: string; amount: number; valueUsd: number | null }[];
+}
+
+export interface SovSnapshot {
+  fetchedAt: string;
+  /** Today's (or the last business day's) Bank of Canada USD/CAD */
+  cadRate: number | null;
+  totalUsd: number;
+  assets: SovAsset[];
+}
+
 export type ApiResult<T> =
   | { data: T; error?: never; rateLimited?: never }
   | { data?: never; error: string; rateLimited?: boolean };
