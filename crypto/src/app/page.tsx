@@ -34,7 +34,12 @@ export default function OverviewPage() {
         <Link href="/taxes" className="text-accent hover:underline">
           Taxes
         </Link>{' '}
-        pages above.
+        pages above. For every asset held anywhere - these three groups plus Hive, Hive Engine, and
+        Magi - see{' '}
+        <a href="https://mes.fm/assets" className="text-accent hover:underline">
+          mes.fm/assets
+        </a>
+        .
       </p>
 
       <div className="flex items-center justify-end">
@@ -46,6 +51,13 @@ export default function OverviewPage() {
           <div className="flex flex-col gap-6">
             <PortfolioSummary summary={portfolio} />
             <WalletBreakdown wallets={portfolio.wallets} />
+            <a href="https://mes.fm/assets" className="panel flex items-center justify-between transition hover:border-accent">
+              <div>
+                <p className="stat-label">Every asset, everywhere</p>
+                <p className="mt-1 text-sm text-gray-300">Hive, Hive Engine, Magi, and every EVM/XRP/BTC wallet - fetched once, shown in one place.</p>
+              </div>
+              <span className="text-sm text-accent">mes.fm/assets &rarr;</span>
+            </a>
           </div>
         )}
       </StateView>
