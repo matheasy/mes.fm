@@ -1,18 +1,22 @@
-import { WALLET_KEYS, WALLET_LABELS, WALLET_LINKS, type WalletKey } from '../wallets';
-import { BTC_ADDRESS, HIVE_ACCOUNTS } from './accounts';
+import { WALLET_LABELS, WALLET_LINKS, type WalletKey } from '../wallets';
+import { BTC_ADDRESS, HIVE_ACCOUNTS, XRP_ADDRESS } from './accounts';
 
 /**
  * Every place the Taxes page reads history from. The four EVM groups come from the other apps
  * (lib/sources.ts); native Bitcoin and the Hive accounts are read by this app itself (keyless APIs),
  * one source key per Hive account ("hive:mes") so each row says which account it was.
  */
-export type TaxGroup = WalletKey | 'bitcoin' | 'hive';
+export type TaxGroup = Exclude<WalletKey, 'sov'> | 'bitcoin' | 'xrp' | 'hive';
 
-export const TAX_GROUPS: TaxGroup[] = [...WALLET_KEYS, 'bitcoin', 'hive'];
+/** The Store of Value group isn't a source here: its BTC is the Main wallet's, its XRP and TGLD are read directly */
+export const TAX_GROUPS: TaxGroup[] = ['main', 'ai', 'mfa', 'bitcoin', 'xrp', 'hive'];
 
 export const TAX_GROUP_LABELS: Record<TaxGroup, string> = {
-  ...WALLET_LABELS,
+  main: WALLET_LABELS.main,
+  ai: WALLET_LABELS.ai,
+  mfa: WALLET_LABELS.mfa,
   bitcoin: 'Bitcoin',
+  xrp: 'XRP',
   hive: 'Hive',
 };
 
@@ -29,6 +33,7 @@ export function sourceLabel(source: string): string {
 export function sourceLink(source: string): string {
   if (source.startsWith('hive:')) return `https://peakd.com/@${source.slice(5)}/wallet`;
   if (source === 'bitcoin') return `https://mempool.space/address/${BTC_ADDRESS}`;
+  if (source === 'xrp') return `https://xrpscan.com/account/${XRP_ADDRESS}`;
   return WALLET_LINKS[source as WalletKey] ?? 'https://mes.fm/assets';
 }
 

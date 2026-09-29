@@ -62,6 +62,8 @@ export interface TaxEntry {
    * acquired at its value on the day and not treated as income.
    */
   bridge?: boolean;
+  /** A market trade whose other side isn't tracked (a Hive Engine fill): a disposal is a swap, not a send */
+  market?: boolean;
 }
 
 export type DisposalKind = 'swap' | 'send' | 'lp' | 'bridge';
@@ -266,7 +268,7 @@ export function computeAcb(
       pool.costCad += valueUsd * (rate ?? 0);
       const base = { source: e.source, timestamp: e.timestamp, taxYear: taxYearOf(e.timestamp), asset, quantity: e.amount, usd: valueUsd, cad: rate === null ? null : valueUsd * rate };
       if (e.income) income.push({ ...base, kind: e.income });
-      else if (!hasOut.has(e.hash)) receipts.push({ ...base, counterparty: e.from, fromLp: !!e.bridge || LP_CONTRACTS.has(e.from.toLowerCase()) });
+      else if (!hasOut.has(e.hash) && !e.market) receipts.push({ ...base, counterparty: e.from, fromLp: !!e.bridge || LP_CONTRACTS.has(e.from.toLowerCase()) });
       continue;
     }
 
@@ -316,7 +318,7 @@ export function computeAcb(
       gainCad: proceedsCad === null ? null : proceedsCad - costCad,
       uncoveredQuantity: qty - covered,
       isTransfer,
-      kind: e.bridge ? 'bridge' : LP_CONTRACTS.has(e.to.toLowerCase()) ? 'lp' : hasIn.has(e.hash) ? 'swap' : 'send',
+      kind: e.bridge ? 'bridge' : LP_CONTRACTS.has(e.to.toLowerCase()) ? 'lp' : hasIn.has(e.hash) || e.market ? 'swap' : 'send',
       counterparty: e.to,
       costOverridden: override !== undefined,
     });

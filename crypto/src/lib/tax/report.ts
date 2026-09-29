@@ -1,5 +1,6 @@
 import { getCadRates } from '../cadRate';
-import { fetchAllSources } from '../combine';
+import { fetchSource } from '../combine';
+import { WALLET_SOURCES } from '../sources';
 import { listLabels } from '../labels';
 import {
   isTransferLabel,
@@ -14,6 +15,8 @@ import {
 import { computeAcb, disposalId, type AcbDisposal, type AcbIncome, type AcbReceipt, type TaxEntry } from './acb';
 import { getBitcoinEntries } from './sources/bitcoin';
 import { getHiveEntries } from './sources/hive';
+import { getTgldEntries } from './sources/tgld';
+import { getXrpEntries } from './sources/xrp';
 import { groupOf, sourceLabel, sourceLink, type TaxGroup } from './taxSources';
 
 /** What every source app's GET /api/ledger returns (ai/, mfa/, sov/ - see e.g. ai/src/app/api/ledger/route.ts) */
@@ -28,18 +31,9 @@ interface UpstreamLedger {
     to: string;
     amount: number;
     priceUsd: number | null;
-    /** sov's combined-BTC legs: the underlying token and chain, e.g. "BTCB · BNB Chain" */
-    subLabel?: string;
   }[];
 }
 
-/**
- * sov's BTC legs on BNB Chain and Ethereum are the Main wallet's own BTCB/WBTC transfers, which the
- * Main wallet's ledger (ai/?wallet=main) already includes - keep only sov's Polygon WBTC, XRP and TGLD.
- */
-function isDuplicateOfMain(sourceKey: string, e: UpstreamLedger['entries'][number]): boolean {
-  return sourceKey === 'sov' && e.network === 'bitcoin' && !/polygon/i.test(e.subLabel ?? '');
-}
 
 /** Every source failed to load - carries each one's reason so the page can say which and why */
 export class NoWalletLoadedError extends Error {
@@ -125,13 +119,27 @@ function needsInput(d: AcbDisposal, label: LabelRecord | null): TaxRow['needsInp
  * down shows as an error on the page rather than blanking it; if none load, NoWalletLoadedError.
  * Shared by /api/taxes and /api/taxes/export so the page and the CSV always agree.
  */
+/** Runs one keyless source, turning a failure into a reported error instead of a thrown one */
+function settle(load: () => Promise<TaxEntry[]>) {
+  return load().then(
+    (entries) => ({ entries, error: null as string | null }),
+    (err: unknown) => ({ entries: [] as TaxEntry[], error: err instanceof Error ? err.message : 'failed to load' }),
+  );
+}
+
+/**
+ * The EVM wallets come from the ai/ (AI Trading + Main) and mfa/ apps' /api/ledger. mes.fm/sov isn't
+ * read any more: its Main-wallet BTCB/WBTC is in the Main wallet's own ledger, and XRP and TGLD are
+ * read here directly (sources/xrp.ts, sources/tgld.ts), so the report doesn't depend on that app.
+ */
+const LEDGER_SOURCES = WALLET_SOURCES.filter((s) => s.key !== 'sov');
+
 export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }): Promise<TaxesResponse> {
-  const [upstream, bitcoin, hive, labels] = await Promise.all([
-    fetchAllSources<UpstreamLedger>('/api/ledger'),
-    getBitcoinEntries().then(
-      (entries) => ({ entries, error: null as string | null }),
-      (err: unknown) => ({ entries: [] as TaxEntry[], error: err instanceof Error ? err.message : 'failed to load' }),
-    ),
+  const [upstream, bitcoin, xrp, tgld, hive, labels] = await Promise.all([
+    Promise.all(LEDGER_SOURCES.map((s) => fetchSource<UpstreamLedger>(s, '/api/ledger'))),
+    settle(getBitcoinEntries),
+    settle(getXrpEntries),
+    settle(getTgldEntries),
     getHiveEntries().catch((err: unknown) => ({
       entries: [] as TaxEntry[],
       errors: [{ account: 'all accounts', error: err instanceof Error ? err.message : 'failed to load' }],
@@ -142,7 +150,7 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
 
   const entries: TaxEntry[] = [
     ...upstream.flatMap((r) =>
-      (r.data?.entries ?? []).filter((e) => !isDuplicateOfMain(r.source.key, e)).map((e) => ({
+      (r.data?.entries ?? []).map((e) => ({
         source: r.source.key,
         hash: e.hash,
         network: e.network,
@@ -155,6 +163,8 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
       })),
     ),
     ...bitcoin.entries,
+    ...xrp.entries,
+    ...tgld.entries,
     ...hive.entries,
   ];
 
@@ -163,6 +173,8 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
   const sources: TaxSourceStatus[] = [
     ...upstream.map((r) => ({ key: r.source.key, label: r.source.label, entries: r.data?.entries.length ?? 0, error: r.error })),
     { key: 'bitcoin', label: 'Bitcoin', entries: bitcoin.entries.length, error: bitcoin.error },
+    { key: 'xrp', label: 'XRP', entries: xrp.entries.length, error: xrp.error },
+    { key: 'tgld', label: 'TGLD (Hive Engine)', entries: tgld.entries.length, error: tgld.error },
     ...Object.keys(hive.counts).map((account) => ({
       key: `hive:${account}`,
       label: `Hive @${account}`,

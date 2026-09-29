@@ -23,7 +23,8 @@ function explorerTx(network: string, hash: string): string | null {
     case 'xrp':
       return `https://xrpscan.com/tx/${hash}`;
     case 'tgld':
-      return `https://he.dtools.dev/tx/${hash}`;
+    case 'hive-engine':
+      return /^[0-9a-f]{40}/.test(hash) ? `https://he.dtools.dev/tx/${hash}` : null;
     case 'hive': {
       const trx = hash.split(':')[0]!;
       return /^[0-9a-f]{40}$/.test(trx) ? `https://hivehub.dev/tx/${trx}` : null;

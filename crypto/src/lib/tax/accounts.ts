@@ -6,3 +6,5 @@
 export const BTC_ADDRESS = 'bc1q3tet9kazk8v59ptfqr6f0945fvj7g4xwnlyzy8';
 
 export const HIVE_ACCOUNTS = ['mes', 'mestruth', 'mathiew', 'artgrafiken'] as const;
+
+export const XRP_ADDRESS = 'rDqSZAsxSEBoTgPGDbSqKEtrEe4JxKkDNh';

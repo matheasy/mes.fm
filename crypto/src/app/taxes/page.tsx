@@ -44,8 +44,8 @@ function TaxesPageInner() {
       <div className="flex flex-col gap-2 text-sm text-gray-400">
         <p>
           Your capital gains, losses and crypto income for Canadian taxes, across <strong className="text-gray-200">every wallet and account at
-          once</strong>: the Main, AI Trading, MikeFA Trading and Store of Value wallets, your Bitcoin address and your Hive accounts (@mes,
-          @mestruth, @mathiew, @artgrafiken). The groupings are just for you - it&apos;s all yours, so it&apos;s all counted together.
+          once</strong>: the Main, AI Trading and MikeFA Trading wallets, your Bitcoin and XRP addresses, and your Hive accounts (@mes,
+          @mestruth, @mathiew, @artgrafiken, TGLD included). The groupings are just for you - it&apos;s all yours, so it&apos;s all counted together.
         </p>
         <p>
           A row appears whenever you <strong className="text-gray-200">got rid of</strong> a coin: sold it, swapped it for another, or added it to a
@@ -287,6 +287,10 @@ function TaxesPageInner() {
                   (never votes, posts or comments). Powering up/down and savings are your own HIVE/HBD changing form, so they&apos;re skipped, as are
                   transfers between your four accounts and to/from Hive Engine&apos;s peg (@honey-swap). History starts when Hive launched on
                   2020-03-20; what you held then counts at $0 cost.
+                </li>
+                <li>
+                  XRP: every transaction&apos;s exact effect on your balance, from the XRP Ledger itself (escrows you create and cancel are
+                  your own XRP). TGLD: all four Hive accounts; payouts from @tgld.yield count as income.
                 </li>
                 <li>
                   Not yet included: Hive Engine tokens (LEO, SWAP.BTC …) other than TGLD, Magi, Hyperliquid perpetuals. Gas fees aren&apos;t added
