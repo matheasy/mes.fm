@@ -105,7 +105,7 @@ FAMILIES = {
         "hub": {"url": "/tools", "title": "All MES Tools", "kind": "Gallery", "img": "/img/tools-icon.jpg"},
         "collection": [
             ("emoji", "Tool"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
-            ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("share", "Tool"), ("search", "Tool"), ("unit-conversion", "Calculator"),
+            ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("share", "Tool"), ("search", "Tool"), ("calendar", "Tool"), ("unit-conversion", "Calculator"),
             ("gematria", "Calculator"), ("impermanent-loss-calculator", "Calculator"), ("earth-curvature-calculator", "Calculator"),
         ],
         "articles": False,

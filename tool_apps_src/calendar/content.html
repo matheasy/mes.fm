@@ -1,0 +1,82 @@
+	<div class="tu" id="cl">
+		<div class="tu-stats cl-stats" id="cl-stats" aria-live="polite"></div>
+
+		<div class="tu-card cl-toolbar">
+			<div class="cl-nav">
+				<button type="button" class="tu-btn cl-arrow" id="cl-prev" aria-label="Previous month">&#8249;</button>
+				<h2 class="cl-title" id="cl-title" aria-live="polite"></h2>
+				<button type="button" class="tu-btn cl-arrow" id="cl-next" aria-label="Next month">&#8250;</button>
+				<button type="button" class="tu-btn tu-btn--primary" id="cl-today">Today</button>
+				<span class="tu-seg cl-view" role="group" aria-label="View">
+					<button type="button" id="cl-v-month" aria-pressed="true">Month</button>
+					<button type="button" id="cl-v-year" aria-pressed="false">Year</button>
+				</span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="cl-foldall">Collapse all</button>
+			</div>
+			<div class="tu-row cl-jump">
+				<div class="tu-field tu-field--sm"><label for="cl-jm">Month</label><select id="cl-jm" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm"><label for="cl-jy">Year</label><input id="cl-jy" class="tu-input" type="number" min="1583" max="2500" step="1" inputmode="numeric"></div>
+				<div class="tu-field"><label for="cl-jd">Go to date</label><input id="cl-jd" class="tu-input" type="date"></div>
+			</div>
+		</div>
+
+		<details class="cl-sec" id="cl-filters">
+			<summary><span class="cl-sec__t">Show on the calendar</span><span class="cl-sum" id="cl-filter-sum"></span></summary>
+			<div class="tu-card cl-filter-body">
+				<div id="cl-groups"></div>
+				<div class="cl-opts">
+					<label><input type="checkbox" id="cl-o-ws"> Week starts on Monday</label>
+					<label><input type="checkbox" id="cl-o-wk"> Show ISO week numbers</label>
+					<label><input type="checkbox" id="cl-o-md"> Moon phase on every day</label>
+				</div>
+				<p class="tu-note" id="cl-tz"></p>
+			</div>
+		</details>
+
+		<div id="cl-main"></div>
+
+		<details class="cl-sec" id="cl-daysec" open>
+			<summary><span class="cl-sec__t">Selected day</span><span class="cl-sum" id="cl-day-sum"></span></summary>
+			<div class="tu-card" id="cl-day"></div>
+		</details>
+
+		<details class="cl-sec" id="cl-listsec" open>
+			<summary><span class="cl-sec__t" id="cl-list-t">Events this month</span></summary>
+			<div class="tu-card cl-list" id="cl-list"></div>
+		</details>
+
+		<details class="cl-sec" id="cl-between">
+			<summary><span class="cl-sec__t">Days between two dates</span><span class="cl-sum">and date calculator</span></summary>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field"><label for="cl-b1">From</label><input id="cl-b1" class="tu-input" type="date"></div>
+					<div class="tu-field"><label for="cl-b2">To</label><input id="cl-b2" class="tu-input" type="date"></div>
+				</div>
+				<div class="cl-opts">
+					<label><input type="checkbox" id="cl-b-inc"> Count the end day too</label>
+					<button type="button" class="tu-chip" id="cl-b-sel1">From = selected day</button>
+					<button type="button" class="tu-chip" id="cl-b-sel2">To = selected day</button>
+					<button type="button" class="tu-chip" id="cl-b-swap">Swap</button>
+				</div>
+				<div class="tu-stats" id="cl-b-out"></div>
+				<h3>Add or subtract from a date</h3>
+				<div class="tu-row">
+					<div class="tu-field"><label for="cl-a1">Start date</label><input id="cl-a1" class="tu-input" type="date"></div>
+					<div class="tu-field tu-field--sm"><label for="cl-an">Amount</label><input id="cl-an" class="tu-input" type="number" value="90" step="1" inputmode="numeric"></div>
+					<div class="tu-field tu-field--sm"><label for="cl-au">Unit</label><select id="cl-au" class="tu-select"><option value="d">days</option><option value="b">business days</option><option value="w">weeks</option><option value="m">months</option><option value="y">years</option></select></div>
+				</div>
+				<div class="tu-stats" id="cl-a-out"></div>
+			</div>
+		</details>
+
+		<div class="tu-seo">
+			<h2>About the MES Calendar</h2>
+			<ul>
+				<li>A full-year and month calendar for any year from 1583 to 2500, with today highlighted, the rest of the months and years a click away, and every month and section collapsible.</li>
+				<li><b>Moon phases:</b> new and full moons (and optionally first and last quarters) with the exact time in your time zone, calculated in your browser with Jean Meeus' astronomical algorithms. Turn on <i>Moon phase on every day</i> to see the moon's phase and how much of it is lit, each day. Blue moons (a second full moon in one month) are marked.</li>
+				<li><b>Holidays:</b> public holidays for Canada (federal and the common provincial ones), the USA, the UK, Australia and Vietnam, including the observed day when a holiday falls on a weekend, plus Christian, Jewish and Islamic observances and Lunar New Year. Islamic dates follow the Umm al-Qura calendar and can differ by a day depending on moon sighting.</li>
+				<li><b>Things standard calendars leave out:</b> equinoxes and solstices to the minute, upcoming eclipses, daylight-saving clock changes for your time zone, ISO week numbers, day of the year, days left in the year, long weekends, Friday the 13th, tax deadlines for Canada and the USA, and a built-in days-between / add-days calculator.</li>
+				<li>Everything runs in your browser and your choices are remembered on this device only. Share a date with a link such as <a href="/calendar?y=2027&amp;m=2&amp;d=14">mes.fm/calendar?y=2027&amp;m=2&amp;d=14</a>. Keys: <b>&larr;</b> / <b>&rarr;</b> change month, <b>T</b> today, <b>M</b> month view, <b>Y</b> year view.</li>
+			</ul>
+		</div>
+	</div>

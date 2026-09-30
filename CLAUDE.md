@@ -253,6 +253,18 @@ of HTML files individually:
   cross-links, tools sidebar family, bottom ad). No `?v=` bump of display-controls.js was needed: Vercel serves `main_js/` with
   `max-age=0, must-revalidate`. Not covered: the 4 pages with no header controls (`links`, `bg`, `911djw`, `chatgpt/calculator`).
 
+- **Calendar** (2026-09-30, `mes.fm/calendar`, a tools-hub tool: card in `tools.html` "Time & Focus", blue `#2f5fd0`). Built like `share`/`search` by
+  `build_tool_apps.py` from `tool_apps_src/calendar/`; new here: an optional `lib.js` in an app's source folder is prepended to `app.js` so
+  one `js/calendar.js` is served. `lib.js` = pure maths, runs in node too (`require`): moon phases (Meeus ch. 49, checked against the 2026
+  new/full moon table to the minute), equinoxes/solstices (ch. 27), Western Easter, Lunar New Year (the new moon falling Jan 21-Feb 20 in UTC+8,
+  or +7 for Vietnam), Hebrew and Islamic (Umm al-Qura, approximate) dates by scanning the year with `Intl`'s `hebrew` / `islamic-umalqura`
+  calendars (month *names* are matched, so re-check them if a browser engine changes its labels), and the per-year holiday tables for Canada / USA /
+  UK / Australia / Vietnam with weekend "observed" days. The eclipse list (`EC`, 2026-2028) is hand-entered; extend it by hand. `app.js` = month /
+  year views (year: per-month fold, Collapse all), filter chips (groups in `GROUPS`; state in localStorage `mes-calendar:v1`), selected-day card,
+  days-between / add-days calculator, `?y=&m=&d=&v=year` links. Same-day events from several regions are merged ("Good Friday CA UK AU").
+  After editing the sources run `build_tool_apps.py --apply`, `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`,
+  `add_bottom_ad.py --apply` (the first strips what the other three add), then `build_search_index.py`. Logo files are placeholders until Grok art lands
+  (`calendar/img/logo.png`, `calendar/img/logo-big.png` 1200x630, `img/calendar-logo.png`: same names).
 - `organize_hub_cards.py` — organises the card hubs `calculators.html` and `tools.html` into categories with a search
   box: cards are grouped by the `PAGES` table (calculators: School & Grades, Money & Finance, Everyday Math & Health,
   Science & Fun; tools: Text & Symbols, Time & Focus, Media & Web, Sky & Space), sorted A-Z inside a category, and emitted

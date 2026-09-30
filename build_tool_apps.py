@@ -58,6 +58,11 @@ APPS = {
                    tag="Search every page on mes.fm.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
                    desc="Search all of mes.fm in one place: calculators, tools, math tutorials and Math Q/A livestreams, memes, quotes, puzzles, and the 9/11, Hutchison Effect, science and crypto posts, with section filters and shareable results.",
                    js_v="1", pre_js=["/main_js/site-search.js?v=1"]),
+    # the calendar: lib.js (moon phases, seasons, holiday tables; pure functions) is prepended to app.js into one mes.fm/calendar/js/calendar.js
+    "calendar": dict(title="MES Calendar", page_title="Calendar",
+                     tag="Moon phases, holidays and more, month by month.", accent="#2f5fd0", dark="#1f44a0", tint="#e6edfb",
+                     desc="Free online calendar for any year: month and year views with today highlighted, new and full moon times, Canada, USA, UK, Australia and Vietnam holidays, Christian, Jewish and Islamic dates, seasons, eclipses, daylight-saving changes and a days-between calculator.",
+                     js_v="1"),
 }
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
@@ -160,7 +165,10 @@ def build_from_source(slug, cfg, tpl):
     page = page.replace(tools_li, "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/calculators'>Calculators</a></li>" + tools_li.replace("tools.html", "tools"))
     js_dir = SITE / slug / "js"
     js_dir.mkdir(parents=True, exist_ok=True)
-    return page, (d / "app.js").read_text(encoding="utf-8"), js_dir / (slug + ".js")
+    js = (d / "app.js").read_text(encoding="utf-8")
+    if (d / "lib.js").exists():       # optional shared/pure code (e.g. calendar maths), prepended so one file is served
+        js = (d / "lib.js").read_text(encoding="utf-8") + "\n" + js
+    return page, js, js_dir / (slug + ".js")
 
 
 def main():
