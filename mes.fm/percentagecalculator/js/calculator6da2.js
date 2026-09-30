@@ -550,7 +550,7 @@ $(document).ready(function(){
 			eq.insertBefore(sum, fold.nextSibling);
 			bar.querySelector('.pc-up').addEventListener('click', function () { move(eq.id, -1, '.pc-up'); });
 			bar.querySelector('.pc-down').addEventListener('click', function () { move(eq.id, 1, '.pc-down'); });
-			fold.querySelector('.pc-toggle').addEventListener('click', function () { setCollapsed(eq.id, true); });
+			fold.querySelector('.pc-toggle').addEventListener('click', function () { setCollapsed(eq.id, !isCollapsed(eq.id)); });
 			sum.addEventListener('click', function () { setCollapsed(eq.id, false); });
 		}
 
