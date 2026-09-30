@@ -110,6 +110,7 @@ const SECTIONS = [
     ],
     items: [
       { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-", title: "Playlist", standalone: true },
+      { href: "https://mes.fm/math-qa-72-ground-rod", title: "72: What is a Ground Rod and how to find it in your house?" },
       { href: "https://mes.fm/math-qa-71-conservation-angular-momentum", title: "71: What is the Conservation of Angular Momentum?", playlistHref: "https://youtube.com/live/glW2rC5Ew5I" },
       { href: "https://mes.fm/math-qa-70-lorentz-force", title: "70: What is the Lorentz Force?", playlistHref: "https://youtube.com/live/BJ1zYm_ZCVw" },
       { href: "https://mes.fm/math-qa-69-electromotive-force-emf", title: "69: What is Electromotive Force (emf)?" },
