@@ -9,6 +9,14 @@
 //     on that staying true.
 //   - BitChute's video pages happened to allow CORS when this was written,
 //     but that's an accident of their CDN config, not a documented contract.
+//     As of 2026-09-30 the video page itself is a client-rendered (Quasar)
+//     app shell with no per-video data in the server-rendered HTML at all --
+//     every video's og:image/og:title are the same site-wide placeholder
+//     (bc-sharing.webp / "Bitchute"), and their oEmbed API 404s server-side
+//     requests behind a Cloudflare JS challenge. resolveBitChute() below
+//     detects that placeholder and reports "not found" rather than a
+//     confidently wrong thumbnail; there's currently no server-side way to
+//     get the real one back.
 //   - Odysee's resolve API requires a POST body most simple embed widgets
 //     don't bother with, and returns a large claim object the client
 //     shouldn't need to parse itself.
@@ -38,6 +46,11 @@ async function resolve3Speak(url) {
   return { platform: "3speak", title: data.title || null, thumbnail: data.thumbnail };
 }
 
+// Site-wide placeholder every BitChute video page's og:image/og:title fall back to now that the
+// page itself no longer server-renders per-video metadata -- see the header comment above.
+const BITCHUTE_PLACEHOLDER_IMAGE = "bc-sharing.webp";
+const BITCHUTE_PLACEHOLDER_TITLE = "Bitchute";
+
 async function resolveBitChute(url) {
   const m = url.match(/bitchute\.com\/(?:video|embed)\/([a-zA-Z0-9]+)/);
   if (!m) return null;
@@ -46,8 +59,10 @@ async function resolveBitChute(url) {
   if (!res.ok) return null;
   const html = await res.text();
   const thumbnail = readMetaTag(html, "og:image");
-  if (!thumbnail) return null;
-  return { platform: "bitchute", title: readMetaTag(html, "og:title") || null, thumbnail };
+  if (!thumbnail || thumbnail.includes(BITCHUTE_PLACEHOLDER_IMAGE)) return null;
+  const title = readMetaTag(html, "og:title");
+  if (title === BITCHUTE_PLACEHOLDER_TITLE) return null;
+  return { platform: "bitchute", title: title || null, thumbnail };
 }
 
 async function resolveOdysee(url) {
