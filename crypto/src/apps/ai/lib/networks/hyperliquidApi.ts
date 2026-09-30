@@ -9,6 +9,7 @@ async function post<T>(body: Record<string, unknown>): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
     next: { revalidate: 0 },
+    signal: AbortSignal.timeout(30_000),
   });
   if (res.status === 429) throw new RateLimitError('Hyperliquid API rate limit reached');
   if (!res.ok) {

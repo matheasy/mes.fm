@@ -34,7 +34,9 @@ async function rpc<T>(method: string, params: unknown[]): Promise<T> {
     try {
       return await rpcOnce<T>(method, params);
     } catch (err) {
-      if (!(err instanceof RateLimitError) || attempt >= RATE_LIMIT_RETRIES) throw err;
+      // rate limits and stalled calls (the 30s fetch timeout) are waited out and retried
+      const timedOut = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError');
+      if (!(err instanceof RateLimitError || timedOut) || attempt >= RATE_LIMIT_RETRIES) throw err;
       await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
     }
   }
@@ -47,6 +49,7 @@ async function rpcOnce<T>(method: string, params: unknown[]): Promise<T> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ jsonrpc: '2.0', method, params, id: ++requestId }),
       next: { revalidate: 0 },
+      signal: AbortSignal.timeout(30_000),
     });
     if (res.status === 429) throw new RateLimitError('NodeReal (BSCTrace) rate limit reached');
     if (!res.ok) throw new Error(`NodeReal request failed: ${res.status}`);

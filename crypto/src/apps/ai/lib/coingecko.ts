@@ -27,7 +27,7 @@ async function get<T>(path: string, params: Record<string, string>): Promise<T> 
   const url = new URL(`${API_BASE}${path}`);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
-  const res = await fetch(url.toString(), { headers: headers(), next: { revalidate: 0 } });
+  const res = await fetch(url.toString(), { headers: headers(), next: { revalidate: 0 }, signal: AbortSignal.timeout(30_000) });
   if (res.status === 429) throw new RateLimitError('CoinGecko rate limit reached');
   if (!res.ok) throw new Error(`CoinGecko request failed: ${res.status}`);
   return res.json() as Promise<T>;
@@ -69,7 +69,7 @@ function toCoingeckoDate(date: Date): string {
 /** DefiLlama rate-limits bursts (429): wait (Retry-After, else backing off) and retry, then give up as a RateLimitError */
 async function llamaFetch(url: string): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch(url, { next: { revalidate: 0 } });
+    const res = await fetch(url, { next: { revalidate: 0 }, signal: AbortSignal.timeout(30_000) });
     if (res.status !== 429) return res;
     if (attempt >= 5) throw new RateLimitError('DefiLlama price API rate limit reached');
     const retryAfter = Number(res.headers.get('retry-after'));

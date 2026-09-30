@@ -13,6 +13,7 @@ export async function getNativeBalanceWei(address: string): Promise<string> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [address, 'latest'] }),
     next: { revalidate: 0 },
+    signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) throw new Error(`HyperEVM RPC request failed: ${res.status}`);
 

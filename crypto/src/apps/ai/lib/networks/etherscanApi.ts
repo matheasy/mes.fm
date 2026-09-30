@@ -33,7 +33,9 @@ async function get<T>(chainId: number, params: Record<string, string>): Promise<
     try {
       return await getOnce<T>(chainId, params);
     } catch (err) {
-      if (!(err instanceof RateLimitError) || attempt >= RATE_LIMIT_RETRIES) throw err;
+      // rate limits and stalled calls (the 30s fetch timeout) are waited out and retried
+      const timedOut = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError');
+      if (!(err instanceof RateLimitError || timedOut) || attempt >= RATE_LIMIT_RETRIES) throw err;
       await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
     }
   }
@@ -46,7 +48,7 @@ async function getOnce<T>(chainId: number, params: Record<string, string>): Prom
     url.searchParams.set('apikey', apiKey());
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
-    const res = await fetch(url.toString(), { next: { revalidate: 0 } });
+    const res = await fetch(url.toString(), { next: { revalidate: 0 }, signal: AbortSignal.timeout(30_000) });
     if (!res.ok) throw new Error(`Etherscan request failed: ${res.status}`);
 
     const json = (await res.json()) as { status: string; message: string; result: T };
