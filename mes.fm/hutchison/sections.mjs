@@ -103,6 +103,7 @@ export const SECTIONS = [
     id: "articles",
     title: "Articles",
     items: [
+      { href: "https://mes.fm/hutchison-nancy-physics-system", title: "John Hutchison and the Physics of the System — report by Nancy Hutchison" },
       { title: "Hutchison Effect: Stop Motion Photos of Levitating WATER",
         image: "https://files.peakd.com/file/peakd-hive/mes/Eos1McX1hDrTwP8GUx8GhY7VsBhufMNgUygaCrcZY3W6ihMnwByRBQBKiWWfKyfBoit.png",
         links: [["Hive", "https://peakd.com/hive-128780/@mes/hutchison-effect-levitating-water-37i"], ["Telegram", "https://t.me/meslinks/29910"], ["InLeo", "https://inleo.io/threads/view/mes/re-leothreads-yfh4z4mf"]] },
