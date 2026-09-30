@@ -48,7 +48,7 @@ const PAGES = [
     slug: "911-videos",
     sectionId: "911-videos",
     tileLabel: "Videos",
-    iconVersion: 2, // icon = crop of the newest video's thumbnail; bump when you refresh img/911-videos-icon.jpg
+    iconVersion: 3, // icon = crop of the newest video's thumbnail; bump when you refresh img/911-videos-icon.jpg
     title: "9/11 Truth Videos",
     description:
       "9/11 videos from MES: NYPD Commissioner Bernie Kerik on jumpers who evaporated, Peter Baron's UFO sighting, Dr. Judy Wood on toasted cars, Curt Weldon on directed energy, and more.",
