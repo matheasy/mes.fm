@@ -105,7 +105,7 @@ def inline_math(h):
         b, s = m.group(1), m.group(2)
         return hold(f"{b}_{s}")
     h = re.sub(r"(?<![\w\\\x00])([A-Za-z])_([A-Za-z0-9])(?![\w(])", simple, h)
-    return re.sub(r"\x00(\d+)\x00", lambda m: r"\(" + holders[int(m.group(1))] + r"\)", h)
+    return re.sub(r"\x00(\d+)\x00", lambda m: r"\(" + esc(holders[int(m.group(1))]) + r"\)", h)
 
 LABELS = ["John alignment.", "RF translation.", "Physics distinction.", "Physics translation.", "Physical translation.",
           "General-physics translation.", "RF/Physics reading.", "RF/Physics reason.", "RF/Physics status.",
@@ -175,7 +175,7 @@ def eq_html(raw):
     if s in EQ: tex = EQ[s]
     else: tex = chain_tex(s)
     cls = "eq eq-not" if s in FORBIDDEN else "eq"
-    return f'<div class="{cls}">\\[{tex}\\]</div>'
+    return f'<div class="{cls}">\\[{esc(tex)}\\]</div>'
 
 # ---------------------------------------------------------------- classify
 FIGURES = {  # PDF image xref -> (file stem, alt text)
