@@ -523,26 +523,34 @@ $(document).ready(function(){
 			return out.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
 		}
 
+		var svg = function (d) { return '<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="' + d + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; };
+		var CHEV_UP = svg('M2 8l4-4 4 4'), CHEV_DOWN = svg('M2 4l4 4 4-4');
+		// "fold" icon: two chevrons pointing in (collapse) or out (expand), so it can't be mistaken for the move arrows
+		var FOLD_IN = svg('M2 1.5l4 3 4-3M2 10.5l4-3 4 3'), FOLD_OUT = svg('M2 4.5l4-3 4 3M2 7.5l4 3 4-3');
+
 		function el(id) { return document.getElementById(id); }
 
 		function build(eq) {
 			var bar = document.createElement('div');
-			bar.className = 'pc-eq-tools';
+			bar.className = 'pc-eq-tools pc-move';
 			bar.innerHTML =
-				'<button type="button" class="pc-tool pc-up" title="Move up" aria-label="Move this calculation up"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2 8l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
-				'<button type="button" class="pc-tool pc-toggle" title="Collapse" aria-label="Collapse this calculation"></button>' +
-				'<button type="button" class="pc-tool pc-down" title="Move down" aria-label="Move this calculation down"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+				'<button type="button" class="pc-tool pc-up" title="Move up" aria-label="Move this calculation up">' + CHEV_UP + '</button>' +
+				'<button type="button" class="pc-tool pc-down" title="Move down" aria-label="Move this calculation down">' + CHEV_DOWN + '</button>';
+			var fold = document.createElement('div');
+			fold.className = 'pc-eq-tools pc-fold';
+			fold.innerHTML = '<button type="button" class="pc-tool pc-toggle"></button>';
+			eq.insertBefore(fold, eq.firstChild);
 			eq.insertBefore(bar, eq.firstChild);
 			var sum = document.createElement('button');
 			sum.type = 'button';
 			sum.className = 'pc-summary';
 			sum.setAttribute('aria-label', 'Expand: ' + label(eq));
-			sum.innerHTML = '<span class="pc-summary-arrow">&#9656;</span><span class="pc-summary-text"></span>';
+			sum.innerHTML = '<span class="pc-summary-text"></span>';
 			sum.querySelector('.pc-summary-text').textContent = label(eq);
-			eq.insertBefore(sum, bar.nextSibling);
+			eq.insertBefore(sum, fold.nextSibling);
 			bar.querySelector('.pc-up').addEventListener('click', function () { move(eq.id, -1, '.pc-up'); });
 			bar.querySelector('.pc-down').addEventListener('click', function () { move(eq.id, 1, '.pc-down'); });
-			bar.querySelector('.pc-toggle').addEventListener('click', function () { setCollapsed(eq.id, true); });
+			fold.querySelector('.pc-toggle').addEventListener('click', function () { setCollapsed(eq.id, true); });
 			sum.addEventListener('click', function () { setCollapsed(eq.id, false); });
 		}
 
@@ -557,7 +565,7 @@ $(document).ready(function(){
 				var eq = el(id), c = isCollapsed(id);
 				eq.classList.toggle('pc-collapsed', c);
 				var t = eq.querySelector('.pc-toggle');
-				t.innerHTML = c ? '+' : '&minus;';
+				t.innerHTML = c ? FOLD_OUT : FOLD_IN;
 				t.title = c ? 'Expand' : 'Collapse';
 				t.setAttribute('aria-label', (c ? 'Expand' : 'Collapse') + ' this calculation');
 				t.setAttribute('aria-expanded', c ? 'false' : 'true');

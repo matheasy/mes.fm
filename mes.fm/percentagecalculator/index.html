@@ -234,18 +234,19 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 	/* PC-LAYOUT: per-calculation collapse + reorder controls (js/calculator6da2.js) */
 	.equation {position:relative;}
-	.equation .input-row {padding-right:2.3em;}
-	.pc-eq-tools {position:absolute;top:0.45em;right:0.35em;z-index:2;display:flex;flex-direction:column;gap:0.15em;}
-	.pc-tool {display:flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;padding:0;border:0;border-radius:0.3em;background:transparent;color:#1479c7;font-size:1.05em;font-weight:700;line-height:1;cursor:pointer;}
+	.equation .input-row {padding-left:2.3em;padding-right:2.3em;}
+	.pc-eq-tools {position:absolute;top:50%;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;gap:0.1em;}
+	.pc-move {left:0.3em;}
+	.pc-fold {right:0.3em;}
+	.pc-tool {display:flex;align-items:center;justify-content:center;width:1.6em;height:1.6em;padding:0;border:0;border-radius:0.3em;background:transparent;color:#1479c7;line-height:1;cursor:pointer;}
+	.pc-tool svg {width:15px;height:15px;}
 	.pc-tool:hover:not(:disabled) {background:rgba(20,121,199,0.15);}
 	.pc-tool:disabled {opacity:0.25;cursor:default;}
 	.pc-tool:focus-visible, .pc-summary:focus-visible, .pc-link:focus-visible {outline:2px solid #1479c7;outline-offset:1px;}
-	.pc-summary {display:none;width:100%;margin:0 0 1em 0;padding:0.75em 4.4em 0.75em 0.8em;text-align:left;font:inherit;color:inherit;cursor:pointer;background-color:#ededed;border:1px solid #cbcbcb;border-radius:0.5em;}
-	.pc-summary-arrow {color:#1479c7;margin-right:0.6em;}
+	.pc-summary {display:none;width:100%;margin:0 0 1em 0;padding:0.75em 2.6em;text-align:left;font:inherit;color:inherit;cursor:pointer;background-color:#ededed;border:1px solid #cbcbcb;border-radius:0.5em;}
 	.pc-collapsed .pc-summary {display:block;}
 	.pc-collapsed .input-row {display:none;}
-	.pc-collapsed .pc-eq-tools {top:0.2em;flex-direction:row;}
-	.pc-collapsed .pc-eq-tools .pc-toggle {display:none;}
+	.pc-collapsed .pc-eq-tools {top:calc(50% - 0.5em);}
 	.pc-toolbar {display:flex;justify-content:flex-end;gap:1.2em;margin:0.6em 0 0.4em 0;}
 	.pc-link {border:0;background:none;padding:0.2em 0;color:#1479c7;font:inherit;font-size:0.9em;cursor:pointer;text-decoration:underline;}
 	body.dark-mode .pc-summary {background-color:#1f1f1f;border-color:#3a3a3a;color:#eeeeee;}
@@ -758,7 +759,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             hide_search:true,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script>$.getScript("/percentagecalculator/js/calculator6da2.js?v=2.6");</script>            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.7" data-scale="main" data-dark="derive" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+	<script>$.getScript("/percentagecalculator/js/calculator6da2.js?v=2.9");</script>            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.7" data-scale="main" data-dark="derive" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
 <!-- Mirrored from percentagecalculator.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:43:44 GMT -->
 </html>
