@@ -47,6 +47,16 @@ export async function GET(request: Request) {
   } catch (err) {
     return new Response(err instanceof Error ? err.message : 'Failed to build the tax report', { status: 502 });
   }
+  // an export is what gets filed: refuse a partial one (a wallet or network that didn't load) rather
+  // than hand over totals with transactions silently missing. Only the SWAP.HIVE reconciliation note is
+  // informational; a failed round-trip check changes the totals like a missing wallet does.
+  const missing = report.sources.filter((s) => s.error && !s.key.startsWith('check:hive-engine:'));
+  if (missing.length) {
+    return new Response(
+      `Not exported - some data didn't load, so the totals would be incomplete. Try again in a minute.\n\n${missing.map((s) => `${s.label}: ${s.error}`).join('\n')}`,
+      { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } },
+    );
+  }
 
   const csvRows = [...report.rows]
     .sort((a, b) => new Date(a.disposedAt).getTime() - new Date(b.disposedAt).getTime())

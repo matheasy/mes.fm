@@ -25,7 +25,7 @@ export const KNOWN_ADDRESSES: Record<string, string> = {
   // plain wallets (not contracts)
   '0x27bf3c74df402476d5b11dd1f15022df3ba71552': 'wallet funded from Bybit and Shakepay - yours?',
   '0x787300f3b94524360a7245923b20840131a42ada': 'plain wallet (active DEX trader)',
-  '0xa95d9c1f655341597c94393fddc30cf3c08e4fce': 'plain wallet collecting small USDC payments',
+  '0xa95d9c1f655341597c94393fddc30cf3c08e4fce': 'Hyperliquid deposit relay - the USDC landed in your own Hyperliquid account',
   // Hive accounts
   'vsc.gateway': 'Magi (VSC) gateway - your own HBD on Magi',
   'honey-swap': 'Hive Engine peg (HIVE <-> SWAP.HIVE)',

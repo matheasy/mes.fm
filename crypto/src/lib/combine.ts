@@ -6,6 +6,8 @@ export interface SourceResult<T> {
   data: T | null;
   error: string | null;
   rateLimited: boolean;
+  /** Networks the upstream couldn't load (its `networkErrors`): `data` is then missing their part */
+  networkErrors?: Record<string, string>;
 }
 
 /**
@@ -15,7 +17,9 @@ export interface SourceResult<T> {
  */
 export async function fetchSource<T>(source: WalletSource, path: string): Promise<SourceResult<T>> {
   try {
-    const res = await fetch(sourceUrl(source, path), { cache: 'no-store' });
+    // give up before this function's own 300s limit, so a stuck upstream shows as that source's error
+    // instead of the whole request hanging
+    const res = await fetch(sourceUrl(source, path), { cache: 'no-store', signal: AbortSignal.timeout(240_000) });
     // A missing deployment answers with a plain-text/HTML page, not our JSON: say so plainly
     // instead of surfacing JSON.parse's "Unexpected token" message.
     if (!(res.headers.get('content-type') ?? '').includes('json')) {
@@ -27,7 +31,11 @@ export async function fetchSource<T>(source: WalletSource, path: string): Promis
     if ('error' in json && json.error) {
       return { source, data: null, error: json.error, rateLimited: Boolean(json.rateLimited) };
     }
-    return { source, data: (json.data as T) ?? null, error: null, rateLimited: false };
+    const raw = (json as { networkErrors?: Record<string, { message?: string } | string> }).networkErrors ?? {};
+    const networkErrors = Object.fromEntries(
+      Object.entries(raw).map(([n, e]) => [n, typeof e === 'string' ? e : (e?.message ?? 'failed to load')]),
+    );
+    return { source, data: (json.data as T) ?? null, error: null, rateLimited: false, networkErrors };
   } catch (err) {
     const message = err instanceof Error ? err.message : `Failed to reach ${source.label}`;
     return { source, data: null, error: message, rateLimited: false };

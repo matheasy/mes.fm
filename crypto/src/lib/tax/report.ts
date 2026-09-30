@@ -251,7 +251,17 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
   const hiveBySource = new Map<string, number>();
   for (const e of hive.entries) hiveBySource.set(e.source, (hiveBySource.get(e.source) ?? 0) + 1);
   const sources: TaxSourceStatus[] = [
-    ...upstream.map((r) => ({ key: r.source.key, label: r.source.label, entries: r.data?.entries.length ?? 0, error: r.error })),
+    ...upstream.map((r) => {
+      // a network the wallet app couldn't load is simply absent from its entries - never let that pass
+      // silently, it changes the totals (seen live 2026-09-29: an Ethereum hiccup dropped 6 rows)
+      const failedNetworks = Object.entries(r.networkErrors ?? {});
+      const error =
+        r.error ??
+        (failedNetworks.length
+          ? `${failedNetworks.map(([n, e]) => `${n} (${e})`).join(', ')} didn't load, so those transactions are missing`
+          : null);
+      return { key: r.source.key, label: r.source.label, entries: r.data?.entries.length ?? 0, error };
+    }),
     { key: 'bitcoin', label: 'Bitcoin', entries: bitcoin.entries.length, error: bitcoin.error },
     { key: 'xrp', label: 'XRP', entries: xrp.entries.length, error: xrp.error },
     { key: 'tgld', label: 'TGLD (Hive Engine)', entries: tgld.entries.length, error: tgld.error },
