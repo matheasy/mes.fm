@@ -3,12 +3,18 @@
  * Paste a video link, see its thumbnail + a direct link to it. YouTube is
  * handled entirely client-side (its thumbnail CDN is public, no API key or
  * CORS issue -- just build the URL from the video ID and probe which sizes
- * actually exist). 3Speak, BitChute, Odysee, and Rumble each need a
- * platform-specific lookup that either requires a POST body, a User-Agent
- * override, or simply has no CORS header, so those route through this site's
- * own /api/thumbnail endpoint (see mes.fm/api/thumbnail.js), which does
- * nothing but ask that platform for its already-public thumbnail and hand it
- * back -- nothing pasted here is stored anywhere.
+ * actually exist). 3Speak, Odysee, and Rumble each need a platform-specific
+ * lookup that either requires a POST body, a User-Agent override, or simply
+ * has no CORS header, so those route through this site's own /api/thumbnail
+ * endpoint (see mes.fm/api/thumbnail.js), which does nothing but ask that
+ * platform for its already-public thumbnail and hand it back -- nothing
+ * pasted here is stored anywhere.
+ *
+ * BitChute is deliberately NOT routed through that lookup (see the header
+ * comment in api/thumbnail.js): as of 2026-09-30 their video pages no longer
+ * server-render per-video metadata at all, so every lookup would fail --
+ * pasting a BitChute link gets its own explicit "not available right now"
+ * message below instead of a wasted round trip.
  */
 (function () {
 	"use strict";
@@ -38,7 +44,7 @@
 		{ key: "default", label: "Default (120×90)" }
 	];
 
-	var PLATFORM_LABELS = { "3speak": "3Speak", bitchute: "BitChute", odysee: "Odysee", rumble: "Rumble" };
+	var PLATFORM_LABELS = { "3speak": "3Speak", odysee: "Odysee", rumble: "Rumble" };
 
 	var toastTimer = null;
 	function toast(msg) {
@@ -183,12 +189,17 @@
 			return;
 		}
 
-		if (/3speak\.tv|bitchute\.com|odysee\.com|rumble\.com/i.test(raw)) {
+		if (/3speak\.tv|odysee\.com|rumble\.com/i.test(raw)) {
 			handleOtherPlatform(raw);
 			return;
 		}
 
-		showError("That link isn't from a supported platform — YouTube, 3Speak, BitChute, Odysee, or Rumble.");
+		if (/bitchute\.com/i.test(raw)) {
+			showError("BitChute thumbnails aren't available right now — their site no longer exposes them for a tool like this to fetch.");
+			return;
+		}
+
+		showError("That link isn't from a supported platform — YouTube, 3Speak, Odysee, or Rumble.");
 	}
 
 	fetchBtn.addEventListener("click", handleFetch);
