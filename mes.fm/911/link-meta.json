@@ -823,5 +823,15 @@
         "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh"
       }
     ]
+  },
+  "https://mes.fm/youtube-removed-curt-weldon-911": {
+    "image": "https://mes.fm/youtube-removed-curt-weldon-911/img/youtube-removed-curt-weldon-911-1.png",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Video",
+        "href": "https://mes.fm/curt-weldon-firefighters-911-dustification"
+      }
+    ]
   }
 }
