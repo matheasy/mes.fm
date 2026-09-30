@@ -17,7 +17,7 @@ async function getAllTxs(address: string): Promise<MempoolTx[]> {
   const out: MempoolTx[] = [];
   let url = `${API}/address/${address}/txs`;
   for (let page = 0; page < 200; page++) {
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(30_000) });
     if (!res.ok) throw new Error(`mempool.space answered ${res.status}`);
     const batch = ((await res.json()) as MempoolTx[]).filter((t) => t.status.confirmed);
     out.push(...batch);

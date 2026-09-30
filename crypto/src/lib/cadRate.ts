@@ -39,7 +39,7 @@ function clampToToday(dateOnly: string): string {
 
 async function fetchRange(startDate: string, endDate: string): Promise<Map<string, number>> {
   const url = `${VALET_BASE}/${SERIES}/json?start_date=${startDate}&end_date=${endDate}`;
-  const res = await fetch(url, { cache: 'no-store' });
+  const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(30_000) });
   if (!res.ok) throw new Error(`Bank of Canada Valet API responded ${res.status}`);
   const json = (await res.json()) as ValetResponse;
   const out = new Map<string, number>();

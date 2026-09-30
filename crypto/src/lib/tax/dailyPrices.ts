@@ -25,7 +25,7 @@ function dayKey(unixSeconds: number): string {
 async function fetchChunk(coinId: string, start: number): Promise<[string, number][]> {
   const key = `coingecko:${coinId}`;
   const url = `https://coins.llama.fi/chart/${key}?start=${start}&span=${CHUNK_DAYS}&period=1d&searchWidth=600`;
-  const res = await fetch(url, { cache: 'no-store' });
+  const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(30_000) });
   if (!res.ok) throw new Error(`DefiLlama chart request failed for ${coinId}: ${res.status}`);
   const json = (await res.json()) as { coins?: Record<string, { prices?: { timestamp: number; price: number }[] }> };
   return (json.coins?.[key]?.prices ?? [])

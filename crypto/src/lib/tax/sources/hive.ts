@@ -44,6 +44,7 @@ async function rpc<T>(method: string, params: unknown): Promise<T> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 }),
         cache: 'no-store',
+        signal: AbortSignal.timeout(30_000),
       });
       if (!res.ok) throw new Error(`${node} answered ${res.status}`);
       const json = (await res.json()) as { result?: T; error?: { message: string } };

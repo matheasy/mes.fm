@@ -23,7 +23,7 @@ async function getCodes(network: string, addresses: string[]): Promise<Map<strin
     const url = urls[attempt % urls.length]!;
     try {
       const body = todo.map((a, i) => ({ jsonrpc: '2.0', id: i, method: 'eth_getCode', params: [a, 'latest'] }));
-      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' });
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store', signal: AbortSignal.timeout(30_000) });
       if (!res.ok) throw new Error(`${url} answered ${res.status}`);
       const json = (await res.json()) as { id: number; result?: string }[];
       if (!Array.isArray(json)) throw new Error(`${url}: unexpected reply`);

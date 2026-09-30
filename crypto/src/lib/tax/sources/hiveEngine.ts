@@ -85,12 +85,18 @@ export async function getJson<T>(url: string): Promise<T> {
   let status = 0;
   for (let attempt = 0; attempt < 4; attempt++) {
     if (attempt) await new Promise((r) => setTimeout(r, 1500 * attempt));
-    const res = await fetch(url, { cache: 'no-store' });
+    let res: Response;
+    try {
+      res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(30_000) });
+    } catch {
+      status = 0; // timed out / connection dropped: retry
+      continue;
+    }
     if (res.ok) return (await res.json()) as T;
     status = res.status;
     if (status !== 429 && status < 500) break;
   }
-  throw new Error(`Hive Engine history answered ${status}`);
+  throw new Error(status ? `Hive Engine history answered ${status}` : 'Hive Engine history timed out');
 }
 
 async function accountHistory(account: string, symbol: string): Promise<HeRow[]> {
@@ -118,6 +124,7 @@ async function txEvents(txid: string): Promise<TxEvent[]> {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getTransactionInfo', params: { txid } }),
             cache: 'no-store',
+            signal: AbortSignal.timeout(30_000),
           });
           if (!res.ok) {
             problem = `Hive Engine RPC answered ${res.status}`;
@@ -351,6 +358,7 @@ export async function swapHiveGaps(entries: TaxEntry[]): Promise<{ account: stri
       params: { contract: 'tokens', table: 'balances', query: { account: { $in: [...HIVE_ACCOUNTS] }, symbol: 'SWAP.HIVE' } },
     }),
     cache: 'no-store',
+    signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) throw new Error(`Hive Engine answered ${res.status}`);
   const held = new Map<string, number>();
