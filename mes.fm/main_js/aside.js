@@ -105,6 +105,32 @@
         }
     }
 
+    /* 2b. wide page -- a "Wide page" pill (>= 1200px only) at the right end of the content column's title row. On: html.page-wide
+       (saved in localStorage "pageWide", restored before first paint by the page's <head> script) collapses the two columns to one,
+       drops the ad and lays the "More like this" cards out as a grid below the content (rules: aside.css). Turning it off brings
+       the ad slot back, so request it then (it is never requested while hidden). */
+    var host = document.querySelector(".has-aside .page-content") || document.querySelector(".mes-col-main");
+    if (host && !host.querySelector(".mes-wide-toggle")) {
+        var wide = document.createElement("button");
+        wide.type = "button";
+        wide.className = "mes-wide-toggle";
+        wide.title = "Use the full page width; the sidebar moves below the content";
+        var root = document.documentElement;
+        var paint = function () {
+            var on = root.classList.contains("page-wide");
+            wide.setAttribute("aria-pressed", on ? "true" : "false");
+            wide.innerHTML = '<span aria-hidden="true">&#8596;</span> ' + (on ? "Standard width" : "Wide page");
+        };
+        wide.addEventListener("click", function () {
+            var on = root.classList.toggle("page-wide");
+            try { localStorage.setItem("pageWide", on ? "1" : "0"); } catch (e) {}
+            paint();
+            if (!on) loadAd();
+        });
+        paint();
+        host.insertBefore(wide, host.firstChild);
+    }
+
     /* 3. random card */
     var list = aside.querySelector(".mes-aside__list");
     var family = aside.getAttribute("data-aside-family");

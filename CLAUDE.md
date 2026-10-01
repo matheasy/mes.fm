@@ -344,6 +344,12 @@ of HTML files individually:
   Same session: the percentage calculator's equation rows became wrapping flex lines (`.eq-text` sentence + Answer box) so the
   Answer no longer overlaps the inputs at larger A+ sizes.
 
+  **Wide page option** (2026-09-30): `aside.js` ("2b") puts a "↔ Wide page" pill at the right end of the content column's title row (classic
+  `.page-content`; in the math shell inside the "Part of" box), >=1200px only. On = `html.page-wide` (localStorage `pageWide`, shared by every
+  sidebar page; restored before first paint by the `MES-ASIDE-HEAD` inline script, back-filled onto the ~1,100 existing pages by
+  `add_page_wide.py`, emitted for new ones by `add_sidebar.py`'s `HEAD_BLOCK`): one column (content ~1070-1090px), the sidebar ad hidden
+  and never requested (turning Wide off requests it then; the bottom ad is unaffected), the "More like this" cards a 4-column grid under the
+  content, the ⇄ side switch hidden. CSS at the end of `aside.css`.
 - `add_sidebar_math.py` — the same "More like this" column for the individual MES **article pages in the math-hub shell** (162 pages:
   Problems Plus 1-5, the MES Math Q/A mirrors, cubic-formula step pages, the 9/11 / Hutchison / conspiracy / crypto / science Hive
   mirrors; every `mes.fm/<slug>/index.html` with `<div class="container">`, a "Part of ..." box, an `<article>`, the AdSense loader and

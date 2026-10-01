@@ -116,3 +116,25 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Wide page (aside.js "2b"): html.page-wide -- one column, the ad dropped, the cards as a grid under the content.
+   The button only exists/shows from 1200px (below that the page is already one column). */
+.mes-wide-toggle { display: none; }
+@media (min-width: 1200px) {
+  .has-aside .page-content, .mes-col-main { position: relative; }
+  .mes-wide-toggle { display: inline-flex; align-items: center; gap: .35em; position: absolute; top: .45em; right: 0; z-index: 2;
+    padding: .28em .8em; border: 1px solid #b9c2cc; border-radius: 999px; background: #fff; color: #1479c7;
+    font: inherit; font-size: .82em; line-height: 1.2; cursor: pointer; }
+  .mes-col-main > .mes-wide-toggle { top: 22px; right: 10px; }
+  .mes-wide-toggle:hover, .mes-wide-toggle[aria-pressed="true"] { background: #1479c7; color: #fff; border-color: #1479c7; }
+  :is(body.dark-mode, body.dark) .mes-wide-toggle { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
+  :is(body.dark-mode, body.dark) .mes-wide-toggle:hover, :is(body.dark-mode, body.dark) .mes-wide-toggle[aria-pressed="true"] { background: #6cb6f5; color: #111; border-color: #6cb6f5; }
+
+  html.page-wide .has-aside .outer-page-content, html.page-wide .mes-cols { grid-template-columns: 1fr; }
+  html.page-wide .has-aside .page-content, html.page-wide .mes-col-main { grid-column: 1; grid-row: 1; }
+  html.page-wide .has-aside .mes-aside, html.page-wide .mes-cols > .mes-aside { grid-column: 1; grid-row: 2; margin: 2em 0 1em; }
+  html.page-wide .mes-aside__sticky { position: static; }
+  html.page-wide .mes-aside__ad, html.page-wide .mes-aside__ad:not([data-ad-slot=""]) { display: none !important; }
+  html.page-wide .mes-aside__flip { display: none !important; }
+  html.page-wide .mes-aside__list { grid-template-columns: repeat(4, 1fr); }
+}
