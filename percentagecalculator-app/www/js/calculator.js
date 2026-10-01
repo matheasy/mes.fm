@@ -213,6 +213,13 @@ $(document).ready(function(){
 				}
 			},
 
+			// equations in their canonical order (equation-1 ... equation-10), whatever order the user has arranged them in on the page
+			canonicalEquations: function () {
+				return $('.equation').get().sort(function (a, b) {
+					return parseInt(a.id.replace('equation-', ''), 10) - parseInt(b.id.replace('equation-', ''), 10);
+				});
+			},
+
 			shareUrl: function () {
 
 				if(!CALCULATOR.createNewUrl) return false;
@@ -222,7 +229,7 @@ $(document).ready(function(){
 				var equation = [];
 				var emptyEquation = true;
 
-				$('.equation').each(function(index1) {
+				$(CALCULATOR.canonicalEquations()).each(function(index1) {
 					$(this).find('.input-row').each(function(index2) {
 						$(this).find('.input').each(function(index3) {
 							if($(this).val() == '')
@@ -312,18 +319,16 @@ $(document).ready(function(){
 							}
 						}
 
-						//open extra calculations -- ensure it's shown rather than
-						//toggling, since it's open by default now (a blind .click()
-						//would close it instead of opening it)
-						$("#extra-calcs").removeClass("hide");
-						$("#more-calcs-button").addClass("selected");
+						//make sure every calculation is expanded, so the shared values are visible
+						if (window.PCLayout) window.PCLayout.expandAll();
 
 						//flatten 3D array into 1D array
 						var oneDimensionalArray = $.map(decodedDataArray, function recurs(n) {
 							return ($.isArray(n) ? $.map(n, recurs): n);
 						});
 
-						$('.input').each(function(index) {
+						// values were saved in canonical order; the page may be arranged differently
+						$(CALCULATOR.canonicalEquations()).find('.input').each(function(index) {
 							$(this).val(oneDimensionalArray[index]);
 						});
 
@@ -406,7 +411,7 @@ $(document).ready(function(){
 
 				    	inputs['answer'] = parentContainer.find(".answer");
 				    	inputs['formula'] = parentContainer.find(".formula");
-				    	var equation = $(this).closest('div[class^="equation"]').index('.equation') + 1;
+				    	var equation = parseInt($(this).closest('.equation').attr('id').replace('equation-', ''), 10);
 
 				    	// If value has changed...
 				    	if (currentVal.data('currentVal') != currentVal.val()) {
@@ -484,5 +489,136 @@ $(document).ready(function(){
 
 	CALCULATOR.bindInputs();
 	CALCULATOR.initializeCustomCalculation();
+
+	/* ---- Layout: collapse / expand and reorder calculations (saved per browser) ---- */
+	window.PCLayout = (function () {
+		var KEY = 'pcLayout';
+		var first = document.getElementById('equation-1');
+		if (!first) return { expandAll: function () {} };
+		var parent = first.parentNode;
+		var DEFAULT = $('.equation').get().map(function (e) { return e.id; });
+		var state = { order: DEFAULT.slice(), collapsed: [] };
+
+		try {
+			var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+			if (saved && saved.order && saved.order.length === DEFAULT.length && DEFAULT.every(function (id) { return saved.order.indexOf(id) > -1; })) {
+				state.order = saved.order;
+			}
+			if (saved && saved.collapsed) state.collapsed = saved.collapsed.filter(function (id) { return DEFAULT.indexOf(id) > -1; });
+		} catch (e) {}
+
+		function save() {
+			try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+		}
+
+		function label(eq) {
+			var box = eq.querySelector('.eq-text');
+			if (!box) return 'Percentage of the mixed fraction';
+			var out = '';
+			box.childNodes.forEach(function (n) {
+				if (n.nodeType === 3) out += n.textContent;
+				else if (n.tagName === 'INPUT') out += '__';
+				else if (!n.classList.contains('button-icon')) out += n.textContent;
+			});
+			return out.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+		}
+
+		var svg = function (d) { return '<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="' + d + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; };
+		var CHEV_UP = svg('M2 8l4-4 4 4'), CHEV_DOWN = svg('M2 4l4 4 4-4');
+		// "fold" icon: two chevrons pointing in (collapse) or out (expand), so it can't be mistaken for the move arrows
+		var FOLD_IN = svg('M2 1.5l4 3 4-3M2 10.5l4-3 4 3'), FOLD_OUT = svg('M2 4.5l4-3 4 3M2 7.5l4 3 4-3');
+
+		function el(id) { return document.getElementById(id); }
+
+		function build(eq) {
+			var bar = document.createElement('div');
+			bar.className = 'pc-eq-tools pc-move';
+			bar.innerHTML =
+				'<button type="button" class="pc-tool pc-up" title="Move up" aria-label="Move this calculation up">' + CHEV_UP + '</button>' +
+				'<button type="button" class="pc-tool pc-down" title="Move down" aria-label="Move this calculation down">' + CHEV_DOWN + '</button>';
+			var fold = document.createElement('div');
+			fold.className = 'pc-eq-tools pc-fold';
+			fold.innerHTML = '<button type="button" class="pc-tool pc-toggle"></button>';
+			eq.insertBefore(fold, eq.firstChild);
+			eq.insertBefore(bar, eq.firstChild);
+			var sum = document.createElement('button');
+			sum.type = 'button';
+			sum.className = 'pc-summary';
+			sum.setAttribute('aria-label', 'Expand: ' + label(eq));
+			sum.innerHTML = '<span class="pc-summary-text"></span>';
+			sum.querySelector('.pc-summary-text').textContent = label(eq);
+			eq.insertBefore(sum, fold.nextSibling);
+			bar.querySelector('.pc-up').addEventListener('click', function () { move(eq.id, -1, '.pc-up'); });
+			bar.querySelector('.pc-down').addEventListener('click', function () { move(eq.id, 1, '.pc-down'); });
+			fold.querySelector('.pc-toggle').addEventListener('click', function () { setCollapsed(eq.id, !isCollapsed(eq.id)); });
+			sum.addEventListener('click', function () { setCollapsed(eq.id, false); });
+		}
+
+		function isCollapsed(id) { return state.collapsed.indexOf(id) > -1; }
+
+		function paint() {
+			// find a stable node after the block of equations to insert before
+			var eqs = DEFAULT.map(el);
+			var after = eqs.reduce(function (a, e) { return a.compareDocumentPosition(e) & 4 ? e : a; }, eqs[0]).nextSibling;
+			state.order.forEach(function (id) { parent.insertBefore(el(id), after); });
+			state.order.forEach(function (id, i) {
+				var eq = el(id), c = isCollapsed(id);
+				eq.classList.toggle('pc-collapsed', c);
+				var t = eq.querySelector('.pc-toggle');
+				t.innerHTML = c ? FOLD_OUT : FOLD_IN;
+				t.title = c ? 'Expand' : 'Collapse';
+				t.setAttribute('aria-label', (c ? 'Expand' : 'Collapse') + ' this calculation');
+				t.setAttribute('aria-expanded', c ? 'false' : 'true');
+				eq.querySelector('.pc-up').disabled = i === 0;
+				eq.querySelector('.pc-down').disabled = i === state.order.length - 1;
+			});
+			var all = state.collapsed.length === DEFAULT.length;
+			var b = document.getElementById('pc-collapse-all');
+			if (b) b.textContent = all ? 'Expand all' : 'Collapse all';
+			var r = document.getElementById('pc-reset');
+			if (r) r.style.display = (state.order.join() === DEFAULT.join() && !state.collapsed.length) ? 'none' : '';
+		}
+
+		function move(id, dir, focusSel) {
+			var i = state.order.indexOf(id), j = i + dir;
+			if (j < 0 || j >= state.order.length) return;
+			state.order.splice(i, 1);
+			state.order.splice(j, 0, id);
+			save(); paint();
+			var b = el(id).querySelector(focusSel);
+			if (b && !b.disabled) b.focus(); else el(id).querySelector('.pc-toggle').focus();
+		}
+
+		function setCollapsed(id, c) {
+			var i = state.collapsed.indexOf(id);
+			if (c && i < 0) state.collapsed.push(id);
+			if (!c && i > -1) state.collapsed.splice(i, 1);
+			save(); paint();
+			var eq = el(id);
+			var f = c ? eq.querySelector('.pc-summary') : eq.querySelector('.pc-toggle');
+			if (f) f.focus();
+		}
+
+		// toolbar
+		var bar = document.createElement('div');
+		bar.className = 'pc-toolbar';
+		bar.innerHTML = '<button type="button" id="pc-reset" class="pc-link" style="display:none">Reset layout</button><button type="button" id="pc-collapse-all" class="pc-link">Collapse all</button>';
+		parent.insertBefore(bar, first);
+		document.getElementById('pc-collapse-all').addEventListener('click', function () {
+			state.collapsed = state.collapsed.length === DEFAULT.length ? [] : DEFAULT.slice();
+			save(); paint();
+		});
+		document.getElementById('pc-reset').addEventListener('click', function () {
+			state = { order: DEFAULT.slice(), collapsed: [] };
+			save(); paint();
+		});
+
+		DEFAULT.forEach(function (id) { build(el(id)); });
+		paint();
+
+		return {
+			expandAll: function () { state.collapsed = []; paint(); }
+		};
+	})();
 
 });
