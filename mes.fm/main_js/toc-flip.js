@@ -1,6 +1,6 @@
 /* Options for the fixed "Jump to" sidebar TOC (.toc-sidebar): pills under its title -- Side (move it to the other side of the
    article) and Hide (collapse the sidebar to a "Jump to" tab where it was; click the tab to bring it back) -- plus a Wide / Narrow
-   pill at the top right of the article, before the <h1> (the same spot as on the calculator pages). Wide widens the article column and
+   pill at the top right of the article (inside the "Part of ..." box when the page has one, else on a row above the <h1>; the same spot as on the calculator pages). Wide widens the article column and
    the sidebar moves out with it. Saved in localStorage ("asideSide", "pageWide" -- both shared with the "More like this" pages --
    and "tocHidden"), restored before first paint by the inline script in <head> (add_toc_flip.py); layout: main_js/toc-flip.css. */
 (function () {
@@ -41,7 +41,12 @@
     paint();
     tools.appendChild(side); tools.appendChild(hide);
     var h1 = document.querySelector(".container > h1");
-    if (h1) {
+    var partOf = h1 && document.querySelector(".container > .part-of");
+    if (partOf && partOf.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING) {
+        /* same line as the "Part of ..." box, at its right end: matches the calculator pages and costs no vertical space */
+        partOf.classList.add("toc-has-wide");
+        partOf.appendChild(wide);
+    } else if (h1) {
         var row = document.createElement("div");
         row.className = "toc-wide-row";
         row.appendChild(wide);

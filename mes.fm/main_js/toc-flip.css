@@ -17,6 +17,8 @@ html.page-wide { --toc-w: max(760px, min(1100px, calc(100vw - 520px))); }  /* ar
 @media (min-width: 1300px) {
   .toc-tools { display: flex; }
   /* Wide / Narrow: top right of the article, on the title row (same look as the calculator pages' pill) */
+  .toc-has-wide { position: relative; }
+  .toc-has-wide > .toc-wide-pill { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
   .toc-wide-row { display: flex; justify-content: flex-end; margin: .7em 0 -.5em; }
   .toc-wide-pill { display: inline-flex; align-items: center; gap: .35em; padding: .28em .8em; border: 1px solid #b9c2cc;
     border-radius: 999px; background: #fff; color: #1479c7; font: inherit; font-size: .82em; line-height: 1.2; cursor: pointer; }
