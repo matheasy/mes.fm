@@ -289,9 +289,11 @@ def build(pdf):
     def tbl(rows):
         head, rest = rows[0], rows[1:]
         c = lambda x: para_html(esc((x or "").replace("\n", " ").strip()).replace("&amp;", "&amp;"))
-        s = '<div class="table-wrap"><table class="doc-table"><thead><tr>' + "".join(f"<th>{c(x)}</th>" for x in head) + "</tr></thead><tbody>"
+        s = ('<div class="table-block"><div class="tbl-modes"><button type="button" data-mode="wide" aria-pressed="false">Wide View</button>'
+             '<button type="button" data-mode="theater" aria-pressed="false">Theater Mode</button></div>'
+             '<div class="table-wrap"><table class="doc-table"><thead><tr>' + "".join(f"<th>{c(x)}</th>" for x in head) + "</tr></thead><tbody>")
         for r in rest: s += "<tr>" + "".join(f"<td>{c(x)}</td>" for x in r) + "</tr>"
-        return s + "</tbody></table></div>"
+        return s + "</tbody></table></div></div>"
     pending_tbl = None
     def flush_tbl():
         nonlocal pending_tbl

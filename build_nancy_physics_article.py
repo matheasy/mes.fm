@@ -76,7 +76,21 @@ CSS = r"""
     .post-body table.doc-table :is(th, td) { vertical-align: top; text-align: left; border-color: rgba(128,128,128,0.4); padding: 7px 10px; }
     .post-body table.doc-table thead th { background: rgba(39,123,182,0.16); font-weight: 700; }
     .post-body table.doc-table tbody tr:nth-child(even) td { background: rgba(128,128,128,0.06); }
-    .post-body table.doc-table td:first-child { font-weight: 700; white-space: nowrap; }
+    .post-body table.doc-table td:first-child { font-weight: 700; width: 13%; min-width: 6.5em; }
+    .post-body table.doc-table th:first-child { width: 13%; }
+    /* Default / Wide / Theater for tables (same idea as the video view modes) */
+    .table-block { position: relative; margin: 1.3em 0; }
+    .table-block .table-wrap { margin: 0; }
+    .tbl-modes { display: flex; gap: 6px; justify-content: flex-end; margin-bottom: 6px; }
+    .tbl-modes button { padding: 3px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.78em; font-family: inherit; }
+    body.light .tbl-modes button { background: #dddddd; color: #000000; }
+    body.dark .tbl-modes button { background: #444444; color: #ffffff; }
+    .tbl-modes button[aria-pressed="true"] { background: #277bb6 !important; color: #ffffff !important; }
+    .table-block.wide-mode, .table-block.theater-mode { position: relative; left: 50%; transform: translateX(-50%); z-index: 20; padding: 8px 12px 4px; border-radius: 6px; box-shadow: 0 2px 14px rgba(0,0,0,0.25); }
+    .table-block.wide-mode { width: min(1180px, calc(100vw - 32px)); }
+    .table-block.theater-mode { width: calc(100vw - 16px); }
+    body.light .table-block.wide-mode, body.light .table-block.theater-mode { background: #ffffff; }
+    body.dark .table-block.wide-mode, body.dark .table-block.theater-mode { background: #1a1a1a; }
     /* figures */
     .post-body figure.fig { margin: 1.4em 0; }
     .post-body figure.fig img { display: block; width: 100%; margin: 0 auto; border-radius: 6px; }
@@ -85,8 +99,34 @@ CSS = r"""
     @media (max-width: 600px) {
       .eq { padding: 0.45em 0.4em; }
       .callout { padding-left: 0.85em; padding-right: 0.85em; }
-      .post-body table.doc-table td:first-child { white-space: normal; }
     }
+"""
+
+TABLE_JS = r"""
+  <script>
+    // table view modes: Default / Wide / Theater (Esc returns to Default)
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('.tbl-modes button');
+      if (!btn) return;
+      var block = btn.closest('.table-block');
+      var want = btn.getAttribute('data-mode');
+      var now = block.classList.contains('theater-mode') ? 'theater' : block.classList.contains('wide-mode') ? 'wide' : 'default';
+      setMode(block, now === want ? 'default' : want);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      document.querySelectorAll('.table-block.wide-mode, .table-block.theater-mode').forEach(function (b) { setMode(b, 'default'); });
+    });
+    function setMode(block, mode) {
+      block.classList.toggle('wide-mode', mode === 'wide');
+      block.classList.toggle('theater-mode', mode === 'theater');
+      block.querySelectorAll('.tbl-modes button').forEach(function (b) {
+        var m = b.getAttribute('data-mode');
+        b.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+        b.textContent = m === mode ? 'Default View' : (m === 'wide' ? 'Wide View' : 'Theater Mode');
+      });
+    }
+  </script>
 """
 
 MATHJAX = """
@@ -131,7 +171,7 @@ def build():
 
     # ---- CSS + MathJax
     T = sub1(r"</style>", CSS + "</style>", T)
-    T = sub1(r"</head>", MATHJAX + "</head>", T)
+    T = sub1(r"</head>", MATHJAX + TABLE_JS + "</head>", T)
 
     # ---- Hutchison branding (same strings mes.fm/hutchison-cancer-treatment carries)
     T = sub1(r'<a href="/math" tabindex="-1"><img class="compact-nav-logo"[^>]*></a>\s*<a class="compact-nav-title" href="/math" tabindex="-1">MES Math Tutorials</a>',
