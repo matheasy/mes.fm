@@ -133,14 +133,16 @@ of HTML files individually:
   `build_sitemap.py` and `build_search_index.py`. The card thumbnail/og:image is `img/physics-of-the-system.jpg` (top of figure 1, 1200x630);
   `mes.fm/hutchison/link-meta.json` has its entry seeded by hand because the build can't scrape a page that isn't deployed yet.
 
-- `add_toc_flip.py` — left/right switch for the fixed "Jump to" sidebar (`<nav class="toc-sidebar">`, >=1300px), the same ⇄ button as the
-  "More like this" column and sharing its saved preference (localStorage `asideSide` -> `html.aside-left`, so one choice applies to every
-  sidebar). `main_js/toc-flip.css` (layout: left mode pins the sidebar's right edge where its left edge was) + `main_js/toc-flip.js` (inserts
-  the button beside the "Jump to" title); each page gets a `TOC-FLIP-HEAD` block (stylesheet + inline pre-paint side restore) and the
-  deferred script. Patches the 12 pages that really contain the nav (cubic-formula, ferrocell, hutchison-tom-sky, moon, norman-patricia,
-  vector-functions-problems-plus, the Nancy physics report) *and* their `build.mjs` so rebuilds keep it; the math/911/hutchison/livestreams
-  hubs only carry the sidebar's CSS, not the nav, so they are skipped on purpose. New pages cloned from the vector-functions-problems-plus
-  shell inherit it. Idempotent; **dry-runs by default, `--apply` writes.**
+- `add_toc_flip.py` — options for the fixed "Jump to" sidebar (`<nav class="toc-sidebar">`, >=1300px): a row of pills under its title —
+  **⇄ Side** (other side of the article), **↔ Wide** (article column up to 1100px, `--toc-w` in `toc-flip.css`; the sidebar moves out with
+  it instead of hiding, and shrinks back to 760px on screens too narrow to fit both) and **Hide ›** (sidebar collapses to a "‹ Jump to"
+  tab where it was; click to restore; `jump-to.js` then offers its floating-bar button). Preferences are the "More like this" pages' own
+  (`asideSide`, `pageWide`) plus `tocHidden`, restored before first paint by the `TOC-FLIP-HEAD` inline script (so Wide on a calculator
+  carries over to the Jump-to pages and back). Files: `main_js/toc-flip.css` + `main_js/toc-flip.js` (`?v=2`). The script (re)writes the
+  head block and script tag on the 12 pages that really contain the nav (cubic-formula, ferrocell, hutchison-tom-sky, moon,
+  norman-patricia, vector-functions-problems-plus, the Nancy physics report) *and* their `build.mjs`, so it also upgrades older
+  versions; the math/911/hutchison/livestreams hubs only carry the sidebar's CSS, not the nav, so they are skipped. New pages cloned from the
+  vector-functions-problems-plus shell inherit it. Idempotent; **dry-runs by default, `--apply` writes.**
 
 - `improve_meta_descriptions.py` — lengthens too-short `<meta name="description">` text under `mes.fm/` (Bing Webmaster
   Tools' "Meta descriptions on many of your pages are too short", 281 pages flagged 2026-09-24; Bing wants ~150-160

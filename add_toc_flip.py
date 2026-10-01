@@ -12,22 +12,25 @@ vector-functions-problems-plus shell (build_nancy_physics_article.py) inherit it
 Idempotent (TOC-FLIP-HEAD marker)."""
 import sys, pathlib, re
 ROOT = pathlib.Path(__file__).resolve().parent
-HEAD = ('<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=1">'
-        "<script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}</script>"
-        '<!-- /TOC-FLIP-HEAD -->\n')
-HEAD_NOSCRIPT = '<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=1"><!-- /TOC-FLIP-HEAD -->\n'
-TAIL = '<script src="/main_js/toc-flip.js?v=1" defer></script>'
+V = "2"
+RESTORE = ("try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');"
+           "if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}")
+HEAD = ('<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=' + V + '"><script>' + RESTORE + '</script><!-- /TOC-FLIP-HEAD -->\n')
+TAIL = '<script src="/main_js/toc-flip.js?v=' + V + '" defer></script>'
+
+HEAD_RE = re.compile(r"<!-- TOC-FLIP-HEAD -->.*?<!-- /TOC-FLIP-HEAD -->\n?", re.S)
+TAIL_RE = re.compile(r'<script src="/main_js/toc-flip\.js\?v=\d+" defer></script>')
 
 def patch(text):
-    if "TOC-FLIP-HEAD" in text or "<nav class=\"toc-sidebar\"" not in text:
+    """(re)writes the head block and script tag; stripping any earlier version first makes upgrades idempotent."""
+    if '<nav class="toc-sidebar"' not in text:
         return text
-    head = HEAD_NOSCRIPT if "MES-ASIDE-HEAD" in text else HEAD
-    # templates keep </head> / </body> literally inside a JS template string; first/last occurrence is the page's own
+    text = TAIL_RE.sub("", HEAD_RE.sub("", text))
     i = text.find("</head>")
-    j = text.rfind("</body>")
+    j = text.rfind("</body>")  # templates keep these literally inside a JS template string; first/last is the page's own
     if i < 0 or j < 0:
         return text
-    return text[:i] + head + text[i:j] + TAIL + text[j:]
+    return text[:i] + HEAD + text[i:j] + TAIL + text[j:]
 
 def main():
     apply = "--apply" in sys.argv
