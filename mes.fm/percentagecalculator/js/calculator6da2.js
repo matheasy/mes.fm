@@ -602,8 +602,15 @@ $(document).ready(function(){
 		// toolbar
 		var bar = document.createElement('div');
 		bar.className = 'pc-toolbar';
-		bar.innerHTML = '<button type="button" id="pc-reset" class="pc-link" style="display:none">Reset layout</button><button type="button" id="pc-collapse-all" class="pc-link">Collapse all</button>';
+		bar.innerHTML = '<button type="button" id="pc-custom" class="pc-link" aria-pressed="false">Custom layout</button><button type="button" id="pc-reset" class="pc-link" style="display:none">Reset layout</button><button type="button" id="pc-collapse-all" class="pc-link">Collapse all</button>';
 		parent.insertBefore(bar, first);
+		// the move arrows and fold chevrons are hidden until "Custom layout" is clicked; the link then reads "Hide icons"
+		document.getElementById('pc-custom').addEventListener('click', function () {
+			var on = !parent.classList.contains('pc-customizing');
+			parent.classList.toggle('pc-customizing', on);
+			this.textContent = on ? 'Hide icons' : 'Custom layout';
+			this.setAttribute('aria-pressed', on ? 'true' : 'false');
+		});
 		document.getElementById('pc-collapse-all').addEventListener('click', function () {
 			state.collapsed = state.collapsed.length === DEFAULT.length ? [] : DEFAULT.slice();
 			save(); paint();
