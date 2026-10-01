@@ -144,4 +144,23 @@
   });
   document.addEventListener('moon-data', renderPreview);
   render();
+
+  // view mode: Default / Wide / Theater -- breaks the box out of the normal column width so
+  // more of the preview table's columns fit without horizontal scrolling. Not persisted
+  // (matches the video embeds' Wide/Theater toggle elsewhere on the site).
+  var viewMode = 'default';
+  var wideBtn = $('rowWideToggle'), theaterBtn = $('rowTheaterToggle');
+  function applyView() {
+    box.classList.toggle('row-wide', viewMode === 'wide');
+    box.classList.toggle('row-theater', viewMode === 'theater');
+    wideBtn.textContent = viewMode === 'wide' ? 'Default view' : 'Wide view';
+    wideBtn.setAttribute('aria-pressed', viewMode === 'wide' ? 'true' : 'false');
+    theaterBtn.textContent = viewMode === 'theater' ? 'Default view' : 'Theater view';
+    theaterBtn.setAttribute('aria-pressed', viewMode === 'theater' ? 'true' : 'false');
+  }
+  function setView(next) { viewMode = viewMode === next ? 'default' : next; applyView(); }
+  if (wideBtn && theaterBtn) {
+    wideBtn.addEventListener('click', function () { setView('wide'); });
+    theaterBtn.addEventListener('click', function () { setView('theater'); });
+  }
 })();

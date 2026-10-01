@@ -165,8 +165,14 @@
     body.dark .refresh-btn { background-color: #2a6fb0; color: #ffffff; }
     .refresh-btn:disabled { opacity: 0.55; cursor: default; }
 
-    .row-builder { margin: 0 0 1.6em; padding: 10px 14px; border: 1px solid rgba(128,128,128,0.4); border-radius: 6px; }
+    .row-builder { position: relative; margin: 0 0 1.6em; padding: 10px 14px; border: 1px solid rgba(128,128,128,0.4); border-radius: 6px;
+      transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease; }
     .row-builder > summary { cursor: pointer; font-weight: bold; }
+    /* Wide / Theater: same left:50%+margin:-W/2 breakout the video embeds use elsewhere on the
+       site, so it centers on the viewport regardless of the (centered) .container's own width. */
+    .row-builder.row-wide { --rw: min(94vw, 1400px); width: var(--rw); max-width: var(--rw); left: 50%; margin-left: calc(var(--rw) / -2); }
+    .row-builder.row-theater { --rw: 100vw; width: var(--rw); max-width: var(--rw); left: 50%; margin-left: calc(var(--rw) / -2); border-radius: 0; }
+    .row-view-btn[aria-pressed="true"] { font-weight: bold; outline: 2px solid #1a6fb0; outline-offset: -2px; }
     .row-cols { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 0.7em; }
     .row-chip { display: inline-flex; align-items: center; gap: 2px; padding: 3px 4px 3px 9px; border-radius: 14px;
       font-size: 0.82em; cursor: grab; background: rgba(128,128,128,0.18); border: 1px solid rgba(128,128,128,0.35); }
@@ -556,6 +562,8 @@
         <button id="rowCopyHdr" class="loc-btn" type="button">Copy headers only</button>
         <label class="row-check"><input type="checkbox" id="rowHdrOn" /> Include header row when copying</label>
         <button id="rowReset" class="loc-btn" type="button">Reset to default</button>
+        <button id="rowWideToggle" class="loc-btn row-view-btn" type="button" aria-pressed="false">Wide view</button>
+        <button id="rowTheaterToggle" class="loc-btn row-view-btn" type="button" aria-pressed="false">Theater view</button>
         <span class="updated-line" id="rowMsg" role="status"></span>
       </div>
       <div class="row-preview-wrap"><table class="row-preview" id="rowPreview"></table></div>
@@ -866,7 +874,7 @@
   </script>
 
   <script src="/moon/js/astronomy.browser.min.js"></script>
-  <script src="/moon/js/moon-row.js?v=1" defer></script>
+  <script src="/moon/js/moon-row.js?v=2" defer></script>
   <script>
     // Live Sun / Moon dashboard.
     //

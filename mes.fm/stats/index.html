@@ -256,13 +256,30 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.st .show-more-btn {display:block;margin:0.8em auto 0;font-size:0.9em;cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);line-height:1;}
 	.st .show-more-btn:hover {background:var(--accent);color:#fff;}
 
+	/* Section header row: heading plus any right-aligned toggle(s) beside it (daily/weekly,
+	   Wide/Theater), shared by Views Over Time and Most Viewed Pages. */
+	.st .section-head {display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:0.5em;}
+	.st .section-head h2 {flex:1 1 auto;}
+
 	/* Views Over Time (daily/weekly toggle) */
-	.st .timeseries-head {display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:0.5em;}
-	.st .timeseries-head h2 {flex:1 1 auto;}
 	.st .ts-toggle {display:flex;gap:0.4em;margin-bottom:0.6em;}
 	.st .ts-toggle-btn {font-size:0.82em;cursor:pointer;padding:0.4em 0.85em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
 	.st .ts-toggle-btn:hover {border-color:var(--accent);color:var(--accent);}
 	.st .ts-toggle-btn.active {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+
+	/* Wide / Theater: widens the whole stats card (#outer-container) so the chart and the
+	   Most Viewed Pages table have more room for their columns -- same two-step pattern as
+	   the video embeds' Wide/Theater toggle elsewhere on the site, just applied to the card's
+	   own max-width instead of a viewport-breakout (this card is already the outermost
+	   centered element, so no left/margin-left trick is needed). Buttons appear beside both
+	   section headings but share one state. Not persisted. */
+	.st .view-toggle {display:flex;gap:0.4em;margin-bottom:0.6em;}
+	.st .view-btn {font-size:0.82em;cursor:pointer;padding:0.4em 0.85em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.st .view-btn:hover {border-color:var(--accent);color:var(--accent);}
+	.st .view-btn[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	body.stats-wide .outer-container, body.stats-theater .outer-container {transition:max-width 0.25s ease;}
+	body.stats-wide .outer-container {max-width:min(94vw, 1700px);}
+	body.stats-theater .outer-container {max-width:100vw;}
 	.st .ts-wrap {position:relative;width:100%;aspect-ratio:640 / 220;margin-top:0.75em;}
 	.st .ts-wrap svg {position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
 	.st .ts-axis-label {font-size:7px;fill:rgba(0,0,0,0.6);}
@@ -625,11 +642,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<p class="updated-at" id="updatedAt">Loading stats&hellip;</p>
 
 		<section class="stats-section">
-			<div class="timeseries-head">
+			<div class="section-head">
 				<h2>Views Over Time</h2>
 				<div class="ts-toggle" id="tsToggle">
 					<button type="button" class="ts-toggle-btn active" data-ts="daily">Daily</button>
 					<button type="button" class="ts-toggle-btn" data-ts="weekly">Weekly</button>
+				</div>
+				<div class="view-toggle" data-view-toggle>
+					<button type="button" class="view-btn" data-view="wide" aria-pressed="false">Wide view</button>
+					<button type="button" class="view-btn" data-view="theater" aria-pressed="false">Theater view</button>
 				</div>
 			</div>
 			<div class="ts-wrap" id="tsChart">
@@ -640,7 +661,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</section>
 
 		<section class="stats-section">
-			<h2>Most Viewed Pages</h2>
+			<div class="section-head">
+				<h2>Most Viewed Pages</h2>
+				<div class="view-toggle" data-view-toggle>
+					<button type="button" class="view-btn" data-view="wide" aria-pressed="false">Wide view</button>
+					<button type="button" class="view-btn" data-view="theater" aria-pressed="false">Theater view</button>
+				</div>
+			</div>
 			<div class="table-wrap">
 				<table class="wide-table">
 					<thead id="topPagesHead">
@@ -755,7 +782,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=3" defer></script>
+	<script src="/stats/js/stats.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

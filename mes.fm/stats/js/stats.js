@@ -683,3 +683,24 @@ async function loadTimeSeries() {
 }
 
 loadTimeSeries();
+
+// Wide / Theater: widens the whole stats card so the chart and the Most Viewed Pages
+// table have more room. One shared state, controlled from either section's buttons
+// (both pairs stay in sync). Not persisted.
+let statsView = 'default';
+const viewBtns = document.querySelectorAll('[data-view-toggle] .view-btn');
+function applyStatsView() {
+  document.body.classList.toggle('stats-wide', statsView === 'wide');
+  document.body.classList.toggle('stats-theater', statsView === 'theater');
+  viewBtns.forEach(function (btn) {
+    const isActive = btn.dataset.view === statsView;
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    btn.textContent = isActive ? 'Default view' : (btn.dataset.view === 'wide' ? 'Wide view' : 'Theater view');
+  });
+}
+viewBtns.forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    statsView = statsView === btn.dataset.view ? 'default' : btn.dataset.view;
+    applyStatsView();
+  });
+});
