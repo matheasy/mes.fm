@@ -210,6 +210,7 @@
 				{ c: "℃", n: "degrees Celsius", k: "centigrade" },
 				{ c: "℉", n: "degrees Fahrenheit" },
 				{ c: "µ", n: "micro sign", k: "micron" },
+				{ c: "ℓ", n: "liter sign", k: "litre script small l ell", l: "\\ell" },
 				{ c: "Ω", n: "ohm sign", l: "\\Omega" },
 				{ c: "‰", n: "per mille", k: "per thousand" }
 			]
