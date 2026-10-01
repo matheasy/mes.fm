@@ -333,7 +333,32 @@
         "href": "https://odysee.com/@mestruth:9/Curt-Weldon-Muted-YouTube"
       }
     ],
-    "namedLinks": []
+    "namedLinks": [
+      {
+        "label": "Muted version",
+        "href": "https://youtu.be/ns2AlXigat8"
+      },
+      {
+        "label": "Unmuted version",
+        "href": "https://mes.fm/curt-weldon-firefighters-911-dustification"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35606"
+      },
+      {
+        "label": "More links",
+        "href": "https://mes.fm/911"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35601"
+      },
+      {
+        "label": "More links",
+        "href": "https://mes.fm/911"
+      }
+    ]
   },
   "https://mes.fm/curt-weldon-firefighters-911-dustification": {
     "image": "https://snipboard.io/PUDT5u.jpg",
