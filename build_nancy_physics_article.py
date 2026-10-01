@@ -22,6 +22,7 @@ SLUG = "hutchison-nancy-physics-system"
 OUT = os.path.join(MES, SLUG, "index.html")
 TEMPLATE = os.path.join(MES, "vector-functions-problems-plus", "index.html")
 
+PDF_URL = "https://drive.google.com/file/d/1DM_0R2QKx2Rkl8TJ_d8zy3HdmvZ42uku/view?usp=drive_link"
 TITLE = "John Hutchison and the Physics of the System"
 DESC = ("Nancy Hutchison's report comparing John Hutchison's reflective RF, interferometer and high-voltage "
         "apparatus with the Project's physics of reflection, return and phase.")
@@ -157,7 +158,7 @@ def build():
 
     <h1>{esc(TITLE)}</h1>
     <div class="page-subtitle">{esc(data["tagline"])}</div>
-    <div class="byline">Report by Nancy Hutchison &middot; Final Draft 7 &middot; September 2026</div>
+    <div class="byline">Report by Nancy Hutchison &middot; Final Draft 7 &middot; September 2026 &middot; <a href="{PDF_URL}" target="_blank" rel="noopener">Download the original PDF</a></div>
 
     <details class="toc-mobile">
       <summary>Jump to section</summary>
@@ -179,7 +180,8 @@ def build():
     T = sub1(r'    <hr>\n\n    <a class="source-link".*?</div>\n(?=    <div id="footer")',
              '    <hr>\n\n    <div class="source-note">Report by Nancy Hutchison, <i>John Hutchison and the Physics of the System</i> '
              '(Final Draft 7, September 2026). Converted from the original PDF to a web article with the equations typeset '
-             'in LaTeX; the wording is unchanged. <a href="https://mes.fm/hutchison">More on the Hutchison Effect &rarr;</a></div>\n', T)
+             'in LaTeX; the wording is unchanged. <a href="' + PDF_URL + '" target="_blank" rel="noopener">Download the original PDF &rarr;</a> &middot; '
+             '<a href="https://mes.fm/hutchison">More on the Hutchison Effect &rarr;</a></div>\n', T)
 
     # ---- drop the video/playlist machinery this page doesn't use
     T = sub1(r'  <script>\s*// playlist-view-toggle.*?</script>\n\n', "", T)
