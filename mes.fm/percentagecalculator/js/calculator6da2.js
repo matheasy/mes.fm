@@ -524,18 +524,17 @@ $(document).ready(function(){
 		}
 
 		var svg = function (d) { return '<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="' + d + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; };
-		var CHEV_UP = svg('M2 8l4-4 4 4'), CHEV_DOWN = svg('M2 4l4 4 4-4');
-		// "fold" icon: two chevrons pointing in (collapse) or out (expand), so it can't be mistaken for the move arrows
-		var FOLD_IN = svg('M2 1.5l4 3 4-3M2 10.5l4-3 4 3'), FOLD_OUT = svg('M2 4.5l4-3 4 3M2 7.5l4 3 4-3');
+		// drag handle: two columns of three dots
+		var GRIP = '<svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true"><g fill="currentColor"><circle cx="4" cy="2.5" r="1.25"/><circle cx="8" cy="2.5" r="1.25"/><circle cx="4" cy="6" r="1.25"/><circle cx="8" cy="6" r="1.25"/><circle cx="4" cy="9.5" r="1.25"/><circle cx="8" cy="9.5" r="1.25"/></g></svg>';
+		// "fold" icon: one chevron, up while the calculation is open (click to collapse) and down once it is collapsed
+		var FOLD_IN = svg('M2 8l4-4 4 4'), FOLD_OUT = svg('M2 4l4 4 4-4');
 
 		function el(id) { return document.getElementById(id); }
 
 		function build(eq) {
 			var bar = document.createElement('div');
 			bar.className = 'pc-eq-tools pc-move';
-			bar.innerHTML =
-				'<button type="button" class="pc-tool pc-up" title="Move up" aria-label="Move this calculation up">' + CHEV_UP + '</button>' +
-				'<button type="button" class="pc-tool pc-down" title="Move down" aria-label="Move this calculation down">' + CHEV_DOWN + '</button>';
+			bar.innerHTML = '<button type="button" class="pc-tool pc-grip" title="Drag to reorder" aria-label="Reorder this calculation: drag, or use the up and down arrow keys">' + GRIP + '</button>';
 			var fold = document.createElement('div');
 			fold.className = 'pc-eq-tools pc-fold';
 			fold.innerHTML = '<button type="button" class="pc-tool pc-toggle"></button>';
@@ -548,8 +547,12 @@ $(document).ready(function(){
 			sum.innerHTML = '<span class="pc-summary-text"></span>';
 			sum.querySelector('.pc-summary-text').textContent = label(eq);
 			eq.insertBefore(sum, fold.nextSibling);
-			bar.querySelector('.pc-up').addEventListener('click', function () { move(eq.id, -1, '.pc-up'); });
-			bar.querySelector('.pc-down').addEventListener('click', function () { move(eq.id, 1, '.pc-down'); });
+			var grip = bar.querySelector('.pc-grip');
+			grip.addEventListener('pointerdown', function (e) { startDrag(eq, grip, e); });
+			grip.addEventListener('keydown', function (e) {
+				if (e.key === 'ArrowUp') { e.preventDefault(); move(eq.id, -1, '.pc-grip'); }
+				else if (e.key === 'ArrowDown') { e.preventDefault(); move(eq.id, 1, '.pc-grip'); }
+			});
 			fold.querySelector('.pc-toggle').addEventListener('click', function () { setCollapsed(eq.id, !isCollapsed(eq.id)); });
 			sum.addEventListener('click', function () { setCollapsed(eq.id, false); });
 		}
@@ -569,8 +572,6 @@ $(document).ready(function(){
 				t.title = c ? 'Expand' : 'Collapse';
 				t.setAttribute('aria-label', (c ? 'Expand' : 'Collapse') + ' this calculation');
 				t.setAttribute('aria-expanded', c ? 'false' : 'true');
-				eq.querySelector('.pc-up').disabled = i === 0;
-				eq.querySelector('.pc-down').disabled = i === state.order.length - 1;
 			});
 			var all = state.collapsed.length === DEFAULT.length;
 			var b = document.getElementById('pc-collapse-all');
@@ -587,6 +588,56 @@ $(document).ready(function(){
 			save(); paint();
 			var b = el(id).querySelector(focusSel);
 			if (b && !b.disabled) b.focus(); else el(id).querySelector('.pc-toggle').focus();
+		}
+
+		// Drag a calculation by its handle (mouse, touch or pen). The card follows the pointer: whichever
+		// slot the pointer is over, the card takes, and the order is saved when it is released.
+		function startDrag(eq, grip, e) {
+			if (e.pointerType === 'mouse' && e.button !== 0) return;
+			e.preventDefault();
+			var pid = e.pointerId, lastY = e.clientY, raf = 0, active = true;
+			eq.classList.add('pc-dragging');
+			parent.classList.add('pc-sorting');
+
+			function place() {
+				var others = state.order.filter(function (id) { return id !== eq.id; });
+				var idx = 0;
+				others.forEach(function (id) {
+					var r = el(id).getBoundingClientRect();
+					if (lastY > r.top + r.height / 2) idx++;
+				});
+				var next = others.slice();
+				next.splice(idx, 0, eq.id);
+				if (next.join() !== state.order.join()) { state.order = next; paint(); }
+			}
+			function tick() {
+				if (!active) return;
+				var edge = 70, speed = 0;
+				if (lastY < edge) speed = -Math.ceil((edge - lastY) / 5);
+				else if (lastY > window.innerHeight - edge) speed = Math.ceil((lastY - (window.innerHeight - edge)) / 5);
+				if (speed) { window.scrollBy(0, speed); place(); }
+				raf = requestAnimationFrame(tick);
+			}
+			// Listen on the window, not the handle: re-ordering re-inserts the dragged card into the page, and the
+			// browser drops pointer capture from an element that is moved, which ended the drag after one slot.
+			function onMove(ev) { if (ev.pointerId !== pid) return; lastY = ev.clientY; place(); }
+			function end(ev) {
+				if (!active || (ev && ev.pointerId !== undefined && ev.pointerId !== pid)) return;
+				active = false;
+				cancelAnimationFrame(raf);
+				window.removeEventListener('pointermove', onMove, true);
+				window.removeEventListener('pointerup', end, true);
+				window.removeEventListener('pointercancel', end, true);
+				window.removeEventListener('blur', end);
+				eq.classList.remove('pc-dragging');
+				parent.classList.remove('pc-sorting');
+				save(); paint();
+			}
+			window.addEventListener('pointermove', onMove, true);
+			window.addEventListener('pointerup', end, true);
+			window.addEventListener('pointercancel', end, true);
+			window.addEventListener('blur', end);
+			raf = requestAnimationFrame(tick);
 		}
 
 		function setCollapsed(id, c) {

@@ -245,6 +245,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.pc-tool svg {width:15px;height:15px;}
 	.pc-tool:hover:not(:disabled) {background:rgba(20,121,199,0.15);}
 	.pc-tool:disabled {opacity:0.25;cursor:default;}
+	.pc-grip {cursor:grab;touch-action:none;width:2em;height:2.4em;}
+	.pc-grip svg {width:18px;height:18px;}
+	.pc-sorting, .pc-sorting * {user-select:none;-webkit-user-select:none;cursor:grabbing !important;}
+	.pc-dragging .input-row, .pc-dragging .pc-summary {border-color:#1479c7;box-shadow:0 8px 22px rgba(0,0,0,0.28);}
 	.pc-tool:focus-visible, .pc-summary:focus-visible, .pc-link:focus-visible {outline:2px solid #1479c7;outline-offset:1px;}
 	.pc-summary {display:none;width:100%;margin:0 0 1em 0;padding:0.75em 1em 0.75em 1em;text-align:left;font:inherit;color:inherit;cursor:pointer;background-color:#ededed;border:1px solid #cbcbcb;border-radius:0.5em;}
 	.pc-collapsed .pc-summary {display:block;}
