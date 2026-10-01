@@ -133,12 +133,14 @@ of HTML files individually:
   `build_sitemap.py` and `build_search_index.py`. The card thumbnail/og:image is `img/physics-of-the-system.jpg` (top of figure 1, 1200x630);
   `mes.fm/hutchison/link-meta.json` has its entry seeded by hand because the build can't scrape a page that isn't deployed yet.
 
-- `add_toc_flip.py` — options for the fixed "Jump to" sidebar (`<nav class="toc-sidebar">`, >=1300px): a row of pills under its title —
-  **⇄ Side** (other side of the article), **↔ Wide** (article column up to 1100px, `--toc-w` in `toc-flip.css`; the sidebar moves out with
-  it instead of hiding, and shrinks back to 760px on screens too narrow to fit both) and **Hide ›** (sidebar collapses to a "‹ Jump to"
+- `add_toc_flip.py` — options for the fixed "Jump to" sidebar (`<nav class="toc-sidebar">`, >=1300px): pills under its title —
+  **⇄ Side** (other side of the article) and **Hide ›**, plus **↔ Wide / Narrow** at the top right of the article (own right-aligned row above
+  the `<h1>`, like the calculator pages' pill, so it stays reachable while the sidebar is hidden; it falls back into the sidebar row if a page has no
+  `.container > h1`): Wide = (article column up to 1100px, `--toc-w` in `toc-flip.css`; the sidebar moves out with
+  it instead of hiding, and shrinks back to 760px on screens too narrow to fit both); Hide = (sidebar collapses to a "‹ Jump to"
   tab where it was; click to restore; `jump-to.js` then offers its floating-bar button). Preferences are the "More like this" pages' own
   (`asideSide`, `pageWide`) plus `tocHidden`, restored before first paint by the `TOC-FLIP-HEAD` inline script (so Wide on a calculator
-  carries over to the Jump-to pages and back). Files: `main_js/toc-flip.css` + `main_js/toc-flip.js` (`?v=2`). The script (re)writes the
+  carries over to the Jump-to pages and back). Files: `main_js/toc-flip.css` + `main_js/toc-flip.js` (`?v=4`). The script (re)writes the
   head block and script tag on the 12 pages that really contain the nav (cubic-formula, ferrocell, hutchison-tom-sky, moon,
   norman-patricia, vector-functions-problems-plus, the Nancy physics report) *and* their `build.mjs`, so it also upgrades older
   versions; the math/911/hutchison/livestreams hubs only carry the sidebar's CSS, not the nav, so they are skipped. New pages cloned from the

@@ -12,7 +12,7 @@ vector-functions-problems-plus shell (build_nancy_physics_article.py) inherit it
 Idempotent (TOC-FLIP-HEAD marker)."""
 import sys, pathlib, re
 ROOT = pathlib.Path(__file__).resolve().parent
-V = "2"
+V = "4"
 RESTORE = ("try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');"
            "if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}")
 HEAD = ('<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=' + V + '"><script>' + RESTORE + '</script><!-- /TOC-FLIP-HEAD -->\n')

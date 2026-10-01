@@ -1,8 +1,8 @@
-/* Options for the fixed "Jump to" sidebar TOC (.toc-sidebar): a small row of pills under its title -- Side (move it to the other
-   side of the article), Wide (widen the article column; the sidebar moves out with it) and Hide (the sidebar collapses to a
-   "Jump to" tab where it was; click the tab to bring it back). Saved in localStorage ("asideSide", "pageWide" -- both shared with
-   the "More like this" pages -- and "tocHidden"), restored before first paint by the inline script in <head> (add_toc_flip.py);
-   layout rules: main_js/toc-flip.css. */
+/* Options for the fixed "Jump to" sidebar TOC (.toc-sidebar): pills under its title -- Side (move it to the other side of the
+   article) and Hide (collapse the sidebar to a "Jump to" tab where it was; click the tab to bring it back) -- plus a Wide / Narrow
+   pill at the top right of the article, before the <h1> (the same spot as on the calculator pages). Wide widens the article column and
+   the sidebar moves out with it. Saved in localStorage ("asideSide", "pageWide" -- both shared with the "More like this" pages --
+   and "tocHidden"), restored before first paint by the inline script in <head> (add_toc_flip.py); layout: main_js/toc-flip.css. */
 (function () {
     "use strict";
     var nav = document.querySelector(".toc-sidebar");
@@ -26,6 +26,7 @@
         save("pageWide", root.classList.toggle("page-wide") ? "1" : "0");
         paint();
     });
+    wide.className = "toc-wide-pill"; /* lives at the top right of the article (before the <h1>), like the calculator pages' Wide button */
     var hide = pill("Hide &#8250;", "Hide this sidebar", function () {
         root.classList.add("toc-hidden");
         save("tocHidden", "1");
@@ -38,7 +39,14 @@
         wide.title = on ? "Back to the standard width" : "Widen the page";
     }
     paint();
-    tools.appendChild(side); tools.appendChild(wide); tools.appendChild(hide);
+    tools.appendChild(side); tools.appendChild(hide);
+    var h1 = document.querySelector(".container > h1");
+    if (h1) {
+        var row = document.createElement("div");
+        row.className = "toc-wide-row";
+        row.appendChild(wide);
+        h1.parentNode.insertBefore(row, h1);
+    } else tools.insertBefore(wide, hide); /* no title to sit beside: keep it in the sidebar */
     var header = nav.querySelector(".toc-sidebar-header") || (nav.querySelector(".toc-title") || {}).parentNode;
     if (header && header !== nav) header.parentNode.insertBefore(tools, header.nextSibling);
     else (nav.querySelector(".toc-title") || nav.firstChild).insertAdjacentElement("afterend", tools);

@@ -12,9 +12,17 @@ html.page-wide { --toc-w: max(760px, min(1100px, calc(100vw - 520px))); }  /* ar
 :is(body.dark-mode, body.dark) .toc-tools button { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
 :is(body.dark-mode, body.dark) .toc-tools button:hover, :is(body.dark-mode, body.dark) .toc-tools button[aria-pressed="true"] { background: #6cb6f5; color: #111; border-color: #6cb6f5; }
 .toc-reopen { display: none; }
+.toc-wide-pill, .toc-wide-row { display: none; }
 
 @media (min-width: 1300px) {
   .toc-tools { display: flex; }
+  /* Wide / Narrow: top right of the article, on the title row (same look as the calculator pages' pill) */
+  .toc-wide-row { display: flex; justify-content: flex-end; margin: .7em 0 -.5em; }
+  .toc-wide-pill { display: inline-flex; align-items: center; gap: .35em; padding: .28em .8em; border: 1px solid #b9c2cc;
+    border-radius: 999px; background: #fff; color: #1479c7; font: inherit; font-size: .82em; line-height: 1.2; cursor: pointer; }
+  .toc-wide-pill:hover, .toc-wide-pill[aria-pressed="true"] { background: #1479c7; color: #fff; border-color: #1479c7; }
+  :is(body.dark-mode, body.dark) .toc-wide-pill { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
+  :is(body.dark-mode, body.dark) .toc-wide-pill:hover, :is(body.dark-mode, body.dark) .toc-wide-pill[aria-pressed="true"] { background: #6cb6f5; color: #111; border-color: #6cb6f5; }
   /* sidebar sits just outside the article column, whatever its width */
   html .toc-sidebar { left: calc(50% + var(--toc-w) / 2 + 30px); }
   html.aside-left .toc-sidebar { left: auto; right: calc(50% + var(--toc-w) / 2 + 30px); padding-right: 0; padding-left: 10px; }

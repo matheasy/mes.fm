@@ -1540,7 +1540,7 @@ ${leadingHtml}
       setTimeout(go, 15000);
     })();
     </script>
-<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=2"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
+<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=4"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
 </head>
 <body class="dark">
 
@@ -2148,7 +2148,7 @@ ${bodyHtml}
     update();
   })();
 </script>
-<script src="/main_js/site-search.js?v=1" defer></script><script src="/main_js/toc-flip.js?v=2" defer></script></body>
+<script src="/main_js/site-search.js?v=1" defer></script><script src="/main_js/toc-flip.js?v=4" defer></script></body>
 </html>
 `;
 }
