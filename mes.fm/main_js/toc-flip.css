@@ -1,0 +1,14 @@
+/* Left/right switch for the fixed "Jump to" sidebar (.toc-sidebar). Same saved preference as the
+   "More like this" column (localStorage "asideSide" -> html.aside-left), so one choice applies everywhere.
+   Behaviour: main_js/toc-flip.js. Patched into pages by add_toc_flip.py. */
+.toc-flip { display: none; flex: 0 0 auto; width: 1.9em; height: 1.9em; padding: 0; border: 1px solid #b9c2cc; border-radius: 50%;
+  background: #fff; color: #1479c7; font-size: .95em; line-height: 1; cursor: pointer; font-family: inherit; opacity: 1 !important; }
+.toc-flip:hover { background: #1479c7; color: #fff; }
+:is(body.dark-mode, body.dark) .toc-flip { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
+:is(body.dark-mode, body.dark) .toc-flip:hover { background: #6cb6f5; color: #111; }
+.toc-head-left { display: flex; align-items: center; gap: .55em; }
+@media (min-width: 1300px) {
+  .toc-flip { display: inline-flex; align-items: center; justify-content: center; }
+  /* sidebar on the left of the article: its right edge sits where the right-hand one's left edge did */
+  html.aside-left .toc-sidebar { left: auto; right: calc(50% + 410px); padding-right: 0; padding-left: 10px; }
+}

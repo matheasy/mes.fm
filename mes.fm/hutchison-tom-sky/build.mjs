@@ -964,6 +964,7 @@ ${leadingHtml}
       setTimeout(go, 15000);
     })();
     </script>
+<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=1"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
 </head>
 <body class="dark">
   <nav class="toc-sidebar" aria-label="Table of contents">
@@ -1330,7 +1331,7 @@ ${bodyHtml}
       applyTransform();
     })();
   </script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script>
-</body>
+<script src="/main_js/toc-flip.js?v=1" defer></script></body>
 </html>
 `;
 }
