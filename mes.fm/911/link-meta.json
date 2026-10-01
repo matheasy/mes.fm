@@ -309,6 +309,32 @@
       }
     ]
   },
+  "https://mes.fm/curt-weldon-911-dew-muted": {
+    "image": "https://mes.fm/curt-weldon-911-dew-muted/img/poster.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mestruth/youtube-reinstated-my-curt-652"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtu.be/hr7SAWmU-oM"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/v7g96pq-youtube-reinstated-my-curt-weldon-video-after-muting-the-hate-speech-part-.html"
+      },
+      {
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/video/4bmuOxAAXylx"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mestruth:9/Curt-Weldon-Muted-YouTube"
+      }
+    ],
+    "namedLinks": []
+  },
   "https://mes.fm/curt-weldon-firefighters-911-dustification": {
     "image": "https://snipboard.io/PUDT5u.jpg",
     "watchLinks": [
@@ -828,6 +854,10 @@
     "image": "https://mes.fm/youtube-removed-curt-weldon-911/img/youtube-removed-curt-weldon-911-1.png",
     "watchLinks": [],
     "namedLinks": [
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35602"
+      },
       {
         "label": "Video",
         "href": "https://mes.fm/curt-weldon-firefighters-911-dustification"
