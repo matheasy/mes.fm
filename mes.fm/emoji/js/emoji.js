@@ -60,10 +60,11 @@
 				{ c: "😐", n: "neutral face" },
 				{ c: "😑", n: "expressionless face" },
 				{ c: "😶", n: "face without mouth" },
+				{ c: "🤐", n: "zipper-mouth face", k: "zip shut up secret mouth closed" },
 				{ c: "😏", n: "smirking face", k: "smirk" },
 				{ c: "😒", n: "unamused face" },
 				{ c: "🙄", n: "face with rolling eyes", k: "eye roll" },
-				{ c: "😬", n: "grimacing face" },
+				{ c: "😬", n: "grimacing face", k: "grin smile teeth awkward cringe nervous" },
 				{ c: "🤥", n: "lying face", k: "pinocchio" }
 			]
 		},
