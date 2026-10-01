@@ -46,7 +46,7 @@ const PAGES = [
     slug: "science-videos",
     sectionId: "science-videos",
     tileLabel: "Videos",
-    iconVersion: 1, // icon = crop of the newest video's thumbnail; bump when you refresh img/science-videos-icon.jpg
+    iconVersion: 2, // icon = crop of the newest video's thumbnail; bump when you refresh img/science-videos-icon.jpg
     title: "MES Science Videos",
     description:
       "MES science video playlists: #MESScience, science and physics videos, vortex math, an overview of biology and a review of the COVID-19 virus isolation paper.",
