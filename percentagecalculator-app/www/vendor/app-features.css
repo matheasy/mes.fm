@@ -151,3 +151,32 @@ html[data-theme="dark"] .pc-chip-open,
 html[data-theme="dark"] .pc-chip-del { color: #5aa9e6; }
 html[data-theme="dark"] .pc-chip-open:hover,
 html[data-theme="dark"] .pc-chip-del:hover { background: #1b2228; }
+
+/* ---------- collapsed calculation rows (app) ---------- */
+/* The page's own dark rule keys off body.dark-mode, but the app themes with
+   html[data-theme="dark"], so the collapsed summary stayed light grey with
+   light text. Give it the same dark card as an open row. */
+html[data-theme="dark"] .pc-summary,
+html[data-theme="dark"] .page-content .pc-summary {
+    background-color: #23272b;
+    border-color: #3a4045;
+    color: #e6e9ec;
+}
+html[data-theme="dark"] .page-content .pc-summary * { color: #e6e9ec; }
+html[data-theme="dark"] .pc-tool { color: #5aa9e6; }
+html[data-theme="dark"] .pc-tool:hover:not(:disabled) { background: rgba(90, 169, 230, 0.2); }
+html[data-theme="dark"] .pc-fold,
+html[data-theme="dark"] .pc-fold svg { color: #5aa9e6; }
+
+/* The reorder arrows were centred on the whole .equation, which also holds
+   the label field when Labels is on, so a collapsed row's arrows landed on
+   its bottom edge. Pin them to the top of the summary instead, level with
+   the fold chevron, and keep the summary tall enough to hold them. */
+.pc-collapsed .pc-move { top: 0.55em; transform: none; }
+.pc-collapsed .pc-summary { min-height: 3.1em; }
+
+/* ---------- page titles (app) ---------- */
+/* The site CSS sets .page-title to font-weight:100. Android's WebView maps
+   that to Roboto Thin, which is hard to read at this size (worse in dark
+   mode). Use a semi-bold so the heading reads as a heading on both apps. */
+.page-title { font-weight: 600; }

@@ -232,17 +232,21 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 	/* PC-LAYOUT: per-calculation collapse + reorder controls (js/calculator6da2.js) */
 	.equation {position:relative;}
-	.equation .input-row {padding-left:2.3em;padding-right:2.3em;}
+	.equation .input-row {padding-left:0.8em;padding-right:0.8em;}
+	.pc-customizing .equation .input-row {padding-left:2.3em;padding-right:2.3em;}
 	.pc-eq-tools {position:absolute;top:50%;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;gap:0.1em;}
-	.pc-move {left:0.3em;}
-	.pc-fold {right:0.3em;top:0.55em;transform:none;}
+	.pc-move {left:0.3em;display:none;}
+	.pc-customizing .pc-move {display:flex;}
+	.pc-fold {right:0.3em;top:0.55em;transform:none;display:none;}
+	.pc-customizing .pc-fold {display:flex;}
 	.pc-tool {display:flex;align-items:center;justify-content:center;width:1.6em;height:1.6em;padding:0;border:0;border-radius:0.3em;background:transparent;color:#1479c7;line-height:1;cursor:pointer;}
 	.pc-tool svg {width:15px;height:15px;}
 	.pc-tool:hover:not(:disabled) {background:rgba(20,121,199,0.15);}
 	.pc-tool:disabled {opacity:0.25;cursor:default;}
 	.pc-tool:focus-visible, .pc-summary:focus-visible, .pc-link:focus-visible {outline:2px solid #1479c7;outline-offset:1px;}
-	.pc-summary {display:none;width:100%;margin:0 0 1em 0;padding:0.75em 2.6em 0.75em 4.2em;text-align:left;font:inherit;color:inherit;cursor:pointer;background-color:#ededed;border:1px solid #cbcbcb;border-radius:0.5em;}
+	.pc-summary {display:none;width:100%;margin:0 0 1em 0;padding:0.75em 1em 0.75em 1em;text-align:left;font:inherit;color:inherit;cursor:pointer;background-color:#ededed;border:1px solid #cbcbcb;border-radius:0.5em;}
 	.pc-collapsed .pc-summary {display:block;}
+	.pc-customizing .pc-summary {padding-left:4.2em;padding-right:2.6em;}
 	.pc-collapsed .input-row {display:none;}
 	.pc-collapsed .pc-move {top:calc(50% - 0.5em);}
 	.pc-collapsed .pc-move {flex-direction:row;}
