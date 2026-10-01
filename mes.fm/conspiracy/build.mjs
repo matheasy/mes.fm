@@ -1,46 +1,60 @@
-// Build-time generator for the "Posts" and "Videos" sections of
-// mes.fm/conspiracy.
+// Build-time generator for mes.fm/conspiracy ("MES Conspiracy") and its section pages.
 //
-// Unlike mes.fm/911 or mes.fm/hutchison, this page is NOT a mirrored Hive
-// post -- it's a hand-authored link hub. This script only regenerates the
-// Posts/Videos thumbnail-card grids (scraping each linked page's og: tags,
-// same treatment as mes.fm/911's Posts/Videos); everything else on the page
-// (the flat link list, ad scripts, theme toggle, footer) lives in the
-// STATIC_HTML template below and should be hand-edited directly.
+// Cloned from mes.fm/911/build.mjs: mes.fm/conspiracy is a tile hub (Posts, Videos) like mes.fm/911 and
+// mes.fm/hutchison. The content lives in sections.mjs (hand-maintained, newest first).
 //
-// This is NOT run by Vercel -- run it manually (`npm run build`) whenever you
-// add a Post/Video or want to refresh thumbnails/excerpts, then commit the
-// regenerated index.html.
+// Pages written (see PAGES): the hub mes.fm/conspiracy/index.html plus mes.fm/{conspiracy-posts,
+// conspiracy-videos}/index.html. Never hand-edit those generated files.
+//
+// Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600), a crop of each section's newest thumbnail --
+// replace the file (same name) with custom art whenever, no rebuild needed.
 //
 // Usage:
-//   npm install
 //   npm run build
 
-import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { SECTIONS, IMPORTANT_LINKS_HTML } from "./sections.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Committed cache of link metadata scraped from each Posts/Videos card target
-// (see resolveAllMeta). Kept in git so a later build still has thumbnails and
-// excerpts even if a source host is briefly unreachable.
+// Committed cache of scraped {image, watchLinks} per item URL. Kept in git so
+// a later build still has thumbnails/links if a source page is briefly
+// unreachable.
 const META_CACHE_PATH = join(__dirname, "link-meta.json");
 
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+// Output layout: mes.fm/911 is a tile hub (one icon tile per section, each linking to its own page); each
+// section then lives at mes.fm/<slug> with the Grid View / List View toggle. `sectionId` matches an `id` in
+// sections.mjs; `title` is the page's <h1>/<title> and `tileLabel` the (shorter) text overlaid on the hub tile.
+const HUB_TITLE = "MES Conspiracy";
+const HUB_DESCRIPTION =
+  "MES Conspiracy: alt-news checkups, videos and mirrored posts on conspiracies investigated by MES, including war psyops, UFO disclosure, mass shootings, crop circles and more.";
+
+const PAGES = [
+  {
+    slug: "conspiracy-posts",
+    sectionId: "conspiracy-posts",
+    tileLabel: "Posts",
+    iconVersion: 1, // icon = crop of the newest post's thumbnail; bump when you refresh img/conspiracy-posts-icon.jpg
+    title: "MES Conspiracy Posts",
+    description:
+      "MES conspiracy posts, newest first: alt-news checkups, UFO disclosure drama, Iran war psyops, humanoid robot soldiers, Illuminati hands and more.",
+  },
+  {
+    slug: "conspiracy-videos",
+    sectionId: "conspiracy-videos",
+    tileLabel: "Videos",
+    iconVersion: 1, // icon = crop of the newest video's thumbnail; bump when you refresh img/conspiracy-videos-icon.jpg
+    title: "MES Conspiracy Videos",
+    description:
+      "MES conspiracy videos: disinfo agents as energy vampires, Stephen A. Smith's presidential bid, the one-armed twin in Star Wars, 9/11 and The Matrix, and Ashton Forbes' letter.",
+  },
+];
 
 // ---------------------------------------------------------------------------
-// Topic-homepage card grid — shared treatment (fetchMeta / resolveAllMeta /
-// buildCardGrid + the .card-grid/.link-card CSS in the template below). Kept
-// in sync with the identical block in mes.fm/911/build.mjs and
-// mes.fm/hutchison/build.mjs.
+// Scraping: og:image / "Watch on: ..." row per item, with a committed cache.
 // ---------------------------------------------------------------------------
 
 function loadMetaCache() {
@@ -53,9 +67,7 @@ function loadMetaCache() {
 }
 
 function saveMetaCache(cache) {
-  const sorted = Object.fromEntries(
-    Object.keys(cache).sort().map((k) => [k, cache[k]])
-  );
+  const sorted = Object.fromEntries(Object.keys(cache).sort().map((k) => [k, cache[k]]));
   writeFileSync(META_CACHE_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
 }
 
@@ -63,78 +75,131 @@ function decodeEntities(str) {
   return str
     .replace(/&amp;/g, "&")
     .replace(/&#39;/g, "'")
-    .replace(/&#x27;/gi, "'")
     .replace(/&quot;/g, '"')
     .replace(/&rsquo;/g, "’")
-    .replace(/&lsquo;/g, "‘")
-    .replace(/&ldquo;/g, "“")
-    .replace(/&rdquo;/g, "”")
-    .replace(/&mdash;/g, "—")
-    .replace(/&ndash;/g, "–")
-    .replace(/&nbsp;/g, " ")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">");
 }
 
-// Pull one <meta property="og:*"> (or name="...") content value out of raw HTML,
-// tolerating either attribute order. Regex-based, matching the repo's other
-// HTML-repair scripts (no DOM parser dependency).
+// Backreference-matched quotes (not a naive ["'] class) so a content value
+// containing the *other* quote character doesn't truncate the match.
 function readMetaTag(html, prop) {
   const p = prop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  // Match each quoted value to its own opening quote (\2 backreference) so a
-  // literal apostrophe inside a double-quoted content="..." doesn't truncate it.
-  const patterns = [
-    new RegExp(`<meta[^>]+(?:property|name)=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"),
-    new RegExp(`<meta[^>]+\\bcontent=(["'])([\\s\\S]*?)\\1[^>]*(?:property|name)=(["'])${p}\\3`, "i"),
-  ];
-  for (let idx = 0; idx < patterns.length; idx++) {
-    const m = html.match(patterns[idx]);
-    if (m) return decodeEntities(idx === 0 ? m[3] : m[2]).trim();
-  }
-  return "";
+  const m = html.match(new RegExp(`<meta[^>]+property=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"));
+  return m ? decodeEntities(m[3]).trim() : "";
 }
 
-// Trailing "— Mirrored from the Hive blockchain…" style boilerplate that every
-// mirror page's og:description carries; drop it from the card excerpt.
-// The separator before it can be a dash or a comma ("… bid, mirrored from the
-// Hive blockchain by MES."), so strip either, or a stray comma is left behind.
-function cleanExcerpt(text, maxLen = 150) {
-  let out = text
-    .replace(/\s*[-–—,;:]*\s*mirrored from the hive blockchain.*$/i, "")
-    .replace(/\s*[-–—,;:]*\s*mirrored from hive.*$/i, "")
-    .trim();
-  if (out.length > maxLen) {
-    const slice = out.slice(0, maxLen);
-    const lastSpace = slice.lastIndexOf(" ");
-    out = (lastSpace > 60 ? slice.slice(0, lastSpace) : slice).replace(/[.,;:!?–—-]+$/, "") + "…";
+// Pull every {label, href} pair out of a page's own `<li>Watch on: <a...>3Speak</a>
+// &middot; <a...>YouTube</a> ...</li>` source-list row. Only mes.fm-hosted
+// mirror pages have this markup -- a raw YouTube playlist page will simply
+// yield [] here, which is expected.
+function readWatchOnLinks(html) {
+  const m = html.match(/<li>\s*Watch on:([\s\S]*?)<\/li>/i);
+  if (!m) return [];
+  const linkRe = /<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
+  const links = [];
+  let lm;
+  while ((lm = linkRe.exec(m[1]))) {
+    links.push({ label: decodeEntities(lm[2]).trim(), href: lm[1] });
   }
-  return out;
+  return links;
 }
 
-async function fetchMeta(url) {
+// Some mes.fm mirror pages (e.g. math-qa-71-stats, a plain stats-screen
+// post with no "Watch on:" video row at all) instead carry a source link
+// per line: `<li>Hive: <a href="...">...</a></li>`, `<li>Telegram:
+// <a href="...">...</a></li>`. Pulled out generically here; callers filter
+// to whichever labels they care about.
+function readNamedLinks(html) {
+  const re = /<li>\s*([A-Za-z ]+):\s*<a\s+href="([^"]+)"[^>]*>[^<]*<\/a>\s*<\/li>/g;
+  const links = [];
+  let m;
+  while ((m = re.exec(html))) {
+    links.push({ label: m[1].trim(), href: m[2] });
+  }
+  return links;
+}
+
+// peakd.com is a client-rendered SPA -- a plain fetch() only gets its
+// server-rendered <head> (og:image etc.), never the article body, so
+// readWatchOnLinks() above always finds nothing there. The real per-video
+// platform links still exist, in the underlying Hive post's raw markdown
+// (e.g. "[Watch on 3Speak](url) - [YouTube](url) - [Odysee](url) - ..."),
+// fetched straight from the Hive blockchain instead of peakd's own HTML.
+const PEAKD_URL_RE = /^https:\/\/peakd\.com\/(?:[^/]+\/)?@([^/]+)\/([^/?#]+)/;
+
+// Known video platforms -- used both to sort a List View row's links into
+// this canonical order and, below, to filter a Hive post's raw "Watch on"
+// markdown line down to just these (dropping trailing "[PDF notes]"/
+// "[Playlist]"/"[MES Links]" entries on the same line).
+const PLATFORM_ORDER = ["3Speak", "YouTube", "Telegram", "BitChute", "Odysee", "Rumble"];
+
+async function hiveCall(method, params) {
+  const res = await fetch("https://api.hive.blog", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
+  });
+  if (!res.ok) throw new Error(`Hive API request failed: HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(`Hive API error: ${JSON.stringify(data.error)}`);
+  return data.result;
+}
+
+// Matches "[Watch on 3Speak](url) - [YouTube](url) - [Odysee](url) - ..."
+// (MES's standard markdown watch-links line). The label of the first link
+// carries a "Watch on " prefix; every [label](url) pair in the next 900
+// characters is a candidate, filtered down to only the known video
+// platforms so trailing "[PDF notes]"/"[Playlist]"/"[MES Links]" entries on
+// the same line are dropped. A fixed (not paragraph-bounded) window: the
+// full line with every platform plus the PDF/playlist/MES-links extras can
+// run past 700 characters, and anchoring the end to the paragraph's "\n\n"
+// with a *lazy* quantifier made the whole match fail outright whenever that
+// boundary sat beyond the capped length (no shorter position satisfies it,
+// so the lazy expansion just runs out and backtracks to no match).
+function readWatchOnLinksMarkdown(markdown) {
+  const m = markdown.match(/\[Watch on ([^\]]+)\]\(([^)]+)\)([\s\S]{0,900})/i);
+  if (!m) return [];
+  const links = [{ label: m[1].trim(), href: m[2] }];
+  const restRe = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let rm;
+  while ((rm = restRe.exec(m[3]))) {
+    links.push({ label: rm[1].trim(), href: rm[2] });
+  }
+  return links.filter((l) => PLATFORM_ORDER.includes(l.label));
+}
+
+async function fetchPeakdWatchLinks(url) {
+  const m = url.match(PEAKD_URL_RE);
+  if (!m) return [];
+  const [, author, permlink] = m;
+  const post = await hiveCall("bridge.get_post", { author, permlink });
+  if (!post || !post.body) return [];
+  return readWatchOnLinksMarkdown(post.body);
+}
+
+async function fetchLinkMeta(url) {
   const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const html = await res.text();
+  const watchLinks = PEAKD_URL_RE.test(url) ? await fetchPeakdWatchLinks(url) : readWatchOnLinks(html);
   return {
     image: readMetaTag(html, "og:image"),
-    title: readMetaTag(html, "og:title"),
-    excerpt: cleanExcerpt(
-      readMetaTag(html, "og:description") || readMetaTag(html, "description")
-    ),
+    watchLinks,
+    namedLinks: readNamedLinks(html),
   };
 }
 
-// Fetch metadata for every card target with a small concurrency cap. A failed
-// fetch keeps whatever the committed cache already had for that URL.
-async function resolveAllMeta(entries, concurrency = 6) {
+async function resolveAllMeta(sections, concurrency = 8) {
   const cache = loadMetaCache();
-  const urls = entries.map((e) => e.href);
+  // Items with explicit `links` (see sections.mjs) and playlist lines need no scraping.
+  const urls = sections.flatMap((s) => s.items.filter((i) => !i.links && !i.standalone).map((i) => i.href));
   let i = 0;
   async function worker() {
     while (i < urls.length) {
       const url = urls[i++];
       try {
-        cache[url] = await fetchMeta(url);
+        cache[url] = await fetchLinkMeta(url);
         console.log(`  meta ok:   ${url}`);
       } catch (err) {
         console.warn(`  meta FAIL: ${url} (${err.message}) — using cached value`);
@@ -146,361 +211,372 @@ async function resolveAllMeta(entries, concurrency = 6) {
   return cache;
 }
 
-// Some Hive image URLs carry an unescaped apostrophe in their filename (a
-// "#filename" fragment some old steemitimages.com uploads use), which would
-// otherwise prematurely close the quoted url('...') below and drop the whole
-// background-image. Percent-encode it so the string stays a valid CSS <url>.
+// Only these platforms, in this order -- anything else scraped (e.g.
+// math-qa-70-lorentz-force's own "Watch on:" row also lists Twitch) is
+// dropped rather than tacked on at the end.
+function sortWatchLinks(links) {
+  return PLATFORM_ORDER.map((label) => links.find((l) => l.label === label)).filter(Boolean);
+}
+
 function cssSafeUrl(url) {
   return String(url).split("'").join("%27");
 }
 
-// Render a link section as a responsive thumbnail-card grid.
-function buildCardGrid(id, label, entries, meta, cta = "Read more") {
-  const cards = entries
-    .map((entry) => {
-      const m = meta[entry.href] || {};
-      const title = entry.title || m.title || entry.href;
-      const thumbStyle = m.image
-        ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"`
-        : "";
-      const excerpt = m.excerpt
-        ? `<span class="link-card-excerpt">${escapeHtml(m.excerpt)}</span>`
-        : "";
-      return `<a class="link-card" href="${escapeHtml(entry.href)}">
-  <span class="link-card-thumb"${thumbStyle}></span>
-  <span class="link-card-body">
-    <span class="link-card-title">${escapeHtml(title)}</span>
-    ${excerpt}
-    <span class="link-card-readmore">${escapeHtml(cta)} &rarr;</span>
-  </span>
-</a>`;
+// Lazy-load remote thumbnails (mirrors optimize_pagespeed.py's transform_images
+// lazy-loading pass, part 5, applied to the whole generated page here so a
+// rebuild doesn't silently undo it): every <img> whose src is a non-mes.fm
+// http(s) URL gets loading="lazy", except the first "real" (non-data:) image
+// on the page, which stays eager so it doesn't delay LCP.
+const IMG_TAG_RE = /<img\b[^>]*?\/?>/gi;
+
+function imgAttr(tag, name) {
+  const m = tag.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, "i"));
+  return m ? m[1] : null;
+}
+
+function addImageLazyLoading(html) {
+  const imgs = [...html.matchAll(IMG_TAG_RE)];
+  if (imgs.length === 0) return html;
+
+  let firstReal = -1;
+  for (let idx = 0; idx < imgs.length; idx++) {
+    const s = imgAttr(imgs[idx][0], "src");
+    if (s && !s.trim().startsWith("data:")) {
+      firstReal = idx;
+      break;
+    }
+  }
+
+  let out = "";
+  let last = 0;
+  imgs.forEach((m, idx) => {
+    const tag = m[0];
+    let newTag = tag;
+    const src = imgAttr(tag, "src");
+    if (
+      src &&
+      idx !== firstReal &&
+      /^https?:\/\//i.test(src.trim()) &&
+      !src.includes("mes.fm") &&
+      !/\bloading\s*=/i.test(tag)
+    ) {
+      newTag = tag.replace(/^<img\b/i, '<img loading="lazy"');
+    }
+    out += html.slice(last, m.index) + newTag;
+    last = m.index + tag.length;
+  });
+  out += html.slice(last);
+  return out;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// Notes link first, then every scraped platform link (sorted), falling back
+// to the item's own hand-curated playlistHref as its "YouTube" entry only
+// when the scrape didn't already turn up a YouTube link of its own.
+// Notes link first, then every real per-video platform link the item's own
+// Hive post actually has (scraped by fetchLinkMeta -- from the page's own
+// "Watch on:" HTML row for a mes.fm mirror, or from the underlying Hive
+// post's raw markdown for a peakd article). No more falling back to a
+// hand-curated playlist link mislabeled as "YouTube" -- if the post has no
+// watch-on row, the List View row just shows Notes alone.
+function buildLinksForItem(item, meta) {
+  if (item.links) return item.links.map(([label, href]) => ({ label, href }));
+  const m = meta[item.href] || {};
+  const sorted = sortWatchLinks(m.watchLinks || []);
+  // An item whose own link is a YouTube video (a livestream not mirrored to
+  // mes.fm yet) is labeled "YouTube", not "Notes".
+  const primaryLabel = /^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)\//.test(item.href) ? "YouTube" : "Notes";
+  return [{ label: primaryLabel, href: item.href }, ...sorted];
+}
+
+// For extraViews items (see e.g. MES Math Q/A Livestreams' "Stats" view):
+// these are always mes.fm-hosted pages, so the item's own link is labeled
+// "MES" rather than "Notes", followed by whichever of its own named source
+// links (readNamedLinks -- "Hive:"/"Telegram:" list items, not a "Watch
+// on:" row) match this fixed label set, in this fixed order.
+const EXTRA_VIEW_LINK_ORDER = ["Hive", "Telegram"];
+function buildExtraViewLinksForItem(item, meta) {
+  const m = meta[item.href] || {};
+  const named = EXTRA_VIEW_LINK_ORDER.map((label) => (m.namedLinks || []).find((l) => l.label === label)).filter(
+    Boolean
+  );
+  return [{ label: "MES", href: item.href }, ...named];
+}
+
+// Where a card goes: the item's own href (mes.fm mirror pages), or for explicit-links items the
+// first mes.fm link, else the Hive/peakd link, else the first link in the row.
+function itemHref(item) {
+  if (item.href) return item.href;
+  const links = item.links || [];
+  const pick =
+    links.find(([, h]) => /^https?:\/\/(?:www\.)?mes\.fm\//.test(h)) ||
+    links.find(([, h]) => /^https?:\/\/peakd\.com\//.test(h)) ||
+    links[0];
+  return pick ? pick[1] : "#";
+}
+
+function itemImage(item, meta) {
+  return item.image || (meta[item.href] || {}).image || "";
+}
+
+function buildCard(item, meta) {
+  const image = itemImage(item, meta);
+  const href = itemHref(item);
+  const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(href);
+  const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
+  return `<a class="link-card" href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
+      <span class="link-card-thumb"${thumbStyle}></span>
+      <span class="link-card-body">
+        <span class="link-card-title">${escapeHtml(item.title)}</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>`;
+}
+
+function buildRow(item, meta, linksBuilder) {
+  const image = itemImage(item, meta);
+  const links = (linksBuilder || buildLinksForItem)(item, meta);
+  const linksHtml = links
+    .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
+    .join(" - ");
+  const imgHtml = image ? `<img class="list-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}">` : "";
+  return `<div class="list-row">
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${linksHtml}</p>
+      ${imgHtml}
+    </div>`;
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Renders one section's heading row + Grid View (default) / List View toggle,
+// plus any extraViews (see e.g. MES Math Q/A Livestreams' "Stats" view) as
+// further toggle buttons/panes. All views are pre-rendered at build time;
+// the client-side script just shows/hides whichever one is active (see the
+// view-toggle script at the bottom of buildPage). Items flagged `standalone`
+// (a whole-channel/whole-playlist link, not a single video/article) are
+// pulled out of the grid/list entirely and rendered as a plain link line
+// above the view-toggle buttons instead. extraViews items never appear in
+// Grid/List at all -- they exist only in their own pane.
+//
+// Each section now renders on its own page (see PAGES), so the collapsible
+// <h2> heading is dropped (the page's own <h1> already names it). A section
+// flagged `single` (one video/article only) skips the Grid/List toggle
+// entirely and renders just the List View row as a featured item.
+function buildSection(section, meta) {
+  const standaloneItems = section.standalone || [];
+  const cardItems = section.items;
+  // One line of links (icon + label, separated by dots) rather than one paragraph each, so the playlist and
+  // the troubleshooting notes sit side by side; external links open in a new tab.
+  const standaloneHtml = standaloneItems.length
+    ? `<p class="section-standalone-link">${standaloneItems
+        .map((item) => {
+          const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(item.href);
+          return `<a href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>${item.icon || "&#9654;&#65039;"} ${escapeHtml(item.title)}</a>`;
+        })
+        .join('<span class="standalone-sep">&middot;</span>')}</p>`
+    : "";
+  const cards = cardItems.map((item) => buildCard(item, meta)).join("\n    ");
+  const rows = cardItems.map((item) => buildRow(item, meta)).join("\n    ");
+  const listViewClass = section.compactList ? "list-view list-view--compact" : "list-view";
+
+  const extraViews = section.extraViews || [];
+  const extraButtons = extraViews
+    .map((view) => `<button type="button" class="view-toggle-btn" id="${section.id}${capitalize(view.id)}Btn">${escapeHtml(view.label)}</button>`)
+    .join("\n      ");
+  const extraPanes = extraViews
+    .map((view) => {
+      const extraRows = view.items.map((item) => buildRow(item, meta, buildExtraViewLinksForItem)).join("\n    ");
+      return `<div class="list-view list-view--compact view-hidden" id="${section.id}${capitalize(view.id)}">
+    ${extraRows}
+    </div>`;
     })
     .join("\n");
 
-  return `<div class="collapsible-section">
-<h2 class="chapter-toggle-header" onclick="toggleSubList('${id}')">${label} <span id="arrowIcon-${id}" class="arrow-icon">&#9660;</span></h2>
-<div id="${id}" class="card-grid collapsible">
-${cards}
-</div>
+  if (section.single) {
+    return `<div class="list-container">
+  <div id="${section.id}" class="section-body">
+  ${standaloneHtml}
+    <div class="list-view list-view--single" id="${section.id}List">
+    ${rows}
+    </div>
+  </div>
+</div>`;
+  }
+
+  return `<div class="list-container">
+  <div id="${section.id}" class="section-body">
+  ${standaloneHtml}
+    <div class="view-toggle">
+      <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
+      <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
+      ${extraButtons}
+    </div>
+    <div class="card-grid" id="${section.id}Grid">
+    ${cards}
+    </div>
+    <div class="${listViewClass} view-hidden" id="${section.id}List">
+    ${rows}
+    </div>
+${extraPanes}
+  </div>
 </div>`;
 }
 
-// "Posts" and "Videos" -- hand-maintained lists of mirrored mes.fm pages that
-// get added to whenever a new one is published. Add a { href, title } entry
-// at the TOP of the relevant list (newest first); the thumbnail + excerpt are
-// scraped from the target page's og: tags at build time and cached in
-// link-meta.json.
-const POSTS = [
-  { href: "https://mes.fm/alex-jones-steven-greer-live", title: "Alex Jones Teams Up with UFO Expert Steven Greer" },
-  { href: "https://mes.fm/humanoid-robot-soldiers-ukraine", title: "USA Delivers Humanoid Robot Soldiers to Ukraine" },
-  { href: "https://mes.fm/hands-dan-dicks-carney-bloomberg-connolly", title: "Illuminati Hands: Dan Dicks, Mark Carney, Mike Bloomberg, Catherine Connolly" },
-  { href: "https://mes.fm/trump-aliens-war-moon", title: "MES Alt-News Checkup — Trump Teaming Up with Aliens to Fight a War on the Moon?" },
-  { href: "https://mes.fm/alex-jones-ashton-forbes-clowns", title: "Ashton Forbes and Alex Jones Team Up to Become the Most Unstoppable Clownish Force" },
-  { href: "https://mes.fm/tim-pool-flat-earth-dave-clowns", title: "Tim Pool Interviews Flat Earth Dave — Not Even His Lowest Interview" },
-  { href: "https://mes.fm/ufo-iran-2026-1976", title: "UFO Spotted in Iran in September 2026 and 1976" },
-  { href: "https://mes.fm/bob-greenyer-con-man-subscriber", title: "Bob Greenyer's Subscriber Calls Him a Rich Fake Con Man" },
-  { href: "https://mes.fm/stock-market-vs-oil", title: "The Top 10 S&P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks" },
-  { href: "https://mes.fm/rudy-giuiliani-medal-cross-dress-trump", title: "Trump Gives Cross-Dressing BFF Rudy Giuliani a Presidential Medal of Freedom" },
-  { href: "https://mes.fm/swim-iran-nukes", title: "MES Goes Undercover to Check If Iran Built Underwater Mini-Nukes" },
-  { href: "https://mes.fm/eyesiswatchin-donate", title: "EyesIsWatchin Health Update" },
-  { href: "https://mes.fm/debt-military-iran-war", title: "Jerusalem Post: Forgive Debt to Enlist a Million Troops for an Iran Ground War" },
-  { href: "https://mes.fm/news-ww3-moon", title: "MES News Checkup — Has WW3 Started Already?" },
-  { href: "https://mes.fm/boy-dress-amputee-ad", title: "BC Children's Hospital Foundation Ad: A Brown Boy in a Dress with an Amputee Leg" },
-  { href: "https://mes.fm/bill-gates-ai-warning", title: "Jeffrey Epstein's Friend Bill Gates Warns of AI Gettin' Too Powerful" },
-  { href: "https://mes.fm/hyperliquid-flagged-address", title: "The Hyperliquid Crypto Exchange Flagged My Wallet Address" },
-  { href: "https://mes.fm/lightning-forest-fires", title: "Lightning Causin' Forest Fires" },
-];
+// Icon tile for the hub page: text-free thumbnail + real overlaid label,
+// same .icon-grid markup/CSS as mes.fm's homepage.
+function buildTile(page) {
+  const icon = `/img/${page.icon || page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}`;
+  return `<a class="icon-grid__link icon-grid__link--labeled" href="${page.href || `/${page.slug}`}"><span class="icon-grid__thumb" style="background-image:url('${icon}')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
+}
 
-const VIDEOS = [
-  { href: "https://mes.fm/energy-vampire", title: "Disinfo Agents Literally Are Energy Vampires 😂😅😳" },
-  { href: "https://mes.fm/president-stephen-a-smith", title: "Stephen A. Smith Possibly Alluding to His Presidential Bid" },
-  { href: "https://mes.fm/one-armed-twin", title: "Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix" },
-  { href: "https://mes.fm/ashton-forbes-letter", title: "Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself" },
-];
+function buildImportantLinks() {
+  return `<div class="hub-links">
+  <h2>Important Links</h2>
+${IMPORTANT_LINKS_HTML}
+</div>`;
+}
 
-function buildPage(meta) {
-  const postsGridHtml = buildCardGrid("posts", "Posts", POSTS, meta, "Read more");
-  const videosGridHtml = buildCardGrid("videos", "Videos", VIDEOS, meta, "Watch");
+// page: the hub ({ hub: true, slug: "conspiracy" }) or one entry of PAGES.
+function buildPage(meta, page) {
+  const isHub = !!page.hub;
+  const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
+  const sectionsHtml = isHub
+    ? `<div class="icon-grid">\n${PAGES.map(buildTile).join("\n")}\n</div>\n${buildImportantLinks()}`
+    : sections.map((s) => buildSection(s, meta)).join("\n\n");
+  const viewToggleWiring = sections
+    .filter((s) => !s.single)
+    .map((s) => {
+      const extraIds = (s.extraViews || []).map((v) => capitalize(v.id));
+      return `      wireViewToggle('${s.id}', ${JSON.stringify(extraIds)});`;
+    })
+    .join("\n");
+
+  const CANONICAL = `https://mes.fm/${page.slug}`;
+  const pageTitle = isHub ? HUB_TITLE : page.title;
+  const description = isHub ? HUB_DESCRIPTION : page.description;
+  const ogImage = isHub ? "https://mes.fm/img/conspiracy-logo-big.jpg" : `https://mes.fm/img/${page.icon || page.slug}-icon.jpg`;
+  const breadcrumbHtml = isHub
+    ? ""
+    : `<p class="page-breadcrumb"><a href="/conspiracy">&larr; MES Conspiracy</a></p>\n        `;
 
   return `
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
-  <link rel="canonical" href="https://mes.fm/conspiracy" />
+  <link rel="icon" href="https://mes.fm/img/conspiracy-logo.jpg?v=1.0" type="image/jpeg" />
+  <link rel="canonical" href="${CANONICAL}" />
+  <title>${escapeHtml(pageTitle)} | Math Easy Solutions</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="MES Conspiracy - Links, notes, and mirrored posts on conspiracy topics investigated by MES, including war psyops, mass shootings, crop circles, and more.">
-  <meta name="keywords" content="MES, Conspiracy, Math Easy Solutions">
-  <meta name="author" content="Mathiew Estepho">
-  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
-  <title>MES Conspiracy</title>
-  <style>
-    h1 {
-      text-align: center;
-      font-size: 3.2em;
-    }
+  <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}
+.hide {display:none;}
 
-    .page-header {
-      position: relative;
-      display: flex;
-      justify-content: center;
-    }
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#346689;text-decoration:underline; cursor:pointer;}
 
-    .page-header .theme-toggle-btn {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-    }
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
 
-    .arrow-icon {
-      font-size: 20px;
-      display: inline-block;
-      vertical-align: middle;
-      transition: transform 0.3s ease;
-    }
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#277bb6;}
+.social__text {display:block;margin-bottom:0.5em;}
+.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(/main_img/social-sprites.png) -18em 0;}
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
 
-    /* .card-grid (display:grid, defined further down) has the same specificity
-       as a bare .hidden and wins on source order, so the Posts/Videos grids never
-       actually collapsed. Two classes beat it. */
-    .hidden,
-    .collapsible.hidden {
-      display: none;
-    }
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:100;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
 
-    /* Section headers, as on mes.fm/hutchison and mes.fm/911: centred, click to
-       fold; the arrow shows the state (see toggleSubList() below). */
-    .chapter-toggle-header {
-      cursor: pointer;
-      text-align: center;
-      font-size: 1.5em;
-      margin: 1.2em 0 0.6em;
-    }
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#277bb6;border:0.125em solid #277bb6;}
 
-    .chapter-toggle-header .arrow-icon {
-      font-size: 0.6em;
-    }
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
 
-    /* Collapse/Expand All button, same look and place as mes.fm/hutchison's
-       .chapters-toolbar: right-aligned above the first section. */
-    .chapters-toolbar {
-      display: flex;
-      justify-content: flex-end;
-      margin: 0 0 0.4em;
-    }
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
 
-    .toggle-all-btn {
-      flex: 0 0 auto;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85em;
-      white-space: nowrap;
-    }
+.active-tab {background-color: #eef0ff;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color: #346689;}
 
-    body.light .toggle-all-btn { background-color: #dddddd; color: #000000; }
-    body.dark .toggle-all-btn { background-color: #444444; color: #ffffff; }
-
-    /* Text-size control (--ts, set by the header A-/A+ buttons; same steps and
-       'articleFontScale' key as mes.fm/math and the other hubs): scales the card
-       text and the link list, leaves headings and buttons alone. */
-    .content li { font-size: calc(1rem * var(--ts, 1)); }
-
-    .top-bar {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    li {
-      margin-bottom: 10px;
-    }
-
-    body {
-      font-weight: 550;
-      word-wrap: break-word;
-      transition: background-color 0.3s, color 0.3s;
-      padding: 0 1.5em 3em;
-    }
-
-    body.light {
-      background-color: #ffffff;
-      color: #000000;
-    }
-
-    body.light a {
-      color: #0000ff;
-    }
-
-    body.dark {
-      background-color: #1a1a1a;
-      color: #ffffff;
-    }
-
-    body.dark a {
-      color: #4da8ff;
-    }
-
-    .content {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .list-container {
-      margin-bottom: 1.5em;
-    }
-
-    /* Wide band for the Posts/Videos card grids -- reads bigger than the
-       900px flat-link-list column below, same treatment as mes.fm/911 and
-       mes.fm/hutchison. */
-    .wide {
-      max-width: 1180px;
-      margin: 1.5em auto;
-    }
-
-    .collapsible-section {
-      margin-bottom: 1.5em;
-    }
-
-    /* Topic-homepage card grid — see buildCardGrid() in build.mjs. Kept in
-       sync with the identical block in mes.fm/911/build.mjs and
-       mes.fm/hutchison/build.mjs. */
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin: 0.6em 0 0.4em;
-    }
-
-    .link-card {
-      display: flex;
-      flex-direction: column;
-      border: 1px solid rgba(128, 128, 128, 0.35);
-      border-radius: 8px;
-      overflow: hidden;
-      text-decoration: none;
-      color: inherit;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .link-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-    }
-
-    /* Override the global body.light/body.dark anchor colour (higher
-       specificity than .link-card) so the card title/excerpt read as body
-       text, not link blue. The "Read more"/"Watch" span opts back into the
-       link colour below. */
-    body.light .link-card { background-color: #fafafa; color: #000000; }
-    body.dark .link-card { background-color: #232323; color: #ffffff; }
-
-    .link-card-thumb {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background-color: #333333;
-      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
-      background-size: cover;
-      background-position: center;
-    }
-
-    .link-card-body {
-      padding: 0.6rem 0.8rem 0.8rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      flex: 1;
-    }
-
-    .link-card-title {
-      font-size: calc(0.95rem * var(--ts, 1));
-      font-weight: 700;
-      line-height: 1.3;
-      color: inherit;
-    }
-
-    .link-card-excerpt {
-      font-size: calc(0.8rem * var(--ts, 1));
-      opacity: 0.7;
-      line-height: 1.4;
-      flex: 1;
-      color: inherit;
-    }
-
-    .link-card-readmore {
-      font-size: calc(0.8rem * var(--ts, 1));
-      font-weight: 600;
-    }
-
-    body.light .link-card-readmore { color: #1a6fb0; }
-    body.dark .link-card-readmore { color: #6cb6f5; }
-
-    @media (max-width: 900px) {
-      .card-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (max-width: 560px) {
-      .card-grid { grid-template-columns: 1fr; }
-    }
-
-    @media screen and (max-width: 600px) {
-      h1 {
-        font-size: 2.4em;
-      }
-      h2 {
-        font-size: 1.5em;
-      }
-      .page-header {
-        flex-direction: column;
-      }
-      .page-header .theme-toggle-btn {
-        position: static;
-        transform: none;
-        margin-top: 0;
-      }
-    }
-
-    .theme-toggle-btn {
-      margin: 10px;
-      width: 2.25em;
-      height: 2.25em;
-      padding: 0;
-      border: 1.5px solid rgba(0, 0, 0, 0.15);
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1.1em;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    }
-
-    body.light .theme-toggle-btn {
-      background-color: #3a3d52;
-      border-color: rgba(255, 255, 255, 0.35);
-    }
-
-    /* Dark mode shows the sun icon (offering a switch to light). A warm
-       cream fill plus a solid gold ring gives it presence without relying
-       on the glyph's own (inherently light) coloring to carry the
-       contrast. */
-    body.dark .theme-toggle-btn {
-      background-color: #fff3d6;
-      border: 2px solid #e0a940;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    }
-
-    .back-link {
-      display: inline-block;
-      margin: 0.5em 0 0;
-    }
-  /* RESPONSIVE-FIX-INSERTED */
+.info-bar,.color-box,.navbar,.footer {background-color:#277bb6;}
+.dropdown-symbol--dark {color:#277bb6;}
+.button--active {background-color:#277bb6;color:white;}
+.navbar__dropdown-container {color: #222222;background-color:#eef0ff;}
+.logo {height:88px;width:88px;border-radius:0.35em;}
+.tag-line {font-size:1.2em;}
+.info-bar__logo-container {display: none;}
+/* RESPONSIVE-FIX-INSERTED */
 @media (max-width: 768px) {
   .outer-container { width: 100% !important; margin: 0 !important; }
   .outer-page-content { width: 100% !important; display: block !important; }
@@ -508,54 +584,885 @@ function buildPage(meta) {
   .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
+  .header { position: static !important; }
+  .logo-image-container, .logo-text-container, .social-container, .social-container--bottom { display: block !important; position: static !important; width: 100% !important; text-align: center !important; margin: 0 auto 0.5em auto !important; }
+  .social-container ul.social, .social__text { display: block !important; margin: 0 auto 0.3em auto !important; }
+  .social__logo { display: inline-block !important; float: none !important; }
+  .info-bar-container { display: block !important; width: 100% !important; text-align: center !important; }
+  .info-bar__logo-container { display: none !important; }
+  .info-bar { margin-left: 0 !important; padding-left: 0 !important; display: block !important; }
+  .info-bar__item { float: none !important; display: inline-block !important; }
+}
+
+/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
+   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
+   panel instead of the always-visible sidebar, at every screen width
+   (not just mobile), so no page reserves a right-hand column for it */
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+#navbar.hide { display: flex; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+/* Math Tutorials needs more width than the site's default narrowed
+   centered column (the calculators.html-style pages cap at 50em once
+   their sidebar becomes a hamburger) -- same widening mes.fm/index.html
+   itself got (50em -> 75em) so the card grid below has room for 4-5
+   columns. */
+.outer-container { width: auto !important; max-width: 75em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+@media (max-width: 600px) {
+  .footer { padding: 1.25em 0.75em; }
+  .footer__item-container { display: block; }
+  .footer__item { display: block; margin-bottom: 0.75em; }
+  .footer__item--extra-padding { padding-left: 0; }
+  .footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+
+  .inner-container { padding: 1em 0.75em; }
+  .page-content { padding-right: 0; }
+
+  .info-bar__item__text { min-height: 44px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+}
+
+/* Page content -- wide topic-card grid with a Grid View / List View toggle
+   per section, same architecture as
+   mes.fm/vector-functions-problems-plus/build.mjs: up to 5 cards/row in
+   Grid View, up to 2 full-thumbnail rows/row in List View on wide screens. */
+.wide {
+  max-width: 75em;
+  margin: 0 auto;
+}
+
+.list-container {
+  margin: 0 0 1.5em;
+}
+
+/* Hub page (mes.fm/hutchison): one icon tile per section, label overlaid as real
+   text on a text-free thumbnail -- same look as mes.fm's homepage
+   .icon-grid. Fixed 3 columns (6 tiles = 3x2, no orphan row), stepping down
+   to 2 then 1 on narrow screens. */
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1em;
+  margin: 1em 0;
+}
+@media (max-width: 720px) {
+  .icon-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 420px) {
+  .icon-grid { grid-template-columns: 1fr; }
+}
+.icon-grid__link { display: block; position: relative; overflow: hidden; border-radius: 4px; }
+/* Ten tiles = three full rows of 3 plus one orphan: centre the orphan in the
+   3-column layout (generic -- applies whenever the last tile starts a row). */
+@media (min-width: 721px) {
+  .icon-grid__link:last-child:nth-child(3n + 1) { grid-column: 2; }
+}
+.icon-grid__thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  background-size: cover;
+  background-position: center;
+  background-color: #0a1024;
+  transition: transform 0.2s ease;
+}
+.icon-grid__link:hover .icon-grid__thumb { transform: scale(1.03); }
+.icon-grid__label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0.7em 0.5em;
+  background: rgba(51, 51, 51, 0.85);
+  color: #ffffff;
+  text-align: center;
+  font-size: 1.15em;
+  font-weight: bold;
+}
+
+.page-breadcrumb {
+  margin: 0 0 0.6em;
+  font-size: 0.95em;
+}
+.page-breadcrumb a {
+  color: #1a6fb0;
+}
+
+/* A section with a single item (no Grid/List toggle): one featured row,
+   thumbnail capped like List View's. */
+.list-view--single .list-row {
+  border-bottom: none;
+}
+
+/* Centered like mes.fm/hutchison's own chapter titles (.wide
+   .chapter-toggle-header{text-align:center}) -- but, matching that same
+   page, only this section-level heading is centered. The standalone
+   playlist link, view-toggle buttons, and each item's own title/links
+   inside List View stay left-aligned, same as hutchison's per-entry
+   markdown headings/link rows -- only the thumbnail image is centered
+   there (via margin:auto on .list-thumb, independent of text-align). */
+.sub-heading {
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 0 0 0.3em;
+  text-align: center;
+}
+
+.arrow-icon {
+  font-size: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform 0.3s ease;
+}
+
+.hidden {
+  display: none;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.5em;
+  margin: 0.4em 0 0.8em;
+}
+
+.view-toggle-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  background-color: #dddddd;
+  color: #000000;
+}
+
+.view-toggle-btn.active {
+  background-color: #277bb6;
+  color: #ffffff;
+}
+
+.card-grid {
+  display: grid;
+  /* Fixed 3 columns (not auto-fit/auto-fill with a minmax upper bound): every
+     section's cards are the exact same size regardless of how many items
+     that section has -- a 1-item section's card fills 1 of 3 equal columns
+     instead of stretching to fill the row. */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 0 0 0.4em;
+}
+
+@media (max-width: 900px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+.link-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  background-color: #fafafa;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.link-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.link-card-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #333333;
+  background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+  background-size: cover;
+  background-position: center;
+}
+
+.link-card-body {
+  padding: 0.6rem 0.8rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.link-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #000000;
+}
+
+.link-card-readmore {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1a6fb0;
+}
+
+/* List View -- title / links row / thumbnail per item, 1 column on narrow
+   screens, 2 side-by-side on big desktop screens (each thumbnail sized to
+   its column, not stretched full-width). */
+.list-view {
+  display: block;
+}
+
+/* MES Math Q/A Livestreams only: 2 smaller columns on big desktop screens
+   (its thumbnails are all the same generic card, so a smaller side-by-side
+   pair reads fine) -- every other section stays the single big full-width
+   row (matching mes.fm/hutchison's own List/Thumbnail view). A class (not
+   an #id) so it stays the same specificity as .view-hidden below and the
+   toggle can still hide this view -- an #id selector here would always
+   beat .view-hidden's display:none regardless of source order. */
+.list-view--compact {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 2em;
+}
+
+@media (min-width: 900px) {
+  .list-view--compact {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.section-standalone-link {
+  margin: 0 0 0.6em;
+  font-weight: 600;
+}
+
+.section-standalone-link a,
+.hub-links a {
+  color: #1a6fb0;
+}
+
+.hub-links {
+  margin: 1.8em 0 0.5em;
+}
+.hub-links h2 {
+  font-size: 1.2em;
+  margin: 0 0 0.5em;
+}
+.hub-links ul {
+  list-style: disc;
+  padding-left: 1.4em;
+}
+.hub-links li {
+  margin: 0 0 0.4em;
+  line-height: 1.4;
+}
+.hub-links h3 {
+  font-size: 1.05em;
+  margin: 1.3em 0 0.4em;
+}
+.hub-links p {
+  line-height: 1.5;
+  margin: 0 0 0.6em;
+}
+.hub-links ul ul {
+  margin: 0.3em 0 0.4em;
+}
+.standalone-sep {
+  color: #8a93a0;
+  margin: 0 0.7em;
+}
+
+.list-row {
+  margin: 0 0 2em;
+  padding: 0 0 2em;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.list-row h3 {
+  font-size: 1.2em;
+  margin: 0 0 0.3em;
+}
+
+.list-row p {
+  margin: 0 0 0.6em;
+}
+
+.list-row a {
+  color: #1a6fb0;
+}
+
+.list-thumb {
+  display: block;
+  /* Capped like mes.fm/hutchison's own Thumbnail View images (naturally
+     sized within that page's 760px .container) -- not stretched edge to
+     edge across this page's much wider band. Centered via margin:auto since
+     a single full-width row is wider than this cap. MES Math Q/A
+     Livestreams' own 2-column layout is already narrower than the cap, so
+     this has no effect there. */
+  max-width: 760px;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 0 auto 1.4em;
+  cursor: zoom-in;
+}
+
+/* Must come after .card-grid/.list-view above: same specificity (single
+   class), so source order decides the tie -- this needs to win. */
+.view-hidden {
+  display: none;
+}
+
+/* Full-viewport image lightbox for List View thumbnails -- click to
+   zoom, prev/next via on-screen arrows or keyboard, same pattern used
+   across the repo (e.g. mes.fm/vector-functions-problems-plus). */
+.lightbox-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.96);
+  z-index: 2147483647;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 120px;
+}
+
+.lightbox-overlay.open { display: flex; }
+
+.lightbox-image {
+  width: 100vw;
+  max-width: 100vw;
+  max-height: calc(100vh - 120px);
+  object-fit: contain;
+  display: block;
+}
+
+.lightbox-controls {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lightbox-counter {
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  font-size: 0.85em;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next {
+  position: fixed;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border: 0;
+  cursor: pointer;
+}
+
+.lightbox-close:hover,
+.lightbox-prev:hover,
+.lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+.lightbox-close {
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.3em;
+  z-index: 2147483647;
+}
+
+.lightbox-prev,
+.lightbox-next {
+  position: static;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.4em;
+}
+
+@media (max-width: 600px) {
+  .lightbox-overlay { padding-bottom: 100px; }
+  .lightbox-image { max-height: calc(100vh - 100px); }
+  .lightbox-controls { bottom: 32px; }
+  .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+  .lightbox-close { width: 36px; height: 36px; }
+}
+
+/* Lightbox zoom in/out + drag-to-pan -- same add_lightbox_zoom.py pattern
+   used repo-wide (e.g. mes.fm/hutchison), reused directly here rather than
+   run against this page's build output (which npm run build would just
+   overwrite). Sits top-left, mirroring the close button's top-right spot,
+   so it never has to touch the bottom .lightbox-controls bar. */
+.lightbox-zoom-controls {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2147483647;
+}
+
+.lightbox-zoom-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border: 0;
+  cursor: pointer;
+  font-size: 1.2em;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-zoom-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.lightbox-zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.lightbox-zoom-level {
+  min-width: 3.4em;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  font-size: 0.8em;
+  padding: 5px 8px;
+  border-radius: 999px;
+}
+
+.lightbox-image {
+  transition: transform 0.15s ease;
+}
+
+.lightbox-image.zoomed {
+  cursor: grab;
+}
+
+.lightbox-image.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+@media (max-width: 600px) {
+  .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
+}
+
+/* Table of contents: a fixed side column on very wide viewports (this page's
+   own .outer-container is 75em/1200px wide, so the sidebar needs a lot more
+   clearance than the 760px-article hub pages it's modeled on -- see
+   mes.fm/vector-functions-problems-plus/build.mjs), collapsing to a
+   <details> dropdown above the sections otherwise. */
+.toc-sidebar {
+  display: none;
+}
+
+@media (min-width: 1700px) {
+  .toc-sidebar {
+    display: block;
+    position: fixed;
+    top: 90px;
+    /* rem (not em/px): tracks .outer-container's own em-based max-width at
+       any text-size step (see html.text-sm/text-lg) without compounding
+       against this element's own local 0.85em font-size below. */
+    left: calc(50% + 39.375rem);
+    width: 12.5rem;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    font-size: 0.85em;
+    padding-right: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
+  }
+
+  .toc-sidebar-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6em;
+    margin: 0 0 0.7em;
+  }
+
+  .toc-sidebar .toc-title {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    margin: 0;
+    color: #333333;
+  }
+
+  .toc-collapse-all-btn {
+    font-size: 0.75em;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+
+  .toc-sidebar a {
+    display: block;
+    padding: 0.3em 0;
+    opacity: 0.85;
+    text-decoration: none;
+    color: #277bb6;
+  }
+
+  .toc-sidebar a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+}
+
+.toc-mobile {
+  margin: 1.2em 0;
+}
+
+@media (min-width: 1700px) {
+  .toc-mobile {
+    display: none;
+  }
+}
+
+.toc-mobile summary {
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0.6em 0.9em;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 6px;
+}
+
+.toc-mobile .toc-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  padding: 0.8em 0.9em 0.2em;
+}
+
+.toc-mobile a {
+  text-decoration: none;
+  opacity: 0.9;
+  color: #277bb6;
+}
+
+.toc-mobile a:hover {
+  text-decoration: underline;
+}
+
+/* Text-size + dark/light display controls -- sit to the left of the
+   hamburger button (#navbar-button), same corner, at every screen width.
+   Styled to match the existing text-size-btn/theme-toggle-btn convention
+   from add_text_size_control.py (e.g. mes.fm/hutchison-article-balloons).
+   Unlike that convention (which scales a whole <article>), these scale
+   only .page-description and the Jump To panel -- see the header-controls
+   script -- leaving headings, card titles, and nav untouched. */
+#header-controls {
+  position: absolute;
+  top: 16px;
+  right: 68px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-control-btn {
+  flex: 0 0 auto;
+  width: 2em;
+  height: 2em;
+  padding: 0;
+  margin: 0;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9em;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background-color: #3a3d52;
+  color: #ffffff;
+}
+
+.header-control-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Dark mode -- toggled by #themeToggleBtn in #header-controls, saved in
+   localStorage. This classic mes.fm template has no dark mode of its own,
+   so these are page-scoped overrides for what math/index.html itself
+   renders (header/nav/footer are already navy-on-white and need no change). */
+body.dark-mode {
+  background-color: #1a1a1a;
+}
+
+body.dark-mode .inner-container {
+  background-color: #232323;
+  box-shadow: none;
+}
+
+body.dark-mode .calculator-title,
+body.dark-mode .page-title,
+body.dark-mode .page-description,
+body.dark-mode .sub-heading,
+body.dark-mode .arrow-icon,
+body.dark-mode .list-row h3,
+body.dark-mode .list-row p,
+body.dark-mode .hub-links h2,
+body.dark-mode .hub-links h3,
+body.dark-mode .hub-links p,
+body.dark-mode .hub-links li,
+body.dark-mode .link-card-title {
+  color: #eeeeee;
+}
+
+body.dark-mode .tag-line {
+  color: #b8b8b8;
+}
+
+body.dark-mode .link-card {
+  background-color: #2a2a2a;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .link-card-readmore,
+body.dark-mode .section-standalone-link a,
+body.dark-mode .hub-links a,
+body.dark-mode .list-row a,
+body.dark-mode .page-breadcrumb a,
+body.dark-mode .toc-sidebar a,
+body.dark-mode .toc-mobile a {
+  color: #6cb6f5;
+}
+
+body.dark-mode .list-row {
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .view-toggle-btn {
+  background-color: #3a3a3a;
+  color: #ffffff;
+}
+
+body.dark-mode .view-toggle-btn.active {
+  background-color: #4a90d9;
+}
+
+body.dark-mode .button {
+  color: #6cb6f5;
+  border-color: #6cb6f5;
+}
+
+body.dark-mode .header-control-btn {
+  background-color: #2e2e2e;
+  color: #eeeeee;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+body.dark-mode .toc-mobile summary {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #eeeeee;
+}
+
+body.dark-mode .toc-sidebar .toc-title {
+  color: #cccccc;
+}
+@media (max-width: 768px) {
+  /* #header-controls (A-/A+/theme) and #navbar-button (hamburger) are both
+     absolutely positioned, normally pinned to the header's top-right
+     corner. Two earlier versions reserved dedicated vertical space above
+     or beside them for the title/tagline, which left visible dead space
+     since that reserved area was taller/wider than the controls actually
+     needed. Instead: keep everything in a single row (small logo, title/
+     tagline, controls), and re-center the controls vertically on that
+     row via top:50%/transform so they need no reserved height of their
+     own -- just a reserved width on the right (padding-right, sized to
+     the controls' own on-screen width) so the title/tagline column
+     doesn't run underneath them.
+
+     The earlier site-wide responsive-fix pass (add_responsive_css.py)
+     forces ".header { position: static !important }" at this same
+     breakpoint, which would otherwise make top:50% resolve against some
+     far larger ancestor (.inner-container, the height of the whole page)
+     instead of the header itself -- re-assert position:relative here to
+     override it. */
+  .header {
+    display: flex !important; flex-wrap: nowrap; align-items: center;
+    position: relative !important;
+    padding-right: 160px !important; box-sizing: border-box;
+  }
+  .logo-image-container { flex: 0 0 auto; width: auto !important; margin: 0 !important; }
+  .logo { height: 64px !important; width: 64px !important; }
+  .logo-text-container {
+    display: block !important;
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto !important;
+    padding-left: 0.6em;
+    text-align: left !important;
+    margin: 0 !important;
+  }
+  .calculator-title { font-size: 1.3em; }
+  .tag-line { font-size: 0.95em; }
+  #header-controls { top: 50%; transform: translateY(-50%); right: 56px; }
+  /* #navbar-button lives in .side-bar, not #header -- its containing block
+     for position:absolute is .inner-container (position:relative, height =
+     the WHOLE page), not this row. A percentage top:50% here resolved
+     against that page height and pushed it thousands of pixels offscreen
+     (this broke it in an earlier version). Leave it at its base top:16px
+     (unset here) rather than reintroduce a percentage. */
+}
+
+
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the display controls + hamburger are pinned into its
+   right end. Toggled by the compact-nav-script below.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left this bar's raw unstyled markup visible above the
+   real header. The inline attribute is a fallback the JS clears itself,
+   independent of this stylesheet surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 172px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #277bb6;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #277bb6; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(39,123,182,0.12); }
+body.dark-mode #compact-nav { background: #1a1a1a; }
+body.dark-mode #compact-nav .compact-nav-title { color: #eeeeee; }
+body.dark-mode #compact-nav .compact-nav-links a { color: #6cb6f5; }
+body.is-stuck #header-controls { position: fixed; top: 13px; right: 60px; }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 160px; gap: 8px; }
+  body.is-stuck #header-controls { right: 56px; }
+}
+/* MOBILE-HEADER-CONTROLS-ROW: (1) stuck controls drop the 768px rule's translateY(-50%),
+   which was lifting them ~14px so the top of the A-/A+/moon buttons was clipped; (2) on
+   phones the controls take their own row under the brand (absolute, so sticking into the
+   floating bar doesn't reflow) and the title/tagline get the full width. */
+body.is-stuck #header-controls { transform: none; bottom: auto; }
+@media (max-width: 480px) {
+  .header { padding-right: 56px !important; padding-bottom: 44px !important; }
+  #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
+  body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
 </style>
-  <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
-     real interaction (scroll / pointer / key), or after a 15s idle fallback,
-     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
-     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
-    <script>
-    (function () {
-      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
-      var done = false;
-      function go() {
-        if (done) return;
-        done = true;
-        EVT.forEach(function (e) { removeEventListener(e, go); });
-        var s = document.createElement('script');
-        s.async = true;
-        s.crossOrigin = 'anonymous';
-        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
-        document.head.appendChild(s);
-      }
-      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
-      setTimeout(go, 15000);
-    })();
-    </script>
+
+<meta property="fb:app_id" content="120877788060946" />
+<meta name="author" content="MES">
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="MES Truth" />
+<meta property="og:url" content="${CANONICAL}" />
+<meta property="og:title" content="${escapeHtml(pageTitle)}" />
+<meta property="og:image" content="${ogImage}" />
+<meta property="og:description" content="${escapeHtml(description)}" />
+<meta name="description" content="${escapeHtml(description)}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@MathEasySolns">
+<meta name="twitter:title" content="${escapeHtml(pageTitle)}">
+<meta name="twitter:description" content="${escapeHtml(description)}">
+<meta name="twitter:image" content="${ogImage}">
+<meta name="twitter:image:alt" content="${escapeHtml(pageTitle)}">
 <script>
 /* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
-   class \`google-auto-placed\`), plus a third: Google's separate "annotation"
-   text-ad format (chips styled like \`<div class="google-anno-skip
-   google-anno-sc" aria-label="...">\`, a different Auto ads mechanism than
-   the in-page blocks above -- rendered as small pill/badge buttons made to
-   look like real nav links). 1) Logo header <-> nav bar: on desktop, any
-   in-page ad caught here is relocated to just below the whole
-   header+nav+logo-badge complex (before .outer-page-content) and allowed to
-   show if it fills; on mobile (max-width: 768px, this repo's existing
-   responsive breakpoint) it is hidden outright instead -- no ad shows below
-   the nav bar on mobile at all. 2) Comments toggle (#comments-button) <->
-   comments widget (#comments-box): on every device, any in-page ad caught
-   here is relocated to just after the comments box and allowed to show if
-   it fills. 3) Annotation chips (\`.google-anno-sc\`) anywhere inside #header,
-   #footer, or .side-bar: hidden outright on every device. Unlike the in-page
-   ad blocks, Google serves many of these annotation chips per page load, so
-   removing the ones in these three zones doesn't cost the page its one
-   shot at an ad the way deleting the in-page block did -- no relocate/poll
-   needed, just hide on sight.
-   In the first two cases Google's own placeholder-collapse doesn't reliably
-   fire once we've moved the node, so we poll it: if no real ad iframe shows
-   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
-   slot never leaves a blank gap. */
+   class \`google-auto-placed\`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Annotation/related-entry chips -- any element carrying the
+   \`google-anno-skip\` class -- and 3) in-text link ads (\`<a class="google-anno">\`
+   wrapping a \`<span class="google-anno-t">\` around an ordinary word): both are
+   only guarded inside #header, #footer, the top .info-bar-container nav, or
+   the .side-bar "Site Navigation" widget -- chips are hidden outright there,
+   and in-text links are unwrapped back to plain text there, so the word
+   stays readable without the ad behavior. Elsewhere in the actual page
+   content both are left alone on purpose.
+   Google's own placeholder-collapse doesn't reliably fire once we've moved
+   the node, so we poll it: if no real ad iframe shows up within ~2s, we
+   force the reserved space to 0 ourselves, so an unfilled slot never
+   leaves a blank gap. */
 (function () {
     function isMobile() {
         return window.matchMedia('(max-width: 768px)').matches;
@@ -600,20 +1507,19 @@ function buildPage(meta) {
         collapseIfUnfilled(node);
         return true;
     }
-    function handleCommentsZone(node) {
-        var button = document.getElementById('comments-button');
-        var box = document.getElementById('comments-box');
-        if (!isBetween(button, box, node)) return false;
-        box.after(node);
-        collapseIfUnfilled(node);
-        return true;
-    }
     function inAnnotationGuardedZone(el) {
-        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar'));
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
     }
     function handleAnnotationChip(node) {
-        if (node.classList && node.classList.contains('google-anno-sc') && inAnnotationGuardedZone(node)) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
             node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
             return true;
         }
         return false;
@@ -621,18 +1527,20 @@ function buildPage(meta) {
     function handle(node) {
         if (node.nodeType !== 1) return;
         if (node.classList && node.classList.contains('google-auto-placed')) {
-            if (handleHeaderNavZone(node)) return;
-            handleCommentsZone(node);
+            handleHeaderNavZone(node);
             return;
         }
         if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
         if (node.querySelectorAll) {
             node.querySelectorAll('.google-auto-placed').forEach(function (n) {
-                if (handleHeaderNavZone(n)) return;
-                handleCommentsZone(n);
+                handleHeaderNavZone(n);
             });
-            node.querySelectorAll('.google-anno-sc').forEach(function (n) {
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
                 handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
             });
         }
     }
@@ -643,163 +1551,566 @@ function buildPage(meta) {
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
+<!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
 </head>
 <body>
+<div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/conspiracy" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/conspiracy-logo.jpg"></a>
+  <a class="compact-nav-title" href="/conspiracy" tabindex="-1">MES Conspiracy</a>
+  <ul class="compact-nav-links">
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container">
+  <div class="inner-container">
+    <div id="header" class="header" role="banner">
+      <div id="header-controls" role="group" aria-label="Display settings">
+        <button type="button" id="textSizeDownBtn" class="header-control-btn" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
+        <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
+      </div>
+      <a class="logo-image-container" href='/conspiracy'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Conspiracy logo" data-src="https://mes.fm/img/conspiracy-logo.jpg"></a>
+      <div class="logo-text-container">
+        <a class="calculator-title-link" href='/conspiracy'>
+          <p class="calculator-title">MES Conspiracy</p>
+        </a>
+        <p class="tag-line">Alt-news checkups, videos and posts on conspiracies.</p>
+      </div>
 
-  <div class="top-bar">
-    <a class="back-link" href="https://mes.fm/links">&larr; MES Links</a>
-  </div>
-
-  <header class="page-header">
-    <h1>MES Conspiracy</h1>
-    <button id="themeToggle" class="theme-toggle-btn">Loading...</button>
-  </header>
-
-  <div class="wide">
-    <div class="chapters-toolbar">
-      <button id="toggleAllBtn" class="toggle-all-btn" type="button" onclick="toggleAllLists()">Collapse All</button>
+      <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
+        <li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+        <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+        <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>
+        <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>
+        <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>
+        <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>
+        <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>
+        <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
+      </ul></div>
     </div>
-${postsGridHtml}
-${videosGridHtml}
+    <div class="info-bar-container" role="navigation" aria-label="Primary">
+      <ul id="info-bar" class="info-bar shadow">
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/conspiracy'>Conspiracy</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/911'>9/11 Truth</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/mobile-apps'>Mobile Apps</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/puzzles'>Puzzles</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a target="_self" class="info-bar__item__text" href='/memes'>Memes</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://teespring.com/stores/mes-store'>Store</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='/donate'>Donate</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+        <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
+      </ul>
+    </div>
+    <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>
+    <div class="outer-page-content">
+      <div class="page-content" role="main">
+        ${breadcrumbHtml}<div class="color-box"></div>
+        <h1 class="page-title">${escapeHtml(pageTitle)}</h1>
+        <p class="page-description">${escapeHtml(description)}</p>
+        <div id="main-content">
+          <div class="wide">
+${sectionsHtml}
+          </div>
+        </div>
+        <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
+        <div id="comments-button" class="mes-comments-toggle">Comments</div>
+        <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
+        <script src="/main_js/comments.js?v=1.0.1" defer></script>
+
+      </div>
+    </div>
+
+    <!-- side bar -->
+    <div class="side-bar">
+      <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>
+        <ul id="navbar" class="navbar">
+          <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><p class="social__text">Follow us!</p><ul class="social">
+            <li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+            <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+            <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>
+            <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>
+            <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>
+            <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
+          </ul></div></li>
+          <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/conspiracy">Conspiracy</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
+          <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+          <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/memes">Memes</a></li>
+          <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+          <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li>
+          <li class="navbar__item navbar__item--utility-added"><a target="_blank" rel="nofollow" class="navbar__link" href='https://matheasy.substack.com/'>Subscribe</a></li>
+          <li class="navbar__item navbar__item--utility-added"><a target="_blank" class="navbar__link" href='/donate'>Donate</a></li>
+          <li class="navbar__item navbar__item--utility-added"><a class="navbar__link" href='/contact'>Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+
   </div>
 
-  <div class="content">
-    <ul>
-      <li><a href="https://peakd.com/c/hive-106474">HIVE community</a></li>
-      <li><a href="https://www.reddit.com/r/ConspiracyMES/">Reddit r/ConspiracyMES</a></li>
-      <li>X Threads</li>
-      <li style="margin-left: 20px;"><a href="https://x.com/MathEasySolns/status/1717628655034306592">War with Iran</a></li>
-      <li style="margin-left: 20px;"><a href="https://x.com/MathEasySolns/status/1668341949697515520">Shooters hearing voices</a></li>
-      <li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0E1tEkmKt1E-8rlSzzpcb8y">Crop Circles playlist</a></li>
-      <li><a href="https://www.bitchute.com/channel/LzzSQpmQ4HUK/">EyesIsWatchin</a></li>
-      <li><a href="https://t.me/methylstopdocumentaries">Methyl's Top Documentaries</a></li>
-    </ul>
+  <div id="footer" class="footer" role="contentinfo">
+    <div class="footer__item-container">
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/calculators">Calculators</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="/tools">Tools</a>
+      </div>
+      <div class="footer__item footer__item--extra-padding">
+        <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
+      </div>
+      <div class="footer__item">
+        <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+      </div>
+    </div>
+    <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+    <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+    <a class="footer__text" target='_blank' href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+    <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
   </div>
+</div>
 
-  <script>
-    function setSectionState(list, collapsed) {
-      list.classList.toggle('hidden', collapsed);
-      const arrow = document.getElementById('arrowIcon-' + list.id);
-      if (arrow) arrow.innerHTML = collapsed ? '&#9654;' : '&#9660;';
-    }
-
-    function toggleSubList(listId) {
-      const list = document.getElementById(listId);
-      setSectionState(list, !list.classList.contains('hidden'));
-      syncToggleAll();
-    }
-
-    // "Collapse All" folds every section; once they are all folded it reads
-    // "Expand All" (and the label also follows manual toggles, see syncToggleAll).
-    function toggleAllLists() {
-      const lists = document.querySelectorAll('.collapsible');
-      const collapse = Array.from(lists).some(list => !list.classList.contains('hidden'));
-      lists.forEach(list => setSectionState(list, collapse));
-      syncToggleAll();
-    }
-
-    function syncToggleAll() {
-      const lists = document.querySelectorAll('.collapsible');
-      const btn = document.getElementById('toggleAllBtn');
-      if (!btn) return;
-      const allHidden = lists.length > 0 && Array.from(lists).every(list => list.classList.contains('hidden'));
-      btn.textContent = allHidden ? 'Expand All' : 'Collapse All';
-    }
-  </script>
-
-  <script>
-    // text-size control: same STEPS / 'articleFontScale' key as mes.fm/math and
-    // the other hubs. Drives the --ts CSS variable used by the card text and
-    // link list above. The A-/A+ buttons live in the header (convert_mirror_pages.py
-    // keeps them for pages that carry this script).
-    (function () {
-      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
-      var body = document.body;
-      var downBtn = document.getElementById('textSizeDown');
-      var upBtn = document.getElementById('textSizeUp');
-      if (!body || !downBtn || !upBtn) return;
-      var index;
-      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
-      if (index === -1) index = STEPS.indexOf(100);
-      function apply() {
-        body.style.setProperty('--ts', String(STEPS[index] / 100));
-        downBtn.disabled = index === 0;
-        upBtn.disabled = index === STEPS.length - 1;
-        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
-      }
-      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
-      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
-      apply();
-    })();
-  </script>
-
-  <script>
-    // Dark/Light theme toggle – saved in browser (no POST, no resubmit popup)
-    const themeToggle = document.getElementById('themeToggle');
-    const body = document.body;
-
-    function setTheme(isDark) {
-      if (isDark) {
-        body.classList.add('dark');
-        body.classList.remove('light');
-        themeToggle.textContent = '☀️';
-        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
-      } else {
-        body.classList.add('light');
-        body.classList.remove('dark');
-        themeToggle.textContent = '🌙';
-        try { localStorage.setItem('theme', 'light'); } catch (e) {}
-      }
-    }
-
-    let saved;
-    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
-    if (saved === 'light') {
-      setTheme(false);
-    } else {
-      setTheme(true);
-    }
-
-    themeToggle.addEventListener('click', () => {
-      const isDarkNow = body.classList.contains('dark');
-      setTheme(!isDarkNow);
+<script>
+  function toggleAllLists() {
+    const lists = document.querySelectorAll('.collapsible');
+    const buttons = document.querySelectorAll('.toggle-all-lists-btn');
+    const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
+    lists.forEach((list) => {
+      list.classList.toggle('hidden', collapse);
+      const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+      if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
     });
-  </script>
+    buttons.forEach((btn) => { btn.textContent = collapse ? 'Expand All' : 'Collapse All'; });
+  }
 
-  <div style="clear: both;"></div>
+  function toggleSubList(listId) {
+    const list = document.getElementById(listId);
+    const arrowIcon = document.getElementById(\`arrowIcon-\${listId}\`);
+    list.classList.toggle('hidden');
+    arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+  }
+</script>
 
+<script>
+  // view-toggle: switches a section between Grid View (thumbnail cards,
+  // default) and List View (title + full thumbnail + platform links) --
+  // both are pre-rendered at build time in buildSection(), this just
+  // toggles which one is visible. One wiring call per section (see
+  // buildPage()'s viewToggleWiring).
+  // id: section id (e.g. 'mathQaLivestreams'). extraIds: capitalized suffixes
+  // beyond 'Grid'/'List' (e.g. ['Stats']) for a section's extraViews -- each
+  // gets its own toggle button (id+suffix+'Btn') and pane (id+suffix),
+  // exactly like Grid/List, so N views can share one toggle group instead of
+  // just two.
+  function wireViewToggle(id, extraIds) {
+    var suffixes = ['Grid', 'List'].concat(extraIds || []);
+    var entries = suffixes
+      .map(function (suffix) {
+        return {
+          btn: document.getElementById(id + suffix + 'Btn'),
+          pane: document.getElementById(id + suffix),
+        };
+      })
+      .filter(function (e) { return e.btn && e.pane; });
+    if (entries.length < 2) return;
 
-  <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
-  <div class="mes-comments-wrap">
-    <div id="comments-button" class="mes-comments-toggle">Comments</div>
-    <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
-    <script src="/main_js/comments.js?v=1.0.1" defer></script>
+    entries.forEach(function (entry) {
+      entry.btn.addEventListener('click', function () {
+        entries.forEach(function (e) {
+          var active = e === entry;
+          e.btn.classList.toggle('active', active);
+          e.pane.classList.toggle('view-hidden', !active);
+        });
+      });
+    });
+  }
+
+${viewToggleWiring}
+</script>
+
+<script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      // MES.fm is the most important link, so drop from the one before it first
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        // Let the browser register the "flex" state above before adding
+        // the class that animates transform: none, or it'd jump instantly.
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        // Keep display:flex through the slide-up transition, then hide.
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script>
+
+<script>
+  // header-controls: text-size (A-/A+) and dark/light mode (sun/moon).
+  // Lives next to #navbar-button so it's reachable at every screen width,
+  // not just desktop. Same STEPS/localStorage-key convention as
+  // add_text_size_control.py (see mes.fm/hutchison-article-balloons) -- but
+  // that control scales a whole <article>; this one deliberately scales
+  // only .page-description and the Jump To panel, leaving headings, card
+  // titles, and nav untouched.
+  (function () {
+    var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+    var TARGETS = [
+      { el: document.querySelector('.page-description'), base: 1 },
+      { el: document.querySelector('.toc-sidebar'), base: 0.85 },
+      { el: document.querySelector('.toc-mobile'), base: 1 },
+      { el: document.querySelector('.hub-links'), base: 1 },
+    ].filter(function (t) { return t.el; });
+    var downBtn = document.getElementById('textSizeDownBtn');
+    var upBtn = document.getElementById('textSizeUpBtn');
+    if (!TARGETS.length || !downBtn || !upBtn) return;
+
+    function clampIndex(i) {
+      return Math.max(0, Math.min(STEPS.length - 1, i));
+    }
+
+    var index;
+    try {
+      index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale')));
+    } catch (e) {
+      index = -1;
+    }
+    if (index === -1) index = STEPS.indexOf(100);
+
+    function apply() {
+      TARGETS.forEach(function (t) {
+        t.el.style.fontSize = (t.base * STEPS[index] / 100) + 'em';
+      });
+      downBtn.disabled = index === 0;
+      upBtn.disabled = index === STEPS.length - 1;
+      try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+    }
+
+    downBtn.addEventListener('click', function () {
+      index = clampIndex(index - 1);
+      apply();
+    });
+    upBtn.addEventListener('click', function () {
+      index = clampIndex(index + 1);
+      apply();
+    });
+
+    apply();
+  })();
+
+  (function () {
+    var body = document.body;
+    var themeBtn = document.getElementById('themeToggleBtn');
+
+    function applyTheme(isDark) {
+      body.classList.toggle('dark-mode', isDark);
+      themeBtn.textContent = isDark ? '☀️' : '🌙';
+      try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (e) {}
+    }
+
+    // Shared 'theme' key (same convention as the rest of the site), but --
+    // unlike those pages, which default new visitors to dark -- this page
+    // defaults to its normal light template unless dark was explicitly
+    // chosen, since math/index.html had no dark mode at all before now.
+    var savedTheme;
+    try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
+    applyTheme(savedTheme === 'dark');
+
+    themeBtn.addEventListener('click', function () {
+      applyTheme(!body.classList.contains('dark-mode'));
+    });
+  })();
+</script>
+
+<div class="lightbox-overlay" id="lightboxOverlay" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <div class="lightbox-zoom-controls" id="lightboxZoomControls">
+    <button class="lightbox-zoom-btn" id="lightboxZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+    <span class="lightbox-zoom-level" id="lightboxZoomLevel">100%</span>
+    <button class="lightbox-zoom-btn" id="lightboxZoomIn" type="button" aria-label="Zoom in">+</button>
   </div>
+  <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+  <img class="lightbox-image" id="lightboxImage" src="" alt="">
+  <div class="lightbox-controls" id="lightboxControls">
+    <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+    <div class="lightbox-counter" id="lightboxCounter"></div>
+    <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+  </div>
+</div>
 
-  <footer style="text-align: center;">
-    <p>&copy; 2026 Math Easy Solutions (MES). All rights reserved. | <a href="https://mes.fm/contact">Contact Us</a> | <a href="https://mes.fm/privacy-policy">Privacy Policy</a></p>
-  </footer>
+<script>
+  // image-lightbox: click any List View thumbnail to pop it out
+  // full-viewport, with prev/next via on-screen arrows and keyboard arrows.
+  (function () {
+    var images = Array.prototype.slice.call(document.querySelectorAll('.list-thumb'));
+    if (!images.length) return;
 
-  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script></body>
+    var overlay = document.getElementById('lightboxOverlay');
+    var imageEl = document.getElementById('lightboxImage');
+    var controlsEl = document.getElementById('lightboxControls');
+    var counterEl = document.getElementById('lightboxCounter');
+    var closeBtn = document.getElementById('lightboxClose');
+    var prevBtn = document.getElementById('lightboxPrev');
+    var nextBtn = document.getElementById('lightboxNext');
+    var currentIndex = 0;
+
+    if (images.length < 2) {
+      controlsEl.style.display = 'none';
+    }
+
+    function show(index) {
+      currentIndex = (index + images.length) % images.length;
+      var img = images[currentIndex];
+      imageEl.src = img.currentSrc || img.src;
+      imageEl.alt = img.alt || '';
+      counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+    }
+
+    function open(index) {
+      show(index);
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    images.forEach(function (img, index) {
+      img.addEventListener('click', function () { open(index); });
+    });
+
+    closeBtn.addEventListener('click', close);
+    prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+    nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) close();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (!overlay.classList.contains('open')) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+      else if (e.key === 'ArrowRight') show(currentIndex + 1);
+    });
+  })();
+</script>
+
+<script>
+  // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the lightbox
+  // above -- same add_lightbox_zoom.py pattern used repo-wide (e.g.
+  // mes.fm/hutchison). Purely additive: only touches the #lightboxZoom*
+  // elements it creates itself, resetting whenever #lightboxImage's src or
+  // #lightboxOverlay's open state changes, so it works regardless of how
+  // the lightbox's own open/prev/next logic runs.
+  (function () {
+    var overlay = document.getElementById('lightboxOverlay');
+    var imageEl = document.getElementById('lightboxImage');
+    var zoomOutBtn = document.getElementById('lightboxZoomOut');
+    var zoomInBtn = document.getElementById('lightboxZoomIn');
+    var zoomLevelEl = document.getElementById('lightboxZoomLevel');
+    if (!overlay || !imageEl || !zoomOutBtn || !zoomInBtn || !zoomLevelEl) return;
+
+    var ZOOM_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+    var zoomIndex = 0;
+    var panX = 0, panY = 0;
+    var dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+    function applyTransform() {
+      imageEl.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + ZOOM_STEPS[zoomIndex] + ')';
+      imageEl.classList.toggle('zoomed', zoomIndex > 0);
+      zoomLevelEl.textContent = Math.round(ZOOM_STEPS[zoomIndex] * 100) + '%';
+      zoomOutBtn.disabled = zoomIndex === 0;
+      zoomInBtn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
+    }
+
+    function zoomTo(index) {
+      zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index));
+      if (zoomIndex === 0) { panX = 0; panY = 0; }
+      applyTransform();
+    }
+
+    function resetZoom() {
+      dragging = false;
+      imageEl.classList.remove('dragging');
+      zoomTo(0);
+    }
+
+    zoomOutBtn.addEventListener('click', function () { zoomTo(zoomIndex - 1); });
+    zoomInBtn.addEventListener('click', function () { zoomTo(zoomIndex + 1); });
+
+    imageEl.addEventListener('dblclick', function () {
+      zoomTo(zoomIndex > 0 ? 0 : 2);
+    });
+
+    imageEl.addEventListener('mousedown', function (e) {
+      if (zoomIndex === 0) return;
+      dragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      panStartX = panX;
+      panStartY = panY;
+      imageEl.classList.add('dragging');
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', function (e) {
+      if (!dragging) return;
+      panX = panStartX + (e.clientX - dragStartX);
+      panY = panStartY + (e.clientY - dragStartY);
+      applyTransform();
+    });
+
+    window.addEventListener('mouseup', function () {
+      if (!dragging) return;
+      dragging = false;
+      imageEl.classList.remove('dragging');
+    });
+
+    imageEl.addEventListener('touchstart', function (e) {
+      if (zoomIndex === 0 || e.touches.length !== 1) return;
+      dragging = true;
+      dragStartX = e.touches[0].clientX;
+      dragStartY = e.touches[0].clientY;
+      panStartX = panX;
+      panStartY = panY;
+    }, { passive: true });
+
+    imageEl.addEventListener('touchmove', function (e) {
+      if (!dragging || e.touches.length !== 1) return;
+      panX = panStartX + (e.touches[0].clientX - dragStartX);
+      panY = panStartY + (e.touches[0].clientY - dragStartY);
+      applyTransform();
+    }, { passive: true });
+
+    imageEl.addEventListener('touchend', function () { dragging = false; });
+
+    document.addEventListener('keydown', function (e) {
+      if (!overlay.classList.contains('open')) return;
+      if (e.key === '+' || e.key === '=') zoomTo(zoomIndex + 1);
+      else if (e.key === '-' || e.key === '_') zoomTo(zoomIndex - 1);
+    });
+
+    new MutationObserver(resetZoom).observe(imageEl, { attributes: true, attributeFilter: ['src'] });
+    new MutationObserver(function () {
+      if (overlay.classList.contains('open')) resetZoom();
+    }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+
+    applyTransform();
+  })();
+</script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+var MES_Vars = {
+    mobile:false,
+    hide_search:false,
+    current_tab:1,
+    info_bar_tab:0
+}
+</script>
+<script src="/main_js/lazysizes.min.js?v=1.0.3" async></script>
+<script src="/main_js/main.js?v=1.0.3"></script>
+<script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
+<!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
+<script src="/main_js/site-search.js?v=1" defer></script></body>
 </html>
 `;
 }
 
 async function main() {
-  console.log(`Resolving card metadata for ${POSTS.length + VIDEOS.length} links ...`);
-  const meta = await resolveAllMeta([...POSTS, ...VIDEOS]);
+  console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
+  const meta = await resolveAllMeta(SECTIONS);
 
-  const html = buildPage(meta);
-  const outPath = join(__dirname, "index.html");
-  writeFileSync(outPath, html, "utf8");
-  // This template still emits the old standalone shell (back link, centred header, plain footer). The math-hub page
-  // format (branded header, nav bar, floating bar, footer) is applied afterwards by convert_mirror_pages.py, so a
-  // rebuild never reverts it -- see that script and CLAUDE.md.
-  execFileSync("python3", [join(__dirname, "..", "..", "convert_mirror_pages.py"), "--apply", "--only=conspiracy"], { stdio: "inherit" });
+  const pages = [{ hub: true, slug: "conspiracy", outDir: __dirname }].concat(
+    PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
+  );
+  for (const page of pages) {
+    mkdirSync(page.outDir, { recursive: true });
+    const outPath = join(page.outDir, "index.html");
+    writeFileSync(outPath, addImageLazyLoading(buildPage(meta, page)), "utf8");
+    console.log(`Wrote ${outPath}`);
+  }
   // The phone-width header fixes (A-/A+/moon on their own row, no sideways scroll) are patched into generated pages by
-  // fix_mobile_header_controls.py, so a rebuild would silently drop them; re-apply (idempotent, only touches pages lacking them).
+  // fix_mobile_header_controls.py, so a rebuild would silently drop them; re-apply (idempotent).
   execFileSync("python3", [join(__dirname, "..", "..", "fix_mobile_header_controls.py"), "--apply"], { stdio: "inherit" });
-  console.log(`Wrote ${outPath}`);
 }
 
 main().catch((err) => {

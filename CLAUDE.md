@@ -491,6 +491,13 @@ default icon name without checking). The slug `1109-keo-meteor-music` is as requ
 got the highlighted "9/11 Truth" tab and section links in their "Part of" boxes (`brand_nav()` in `convert_mirror_pages.py`, which now handles
 both the Hutchison and 9/11 brands).
 
+`mes.fm/conspiracy/build.mjs` (2026-10-01) got the same treatment as `911` and is **no longer a flat link hub**: it was cloned from `911/build.mjs`, so
+`mes.fm/conspiracy` is a tile hub (Posts, Videos tiles + the old link list as "Important Links") and emits **three** pages -- the hub plus
+`mes.fm/{conspiracy-posts,conspiracy-videos}/index.html` -- from `conspiracy/sections.mjs` (hand-maintained, newest first: add a `{ href, title }`
+entry at the TOP of the right section and `npm run build`). Tile art is `img/conspiracy-{posts,videos}-icon.jpg` (900x600 crops of the newest item's
+thumbnail; bump `iconVersion` in `PAGES` when refreshed). The "Part of MES Links" box is gone with the old shell. A not-yet-deployed new mirror
+page must be seeded by hand in `conspiracy/link-meta.json` (image) until it is live, since the scrape 404s.
+
 `mes.fm/livestreams/build.mjs` (2026-09-26) is the `math-qa` idea for *all* MES livestreams: one page, Grid View / List View of every
 numbered stream (newest first) plus two more tabs -- **Stats** (the stats-screen pages, now `mes.fm/livestream-140-stats`, mirrored from the
 Hive/Telegram post; add new ones to `STATS`) and **Trailers** (card grid). Cloned from `hutchison/build.mjs`. The list comes from
