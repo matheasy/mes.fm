@@ -27,8 +27,21 @@
   },
   "https://mes.fm/alex-jones-steven-greer-live": {
     "image": "https://mes.fm/alex-jones-steven-greer-live/img/alex-jones-steven-greer-live.jpg",
-    "title": "Alex Jones Teams Up with UFO Expert Steven Greer",
-    "excerpt": "Alien prober Alex Jones teams up with illegal alien prober Steven Greer; Tucker Carlson says Trump put him in a magical spell"
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-32gnuymvn"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35604"
+      },
+      {
+        "label": "MES Conspiracy",
+        "href": "https://mes.fm/conspiracy"
+      }
+    ]
   },
   "https://mes.fm/ashton-forbes-letter": {
     "image": "https://images.hive.blog/DQmWgwRYxidEYcB19FehHeSFpTgoJFJFFpRxG5CdMsesseq/image",

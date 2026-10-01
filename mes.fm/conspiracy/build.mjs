@@ -1617,6 +1617,8 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     <div class="info-bar-container" role="navigation" aria-label="Primary">
       <ul id="info-bar" class="info-bar shadow">
         <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/conspiracy'>Conspiracy</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/conspiracy-posts'>Posts</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/conspiracy-videos'>Videos</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/911'>9/11 Truth</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>

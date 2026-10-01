@@ -498,6 +498,12 @@ entry at the TOP of the right section and `npm run build`). Tile art is `img/con
 thumbnail; bump `iconVersion` in `PAGES` when refreshed). The "Part of MES Links" box is gone with the old shell. A not-yet-deployed new mirror
 page must be seeded by hand in `conspiracy/link-meta.json` (image) until it is live, since the scrape 404s.
 
+`mes.fm/science/build.mjs` (2026-10-01) was converted the same way (cloned from `conspiracy/build.mjs`): tile hub + `mes.fm/{science-posts,science-videos}/index.html`
+from `science/sections.mjs`, tile art `img/science-{posts,videos}-icon.jpg`. It now uses the shared blue family look, not its old amber accent. Its Videos are external
+YouTube playlists (scraped for their thumbnail). The info-bar of the conspiracy and science families shows `Conspiracy|Science | Posts | Videos` (hub builds, and
+`convert_mirror_pages.py`'s `BRAND_TABS` extras for the mirrors); the mirrors' "Part of" box links the matching section page via `add_conspiracy_section_links.py`
+(both hubs; idempotent, `--apply` writes -- re-run after adding a mirror to a section list).
+
 `mes.fm/livestreams/build.mjs` (2026-09-26) is the `math-qa` idea for *all* MES livestreams: one page, Grid View / List View of every
 numbered stream (newest first) plus two more tabs -- **Stats** (the stats-screen pages, now `mes.fm/livestream-140-stats`, mirrored from the
 Hive/Telegram post; add new ones to `STATS`) and **Trailers** (card grid). Cloned from `hutchison/build.mjs`. The list comes from

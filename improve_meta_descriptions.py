@@ -47,7 +47,7 @@ GENERATED = {
     # emitted by mes.fm/livestreams/build.mjs
     "livestreams",
     # emitted by mes.fm/911/build.mjs (hub + section pages)
-    "conspiracy-posts", "conspiracy-videos", "911-posts", "911-videos", "911truth", "911-observable-evidence", "911-short-videos", "1109-keo-meteor-music",
+    "conspiracy-posts", "conspiracy-videos", "science-posts", "science-videos", "911-posts", "911-videos", "911truth", "911-observable-evidence", "911-short-videos", "1109-keo-meteor-music",
 }
 
 # site dir -> (site label, tail options longest -> shortest)

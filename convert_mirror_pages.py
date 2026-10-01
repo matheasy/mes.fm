@@ -332,17 +332,22 @@ BRAND_TABS = {
     'class="site-brand-title" href="/hutchison"': ("/hutchison", "Hutchison Effect"),
     'class="site-brand-title" href="/911"': ("/911", "9/11 Truth"),
     'class="site-brand-title" href="/crypto"': ("/crypto", "MES Crypto"),
+    # Conspiracy and Science also list their two section pages (Posts, Videos) right after the hub tab.
+    'class="site-brand-title" href="/conspiracy"': ("/conspiracy", "Conspiracy", [("/conspiracy-posts", "Posts"), ("/conspiracy-videos", "Videos")]),
+    'class="site-brand-title" href="/science"': ("/science", "Science", [("/science-posts", "Posts"), ("/science-videos", "Videos")]),
 }
 HUTCH_MARK = 'class="site-brand-title" href="/hutchison"'  # kept for callers that import it
 
 
 def brand_nav(s):
     """Idempotent; pages of other brands are returned untouched."""
-    for mark, (href, label) in BRAND_TABS.items():
+    for mark, (href, label, *extra_tabs) in BRAND_TABS.items():
         if mark not in s:
             continue
-        s = s.replace('<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="https://mes.fm/math">Math Tutorials</a></li>',
-                      '<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="%s">%s</a></li>' % (href, label), 1)
+        tabs = '<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="%s">%s</a></li>' % (href, label)
+        for xh, xl in (extra_tabs[0] if extra_tabs else []):
+            tabs += '\n        <li class="info-bar__item"><a class="info-bar__item__text" href="%s">%s</a></li>' % (xh, xl)
+        s = s.replace('<li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="https://mes.fm/math">Math Tutorials</a></li>', tabs, 1)
         if href == "/911" and 'href="/conspiracy">Conspiracy</a></li>' not in s:
             # Conspiracy is more relevant to 9/11-family pages than the generic Calculators/Tools
             # links that follow it, so it goes right after the 9/11 Truth tab in the info-bar.
