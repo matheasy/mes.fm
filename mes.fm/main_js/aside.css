@@ -187,3 +187,12 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   .mes-mode .mes-aside-show { border-left: 1px solid #d5dbe2; }
   :is(body.dark-mode, body.dark) .mes-mode .mes-aside-show { border-left-color: #555; }
 }
+
+/* second ad (300x600) inside the card list, after the 7th recommendation: clearly labelled and fenced off so it can't pass for a recommendation */
+.mes-aside__list > li.mes-aside__ad2 { list-style: none; margin: 1.1em 0; padding: .6em 0 .7em; border-top: 1px solid #d5dbe2; border-bottom: 1px solid #d5dbe2; text-align: center; }
+.mes-aside__ad2-label { display: block; font-size: .68em; letter-spacing: .08em; text-transform: uppercase; color: #8a93a0; margin-bottom: .5em; }
+.mes-aside__ad2-slot { min-height: 600px; width: 300px; max-width: 100%; margin: 0 auto; }
+.mes-aside__ad2-slot.is-debug { display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, #f1f3f6, #f1f3f6 10px, #e8ebef 10px, #e8ebef 20px); color: #667; font-size: .85em; }
+:is(body.dark-mode, body.dark) .mes-aside__list > li.mes-aside__ad2 { border-color: #444; }
+:is(body.dark-mode, body.dark) .mes-aside__ad2-slot.is-debug { background: repeating-linear-gradient(45deg, #26282c, #26282c 10px, #2d3035 10px, #2d3035 20px); color: #aab; }
+

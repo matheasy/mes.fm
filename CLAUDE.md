@@ -427,6 +427,10 @@ of HTML files individually:
   `moon`; the Hutchison / ferrocell / Norman Patricia / Nancy reports are left alone on purpose) get the sidebar as a **fixed rail on the side opposite the "Jump to" list from 1500px**
   (`jump-aside.js` builds the markup and loads `aside.js`; Wide / Theatre shrink the article by the rail's width via `--toc-w`; hide / show shares `asideHidden`). Re-run
   `build_search_index.py` then `build_aside_recs.py --apply` after adding pages.
+- **Second sidebar ad (300x600)** (2026-10-02, `aside.js` `AD2_SLOT`, `aside.css` end): after the 7th card in the column (counted over the page's own related cards + ours) a labelled, fenced-off
+  "Advertisement" box with a fixed 300x600 AdSense unit, only when the content is at least ~760px taller than the column at that point (so short pages never get it), never on the Jump-to rail,
+  requested lazily (IntersectionObserver, 300px margin) and collapsed by the same blocker/unfilled watcher as the top ad (more cards then fill the space). **Off until `AD2_SLOT` is set** to the
+  slot id of a new fixed-size AdSense unit "Sidebar Half Page 300x600"; `?aside-debug` shows a hatched placeholder where it would go (checked: 7 cards, ad, then 40 more cards down to the footer).
 - `add_hub_theatre.py` -- the **Standard | Theatre** switch on the sidebar-less hub pages (2026-10-01; `calculators`, `tools`, `mobile-apps`, `puzzles`, `memes`
   and the thumbnail-gallery / quote list pages: every page with the `HUB-WIDE-LAYOUT` marker and no "More like this" sidebar, 62 pages). `main_js/hub-theatre.css` + `.js`;
   same saved `pageMode`/`pageWide` preference as `add_page_theatre.py`'s switch, so Theatre carries across the whole site. Theatre = `.outer-container` up to

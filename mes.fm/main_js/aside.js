@@ -13,6 +13,9 @@
     if (!aside) return;
 
     var AD_CLIENT = "ca-pub-1461238060884369";
+    /* Second, taller ad in the column (a fixed 300x600 "half page" unit), placed after the 7th recommendation when the column is long enough for it: create an AdSense unit
+       "Sidebar Half Page 300x600" (fixed size) and put its slot id here. Empty = the feature is off (nothing is requested or shown). ?aside-debug shows a placeholder. */
+    var AD2_SLOT = "";
 
     if (/[?&]aside-debug\b/.test(location.search)) document.documentElement.classList.add("aside-debug");
 
@@ -283,12 +286,47 @@
             var count = 0, rail = aside.classList.contains("mes-aside--rail");   /* rail = Jump-to pages' fixed side rail (jump-aside.js): a fixed number of cards, it scrolls on its own */
             function beside() { var a = aside.getBoundingClientRect(), c = content && content.getBoundingClientRect(); return !!c && window.innerWidth >= 1200 && (a.left >= c.right - 5 || a.right <= c.left + 5) && getComputedStyle(aside).display !== "none"; }
             function need() { return host2.getBoundingClientRect().height < content.getBoundingClientRect().height - 100; }
+            var ad2 = null, AD2_AFTER = 7;      /* counted over ALL cards in the column (the related cards the page already carries + ours) */
+            var debug2 = /[?&]aside-debug\b/.test(location.search);
+            function placeAd2() {                       /* the 600px ad goes right after the 7th card, only if the column has room for it and some cards below it */
+                if (ad2 || !(AD2_SLOT || debug2) || rail || !content || !beside()) return;
+                var cards = aside.querySelectorAll("li > a.mes-aside__card");
+                if (cards.length < AD2_AFTER) return;
+                var seventh = cards[AD2_AFTER - 1].parentNode;
+                if (content.getBoundingClientRect().height - host2.getBoundingClientRect().height < 760) return;
+                var li = document.createElement("li");
+                li.className = "mes-aside__ad2";
+                li.innerHTML = '<span class="mes-aside__ad2-label">Advertisement</span><div class="mes-aside__ad2-slot"></div>';
+                seventh.parentNode.insertBefore(li, seventh.nextSibling);
+                ad2 = li;
+                var slot = li.querySelector(".mes-aside__ad2-slot");
+                if (!AD2_SLOT) { slot.className += " is-debug"; slot.textContent = "300x600 ad goes here"; return; }
+                var requested = false;
+                function request() {                    /* lazy: only when it is near the screen, so an unseen impression is never counted */
+                    if (requested) return;
+                    requested = true;
+                    var ins = document.createElement("ins");
+                    ins.className = "adsbygoogle";
+                    ins.style.cssText = "display:inline-block;width:300px;height:600px";
+                    ins.setAttribute("data-ad-client", AD_CLIENT);
+                    ins.setAttribute("data-ad-slot", AD2_SLOT);
+                    slot.appendChild(ins);
+                    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+                    watchAd(ins, function (gone) { li.style.display = gone ? "none" : ""; if (gone) later(); });   /* blocked / unfilled: collapse and let more cards fill the space */
+                }
+                if ("IntersectionObserver" in window) {
+                    var io = new IntersectionObserver(function (es) { if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); request(); } }, { rootMargin: "300px 0px" });
+                    io.observe(li);
+                } else request();
+            }
             function add(b) {
                 var it = b.items.shift();
                 if (!it || have[it.u]) return;
                 have[it.u] = true;
                 if (!b.ul) b.ul = block(b.h);
-                b.ul.appendChild(card(it, b.logo)); count++;
+                var li = card(it, b.logo);
+                b.ul.appendChild(li); count++;
+                placeAd2();
             }
             function next() { for (var i = 0; i < blocks.length; i++) if (blocks[i].items.length) return blocks[i]; return null; }
             function fill() {
@@ -302,7 +340,9 @@
                     var lastB = null;
                     for (var k = blocks.length - 1; k >= 0; k--) if (blocks[k].ul && blocks[k].ul.lastChild) { lastB = blocks[k]; break; }
                     if (!lastB) break;
-                    var li = lastB.ul.lastChild, href = li.querySelector("a").getAttribute("href");
+                    var li = lastB.ul.lastChild;
+                    if (li.classList.contains("mes-aside__ad2")) break;      /* never trim the ad itself */
+                    var href = li.querySelector("a").getAttribute("href");
                     lastB.ul.removeChild(li); count--; delete have[href];
                     if (!lastB.ul.lastChild) { lastB.ul.parentNode.parentNode.removeChild(lastB.ul.parentNode); lastB.ul = null; }
                 }
