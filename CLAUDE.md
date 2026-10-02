@@ -404,12 +404,11 @@ of HTML files individually:
   for the sidebar). The script back-fills the early `<head>` restore snippet (1,100+ pages, the Jump-to `build.mjs` generators, `add_sidebar.py` HEAD_BLOCK,
   `add_toc_flip.py`); re-run it after cloning an old page. Idempotent; dry-runs by default, `--apply` writes. Pages with their own wide logic (`2d-graphing-calculator`,
   `stats`) and the sidebar-less hubs do not have the switch. The calendar also got sticky side arrows (previous / next month or year), left/right arrow keys and swipe.
-- **Wide / Theatre keep the sidebar + ad when the screen has room** (2026-10-02, `aside.css` end + `aside.js`): Wide puts the "More like this" column *beside* a wider content column
-  from 1560px up (frame `calc(50em + 332px + 360px)`, content ~1096px; math shell `.container.has-aside` +340px); Theatre does so from 1900px up (frame `min(98vw, 2400px)`, e.g. content
-  ~1525px at 1960px). Below those widths the old behaviour applies (one column, ad hidden and never requested, cards as a 4/6-column grid under the content; two media blocks
-  re-state the collapse rules per width range). `aside.js` calls `loadAd()` after every mode change and (debounced) on window resize -- it only requests the ad when the slot is
-  actually visible, so nothing is requested while collapsed. Rationale: the people who pick Wide / Theatre are on big monitors, i.e. the most valuable ad impressions. Idea not done yet: a
-  responsive vertical unit (300x600 / 300x250 / 160x600) for the sidebar slot, which needs a new AdSense unit id (`add_sidebar.py --ad-slot`, `aside.js` hardcodes 300x250 on the `<ins>`).
+- **Wide / Theatre keep the sidebar + ad on any widescreen** (2026-10-02, `aside.css` end + `aside.js`; thresholds lowered the same day after "shouldn't the sidebar still show on widescreens by default
+  unless they hide it?"): from **1360px** up the "More like this" column (ad + cards) sits *beside* the content in all three width modes unless the person hides it -- Wide: frame `min(98vw, 1492px)`
+  (content ~1096px on 1560px+, ~976px at 1400px); Theatre: frame `min(98vw, 2400px)` (content 1231px at 1660px). Only at 1200-1359px do Wide / Theatre fall back to one column with the
+  sidebar as a 4/6-column card grid under the content (ad neither shown nor requested). `aside.js` calls `loadAd()` after every mode change and (debounced) on window resize and only requests
+  the ad when its slot is visible. Rationale: the people who pick Wide / Theatre are on big monitors, i.e. the most valuable ad impressions.
 - **Sidebar rework** (2026-10-02, `aside.js` sections 1 / 2b / 4, `aside.css`, `build_aside_recs.py`): (1) the column is **no longer sticky** -- ad first, then the related cards run down the side with the
   page. (2) **Cross recommendations**: calculator / meme / puzzle / tool / timer pages get a "Free math video tutorials" block, the math-hub article pages (`math-qa`, `cubic-formula`,
   `vector-functions-problems-plus`) a "Free calculators" block, appended by JS from `main_js/aside-recs.json` (curated slug lists in `build_aside_recs.py`, titles/thumbnails from
