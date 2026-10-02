@@ -65,8 +65,11 @@
 	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
 	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
 	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
 	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
 	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:@@ACCENT_LIGHT@@ !important;--accent-dark:@@ACCENT_LIGHT@@ !important;}
 	@media (max-width:600px) {
 		.tu-stat__value {font-size:1.45em;}
 		.tu-field--sm {flex:1 1 7em;}

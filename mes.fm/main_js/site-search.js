@@ -177,6 +177,7 @@
             "#mes-search .ss-where{display:block;font-size:12.5px;color:var(--ss-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}",
             "#mes-search mark{background:var(--ss-mark);color:inherit;border-radius:2px;padding:0 1px}",
             "#mes-search .ss-status{padding:14px 16px;color:var(--ss-sub);font-size:14px;margin:0}",
+            "#mes-search span,#mes-search kbd,#mes-search mark{color:inherit}",   /* the pages' CSS reset paints every span #333, which left result titles and the key hints unreadable in dark mode */
             "#mes-search .ss-status:empty{display:none}",
             "#mes-search .ss-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--ss-line);font-size:13px;color:var(--ss-sub)}",
             "#mes-search .ss-foot a{color:var(--ss-accent) !important;font-weight:700;text-decoration:none !important}",

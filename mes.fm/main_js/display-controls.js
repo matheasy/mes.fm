@@ -71,6 +71,7 @@
         "body.dark-mode .calc-link,body.dark-mode .memes__img{border-color:rgba(255,255,255,.2)}",
         "body.dark-mode .calc-link:hover,body.dark-mode .memes__img:hover{border-color:#6cb6f5}",
         "body.dark-mode .button:not(.selected){color:#6cb6f5;border-color:#6cb6f5}",
+        "body.dark-mode .hide-div-button.selected{background-color:#2563a8;border-color:#2563a8;color:#fff}",
         "body.dark-mode .header-control-btn{background-color:#2e2e2e;color:#eee;border-color:rgba(255,255,255,.25)}",
         "body.dark-mode #compact-nav{background:#1a1a1a}",
         "body.dark-mode #compact-nav .compact-nav-title{color:#eee}",

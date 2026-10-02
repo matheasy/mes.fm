@@ -106,6 +106,28 @@ APPS = {
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
 
+def light_accent(hex_color, bg="#1a1a1a", target=6.0):
+    """The accent lightened (same hue) until it reads on the dark-mode page background: used for links, outlines and filled buttons in dark mode."""
+    import colorsys
+
+    def lin(c):
+        c /= 255.0
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+    def lum(rgb):
+        return 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2])
+    h = hex_color.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    bgc = tuple(int(bg.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
+    hh, ll, ss = colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
+    while ll < 0.95:
+        rr, gg, bb = (round(v * 255) for v in colorsys.hls_to_rgb(hh, ll, ss))
+        if (lum((rr, gg, bb)) + 0.05) / (lum(bgc) + 0.05) >= target:
+            break
+        ll += 0.01
+    return "#%02x%02x%02x" % (rr, gg, bb)
+
+
 def css_items(css):
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     items, i, n = [], 0, len(css)
@@ -185,7 +207,7 @@ def build_from_source(slug, cfg, tpl):
         css += "\n" + (SRC / extra).read_text(encoding="utf-8")
     if (d / "app.css").exists():
         css += "\n" + (d / "app.css").read_text(encoding="utf-8")
-    css = (css.replace("@@ACCENT@@", cfg["accent"]).replace("@@ACCENT_DARK@@", cfg["dark"]).replace("@@TINT@@", cfg["tint"])
+    css = (css.replace("@@ACCENT_LIGHT@@", light_accent(cfg["accent"])).replace("@@ACCENT@@", cfg["accent"]).replace("@@ACCENT_DARK@@", cfg["dark"]).replace("@@TINT@@", cfg["tint"])
            .replace("var(--tint)", cfg["tint"]))
     content = (d / "content.html").read_text(encoding="utf-8")
     desc = cfg["desc"]
