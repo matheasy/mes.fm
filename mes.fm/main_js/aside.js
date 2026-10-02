@@ -232,7 +232,7 @@
        opening its sections, the comments loading). Not shown on the 9/11 / Hutchison / science / conspiracy / crypto / mathiew / livestreams mirrors. */
     (function () {
         var MATH_FAMS = { "math-qa": 1, "cubic-formula": 1, "vector-functions-problems-plus": 1, "math": 1 };
-        var NONE = { "science": 1, "crypto": 1, "mathiew": 1, "livestreams": 1 };
+        var NONE = { "livestreams": 1 };
         /* the 9/11 / Hutchison / conspiracy cluster recommends only itself (own family first, then the other two): never calculators or math */
         var CLUSTER = { "911": ["911", "hutchison", "conspiracy"], "hutchison": ["hutchison", "911", "conspiracy"], "conspiracy": ["conspiracy", "911", "hutchison"] };
         var CL_HEAD = { "911": "More 9/11 Truth", "hutchison": "More on the Hutchison Effect", "conspiracy": "More conspiracy research" };
@@ -281,6 +281,13 @@
             var calc = ctx.concat(rank(recs.calc)), blocks;
             if (CLUSTER[family]) {
                 blocks = CLUSTER[family].map(function (f) { return { h: CL_HEAD[f], items: fresh((recs.cl || {})[f]), logo: false }; });
+            } else if (family === "mathiew") {                      /* the humour pages: only math memes */
+                blocks = [{ h: "More math memes", items: fresh(rnd.memes), logo: false }];
+            } else if (family === "crypto" || family === "science") {
+                blocks = [{ h: family === "crypto" ? "More from MES Crypto" : "More science", items: fresh((recs.cl || {})[family]), logo: false },
+                          { h: "Related calculators & tools", items: calc.slice(0, 8), logo: true },
+                          { h: "Free math video tutorials", items: rank(recs.math), logo: false },
+                          { h: "More free calculators & tools", items: calc.slice(8), logo: true }];
             } else if (mathWorld) {
                 blocks = [{ h: ctx.length ? "Try it with MES tools" : "Calculators for this topic", items: calc.slice(0, ctx.length + 8), logo: true }];
                 if (isQA) blocks.push({ h: "More Math Q/A livestreams", items: rank(recs.qa), logo: false });      /* the livestream replays only ever show up next to other livestream replays */

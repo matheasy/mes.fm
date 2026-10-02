@@ -37,6 +37,7 @@ CALC = {   # path -> (kind, tags)
     "/inflationcalculator": ("Calculator", ["money", "finance", "percent"]),
     "/vatcalculator": ("Calculator", ["money", "percent"]),
     "/bmicalculator": ("Calculator", ["health", "everyday"]),
+    "/impermanent-loss-calculator": ("Calculator", ["crypto", "finance", "money"]),
     "/earth-curvature-calculator": ("Calculator", ["science", "physics", "math"]),
     "/latex": ("Tool", ["math", "school", "notation"]),
     "/symbols": ("Tool", ["math", "school", "notation"]),
@@ -58,7 +59,7 @@ PAGE_TAGS = {
     "fam": {"percentagecalculator": ["percent", "everyday", "money", "school"], "gradecalculator": ["school", "percent"], "gpacalculator": ["school"],
             "mortgagecalculator": ["money", "finance"], "inflationcalculator": ["money", "finance", "percent"], "vatcalculator": ["money", "percent"],
             "bmicalculator": ["health", "everyday"], "memes": ["fun"], "puzzles": ["fun", "math", "school"], "timer": ["focus", "time", "school"], "tools": ["everyday"],
-            "pokemongocalculator": ["fun"], "graphing": ["graphing", "calculus", "algebra", "school"], "math-qa": ["physics", "science", "math"], "cubic-formula": ["algebra", "equations", "math"],
+            "pokemongocalculator": ["fun"], "crypto": ["money", "finance", "crypto"], "science": ["science", "physics", "astronomy"], "graphing": ["graphing", "calculus", "algebra", "school"], "math-qa": ["physics", "science", "math"], "cubic-formula": ["algebra", "equations", "math"],
             "vector-functions-problems-plus": ["calculus", "vectors", "physics", "graphing", "math"]},
     "pat": [["problems-plus-[1-6]|projectile|curvature|spool", ["calculus", "graphing", "physics", "vectors"]], ["cubic|quadratic|cube-root", ["algebra", "equations"]],
             ["^/moon", ["astronomy", "time", "science"]], ["^/calendar", ["time", "astronomy"]], ["^/timer", ["focus", "time"]],
@@ -135,11 +136,11 @@ def main():
     # Families come from each page's own data-aside-family; hubs and the graphic jumper clips are left out (thumbnails of the latter are not for cards).
     HUBS = {"911", "911-posts", "911-videos", "911truth", "911-short-videos", "911-observable-evidence", "1109-keo-meteor-music", "hutchison", "hutchison-posts", "hutchison-videos",
             "highlights", "articles", "hutchison-debunking-debunkers", "hutchison-news", "hutchison-unedited-footage", "hutchison-interviews", "cold-fusion-lenr",
-            "conspiracy", "conspiracy-posts", "conspiracy-videos"}
+            "conspiracy", "conspiracy-posts", "conspiracy-videos", "crypto", "science", "science-posts", "science-videos"}
     BAD = re.compile(r"jumper|jumping|falling-man|eyesiswatchin|coat-jumper")
-    LABEL = {"911": "9/11 Truth", "hutchison": "Hutchison Effect", "conspiracy": "Conspiracy"}
+    LABEL = {"911": "9/11 Truth", "hutchison": "Hutchison Effect", "conspiracy": "Conspiracy", "crypto": "Crypto", "science": "Science"}
     fam_re = re.compile(r'data-aside-family="([^"]+)"')
-    cl = {"911": [], "hutchison": [], "conspiracy": []}
+    cl = {"911": [], "hutchison": [], "conspiracy": [], "crypto": [], "science": []}   # crypto + science: their own pages (shown with calculators and math videos, see aside.js)
     for d in sorted(p for p in SITE.iterdir() if p.is_dir()):
         f = d / "index.html"
         if not f.exists() or d.name in HUBS or BAD.search(d.name):
