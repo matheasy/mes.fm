@@ -117,18 +117,24 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   }
 }
 
-/* Wide page (aside.js "2b"): html.page-wide -- one column, the ad dropped, the cards as a grid under the content.
-   The button only exists/shows from 1200px (below that the page is already one column). */
+/* Page width (aside.js "2b"): a Standard | Wide | Theatre switch. html.page-wide -- one column, the ad dropped, the cards as a grid under the content;
+   html.page-theatre (always together with page-wide) -- the same, with the page using nearly the whole window.
+   The switch only exists/shows from 1200px (below that the page is already one column). */
 .mes-wide-toggle { display: none; }
 @media (min-width: 1200px) {
   .has-aside .page-content, .mes-col-main { position: relative; }
-  .mes-wide-toggle { display: inline-flex; align-items: center; gap: .35em; position: absolute; top: .45em; right: 0; z-index: 2;
-    padding: .28em .8em; border: 1px solid #b9c2cc; border-radius: 999px; background: #fff; color: #1479c7;
-    font: inherit; font-size: .82em; line-height: 1.2; cursor: pointer; }
-  .mes-col-main > .mes-wide-toggle { top: 22px; right: 10px; }
-  .mes-wide-toggle:hover, .mes-wide-toggle[aria-pressed="true"] { background: #1479c7; color: #fff; border-color: #1479c7; }
-  :is(body.dark-mode, body.dark) .mes-wide-toggle { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
-  :is(body.dark-mode, body.dark) .mes-wide-toggle:hover, :is(body.dark-mode, body.dark) .mes-wide-toggle[aria-pressed="true"] { background: #6cb6f5; color: #111; border-color: #6cb6f5; }
+  .mes-mode { display: inline-flex; position: absolute; top: .45em; right: 0; z-index: 2; border: 1px solid #b9c2cc; border-radius: 999px;
+    background: #fff; overflow: hidden; font-size: .82em; line-height: 1.2; }
+  .mes-col-main > .mes-mode { top: 22px; right: 10px; }
+  .mes-mode button { border: 0; background: transparent; color: #1479c7; font: inherit; padding: .28em .8em; cursor: pointer; }
+  .mes-mode button + button { border-left: 1px solid #d5dbe2; }
+  .mes-mode button:hover { background: #e8f2fb; }
+  .mes-mode button[aria-pressed="true"] { background: #1479c7; color: #fff; }
+  :is(body.dark-mode, body.dark) .mes-mode { background: #2e2e2e; border-color: #555; }
+  :is(body.dark-mode, body.dark) .mes-mode button { color: #6cb6f5; }
+  :is(body.dark-mode, body.dark) .mes-mode button + button { border-left-color: #555; }
+  :is(body.dark-mode, body.dark) .mes-mode button:hover { background: #3a3a3a; }
+  :is(body.dark-mode, body.dark) .mes-mode button[aria-pressed="true"] { background: #6cb6f5; color: #111; }
 
   html.page-wide .has-aside .outer-page-content, html.page-wide .mes-cols { grid-template-columns: 1fr; }
   html.page-wide .has-aside .page-content, html.page-wide .mes-col-main { grid-column: 1; grid-row: 1; }
@@ -137,4 +143,8 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   html.page-wide .mes-aside__ad, html.page-wide .mes-aside__ad:not([data-ad-slot=""]) { display: none !important; }
   html.page-wide .mes-aside__flip { display: none !important; }
   html.page-wide .mes-aside__list { grid-template-columns: repeat(4, 1fr); }
+  /* Theatre: the page frame (and the footer / math-shell container) grow to nearly the whole window */
+  html.page-theatre .outer-container.has-aside, html.page-theatre .container.has-aside { max-width: min(98vw, 2400px) !important; width: auto !important; }
+  html.page-theatre .container.has-aside .footer { max-width: none; }
+  html.page-theatre .mes-aside__list { grid-template-columns: repeat(6, 1fr); }
 }

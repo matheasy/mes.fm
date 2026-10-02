@@ -249,7 +249,7 @@
         var y = state.y, m = state.m, main = $("cl-main");
         $("cl-v-month").setAttribute("aria-pressed", state.view === "month"); $("cl-v-year").setAttribute("aria-pressed", state.view === "year");
         $("cl-title").textContent = state.view === "year" ? String(y) : MONTHS[m] + " " + y;
-        $("cl-prev").setAttribute("aria-label", state.view === "year" ? "Previous year" : "Previous month"); $("cl-next").setAttribute("aria-label", state.view === "year" ? "Next year" : "Next month");
+        $("cl-prev").setAttribute("aria-label", state.view === "year" ? "Previous year" : "Previous month"); $("cl-next").setAttribute("aria-label", state.view === "year" ? "Next year" : "Next month"); $("cl-side-prev").setAttribute("aria-label", state.view === "year" ? "Previous year" : "Previous month"); $("cl-side-next").setAttribute("aria-label", state.view === "year" ? "Next year" : "Next month");
         $("cl-jm").value = m; $("cl-jy").value = y; if (state.sel) $("cl-jd").value = state.sel;
         if (state.view === "year") { var h = []; for (var i = 0; i < 12; i++) h.push(miniMonth(y, i)); main.innerHTML = '<div class="cl-year">' + h.join("") + '</div><p class="tu-note cl-legend"><i class="cl-lg cl-lg--new"></i> new moon &nbsp; <i class="cl-lg cl-lg--full"></i> full moon &nbsp; <i class="cl-lg cl-lg--q"></i> quarter moon &nbsp; <b class="cl-lg-red">red</b> public holiday &nbsp; <span class="cl-lg-dot">dotted</span> observance or event. Hover a day for details, click it to open the month.</p>'; }
         else main.innerHTML = monthGrid(y, m);
@@ -332,6 +332,21 @@
     function toast(msg) { var el = document.createElement("div"); el.className = "tu-toast"; el.textContent = msg; document.body.appendChild(el); requestAnimationFrame(function () { el.classList.add("tu-toast--show"); }); setTimeout(function () { el.remove(); }, 1800); }
     $("cl-prev").addEventListener("click", function () { step(-1); });
     $("cl-next").addEventListener("click", function () { step(1); });
+    $("cl-side-prev").addEventListener("click", function () { step(-1); });
+    $("cl-side-next").addEventListener("click", function () { step(1); });
+    document.addEventListener("keydown", function (e) {      // left / right arrow = previous / next month (year in year view), unless typing or using a modifier
+        var t = e.target, tag = t && t.tagName;
+        if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || (tag && /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(tag)) || (t && t.isContentEditable)) return;
+        if (e.key === "ArrowLeft") { step(-1); e.preventDefault(); } else if (e.key === "ArrowRight") { step(1); e.preventDefault(); }
+    });
+    (function () {                                           // swipe left / right on the calendar (touch screens)
+        var st = $("cl-stage"), x0 = 0, y0 = 0, t0 = 0;
+        st.addEventListener("touchstart", function (e) { if (e.touches.length !== 1) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); }, { passive: true });
+        st.addEventListener("touchend", function (e) {
+            if (!t0 || !e.changedTouches.length) return; var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0, dt = Date.now() - t0; t0 = 0;
+            if (dt < 600 && Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 2) step(dx < 0 ? 1 : -1);
+        }, { passive: true });
+    })();
     $("cl-today").addEventListener("click", function () { var n = new Date(); state.sel = keyOfDate(n); state.y = n.getFullYear(); state.m = n.getMonth(); render(); });
     $("cl-v-month").addEventListener("click", function () { state.view = "month"; save(); render(); });
     $("cl-v-year").addEventListener("click", function () { state.view = "year"; save(); render(); });

@@ -1,7 +1,7 @@
 /* Options for the fixed "Jump to" sidebar TOC (.toc-sidebar): pills under its title -- Side (move it to the other side of the
    article) and Hide (collapse the sidebar to a "Jump to" tab where it was; click the tab to bring it back) -- plus a Wide / Narrow
    pill at the top right of the article (inside the "Part of ..." box when the page has one, else on a row above the <h1>; the same spot as on the calculator pages). Wide widens the article column and
-   the sidebar moves out with it. Saved in localStorage ("asideSide", "pageWide" -- both shared with the "More like this" pages --
+   the sidebar moves out with it. Saved in localStorage ("asideSide", "pageWide" / "pageMode" -- both shared with the "More like this" pages --
    and "tocHidden"), restored before first paint by the inline script in <head> (add_toc_flip.py); layout: main_js/toc-flip.css. */
 (function () {
     "use strict";
@@ -22,21 +22,34 @@
     var side = pill("&#8644; Side", "Move this sidebar to the other side", function () {
         save("asideSide", root.classList.toggle("aside-left") ? "left" : "right");
     });
-    var wide = pill("", "Widen the page", function () {
-        save("pageWide", root.classList.toggle("page-wide") ? "1" : "0");
+    /* Standard | Wide | Theatre switch (the sidebar stays in all three; theatre just gives the article most of the window) */
+    var wide = document.createElement("div");
+    wide.className = "toc-wide-pill toc-mode";
+    wide.setAttribute("role", "group");
+    wide.setAttribute("aria-label", "Page width");
+    var MODES = [["std", "Standard", "Normal article width"], ["wide", "Wide", "Widen the article"], ["theatre", "Theatre", "Use most of the window for the article (the Jump to sidebar stays)"]], mbtn = {};
+    function current() { return root.classList.contains("page-theatre") ? "theatre" : root.classList.contains("page-wide") ? "wide" : "std"; }
+    function setMode(m) {
+        root.classList.toggle("page-wide", m !== "std");
+        root.classList.toggle("page-theatre", m === "theatre");
+        save("pageMode", m); save("pageWide", m === "std" ? "0" : "1");
         paint();
+        try { window.dispatchEvent(new Event("resize")); } catch (e) {}
+    }
+    MODES.forEach(function (x) {
+        var b = document.createElement("button");
+        b.type = "button"; b.textContent = x[1]; b.title = x[2];
+        b.addEventListener("click", function () { setMode(x[0]); });
+        mbtn[x[0]] = b; wide.appendChild(b);
     });
-    wide.className = "toc-wide-pill"; /* lives at the top right of the article (before the <h1>), like the calculator pages' Wide button */
     var hide = pill("Hide &#8250;", "Hide this sidebar", function () {
         root.classList.add("toc-hidden");
         save("tocHidden", "1");
         window.dispatchEvent(new Event("resize")); /* lets jump-to.js show its floating-bar button */
     });
     function paint() {
-        var on = root.classList.contains("page-wide");
-        wide.setAttribute("aria-pressed", on ? "true" : "false");
-        wide.innerHTML = "&#8596; " + (on ? "Narrow" : "Wide");
-        wide.title = on ? "Back to the standard width" : "Widen the page";
+        var m = current();
+        MODES.forEach(function (x) { mbtn[x[0]].setAttribute("aria-pressed", x[0] === m ? "true" : "false"); });
     }
     paint();
     tools.appendChild(side); tools.appendChild(hide);

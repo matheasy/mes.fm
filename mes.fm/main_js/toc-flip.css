@@ -4,6 +4,7 @@
    Behaviour: main_js/toc-flip.js. Patched into pages by add_toc_flip.py. */
 :root { --toc-w: 760px; }
 html.page-wide { --toc-w: max(760px, min(1100px, calc(100vw - 520px))); }  /* article column; room left for the sidebar beside it */
+html.page-theatre { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }  /* theatre: most of the window, sidebar still beside it */
 
 .toc-tools { display: none; flex-wrap: wrap; gap: 6px; margin: 0 0 .8em; }
 .toc-tools button { display: inline-flex; align-items: center; gap: .3em; padding: .2em .6em; border: 1px solid #b9c2cc; border-radius: 999px;
@@ -20,11 +21,16 @@ html.page-wide { --toc-w: max(760px, min(1100px, calc(100vw - 520px))); }  /* ar
   .toc-has-wide { position: relative; }
   .toc-has-wide > .toc-wide-pill { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
   .toc-wide-row { display: flex; justify-content: flex-end; margin: .7em 0 -.5em; }
-  .toc-wide-pill { display: inline-flex; align-items: center; gap: .35em; padding: .28em .8em; border: 1px solid #b9c2cc;
-    border-radius: 999px; background: #fff; color: #1479c7; font: inherit; font-size: .82em; line-height: 1.2; cursor: pointer; }
-  .toc-wide-pill:hover, .toc-wide-pill[aria-pressed="true"] { background: #1479c7; color: #fff; border-color: #1479c7; }
-  :is(body.dark-mode, body.dark) .toc-wide-pill { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
-  :is(body.dark-mode, body.dark) .toc-wide-pill:hover, :is(body.dark-mode, body.dark) .toc-wide-pill[aria-pressed="true"] { background: #6cb6f5; color: #111; border-color: #6cb6f5; }
+  .toc-mode { display: inline-flex; border: 1px solid #b9c2cc; border-radius: 999px; background: #fff; overflow: hidden; font-size: .82em; line-height: 1.2; }
+  .toc-mode button { border: 0; background: transparent; color: #1479c7; font: inherit; padding: .28em .8em; cursor: pointer; }
+  .toc-mode button + button { border-left: 1px solid #d5dbe2; }
+  .toc-mode button:hover { background: #e8f2fb; }
+  .toc-mode button[aria-pressed="true"] { background: #1479c7; color: #fff; }
+  :is(body.dark-mode, body.dark) .toc-mode { background: #2e2e2e; border-color: #555; }
+  :is(body.dark-mode, body.dark) .toc-mode button { color: #6cb6f5; }
+  :is(body.dark-mode, body.dark) .toc-mode button + button { border-left-color: #555; }
+  :is(body.dark-mode, body.dark) .toc-mode button:hover { background: #3a3a3a; }
+  :is(body.dark-mode, body.dark) .toc-mode button[aria-pressed="true"] { background: #6cb6f5; color: #111; }
   /* sidebar sits just outside the article column, whatever its width */
   html .toc-sidebar { left: calc(50% + var(--toc-w) / 2 + 30px); }
   html.aside-left .toc-sidebar { left: auto; right: calc(50% + var(--toc-w) / 2 + 30px); padding-right: 0; padding-left: 10px; }

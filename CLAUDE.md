@@ -327,6 +327,14 @@ of HTML files individually:
   calendar's `lib.js` (holiday engine `MESCal`, used for the business-day holiday regions) + its own `lib.js` (`DC`, date maths on "naive" wall-clock ms: calendar
   months with end-of-month clamping, user-chosen unit combinations `breakdown()`, weekday counts, business days, ISO week, DST-aware elapsed via Intl) + `app.js`.
   Inclusive-end option, time of day, weekend picker, custom days off, shareable `?start=&end=&u=` links. Logos are PIL placeholders until Grok art lands.
+- `add_page_theatre.py` -- **page-width switch** (2026-10-01): the "Wide page" pill on the sidebar pages (`aside.js`) and the Wide pill on the Jump-to pages
+  (`toc-flip.js`) became a **Standard | Wide | Theatre** segmented control (>=1200px / >=1300px only). Saved as localStorage `pageMode` (`std|wide|theatre`);
+  theatre also writes `pageWide=1` and sets `html.page-theatre` *in addition to* `html.page-wide`, so every Wide rule still applies and theatre just adds "use nearly
+  the whole window" (`aside.css`: `.outer-container.has-aside` / `.container.has-aside` -> `min(98vw, 2400px)`, 6-column "More like this" grid; `toc-flip.css`:
+  `--toc-w` up to 2000px with the Jump-to sidebar kept beside the article -- on screens under ~1800px that equals Wide, since the centred article has to leave room
+  for the sidebar). The script back-fills the early `<head>` restore snippet (1,100+ pages, the Jump-to `build.mjs` generators, `add_sidebar.py` HEAD_BLOCK,
+  `add_toc_flip.py`); re-run it after cloning an old page. Idempotent; dry-runs by default, `--apply` writes. Pages with their own wide logic (`graphing-calculator-2D`,
+  `stats`) and the sidebar-less hubs do not have the switch. The calendar also got sticky side arrows (previous / next month or year), left/right arrow keys and swipe.
 - `add_cross_links.py` — cross-links calculators and tools in the horizontal info bar: calculator pages (the calculator
   mini-sites and the four rebuilt apps) get a **Tools** item (-> `/tools`), tool pages (timer incl. its quote galleries,
   speedreader, emoji, latex, timezone, symbols, youtube-thumbnail, stats) get **Calculators** (and Tools where missing),

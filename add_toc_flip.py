@@ -14,7 +14,7 @@ import sys, pathlib, re
 ROOT = pathlib.Path(__file__).resolve().parent
 V = "5"
 RESTORE = ("try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');"
-           "if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}")
+           "if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}")
 HEAD = ('<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=' + V + '"><script>' + RESTORE + '</script><!-- /TOC-FLIP-HEAD -->\n')
 TAIL = '<script src="/main_js/toc-flip.js?v=' + V + '" defer></script>'
 

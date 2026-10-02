@@ -407,6 +407,18 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .cl-rowbtn {color:#e0e0e0;}
 	body.dark-mode .tu .cl-rowbtn:hover {background:#26282c;}
 	body.dark-mode .tu .cl-evlist--rows li {border-color:#2e3035;}
+	/* side arrows: sticky chevrons in the margins beside the calendar (hidden on phones, where swiping and the top arrows do the job) */
+	.tu .cl-stage {display:block;}
+	.tu .cl-side {display:none;}
+	@media (min-width:900px) {
+		.tu .cl-stage {display:grid;grid-template-columns:2.6em minmax(0,1fr) 2.6em;gap:0.5em;align-items:stretch;}
+		.tu .cl-side {display:block;position:relative;}
+		.tu .cl-side button {position:sticky;top:42vh;width:2.6em;height:4.2em;border:1px solid #cfd5dd;border-radius:0.6em;background:#fff;color:var(--accent);font-size:1.9em;line-height:1;cursor:pointer;padding:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+		.tu .cl-side button:hover {background:var(--accent);color:#fff;border-color:var(--accent);}
+		body.dark-mode .tu .cl-side button {background:#262626;border-color:#4a4a4a;color:var(--accent);}
+		body.dark-mode .tu .cl-side button:hover {background:var(--accent);color:#0b1416;}
+	}
+
 
 
 	@media print {
@@ -532,6 +544,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .cl-rowbtn{color:#c5c9d0}
 	body.dark-mode .tu .cl-rowbtn:hover{background:#15181e}
 	body.dark-mode .tu .cl-rowdate{color:#9a9da3}
+	body.dark-mode .tu .cl-side button{border:1px solid #2f3742;background:#1a1a1a}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -748,7 +761,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -819,7 +832,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</details>
 
-		<div id="cl-main"></div>
+		<div class="cl-stage" id="cl-stage">
+			<div class="cl-side cl-side--prev"><button type="button" id="cl-side-prev" aria-label="Previous month" title="Previous (or press the left arrow key)">&#8249;</button></div>
+			<div id="cl-main"></div>
+			<div class="cl-side cl-side--next"><button type="button" id="cl-side-next" aria-label="Next month" title="Next (or press the right arrow key)">&#8250;</button></div>
+		</div>
 
 		<details class="cl-sec" id="cl-daysec" open>
 			<summary><span class="cl-sec__t">Selected day</span><span class="cl-sum" id="cl-day-sum"></span></summary>

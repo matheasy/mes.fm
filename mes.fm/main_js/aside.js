@@ -105,30 +105,42 @@
         }
     }
 
-    /* 2b. wide page -- a "Wide page" pill (>= 1200px only) at the right end of the content column's title row. On: html.page-wide
-       (saved in localStorage "pageWide", restored before first paint by the page's <head> script) collapses the two columns to one,
-       drops the ad and lays the "More like this" cards out as a grid below the content (rules: aside.css). Turning it off brings
-       the ad slot back, so request it then (it is never requested while hidden). */
+    /* 2b. page width -- a "Standard | Wide | Theatre" switch (>= 1200px only) at the right end of the content column's title row.
+       Wide = html.page-wide: one column (content ~1070px), the ad dropped, the "More like this" cards as a grid below the content.
+       Theatre = html.page-wide + html.page-theatre: the same, but the page uses nearly the whole window (calendar year view, wide tables, videos).
+       Saved in localStorage "pageMode" (std | wide | theatre) and, for the older head scripts, "pageWide" ("1" for wide and theatre); both are
+       restored before first paint by the page's <head> script (rules: aside.css). Going back to Standard brings the ad slot back, so request it
+       then (it is never requested while hidden). */
     var host = document.querySelector(".has-aside .page-content") || document.querySelector(".mes-col-main");
     if (host && !host.querySelector(".mes-wide-toggle")) {
-        var wide = document.createElement("button");
-        wide.type = "button";
-        wide.className = "mes-wide-toggle";
-        wide.title = "Use the full page width; the sidebar moves below the content";
         var root = document.documentElement;
+        var group = document.createElement("div");
+        group.className = "mes-wide-toggle mes-mode";
+        group.setAttribute("role", "group");
+        group.setAttribute("aria-label", "Page width");
+        var MODES = [["std", "Standard", "Normal width, sidebar beside the content"], ["wide", "Wide", "Use the full page width; the sidebar moves below the content"], ["theatre", "Theatre", "Use nearly the whole window: best for big screens, wide tables and the full-year calendar"]];
+        var buttons = {};
+        var current = function () { return root.classList.contains("page-theatre") ? "theatre" : root.classList.contains("page-wide") ? "wide" : "std"; };
         var paint = function () {
-            var on = root.classList.contains("page-wide");
-            wide.setAttribute("aria-pressed", on ? "true" : "false");
-            wide.innerHTML = '<span aria-hidden="true">&#8596;</span> ' + (on ? "Standard width" : "Wide page");
+            var m = current();
+            MODES.forEach(function (x) { buttons[x[0]].setAttribute("aria-pressed", x[0] === m ? "true" : "false"); });
         };
-        wide.addEventListener("click", function () {
-            var on = root.classList.toggle("page-wide");
-            try { localStorage.setItem("pageWide", on ? "1" : "0"); } catch (e) {}
+        var setMode = function (m) {
+            root.classList.toggle("page-wide", m !== "std");
+            root.classList.toggle("page-theatre", m === "theatre");
+            try { localStorage.setItem("pageMode", m); localStorage.setItem("pageWide", m === "std" ? "0" : "1"); } catch (e) {}
             paint();
-            if (!on) loadAd();
+            if (m === "std") loadAd();
+            try { window.dispatchEvent(new Event("resize")); } catch (e) {}
+        };
+        MODES.forEach(function (x) {
+            var b = document.createElement("button");
+            b.type = "button"; b.textContent = x[1]; b.title = x[2];
+            b.addEventListener("click", function () { setMode(x[0]); });
+            buttons[x[0]] = b; group.appendChild(b);
         });
         paint();
-        host.insertBefore(wide, host.firstChild);
+        host.insertBefore(group, host.firstChild);
     }
 
     /* 3. random card */
