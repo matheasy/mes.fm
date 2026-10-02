@@ -42,6 +42,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   tagline: 'Liquidity providing: the Main wallet\'s PancakeSwap position and rewards.',
                   homeHref: 'https://mes.fm/lp',
                 },
+                'random-wallets': {
+                  title: 'MES Random Small Wallets',
+                  tagline: 'Old wallets and exchange accounts, kept for reference - not counted anywhere.',
+                  homeHref: 'https://mes.fm/random-wallets',
+                },
                 assets: {
                   title: 'MES Assets',
                   tagline: 'Every asset worth $10+ across Hive, EVM chains, Hyperliquid and XRP.',
