@@ -15,7 +15,7 @@
     var AD_CLIENT = "ca-pub-1461238060884369";
     /* Second, taller ad in the column (a fixed 300x600 "half page" unit), placed after the 7th recommendation when the column is long enough for it: create an AdSense unit
        "Sidebar Half Page 300x600" (Display ads, Vertical, Responsive) and put its slot id here. Empty = the feature is off (nothing is requested or shown). ?aside-debug shows a placeholder. */
-    var AD2_SLOT = "";
+    var AD2_SLOT = "2932057652";
 
     if (/[?&]aside-debug\b/.test(location.search)) document.documentElement.classList.add("aside-debug");
 

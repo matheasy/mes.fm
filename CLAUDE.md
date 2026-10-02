@@ -429,7 +429,7 @@ of HTML files individually:
   `build_search_index.py` then `build_aside_recs.py --apply` after adding pages.
 - **Second sidebar ad (300x600)** (2026-10-02, `aside.js` `AD2_SLOT`, `aside.css` end): after the 7th card in the column (counted over the page's own related cards + ours) a labelled, fenced-off
   "Advertisement" box with a responsive Vertical AdSense unit (300x600 / 160x600), only when the content is at least ~760px taller than the column at that point (so short pages never get it), never on the Jump-to rail,
-  requested lazily (IntersectionObserver, 300px margin) and collapsed by the same blocker/unfilled watcher as the top ad (more cards then fill the space). **Off until `AD2_SLOT` is set** to the
+  requested lazily (IntersectionObserver, 300px margin) and collapsed by the same blocker/unfilled watcher as the top ad (more cards then fill the space). **On since 2026-10-02: `AD2_SLOT` = `2932057652`** (the unit; was off until it was set) -- the
   slot id of the AdSense unit "Sidebar Half Page 300x600" (Display, Vertical, Responsive); `?aside-debug` shows a hatched placeholder where it would go (checked: 7 cards, ad, then 40 more cards down to the footer).
 - `add_hub_theatre.py` -- the **Standard | Theatre** switch on the sidebar-less hub pages (2026-10-01; `calculators`, `tools`, `mobile-apps`, `puzzles`, `memes`
   and the thumbnail-gallery / quote list pages: every page with the `HUB-WIDE-LAYOUT` marker and no "More like this" sidebar, 62 pages). `main_js/hub-theatre.css` + `.js`;
