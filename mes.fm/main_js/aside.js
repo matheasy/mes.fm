@@ -16,13 +16,31 @@
 
     if (/[?&]aside-debug\b/.test(location.search)) document.documentElement.classList.add("aside-debug");
 
-    /* 1. flip */
+    /* 1. flip + hide */
     var flip = aside.querySelector(".mes-aside__flip");
+    var hideBtn = null;
     if (flip) {
         flip.addEventListener("click", function () {
             var left = document.documentElement.classList.toggle("aside-left");
             try { localStorage.setItem("asideSide", left ? "left" : "right"); } catch (e) {}
         });
+        /* hide button next to it (>= 1200px, same visibility rules as the flip); "Show sidebar" lives in the width switch (2b) */
+        var tools = document.createElement("span");
+        tools.className = "mes-aside__tools";
+        flip.parentNode.insertBefore(tools, flip);
+        tools.appendChild(flip);
+        hideBtn = document.createElement("button");
+        hideBtn.type = "button";
+        hideBtn.className = "mes-aside__hide";
+        hideBtn.setAttribute("aria-label", "Hide this sidebar");
+        hideBtn.title = "Hide this sidebar (bring it back with “Show sidebar” at the top right of the page)";
+        hideBtn.innerHTML = "&#8250;";
+        hideBtn.addEventListener("click", function () {
+            document.documentElement.classList.add("aside-hidden");
+            try { localStorage.setItem("asideHidden", "1"); } catch (e) {}
+            try { window.dispatchEvent(new Event("resize")); } catch (e) {}
+        });
+        tools.appendChild(hideBtn);
     }
 
 
@@ -141,6 +159,15 @@
             b.addEventListener("click", function () { setMode(x[0]); });
             buttons[x[0]] = b; group.appendChild(b);
         });
+        var show = document.createElement("button");
+        show.type = "button"; show.className = "mes-aside-show"; show.textContent = "Show sidebar"; show.title = "Bring the sidebar back";
+        show.addEventListener("click", function () {
+            root.classList.remove("aside-hidden");
+            try { localStorage.setItem("asideHidden", "0"); } catch (e) {}
+            loadAd();
+            try { window.dispatchEvent(new Event("resize")); } catch (e) {}
+        });
+        group.appendChild(show);
         paint();
         host.insertBefore(group, host.firstChild);
     }
@@ -184,4 +211,52 @@
         };
         if (window.requestIdleCallback) requestIdleCallback(start, { timeout: 3000 }); else setTimeout(start, 1500);
     }
+    /* 4. cross recommendations -- calculator / meme / puzzle / tool pages send people to the math video tutorials, and the math-hub article pages
+       send them to the calculators (pools: aside-recs.json, built by build_aside_recs.py). The column is filled with as many extra cards as it
+       takes to reach the height of the content next to it (at least 3, at most 12); when the sidebar sits below the content (< 1200px, or Wide /
+       Theatre without room) just one row of four. Not shown on the 9/11 / Hutchison / science / conspiracy / crypto mirrors. */
+    (function () {
+        var MATH_FAMS = { "math-qa": 1, "cubic-formula": 1, "vector-functions-problems-plus": 1, "math": 1 };
+        var NONE = { "911": 1, "hutchison": 1, "science": 1, "conspiracy": 1, "crypto": 1, "mathiew": 1, "livestreams": 1 };
+        if (!family || NONE[family] || !window.fetch) return;
+        var pool = MATH_FAMS[family] ? "calc" : "math";
+        var heading = pool === "math" ? "Free math video tutorials" : "Free calculators";
+        var host2 = aside.querySelector(".mes-aside__sticky") || aside;
+        function card(it) {
+            var li = document.createElement("li"), a = document.createElement("a");
+            a.className = "mes-aside__card"; a.href = it.u;
+            if (it.i) {
+                var img = document.createElement("img");
+                img.className = "mes-aside__img" + (pool === "calc" ? " mes-aside__img--logo" : "");
+                img.width = 56; img.height = 56; img.loading = "lazy"; img.alt = ""; img.src = it.i;
+                a.appendChild(img);
+            }
+            var text = document.createElement("span"), name = document.createElement("span"), tag = document.createElement("span");
+            text.className = "mes-aside__text"; name.className = "mes-aside__name"; tag.className = "mes-aside__tag";
+            name.textContent = it.t; tag.textContent = it.k;
+            text.appendChild(name); text.appendChild(tag); a.appendChild(text); li.appendChild(a);
+            return li;
+        }
+        function build(data) {
+            var items = (data[pool] || []).slice(), have = {};
+            have[location.pathname.replace(/\/$/, "").replace(/\/index\.html$/, "")] = true;
+            aside.querySelectorAll("a.mes-aside__card").forEach(function (a) { have[a.getAttribute("href")] = true; });
+            items = items.filter(function (it) { return !have[it.u]; });
+            if (!items.length) return;
+            for (var i = items.length - 1; i > 0; i--) { var k = Math.floor(Math.random() * (i + 1)), t = items[i]; items[i] = items[k]; items[k] = t; }
+            var box = document.createElement("div"), h = document.createElement("h2"), ul = document.createElement("ul");
+            box.className = "mes-aside__more"; h.className = "mes-aside__title-h"; h.textContent = heading; ul.className = "mes-aside__list";
+            box.appendChild(h); box.appendChild(ul); host2.appendChild(box);
+            var content = document.querySelector(".has-aside .page-content") || document.querySelector(".mes-col-main");
+            function beside() { var a = aside.getBoundingClientRect(), c = content && content.getBoundingClientRect(); return !!c && window.innerWidth >= 1200 && (a.left >= c.right - 5 || a.right <= c.left + 5); }
+            var n = 0;
+            if (beside()) {
+                while (n < items.length && n < 12 && (n < 3 || host2.getBoundingClientRect().height < content.getBoundingClientRect().height - 140)) { ul.appendChild(card(items[n])); n++; }
+            } else {
+                for (; n < Math.min(4, items.length); n++) ul.appendChild(card(items[n]));
+            }
+        }
+        var go = function () { fetch("/main_js/aside-recs.json?v=1").then(function (r) { return r.json(); }).then(build).catch(function () {}); };
+        if (document.readyState === "complete") go(); else window.addEventListener("load", go);
+    })();
 })();

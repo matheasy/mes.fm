@@ -126,7 +126,7 @@ FAMILIES = {
 
 HEAD_BLOCK = (
     '<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v={v}">'
-    "<script>try{{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}}catch(e){{}}try{{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}}catch(e){{}}try{{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}}catch(e){{}}</script>"
+    "<script>try{{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}}catch(e){{}}try{{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}}catch(e){{}}try{{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}}catch(e){{}}try{{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}}catch(e){{}}</script>"
     "<!-- /MES-ASIDE-HEAD -->"
 )
 JS_BLOCK = '<!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v={v}" defer></script><!-- /MES-ASIDE-JS -->'

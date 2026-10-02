@@ -410,6 +410,13 @@ of HTML files individually:
   re-state the collapse rules per width range). `aside.js` calls `loadAd()` after every mode change and (debounced) on window resize -- it only requests the ad when the slot is
   actually visible, so nothing is requested while collapsed. Rationale: the people who pick Wide / Theatre are on big monitors, i.e. the most valuable ad impressions. Idea not done yet: a
   responsive vertical unit (300x600 / 300x250 / 160x600) for the sidebar slot, which needs a new AdSense unit id (`add_sidebar.py --ad-slot`, `aside.js` hardcodes 300x250 on the `<ins>`).
+- **Sidebar rework** (2026-10-02, `aside.js` sections 1 / 2b / 4, `aside.css`, `build_aside_recs.py`): (1) the column is **no longer sticky** -- ad first, then the related cards run down the side with the
+  page. (2) **Cross recommendations**: calculator / meme / puzzle / tool / timer pages get a "Free math video tutorials" block, the math-hub article pages (`math-qa`, `cubic-formula`,
+  `vector-functions-problems-plus`) a "Free calculators" block, appended by JS from `main_js/aside-recs.json` (curated slug lists in `build_aside_recs.py`, titles/thumbnails from
+  `search/index.json` -- run it after `build_search_index.py`); it adds cards until the column is as tall as the content (3-12) or one row of four when the sidebar sits under the content.
+  Not shown on the 9/11 / Hutchison / science / conspiracy / crypto / mathiew / livestreams mirrors. (3) **Hide**: a `›` button next to the switch-sides arrow hides the sidebar (the content takes
+  the full width; "Show sidebar" appears as a 4th segment of the Standard | Wide | Theatre switch); saved as localStorage `asideHidden`, restored before first paint by the head snippet
+  (`add_page_theatre.py` second pass, also in `add_sidebar.py` HEAD_BLOCK). Only >= 1200px where the sidebar sits beside the content.
 - `add_hub_theatre.py` -- the **Standard | Theatre** switch on the sidebar-less hub pages (2026-10-01; `calculators`, `tools`, `mobile-apps`, `puzzles`, `memes`
   and the thumbnail-gallery / quote list pages: every page with the `HUB-WIDE-LAYOUT` marker and no "More like this" sidebar, 62 pages). `main_js/hub-theatre.css` + `.js`;
   same saved `pageMode`/`pageWide` preference as `add_page_theatre.py`'s switch, so Theatre carries across the whole site. Theatre = `.outer-container` up to

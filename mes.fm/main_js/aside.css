@@ -10,8 +10,9 @@
 
 .mes-aside__head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 .6em; }
 .mes-aside__title-h { margin: 0; font-size: 1.05em; font-weight: 700; color: #222; }
-.mes-aside__flip { display: none; width: 2em; height: 2em; padding: 0; border: 1px solid #b9c2cc; border-radius: 50%; background: #fff; color: #1479c7; font-size: .9em; line-height: 1; cursor: pointer; }
-.mes-aside__flip:hover { background: #1479c7; color: #fff; }
+.mes-aside__flip, .mes-aside__hide { display: none; width: 2em; height: 2em; padding: 0; border: 1px solid #b9c2cc; border-radius: 50%; background: #fff; color: #1479c7; font-size: .9em; line-height: 1; cursor: pointer; }
+.mes-aside__flip:hover, .mes-aside__hide:hover { background: #1479c7; color: #fff; }
+.mes-aside__tools { display: inline-flex; gap: .4em; }
 
 .mes-aside__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: .5em; }
 .mes-aside__card { display: flex; align-items: center; gap: .75em; padding: .5em; border: 1px solid #d7dee5; border-radius: .5em; background: #fff; color: #222; text-decoration: none; }
@@ -43,8 +44,9 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   .has-aside .outer-page-content { display: grid !important; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 32px; align-items: start; }
   .has-aside .page-content { grid-column: 1; grid-row: 1; }
   .has-aside .mes-aside { grid-column: 2; grid-row: 1; margin: 1.2em 0 1em; align-self: stretch; } /* full-height track so the sticky child has room to travel */
-  .has-aside .mes-aside__sticky { position: sticky; top: 64px; }
-  .has-aside .mes-aside__flip { display: block; }
+  /* the column is no longer sticky (2026-10-02): the ad sits at the top, then the related and cross-family cards run down the side with the page */
+  .has-aside .mes-aside__sticky { position: static; }
+  .has-aside .mes-aside__flip, .has-aside .mes-aside__hide { display: block; }
   html.aside-left .has-aside .outer-page-content { grid-template-columns: 300px minmax(0, 1fr); }
   html.aside-left .has-aside .page-content { grid-column: 2; }
   html.aside-left .has-aside .mes-aside { grid-column: 1; }
@@ -57,8 +59,8 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
 :is(body.dark-mode, body.dark) .mes-aside__img { background: #3a3a3a; }
 :is(body.dark-mode, body.dark) .mes-aside__img--logo { background: transparent; }
 :is(body.dark-mode, body.dark) .mes-aside__tag { color: #aab; }
-:is(body.dark-mode, body.dark) .mes-aside__flip { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
-:is(body.dark-mode, body.dark) .mes-aside__flip:hover { background: #6cb6f5; color: #111; }
+:is(body.dark-mode, body.dark) .mes-aside__flip, :is(body.dark-mode, body.dark) .mes-aside__hide { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
+:is(body.dark-mode, body.dark) .mes-aside__flip:hover, :is(body.dark-mode, body.dark) .mes-aside__hide:hover { background: #6cb6f5; color: #111; }
 :is(body.dark-mode, body.dark) .mes-aside__name { color: #eee; }
 
 /* math-hub shell (add_sidebar_math.py): the page's main blocks live in .mes-col-main, the aside next to them in .mes-cols;
@@ -152,7 +154,7 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   html.page-wide .has-aside .mes-aside, html.page-wide .mes-cols > .mes-aside { grid-column: 1; grid-row: 2; margin: 2em 0 1em; }
   html.page-wide .mes-aside__sticky { position: static; }
   html.page-wide .mes-aside__ad, html.page-wide .mes-aside__ad:not([data-ad-slot=""]) { display: none !important; }
-  html.page-wide .mes-aside__flip { display: none !important; }
+  html.page-wide .mes-aside__flip, html.page-wide .mes-aside__hide { display: none !important; }
   html.page-wide .mes-aside__list { grid-template-columns: repeat(4, 1fr); }
   html.page-theatre .mes-aside__list { grid-template-columns: repeat(6, 1fr); }
 }
@@ -162,10 +164,26 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   html.page-theatre .has-aside .mes-aside, html.page-theatre .mes-cols > .mes-aside { grid-column: 1; grid-row: 2; margin: 2em 0 1em; }
   html.page-theatre .mes-aside__sticky { position: static; }
   html.page-theatre .mes-aside__ad, html.page-theatre .mes-aside__ad:not([data-ad-slot=""]) { display: none !important; }
-  html.page-theatre .mes-aside__flip { display: none !important; }
+  html.page-theatre .mes-aside__flip, html.page-theatre .mes-aside__hide { display: none !important; }
   html.page-theatre .mes-aside__list { grid-template-columns: repeat(6, 1fr); }
 }
 @media (min-width: 1560px) {
   html.page-wide:not(.page-theatre) .outer-container.has-aside { max-width: calc(50em + 332px + 360px) !important; }
   html.page-wide:not(.page-theatre) .container.has-aside { max-width: calc(760px + 332px + 340px); }
+}
+
+/* cross recommendations block (aside.js section 4) */
+.mes-aside__more { margin-top: 1.6em; }
+.mes-aside__more .mes-aside__title-h { margin-bottom: .6em; }
+
+/* Hide the sidebar (button next to the switch-sides arrow; "Show sidebar" comes back in the width switch). Saved as localStorage "asideHidden",
+   restored before first paint by the head snippet (add_page_theatre.py). Only applies where the sidebar sits beside the content (>= 1200px). */
+.mes-aside-show { display: none !important; }
+@media (min-width: 1200px) {
+  html.aside-hidden .has-aside .outer-page-content, html.aside-hidden .mes-cols { grid-template-columns: 1fr; }
+  html.aside-hidden .has-aside .page-content, html.aside-hidden .mes-col-main { grid-column: 1; grid-row: 1; }
+  html.aside-hidden .mes-aside { display: none !important; }
+  html.aside-hidden .mes-aside-show { display: inline-block !important; }
+  .mes-mode .mes-aside-show { border-left: 1px solid #d5dbe2; }
+  :is(body.dark-mode, body.dark) .mes-mode .mes-aside-show { border-left-color: #555; }
 }

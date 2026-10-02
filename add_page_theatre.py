@@ -25,6 +25,13 @@ PAIRS = [
     ("if(L.getItem('pageWide')==='1')H.add('page-wide');",
      "if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');"),
 ]
+# second pass (2026-10-02): the sidebar's "hide" preference is restored in the same head block, on the pages that carry the sidebar (MES-ASIDE-HEAD) and in add_sidebar.py
+ASIDE_PAIRS = [
+    ("document.documentElement.classList.add('page-theatre')}catch(e){}",
+     "document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}"),
+    ("document.documentElement.classList.add('page-theatre')}}catch(e){{}}",
+     "document.documentElement.classList.add('page-theatre')}}catch(e){{}}try{{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}}catch(e){{}}"),
+]
 changed = 0
 for p in list(ROOT.rglob("*.html")) + list(ROOT.rglob("build.mjs")) + [ROOT / "add_sidebar.py", ROOT / "add_toc_flip.py", ROOT / "add_page_wide.py"]:
     if "node_modules" in p.parts or ".claude" in p.parts:
@@ -33,11 +40,15 @@ for p in list(ROOT.rglob("*.html")) + list(ROOT.rglob("build.mjs")) + [ROOT / "a
         t = p.read_text(encoding="utf-8")
     except Exception:
         continue
-    if "pageWide" not in t or "pageMode" in t.replace("localStorage.getItem('pageMode')", "", 0) and "page-theatre" in t:
+    if "pageWide" not in t:
         continue
     n = t
-    for old, new in PAIRS:
-        n = n.replace(old, new)
+    if "page-theatre" not in n:
+        for old, new in PAIRS:
+            n = n.replace(old, new)
+    if ("MES-ASIDE-HEAD" in n or p.name == "add_sidebar.py") and "asideHidden" not in n:
+        for old, new in ASIDE_PAIRS:
+            n = n.replace(old, new)
     if n != t:
         changed += 1
         if APPLY:
