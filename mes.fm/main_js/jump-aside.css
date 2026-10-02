@@ -1,0 +1,18 @@
+/* "More like this" rail on the Jump-to pages (see jump-aside.js). Fixed, on the side of the article opposite the "Jump to" list, >= 1500px only. */
+.mes-aside--rail, .mes-rail-show { display: none; }
+@media (min-width: 1500px) {
+  html.jump-rail .mes-aside--rail { display: block; position: fixed; top: 90px; width: 300px; max-height: calc(100vh - 110px); overflow-y: auto; z-index: 9;
+    right: calc(50% + var(--toc-w) / 2 + 30px); left: auto; scrollbar-width: thin; scrollbar-color: rgba(128, 128, 128, .4) transparent; }
+  html.aside-left.jump-rail .mes-aside--rail { right: auto; left: calc(50% + var(--toc-w) / 2 + 30px); }
+  .mes-aside--rail .mes-aside__hide { display: block; }
+  .mes-aside--rail .mes-aside__list { grid-template-columns: 1fr; }
+  /* with the rail on the other side the article column may still use the room Wide / Theatre give it, but not the rail's 340px */
+  html.jump-rail.page-wide { --toc-w: max(760px, min(1100px, calc(100vw - 860px))); }
+  html.jump-rail.page-theatre { --toc-w: max(760px, min(2000px, calc(100vw - 860px))); }
+  html.aside-hidden .mes-rail-show { display: inline-block; position: fixed; top: 90px; z-index: 9; padding: .3em .8em; border: 1px solid #b9c2cc; border-radius: 999px;
+    background: #fff; color: #1479c7; font: inherit; font-size: .82em; cursor: pointer; right: calc(50% + var(--toc-w) / 2 + 30px); }
+  html.aside-hidden.aside-left .mes-rail-show { right: auto; left: calc(50% + var(--toc-w) / 2 + 30px); }
+  .mes-rail-show:hover { background: #1479c7; color: #fff; border-color: #1479c7; }
+  :is(body.dark-mode, body.dark) .mes-rail-show { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
+  :is(body.dark-mode, body.dark) .mes-rail-show:hover { background: #6cb6f5; color: #111; border-color: #6cb6f5; }
+}

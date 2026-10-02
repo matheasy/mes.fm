@@ -417,6 +417,16 @@ of HTML files individually:
   Not shown on the 9/11 / Hutchison / science / conspiracy / crypto / mathiew / livestreams mirrors. (3) **Hide**: a `›` button next to the switch-sides arrow hides the sidebar (the content takes
   the full width; "Show sidebar" appears as a 4th segment of the Standard | Wide | Theatre switch); saved as localStorage `asideHidden`, restored before first paint by the head snippet
   (`add_page_theatre.py` second pass, also in `add_sidebar.py` HEAD_BLOCK). Only >= 1200px where the sidebar sits beside the content.
+- **Smart recommendations + Jump-to rail** (2026-10-02, `build_aside_recs.py` -> `main_js/aside-recs.json`, `aside.js` section 4, `jump-aside.js/css`, `add_jump_aside.py`): the sidebar blocks are
+  *context-aware*: every page gets topic tags (`tags.fam` by `data-aside-family` + `tags.pat` path regexes) and items carry tags `g`; blocks are ranked by overlap (ties shuffled).
+  Calculator-world pages: "Try it with MES tools" (only where a page has `ctx` deep links) / "Related calculators & tools" (ranked: the percentage calculator gets Grade, Inflation, VAT
+  first), "Free math video tutorials", "More from MES" (own family), "More free calculators & tools". Math pages: "Try it with MES tools" -- **deep links that open a calculator with
+  the page's own example typed in** (`CTX` in the script: Problems Plus 5 -> CAS with the launch-angle equation + 2D graph of it; Problems Plus 6 -> a 3D helix; cubic formula -> CAS cubic
+  + 2D graph; ...) -- then "Calculators for this topic", "More math tutorials" and "Math memes & puzzles". **Math Q/A livestream replays are only ever recommended on other
+  `/math-qa*` pages** (pool `qa`, never in `math` / `mathall`; decided 2026-10-02: they look poor outside their own section). Jump-to pages (`cubic-formula`, `vector-functions-problems-plus`,
+  `moon`; the Hutchison / ferrocell / Norman Patricia / Nancy reports are left alone on purpose) get the sidebar as a **fixed rail on the side opposite the "Jump to" list from 1500px**
+  (`jump-aside.js` builds the markup and loads `aside.js`; Wide / Theatre shrink the article by the rail's width via `--toc-w`; hide / show shares `asideHidden`). Re-run
+  `build_search_index.py` then `build_aside_recs.py --apply` after adding pages.
 - `add_hub_theatre.py` -- the **Standard | Theatre** switch on the sidebar-less hub pages (2026-10-01; `calculators`, `tools`, `mobile-apps`, `puzzles`, `memes`
   and the thumbnail-gallery / quote list pages: every page with the `HUB-WIDE-LAYOUT` marker and no "More like this" sidebar, 62 pages). `main_js/hub-theatre.css` + `.js`;
   same saved `pageMode`/`pageWide` preference as `add_page_theatre.py`'s switch, so Theatre carries across the whole site. Theatre = `.outer-container` up to

@@ -24,16 +24,18 @@
             var left = document.documentElement.classList.toggle("aside-left");
             try { localStorage.setItem("asideSide", left ? "left" : "right"); } catch (e) {}
         });
-        /* hide button next to it (>= 1200px, same visibility rules as the flip); "Show sidebar" lives in the width switch (2b) */
+    }
+    /* hide button next to the flip (or alone, on the Jump-to pages' rail): >= 1200px, same visibility rules as the flip; "Show sidebar" lives in the width switch (2b) */
+    var head = aside.querySelector(".mes-aside__head");
+    if (head) {
         var tools = document.createElement("span");
         tools.className = "mes-aside__tools";
-        flip.parentNode.insertBefore(tools, flip);
-        tools.appendChild(flip);
+        if (flip) { flip.parentNode.insertBefore(tools, flip); tools.appendChild(flip); } else head.appendChild(tools);
         hideBtn = document.createElement("button");
         hideBtn.type = "button";
         hideBtn.className = "mes-aside__hide";
         hideBtn.setAttribute("aria-label", "Hide this sidebar");
-        hideBtn.title = "Hide this sidebar (bring it back with “Show sidebar” at the top right of the page)";
+        hideBtn.title = "Hide this sidebar (bring it back with “Show sidebar”)";
         hideBtn.innerHTML = "&#8250;";
         hideBtn.addEventListener("click", function () {
             document.documentElement.classList.add("aside-hidden");
@@ -250,30 +252,59 @@
             var have = {};
             have[location.pathname.replace(/\/$/, "").replace(/\/index\.html$/, "")] = true;
             aside.querySelectorAll("a.mes-aside__card").forEach(function (a) { have[a.getAttribute("href")] = true; });
+            var path = location.pathname.replace(/\/$/, "").replace(/\/index\.html$/, "");
+            var isQA = /^\/math-qa/.test(path);
+            /* topic tags of this page (families + path patterns, aside-recs.json "tags"); items are ranked by how many tags they share, ties shuffled */
+            var T = recs.tags || { fam: {}, pat: [] }, pageTags = {};
+            (T.fam[family] || []).forEach(function (t) { pageTags[t] = 1; });
+            (T.pat || []).forEach(function (p) { try { if (new RegExp(p[0]).test(path)) p[1].forEach(function (t) { pageTags[t] = 1; }); } catch (e) {} });
+            function score(it) { var s = 0; (it.g || []).forEach(function (t) { if (pageTags[t]) s++; }); return s + Math.random() * 0.9; }
+            function rank(list) { return (list || []).filter(function (it) { return !have[it.u]; }).map(function (it) { return { it: it, s: score(it) }; }).sort(function (a, b) { return b.s - a.s; }).map(function (x) { return x.it; }); }
             function fresh(list) { return shuffle((list || []).filter(function (it) { return !have[it.u]; })); }
-            var primary = fresh(mathWorld ? recs.calc : recs.math), filler = fresh(mathWorld ? recs.mathall : rnd[family]);
-            if (!primary.length && !filler.length) return;
+            /* "Try it" cards: this page's own example opened in a calculator (?q= / ?f=), see CTX in build_aside_recs.py */
+            var ctx = [];
+            Object.keys(recs.ctx || {}).forEach(function (pat) { try { if (new RegExp(pat).test(path)) ctx = ctx.concat(recs.ctx[pat]); } catch (e) {} });
+            var calc = ctx.concat(rank(recs.calc)), blocks;
+            if (mathWorld) {
+                blocks = [{ h: ctx.length ? "Try it with MES tools" : "Calculators for this topic", items: calc.slice(0, ctx.length + 8), logo: true }];
+                if (isQA) blocks.push({ h: "More Math Q/A livestreams", items: rank(recs.qa), logo: false });      /* the livestream replays only ever show up next to other livestream replays */
+                blocks.push({ h: "More math tutorials", items: rank((recs.math || []).concat(recs.mathall || [])), logo: false });
+                blocks.push({ h: "More free calculators & tools", items: calc.slice(ctx.length + 8), logo: true });
+                if (!isQA) blocks.push({ h: "Math memes & puzzles", items: fresh((rnd.memes || []).concat(rnd.puzzles || [])), logo: false });
+            } else {
+                blocks = [{ h: ctx.length ? "Try it with MES tools" : "Related calculators & tools", items: calc.slice(0, ctx.length + 8), logo: true },
+                          { h: "Free math video tutorials", items: rank(recs.math), logo: false },
+                          { h: "More from MES", items: fresh(rnd[family]), logo: false },
+                          { h: "More free calculators & tools", items: calc.slice(ctx.length + 8), logo: true }];
+            }
+            blocks = blocks.filter(function (b) { return b.items.length; });
+            if (!blocks.length) return;
             var content = document.querySelector(".has-aside .page-content") || document.querySelector(".mes-col-main");
-            var ulA = primary.length ? block(mathWorld ? "Free calculators" : "Free math video tutorials") : null, ulB = null, count = 0;
+            var count = 0, rail = aside.classList.contains("mes-aside--rail");   /* rail = Jump-to pages' fixed side rail (jump-aside.js): a fixed number of cards, it scrolls on its own */
             function beside() { var a = aside.getBoundingClientRect(), c = content && content.getBoundingClientRect(); return !!c && window.innerWidth >= 1200 && (a.left >= c.right - 5 || a.right <= c.left + 5) && getComputedStyle(aside).display !== "none"; }
             function need() { return host2.getBoundingClientRect().height < content.getBoundingClientRect().height - 100; }
-            function add(it, ul, logo) { if (have[it.u]) return; have[it.u] = true; ul.appendChild(card(it, logo)); count++; }
+            function add(b) {
+                var it = b.items.shift();
+                if (!it || have[it.u]) return;
+                have[it.u] = true;
+                if (!b.ul) b.ul = block(b.h);
+                b.ul.appendChild(card(it, b.logo)); count++;
+            }
+            function next() { for (var i = 0; i < blocks.length; i++) if (blocks[i].items.length) return blocks[i]; return null; }
             function fill() {
+                var b;
+                if (rail) { while (count < 16 && (b = next())) add(b); return; }
                 if (!content) return;
-                if (!beside()) {                                    /* sidebar below the content: one row of four */
-                    if (!count) for (var i = 0; i < Math.min(4, primary.length); i++) add(primary.shift(), ulA, mathWorld);
-                    return;
-                }
-                while (count < MAX && (primary.length || filler.length) && (count < 3 || need())) {
-                    if (primary.length) add(primary.shift(), ulA, mathWorld);
-                    else { if (!ulB) ulB = block(mathWorld ? "More math tutorials" : "More from MES"); add(filler.shift(), ulB, false); }
-                }
+                if (!beside()) { if (!count) for (var i = 0; i < 4 && (b = next()); i++) add(b); return; }
+                while (count < MAX && (b = next()) && (count < 3 || need())) add(b);
                 /* the content shrank (sections collapsed, ...): drop cards again so the column never pushes the footer down */
                 while (count > 3 && host2.getBoundingClientRect().height > content.getBoundingClientRect().height + 30) {
-                    var last = host2.querySelector(".mes-aside__more:last-of-type") || host2, lis = last.querySelectorAll("li");
-                    if (!lis.length) break;
-                    lis[lis.length - 1].parentNode.removeChild(lis[lis.length - 1]); count--;
-                    if (!last.querySelectorAll("li").length && last !== host2) { last.parentNode.removeChild(last); if (ulB && last === ulB.parentNode) ulB = null; }
+                    var lastB = null;
+                    for (var k = blocks.length - 1; k >= 0; k--) if (blocks[k].ul && blocks[k].ul.lastChild) { lastB = blocks[k]; break; }
+                    if (!lastB) break;
+                    var li = lastB.ul.lastChild, href = li.querySelector("a").getAttribute("href");
+                    lastB.ul.removeChild(li); count--; delete have[href];
+                    if (!lastB.ul.lastChild) { lastB.ul.parentNode.parentNode.removeChild(lastB.ul.parentNode); lastB.ul = null; }
                 }
             }
             fill();

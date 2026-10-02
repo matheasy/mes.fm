@@ -1,60 +1,138 @@
 #!/usr/bin/env python3
-"""Cross-family recommendations for the "More like this" sidebar (2026-10-02): writes mes.fm/main_js/aside-recs.json from mes.fm/search/index.json.
+"""Recommendations for the "More like this" sidebar (2026-10-02): writes mes.fm/main_js/aside-recs.json from mes.fm/search/index.json.
 
-  math -> shown on calculator / meme / puzzle / tool / timer pages, under the heading "Free math video tutorials" (send calculator users to the videos)
-  calc -> shown on the math-hub article pages (Problems Plus, Math Q/A, cubic formula, ...), under "Free calculators" (and send video viewers to the tools)
-
-main_js/aside.js picks the pool from the page's data-aside-family, shuffles it, skips the current page and fills the column up to the height of the content
-(or four cards when the sidebar is below the content). Titles and thumbnails come from the search index, so **run build_search_index.py first**; edit the
-curated slug lists below to change what is recommended (newest first). Idempotent; dry-runs by default, `--apply` writes.
+Contents (consumed by main_js/aside.js section 4, also the Jump-to pages' rail):
+  calc    calculators and tools (each with topic tags `g`)             -> "Related calculators & tools" / "Calculators for this topic"
+  math    curated math video tutorials (tags)                           -> "Free math video tutorials" on calculator-world pages
+  mathall every math-category page except the Math Q/A livestreams     -> filler "More math tutorials" on math pages
+  qa      the Math Q/A livestream replays                               -> only on other Math Q/A pages ("More Math Q/A livestreams"); never on any other page
+  tags    {fam: {data-aside-family: [tags]}, pat: [[path regex, [tags]]]} -> the *page's* topic tags; items are ranked by tag overlap (+ a little randomness)
+  ctx     {page path: [deep-link "Try it" cards]}                       -> calculators opened with this page's own example already typed in (?q= / ?f=)
+Titles and thumbnails come from the search index, so **run build_search_index.py first**. Edit the tables below to change what is recommended / how pages are
+matched. Idempotent; dry-runs by default, `--apply` writes.
 """
 import json
+import re
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "mes.fm"
 APPLY = "--apply" in sys.argv
 
+CALC = {   # path -> (kind, tags)
+    "/calculator": ("Calculator", ["everyday", "algebra", "school"]),
+    "/derivative-calculator": ("Calculator", ["calculus", "school", "algebra"]),
+    "/integral-calculator": ("Calculator", ["calculus", "school"]),
+    "/cas-calculator": ("Calculator", ["algebra", "calculus", "equations", "school"]),
+    "/2d-graphing-calculator": ("Calculator", ["graphing", "algebra", "calculus", "school"]),
+    "/3d-graphing-calculator": ("Calculator", ["graphing", "calculus", "vectors", "physics"]),
+    "/percentagecalculator": ("Calculator", ["percent", "everyday", "money", "school"]),
+    "/gradecalculator": ("Calculator", ["school", "percent"]),
+    "/gpacalculator": ("Calculator", ["school"]),
+    "/unit-conversion": ("Calculator", ["everyday", "science", "physics"]),
+    "/days-between-dates-calculator": ("Calculator", ["time", "everyday"]),
+    "/mortgagecalculator": ("Calculator", ["money", "finance"]),
+    "/inflationcalculator": ("Calculator", ["money", "finance", "percent"]),
+    "/vatcalculator": ("Calculator", ["money", "percent"]),
+    "/bmicalculator": ("Calculator", ["health", "everyday"]),
+    "/earth-curvature-calculator": ("Calculator", ["science", "physics", "math"]),
+    "/latex": ("Tool", ["math", "school", "notation"]),
+    "/symbols": ("Tool", ["math", "school", "notation"]),
+    "/calendar": ("Tool", ["time", "astronomy", "everyday"]),
+    "/moon": ("Tool", ["astronomy", "science", "time"]),
+    "/timer": ("Tool", ["focus", "time", "school"]),
+    "/speedreader": ("Tool", ["focus", "school"]),
+    "/timezone": ("Tool", ["time", "everyday"]),
+}
 MATH = ["/problems-plus-6-cable-wound-spool", "/problems-plus-5-projectile-total-distance", "/problems-plus-4-curvature-parametric-integrals",
         "/problems-plus-3-ball-rolls-table", "/problems-plus-2-projectile-inclined-plane", "/problems-plus-1-projectile-origin",
         "/cubic-formula", "/quadratic-formula-complete-square", "/quadratic-formula-pq-substitution", "/cube-root-unity", "/vector-functions-problems-plus",
-        "/math-qa", "/vectors", "/sequences-series", "/spherical-harmonics", "/vector-functions", "/math"]
-CALC = ["/calculator", "/derivative-calculator", "/integral-calculator", "/cas-calculator", "/2d-graphing-calculator", "/3d-graphing-calculator",
-        "/percentagecalculator", "/gradecalculator", "/gpacalculator", "/unit-conversion", "/days-between-dates-calculator", "/mortgagecalculator",
-        "/latex", "/symbols", "/calendar", "/inflationcalculator", "/bmicalculator"]
+        "/vectors", "/sequences-series", "/spherical-harmonics", "/vector-functions", "/math"]
+MATH_TAGS = [(r"cubic|quadratic|cube-root", ["algebra", "equations", "math"]), (r"problems-plus|vector|spherical|projectile|curvature", ["calculus", "vectors", "physics", "graphing", "math"]),
+             (r"sequences", ["calculus", "series", "math"]), (r"math-qa", ["physics", "science", "math"])]
 KIND = {"/math": "Math tutorials", "/math-qa": "Livestreams", "/vectors": "Math tutorials", "/sequences-series": "Math tutorials",
         "/spherical-harmonics": "Math tutorials", "/vector-functions": "Math tutorials"}
+PAGE_TAGS = {
+    "fam": {"percentagecalculator": ["percent", "everyday", "money", "school"], "gradecalculator": ["school", "percent"], "gpacalculator": ["school"],
+            "mortgagecalculator": ["money", "finance"], "inflationcalculator": ["money", "finance", "percent"], "vatcalculator": ["money", "percent"],
+            "bmicalculator": ["health", "everyday"], "memes": ["fun"], "puzzles": ["fun", "math", "school"], "timer": ["focus", "time", "school"], "tools": ["everyday"],
+            "pokemongocalculator": ["fun"], "math-qa": ["physics", "science", "math"], "cubic-formula": ["algebra", "equations", "math"],
+            "vector-functions-problems-plus": ["calculus", "vectors", "physics", "graphing", "math"]},
+    "pat": [["problems-plus-[1-6]|projectile|curvature|spool", ["calculus", "graphing", "physics", "vectors"]], ["cubic|quadratic|cube-root", ["algebra", "equations"]],
+            ["^/moon", ["astronomy", "time", "science"]], ["^/calendar", ["time", "astronomy"]], ["^/timer", ["focus", "time"]],
+            ["percent", ["percent"]], ["mortgage|dream-homes", ["money", "finance"]], ["bmi|health", ["health"]], ["grade|gpa|study", ["school"]],
+            ["electro|faraday|maxwell|lorentz|emf|aharonov", ["physics", "electromagnetism", "science"]]],
+}
+EQ = "0 = 2 - sin(alpha)*ln((1+sin(alpha))/(1-sin(alpha)))"
+CTX = {   # page path regex -> [(target, title, kind-label, logo path)]
+    r"^/problems-plus-5-": [("/cas-calculator?q=" + quote(EQ), "Solve this page's launch-angle equation in the CAS", "/cas-calculator"),
+                            ("/2d-graphing-calculator?f=" + quote("y = 2 - sin(x)*ln((1+sin(x))/(1-sin(x)))"), "Graph it and watch it cross zero near 0.9855", "/2d-graphing-calculator")],
+    r"^/problems-plus-6-": [("/3d-graphing-calculator?f=" + quote("(cos(t), sin(t), t/4)"), "See a helix (the cable on the spool) in 3D", "/3d-graphing-calculator"),
+                            ("/derivative-calculator?q=" + quote("sqrt((r*cos(t))^2 + (r*sin(t))^2 + h^2)"), "Differentiate a speed formula, step by step", "/derivative-calculator")],
+    r"^/problems-plus-4-": [("/derivative-calculator?q=" + quote("x*sqrt(1 + x^2)"), "Try a chain-rule derivative with steps", "/derivative-calculator"),
+                            ("/integral-calculator?q=" + quote("sqrt(1 + x^2)"), "Integrate an arc-length integrand with steps", "/integral-calculator")],
+    r"^/problems-plus-[123]-": [("/2d-graphing-calculator?f=" + quote("x*tan(a) - x^2/(2*cos(a)^2)"), "Graph a projectile's path and drag the angle slider", "/2d-graphing-calculator"),
+                                ("/cas-calculator?q=" + quote("x*tan(a) - x^2/(2*cos(a)^2) = 0"), "Solve for where it lands", "/cas-calculator")],
+    r"^/(cubic-formula|cube-root-unity)": [("/cas-calculator?q=" + quote("x^3 - 6*x - 9 = 0"), "Solve a cubic with the CAS (exact roots + steps)", "/cas-calculator"),
+                                         ("/2d-graphing-calculator?f=" + quote("y = x^3 - 6x - 9"), "Graph the cubic and see its real root", "/2d-graphing-calculator")],
+    r"^/quadratic-formula": [("/cas-calculator?q=" + quote("x^2 - 5*x + 6 = 0"), "Solve a quadratic with steps", "/cas-calculator"),
+                             ("/2d-graphing-calculator?f=" + quote("y = x^2 - 5x + 6"), "Graph the parabola and its roots", "/2d-graphing-calculator")],
+    r"^/vector-functions-problems-plus": [("/3d-graphing-calculator?f=" + quote("(cos(t), sin(t), t/4)"), "Plot a vector function r(t) in 3D", "/3d-graphing-calculator"),
+                                          ("/derivative-calculator?q=" + quote("sin(t)*cos(t)"), "Differentiate component functions step by step", "/derivative-calculator")],
+    r"^/(vectors|spherical-harmonics|vector-functions)$": [("/3d-graphing-calculator", "Plot surfaces and curves in 3D", "/3d-graphing-calculator")],
+    r"^/sequences-series": [("/cas-calculator", "Sums, limits and series in the CAS calculator", "/cas-calculator")],
+    r"^/moon": [("/calendar", "Moon phases for any month in the Calendar", "/calendar")],
+}
 
 
 def main():
     idx = json.loads((SITE / "search" / "index.json").read_text(encoding="utf-8"))
     by = {x[0]: x for x in idx["p"]}
     out = {}
-    for name, slugs, default_kind in (("math", MATH, "Math video"), ("calc", CALC, "Calculator")):
-        items = []
-        for u in slugs:
-            x = by.get(u)
-            if not x:
-                print("missing from the search index (run build_search_index.py?):", u)
-                continue
-            title = x[1]
-            img = x[5] if len(x) > 5 else ""
-            if name == "calc" and not img:
-                img = u + "/img/logo.png"
-            items.append({"u": u, "t": title, "i": img, "k": KIND.get(u, default_kind)})
-        out[name] = items
-        print("%-5s %d items" % (name, len(items)))
-    # every math-category page of the search index (video mirrors, Q/A, tutorials): the filler pool that keeps the math pages' column going down to the footer
+    calc = []
+    for u, (kind, tags) in CALC.items():
+        x = by.get(u)
+        if not x:
+            print("missing from the search index (run build_search_index.py?):", u)
+            continue
+        calc.append({"u": u, "t": x[1], "i": (x[5] if len(x) > 5 and x[5] else u + "/img/logo.png"), "k": kind, "g": tags})
+    out["calc"] = calc
+
+    def mtags(u):
+        for pat, tags in MATH_TAGS:
+            if re.search(pat, u):
+                return tags
+        return ["math"]
+    math = []
+    for u in MATH:
+        x = by.get(u)
+        if x:
+            math.append({"u": u, "t": x[1], "i": (x[5] if len(x) > 5 else ""), "k": KIND.get(u, "Math video"), "g": mtags(u)})
+        else:
+            print("missing:", u)
+    out["math"] = math
     skip = set(MATH) | set(CALC) | {"/math", "/math-qa", "/livestreams"}
     allm = []
+    qa = []
     for x in idx["p"]:
         u, title, cat = x[0], x[1], x[4]
-        img = x[5] if len(x) > 5 else ""
         if cat == 2 and u not in skip and u.count("/") == 1 and not u.startswith("/911") and "hutchison" not in u:   # category 2 = Math
-            allm.append({"u": u, "t": title, "i": img, "k": "Math video"})
+            if u.startswith("/math-qa"):        # the livestream Q/A replays are only recommended on other Math Q/A pages (pool "qa"), never as general math content
+                if not u.endswith("-stats"):
+                    qa.append({"u": u, "t": title, "i": (x[5] if len(x) > 5 else ""), "k": "Math Q/A livestream", "g": mtags(u)})
+                continue
+            allm.append({"u": u, "t": title, "i": (x[5] if len(x) > 5 else ""), "k": "Math video", "g": mtags(u)})
     out["mathall"] = allm
-    print("mathall %d items" % len(allm))
+    out["qa"] = qa
+    out["tags"] = PAGE_TAGS
+    ctx = {}
+    logos = {c["u"]: c["i"] for c in calc}
+    for pat, cards in CTX.items():
+        ctx[pat] = [{"u": u, "t": t, "i": logos.get(lg, lg + "/img/logo.png"), "k": "Try it"} for u, t, lg in cards]
+    out["ctx"] = ctx
+    print("calc %d, math %d, mathall %d, qa %d, ctx patterns %d" % (len(calc), len(math), len(allm), len(qa), len(ctx)))
     text = json.dumps(out, ensure_ascii=False, separators=(",", ":"))
     if APPLY:
         (SITE / "main_js" / "aside-recs.json").write_text(text, encoding="utf-8")
