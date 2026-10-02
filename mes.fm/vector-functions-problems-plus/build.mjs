@@ -96,6 +96,7 @@ const PLAYLIST = [
   { href: "https://mes.fm/problems-plus-3-ball-rolls-table" },
   { href: "https://mes.fm/problems-plus-4-curvature-parametric-integrals" },
   { href: "https://mes.fm/problems-plus-5-projectile-total-distance" },
+  { href: "https://mes.fm/problems-plus-6-cable-wound-spool" },
 ];
 
 function loadPlaylistCache() {
@@ -1476,7 +1477,7 @@ ${leadingHtml}
       setTimeout(go, 15000);
     })();
     </script>
-<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=5"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
+<!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=5"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
 </head>
 <body class="dark">
 
