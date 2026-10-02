@@ -136,6 +136,17 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   :is(body.dark-mode, body.dark) .mes-mode button:hover { background: #3a3a3a; }
   :is(body.dark-mode, body.dark) .mes-mode button[aria-pressed="true"] { background: #6cb6f5; color: #111; }
 
+  /* Theatre: the page frame (and the footer / math-shell container) grow to nearly the whole window */
+  html.page-theatre .outer-container.has-aside, html.page-theatre .container.has-aside { max-width: min(98vw, 2400px) !important; width: auto !important; }
+  html.page-theatre .container.has-aside .footer { max-width: none; }
+}
+
+/* Wide and Theatre keep the sidebar (and its ad) beside the content when the screen has room for it; otherwise the page is one column and the
+   sidebar becomes a card grid under the content (the ad is not shown or requested then):
+     Wide    -> sidebar beside the content from 1560px (the frame grows by ~360px, so the content column is ~1090px)
+     Theatre -> sidebar beside the content from 1900px (the frame is nearly the whole window, the content takes the rest)
+   Below those widths the one-column rules below apply. */
+@media (min-width: 1200px) and (max-width: 1559px) {
   html.page-wide .has-aside .outer-page-content, html.page-wide .mes-cols { grid-template-columns: 1fr; }
   html.page-wide .has-aside .page-content, html.page-wide .mes-col-main { grid-column: 1; grid-row: 1; }
   html.page-wide .has-aside .mes-aside, html.page-wide .mes-cols > .mes-aside { grid-column: 1; grid-row: 2; margin: 2em 0 1em; }
@@ -143,8 +154,18 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   html.page-wide .mes-aside__ad, html.page-wide .mes-aside__ad:not([data-ad-slot=""]) { display: none !important; }
   html.page-wide .mes-aside__flip { display: none !important; }
   html.page-wide .mes-aside__list { grid-template-columns: repeat(4, 1fr); }
-  /* Theatre: the page frame (and the footer / math-shell container) grow to nearly the whole window */
-  html.page-theatre .outer-container.has-aside, html.page-theatre .container.has-aside { max-width: min(98vw, 2400px) !important; width: auto !important; }
-  html.page-theatre .container.has-aside .footer { max-width: none; }
   html.page-theatre .mes-aside__list { grid-template-columns: repeat(6, 1fr); }
+}
+@media (min-width: 1560px) and (max-width: 1899px) {
+  html.page-theatre .has-aside .outer-page-content, html.page-theatre .mes-cols { grid-template-columns: 1fr; }
+  html.page-theatre .has-aside .page-content, html.page-theatre .mes-col-main { grid-column: 1; grid-row: 1; }
+  html.page-theatre .has-aside .mes-aside, html.page-theatre .mes-cols > .mes-aside { grid-column: 1; grid-row: 2; margin: 2em 0 1em; }
+  html.page-theatre .mes-aside__sticky { position: static; }
+  html.page-theatre .mes-aside__ad, html.page-theatre .mes-aside__ad:not([data-ad-slot=""]) { display: none !important; }
+  html.page-theatre .mes-aside__flip { display: none !important; }
+  html.page-theatre .mes-aside__list { grid-template-columns: repeat(6, 1fr); }
+}
+@media (min-width: 1560px) {
+  html.page-wide:not(.page-theatre) .outer-container.has-aside { max-width: calc(50em + 332px + 360px) !important; }
+  html.page-wide:not(.page-theatre) .container.has-aside { max-width: calc(760px + 332px + 340px); }
 }

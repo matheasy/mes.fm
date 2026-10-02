@@ -97,6 +97,8 @@
         watchAd(ins, function (gone) { ad.style.display = gone ? "none" : ""; });
     }
     if (ad && ad.getAttribute("data-ad-slot")) {
+        var rzTimer;   /* the slot can become visible later (window resized past a Wide / Theatre breakpoint) */
+        window.addEventListener("resize", function () { clearTimeout(rzTimer); rzTimer = setTimeout(loadAd, 300); });
         loadAd();
         if (!adDone && window.matchMedia) {
             var mq = window.matchMedia("(min-width: 1200px)");
@@ -130,7 +132,7 @@
             root.classList.toggle("page-theatre", m === "theatre");
             try { localStorage.setItem("pageMode", m); localStorage.setItem("pageWide", m === "std" ? "0" : "1"); } catch (e) {}
             paint();
-            if (m === "std") loadAd();
+            loadAd();   /* no-op unless the ad slot is visible: Standard always, Wide from 1560px, Theatre from 1900px (aside.css) */
             try { window.dispatchEvent(new Event("resize")); } catch (e) {}
         };
         MODES.forEach(function (x) {
