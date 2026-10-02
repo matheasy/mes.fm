@@ -26,7 +26,9 @@ export async function GET(request: Request) {
       const endDate = searchParams.get('endDate');
       const network = parseNetwork(searchParams);
 
-      const { transactions: allTransactions, networkErrors, pricedTokens } = await getTransactions(network);
+      // every token, including the ones this wallet's config leaves out of its *holdings* (the Main wallet's
+      // BTCB/WBTC, which mes.fm/sov reports): excluding them from the history hid the BTCB side of swaps
+      const { transactions: allTransactions, networkErrors, pricedTokens } = await getTransactions(network, { includeExcluded: true });
       // tokens that never had a market price (scam airdrops) are left out unless asked for
       let transactions = searchParams.get('includeSpam') === '1' ? allTransactions : allTransactions.filter((t) => !isSpamToken(t, pricedTokens));
 
