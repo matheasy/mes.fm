@@ -1,0 +1,85 @@
+	<div class="tu cs" id="cs">
+		<div class="tu-card">
+			<label class="tu-label" for="cs-in">Function to differentiate</label>
+			<div class="cs-inrow"><span class="cs-op" id="cs-opname">d/dx</span>
+				<input id="cs-in" class="tu-input tu-input--big cs-expr" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. x^2 sin x, e^(3x) sqrt x, ln(cos x)" aria-describedby="cs-preview">
+			</div>
+			<div class="cs-chips" id="cs-chips" aria-label="Insert a symbol">
+				<button type="button" data-ins="^" title="Power">xʸ</button><button type="button" data-ins="^2" title="Square">x²</button>
+				<button type="button" data-ins="sqrt(" title="Square root">√</button><button type="button" data-ins="π">π</button>
+				<button type="button" data-ins="e^(" title="e to the power">eˣ</button><button type="button" data-ins="ln(">ln</button>
+				<button type="button" data-ins="sin(">sin</button><button type="button" data-ins="cos(">cos</button><button type="button" data-ins="tan(">tan</button>
+				<button type="button" data-ins="asin(">sin⁻¹</button><button type="button" data-ins="|" title="Absolute value">|x|</button>
+				<button type="button" data-ins="θ">θ</button><button type="button" data-ins="α">α</button><button type="button" data-ins="·" title="Multiply">·</button>
+			</div>
+			<div class="cs-preview is-dim" id="cs-preview" aria-live="polite"></div>
+			<div class="tu-row cs-opts">
+				<div class="tu-field tu-field--sm"><label for="cs-var">Variable</label><input id="cs-var" class="tu-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="auto"></div>
+				<div class="tu-field tu-field--sm"><label for="cs-order">Order</label>
+					<select id="cs-order" class="tu-select"><option value="1">1st (f′)</option><option value="2">2nd (f″)</option><option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option></select></div>
+				<div class="tu-field"><label for="cs-at">Evaluate at (optional)</label><input id="cs-at" class="tu-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. 2 or x = pi/4"></div>
+				<div class="tu-field"><label for="cs-ex">Examples</label>
+					<select id="cs-ex" class="tu-select">
+						<option value="">Choose an example…</option>
+						<option value="x^2*sin(x)">x² sin x (product rule)</option>
+						<option value="sin(x^2)">sin(x²) (chain rule)</option>
+						<option value="(x^2+1)/(x-1)">(x² + 1)/(x − 1) (quotient rule)</option>
+						<option value="e^(3x) sqrt(x)" data-p='{"at":"1"}'>e³ˣ √x at x = 1</option>
+						<option value="ln(cos x)" data-p='{"order":"2"}'>ln(cos x), second derivative</option>
+						<option value="x^x">xˣ (logarithmic differentiation)</option>
+						<option value="2^x + log_3(x)">2ˣ + log₃ x</option>
+						<option value="arctan(x) + sinh(2x)">arctan x + sinh 2x</option>
+						<option value="|x^2 - 4|">|x² − 4|</option>
+						<option value="sin θ cos θ">sin θ cos θ</option>
+						<option value="x^2 y + y^3" data-p='{"var":"y"}'>∂/∂y of x²y + y³ (partial)</option>
+						<option value="x^2 y^3" data-p='{"var":"x, y"}'>∂²/∂x∂y of x²y³ (mixed partial)</option>
+						<option value="x^2 + y^2 = 25">x² + y² = 25 (implicit dy/dx)</option>
+						<option value="sin α · ln((1+sin α)/(1−sin α))">sin α · ln((1+sin α)/(1−sin α))</option>
+					</select></div>
+			</div>
+			<div class="tu-row cs-actions">
+				<button type="button" class="tu-btn tu-btn--primary" id="cs-go">Differentiate</button>
+				<span class="tu-note">Press Enter to run. Steps, a plot and a check against SymPy come with every answer.</span>
+			</div>
+			<div class="cs-status" id="cs-status" role="status" hidden></div>
+		</div>
+
+		<div class="cs-out" id="cs-out" aria-live="polite" hidden></div>
+
+		<div class="tu-card" id="cs-hist-card" style="margin-top:1em;" hidden>
+			<div class="tu-row" style="justify-content:space-between;align-items:center;">
+				<h3 style="margin:0;">History</h3>
+				<button type="button" class="tu-btn tu-btn--ghost" id="cs-hist-clear">Clear</button>
+			</div>
+			<ul class="cs-hist" id="cs-hist"></ul>
+		</div>
+
+		<section class="tu-seo">
+			<h2>More from MES</h2>
+			<div class="cs-links">
+				<a class="cs-link" href="/integral-calculator">Integral Calculator<span>indefinite &amp; definite integrals with steps</span></a>
+				<a class="cs-link" href="/cas-calculator">CAS Calculator<span>solve equations, simplify, limits, series</span></a>
+				<a class="cs-link" href="/2d-graphing-calculator">2D Graphing Calculator<span>plot f and f′ together</span></a>
+				<a class="cs-link" href="/3d-graphing-calculator">3D Graphing Calculator<span>surfaces for partial derivatives</span></a>
+				<a class="cs-link" href="/calculator">Calculator<span>everyday arithmetic and scientific keys</span></a>
+				<a class="cs-link" href="/latex">LaTeX Render<span>paste the LaTeX of an answer</span></a>
+			</div>
+			<h2>Free online derivative calculator with steps</h2>
+			<p>Type a function the way you would write it on paper — <code>x^2 sin x</code>, <code>2x</code>, <code>e^(3x)</code>, <code>sqrt x</code>, <code>ln(cos x)</code>, <code>|x|</code>, <code>sin^2 x</code> or with Greek letters such as <code>θ</code> and <code>α</code> — and get its derivative with a full step-by-step solution. Every step names the rule it uses (constant, power, sum, product, quotient, chain rule with the inner and outer function, exponential and logarithm rules, trigonometric, inverse trigonometric and hyperbolic derivatives, absolute value and logarithmic differentiation for functions like <code>x^x</code>), shows the rule, the substitution and the result, and finishes with a simplification.</p>
+			<ul>
+				<li><strong>Higher derivatives</strong> up to the 5th, each order with its own steps.</li>
+				<li><strong>Partial derivatives</strong>: pick the variable (<code>y</code>), or list several (<code>x, y</code>) for a mixed partial derivative.</li>
+				<li><strong>Implicit differentiation</strong>: type an equation such as <code>x^2 + y^2 = 25</code> to get dy/dx.</li>
+				<li><strong>Evaluate at a point</strong> and get the tangent line there.</li>
+				<li>A <strong>plot of f and f′</strong>, a link to open both in the <a href="/2d-graphing-calculator">2D graphing calculator</a>, and a check of the answer against SymPy.</li>
+			</ul>
+			<h2>How it works</h2>
+			<p>The maths runs in your own browser: the first time you press Differentiate, the page downloads <a href="https://www.sympy.org/" rel="noopener">SymPy</a>, the open-source computer algebra system, together with a WebAssembly build of Python (about 10 MB, cached by your browser afterwards). Nothing you type is sent to a server. The step-by-step explanation comes from MES's own rule-based differentiator, and the final answer is checked against SymPy's.</p>
+			<h2>Tips</h2>
+			<dl>
+				<dt>Multiplication</dt><dd>Write <code>2x</code>, <code>x sin x</code> or use <code>*</code>, <code>·</code> or <code>×</code>. <code>xy</code> means x times y.</dd>
+				<dt>Functions</dt><dd><code>ln</code> and <code>log</code> are the natural logarithm; <code>log_2(x)</code> or <code>log10(x)</code> for other bases. <code>sin^2 x</code> is (sin x)², <code>sin^-1 x</code> is arcsin x.</dd>
+				<dt>Constants</dt><dd><code>e</code>, <code>pi</code> or <code>π</code>; every other letter is a variable.</dd>
+			</dl>
+		</section>
+	</div>
