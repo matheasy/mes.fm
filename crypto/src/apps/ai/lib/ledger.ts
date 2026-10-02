@@ -75,12 +75,29 @@ export async function getCurrentHoldings(network?: NetworkId): Promise<{ holding
   return { holdings, networkErrors };
 }
 
-export async function getTransactions(network?: NetworkId): Promise<{ transactions: Transaction[]; networkErrors: AggregatedNetworkData['networkErrors'] }> {
+export async function getTransactions(network?: NetworkId): Promise<{
+  transactions: Transaction[];
+  networkErrors: AggregatedNetworkData['networkErrors'];
+  /** `network:contract` of every token that had a market price at least once - see isSpamToken */
+  pricedTokens: Set<string>;
+}> {
   const { byNetwork, networkErrors } = await getAggregatedNetworkData(network);
   const transactions = Object.values(byNetwork)
     .flatMap((d) => d!.transactions)
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  return { transactions, networkErrors };
+  const pricedTokens = new Set<string>();
+  for (const d of Object.values(byNetwork))
+    for (const t of d!.pricedTransactions) if (t.priceUsd !== null) pricedTokens.add(`${t.network}:${t.token.contractAddress.toLowerCase()}`);
+  return { transactions, networkErrors, pricedTokens };
+}
+
+/**
+ * A token with no market price on any of its transactions: in practice the unsolicited airdrops scammers
+ * send to active wallets (fake "Binance ..." tokens and the like), which the tax report already skips.
+ * The native coin is never spam.
+ */
+export function isSpamToken(t: Transaction, pricedTokens: ReadonlySet<string>): boolean {
+  return !t.token.isNative && !pricedTokens.has(`${t.network}:${t.token.contractAddress.toLowerCase()}`);
 }
 
 export interface NetworkLots {

@@ -12,6 +12,7 @@ function buildQuery(filters: TransactionFilters): string {
   if (filters.type) params.set('type', filters.type);
   if (filters.startDate) params.set('startDate', filters.startDate);
   if (filters.endDate) params.set('endDate', filters.endDate);
+  if (filters.includeSpam) params.set('includeSpam', '1');
   const qs = params.toString();
   return qs ? `?${qs}` : '';
 }

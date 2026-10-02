@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { NATIVE_TOKENS, NETWORKS, type NetworkId } from '@/apps/ai/lib/config';
 import { apiErrorResponse } from '@/apps/ai/lib/errors';
-import { getHistoricalPriceForToken, getTransactions } from '@/apps/ai/lib/ledger';
+import { getHistoricalPriceForToken, getTransactions, isSpamToken } from '@/apps/ai/lib/ledger';
 import type { ApiResult, Transaction, TransactionType } from '@/apps/ai/lib/types';
 import { withWallet } from '@/apps/ai/lib/walletContext';
 
@@ -26,8 +26,9 @@ export async function GET(request: Request) {
       const endDate = searchParams.get('endDate');
       const network = parseNetwork(searchParams);
 
-      const { transactions: allTransactions, networkErrors } = await getTransactions(network);
-      let transactions = allTransactions;
+      const { transactions: allTransactions, networkErrors, pricedTokens } = await getTransactions(network);
+      // tokens that never had a market price (scam airdrops) are left out unless asked for
+      let transactions = searchParams.get('includeSpam') === '1' ? allTransactions : allTransactions.filter((t) => !isSpamToken(t, pricedTokens));
 
       if (tokenFilter) transactions = transactions.filter((t) => t.token.symbol.toUpperCase() === tokenFilter);
       if (typeFilter) transactions = transactions.filter((t) => t.type === typeFilter);

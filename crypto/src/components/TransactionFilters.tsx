@@ -77,6 +77,14 @@ export default function TransactionFilters({
         />
       </label>
 
+      <label
+        className="flex items-center gap-1.5 self-end pb-1.5 text-xs text-gray-400"
+        title="Tokens that never had a market price - in practice scam airdrops (fake Binance tokens and the like). Hidden by default; the Taxes page ignores them too."
+      >
+        <input type="checkbox" checked={!!filters.includeSpam} onChange={(e) => onChange({ ...filters, includeSpam: e.target.checked || undefined })} />
+        Show spam tokens (no market price)
+      </label>
+
       <button
         onClick={() => onChange({})}
         className="rounded-md border border-bg-border px-3 py-1.5 text-sm text-gray-300 hover:border-accent hover:text-accent"

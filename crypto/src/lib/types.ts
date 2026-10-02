@@ -57,6 +57,8 @@ export interface TransactionFilters {
   type?: TransactionType;
   startDate?: string;
   endDate?: string;
+  /** Also list tokens that never had a market price (scam airdrops) - hidden by default */
+  includeSpam?: boolean;
 }
 
 export interface PortfolioValuePoint {

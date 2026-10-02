@@ -23,6 +23,7 @@ export async function GET(request: Request) {
   if (type && TX_TYPES.includes(type as TransactionType)) qs.set('type', type);
   if (startDate) qs.set('startDate', startDate);
   if (endDate) qs.set('endDate', endDate);
+  if (searchParams.get('includeSpam') === '1') qs.set('includeSpam', '1');
   const path = `/api/transactions${qs.toString() ? `?${qs}` : ''}`;
 
   const results = await fetchAllSources<Transaction[]>(path);

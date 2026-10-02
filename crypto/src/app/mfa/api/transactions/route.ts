@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { apiErrorResponse } from '@/apps/mfa/lib/errors';
-import { getHistoricalPriceForToken, getTransactions } from '@/apps/mfa/lib/ledger';
+import { getHistoricalPriceForToken, getPricedTransactions } from '@/apps/mfa/lib/ledger';
 import type { ApiResult, Transaction, TransactionType } from '@/apps/mfa/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +17,13 @@ export async function GET(request: Request) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    let transactions = await getTransactions();
+    // tokens that never had a market price (scam airdrops) are left out unless asked for - the same
+    // rule as the AI/Main wallet's route; prices are cached, so this costs no extra lookups after the first
+    const priced = await getPricedTransactions();
+    const pricedTokens = new Set(priced.filter((t) => t.priceUsd !== null).map((t) => t.token.contractAddress.toLowerCase()));
+    let transactions: Transaction[] = priced.map(({ priceUsd: _price, ...t }) => t);
+    if (searchParams.get('includeSpam') !== '1')
+      transactions = transactions.filter((t) => t.token.isNative || t.amount === 0 || pricedTokens.has(t.token.contractAddress.toLowerCase()));
 
     if (tokenFilter) transactions = transactions.filter((t) => t.token.symbol.toUpperCase() === tokenFilter);
     if (typeFilter) transactions = transactions.filter((t) => t.type === typeFilter);
