@@ -1,0 +1,94 @@
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu g3" id="g3">
+		<div class="g3-layout">
+			<div class="g3-side" id="g3-side">
+				<div class="g3-side-top">
+					<button type="button" class="tu-btn tu-btn--primary" id="g3-add">+ Add</button>
+					<select id="g3-examples" class="tu-select" aria-label="Load an example"></select>
+					<button type="button" class="tu-btn tu-btn--ghost" id="g3-clear">Clear</button>
+				</div>
+				<div id="g3-rows" class="g3-rows"></div>
+				<div class="g3-keys" id="g3-keys" aria-label="Insert a symbol">
+					<button type="button" data-ins="π">π</button><button type="button" data-ins="θ">θ</button><button type="button" data-ins="√(§)">√</button><button type="button" data-ins="^2">x²</button><button type="button" data-ins="^(§)">xⁿ</button>
+					<button type="button" data-ins="abs(§)">|x|</button><button type="button" data-ins="⌊§⌋">⌊x⌋</button><button type="button" data-ins="⌈§⌉">⌈x⌉</button>
+					<button type="button" data-ins="sin(§)">sin</button><button type="button" data-ins="cos(§)">cos</button><button type="button" data-ins="tan(§)">tan</button><button type="button" data-ins="ln(§)">ln</button>
+					<button type="button" data-ins="(§, , )">( , , )</button><button type="button" data-ins="{0≤u≤2π, 0≤v≤π}">{u, v}</button><button type="button" data-ins="≤">≤</button><button type="button" data-ins="{§}">{ }</button>
+				</div>
+				<div id="g3-params" class="g3-params"></div>
+				<div class="g3-domain" id="g3-domain">
+					<h3>Box</h3>
+					<div class="g3-dom-row"><b>x</b><input type="text" inputmode="decimal" data-ax="x" data-i="0" aria-label="x from"><span>to</span><input type="text" inputmode="decimal" data-ax="x" data-i="1" aria-label="x to"></div>
+					<div class="g3-dom-row"><b>y</b><input type="text" inputmode="decimal" data-ax="y" data-i="0" aria-label="y from"><span>to</span><input type="text" inputmode="decimal" data-ax="y" data-i="1" aria-label="y to"></div>
+					<div class="g3-dom-row"><b>z</b><input type="text" inputmode="decimal" data-ax="z" data-i="0" aria-label="z from"><span>to</span><input type="text" inputmode="decimal" data-ax="z" data-i="1" aria-label="z to"></div>
+					<button type="button" class="tu-btn tu-btn--ghost g3-dom-reset" id="g3-dom-reset">Reset to −5 … 5</button>
+					<p class="tu-note">Surfaces are cut off at the box. Implicit surfaces are searched for inside it.</p>
+				</div>
+			</div>
+			<div class="g3-main">
+				<div class="g3-toolbar" role="toolbar" aria-label="Graph controls">
+					<button type="button" id="g3-home" title="Reset the view" aria-label="Reset view">⌂</button>
+					<button type="button" data-view="top" title="Look down from above">Top</button>
+					<button type="button" data-view="front" title="Look from the front (along y)">Front</button>
+					<button type="button" data-view="side" title="Look from the side (along x)">Side</button>
+					<button type="button" data-view="iso" title="Isometric view">Iso</button>
+					<button type="button" id="g3-spin" title="Rotate automatically" aria-pressed="false">⟳ Spin</button>
+					<button type="button" id="g3-box" title="Show a box or axes through the origin">Box</button>
+					<button type="button" id="g3-grid" title="Show the grid" aria-pressed="true">Grid</button>
+					<button type="button" id="g3-deg" title="Angle unit for sin, cos, tan" aria-pressed="false">Rad</button>
+					<span class="g3-sp"></span>
+					<button type="button" id="g3-png" title="Download the graph as a PNG image">PNG</button>
+					<button type="button" id="g3-link" title="Copy a link to this graph">Link</button>
+					<button type="button" id="g3-theatre" class="g3-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
+					<button type="button" id="g3-full" title="Full screen" aria-label="Full screen">⛶</button>
+				</div>
+				<div class="g3-stage" id="g3-stage">
+					<canvas id="g3-canvas" tabindex="0" aria-label="3D graph. Drag to rotate, right-drag or Shift-drag to move, scroll or pinch to zoom, arrow keys to rotate."></canvas>
+					<div class="g3-labels" id="g3-labels" aria-hidden="true"></div>
+					<div class="g3-readout" id="g3-readout" aria-live="off"></div>
+					<div class="g3-overlay" id="g3-overlay">Loading the 3D engine&hellip;</div>
+				</div>
+				<p class="tu-note g3-hint">Drag to rotate &middot; right-drag or Shift-drag to move &middot; scroll or pinch to zoom &middot; hover a surface to read its (x, y, z).</p>
+			</div>
+		</div>
+
+		<h2>What you can type</h2>
+		<div class="tu-card g3-help">
+			<table class="tu-table g3-help-table">
+				<tbody>
+					<tr><td><code>z = x^2 - y^2</code></td><td>a surface over the x-y plane (just <code>x^2 - y^2</code> works too)</td></tr>
+					<tr><td><code>x = y^2</code> &nbsp; <code>y = sin(z)</code></td><td>surfaces facing the other ways</td></tr>
+					<tr><td><code>x^2 + y^2 + z^2 = 9</code></td><td>any equation in x, y and z: spheres, tori, cones, hyperboloids, &hellip;</td></tr>
+					<tr><td><code>(cos(t), sin(t), t/4)</code></td><td>a curve in space (t from 0 to 2π); <code>{-4π&lt;=t&lt;=4π}</code> sets the range</td></tr>
+					<tr><td><code>(u cos(v), u sin(v), u)</code></td><td>a parametric surface; <code>{0&lt;=u&lt;=2, 0&lt;=v&lt;=2π}</code> sets the ranges (default 0 to 2π)</td></tr>
+					<tr><td><code>(1, 2, 3)</code></td><td>a point</td></tr>
+					<tr><td><code>a = 2</code> &nbsp; <code>z = a sin(x)</code></td><td>letters become sliders; define one with <code>a = 2</code> and press ▶ to animate</td></tr>
+					<tr><td><code>f(x, y) = x y</code> &nbsp; <code>z = f(x, 2)</code></td><td>define your own functions (a 2-variable one is also drawn)</td></tr>
+					<tr><td><code>z = x^2 + y^2 {z &lt; 4}</code></td><td>restrict where a surface is drawn</td></tr>
+					<tr><td><code>sqrt</code> <code>abs</code> <code>|x|</code> <code>⌊x⌋</code> <code>⌈x⌉</code> <code>ln</code> <code>log</code> <code>exp</code> <code>sin</code> <code>cos</code> <code>tan</code> <code>atan2</code> <code>sinh</code> <code>mod</code> <code>root</code> <code>min</code> <code>max</code> <code>pi</code> <code>e</code></td><td>functions and constants (<code>⌊ ⌋</code> and <code>⌈ ⌉</code> are on the <a href="/symbols">Symbol Copier</a>)</td></tr>
+				</tbody>
+			</table>
+			<p class="tu-note">The ⚙ button on a row sets its colouring (solid or by height), grid lines and opacity.</p>
+		</div>
+
+		<div class="tu-toast" id="g3-toast" role="status"></div>
+
+		<section class="tu-seo">
+			<h2>More from MES</h2>
+			<div class="mc-links">
+				<a class="mc-link" href="/graphing-calculator-2D">Graphing Calculator 2D<span>functions, equations &amp; inequalities</span></a>
+				<a class="mc-link" href="/calculator">Calculator<span>multiply, divide, squares, roots&hellip;</span></a>
+				<a class="mc-link" href="/latex">LaTeX Render<span>write equations nicely</span></a>
+				<a class="mc-link" href="/symbols">Symbol Copier<span>π, ≤, ⌊x⌋ and more</span></a>
+			</div>
+			<h2>Free online 3D graphing calculator</h2>
+			<p>Plot surfaces like <code>z = sin(x) cos(y)</code>, equations in x, y and z such as spheres and tori, curves in space and parametric surfaces, then rotate, zoom and move them with your mouse or fingers. Each expression gets its own colour; colour a surface by height, show its grid lines or make it see-through. Letters become sliders you can drag or animate, so you can watch a surface change. Save the view as a PNG or share it with a link. Everything runs in your browser, with no sign-up. For flat graphs use the <a href="/graphing-calculator-2D">2D graphing calculator</a>.</p>
+			<ul>
+				<li><strong>Surfaces z = f(x, y)</strong>, and <code>x = f(y, z)</code> / <code>y = f(x, z)</code>, with jumps and asymptotes (1/x, tan x) left open instead of joined by walls.</li>
+				<li><strong>Implicit surfaces</strong> <code>F(x, y, z) = G</code>: spheres, ellipsoids, tori, cones, hyperboloids and more.</li>
+				<li><strong>Parametric curves and surfaces</strong>: helices, knots, the Möbius strip, spheres and tori in u and v.</li>
+				<li><strong>Sliders and your own functions</strong> for exploring how parameters change a surface.</li>
+				<li>Top, front, side and isometric views, auto-rotate, a box or axes, adjustable x, y and z ranges, degrees or radians.</li>
+				<li>Works on phones and tablets (pinch to zoom, two fingers to move), in dark mode, and your graph is remembered in your browser.</li>
+			</ul>
+		</section>
+	</div>

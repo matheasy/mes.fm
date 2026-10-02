@@ -313,15 +313,40 @@ of HTML files individually:
   (`add_tool_page_controls`, `add_bottom_ad`, `add_cross_links` CALC_DIRS, `add_sidebar` tools family, `build_search_index`, `organize_hub_cards`).
   After editing run `build_tool_apps.py --apply`, `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`, `add_bottom_ad.py --apply`. Logos are placeholders
   (PIL-drawn) until Grok art lands (`calculator/img/logo.png`, `logo-big.png` 1200x630, `img/calculator-logo.png`: same names). The "Graphing Calculator 2D / 3D"
-  cards at the bottom are deliberately **not links** (pages don't exist yet): when built, make them `<a class="mc-link">` in `content.html`.
+  cards at the bottom are real `<a class="mc-link">` links now that both pages exist.
 
 - **Graphing Calculator 2D** (2026-10-01, `mes.fm/graphing-calculator-2D`, capital D as requested; blue `#2160d0`) -- Desmos-style, built by
   `build_tool_apps.py` from `tool_apps_src/graphing-calculator-2D/`. `lib.js` = tokenizer + parser that emits JS source from a whitelist only (no raw user text
   is executed): functions, `x=`, implicit `F(x,y)=G`, inequalities (shaded), parametric `(x(t),y(t))`, polar `r=`, `{restrictions}` / `{0<=t<=6π}` ranges, sliders for
   free letters or `a = 2` rows, user functions `f(x)=...`, `⌊x⌋`/`⌈x⌉`/`|x|`; plus key-point numerics (zeros, extrema, intersections; node-testable).
   `app.js` = canvas renderer (grid, marching squares, adaptive function sampling that breaks at jumps/asymptotes, pan/zoom/pinch, trace, PNG, `?s=`/`?f=` links,
-  localStorage `mes-graph2d:v1`). It is a wide page (`.outer-container` 80em override in `app.css`), so it is NOT in the `add_sidebar.py` collection. 3D page is
-  not built yet; `graphing-calculator-3D/img` + `img/graphing-calculator-3d-logo.png` already hold the Grok art. Run the same four scripts as the calculator after edits.
+  localStorage `mes-graph2d:v1`). It is a wide page (`.outer-container` 80em override in `app.css`), so it is NOT in the `add_sidebar.py` collection.
+  Run the same four scripts as the calculator after edits.
+- **Graphing Calculator 3D** (2026-10-01, `mes.fm/graphing-calculator-3D`, capital D like 2D; purple `#6a3fc4`; card on `calculators.html` "Everyday Math & Health",
+  Grok art `graphing-calculator-3D/img/{logo,logo-big}.png` + `img/graphing-calculator-3d-logo.png`). Desmos-3D-lite, built by `build_tool_apps.py` from
+  `tool_apps_src/graphing-calculator-3D/`. `lib.js` (`G3`, node-testable: `require('./tool_apps_src/graphing-calculator-3D/lib.js')`) = the 2D page's whitelist
+  tokenizer/parser copied and extended: compiled functions take `(x, y, z, u, v, t)`, `θ` = `t`, sliders `P["a"]`, user functions `f(x, y) = ...` (1-3 args; a 2-arg one
+  is also drawn). Row kinds: `surface` (`z = f(x,y)`, bare `f(x,y)`, also `x = f(y,z)` / `y = f(x,z)`), `implicit` (`F(x,y,z) = G`), `curve` `(x(t), y(t), z(t))`,
+  `psurface` `(x(u,v), ...)` (ranges from `{0<=u<=2π, -1<=v<=1}`, default 0..2π), `point`, `param`, `def`; `{z < 3}` restrictions; inequalities are rejected with a hint.
+  Meshing is in lib.js too, in data coordinates: `gridMesh` drops quads with a missing corner and **breaks edges that cross a jump** (bisects towards the bigger gap;
+  a continuous piece shrinks, a jump / asymptote doesn't -- so `tan x`, `1/x`, `⌊x⌋` leave gaps instead of walls) and nudges removable holes (`sin(r)/r` at 0);
+  implicit surfaces use **naive surface nets** (one vertex per sign-changing cell, consistent winding, checked against the gradient in the tests). `app.js` = rows / sliders /
+  box inputs UI (mirrors 2D) + renderer: **three.js 0.170.0 core** (`three.module.min.js`, self-contained) is `import()`ed from jsDelivr (unpkg fallback) only after the page
+  is interactive (`requestIdleCallback`), via `new Function('u','return import(u)')` so the classic deferred script still parses; no OrbitControls add-on -- the
+  orbit / pan (right- or Shift-drag, two fingers) / zoom (wheel, pinch) controls are our own. If WebGL or the CDN is missing, the stage shows a message and the rows still
+  work. The box is mapped to a ~10-unit scene cube (true proportions unless the x/y/z ranges differ by >4x, then each axis is stretched) and every surface is cut at the box
+  by six `clippingPlanes`. Surfaces: Phong + hemisphere light + a head light that follows the camera; per row (⚙) solid or **by height** (viridis vertex colours),
+  grid lines (on by default except implicit, where it is a faint wireframe) and opacity. Curves are `TubeGeometry` pieces. Labels (ticks, axis names, point coordinates) are
+  HTML spans projected each frame (box mode puts them on the box edges nearest the camera); PNG export re-renders and copies the WebGL canvas in the same task, then draws
+  the labels on top. Resolution drops while a slider is dragged / animated (rebuild ~260 ms later at full res); only shape changes rebuild geometry (`geoKey`), colour /
+  style / opacity just restyle. Hover = raycast readout `(x, y, z)`. Also: top/front/side/iso views (tweened), Spin, Box/Axes, Grid, Deg/Rad (examples reset to Rad),
+  Theatre toggle (same as 2D: `pageMode` / `pageWide`, restore snippet as `content.html`'s first line), fullscreen, `?s=` (base64 JSON incl. box + camera) / `?f=` links,
+  localStorage `mes-graph3d:v1`, dark mode via a `body.dark-mode` MutationObserver. Wide page (`.outer-container` override in `app.css`), NOT in the `add_sidebar.py`
+  collection. Registered in the same lists as 2D (`add_tool_page_controls` TOOLS, `add_bottom_ad` TOOL_DIRS, `add_cross_links` CALC_DIRS, `build_search_index`,
+  `organize_hub_cards`). After editing run `build_tool_apps.py --apply`, `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`, `add_bottom_ad.py --apply`,
+  `add_cross_links.py --apply` (the first rebuilds every app and strips what the others add). Gotcha: re-running `add_bottom_ad.py` currently also re-orders its
+  `MES-BOTTOM-AD-JS` tag after the `HUB-THEATRE-JS` block on 9 gallery pages (`bmicalculator/memes.html`, `timer/inspirational-quotes.html`, ...): harmless churn, don't commit it
+  with unrelated work.
 - **Days Between Dates** (2026-10-01, canonical `mes.fm/days-between-dates-calculator`, green `#2f7d32`; `/days`, `/days-between`, `/days-calculator`,
   `/days-between-calculator`, `/days-between-dates` 308-redirect to it in `mes.fm/vercel.json`). `build_tool_apps.py` got a `lib_from` option: the page's js is the
   calendar's `lib.js` (holiday engine `MESCal`, used for the business-day holiday regions) + its own `lib.js` (`DC`, date maths on "naive" wall-clock ms: calendar

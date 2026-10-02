@@ -21,7 +21,7 @@ APPLY = "--apply" in sys.argv
 
 CALC_DIRS = {"bmicalculator", "gradecalculator", "percentagecalculator", "mortgagecalculator", "inflationcalculator", "vatcalculator",
              "pokemongocalculator", "gpacalculator", "youtubemoney", "earth-curvature-calculator", "gematria",
-             "impermanent-loss-calculator", "unit-conversion", "calculator", "graphing-calculator-2D", "days-between-dates-calculator"}
+             "impermanent-loss-calculator", "unit-conversion", "calculator", "graphing-calculator-2D", "graphing-calculator-3D", "days-between-dates-calculator"}
 TOOL_DIRS = {"timer", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "search", "calendar"}
 LINKS = {"tools": ("Tools", "https://mes.fm/tools", "/tools"), "calculators": ("Calculators", "https://mes.fm/calculators", "/calculators")}
 ITEM = re.compile(r'<li class="info-bar__item([^"]*)"[^>]*>\s*<a[^>]*href=["\']([^"\']*)["\'][^>]*>([^<]*)</a>\s*</li>', re.S)
