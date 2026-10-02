@@ -211,23 +211,25 @@
         };
         if (window.requestIdleCallback) requestIdleCallback(start, { timeout: 3000 }); else setTimeout(start, 1500);
     }
-    /* 4. cross recommendations -- calculator / meme / puzzle / tool pages send people to the math video tutorials, and the math-hub article pages
-       send them to the calculators (pools: aside-recs.json, built by build_aside_recs.py). The column is filled with as many extra cards as it
-       takes to reach the height of the content next to it (at least 3, at most 12); when the sidebar sits below the content (< 1200px, or Wide /
-       Theatre without room) just one row of four. Not shown on the 9/11 / Hutchison / science / conspiracy / crypto mirrors. */
+    /* 4. recommendations all the way down -- the column keeps adding cards until it is as tall as the content next to it, so it ends at the footer however long
+       the page is (like YouTube's endless list, but finite). Two blocks: (a) the cross-family block -- calculator / meme / puzzle / tool / timer pages send people
+       to the math video tutorials, the math-hub article pages send them to the calculators (pool: aside-recs.json, built by build_aside_recs.py); (b) the filler
+       block -- more pages of the page's own family (aside-random.json) for calculator-world pages, more math tutorials (aside-recs.json "mathall") for math pages.
+       When the sidebar sits below the content (< 1200px, or Wide / Theatre without room) just one row of four. Re-checked when the content grows (a calculator
+       opening its sections, the comments loading). Not shown on the 9/11 / Hutchison / science / conspiracy / crypto / mathiew / livestreams mirrors. */
     (function () {
         var MATH_FAMS = { "math-qa": 1, "cubic-formula": 1, "vector-functions-problems-plus": 1, "math": 1 };
         var NONE = { "911": 1, "hutchison": 1, "science": 1, "conspiracy": 1, "crypto": 1, "mathiew": 1, "livestreams": 1 };
         if (!family || NONE[family] || !window.fetch) return;
-        var pool = MATH_FAMS[family] ? "calc" : "math";
-        var heading = pool === "math" ? "Free math video tutorials" : "Free calculators";
+        var mathWorld = !!MATH_FAMS[family];
         var host2 = aside.querySelector(".mes-aside__sticky") || aside;
-        function card(it) {
+        var MAX = 100;
+        function card(it, logo) {
             var li = document.createElement("li"), a = document.createElement("a");
             a.className = "mes-aside__card"; a.href = it.u;
             if (it.i) {
                 var img = document.createElement("img");
-                img.className = "mes-aside__img" + (pool === "calc" ? " mes-aside__img--logo" : "");
+                img.className = "mes-aside__img" + (logo ? " mes-aside__img--logo" : "");
                 img.width = 56; img.height = 56; img.loading = "lazy"; img.alt = ""; img.src = it.i;
                 a.appendChild(img);
             }
@@ -237,26 +239,54 @@
             text.appendChild(name); text.appendChild(tag); a.appendChild(text); li.appendChild(a);
             return li;
         }
-        function build(data) {
-            var items = (data[pool] || []).slice(), have = {};
-            have[location.pathname.replace(/\/$/, "").replace(/\/index\.html$/, "")] = true;
-            aside.querySelectorAll("a.mes-aside__card").forEach(function (a) { have[a.getAttribute("href")] = true; });
-            items = items.filter(function (it) { return !have[it.u]; });
-            if (!items.length) return;
-            for (var i = items.length - 1; i > 0; i--) { var k = Math.floor(Math.random() * (i + 1)), t = items[i]; items[i] = items[k]; items[k] = t; }
+        function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var k = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[k]; a[k] = t; } return a; }
+        function block(heading) {
             var box = document.createElement("div"), h = document.createElement("h2"), ul = document.createElement("ul");
             box.className = "mes-aside__more"; h.className = "mes-aside__title-h"; h.textContent = heading; ul.className = "mes-aside__list";
             box.appendChild(h); box.appendChild(ul); host2.appendChild(box);
-            var content = document.querySelector(".has-aside .page-content") || document.querySelector(".mes-col-main");
-            function beside() { var a = aside.getBoundingClientRect(), c = content && content.getBoundingClientRect(); return !!c && window.innerWidth >= 1200 && (a.left >= c.right - 5 || a.right <= c.left + 5); }
-            var n = 0;
-            if (beside()) {
-                while (n < items.length && n < 12 && (n < 3 || host2.getBoundingClientRect().height < content.getBoundingClientRect().height - 140)) { ul.appendChild(card(items[n])); n++; }
-            } else {
-                for (; n < Math.min(4, items.length); n++) ul.appendChild(card(items[n]));
-            }
+            return ul;
         }
-        var go = function () { fetch("/main_js/aside-recs.json?v=1").then(function (r) { return r.json(); }).then(build).catch(function () {}); };
+        function start(recs, rnd) {
+            var have = {};
+            have[location.pathname.replace(/\/$/, "").replace(/\/index\.html$/, "")] = true;
+            aside.querySelectorAll("a.mes-aside__card").forEach(function (a) { have[a.getAttribute("href")] = true; });
+            function fresh(list) { return shuffle((list || []).filter(function (it) { return !have[it.u]; })); }
+            var primary = fresh(mathWorld ? recs.calc : recs.math), filler = fresh(mathWorld ? recs.mathall : rnd[family]);
+            if (!primary.length && !filler.length) return;
+            var content = document.querySelector(".has-aside .page-content") || document.querySelector(".mes-col-main");
+            var ulA = primary.length ? block(mathWorld ? "Free calculators" : "Free math video tutorials") : null, ulB = null, count = 0;
+            function beside() { var a = aside.getBoundingClientRect(), c = content && content.getBoundingClientRect(); return !!c && window.innerWidth >= 1200 && (a.left >= c.right - 5 || a.right <= c.left + 5) && getComputedStyle(aside).display !== "none"; }
+            function need() { return host2.getBoundingClientRect().height < content.getBoundingClientRect().height - 100; }
+            function add(it, ul, logo) { if (have[it.u]) return; have[it.u] = true; ul.appendChild(card(it, logo)); count++; }
+            function fill() {
+                if (!content) return;
+                if (!beside()) {                                    /* sidebar below the content: one row of four */
+                    if (!count) for (var i = 0; i < Math.min(4, primary.length); i++) add(primary.shift(), ulA, mathWorld);
+                    return;
+                }
+                while (count < MAX && (primary.length || filler.length) && (count < 3 || need())) {
+                    if (primary.length) add(primary.shift(), ulA, mathWorld);
+                    else { if (!ulB) ulB = block(mathWorld ? "More math tutorials" : "More from MES"); add(filler.shift(), ulB, false); }
+                }
+                /* the content shrank (sections collapsed, ...): drop cards again so the column never pushes the footer down */
+                while (count > 3 && host2.getBoundingClientRect().height > content.getBoundingClientRect().height + 30) {
+                    var last = host2.querySelector(".mes-aside__more:last-of-type") || host2, lis = last.querySelectorAll("li");
+                    if (!lis.length) break;
+                    lis[lis.length - 1].parentNode.removeChild(lis[lis.length - 1]); count--;
+                    if (!last.querySelectorAll("li").length && last !== host2) { last.parentNode.removeChild(last); if (ulB && last === ulB.parentNode) ulB = null; }
+                }
+            }
+            fill();
+            var t;
+            function later() { clearTimeout(t); t = setTimeout(fill, 250); }
+            window.addEventListener("resize", later);
+            window.addEventListener("load", later);
+            if (window.ResizeObserver && content) new ResizeObserver(later).observe(content);   /* content grew: more cards */
+        }
+        var go = function () {
+            Promise.all([fetch("/main_js/aside-recs.json?v=1").then(function (r) { return r.json(); }), fetch("/main_js/aside-random.json?v=1").then(function (r) { return r.json(); })])
+                .then(function (d) { start(d[0], d[1]); }).catch(function () {});
+        };
         if (document.readyState === "complete") go(); else window.addEventListener("load", go);
     })();
 })();

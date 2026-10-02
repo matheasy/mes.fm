@@ -45,6 +45,16 @@ def main():
             items.append({"u": u, "t": title, "i": img, "k": KIND.get(u, default_kind)})
         out[name] = items
         print("%-5s %d items" % (name, len(items)))
+    # every math-category page of the search index (video mirrors, Q/A, tutorials): the filler pool that keeps the math pages' column going down to the footer
+    skip = set(MATH) | set(CALC) | {"/math", "/math-qa", "/livestreams"}
+    allm = []
+    for x in idx["p"]:
+        u, title, cat = x[0], x[1], x[4]
+        img = x[5] if len(x) > 5 else ""
+        if cat == 2 and u not in skip and u.count("/") == 1 and not u.startswith("/911") and "hutchison" not in u:   # category 2 = Math
+            allm.append({"u": u, "t": title, "i": img, "k": "Math video"})
+    out["mathall"] = allm
+    print("mathall %d items" % len(allm))
     text = json.dumps(out, ensure_ascii=False, separators=(",", ":"))
     if APPLY:
         (SITE / "main_js" / "aside-recs.json").write_text(text, encoding="utf-8")
