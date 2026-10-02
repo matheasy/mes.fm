@@ -19,7 +19,7 @@ import { computeAcb, custodyKey, disposalId, type AcbDisposal, type AcbIncome, t
 import { assetKey } from './assetKey';
 import { contractsAmong, EVM_NETWORKS } from './contracts';
 import { isLpContract } from '../lp';
-import { isOwnAddress } from './ownAddresses';
+import { isOwnAddress, isOwnExchangeDeposit } from './ownAddresses';
 import { getBitcoinEntries } from './sources/bitcoin';
 import { getHiveEntries } from './sources/hive';
 import { getTgldEntries } from './sources/tgld';
@@ -284,7 +284,9 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
   const cadComplete = [...cadRatesRaw.values()].every((r) => r !== null);
 
   const ids = entries.map(disposalId);
+  // personal transfers: labelled so, or sent to one of the owner's own exchange deposit addresses
   const transferIds = new Set(ids.filter((id) => isTransferLabel(labels[id])));
+  for (const e of entries) if (e.amount < 0 && isOwnExchangeDeposit(e.to)) transferIds.add(disposalId(e));
   const costOverrides = new Map<string, number>();
   for (const id of ids) {
     const c = labels[id]?.costCad;
