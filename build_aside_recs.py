@@ -58,7 +58,7 @@ PAGE_TAGS = {
     "fam": {"percentagecalculator": ["percent", "everyday", "money", "school"], "gradecalculator": ["school", "percent"], "gpacalculator": ["school"],
             "mortgagecalculator": ["money", "finance"], "inflationcalculator": ["money", "finance", "percent"], "vatcalculator": ["money", "percent"],
             "bmicalculator": ["health", "everyday"], "memes": ["fun"], "puzzles": ["fun", "math", "school"], "timer": ["focus", "time", "school"], "tools": ["everyday"],
-            "pokemongocalculator": ["fun"], "math-qa": ["physics", "science", "math"], "cubic-formula": ["algebra", "equations", "math"],
+            "pokemongocalculator": ["fun"], "graphing": ["graphing", "calculus", "algebra", "school"], "math-qa": ["physics", "science", "math"], "cubic-formula": ["algebra", "equations", "math"],
             "vector-functions-problems-plus": ["calculus", "vectors", "physics", "graphing", "math"]},
     "pat": [["problems-plus-[1-6]|projectile|curvature|spool", ["calculus", "graphing", "physics", "vectors"]], ["cubic|quadratic|cube-root", ["algebra", "equations"]],
             ["^/moon", ["astronomy", "time", "science"]], ["^/calendar", ["time", "astronomy"]], ["^/timer", ["focus", "time"]],
@@ -67,6 +67,11 @@ PAGE_TAGS = {
 }
 EQ = "0 = 2 - sin(alpha)*ln((1+sin(alpha))/(1-sin(alpha)))"
 CTX = {   # page path regex -> [(target, title, kind-label, logo path)]
+    r"^/2d-graphing-calculator": [("/derivative-calculator?q=" + quote("x^2*sin(x)"), "Find the slope of x² sin x, step by step", "/derivative-calculator"),
+                                  ("/integral-calculator?q=" + quote("x^2*sin(x)"), "Find the area under it with an integral", "/integral-calculator"),
+                                  ("/cas-calculator?q=" + quote("x^2 - 4 = 0"), "Solve the equation you graphed in the CAS", "/cas-calculator")],
+    r"^/3d-graphing-calculator": [("/derivative-calculator?q=" + quote("x^2*y + sin(x*y)"), "Partial derivatives of a surface, step by step", "/derivative-calculator"),
+                                  ("/2d-graphing-calculator", "Slice it: plot a cross-section in 2D", "/2d-graphing-calculator")],
     r"^/problems-plus-5-": [("/cas-calculator?q=" + quote(EQ), "Solve this page's launch-angle equation in the CAS", "/cas-calculator"),
                             ("/2d-graphing-calculator?f=" + quote("y = 2 - sin(x)*ln((1+sin(x))/(1-sin(x)))"), "Graph it and watch it cross zero near 0.9855", "/2d-graphing-calculator")],
     r"^/problems-plus-6-": [("/3d-graphing-calculator?f=" + quote("(cos(t), sin(t), t/4)"), "See a helix (the cable on the spool) in 3D", "/3d-graphing-calculator"),
@@ -126,6 +131,27 @@ def main():
             allm.append({"u": u, "t": title, "i": (x[5] if len(x) > 5 else ""), "k": "Math video", "g": mtags(u)})
     out["mathall"] = allm
     out["qa"] = qa
+    # the 9/11 / Hutchison / conspiracy cluster (2026-10-02): these pages recommend each other only (own family first, then the other two), never calculators or math.
+    # Families come from each page's own data-aside-family; hubs and the graphic jumper clips are left out (thumbnails of the latter are not for cards).
+    HUBS = {"911", "911-posts", "911-videos", "911truth", "911-short-videos", "911-observable-evidence", "1109-keo-meteor-music", "hutchison", "hutchison-posts", "hutchison-videos",
+            "highlights", "articles", "hutchison-debunking-debunkers", "hutchison-news", "hutchison-unedited-footage", "hutchison-interviews", "cold-fusion-lenr",
+            "conspiracy", "conspiracy-posts", "conspiracy-videos"}
+    BAD = re.compile(r"jumper|jumping|falling-man|eyesiswatchin|coat-jumper")
+    LABEL = {"911": "9/11 Truth", "hutchison": "Hutchison Effect", "conspiracy": "Conspiracy"}
+    fam_re = re.compile(r'data-aside-family="([^"]+)"')
+    cl = {"911": [], "hutchison": [], "conspiracy": []}
+    for d in sorted(p for p in SITE.iterdir() if p.is_dir()):
+        f = d / "index.html"
+        if not f.exists() or d.name in HUBS or BAD.search(d.name):
+            continue
+        m = fam_re.search(f.read_text(encoding="utf-8", errors="ignore"))
+        if not m or m.group(1) not in cl:
+            continue
+        x = by.get("/" + d.name)
+        if x:
+            cl[m.group(1)].append({"u": "/" + d.name, "t": x[1], "i": (x[5] if len(x) > 5 else ""), "k": LABEL[m.group(1)]})
+    out["cl"] = cl
+    print("cluster pools:", {k: len(v) for k, v in cl.items()})
     out["tags"] = PAGE_TAGS
     ctx = {}
     logos = {c["u"]: c["i"] for c in calc}

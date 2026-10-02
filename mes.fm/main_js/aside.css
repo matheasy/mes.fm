@@ -148,14 +148,16 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
      Wide    -> the frame grows to min(98vw, 1492px): content ~1096px next to the column on a 1560px+ screen
      Theatre -> the frame is min(98vw, 2400px): the content takes everything the column leaves */
 @media (min-width: 1200px) and (max-width: 1359px) {
-  html.page-wide .has-aside .outer-page-content, html.page-wide .mes-cols { grid-template-columns: 1fr; }
-  html.page-wide .has-aside .page-content, html.page-wide .mes-col-main { grid-column: 1; grid-row: 1; }
-  html.page-wide .has-aside .mes-aside, html.page-wide .mes-cols > .mes-aside { grid-column: 1; grid-row: 2; margin: 2em 0 1em; }
-  html.page-wide .mes-aside__sticky { position: static; }
-  html.page-wide .mes-aside__ad, html.page-wide .mes-aside__ad:not([data-ad-slot=""]) { display: none !important; }
-  html.page-wide .mes-aside__flip, html.page-wide .mes-aside__hide { display: none !important; }
-  html.page-wide .mes-aside__list { grid-template-columns: repeat(4, 1fr); }
-  html.page-theatre .mes-aside__list { grid-template-columns: repeat(6, 1fr); }
+  html.page-wide:not(.aside-force) .has-aside .outer-page-content, html.page-wide:not(.aside-force) .mes-cols { grid-template-columns: 1fr; }
+  html.page-wide:not(.aside-force) .has-aside .page-content, html.page-wide:not(.aside-force) .mes-col-main { grid-column: 1; grid-row: 1; }
+  html.page-wide:not(.aside-force) .has-aside .mes-aside, html.page-wide:not(.aside-force) .mes-cols > .mes-aside { grid-column: 1; grid-row: 2; margin: 2em 0 1em; }
+  html.page-wide:not(.aside-force) .mes-aside__sticky { position: static; }
+  html.page-wide:not(.aside-force) .mes-aside__ad, html.page-wide:not(.aside-force) .mes-aside__ad:not([data-ad-slot=""]) { display: none !important; }
+  html.page-wide:not(.aside-force) .mes-aside__flip, html.page-wide:not(.aside-force) .mes-aside__hide { display: none !important; }
+  html.page-wide:not(.aside-force) .mes-aside__list { grid-template-columns: repeat(4, 1fr); }
+  html.page-theatre:not(.aside-force) .mes-aside__list { grid-template-columns: repeat(6, 1fr); }
+  /* the sidebar was moved below the content to make room: "Show sidebar" (in the width switch) puts it back beside the content (html.aside-force) */
+  html.page-wide:not(.aside-force) .mes-aside-show { display: inline-block !important; }
 }
 @media (min-width: 1360px) {
   html.page-wide:not(.page-theatre) .outer-container.has-aside { max-width: min(98vw, calc(50em + 332px + 360px)) !important; }
@@ -184,4 +186,10 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
 .mes-aside__ad2-slot.is-debug { display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, #f1f3f6, #f1f3f6 10px, #e8ebef 10px, #e8ebef 20px); color: #667; font-size: .85em; }
 :is(body.dark-mode, body.dark) .mes-aside__list > li.mes-aside__ad2 { border-color: #444; }
 :is(body.dark-mode, body.dark) .mes-aside__ad2-slot.is-debug { background: repeating-linear-gradient(45deg, #26282c, #26282c 10px, #2d3035 10px, #2d3035 20px); color: #aab; }
+
+/* inline recommendations under a tool that has no sidebar column (the graphing calculators): a grid of cards */
+.mes-aside--inline { margin: 1.6em 0 1.2em; }
+.mes-aside--inline .mes-aside__head { margin-bottom: .8em; }
+.mes-aside--inline .mes-aside__list { grid-template-columns: repeat(auto-fill, minmax(16em, 1fr)); gap: .6em; }
+.mes-aside--inline .mes-aside__hide, .mes-aside--inline .mes-aside__flip { display: none !important; }
 

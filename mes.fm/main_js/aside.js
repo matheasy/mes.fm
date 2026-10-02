@@ -150,7 +150,10 @@
             var m = current();
             MODES.forEach(function (x) { buttons[x[0]].setAttribute("aria-pressed", x[0] === m ? "true" : "false"); });
         };
+        try { if (localStorage.getItem("asideForce") === "1" && root.classList.contains("page-wide")) root.classList.add("aside-force"); } catch (e) {}
         var setMode = function (m) {
+            root.classList.remove("aside-force");   /* choosing a width resets "Show sidebar" (the automatic layout applies again) */
+            try { localStorage.setItem("asideForce", "0"); } catch (e) {}
             root.classList.toggle("page-wide", m !== "std");
             root.classList.toggle("page-theatre", m === "theatre");
             try { localStorage.setItem("pageMode", m); localStorage.setItem("pageWide", m === "std" ? "0" : "1"); } catch (e) {}
@@ -167,8 +170,13 @@
         var show = document.createElement("button");
         show.type = "button"; show.className = "mes-aside-show"; show.textContent = "Show sidebar"; show.title = "Bring the sidebar back";
         show.addEventListener("click", function () {
-            root.classList.remove("aside-hidden");
-            try { localStorage.setItem("asideHidden", "0"); } catch (e) {}
+            if (root.classList.contains("aside-hidden")) {
+                root.classList.remove("aside-hidden");
+                try { localStorage.setItem("asideHidden", "0"); } catch (e) {}
+            } else {                      /* auto-collapsed (Wide / Theatre on a 1200-1359px window): bring the sidebar back beside the content */
+                root.classList.add("aside-force");
+                try { localStorage.setItem("asideForce", "1"); } catch (e) {}
+            }
             loadAd();
             try { window.dispatchEvent(new Event("resize")); } catch (e) {}
         });
@@ -224,7 +232,10 @@
        opening its sections, the comments loading). Not shown on the 9/11 / Hutchison / science / conspiracy / crypto / mathiew / livestreams mirrors. */
     (function () {
         var MATH_FAMS = { "math-qa": 1, "cubic-formula": 1, "vector-functions-problems-plus": 1, "math": 1 };
-        var NONE = { "911": 1, "hutchison": 1, "science": 1, "conspiracy": 1, "crypto": 1, "mathiew": 1, "livestreams": 1 };
+        var NONE = { "science": 1, "crypto": 1, "mathiew": 1, "livestreams": 1 };
+        /* the 9/11 / Hutchison / conspiracy cluster recommends only itself (own family first, then the other two): never calculators or math */
+        var CLUSTER = { "911": ["911", "hutchison", "conspiracy"], "hutchison": ["hutchison", "911", "conspiracy"], "conspiracy": ["conspiracy", "911", "hutchison"] };
+        var CL_HEAD = { "911": "More 9/11 Truth", "hutchison": "More on the Hutchison Effect", "conspiracy": "More conspiracy research" };
         if (!family || NONE[family] || !window.fetch) return;
         var mathWorld = !!MATH_FAMS[family];
         var host2 = aside.querySelector(".mes-aside__sticky") || aside;
@@ -268,7 +279,9 @@
             var ctx = [];
             Object.keys(recs.ctx || {}).forEach(function (pat) { try { if (new RegExp(pat).test(path)) ctx = ctx.concat(recs.ctx[pat]); } catch (e) {} });
             var calc = ctx.concat(rank(recs.calc)), blocks;
-            if (mathWorld) {
+            if (CLUSTER[family]) {
+                blocks = CLUSTER[family].map(function (f) { return { h: CL_HEAD[f], items: fresh((recs.cl || {})[f]), logo: false }; });
+            } else if (mathWorld) {
                 blocks = [{ h: ctx.length ? "Try it with MES tools" : "Calculators for this topic", items: calc.slice(0, ctx.length + 8), logo: true }];
                 if (isQA) blocks.push({ h: "More Math Q/A livestreams", items: rank(recs.qa), logo: false });      /* the livestream replays only ever show up next to other livestream replays */
                 blocks.push({ h: "More math tutorials", items: rank((recs.math || []).concat(recs.mathall || [])), logo: false });
@@ -283,6 +296,7 @@
             blocks = blocks.filter(function (b) { return b.items.length; });
             if (!blocks.length) return;
             var content = document.querySelector(".has-aside .page-content") || document.querySelector(".mes-col-main");
+            var inline = aside.classList.contains("mes-aside--inline");   /* graphing calculator pages: a card grid under the tool (no column) */
             var count = 0, rail = aside.classList.contains("mes-aside--rail");   /* rail = Jump-to pages' fixed side rail (jump-aside.js): a fixed number of cards, it scrolls on its own */
             function beside() { var a = aside.getBoundingClientRect(), c = content && content.getBoundingClientRect(); return !!c && window.innerWidth >= 1200 && (a.left >= c.right - 5 || a.right <= c.left + 5) && getComputedStyle(aside).display !== "none"; }
             function need() { return host2.getBoundingClientRect().height < content.getBoundingClientRect().height - 100; }
@@ -333,7 +347,7 @@
             function next() { for (var i = 0; i < blocks.length; i++) if (blocks[i].items.length) return blocks[i]; return null; }
             function fill() {
                 var b;
-                if (rail) { while (count < 16 && (b = next())) add(b); return; }
+                if (rail || inline) { while (count < (rail ? 16 : 12) && (b = next())) add(b); return; }
                 if (!content) return;
                 if (!beside()) { if (!count) for (var i = 0; i < 4 && (b = next()); i++) add(b); return; }
                 while (count < MAX && (b = next()) && (count < 3 || need())) add(b);

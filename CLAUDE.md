@@ -430,6 +430,12 @@ of HTML files individually:
   "Advertisement" box with a responsive Vertical AdSense unit (300x600 / 160x600), only when the content is at least ~760px taller than the column at that point (so short pages never get it), never on the Jump-to rail,
   requested lazily (IntersectionObserver, 300px margin) and collapsed by the same blocker/unfilled watcher as the top ad (more cards then fill the space). **On since 2026-10-02: `AD2_SLOT` = `2932057652`** (the unit; was off until it was set) -- the
   slot id of the AdSense unit "Sidebar Half Page 300x600" (Display, Vertical, Responsive); `?aside-debug` shows a hatched placeholder where it would go (checked: 7 cards, ad, then 40 more cards down to the footer).
+- **Cluster + graphing recommendations + "Show sidebar" after an automatic collapse** (2026-10-02): (1) the 9/11, Hutchison and conspiracy pages recommend only each other (`aside.js` `CLUSTER`: 9/11 pages ->
+  9/11, Hutchison, conspiracy in that order; Hutchison -> Hutchison, 9/11, conspiracy; conspiracy -> conspiracy, 9/11, Hutchison), never calculators or math; pool `cl` in `aside-recs.json` is built
+  from each page's own `data-aside-family`, minus hubs and the graphic jumper clips (`BAD` in `build_aside_recs.py`). science / crypto / mathiew / livestreams still get no cross cards. (2) The 2D / 3D
+  graphing calculators (wide pages, no column) carry `<aside class="mes-aside mes-aside--inline" data-aside-family="graphing">` in their `content.html` + `aside.css` / `aside.js` tags: a 4-column card grid
+  under the tool (up to 12: "Try it with MES tools" deep links like the derivative of x² sin x, related calculators, math videos). (3) When Wide / Theatre collapse the sidebar below the content (1200-1359px),
+  "Show sidebar" appears in the width switch and brings it back beside the content (`html.aside-force`, localStorage `asideForce`; choosing any width resets it).
 - `add_hub_theatre.py` -- the **Standard | Theatre** switch on the sidebar-less hub pages (2026-10-01; `calculators`, `tools`, `mobile-apps`, `puzzles`, `memes`
   and the thumbnail-gallery / quote list pages: every page with the `HUB-WIDE-LAYOUT` marker and no "More like this" sidebar, 62 pages). `main_js/hub-theatre.css` + `.js`;
   same saved `pageMode`/`pageWide` preference as `add_page_theatre.py`'s switch, so Theatre carries across the whole site. Theatre = `.outer-container` up to
