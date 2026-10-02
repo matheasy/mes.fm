@@ -1,0 +1,32 @@
+	.db-dates {display:flex;flex-wrap:wrap;gap:0.8em;align-items:flex-start;}
+	.db-date {flex:1 1 14em;display:flex;flex-direction:column;gap:0.35em;min-width:0;}
+	.db-date .tu-chip {align-self:flex-start;}
+	.db-swap {align-self:center;margin-top:1.4em;padding:0.5em 0.8em;}
+	@media (max-width:560px) {.db-swap {margin:0 auto;transform:rotate(90deg);}}
+	.db-quick {margin-top:0.8em;}
+	.db-opts {display:flex;flex-wrap:wrap;gap:0.4em 1.6em;margin-top:0.9em;}
+	.db-check {display:flex;gap:0.45em;align-items:center;cursor:pointer;}
+	.db-check input {width:1.1em;height:1.1em;accent-color:var(--accent);}
+	.db-hero {margin-top:1em;text-align:center;padding:1.3em 1em;}
+	.db-hero__big {font-size:2.6em;font-weight:800;color:#1e2733;line-height:1.15;word-break:break-word;}
+	.db-hero__sub {margin:0.5em 0 0.9em;color:#4a5160;line-height:1.5;}
+	.db-hero__row {display:flex;flex-direction:column;gap:0.8em;align-items:center;}
+	.db-bar {width:min(28em,100%);height:0.7em;background:rgba(0,0,0,0.12);border-radius:1em;overflow:hidden;}
+	.db-bar__fill {height:100%;background:var(--accent);}
+	.db-units {display:flex;flex-wrap:wrap;gap:0.4em 1.1em;margin:0.9em 0;}
+	.db-breakdown {font-size:1.5em;font-weight:700;color:#1e2733;padding:0.5em 0.2em;line-height:1.35;word-break:break-word;}
+	.db-details {margin-top:0.9em;}
+	.db-details summary {cursor:pointer;color:var(--accent);font-weight:600;}
+	.db-wk {display:flex;flex-wrap:wrap;gap:0.4em 0.9em;}
+	.db-ta {font-family:ui-monospace,Menlo,Consolas,monospace;resize:vertical;}
+	.db-two {display:grid;grid-template-columns:repeat(auto-fit,minmax(16em,1fr));gap:1em;}
+	.db-info div {padding:0.25em 0;border-bottom:1px solid #eceff3;display:flex;justify-content:space-between;gap:1em;}
+	.db-info span:first-child {color:#6a7280;}
+	.db-info span:last-child {font-weight:600;text-align:right;}
+	.db-mile {list-style:none;margin:0.4em 0 0;padding:0;}
+	.db-mile li {padding:0.35em 0;border-bottom:1px solid #eceff3;display:flex;justify-content:space-between;gap:1em;flex-wrap:wrap;}
+	.db-tz {margin:1.2em 0;}
+	.db-links {display:flex;flex-wrap:wrap;gap:0.5em 1.2em;margin:0.5em 0;}
+	body.dark-mode .tu .db-bar {background:rgba(255,255,255,0.18);}
+	body.dark-mode .tu .db-hero__big {color:#f2f2f2;}
+	body.dark-mode .tu .db-hero__sub {color:#c8c8c8;}

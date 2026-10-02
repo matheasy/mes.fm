@@ -1,0 +1,103 @@
+	<div class="tu" id="db">
+		<div class="tu-card">
+			<div class="db-dates">
+				<div class="db-date">
+					<label class="tu-label" for="db-a">Start date</label>
+					<input id="db-a" class="tu-input tu-input--big" type="date">
+					<div class="db-time" id="db-ta-wrap" hidden><label class="tu-label" for="db-ta">Start time</label><input id="db-ta" class="tu-input" type="time" step="1" value="00:00:00"></div>
+					<button type="button" class="tu-chip" id="db-a-today">Today</button>
+				</div>
+				<button type="button" class="tu-btn db-swap" id="db-swap" title="Swap the two dates" aria-label="Swap start and end">&#8646;</button>
+				<div class="db-date">
+					<label class="tu-label" for="db-b">End date</label>
+					<input id="db-b" class="tu-input tu-input--big" type="date">
+					<div class="db-time" id="db-tb-wrap" hidden><label class="tu-label" for="db-tb">End time</label><input id="db-tb" class="tu-input" type="time" step="1" value="00:00:00"></div>
+					<button type="button" class="tu-chip" id="db-b-today">Today</button>
+				</div>
+			</div>
+			<div class="tu-chips db-quick" id="db-quick" aria-label="Quick ranges"></div>
+
+			<div class="db-opts">
+				<label class="db-check"><input type="checkbox" id="db-incl"> Include the end date <span class="tu-note">(count both the first and last day)</span></label>
+				<label class="db-check"><input type="checkbox" id="db-time"> Include time of day</label>
+			</div>
+		</div>
+
+		<div class="tu-card tu-card--tint db-hero" id="db-hero" aria-live="polite">
+			<div class="db-hero__big" id="db-big">&mdash;</div>
+			<div class="db-hero__sub" id="db-sub"></div>
+			<div class="db-hero__row">
+				<div class="db-bar" id="db-bar" hidden><div class="db-bar__fill" id="db-barfill"></div></div>
+				<div class="tu-row" style="gap:0.5em;">
+					<button type="button" class="tu-btn tu-btn--primary" id="db-copy">Copy result</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="db-link">Copy link</button>
+				</div>
+			</div>
+		</div>
+
+		<h2>Show the result as&hellip;</h2>
+		<div class="tu-card">
+			<div class="tu-chips" id="db-presets" aria-label="Unit combinations"></div>
+			<div class="db-units" id="db-units" role="group" aria-label="Units to use"></div>
+			<div class="db-breakdown" id="db-breakdown"></div>
+			<p class="tu-note">The largest units are filled first and the smallest unit you pick shows any remainder as a decimal. Months are calendar months (31 Jan + 1 month = 28 Feb), not 30-day blocks.</p>
+		</div>
+
+		<h2>Totals</h2>
+		<div class="tu-stats" id="db-totals"></div>
+
+		<h2>Business days</h2>
+		<div class="tu-card">
+			<div class="tu-stats" id="db-work" style="margin-top:0;"></div>
+			<details class="db-details" id="db-wopts">
+				<summary>Weekend days &amp; holidays</summary>
+				<div class="tu-row" style="margin-top:0.7em;">
+					<div class="tu-field" style="flex:2 1 18em;"><span class="tu-label">Weekend days (not counted as working days)</span>
+						<div class="db-wk" id="db-wk"></div></div>
+					<div class="tu-field"><label for="db-region">Skip public holidays of</label>
+						<select id="db-region" class="tu-select"><option value="">None</option><option value="ca">Canada</option><option value="us">USA</option><option value="uk">United Kingdom</option><option value="au">Australia</option><option value="vn">Vietnam</option></select></div>
+				</div>
+				<div class="tu-field" style="margin-top:0.7em;"><label for="db-hol">Extra days off (one date per line, YYYY-MM-DD)</label>
+					<textarea id="db-hol" class="tu-input db-ta" rows="2" spellcheck="false" placeholder="2026-12-24"></textarea></div>
+				<div id="db-hol-list" class="tu-note"></div>
+			</details>
+		</div>
+
+		<h2>Details</h2>
+		<div class="db-two">
+			<div class="tu-card"><h3 style="margin-top:0;">Start</h3><div id="db-info-a"></div></div>
+			<div class="tu-card"><h3 style="margin-top:0;">End</h3><div id="db-info-b"></div></div>
+		</div>
+		<div class="tu-card" style="margin-top:1em;">
+			<h3 style="margin-top:0;">Weekdays in this period</h3>
+			<div class="tu-table-wrap"><table class="tu-table" id="db-wdays"><thead><tr></tr></thead><tbody><tr></tr></tbody></table></div>
+			<h3>Milestones</h3>
+			<ul class="db-mile" id="db-mile"></ul>
+		</div>
+
+		<details class="db-details db-tz" id="db-tzbox">
+			<summary>Time zone &amp; daylight saving</summary>
+			<div class="tu-row" style="margin-top:0.7em;">
+				<div class="tu-field"><label for="db-zone">Both times are in</label><select id="db-zone" class="tu-select"></select></div>
+				<button type="button" class="tu-btn tu-btn--ghost" id="db-now">Set start to now</button>
+			</div>
+			<p class="tu-note" id="db-dst">When your two times straddle a daylight-saving change, the real elapsed time differs from the clock difference by an hour. That is shown here when it happens.</p>
+		</details>
+
+		<div class="tu-toast" id="db-toast" role="status"></div>
+
+		<section class="tu-seo">
+			<h2>How this calculator counts</h2>
+			<p>Pick a start and end date and the calculator shows the number of days between them. By default the start date is counted and the end date is not, so Monday to Wednesday is 2 days. Tick <strong>Include the end date</strong> when you want both days counted (Monday to Wednesday is then 3 days), which is common for hotel stays, project schedules and day counts that must include the last day.</p>
+			<ul>
+				<li><strong>Any combination of units:</strong> years, months, weeks, days, hours, minutes and seconds, in whatever mix you tick.</li>
+				<li><strong>Business days:</strong> choose your weekend, skip the public holidays of Canada, the USA, the UK, Australia or Vietnam, and add your own days off.</li>
+				<li><strong>Time of day and time zones:</strong> add start and end times, with a note when daylight saving changes the real elapsed time.</li>
+				<li><strong>Leap years</strong> are handled correctly, and every result has a shareable link.</li>
+			</ul>
+			<h2>More from MES</h2>
+			<div class="db-links">
+				<a href="/calendar">Calendar &amp; moon phases</a><a href="/calculator">Calculator</a><a href="/timezone">Timezone Converter</a><a href="/percentagecalculator">Percentage Calculator</a><a href="/timer">Timer</a>
+			</div>
+		</section>
+	</div>

@@ -315,6 +315,18 @@ of HTML files individually:
   (PIL-drawn) until Grok art lands (`calculator/img/logo.png`, `logo-big.png` 1200x630, `img/calculator-logo.png`: same names). The "Graphing Calculator 2D / 3D"
   cards at the bottom are deliberately **not links** (pages don't exist yet): when built, make them `<a class="mc-link">` in `content.html`.
 
+- **Graphing Calculator 2D** (2026-10-01, `mes.fm/graphing-calculator-2D`, capital D as requested; blue `#2160d0`) -- Desmos-style, built by
+  `build_tool_apps.py` from `tool_apps_src/graphing-calculator-2D/`. `lib.js` = tokenizer + parser that emits JS source from a whitelist only (no raw user text
+  is executed): functions, `x=`, implicit `F(x,y)=G`, inequalities (shaded), parametric `(x(t),y(t))`, polar `r=`, `{restrictions}` / `{0<=t<=6π}` ranges, sliders for
+  free letters or `a = 2` rows, user functions `f(x)=...`, `⌊x⌋`/`⌈x⌉`/`|x|`; plus key-point numerics (zeros, extrema, intersections; node-testable).
+  `app.js` = canvas renderer (grid, marching squares, adaptive function sampling that breaks at jumps/asymptotes, pan/zoom/pinch, trace, PNG, `?s=`/`?f=` links,
+  localStorage `mes-graph2d:v1`). It is a wide page (`.outer-container` 80em override in `app.css`), so it is NOT in the `add_sidebar.py` collection. 3D page is
+  not built yet; `graphing-calculator-3D/img` + `img/graphing-calculator-3d-logo.png` already hold the Grok art. Run the same four scripts as the calculator after edits.
+- **Days Between Dates** (2026-10-01, canonical `mes.fm/days-between-dates-calculator`, green `#2f7d32`; `/days`, `/days-between`, `/days-calculator`,
+  `/days-between-calculator`, `/days-between-dates` 308-redirect to it in `mes.fm/vercel.json`). `build_tool_apps.py` got a `lib_from` option: the page's js is the
+  calendar's `lib.js` (holiday engine `MESCal`, used for the business-day holiday regions) + its own `lib.js` (`DC`, date maths on "naive" wall-clock ms: calendar
+  months with end-of-month clamping, user-chosen unit combinations `breakdown()`, weekday counts, business days, ISO week, DST-aware elapsed via Intl) + `app.js`.
+  Inclusive-end option, time of day, weekend picker, custom days off, shareable `?start=&end=&u=` links. Logos are PIL placeholders until Grok art lands.
 - `add_cross_links.py` — cross-links calculators and tools in the horizontal info bar: calculator pages (the calculator
   mini-sites and the four rebuilt apps) get a **Tools** item (-> `/tools`), tool pages (timer incl. its quote galleries,
   speedreader, emoji, latex, timezone, symbols, youtube-thumbnail, stats) get **Calculators** (and Tools where missing),

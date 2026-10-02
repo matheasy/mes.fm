@@ -65,6 +65,17 @@ APPS = {
                        tag="Multiply, divide, squares, roots and more.", accent="#c2255c", dark="#8f1a43", tint="#fbe6ee",
                        desc="Free online calculator: type any expression or use the keypad for multiplication, division, squares, square roots, powers, percentages, fractions, factorials, logarithms and trigonometry, plus exact big-number maths, prime factors, GCD, LCM and more.",
                        js_v="1"),
+    # 2D graphing calculator (Desmos-style): lib.js = tokenizer/parser -> compiled JS functions + key-point numerics (node-testable), app.js = canvas UI.
+    # Slug keeps the capital D as requested (Vercel is case-sensitive on static paths).
+    "graphing-calculator-2D": dict(title="MES Graphing Calculator 2D", page_title="Graphing Calculator 2D",
+                                   tag="Plot functions, equations and inequalities.", accent="#2160d0", dark="#1646a0", tint="#e3ecfb",
+                                   desc="Free online 2D graphing calculator: plot functions, equations, inequalities, parametric and polar curves, use sliders, and find zeros, maximums, minimums and intersections. Zoom, pan, share a link or save a PNG.",
+                                   js_v="1"),
+    # days between two dates: own lib.js (DC, date maths) + the calendar's holiday engine (MESCal) via lib_from. Real page at the keyword URL; /days etc. redirect (mes.fm/vercel.json).
+    "days-between-dates-calculator": dict(title="MES Days Between Dates Calculator", page_title="Days Between Dates Calculator",
+                                          tag="Days, weeks, months, hours and business days between two dates.", accent="#2f7d32", dark="#1f5a23", tint="#e4f2e4",
+                                          desc="Free days between dates calculator: count the days, weeks, months, years, hours, minutes and seconds between any two dates, with optional end-date inclusion, business days (custom weekends and holidays), time of day and shareable links.",
+                                          js_v="1", lib_from=["calendar"]),
     "calendar": dict(title="MES Calendar", page_title="Calendar",
                      tag="Moon phases, holidays and more, month by month.", accent="#2f5fd0", dark="#1f44a0", tint="#e6edfb",
                      desc="Free online calendar for any year: month and year views with today highlighted, new and full moon times, Canada, USA, UK, Australia and Vietnam holidays, Christian, Jewish and Islamic dates, seasons, eclipses, daylight-saving changes and a days-between calculator.",
@@ -174,6 +185,8 @@ def build_from_source(slug, cfg, tpl):
     js = (d / "app.js").read_text(encoding="utf-8")
     if (d / "lib.js").exists():       # optional shared/pure code (e.g. calendar maths), prepended so one file is served
         js = (d / "lib.js").read_text(encoding="utf-8") + "\n" + js
+    for other in reversed(cfg.get("lib_from", [])):   # another app's lib.js (e.g. the calendar's holiday engine), prepended before our own
+        js = (SRC / other / "lib.js").read_text(encoding="utf-8") + "\n" + js
     return page, js, js_dir / (slug + ".js")
 
 

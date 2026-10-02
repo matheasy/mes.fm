@@ -4,6 +4,11 @@
   "redirects": [
     { "source": "/video-thumbnail", "destination": "/youtube-thumbnail", "permanent": true },
     { "source": "/thumbnail", "destination": "/youtube-thumbnail", "permanent": true },
+    { "source": "/days", "destination": "/days-between-dates-calculator", "permanent": true },
+    { "source": "/days-between", "destination": "/days-between-dates-calculator", "permanent": true },
+    { "source": "/days-calculator", "destination": "/days-between-dates-calculator", "permanent": true },
+    { "source": "/days-between-calculator", "destination": "/days-between-dates-calculator", "permanent": true },
+    { "source": "/days-between-dates", "destination": "/days-between-dates-calculator", "permanent": true },
     { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/:slug/contact", "destination": "/contact", "permanent": true },
     { "source": "/:slug/contact.html", "destination": "/contact", "permanent": true },

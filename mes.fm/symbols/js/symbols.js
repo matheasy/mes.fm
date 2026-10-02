@@ -93,6 +93,14 @@
 				{ c: "∅", n: "empty set", k: "null set", l: "\\emptyset" },
 				{ c: "⊥", n: "perpendicular", l: "\\perp" },
 				{ c: "∥", n: "parallel", l: "\\parallel" },
+				{ c: "⌊", n: "floor left", k: "floor function greatest integer round down", l: "\\lfloor" },
+				{ c: "⌋", n: "floor right", k: "floor function greatest integer round down", l: "\\rfloor" },
+				{ c: "⌈", n: "ceiling left", k: "ceiling function least integer round up", l: "\\lceil" },
+				{ c: "⌉", n: "ceiling right", k: "ceiling function least integer round up", l: "\\rceil" },
+				{ c: "⌊x⌋", n: "floor of x", k: "floor function greatest integer round down", l: "\\lfloor x \\rfloor" },
+				{ c: "⌈x⌉", n: "ceiling of x", k: "ceiling function least integer round up", l: "\\lceil x \\rceil" },
+				{ c: "⟦", n: "white square bracket left", k: "floor function double bracket greatest integer", l: "\\llbracket" },
+				{ c: "⟧", n: "white square bracket right", k: "floor function double bracket greatest integer", l: "\\rrbracket" },
 				{ c: "∠", n: "angle", l: "\\angle" },
 				{ c: "′", n: "prime", l: "'" },
 				{ c: "″", n: "double prime", l: "''" }
@@ -260,8 +268,7 @@
 	var builderChars = []; // raw characters clicked, independent of `mode` -- see renderBuilder()
 
 	function htmlEntity(ch) {
-		var cp = ch.codePointAt(0);
-		return "&#" + cp + ";";
+		return Array.from(ch).map(function (c) { return "&#" + c.codePointAt(0) + ";"; }).join("");
 	}
 	function copyTextFor(item) {
 		if (mode === "latex") return item.l || item.c;

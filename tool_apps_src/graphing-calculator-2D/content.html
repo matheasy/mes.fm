@@ -1,0 +1,83 @@
+	<div class="tu gc" id="gc">
+		<div class="gc-layout">
+			<div class="gc-side" id="gc-side">
+				<div class="gc-side-top">
+					<button type="button" class="tu-btn tu-btn--primary" id="gc-add">+ Add</button>
+					<select id="gc-examples" class="tu-select" aria-label="Load an example"></select>
+					<button type="button" class="tu-btn tu-btn--ghost" id="gc-clear">Clear</button>
+				</div>
+				<div id="gc-rows" class="gc-rows"></div>
+				<div class="gc-keys" id="gc-keys" aria-label="Insert a symbol">
+					<button type="button" data-ins="π">π</button><button type="button" data-ins="θ">θ</button><button type="button" data-ins="√(§)">√</button><button type="button" data-ins="^2">x²</button><button type="button" data-ins="^(§)">xⁿ</button>
+					<button type="button" data-ins="abs(§)">|x|</button><button type="button" data-ins="⌊§⌋">⌊x⌋</button><button type="button" data-ins="⌈§⌉">⌈x⌉</button>
+					<button type="button" data-ins="sin(§)">sin</button><button type="button" data-ins="cos(§)">cos</button><button type="button" data-ins="tan(§)">tan</button><button type="button" data-ins="ln(§)">ln</button>
+					<button type="button" data-ins="≤">≤</button><button type="button" data-ins="≥">≥</button><button type="button" data-ins="{§}">{ }</button>
+				</div>
+				<div id="gc-params" class="gc-params"></div>
+			</div>
+			<div class="gc-main">
+				<div class="gc-toolbar" role="toolbar" aria-label="Graph controls">
+					<button type="button" id="gc-zin" title="Zoom in" aria-label="Zoom in">+</button>
+					<button type="button" id="gc-zout" title="Zoom out" aria-label="Zoom out">−</button>
+					<button type="button" id="gc-home" title="Reset the view" aria-label="Reset view">⌂</button>
+					<button type="button" id="gc-sq" title="Make the x and y scales equal (1 : 1)">1:1</button>
+					<button type="button" id="gc-deg" title="Angle unit for sin, cos, tan" aria-pressed="false">Rad</button>
+					<span class="gc-sp"></span>
+					<button type="button" id="gc-png" title="Download the graph as a PNG image">PNG</button>
+					<button type="button" id="gc-link" title="Copy a link to this graph">Link</button>
+					<button type="button" id="gc-full" title="Full screen" aria-label="Full screen">⛶</button>
+				</div>
+				<div class="gc-stage" id="gc-stage">
+					<canvas id="gc-canvas" tabindex="0" aria-label="Graph. Drag to move, scroll or pinch to zoom, arrow keys to pan."></canvas>
+					<div class="gc-readout" id="gc-readout" aria-live="off"></div>
+					<div class="gc-tip" id="gc-tip" hidden></div>
+				</div>
+				<p class="tu-note gc-hint">Drag to move &middot; scroll or pinch to zoom (hold Shift for x only, Alt for y only) &middot; click a row to see its key points.</p>
+			</div>
+		</div>
+
+		<div class="tu-card" id="gc-kp" style="margin-top:1em;" hidden>
+			<h3 style="margin-top:0;">Key points: <span id="gc-kp-name"></span></h3>
+			<div class="tu-table-wrap"><table class="tu-table" id="gc-kp-table"><thead><tr><th>Point</th><th>x</th><th>y</th></tr></thead><tbody></tbody></table></div>
+			<p class="tu-note">Zeros, intercepts, maximums, minimums and intersections with your other curves in the part of the graph you can see. Zoom or move and they update.</p>
+		</div>
+
+		<h2>What you can type</h2>
+		<div class="tu-card gc-help">
+			<table class="tu-table gc-help-table">
+				<tbody>
+					<tr><td><code>y = x^2 - 3</code></td><td>a function (just <code>x^2 - 3</code> works too)</td></tr>
+					<tr><td><code>x = 2</code> &nbsp; <code>x = y^2</code></td><td>a vertical line or a sideways curve</td></tr>
+					<tr><td><code>x^2 + y^2 = 9</code></td><td>any equation in x and y (circles, ellipses, hearts, …)</td></tr>
+					<tr><td><code>y &gt; x^2</code> &nbsp; <code>0 &lt; x &lt; 3</code></td><td>inequalities shade a region</td></tr>
+					<tr><td><code>a = 2</code> &nbsp; <code>y = a sin(b x)</code></td><td>letters become sliders; define one with <code>a = 2</code></td></tr>
+					<tr><td><code>f(x) = x^2 + 1</code> &nbsp; <code>y = f(3x)</code></td><td>define your own functions</td></tr>
+					<tr><td><code>(cos(t), sin(t))</code></td><td>parametric curve (t from 0 to 2π); <code>(2, 3)</code> is a point</td></tr>
+					<tr><td><code>r = 1 + cos(θ)</code></td><td>polar curve</td></tr>
+					<tr><td><code>y = x^2 {-2 &lt;= x &lt;= 2}</code></td><td>restrict where it is drawn; <code>{0&lt;=t&lt;=6π}</code> sets the t range</td></tr>
+					<tr><td><code>sqrt</code> <code>abs</code> <code>|x|</code> <code>⌊x⌋</code> <code>⌈x⌉</code> <code>ln</code> <code>log</code> <code>exp</code> <code>sin</code> <code>cos</code> <code>tan</code> <code>asin</code> <code>sinh</code> <code>mod</code> <code>root</code> <code>min</code> <code>max</code> <code>round</code> <code>pi</code> <code>e</code></td><td>functions and constants (<code>⌊ ⌋</code> and <code>⌈ ⌉</code> are on the <a href="/symbols">Symbol Copier</a>)</td></tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="tu-toast" id="gc-toast" role="status"></div>
+
+		<section class="tu-seo">
+			<h2>More from MES</h2>
+			<div class="mc-links">
+				<a class="mc-link" href="/calculator">Calculator<span>multiply, divide, squares, roots&hellip;</span></a>
+				<a class="mc-link" href="/latex">LaTeX Render<span>write equations nicely</span></a>
+				<a class="mc-link" href="/symbols">Symbol Copier<span>π, ≤, ⌊x⌋ and more</span></a>
+				<span class="mc-link mc-link--soon" aria-disabled="true">Graphing Calculator 3D<span>Coming soon &middot; surfaces z = f(x, y)</span></span>
+			</div>
+			<h2>Free online graphing calculator</h2>
+			<p>Plot functions, equations, inequalities, parametric and polar curves on a smooth, zoomable graph. Type as many expressions as you like, each in its own colour. Use sliders to see what a changes in <code>y = a sin(bx)</code>, find zeros, maximums, minimums and intersections automatically, then save the graph as a PNG or share it with a link. Everything runs in your browser, with no sign-up.</p>
+			<ul>
+				<li><strong>Functions, implicit curves and inequalities</strong>: <code>y = x^2</code>, <code>x^2 + y^2 = 9</code>, <code>y &gt; |x|</code>.</li>
+				<li><strong>Parametric and polar</strong>: circles, Lissajous figures, roses, spirals.</li>
+				<li><strong>Sliders and your own functions</strong> for exploring how parameters change a graph.</li>
+				<li><strong>Key points</strong> shown on the graph and listed in a table.</li>
+				<li>Works on phones and tablets (pinch to zoom), in dark mode, and your graph is remembered in your browser.</li>
+			</ul>
+		</section>
+	</div>
