@@ -331,6 +331,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .gc-row.is-active {background:rgba(255,255,255,0.07);}
 	body.dark-mode .tu .gc-stage {background:#161618;border-color:#444;}
 	@media print {.gc-side, .gc-toolbar, .gc-hint {display:none !important;}}
+	/* Theatre: nearly the whole window, a taller stage and a slightly wider side panel */
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
+	@media (min-width:860px) {html.page-theatre .gc-layout {grid-template-columns:24em 1fr;--gc-h:min(84vh,1000px);}}
+
 
 
 	@media print {
@@ -684,6 +688,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Graphing Calculator 2D</h1>                                        <p class="page-description">Free online 2D graphing calculator: plot functions, equations, inequalities, parametric and polar curves, use sliders, and find zeros, maximums, minimums and intersections. Zoom, pan, share a link or save a PNG.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
 	<div class="tu gc" id="gc">
 		<div class="gc-layout">
 			<div class="gc-side" id="gc-side">
@@ -711,6 +716,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<span class="gc-sp"></span>
 					<button type="button" id="gc-png" title="Download the graph as a PNG image">PNG</button>
 					<button type="button" id="gc-link" title="Copy a link to this graph">Link</button>
+					<button type="button" id="gc-theatre" class="gc-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
 					<button type="button" id="gc-full" title="Full screen" aria-label="Full screen">⛶</button>
 				</div>
 				<div class="gc-stage" id="gc-stage">

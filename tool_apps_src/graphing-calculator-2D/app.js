@@ -448,6 +448,13 @@
 		canvas.toBlob(function (b) { if (!b) return; var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'mes-graph.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); });
 	});
 	$('gc-link').addEventListener('click', function () { copy(location.origin + location.pathname + '?s=' + encodeURIComponent(encode(snapshot())), 'Link copied'); });
+	function paintTheatre() { $('gc-theatre').setAttribute('aria-pressed', String(document.documentElement.classList.contains('page-theatre'))); }
+	$('gc-theatre').addEventListener('click', function () {
+		var on = document.documentElement.classList.toggle('page-theatre');
+		try { localStorage.setItem('pageMode', on ? 'theatre' : 'std'); localStorage.setItem('pageWide', on ? '1' : '0'); } catch (e) {}
+		paintTheatre(); setTimeout(resize, 60);
+	});
+	paintTheatre();
 	$('gc-full').addEventListener('click', function () { if (document.fullscreenElement) document.exitFullscreen(); else if (stage.requestFullscreen) stage.requestFullscreen(); });
 	document.addEventListener('fullscreenchange', function () { setTimeout(resize, 50); });
 	if (window.ResizeObserver) new ResizeObserver(resize).observe(stage); else window.addEventListener('resize', resize);

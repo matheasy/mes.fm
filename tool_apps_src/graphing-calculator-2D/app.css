@@ -57,3 +57,7 @@
 	body.dark-mode .tu .gc-row.is-active {background:rgba(255,255,255,0.07);}
 	body.dark-mode .tu .gc-stage {background:#161618;border-color:#444;}
 	@media print {.gc-side, .gc-toolbar, .gc-hint {display:none !important;}}
+	/* Theatre: nearly the whole window, a taller stage and a slightly wider side panel */
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
+	@media (min-width:860px) {html.page-theatre .gc-layout {grid-template-columns:24em 1fr;--gc-h:min(84vh,1000px);}}
+
