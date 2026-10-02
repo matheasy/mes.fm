@@ -157,7 +157,7 @@ HAND_WRITTEN = {
     "gpacalculator/gpa-scale-433.html": "See the 4.33 GPA scale used by our GPA Calculator, with the letter grade, percentage and grade point equivalents in one table.",
     "gpacalculator/grade-point-average.html": "Learn what Grade Point Average (GPA) really means, how it is calculated and how to use the free GPA Calculator on MES.fm.",
     "gpacalculator/tutorial.html": "Learn how the GPA Calculator works with this video tutorial, then use the free GPA Calculator on MES.fm on your own grades.",
-    "inflationcalculator/index.html": "This Inflation Calculator calculates a country's inflation rate between two different years, so you can see how prices have changed.",
+    "inflationcalculator/index.html": "Free inflation calculator with live data: see what money from any year is worth today in 190+ countries, with charts, a data table and month-by-month US, Canada and UK CPI.",
     "vatcalculator/index.html": "Use this VAT Calculator to calculate value added tax from a net value at a specific VAT rate. Free and easy to use on MES.fm.",
     "youtubemoney/index.html": "Use this YouTube Money Calculator to calculate how much revenue YouTubers can make from their views. Free and easy on MES.fm.",
     "pokemongocalculator/experience-chart.html": "See the Pokemon Go experience chart from level 1 to 40, with the XP needed for each level, from the Pokemon Go Calculator on MES.fm.",

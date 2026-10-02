@@ -214,23 +214,98 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .page-content { padding-right: 0 !important; }
 
 </style>	<style>
-	.calculator-header {font-size: 1.1em;margin-bottom:1em;}
-	#main-content .custom-input, #main-content select {height:1.8em;width:9em;font-size: 1em;text-align: center;}
-	#main-content-container {display:table;table-layout: fixed;width:100%;}
-	#left-side-container {display:table-cell;border-right: 0.15em solid #e1e1e1;width:45%;}
-	#left-side-container div:last-child {margin-bottom:0.5em;}
-	#left-side-container input {margin-left:0.3em;}
-	#left-side-container input {margin-top: 0.5em;}
-	#left-side-container select:not(:first-child) {margin-top: 0.5em;}
-	#left-side-container span {display: inline-block;width:8.5em;font-size: 1em;font-weight: 400;}
-	#right-side-container {display: table-cell;padding-left:2em;}
-	.result-text {color:black;margin-top:0.8em;line-height: 1.3;font-style: italic;font-weight: 400;}
-	.result-text span {font-weight: 700;}
-	.active-button {background-color:#da3b10;color:white;}
-	.graph-container {text-align: center;display:block;}
-	.inflation-button, .cpi-button, .dollar-button {display:inline-block;width:13em;cursor:pointer;}
-	.inflation-button {margin-right:0.6em;}
-	.cpi-button {margin-right:0.6em;}
+	/* Inflation calculator 2.0 (2026-10-02) -- scoped under .ic; widths come from #main-content, charts follow it */
+	.ic { color: #222; font-size: 1em; }
+	.ic * { box-sizing: border-box; }
+	.ic [hidden] { display: none !important; }
+	.ic select, .ic input[type=number], .ic input[type=search] { font: inherit; font-size: 1em; height: 2.4em; padding: 0 0.6em; border: 1px solid #b8b8b8; border-radius: 0.3em; background: #fff; color: #222; width: 100%; min-width: 0; }
+	.ic select:focus-visible, .ic input:focus-visible, .ic button:focus-visible { outline: 2px solid #da3b10; outline-offset: 1px; }
+	.ic-panel { background: #f7f7f7; border: 1px solid #e1e1e1; border-radius: 0.5em; padding: 1em; }
+	.ic-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(11em, 1fr)); gap: 0.8em 1em; align-items: end; }
+	.ic-f { display: flex; flex-direction: column; gap: 0.3em; min-width: 0; font-weight: 400; }
+	.ic-f > span { font-size: 0.82em; font-weight: 700; color: #555; letter-spacing: 0.02em; }
+	.ic-f > span b { font-weight: 400; color: #888; }
+	.ic-f--range { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.6em; align-items: end; }
+	.ic-swap { height: 2.4em; width: 2.6em; border: 1px solid #b8b8b8; border-radius: 0.3em; background: #fff; color: #da3b10; font-size: 1.1em; cursor: pointer; }
+	.ic-swap:hover { background: #fbd1c8; }
+	.ic-bar { display: flex; flex-wrap: wrap; gap: 0.6em 1em; justify-content: space-between; align-items: center; margin-top: 0.9em; }
+	.ic-presets { display: flex; flex-wrap: wrap; gap: 0.4em; }
+	.ic-chip { font: inherit; font-size: 0.85em; padding: 0.35em 0.8em; border: 1px solid #da3b10; border-radius: 2em; background: #fff; color: #da3b10; cursor: pointer; }
+	.ic-chip:hover { background: #da3b10; color: #fff; }
+	.ic-actions { display: flex; gap: 0.5em; }
+	.ic-btn { font: inherit; font-size: 0.95em; padding: 0.55em 1.2em; border: 0.125em solid #da3b10; border-radius: 0.3em; background: #da3b10; color: #fff; cursor: pointer; }
+	.ic-btn:hover { background: #ae3a12; border-color: #ae3a12; }
+	.ic-btn--ghost { background: #fff; color: #da3b10; }
+	.ic-btn--ghost:hover { background: #fbd1c8; color: #ae3a12; }
+
+	.ic-result { margin: 1.2em 0 0.4em; }
+	.ic-headline { font-size: 1.25em; line-height: 1.5; color: #222; }
+	.ic-headline--err { color: #b00020; }
+	.ic-big { font-size: 1.3em; font-weight: 700; color: #222; white-space: nowrap; }
+	.ic-big--out { color: #da3b10; }
+	.ic-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5em, 1fr)); gap: 0.7em; margin: 0.9em 0; }
+	.ic-stat { border: 1px solid #e1e1e1; border-left: 0.3em solid #da3b10; border-radius: 0.4em; padding: 0.6em 0.8em; background: #fff; }
+	.ic-stat__k { font-size: 0.78em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #666; }
+	.ic-stat__v { font-size: 1.35em; font-weight: 700; margin: 0.15em 0; color: #222; }
+	.ic-stat__s { font-size: 0.8em; line-height: 1.3; color: #666; }
+	.ic-sentences { line-height: 1.7; font-style: italic; color: #222; }
+	.ic-small { font-size: 0.82em; color: #666; line-height: 1.5; margin: 0.4em 0; }
+	.ic-small a, .ic-list a { color: #0b57c9; }
+	.ic-warn { color: #b00020; font-weight: 700; }
+
+	.ic-h2 { font-size: 1.15em; font-weight: 700; margin: 1.6em 0 0.6em; color: #222; }
+	.ic-charts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1em; }
+	.ic-card { background: #fff; border: 1px solid #dcdcdc; border-radius: 0.5em; padding: 0.7em 0.9em 0.9em; min-width: 0; }
+	.ic-card__head { display: flex; flex-wrap: wrap; gap: 0.5em 1em; justify-content: space-between; align-items: center; margin-bottom: 0.5em; }
+	.ic-card__title { font-size: 0.98em; font-weight: 700; line-height: 1.3; color: #222; flex: 1 1 14em; }
+	.ic-tools { display: flex; flex-wrap: wrap; gap: 0.4em; align-items: center; }
+	.ic-tools .ic-range, .ic-tools .ic-filter { height: 2.1em; width: auto; font-size: 0.85em; }
+	.ic-filter { width: 10em !important; }
+	.ic-logl { font-size: 0.85em; color: #444; display: inline-flex; gap: 0.3em; align-items: center; cursor: pointer; }
+	.ic-tool { font: inherit; font-size: 0.85em; height: 2.1em; padding: 0 0.7em; border: 1px solid #b8b8b8; border-radius: 0.3em; background: #fff; color: #222; cursor: pointer; display: inline-flex; gap: 0.35em; align-items: center; }
+	.ic-tool i { font-style: normal; color: #da3b10; }
+	.ic-tool:hover, .ic-tool[aria-pressed=true] { background: #fbd1c8; border-color: #da3b10; }
+	.ic-plot { position: relative; height: 20em; }
+	.ic-plot canvas { max-width: 100%; }
+	/* data-w is set by a ResizeObserver on #ic-app (container queries would make .ic the containing block of the fixed "Expand" card) */
+	.ic[data-w~="m"] .ic-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.ic[data-w~="m"] .ic-card--wide { grid-column: 1 / -1; }
+	.ic[data-w~="m"] .ic-plot { height: 22em; }
+	.ic[data-w~="m"] .ic-f--range { grid-column: span 2; }
+	.ic[data-w~="l"] .ic-plot { height: 26em; }
+
+	.ic-card--table .ic-tablewrap { max-height: 30em; overflow: auto; border: 1px solid #e1e1e1; border-radius: 0.3em; }
+	.ic-table { width: 100%; border-collapse: collapse; font-size: 0.92em; font-variant-numeric: tabular-nums; }
+	.ic-table th, .ic-table td { padding: 0.4em 0.7em; text-align: right; border-bottom: 1px solid #ececec; }
+	.ic-table th:first-child, .ic-table td:first-child { text-align: left; }
+	.ic-table thead th { position: sticky; top: 0; background: #f0f0f0; z-index: 1; border-bottom: 2px solid #ccc; }
+	.ic-table tbody tr:hover { background: #fdf3f0; }
+	.ic-table .ic-row--from td, .ic-table .ic-row--to td { background: #fbd1c8; font-weight: 700; }
+	.ic-neg { color: #b00020; }
+
+	/* expand: one card fills the viewport */
+	html.ic-noscroll, html.ic-noscroll body { overflow: hidden; }
+	.ic-card--full { position: fixed; inset: 0.6em; z-index: 100000; display: flex; flex-direction: column; margin: 0; padding: 0.9em 1.1em 1em; box-shadow: 0 0 0 100vmax rgba(0,0,0,.65); }
+	.ic-card--full .ic-plot { flex: 1 1 auto; height: auto; min-height: 0; }
+	.ic-card--full .ic-tablewrap { flex: 1 1 auto; max-height: none; min-height: 0; }
+	.ic-card--full .ic-card__title { font-size: 1.15em; }
+
+	.ic-about { margin-top: 1.5em; line-height: 1.6; }
+	.ic-about p { margin: 0.5em 0; color: #222; }
+	.ic-formula { background: #f7f7f7; border-left: 0.3em solid #da3b10; padding: 0.6em 0.9em; font-weight: 700; }
+	.ic-list { list-style: disc; margin: 0.4em 0 0.4em 1.4em; }
+	.ic-list li { margin: 0.45em 0; color: #222; line-height: 1.5; }
+	.ic-toast { position: fixed; left: 50%; bottom: 1.2em; transform: translate(-50%, 2em); background: #222; color: #fff; padding: 0.7em 1.2em; border-radius: 0.4em; font-size: 0.9em; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 100001; }
+	.ic-toast--on { opacity: 1; transform: translate(-50%, 0); }
+	@media (max-width: 600px) {
+		.ic-panel { padding: 0.8em; }
+		.ic-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		.ic-f--country, .ic-f--range { grid-column: 1 / -1; }
+		.ic-bar { flex-direction: column; align-items: stretch; }
+		.ic-actions .ic-btn { flex: 1; }
+		.ic-plot { height: 17em; }
+		.ic-card--full { inset: 0; border-radius: 0; }
+	}
 
 		
 	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
@@ -262,15 +337,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 		.page-content { padding: 1.2em 0 0 0; }
 
-		/* calculator inputs: stack the data-source/country select panel
-		   above the results panel instead of squeezing them into
-		   table-cells side by side */
-		#main-content-container { display: block; }
-		#left-side-container, #right-side-container { display: block; width: 100%; box-sizing: border-box; padding-left: 0; }
-		#left-side-container { border-right: none; border-bottom: 0.15em solid #e1e1e1; padding-bottom: 1em; margin-bottom: 1em; }
-		#left-side-container span { display: block; width: auto; margin-bottom: 0.3em; }
-		#main-content .custom-input, #main-content select { width: 100%; box-sizing: border-box; height: 2.4em; font-size: 1em; }
-		.inflation-button, .cpi-button, .dollar-button { width: 100%; margin: 0 0 0.5em 0 !important; }
 
 		/* footer: stack columns instead of squeezing table-cells side by side */
 		.footer { padding: 1.25em 0.75em; }
@@ -284,11 +350,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         <meta name="author" content="Inflation Calculator Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/inflationcalculator" />            <meta property="og:title" content="Inflation Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/inflationcalculator/img/logo-big.png" />
-        <meta property="og:description" content="This Inflation Calculator calculates a country&#x27;s inflation rate between two different years, so you can see how prices have changed." />
+        <meta property="og:description" content="Free inflation calculator with live data: see what money from any year is worth today in 190+ countries, with charts, a data table and month-by-month US, Canada and UK CPI." />
 
-        <meta name="description" content="This Inflation Calculator calculates a country&#x27;s inflation rate between two different years, so you can see how prices have changed.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@Inflation_Calc">
+        <meta name="description" content="Free inflation calculator with live data: see what money from any year is worth today in 190+ countries, with charts, a data table and month-by-month US, Canada and UK CPI.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@Inflation_Calc">
         <meta name="twitter:title" content="Inflation Calculator">
-        <meta name="twitter:description" content="This Inflation Calculator calculates a country&#x27;s inflation rate between two different years, so you can see how prices have changed.">
+        <meta name="twitter:description" content="Free inflation calculator with live data: see what money from any year is worth today in 190+ countries, with charts, a data table and month-by-month US, Canada and UK CPI.">
         <meta name="twitter:image" content="https://mes.fm/inflationcalculator/img/logo-big.png">
         <meta name="twitter:image:alt" content="Inflation Calculator">            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -473,259 +539,113 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Inflation Calculator</h1>                                        <p class="page-description">This inflation calculator calculates a country's inflation rate within two different years. Many factors affect inflation so it is important to understand how much your money is really worth!</p>                                    <div id="main-content">
-	<div id="share-calc-button" class="button button--share-calc">Share Results</div>
-	<div id="share-calc-url-container" class="share-calc-url-container hide">
-		<span class="right-arrow">&#9654;</span>
-		<input aria-label="url to share" id="url-to-share" class="share-calc-url">
-		<img src="https://mes.fm/main_img/scissors-icon.png" height="32" width="19" id="copy-link-button" class="scissors-icon">
-	</div>
-	<div id="main-content-container">	
-		<div id="left-side-container">
-			<div>
-				<span>Data Source</span>
-				<select id="data-source-select">
-					<option value="FRED">FRED</option>
-					<option value="StatCan">StatCan</option>
-					<option value="UK ONS">UK ONS</option>
-					<option value="World Bank" selected>World Bank</option>
-				</select>
-			</div>
-			<div>
-				<span>Country</span><!--<input id="country-input" placeholder="eg Canada" type="text">-->
-				<select id = "country-select">
-													                	<option value="Afghanistan">Afghanistan</option>
-		                		            								                	<option value="Cambodia">Cambodia</option>
-		                		            								                	<option value="Albania">Albania</option>
-		                		            								                	<option value="Algeria">Algeria</option>
-		                		            								                	<option value="Angola">Angola</option>
-		                		            								                	<option value="Antigua and Barbuda">Antigua and Barbuda</option>
-		                		            								                	<option value="Armenia">Armenia</option>
-		                		            								                	<option value="Aruba">Aruba</option>
-		                		            								                	<option value="Cabo Verde">Cabo Verde</option>
-		                		            								                	<option value="Australia">Australia</option>
-		                		            								                	<option value="Austria">Austria</option>
-		                		            								                	<option value="Bahamas, The">Bahamas, The</option>
-		                		            								                	<option value="Burundi">Burundi</option>
-		                		            								                	<option value="Bahrain">Bahrain</option>
-		                		            								                	<option value="Bangladesh">Bangladesh</option>
-		                		            								                	<option value="Barbados">Barbados</option>
-		                		            								                	<option value="Belgium">Belgium</option>
-		                		            								                	<option value="Belize">Belize</option>
-		                		            								                	<option value="Benin">Benin</option>
-		                		            								                	<option value="Burkina Faso">Burkina Faso</option>
-		                		            								                	<option value="Bhutan">Bhutan</option>
-		                		            								                	<option value="Bolivia">Bolivia</option>
-		                		            								                	<option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
-		                		            								                	<option value="Botswana">Botswana</option>
-		                		            								                	<option value="Brazil">Brazil</option>
-		                		            								                	<option value="Brunei Darussalam">Brunei Darussalam</option>
-		                		            								                	<option value="Bulgaria">Bulgaria</option>
-		                		            								                	<option value="Cameroon">Cameroon</option>
-		                		            								                	<option value="Canada">Canada</option>
-		                		            								                	<option value="Central African Republic">Central African Republic</option>
-		                		            								                	<option value="Chad">Chad</option>
-		                		            								                	<option value="Chile">Chile</option>
-		                		            								                	<option value="China">China</option>
-		                		            								                	<option value="Colombia">Colombia</option>
-		                		            								                	<option value="Congo, Dem. Rep.">Congo, Dem. Rep.</option>
-		                		            								                	<option value="Congo, Rep.">Congo, Rep.</option>
-		                		            								                	<option value="Costa Rica">Costa Rica</option>
-		                		            								                	<option value="Cote d&#039;Ivoire">Cote d&#039;Ivoire</option>
-		                		            								                	<option value="Croatia">Croatia</option>
-		                		            								                	<option value="Cyprus">Cyprus</option>
-		                		            								                	<option value="Czech Republic">Czech Republic</option>
-		                		            								                	<option value="Denmark">Denmark</option>
-		                		            								                	<option value="Djibouti">Djibouti</option>
-		                		            								                	<option value="Dominica">Dominica</option>
-		                		            								                	<option value="Dominican Republic">Dominican Republic</option>
-		                		            								                	<option value="Ecuador">Ecuador</option>
-		                		            								                	<option value="Egypt, Arab Rep.">Egypt, Arab Rep.</option>
-		                		            								                	<option value="El Salvador">El Salvador</option>
-		                		            								                	<option value="Equatorial Guinea">Equatorial Guinea</option>
-		                		            								                	<option value="Estonia">Estonia</option>
-		                		            								                	<option value="Ethiopia">Ethiopia</option>
-		                		            								                	<option value="Fiji">Fiji</option>
-		                		            								                	<option value="Finland">Finland</option>
-		                		            								                	<option value="France">France</option>
-		                		            								                	<option value="Gabon">Gabon</option>
-		                		            								                	<option value="Gambia, The">Gambia, The</option>
-		                		            								                	<option value="Georgia">Georgia</option>
-		                		            								                	<option value="Germany">Germany</option>
-		                		            								                	<option value="Ghana">Ghana</option>
-		                		            								                	<option value="Greece">Greece</option>
-		                		            								                	<option value="Grenada">Grenada</option>
-		                		            								                	<option value="Guatemala">Guatemala</option>
-		                		            								                	<option value="Guinea">Guinea</option>
-		                		            								                	<option value="Guinea-Bissau">Guinea-Bissau</option>
-		                		            								                	<option value="Guyana">Guyana</option>
-		                		            								                	<option value="Haiti">Haiti</option>
-		                		            								                	<option value="Honduras">Honduras</option>
-		                		            								                	<option value="Hong Kong SAR, China">Hong Kong SAR, China</option>
-		                		            								                	<option value="Hungary">Hungary</option>
-		                		            								                	<option value="Iceland">Iceland</option>
-		                		            								                	<option value="India">India</option>
-		                		            								                	<option value="Indonesia">Indonesia</option>
-		                		            								                	<option value="Iran, Islamic Rep.">Iran, Islamic Rep.</option>
-		                		            								                	<option value="Iraq">Iraq</option>
-		                		            								                	<option value="Ireland">Ireland</option>
-		                		            								                	<option value="Israel">Israel</option>
-		                		            								                	<option value="Italy">Italy</option>
-		                		            								                	<option value="Jamaica">Jamaica</option>
-		                		            								                	<option value="Japan">Japan</option>
-		                		            								                	<option value="Jordan">Jordan</option>
-		                		            								                	<option value="Kazakhstan">Kazakhstan</option>
-		                		            								                	<option value="Kenya">Kenya</option>
-		                		            								                	<option value="Korea, Rep.">Korea, Rep.</option>
-		                		            								                	<option value="Kosovo">Kosovo</option>
-		                		            								                	<option value="Kuwait">Kuwait</option>
-		                		            								                	<option value="Kyrgyz Republic">Kyrgyz Republic</option>
-		                		            								                	<option value="Lao PDR">Lao PDR</option>
-		                		            								                	<option value="Latvia">Latvia</option>
-		                		            								                	<option value="Lebanon">Lebanon</option>
-		                		            								                	<option value="Lesotho">Lesotho</option>
-		                		            								                	<option value="Liberia">Liberia</option>
-		                		            								                	<option value="Libya">Libya</option>
-		                		            								                	<option value="Lithuania">Lithuania</option>
-		                		            								                	<option value="Luxembourg">Luxembourg</option>
-		                		            								                	<option value="Macao SAR, China">Macao SAR, China</option>
-		                		            								                	<option value="Macedonia, FYR">Macedonia, FYR</option>
-		                		            								                	<option value="Madagascar">Madagascar</option>
-		                		            								                	<option value="Malawi">Malawi</option>
-		                		            								                	<option value="Malaysia">Malaysia</option>
-		                		            								                	<option value="Maldives">Maldives</option>
-		                		            								                	<option value="Mali">Mali</option>
-		                		            								                	<option value="Malta">Malta</option>
-		                		            								                	<option value="Mauritania">Mauritania</option>
-		                		            								                	<option value="Mauritius">Mauritius</option>
-		                		            								                	<option value="Mexico">Mexico</option>
-		                		            								                	<option value="Moldova">Moldova</option>
-		                		            								                	<option value="Mongolia">Mongolia</option>
-		                		            								                	<option value="Montenegro">Montenegro</option>
-		                		            								                	<option value="Morocco">Morocco</option>
-		                		            								                	<option value="Mozambique">Mozambique</option>
-		                		            								                	<option value="Myanmar">Myanmar</option>
-		                		            								                	<option value="Azerbaijan">Azerbaijan</option>
-		                		            								                	<option value="Namibia">Namibia</option>
-		                		            								                	<option value="Nepal">Nepal</option>
-		                		            								                	<option value="Netherlands">Netherlands</option>
-		                		            								                	<option value="New Zealand">New Zealand</option>
-		                		            								                	<option value="Nicaragua">Nicaragua</option>
-		                		            								                	<option value="Niger">Niger</option>
-		                		            								                	<option value="Nigeria">Nigeria</option>
-		                		            								                	<option value="Norway">Norway</option>
-		                		            								                	<option value="Oman">Oman</option>
-		                		            								                	<option value="Pakistan">Pakistan</option>
-		                		            								                	<option value="Panama">Panama</option>
-		                		            								                	<option value="Papua New Guinea">Papua New Guinea</option>
-		                		            								                	<option value="Paraguay">Paraguay</option>
-		                		            								                	<option value="Peru">Peru</option>
-		                		            								                	<option value="Philippines">Philippines</option>
-		                		            								                	<option value="Poland">Poland</option>
-		                		            								                	<option value="Portugal">Portugal</option>
-		                		            								                	<option value="Qatar">Qatar</option>
-		                		            								                	<option value="Romania">Romania</option>
-		                		            								                	<option value="Russian Federation">Russian Federation</option>
-		                		            								                	<option value="Rwanda">Rwanda</option>
-		                		            								                	<option value="Samoa">Samoa</option>
-		                		            								                	<option value="San Marino">San Marino</option>
-		                		            								                	<option value="Sao Tome and Principe">Sao Tome and Principe</option>
-		                		            								                	<option value="Saudi Arabia">Saudi Arabia</option>
-		                		            								                	<option value="Senegal">Senegal</option>
-		                		            								                	<option value="Serbia">Serbia</option>
-		                		            								                	<option value="Seychelles">Seychelles</option>
-		                		            								                	<option value="Sierra Leone">Sierra Leone</option>
-		                		            								                	<option value="Singapore">Singapore</option>
-		                		            								                	<option value="Slovak Republic">Slovak Republic</option>
-		                		            								                	<option value="Slovenia">Slovenia</option>
-		                		            								                	<option value="Solomon Islands">Solomon Islands</option>
-		                		            								                	<option value="South Africa">South Africa</option>
-		                		            								                	<option value="South Sudan">South Sudan</option>
-		                		            								                	<option value="Spain">Spain</option>
-		                		            								                	<option value="Sri Lanka">Sri Lanka</option>
-		                		            								                	<option value="St. Kitts and Nevis">St. Kitts and Nevis</option>
-		                		            								                	<option value="St. Lucia">St. Lucia</option>
-		                		            								                	<option value="St. Vincent and the Grenadines">St. Vincent and the Grenadines</option>
-		                		            								                	<option value="Sudan">Sudan</option>
-		                		            								                	<option value="Suriname">Suriname</option>
-		                		            								                	<option value="Swaziland">Swaziland</option>
-		                		            								                	<option value="Sweden">Sweden</option>
-		                		            								                	<option value="Switzerland">Switzerland</option>
-		                		            								                	<option value="Syrian Arab Republic">Syrian Arab Republic</option>
-		                		            								                	<option value="Tanzania">Tanzania</option>
-		                		            								                	<option value="Thailand">Thailand</option>
-		                		            								                	<option value="Timor-Leste">Timor-Leste</option>
-		                		            								                	<option value="Togo">Togo</option>
-		                		            								                	<option value="Tonga">Tonga</option>
-		                		            								                	<option value="Trinidad and Tobago">Trinidad and Tobago</option>
-		                		            								                	<option value="Tunisia">Tunisia</option>
-		                		            								                	<option value="Turkey">Turkey</option>
-		                		            								                	<option value="Uganda">Uganda</option>
-		                		            								                	<option value="Ukraine">Ukraine</option>
-		                		            								                	<option value="United Arab Emirates">United Arab Emirates</option>
-		                		            								                	<option value="United Kingdom">United Kingdom</option>
-		                		            													<option value="United States" selected>United States</option>
-								            								                	<option value="Uruguay">Uruguay</option>
-		                		            								                	<option value="Vanuatu">Vanuatu</option>
-		                		            								                	<option value="Venezuela, RB">Venezuela, RB</option>
-		                		            								                	<option value="Vietnam">Vietnam</option>
-		                		            								                	<option value="West Bank and Gaza">West Bank and Gaza</option>
-		                		            								                	<option value="Zambia">Zambia</option>
-		                		            								                	<option value="Cayman Islands">Cayman Islands</option>
-		                		            								                	<option value="Curacao">Curacao</option>
-		                		            								                	<option value="Eswatini">Eswatini</option>
-		                		            								                	<option value="Bissau">Bissau</option>
-		                		            								                	<option value="Kiribati">Kiribati</option>
-		                		            								                	<option value="Micronesia, Fed. Sts.">Micronesia, Fed. Sts.</option>
-		                		            								                	<option value="New Caledonia">New Caledonia</option>
-		                		            								                	<option value="North Macedonia">North Macedonia</option>
-		                		            								                	<option value="Palau">Palau</option>
-		                		            								                	<option value="Sint Maarten (Dutch part)">Sint Maarten (Dutch part)</option>
-		                		            								                	<option value="Tajikistan">Tajikistan</option>
-		                		            								                	<option value="Leste">Leste</option>
-		                		            								                	<option value="Yemen, Rep.">Yemen, Rep.</option>
-		                		            								                	<option value="Zimbabwe">Zimbabwe</option>
-		                		            	            </select>
-			</div>
-			<div>
-				<span>Index Year</span><!--<input id="index-year-input" placeholder = "eg 1990" maxlength="4" type="text">-->
-				<select id="index-year-select">
-					<option value="115.1573032">2018</option>
-				</select>
-			</div>
-			<div>
-				<span>Comparison Year</span>
-				<select id="comparison-year-select">
-					<option value="115.1573032">2018</option>
-				</select>
-			</div>
-			<div>
-				<span>Custom Input ($)</span><input class="custom-input" id="custom-input-input" value = "1.00" placeholder = "eg 3.50" type="number" autocomplete="off">
-			</div>
-		</div>
+                                    <h1 class="page-title">Inflation Calculator</h1>                                        <p class="page-description">How much was your money worth in the past, and what is it worth today? Pick a country and two dates and see the inflation rate, what your amount is worth, charts and a full data table. The data is fetched live from the World Bank, the US BLS, Statistics Canada and the UK ONS, so it stays up to date.</p>                                    <div id="main-content">
+<div id="ic-app" class="ic">
+<noscript><p class="ic-warn">This calculator needs JavaScript. Enable it to see live inflation data and charts.</p></noscript>
 
-		<div id="right-side-container">
-			<p id="result-1" class="result-text">Please enter all of the fields to the left.</p>
-			<p id="result-2" class="result-text"></p>
-			<p id="result-3" class="result-text"></p>
-		</div>
-	</div>
+<section class="ic-panel" aria-label="Inflation calculator">
+  <div class="ic-form">
+    <label class="ic-f ic-f--country"><span>Country</span><select id="ic-country" aria-label="Country"><option>Loading…</option></select></label>
+    <label class="ic-f"><span>Data source</span><select id="ic-source" aria-label="Data source"></select></label>
+    <label class="ic-f" id="ic-gran-wrap" hidden><span>Detail</span><select id="ic-gran" aria-label="Annual or monthly"><option value="annual">Annual average</option><option value="monthly">Month by month</option></select></label>
+    <label class="ic-f"><span>Amount <b id="ic-cur"></b></span><input id="ic-amt" type="number" inputmode="decimal" min="0" step="any" value="100" autocomplete="off"></label>
+    <div class="ic-f ic-f--range">
+      <label class="ic-f"><span>From</span><select id="ic-from" aria-label="From"></select></label>
+      <button id="ic-swap" class="ic-swap" type="button" title="Swap From and To" aria-label="Swap From and To">⇄</button>
+      <label class="ic-f"><span>To</span><select id="ic-to" aria-label="To"></select></label>
+    </div>
+  </div>
+  <div class="ic-bar">
+    <div id="ic-presets" class="ic-presets" role="group" aria-label="Quick ranges ending today" hidden></div>
+    <div class="ic-actions">
+      <button id="ic-share" class="ic-btn" type="button">Share results</button>
+      <button id="ic-reset" class="ic-btn ic-btn--ghost" type="button">Reset</button>
+    </div>
+  </div>
+</section>
 
-			<div class="graph-container">
-			<div class="inflation-button button active-button">Inflation Rate Graph</div>
-			<div class="cpi-button button active-button">CPI Graph</div>
-			<div class="dollar-button button active-button">Dollar Worth Graph</div>
-			<div id="inflation-graph"></div>
-			<div id="cpi-graph"></div>
-			<div id="dollar-graph"></div>
-		</div>
+<section class="ic-result" aria-live="polite" aria-label="Result">
+  <p id="ic-headline" class="ic-headline">Loading the latest inflation data…</p>
+  <div id="ic-stats" class="ic-stats"></div>
+  <p id="ic-sentences" class="ic-sentences"></p>
+  <p id="ic-datanote" class="ic-small"></p>
+</section>
 
-	<div class="button graph-data-button hide-div-button selected" id="graph-table-button">Graph Data Table</div>
-	<div>
-		<p id="data-table-title" class="header2">*Worth of $1.00 each Year vs. $1.00 in Index Year (2014)</p>
-		<table id="graph-table" class="basic-table basic-table--full"></table>
-	</div>
+<h2 class="ic-h2">Charts</h2>
+<p id="ic-chartmsg" class="ic-small" hidden>Loading charts… (if they never appear, a content blocker may be stopping the chart library; the table below still works).</p>
+<div class="ic-charts">
+  <article class="ic-card" id="ic-card-infl">
+    <header class="ic-card__head">
+      <h3 id="ic-t-infl" class="ic-card__title">Inflation rate</h3>
+      <div class="ic-tools">
+        <select class="ic-range" data-chart="infl" aria-label="Inflation chart range"><option value="all">All years</option><option value="50">Last 50 yrs</option><option value="25">Last 25 yrs</option><option value="10">Last 10 yrs</option><option value="5">Last 5 yrs</option><option value="sel">Selected span</option></select>
+        <button type="button" class="ic-tool ic-png" data-chart="infl" title="Save as PNG"><i>⬇</i><span>PNG</span></button>
+        <button type="button" class="ic-tool ic-expand" aria-pressed="false" title="Fill the screen (Esc to close)"><i>⤢</i><span>Expand</span></button>
+      </div>
+    </header>
+    <div class="ic-plot"><canvas id="ic-c-infl" role="img" aria-label="Inflation rate chart"></canvas></div>
+  </article>
+  <article class="ic-card" id="ic-card-cpi">
+    <header class="ic-card__head">
+      <h3 id="ic-t-cpi" class="ic-card__title">Consumer price index</h3>
+      <div class="ic-tools">
+        <label class="ic-logl"><input type="checkbox" class="ic-log" data-chart="cpi"> Log scale</label>
+        <select class="ic-range" data-chart="cpi" aria-label="CPI chart range"><option value="all">All years</option><option value="50">Last 50 yrs</option><option value="25">Last 25 yrs</option><option value="10">Last 10 yrs</option><option value="5">Last 5 yrs</option><option value="sel">Selected span</option></select>
+        <button type="button" class="ic-tool ic-png" data-chart="cpi" title="Save as PNG"><i>⬇</i><span>PNG</span></button>
+        <button type="button" class="ic-tool ic-expand" aria-pressed="false" title="Fill the screen (Esc to close)"><i>⤢</i><span>Expand</span></button>
+      </div>
+    </header>
+    <div class="ic-plot"><canvas id="ic-c-cpi" role="img" aria-label="Consumer price index chart"></canvas></div>
+  </article>
+  <article class="ic-card ic-card--wide" id="ic-card-worth">
+    <header class="ic-card__head">
+      <h3 id="ic-t-worth" class="ic-card__title">Worth of your amount</h3>
+      <div class="ic-tools">
+        <label class="ic-logl"><input type="checkbox" class="ic-log" data-chart="worth"> Log scale</label>
+        <select class="ic-range" data-chart="worth" aria-label="Worth chart range"><option value="all">All years</option><option value="50">Last 50 yrs</option><option value="25">Last 25 yrs</option><option value="10">Last 10 yrs</option><option value="5">Last 5 yrs</option><option value="sel">Selected span</option></select>
+        <button type="button" class="ic-tool ic-png" data-chart="worth" title="Save as PNG"><i>⬇</i><span>PNG</span></button>
+        <button type="button" class="ic-tool ic-expand" aria-pressed="false" title="Fill the screen (Esc to close)"><i>⤢</i><span>Expand</span></button>
+      </div>
+    </header>
+    <div class="ic-plot"><canvas id="ic-c-worth" role="img" aria-label="Worth of the amount over time chart"></canvas></div>
+  </article>
+</div>
 
+<h2 class="ic-h2">Data table</h2>
+<article class="ic-card ic-card--table" id="ic-card-table">
+  <header class="ic-card__head">
+    <div>
+      <h3 class="ic-card__title">Every period, side by side</h3>
+      <p id="ic-tabletitle" class="ic-small"></p>
+    </div>
+    <div class="ic-tools">
+      <input id="ic-filter" class="ic-filter" type="search" placeholder="Filter, e.g. 199" aria-label="Filter table rows" autocomplete="off">
+      <button type="button" id="ic-newest" class="ic-tool" aria-pressed="false" title="Show newest first"><i>↕</i><span>Newest first</span></button>
+      <button type="button" id="ic-csv" class="ic-tool" title="Download as CSV"><i>⬇</i><span>CSV</span></button>
+      <button type="button" class="ic-tool ic-expand" aria-pressed="false" title="Fill the screen (Esc to close)"><i>⤢</i><span>Expand</span></button>
+    </div>
+  </header>
+  <div class="ic-tablewrap"><table class="ic-table"><thead id="ic-thead"></thead><tbody id="ic-tbody"></tbody></table></div>
+  <p class="ic-small"><span id="ic-rowcount"></span> · highlighted rows are your From and To periods · negative inflation is shown in (brackets)</p>
+</article>
+
+<section class="ic-about" aria-label="About this calculator">
+  <h2 class="ic-h2">How it works</h2>
+  <p>Inflation is measured with a <b>consumer price index (CPI)</b>: the cost of a typical basket of goods and services, indexed to a base year. To compare two periods, divide the index at the later period by the index at the earlier one. If the CPI was 100 in 2000 and 188 in 2025, prices rose 88% and <b>100 in 2000 buys what 188 buys in 2025</b>.</p>
+  <p class="ic-formula">Value in <i>To</i> = Amount × CPI<sub>To</sub> ÷ CPI<sub>From</sub></p>
+  <h2 class="ic-h2">Where the data comes from</h2>
+  <p>The numbers are fetched from the publishers each time the cache refreshes (about twice a day), so the latest releases appear without any manual update. If a publisher is unreachable the calculator falls back to its last saved copy and says so under the result.</p>
+  <ul id="ic-sources" class="ic-list"></ul>
+  <h2 class="ic-h2">Good to know</h2>
+  <ul class="ic-list">
+    <li><b>Annual vs monthly.</b> The United States, Canada and the United Kingdom offer month-by-month data. Annual mode uses the average of the year; the current year is shown as a year-to-date average (YTD).</li>
+    <li><b>Currencies.</b> Results use the country's current currency symbol. In countries that redenominated their currency (for example Zimbabwe, Turkey or Brazil) older values are in the old units, which is why the index, not the symbol, is what matters.</li>
+    <li><b>CPI is an average.</b> Your own basket (rent, tuition, fuel) may have inflated faster or slower than the national index.</li>
+    <li><b>Old share links</b> (mes.fm/inflationcalculator/s/…) still open: they are matched to the closest year in the new data.</li>
+  </ul>
+</section>
+<div id="ic-toast" class="ic-toast" role="status" aria-live="polite"></div>
+</div>
 </div>
                                     <!-- (Responsive) Rectangle Ad -->
                                                                         <!-- PC (Responsive/Rectangle) Matched Content -->
@@ -791,12 +711,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script>$.getScript("/inflationcalculator/js/calculatord28d.js?v=1.8");</script>
-	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-	<script type="text/javascript">
-	google.load("visualization", "1", {packages:["corechart"]});
-	//google.setOnLoadCallback(drawChart);
-	</script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+	<script src="/inflationcalculator/js/inflation.js?v=2.1" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.7" data-scale="main" data-dark="derive" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
 <!-- Mirrored from inflationcalculator.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:43:20 GMT -->

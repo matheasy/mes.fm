@@ -396,6 +396,18 @@ of HTML files individually:
   equation ~1 s incl. the exact-form search). **Limitations:** SymPy can't integrate everything (non-elementary integrands give special functions or no closed form; some
   integrals time out after 25 s); integral steps exist only where `manualintegrate` has a rule; derivative steps fall back to SymPy for unusual functions; transcendental
   roots are only those inside the search interval; systems of inequalities aren't supported; `log` is the natural log (use `log10` / `log_b`).
+- **Inflation Calculator 2.0** (2026-10-02, `mes.fm/inflationcalculator`) -- rewritten; the 2018/2019 MySQL-era snapshot and the Google Charts / jQuery code are gone.
+  **Data is live:** `mes.fm/api/inflation.js` (Vercel function, edge-cached `s-maxage=12h` + `stale-while-revalidate=7d`) pulls World Bank `FP.CPI.TOTL` (annual, ~190 countries),
+  FRED `CPIAUCNS` (US BLS CPI-U, monthly since 1913), StatCan vector 41690973 (Canada, monthly since 1914) and ONS `D7BT` (UK CPI, monthly since 1988) and returns one JSON
+  (`v:2`, per country `{iso, cur, a:{s,v}, m:{s,v}}`; `a` = complete years only, the client derives the current year's YTD average from `m`; BLS skipped Oct 2025, so an annual mean needs >= 11 months).
+  If one publisher fails its source is filled from the committed snapshot `inflationcalculator/data/inflation-data.json` (flagged `stale`); refresh that snapshot with
+  `node mes.fm/api/inflation.js --write` (exits non-zero if any source failed). UK years before 1988 come from `data/uk-long-run-pre-1989.json` (the old retail-price-based long-run series),
+  scaled to join the CPI in 1988 -- disclosed on the page. `data/legacy-cpi-2019.json` is the *old* snapshot, kept only so old `/inflationcalculator/s/<id>` share links (which stored CPI values, not years)
+  can be mapped to the closest year; new share links are plain query strings (`?c=&s=&from=&to=&amt=`, `from`/`to` = `2000` or `2000-03`), no Redis. Front end = `js/inflation.js` (vanilla) + Chart.js 4 from jsDelivr
+  (unpkg fallback): charts are `responsive` so Standard / Wide / Theatre resize them live (the old Google charts needed a refresh), each card has Expand (fixed full-screen overlay, Esc closes),
+  PNG, range select and log scale; the data table has filter, newest-first, CSV, Expand. Don't use `container-type` on `#ic-app` -- it would become the containing block of the fixed Expand card;
+  a ResizeObserver sets `data-w` instead. Page-level CSS is inline in `index.html` (so `display-controls.js` derives the dark theme); chart colours follow `body.dark-mode` via a MutationObserver.
+  Bump `?v=` on the `inflation.js` tag when it changes.
 - `add_page_theatre.py` -- **page-width switch** (2026-10-01): the "Wide page" pill on the sidebar pages (`aside.js`) and the Wide pill on the Jump-to pages
   (`toc-flip.js`) became a **Standard | Wide | Theatre** segmented control (>=1200px / >=1300px only). Saved as localStorage `pageMode` (`std|wide|theatre`);
   theatre also writes `pageWide=1` and sets `html.page-theatre` *in addition to* `html.page-wide`, so every Wide rule still applies and theatre just adds "use nearly
