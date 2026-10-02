@@ -42,6 +42,7 @@ TOOLS = [  # (directory, compact-bar title)
     ("gematria", "Gematria Calculator"),
     ("impermanent-loss-calculator", "Impermanent Loss Calculator"),
     ("unit-conversion", "Unit Conversion Calculator"),
+    ("calculator", "Calculator"),   # also built by build_tool_apps.py
     ("share", "Share Launcher"),   # also built by build_tool_apps.py
     ("search", "Site Search"),     # also built by build_tool_apps.py
     ("calendar", "Calendar"),      # also built by build_tool_apps.py

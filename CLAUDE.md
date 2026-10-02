@@ -305,6 +305,16 @@ of HTML files individually:
   the page's last table, add its slug to the right category in `PAGES` (unmapped cards land in a trailing "More" section
   and are reported) and re-run. Idempotent; **dry-runs by default, `--apply` writes.**
 
+- **Calculator** (2026-10-01, `mes.fm/calculator`, rose `#c2255c`; card on `calculators.html` "Everyday Math & Health"). Built like `calendar` by
+  `build_tool_apps.py` from `tool_apps_src/calculator/`: `lib.js` = pure maths (no `eval`: tokenizer + recursive-descent parser with `^`, `%`, `!`, implicit
+  multiplication, `of`, deg/rad trig, `root`/`gcd`/`nCr`...; BigInt exact decimal multiply/divide with repeating-cycle detection; factorization, fractions,
+  bases, Roman numerals, list stats; runs in node: `require('./tool_apps_src/calculator/lib.js')`), `app.js` = keypad + live result + history
+  (localStorage `mes-calculator:v1`, `?q=` / `?tab=` links) + seven "More calculations" panels. It is registered in the same script lists as `unit-conversion`
+  (`add_tool_page_controls`, `add_bottom_ad`, `add_cross_links` CALC_DIRS, `add_sidebar` tools family, `build_search_index`, `organize_hub_cards`).
+  After editing run `build_tool_apps.py --apply`, `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`, `add_bottom_ad.py --apply`. Logos are placeholders
+  (PIL-drawn) until Grok art lands (`calculator/img/logo.png`, `logo-big.png` 1200x630, `img/calculator-logo.png`: same names). The "Graphing Calculator 2D / 3D"
+  cards at the bottom are deliberately **not links** (pages don't exist yet): when built, make them `<a class="mc-link">` in `content.html`.
+
 - `add_cross_links.py` — cross-links calculators and tools in the horizontal info bar: calculator pages (the calculator
   mini-sites and the four rebuilt apps) get a **Tools** item (-> `/tools`), tool pages (timer incl. its quote galleries,
   speedreader, emoji, latex, timezone, symbols, youtube-thumbnail, stats) get **Calculators** (and Tools where missing),

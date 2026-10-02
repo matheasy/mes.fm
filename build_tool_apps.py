@@ -59,6 +59,12 @@ APPS = {
                    desc="Search all of mes.fm in one place: calculators, tools, math tutorials and Math Q/A livestreams, memes, quotes, puzzles, and the 9/11, Hutchison Effect, science and crypto posts, with section filters and shareable results.",
                    js_v="1", pre_js=["/main_js/site-search.js?v=1"]),
     # the calendar: lib.js (moon phases, seasons, holiday tables; pure functions) is prepended to app.js into one mes.fm/calendar/js/calendar.js
+    # the general-purpose calculator: expression parser + keypad, plus multiply/divide, squares, fractions, factors, bases, list stats panels
+    # (lib.js = pure maths, node-testable; app.js = UI). A calculator, so it gets the Home | Calculators | Tools info bar like unit-conversion.
+    "calculator": dict(title="MES Calculator", page_title="Calculator",
+                       tag="Multiply, divide, squares, roots and more.", accent="#c2255c", dark="#8f1a43", tint="#fbe6ee",
+                       desc="Free online calculator: type any expression or use the keypad for multiplication, division, squares, square roots, powers, percentages, fractions, factorials, logarithms and trigonometry, plus exact big-number maths, prime factors, GCD, LCM and more.",
+                       js_v="1"),
     "calendar": dict(title="MES Calendar", page_title="Calendar",
                      tag="Moon phases, holidays and more, month by month.", accent="#2f5fd0", dark="#1f44a0", tint="#e6edfb",
                      desc="Free online calendar for any year: month and year views with today highlighted, new and full moon times, Canada, USA, UK, Australia and Vietnam holidays, Christian, Jewish and Islamic dates, seasons, eclipses, daylight-saving changes and a days-between calculator.",

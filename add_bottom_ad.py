@@ -38,7 +38,7 @@ RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator
                        "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles", "tools", "math"}
 # stand-alone tool / rebuilt-calculator pages (tool shell, one index.html per folder): included on purpose, unlike the timer etc. skip below
 TOOL_DIRS = ["emoji", "latex", "timezone", "symbols", "stats", "speedreader", "timer", "youtube-thumbnail", "unit-conversion",
-             "gematria", "impermanent-loss-calculator", "earth-curvature-calculator", "share", "search", "calendar"]
+             "gematria", "impermanent-loss-calculator", "earth-curvature-calculator", "share", "search", "calendar", "calculator"]
 FAMILIES = ["percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator",
             "inflationcalculator", "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles"]
 

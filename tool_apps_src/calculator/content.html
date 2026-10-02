@@ -1,0 +1,176 @@
+	<div class="tu" id="mc">
+		<div class="tu-card mc-main">
+			<div class="mc-top">
+				<label class="tu-label" for="mc-expr">Type a calculation or use the keypad</label>
+				<div class="tu-seg" id="mc-angle" role="group" aria-label="Angle unit">
+					<button type="button" data-deg="1" aria-pressed="true">Deg</button><button type="button" data-deg="0" aria-pressed="false">Rad</button>
+				</div>
+			</div>
+			<input id="mc-expr" class="tu-input tu-input--big mc-expr" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. 12 × 34 + 5², sqrt(144), 15% of 80" aria-describedby="mc-live">
+			<div class="mc-live" id="mc-live" aria-live="polite">&nbsp;</div>
+
+			<div class="mc-pad" id="mc-pad">
+				<div class="mc-sci" id="mc-sci">
+					<button type="button" data-ins="^2" title="Square">x²</button>
+					<button type="button" data-ins="^3" title="Cube">x³</button>
+					<button type="button" data-ins="^" title="Power">xʸ</button>
+					<button type="button" data-ins="sqrt(" title="Square root">√</button>
+					<button type="button" data-ins="cbrt(" title="Cube root">∛</button>
+					<button type="button" data-ins="1/(" title="Reciprocal">1/x</button>
+					<button type="button" data-ins="!" title="Factorial">n!</button>
+					<button type="button" data-ins="%" title="Percent">%</button>
+					<button type="button" data-ins="sin(">sin</button>
+					<button type="button" data-ins="cos(">cos</button>
+					<button type="button" data-ins="tan(">tan</button>
+					<button type="button" data-ins="π">π</button>
+					<button type="button" data-ins="ln(">ln</button>
+					<button type="button" data-ins="log(">log</button>
+					<button type="button" data-ins="e" title="Euler's number">e</button>
+					<button type="button" data-ins="ans" title="Previous answer">Ans</button>
+				</div>
+				<div class="mc-keys">
+					<button type="button" class="mc-fn" data-act="clear">AC</button>
+					<button type="button" class="mc-fn" data-ins="(">(</button>
+					<button type="button" class="mc-fn" data-ins=")">)</button>
+					<button type="button" class="mc-op" data-ins="÷" aria-label="divide">÷</button>
+					<button type="button" data-ins="7">7</button><button type="button" data-ins="8">8</button><button type="button" data-ins="9">9</button>
+					<button type="button" class="mc-op" data-ins="×" aria-label="multiply">×</button>
+					<button type="button" data-ins="4">4</button><button type="button" data-ins="5">5</button><button type="button" data-ins="6">6</button>
+					<button type="button" class="mc-op" data-ins="−" aria-label="minus">−</button>
+					<button type="button" data-ins="1">1</button><button type="button" data-ins="2">2</button><button type="button" data-ins="3">3</button>
+					<button type="button" class="mc-op" data-ins="+" aria-label="plus">+</button>
+					<button type="button" data-ins="0">0</button><button type="button" data-ins=".">.</button>
+					<button type="button" class="mc-fn" data-act="back" aria-label="Backspace">⌫</button>
+					<button type="button" class="mc-eq" data-act="eq">=</button>
+				</div>
+			</div>
+			<div class="tu-row mc-actions">
+				<button type="button" class="tu-btn tu-btn--ghost" id="mc-copy">Copy result</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mc-link">Copy link</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mc-sci-toggle" aria-expanded="true">Hide scientific keys</button>
+			</div>
+			<p class="tu-note">Works as you type. Understands <code>^</code> powers, <code>%</code>, <code>!</code>, implicit multiplication like <code>2(3+4)</code>, and functions such as <code>sqrt</code>, <code>sin</code>, <code>ln</code>, <code>log</code>, <code>root(3,27)</code>, <code>gcd(12,18)</code>, <code>nCr(5,2)</code>, <code>round(x,2)</code>.</p>
+		</div>
+
+		<div class="tu-card" id="mc-hist-card" style="margin-top:1em;" hidden>
+			<div class="tu-row" style="justify-content:space-between;align-items:center;">
+				<h3 style="margin:0;">History</h3>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mc-hist-clear">Clear</button>
+			</div>
+			<ul class="mc-hist" id="mc-hist"></ul>
+		</div>
+
+		<h2>More calculations</h2>
+		<div class="tu-seg mc-tabs" id="mc-tabs" role="tablist" aria-label="More calculations">
+			<button type="button" data-tab="muldiv" aria-pressed="true">Multiply &amp; divide</button>
+			<button type="button" data-tab="squares" aria-pressed="false">Squares &amp; roots</button>
+			<button type="button" data-tab="powers" aria-pressed="false">Powers &amp; logs</button>
+			<button type="button" data-tab="fractions" aria-pressed="false">Fractions</button>
+			<button type="button" data-tab="factors" aria-pressed="false">Factors &amp; primes</button>
+			<button type="button" data-tab="bases" aria-pressed="false">Bases &amp; Roman</button>
+			<button type="button" data-tab="stats" aria-pressed="false">List statistics</button>
+		</div>
+
+		<div class="tu-card mc-panel" id="p-muldiv">
+			<p class="tu-note" style="margin-top:0;">Whole numbers and decimals of any size are multiplied and divided <em>exactly</em> (no rounding), so big products and repeating decimals are correct to the last digit.</p>
+			<div class="tu-row">
+				<div class="tu-field"><label for="md-a">First number</label><input id="md-a" class="tu-input tu-input--big" type="text" inputmode="decimal" value="123456789" autocomplete="off"></div>
+				<div class="tu-field"><label for="md-b">Second number</label><input id="md-b" class="tu-input tu-input--big" type="text" inputmode="decimal" value="987654321" autocomplete="off"></div>
+			</div>
+			<div class="tu-stats" id="md-out"></div>
+			<h3>Multiplication table</h3>
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm"><label for="mt-n">Table of</label><input id="mt-n" class="tu-input" type="text" inputmode="decimal" value="7" autocomplete="off"></div>
+				<div class="tu-field tu-field--sm"><label for="mt-k">Up to</label><input id="mt-k" class="tu-input" type="number" min="1" max="100" value="12"></div>
+			</div>
+			<div class="mc-table" id="mt-out"></div>
+		</div>
+
+		<div class="tu-card mc-panel" id="p-squares" hidden>
+			<div class="tu-row">
+				<div class="tu-field"><label for="sq-n">Number</label><input id="sq-n" class="tu-input tu-input--big" type="text" inputmode="decimal" value="72" autocomplete="off"></div>
+				<div class="tu-field tu-field--sm"><label for="sq-k">Other power / root</label><input id="sq-k" class="tu-input tu-input--big" type="text" inputmode="decimal" value="4" autocomplete="off"></div>
+			</div>
+			<div class="tu-stats" id="sq-out"></div>
+			<details class="mc-details"><summary>Squares, cubes and roots table (1–25)</summary>
+				<div class="tu-table-wrap"><table class="tu-table" id="sq-table"><thead><tr><th>n</th><th>n²</th><th>n³</th><th>√n</th><th>∛n</th></tr></thead><tbody></tbody></table></div>
+			</details>
+		</div>
+
+		<div class="tu-card mc-panel" id="p-powers" hidden>
+			<h3 style="margin-top:0;">Power</h3>
+			<div class="tu-row">
+				<div class="tu-field"><label for="pw-b">Base</label><input id="pw-b" class="tu-input tu-input--big" type="text" inputmode="decimal" value="2" autocomplete="off"></div>
+				<div class="tu-field"><label for="pw-e">Exponent</label><input id="pw-e" class="tu-input tu-input--big" type="text" inputmode="decimal" value="10" autocomplete="off"></div>
+			</div>
+			<div class="tu-stats" id="pw-out"></div>
+			<h3>Logarithm &amp; scientific notation</h3>
+			<div class="tu-row">
+				<div class="tu-field"><label for="lg-y">Value</label><input id="lg-y" class="tu-input tu-input--big" type="text" inputmode="decimal" value="1000" autocomplete="off"></div>
+				<div class="tu-field"><label for="lg-b">Log base</label><input id="lg-b" class="tu-input tu-input--big" type="text" inputmode="decimal" value="2" autocomplete="off"></div>
+			</div>
+			<div class="tu-stats" id="lg-out"></div>
+		</div>
+
+		<div class="tu-card mc-panel" id="p-fractions" hidden>
+			<div class="mc-fr">
+				<div class="mc-fr__pair"><input id="fr-an" class="tu-input" type="text" inputmode="numeric" value="3" aria-label="First numerator" autocomplete="off"><span class="mc-fr__bar"></span><input id="fr-ad" class="tu-input" type="text" inputmode="numeric" value="4" aria-label="First denominator" autocomplete="off"></div>
+				<select id="fr-op" class="tu-select mc-fr__op" aria-label="Operation"><option value="+">+</option><option value="-">−</option><option value="*">×</option><option value="/">÷</option></select>
+				<div class="mc-fr__pair"><input id="fr-bn" class="tu-input" type="text" inputmode="numeric" value="5" aria-label="Second numerator" autocomplete="off"><span class="mc-fr__bar"></span><input id="fr-bd" class="tu-input" type="text" inputmode="numeric" value="6" aria-label="Second denominator" autocomplete="off"></div>
+			</div>
+			<div class="tu-stats" id="fr-out"></div>
+			<h3>Decimal to fraction</h3>
+			<div class="tu-row"><div class="tu-field"><label for="df-x">Decimal</label><input id="df-x" class="tu-input tu-input--big" type="text" inputmode="decimal" value="0.375" autocomplete="off"></div></div>
+			<div class="tu-stats" id="df-out"></div>
+		</div>
+
+		<div class="tu-card mc-panel" id="p-factors" hidden>
+			<div class="tu-row">
+				<div class="tu-field"><label for="fa-n">Whole number</label><input id="fa-n" class="tu-input tu-input--big" type="text" inputmode="numeric" value="360" autocomplete="off"></div>
+			</div>
+			<div class="tu-stats" id="fa-out"></div>
+			<h3>GCD and LCM</h3>
+			<div class="tu-row"><div class="tu-field"><label for="gl-list">Numbers (separated by commas or spaces)</label><input id="gl-list" class="tu-input tu-input--big" type="text" value="12, 18, 30" autocomplete="off"></div></div>
+			<div class="tu-stats" id="gl-out"></div>
+		</div>
+
+		<div class="tu-card mc-panel" id="p-bases" hidden>
+			<div class="tu-row">
+				<div class="tu-field"><label for="bs-v">Number</label><input id="bs-v" class="tu-input tu-input--big" type="text" value="255" autocomplete="off" autocapitalize="off"></div>
+				<div class="tu-field tu-field--sm"><label for="bs-from">Is in base</label><select id="bs-from" class="tu-select tu-input--big"><option value="10" selected>10 (decimal)</option><option value="2">2 (binary)</option><option value="8">8 (octal)</option><option value="16">16 (hex)</option></select></div>
+				<div class="tu-field tu-field--sm"><label for="bs-to">Other base (2–36)</label><input id="bs-to" class="tu-input tu-input--big" type="number" min="2" max="36" value="5"></div>
+			</div>
+			<div class="tu-stats" id="bs-out"></div>
+			<h3>Roman numerals</h3>
+			<div class="tu-row"><div class="tu-field"><label for="ro-v">Number (1–3999) or Roman numeral</label><input id="ro-v" class="tu-input tu-input--big" type="text" value="1994" autocomplete="off" autocapitalize="characters"></div></div>
+			<div class="tu-stats" id="ro-out"></div>
+		</div>
+
+		<div class="tu-card mc-panel" id="p-stats" hidden>
+			<div class="tu-field"><label for="st-list">Numbers (separated by commas, spaces or new lines)</label><textarea id="st-list" class="tu-input mc-ta" rows="3" spellcheck="false">4, 8, 15, 16, 23, 42, 8</textarea></div>
+			<div class="tu-stats" id="st-out"></div>
+		</div>
+
+		<div class="tu-toast" id="mc-toast" role="status"></div>
+
+		<section class="tu-seo">
+			<h2>More from MES</h2>
+			<div class="mc-links">
+				<a class="mc-link" href="/percentagecalculator">Percentage Calculator<span>what % of, % change, discounts</span></a>
+				<a class="mc-link" href="/unit-conversion">Unit Conversion<span>length, weight, temperature…</span></a>
+				<a class="mc-link" href="/gradecalculator">Grade Calculator<span>final exam &amp; weighted grades</span></a>
+				<a class="mc-link" href="/latex">LaTeX Render<span>write equations nicely</span></a>
+				<span class="mc-link mc-link--soon" aria-disabled="true">Graphing Calculator 2D<span>Coming soon &middot; plot y = f(x) like Desmos</span></span>
+				<span class="mc-link mc-link--soon" aria-disabled="true">Graphing Calculator 3D<span>Coming soon &middot; surfaces z = f(x, y)</span></span>
+			</div>
+			<h2>About this calculator</h2>
+			<p>This free online calculator covers everyday arithmetic and the maths you need for school: addition, subtraction, multiplication and division, squares and square roots, cubes and cube roots, powers, percentages, factorials, logarithms and trigonometry in degrees or radians. Type a whole expression such as <code>(12 + 8) × 3²</code> and the answer appears as you type, following the correct order of operations.</p>
+			<ul>
+				<li><strong>Exact big-number multiplication and division</strong> with quotient, remainder and repeating decimals.</li>
+				<li><strong>Squares, cubes and roots</strong> with simplified radicals (√72 = 6√2) and a perfect-square check.</li>
+				<li><strong>Fractions</strong> added, subtracted, multiplied and divided and always reduced, plus decimal-to-fraction conversion.</li>
+				<li><strong>Prime factorization, factors, GCD and LCM</strong>, number base conversion and Roman numerals, and mean, median, mode and standard deviation of any list.</li>
+				<li>Your history stays in your own browser, and every calculation has a shareable link.</li>
+			</ul>
+		</section>
+	</div>
