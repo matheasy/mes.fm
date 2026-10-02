@@ -33,7 +33,19 @@ export interface RandomWallet {
 
 export const RANDOM_WALLETS: RandomWallet[] = [
   {
-    name: 'Bitrue',
+    name: 'Bitrue - Funding account',
+    kind: 'Exchange',
+    link: 'https://www.bitrue.com',
+    status: 'Not used any more',
+    asOf: '2026-10-02',
+    currency: 'USDT',
+    total: 51.52,
+    totalBtc: 0.00060963,
+    holdings: [{ symbol: 'BTR', name: 'Bitrue Coin', amount: 3659.38699511, value: 51.52 }],
+    notes: 'Bitrue\'s exchange coin, held in the Funding account (separate from Spot).',
+  },
+  {
+    name: 'Bitrue - Spot account',
     kind: 'Exchange',
     link: 'https://www.bitrue.com',
     status: 'Not used any more',

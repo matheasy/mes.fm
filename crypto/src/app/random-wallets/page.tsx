@@ -68,6 +68,9 @@ function WalletCard({ w }: { w: RandomWallet }) {
  */
 export default function RandomWalletsPage() {
   const wallets = [...RANDOM_WALLETS].sort((a, b) => (b.total ?? 0) - (a.total ?? 0));
+  // altogether, per quote currency (USDT, USD...) - snapshots of different dates, so only a rough figure
+  const totals = new Map<string, number>();
+  for (const w of wallets) if (w.total !== null) totals.set(w.currency, (totals.get(w.currency) ?? 0) + w.total);
   return (
     <div className="flex flex-col gap-6">
       <p className="text-sm text-gray-400">
@@ -75,6 +78,15 @@ export default function RandomWalletsPage() {
         snapshots from screenshots or statements, entered by hand -{' '}
         <strong className="text-gray-200">none of it is counted</strong> in Assets, Transactions, the Portfolio total or Taxes.
       </p>
+      {totals.size > 0 && (
+        <div className="panel">
+          <p className="stat-label">Altogether (reference only)</p>
+          <p className="mt-1 text-3xl font-semibold">{[...totals].map(([c, t]) => val(t, c)).join(' + ')}</p>
+          <p className="mt-1 text-xs text-gray-500">
+            {wallets.length} account{wallets.length === 1 ? '' : 's'}, at each one&apos;s own snapshot date
+          </p>
+        </div>
+      )}
       {wallets.length === 0 ? (
         <div className="panel py-10 text-center text-gray-400">Nothing listed yet.</div>
       ) : (
