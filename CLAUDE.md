@@ -352,6 +352,50 @@ of HTML files individually:
   calendar's `lib.js` (holiday engine `MESCal`, used for the business-day holiday regions) + its own `lib.js` (`DC`, date maths on "naive" wall-clock ms: calendar
   months with end-of-month clamping, user-chosen unit combinations `breakdown()`, weekday counts, business days, ISO week, DST-aware elapsed via Intl) + `app.js`.
   Inclusive-end option, time of day, weekend picker, custom days off, shareable `?start=&end=&u=` links. Logos are PIL placeholders until Grok art lands.
+- **CAS / Derivative / Integral calculators** (2026-10-02; `mes.fm/cas-calculator` slate `#334155`, `mes.fm/derivative-calculator` fuchsia `#c026d3`,
+  `mes.fm/integral-calculator` amber `#b45309`; cards in the new **"Algebra & Calculus"** category of `calculators.html` together with `calculator` and the 2D / 3D
+  graphing calculators; Grok art `<slug>/img/{logo,logo-big}.png` + `img/<slug>-logo.png`). A real computer algebra system: **SymPy running in the browser via Pyodide**,
+  in a Web Worker shared by all three pages. Built by `build_tool_apps.py` from `tool_apps_src/<slug>/` (`content.html` + `app.js`, which only builds requests and renders
+  results) with two new `APPS` options: `pre_js=CAS_JS` (loads the shared client + UI first) and `css_extra=["_cas.css"]` (shared CSS, *inlined* so
+  `add_tool_page_controls.py` derives its dark theme too). Normal-width pages with the "More like this" sidebar (in `add_sidebar.py`'s tools collection, so they get
+  Standard | Wide | Theatre), registered in the same lists as `calculator` (`add_tool_page_controls` TOOLS, `add_bottom_ad` TOOL_DIRS, `add_cross_links` CALC_DIRS,
+  `build_search_index`, `organize_hub_cards`). Shared files in `mes.fm/main_js/cas/`:
+  - `engine.py` -- *all* the maths, one entry point `handle(json) -> json` (ops `parse`, `diff`, `integrate`, `solve`, `cas` (simplify/factor/expand/apart/together/
+    trigsimp/cancel/rationalize, evaluate, limit, series, sum, product, matrix), `plot`, `ping`). Input normaliser for student syntax (`2x`, `sin x`, `sin^2 x`, `sin^-1 x`,
+    `sinx`, `|x|`, `log_2(x)`, `e^x`, `√ × ÷ − · π ∞ ° ²`, Greek letters as variables -- `γ β ζ λ` typed as letters become symbols, not SymPy's gamma/beta/zeta functions,
+    via `Gk_*` placeholders), then `parse_expr` with implicit multiplication / application / `^` / function-exponent transformations in a **whitelisted namespace**
+    (`GLOBALS`, `__builtins__` empty; dunders, `.attr`, quotes, `:` `;`... rejected before parsing; 600-char cap). Derivative steps = our own rule-based `Differ` (constant,
+    constant multiple, sum/difference, power, product, quotient, chain rule naming inner/outer function, exp / a^x / ln / log_a, trig, inverse trig, hyperbolic, `|u|`,
+    logarithmic differentiation for f^g; every result checked against `sympy.diff`; real-valued symbols so `|x|' = sign x`), higher orders / partial / mixed partial,
+    evaluation at a point + tangent line, implicit dy/dx for equations in x and y. Integral steps = a renderer of `sympy.integrals.manualintegrate.integral_steps`
+    (`IntRender`: u-substitution, by parts incl. cyclic, partial fractions, trig substitution, rewrites...; `ln|u|` in the final answer); `DontKnowRule` anywhere ->
+    no steps, `sympy.integrate` result + an honest note; definite = `F(b) - F(a)` (limits at ±oo) cross-checked against `integrate((f, a, b))` and `mpmath.quad`,
+    numeric-only value when there is no closed form; verification by differentiating. Solve: polynomial path (linear isolate, quadratic with discriminant / factoring
+    / formula, rational root theorem + factor + Cardano / numeric, denominators cleared + excluded values checked), **transcendental path = numeric scan first**
+    (`numeric_roots`: 1,500 samples, sign changes refined by Illinois at 30 digits, touching roots via secant, poles rejected, de-duplicated; default interval [0, 2π]
+    when trig, else [-10, 10]; user-editable), substitution insight (`s = sin α` when the variable only appears through one function, with the
+    `ln((1+s)/(1-s)) = 2 artanh s` note), `periodicity()` for the general solution; then exact forms (`solveset` on the interval / reals, `solve`, the other Lambert-W
+    branch) matched to the numeric roots. That second, slower stage is *after* an `emit({"partial": ...})`, so the page shows the numeric answer immediately and keeps it
+    if the exact search times out. Systems: substitution narrative for 2 equations, Gauss-Jordan (augmented matrix rref) for linear ones, `nsolve` from several starts
+    when `solve` fails. Inequalities: `solveset` + critical points / test-value table, `|u| < c` rewrite.
+  - `cas-worker.js` -- `importScripts` Pyodide **0.27.7 (pinned)** from jsDelivr, `loadPackage(['mpmath','sympy'])` (SymPy 1.13.3, mpmath 1.3.0), writes `engine.py`
+    (fetched as text) into the Pyodide FS, imports it, warms the parser / differentiator, installs the `emit` callback (partial results).
+  - `cas-client.js` (`window.MESCAS`) -- starts the worker on first use, one request at a time, progress events, `call(req, {timeout, onPartial})`; on timeout (25 s
+    default) or Cancel the worker is **terminated** (the only way to stop busy Python) and a fresh one starts on the next call (from the HTTP cache: ~2.5 s).
+    WebAssembly / Worker / CDN failures reject with a friendly message. `V` in this file cache-busts `cas-worker.js` and `engine.py` -- bump it when either changes.
+  - `cas-ui.js` (`window.CASUI`) -- MathJax 4 loader (jsDelivr, configured like the Nancy physics page, loaded on first use), step-tree renderer, canvas plot from
+    engine samples (shaded area, roots, dark-mode aware), and `page(cfg)`: input + live preview (plain echo until the engine is up, then SymPy's reading as LaTeX;
+    typing starts the engine download), symbol chips, examples, localStorage history (`mes-cas:v1`, `mes-derivative:v1`, `mes-integral:v1`), `?q=` share links that
+    run on load, Copy answer / LaTeX / link, status line with progress bar and Cancel. Nothing heavy loads until the person types or presses a button.
+  **Tests:** `python3 tool_apps_src/cas-engine-tests.py` (60 cases, native Python; needs `pip install sympy==1.13.3 mpmath` in a venv -- the Pyodide versions) imports
+  the same `engine.py` through `handle()`; includes the Problems Plus 5 launch-angle equation `0 = 2 - sin α · ln((1+sin α)/(1−sin α))` -> α ≈ 0.9855147379 rad
+  (56.4658°), 2.156077916, 4.127107391, 5.297670569 in [0, 2π]. **Rebuild:** edit `tool_apps_src/<slug>/` or `_cas.css`, then `build_tool_apps.py --apply`,
+  `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`, `add_bottom_ad.py --apply`; engine changes need no rebuild (served as-is, but bump `V` in
+  `cas-client.js`). **Measured** (2026-10-02, desktop, fast connection): download ~10.1 MB compressed (18.4 MB raw: wasm 3.0, stdlib 2.3, SymPy wheel 4.1, mpmath 0.4,
+  JS 0.25) + MathJax ~0.3 MB; network ~1.2 s, engine ready ~3 s after the first click when cached (cold ≈ download time + ~3 s); typical requests 3 ms-1 s (launch-angle
+  equation ~1 s incl. the exact-form search). **Limitations:** SymPy can't integrate everything (non-elementary integrands give special functions or no closed form; some
+  integrals time out after 25 s); integral steps exist only where `manualintegrate` has a rule; derivative steps fall back to SymPy for unusual functions; transcendental
+  roots are only those inside the search interval; systems of inequalities aren't supported; `log` is the natural log (use `log10` / `log_b`).
 - `add_page_theatre.py` -- **page-width switch** (2026-10-01): the "Wide page" pill on the sidebar pages (`aside.js`) and the Wide pill on the Jump-to pages
   (`toc-flip.js`) became a **Standard | Wide | Theatre** segmented control (>=1200px / >=1300px only). Saved as localStorage `pageMode` (`std|wide|theatre`);
   theatre also writes `pageWide=1` and sets `html.page-theatre` *in addition to* `html.page-wide`, so every Wide rule still applies and theatre just adds "use nearly

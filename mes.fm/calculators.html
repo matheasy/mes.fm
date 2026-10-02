@@ -529,7 +529,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">Calculators</h1>                                        <p class="page-description">Free online calculators for all your needs.</p>	<div id="main-content">
 		<div class="hub-filter">
 			<input type="search" id="hub-search" placeholder="Search calculators&hellip;" aria-label="Search calculators" autocomplete="off">
-			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (19)</button><button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (4)</button><button type="button" data-c="school" aria-pressed="false">School &amp; Grades (4)</button><button type="button" data-c="money" aria-pressed="false">Money &amp; Finance (5)</button><button type="button" data-c="everyday" aria-pressed="false">Everyday Math &amp; Health (7)</button><button type="button" data-c="fun" aria-pressed="false">Science &amp; Fun (3)</button></div>
+			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (22)</button><button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (4)</button><button type="button" data-c="school" aria-pressed="false">School &amp; Grades (4)</button><button type="button" data-c="money" aria-pressed="false">Money &amp; Finance (5)</button><button type="button" data-c="algebra" aria-pressed="false">Algebra &amp; Calculus (6)</button><button type="button" data-c="everyday" aria-pressed="false">Everyday Math &amp; Health (4)</button><button type="button" data-c="fun" aria-pressed="false">Science &amp; Fun (3)</button></div>
 		</div>
 		<section class="hub-cat hub-cat--popular" data-cat="popular" id="popular">
 			<h2 class="hub-cat__title">&#9733; Popular</h2>
@@ -651,31 +651,31 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</tr>
 		</table>
 		</section>
-		<section class="hub-cat" data-cat="everyday" id="everyday">
-			<h2 class="hub-cat__title">Everyday Math &amp; Health</h2>
+		<section class="hub-cat" data-cat="algebra" id="algebra">
+			<h2 class="hub-cat__title">Algebra &amp; Calculus</h2>
 		<table class="tbl tbl--stack">
 			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/bmicalculator">
-					<div class="calc__img-container"><img class="calc__img" src="img/bmi-logo.png" alt="bmi calculator logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">BMI Calculator</span>
-						<span class="calc__text--desc">Calculate your BMI (Body Mass Index) using your height and weight.</span>
-					</div></a>
-		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/calculator">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/calculator">
 					<div class="calc__img-container"><img class="calc__img" src="img/calculator-logo.png?v=1" alt="MES Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Calculator</span>
 						<span class="calc__text--desc">Multiplication, division, squares, roots, powers, fractions, factors and more, with a keypad and step-by-step panels.</span>
 					</div></a>
 		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/cas-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/cas-calculator-logo.png?v=1" alt="MES CAS Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">CAS Calculator</span>
+						<span class="calc__text--desc">Solve equations, systems and inequalities with steps, every real root of hard equations, simplify, factor, limits and series.</span>
+					</div></a>
+		        </td>
 			</tr>
 			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/days-between-dates-calculator">
-					<div class="calc__img-container"><img class="calc__img" src="img/days-between-dates-calculator-logo.png?v=1" alt="MES Days Between Dates Calculator logo" width="88" height="88"></div>
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/derivative-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/derivative-calculator-logo.png?v=1" alt="MES Derivative Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
-						<span class="calc__text--title">Days Between Dates Calculator</span>
-						<span class="calc__text--desc">Days, weeks, months, hours and business days between two dates, with end-date inclusion and holidays.</span>
+						<span class="calc__text--title">Derivative Calculator</span>
+						<span class="calc__text--desc">Derivatives with every step explained: product, quotient and chain rules, higher, partial and implicit derivatives.</span>
 					</div></a>
 		        </td>
 				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/2d-graphing-calculator">
@@ -694,16 +694,44 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="calc__text--desc">Plot surfaces, spheres, curves and parametric surfaces in 3D, then rotate, zoom and colour them by height.</span>
 					</div></a>
 		        </td>
-		        <td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/percentagecalculator">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/integral-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/integral-calculator-logo.png?v=1" alt="MES Integral Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Integral Calculator</span>
+						<span class="calc__text--desc">Antiderivatives and definite integrals with steps: substitution, by parts, partial fractions, numeric values.</span>
+					</div></a>
+		        </td>
+			</tr>
+		</table>
+		</section>
+		<section class="hub-cat" data-cat="everyday" id="everyday">
+			<h2 class="hub-cat__title">Everyday Math &amp; Health</h2>
+		<table class="tbl tbl--stack">
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/bmicalculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/bmi-logo.png" alt="bmi calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">BMI Calculator</span>
+						<span class="calc__text--desc">Calculate your BMI (Body Mass Index) using your height and weight.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/days-between-dates-calculator">
+					<div class="calc__img-container"><img class="calc__img" src="img/days-between-dates-calculator-logo.png?v=1" alt="MES Days Between Dates Calculator logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Days Between Dates Calculator</span>
+						<span class="calc__text--desc">Days, weeks, months, hours and business days between two dates, with end-date inclusion and holidays.</span>
+					</div></a>
+		        </td>
+			</tr>
+			<tr class="calc-row">
+		        <td class="calc-container"><a class="calc-link" href="https://mes.fm/percentagecalculator">
 		            <div class="calc__img-container"><img class="calc__img" src="img/pc-logo.png" alt="percentage calculator logo" width="88" height="88"></div>
 		            <div class="calc__text">
 			            <span class="calc__text--title">Percentage Calculator</span>
 			            <span class="calc__text--desc">Calculate various percentages and convert ratios to percentages.</span>
 			        </div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/unit-conversion">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/unit-conversion">
 					<div class="calc__img-container"><img class="calc__img" src="img/unit-conversion-logo.png?v=2" alt="MES Unit Conversion Calculator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Unit Conversion Calculator</span>

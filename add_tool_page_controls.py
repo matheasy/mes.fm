@@ -46,6 +46,9 @@ TOOLS = [  # (directory, compact-bar title)
     ("days-between-dates-calculator", "Days Between Dates Calculator"),   # also built by build_tool_apps.py
     ("2d-graphing-calculator", "Graphing Calculator 2D"),   # also built by build_tool_apps.py   # also built by build_tool_apps.py
     ("3d-graphing-calculator", "Graphing Calculator 3D"),   # also built by build_tool_apps.py
+    ("cas-calculator", "CAS Calculator"),   # the three CAS pages, built by build_tool_apps.py
+    ("derivative-calculator", "Derivative Calculator"),
+    ("integral-calculator", "Integral Calculator"),
     ("share", "Share Launcher"),   # also built by build_tool_apps.py
     ("search", "Site Search"),     # also built by build_tool_apps.py
     ("calendar", "Calendar"),      # also built by build_tool_apps.py

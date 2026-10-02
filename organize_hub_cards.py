@@ -27,7 +27,8 @@ PAGES = {
     "calculators.html": dict(noun="calculators", popular=["gradecalculator", "percentagecalculator", "gradecalculator/weighted-average-calculator", "gpacalculator"], cats=[
         ("school", "School &amp; Grades", ["gradecalculator", "gpacalculator", "gradecalculator/weighted-average-calculator", "gradecalculator/br"]),
         ("money", "Money &amp; Finance", ["mortgagecalculator", "inflationcalculator", "vatcalculator", "youtubemoney/index.html", "impermanent-loss-calculator"]),
-        ("everyday", "Everyday Math &amp; Health", ["calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
+        ("algebra", "Algebra &amp; Calculus", ["calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "2d-graphing-calculator", "3d-graphing-calculator"]),
+        ("everyday", "Everyday Math &amp; Health", ["days-between-dates-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
         ("fun", "Science &amp; Fun", ["earth-curvature-calculator", "gematria", "pokemongocalculator"]),
     ]),
     "tools.html": dict(noun="tools", popular=["timer", "speedreader", "moon", "emoji"], cats=[
