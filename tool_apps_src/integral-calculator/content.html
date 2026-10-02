@@ -1,0 +1,87 @@
+	<div class="tu cs" id="cs">
+		<div class="tu-card">
+			<div class="tu-row" style="justify-content:space-between;align-items:center;margin-bottom:0.5em;">
+				<label class="tu-label" for="cs-in">Function to integrate</label>
+				<div class="tu-seg" id="cs-kind" role="group" aria-label="Integral type">
+					<button type="button" data-def="0" aria-pressed="true">Indefinite</button><button type="button" data-def="1" aria-pressed="false">Definite</button>
+				</div>
+			</div>
+			<div class="cs-inrow"><span class="cs-op" id="cs-opname">∫</span>
+				<input id="cs-in" class="tu-input tu-input--big cs-expr" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. x e^x, 1/(x^2 - 1), sin^2 x cos x" aria-describedby="cs-preview">
+				<span class="cs-op" id="cs-dx">dx</span>
+			</div>
+			<div class="cs-chips" id="cs-chips" aria-label="Insert a symbol">
+				<button type="button" data-ins="^" title="Power">xʸ</button><button type="button" data-ins="^2" title="Square">x²</button>
+				<button type="button" data-ins="sqrt(" title="Square root">√</button><button type="button" data-ins="π">π</button>
+				<button type="button" data-ins="e^(" title="e to the power">eˣ</button><button type="button" data-ins="ln(">ln</button>
+				<button type="button" data-ins="sin(">sin</button><button type="button" data-ins="cos(">cos</button><button type="button" data-ins="tan(">tan</button>
+				<button type="button" data-ins="sec(">sec</button><button type="button" data-ins="|" title="Absolute value">|x|</button>
+				<button type="button" data-ins="θ">θ</button><button type="button" data-ins="∞" title="Infinity (for bounds)">∞</button><button type="button" data-ins="·" title="Multiply">·</button>
+			</div>
+			<div class="cs-preview is-dim" id="cs-preview" aria-live="polite"></div>
+			<div class="tu-row cs-opts">
+				<div class="tu-field tu-field--sm"><label for="cs-var">Variable</label><input id="cs-var" class="tu-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="auto"></div>
+				<div class="tu-field tu-field--sm cs-only" data-def-only><label for="cs-lo">Lower bound</label><input id="cs-lo" class="tu-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="0" placeholder="e.g. 0, -oo"></div>
+				<div class="tu-field tu-field--sm cs-only" data-def-only><label for="cs-hi">Upper bound</label><input id="cs-hi" class="tu-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="1" placeholder="e.g. pi, oo"></div>
+				<div class="tu-field"><label for="cs-ex">Examples</label>
+					<select id="cs-ex" class="tu-select">
+						<option value="">Choose an example…</option>
+						<option value="x e^x">x eˣ (by parts)</option>
+						<option value="sin(x)^2 cos(x)">sin² x cos x (u-substitution)</option>
+						<option value="1/(x^2 - 1)">1/(x² − 1) (partial fractions)</option>
+						<option value="x/(x^2 + 1)">x/(x² + 1)</option>
+						<option value="e^x sin x">eˣ sin x (by parts twice)</option>
+						<option value="sqrt(1 - x^2)">√(1 − x²)</option>
+						<option value="tan x">tan x</option>
+						<option value="1/x">1/x</option>
+						<option value="x^2" data-p='{"def":"1","lo":"0","hi":"3"}'>∫₀³ x² dx</option>
+						<option value="sin x" data-p='{"def":"1","lo":"0","hi":"pi"}'>∫₀^π sin x dx</option>
+						<option value="e^(-x^2)" data-p='{"def":"1","lo":"-oo","hi":"oo"}'>∫ e^(−x²) over the whole line</option>
+						<option value="x^x" data-p='{"def":"1","lo":"0","hi":"1"}'>∫₀¹ xˣ dx (numeric)</option>
+						<option value="1/(1 + t^2)" data-p='{"def":"1","lo":"0","hi":"oo"}'>∫₀^∞ 1/(1 + t²) dt</option>
+					</select></div>
+			</div>
+			<div class="tu-row cs-actions">
+				<button type="button" class="tu-btn tu-btn--primary" id="cs-go">Integrate</button>
+				<span class="tu-note">Press Enter to run. Steps, a check by differentiation and a plot come with every answer.</span>
+			</div>
+			<div class="cs-status" id="cs-status" role="status" hidden></div>
+		</div>
+
+		<div class="cs-out" id="cs-out" aria-live="polite" hidden></div>
+
+		<div class="tu-card" id="cs-hist-card" style="margin-top:1em;" hidden>
+			<div class="tu-row" style="justify-content:space-between;align-items:center;">
+				<h3 style="margin:0;">History</h3>
+				<button type="button" class="tu-btn tu-btn--ghost" id="cs-hist-clear">Clear</button>
+			</div>
+			<ul class="cs-hist" id="cs-hist"></ul>
+		</div>
+
+		<section class="tu-seo">
+			<h2>More from MES</h2>
+			<div class="cs-links">
+				<a class="cs-link" href="/derivative-calculator">Derivative Calculator<span>derivatives with every rule explained</span></a>
+				<a class="cs-link" href="/cas-calculator">CAS Calculator<span>solve equations, simplify, limits, series</span></a>
+				<a class="cs-link" href="/2d-graphing-calculator">2D Graphing Calculator<span>plot the integrand and its antiderivative</span></a>
+				<a class="cs-link" href="/3d-graphing-calculator">3D Graphing Calculator<span>surfaces z = f(x, y)</span></a>
+				<a class="cs-link" href="/calculator">Calculator<span>everyday arithmetic and scientific keys</span></a>
+				<a class="cs-link" href="/latex">LaTeX Render<span>paste the LaTeX of an answer</span></a>
+			</div>
+			<h2>Free online integral calculator with steps</h2>
+			<p>Type a function such as <code>x e^x</code>, <code>1/(x^2 - 1)</code>, <code>sin^2 x cos x</code> or <code>sqrt(1 - x^2)</code> to get its antiderivative (with + C) and a step-by-step solution: the constant and power rules, integrating term by term, u-substitution, integration by parts (also the "by parts twice" trick for <code>e^x sin x</code>), partial fractions, trigonometric rewrites and substitutions, completing the square and the standard arctangent, arcsine and logarithm forms.</p>
+			<ul>
+				<li><strong>Definite integrals</strong>: switch to Definite and enter the bounds — numbers, <code>pi</code>, expressions like <code>pi/4</code> or <code>sqrt(2)</code>, and <code>-oo</code> / <code>oo</code> (or ∞) for improper integrals. The answer shows F(b) − F(a) and its decimal value.</li>
+				<li><strong>No closed form?</strong> Integrals like ∫₀¹ xˣ dx are evaluated numerically (mpmath's adaptive quadrature) to 15 significant digits.</li>
+				<li><strong>Verified</strong>: the antiderivative is differentiated again and compared with your function.</li>
+				<li>A <strong>plot</strong> of the integrand with the area shaded, and a link to the <a href="/2d-graphing-calculator">2D graphing calculator</a>.</li>
+			</ul>
+			<h2>How it works</h2>
+			<p>Everything runs in your own browser with <a href="https://www.sympy.org/" rel="noopener">SymPy</a>, the open-source computer algebra system, compiled to WebAssembly with Python (about 10 MB the first time, cached afterwards). The steps are SymPy's own integration rule tree (the same method a person would use), written out as numbered steps. When no such method applies, the result comes from SymPy's general algorithm (Risch, Meijer G) and the page says so honestly.</p>
+			<h2>Tips</h2>
+			<dl>
+				<dt>Variable</dt><dd>Usually found automatically; you can also end the input with <code>dt</code>, <code>dθ</code>…, or type it in the Variable box. Other letters are treated as constants.</dd>
+				<dt>Logarithms</dt><dd>The antiderivative of 1/x is shown as ln|x|. <code>ln</code> and <code>log</code> both mean the natural logarithm.</dd>
+			</dl>
+		</section>
+	</div>
