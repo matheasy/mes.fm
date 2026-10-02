@@ -153,6 +153,37 @@ def main():
             cl[m.group(1)].append({"u": "/" + d.name, "t": x[1], "i": (x[5] if len(x) > 5 else ""), "k": LABEL[m.group(1)]})
     out["cl"] = cl
     print("cluster pools:", {k: len(v) for k, v in cl.items()})
+    # livestreams (2026-10-02): the numbered MES livestreams from livestreams/playlist.json, tagged by topic from their titles; only shown on the 9/11 / Hutchison / conspiracy /
+    # science / crypto pages (aside.js LS_PREFS decides which topics each family gets), never on math / calculator / tool pages. Cards go to the YouTube video (new tab) or to the
+    # stream's mes.fm mirror page when it has one.
+    TOPIC = [
+        ("hutchison", r"hutchison|beneficence|radiant energy|free energy|lenr|\bevos?\b|exotic vacuum|electrogravitics|depalma|n-machine|zero point|experimental science|orgone|vortex coil|induction|energy recycling|greenyer|tom sky"),
+        ("911", r"9/11|\bwtc\b|towers|judy wood|building 7|planes|mystery (objects|flashes)|ufos on 9|disinfo|blue bacon|clowns|nist|mystic bazaar|wings|chris shak|avengers|revisionist|morgan reynolds|andrew johnson|1109"),
+        ("conspiracy", r"deep dive|predictive programming|assassination|jfk|epstein|pizzagate|january 6|jan 6|insurrection|moon|apollo|flat earth|mh370|blue beam|agenda 2030|clown world|controlled opposition|\bufo|buga|psyop|geoengineering|who runs the world|emergency broadcast|ww3|iran|trump|hollow|crop circles|doomsday|covid|kaufman|malthouse|hoffe|nagase|voice to skull|targeted individuals|okc"),
+        ("science", r"physics|electro|gyroscope|n-machine|crop circles|vortex|moon landing|geoengineering|hollow|near death|lightning|evo|vacuum|free energy|zero point|harmonics|reich|orgone|radiant|field (effects|interference)|hurricane|eclipse|methylminer|biodigital|teleportation|virology"),
+        ("crypto", r"blockchain|\bhive\b|taxation|\bai\b|artificial intelligence|biodigital|infocrypt|bitcoin|crypto|deep fakes"),
+    ]
+    mirrors = {}
+    try:
+        bm = (SITE / "livestreams" / "build.mjs").read_text(encoding="utf-8")
+        for mm in re.finditer(r'(\w{11}):\s*\{\s*href:\s*"(https://mes\.fm/[^"]+)"', bm):
+            mirrors[mm.group(1)] = mm.group(2)[len("https://mes.fm"):]
+    except OSError:
+        pass
+    lsl = []
+    for v in json.loads((SITE / "livestreams" / "playlist.json").read_text(encoding="utf-8")):
+        m = re.match(r"^MES Livestream (\d+):\s*(.+)$", v["title"])
+        if not m or v.get("status") not in ("public", "upcoming"):
+            continue
+        topics = [name for name, rx in TOPIC if re.search(rx, v["title"], re.I)]
+        if not topics:
+            continue
+        mir = mirrors.get(v["id"])
+        lsl.append({"u": mir or "https://www.youtube.com/watch?v=" + v["id"], "t": "%s: %s" % (m.group(1), m.group(2)),
+                    "i": (v.get("thumb") or "").replace("maxresdefault", "mqdefault"), "k": "Livestream" + (" (upcoming)" if v.get("status") == "upcoming" else ""),
+                    "g": topics, "x": 0 if mir else 1})
+    out["ls"] = lsl
+    print("livestreams %d (%s)" % (len(lsl), ", ".join("%s %d" % (n, sum(1 for x in lsl if n in x["g"])) for n, _ in TOPIC)))
     out["tags"] = PAGE_TAGS
     ctx = {}
     logos = {c["u"]: c["i"] for c in calc}

@@ -243,6 +243,7 @@
         function card(it, logo) {
             var li = document.createElement("li"), a = document.createElement("a");
             a.className = "mes-aside__card"; a.href = it.u;
+            if (it.x) { a.target = "_blank"; a.rel = "noopener"; }       /* a livestream on YouTube: opens in a new tab */
             if (it.i) {
                 var img = document.createElement("img");
                 img.className = "mes-aside__img" + (logo ? " mes-aside__img--logo" : "");
@@ -279,15 +280,30 @@
             var ctx = [];
             Object.keys(recs.ctx || {}).forEach(function (pat) { try { if (new RegExp(pat).test(path)) ctx = ctx.concat(recs.ctx[pat]); } catch (e) {} });
             var calc = ctx.concat(rank(recs.calc)), blocks;
+            /* related MES livestreams (YouTube / mirror pages) for the 9/11 / Hutchison / conspiracy / science / crypto pages, by topic -- never on math, calculator or tool pages */
+            var LS_PREFS = { "hutchison": ["hutchison", "science"], "911": ["911", "hutchison", "conspiracy"], "conspiracy": ["conspiracy", "911", "hutchison"],
+                             "science": ["hutchison", "science"], "crypto": ["crypto", "science", "hutchison"] };
+            function lsBlock() {
+                var prefs = LS_PREFS[family];
+                if (!prefs) return null;
+                var items = (recs.ls || []).filter(function (it) { return !have[it.u]; }).map(function (it) {
+                    var best = 99; (it.g || []).forEach(function (t) { var k = prefs.indexOf(t); if (k >= 0 && k < best) best = k; });
+                    return { it: it, s: best + Math.random() * 0.9 };
+                }).filter(function (x) { return x.s < 99; }).sort(function (a, b) { return a.s - b.s; }).slice(0, 8).map(function (x) { return x.it; });
+                return items.length ? { h: "Related MES livestreams", items: items, logo: false } : null;
+            }
             if (CLUSTER[family]) {
                 blocks = CLUSTER[family].map(function (f) { return { h: CL_HEAD[f], items: fresh((recs.cl || {})[f]), logo: false }; });
+                var lsb = lsBlock(); if (lsb) blocks.splice(1, 0, lsb);
             } else if (family === "mathiew") {                      /* the humour pages: only math memes */
                 blocks = [{ h: "More math memes", items: fresh(rnd.memes), logo: false }];
             } else if (family === "crypto" || family === "science") {
-                blocks = [{ h: family === "crypto" ? "More from MES Crypto" : "More science", items: fresh((recs.cl || {})[family]), logo: false },
+                var lsb2 = lsBlock();
+                blocks = [{ h: family === "crypto" ? "More from MES Crypto" : "More science", items: fresh((recs.cl || {})[family]), logo: false }]
+                    .concat(lsb2 ? [lsb2] : []).concat([
                           { h: "Related calculators & tools", items: calc.slice(0, 8), logo: true },
                           { h: "Free math video tutorials", items: rank(recs.math), logo: false },
-                          { h: "More free calculators & tools", items: calc.slice(8), logo: true }];
+                          { h: "More free calculators & tools", items: calc.slice(8), logo: true }]);
             } else if (mathWorld) {
                 blocks = [{ h: ctx.length ? "Try it with MES tools" : "Calculators for this topic", items: calc.slice(0, ctx.length + 8), logo: true }];
                 if (isQA) blocks.push({ h: "More Math Q/A livestreams", items: rank(recs.qa), logo: false });      /* the livestream replays only ever show up next to other livestream replays */
@@ -348,10 +364,16 @@
                 have[it.u] = true;
                 if (!b.ul) b.ul = block(b.h);
                 var li = card(it, b.logo);
-                b.ul.appendChild(li); count++;
+                b.ul.appendChild(li); count++; b.n++;
                 placeAd2();
             }
-            function next() { for (var i = 0; i < blocks.length; i++) if (blocks[i].items.length) return blocks[i]; return null; }
+            /* blocks are mixed in proportion (3 : 2 : 2 : 1 ...) instead of one after the other, so even a short page's column shows a bit of everything (own pages, livestreams, tools, videos) */
+            blocks.forEach(function (b, i) { b.w = [3, 2, 2, 1][i] || 1; b.n = 0; });
+            function next() {
+                var best = null;
+                for (var i = 0; i < blocks.length; i++) { var b = blocks[i]; if (b.items.length && (!best || b.n / b.w < best.n / best.w)) best = b; }
+                return best;
+            }
             function fill() {
                 var b;
                 if (rail || inline) { while (count < (rail ? 16 : 12) && (b = next())) add(b); return; }
@@ -366,7 +388,7 @@
                     var li = lastB.ul.lastChild;
                     if (li.classList.contains("mes-aside__ad2")) break;      /* never trim the ad itself */
                     var href = li.querySelector("a").getAttribute("href");
-                    lastB.ul.removeChild(li); count--; delete have[href];
+                    lastB.ul.removeChild(li); count--; lastB.n--; delete have[href];
                     if (!lastB.ul.lastChild) { lastB.ul.parentNode.parentNode.removeChild(lastB.ul.parentNode); lastB.ul = null; }
                 }
             }

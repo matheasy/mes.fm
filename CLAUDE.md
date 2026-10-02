@@ -436,6 +436,11 @@ of HTML files individually:
   graphing calculators (wide pages, no column) carry `<aside class="mes-aside mes-aside--inline" data-aside-family="graphing">` in their `content.html` + `aside.css` / `aside.js` tags: a 4-column card grid
   under the tool (up to 12: "Try it with MES tools" deep links like the derivative of x² sin x, related calculators, math videos). (3) When Wide / Theatre collapse the sidebar below the content (1200-1359px),
   "Show sidebar" appears in the width switch and brings it back beside the content (`html.aside-force`, localStorage `asideForce`; choosing any width resets it).
+- **Livestream recommendations** (2026-10-02): `build_aside_recs.py` also writes pool `ls` = the numbered MES livestreams from `livestreams/playlist.json` (public + upcoming), tagged by topic from their
+  titles (`TOPIC` regexes: hutchison / 911 / conspiracy / science / crypto-AI), with the stream's mes.fm mirror page as the target where one exists (140, 141) and the YouTube video otherwise (opens in a new
+  tab, `x: 1`). `aside.js` `LS_PREFS` decides who gets which: Hutchison -> hutchison, science; 9/11 -> 9/11, hutchison, conspiracy; conspiracy -> conspiracy, 9/11, hutchison; science -> hutchison, science;
+  crypto -> crypto, science, hutchison -- as a "Related MES livestreams" block (up to 8, best topic match first) right after the page's own family block. **Never on math, calculator, tool, meme or mathiew
+  pages.** Also new: blocks are now *mixed in proportion* (3 : 2 : 2 : 1 ...) instead of filled one after the other, so a short page's column still shows a bit of everything.
 - `add_hub_theatre.py` -- the **Standard | Theatre** switch on the sidebar-less hub pages (2026-10-01; `calculators`, `tools`, `mobile-apps`, `puzzles`, `memes`
   and the thumbnail-gallery / quote list pages: every page with the `HUB-WIDE-LAYOUT` marker and no "More like this" sidebar, 62 pages). `main_js/hub-theatre.css` + `.js`;
   same saved `pageMode`/`pageWide` preference as `add_page_theatre.py`'s switch, so Theatre carries across the whole site. Theatre = `.outer-container` up to
