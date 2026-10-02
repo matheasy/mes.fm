@@ -1,0 +1,23 @@
+/* Standard | Theatre switch for the sidebar-less hub pages (calculators, tools, mobile apps, puzzles, memes and the thumbnail galleries).
+   Same saved preference as the sidebar pages' Standard | Wide | Theatre switch (localStorage "pageMode"); these pages are already "wide", so there are only two states.
+   html.page-theatre is restored before first paint by the HUB-THEATRE-HEAD snippet; behaviour: hub-theatre.js; installed by add_hub_theatre.py. */
+.hub-mode { display: none; }
+@media (min-width: 1200px) {
+  .outer-page-content .page-content { position: relative; }
+  .hub-mode { display: inline-flex; position: absolute; top: .45em; right: 0; z-index: 2; border: 1px solid #b9c2cc; border-radius: 999px;
+    background: #fff; overflow: hidden; font-size: .82em; line-height: 1.2; }
+  .hub-mode button { border: 0; background: transparent; color: #1479c7; font: inherit; padding: .28em .8em; cursor: pointer; }
+  .hub-mode button + button { border-left: 1px solid #d5dbe2; }
+  .hub-mode button:hover { background: #e8f2fb; }
+  .hub-mode button[aria-pressed="true"] { background: #1479c7; color: #fff; }
+  :is(body.dark-mode, body.dark) .hub-mode { background: #2e2e2e; border-color: #555; }
+  :is(body.dark-mode, body.dark) .hub-mode button { color: #6cb6f5; }
+  :is(body.dark-mode, body.dark) .hub-mode button + button { border-left-color: #555; }
+  :is(body.dark-mode, body.dark) .hub-mode button:hover { background: #3a3a3a; }
+  :is(body.dark-mode, body.dark) .hub-mode button[aria-pressed="true"] { background: #6cb6f5; color: #111; }
+
+  /* Theatre: the page frame grows to nearly the whole window and the grids add columns */
+  html.page-theatre .outer-container { max-width: min(98vw, 2400px) !important; width: auto !important; }
+  html.page-theatre .tbl { grid-template-columns: repeat(auto-fill, minmax(19em, 1fr)); }
+  html.page-theatre table.memes { grid-template-columns: repeat(auto-fill, minmax(14em, 1fr)); }
+}

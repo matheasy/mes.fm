@@ -335,6 +335,12 @@ of HTML files individually:
   for the sidebar). The script back-fills the early `<head>` restore snippet (1,100+ pages, the Jump-to `build.mjs` generators, `add_sidebar.py` HEAD_BLOCK,
   `add_toc_flip.py`); re-run it after cloning an old page. Idempotent; dry-runs by default, `--apply` writes. Pages with their own wide logic (`graphing-calculator-2D`,
   `stats`) and the sidebar-less hubs do not have the switch. The calendar also got sticky side arrows (previous / next month or year), left/right arrow keys and swipe.
+- `add_hub_theatre.py` -- the **Standard | Theatre** switch on the sidebar-less hub pages (2026-10-01; `calculators`, `tools`, `mobile-apps`, `puzzles`, `memes`
+  and the thumbnail-gallery / quote list pages: every page with the `HUB-WIDE-LAYOUT` marker and no "More like this" sidebar, 62 pages). `main_js/hub-theatre.css` + `.js`;
+  same saved `pageMode`/`pageWide` preference as `add_page_theatre.py`'s switch, so Theatre carries across the whole site. Theatre = `.outer-container` up to
+  `min(98vw, 2400px)` and the card grid / thumbnail grid switching to `auto-fill` columns (calculators page: 3 -> 5 columns at 1700px). Head block `HUB-THEATRE-HEAD`
+  restores it before first paint. Not covered: the `mes.fm` homepage and the math-hub tile pages (`math`, `911`, `hutchison`, `livestreams`, ... own shell/`build.mjs`).
+  Idempotent; dry-runs by default, `--apply` writes. Run it after `widen_hub_pages.py` / `widen_gallery_pages.py` for any new hub page.
 - `add_cross_links.py` — cross-links calculators and tools in the horizontal info bar: calculator pages (the calculator
   mini-sites and the four rebuilt apps) get a **Tools** item (-> `/tools`), tool pages (timer incl. its quote galleries,
   speedreader, emoji, latex, timezone, symbols, youtube-thumbnail, stats) get **Calculators** (and Tools where missing),
