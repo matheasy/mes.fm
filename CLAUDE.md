@@ -410,6 +410,7 @@ of HTML files individually:
   **Compare countries** (same day): the inflation chart card has a "+ Compare with..." select (up to 4 countries, removable chips, `&cmp=A|B` in share links). Each compared country uses its
   best source (monthly when the main chart is monthly and it has monthly data, else annual; an annual-only country on a monthly chart shows its year's rate); lines get their own colours
   (`cmpColors()`), a legend appears, and the main line's red/blue sign colouring and fill switch off while comparing.
+  The inflation chart also has a **Log scale** toggle: rates can be negative, so it is a symmetric log (`y = sign(v)*log10(1+|v|)`; data plotted transformed, ticks from `SL_TICKS`, tooltips read the untransformed `dataset.raw`).
   Bump `?v=` on the `inflation.js` tag when it changes.
 - `add_page_theatre.py` -- **page-width switch** (2026-10-01): the "Wide page" pill on the sidebar pages (`aside.js`) and the Wide pill on the Jump-to pages
   (`toc-flip.js`) became a **Standard | Wide | Theatre** segmented control (>=1200px / >=1300px only). Saved as localStorage `pageMode` (`std|wide|theatre`);

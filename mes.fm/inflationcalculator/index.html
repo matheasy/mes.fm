@@ -586,6 +586,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
     <header class="ic-card__head">
       <h3 id="ic-t-infl" class="ic-card__title">Inflation rate</h3>
       <div class="ic-tools">
+        <label class="ic-logl" title="Symmetric log scale: spreads out the small rates so a spike in one country doesn't flatten the rest"><input type="checkbox" class="ic-log" data-chart="infl"> Log scale</label>
         <select class="ic-range" data-chart="infl" aria-label="Inflation chart range"><option value="all">All years</option><option value="50">Last 50 yrs</option><option value="25">Last 25 yrs</option><option value="10">Last 10 yrs</option><option value="5">Last 5 yrs</option><option value="sel">Selected span</option></select>
         <button type="button" class="ic-tool ic-png" data-chart="infl" title="Save as PNG"><i>⬇</i><span>PNG</span></button>
         <button type="button" class="ic-tool ic-expand" aria-pressed="false" title="Fill the screen (Esc to close)"><i>⤢</i><span>Expand</span></button>
@@ -721,7 +722,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-	<script src="/inflationcalculator/js/inflation.js?v=2.2" defer></script>
+	<script src="/inflationcalculator/js/inflation.js?v=2.3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.7" data-scale="main" data-dark="derive" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
 <!-- Mirrored from inflationcalculator.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:43:20 GMT -->

@@ -27,7 +27,7 @@
   var cache = {};                // series cache
   var S = { country: 'United States', src: null, from: null, to: null, amt: 100, cmp: [] };
   var ranges = { infl: 'all', cpi: 'all', worth: 'all' };
-  var logs = { cpi: false, worth: false };
+  var logs = { infl: false, cpi: false, worth: false };
   var charts = {};
   var touched = false;           // only write the URL once the person changed something
   var newestFirst = false;
@@ -590,14 +590,24 @@
     return new Chart(canvas.getContext('2d'), cfg);
   }
 
+  // Inflation rates go negative, so "log scale" is a symmetric log: y = sign(v) * log10(1 + |v|).
+  // Points are plotted transformed; ticks and tooltips map back to real percentages.
+  var SL_TICKS = [-50, -20, -10, -5, -2, -1, 0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 5000, 10000, 100000];
+  function symlog(v) { return v == null ? null : Math.sign(v) * Math.log10(1 + Math.abs(v)); }
+  function unsymlog(t) { return Math.sign(t) * (Math.pow(10, Math.abs(t)) - 1); }
+
   function ensureCharts() {
     if (charts.infl || !window.Chart) return;
     charts.infl = makeChart('infl', function (v) { return v.toFixed(2) + '%'; }, function (cfg) {
-      cfg.options.scales.y.ticks.callback = function (v) { return v + '%'; };
+      cfg.options.scales.y.ticks.callback = function (v) { return (logs.infl ? +unsymlog(v).toPrecision(3) : v) + '%'; };
+      cfg.options.scales.y.afterBuildTicks = function (sc) {
+        if (!logs.infl) return;
+        sc.ticks = SL_TICKS.map(symlog).filter(function (t) { return t >= sc.min - 1e-9 && t <= sc.max + 1e-9; }).map(function (t) { return { value: t }; });
+      };
       cfg.data.datasets[0].fill = { target: 'origin', above: 'rgba(217,45,18,.14)', below: 'rgba(42,91,215,.16)' };
       cfg.data.datasets[0].segment = { borderColor: function (c) { return !S.cmp.length && c.p1.parsed.y < 0 ? palette().blue : palette().red; } };
       cfg.options.plugins.legend = { display: false, labels: { usePointStyle: true, boxWidth: 8 } };
-      cfg.options.plugins.tooltip.callbacks.label = function (c) { return c.parsed.y == null ? '' : (S.cmp.length ? c.dataset.label + ': ' : '') + c.parsed.y.toFixed(2) + '%'; };
+      cfg.options.plugins.tooltip.callbacks.label = function (c) { var v = c.dataset.raw ? c.dataset.raw[c.dataIndex] : c.parsed.y; return v == null ? '' : (S.cmp.length ? c.dataset.label + ': ' : '') + v.toFixed(2) + '%'; };
     });
     charts.cpi = makeChart('cpi', function (v) { return num(v); });
     charts.worth = makeChart('worth', function (v, tick) { return tick ? shortMoney(v) : money(v); });
@@ -671,11 +681,16 @@
         ch.data.datasets = [main].concat(S.cmp.map(function (n) {
           return { label: n, data: cmpValues(n, s).slice(w[0], w[1]), borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.1, spanGaps: false, fill: false };
         }));
+        ch.data.datasets.forEach(function (d) {      // keep the real values for tooltips; plot the symlog ones when asked
+          d.raw = d.data.slice();
+          if (logs.infl) d.data = d.data.map(symlog);
+        });
         ch.options.plugins.legend.display = S.cmp.length > 0;
         styleCharts();
       }
       ch.options.plugins.icMarks.items = [{ i: i - w[0], t: 'From ' + s.L[i] }, { i: j - w[0], t: 'To ' + s.L[j] }];
       if (id !== 'infl') ch.options.scales.y.type = logs[id] ? 'logarithmic' : 'linear';
+      else ch.options.scales.y.title = { display: logs.infl, text: 'symmetric log scale', color: palette().text, font: { size: 10 } };
       ch.options.scales.x.ticks.maxTicksLimit = ch.canvas.clientWidth < 520 ? 5 : 10;
       ch.update('none');
     });
