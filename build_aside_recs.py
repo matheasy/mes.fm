@@ -90,6 +90,10 @@ CTX = {   # page path regex -> [(target, title, kind-label, logo path)]
     r"^/(vectors|spherical-harmonics|vector-functions)$": [("/3d-graphing-calculator", "Plot surfaces and curves in 3D", "/3d-graphing-calculator")],
     r"^/sequences-series": [("/cas-calculator", "Sums, limits and series in the CAS calculator", "/cas-calculator")],
     r"^/moon": [("/calendar", "Moon phases for any month in the Calendar", "/calendar")],
+    r"^/inflationcalculator/money-facts/": [("/inflationcalculator?c=United+States&s=FRED&from=1980&amt=100", "What $100 from 1980 is worth today", "/inflationcalculator"),
+                                            ("/inflationcalculator?c=United+Kingdom&s=UK+ONS&from=1950&amt=100", "What 100 pounds from 1950 is worth in the UK", "/inflationcalculator")],
+    r"^/inflationcalculator$": [("/inflationcalculator?c=United+States&from=1960&to=2025&cmp=Japan|Germany|Turkiye", "Compare US inflation with Japan, Germany and Turkiye", "/inflationcalculator"),
+                                ("/inflationcalculator?c=Canada&s=StatCan&from=1990&amt=1000", "What 1,000 Canadian dollars from 1990 is worth today", "/inflationcalculator")],
 }
 
 

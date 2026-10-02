@@ -411,6 +411,9 @@ of HTML files individually:
   best source (monthly when the main chart is monthly and it has monthly data, else annual; an annual-only country on a monthly chart shows its year's rate); lines get their own colours
   (`cmpColors()`), a legend appears, and the main line's red/blue sign colouring and fill switch off while comparing.
   The inflation chart also has a **Log scale** toggle: rates can be negative, so it is a symmetric log (`y = sign(v)*log10(1+|v|)`; data plotted transformed, ticks from `SL_TICKS`, tooltips read the untransformed `dataset.raw`).
+  **Money Facts links** (`add_inflation_fact_links.py`, idempotent, `--apply` writes): the eight facts that state an old price (bread, soup, gasoline, household income, first cell phone / PC, 1970 house, 1896 speeding ticket)
+  get an "Adjust it for inflation" box after `#main-content`; `js/fact-cta.js` fills in today's value from `data/inflation-data.json` and the button opens the calculator pre-filled (`?c=&s=&from=&amt=`; `to` omitted = latest).
+  Add a page to `FACTS` to extend it. The sidebar's "Try it" cards for the calculator and Money Facts pages are `CTX` entries in `build_aside_recs.py`.
   Bump `?v=` on the `inflation.js` tag when it changes.
 - `add_page_theatre.py` -- **page-width switch** (2026-10-01): the "Wide page" pill on the sidebar pages (`aside.js`) and the Wide pill on the Jump-to pages
   (`toc-flip.js`) became a **Standard | Wide | Theatre** segmented control (>=1200px / >=1300px only). Saved as localStorage `pageMode` (`std|wide|theatre`);
