@@ -67,13 +67,13 @@ APPS = {
                        js_v="1"),
     # 2D graphing calculator (Desmos-style): lib.js = tokenizer/parser -> compiled JS functions + key-point numerics (node-testable), app.js = canvas UI.
     # Slug keeps the capital D as requested (Vercel is case-sensitive on static paths).
-    "graphing-calculator-2D": dict(title="MES Graphing Calculator 2D", page_title="Graphing Calculator 2D",
+    "2d-graphing-calculator": dict(title="MES Graphing Calculator 2D", page_title="Graphing Calculator 2D",
                                    tag="Plot functions, equations and inequalities.", accent="#2160d0", dark="#1646a0", tint="#e3ecfb",
                                    desc="Free online 2D graphing calculator: plot functions, equations, inequalities, parametric and polar curves, use sliders, and find zeros, maximums, minimums and intersections. Zoom, pan, share a link or save a PNG.",
                                    js_v="1"),
     # 3D graphing calculator: lib.js = the 2D page's whitelist compiler extended to x,y,z,u,v,t + meshing (grid surfaces with jump detection,
     # surface nets for implicit F(x,y,z)=G, curve pieces; node-testable), app.js = UI + three.js renderer (core module imported lazily from jsDelivr).
-    "graphing-calculator-3D": dict(title="MES Graphing Calculator 3D", page_title="Graphing Calculator 3D",
+    "3d-graphing-calculator": dict(title="MES Graphing Calculator 3D", page_title="Graphing Calculator 3D",
                                    tag="Plot surfaces in 3D and rotate them", accent="#6a3fc4", dark="#4c2a94", tint="#ece6fa",
                                    desc="Free online 3D graphing calculator: plot surfaces z = f(x, y), equations in x, y and z like spheres and tori, parametric curves and surfaces, with sliders. Rotate, zoom, colour by height, share a link or save a PNG.",
                                    js_v="1"),

@@ -4,6 +4,13 @@
   "redirects": [
     { "source": "/video-thumbnail", "destination": "/youtube-thumbnail", "permanent": true },
     { "source": "/thumbnail", "destination": "/youtube-thumbnail", "permanent": true },
+    { "source": "/2d", "destination": "/2d-graphing-calculator", "permanent": true },
+    { "source": "/3d", "destination": "/3d-graphing-calculator", "permanent": true },
+    { "source": "/graphing-calculator-2D", "destination": "/2d-graphing-calculator", "permanent": true },
+    { "source": "/graphing-calculator-2d", "destination": "/2d-graphing-calculator", "permanent": true },
+    { "source": "/graphing-calculator-3D", "destination": "/3d-graphing-calculator", "permanent": true },
+    { "source": "/graphing-calculator-3d", "destination": "/3d-graphing-calculator", "permanent": true },
+    { "source": "/graphing-calculator", "destination": "/2d-graphing-calculator", "permanent": true },
     { "source": "/days", "destination": "/days-between-dates-calculator", "permanent": true },
     { "source": "/days-between", "destination": "/days-between-dates-calculator", "permanent": true },
     { "source": "/days-calculator", "destination": "/days-between-dates-calculator", "permanent": true },

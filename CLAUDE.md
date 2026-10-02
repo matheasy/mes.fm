@@ -315,16 +315,16 @@ of HTML files individually:
   (PIL-drawn) until Grok art lands (`calculator/img/logo.png`, `logo-big.png` 1200x630, `img/calculator-logo.png`: same names). The "Graphing Calculator 2D / 3D"
   cards at the bottom are real `<a class="mc-link">` links now that both pages exist.
 
-- **Graphing Calculator 2D** (2026-10-01, `mes.fm/graphing-calculator-2D`, capital D as requested; blue `#2160d0`) -- Desmos-style, built by
-  `build_tool_apps.py` from `tool_apps_src/graphing-calculator-2D/`. `lib.js` = tokenizer + parser that emits JS source from a whitelist only (no raw user text
+- **Graphing Calculator 2D** (2026-10-01, `mes.fm/2d-graphing-calculator`, capital D as requested; blue `#2160d0`) -- Desmos-style, built by
+  `build_tool_apps.py` from `tool_apps_src/2d-graphing-calculator/`. `lib.js` = tokenizer + parser that emits JS source from a whitelist only (no raw user text
   is executed): functions, `x=`, implicit `F(x,y)=G`, inequalities (shaded), parametric `(x(t),y(t))`, polar `r=`, `{restrictions}` / `{0<=t<=6π}` ranges, sliders for
   free letters or `a = 2` rows, user functions `f(x)=...`, `⌊x⌋`/`⌈x⌉`/`|x|`; plus key-point numerics (zeros, extrema, intersections; node-testable).
   `app.js` = canvas renderer (grid, marching squares, adaptive function sampling that breaks at jumps/asymptotes, pan/zoom/pinch, trace, PNG, `?s=`/`?f=` links,
   localStorage `mes-graph2d:v1`). It is a wide page (`.outer-container` 80em override in `app.css`), so it is NOT in the `add_sidebar.py` collection.
   Run the same four scripts as the calculator after edits.
-- **Graphing Calculator 3D** (2026-10-01, `mes.fm/graphing-calculator-3D`, capital D like 2D; purple `#6a3fc4`; card on `calculators.html` "Everyday Math & Health",
-  Grok art `graphing-calculator-3D/img/{logo,logo-big}.png` + `img/graphing-calculator-3d-logo.png`). Desmos-3D-lite, built by `build_tool_apps.py` from
-  `tool_apps_src/graphing-calculator-3D/`. `lib.js` (`G3`, node-testable: `require('./tool_apps_src/graphing-calculator-3D/lib.js')`) = the 2D page's whitelist
+- **Graphing Calculator 3D** (2026-10-01, `mes.fm/3d-graphing-calculator`, capital D like 2D; purple `#6a3fc4`; card on `calculators.html` "Everyday Math & Health",
+  Grok art `3d-graphing-calculator/img/{logo,logo-big}.png` + `img/graphing-calculator-3d-logo.png`). Desmos-3D-lite, built by `build_tool_apps.py` from
+  `tool_apps_src/3d-graphing-calculator/`. `lib.js` (`G3`, node-testable: `require('./tool_apps_src/3d-graphing-calculator/lib.js')`) = the 2D page's whitelist
   tokenizer/parser copied and extended: compiled functions take `(x, y, z, u, v, t)`, `θ` = `t`, sliders `P["a"]`, user functions `f(x, y) = ...` (1-3 args; a 2-arg one
   is also drawn). Row kinds: `surface` (`z = f(x,y)`, bare `f(x,y)`, also `x = f(y,z)` / `y = f(x,z)`), `implicit` (`F(x,y,z) = G`), `curve` `(x(t), y(t), z(t))`,
   `psurface` `(x(u,v), ...)` (ranges from `{0<=u<=2π, -1<=v<=1}`, default 0..2π), `point`, `param`, `def`; `{z < 3}` restrictions; inequalities are rejected with a hint.
@@ -358,7 +358,7 @@ of HTML files individually:
   the whole window" (`aside.css`: `.outer-container.has-aside` / `.container.has-aside` -> `min(98vw, 2400px)`, 6-column "More like this" grid; `toc-flip.css`:
   `--toc-w` up to 2000px with the Jump-to sidebar kept beside the article -- on screens under ~1800px that equals Wide, since the centred article has to leave room
   for the sidebar). The script back-fills the early `<head>` restore snippet (1,100+ pages, the Jump-to `build.mjs` generators, `add_sidebar.py` HEAD_BLOCK,
-  `add_toc_flip.py`); re-run it after cloning an old page. Idempotent; dry-runs by default, `--apply` writes. Pages with their own wide logic (`graphing-calculator-2D`,
+  `add_toc_flip.py`); re-run it after cloning an old page. Idempotent; dry-runs by default, `--apply` writes. Pages with their own wide logic (`2d-graphing-calculator`,
   `stats`) and the sidebar-less hubs do not have the switch. The calendar also got sticky side arrows (previous / next month or year), left/right arrow keys and swipe.
 - `add_hub_theatre.py` -- the **Standard | Theatre** switch on the sidebar-less hub pages (2026-10-01; `calculators`, `tools`, `mobile-apps`, `puzzles`, `memes`
   and the thumbnail-gallery / quote list pages: every page with the `HUB-WIDE-LAYOUT` marker and no "More like this" sidebar, 62 pages). `main_js/hub-theatre.css` + `.js`;
