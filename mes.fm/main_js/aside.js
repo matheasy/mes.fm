@@ -14,7 +14,7 @@
 
     var AD_CLIENT = "ca-pub-1461238060884369";
     /* Second, taller ad in the column (a fixed 300x600 "half page" unit), placed after the 7th recommendation when the column is long enough for it: create an AdSense unit
-       "Sidebar Half Page 300x600" (fixed size) and put its slot id here. Empty = the feature is off (nothing is requested or shown). ?aside-debug shows a placeholder. */
+       "Sidebar Half Page 300x600" (Display ads, Vertical, Responsive) and put its slot id here. Empty = the feature is off (nothing is requested or shown). ?aside-debug shows a placeholder. */
     var AD2_SLOT = "";
 
     if (/[?&]aside-debug\b/.test(location.search)) document.documentElement.classList.add("aside-debug");
@@ -307,9 +307,11 @@
                     requested = true;
                     var ins = document.createElement("ins");
                     ins.className = "adsbygoogle";
-                    ins.style.cssText = "display:inline-block;width:300px;height:600px";
+                    ins.style.cssText = "display:block;width:300px;min-height:600px";   /* a responsive "Vertical" unit: Google fills the 300px column with a tall ad (300x600 / 160x600) */
                     ins.setAttribute("data-ad-client", AD_CLIENT);
                     ins.setAttribute("data-ad-slot", AD2_SLOT);
+                    ins.setAttribute("data-ad-format", "vertical");
+                    ins.setAttribute("data-full-width-responsive", "false");
                     slot.appendChild(ins);
                     try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
                     watchAd(ins, function (gone) { li.style.display = gone ? "none" : ""; if (gone) later(); });   /* blocked / unfilled: collapse and let more cards fill the space */
