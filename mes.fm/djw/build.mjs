@@ -410,6 +410,8 @@ async function main() {
   // format (branded header, nav bar, floating bar, footer) is applied afterwards by convert_mirror_pages.py, so a
   // rebuild never reverts it -- see that script and CLAUDE.md.
   execFileSync("python3", [join(__dirname, "..", "..", "convert_mirror_pages.py"), "--apply", "--only=djw"], { stdio: "inherit" });
+  // Standard | Theatre switch (hub-theatre.js): idempotent, and the conversion above rewrites the page shell, so re-apply it
+  execFileSync("python3", [join(__dirname, "..", "..", "add_hub_theatre.py"), "--apply"], { stdio: "inherit" });
   console.log(`Wrote ${outPath}`);
 }
 

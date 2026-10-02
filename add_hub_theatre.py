@@ -15,6 +15,8 @@ HEAD = ('<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-thea
 JS = '<!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->'
 # build.mjs generators of the math-hub family: patched too, so a rebuild keeps the switch (their pages carry the markers, so this is idempotent)
 GENERATORS = ["math", "hutchison", "911", "conspiracy", "science", "livestreams"]
+# bare `.container` shells (hub_swap pages from convert_mirror_pages.py): listed by slug; their build.mjs re-run this script after converting
+EXTRA = ["crypto", "mathiew", "djw"]
 
 
 def is_hub_family(t):
@@ -40,7 +42,7 @@ for p in sorted(SITE.rglob("*.html")):
     if "_http" in str(p) or "node_modules" in p.parts:
         continue
     t = p.read_text(encoding="utf-8", errors="ignore")
-    if ("HUB-WIDE-LAYOUT" not in t and not is_hub_family(t)) or "MES-ASIDE-HEAD" in t or "HUB-THEATRE-HEAD" in t or "</head>" not in t or "</body>" not in t:
+    if ("HUB-WIDE-LAYOUT" not in t and not is_hub_family(t) and p.relative_to(SITE).as_posix() not in [e + "/index.html" for e in EXTRA]) or "MES-ASIDE-HEAD" in t or "HUB-THEATRE-HEAD" in t or "</head>" not in t or "</body>" not in t:
         continue
     new = t.replace("</head>", HEAD + "</head>", 1)
     i = new.rfind("</body>")

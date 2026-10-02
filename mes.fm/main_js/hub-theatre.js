@@ -3,6 +3,7 @@
 (function () {
     "use strict";
     var host = document.querySelector(".outer-page-content .page-content");
+    if (!host) { host = document.querySelector(".container"); if (host) host.classList.add("hub-host-container"); }   /* crypto / mathiew / djw: bare .container shell */
     if (!host || host.querySelector(".hub-mode")) return;
     var root = document.documentElement;
     var group = document.createElement("div");

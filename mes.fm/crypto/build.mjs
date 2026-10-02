@@ -776,6 +776,8 @@ async function main() {
   // format (branded header, nav bar, floating bar, footer) is applied afterwards by convert_mirror_pages.py, so a
   // rebuild never reverts it -- see that script and CLAUDE.md.
   execFileSync("python3", [join(__dirname, "..", "..", "convert_mirror_pages.py"), "--apply", "--only=crypto"], { stdio: "inherit" });
+  // Standard | Theatre switch (hub-theatre.js): idempotent, and the conversion above rewrites the page shell, so re-apply it
+  execFileSync("python3", [join(__dirname, "..", "..", "add_hub_theatre.py"), "--apply"], { stdio: "inherit" });
   // The phone-width header fixes (A-/A+/moon on their own row, no sideways scroll) are patched into generated pages by
   // fix_mobile_header_controls.py, so a rebuild would silently drop them; re-apply (idempotent, only touches pages lacking them).
   execFileSync("python3", [join(__dirname, "..", "..", "fix_mobile_header_controls.py"), "--apply"], { stdio: "inherit" });

@@ -3,7 +3,7 @@
    html.page-theatre is restored before first paint by the HUB-THEATRE-HEAD snippet; behaviour: hub-theatre.js; installed by add_hub_theatre.py. */
 .hub-mode { display: none; }
 @media (min-width: 1200px) {
-  .outer-page-content .page-content { position: relative; }
+  .outer-page-content .page-content, .hub-host-container { position: relative; }
   .hub-mode { display: inline-flex; position: absolute; top: .45em; right: 0; z-index: 2; border: 1px solid #b9c2cc; border-radius: 999px;
     background: #fff; overflow: hidden; font-size: .82em; line-height: 1.2; }
   .hub-mode button { border: 0; background: transparent; color: #1479c7; font: inherit; padding: .28em .8em; cursor: pointer; }
@@ -21,6 +21,7 @@
   html.page-theatre .tbl { grid-template-columns: repeat(auto-fill, minmax(19em, 1fr)); }
   html.page-theatre table.memes { grid-template-columns: repeat(auto-fill, minmax(14em, 1fr)); }
   /* math-hub family (math, 911, hutchison, science, conspiracy, livestreams and their section pages) and the homepage: tile / card grids */
+  html.page-theatre .hub-host-container { max-width: min(98vw, 2400px) !important; }   /* crypto, mathiew, djw (bare .container shells) */
   html.page-theatre .wide { max-width: none; }
   html.page-theatre .icon-grid { grid-template-columns: repeat(auto-fill, minmax(17em, 1fr)); }
   html.page-theatre .card-grid { grid-template-columns: repeat(auto-fill, minmax(16em, 1fr)); }
