@@ -1,4 +1,4 @@
-/* MES Graphing Calculator 2D -- expression compiler + numerics (no DOM), prepended to app.js by build_tool_apps.py.
+/* MES 2D Graphing Calculator -- expression compiler + numerics (no DOM), prepended to app.js by build_tool_apps.py.
  * Also runs in node: require() it to test. User text is tokenised and parsed by our own grammar and only whitelisted
  * tokens ever reach the generated JavaScript (numbers, our own function table, x/y/t, P["a"] sliders) -- no raw user text is executed. */
 var GC = (function () {

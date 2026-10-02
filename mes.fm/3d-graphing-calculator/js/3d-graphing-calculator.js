@@ -1,4 +1,4 @@
-/* MES Graphing Calculator 3D -- expression compiler + meshing (no DOM, no three.js), prepended to app.js by build_tool_apps.py.
+/* MES 3D Graphing Calculator -- expression compiler + meshing (no DOM, no three.js), prepended to app.js by build_tool_apps.py.
  * Also runs in node: require() it to test. Same design as the 2D page's lib.js: user text is tokenised and parsed by our own
  * grammar and only whitelisted tokens ever reach the generated JavaScript (numbers, our own function table, the variables
  * x/y/z/u/v/t, P["a"] sliders, F["f"] user functions) -- no raw user text is executed.
@@ -475,7 +475,7 @@ var G3 = (function () {
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = G3;
 
-/* MES Graphing Calculator 3D UI (compiler + meshing are in lib.js, prepended above as G3).
+/* MES 3D Graphing Calculator UI (compiler + meshing are in lib.js, prepended above as G3).
  * three.js (core only, pinned) is imported lazily from jsDelivr (unpkg as a fallback) once the page is interactive; the rows,
  * sliders and messages work without it. Camera controls are our own (orbit / pan / zoom / pinch), so no add-on modules are needed. */
 (function () {

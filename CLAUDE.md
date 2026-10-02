@@ -312,17 +312,17 @@ of HTML files individually:
   (localStorage `mes-calculator:v1`, `?q=` / `?tab=` links) + seven "More calculations" panels. It is registered in the same script lists as `unit-conversion`
   (`add_tool_page_controls`, `add_bottom_ad`, `add_cross_links` CALC_DIRS, `add_sidebar` tools family, `build_search_index`, `organize_hub_cards`).
   After editing run `build_tool_apps.py --apply`, `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`, `add_bottom_ad.py --apply`. Logos are placeholders
-  (PIL-drawn) until Grok art lands (`calculator/img/logo.png`, `logo-big.png` 1200x630, `img/calculator-logo.png`: same names). The "Graphing Calculator 2D / 3D"
+  (PIL-drawn) until Grok art lands (`calculator/img/logo.png`, `logo-big.png` 1200x630, `img/calculator-logo.png`: same names). The "2D Graphing Calculator / 3D"
   cards at the bottom are real `<a class="mc-link">` links now that both pages exist.
 
-- **Graphing Calculator 2D** (2026-10-01, `mes.fm/2d-graphing-calculator`, capital D as requested; blue `#2160d0`) -- Desmos-style, built by
+- **2D Graphing Calculator** (2026-10-01, `mes.fm/2d-graphing-calculator`, capital D as requested; blue `#2160d0`) -- Desmos-style, built by
   `build_tool_apps.py` from `tool_apps_src/2d-graphing-calculator/`. `lib.js` = tokenizer + parser that emits JS source from a whitelist only (no raw user text
   is executed): functions, `x=`, implicit `F(x,y)=G`, inequalities (shaded), parametric `(x(t),y(t))`, polar `r=`, `{restrictions}` / `{0<=t<=6π}` ranges, sliders for
   free letters or `a = 2` rows, user functions `f(x)=...`, `⌊x⌋`/`⌈x⌉`/`|x|`; plus key-point numerics (zeros, extrema, intersections; node-testable).
   `app.js` = canvas renderer (grid, marching squares, adaptive function sampling that breaks at jumps/asymptotes, pan/zoom/pinch, trace, PNG, `?s=`/`?f=` links,
   localStorage `mes-graph2d:v1`). It is a wide page (`.outer-container` 80em override in `app.css`), so it is NOT in the `add_sidebar.py` collection.
   Run the same four scripts as the calculator after edits.
-- **Graphing Calculator 3D** (2026-10-01, `mes.fm/3d-graphing-calculator`, capital D like 2D; purple `#6a3fc4`; card on `calculators.html` "Everyday Math & Health",
+- **3D Graphing Calculator** (2026-10-01, `mes.fm/3d-graphing-calculator`, capital D like 2D; purple `#6a3fc4`; card on `calculators.html` "Everyday Math & Health",
   Grok art `3d-graphing-calculator/img/{logo,logo-big}.png` + `img/graphing-calculator-3d-logo.png`). Desmos-3D-lite, built by `build_tool_apps.py` from
   `tool_apps_src/3d-graphing-calculator/`. `lib.js` (`G3`, node-testable: `require('./tool_apps_src/3d-graphing-calculator/lib.js')`) = the 2D page's whitelist
   tokenizer/parser copied and extended: compiled functions take `(x, y, z, u, v, t)`, `θ` = `t`, sliders `P["a"]`, user functions `f(x, y) = ...` (1-3 args; a 2-arg one

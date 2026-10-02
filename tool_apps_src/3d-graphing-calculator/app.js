@@ -1,4 +1,4 @@
-/* MES Graphing Calculator 3D UI (compiler + meshing are in lib.js, prepended above as G3).
+/* MES 3D Graphing Calculator UI (compiler + meshing are in lib.js, prepended above as G3).
  * three.js (core only, pinned) is imported lazily from jsDelivr (unpkg as a fallback) once the page is interactive; the rows,
  * sliders and messages work without it. Camera controls are our own (orbit / pan / zoom / pinch), so no add-on modules are needed. */
 (function () {

@@ -1,4 +1,4 @@
-/* MES Graphing Calculator 2D UI (compiler + numerics are in lib.js, prepended above as GC) */
+/* MES 2D Graphing Calculator UI (compiler + numerics are in lib.js, prepended above as GC) */
 (function () {
 	'use strict';
 	var $ = function (id) { return document.getElementById(id); };
