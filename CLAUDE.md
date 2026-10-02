@@ -407,6 +407,9 @@ of HTML files individually:
   (unpkg fallback): charts are `responsive` so Standard / Wide / Theatre resize them live (the old Google charts needed a refresh), each card has Expand (fixed full-screen overlay, Esc closes),
   PNG, range select and log scale; the data table has filter, newest-first, CSV, Expand. Don't use `container-type` on `#ic-app` -- it would become the containing block of the fixed Expand card;
   a ResizeObserver sets `data-w` instead. Page-level CSS is inline in `index.html` (so `display-controls.js` derives the dark theme); chart colours follow `body.dark-mode` via a MutationObserver.
+  **Compare countries** (same day): the inflation chart card has a "+ Compare with..." select (up to 4 countries, removable chips, `&cmp=A|B` in share links). Each compared country uses its
+  best source (monthly when the main chart is monthly and it has monthly data, else annual; an annual-only country on a monthly chart shows its year's rate); lines get their own colours
+  (`cmpColors()`), a legend appears, and the main line's red/blue sign colouring and fill switch off while comparing.
   Bump `?v=` on the `inflation.js` tag when it changes.
 - `add_page_theatre.py` -- **page-width switch** (2026-10-01): the "Wide page" pill on the sidebar pages (`aside.js`) and the Wide pill on the Jump-to pages
   (`toc-flip.js`) became a **Standard | Wide | Theatre** segmented control (>=1200px / >=1300px only). Saved as localStorage `pageMode` (`std|wide|theatre`);

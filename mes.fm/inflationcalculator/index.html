@@ -265,6 +265,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.ic-tool { font: inherit; font-size: 0.85em; height: 2.1em; padding: 0 0.7em; border: 1px solid #b8b8b8; border-radius: 0.3em; background: #fff; color: #222; cursor: pointer; display: inline-flex; gap: 0.35em; align-items: center; }
 	.ic-tool i { font-style: normal; color: #da3b10; }
 	.ic-tool:hover, .ic-tool[aria-pressed=true] { background: #fbd1c8; border-color: #da3b10; }
+	.ic-cmp { display: flex; flex-wrap: wrap; gap: 0.5em; align-items: center; margin-bottom: 0.5em; }
+	.ic-cmp select { width: auto; max-width: 13em; height: 2.1em; font-size: 0.85em; }
+	.ic-cchips { display: contents; }
+	.ic-cchip { display: inline-flex; align-items: center; gap: 0.3em; font-size: 0.85em; padding: 0.25em 0.3em 0.25em 0.7em; border: 2px solid var(--c); border-radius: 2em; background: #fff; color: #222; }
+	.ic-cchip button, .ic-cclear { font: inherit; border: 0; background: transparent; cursor: pointer; color: #666; }
+	.ic-cchip button { width: 1.5em; height: 1.5em; border-radius: 50%; line-height: 1; }
+	.ic-cchip button:hover, .ic-cclear:hover { color: #b00020; background: #fbe9e7; }
+	.ic-cclear { font-size: 0.82em; padding: 0.3em 0.6em; text-decoration: underline; }
 	.ic-plot { position: relative; height: 20em; }
 	.ic-plot canvas { max-width: 100%; }
 	/* data-w is set by a ResizeObserver on #ic-app (container queries would make .ic the containing block of the fixed "Expand" card) */
@@ -583,6 +591,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         <button type="button" class="ic-tool ic-expand" aria-pressed="false" title="Fill the screen (Esc to close)"><i>⤢</i><span>Expand</span></button>
       </div>
     </header>
+    <div class="ic-cmp"><select id="ic-cmp-add" aria-label="Compare with another country"><option value="">+ Compare with…</option></select><span id="ic-cmp-chips" class="ic-cchips"></span></div>
     <div class="ic-plot"><canvas id="ic-c-infl" role="img" aria-label="Inflation rate chart"></canvas></div>
   </article>
   <article class="ic-card" id="ic-card-cpi">
@@ -712,7 +721,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-	<script src="/inflationcalculator/js/inflation.js?v=2.1" defer></script>
+	<script src="/inflationcalculator/js/inflation.js?v=2.2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.7" data-scale="main" data-dark="derive" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
 <!-- Mirrored from inflationcalculator.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:43:20 GMT -->

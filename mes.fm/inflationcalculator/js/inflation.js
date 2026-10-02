@@ -19,18 +19,19 @@
     share: $('#ic-share'), reset: $('#ic-reset'), presets: $('#ic-presets'),
     headline: $('#ic-headline'), stats: $('#ic-stats'), sentences: $('#ic-sentences'), note: $('#ic-datanote'),
     tbody: $('#ic-tbody'), thead: $('#ic-thead'), filter: $('#ic-filter'), newest: $('#ic-newest'), csv: $('#ic-csv'),
-    sources: $('#ic-sources'), toast: $('#ic-toast')
+    sources: $('#ic-sources'), cmpAdd: $('#ic-cmp-add'), cmpChips: $('#ic-cmp-chips'), toast: $('#ic-toast')
   };
 
   var DATA = null, isLive = false, ready = false;
   var byCountry = {};            // name -> [{key, src, entry}]
   var cache = {};                // series cache
-  var S = { country: 'United States', src: null, from: null, to: null, amt: 100 };
+  var S = { country: 'United States', src: null, from: null, to: null, amt: 100, cmp: [] };
   var ranges = { infl: 'all', cpi: 'all', worth: 'all' };
   var logs = { cpi: false, worth: false };
   var charts = {};
   var touched = false;           // only write the URL once the person changed something
   var newestFirst = false;
+  var MAXCMP = 4;
   var srcPinned = false;         // the person chose a data source themselves
 
   /* ---------- data loading ---------- */
@@ -149,6 +150,32 @@
     var names = Object.keys(byCountry).sort(function (a, b) { return a.localeCompare(b); });
     el.country.innerHTML = names.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
     el.country.value = S.country;
+    fillCompare();
+  }
+
+  /* ---------- compare countries (inflation chart overlay) ---------- */
+  function fillCompare() {
+    S.cmp = S.cmp.filter(function (n) { return byCountry[n] && n !== S.country; }).slice(0, MAXCMP);
+    var names = Object.keys(byCountry).sort(function (a, b) { return a.localeCompare(b); });
+    el.cmpAdd.innerHTML = '<option value="">' + (S.cmp.length >= MAXCMP ? 'Up to ' + MAXCMP + ' countries' : '+ Compare with…') + '</option>' +
+      names.filter(function (n) { return n !== S.country && S.cmp.indexOf(n) < 0; }).map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
+    el.cmpAdd.disabled = S.cmp.length >= MAXCMP;
+    el.cmpChips.innerHTML = S.cmp.map(function (n, i) {
+      return '<span class="ic-cchip" style="--c:' + cmpColors()[i] + '">' + esc(n) + '<button type="button" data-n="' + esc(n) + '" aria-label="Remove ' + esc(n) + '">×</button></span>';
+    }).join('') + (S.cmp.length ? '<button type="button" class="ic-cclear" id="ic-cmp-clear">Clear</button>' : '');
+  }
+  function cmpColors() {
+    return document.body.classList.contains('dark-mode') ? ['#ffb454', '#5fd38a', '#c792ea', '#4dd0e1'] : ['#e08a00', '#1c8a3c', '#8e44ad', '#0097a7'];
+  }
+  // the compared country's year-over-year % aligned to the main series' periods (null where it has no data)
+  function cmpValues(name, s) {
+    var l = byCountry[name], key = l[0].key, cm = !!(s.monthly && l[0].entry.m);
+    var cs = series(name, key, cm);
+    return s.K.map(function (k) {
+      var j = cs.monthly === s.monthly ? cs.idx[k] : cs.idx[Math.floor(k / 12)];   // annual-only country against a monthly chart: its year's rate
+      var v = j == null ? null : cs.yoy[j];
+      return v == null ? null : v * 100;
+    });
   }
 
   function fillSources() {
@@ -220,6 +247,7 @@
     q.set('c', S.country); q.set('s', S.src);
     q.set('from', token(s, S.from)); q.set('to', token(s, S.to));
     q.set('amt', String(S.amt));
+    if (S.cmp.length) q.set('cmp', S.cmp.join('|'));
     return location.origin + '/inflationcalculator?' + q.toString();
   }
   function syncUrl() {
@@ -280,6 +308,7 @@
       if (!f && !t) { setDefaults(c); if (entryOf(c, q.get('s'))) { S.src = q.get('s'); S.monthly = !!cur().entry.m; var s0 = curSeries(); S.to = s0.K[s0.K.length - 1]; S.from = s0.K[nearestT(s0, Math.max(2000, s0.T[0]))]; } finishInit(); return; }
       S.monthly = !!((f && f.monthly) || (t && t.monthly)) && !!cur().entry.m;
       var s = curSeries();
+      S.cmp = (q.get('cmp') || '').split('|').filter(function (n) { return byCountry[n] && n !== c; }).slice(0, MAXCMP);
       var a = parseFloat(q.get('amt'));
       S.amt = a > 0 ? a : 100;
       S.from = s.K[nearest(s, f ? (s.monthly === f.monthly ? f.k : (s.monthly ? f.k * 12 : Math.floor(f.k / 12))) : 2000)];
@@ -361,7 +390,7 @@
     el.amt.addEventListener('input', function () { var v = parseFloat(el.amt.value); S.amt = v >= 0 ? v : 0; changed(); });
     el.presets.addEventListener('click', function (e) { var b = e.target.closest('.ic-chip'); if (b) applyPreset(b.getAttribute('data-p')); });
     el.reset.addEventListener('click', function () {
-      touched = false; S.amt = 100; el.amt.value = '100'; setDefaults(defaultCountry());
+      touched = false; S.amt = 100; S.cmp = []; el.amt.value = '100'; setDefaults(defaultCountry());
       fillCountries(); fillSources(); fillPeriods(); updatePresets();
       Object.keys(ranges).forEach(function (k) { ranges[k] = 'all'; });
       $$('.ic-range').forEach(function (r) { r.value = 'all'; });
@@ -369,6 +398,16 @@
       render();
     });
     el.share.addEventListener('click', doShare);
+    el.cmpAdd.addEventListener('change', function () {
+      var n = el.cmpAdd.value; if (!n) return;
+      if (S.cmp.length < MAXCMP && S.cmp.indexOf(n) < 0) S.cmp.push(n);
+      fillCompare(); changed();
+    });
+    el.cmpChips.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.id === 'ic-cmp-clear') S.cmp = []; else S.cmp = S.cmp.filter(function (n) { return n !== b.getAttribute('data-n'); });
+      fillCompare(); changed();
+    });
 
     $$('.ic-range').forEach(function (sel) {
       sel.addEventListener('change', function () { ranges[sel.getAttribute('data-chart')] = sel.value; renderCharts(); });
@@ -392,7 +431,7 @@
         app.setAttribute('data-w', v.join(' '));
       }).observe(app);
     }
-    new MutationObserver(function () { styleCharts(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(function () { styleCharts(); if (ready) fillCompare(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
 
   // carry the person's From / To across a change of country, source or detail level
@@ -556,7 +595,9 @@
     charts.infl = makeChart('infl', function (v) { return v.toFixed(2) + '%'; }, function (cfg) {
       cfg.options.scales.y.ticks.callback = function (v) { return v + '%'; };
       cfg.data.datasets[0].fill = { target: 'origin', above: 'rgba(217,45,18,.14)', below: 'rgba(42,91,215,.16)' };
-      cfg.data.datasets[0].segment = { borderColor: function (c) { return c.p1.parsed.y < 0 ? palette().blue : palette().red; } };
+      cfg.data.datasets[0].segment = { borderColor: function (c) { return !S.cmp.length && c.p1.parsed.y < 0 ? palette().blue : palette().red; } };
+      cfg.options.plugins.legend = { display: false, labels: { usePointStyle: true, boxWidth: 8 } };
+      cfg.options.plugins.tooltip.callbacks.label = function (c) { return c.parsed.y == null ? '' : (S.cmp.length ? c.dataset.label + ': ' : '') + c.parsed.y.toFixed(2) + '%'; };
     });
     charts.cpi = makeChart('cpi', function (v) { return num(v); });
     charts.worth = makeChart('worth', function (v, tick) { return tick ? shortMoney(v) : money(v); });
@@ -581,6 +622,8 @@
       var ds = ch.data.datasets[0];
       ds.borderColor = colour[id];
       ds.backgroundColor = colour[id];
+      for (var q = 1; q < ch.data.datasets.length; q++) { ch.data.datasets[q].borderColor = ch.data.datasets[q].backgroundColor = cmpColors()[q - 1]; }
+      if (id === 'infl') ch.options.plugins.legend.labels.color = p.text;
       ch.options.scales.x.ticks.color = p.text;
       ch.options.scales.y.ticks.color = p.text;
       ch.options.scales.y.grid = { color: function (c) { return id === 'infl' && c.tick.value === 0 ? p.zero : p.grid; }, lineWidth: function (c) { return id === 'infl' && c.tick.value === 0 ? 1.5 : 1; } };
@@ -611,7 +654,7 @@
       worth: s.V.map(function (v) { return v * worthBase; })
     };
     var titles = {
-      infl: S.country + ': inflation rate (' + (s.monthly ? 'year over year, by month' : 'annual average') + ')',
+      infl: (S.cmp.length ? S.country + ' vs ' + S.cmp.join(', ') : S.country) + ': inflation rate (' + (s.monthly ? 'year over year, by month' : 'annual average') + ')',
       cpi: S.country + ': consumer price index (' + o.src.base + ')',
       worth: 'What ' + money(S.amt) + ' from ' + s.L[i] + ' is worth in other ' + (s.monthly ? 'months' : 'years')
     };
@@ -621,6 +664,16 @@
       var w = windowFor(ranges[id], s, i, j);
       ch.data.labels = s.L.slice(w[0], w[1]);
       ch.data.datasets[0].data = series3[id].slice(w[0], w[1]);
+      if (id === 'infl') {
+        var main = ch.data.datasets[0];
+        main.label = S.country;
+        main.fill = S.cmp.length ? false : { target: 'origin', above: 'rgba(217,45,18,.14)', below: 'rgba(42,91,215,.16)' };
+        ch.data.datasets = [main].concat(S.cmp.map(function (n) {
+          return { label: n, data: cmpValues(n, s).slice(w[0], w[1]), borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.1, spanGaps: false, fill: false };
+        }));
+        ch.options.plugins.legend.display = S.cmp.length > 0;
+        styleCharts();
+      }
       ch.options.plugins.icMarks.items = [{ i: i - w[0], t: 'From ' + s.L[i] }, { i: j - w[0], t: 'To ' + s.L[j] }];
       if (id !== 'infl') ch.options.scales.y.type = logs[id] ? 'logarithmic' : 'linear';
       ch.options.scales.x.ticks.maxTicksLimit = ch.canvas.clientWidth < 520 ? 5 : 10;
