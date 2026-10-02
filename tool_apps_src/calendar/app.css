@@ -133,13 +133,13 @@
 	body.dark-mode .tu .cl-rowbtn {color:#e0e0e0;}
 	body.dark-mode .tu .cl-rowbtn:hover {background:#26282c;}
 	body.dark-mode .tu .cl-evlist--rows li {border-color:#2e3035;}
-	/* side arrows: sticky chevrons in the margins beside the calendar (hidden on phones, where swiping and the top arrows do the job) */
+	/* side arrows: fixed chevrons in the margins (same height on both sides, level with the top rows of the calendar) beside the calendar (hidden on phones, where swiping and the top arrows do the job) */
 	.tu .cl-stage {display:block;}
 	.tu .cl-side {display:none;}
 	@media (min-width:900px) {
 		.tu .cl-stage {display:grid;grid-template-columns:2.6em minmax(0,1fr) 2.6em;gap:0.5em;align-items:stretch;}
-		.tu .cl-side {display:block;position:relative;}
-		.tu .cl-side button {position:sticky;top:42vh;width:2.6em;height:4.2em;border:1px solid #cfd5dd;border-radius:0.6em;background:#fff;color:var(--accent);font-size:1.9em;line-height:1;cursor:pointer;padding:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+		.tu .cl-side {display:flex;justify-content:center;align-items:flex-start;padding-top:5.5em;}
+		.tu .cl-side button {position:static;width:2.4em;height:3.8em;flex:0 0 auto;border:1px solid #cfd5dd;border-radius:0.6em;background:#fff;color:var(--accent);font-size:1.9em;line-height:1;cursor:pointer;padding:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);}
 		.tu .cl-side button:hover {background:var(--accent);color:#fff;border-color:var(--accent);}
 		body.dark-mode .tu .cl-side button {background:#262626;border-color:#4a4a4a;color:var(--accent);}
 		body.dark-mode .tu .cl-side button:hover {background:var(--accent);color:#0b1416;}
