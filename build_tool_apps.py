@@ -30,6 +30,7 @@ TEMPLATE = ROOT / "tool_page_template.html"
 APPLY = "--apply" in sys.argv
 
 SRC = ROOT / "tool_apps_src"
+CAS_JS = ["/main_js/cas/cas-client.js?v=1", "/main_js/cas/cas-ui.js?v=1"]
 APPS = {
     "earth-curvature-calculator": dict(title="MES Earth Curvature Calculator", page_title="Earth Curvature Calculator",
                                        tag="How much does the Earth curve over a distance?", accent="#0b6f6d", dark="#075250", tint="#e2f3f2",
@@ -82,6 +83,21 @@ APPS = {
                                           tag="Days, weeks, months, hours and business days between two dates.", accent="#2f7d32", dark="#1f5a23", tint="#e4f2e4",
                                           desc="Free days between dates calculator: count the days, weeks, months, years, hours, minutes and seconds between any two dates, with optional end-date inclusion, business days (custom weekends and holidays), time of day and shareable links.",
                                           js_v="1", lib_from=["calendar"]),
+    # the three CAS pages: SymPy running in the browser (Pyodide in a Web Worker), shared engine + UI in mes.fm/main_js/cas/ (engine.py,
+    # cas-worker.js, cas-client.js, cas-ui.js; loaded via pre_js) and the shared CSS tool_apps_src/_cas.css (css_extra, inlined so the
+    # derived dark theme covers it). Each page's own app.js only builds requests and renders results. Tests: tool_apps_src/cas-engine-tests.py.
+    "cas-calculator": dict(title="MES CAS Calculator", page_title="CAS Calculator",
+                           tag="Solve, simplify, factor, limits and series.", accent="#334155", dark="#1e293b", tint="#e8ecf1",
+                           desc="Free online CAS calculator (computer algebra system): solve equations, systems and inequalities with steps, find every real root of hard equations numerically, simplify, factor, expand, partial fractions, limits, series, sums and matrices.",
+                           js_v="1", pre_js=CAS_JS, css_extra=["_cas.css"]),
+    "derivative-calculator": dict(title="MES Derivative Calculator", page_title="Derivative Calculator",
+                                  tag="Derivatives with every step explained.", accent="#c026d3", dark="#86198f", tint="#fae8ff",
+                                  desc="Free derivative calculator with steps: differentiate any function using the power, product, quotient and chain rules, get higher-order, partial and implicit derivatives, evaluate at a point and plot f and f′.",
+                                  js_v="1", pre_js=CAS_JS, css_extra=["_cas.css"]),
+    "integral-calculator": dict(title="MES Integral Calculator", page_title="Integral Calculator",
+                                tag="Antiderivatives and definite integrals with steps.", accent="#b45309", dark="#7c3a06", tint="#fdf0d9",
+                                desc="Free integral calculator with steps: indefinite and definite integrals by substitution, integration by parts, partial fractions and trig rules, improper integrals with infinite bounds, numeric values when there is no closed form, and a plot of the area.",
+                                js_v="1", pre_js=CAS_JS, css_extra=["_cas.css"]),
     "calendar": dict(title="MES Calendar", page_title="Calendar",
                      tag="Moon phases, holidays and more, month by month.", accent="#2f5fd0", dark="#1f44a0", tint="#e6edfb",
                      desc="Free online calendar for any year: month and year views with today highlighted, new and full moon times, Canada, USA, UK, Australia and Vietnam holidays, Christian, Jewish and Islamic dates, seasons, eclipses, daylight-saving changes and a days-between calculator.",
@@ -165,6 +181,8 @@ def build(slug, cfg, old, tpl):
 def build_from_source(slug, cfg, tpl):
     d = SRC / slug
     css = (SRC / "_shared.css").read_text(encoding="utf-8")
+    for extra in cfg.get("css_extra", []):    # shared CSS of a family of apps (e.g. _cas.css), before the app's own
+        css += "\n" + (SRC / extra).read_text(encoding="utf-8")
     if (d / "app.css").exists():
         css += "\n" + (d / "app.css").read_text(encoding="utf-8")
     css = (css.replace("@@ACCENT@@", cfg["accent"]).replace("@@ACCENT_DARK@@", cfg["dark"]).replace("@@TINT@@", cfg["tint"])

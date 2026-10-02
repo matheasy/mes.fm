@@ -1,0 +1,115 @@
+	/* shared by the three CAS pages (cas-calculator, derivative-calculator, integral-calculator); inlined by build_tool_apps.py (css_extra) so
+	   add_tool_page_controls.py can derive its dark theme from it like the rest of the tool CSS */
+	.cs-expr {font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:0.01em;}
+	textarea.cs-expr {resize:vertical;min-height:3.2em;line-height:1.4;}
+	.cs-inrow {display:flex;align-items:center;gap:0.5em;}
+	.cs-inrow .tu-input {flex:1 1 auto;min-width:0;}
+	.cs-op {font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:1.25em;color:#1e2733;white-space:nowrap;}
+	.cs-chips {display:flex;flex-wrap:wrap;gap:0.35em;margin:0.55em 0 0.2em;}
+	.cs-chips button {cursor:pointer;min-width:2.4em;padding:0.35em 0.6em;border:1px solid #cfd5dd;border-radius:0.4em;background:#f5f6f9;color:#222;font-size:0.95em;line-height:1.1;}
+	.cs-chips button:hover {border-color:var(--accent);color:var(--accent);background:#fff;}
+	.cs-preview {min-height:2.6em;margin:0.5em 0 0.2em;padding:0.4em 0.7em;border-radius:0.4em;background:#f7f8fa;border:1px dashed #d5dae1;color:#1e2733;overflow-x:auto;}
+	.cs-preview .cs-math {margin:0.1em 0;}
+	.cs-preview.is-dim, .cs-preview.is-echo {color:#6a7280;font-size:0.92em;display:flex;align-items:center;gap:0.5em;flex-wrap:wrap;}
+	.cs-preview.is-err {color:#b3261e;font-size:0.92em;border-color:#f0c4c0;background:#fdf3f2;}
+	.cs-preview__lbl {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#8a93a0;display:block;}
+	.cs-preview code {background:transparent;padding:0;font-size:1em;color:#333;word-break:break-all;}
+	.cs-opts {margin-top:0.8em;}
+	.cs-actions {margin-top:0.9em;align-items:center;gap:0.6em;}
+	.cs-actions .tu-btn--primary {font-size:1.02em;padding:0.6em 1.4em;font-weight:700;}
+	.cs-actions .tu-btn[disabled] {opacity:0.55;cursor:progress;}
+	.cs-status {margin-top:0.8em;padding:0.6em 0.8em;border-radius:0.45em;background:var(--tint);color:#1e2733;font-size:0.92em;}
+	.cs-status[hidden] {display:none;}
+	.cs-status__row {display:flex;align-items:center;gap:0.6em;flex-wrap:wrap;}
+	.cs-status__msg {flex:1 1 12em;}
+	.cs-status .cs-cancel {padding:0.3em 0.8em;font-size:0.85em;background:#fff;}
+	.cs-status .cs-cancel[hidden] {display:none;}
+	.cs-bar {display:none;height:5px;border-radius:3px;background:rgba(0,0,0,0.08);margin-top:0.5em;overflow:hidden;}
+	.cs-status.has-bar .cs-bar {display:block;}
+	.cs-bar span {display:block;height:100%;width:0;background:var(--accent);transition:width 0.4s;}
+	.cs-spin {width:1em;height:1em;border-radius:50%;border:2px solid rgba(0,0,0,0.15);border-top-color:var(--accent);animation:cs-spin 0.8s linear infinite;flex:0 0 auto;}
+	@keyframes cs-spin {to {transform:rotate(360deg);}}
+	.cs-out {margin-top:1em;}
+	.cs-out[hidden] {display:none;}
+	.cs-error {padding:0.8em 1em;border-radius:0.5em;background:#fdf3f2;border:1px solid #f0c4c0;color:#8c1d16;line-height:1.45;}
+	.cs-result {background:var(--tint);border:1px solid var(--tint);border-radius:0.55em;padding:0.9em 1.1em;}
+	.cs-result .cs-math {font-size:1.12em;}
+	.cs-result__label, .cs-sec__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;margin-bottom:0.2em;}
+	.cs-math {overflow-x:auto;overflow-y:hidden;padding:0.1em 0;max-width:100%;}
+	.cs-math--l {padding:0.25em 0;font-size:1.08em;}
+	.cs-sols li .cs-math--l {padding:0.1em 0;}
+	.cs-nomj .cs-math {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.9em;white-space:pre-wrap;word-break:break-all;}
+	.cs-btns {display:flex;flex-wrap:wrap;gap:0.45em;margin-top:0.6em;}
+	.cs-btns .tu-btn {padding:0.35em 0.8em;font-size:0.85em;background:#fff;}
+	.cs-badge {display:inline-block;font-size:0.78em;font-weight:700;padding:0.15em 0.6em;border-radius:1em;background:#e3f3e6;color:#1f6b33;margin:0.4em 0.4em 0 0;}
+	.cs-badge--warn {background:#fff4dd;color:#8a5300;}
+	.cs-badge--info {background:#e8ecf1;color:#334155;}
+	.cs-sec {margin-top:1em;}
+	.cs-kv {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.6em;margin-top:0.8em;}
+	.cs-kv > div {background:#fff;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.6em 0.8em;min-width:0;}
+	.cs-steps-card {margin-top:1em;}
+	.cs-steps-card > summary {cursor:pointer;font-weight:700;color:var(--accent);padding:0.2em 0;font-size:1.02em;}
+	.cs-steps {list-style:none;counter-reset:cs;margin:0.6em 0 0;padding:0;}
+	.cs-steps > .cs-step {counter-increment:cs;position:relative;padding:0.55em 0 0.55em 2.3em;border-top:1px solid #e8ebef;}
+	.cs-steps > .cs-step::before {content:counter(cs);position:absolute;left:0.1em;top:0.6em;width:1.6em;height:1.6em;border-radius:50%;background:var(--tint);color:var(--accent-dark);font-weight:700;font-size:0.82em;display:flex;align-items:center;justify-content:center;}
+	.cs-steps--sub {margin:0.4em 0 0 0.2em;border-left:3px solid var(--tint);padding-left:0.4em;}
+	.cs-steps--sub > .cs-step {padding-left:2em;border-top:0;}
+	.cs-steps--sub > .cs-step::before {content:counter(cs, lower-alpha);background:transparent;border:1px solid #cfd5dd;color:#667;}
+	.cs-step__h {font-weight:700;color:#1e2733;}
+	.cs-step__t {margin:0.2em 0 0.1em;color:#444;font-size:0.95em;}
+	.cs-step .cs-math {font-size:0.97em;}
+	.cs-sols {list-style:none;margin:0.4em 0 0;padding:0;display:grid;gap:0.45em;}
+	.cs-sols li {background:#fff;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.45em 0.8em;display:flex;flex-wrap:wrap;align-items:center;gap:0.2em 1.2em;}
+	.cs-sols li .cs-math {flex:0 1 auto;}
+	.cs-sols .cs-dec {color:#444;font-variant-numeric:tabular-nums;font-size:0.95em;}
+	.cs-sols .cs-deg {color:#6a7280;font-size:0.9em;}
+	.cs-pending {font-size:0.88em;color:#6a7280;margin-top:0.6em;display:flex;align-items:center;gap:0.5em;}
+	.cs-plotwrap {margin-top:1em;background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.5em;}
+	.cs-plot {display:block;width:100%;height:260px;}
+	.cs-legend {display:flex;flex-wrap:wrap;gap:0.4em 1.2em;font-size:0.85em;color:#555;padding:0.3em 0.3em 0;align-items:center;}
+	.cs-legend i {display:inline-block;width:1.4em;height:3px;border-radius:2px;vertical-align:middle;margin-right:0.35em;background:#1e2733;}
+	.cs-legend i.cs-l2 {background:var(--accent);}
+	.cs-legend i.cs-l3 {height:0.8em;width:0.8em;border-radius:50%;background:var(--accent);}
+	.cs-legend i.cs-l4 {height:0.8em;background:var(--tint);border:1px solid var(--accent);}
+	.cs-legend a {margin-left:auto;}
+	.cs-hist {list-style:none;margin:0.5em 0 0;padding:0;max-height:16em;overflow-y:auto;}
+	.cs-hist li {display:flex;gap:1em;justify-content:space-between;padding:0.45em 0.2em;border-bottom:1px solid #e8ebef;cursor:pointer;font-size:0.93em;}
+	.cs-hist li:hover {background:var(--tint);}
+	.cs-hist .cs-h-q {color:#334;font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;}
+	.cs-hist .cs-h-r {color:#6a7280;text-align:right;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	.cs-tabs {display:flex;flex-wrap:wrap;margin-bottom:0.8em;}
+	.cs-tabs button {flex:1 1 auto;}
+	.cs-mode[hidden], .cs-only[hidden] {display:none !important;}
+	.cs-links {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.6em;margin:0.6em 0 1em;}
+	.cs-link {display:block;padding:0.7em 0.9em;border:1px solid #dfe4ea;border-radius:0.5em;background:#fff;font-weight:700;text-decoration:none !important;}
+	.cs-link span {display:block;font-weight:400;font-size:0.85em;color:#6a7280;margin-top:0.15em;}
+	.cs-link:hover {border-color:var(--accent);background:var(--tint);}
+	.tu code {background:#eef1f5;padding:0.05em 0.35em;border-radius:0.25em;font-size:0.92em;}
+	.tu-seo dl {margin:0.5em 0;}
+	.tu-seo dt {font-weight:700;margin-top:0.7em;color:#1e2733;}
+	.tu-seo dd {margin:0.2em 0 0 0;line-height:1.5;}
+	/* dark: selected / filled states and the canvas card */
+	body.dark-mode .tu .cs-result {background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12);}
+	body.dark-mode .tu .cs-status {background:rgba(255,255,255,0.07);color:#e6e6e6;}
+	body.dark-mode .tu .cs-steps > .cs-step::before {background:rgba(255,255,255,0.1);color:var(--accent);}
+	body.dark-mode .tu .cs-steps--sub {border-left-color:rgba(255,255,255,0.14);}
+	body.dark-mode .tu .cs-plotwrap {background:#1b1d21;border-color:#3a3f47;}
+	body.dark-mode .tu .cs-badge {background:rgba(80,190,110,0.18);color:#8fdca4;}
+	body.dark-mode .tu .cs-badge--warn {background:rgba(255,180,60,0.16);color:#ffc977;}
+	body.dark-mode .tu .cs-badge--info {background:rgba(255,255,255,0.1);color:#cbd5e1;}
+	body.dark-mode .tu .cs-error {background:rgba(220,60,50,0.14);border-color:rgba(220,60,50,0.4);color:#ffb4ab;}
+	body.dark-mode .tu .cs-preview.is-err {background:rgba(220,60,50,0.12);border-color:rgba(220,60,50,0.35);color:#ffb4ab;}
+	body.dark-mode .tu .cs-spin {border-color:rgba(255,255,255,0.18);border-top-color:var(--accent);}
+	body.dark-mode .tu .cs-legend i {background:#e8ecf1;}
+	body.dark-mode .tu .cs-legend i.cs-l2, body.dark-mode .tu .cs-legend i.cs-l3 {background:var(--accent);}
+	body.dark-mode .tu .cs-legend i.cs-l4 {background:rgba(255,255,255,0.12);}
+	@media (max-width:600px) {
+		.cs-op {font-size:1.05em;}
+		.cs-chips button {min-width:2.2em;padding:0.4em 0.5em;}
+		.cs-tabs button {padding:0.5em 0.6em;font-size:0.85em;}
+		.cs-steps > .cs-step {padding-left:2em;}
+		.cs-steps--sub {margin-left:0;}
+		.cs-steps--sub > .cs-step {padding-left:1.7em;}
+		.cs-result {padding:0.7em 0.75em;}
+		.cs-hist .cs-h-r {display:none;}
+	}

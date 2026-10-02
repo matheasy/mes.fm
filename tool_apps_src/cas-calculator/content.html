@@ -1,0 +1,97 @@
+	<div class="tu cs" id="cs">
+		<div class="tu-seg cs-tabs" id="cs-tabs" role="tablist" aria-label="What to do">
+			<button type="button" data-mode="solve" aria-pressed="true">Solve</button>
+			<button type="button" data-mode="simplify" aria-pressed="false">Simplify &amp; factor</button>
+			<button type="button" data-mode="limit" aria-pressed="false">Limit</button>
+			<button type="button" data-mode="series" aria-pressed="false">Series</button>
+			<button type="button" data-mode="sum" aria-pressed="false">Sum &amp; product</button>
+			<button type="button" data-mode="matrix" aria-pressed="false">Matrix</button>
+			<button type="button" data-mode="evaluate" aria-pressed="false">Evaluate</button>
+			<button type="button" data-mode="calculus" aria-pressed="false">d/dx &amp; ∫</button>
+		</div>
+		<div class="tu-card">
+			<label class="tu-label" for="cs-in" id="cs-inlabel">Equation, inequality or system</label>
+			<textarea id="cs-in" class="tu-input tu-input--big cs-expr" rows="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. x^2 - 5x + 6 = 0" aria-describedby="cs-preview"></textarea>
+			<div class="cs-chips" id="cs-chips" aria-label="Insert a symbol">
+				<button type="button" data-ins="=">=</button><button type="button" data-ins="≤">≤</button><button type="button" data-ins="≥">≥</button>
+				<button type="button" data-ins="^" title="Power">xʸ</button><button type="button" data-ins="sqrt(" title="Square root">√</button>
+				<button type="button" data-ins="π">π</button><button type="button" data-ins="e^(" title="e to the power">eˣ</button><button type="button" data-ins="ln(">ln</button>
+				<button type="button" data-ins="sin(">sin</button><button type="button" data-ins="cos(">cos</button><button type="button" data-ins="tan(">tan</button>
+				<button type="button" data-ins="|" title="Absolute value">|x|</button><button type="button" data-ins="α">α</button><button type="button" data-ins="θ">θ</button>
+				<button type="button" data-ins="∞" title="Infinity">∞</button><button type="button" data-ins="·" title="Multiply">·</button><button type="button" data-ins=", " title="Separate equations">,</button>
+			</div>
+			<div class="cs-preview is-dim" id="cs-preview" aria-live="polite"></div>
+
+			<div class="tu-row cs-opts">
+				<div class="tu-field tu-field--sm cs-mode" data-modes="solve simplify limit series sum"><label for="cs-var" id="cs-varlabel">Variable(s)</label><input id="cs-var" class="tu-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="auto"></div>
+				<div class="tu-field tu-field--sm cs-mode" data-modes="solve"><label for="cs-lo">Search from</label><input id="cs-lo" class="tu-input" type="text" autocomplete="off" spellcheck="false" placeholder="auto"></div>
+				<div class="tu-field tu-field--sm cs-mode" data-modes="solve"><label for="cs-hi">Search to</label><input id="cs-hi" class="tu-input" type="text" autocomplete="off" spellcheck="false" placeholder="auto"></div>
+				<div class="tu-field cs-mode" data-modes="simplify" hidden><label for="cs-op">Operation</label>
+					<select id="cs-op" class="tu-select">
+						<option value="simplify">Simplify</option><option value="factor">Factor</option><option value="expand">Expand</option>
+						<option value="apart">Partial fractions (apart)</option><option value="together">Combine into one fraction (together)</option>
+						<option value="cancel">Cancel common factors</option><option value="trigsimp">Trig simplify</option><option value="rationalize">Rationalize the denominator</option>
+					</select></div>
+				<div class="tu-field tu-field--sm cs-mode" data-modes="limit series" hidden><label for="cs-at" id="cs-atlabel">Approaches</label><input id="cs-at" class="tu-input" type="text" autocomplete="off" spellcheck="false" placeholder="0" value="0"></div>
+				<div class="tu-field tu-field--sm cs-mode" data-modes="limit" hidden><label for="cs-dir">Direction</label>
+					<select id="cs-dir" class="tu-select"><option value="+-">Two-sided</option><option value="+">From the right (+)</option><option value="-">From the left (−)</option></select></div>
+				<div class="tu-field tu-field--sm cs-mode" data-modes="series" hidden><label for="cs-n">Order (terms up to)</label><input id="cs-n" class="tu-input" type="number" min="1" max="20" value="6"></div>
+				<div class="tu-field tu-field--sm cs-mode" data-modes="sum" hidden><label for="cs-kind">Sum or product</label>
+					<select id="cs-kind" class="tu-select"><option value="sum">Sum Σ</option><option value="product">Product Π</option></select></div>
+				<div class="tu-field tu-field--sm cs-mode" data-modes="sum" hidden><label for="cs-from">From</label><input id="cs-from" class="tu-input" type="text" autocomplete="off" spellcheck="false" value="1"></div>
+				<div class="tu-field tu-field--sm cs-mode" data-modes="sum" hidden><label for="cs-to">To</label><input id="cs-to" class="tu-input" type="text" autocomplete="off" spellcheck="false" value="oo"></div>
+				<div class="tu-field tu-field--sm cs-mode" data-modes="evaluate" hidden><label for="cs-digits">Digits</label><input id="cs-digits" class="tu-input" type="number" min="5" max="100" value="15"></div>
+				<div class="tu-field cs-mode" data-modes="solve simplify limit series sum matrix evaluate"><label for="cs-ex">Examples</label>
+					<select id="cs-ex" class="tu-select"><option value="">Choose an example…</option></select></div>
+			</div>
+			<div class="cs-mode" data-modes="calculus" hidden>
+				<p class="tu-note">Derivatives and integrals have their own pages, with full step-by-step solutions and plots. Type a function above, then:</p>
+				<div class="cs-links" style="margin-bottom:0;">
+					<a class="cs-link" id="cs-to-d" href="/derivative-calculator">Differentiate →<span>MES Derivative Calculator</span></a>
+					<a class="cs-link" id="cs-to-i" href="/integral-calculator">Integrate →<span>MES Integral Calculator</span></a>
+				</div>
+			</div>
+			<div class="tu-row cs-actions cs-mode" data-modes="solve simplify limit series sum matrix evaluate">
+				<button type="button" class="tu-btn tu-btn--primary" id="cs-go">Solve</button>
+				<span class="tu-note" id="cs-tip">Press Enter to run (Shift+Enter for a new line). Separate the equations of a system with commas, semicolons or new lines.</span>
+			</div>
+			<div class="cs-status" id="cs-status" role="status" hidden></div>
+		</div>
+
+		<div class="cs-out" id="cs-out" aria-live="polite" hidden></div>
+
+		<div class="tu-card" id="cs-hist-card" style="margin-top:1em;" hidden>
+			<div class="tu-row" style="justify-content:space-between;align-items:center;">
+				<h3 style="margin:0;">History</h3>
+				<button type="button" class="tu-btn tu-btn--ghost" id="cs-hist-clear">Clear</button>
+			</div>
+			<ul class="cs-hist" id="cs-hist"></ul>
+		</div>
+
+		<section class="tu-seo">
+			<h2>More from MES</h2>
+			<div class="cs-links">
+				<a class="cs-link" href="/derivative-calculator">Derivative Calculator<span>derivatives with every rule explained</span></a>
+				<a class="cs-link" href="/integral-calculator">Integral Calculator<span>indefinite &amp; definite integrals with steps</span></a>
+				<a class="cs-link" href="/2d-graphing-calculator">2D Graphing Calculator<span>see the roots of an equation</span></a>
+				<a class="cs-link" href="/3d-graphing-calculator">3D Graphing Calculator<span>surfaces and equations in x, y, z</span></a>
+				<a class="cs-link" href="/calculator">Calculator<span>everyday arithmetic and scientific keys</span></a>
+				<a class="cs-link" href="/latex">LaTeX Render<span>paste the LaTeX of an answer</span></a>
+			</div>
+			<h2>Free online CAS calculator (computer algebra system)</h2>
+			<p>A computer algebra system works with exact symbols instead of decimals: it solves <code>x^2 - 5x + 6 = 0</code> as x = 2 or x = 3, keeps √2 and π exact, factors, expands and simplifies expressions, and finds limits, series and sums in closed form. This one runs <a href="https://www.sympy.org/" rel="noopener">SymPy</a> right in your browser.</p>
+			<ul>
+				<li><strong>Solve</strong> equations, systems (separate them with commas, semicolons or new lines) and inequalities, with steps for linear and quadratic equations (factoring or the quadratic formula with the discriminant), polynomials (rational root theorem), equations with fractions, substitutions such as s = sin α, and linear systems.</li>
+				<li><strong>Hard equations too</strong>: when there is no closed form, every real root in the search interval is found numerically (sign changes plus touching roots, refined to 30 digits), shown in radians and degrees for trigonometric equations, with the periodic general solution and a plot of the roots.</li>
+				<li><strong>Simplify, factor, expand</strong>, partial fractions, combine fractions, trigonometric simplification and rationalizing denominators.</li>
+				<li><strong>Limits</strong> (two-sided, left, right, at ±∞), <strong>Taylor and Maclaurin series</strong>, <strong>sums and products</strong>, <strong>matrices</strong> (determinant, inverse, eigenvalues, rank, row-reduced form) and exact or high-precision <strong>evaluation</strong>.</li>
+			</ul>
+			<h2>Example: the optimal launch angle equation</h2>
+			<p>Type <code>0 = 2 - sin α · ln((1+sin α)/(1−sin α))</code> exactly like that. The calculator notices that α only appears through sin α, substitutes s = sin α (so the equation is 2 = 2s·artanh(s)), solves for s ≈ ±0.8336 and back-substitutes, giving α ≈ 0.98551 rad ≈ 56.47° and the other solutions in [0, 2π].</p>
+			<h2>Tips</h2>
+			<dl>
+				<dt>Typing maths</dt><dd><code>2x</code>, <code>x^2</code>, <code>sqrt x</code>, <code>sin x</code>, <code>e^x</code>, <code>ln</code>, <code>|x|</code>, <code>pi</code>, and the symbols × ÷ − √ π · ≤ ≥ all work. Greek letters are variables.</dd>
+				<dt>Privacy</dt><dd>Everything is computed on your own device: the first run downloads Python and SymPy (about 10 MB, cached afterwards). Your history is kept in your browser only.</dd>
+			</dl>
+		</section>
+	</div>
