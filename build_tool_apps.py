@@ -52,7 +52,7 @@ APPS = {
     "share": dict(title="MES Share Launcher", page_title="Share Launcher",
                   tag="Cross-post one video or link to 30+ sites.", accent="#5b3cc4", dark="#43299a", tint="#eeeafb",
                   desc="Free social media share launcher: paste your post once and get ready-to-paste text for X, Facebook, Instagram, TikTok, YouTube, Threads, Bluesky, Reddit and 20+ more sites, with the link placed where each site wants it.",
-                  js_v="8"),
+                  js_v="9"),
     # site search: the page is only the results UI; the engine + index loader is /main_js/site-search.js (also the header
     # magnifier on every page), loaded first via pre_js. The index itself comes from build_search_index.py.
     "search": dict(title="MES Site Search", page_title="Site Search",
@@ -98,6 +98,14 @@ APPS = {
                                 tag="Antiderivatives and definite integrals with steps.", accent="#b45309", dark="#7c3a06", tint="#fdf0d9",
                                 desc="Free integral calculator with steps: indefinite and definite integrals by substitution, integration by parts, partial fractions and trig rules, improper integrals with infinite bounds, numeric values when there is no closed form, and a plot of the area.",
                                 js_v="1", pre_js=CAS_JS, css_extra=["_cas.css"]),
+    # YouTube Money Calculator (rewritten 2026-10-02 from the 2016 jQuery page; youtubemoney must NEVER carry ads, so no_ads strips the
+    # AdSense loader + Auto-ads guard from the shell and tags the sidebar no-ads; the old meme gallery lives on at /youtubemoney/youtubers).
+    "youtubemoney": dict(title="YouTube Money Calculator", page_title="YouTube Money Calculator",
+                         tag="How much do YouTubers make?", accent="#cc1f1f", dark="#9a1515", tint="#fbe9e9",
+                         desc="Free YouTube money calculator: estimate how much a video or channel earns from views, by topic, Shorts or long-form and viewer location, or work out how many views you need to hit an income goal. Uses your own RPM if you know it.",
+                         js_v="1", no_ads=True,
+                         nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youtubemoney/youtubers'>YouTubers</a></li>",
+                         menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/youtubemoney/youtubers\">YouTuber earnings archive</a></li>"),
     "calendar": dict(title="MES Calendar", page_title="Calendar",
                      tag="Moon phases, holidays and more, month by month.", accent="#2f5fd0", dark="#1f44a0", tint="#e6edfb",
                      desc="Free online calendar for any year: month and year views with today highlighted, new and full moon times, Canada, USA, UK, Australia and Vietnam holidays, Christian, Jewish and Islamic dates, seasons, eclipses, daylight-saving changes and a days-between calculator.",
@@ -226,6 +234,19 @@ def build_from_source(slug, cfg, tpl):
     # these are calculators: the info bar reads Home | Calculators | Tools (cross-link both ways, see add_cross_links.py)
     tools_li = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/tools.html'>Tools</a></li>"
     page = page.replace(tools_li, "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/calculators'>Calculators</a></li>" + tools_li.replace("tools.html", "tools"))
+    if cfg.get("no_ads"):             # ad-free page: drop the deferred AdSense loader + the Auto-ads placement guard (they sit between the GTM block and </head>)
+        a = page.find("<!-- ADSENSE-DEFERRED")
+        b = page.find("</head>")
+        assert a > 0 and b > a, "ad block markers not found in tool_page_template.html"
+        page = page[:a] + page[b:]
+        assert "adsbygoogle" not in page and "googlesyndication" not in page
+    if cfg.get("nav_extra"):          # extra info-bar tab after Home, and an entry in the Site Navigation menu
+        home = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>Home</a></li>" % slug
+        assert home in page
+        page = page.replace(home, home + cfg["nav_extra"], 1)
+        nav_home = re.search(r'<li class="navbar__item"><a class="navbar__link navbar__link--first" href="/%s">Home</a></li>' % slug, page)
+        assert nav_home
+        page = page[:nav_home.end()] + cfg["menu_extra"] + page[nav_home.end():]
     js_dir = SITE / slug / "js"
     js_dir.mkdir(parents=True, exist_ok=True)
     js = (d / "app.js").read_text(encoding="utf-8")

@@ -211,6 +211,9 @@
 		{ id: "pixagramcom", name: "Pixagram community", g: "link", open: "https://pixagram.com/portal-112893/created/",
 			blocks: function (d) { return [["Post", shortPost(d, 1000, { link: true, tags: 5 })]]; },
 			tips: ["Your community page on Pixagram, a Hive-based network, so the link in the post is fine.", "Attach the thumbnail (or the trailer) as the media.", "Use ✎ URL if Open should go somewhere else."] },
+		{ id: "patreonquip", name: "Patreon Quip", g: "link", open: "https://www.patreon.com/home",
+			blocks: function (d) { return [["Quip", shortPost(d, 500, { link: true, tags: 2 })]]; },
+			tips: ["Quips are Patreon's short public posts, shown in the Home feed to your patrons and to people who don't know you yet. Click the <b>+</b> in the left bar, then <b>Quip</b>.", "Quips are always public. Text only, short: after about nine lines readers see “read more”.", "Add the thumbnail, a trailer clip or an image.", "Patreon doesn't say how links in Quips are treated, so check yours shows as a clickable link."] },
 		{ id: "discord", name: "Discord", g: "link", open: "https://discord.com/channels/@me",
 			blocks: function (d) { return [["Message", ["**" + d.title + "**", sentences(d.desc).slice(0, 2).join(" "), lk(d), d.video].filter(Boolean).join("\n"), 2000]]; },
 			tips: ["Links unfurl into a preview.", "Use ✎ URL to make Open go straight to your server’s channel."] },
@@ -285,18 +288,18 @@
 	var MODE_NOTE = {
 		post: "",
 		announce: "Upload the trailer as a native video (add the thumbnail as a second image where the site allows it). The link goes in the first comment or reply, with a time zone link so people can see your start time in their own zone.",
-		live: "One short post with the thumbnail and a single line. Upload, blog-style and image sites are hidden: the stream would be over before anyone saw it there."
+		live: "One short post with the thumbnail and a single line. Upload, blog-style (except Patreon) and image sites are hidden: the stream would be over before anyone saw it there."
 	};
 	// sites that make no sense for the mode (the stream itself is the video; slow sites miss a live post)
 	var STREAM_HIDE = ["youtube", "3speak", "rumble", "odysee", "bitchute", "blurtmedia", "paychute"];
 	var LIVE_HIDE = STREAM_HIDE.concat(["fbreels", "tiktok", "substacknote", "pinterest", "liketu", "pixagram", "tiktokphoto"]);
 	function modeHides(id, g) {
 		if (mode === "announce") {
-			if (STREAM_HIDE.indexOf(id) >= 0 || g === "blog") return true;
+			if (STREAM_HIDE.indexOf(id) >= 0 || (g === "blog" && id !== "patreon")) return true;
 			// the trailer is a video, the thumbnail an image: each goes only where it belongs
 			return asset === "thumb" ? (id === "fbreels" || id === "tiktok") : g === "image";
 		}
-		if (mode === "live") return LIVE_HIDE.indexOf(id) >= 0 || g === "blog";
+		if (mode === "live") return LIVE_HIDE.indexOf(id) >= 0 || (g === "blog" && id !== "patreon");
 		return false;
 	}
 	function zoneOk(z) { try { new Intl.DateTimeFormat("en-US", { timeZone: z }); return !!z; } catch (e) { return false; } }
