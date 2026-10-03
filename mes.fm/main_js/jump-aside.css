@@ -22,10 +22,11 @@
   html.jump-rail.page-theatre.aside-hidden { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }
   html.jump-rail.page-theatre.toc-hidden.aside-hidden { --toc-w: min(2000px, calc(100vw - 80px)); }
   html.jump-rail.page-theatre.toc-hidden.aside-hidden > body > .mes-rail-show { display: none; }
-  html.jump-rail.page-theatre.toc-hidden:not(.aside-hidden) .container, html.jump-rail.page-theatre.toc-hidden:not(.aside-hidden) .footer {
+  html.jump-rail.page-theatre.toc-hidden:not(.aside-hidden) .container {
     max-width: min(2000px, calc(100vw - 420px)); margin-left: 360px; margin-right: auto; }
+  html.jump-rail.page-theatre.toc-hidden .footer { max-width: none; }
   html.jump-rail.page-theatre.toc-hidden:not(.aside-hidden) .mes-aside--rail { left: 30px; right: auto; }
-  html.jump-rail.page-theatre.toc-hidden.aside-left:not(.aside-hidden) .container, html.jump-rail.page-theatre.toc-hidden.aside-left:not(.aside-hidden) .footer {
+  html.jump-rail.page-theatre.toc-hidden.aside-left:not(.aside-hidden) .container {
     margin-left: auto; margin-right: 360px; }
   html.jump-rail.page-theatre.toc-hidden.aside-left:not(.aside-hidden) .mes-aside--rail { left: auto; right: 30px; }
 }
