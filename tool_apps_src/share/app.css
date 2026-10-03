@@ -3,9 +3,18 @@
 	.tu textarea.tu-input {resize:vertical;line-height:1.45;}
 	.tu .sl-warn {margin:0.6em 0 0;font-size:0.9em;color:#9a5200;font-weight:700;}
 	.tu .sl-warn:empty {display:none;}
+	.tu #sl-modes, .tu #sl-asset {display:flex;flex-wrap:wrap;max-width:100%;}
+	.tu #sl-modes button, .tu #sl-asset button {flex:1 1 auto;border-bottom:1px solid #dfe4ea;margin-bottom:-1px;}
 	.tu .sl-fields {margin-top:0.8em;}
-	.tu .sl-fields summary {cursor:pointer;font-size:0.85em;font-weight:700;color:#555;}
-	.tu .sl-fields[open] summary {margin-bottom:0.6em;}
+	.tu .sl-fields summary {cursor:pointer;list-style:none;display:flex;align-items:center;gap:0.5em;padding:0.55em 0.9em;border:1px solid var(--accent);border-radius:0.4em;background:#fff;color:var(--accent);font-size:0.95em;font-weight:700;}
+	.tu .sl-fields summary::-webkit-details-marker {display:none;}
+	.tu .sl-fields summary::before {content:"\25B6";font-size:0.7em;transition:transform 0.15s;}
+	.tu .sl-fields[open] summary::before {transform:rotate(90deg);}
+	.tu .sl-fields summary:hover {background:#f4f6f9;}
+	.tu .sl-fields summary small {margin-left:auto;font-weight:400;color:#6a7280;font-size:0.85em;}
+	.tu .sl-fields[open] summary {margin-bottom:0.8em;}
+	body.dark-mode .tu .sl-fields summary {background:transparent;}
+	body.dark-mode .tu .sl-fields summary:hover {background:rgba(255,255,255,0.08);}
 	.tu .sl-bar {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:1em 0 0.6em;}
 	.tu .sl-check {display:flex;gap:0.35em;align-items:center;font-size:0.9em;cursor:pointer;}
 	.tu .sl-progress {margin-left:auto;font-size:0.9em;color:#6a7280;}
