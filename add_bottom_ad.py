@@ -38,9 +38,9 @@ RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator
                        "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles", "tools", "math"}
 # stand-alone tool / rebuilt-calculator pages (tool shell, one index.html per folder): included on purpose, unlike the timer etc. skip below
 TOOL_DIRS = ["emoji", "latex", "timezone", "symbols", "stats", "speedreader", "timer", "youtube-thumbnail", "unit-conversion",
-             "gematria", "impermanent-loss-calculator", "earth-curvature-calculator", "share", "search", "calendar", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator"]
+             "gematria", "impermanent-loss-calculator", "earth-curvature-calculator", "share", "search", "calendar", "copy-text", "solar-system-today", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "vatcalculator"]
 FAMILIES = ["percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator",
-            "inflationcalculator", "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles"]
+            "inflationcalculator", "timer", "pokemongocalculator", "memes", "puzzles"]
 
 LOADER = "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
 NUMERIC_STUB = re.compile(r"^\d+\.html$")  # 1.html, 2.html ... are "Page Not Found" pagination stubs

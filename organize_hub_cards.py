@@ -32,10 +32,10 @@ PAGES = {
         ("fun", "Science &amp; Fun", ["earth-curvature-calculator", "gematria", "pokemongocalculator"]),
     ]),
     "tools.html": dict(noun="tools", popular=["timer", "speedreader", "moon", "emoji"], cats=[
-        ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols"]),
+        ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols", "copy-text"]),
         ("time", "Time &amp; Focus", ["speedreader", "timer", "timezone", "calendar"]),
         ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search"]),
-        ("sky", "Sky &amp; Space", ["moon"]),
+        ("sky", "Sky &amp; Space", ["moon", "solar-system-today"]),
     ]),
 }
 TD = re.compile(r'[ \t]*<td class="calc-container[^"]*"><a class="calc-link" href="([^"]*)">.*?</td>\n?', re.S)

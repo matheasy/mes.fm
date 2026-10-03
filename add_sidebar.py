@@ -52,7 +52,7 @@ CALCS = [
 # A family = one calculator/tool mini-site under mes.fm/<slug>. `sections` are its gallery-item folders (dir, card label,
 # ring offsets or None for the default); the top-level pages that are not galleries (tutorials, formulas ...) become
 # the "articles". Gallery/list pages (HUB-WIDE-LAYOUT), numeric pagination pages, tool-shell pages (data-tool) and `skip`
-# files never get an aside. Left out on purpose: vatcalculator / pokemongocalculator (a page or two each, own layouts),
+# files never get an aside. Left out on purpose: pokemongocalculator (a page or two, own layout; vatcalculator became a tool-shell page in the "tools" collection, 2026-10-03),
 # timer + speedreader tool pages, and the build.mjs / Hive-mirror pages.
 FAMILIES = {
     "percentagecalculator": {
@@ -104,8 +104,8 @@ FAMILIES = {
         "name": "MES Tools",
         "hub": {"url": "/tools", "title": "All MES Tools", "kind": "Gallery", "img": "/img/tools-icon.jpg"},
         "collection": [
-            ("emoji", "Tool"), ("youtubemoney", "Calculator"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
-            ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("share", "Tool"), ("search", "Tool"), ("calendar", "Tool"), ("unit-conversion", "Calculator"), ("calculator", "Calculator"), ("days-between-dates-calculator", "Calculator"),
+            ("emoji", "Tool"), ("youtubemoney", "Calculator"), ("vatcalculator", "Calculator"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
+            ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("share", "Tool"), ("search", "Tool"), ("calendar", "Tool"), ("copy-text", "Tool"), ("unit-conversion", "Calculator"), ("calculator", "Calculator"), ("days-between-dates-calculator", "Calculator"),
             ("cas-calculator", "Calculator"), ("derivative-calculator", "Calculator"), ("integral-calculator", "Calculator"),
             ("gematria", "Calculator"), ("impermanent-loss-calculator", "Calculator"), ("earth-curvature-calculator", "Calculator"),
         ],
@@ -121,7 +121,6 @@ FAMILIES = {
         "articles": False,
         "sections": [("youtubers", "YouTuber (2016)", None)],
     },
-    "vatcalculator": {"name": "VAT Calculator", "article_kind": "Guide", "sections": []},
     "pokemongocalculator": {"name": "Pokemon Go Calculator", "article_kind": "Guide", "sections": []},
     "timer": {  # only the inspirational-quotes pages: the Timer page itself is a tool shell
         "name": "Timer",

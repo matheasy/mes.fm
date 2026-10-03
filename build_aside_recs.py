@@ -92,6 +92,8 @@ CTX = {   # page path regex -> [(target, title, kind-label, logo path)]
     r"^/moon": [("/calendar", "Moon phases for any month in the Calendar", "/calendar")],
     r"^/inflationcalculator/money-facts/": [("/inflationcalculator?c=United+States&s=FRED&from=1980&amt=100", "What $100 from 1980 is worth today", "/inflationcalculator"),
                                             ("/inflationcalculator?c=United+Kingdom&s=UK+ONS&from=1950&amt=100", "What 100 pounds from 1950 is worth in the UK", "/inflationcalculator")],
+    r"^/percentagecalculator$": [("/vatcalculator?mode=gross&gross=120&rate=20&c=GB", "Take 20% VAT out of a price that includes it", "/vatcalculator"),
+                                 ("/vatcalculator?mode=net&net=250&rate=13&c=CA&g=ON", "Add Ontario's 13% HST to a $250 price", "/vatcalculator")],
     r"^/inflationcalculator$": [("/inflationcalculator?c=United+States&from=1960&to=2025&cmp=Japan|Germany|Turkiye", "Compare US inflation with Japan, Germany and Turkiye", "/inflationcalculator"),
                                 ("/inflationcalculator?c=Canada&s=StatCan&from=1990&amt=1000", "What 1,000 Canadian dollars from 1990 is worth today", "/inflationcalculator")],
 }

@@ -1,9 +1,8 @@
-<!DOCTYPE html>    <html lang="en">    
-<!-- Mirrored from speedreader.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:43:57 GMT -->
+<!DOCTYPE html>    <html lang="en">
+<!-- Speed Reader and Read Aloud -- mes.fm/speedreader -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/speedreader/img/faviconc619.ico?v=1.0" type="image/x-icon" /><link rel="canonical" href="https://mes.fm/speedreader/" />                    <title>Speed Reader | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/speedreader/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/speedreader" />                    <title>Speed Reader and Read Aloud | Math Easy Solutions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.3/css/bootstrap-select.min.css">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
 tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
@@ -141,21 +140,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
 
-  /* keep only the site-content links in the header row on mobile (Home/
-     Donate/Subscribe/Links live in the hamburger dropdown instead, see
-     the unconditional block below the media query) -- kept mobile-only
-     since the full row already fits fine as a normal top nav on wider
-     screens */
   #info-bar > .info-bar__item:has(a[href$="index.html"]),
   #info-bar > .info-bar__item:has(a[href*="donate"]),
   #info-bar > .info-bar__item:has(a[href*="substack.com"]),
   #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
 }
 
-/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
-   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
-   panel instead of the always-visible sidebar, at every screen width
-   (not just mobile), so no page reserves a right-hand column for it */
 .inner-container { position: relative !important; }
 .header .social-container { display: none !important; }
 .side-bar { width: auto !important; float: none !important; }
@@ -172,11 +162,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   font-size: 0;
 }
 
-/* on narrow screens the title/logo-text can wrap wide enough that its
-   flex-item bounding box runs under the absolutely-positioned hamburger
-   button (out of normal flow, so nothing naturally reserves space for
-   it) -- give the header a bit of right padding on mobile so wrapped
-   title text never renders underneath the button */
 @media (max-width: 768px) {
   .header { padding-right: 4em !important; box-sizing: border-box; }
 }
@@ -187,9 +172,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 }
 #navbar { display: none; }
 #navbar.hide {
-  /* !important: this page loads Bootstrap 3's CSS, whose
-     `.hide { display: none !important }` utility would otherwise
-     keep the menu hidden even with #navbar.hide's higher specificity */
   display: block !important; box-sizing: border-box;
   position: absolute; top: 76px; right: 16px; z-index: 19;
   width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
@@ -198,55 +180,308 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   border-radius: 0.25em;
 }
 
-/* dropdown polish: fix the icon/logo row overlapping the next nav item
-   (.info-bar__logo-container's global `display: table-cell` doesn't
-   behave without a table/table-row ancestor), and move "Follow us!" to
-   the bottom of the list instead of the top -- via flex order, not an
-   HTML move, since locating the true closing </ul> among the nested
-   .navbar__dropdown-container <ul>s isn't worth the risk */
 #navbar.hide { display: flex !important; flex-direction: column; }
 .navbar__item--social { order: 999; }
 .navbar__item--social .info-bar__logo-container { display: block !important; }
 
-/* now that the sidebar is gone, center the main content column in a
-   narrower page instead of leaving it flush-left in a wide, mostly-empty
-   .outer-container -- matches the plain centered-column layout
-   mes.fm/ufo already uses */
 .outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 
 </style>	<style>
-	.text-input {width:100%;max-width:1028px;min-height:20em;padding:1em; font-size: 16px;display: inline-block;-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;}
-	.scanner {padding:1em; font-size: 16px;display: inline-block;text-align: left;white-space: pre-wrap;line-height:1.5;margin-bottom:1em;color;}
-	.scanner span {color:#777777;} 
-	.result {font-size: 48px; margin:0 auto;}
-	.yellowBG {background-color: yellow;}
 	.hide {display:none;}
-	.basic-table--left {margin:0;}
-	.basic-table td {text-align: left; vertical-align: middle;}
-	.basic-table td:last-child {background-color: #eeeeee}
-	.settings__input {border:1px solid #ccc;width:7em;border-radius:5px;background-color:#fff;height:2em;text-align: center;font-size: 1.1em;}
-	.result-wrapper-outer {width:100%;height:20em;text-align: center; display: table;background-color: #eef0ff;margin:1em 0;}
-	.result-wrapper-inner {display: table-cell;vertical-align: middle}
-	.buttons-container {margin:1em 0;}
-	.btn {margin-right:0.5em;}
-	.btn:focus,.btn:active {outline:none !important;}
-	.grey-bg {background-color: #e6e6e6}
 	a,a:hover {text-decoration: none !important;color:white;}
 	a.active-tab:hover {color:#222222;}
 	.navbar {border:none;}
-	#settingsTable .selected {background-color: white;}
-	#settingsTable .btn {font-size:16px;}
-	#fontSize {font-size:16px;}		#playSpeed::after {content:" Play";}
-		#pauseSpeed::after {content:" Pause";}
-		#stopSpeed::after {content:" Stop";}
-		#settingsButton::after {content:" Settings";}	
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#e52503;--accent-dark:#bf190d;--tint:#fdeceb;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #fdeceb;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#fdeceb;border-color:#fdeceb;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #fdeceb;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#fdeceb;border-color:#fdeceb;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#fdeceb;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#fdeceb;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#fd6b51 !important;--accent-dark:#fd6b51 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+	/* MES Speed Reader -- mes.fm/speedreader. Stage colours are literal (the derived dark theme can't see through var()), restated under body.dark-mode below. */
+	.tu .sr-reader {display:flex;flex-direction:column;padding:0.9em;position:relative;}
+	.tu .sr-top {order:0;display:flex;flex-wrap:nowrap;gap:0.6em;align-items:center;justify-content:space-between;margin-bottom:0.8em;}
+	.tu .sr-modes {flex:1 1 0;min-width:0;max-width:100%;}
+	.tu .sr-modes button {flex:1 1 auto;padding:0.6em 0.8em;}
+	.tu .sr-focusbtn {flex:0 0 auto;width:2.7em;height:2.7em;padding:0;display:inline-flex;align-items:center;justify-content:center;}
+	.tu .sr-focusbtn .sr-i-collapse {display:none;}
+	.tu .sr-focusbtn[aria-pressed="true"] .sr-i-collapse {display:block;}
+	.tu .sr-focusbtn[aria-pressed="true"] .sr-i-expand {display:none;}
+	.tu .sr-focusbtn[aria-pressed="true"] {background:var(--accent);color:#fff;}
+
+	/* stage */
+	.tu .sr-stage {order:1;position:relative;height:calc(var(--sr-fs,56px) * 1.7 + 4em);min-height:9.5em;border-radius:0.6em;overflow:hidden;background:var(--sr-bg);color:var(--sr-fg);user-select:none;-webkit-user-select:none;}
+	.tu .sr-stage[data-th="light"] {--sr-bg:#f6f7fb;--sr-fg:#1b2430;--sr-dim:#7b8594;--sr-orp:#e52503;--sr-guide:#b7bfcb;}
+	.tu .sr-stage[data-th="dark"] {--sr-bg:#14161a;--sr-fg:#eceff4;--sr-dim:#8b93a1;--sr-orp:#ff6a5b;--sr-guide:#4a515d;}
+	.tu .sr-stage[data-th="sepia"] {--sr-bg:#f4ecd8;--sr-fg:#3b2f22;--sr-dim:#8e7e66;--sr-orp:#b3261e;--sr-guide:#c7b794;}
+	.tu .sr-stage[data-th="night"] {--sr-bg:#050505;--sr-fg:#e8b45a;--sr-dim:#8a6b32;--sr-orp:#ff6b4a;--sr-guide:#4d3d1c;}
+	.tu .sr-stage[data-font="sans"] {font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;}
+	.tu .sr-stage[data-font="serif"] {font-family:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,"Times New Roman",serif;}
+	.tu .sr-stage[data-font="mono"] {font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;}
+	.tu .sr-stage[data-font="easy"] {font-family:Verdana,Tahoma,"Trebuchet MS",Geneva,sans-serif;letter-spacing:0.03em;}
+	.tu .sr-word {position:absolute;left:50%;top:calc(46% - var(--sr-fs,56px) * 0.6);height:1.2em;line-height:1.2;font-size:var(--sr-fs,56px);white-space:pre;color:var(--sr-fg);font-weight:500;will-change:transform;}
+	.tu .sr-word span {color:inherit;font-family:inherit;font-size:inherit;}
+	.tu .sr-stage .sr-orp {color:var(--sr-fg);}
+	.tu .sr-stage[data-orp="1"] .sr-orp {color:var(--sr-orp);font-weight:700;}
+	.tu .sr-guide {position:absolute;left:50%;width:2px;margin-left:-1px;background:var(--sr-guide);display:none;}
+	.tu .sr-stage[data-guide="1"] .sr-guide {display:block;}
+	.tu .sr-guide--top {top:calc(46% - var(--sr-fs,56px) * 0.62 - 14px);height:14px;}
+	.tu .sr-guide--bot {top:calc(46% + var(--sr-fs,56px) * 0.62);height:14px;}
+	.tu .sr-ctx {position:absolute;left:0;right:0;bottom:0.7em;display:none;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.4em;padding:0 0.8em;font-size:0.95em;color:var(--sr-dim);}
+	.tu .sr-stage[data-ctx="1"] .sr-ctx {display:grid;}
+	.tu .sr-ctx-l, .tu .sr-ctx-r {overflow:hidden;white-space:nowrap;color:var(--sr-dim);}
+	.tu .sr-ctx-l {direction:rtl;text-align:right;-webkit-mask-image:linear-gradient(to right,transparent,#000 30%);mask-image:linear-gradient(to right,transparent,#000 30%);}
+	.tu .sr-ctx-r {-webkit-mask-image:linear-gradient(to left,transparent,#000 30%);mask-image:linear-gradient(to left,transparent,#000 30%);}
+	.tu .sr-ctx-l i, .tu .sr-ctx-r i {display:inline-block;font-style:normal;direction:ltr;color:var(--sr-dim);}
+	.tu .sr-msg {position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;padding:0 1em;font-size:1.15em;color:var(--sr-dim);line-height:1.4;}
+	.tu .sr-msg[hidden] {display:none;}
+	.tu .sr-msg b {color:var(--sr-fg);}
+
+	/* progress */
+	.tu .sr-progress {order:3;margin-top:0.7em;}
+	.tu .sr-progress[hidden] {display:none;}
+	.tu .sr-range {width:100%;accent-color:var(--accent);margin:0;height:1.6em;cursor:pointer;}
+	.tu .sr-info {display:flex;justify-content:space-between;gap:1em;font-size:0.82em;color:#6a7280;font-variant-numeric:tabular-nums;}
+
+	/* transport */
+	.tu .sr-transport {order:4;display:flex;justify-content:center;align-items:center;gap:0.45em;margin:0.6em 0 0.4em;}
+	.tu .sr-tb {flex:0 1 auto;width:2.9em;height:2.9em;border-radius:50%;border:1px solid #c3c9d2;background:#fff;color:#44505e;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+	.tu .sr-tb:hover {background:#eef1f5;}
+	.tu .sr-tb:disabled {opacity:0.4;cursor:default;}
+	.tu .sr-play {width:4.2em;height:4.2em;background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu .sr-play:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu .sr-play .sr-i-pause {display:none;}
+	.tu .sr-play[data-playing="1"] .sr-i-pause {display:block;}
+	.tu .sr-play[data-playing="1"] .sr-i-play {display:none;}
+
+	/* speed + voice rows */
+	.tu .sr-speedrow {order:5;margin-top:0.5em;}
+	.tu .sr-speedrow[hidden] {display:none;}
+	.tu .sr-speedhead {display:flex;align-items:center;justify-content:space-between;gap:0.8em;margin-bottom:0.2em;}
+	.tu .sr-wpmbox {display:inline-flex;align-items:center;gap:0.5em;}
+	.tu .sr-wpm {width:5.6em;text-align:center;font-weight:700;padding:0.4em 0.3em;}
+	.tu .sr-unit {font-size:0.8em;color:#6a7280;}
+	.tu .sr-slider {display:flex;align-items:center;gap:0.6em;}
+	.tu .sr-nudge {flex:0 0 auto;width:2.2em;height:2.2em;border-radius:50%;border:1px solid #c3c9d2;background:#fff;color:#44505e;font-size:1.1em;line-height:1;cursor:pointer;padding:0;}
+	.tu .sr-nudge:hover {background:#eef1f5;}
+	.tu .sr-presets {justify-content:center;margin-top:0.4em;}
+	.tu .sr-voicerow {order:5;margin-top:0.6em;display:grid;gap:0.8em;}
+	.tu .sr-voicerow[hidden] {display:none;}
+	.tu .sr-vgrid {display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:0.8em;}
+	.tu .sr-voicerow output {font-weight:400;text-transform:none;letter-spacing:0;color:#667;margin-left:0.3em;}
+	.tu .sr-note {order:6;margin:0.6em 0 0;padding:0.5em 0.8em;border-radius:0.4em;background:#fff6dd;color:#6b4a00;font-size:0.88em;line-height:1.45;}
+	.tu .sr-note[hidden] {display:none;}
+
+	/* settings */
+	.tu .sr-settings {order:7;margin-top:0.8em;}
+	.tu .sr-settings summary {cursor:pointer;list-style:none;display:flex;align-items:center;gap:0.5em;padding:0.55em 0.9em;border:1px solid var(--accent);border-radius:0.4em;background:#fff;color:var(--accent);font-size:0.95em;font-weight:700;}
+	.tu .sr-settings summary::-webkit-details-marker {display:none;}
+	.tu .sr-settings summary::before {content:"\25B6";font-size:0.7em;transition:transform 0.15s;}
+	.tu .sr-settings[open] summary::before {transform:rotate(90deg);}
+	.tu .sr-settings summary:hover {background:#f4f6f9;}
+	.tu .sr-settings summary small {margin-left:auto;font-weight:400;color:#6a7280;font-size:0.82em;text-align:right;}
+	.tu .sr-settings[open] summary {margin-bottom:0.9em;}
+	.tu .sr-sgrid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:1em 1.4em;}
+	.tu .sr-sgrid .tu-seg {display:flex;flex-wrap:wrap;}
+	.tu .sr-sgrid .tu-seg button {flex:1 1 auto;}
+	.tu .sr-sgrid output {font-weight:400;text-transform:none;letter-spacing:0;color:#667;margin-left:0.3em;}
+	.tu .sr-check, .tu .tu-field > label.sr-check {display:flex;gap:0.5em;align-items:flex-start;font-size:0.9em;font-weight:400;text-transform:none;letter-spacing:0;color:#333;line-height:1.35;cursor:pointer;margin:0.15em 0;}
+	.tu .sr-check input {margin-top:0.2em;accent-color:var(--accent);flex:0 0 auto;}
+
+	/* text view */
+	.tu .sr-tv {order:8;margin-top:0.8em;}
+	.tu .sr-tvtoggle {cursor:pointer;width:100%;text-align:left;display:flex;align-items:center;gap:0.5em;padding:0.55em 0.9em;border:1px solid #c3c9d2;border-radius:0.4em;background:#fff;color:#44505e;font-size:0.95em;font-weight:700;}
+	.tu .sr-tvtoggle::before {content:"\25B6";font-size:0.7em;transition:transform 0.15s;}
+	.tu .sr-tvtoggle[aria-expanded="true"]::before {transform:rotate(90deg);}
+	.tu .sr-tvtoggle small {margin-left:auto;font-weight:400;color:#6a7280;font-size:0.82em;}
+	.tu .sr-tvtoggle:hover {background:#f4f6f9;}
+	.tu .sr-tvbody {margin-top:0.6em;}
+	.tu .sr-tvbody[hidden], .tu .sr-tvnav[hidden] {display:none;}
+	.tu .sr-tvnav {display:flex;align-items:center;justify-content:space-between;gap:0.6em;margin-bottom:0.5em;font-size:0.85em;color:#6a7280;}
+	.tu .sr-pane {max-height:16em;overflow:auto;padding:0.8em 1em;border:1px solid #dfe4ea;border-radius:0.5em;background:#fff;color:#243040;line-height:1.75;font-size:1.05em;overscroll-behavior:contain;}
+	.tu .sr-w {cursor:pointer;border-radius:0.25em;padding:0.02em 0.03em;color:#243040;}
+	.tu .sr-w:hover {background:#e9edf3;}
+	.tu .sr-w.is-sent {background:#fff2c4;}
+	.tu .sr-w.is-cur {background:#ffd23f;color:#1b1b1b;box-shadow:0 0 0 0.1em #ffd23f;}
+	.tu .sr-para {display:block;height:0.8em;}
+	.tu .sr-empty {color:#8a93a0;font-style:italic;}
+	.tu .sr-reader[data-mode="aloud"] .sr-stage {display:none;}
+	.tu .sr-reader[data-mode="aloud"] .sr-tv {order:2;margin-top:0;}
+	.tu .sr-reader[data-mode="aloud"] .sr-tvtoggle {display:none;}
+	.tu .sr-reader[data-mode="aloud"] .sr-tvbody {margin-top:0;}
+	.tu .sr-reader[data-mode="aloud"] .sr-pane {max-height:26em;min-height:14em;font-size:1.15em;}
+	.tu .sr-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+
+	/* focus mode (also the fallback where the Fullscreen API is missing, e.g. iPhone Safari) */
+	html.sr-lock, html.sr-lock body {overflow:hidden;}
+	.tu .sr-reader.is-focus {position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;border-radius:0;margin:0;border:0;overflow:auto;padding:1em clamp(0.8em,4vw,3em);background:#fff;max-width:none;}
+	.tu .sr-reader.is-focus .sr-stage {flex:1 1 auto;height:auto;min-height:12em;}
+	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-tv {flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
+	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-tvbody {flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
+	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-pane {flex:1 1 auto;max-height:none;}
+	.tu .sr-reader.is-focus .sr-settings, .tu .sr-reader.is-focus .sr-tv, .tu .sr-reader.is-focus .sr-note {max-width:60em;width:100%;margin-left:auto;margin-right:auto;}
+	.tu .sr-reader.is-focus .sr-progress, .tu .sr-reader.is-focus .sr-transport, .tu .sr-reader.is-focus .sr-speedrow, .tu .sr-reader.is-focus .sr-voicerow {max-width:48em;width:100%;margin-left:auto;margin-right:auto;}
+	.tu .sr-reader.is-focus .sr-top {max-width:48em;width:100%;margin-left:auto;margin-right:auto;}
+
+	/* input card */
+	.tu .sr-input {margin-top:1em;position:relative;}
+	.tu .sr-inhead {display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.35em;}
+	.tu .sr-count {font-size:0.8em;color:#6a7280;}
+	.tu textarea.sr-textarea {width:100%;min-height:9em;resize:vertical;line-height:1.5;font-size:1em;}
+	.tu .sr-samples {align-items:center;}
+	.tu .sr-samplelabel {margin-right:0.2em;}
+	.tu .sr-warn {margin:0.6em 0 0;font-size:0.9em;color:#9a5200;font-weight:700;}
+	.tu .sr-warn:empty {display:none;}
+	.tu .sr-drop {display:none;position:absolute;left:0;top:0;right:0;bottom:0;z-index:5;border:3px dashed var(--accent);border-radius:0.55em;background:#fdeceb;color:var(--accent);font-weight:700;font-size:1.2em;align-items:center;justify-content:center;text-align:center;pointer-events:none;}
+	.tu .sr-input.is-drag .sr-drop {display:flex;}
+	.tu .sr-stats {grid-template-columns:repeat(auto-fit,minmax(10.5em,1fr));margin-bottom:0;}
+	.tu .sr-measure {margin-top:1em;padding:0.9em 1em;border-radius:0.55em;background:#fdeceb;border:1px solid #fdeceb;}
+	.tu .sr-measure[hidden] {display:none;}
+	.tu .sr-measure h3 {margin-top:0;}
+	.tu .sr-mtext {background:#fff;color:#243040;padding:0.8em 1em;border-radius:0.5em;line-height:1.65;max-height:22em;overflow:auto;margin:0.6em 0;}
+	.tu .sr-mtext.is-hidden {filter:blur(7px);user-select:none;-webkit-user-select:none;}
+	.tu .sr-mbar {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;}
+	.tu .sr-mtime {margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;}
+	.tu .sr-mresult {margin:0.6em 0 0;font-weight:700;}
+	.tu .sr-mresult:empty {display:none;}
+	.tu kbd {display:inline-block;padding:0.05em 0.45em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;font:inherit;font-size:0.85em;color:#333;white-space:nowrap;}
+	.tu .sr-keys td {text-align:left;white-space:normal;}
+	.tu .sr-keys th {text-align:left;}
+	.tu button:focus-visible, .tu input:focus-visible, .tu select:focus-visible, .tu summary:focus-visible, .tu .sr-pane:focus-visible, .tu textarea:focus-visible {outline:3px solid var(--accent);outline-offset:2px;}
+
+	/* dark page: the stage themes restated (these must out-rank the derived twins), text view, buttons, highlights */
+	body.dark-mode #sr .sr-stage[data-th="light"] {--sr-bg:#f6f7fb;--sr-fg:#1b2430;--sr-dim:#7b8594;--sr-orp:#e52503;--sr-guide:#b7bfcb;}
+	body.dark-mode #sr .sr-stage[data-th="dark"] {--sr-bg:#14161a;--sr-fg:#eceff4;--sr-dim:#8b93a1;--sr-orp:#ff6a5b;--sr-guide:#4a515d;}
+	body.dark-mode #sr .sr-stage[data-th="sepia"] {--sr-bg:#f4ecd8;--sr-fg:#3b2f22;--sr-dim:#8e7e66;--sr-orp:#b3261e;--sr-guide:#c7b794;}
+	body.dark-mode #sr .sr-stage[data-th="night"] {--sr-bg:#050505;--sr-fg:#e8b45a;--sr-dim:#8a6b32;--sr-orp:#ff6b4a;--sr-guide:#4d3d1c;}
+	body.dark-mode #sr .sr-stage .sr-word, body.dark-mode #sr .sr-stage .sr-word span, body.dark-mode #sr .sr-stage .sr-orp {color:var(--sr-fg);}
+	body.dark-mode #sr .sr-stage[data-orp="1"] .sr-orp {color:var(--sr-orp);}
+	body.dark-mode #sr .sr-stage .sr-ctx-l, body.dark-mode #sr .sr-stage .sr-ctx-r, body.dark-mode #sr .sr-stage .sr-ctx-l i, body.dark-mode #sr .sr-stage .sr-ctx-r i, body.dark-mode #sr .sr-stage .sr-msg {color:var(--sr-dim);}
+	body.dark-mode #sr .sr-stage .sr-msg b {color:var(--sr-fg);}
+	body.dark-mode #sr .sr-stage .sr-guide {background:var(--sr-guide);}
+	body.dark-mode #sr .sr-stage {background:var(--sr-bg);}
+	body.dark-mode #sr .sr-reader.is-focus {background:#1a1a1a;}
+	body.dark-mode #sr .sr-play, body.dark-mode #sr .sr-play:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode #sr .sr-tb:hover, body.dark-mode #sr .sr-nudge:hover, body.dark-mode #sr .sr-tvtoggle:hover, body.dark-mode #sr .sr-settings summary:hover {background:rgba(255,255,255,0.09);}
+	body.dark-mode #sr .sr-settings summary, body.dark-mode #sr .sr-tvtoggle {background:transparent;}
+	body.dark-mode #sr .sr-focusbtn[aria-pressed="true"] {background:var(--accent);color:#0b1416;border-color:var(--accent);}
+	body.dark-mode #sr .sr-note {background:#3a3220;color:#f0d9a0;}
+	body.dark-mode #sr .sr-pane, body.dark-mode #sr .sr-mtext {background:#202226;color:#dfe3ea;}
+	body.dark-mode #sr .sr-w {color:#dfe3ea;}
+	body.dark-mode #sr .sr-w:hover {background:#33373e;}
+	body.dark-mode #sr .sr-w.is-sent {background:#3a3622;}
+	body.dark-mode #sr .sr-w.is-cur {background:#e0a800;color:#111;box-shadow:0 0 0 0.1em #e0a800;}
+	body.dark-mode #sr .sr-warn {color:#f0b45a;}
+	body.dark-mode #sr .sr-measure {background:rgba(255,255,255,0.06);border-color:#444;}
+	body.dark-mode #sr .sr-drop {background:#202226;}
+	body.dark-mode #sr kbd {background:#2e3036;color:#e6e6e6;border-color:#555;}
+	body.dark-mode #sr .sr-check, body.dark-mode #sr .tu-field > label.sr-check {color:#d8d8d8;}
+	body.dark-mode #sr .sr-info, body.dark-mode #sr .sr-count, body.dark-mode #sr .sr-unit {color:#a9b0bb;}
+
+	@media (max-width:600px) {
+		.tu .sr-reader {padding:0.7em;}
+		.tu .sr-modes button {font-size:0.84em;padding:0.65em 0.2em;}
+		.tu .sr-tb {width:2.6em;height:2.6em;}
+		.tu .sr-play {width:3.8em;height:3.8em;}
+		.tu .sr-transport {gap:0.35em;}
+		.tu .sr-settings summary small, .tu .sr-tvtoggle small {display:none;}
+		.tu .sr-vgrid {grid-template-columns:repeat(2,minmax(0,1fr));}
+		.tu .sr-vgrid > .tu-field:first-child {grid-column:1 / -1;}
+		.tu .sr-stats {grid-template-columns:repeat(2,minmax(0,1fr));}
+	}
+	@media (prefers-reduced-motion:reduce) {
+		.tu * {transition:none !important;scroll-behavior:auto !important;}
+	}
+	@media print {
+		.tu .sr-reader {display:none !important;}
+	}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
 	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
 	@media (max-width: 600px) {
 		.inner-container { padding: 1em 0.75em; }
 
-		/* header: stack logo/title and follow-us icons instead of overlapping */
 		.header { display: flex; flex-wrap: wrap; align-items: center; }
 		.logo-image-container { flex: 0 0 auto; }
 		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
@@ -259,7 +494,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.social-container .info-bar__logo-container { margin-left: auto; }
 		#mes-logo { width: 110px; height: auto; }
 
-		/* nav bar: wrap since Donate/Subscribe/Links brings this to 9 items */
 		.info-bar-container { display: block; width: 100%; }
 		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
 		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
@@ -271,14 +505,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 		.page-content { padding: 1.2em 0 0 0; }
 
-		/* reader controls: the play/pause/stop/settings buttons already wrap
-		   fine, but the text areas need box-sizing so their existing 100%
-		   width doesn't add padding past the viewport edge */
-		.buttons-container { display: flex; flex-wrap: wrap; gap: 0.5em; }
-		.text-input, .scanner, .result-wrapper-outer { box-sizing: border-box; }
-		.settings__input { width: 100%; box-sizing: border-box; }
-
-		/* footer: stack columns instead of squeezing table-cells side by side */
 		.footer { padding: 1.25em 0.75em; }
 		.footer__item-container { display: block; }
 		.footer__item { display: block; margin-bottom: 0.75em; }
@@ -332,31 +558,92 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
 	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
 	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .scanner span{color:#9e9e9e}
-	body.dark-mode .basic-table td:last-child{background-color:#202020}
-	body.dark-mode .settings__input{border:1px solid #424242;background-color:#1a1a1a}
-	body.dark-mode .result-wrapper-outer{background-color:#0e1125}
-	body.dark-mode .grey-bg{background-color:#282828}
-	body.dark-mode #settingsTable .selected{background-color:#1a1a1a}
+	body.dark-mode .tu{--accent:#fc310d;--accent-dark:#ef281a}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #420a07}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#241211;border-color:#420a07}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#241211;border-color:#420a07}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#241211}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu .sr-stage[data-th="light"]{--sr-orp:#fc310d}
+	body.dark-mode .tu .sr-stage[data-th="sepia"]{--sr-orp:#dc372d}
+	body.dark-mode .tu .sr-stage[data-th="night"]{--sr-dim:#be964b;--sr-guide:#be984b}
+	body.dark-mode .tu .sr-info{color:#9a9da3}
+	body.dark-mode .tu .sr-tb{border:1px solid #3a424d;background:#1a1a1a;color:#a8aeb4}
+	body.dark-mode .tu .sr-tb:hover{background:#191c20}
+	body.dark-mode .tu .sr-unit{color:#9a9da3}
+	body.dark-mode .tu .sr-nudge{border:1px solid #3a424d;background:#1a1a1a;color:#a8aeb4}
+	body.dark-mode .tu .sr-nudge:hover{background:#191c20}
+	body.dark-mode .tu .sr-voicerow output{color:#9a9aa2}
+	body.dark-mode .tu .sr-note{background:#2f2712;color:#ffcd5c}
+	body.dark-mode .tu .sr-settings summary{background:#1a1a1a}
+	body.dark-mode .tu .sr-settings summary:hover{background:#16191d}
+	body.dark-mode .tu .sr-settings summary small{color:#9a9da3}
+	body.dark-mode .tu .sr-sgrid output{color:#9a9aa2}
+	body.dark-mode .tu .sr-check,body.dark-mode .tu .tu-field > label.sr-check{color:#cccccc}
+	body.dark-mode .tu .sr-tvtoggle{border:1px solid #3a424d;background:#1a1a1a;color:#a8aeb4}
+	body.dark-mode .tu .sr-tvtoggle small{color:#9a9da3}
+	body.dark-mode .tu .sr-tvtoggle:hover{background:#16191d}
+	body.dark-mode .tu .sr-tvnav{color:#9a9da3}
+	body.dark-mode .tu .sr-pane{border:1px solid #28323e;background:#1a1a1a;color:#c6ccd4}
+	body.dark-mode .tu .sr-w{color:#c6ccd4}
+	body.dark-mode .tu .sr-w:hover{background:#1c1f25}
+	body.dark-mode .tu .sr-w.is-sent{background:#413819}
+	body.dark-mode .tu .sr-w.is-cur{color:#e4e4e4}
+	body.dark-mode .tu .sr-empty{color:#999da3}
+	body.dark-mode .tu .sr-reader.is-focus{background:#1a1a1a}
+	body.dark-mode .tu .sr-count{color:#9a9da3}
+	body.dark-mode .tu .sr-warn{color:#ffb35c}
+	body.dark-mode .tu .sr-drop{background:#241211}
+	body.dark-mode .tu .sr-measure{background:#241211;border:1px solid #420a07}
+	body.dark-mode .tu .sr-mtext{background:#1a1a1a;color:#c6ccd4}
+	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
-        <meta name="author" content="Speed Reader Staff">
+        <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://mes.fm/speedreader" />            <meta property="og:title" content="Speed Reader | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/speedreader/img/logo-big.png" />
-        <meta property="og:description" content="Master the craft of speed reading! By staring at one spot instead of scanning sentences from left to right, your eyes can read words at a higher rate. Slowly increase the words per minute value as you get faster and faster at reading. Can you reach the 1000 words per minute mark?" />
+        <meta property="og:url" content="https://mes.fm/speedreader" />            <meta property="og:title" content="Speed Reader and Read Aloud | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/speedreader/img/logo-big.png" />
+        <meta property="og:description" content="Free online speed reader and read-aloud tool: flash text one word at a time with a red focus letter at 60 to 1500 words per minute, or listen with the spoken word highlighted. Paste text or drop a file; nothing leaves your browser." />
 
-        <meta name="description" content="Master the craft of speed reading! By staring at one spot instead of scanning sentences from left to right, your eyes can read words at a higher rate. Slowly increase the words per minute value as you get faster and faster at reading. Can you reach the 1000 words per minute mark?">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@">
-        <meta name="twitter:title" content="Speed Reader">
-        <meta name="twitter:description" content="Master the craft of speed reading! By staring at one spot instead of scanning sentences from left to right, your eyes can read words at a higher rate. Slowly increase the words per minute value as you get faster and faster at reading. Can you reach the 1000 words per minute mark?">
+        <meta name="description" content="Free online speed reader and read-aloud tool: flash text one word at a time with a red focus letter at 60 to 1500 words per minute, or listen with the spoken word highlighted. Paste text or drop a file; nothing leaves your browser.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="Speed Reader and Read Aloud">
+        <meta name="twitter:description" content="Free online speed reader and read-aloud tool: flash text one word at a time with a red focus letter at 60 to 1500 words per minute, or listen with the spoken word highlighted. Paste text or drop a file; nothing leaves your browser.">
         <meta name="twitter:image" content="https://mes.fm/speedreader/img/logo-big.png">
-        <meta name="twitter:image:alt" content="Speed Reader">            <!-- Google Tag Manager -->
+        <meta name="twitter:image:alt" content="Speed Reader and Read Aloud">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Speed Reader and Read Aloud", "url": "https://mes.fm/speedreader", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free online speed reader and read-aloud tool: flash text one word at a time with a red focus letter at 60 to 1500 words per minute, or listen with the spoken word highlighted. Paste text or drop a file; nothing leaves your browser."}
+        </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
-            <!-- End Google Tag Manager -->            
+            <!-- End Google Tag Manager -->
 <!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
     <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -514,7 +801,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/speedreader" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/speedreader/img/logo.png"></a>
+  <a href="/speedreader" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/speedreader/img/logo.png?v=2"></a>
   <a class="compact-nav-title" href="/speedreader" tabindex="-1">Speed Reader</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
@@ -526,70 +813,234 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/speedreader'><img height="88" width="88" id="logo" class="logo lazyload" alt="Speed Reader logo" data-src="/speedreader/img/logo.png"></a>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/speedreader'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/speedreader/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/speedreader'>
-                                    <p class="calculator-title">Speed Reader by MES</p>
+                                    <p class="calculator-title">Speed Reader and Read Aloud</p>
                                 </a>
-                                <p class="tag-line">Increase your reading speed!</p>                            </div>
+                                <p class="tag-line">Read faster, or have any text read aloud.</p>                            </div>
 
                             <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/speedreader'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/speedreader'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Speed Reader</h1>                                        <p class="page-description">Master the craft of speed reading! By staring at one spot instead of scanning sentences from left to right, your eyes can read words at a higher rate. Slowly increase the words per minute value as you get faster and faster at reading. Can you reach the 1000 words per minute mark?</p>                                    	<div id="main-content" data-tool data-text-scale>
-		<div class="buttons-container">
-			<button id="playSpeed" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
-			<button id="pauseSpeed" class="btn btn-default btn-lg hide"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></button>
-			<button id="stopSpeed" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></button>
-			<button id="settingsButton" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
-		</div>
-		
-		<table id="settingsTable" class="basic-table basic-table--full hide">
-			<tr><td>Words Per Minute</td><td><input id="speed" class="settings__input" type="number" autocomplete="off" min="1" value="300" placeholder="eg 300"></td></tr>
-			<tr><td>Font Size (px)</td><td>
-				<select id="fontSize" class="selectpicker" data-width="123px">
-					<option>8</option>
-					<option>12</option>
-					<option>16</option>
-					<option>32</option>
-					<option selected>48</option>						<option>76</option>
-						<option>100</option>
-						<option>120</option>				</select></td></tr>
-			<tr><td>Font Color</td><td><input id="font-color" class="settings__input" type="color" autocomplete="off" value="#333333"></td></tr>
-			<tr><td>Background Color</td><td><input id="background-color" class="settings__input" type="color" autocomplete="off" value="#eef0ff"></td></tr>
-			<tr><td>Number of Words</td><td>
-				<select id="word-count" class="selectpicker" data-width="123px">
-					<option selected>1</option>
-					<option>2</option>
-					<option>3</option>
-					<option>4</option>
-					<option>5</option>
-					<option>6</option>
-					<option>7</option>
-					<option>8</option>
-					<option>9</option>
-					<option>10</option>
-				</select>
-			</td></tr>
-		</table>
-
-		<div id="result-container" class="result-wrapper-outer">
-			<div class="result-wrapper-inner">
-				<p id="result" class="result">Press Play!</p>
+                                    <h1 class="page-title">Speed Reader</h1>                                        <p class="page-description">Free online speed reader and read-aloud tool: flash text one word at a time with a red focus letter at 60 to 1500 words per minute, or listen with the spoken word highlighted. Paste text or drop a file; nothing leaves your browser.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="sr">
+		<section class="tu-card sr-reader" id="sr-reader" aria-label="Reader">
+			<div class="sr-top">
+				<div class="tu-seg sr-modes" id="sr-modes" role="group" aria-label="Reading mode">
+					<button type="button" data-m="speed" aria-pressed="true" title="Silent: one word at a time at a fixed spot (1)">Speed read</button>
+					<button type="button" data-m="aloud" aria-pressed="false" title="Text is read to you, the spoken word is highlighted (2)">Read aloud</button>
+					<button type="button" data-m="both" aria-pressed="false" title="One word at a time, in time with the voice (3)">Read + listen</button>
+				</div>
+				<button type="button" class="tu-btn tu-btn--ghost sr-focusbtn" id="sr-focus" aria-pressed="false" aria-label="Focus mode (full screen)" title="Focus mode: full-screen reading (F)"><svg class="sr-i-expand" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="sr-i-collapse" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 			</div>
+
+			<div class="sr-stage" id="sr-stage" data-th="light" aria-hidden="true">
+				<div class="sr-guide sr-guide--top"></div>
+				<div class="sr-word" id="sr-word"><span class="sr-pre" id="sr-pre"></span><span class="sr-orp" id="sr-orp"></span><span class="sr-post" id="sr-post"></span></div>
+				<div class="sr-guide sr-guide--bot"></div>
+				<div class="sr-ctx" id="sr-ctx"><span class="sr-ctx-l" id="sr-ctx-l"></span><span class="sr-ctx-r" id="sr-ctx-r"></span></div>
+				<div class="sr-msg" id="sr-msg">Press play</div>
+			</div>
+
+			<div class="sr-progress" id="sr-progress">
+				<input type="range" id="sr-seek" class="sr-range" min="0" max="0" value="0" step="1" aria-label="Position in the text">
+				<div class="sr-info"><span id="sr-pos">Word 0 of 0</span><span id="sr-eta"></span></div>
+			</div>
+
+			<div class="sr-transport" role="group" aria-label="Playback controls">
+				<button type="button" class="sr-tb" id="sr-restart" aria-label="Back to the start (R)" title="Back to the start (R)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb" id="sr-prevs" aria-label="Previous sentence (Shift + Left)" title="Previous sentence (Shift + Left)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M11 6v12L2 12zM22 6v12l-9-6z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb" id="sr-prevw" aria-label="Back one word (Left)" title="Back one word (Left)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M16 5v14L6 12z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb sr-play" id="sr-play" aria-label="Play (Space)" title="Play / pause (Space)"><svg class="sr-i-play" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M7 4v16l13-8z" fill="currentColor"/></svg><svg class="sr-i-pause" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb" id="sr-nextw" aria-label="Forward one word (Right)" title="Forward one word (Right)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 5v14l10-7z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb" id="sr-nexts" aria-label="Next sentence (Shift + Right)" title="Next sentence (Shift + Right)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M13 6v12l9-6zM2 6v12l9-6z" fill="currentColor"/></svg></button>
+			</div>
+
+			<div class="sr-speedrow" id="sr-speedrow">
+				<div class="sr-speedhead"><label for="sr-wpm" class="tu-label">Speed</label><span class="sr-wpmbox"><input type="number" id="sr-wpm" class="tu-input sr-wpm" min="60" max="1500" step="5" inputmode="numeric" value="300" aria-label="Words per minute"> <span class="sr-unit">words per minute</span></span></div>
+				<div class="sr-slider"><button type="button" class="sr-nudge" id="sr-wpm-minus" aria-label="Slower (minus)">&minus;</button><input type="range" id="sr-wpm-r" class="sr-range" min="0" max="1000" step="1" value="500" aria-label="Words per minute slider"><button type="button" class="sr-nudge" id="sr-wpm-plus" aria-label="Faster (plus)">+</button></div>
+				<div class="tu-chips sr-presets" id="sr-presets" role="group" aria-label="Speed presets">
+					<button type="button" class="tu-chip" data-w="150">150</button><button type="button" class="tu-chip" data-w="250">250</button><button type="button" class="tu-chip" data-w="350">350</button><button type="button" class="tu-chip" data-w="500">500</button><button type="button" class="tu-chip" data-w="700">700</button><button type="button" class="tu-chip" data-w="1000">1000</button>
+				</div>
+			</div>
+
+			<div class="sr-voicerow" id="sr-voicerow" hidden>
+				<div class="tu-field"><label for="sr-voice">Voice</label><select id="sr-voice" class="tu-select"></select></div>
+				<div class="sr-vgrid">
+					<div class="tu-field"><label for="sr-rate">Speed <output id="sr-rate-o">1.0&times;</output></label><input type="range" id="sr-rate" class="sr-range" min="0.5" max="3" step="0.1" value="1"></div>
+					<div class="tu-field"><label for="sr-pitch">Pitch <output id="sr-pitch-o">1.0</output></label><input type="range" id="sr-pitch" class="sr-range" min="0.5" max="2" step="0.1" value="1"></div>
+					<div class="tu-field"><label for="sr-vol">Volume <output id="sr-vol-o">100%</output></label><input type="range" id="sr-vol" class="sr-range" min="0" max="1" step="0.05" value="1"></div>
+				</div>
+			</div>
+			<p class="sr-note" id="sr-note" role="status" hidden></p>
+
+			<details class="sr-settings" id="sr-settings">
+				<summary>Settings <small>words at a time, pacing, font, size, colours</small></summary>
+				<div class="sr-sgrid">
+					<div class="tu-field">
+						<span class="tu-label" id="sr-chunk-l">Words at a time</span>
+						<div class="tu-seg" id="sr-chunk" role="group" aria-labelledby="sr-chunk-l">
+							<button type="button" data-n="1" aria-pressed="true">1</button><button type="button" data-n="2" aria-pressed="false">2</button><button type="button" data-n="3" aria-pressed="false">3</button><button type="button" data-n="4" aria-pressed="false">4</button><button type="button" data-n="5" aria-pressed="false">5</button>
+						</div>
+					</div>
+					<div class="tu-field">
+						<span class="tu-label">Pacing</span>
+						<label class="sr-check"><input type="checkbox" id="sr-smart"> Smart pauses (sentence ends, commas, long words, numbers)</label>
+						<label class="sr-check"><input type="checkbox" id="sr-ramp"> Slow start (ease in over the first words)</label>
+						<label class="sr-check"><input type="checkbox" id="sr-rewind"> Back up 5 words when I pause</label>
+					</div>
+					<div class="tu-field">
+						<label for="sr-font">Font</label>
+						<select id="sr-font" class="tu-select"><option value="sans">Sans-serif</option><option value="serif">Serif</option><option value="mono">Monospace</option><option value="easy">Easy-read (wide letters)</option></select>
+					</div>
+					<div class="tu-field">
+						<label for="sr-size">Word size <output id="sr-size-o">56</output></label>
+						<input type="range" id="sr-size" class="sr-range" min="24" max="120" step="2" value="56">
+					</div>
+					<div class="tu-field">
+						<span class="tu-label" id="sr-th-l">Stage colours</span>
+						<div class="tu-seg sr-themes" id="sr-th" role="group" aria-labelledby="sr-th-l">
+							<button type="button" data-t="auto" aria-pressed="true">Auto</button><button type="button" data-t="light" aria-pressed="false">Light</button><button type="button" data-t="dark" aria-pressed="false">Dark</button><button type="button" data-t="sepia" aria-pressed="false">Sepia</button><button type="button" data-t="night" aria-pressed="false">Night</button>
+						</div>
+					</div>
+					<div class="tu-field">
+						<span class="tu-label">Show</span>
+						<label class="sr-check"><input type="checkbox" id="sr-orpon"> Red focus letter</label>
+						<label class="sr-check"><input type="checkbox" id="sr-guideon"> Guide marks</label>
+						<label class="sr-check"><input type="checkbox" id="sr-ctxon"> Words before and after (dimmed)</label>
+						<label class="sr-check"><input type="checkbox" id="sr-progon"> Progress bar and time left</label>
+					</div>
+				</div>
+				<div class="tu-chips">
+					<button type="button" class="tu-chip" id="sr-link">Copy link to these settings</button>
+					<button type="button" class="tu-chip" id="sr-reset">Reset settings</button>
+				</div>
+			</details>
+
+			<div class="sr-tv" id="sr-tv">
+				<button type="button" class="sr-tvtoggle" id="sr-tvtoggle" aria-expanded="false" aria-controls="sr-pane">Text view <small>click a word to jump there</small></button>
+				<div class="sr-tvbody" id="sr-tvbody" hidden>
+					<div class="sr-tvnav" id="sr-tvnav" hidden>
+						<button type="button" class="tu-chip" id="sr-tvprev">&lsaquo; Earlier</button><span id="sr-tvpage"></span><button type="button" class="tu-chip" id="sr-tvnext">Later &rsaquo;</button>
+					</div>
+					<div class="sr-pane" id="sr-pane" tabindex="0" role="region" aria-label="Text view: click a word to jump there"></div>
+				</div>
+			</div>
+			<div class="sr-sr" id="sr-live" role="status" aria-live="polite"></div>
+		</section>
+
+		<section class="tu-card sr-input" id="sr-input" aria-label="Your text">
+			<div class="sr-inhead"><label for="sr-text" class="tu-label">Your text</label><span class="sr-count" id="sr-count"></span></div>
+			<textarea id="sr-text" class="tu-input sr-textarea" rows="8" spellcheck="false" placeholder="Paste or type text here, or drop a .txt, .md or .html file onto this box. It stays in your browser."></textarea>
+			<div class="sr-drop" id="sr-drop" aria-hidden="true">Drop a text file here</div>
+			<div class="tu-chips">
+				<button type="button" class="tu-chip" id="sr-paste">Paste from clipboard</button>
+				<button type="button" class="tu-chip" id="sr-open">Open a file&hellip;</button>
+				<button type="button" class="tu-chip" id="sr-here" title="Start reading from the cursor in the text box">Start from cursor</button>
+				<button type="button" class="tu-chip" id="sr-measure-btn">Measure my reading speed</button>
+				<button type="button" class="tu-chip" id="sr-clear">Clear</button>
+			</div>
+			<div class="tu-chips sr-samples" role="group" aria-label="Sample texts">
+				<span class="tu-label sr-samplelabel">Samples</span>
+				<button type="button" class="tu-chip" data-s="alice">Alice in Wonderland</button>
+				<button type="button" class="tu-chip" data-s="pride">Pride and Prejudice</button>
+				<button type="button" class="tu-chip" data-s="moby">Moby-Dick</button>
+			</div>
+			<input type="file" id="sr-file" accept=".txt,.text,.md,.markdown,.html,.htm,text/plain,text/markdown,text/html" style="display:none">
+			<p class="sr-warn" id="sr-warn" role="status"></p>
+
+			<div class="tu-stats sr-stats" id="sr-stats">
+				<div class="tu-stat"><div class="tu-stat__label">Words</div><div class="tu-stat__value" id="sr-st-w">0</div><div class="tu-stat__sub" id="sr-st-c">0 characters</div></div>
+				<div class="tu-stat tu-stat--hero"><div class="tu-stat__label" id="sr-st-l1">At 300 wpm</div><div class="tu-stat__value" id="sr-st-t1">0 s</div><div class="tu-stat__sub" id="sr-st-s1"></div></div>
+				<div class="tu-stat"><div class="tu-stat__label">Average adult, silent</div><div class="tu-stat__value" id="sr-st-t2">0 s</div><div class="tu-stat__sub">about 238 words per minute</div></div>
+				<div class="tu-stat"><div class="tu-stat__label">Listening at a normal pace</div><div class="tu-stat__value" id="sr-st-t3">0 s</div><div class="tu-stat__sub">about 150 words per minute</div></div>
+			</div>
+
+			<div class="sr-measure" id="sr-measure" hidden>
+				<h3>Measure my reading speed</h3>
+				<p class="tu-note">Press <b>Start</b> to reveal a short passage, read it once at your normal pace, then press <b>Done</b>. Your speed is the number of words divided by your time. Reading for fun at an easy pace is the honest test, so don&rsquo;t race.</p>
+				<div class="sr-mtext is-hidden" id="sr-mtext"></div>
+				<div class="sr-mbar">
+					<button type="button" class="tu-btn tu-btn--primary" id="sr-m-start">Start</button>
+					<button type="button" class="tu-btn" id="sr-m-done" disabled>Done</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="sr-m-close">Close</button>
+					<span class="sr-mtime" id="sr-m-time" aria-hidden="true"></span>
+				</div>
+				<p class="sr-mresult" id="sr-m-result" role="status"></p>
+			</div>
+		</section>
+		<div class="tu-toast" id="sr-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>What is this speed reader?</h2>
+			<p>This page shows text one word (or a short group of words) at a time at a fixed spot on the screen. Your eyes stay still while the words come to you, which removes the small eye movements of normal reading. The <strong>red letter</strong> in each word is its focus point: a little left of the middle, where the eye recognises a word most quickly. Every word is lined up so that letter sits on the same vertical guide.</p>
+			<p>The same page also reads text <strong>aloud</strong> with your device&rsquo;s own voices, highlights the word being spoken, and can combine both: one big word at a time, in step with the voice. Paste text, drop a .txt, .md or .html file, or try a public-domain sample. Nothing is uploaded; your text, settings and position are stored only in this browser.</p>
+
+			<h2>Does speed reading work? What the research says</h2>
+			<ul>
+				<li><strong>Average reading speed.</strong> Adults read about 240 words per minute silently (a little more for fiction, a little less for dense non-fiction). Speech is slower, about 150 words per minute.</li>
+				<li><strong>Speed and understanding trade off.</strong> Reviews of the eye-movement research (for example Rayner and colleagues, 2016) find that reading faster costs comprehension, and that claims of reading 1,000 words per minute or more with full understanding are not supported. Skimming is useful, but it is not the same as reading every word.</li>
+				<li><strong>Why one word at a time can still help.</strong> Showing words in one place (RSVP) removes the time spent moving your eyes and stops you drifting off the line. For easy material, many people can comfortably go somewhat faster than they usually read. It also removes your ability to glance back, and that glance back is part of how understanding works. That is why this reader has a <em>back up</em> option, sentence jumps and a text view.</li>
+				<li><strong>Use it where it fits.</strong> Light articles, news, emails and review passes are good fits. Hard textbooks, contracts and anything you must remember deserve a slower speed, or the read-aloud mode with the text in front of you.</li>
+			</ul>
+
+			<h2>How to use it</h2>
+			<ul>
+				<li><strong>Speed read.</strong> Choose a speed, press play (or Space). Start at your comfortable speed plus 10 to 20 percent. When you can retell what you read, raise it by 25 to 50 words per minute. Drop back as soon as you lose the thread.</li>
+				<li><strong>Words at a time.</strong> In Settings, show 2 to 5 words at once. Groups of words match how the eye takes in phrases and feel less choppy at higher speeds.</li>
+				<li><strong>Smart pauses</strong> hold a little longer at commas and full stops and on long words and numbers, so sentences keep their rhythm. The speed you set is the base speed; with smart pauses on, the real average is a bit lower. <strong>Slow start</strong> eases in over the first few words.</li>
+				<li><strong>Read aloud.</strong> Pick a voice (the best match for your text&rsquo;s language is chosen for you), set the speed, pitch and volume, and press play. The word being spoken and its sentence are highlighted and scrolled into view. Click any word in the text view to jump there, in any mode.</li>
+				<li><strong>Read + listen.</strong> One big word at a time, driven by the voice. Hearing words while seeing them helps with names and unfamiliar terms, and is a good way to learn how a word is pronounced.</li>
+				<li><strong>Measure my reading speed</strong> gives a rough starting number. It is a sample of one easy passage, not a test of comprehension.</li>
+			</ul>
+
+			<h2>Tips</h2>
+			<ul>
+				<li>Most people hear the words in their head as they read (subvocalisation). That is normal and nothing to fight; speeds above roughly 400 to 500 words per minute leave little room for it, which is one reason understanding falls.</li>
+				<li>Use the text view or read-aloud mode first for a hard passage, then speed read it once more as revision.</li>
+				<li>Take a break every 10 to 15 minutes. Staring at a flashing word is tiring, and focus mode (F) hides everything else.</li>
+				<li>If one word at a time feels jumpy, try 2 or 3 words, a larger or smaller word size, a different font or a softer colour scheme. Some readers, including some with dyslexia or ADHD, find a single calm focus point easier to follow; others prefer the full text. Try both and use whichever helps you. This is a reading aid, not a treatment for anything, and the &ldquo;Easy-read&rdquo; font is simply a wide-lettered system font.</li>
+				<li>Reduced-motion settings are respected, and the word display is hidden from screen readers (it would announce every word). Screen reader users get status updates and the full text view instead.</li>
+			</ul>
+
+			<h2>Keyboard shortcuts</h2>
+			<div class="tu-table-wrap">
+				<table class="tu-table sr-keys">
+					<thead><tr><th>Key</th><th>Action</th></tr></thead>
+					<tbody>
+						<tr><td><kbd>Space</kbd></td><td>Play / pause</td></tr>
+						<tr><td><kbd>&larr;</kbd> <kbd>&rarr;</kbd></td><td>Back / forward one word</td></tr>
+						<tr><td><kbd>Shift</kbd> + <kbd>&larr;</kbd> <kbd>&rarr;</kbd></td><td>Previous / next sentence</td></tr>
+						<tr><td><kbd>&uarr;</kbd> <kbd>&darr;</kbd> or <kbd>+</kbd> <kbd>&minus;</kbd></td><td>Faster / slower (words per minute, or voice speed)</td></tr>
+						<tr><td><kbd>R</kbd></td><td>Restart from the beginning</td></tr>
+						<tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>Speed read / Read aloud / Read + listen</td></tr>
+						<tr><td><kbd>F</kbd></td><td>Focus mode (full screen)</td></tr>
+						<tr><td><kbd>Esc</kbd></td><td>Leave focus mode, otherwise pause</td></tr>
+					</tbody>
+				</table>
+			</div>
+
+			<h2>Questions</h2>
+			<h3>Why can&rsquo;t I hear a voice, or why is it missing words?</h3>
+			<p>Voices come from your browser and operating system, so the list differs by device. Chrome, Edge and Safari have many; Firefox on some systems has few. If the list is empty, install a voice in your system settings (Settings &rsaquo; Accessibility &rsaquo; Spoken content on Apple devices, Speech on Windows) and reload. Some voices do not report which word they are on; the page then estimates the highlight from the speaking speed and tells you so.</p>
+			<h3>Is my text sent anywhere?</h3>
+			<p>No. Speech runs on your device through the browser&rsquo;s speech synthesis, and some browsers use an online voice that sends the text being spoken to that voice provider (the voice name says &ldquo;Online&rdquo; or &ldquo;Google&rdquo;). Pick a local voice if the text is private. The shareable settings link contains only speed, words at a time and mode, never your text.</p>
+			<h3>What file types can I open?</h3>
+			<p>Plain text (.txt), Markdown (.md) and HTML (.html). For a PDF or Word file, copy the text out of it and paste it in. For a web page, select the article, copy and paste it here (a page cannot be fetched from here because browsers block it).</p>
+			<h3>What speed should I choose?</h3>
+			<p>Start where reading feels easy, around 250 to 350 words per minute for most adults. Faster speeds suit familiar, simple text. Above about 500, expect to retain much less. The highest settings (up to 1,500) are there for skimming and for fun, not for studying.</p>
+			<p><a href="/tools">More MES tools</a> &middot; <a href="/timer">Timer</a> &middot; <a href="/emoji">Emoji Copier</a></p>
 		</div>
-
-		<p id="scanner" class="scanner">All you have to do is copy and paste text into the text box and then press the "Play" button to start speed reading! You can adjust the settings of the Speed Reader by clicking the "Settings" button! Tap on any word in the text box below to start the Speed Reader at that position!</p>
-
-		<textarea id="text-input" class="text-input" placeholder="Type anything..." autocomplete="off">All you have to do is copy and paste text into the text box and then press the "Play" button to start speed reading! You can adjust the settings of the Speed Reader by clicking the "Settings" button! Tap on any word in the text box below to start the Speed Reader at that position!</textarea>
+	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
@@ -599,7 +1050,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/timer"><img class="mes-aside__img mes-aside__img--logo" src="/timer/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Timer</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/youtube-thumbnail"><img class="mes-aside__img mes-aside__img--logo" src="/youtube-thumbnail/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">YouTube Thumbnail Grabber</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/timer"><img class="mes-aside__img mes-aside__img--logo" src="/timer/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Timer</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/share"><img class="mes-aside__img mes-aside__img--logo" src="/share/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Share Launcher</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -612,7 +1063,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
     <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
                                     </div>                                        <!-- (Responsive) Vertical -->
-                                        
+
                             </div>                            <!-- (Responsive) Horizontal -->
                                             </div><div id="footer" class="footer" role="contentinfo">
             <div class="footer__item-container">
@@ -648,9 +1099,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script>$.getScript("/speedreader/js/calculator.js");</script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.3/js/bootstrap-select.min.js"></script>            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+	<script src="/speedreader/js/speedreader.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
   // are dropped from the right, least important first, rather than
@@ -706,5 +1156,4 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   })();
 </script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
-<!-- Mirrored from speedreader.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:44:02 GMT -->
 </html>

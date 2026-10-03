@@ -1,0 +1,92 @@
+	/* copy text -- sticky-note palette: the accent is a note yellow-brown; note colours are literals so the dark theme can map them */
+	.tu kbd {font:0.85em ui-monospace,Menlo,monospace;padding:0.1em 0.4em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;color:#333;}
+	.tu .cp-new-text {min-height:6.5em;line-height:1.45;resize:vertical;}
+	.tu .cp-add-btns {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;}
+	.tu .cp-boards {display:flex;flex-wrap:wrap;gap:0.4em;margin:1.2em 0 0.8em;padding-bottom:0.2em;border-bottom:2px solid var(--tint);}
+	.tu .cp-tab {cursor:pointer;border:1px solid #c3c9d2;border-bottom:0;border-radius:0.5em 0.5em 0 0;background:#fff;color:#444;padding:0.5em 0.9em;font-size:0.92em;margin-bottom:-2px;}
+	.tu .cp-tab:hover {border-color:var(--accent);color:var(--accent);}
+	.tu .cp-tab[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	.tu .cp-tab--add {border-style:dashed;color:var(--accent);background:transparent;}
+	.tu .cp-n {display:inline-block;min-width:1.5em;text-align:center;font-size:0.8em;padding:0 0.35em;border-radius:1em;background:rgba(0,0,0,0.08);}
+	.tu .cp-tab[aria-selected="true"] .cp-n {background:rgba(255,255,255,0.25);}
+	.tu .cp-bar {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-bottom:0.3em;}
+	.tu .cp-search {flex:1 1 14em;min-width:0;}
+	.tu .cp-bar .tu-btn {display:inline-block;}
+	.tu .cp-menu {position:relative;}
+	.tu .cp-menu summary {list-style:none;}
+	.tu .cp-menu summary::-webkit-details-marker {display:none;}
+	.tu .cp-menu-box {position:absolute;right:0;top:calc(100% + 0.3em);z-index:30;min-width:15em;display:flex;flex-direction:column;background:#fff;border:1px solid #c3c9d2;border-radius:0.5em;box-shadow:0 0.5em 1.4em rgba(0,0,0,0.2);padding:0.3em;}
+	.tu .cp-menu-box button {cursor:pointer;text-align:left;border:0;background:transparent;padding:0.55em 0.7em;border-radius:0.35em;color:#333;font-size:0.92em;}
+	.tu .cp-menu-box button:hover {background:var(--tint);}
+	.tu .cp-menu-box .cp-danger {color:#b3261e;}
+	.tu .cp-status {margin:0.3em 0 0.8em;}
+	.tu .cp-status.cp-warn {color:#9a5200;font-weight:700;}
+	.tu .cp-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(19em,1fr));gap:0.8em;align-items:start;}
+	.tu .cp-note {display:flex;flex-direction:column;gap:0.45em;min-width:0;background:#fffdf5;border:1px solid #e8dfc2;border-left:5px solid #d8b84a;border-radius:0.5em;padding:0.65em 0.75em;transition:box-shadow 0.15s,background 0.3s;}
+	.tu .cp-note:hover {box-shadow:0 0.2em 0.8em rgba(0,0,0,0.12);}
+	.tu .cp-note.c-x {background:#fff;border-color:#dfe4ea;border-left-color:#aab2bd;}
+	.tu .cp-note.c-y {background:#fffdf0;border-color:#efe3b0;border-left-color:#e0b81c;}
+	.tu .cp-note.c-g {background:#f3faf4;border-color:#cfe6d3;border-left-color:#3d9a58;}
+	.tu .cp-note.c-b {background:#f1f6fd;border-color:#cddcf2;border-left-color:#3b78d1;}
+	.tu .cp-note.c-p {background:#f7f3fd;border-color:#ddd2f1;border-left-color:#8a58d0;}
+	.tu .cp-note.c-r {background:#fdf3f2;border-color:#f0d0cc;border-left-color:#d1453b;}
+	.tu .cp-note.is-flash {box-shadow:0 0 0 3px var(--accent);}
+	.tu .cp-note.is-drag {opacity:0.45;}
+	.tu .cp-nh {display:flex;align-items:center;gap:0.4em;min-width:0;}
+	.tu .cp-grip {cursor:grab;color:#9aa3af;font-size:1.1em;line-height:1;user-select:none;}
+	.tu .cp-title {font-size:0.98em;color:#1e2733;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+	.tu .cp-title i {font-weight:400;color:#6a7280;}
+	.tu .cp-bname {font-size:0.7em;padding:0.1em 0.55em;border-radius:1em;background:#eef1f5;color:#556;white-space:nowrap;}
+	.tu .cp-dyn {font-size:0.65em;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:0.1em 0.5em;border-radius:1em;background:var(--tint);color:var(--accent-dark);}
+	.tu .cp-sp {flex:1;}
+	.tu .cp-ibtn {cursor:pointer;border:0;background:transparent;font-size:1.2em;line-height:1;padding:0.1em 0.25em;color:#b9c0ca;}
+	.tu .cp-ibtn:hover {color:#d8a800;}
+	.tu .cp-ibtn[aria-pressed="true"] {color:#e0a800;}
+	.tu .cp-body {cursor:copy;border-radius:0.35em;padding:0.1em 0.15em;outline-offset:2px;}
+	.tu .cp-body:hover {background:rgba(0,0,0,0.04);}
+	.tu .cp-body:focus-visible {outline:2px solid var(--accent);}
+	.tu .cp-body pre {margin:0;white-space:pre-wrap;word-break:break-word;font:0.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#222;background:transparent;border:0;border-radius:0;}
+	.tu .cp-body.is-clamped {max-height:10.5em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent);}
+	.tu .cp-more {align-self:flex-start;cursor:pointer;border:0;background:none;color:var(--accent);font-size:0.82em;padding:0;text-decoration:underline;}
+	.tu .cp-foot {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
+	.tu .cp-foot .tu-btn {padding:0.35em 0.7em;font-size:0.85em;}
+	.tu .cp-count {font-size:0.72em;color:#8a93a0;white-space:nowrap;}
+	.tu .cp-edit {gap:0.55em;}
+	.tu .cp-e-text {font:0.9em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical;min-height:7em;}
+	.tu .cp-e-row {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:center;font-size:0.85em;}
+	.tu .cp-swatches {display:inline-flex;gap:0.35em;}
+	.tu .cp-sw {cursor:pointer;width:1.6em;height:1.6em;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #9aa3af;padding:0;}
+	.tu .cp-sw[aria-pressed="true"] {box-shadow:0 0 0 2px var(--accent);}
+	.tu .cp-sw.c-x {background:#fff;} .tu .cp-sw.c-y {background:#e8c53a;} .tu .cp-sw.c-g {background:#4aa866;} .tu .cp-sw.c-b {background:#4a86dd;} .tu .cp-sw.c-p {background:#9a68de;} .tu .cp-sw.c-r {background:#dd5a50;}
+	.tu .cp-move {display:inline-flex;align-items:center;gap:0.4em;color:#667;}
+	.tu .cp-move .tu-select {width:auto;font-size:1em;padding:0.3em 0.5em;}
+	.tu .cp-ins .tu-chip {margin-left:0.25em;font-family:ui-monospace,Menlo,monospace;}
+	.tu .cp-empty {grid-column:1/-1;padding:2em 1em;text-align:center;color:#6a7280;border:2px dashed #dfe4ea;border-radius:0.6em;line-height:1.7;}
+	.tu .cp-undo button {margin-left:0.8em;cursor:pointer;border:0;background:transparent;color:#ffd666;font-weight:700;text-decoration:underline;}
+	.tu .cp-undo button[hidden] {display:none;}
+	.tu .tu-toast.cp-undo {pointer-events:auto;}
+	/* dark mode: the derived theme maps most of this; restate what depends on it */
+	body.dark-mode .tu .cp-note.c-x {background:#232323;border-color:#3a3a3a;border-left-color:#7b8590;}
+	body.dark-mode .tu .cp-note.c-y {background:#2b2711;border-color:#4a431b;border-left-color:#e0b81c;}
+	body.dark-mode .tu .cp-note.c-g {background:#14251a;border-color:#264a31;border-left-color:#4caf6e;}
+	body.dark-mode .tu .cp-note.c-b {background:#142034;border-color:#263e66;border-left-color:#6a9be6;}
+	body.dark-mode .tu .cp-note.c-p {background:#221a33;border-color:#3d2e61;border-left-color:#a47be0;}
+	body.dark-mode .tu .cp-note.c-r {background:#2f1816;border-color:#592a26;border-left-color:#e76f66;}
+	body.dark-mode .tu .cp-title, body.dark-mode .tu .cp-body pre {color:#e4e4e4;}
+	body.dark-mode .tu .cp-title i, body.dark-mode .tu .cp-count {color:#a0a8b3;}
+	body.dark-mode .tu .cp-tab[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .cp-tab {background:#262626;color:#d1d6dc;border-color:#444;}
+	body.dark-mode .tu .cp-tab--add {background:transparent;color:var(--accent);}
+	body.dark-mode .tu .cp-menu-box {background:#262626;border-color:#555;}
+	body.dark-mode .tu .cp-menu-box button {color:#e4e4e4;}
+	body.dark-mode .tu .cp-menu-box button:hover {background:rgba(255,255,255,0.1);}
+	body.dark-mode .tu .cp-menu-box .cp-danger {color:#ff8a80;}
+	body.dark-mode .tu .cp-dyn {background:rgba(255,255,255,0.1);color:var(--accent);}
+	body.dark-mode .tu kbd {background:#2e2e2e;color:#ddd;border-color:#555;}
+	body.dark-mode .tu .cp-bname {background:#333;color:#ccc;}
+	body.dark-mode .tu .cp-sw {border-color:#262626;}
+	@media (max-width:600px) {
+		.tu .cp-grid {grid-template-columns:1fr;}
+		.tu .cp-grip {display:none;}
+	}
+	.tu #cp-file {display:none !important;}

@@ -1,0 +1,118 @@
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu ss" id="ss">
+		<div class="ss-top">
+			<div class="tu-seg" id="ss-views" role="group" aria-label="View">
+				<button type="button" data-v="orrery" aria-pressed="true">☀ Solar system</button>
+				<button type="button" data-v="moon" aria-pressed="false">🌍 Earth &amp; Moon</button>
+				<button type="button" data-v="sky" aria-pressed="false">✨ Zodiac sky</button>
+			</div>
+			<div class="tu-chips ss-fits" id="ss-fits" role="group" aria-label="How much of the solar system to show">
+				<button type="button" class="tu-chip" data-au="1.8">Inner planets</button>
+				<button type="button" class="tu-chip" data-au="5.8">To Jupiter</button>
+				<button type="button" class="tu-chip" data-au="10.5">To Saturn</button>
+				<button type="button" class="tu-chip" data-au="36">Everything</button>
+				<button type="button" class="tu-chip" id="ss-flat" aria-pressed="false">Top-down</button>
+			</div>
+			<div class="tu-chips ss-fits" id="ss-moonopts" hidden>
+				<button type="button" class="tu-chip" id="ss-truescale" aria-pressed="false">True scale</button>
+			</div>
+		</div>
+
+		<div class="ss-wrap" id="ss-wrap">
+			<div class="ss-stage" id="ss-stage">
+				<canvas id="ss-canvas" tabindex="0" role="img" aria-label="Interactive map of the solar system for the chosen date. Drag to rotate, scroll to zoom, click a planet for details."></canvas>
+				<div class="ss-datebox" aria-live="off"><div id="ss-date-big"></div><div id="ss-date-sub"></div></div>
+				<div class="ss-tip" id="ss-tip" hidden></div>
+				<div class="ss-tools" role="toolbar" aria-label="View tools">
+					<button type="button" id="ss-zin" title="Zoom in" aria-label="Zoom in">＋</button>
+					<button type="button" id="ss-zout" title="Zoom out" aria-label="Zoom out">－</button>
+					<button type="button" id="ss-reset" title="Reset the view (or double-click the map)" aria-label="Reset the view">⌂</button>
+					<button type="button" id="ss-png" title="Save this view as a picture" aria-label="Save as PNG">📷</button>
+					<button type="button" id="ss-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
+					<button type="button" id="ss-full" title="Full screen" aria-label="Full screen">⛶</button>
+				</div>
+				<div class="ss-hint" id="ss-hint">Drag to rotate · scroll to zoom · click a planet</div>
+			</div>
+			<div class="ss-transport" id="ss-transport">
+				<div class="ss-trow">
+					<button type="button" class="ss-btn" id="ss-rev" title="Play backwards (Shift + Space)" aria-pressed="false">◀ Reverse</button>
+					<button type="button" class="ss-btn" id="ss-prev" title="Step back (←)" aria-label="Step back">⏮</button>
+					<button type="button" class="ss-btn ss-btn--main" id="ss-play" title="Play / pause (Space)">▶ Play</button>
+					<button type="button" class="ss-btn" id="ss-next" title="Step forward (→)" aria-label="Step forward">⏭</button>
+					<label class="ss-speed">Speed <select id="ss-speed" class="tu-select" aria-label="Playback speed"></select></label>
+					<span class="ss-step" id="ss-steplabel"></span>
+					<button type="button" class="ss-btn" id="ss-now" title="Back to the present moment">Now</button>
+				</div>
+				<div class="ss-trow">
+					<label class="ss-dt">Date <input type="date" id="ss-date" min="1000-01-01" max="3000-12-31" class="tu-input"></label>
+					<label class="ss-dt">Time <input type="time" id="ss-time" class="tu-input"></label>
+					<div class="ss-jumps" role="group" aria-label="Jump in time">
+						<button type="button" class="ss-btn" data-y="-100">−100y</button><button type="button" class="ss-btn" data-y="-10">−10y</button><button type="button" class="ss-btn" data-y="-1">−1y</button>
+						<button type="button" class="ss-btn" data-y="1">+1y</button><button type="button" class="ss-btn" data-y="10">+10y</button><button type="button" class="ss-btn" data-y="100">+100y</button>
+					</div>
+				</div>
+				<div class="ss-trow ss-scrub">
+					<span class="ss-yr" id="ss-yr-left">Jan 1</span>
+					<input type="range" id="ss-year" min="0" max="365" step="0.01" value="0" aria-label="Scrub through the year">
+					<span class="ss-yr" id="ss-yr-right">Dec 31</span>
+				</div>
+			</div>
+		</div>
+
+		<details class="tu-card ss-opts" id="ss-opts">
+			<summary><b>Display options</b> <small>orbits, trails, labels, belts, distance squeeze…</small></summary>
+			<div class="ss-checks" id="ss-checks">
+				<label><input type="checkbox" data-s="orbits" checked> Orbits</label>
+				<label><input type="checkbox" data-s="trails" checked> Trails</label>
+				<label><input type="checkbox" data-s="labels" checked> Labels</label>
+				<label><input type="checkbox" data-s="rings" checked> Distance rings (AU)</label>
+				<label><input type="checkbox" data-s="belts" checked> Asteroid &amp; Kuiper belts</label>
+				<label><input type="checkbox" data-s="halley" checked> Halley's Comet</label>
+				<label><input type="checkbox" data-s="moon" checked> Moon</label>
+				<label><input type="checkbox" data-s="seasons"> Seasons around Earth's orbit</label>
+				<label><input type="checkbox" data-s="sight" checked> Line from Earth to the selected world</label>
+			</div>
+			<div class="ss-sliders">
+				<label>Squeeze distances <input type="range" id="ss-compress" min="0" max="100" step="1" value="72" aria-label="Squeeze distances"><output id="ss-compress-o"></output></label>
+				<label>Tilt <input type="range" id="ss-tilt" min="0" max="82" step="1" value="52" aria-label="Tilt"><output id="ss-tilt-o"></output></label>
+				<label>Rotate <input type="range" id="ss-yaw" min="-180" max="180" step="1" value="-90" aria-label="Rotate"><output id="ss-yaw-o"></output></label>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Real distances make the inner planets a tight knot and Neptune a dot at the edge, so <b>Squeeze distances</b> (on by default) spreads them out. Set it to 0 for the true proportions. The planets themselves are drawn far bigger than life.</p>
+		</details>
+
+		<div class="ss-panels">
+			<section class="tu-card ss-card" id="ss-card" aria-live="polite"></section>
+			<section class="tu-card ss-card" id="ss-now-card"></section>
+			<section class="tu-card ss-card" id="ss-events"></section>
+		</div>
+
+		<h2>Where is everything? <small class="ss-small" id="ss-tbl-date"></small></h2>
+		<div class="tu-table-wrap"><table class="tu-table ss-table" id="ss-table"><thead><tr>
+			<th>World</th><th>From Sun</th><th>From Earth</th><th>Light takes</th><th>Speed</th><th>Constellation</th><th>In the sky</th><th>Bright­ness</th>
+		</tr></thead><tbody></tbody></table></div>
+		<p class="tu-note">Click a row to select that world. Distances are in astronomical units (1 AU = 149.6 million km, the average Earth–Sun distance). Brightness is apparent magnitude: smaller is brighter, and anything below about +6 is visible to the naked eye under dark skies. “Evening sky” means east of the Sun, so it is up after sunset; “morning sky” is west of the Sun, up before sunrise.</p>
+		<div class="tu-toast" id="ss-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>Where is Earth in the solar system today?</h2>
+			<p>This page shows where the Sun, the eight planets, Pluto, our Moon and Halley's Comet really are on any date you choose, looking down on the solar system from above (and tilted, if you like). Right now it is set to <strong>today</strong>: Earth is somewhere on its roughly 940-million-kilometre loop around the Sun, and the other planets are wherever their own, slower or faster, orbits have taken them. Press <strong>Play</strong> to watch time pass, from one hour per second up to a hundred years per second, or drag the year slider and watch the seasons turn.</p>
+			<h3>How to use it</h3>
+			<ul>
+				<li><strong>Look around:</strong> drag to rotate and tilt the view, scroll or pinch to zoom, shift-drag (or two fingers) to pan, double-click to reset. <strong>Inner planets / To Jupiter / Everything</strong> zoom to a good size for you.</li>
+				<li><strong>Click a world</strong> for its distance from the Sun and from Earth, how long its light takes to reach us, its speed, the constellation it is in, whether it is in the evening or morning sky, and how bright it is.</li>
+				<li><strong>Change the date</strong> with the date box, the ±1, 10 and 100 year jumps, or the year slider. <strong>Coming up</strong> lists the next eclipses, moon phases, solstices, oppositions and more, each with a button that jumps straight to it.</li>
+				<li><strong>Earth &amp; Moon</strong> zooms in on our own neighbourhood: the Moon's orbit, its phase and its distance today, with the Sun fixed on the left so the phases run in order. <strong>True scale</strong> shows how small Earth and the Moon really are against the gap between them.</li>
+				<li><strong>Zodiac sky</strong> flattens the picture to what you would see from Earth: the band of constellations along the ecliptic with the Sun, Moon and planets marked on it, so you can see which planets are close together and which are in the evening or morning sky.</li>
+			</ul>
+			<h3>How accurate is it?</h3>
+			<p>Positions are calculated, not animated by hand: the planets come from the VSOP87 planetary theory and the Moon from a full lunar series, through the open-source <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy Engine</a>, accurate to about an arcminute between roughly the years 1800 and 2200 and still sensible far beyond. Eclipses, moon phases, solstices and oppositions come from the same library. Halley's Comet follows a simple two-body orbit from its 1986 passage, so treat its date as good to a few months (it is due back around mid-2061). The asteroid belt, Kuiper belt and Jupiter's Trojan asteroids are drawn as swarms of typical rocks, not individual asteroids. Planet sizes are exaggerated so you can see them: drawn to scale, even Jupiter would be a fraction of a pixel.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>How fast is Earth moving?</strong> About 29.8 km/s (107,000 km/h) around the Sun, a little faster in January when it is closest, and a little slower in July.</li>
+				<li><strong>Why do planets sometimes go backwards?</strong> Retrograde motion is an illusion of perspective. When Earth overtakes Mars or Jupiter on the inside lane, they seem to slip backwards against the stars for a few weeks. The table marks it with ℞.</li>
+				<li><strong>What is an opposition?</strong> When an outer planet is directly opposite the Sun in our sky: closest to Earth, fully lit and rising at sunset, the best time to see it.</li>
+				<li><strong>What is an AU?</strong> One astronomical unit is the average distance from Earth to the Sun. Jupiter is about 5 AU out, Neptune about 30. Sunlight takes 8 minutes 19 seconds to reach us, and over 4 hours to reach Neptune.</li>
+			</ul>
+			<p>Everything runs in your browser. Date, view and selected world can be shared with the page link. <a href="/moon">Moon, sunrise and sky times for your location</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

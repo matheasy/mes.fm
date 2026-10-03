@@ -305,6 +305,21 @@ of HTML files individually:
   the page's last table, add its slug to the right category in `PAGES` (unmapped cards land in a trailing "More" section
   and are reported) and re-run. Idempotent; **dry-runs by default, `--apply` writes.**
 
+- **Speed Reader 2.0** (2026-10-03, `mes.fm/speedreader`, red `#e52503` + its old Grok logos, kept; `/sr` still 308s to it) -- rewritten from the 2016 jQuery/Bootstrap page (the app code has no jQuery /
+  Bootstrap; the shared tool shell still loads them for `main.js`). Built by `build_tool_apps.py` from `tool_apps_src/speedreader/` (`lib.js` + `app.js` -> one `js/speedreader.js`, `content.html`, `app.css`); title
+  "Speed Reader and Read Aloud" (search index / `aside-recs.json` / the two `tools.html` cards were refreshed for it). `lib.js` (`SRLib`, pure, node-tested by `node tool_apps_src/speedreader-tests.js`, 21 tests) =
+  cleaning + HTML/Markdown to text, tokenising (sentence ends skip `Mr.` / initials / `"Why?" she said`, em dashes split), focus letter (`orpIndex`), chunking (never across a sentence), pacing (`chunkFactors` for smart
+  pauses is speed-independent so a slider drag only redoes `timelineFrom`; slow start is applied at play time), ETA, `speechChunk` (whole sentences up to ~200 chars, offsets into the cleaned text), `wordAtChar`,
+  `detectLang` + `pickVoice` (prefers local voices: they send word-boundary events, many online ones don't), `?wpm=&chunk=&mode=` params. Three modes: **Speed read** (silent RSVP: word placed by measuring the pre-focus
+  width and `translateX`/`scale` about the focus letter, so every word's red letter sits on the guide and long words shrink to fit a phone), **Read aloud** (Web Speech API, text view highlights word + sentence), **Read + listen**
+  (RSVP driven by the voice). Speech notes: pause = cancel and resume = restart from the current word (Chrome's pause/resume is unreliable); the next sentence is queued at `onstart` of the current one (no gap); a few utterances are
+  kept referenced (Chrome GC bug); a 3.5 s watchdog retries a speak() that never starts; if a voice sends no `boundary` events within ~0.8 s the highlight / RSVP word follows `speechDelay` estimates and a note says so; no
+  speechSynthesis -> the two speech modes are disabled with a message. State is localStorage `mes-speedreader:v1` (text, settings, position; nothing is uploaded; settings link carries no text). Dark mode: stage colours
+  (`data-th` light/dark/sepia/night, Auto follows `body.dark-mode`) are literals restated under `body.dark-mode #sr ...` -- **hand-written dark rules must use the `#sr` id prefix**: the derived `TOOL-DARK` block keeps `.tu`
+  and is emitted later at equal specificity, so a plain `body.dark-mode .tu .x` rule silently loses (the Play button went dark). Gotchas while building: `build_tool_apps.py` rebuilds every app and `add_sidebar`/`add_bottom_ad`
+  rewrite other sessions' pages, so a one-slug rebuild script (`build_from_source` + `add_tool_page_controls.patch` + `add_sidebar.patch_page`/`aside_html` + `add_bottom_ad.patch`, speedreader only) avoids churn; and the
+  shared scratchpad dir is shared between agents (name scratch files uniquely). Logos: unchanged (`speedreader/img/logo.png` 176 px and `logo-big.png` 250 px square, Grok art; the og:image is therefore the small square, not a
+  1200x630 card -- replace the same file names when a wide share image exists).
 - **Calculator** (2026-10-01, `mes.fm/calculator`, rose `#c2255c`; card on `calculators.html` "Everyday Math & Health"). Built like `calendar` by
   `build_tool_apps.py` from `tool_apps_src/calculator/`: `lib.js` = pure maths (no `eval`: tokenizer + recursive-descent parser with `^`, `%`, `!`, implicit
   multiplication, `of`, deg/rad trig, `root`/`gcd`/`nCr`...; BigInt exact decimal multiply/divide with repeating-cycle detection; factorization, fractions,
@@ -408,6 +423,23 @@ of HTML files individually:
   300x600 second unit is skipped too). Not in `add_bottom_ad.py`'s `TOOL_DIRS` on purpose. Registered in `add_tool_page_controls` TOOLS (floating bar, dark theme). Logos are PIL placeholders
   (`youtubemoney/img/logo.png`, `logo-big.png` 1200x630, `img/ymc-logo.png`) until Grok art lands. After editing run `build_tool_apps.py --apply` (rebuilds every app; `git checkout` the
   other apps' pages, or re-run the other scripts), then `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`.
+- **VAT Calculator 2.0** (2026-10-03, `mes.fm/vatcalculator`, olive-gold `#7a6200`; card on `calculators.html` "Money & Finance", `img/vatcalculator-logo.png`) -- rewritten from the 2013 jQuery
+  page (old `js/calculatorf9e3.js` deleted). Built by `build_tool_apps.py` from `tool_apps_src/vatcalculator/` (`lib.js` + `app.js` + `app.css` + `content.html`, one served `js/vatcalculator.js`); **keeps ads**
+  (AdSense, sidebar, bottom ad) unlike youtubemoney: it is in `add_sidebar.py`'s `tools` collection (its old one-page FAMILIES entry was removed), `add_bottom_ad.py` `TOOL_DIRS`, `add_tool_page_controls` TOOLS,
+  `build_aside_recs.py` CALC + a `CTX` "Try it" pair on `/percentagecalculator` (VAT out of 120 in the UK, Ontario HST); `add_cross_links` / `build_search_index` / `organize_hub_cards` already listed it.
+  Modes: net -> gross, gross -> net, VAT amount -> both, net + gross -> the rate; itemised invoice (qty x unit price, net or gross, per-line rate, 0% = exempt / zero-rated / reverse charge) totalled **per rate**
+  (VAT rounded once per rate, the usual invoice method, or per line); country + province/state picker, rate chips, currency, rounding (cent / none / whole unit / 0.05), compare two rates, quick-reference table,
+  worked steps, copy sentence / text / CSV, print, click a result tile to copy. **Maths is exact**: every amount is a BigInt rational in `lib.js`, rounded only where the tax is derived (half away from zero);
+  number parsing accepts `1,234.56` / `1.234,56` / `1 234,56`. Tests: `node tool_apps_src/vatcalculator-tests.js` (12 groups; run after touching lib.js).
+  **Rate table = `COUNTRIES` / `CA_ROWS` / `US_ROWS` at the top of `lib.js`** (row = code, name, group, currency, tax name, standard %, [[reduced %, label]], note); to refresh, update the rows, set `RATES_VERIFIED`
+  (shown on the page + in the "all countries" table, with `SOURCES`), run the tests and `build_tool_apps.py --apply` (+ the follow-up scripts below). Verified 2026-10-03 against Tax Foundation (Jan 2026 Europe table; 1 Jul 2026 US
+  state table), PwC Worldwide Tax Summaries (reviewed Jun-Sep 2026), TaxTips.ca (Canada) and news checks: Thailand stays at 7% (extended to 30 Sep 2027, statutory 10%), Russia is 22% since 1 Jan 2026, Vietnam 8% temporary
+  to 31 Dec 2026, India GST 2.0 = 5 / 18 / 40, Indonesia effective 11% (12% statutory on 11/12 of the base; 12% on luxury goods), Estonia 24, Finland 25.5 / 13.5, Romania 21 / 11, Slovakia 23, Nova Scotia HST 14. Brazil has no single
+  rate (note only); US = state base rates only (local taxes extra, said on the page). **Share links are plain query strings**: `?mode=net|gross|vat|rate&net=|gross=|vat=&rate=&c=<ISO>&g=<province/state>&cur=<ISO|none>&round=cent|none|unit|nickel`
+  and `?view=items&items=<desc~qty~price~net|gross~rate rows split by |, each field URL-encoded>&how=line`; localStorage `mes-vatcalculator:v1`. **Old `/vatcalculator/s/<id>` links**: `vercel.json` rewrites them to the page, `fromOldShare()` fetches
+  `/api/share?calc=vat&id=<id>` and maps the stored `{tax, value, rate}` (tax true = "add tax", value is the net price; false / `"false"` = gross) to a mode + rate in USD (the old page showed `$`), then rewrites the URL to the query form; a
+  dead id shows a notice and a fresh calculator. `/vat` 308-redirects to it (already in `vercel.json`). Logos are PIL placeholders (`vatcalculator/img/logo.png` 512, `logo-big.png` 1200x630, `img/vatcalculator-logo.png` 512) until Grok art lands.
+  After editing run `build_tool_apps.py --apply` (rebuilds every app: `git checkout` other apps' pages), `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`, `add_bottom_ad.py --apply`, then `build_search_index.py` and `build_aside_recs.py --apply`.
 - **Inflation Calculator 2.0** (2026-10-02, `mes.fm/inflationcalculator`) -- rewritten; the 2018/2019 MySQL-era snapshot and the Google Charts / jQuery code are gone.
   **Data is live:** `mes.fm/api/inflation.js` (Vercel function, edge-cached `s-maxage=12h` + `stale-while-revalidate=7d`) pulls World Bank `FP.CPI.TOTL` (annual, ~190 countries),
   FRED `CPIAUCNS` (US BLS CPI-U, monthly since 1913), StatCan vector 41690973 (Canada, monthly since 1914) and ONS `D7BT` (UK CPI, monthly since 1988) and returns one JSON
@@ -601,6 +633,24 @@ per-file report; read the output rather than assuming success — `fix_broken_in
 Note that other agent sessions sometimes have a repo-wide pass of their own sitting uncommitted in this same working
 tree. Before committing one of these, compare `git status --porcelain | wc -l` against the file count your script
 reported; if there is a large gap, stage only your own paths rather than `git add -A`.
+
+- **Copy Text** (2026-10-03, `mes.fm/copy-text`, note-yellow `#a16207`; `/copy`, `/clipboard` 308 to it; card in `tools.html` "Text & Symbols"). A clipboard shelf built by
+  `build_tool_apps.py` from `tool_apps_src/copy-text/`: notes on boards, click a note to copy, pin / colour / drag-reorder, search across boards, `{date}` `{time}` `{weekday}` `{year}` `{iso}`
+  placeholders filled in at copy time (`{{date}}` = literal), undo for deletes, .txt / .json export, JSON restore (merges, skips duplicates), cross-tab sync via the `storage` event. All state is
+  localStorage `mes-copytext:v1` (draft in `:draft`); nothing is uploaded. Normal-width page in `add_sidebar.py`'s tools collection. `mes.fm/share` got a small "My own text" card (same idea, own
+  storage `mes-share:snippets`, links to Copy Text). Logos are PIL placeholders (`copy-text/img/logo.png`, `logo-big.png` 1200x630, `img/copy-text-logo.png`) until Grok art lands.
+- **Solar System Today** (2026-10-03, `mes.fm/solar-system-today`, indigo `#3730a3`; `/earth-today`, `/solar-system`, `/orrery`, `/planets` 308 to it; card in `tools.html` "Sky & Space"). Where the Sun,
+  planets, Pluto, the Moon and Halley's Comet are on any date (clamped 1000-3000), with playback from real time to 100 years/s. Built by `build_tool_apps.py` from `tool_apps_src/solar-system-today/`;
+  the page script is `lib.js` + `view.js` + `app.js` (new `js_parts` option) and `extra_js` also writes `mes.fm/solar-system-today/js/orrery-embed.js` = `lib.js` + `view.js` + `embed.js`, the limited
+  widget on `mes.fm/moon` ("Earth, Moon & the Solar System Right Now": Earth & Moon / inner / whole system, play, +-1 day, Now; Ctrl+scroll zooms so the page still scrolls). **All astronomy is Astronomy
+  Engine** (the copy `mes.fm/moon/js/astronomy.browser.min.js` already ships; the page loads it via `pre_js`, so don't move that file): `lib.js` = positions (heliocentric ecliptic J2000),
+  geocentric view (constellation, elongation, magnitude, retrograde), Moon info, `events()` (next moon quarters, lunar/solar eclipse, equinoxes/solstices, Earth perihelion/aphelion, oppositions, greatest
+  elongations -- each a "Jump" row), Halley (two-body from 1986 elements, good to a few months), zodiac boundaries. Node tests: `node tool_apps_src/solar-system-tests.js`. `view.js` = canvas renderer: orrery
+  (drag = rotate/tilt, shift/right-drag pan, wheel/pinch zoom, "Squeeze distances" = r^p with p = 1-0.62*c so every planet fits, trails computed live, belts / Trojans as Kepler-moving particles, Saturn
+  rings, procedural Earth/Moon/Jupiter), Earth & Moon (Sun fixed on the left so phases read in order; no shadow cone on purpose -- the 5 degree orbit tilt would imply an eclipse every full moon; "True
+  scale" toggle; phase inset with maria) and the zodiac band. Wide page like the graphing calculators (not in `add_sidebar.py`), Theatre via `pageMode`. Dark-theme gotcha: the planetarium stage colours are
+  custom properties (`--ss-bg`...) because `add_tool_page_controls.py` would lighten a literal near-black background. Logos are PIL placeholders (`solar-system-today/img/logo.png`, `logo-big.png`,
+  `img/solar-system-today-logo.png`) until Grok art lands. `build_tool_apps.py --only=slug,slug` now rebuilds just those apps.
 
 ### `build.mjs` pages: never rebuild without diffing first
 

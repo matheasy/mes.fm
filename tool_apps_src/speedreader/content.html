@@ -1,0 +1,209 @@
+	<div class="tu" id="sr">
+		<section class="tu-card sr-reader" id="sr-reader" aria-label="Reader">
+			<div class="sr-top">
+				<div class="tu-seg sr-modes" id="sr-modes" role="group" aria-label="Reading mode">
+					<button type="button" data-m="speed" aria-pressed="true" title="Silent: one word at a time at a fixed spot (1)">Speed read</button>
+					<button type="button" data-m="aloud" aria-pressed="false" title="Text is read to you, the spoken word is highlighted (2)">Read aloud</button>
+					<button type="button" data-m="both" aria-pressed="false" title="One word at a time, in time with the voice (3)">Read + listen</button>
+				</div>
+				<button type="button" class="tu-btn tu-btn--ghost sr-focusbtn" id="sr-focus" aria-pressed="false" aria-label="Focus mode (full screen)" title="Focus mode: full-screen reading (F)"><svg class="sr-i-expand" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="sr-i-collapse" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+			</div>
+
+			<div class="sr-stage" id="sr-stage" data-th="light" aria-hidden="true">
+				<div class="sr-guide sr-guide--top"></div>
+				<div class="sr-word" id="sr-word"><span class="sr-pre" id="sr-pre"></span><span class="sr-orp" id="sr-orp"></span><span class="sr-post" id="sr-post"></span></div>
+				<div class="sr-guide sr-guide--bot"></div>
+				<div class="sr-ctx" id="sr-ctx"><span class="sr-ctx-l" id="sr-ctx-l"></span><span class="sr-ctx-r" id="sr-ctx-r"></span></div>
+				<div class="sr-msg" id="sr-msg">Press play</div>
+			</div>
+
+			<div class="sr-progress" id="sr-progress">
+				<input type="range" id="sr-seek" class="sr-range" min="0" max="0" value="0" step="1" aria-label="Position in the text">
+				<div class="sr-info"><span id="sr-pos">Word 0 of 0</span><span id="sr-eta"></span></div>
+			</div>
+
+			<div class="sr-transport" role="group" aria-label="Playback controls">
+				<button type="button" class="sr-tb" id="sr-restart" aria-label="Back to the start (R)" title="Back to the start (R)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb" id="sr-prevs" aria-label="Previous sentence (Shift + Left)" title="Previous sentence (Shift + Left)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M11 6v12L2 12zM22 6v12l-9-6z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb" id="sr-prevw" aria-label="Back one word (Left)" title="Back one word (Left)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M16 5v14L6 12z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb sr-play" id="sr-play" aria-label="Play (Space)" title="Play / pause (Space)"><svg class="sr-i-play" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M7 4v16l13-8z" fill="currentColor"/></svg><svg class="sr-i-pause" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb" id="sr-nextw" aria-label="Forward one word (Right)" title="Forward one word (Right)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 5v14l10-7z" fill="currentColor"/></svg></button>
+				<button type="button" class="sr-tb" id="sr-nexts" aria-label="Next sentence (Shift + Right)" title="Next sentence (Shift + Right)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M13 6v12l9-6zM2 6v12l9-6z" fill="currentColor"/></svg></button>
+			</div>
+
+			<div class="sr-speedrow" id="sr-speedrow">
+				<div class="sr-speedhead"><label for="sr-wpm" class="tu-label">Speed</label><span class="sr-wpmbox"><input type="number" id="sr-wpm" class="tu-input sr-wpm" min="60" max="1500" step="5" inputmode="numeric" value="300" aria-label="Words per minute"> <span class="sr-unit">words per minute</span></span></div>
+				<div class="sr-slider"><button type="button" class="sr-nudge" id="sr-wpm-minus" aria-label="Slower (minus)">&minus;</button><input type="range" id="sr-wpm-r" class="sr-range" min="0" max="1000" step="1" value="500" aria-label="Words per minute slider"><button type="button" class="sr-nudge" id="sr-wpm-plus" aria-label="Faster (plus)">+</button></div>
+				<div class="tu-chips sr-presets" id="sr-presets" role="group" aria-label="Speed presets">
+					<button type="button" class="tu-chip" data-w="150">150</button><button type="button" class="tu-chip" data-w="250">250</button><button type="button" class="tu-chip" data-w="350">350</button><button type="button" class="tu-chip" data-w="500">500</button><button type="button" class="tu-chip" data-w="700">700</button><button type="button" class="tu-chip" data-w="1000">1000</button>
+				</div>
+			</div>
+
+			<div class="sr-voicerow" id="sr-voicerow" hidden>
+				<div class="tu-field"><label for="sr-voice">Voice</label><select id="sr-voice" class="tu-select"></select></div>
+				<div class="sr-vgrid">
+					<div class="tu-field"><label for="sr-rate">Speed <output id="sr-rate-o">1.0&times;</output></label><input type="range" id="sr-rate" class="sr-range" min="0.5" max="3" step="0.1" value="1"></div>
+					<div class="tu-field"><label for="sr-pitch">Pitch <output id="sr-pitch-o">1.0</output></label><input type="range" id="sr-pitch" class="sr-range" min="0.5" max="2" step="0.1" value="1"></div>
+					<div class="tu-field"><label for="sr-vol">Volume <output id="sr-vol-o">100%</output></label><input type="range" id="sr-vol" class="sr-range" min="0" max="1" step="0.05" value="1"></div>
+				</div>
+			</div>
+			<p class="sr-note" id="sr-note" role="status" hidden></p>
+
+			<details class="sr-settings" id="sr-settings">
+				<summary>Settings <small>words at a time, pacing, font, size, colours</small></summary>
+				<div class="sr-sgrid">
+					<div class="tu-field">
+						<span class="tu-label" id="sr-chunk-l">Words at a time</span>
+						<div class="tu-seg" id="sr-chunk" role="group" aria-labelledby="sr-chunk-l">
+							<button type="button" data-n="1" aria-pressed="true">1</button><button type="button" data-n="2" aria-pressed="false">2</button><button type="button" data-n="3" aria-pressed="false">3</button><button type="button" data-n="4" aria-pressed="false">4</button><button type="button" data-n="5" aria-pressed="false">5</button>
+						</div>
+					</div>
+					<div class="tu-field">
+						<span class="tu-label">Pacing</span>
+						<label class="sr-check"><input type="checkbox" id="sr-smart"> Smart pauses (sentence ends, commas, long words, numbers)</label>
+						<label class="sr-check"><input type="checkbox" id="sr-ramp"> Slow start (ease in over the first words)</label>
+						<label class="sr-check"><input type="checkbox" id="sr-rewind"> Back up 5 words when I pause</label>
+					</div>
+					<div class="tu-field">
+						<label for="sr-font">Font</label>
+						<select id="sr-font" class="tu-select"><option value="sans">Sans-serif</option><option value="serif">Serif</option><option value="mono">Monospace</option><option value="easy">Easy-read (wide letters)</option></select>
+					</div>
+					<div class="tu-field">
+						<label for="sr-size">Word size <output id="sr-size-o">56</output></label>
+						<input type="range" id="sr-size" class="sr-range" min="24" max="120" step="2" value="56">
+					</div>
+					<div class="tu-field">
+						<span class="tu-label" id="sr-th-l">Stage colours</span>
+						<div class="tu-seg sr-themes" id="sr-th" role="group" aria-labelledby="sr-th-l">
+							<button type="button" data-t="auto" aria-pressed="true">Auto</button><button type="button" data-t="light" aria-pressed="false">Light</button><button type="button" data-t="dark" aria-pressed="false">Dark</button><button type="button" data-t="sepia" aria-pressed="false">Sepia</button><button type="button" data-t="night" aria-pressed="false">Night</button>
+						</div>
+					</div>
+					<div class="tu-field">
+						<span class="tu-label">Show</span>
+						<label class="sr-check"><input type="checkbox" id="sr-orpon"> Red focus letter</label>
+						<label class="sr-check"><input type="checkbox" id="sr-guideon"> Guide marks</label>
+						<label class="sr-check"><input type="checkbox" id="sr-ctxon"> Words before and after (dimmed)</label>
+						<label class="sr-check"><input type="checkbox" id="sr-progon"> Progress bar and time left</label>
+					</div>
+				</div>
+				<div class="tu-chips">
+					<button type="button" class="tu-chip" id="sr-link">Copy link to these settings</button>
+					<button type="button" class="tu-chip" id="sr-reset">Reset settings</button>
+				</div>
+			</details>
+
+			<div class="sr-tv" id="sr-tv">
+				<button type="button" class="sr-tvtoggle" id="sr-tvtoggle" aria-expanded="false" aria-controls="sr-pane">Text view <small>click a word to jump there</small></button>
+				<div class="sr-tvbody" id="sr-tvbody" hidden>
+					<div class="sr-tvnav" id="sr-tvnav" hidden>
+						<button type="button" class="tu-chip" id="sr-tvprev">&lsaquo; Earlier</button><span id="sr-tvpage"></span><button type="button" class="tu-chip" id="sr-tvnext">Later &rsaquo;</button>
+					</div>
+					<div class="sr-pane" id="sr-pane" tabindex="0" role="region" aria-label="Text view: click a word to jump there"></div>
+				</div>
+			</div>
+			<div class="sr-sr" id="sr-live" role="status" aria-live="polite"></div>
+		</section>
+
+		<section class="tu-card sr-input" id="sr-input" aria-label="Your text">
+			<div class="sr-inhead"><label for="sr-text" class="tu-label">Your text</label><span class="sr-count" id="sr-count"></span></div>
+			<textarea id="sr-text" class="tu-input sr-textarea" rows="8" spellcheck="false" placeholder="Paste or type text here, or drop a .txt, .md or .html file onto this box. It stays in your browser."></textarea>
+			<div class="sr-drop" id="sr-drop" aria-hidden="true">Drop a text file here</div>
+			<div class="tu-chips">
+				<button type="button" class="tu-chip" id="sr-paste">Paste from clipboard</button>
+				<button type="button" class="tu-chip" id="sr-open">Open a file&hellip;</button>
+				<button type="button" class="tu-chip" id="sr-here" title="Start reading from the cursor in the text box">Start from cursor</button>
+				<button type="button" class="tu-chip" id="sr-measure-btn">Measure my reading speed</button>
+				<button type="button" class="tu-chip" id="sr-clear">Clear</button>
+			</div>
+			<div class="tu-chips sr-samples" role="group" aria-label="Sample texts">
+				<span class="tu-label sr-samplelabel">Samples</span>
+				<button type="button" class="tu-chip" data-s="alice">Alice in Wonderland</button>
+				<button type="button" class="tu-chip" data-s="pride">Pride and Prejudice</button>
+				<button type="button" class="tu-chip" data-s="moby">Moby-Dick</button>
+			</div>
+			<input type="file" id="sr-file" accept=".txt,.text,.md,.markdown,.html,.htm,text/plain,text/markdown,text/html" style="display:none">
+			<p class="sr-warn" id="sr-warn" role="status"></p>
+
+			<div class="tu-stats sr-stats" id="sr-stats">
+				<div class="tu-stat"><div class="tu-stat__label">Words</div><div class="tu-stat__value" id="sr-st-w">0</div><div class="tu-stat__sub" id="sr-st-c">0 characters</div></div>
+				<div class="tu-stat tu-stat--hero"><div class="tu-stat__label" id="sr-st-l1">At 300 wpm</div><div class="tu-stat__value" id="sr-st-t1">0 s</div><div class="tu-stat__sub" id="sr-st-s1"></div></div>
+				<div class="tu-stat"><div class="tu-stat__label">Average adult, silent</div><div class="tu-stat__value" id="sr-st-t2">0 s</div><div class="tu-stat__sub">about 238 words per minute</div></div>
+				<div class="tu-stat"><div class="tu-stat__label">Listening at a normal pace</div><div class="tu-stat__value" id="sr-st-t3">0 s</div><div class="tu-stat__sub">about 150 words per minute</div></div>
+			</div>
+
+			<div class="sr-measure" id="sr-measure" hidden>
+				<h3>Measure my reading speed</h3>
+				<p class="tu-note">Press <b>Start</b> to reveal a short passage, read it once at your normal pace, then press <b>Done</b>. Your speed is the number of words divided by your time. Reading for fun at an easy pace is the honest test, so don&rsquo;t race.</p>
+				<div class="sr-mtext is-hidden" id="sr-mtext"></div>
+				<div class="sr-mbar">
+					<button type="button" class="tu-btn tu-btn--primary" id="sr-m-start">Start</button>
+					<button type="button" class="tu-btn" id="sr-m-done" disabled>Done</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="sr-m-close">Close</button>
+					<span class="sr-mtime" id="sr-m-time" aria-hidden="true"></span>
+				</div>
+				<p class="sr-mresult" id="sr-m-result" role="status"></p>
+			</div>
+		</section>
+		<div class="tu-toast" id="sr-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>What is this speed reader?</h2>
+			<p>This page shows text one word (or a short group of words) at a time at a fixed spot on the screen. Your eyes stay still while the words come to you, which removes the small eye movements of normal reading. The <strong>red letter</strong> in each word is its focus point: a little left of the middle, where the eye recognises a word most quickly. Every word is lined up so that letter sits on the same vertical guide.</p>
+			<p>The same page also reads text <strong>aloud</strong> with your device&rsquo;s own voices, highlights the word being spoken, and can combine both: one big word at a time, in step with the voice. Paste text, drop a .txt, .md or .html file, or try a public-domain sample. Nothing is uploaded; your text, settings and position are stored only in this browser.</p>
+
+			<h2>Does speed reading work? What the research says</h2>
+			<ul>
+				<li><strong>Average reading speed.</strong> Adults read about 240 words per minute silently (a little more for fiction, a little less for dense non-fiction). Speech is slower, about 150 words per minute.</li>
+				<li><strong>Speed and understanding trade off.</strong> Reviews of the eye-movement research (for example Rayner and colleagues, 2016) find that reading faster costs comprehension, and that claims of reading 1,000 words per minute or more with full understanding are not supported. Skimming is useful, but it is not the same as reading every word.</li>
+				<li><strong>Why one word at a time can still help.</strong> Showing words in one place (RSVP) removes the time spent moving your eyes and stops you drifting off the line. For easy material, many people can comfortably go somewhat faster than they usually read. It also removes your ability to glance back, and that glance back is part of how understanding works. That is why this reader has a <em>back up</em> option, sentence jumps and a text view.</li>
+				<li><strong>Use it where it fits.</strong> Light articles, news, emails and review passes are good fits. Hard textbooks, contracts and anything you must remember deserve a slower speed, or the read-aloud mode with the text in front of you.</li>
+			</ul>
+
+			<h2>How to use it</h2>
+			<ul>
+				<li><strong>Speed read.</strong> Choose a speed, press play (or Space). Start at your comfortable speed plus 10 to 20 percent. When you can retell what you read, raise it by 25 to 50 words per minute. Drop back as soon as you lose the thread.</li>
+				<li><strong>Words at a time.</strong> In Settings, show 2 to 5 words at once. Groups of words match how the eye takes in phrases and feel less choppy at higher speeds.</li>
+				<li><strong>Smart pauses</strong> hold a little longer at commas and full stops and on long words and numbers, so sentences keep their rhythm. The speed you set is the base speed; with smart pauses on, the real average is a bit lower. <strong>Slow start</strong> eases in over the first few words.</li>
+				<li><strong>Read aloud.</strong> Pick a voice (the best match for your text&rsquo;s language is chosen for you), set the speed, pitch and volume, and press play. The word being spoken and its sentence are highlighted and scrolled into view. Click any word in the text view to jump there, in any mode.</li>
+				<li><strong>Read + listen.</strong> One big word at a time, driven by the voice. Hearing words while seeing them helps with names and unfamiliar terms, and is a good way to learn how a word is pronounced.</li>
+				<li><strong>Measure my reading speed</strong> gives a rough starting number. It is a sample of one easy passage, not a test of comprehension.</li>
+			</ul>
+
+			<h2>Tips</h2>
+			<ul>
+				<li>Most people hear the words in their head as they read (subvocalisation). That is normal and nothing to fight; speeds above roughly 400 to 500 words per minute leave little room for it, which is one reason understanding falls.</li>
+				<li>Use the text view or read-aloud mode first for a hard passage, then speed read it once more as revision.</li>
+				<li>Take a break every 10 to 15 minutes. Staring at a flashing word is tiring, and focus mode (F) hides everything else.</li>
+				<li>If one word at a time feels jumpy, try 2 or 3 words, a larger or smaller word size, a different font or a softer colour scheme. Some readers, including some with dyslexia or ADHD, find a single calm focus point easier to follow; others prefer the full text. Try both and use whichever helps you. This is a reading aid, not a treatment for anything, and the &ldquo;Easy-read&rdquo; font is simply a wide-lettered system font.</li>
+				<li>Reduced-motion settings are respected, and the word display is hidden from screen readers (it would announce every word). Screen reader users get status updates and the full text view instead.</li>
+			</ul>
+
+			<h2>Keyboard shortcuts</h2>
+			<div class="tu-table-wrap">
+				<table class="tu-table sr-keys">
+					<thead><tr><th>Key</th><th>Action</th></tr></thead>
+					<tbody>
+						<tr><td><kbd>Space</kbd></td><td>Play / pause</td></tr>
+						<tr><td><kbd>&larr;</kbd> <kbd>&rarr;</kbd></td><td>Back / forward one word</td></tr>
+						<tr><td><kbd>Shift</kbd> + <kbd>&larr;</kbd> <kbd>&rarr;</kbd></td><td>Previous / next sentence</td></tr>
+						<tr><td><kbd>&uarr;</kbd> <kbd>&darr;</kbd> or <kbd>+</kbd> <kbd>&minus;</kbd></td><td>Faster / slower (words per minute, or voice speed)</td></tr>
+						<tr><td><kbd>R</kbd></td><td>Restart from the beginning</td></tr>
+						<tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>Speed read / Read aloud / Read + listen</td></tr>
+						<tr><td><kbd>F</kbd></td><td>Focus mode (full screen)</td></tr>
+						<tr><td><kbd>Esc</kbd></td><td>Leave focus mode, otherwise pause</td></tr>
+					</tbody>
+				</table>
+			</div>
+
+			<h2>Questions</h2>
+			<h3>Why can&rsquo;t I hear a voice, or why is it missing words?</h3>
+			<p>Voices come from your browser and operating system, so the list differs by device. Chrome, Edge and Safari have many; Firefox on some systems has few. If the list is empty, install a voice in your system settings (Settings &rsaquo; Accessibility &rsaquo; Spoken content on Apple devices, Speech on Windows) and reload. Some voices do not report which word they are on; the page then estimates the highlight from the speaking speed and tells you so.</p>
+			<h3>Is my text sent anywhere?</h3>
+			<p>No. Speech runs on your device through the browser&rsquo;s speech synthesis, and some browsers use an online voice that sends the text being spoken to that voice provider (the voice name says &ldquo;Online&rdquo; or &ldquo;Google&rdquo;). Pick a local voice if the text is private. The shareable settings link contains only speed, words at a time and mode, never your text.</p>
+			<h3>What file types can I open?</h3>
+			<p>Plain text (.txt), Markdown (.md) and HTML (.html). For a PDF or Word file, copy the text out of it and paste it in. For a web page, select the article, copy and paste it here (a page cannot be fetched from here because browsers block it).</p>
+			<h3>What speed should I choose?</h3>
+			<p>Start where reading feels easy, around 250 to 350 words per minute for most adults. Faster speeds suit familiar, simple text. Above about 500, expect to retain much less. The highest settings (up to 1,500) are there for skimming and for fun, not for studying.</p>
+			<p><a href="/tools">More MES tools</a> &middot; <a href="/timer">Timer</a> &middot; <a href="/emoji">Emoji Copier</a></p>
+		</div>
+	</div>

@@ -22,7 +22,7 @@ APPLY = "--apply" in sys.argv
 CALC_DIRS = {"bmicalculator", "gradecalculator", "percentagecalculator", "mortgagecalculator", "inflationcalculator", "vatcalculator",
              "pokemongocalculator", "gpacalculator", "youtubemoney", "earth-curvature-calculator", "gematria",
              "impermanent-loss-calculator", "unit-conversion", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator"}
-TOOL_DIRS = {"timer", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "search", "calendar"}
+TOOL_DIRS = {"timer", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "search", "calendar", "copy-text", "solar-system-today"}
 LINKS = {"tools": ("Tools", "https://mes.fm/tools", "/tools"), "calculators": ("Calculators", "https://mes.fm/calculators", "/calculators")}
 ITEM = re.compile(r'<li class="info-bar__item([^"]*)"[^>]*>\s*<a[^>]*href=["\']([^"\']*)["\'][^>]*>([^<]*)</a>\s*</li>', re.S)
 UTILITY_LABELS = {"donate", "subscribe", "contact us"}

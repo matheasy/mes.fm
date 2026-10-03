@@ -1,0 +1,196 @@
+	<div class="tu" id="vc">
+		<div id="vc-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
+
+		<div class="tu-card" id="vc-setup">
+			<div class="tu-row" style="align-items:center;">
+				<div class="tu-seg" id="vc-view" role="group" aria-label="Calculator type">
+					<button type="button" data-view="single" aria-pressed="true">One amount</button>
+					<button type="button" data-view="items" aria-pressed="false">Itemised invoice (several rates)</button>
+				</div>
+			</div>
+
+			<div class="tu-row" style="margin-top:1em;">
+				<div class="tu-field" style="flex-basis:15em;">
+					<label for="vc-country">Country</label>
+					<select id="vc-country" class="tu-select"></select>
+				</div>
+				<div class="tu-field" id="vc-region-wrap" style="flex-basis:13em;" hidden>
+					<label for="vc-region" id="vc-region-label">Region</label>
+					<select id="vc-region" class="tu-select"></select>
+				</div>
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;">
+					<label for="vc-cur">Currency</label>
+					<select id="vc-cur" class="tu-select"></select>
+				</div>
+			</div>
+
+			<div id="vc-ratebox">
+				<div class="tu-row" style="margin-top:1em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;">
+						<label for="vc-rate" id="vc-rate-label">VAT rate</label>
+						<div class="tu-suffix"><input id="vc-rate" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="20"><span>%</span></div>
+					</div>
+					<div class="tu-field" style="flex:2 1 14em;">
+						<span class="tu-label" id="vc-chips-label">Rates in this country</span>
+						<div class="tu-chips" id="vc-chips" role="group" aria-labelledby="vc-chips-label" style="margin-top:0;"></div>
+					</div>
+				</div>
+				<p class="tu-note" id="vc-cnote" style="margin-bottom:0;"></p>
+			</div>
+
+			<div class="tu-row" style="margin-top:0.9em;">
+				<div class="tu-field" style="flex-basis:14em;">
+					<label for="vc-round">Rounding</label>
+					<select id="vc-round" class="tu-select"></select>
+				</div>
+				<div class="tu-field" id="vc-how-wrap" style="flex-basis:18em;" hidden>
+					<label for="vc-how">Round the VAT&hellip;</label>
+					<select id="vc-how" class="tu-select">
+						<option value="rate">once per rate on the invoice total (usual)</option>
+						<option value="line">on every line</option>
+					</select>
+				</div>
+			</div>
+			<p class="tu-note" id="vc-verified" style="margin:0.8em 0 0;"></p>
+		</div>
+
+		<div id="vc-single">
+			<div class="tu-card" style="margin-top:1em;">
+				<span class="tu-label" id="vc-mode-label">I know the&hellip;</span>
+				<div class="tu-seg" id="vc-mode" role="group" aria-labelledby="vc-mode-label" style="margin-top:0.4em;display:flex;flex-wrap:wrap;">
+					<button type="button" data-mode="net" aria-pressed="true">Net price <small>(add VAT)</small></button>
+					<button type="button" data-mode="gross" aria-pressed="false">Gross price <small>(remove VAT)</small></button>
+					<button type="button" data-mode="vat" aria-pressed="false">VAT amount</button>
+					<button type="button" data-mode="rate" aria-pressed="false">Net &amp; gross <small>(find the rate)</small></button>
+				</div>
+				<div class="tu-row" style="margin-top:1em;">
+					<div class="tu-field" style="flex-basis:14em;">
+						<label for="vc-a" id="vc-a-label">Net price (before VAT)</label>
+						<div class="tu-suffix"><input id="vc-a" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 1,234.56"><span class="vc-cur-tag"></span></div>
+					</div>
+					<div class="tu-field" id="vc-a2-wrap" style="flex-basis:14em;" hidden>
+						<label for="vc-a2">Gross price (with VAT)</label>
+						<div class="tu-suffix"><input id="vc-a2" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 1,481.47"><span class="vc-cur-tag"></span></div>
+					</div>
+				</div>
+			</div>
+
+			<div id="vc-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span id="vc-empty-text">Type an amount above and the other figures appear instantly &mdash; or try an example: </span><span class="tu-chips" id="vc-examples" style="display:inline-flex;margin:0 0 0 0.3em;"></span></div>
+
+			<div id="vc-out" hidden>
+				<div class="tu-stats" id="vc-hero" aria-live="polite"></div>
+				<p class="tu-note" id="vc-eff" style="margin-top:0;"></p>
+				<div class="tu-card" id="vc-steps-card">
+					<div class="tu-label">How it is worked out</div>
+					<ol id="vc-steps" class="vc-steps"></ol>
+				</div>
+				<div class="tu-card tu-card--tint" style="margin-top:0.8em;"><span id="vc-sentence"></span></div>
+				<div class="vc-btns">
+					<button type="button" class="tu-btn tu-btn--primary" id="vc-link">Copy link to this calculation</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="vc-copy">Copy result</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="vc-sent">Copy sentence</button>
+					<button type="button" class="tu-btn tu-btn--ghost vc-print">Print</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="vc-reset">Reset</button>
+				</div>
+			</div>
+
+			<h2 id="vc-ref-h">Quick reference at this rate</h2>
+			<div class="tu-card" id="vc-ref-card">
+				<div class="tu-table-wrap"><table class="tu-table" id="vc-ref"></table></div>
+				<p class="tu-note" style="margin-bottom:0;" id="vc-ref-note"></p>
+			</div>
+
+			<h2>Compare with another rate</h2>
+			<div class="tu-card" id="vc-cmp-card">
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;">
+						<label for="vc-cmp">Other rate</label>
+						<div class="tu-suffix"><input id="vc-cmp" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 25"><span>%</span></div>
+					</div>
+					<div class="tu-field" style="flex:2 1 14em;"><span class="tu-chips" id="vc-cmp-chips" style="margin:0;"></span></div>
+				</div>
+				<div id="vc-cmp-out" class="tu-table-wrap" style="margin-top:0.8em;" hidden><table class="tu-table" id="vc-cmp-table"></table></div>
+				<p class="tu-note" style="margin-bottom:0;" id="vc-cmp-note">Handy for a rate change (&ldquo;what will it cost after VAT goes up?&rdquo;) or for comparing the standard and a reduced rate. The net price is kept the same in both columns.</p>
+			</div>
+		</div>
+
+		<div id="vc-items" hidden>
+			<div class="tu-card" style="margin-top:1em;">
+				<div class="tu-label">Invoice lines</div>
+				<div id="vc-lines"></div>
+				<div class="vc-btns" style="margin-top:0.8em;">
+					<button type="button" class="tu-btn tu-btn--primary" id="vc-addline">+ Add line</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="vc-clearlines">Clear all lines</button>
+				</div>
+				<p class="tu-note" style="margin-bottom:0;">Each line has a quantity, a unit price (with or without VAT) and its own rate. Use <strong>0%</strong> for zero-rated, exempt or reverse-charge lines.</p>
+			</div>
+			<div id="vc-inv-empty" class="tu-card tu-card--tint" style="margin-top:1em;">Enter a price on at least one line to see the VAT summary.</div>
+			<div id="vc-inv" hidden>
+				<h2>VAT summary by rate</h2>
+				<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="vc-inv-table"></table></div></div>
+				<div class="vc-btns">
+					<button type="button" class="tu-btn tu-btn--primary" id="vc-inv-link">Copy link to this invoice</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="vc-inv-text">Copy as text</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="vc-inv-csv">Copy as CSV</button>
+					<button type="button" class="tu-btn tu-btn--ghost vc-print">Print</button>
+				</div>
+			</div>
+		</div>
+
+		<h2>VAT, GST and sales tax rates by country</h2>
+		<div class="tu-card" id="vc-dir-card">
+			<p class="tu-note" style="margin-top:0;">Standard and reduced rates for <span id="vc-dir-n">60+</span> countries. Click a row to use it. Rates last verified <strong id="vc-dir-date"></strong>.</p>
+			<div class="tu-table-wrap"><table class="tu-table" id="vc-dir"></table></div>
+			<p class="tu-note" style="margin-bottom:0;">Sources: <span id="vc-sources"></span>. Rates change &mdash; always confirm with your tax authority before you invoice.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What is VAT?</h2>
+			<p><strong>VAT (value added tax)</strong> is a consumption tax charged on the value that each business adds as a product or service moves from producer to final customer. Every seller in the chain charges VAT on their sale and deducts the VAT they paid on their own purchases, so in the end the whole tax is paid by the final consumer. More than 170 countries use a VAT or its close cousin <strong>GST</strong> (goods and services tax); the biggest exception is the United States, which uses a state-level <strong>sales tax</strong> instead.</p>
+			<p>Two prices matter: the <strong>net price</strong> (also called the price <em>excluding</em> VAT, ex-VAT or exclusive) and the <strong>gross price</strong> (<em>including</em> VAT, inc-VAT or inclusive). This calculator converts between them, and finds the VAT amount that sits between the two.</p>
+
+			<h2>How to calculate VAT</h2>
+			<h3>Add VAT to a net price</h3>
+			<p><strong>VAT amount = net price &times; VAT rate</strong><br><strong>Gross price = net price &times; (1 + VAT rate)</strong></p>
+			<p>Example: a net price of 100 at 20% VAT. VAT = 100 &times; 0.20 = 20. Gross = 100 &times; 1.20 = 120.</p>
+			<h3>Remove VAT from a gross price</h3>
+			<p><strong>Net price = gross price &divide; (1 + VAT rate)</strong><br><strong>VAT amount = gross price &minus; net price</strong></p>
+			<p>Example: a price of 120 that includes 20% VAT. Net = 120 &divide; 1.20 = 100. VAT = 120 &minus; 100 = 20. A common mistake is to take 20% <em>off</em> 120, which gives 96 and is wrong: the VAT is 20% of the <em>net</em> price, which is only 16.67% of the gross price (rate &divide; (100 + rate)).</p>
+			<h3>Work backwards from the VAT amount</h3>
+			<p><strong>Net price = VAT amount &divide; VAT rate</strong>, and gross = net + VAT. If a receipt shows 20.00 of VAT at 20%, the net price was 100.00 and the total 120.00.</p>
+			<h3>Find the VAT rate</h3>
+			<p><strong>VAT rate = (gross &minus; net) &divide; net</strong>. A net of 100 and a gross of 107.50 means a 7.5% rate.</p>
+
+			<h2>VAT vs. GST vs. sales tax</h2>
+			<ul>
+				<li><strong>VAT</strong> (Europe, UK, much of Asia, Africa and Latin America): charged at every step of the supply chain; businesses reclaim the VAT on what they buy, and the displayed shelf price normally <em>includes</em> VAT.</li>
+				<li><strong>GST</strong> (Australia, New Zealand, Canada, India, Singapore ...): the same mechanism as VAT under another name. Canada's provinces blend it into an HST.</li>
+				<li><strong>Sales tax</strong> (United States): charged only once, at the final sale to the consumer, and added at the till on top of the shelf price. Rates are set by each state plus local governments, so there is no single national rate. Use the &ldquo;add VAT&rdquo; direction of this calculator with your combined state and local rate.</li>
+			</ul>
+
+			<h2>Which countries have no VAT?</h2>
+			<p>The best-known exception is the <strong>United States</strong>, which has no national VAT or GST and relies on state and local sales taxes instead (five states &mdash; Alaska, Delaware, Montana, New Hampshire and Oregon &mdash; have no state sales tax). A small number of other jurisdictions, mostly some Gulf states and tax havens, also have no VAT; check locally. Several countries have unusual set-ups: Malaysia uses a sales and service tax, Brazil a patchwork of federal, state and municipal taxes, and Thailand, Vietnam and Indonesia currently apply special or temporary rates (see the notes beside the rate chips).</p>
+
+			<h2>Worked examples</h2>
+			<ul>
+				<li><strong>UK:</strong> a freelancer invoices &pound;850 net. VAT at 20% is &pound;170, so the client pays &pound;1,020.</li>
+				<li><strong>Germany:</strong> a shelf price of &euro;59.90 includes 19% VAT. Net = 59.90 &divide; 1.19 = &euro;50.34, VAT = &euro;9.56.</li>
+				<li><strong>Canada, Ontario:</strong> a $200 net price carries 13% HST: $26 of tax, $226 in total.</li>
+				<li><strong>Several rates on one invoice:</strong> switch to the itemised view. VAT is then totalled per rate, the way a VAT invoice must show it.</li>
+			</ul>
+
+			<h2>Frequently asked questions</h2>
+			<h3>Is the VAT calculated per line or on the invoice total?</h3>
+			<p>Both are allowed in most EU countries as long as you are consistent; the usual and most accurate way is to add up the net amounts at each rate and calculate VAT once per rate, which is the default in the itemised view. You can switch to per-line rounding if your accounting software does that.</p>
+			<h3>Why does the rounding option matter?</h3>
+			<p>VAT rarely comes out in whole cents. Rounding to the nearest cent is standard (half a cent rounds up). Some countries round cash payments to the nearest 0.05 (Switzerland, Australia and others); whole-unit rounding suits currencies like the yen and won. All sums here are done in exact arithmetic first, so there is no floating-point drift.</p>
+			<h3>What is a reverse-charge or zero-rated line?</h3>
+			<p>Zero-rated and exempt supplies carry no VAT, and under the reverse-charge mechanism the <em>buyer</em> accounts for the VAT instead of the seller. In all three cases the invoice shows 0% VAT, so choose the 0% rate on that line.</p>
+			<h3>How accurate are the rates?</h3>
+			<p>Standard and common reduced rates were checked against official and professional sources on the date shown above. Reduced rates apply to specific goods and services (food, books, hotels, energy ...) that differ by country, so confirm which rate applies to your product. Regional exceptions (the Canary Islands, Madeira, Azores, Corsica, Northern Ireland trade rules ...) are not modelled.</p>
+			<h3>Do you store what I type?</h3>
+			<p>No. Everything is calculated in your browser and your last settings are kept only in your own browser storage. A shared link just carries the numbers in its address.</p>
+			<p class="tu-note"><strong>Disclaimer:</strong> this calculator is a convenience, not tax or accounting advice. VAT rules depend on what you sell, where you and your customer are based and whether you are registered. Check with a qualified adviser or your tax authority.</p>
+			<p><a href="/percentagecalculator">Percentage Calculator</a> &middot; <a href="/inflationcalculator">Inflation Calculator</a> &middot; <a href="/mortgagecalculator">Mortgage Calculator</a> &middot; <a href="/calculator">Calculator</a> &middot; <a href="/calculators">More MES calculators</a></p>
+		</div>
+	</div>

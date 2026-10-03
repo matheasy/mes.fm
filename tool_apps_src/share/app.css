@@ -65,3 +65,15 @@
 		.tu .sl-cards {grid-template-columns:1fr;}
 		.tu .sl-progress {margin-left:0;width:100%;}
 	}
+
+	/* my own text */
+	.tu .sl-snips {margin-top:1em;}
+	.tu .sl-snips summary {cursor:pointer;list-style:none;display:flex;align-items:center;gap:0.5em;font-size:1em;color:var(--accent);}
+	.tu .sl-snips summary::-webkit-details-marker {display:none;}
+	.tu .sl-snips summary::before {content:"\25B6";font-size:0.7em;transition:transform 0.15s;}
+	.tu .sl-snips[open] summary::before {transform:rotate(90deg);}
+	.tu .sl-snips summary small {margin-left:auto;font-weight:400;color:#6a7280;font-size:0.85em;}
+	.tu .sl-snip {margin:0 0 0.8em;padding:0.6em;border:1px solid #e3e7ec;border-radius:0.5em;background:#f7f8fa;}
+	.tu .sl-snip-h {display:flex;gap:0.4em;align-items:center;margin-bottom:0.45em;}
+	.tu .sl-snip-h .sl-snip-label {flex:1;min-width:0;font-weight:700;}
+	body.dark-mode .tu .sl-snip {background:rgba(255,255,255,0.05);border-color:#3a3a3a;}

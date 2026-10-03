@@ -1,0 +1,58 @@
+	<div class="tu" id="cp">
+		<div class="tu-card cp-add">
+			<div class="tu-field">
+				<label for="cp-new-text">Add text to keep</label>
+				<textarea id="cp-new-text" class="tu-input cp-new-text" rows="4" spellcheck="true" placeholder="Paste or type anything you want to copy again later: an email reply, an address, a link, a code snippet, a signature…"></textarea>
+			</div>
+			<div class="tu-row" style="margin-top:0.7em;align-items:center;">
+				<div class="tu-field" style="flex:1 1 14em;"><input id="cp-new-title" class="tu-input" type="text" maxlength="80" placeholder="Title (optional)" aria-label="Title (optional)" autocomplete="off"></div>
+				<div class="cp-add-btns">
+					<button type="button" class="tu-btn tu-btn--primary" id="cp-save">Save to this board</button>
+					<button type="button" class="tu-btn" id="cp-paste" title="Read your clipboard and save it as a new text">📋 Paste &amp; save</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cp-new-clear">Clear</button>
+				</div>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to save. Everything stays in this browser: nothing is uploaded.</p>
+		</div>
+
+		<div class="cp-boards" id="cp-boards" role="tablist" aria-label="Boards"></div>
+
+		<div class="cp-bar">
+			<input id="cp-search" class="tu-input cp-search" type="search" placeholder="Search all your texts…" aria-label="Search all your texts" autocomplete="off">
+			<button type="button" class="tu-btn tu-btn--ghost" id="cp-copyall" title="Copy every text on this board, separated by blank lines">Copy all</button>
+			<details class="cp-menu" id="cp-menu">
+				<summary class="tu-btn tu-btn--ghost">More ▾</summary>
+				<div class="cp-menu-box">
+					<button type="button" data-act="rename">✎ Rename this board</button>
+					<button type="button" data-act="txt">⬇ Download this board (.txt)</button>
+					<button type="button" data-act="export">⬇ Back up everything (.json)</button>
+					<button type="button" data-act="import">⬆ Restore from a backup…</button>
+					<button type="button" data-act="examples">✚ Add a few example texts</button>
+					<button type="button" data-act="delboard" class="cp-danger">🗑 Delete this board</button>
+				</div>
+			</details>
+			<input type="file" id="cp-file" accept=".json,application/json" hidden>
+		</div>
+		<p class="tu-note cp-status" id="cp-status"></p>
+
+		<div id="cp-out" class="cp-grid" aria-live="polite"></div>
+		<div class="tu-toast cp-undo" id="cp-toast" role="status"><span id="cp-toast-msg"></span><button type="button" id="cp-toast-undo" hidden>Undo</button></div>
+
+		<div class="tu-seo">
+			<h2>What is Copy Text?</h2>
+			<p>Copy Text is a free clipboard shelf for the things you paste again and again: a signature, an address, a reply you send every week, a link, a hashtag block, a code snippet, a prompt. Save each one as a note, and when you need it, <strong>click the note and it is copied</strong>. Your computer's own clipboard only remembers one thing at a time; this remembers as many as you like, for as long as you like.</p>
+			<h3>How to use it</h3>
+			<ul>
+				<li><strong>Save:</strong> paste or type into the box at the top and press <em>Save</em> (or <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd>). <em>Paste &amp; save</em> grabs whatever is on your clipboard in one click.</li>
+				<li><strong>Copy:</strong> click a note, or its <em>Copy</em> button. Then paste it where you need it.</li>
+				<li><strong>Boards:</strong> keep different sets apart (Work, Home, Social, Code…). <em>+ Board</em> makes a new one. Search looks across every board.</li>
+				<li><strong>Pin, colour, reorder:</strong> pin your favourites to the top, colour-code notes, and drag the ⠿ handle to put them in your order.</li>
+				<li><strong>Edit:</strong> the ✎ button edits the title and text, changes the colour and moves the note to another board.</li>
+				<li><strong>Back up:</strong> <em>More ▾ → Back up everything</em> downloads a file you can restore on this or another device.</li>
+			</ul>
+			<h3>Notes that fill themselves in</h3>
+			<p>Put <code>{date}</code>, <code>{time}</code>, <code>{weekday}</code>, <code>{year}</code> or <code>{iso}</code> in a note and it is replaced with the current value at the moment you copy it, so a reply that says &ldquo;as of {date}&rdquo; is always up to date. Type <code>{{date}}</code> if you want the literal text <code>{date}</code>.</p>
+			<h3>Is it private?</h3>
+			<p>Yes. Your notes are stored only in this browser (localStorage) and are never sent to a server, so don't keep anything here that you would not keep in a browser on that computer, such as passwords. Clearing your browser's site data deletes them, and they don't sync between devices, so use the backup file if they matter. <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

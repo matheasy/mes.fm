@@ -1,0 +1,46 @@
+	/* VAT Calculator */
+	.tu [hidden] {display:none !important;}
+	.tu #vc-view, .tu #vc-mode {display:flex;flex-wrap:wrap;max-width:100%;}
+	.tu #vc-view button, .tu #vc-mode button {flex:1 1 auto;border-bottom:1px solid #dfe4ea;}
+	.tu #vc-mode button small {opacity:0.92;font-size:0.82em;}
+	.tu #vc-hero {grid-template-columns:repeat(auto-fit,minmax(10em,1fr));}
+	.tu .vc-tile {cursor:pointer;}
+	.tu .vc-tile:hover {border-color:var(--accent);}
+	.tu .vc-tile:focus-visible {outline:2px solid var(--accent);outline-offset:2px;}
+	.tu .vc-steps {margin:0.5em 0 0 1.4em;padding:0;line-height:1.7;}
+	.tu .vc-steps li {margin:0.15em 0;color:#333;}
+	.tu .vc-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.8em;}
+	.tu #vc-dir tbody tr, .tu #vc-ref tbody tr {cursor:default;}
+	.tu #vc-dir tbody tr {cursor:pointer;}
+	.tu #vc-dir tbody tr:hover td {background:#f6f0d6;}
+	.tu #vc-dir td:last-child {white-space:normal;min-width:10em;}
+	.tu #vc-dir-card .tu-table-wrap {max-height:30em;overflow-y:auto;}
+	.tu #vc-dir th {position:sticky;top:0;}
+	.tu .vc-line {display:flex;flex-wrap:wrap;gap:0.6em 0.7em;align-items:flex-end;padding:0.8em 0;border-bottom:1px solid #e3e7ec;}
+	.tu .vc-line:first-child {padding-top:0.4em;}
+	.tu .vc-f-desc {flex:3 1 12em;}
+	.tu .vc-f-qty {flex:0 1 5em;}
+	.tu .vc-f-price {flex:1 1 7em;}
+	.tu .vc-f-type {flex:0 1 8em;}
+	.tu .vc-f-rate {flex:1 1 11em;}
+	.tu .vc-f-rate .vc-other {margin-top:0.3em;}
+	.tu .vc-f-out {flex:1 1 7em;font-size:0.82em;color:#555;line-height:1.4;min-height:2.4em;}
+	.tu .vc-f-out b {color:#1e2733;font-variant-numeric:tabular-nums;}
+	.tu .vc-del {padding:0.45em 0.8em;font-size:1.1em;}
+	.tu #vc-hero .tu-stat__value, .tu #vc-ref td, .tu #vc-inv-table td {font-variant-numeric:tabular-nums;}
+	.tu #vc-steps-card {margin-top:0.2em;}
+	body.dark-mode .tu .vc-tile:hover {border-color:var(--accent);}
+	body.dark-mode .tu #vc-dir tbody tr:hover td {background:#2c2a1c;}
+	body.dark-mode .tu .vc-steps li, body.dark-mode .tu .vc-f-out {color:#ccc;}
+	body.dark-mode .tu .vc-f-out b {color:#eee;}
+	body.dark-mode .tu #vc-view button, body.dark-mode .tu #vc-mode button {border-bottom-color:#444;}
+	@media (max-width: 600px) {
+		.tu .vc-f-qty, .tu .vc-f-type {flex:1 1 6em;}
+		.tu .vc-f-out {flex:1 1 100%;}
+		.tu .vc-del {margin-left:auto;}
+		.tu #vc-mode button, .tu #vc-view button {flex:1 1 45%;}
+	}
+	@media print {
+		.tu-seo, #vc-dir-card, #vc-setup .tu-chips, #vc-ref-h, #vc-ref-card, #vc-cmp-card, .vc-del, .vc-btns {display:none !important;}
+		.tu .vc-line {break-inside:avoid;}
+	}

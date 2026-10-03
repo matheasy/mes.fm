@@ -529,6 +529,45 @@
 	$("sl-example").onclick = function () { $("sl-blob").value = EXAMPLE; F.forEach(function (k) { $("sl-" + k).value = ""; }); fromBlob(); };
 	$("sl-clear").onclick = function () { $("sl-blob").value = ""; F.forEach(function (k) { $("sl-" + k).value = ""; }); save(); render(); $("sl-blob").focus(); };
 
+	/* ---------- my own text: user snippets with their own Copy buttons (localStorage mes-share:snippets) ---------- */
+	var snips = store.get("snippets", []);
+	if (!Array.isArray(snips)) snips = [];
+	function saveSnips() { store.set("snippets", snips); }
+	function renderSnips() {
+		var box = $("sl-snip-list");
+		box.innerHTML = snips.map(function (s, i) {
+			return '<div class="sl-snip" data-i="' + i + '"><div class="sl-snip-h"><input class="tu-input sl-snip-label" type="text" maxlength="60" placeholder="Name (e.g. Sign-off)" aria-label="Snippet name" value="' + esc(s.label || "") + '">' +
+				'<button type="button" class="tu-btn tu-btn--primary sl-snip-copy">Copy</button><button type="button" class="tu-btn tu-btn--ghost sl-snip-del" title="Delete this text" aria-label="Delete this text">✕</button></div>' +
+				'<textarea class="tu-input sl-snip-text" rows="3" spellcheck="true" aria-label="Snippet text" placeholder="Text to copy and paste…">' + esc(s.text || "") + "</textarea></div>";
+		}).join("");
+		$("sl-snips-n").textContent = snips.length ? snips.length + " saved" : "your own snippets to copy and paste";
+	}
+	$("sl-snip-add").onclick = function () {
+		snips.push({ label: "", text: "" }); saveSnips(); renderSnips();
+		$("sl-snips").open = true;
+		var t = $("sl-snip-list").querySelectorAll(".sl-snip-label"); if (t.length) t[t.length - 1].focus();
+	};
+	$("sl-snip-list").addEventListener("input", function (e) {
+		var row = e.target.closest(".sl-snip"); if (!row) return;
+		var s = snips[+row.dataset.i];
+		if (e.target.classList.contains("sl-snip-label")) s.label = e.target.value;
+		else if (e.target.classList.contains("sl-snip-text")) s.text = e.target.value;
+		saveSnips();
+	});
+	$("sl-snip-list").addEventListener("click", function (e) {
+		var row = e.target.closest(".sl-snip"), btn = e.target.closest("button"); if (!row || !btn) return;
+		var i = +row.dataset.i;
+		if (btn.classList.contains("sl-snip-copy")) {
+			var t = snips[i].text || ""; if (!t) { toast("Nothing to copy yet"); return; }
+			copy(t).then(function (ok) { toast(ok ? "Copied" + (snips[i].label ? " “" + snips[i].label + "”" : "") : "Copy failed: select the text instead"); });
+		} else if (btn.classList.contains("sl-snip-del")) {
+			if (snips[i].text && !confirm("Delete this text?")) return;
+			snips.splice(i, 1); saveSnips(); renderSnips();
+		}
+	});
+	renderSnips();
+	if (snips.length) $("sl-snips").open = true;
+
 	var saved = store.get("post", null);
 	if (saved) { $("sl-blob").value = saved.blob || ""; fill(saved); }
 	$("sl-label").value = store.get("label", "🔗 Full post:");

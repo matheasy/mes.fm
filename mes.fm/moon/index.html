@@ -461,6 +461,7 @@
     <a href="#sun-now">The Sun right now</a>
     <a href="#sun-year">The Sun's path this year</a>
     <a href="#moon-now">The Moon right now</a>
+    <a href="#solar-system">Solar system today</a>
     <a href="#more-data">Planets &amp; live data</a>
     <a href="#coords">Reading the sky</a>
   </nav>
@@ -580,6 +581,7 @@
         <a href="#sun-now">The Sun right now</a>
         <a href="#sun-year">The Sun's path this year</a>
         <a href="#moon-now">The Moon right now</a>
+        <a href="#solar-system">Solar system today</a>
         <a href="#more-data">Planets &amp; live data</a>
         <a href="#coords">Reading the sky</a>
       </nav>
@@ -690,6 +692,11 @@
         <tr><th>Magnitude</th><td class="big-value" id="moonMag">&mdash;</td></tr>
       </tbody>
     </table>
+
+    <h2 id="solar-system">Earth, Moon &amp; the Solar System Right Now</h2>
+    <p class="section-note">Where the Moon is on its orbit today, and where Earth and the other planets are around the Sun. Press Play to watch time pass, or open the
+    <a href="/solar-system-today">full Solar System Today</a> for every planet, any date, eclipses and more. (Ctrl + scroll to zoom.)</p>
+    <div id="ssEmbed"></div>
 
     <h2 id="more-data">Planets &amp; Live Sky Data</h2>
     <p class="section-note">External pages that also update in real time &mdash; handy for planning what to observe tonight.</p>
@@ -876,6 +883,7 @@
 
   <script src="/moon/js/astronomy.browser.min.js"></script>
   <script src="/moon/js/moon-row.js?v=2" defer></script>
+  <script src="/solar-system-today/js/orrery-embed.js?v=1" defer></script>
   <script>
     // Live Sun / Moon dashboard.
     //

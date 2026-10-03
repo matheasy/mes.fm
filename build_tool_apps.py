@@ -17,7 +17,7 @@ page is rebuilt from it -- `_shared.css` (the `.tu-*` widget kit, filled with th
 run (`--rebuild` is implied), so edit the sources and re-run both scripts. Afterwards run
 `python3 add_tool_page_controls.py --apply` (these slugs are in its TOOLS list) for the floating bar + controls + dark.
 The per-app logos are placeholder artwork (mes.fm/<slug>/img/logo.png, img/<slug>-logo.png) -- replace the files, same
-names, when real art exists. **Dry-runs by default; `--apply` writes.**
+names, when real art exists. `--only=slug,slug` rebuilds just those apps (the default rebuilds all). **Dry-runs by default; `--apply` writes.**
 """
 import json
 import re
@@ -52,7 +52,7 @@ APPS = {
     "share": dict(title="MES Share Launcher", page_title="Share Launcher",
                   tag="Cross-post one video or link to 30+ sites.", accent="#5b3cc4", dark="#43299a", tint="#eeeafb",
                   desc="Free social media share launcher: paste your post once and get ready-to-paste text for X, Facebook, Instagram, TikTok, YouTube, Threads, Bluesky, Reddit and 20+ more sites, with the link placed where each site wants it.",
-                  js_v="9"),
+                  js_v="10"),
     # site search: the page is only the results UI; the engine + index loader is /main_js/site-search.js (also the header
     # magnifier on every page), loaded first via pre_js. The index itself comes from build_search_index.py.
     "search": dict(title="MES Site Search", page_title="Site Search",
@@ -110,6 +110,30 @@ APPS = {
                      tag="Moon phases, holidays and more, month by month.", accent="#2f5fd0", dark="#1f44a0", tint="#e6edfb",
                      desc="Free online calendar for any year: month and year views with today highlighted, new and full moon times, Canada, USA, UK, Australia and Vietnam holidays, Christian, Jewish and Islamic dates, seasons, eclipses, daylight-saving changes and a days-between calculator.",
                      js_v="1"),
+    # VAT Calculator 2.0 (rewritten 2026-10-03 from the 2013 jQuery page): lib.js = exact-rational maths + the country rate table (node-testable:
+    # tool_apps_src/vatcalculator-tests.js), app.js = UI. Keeps ads (not an ad-free page); old /vatcalculator/s/<id> links still resolve via /api/share?calc=vat.
+    "vatcalculator": dict(title="VAT Calculator", page_title="VAT Calculator",
+                          tag="Add or remove VAT, GST and sales tax.", accent="#7a6200", dark="#574600", tint="#f6f0d6",
+                          desc="Free VAT calculator for 60+ countries: add VAT to a net price, remove it from a gross price, or find the VAT amount or rate. Itemised invoices grouped by rate, UK, EU, Canada, US, India and more, with up-to-date rates, exact rounding and shareable links.",
+                          js_v="1"),
+    # Speed Reader 2.0 (rewritten 2026-10-03 from the 2016 jQuery/Bootstrap page; keeps its red accent + Grok logos): lib.js = pure logic (tokenising, focus letter, chunking,
+    # pacing, speech chunking, voice choice; node-testable: tool_apps_src/speedreader-tests.js), app.js = RSVP + Web Speech UI. Keeps ads (like the old page).
+    "speedreader": dict(title="Speed Reader and Read Aloud", page_title="Speed Reader",
+                        tag="Read faster, or have any text read aloud.", accent="#e52503", dark="#bf190d", tint="#fdeceb",
+                        desc="Free online speed reader and read-aloud tool: flash text one word at a time with a red focus letter at 60 to 1500 words per minute, or listen with the spoken word highlighted. Paste text or drop a file; nothing leaves your browser.",
+                        js_v="1"),
+    # Copy Text: a clipboard shelf (notes on boards, click to copy, localStorage only). Normal-width tool with the "More like this" sidebar.
+    "copy-text": dict(title="MES Copy Text", page_title="Copy Text",
+                      tag="Save text once, copy it again anytime.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
+                      desc="Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, stored only in your browser, with backup and restore.",
+                      js_v="1"),
+    # Solar System Today: where the Sun, planets, Moon and Halley's Comet are on any date. lib.js = Astronomy Engine wrapper (node-testable), view.js = canvas renderer
+    # (shared with the mes.fm/moon widget through the extra_js bundle), app.js = UI. Astronomy Engine itself is the copy that /moon already ships (pre_js).
+    "solar-system-today": dict(title="MES Solar System Today", page_title="Solar System Today",
+                               tag="Where Earth, the Moon and planets are today.", accent="#3730a3", dark="#292477", tint="#e6e5f8",
+                               desc="See where Earth, the Moon, the Sun and the planets are in the solar system today, or on any date: an interactive 3D-style map you can rotate and play forward or backward in time, with distances, light travel times, retrograde planets, eclipses and oppositions.",
+                               js_v="1", pre_js=["/moon/js/astronomy.browser.min.js"], js_parts=["view.js"],
+                               extra_js={"orrery-embed.js": ["lib.js", "view.js", "embed.js"]}),
 }
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
@@ -250,16 +274,25 @@ def build_from_source(slug, cfg, tpl):
     js_dir = SITE / slug / "js"
     js_dir.mkdir(parents=True, exist_ok=True)
     js = (d / "app.js").read_text(encoding="utf-8")
+    for part in reversed(cfg.get("js_parts", [])):   # more of the app's own source files (e.g. a canvas renderer), between lib.js and app.js
+        js = (d / part).read_text(encoding="utf-8") + "\n" + js
     if (d / "lib.js").exists():       # optional shared/pure code (e.g. calendar maths), prepended so one file is served
         js = (d / "lib.js").read_text(encoding="utf-8") + "\n" + js
     for other in reversed(cfg.get("lib_from", [])):   # another app's lib.js (e.g. the calendar's holiday engine), prepended before our own
         js = (SRC / other / "lib.js").read_text(encoding="utf-8") + "\n" + js
+    for out_name, parts in cfg.get("extra_js", {}).items():   # additional bundles served next to the page script (e.g. the mes.fm/moon widget)
+        bundle = "\n".join((d / x).read_text(encoding="utf-8") for x in parts)
+        if APPLY:
+            (js_dir / out_name).write_text(bundle, encoding="utf-8")
     return page, js, js_dir / (slug + ".js")
 
 
 def main():
     tpl = TEMPLATE.read_text(encoding="utf-8")
+    only = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)   # --only=slug,slug rebuilds just those apps
     for slug, cfg in APPS.items():
+        if only and slug not in only:
+            continue
         p = SITE / slug / "index.html"
         if (SRC / slug / "content.html").exists():
             new, js, jsp = build_from_source(slug, cfg, tpl)
