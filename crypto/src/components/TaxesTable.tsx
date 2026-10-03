@@ -28,7 +28,11 @@ function explorerTx(network: string, hash: string): string | null {
       return /^[0-9a-f]{40}/.test(hash) ? `https://he.dtools.dev/tx/${hash}` : null;
     case 'hive': {
       const trx = hash.split(':')[0]!;
-      return /^[0-9a-f]{40}$/.test(trx) ? `https://hivehub.dev/tx/${trx}` : null;
+      if (/^[0-9a-f]{40}$/.test(trx)) return `https://hivehub.dev/tx/${trx}`;
+      // a virtual operation (a recurring transfer paid automatically, interest...) has no transaction id -
+      // its row id is hive-<block>-<index>, so link the block, where Hive Hub lists its virtual operations
+      const block = /^hive-(\d+)-\d+$/.exec(hash)?.[1];
+      return block ? `https://hivehub.dev/b/${block}` : null;
     }
     default:
       return null;
