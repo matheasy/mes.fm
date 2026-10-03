@@ -95,7 +95,7 @@
 	}
 
 	/* ---------- text builders ---------- */
-	function lk(d) { return (d.label ? d.label + " " : "") + d.link; }
+	function lk(d) { return (d.label ? d.label + " " : "") + d.link + (d.tz ? "\n🌐 Your time zone: " + d.tz : ""); }
 	function shortPost(d, limit, o) {
 		o = o || {};
 		return fit(d.title, d.desc, join([o.link ? lk(d) : "", hashes(d.tags, o.tags || 0)]), limit, o.len);
@@ -271,9 +271,73 @@
 		var d = {};
 		F.forEach(function (k) { d[k] = $("sl-" + k).value.trim(); });
 		d.label = $("sl-label").value.trim();
+		d.sdate = $("sl-sdate").value; d.stime = $("sl-stime").value; d.szone = $("sl-szone").value.trim();
 		return d;
 	}
-	function doneKey() { return "done:" + (data().link || "nolink"); }
+
+	/* ---------- livestream switch ---------- */
+	// post = the normal video/replay flow; announce = before the stream (trailer + time + live-page link); live = one short "LIVE now" post.
+	var live = store.get("live", {}), mode = ["post", "announce", "live"].indexOf(live.mode) >= 0 ? live.mode : "post";
+	var MODE_NOTE = {
+		post: "",
+		announce: "Upload the trailer as a native video (add the thumbnail as a second image where the site allows it). The link goes in the first comment or reply, with a time zone link so people can see your start time in their own zone.",
+		live: "One short post with the thumbnail and a single line. Upload, blog-style and image sites are hidden: the stream would be over before anyone saw it there."
+	};
+	// sites that make no sense for the mode (the stream itself is the video; slow sites miss a live post)
+	var STREAM_HIDE = ["youtube", "3speak", "rumble", "odysee", "bitchute", "blurtmedia", "paychute"];
+	var LIVE_HIDE = STREAM_HIDE.concat(["fbreels", "tiktok", "substacknote", "pinterest", "liketu", "pixagram", "tiktokphoto"]);
+	function modeHides(id, g) {
+		if (mode === "announce") return STREAM_HIDE.indexOf(id) >= 0 || g === "blog";
+		if (mode === "live") return LIVE_HIDE.indexOf(id) >= 0 || g === "blog";
+		return false;
+	}
+	function zoneOk(z) { try { new Intl.DateTimeFormat("en-US", { timeZone: z }); return !!z; } catch (e) { return false; } }
+	function defaultZone() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { return ""; } }
+	function zoneParts(z, ts) {
+		var o = {};
+		new Intl.DateTimeFormat("en-US", { timeZone: z, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric" })
+			.formatToParts(new Date(ts)).forEach(function (p) { o[p.type] = +p.value; });
+		return Date.UTC(o.year, o.month - 1, o.day, o.hour, o.minute, o.second) - ts;  // zone offset from UTC in ms
+	}
+	// "Sat, Oct 4, 6:00 PM PDT (01:00 UTC)" for a wall-clock date + time in an IANA zone; null if incomplete
+	function whenText(date, time, zone) {
+		var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date), t = /^(\d{1,2}):(\d{2})$/.exec(time);
+		if (!m || !t || !zoneOk(zone)) return null;
+		var wall = Date.UTC(+m[1], +m[2] - 1, +m[3], +t[1], +t[2]);
+		var ts = wall - zoneParts(zone, wall); ts = wall - zoneParts(zone, ts);  // second pass settles DST edges
+		var day = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" }).format(new Date(wall));
+		var clock = new Intl.DateTimeFormat("en-US", { timeZone: zone, hour: "numeric", minute: "2-digit", timeZoneName: "short" }).format(new Date(ts));
+		var utc = new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(ts));
+		return { text: day + ", " + clock + (/UTC|GMT/.test(clock) ? "" : " (" + utc + " UTC)"), ts: ts };
+	}
+	function tzLink(date, time, zone) {
+		return "https://mes.fm/timezone#t=" + enc(time) + "&d=" + enc(date) + "&f=" + enc(zone);
+	}
+	// the post as the current mode words it
+	function modeData(d) {
+		if (mode === "post") return d;
+		var o = {}, k;
+		for (k in d) o[k] = d[k];
+		var tags = d.tags.indexOf("#livestream") < 0 && !/#livestream\b/i.test(d.tags) ? ("#livestream " + d.tags).trim() : d.tags;
+		o.tags = tags;
+		if (mode === "live") {
+			o.title = "🔴 LIVE NOW: " + d.title;
+			o.desc = sentences(d.desc).slice(0, 1).join(" ");
+			o.label = "🔴 Watch live:";
+			return o;
+		}
+		o.title = "📅 Livestream: " + d.title;
+		o.label = "🔔 Set a reminder:";
+		var w = whenText(d.sdate, d.stime, d.szone || defaultZone());
+		if (w) {
+			o.desc = ("🕒 " + w.text + ". " + d.desc).trim();
+			o.tz = tzLink(d.sdate, d.stime, d.szone || defaultZone());
+		}
+		return o;
+	}
+	function cur() { return modeData(data()); }
+	function modeKey() { return mode === "post" ? "" : ":" + mode; }
+	function doneKey() { return "done:" + (data().link || "nolink") + modeKey(); }
 	function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	function blocksOf(s, d) { return s.blocks(d).filter(function (b) { return b[1]; }); }
 
@@ -295,16 +359,16 @@
 	/* ---------- render ---------- */
 	// Folding: a group (section) fold is a layout preference, kept across posts; a card fold is per link like the Done ticks.
 	// A card with no explicit fold follows its Done tick (ticking Done folds it), so a finished site shrinks to one line.
-	function foldKey() { return "fold:" + (data().link || "nolink"); }
+	function foldKey() { return "fold:" + (data().link || "nolink") + modeKey(); }
 	var gfold = store.get("gfold", {});
 	function cardFolded(fold, done, id) { return id in fold ? !!fold[id] : !!done[id]; }
 	function render() {
-		var d = data(), done = store.get(doneKey(), {}), fold = store.get(foldKey(), {}), hide = $("sl-hidedone").checked;
+		var d = cur(), done = store.get(doneKey(), {}), fold = store.get(foldKey(), {}), hide = $("sl-hidedone").checked;
 		var html = "", shown = 0, nDone = 0, anyOpen = false;
-		$("sl-warn").textContent = checks(d);
+		$("sl-warn").textContent = checks(data()) + (mode === "announce" && !whenText(d.sdate, d.stime, d.szone || defaultZone()) ? " Set the stream date, time and a valid time zone so the posts include when it starts." : "");
 		GROUPS.forEach(function (g) {
 			var list = SITES.filter(function (s) {
-				return s.g === g[0] && !hidden[s.id] &&
+				return s.g === g[0] && !hidden[s.id] && !modeHides(s.id, s.g) &&
 					(!searchQuery || s.name.toLowerCase().indexOf(searchQuery) !== -1);
 			});
 			if (!list.length) return;
@@ -363,7 +427,7 @@
 			fold[id] = !card.classList.contains("is-folded");
 			store.set(foldKey(), fold); render(); return;
 		}
-		var s = SITES.filter(function (x) { return x.id === card.dataset.id; })[0], d = data(), bl = blocksOf(s, d), btn = e.target.closest("button");
+		var s = SITES.filter(function (x) { return x.id === card.dataset.id; })[0], d = cur(), bl = blocksOf(s, d), btn = e.target.closest("button");
 		if (!btn) return;
 		if (btn.classList.contains("sl-copy")) {
 			copy(bl[+btn.dataset.i][1]).then(function (ok) { toast(ok ? "Copied" : "Copy failed: select the text instead"); });
@@ -421,6 +485,19 @@
 
 	function fill(p) { F.forEach(function (k) { if (k in p) $("sl-" + k).value = p[k]; }); }
 	function save() { var d = data(); d.blob = $("sl-blob").value; store.set("post", d); store.set("label", d.label); }
+	function saveLive() { store.set("live", { mode: mode, sdate: $("sl-sdate").value, stime: $("sl-stime").value, szone: $("sl-szone").value.trim() }); }
+	function syncMode() {
+		Array.prototype.forEach.call($("sl-modes").querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.m === mode)); });
+		$("sl-live").hidden = mode !== "announce";
+		$("sl-mode-note").textContent = MODE_NOTE[mode];
+		var w = whenText($("sl-sdate").value, $("sl-stime").value, $("sl-szone").value.trim() || defaultZone());
+		$("sl-when").textContent = w ? "Posts will say: " + w.text : "Pick a date and time; your own time zone is used unless you change it.";
+	}
+	$("sl-modes").addEventListener("click", function (e) {
+		var b = e.target.closest("button"); if (!b) return;
+		mode = b.dataset.m; saveLive(); syncMode(); render();
+	});
+	["sdate", "stime", "szone"].forEach(function (k) { $("sl-" + k).addEventListener("input", function () { saveLive(); syncMode(); render(); }); });
 	function fromBlob() {
 		var p = parse($("sl-blob").value), keep = data();
 		if (!p.link) p.link = keep.link;
@@ -438,5 +515,7 @@
 	if (saved) { $("sl-blob").value = saved.blob || ""; fill(saved); }
 	$("sl-label").value = store.get("label", "🔗 Full post:");
 	$("sl-hidedone").checked = store.get("hidedone", false);
+	$("sl-sdate").value = live.sdate || ""; $("sl-stime").value = live.stime || ""; $("sl-szone").value = live.szone || defaultZone();
+	syncMode();
 	render();
 })();
