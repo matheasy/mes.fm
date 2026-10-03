@@ -95,10 +95,11 @@
 	}
 
 	/* ---------- text builders ---------- */
-	function lk(d) { return (d.label ? d.label + " " : "") + d.link + (d.tz ? "\n🌐 Your time zone: " + d.tz : ""); }
+	function lk(d, noTz) { return (d.label ? d.label + " " : "") + d.link + (d.tz && !noTz ? "\n🌐 Your time zone: " + d.tz : ""); }
 	function shortPost(d, limit, o) {
 		o = o || {};
-		return fit(d.title, d.desc, join([o.link ? lk(d) : "", hashes(d.tags, o.tags || 0)]), limit, o.len);
+		// the time zone link costs ~90 characters: only worth it where the limit is roomy (not Snaps, Bluesky, Threads, Truth Social)
+		return fit(d.title, d.desc, join([o.link ? lk(d, limit < 1000) : "", hashes(d.tags, o.tags || 0)]), limit, o.len);
 	}
 	function uploadDesc(d, n) { return join([d.desc, lk(d), hashes(d.tags, n)]); }
 	function blogBody(d) { return join([d.desc, lk(d), d.video]); }
