@@ -13,6 +13,7 @@ html.page-theatre { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }  /*
 :is(body.dark-mode, body.dark) .toc-tools button { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
 :is(body.dark-mode, body.dark) .toc-tools button:hover, :is(body.dark-mode, body.dark) .toc-tools button[aria-pressed="true"] { background: #6cb6f5; color: #111; border-color: #6cb6f5; }
 .toc-reopen { display: none; }
+.toc-mode .toc-reopen { display: none; }
 .toc-wide-pill, .toc-wide-row { display: none; }
 
 @media (min-width: 1300px) {
@@ -31,6 +32,8 @@ html.page-theatre { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }  /*
   :is(body.dark-mode, body.dark) .toc-mode button + button { border-left-color: #555; }
   :is(body.dark-mode, body.dark) .toc-mode button:hover { background: #3a3a3a; }
   :is(body.dark-mode, body.dark) .toc-mode button[aria-pressed="true"] { background: #6cb6f5; color: #111; }
+  html.toc-hidden .toc-mode .toc-reopen { display: inline-block; border-right: 1px solid #d5dbe2; }
+  :is(body.dark-mode, body.dark) .toc-mode .toc-reopen { border-right-color: #555; }
   /* sidebar sits just outside the article column, whatever its width */
   html .toc-sidebar { left: calc(50% + var(--toc-w) / 2 + 30px); }
   html.aside-left .toc-sidebar { left: auto; right: calc(50% + var(--toc-w) / 2 + 30px); padding-right: 0; padding-left: 10px; }
@@ -38,11 +41,11 @@ html.page-theatre { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }  /*
   html.page-wide .footer { max-width: var(--toc-w); }
   html.toc-hidden .toc-sidebar { display: none; }
   /* small tab where the sidebar was, to bring it back */
-  html.toc-hidden .toc-reopen { display: inline-flex; align-items: center; gap: .35em; position: fixed; top: 90px; z-index: 12;
+  html.toc-hidden > body > .toc-reopen { display: inline-flex; align-items: center; gap: .35em; position: fixed; top: 90px; z-index: 12;
     left: calc(50% + var(--toc-w) / 2 + 30px); padding: .3em .8em; border: 1px solid #b9c2cc; border-radius: 999px; background: #fff; color: #1479c7;
     font: inherit; font-size: .82em; cursor: pointer; }
-  html.toc-hidden.aside-left .toc-reopen { left: auto; right: calc(50% + var(--toc-w) / 2 + 30px); }
-  html.toc-hidden .toc-reopen:hover { background: #1479c7; color: #fff; border-color: #1479c7; }
+  html.toc-hidden.aside-left > body > .toc-reopen { left: auto; right: calc(50% + var(--toc-w) / 2 + 30px); }
+  html.toc-hidden > body > .toc-reopen:hover { background: #1479c7; color: #fff; border-color: #1479c7; }
   :is(body.dark-mode, body.dark) .toc-reopen { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
   :is(body.dark-mode, body.dark) .toc-reopen:hover { background: #6cb6f5; color: #111; border-color: #6cb6f5; }
 }

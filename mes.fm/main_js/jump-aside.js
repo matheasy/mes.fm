@@ -31,7 +31,8 @@
         css.rel = "stylesheet"; css.href = "/main_js/aside.css?v=2";
         document.head.appendChild(css);
         document.body.appendChild(aside);
-        document.body.appendChild(show);
+        var sw = document.querySelector(".toc-mode");
+        if (sw && !document.querySelector(".toc-sidebar .toc-mode")) sw.appendChild(show); else document.body.appendChild(show);
         sync();
         window.addEventListener("resize", sync);
         var s = document.createElement("script");

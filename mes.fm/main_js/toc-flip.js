@@ -79,5 +79,8 @@
         save("tocHidden", "0");
         window.dispatchEvent(new Event("resize"));
     });
-    document.body.appendChild(reopen);
+    /* in the width switch (when it sits in the article header) the tab is a segment of it, shown only while the list is hidden;
+       otherwise (switch inside the sidebar itself) it stays a floating tab where the sidebar was */
+    if (wide.parentNode === nav || nav.contains(wide)) document.body.appendChild(reopen);
+    else wide.insertBefore(reopen, wide.firstChild);
 })();
