@@ -53,7 +53,7 @@ CALCS = [
 # ring offsets or None for the default); the top-level pages that are not galleries (tutorials, formulas ...) become
 # the "articles". Gallery/list pages (HUB-WIDE-LAYOUT), numeric pagination pages, tool-shell pages (data-tool) and `skip`
 # files never get an aside. Left out on purpose: vatcalculator / pokemongocalculator (a page or two each, own layouts),
-# timer + speedreader tool pages, youtubemoney (never any ads), and the build.mjs / Hive-mirror pages.
+# timer + speedreader tool pages, and the build.mjs / Hive-mirror pages.
 FAMILIES = {
     "percentagecalculator": {
         "name": "Percentage Calculator",
@@ -104,13 +104,22 @@ FAMILIES = {
         "name": "MES Tools",
         "hub": {"url": "/tools", "title": "All MES Tools", "kind": "Gallery", "img": "/img/tools-icon.jpg"},
         "collection": [
-            ("emoji", "Tool"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
+            ("emoji", "Tool"), ("youtubemoney", "Calculator"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
             ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("share", "Tool"), ("search", "Tool"), ("calendar", "Tool"), ("unit-conversion", "Calculator"), ("calculator", "Calculator"), ("days-between-dates-calculator", "Calculator"),
             ("cas-calculator", "Calculator"), ("derivative-calculator", "Calculator"), ("integral-calculator", "Calculator"),
             ("gematria", "Calculator"), ("impermanent-loss-calculator", "Calculator"), ("earth-curvature-calculator", "Calculator"),
         ],
         "articles": False,
         "sections": [("", "Tool", None)],
+    },
+    # the 2016 YouTuber-earnings meme pages (the calculator itself is a tools-family page, built by build_tool_apps.py). Ad-free: see NO_AD_DIRS.
+    "youtubemoney": {
+        "name": "YouTube Money Calculator",
+        "calc_title": "YouTube Money Calculator",
+        "calc_kind": "Calculator",
+        "calc_patch": False,
+        "articles": False,
+        "sections": [("youtubers", "YouTuber (2016)", None)],
     },
     "vatcalculator": {"name": "VAT Calculator", "article_kind": "Guide", "sections": []},
     "pokemongocalculator": {"name": "Pokemon Go Calculator", "article_kind": "Guide", "sections": []},
@@ -282,10 +291,13 @@ def card_html(c):
              lg=" mes-aside__img--logo" if c.get("logo") else "", t=c["title"], k=c["kind"])
 
 
-def aside_html(family, cfg, cards, slot):
+NO_AD_DIRS = ("youtubemoney",)   # these pages must never carry ads: empty slot (no top ad) + data-no-ads (aside.js skips the 300x600 unit)
+
+
+def aside_html(family, cfg, cards, slot, no_ads=False):
     return (
         "<!-- MES-ASIDE -->\n"
-        '<aside id="mes-aside" class="mes-aside" data-aside-family="{fam}" aria-label="More from {name}">'
+        '<aside id="mes-aside" class="mes-aside" data-aside-family="{fam}"' + (' data-no-ads="1"' if no_ads else "") + ' aria-label="More from {name}">'
         '<div class="mes-aside__sticky">'
         '<div class="mes-aside__ad" data-ad-slot="{slot}"></div>'
         '<div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2>'
@@ -359,7 +371,10 @@ def main():
             else:
                 m = SLOT_RE.search(old)
                 slot = m.group(1) if m else DEFAULT_SLOT
-            block = "" if args.remove else aside_html(family, cfg, recs_for(family, page, cat, cfg), slot)
+            no_ads = os.path.relpath(page["path"], SITE).split(os.sep)[0] in NO_AD_DIRS
+            if no_ads:
+                slot = ""
+            block = "" if args.remove else aside_html(family, cfg, recs_for(family, page, cat, cfg), slot, no_ads)
             new = patch_page(old, block, args.remove)
             if new is None:
                 skipped.append(os.path.relpath(page["path"], ROOT))

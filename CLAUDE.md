@@ -396,6 +396,18 @@ of HTML files individually:
   equation ~1 s incl. the exact-form search). **Limitations:** SymPy can't integrate everything (non-elementary integrands give special functions or no closed form; some
   integrals time out after 25 s); integral steps exist only where `manualintegrate` has a rule; derivative steps fall back to SymPy for unusual functions; transcendental
   roots are only those inside the search interval; systems of inequalities aren't supported; `log` is the natural log (use `log10` / `log_b`).
+- **YouTube Money Calculator 2.0** (2026-10-02, `mes.fm/youtubemoney`, YouTube red `#cc1f1f`) -- rewritten from the 2016 jQuery page; **still ad-free, never add ads**. Built by
+  `build_tool_apps.py` from `tool_apps_src/youtubemoney/` (`content.html` + `app.js` -> `youtubemoney/js/youtubemoney.js`) with two new `APPS` options: `no_ads` (strips the template's
+  deferred AdSense loader + Auto-ads guard and asserts no `adsbygoogle`/`googlesyndication` is left) and `nav_extra`/`menu_extra` (a "YouTubers" tab). The old Insticator / dclick /
+  GTM-MR4PFN3 / jQuery code is gone. Maths: creator RPM (USD per 1,000 views after YouTube's cut) = topic table (`NICHES`, low/typical/high; Shorts `SHORTS` 0.01-0.07) x viewer-location
+  factor, or the person's own RPM; two modes (views -> earnings per video/day/month/year with low-typical-high, and goal $ -> views needed); `?mode=&f=&v=&per=&vpm=&n=&geo=&rpm=&g=&gp=`
+  share links (no Redis any more) and localStorage `mes-youtubemoney:v1`; old `/youtubemoney/s/<id>` links still resolve through `/api/share?calc=ymc`. The RPM/CPM, 55% / 45% split and Partner
+  Program thresholds are written into the page text -- re-check them against YouTube Help now and then. The 2016 meme gallery stays as an **archive**
+  (`modernize_youtubemoney_archive.py`: archive note on `youtubers.html` + the ten pages, "YouTubers" nav label; idempotent, `--apply`). Sidebar / recommendations: the calculator is in the
+  `tools` collection of `add_sidebar.py`, the archive pages are the `youtubemoney` family; both pass through `NO_AD_DIRS` (empty top-ad slot + `data-no-ads`, which `aside.js` honours so the
+  300x600 second unit is skipped too). Not in `add_bottom_ad.py`'s `TOOL_DIRS` on purpose. Registered in `add_tool_page_controls` TOOLS (floating bar, dark theme). Logos are PIL placeholders
+  (`youtubemoney/img/logo.png`, `logo-big.png` 1200x630, `img/ymc-logo.png`) until Grok art lands. After editing run `build_tool_apps.py --apply` (rebuilds every app; `git checkout` the
+  other apps' pages, or re-run the other scripts), then `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`.
 - **Inflation Calculator 2.0** (2026-10-02, `mes.fm/inflationcalculator`) -- rewritten; the 2018/2019 MySQL-era snapshot and the Google Charts / jQuery code are gone.
   **Data is live:** `mes.fm/api/inflation.js` (Vercel function, edge-cached `s-maxage=12h` + `stale-while-revalidate=7d`) pulls World Bank `FP.CPI.TOTL` (annual, ~190 countries),
   FRED `CPIAUCNS` (US BLS CPI-U, monthly since 1913), StatCan vector 41690973 (Canada, monthly since 1914) and ONS `D7BT` (UK CPI, monthly since 1988) and returns one JSON

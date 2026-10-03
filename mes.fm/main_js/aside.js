@@ -326,7 +326,7 @@
             var ad2 = null, AD2_AFTER = 7;      /* counted over ALL cards in the column (the related cards the page already carries + ours) */
             var debug2 = /[?&]aside-debug\b/.test(location.search);
             function placeAd2() {                       /* the 600px ad goes right after the 7th card, only if the column has room for it and some cards below it */
-                if (ad2 || !(AD2_SLOT || debug2) || rail || !content || !beside()) return;
+                if (ad2 || !(AD2_SLOT || debug2) || aside.hasAttribute("data-no-ads") || rail || !content || !beside()) return;
                 var cards = aside.querySelectorAll("li > a.mes-aside__card");
                 if (cards.length < AD2_AFTER) return;
                 var seventh = cards[AD2_AFTER - 1].parentNode;

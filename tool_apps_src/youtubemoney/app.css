@@ -1,0 +1,7 @@
+	/* YouTube Money Calculator */
+	.tu #ym-rpm-table tbody tr {cursor:pointer;}
+	.tu #ym-rpm-table tbody tr:hover td {background:#fdf3f3;}
+	.tu #ym-hero .tu-stat__value {font-variant-numeric:tabular-nums;}
+	.tu [hidden] {display:none !important;}
+	.tu #ym-examples .tu-chip {margin:0.15em 0;}
+	@media (max-width: 600px) {.tu #ym-format {margin-left:0 !important;}}

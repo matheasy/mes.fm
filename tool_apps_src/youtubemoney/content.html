@@ -1,0 +1,120 @@
+	<div class="tu" id="ym">
+		<div class="tu-card">
+			<div class="tu-row" style="align-items:center;">
+				<div class="tu-seg" id="ym-mode" role="group" aria-label="What do you want to work out?">
+					<button type="button" data-mode="earn" aria-pressed="true">Estimate earnings</button>
+					<button type="button" data-mode="goal" aria-pressed="false">Views needed for a goal</button>
+				</div>
+				<div class="tu-seg" id="ym-format" role="group" aria-label="Video format" style="margin-left:auto;">
+					<button type="button" data-format="long" aria-pressed="true">Long-form videos</button>
+					<button type="button" data-format="shorts" aria-pressed="false">Shorts</button>
+				</div>
+			</div>
+
+			<div id="ym-earn-in" class="tu-row" style="margin-top:1em;">
+				<div class="tu-field">
+					<label for="ym-views">Views</label>
+					<input id="ym-views" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 100,000">
+				</div>
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;">
+					<label for="ym-per">Views are</label>
+					<select id="ym-per" class="tu-select">
+						<option value="video">per video</option>
+						<option value="day">per day</option>
+						<option value="month">per month</option>
+						<option value="year">per year</option>
+					</select>
+				</div>
+				<div class="tu-field tu-field--sm" id="ym-vpm-wrap">
+					<label for="ym-vpm">Videos / month</label>
+					<input id="ym-vpm" class="tu-input" type="number" min="1" max="1000" step="1" value="4" inputmode="numeric">
+				</div>
+			</div>
+
+			<div id="ym-goal-in" class="tu-row" style="margin-top:1em;" hidden>
+				<div class="tu-field">
+					<label for="ym-goal">I want to earn</label>
+					<div class="tu-suffix"><input id="ym-goal" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 1,000"><span>USD</span></div>
+				</div>
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;">
+					<label for="ym-goalper">&hellip; each</label>
+					<select id="ym-goalper" class="tu-select">
+						<option value="video">video</option>
+						<option value="month" selected>month</option>
+						<option value="year">year</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="tu-row" style="margin-top:1em;">
+				<div class="tu-field" id="ym-niche-wrap">
+					<label for="ym-niche">Channel topic (sets the typical RPM)</label>
+					<select id="ym-niche" class="tu-select"></select>
+				</div>
+				<div class="tu-field">
+					<label for="ym-geo">Where your viewers are</label>
+					<select id="ym-geo" class="tu-select">
+						<option value="1">Mostly US, Canada, UK, Australia, W. Europe</option>
+						<option value="0.7">A mix of regions</option>
+						<option value="0.35">Mostly Asia, Africa, Latin America</option>
+					</select>
+				</div>
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;">
+					<label for="ym-rpm">Your own RPM (optional)</label>
+					<div class="tu-suffix"><input id="ym-rpm" class="tu-input" type="number" min="0" step="0.01" inputmode="decimal" placeholder="auto"><span>$</span></div>
+				</div>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">RPM = what <em>you</em> earn per 1,000 views, after YouTube&rsquo;s cut. Find yours in YouTube Studio &rarr; Analytics &rarr; Revenue. Leave it blank to use the topic&rsquo;s typical range.</p>
+		</div>
+
+		<div id="ym-empty" class="tu-card tu-card--tint" style="margin-top:1em;">Enter a number of views above to see an estimate &mdash; or try an example: <span class="tu-chips" id="ym-examples" style="display:inline-flex;margin:0 0 0 0.3em;"></span></div>
+
+		<div id="ym-out" hidden>
+			<div class="tu-stats" id="ym-hero" aria-live="polite"></div>
+			<p class="tu-note" id="ym-basis"></p>
+
+			<div class="tu-card" id="ym-table-card">
+				<div class="tu-label" id="ym-table-title">Earnings by period</div>
+				<div class="tu-table-wrap"><table class="tu-table" id="ym-table"></table></div>
+			</div>
+			<div style="display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.8em;">
+				<button type="button" class="tu-btn tu-btn--primary" id="ym-link">Copy link to these results</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ym-copy">Copy summary</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ym-reset">Reset</button>
+			</div>
+		</div>
+
+		<h2>Typical RPM by topic <span class="tu-note" style="font-weight:400;text-transform:none;">&mdash; click a row to use it</span></h2>
+		<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="ym-rpm-table"></table></div>
+		<p class="tu-note" style="margin-bottom:0;">US dollars per 1,000 views for long-form videos, after YouTube&rsquo;s share, for an audience mostly in high-paying countries. These are broad creator-reported ballparks, not guarantees &mdash; your own Analytics is always the better number.</p></div>
+
+		<div class="tu-card tu-card--tint" style="margin-top:1em;">
+			<strong>How much do famous YouTubers make?</strong> Our 2016-era estimates for PewDiePie, Dude Perfect, Vsauce and others are kept as an archive:
+			<a href="/youtubemoney/youtubers">see the YouTuber earnings archive</a>.
+		</div>
+
+		<div class="tu-seo">
+			<h2>How do YouTubers get paid?</h2>
+			<p>Most of a channel&rsquo;s income starts with ads. Once a channel is in the <strong>YouTube Partner Program</strong>, YouTube shows ads (and counts YouTube Premium watch time) against the videos and pays the creator a share of the revenue: <strong>55% of ad revenue on long-form videos</strong>. For Shorts, ad revenue from the feed is pooled and divided among creators by views, and the creator receives <strong>45%</strong> of their share of that pool &mdash; which is why Shorts pay far less per view.</p>
+			<h3>CPM vs. RPM &mdash; which one is this calculator using?</h3>
+			<ul>
+				<li><strong>CPM</strong> is what advertisers pay per 1,000 ad impressions, before YouTube takes its cut. It can look high, but not every view shows an ad.</li>
+				<li><strong>RPM</strong> is what you actually take home per 1,000 <em>views</em>, after YouTube&rsquo;s cut and counting views with no ad. RPM is always lower than CPM, and it is the number this calculator uses.</li>
+			</ul>
+			<h3>Why do different channels earn so differently?</h3>
+			<ul>
+				<li><strong>Topic.</strong> Finance, business and tech attract advertisers who pay more than gaming, music or kids&rsquo; content.</li>
+				<li><strong>Viewer location.</strong> Advertisers pay more to reach viewers in the US, Canada, the UK, Australia and Western Europe.</li>
+				<li><strong>Video length.</strong> Videos over 8 minutes can carry mid-roll ads, which raises RPM.</li>
+				<li><strong>Season.</strong> Ad prices peak in Q4 (around the holidays) and dip in January.</li>
+				<li><strong>Advertiser-friendliness.</strong> Videos with limited ads earn a fraction of full RPM.</li>
+			</ul>
+			<h3>Do I need to be in the Partner Program?</h3>
+			<p>To earn a share of ad revenue you must join the YouTube Partner Program. At the time of writing that takes <strong>1,000 subscribers plus either 4,000 public watch hours in the last 12 months or 10 million public Shorts views in the last 90 days</strong>; a lower tier (500 subscribers) unlocks memberships and fan funding first. Check <a href="https://support.google.com/youtube/answer/72851" target="_blank" rel="noopener">YouTube&rsquo;s own requirements</a> for the current rules in your country.</p>
+			<h3>Ads aren&rsquo;t the only income</h3>
+			<p>Many creators earn more from <strong>sponsorships</strong>, <strong>affiliate links</strong>, <strong>channel memberships</strong>, <strong>Super Chat and Super Thanks</strong>, <strong>merchandise</strong> and their own products or courses. None of those are included in the estimate above.</p>
+			<h3>How accurate is this estimate?</h3>
+			<p>It is a ballpark. The low and high figures come from typical creator-reported RPM ranges for the topic you choose, adjusted for where your viewers live, and the real number can fall outside them. If you run the channel, the true figure is in YouTube Studio&rsquo;s Revenue tab &mdash; type your RPM in the box above to project it forward. Nothing you type leaves your browser.</p>
+			<p><a href="/youtube-thumbnail">YouTube Thumbnail Downloader</a> &middot; <a href="/percentagecalculator">Percentage Calculator</a> &middot; <a href="/calculators">More MES calculators</a></p>
+		</div>
+	</div>
