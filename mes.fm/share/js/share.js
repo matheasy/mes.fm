@@ -152,8 +152,12 @@
 		// link in the reply / comment
 		{ id: "x", name: "X", g: "reply", open: "https://x.com/compose/post",
 			prefill: function (d, m) { return "https://x.com/intent/post?text=" + enc(m); },
-			blocks: function (d) { return [["Post (no link)", shortPost(d, 280, { tags: 2, len: xlen }), 280, xlen], ["Reply", lk(d), 280, xlen]]; },
-			tips: ["Attach the video, <b>no link in the post</b>.", "X lets you attach the thumbnail alongside the video in the same post — worth doing when it carries real content of its own, like a full derivation.", "Right after posting, <b>reply with the link</b>.", "1–2 hashtags."] },
+			blocks: function (d) {
+				// X Premium raises the post limit to 25,000 characters, so the whole description fits; the reply stays a short link
+				var limit = xPremium ? 25000 : 280;
+				return [["Post (no link)", shortPost(d, limit, { tags: 2, len: xlen }), limit, xlen], ["Reply", lk(d), 280, xlen]];
+			},
+			tips: ["Attach the video, <b>no link in the post</b>.", "280 characters, unless you tick X Premium above (25,000). Long posts collapse after about 280 characters behind “Show more”, so the title has to carry the hook.", "X lets you attach the thumbnail alongside the video in the same post — worth doing when it carries real content of its own, like a full derivation.", "Right after posting, <b>reply with the link</b>.", "1–2 hashtags."] },
 		{ id: "mbs", name: "Meta Business Suite", g: "reply", open: "https://business.facebook.com/latest/composer",
 			blocks: function (d) { return [["Post (no link)", inReply(d, 1500, 3, "Link in the first comment 👇")], ["First comment", lk(d)]]; },
 			tips: ["Tick both your Facebook Page and Instagram to post to both at once.", "Upload the video natively; <b>link in the first comment</b>.", "Attaching a photo alongside it turns the post into a carousel, which Facebook's Reels-specific feed doesn't count the same as a video-only post — fine for a landscape/long-form video, worth keeping the video solo for a short vertical clip you want in the Reels feed."] },
@@ -262,6 +266,7 @@
 	var urls = store.get("urls", {}), hidden = store.get("hidden", {});
 	var searchQuery = "";  // not persisted -- a fresh search each visit, unlike hidden/urls
 	var inleoPremium = store.get("inleoPremium", false);  // removes InLeo's 240-char thread cap
+	var xPremium = store.get("xPremium", false);  // X Premium: 25,000-character posts instead of 280
 	function data() {
 		var d = {};
 		F.forEach(function (k) { d[k] = $("sl-" + k).value.trim(); });
@@ -318,6 +323,8 @@
 					(isDone ? '<span class="sl-check-mark" aria-label="done">✓</span>' : "") + "<b>" + esc(s.name) + "</b></button>" +
 					(s.prefill ? '<span class="sl-badge">pre-fills</span>' : "") + '<span class="sl-sp"></span>' +
 					'<label class="sl-done">Done <input type="checkbox" class="sl-tick"' + (isDone ? " checked" : "") + '></label></div><div class="sl-body">' +
+					(s.id === "x" ? '<label class="sl-done" style="margin:0 0 0.6em;"><input type="checkbox" class="sl-x-premium"' +
+						(xPremium ? " checked" : "") + '> X Premium (long posts, 25,000 chars)</label>' : "") +
 					(s.id === "inleo" ? '<label class="sl-done" style="margin:0 0 0.6em;"><input type="checkbox" class="sl-inleo-premium"' +
 						(inleoPremium ? " checked" : "") + '> InLeo Premium (no 240-char cap)</label>' : "");
 				bl.forEach(function (b, i) {
@@ -374,6 +381,12 @@
 		}
 	});
 	$("sl-out").addEventListener("change", function (e) {
+		if (e.target.classList.contains("sl-x-premium")) {
+			xPremium = e.target.checked;
+			store.set("xPremium", xPremium);
+			render();
+			return;
+		}
 		if (e.target.classList.contains("sl-inleo-premium")) {
 			inleoPremium = e.target.checked;
 			store.set("inleoPremium", inleoPremium);
