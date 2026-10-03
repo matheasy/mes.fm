@@ -323,19 +323,21 @@
             var count = 0, rail = aside.classList.contains("mes-aside--rail");   /* rail = Jump-to pages' fixed side rail (jump-aside.js): a fixed number of cards, it scrolls on its own */
             function beside() { var a = aside.getBoundingClientRect(), c = content && content.getBoundingClientRect(); return !!c && window.innerWidth >= 1200 && (a.left >= c.right - 5 || a.right <= c.left + 5) && getComputedStyle(aside).display !== "none"; }
             function need() { return host2.getBoundingClientRect().height < content.getBoundingClientRect().height - 100; }
-            var ad2 = null, AD2_AFTER = 7;      /* counted over ALL cards in the column (the related cards the page already carries + ours) */
+            var ads2 = [], AD2_AFTER = 7, AD2_EVERY = 12, AD2_MAX = 3;      /* first tall ad after the 7th card, then one every 12 cards, at most 3 per page; counted over ALL cards in the column (the related cards the page already carries + ours) */
+            function ad2Pos(k) { return AD2_AFTER + AD2_EVERY * k; }
             var debug2 = /[?&]aside-debug\b/.test(location.search);
             function placeAd2() {                       /* the 600px ad goes right after the 7th card, only if the column has room for it and some cards below it */
-                if (ad2 || !(AD2_SLOT || debug2) || aside.hasAttribute("data-no-ads") || rail || !content || !beside()) return;
+                if (ads2.length >= AD2_MAX || !(AD2_SLOT || debug2) || aside.hasAttribute("data-no-ads") || rail || !content || !beside()) return;
                 var cards = aside.querySelectorAll("li > a.mes-aside__card");
-                if (cards.length < AD2_AFTER) return;
-                var seventh = cards[AD2_AFTER - 1].parentNode;
+                var k = ads2.length;
+                if (cards.length < ad2Pos(k) + (k ? 1 : 0)) return;       /* later units only once there is a card below them */
+                var seventh = cards[ad2Pos(k) - 1].parentNode;
                 if (content.getBoundingClientRect().height - host2.getBoundingClientRect().height < 760) return;
                 var li = document.createElement("li");
                 li.className = "mes-aside__ad2";
                 li.innerHTML = '<span class="mes-aside__ad2-label">Advertisement</span><div class="mes-aside__ad2-slot"></div>';
                 seventh.parentNode.insertBefore(li, seventh.nextSibling);
-                ad2 = li;
+                ads2.push(li);
                 var slot = li.querySelector(".mes-aside__ad2-slot");
                 if (!AD2_SLOT) { slot.className += " is-debug"; slot.textContent = "300x600 ad goes here"; return; }
                 var requested = false;
@@ -359,11 +361,12 @@
                 } else request();
             }
             function keepAd2() {                        /* cards keep arriving after the ad was placed: hold it right after the 7th card in column order */
-                if (!ad2) return;
                 var cards = aside.querySelectorAll("li > a.mes-aside__card");
-                if (cards.length < AD2_AFTER) return;
-                var seventh = cards[AD2_AFTER - 1].parentNode;
-                if (seventh.nextSibling !== ad2) seventh.parentNode.insertBefore(ad2, seventh.nextSibling);
+                for (var k = 0; k < ads2.length; k++) {
+                    if (cards.length < ad2Pos(k)) return;
+                    var prev = cards[ad2Pos(k) - 1].parentNode;
+                    if (prev.nextSibling !== ads2[k]) prev.parentNode.insertBefore(ads2[k], prev.nextSibling);
+                }
             }
             function add(b) {
                 var it = b.items.shift();
