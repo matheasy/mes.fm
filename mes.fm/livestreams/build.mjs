@@ -64,7 +64,10 @@ const MIRRORS = {
 };
 
 // Stats-screen pages (the Stats tab), newest first.
-const STATS = [{ href: "https://mes.fm/livestream-140-stats", title: "140: Stats" }];
+const STATS = [
+  { href: "https://mes.fm/livestream-141-stats", title: "141: Stats" },
+  { href: "https://mes.fm/livestream-140-stats", title: "140: Stats" },
+];
 
 // Filter chips above the tabs (same idea as the chips on mes.fm/calculators). A video can be in
 // several (a 9/11 stream on the MES Truth channel is in both); "All" is implicit. The first three

@@ -59,6 +59,24 @@
       }
     ]
   },
+  "https://mes.fm/livestream-141-stats": {
+    "image": "https://img.leopedia.io/DQmaqQmrbvJv218AGjLFQSVzwCAEyQKESV8jupMwmhQgsjv/telegram-cloud-photo-size-1-5048700796681260142-x.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mes/re-leothreads-2xkkignwj"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35612"
+      },
+      {
+        "label": "All livestreams",
+        "href": "https://mes.fm/livestreams"
+      }
+    ]
+  },
   "https://mes.fm/livestream-141-trailer-hutchison-tom-sky-levitation": {
     "image": "https://images.3speak.tv/images/1790463348035-7542bd8045bc9d7a.webp",
     "watchLinks": [
