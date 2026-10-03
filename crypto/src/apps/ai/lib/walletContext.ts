@@ -23,6 +23,11 @@ export function walletFromRequest(request: Request): WalletConfig {
   return key && key in WALLETS ? WALLETS[key as WalletKey] : WALLETS.ai;
 }
 
+/** Runs `fn` as one wallet, from code that isn't handling a `?wallet=` request (e.g. mes.fm/lp's own route) */
+export function runAsWallet<T>(key: WalletKey, fn: () => Promise<T>): Promise<T> {
+  return store.run(WALLETS[key], fn);
+}
+
 /** Runs a route handler with `?wallet=` (default: the AI Trading wallet) as the current wallet */
 export function withWallet<T>(request: Request, fn: () => Promise<T>): Promise<T> {
   return store.run(walletFromRequest(request), fn);
