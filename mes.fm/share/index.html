@@ -693,6 +693,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<p class="tu-note" id="sl-mode-note" style="margin-bottom:0;"></p>
 			</div>
 			<div id="sl-live" hidden style="margin:0.8em 0 1em;">
+				<div class="tu-seg" id="sl-asset" role="group" aria-label="Which announcement post" style="margin-bottom:0.8em;">
+					<button type="button" data-a="trailer" aria-pressed="true">🎬 Trailer post</button>
+					<button type="button" data-a="thumb" aria-pressed="false">🖼 Thumbnail post</button>
+				</div>
 				<div class="tu-row">
 					<div class="tu-field"><label for="sl-sdate">Stream date</label><input id="sl-sdate" class="tu-input" type="date"></div>
 					<div class="tu-field"><label for="sl-stime">Start time</label><input id="sl-stime" class="tu-input" type="time"></div>
@@ -764,7 +768,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</ul>
 			<h3>Sharing a livestream</h3>
 			<ul>
-				<li><strong>📅 Announcement</strong> (a day or two before, and again on the day): upload the trailer as a native video, add the thumbnail as a second image where the site allows it, give the date and time with a time zone, and put the live page link in the first comment or reply. The time zone link opens <a href="/timezone">the Timezone Converter</a> on your start time.</li>
+				<li><strong>📅 Announcement</strong> (a day or two before, and again on the day): post the trailer as its own native video and the thumbnail as its own image post, a few hours or a day apart (the <strong>Trailer post / Thumbnail post</strong> switch shows only the sites that fit each), give the date and time with a time zone, and put the live page link in the first comment or reply. The time zone link opens <a href="/timezone">the Timezone Converter</a> on your start time.</li>
 				<li><strong>🔴 Live now</strong>: one short post with the thumbnail and a single line. Upload sites, blog-style sites and Pinterest are hidden because the stream would be over before anyone saw the post there.</li>
 				<li><strong>Replay</strong>: after the stream, switch back to <strong>Video / replay</strong> and share the notes page the usual way.</li>
 				<li>Each of the three keeps its own Done checklist for the same link.</li>
@@ -839,7 +843,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/share/js/share.js?v=4" defer></script>
+	<script src="/share/js/share.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

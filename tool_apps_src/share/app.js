@@ -277,7 +277,7 @@
 
 	/* ---------- livestream switch ---------- */
 	// post = the normal video/replay flow; announce = before the stream (trailer + time + live-page link); live = one short "LIVE now" post.
-	var live = store.get("live", {}), mode = ["post", "announce", "live"].indexOf(live.mode) >= 0 ? live.mode : "post";
+	var live = store.get("live", {}), mode = ["post", "announce", "live"].indexOf(live.mode) >= 0 ? live.mode : "post", asset = live.asset === "thumb" ? "thumb" : "trailer";
 	var MODE_NOTE = {
 		post: "",
 		announce: "Upload the trailer as a native video (add the thumbnail as a second image where the site allows it). The link goes in the first comment or reply, with a time zone link so people can see your start time in their own zone.",
@@ -287,7 +287,11 @@
 	var STREAM_HIDE = ["youtube", "3speak", "rumble", "odysee", "bitchute", "blurtmedia", "paychute"];
 	var LIVE_HIDE = STREAM_HIDE.concat(["fbreels", "tiktok", "substacknote", "pinterest", "liketu", "pixagram", "tiktokphoto"]);
 	function modeHides(id, g) {
-		if (mode === "announce") return STREAM_HIDE.indexOf(id) >= 0 || g === "blog";
+		if (mode === "announce") {
+			if (STREAM_HIDE.indexOf(id) >= 0 || g === "blog") return true;
+			// the trailer is a video, the thumbnail an image: each goes only where it belongs
+			return asset === "thumb" ? (id === "fbreels" || id === "tiktok") : g === "image";
+		}
 		if (mode === "live") return LIVE_HIDE.indexOf(id) >= 0 || g === "blog";
 		return false;
 	}
@@ -336,7 +340,7 @@
 		return o;
 	}
 	function cur() { return modeData(data()); }
-	function modeKey() { return mode === "post" ? "" : ":" + mode; }
+	function modeKey() { return mode === "post" ? "" : ":" + mode + (mode === "announce" && asset === "thumb" ? ":thumb" : ""); }
 	function doneKey() { return "done:" + (data().link || "nolink") + modeKey(); }
 	function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	function blocksOf(s, d) { return s.blocks(d).filter(function (b) { return b[1]; }); }
@@ -485,14 +489,21 @@
 
 	function fill(p) { F.forEach(function (k) { if (k in p) $("sl-" + k).value = p[k]; }); }
 	function save() { var d = data(); d.blob = $("sl-blob").value; store.set("post", d); store.set("label", d.label); }
-	function saveLive() { store.set("live", { mode: mode, sdate: $("sl-sdate").value, stime: $("sl-stime").value, szone: $("sl-szone").value.trim() }); }
+	function saveLive() { store.set("live", { mode: mode, asset: asset, sdate: $("sl-sdate").value, stime: $("sl-stime").value, szone: $("sl-szone").value.trim() }); }
 	function syncMode() {
 		Array.prototype.forEach.call($("sl-modes").querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.m === mode)); });
 		$("sl-live").hidden = mode !== "announce";
-		$("sl-mode-note").textContent = MODE_NOTE[mode];
+		Array.prototype.forEach.call($("sl-asset").querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.a === asset)); });
+		$("sl-mode-note").textContent = mode === "announce" ? (asset === "thumb"
+			? "Post the thumbnail as its own image post (Pinterest, YouTube Community, Instagram, Facebook...). The video-only cards (Reels, TikTok) are hidden. Space it a few hours or a day from the trailer post."
+			: "Post the trailer as its own native video (add no photo, so it is not turned into a carousel). Image sites are hidden. The link goes in the first comment or reply, with a time zone link so people can see your start time in their own zone.") : MODE_NOTE[mode];
 		var w = whenText($("sl-sdate").value, $("sl-stime").value, $("sl-szone").value.trim() || defaultZone());
 		$("sl-when").textContent = w ? "Posts will say: " + w.text : "Pick a date and time; your own time zone is used unless you change it.";
 	}
+	$("sl-asset").addEventListener("click", function (e) {
+		var b = e.target.closest("button"); if (!b) return;
+		asset = b.dataset.a; saveLive(); syncMode(); render();
+	});
 	$("sl-modes").addEventListener("click", function (e) {
 		var b = e.target.closest("button"); if (!b) return;
 		mode = b.dataset.m; saveLive(); syncMode(); render();
