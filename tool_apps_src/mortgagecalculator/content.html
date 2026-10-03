@@ -1,0 +1,408 @@
+	<div class="tu" id="mc">
+		<div id="mc-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
+
+		<div class="tu-card" id="mc-setup">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:2 1 24em;">
+					<span class="tu-label" id="mc-region-label">Country (sets the rules)</span>
+					<div class="tu-seg mc-seg" id="mc-region" role="group" aria-labelledby="mc-region-label">
+						<button type="button" data-v="us" aria-pressed="true">United States</button>
+						<button type="button" data-v="ca" aria-pressed="false">Canada</button>
+						<button type="button" data-v="uk" aria-pressed="false">UK</button>
+						<button type="button" data-v="au" aria-pressed="false">Australia</button>
+						<button type="button" data-v="other" aria-pressed="false">Other</button>
+					</div>
+				</div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+					<label for="mc-cur">Currency</label>
+					<select id="mc-cur" class="tu-select"></select>
+				</div>
+			</div>
+
+			<div class="tu-row" style="margin-top:1em;">
+				<div class="tu-field" style="flex:1 1 100%;">
+					<span class="tu-label" id="mc-mode-label">What do you want to work out?</span>
+					<div class="tu-seg mc-seg" id="mc-mode" role="group" aria-labelledby="mc-mode-label">
+						<button type="button" data-v="pay" aria-pressed="true">My payment</button>
+						<button type="button" data-v="afford" aria-pressed="false">How much can I afford?</button>
+						<button type="button" data-v="loan" aria-pressed="false">Payment &rarr; loan size</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- mode: payment -->
+			<div data-m="pay" style="margin-top:1em;">
+				<div class="tu-seg mc-seg" id="mc-inp" role="group" aria-label="What you know">
+					<button type="button" data-v="price" aria-pressed="true">Home price + down payment</button>
+					<button type="button" data-v="loan" aria-pressed="false">Loan amount</button>
+				</div>
+				<div class="tu-row" style="margin-top:0.9em;align-items:flex-start;">
+					<div class="tu-field" style="flex-basis:12em;">
+						<label for="mc-price" id="mc-price-label">Home price</label>
+						<div class="tu-suffix"><input id="mc-price" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="450,000"><span class="mc-cur-tag"></span></div>
+					</div>
+					<div class="tu-field" id="mc-dp-wrap" style="flex-basis:14em;">
+						<label for="mc-dp">Down payment</label>
+						<div class="mc-dprow">
+							<div class="tu-suffix" style="flex:1 1 auto;"><input id="mc-dp" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="20"><span id="mc-dp-tag">%</span></div>
+							<div class="tu-seg mc-seg mc-seg--sm" id="mc-dpu" role="group" aria-label="Down payment unit"><button type="button" data-v="%" aria-pressed="true">%</button><button type="button" data-v="$" aria-pressed="false">$</button></div>
+						</div>
+						<span class="tu-note mc-hint" id="mc-dphint" style="margin:0;"></span>
+					</div>
+					<div class="tu-field" id="mc-loan-wrap" style="flex-basis:12em;" hidden>
+						<label for="mc-loan">Loan amount</label>
+						<div class="tu-suffix"><input id="mc-loan" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="360,000"><span class="mc-cur-tag"></span></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- mode: affordability -->
+			<div data-m="afford" style="margin-top:1em;" hidden>
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:12em;">
+						<label for="mc-inc">Gross income per year (before tax)</label>
+						<div class="tu-suffix"><input id="mc-inc" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="120,000"><span class="mc-cur-tag"></span></div>
+					</div>
+					<div class="tu-field" style="flex-basis:12em;">
+						<label for="mc-debts">Other debt payments per month</label>
+						<div class="tu-suffix"><input id="mc-debts" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="500"><span class="mc-cur-tag"></span></div>
+					</div>
+					<div class="tu-field" style="flex-basis:12em;">
+						<label for="mc-adp">Down payment you have saved</label>
+						<div class="tu-suffix"><input id="mc-adp" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="60,000"><span class="mc-cur-tag"></span></div>
+					</div>
+				</div>
+				<p class="tu-note" style="margin-bottom:0;">Car loans, student loans, credit-card minimums and similar monthly payments go in &ldquo;other debt&rdquo;. Property tax, insurance and other costs come from the &ldquo;Taxes, insurance &amp; other costs&rdquo; box below.</p>
+			</div>
+
+			<!-- mode: payment -> loan -->
+			<div data-m="loan" style="margin-top:1em;" hidden>
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:12em;">
+						<label for="mc-tp">Payment you can afford</label>
+						<div class="tu-suffix"><input id="mc-tp" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="2,000"><span class="mc-cur-tag"></span></div>
+						<span class="tu-note mc-hint" id="mc-tp-hint" style="margin:0;">principal &amp; interest, per month</span>
+					</div>
+					<div class="tu-field" style="flex-basis:12em;">
+						<label for="mc-tdp">Down payment (optional)</label>
+						<div class="tu-suffix"><input id="mc-tdp" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="50,000"><span class="mc-cur-tag"></span></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- shared: rate, term, frequency, start -->
+			<div class="tu-row" style="margin-top:0.9em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:9em;">
+					<label for="mc-rate">Interest rate</label>
+					<div class="tu-suffix"><input id="mc-rate" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="6.5"><span>%</span></div>
+				</div>
+				<div class="tu-field" data-r="ca" style="flex-basis:15em;" hidden>
+					<label for="mc-rt">Rate type</label>
+					<select id="mc-rt" class="tu-select">
+						<option value="fixed">Fixed (compounded semi-annually)</option>
+						<option value="var">Variable (compounded monthly)</option>
+					</select>
+				</div>
+				<div class="tu-field tu-field--sm" style="flex-basis:9em;">
+					<label for="mc-years" id="mc-years-label">Loan term (years)</label>
+					<input id="mc-years" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="30">
+				</div>
+				<div class="tu-field" style="flex:2 1 15em;">
+					<span class="tu-label" id="mc-yrchips-label">Common terms</span>
+					<div class="tu-chips" id="mc-yrchips" role="group" aria-labelledby="mc-yrchips-label" style="margin-top:0;"></div>
+				</div>
+			</div>
+			<div class="tu-row" style="margin-top:0.9em;">
+				<div class="tu-field" style="flex-basis:16em;">
+					<label for="mc-freq">Payment frequency</label>
+					<select id="mc-freq" class="tu-select"></select>
+				</div>
+				<div class="tu-field" data-m="pay" style="flex-basis:12em;">
+					<label for="mc-start">Loan start date</label>
+					<input id="mc-start" class="tu-input" type="date">
+				</div>
+			</div>
+			<p class="tu-note" id="mc-freqnote" style="margin:0.6em 0 0;"></p>
+		</div>
+
+		<!-- options -->
+		<div id="mc-options">
+			<details class="tu-card mc-det" id="mc-d-costs" data-m="pay afford" style="margin-top:0.8em;">
+				<summary>Taxes, insurance &amp; other costs <span class="mc-sum" id="mc-s-costs"></span></summary>
+				<div class="tu-row" style="margin-top:0.8em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;">
+						<label for="mc-tax">Property tax (% of price / year)</label>
+						<div class="tu-suffix"><input id="mc-tax" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="1.0"><span>%</span></div>
+					</div>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;">
+						<label for="mc-ins">Home insurance (per year)</label>
+						<div class="tu-suffix"><input id="mc-ins" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="1,500"><span class="mc-cur-tag"></span></div>
+					</div>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;">
+						<label for="mc-hoa" id="mc-hoa-label">HOA fees (per month)</label>
+						<div class="tu-suffix"><input id="mc-hoa" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><span class="mc-cur-tag"></span></div>
+					</div>
+					<div class="tu-field tu-field--sm" data-r="us" style="flex-basis:10em;">
+						<label for="mc-pmi">PMI (% of loan / year)</label>
+						<div class="tu-suffix"><input id="mc-pmi" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="0.6"><span>%</span></div>
+					</div>
+					<div class="tu-field tu-field--sm" data-r="ca" data-m="afford" style="flex-basis:10em;" hidden>
+						<label for="mc-ht">Heating (per month)</label>
+						<div class="tu-suffix"><input id="mc-ht" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="120"><span class="mc-cur-tag"></span></div>
+					</div>
+				</div>
+				<p class="tu-note" id="mc-costs-note" style="margin-bottom:0;"></p>
+			</details>
+
+			<details class="tu-card mc-det" id="mc-d-region" data-m="pay afford loan" data-r="ca uk" style="margin-top:0.8em;" hidden>
+				<summary><span id="mc-region-sum">Country options</span> <span class="mc-sum" id="mc-s-region"></span></summary>
+				<div data-r="ca" style="margin-top:0.8em;" hidden>
+					<label class="mc-check"><input type="checkbox" id="mc-ftb30"> I am a first-time buyer, or buying a newly built home (30-year amortization allowed on an insured mortgage)</label>
+					<p class="tu-note" style="margin-bottom:0;">With less than 20% down your mortgage must be insured (CMHC, Sagen or Canada Guaranty). The premium is added to your mortgage. Insured mortgages are capped at a $1.5 million purchase price.</p>
+				</div>
+				<div data-r="uk" style="margin-top:0.8em;" hidden>
+					<div class="tu-row">
+						<div class="tu-field" style="flex-basis:16em;">
+							<label for="mc-ukt">Mortgage type</label>
+							<select id="mc-ukt" class="tu-select"><option value="repay">Repayment (capital + interest)</option><option value="io">Interest-only</option></select>
+						</div>
+					</div>
+					<label class="mc-check" style="margin-top:0.8em;"><input type="checkbox" id="mc-sdlt"> Add Stamp Duty Land Tax (England &amp; Northern Ireland) to the cash needed up front</label>
+					<div id="mc-sdlt-opts" style="margin-left:1.6em;" hidden>
+						<label class="mc-check"><input type="checkbox" id="mc-sf"> First-time buyer (main home)</label>
+						<label class="mc-check"><input type="checkbox" id="mc-sa"> Additional property (second home / buy-to-let: +5%)</label>
+					</div>
+					<p class="tu-note" style="margin-bottom:0;">Scotland (LBTT) and Wales (LTT) have their own taxes, which this calculator does not model. Interest-only means the whole loan is still owed at the end of the term.</p>
+				</div>
+			</details>
+
+			<details class="tu-card mc-det" id="mc-d-extra" data-m="pay" style="margin-top:0.8em;">
+				<summary>Extra payments <span class="mc-sum" id="mc-s-extra"></span></summary>
+				<div class="tu-row" style="margin-top:0.8em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+						<label for="mc-xm">Extra every month</label>
+						<div class="tu-suffix"><input id="mc-xm" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="200"><span class="mc-cur-tag"></span></div>
+					</div>
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+						<label for="mc-xy">Extra once a year</label>
+						<div class="tu-suffix"><input id="mc-xy" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="3,000"><span class="mc-cur-tag"></span></div>
+					</div>
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+						<label for="mc-xl">One-time lump sum</label>
+						<div class="tu-suffix"><input id="mc-xl" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="25,000"><span class="mc-cur-tag"></span></div>
+					</div>
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+						<label for="mc-xd">Lump sum paid on</label>
+						<input id="mc-xd" class="tu-input" type="date">
+					</div>
+				</div>
+				<p class="tu-note" style="margin-bottom:0;">Extra money goes straight to principal and the regular payment stays the same, so the loan ends sooner. The yearly extra is paid with the payment on each anniversary of the start date. Check your lender&rsquo;s prepayment rules and limits: many mortgages cap or charge for them.</p>
+			</details>
+
+			<details class="tu-card mc-det" id="mc-d-reset" data-m="pay" style="margin-top:0.8em;">
+				<summary><span id="mc-reset-sum">Rate change</span> <span class="mc-sum" id="mc-s-reset"></span></summary>
+				<label class="mc-check" style="margin-top:0.8em;"><input type="checkbox" id="mc-rs"> <span id="mc-rs-label">The rate changes after the initial period</span></label>
+				<div class="tu-row" style="margin-top:0.6em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+						<label for="mc-ry" id="mc-ry-label">Initial period (years)</label>
+						<input id="mc-ry" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="5">
+					</div>
+					<div class="tu-field tu-field--sm" id="mc-rr-wrap" style="flex-basis:11em;">
+						<label for="mc-rr" id="mc-rr-label">New rate</label>
+						<div class="tu-suffix"><input id="mc-rr" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="6.5"><span>%</span></div>
+					</div>
+				</div>
+				<p class="tu-note" id="mc-reset-note" style="margin-bottom:0;"></p>
+			</details>
+
+			<details class="tu-card mc-det" id="mc-d-bal" data-m="pay" data-r="us ca au other" style="margin-top:0.8em;">
+				<summary>Balloon payment <span class="mc-sum" id="mc-s-bal"></span></summary>
+				<div class="tu-row" style="margin-top:0.8em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:12em;">
+						<label for="mc-bal">Balloon due at the end</label>
+						<div class="tu-suffix"><input id="mc-bal" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><span class="mc-cur-tag"></span></div>
+					</div>
+				</div>
+				<p class="tu-note" style="margin-bottom:0;">A balloon loan has smaller regular payments and one big payment of the remaining balance at the end of the term.</p>
+			</details>
+		</div>
+
+		<div id="mc-empty" class="tu-card tu-card--tint" style="margin-top:1em;" hidden><span id="mc-empty-text"></span></div>
+		<div id="mc-warn"></div>
+
+		<div id="mc-out" aria-live="polite">
+			<div class="tu-stats" id="mc-hero"></div>
+			<p class="tu-note" id="mc-hero-note" style="margin-top:0;"></p>
+		</div>
+
+		<!-- affordability / payment->loan result extras -->
+		<div id="mc-side" hidden>
+			<div class="tu-card" id="mc-side-card"></div>
+		</div>
+
+		<div class="mc-btns" data-m="afford loan">
+			<button type="button" class="tu-btn tu-btn--primary" id="mc-link2">Copy link to this calculation</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="mc-sent2">Copy result as a sentence</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="mc-print2">Print</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="mc-reset2">Reset</button>
+		</div>
+
+		<div id="mc-payres">
+			<div class="tu-card" id="mc-break-card" hidden>
+				<div class="tu-label">Where each payment goes</div>
+				<div class="mc-bar" id="mc-bar" role="img"></div>
+				<div class="mc-legend" id="mc-legend"></div>
+			</div>
+
+			<div class="tu-card" id="mc-extra-card" hidden>
+				<div class="tu-label">What your extra payments do</div>
+				<div class="tu-stats" id="mc-extra-stats" style="margin-bottom:0;"></div>
+			</div>
+
+			<div class="mc-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="mc-link">Copy link to this calculation</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mc-sent">Copy result as a sentence</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mc-csv">Copy schedule as CSV</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mc-print">Print</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mc-reset">Reset</button>
+			</div>
+			<div class="tu-card tu-card--tint" style="margin-top:0.8em;"><span id="mc-sentence"></span></div>
+
+			<h2>Balance and interest over time</h2>
+			<div class="tu-card">
+				<div class="mc-chartwrap">
+					<div class="mc-readout" id="mc-readout" aria-live="off">Move over the chart to read it.</div>
+					<div id="mc-chart1" class="mc-chart"></div>
+				</div>
+				<div class="mc-legend" id="mc-leg1"></div>
+			</div>
+
+			<h2>Principal vs. interest each year</h2>
+			<div class="tu-card">
+				<div id="mc-chart2" class="mc-chart"></div>
+				<div class="mc-legend" id="mc-leg2"></div>
+				<p class="tu-note" id="mc-cross" style="margin-bottom:0;"></p>
+			</div>
+
+			<h2>Amortization schedule</h2>
+			<div class="tu-card" id="mc-sched-card">
+				<div class="tu-row" style="align-items:center;margin-bottom:0.6em;">
+					<div class="tu-seg mc-seg" id="mc-vw" role="group" aria-label="Schedule view">
+						<button type="button" data-v="year" aria-pressed="true">By year</button>
+						<button type="button" data-v="all" aria-pressed="false">Every payment</button>
+					</div>
+					<span class="tu-note" style="margin:0;" id="mc-sched-note">Click a year to see its payments.</span>
+				</div>
+				<div class="tu-table-wrap mc-sched-wrap"><table class="tu-table" id="mc-sched"></table></div>
+			</div>
+
+			<h2>Compare two scenarios</h2>
+			<div class="tu-card" id="mc-cmp-card">
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;">
+						<label for="mc-cr">Scenario B rate</label>
+						<div class="tu-suffix"><input id="mc-cr" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="same"><span>%</span></div>
+					</div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;">
+						<label for="mc-cy">Scenario B term (years)</label>
+						<input id="mc-cy" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="same">
+					</div>
+					<div class="tu-field" style="flex-basis:15em;">
+						<label for="mc-cf">Scenario B payment frequency</label>
+						<select id="mc-cf" class="tu-select"></select>
+					</div>
+				</div>
+				<div class="tu-chips" id="mc-cmp-chips" style="margin-top:0.7em;"></div>
+				<div id="mc-cmp-out" class="tu-table-wrap" style="margin-top:0.8em;" hidden><table class="tu-table" id="mc-cmp-table"></table></div>
+				<p class="tu-note" id="mc-cmp-note" style="margin-bottom:0;">Scenario A is the calculation above. Leave a B field empty to keep A&rsquo;s value, so you can change one thing at a time: 15 years instead of 30, a lower rate, accelerated bi-weekly instead of monthly.</p>
+			</div>
+
+			<h2>What if the rate were different?</h2>
+			<div class="tu-card">
+				<div class="tu-table-wrap"><table class="tu-table" id="mc-sens"></table></div>
+				<p class="tu-note" style="margin-bottom:0;">Same loan, same term, only the interest rate changes (any rate change or extra payments you set above still apply).</p>
+			</div>
+		</div>
+
+		<h2>Rules used for <span id="mc-rules-name">this country</span></h2>
+		<div class="tu-card" id="mc-rules">
+			<div data-r="us">
+				<ul class="mc-rules">
+					<li><strong>Interest:</strong> the nominal annual rate divided by payments per year, charged on the remaining balance (monthly compounding, the standard US method).</li>
+					<li><strong>PMI (private mortgage insurance):</strong> usually charged on a conventional loan with less than 20% down. It typically costs about 0.3% to 1.5% of the loan per year (your price depends on your credit score, down payment and loan type); the 0.6% used here is just a placeholder. The calculator charges it while your balance is above 80% of the original price. Under the Homeowners Protection Act you can ask to cancel at 80% and lenders must end it automatically when the balance is scheduled to reach 78% of the original value.</li>
+					<li><strong>PITI:</strong> principal, interest, property tax and homeowner&rsquo;s insurance (plus HOA dues and PMI when they apply). Tax and insurance vary enormously by county and home; enter your own numbers.</li>
+					<li><strong>Affordability guideline:</strong> lenders often like housing costs at or under 28% of gross monthly income and all debts at or under 36% (the &ldquo;28/36 rule&rdquo;). It is a guideline, not a rule: many loan programs allow more, and your budget may allow less.</li>
+					<li><strong>Loan size:</strong> the 2026 baseline conforming loan limit for a one-unit home is $832,750 (up to $1,249,125 in high-cost areas, FHFA); bigger loans are &ldquo;jumbo&rdquo; loans with their own pricing.</li>
+				</ul>
+			</div>
+			<div data-r="ca" hidden>
+				<ul class="mc-rules">
+					<li><strong>Compounding:</strong> a fixed-rate Canadian mortgage compounds semi-annually (Interest Act), a variable rate compounds monthly. A 5.00% fixed rate is therefore an effective monthly rate of (1 + 0.05/2)<sup>1/6</sup> &minus; 1, and a $100,000, 25-year mortgage costs $581.60 a month, not the $584.59 a US-style calculator shows.</li>
+					<li><strong>Minimum down payment:</strong> 5% of the first $500,000 of the price plus 10% of the part from $500,000 up to $1.5 million; 20% on a home at $1.5 million or more. With under 20% down the mortgage must be insured, and insured mortgages are limited to homes under $1.5 million (since 15 December 2024).</li>
+					<li><strong>Mortgage insurance premium (CMHC):</strong> a percentage of the base loan, set by loan-to-value, <em>added to your mortgage</em>: 80.01&ndash;85% LTV 2.80%, 85.01&ndash;90% 3.10%, 90.01&ndash;95% 4.00%, plus 0.20% when the amortization is over 25 years. Sagen and Canada Guaranty publish very similar rates. Provincial sales tax on the premium (Ontario, Quebec, Saskatchewan) is paid in cash at closing, not added here.</li>
+					<li><strong>Amortization:</strong> 25 years is the standard maximum for an insured mortgage; since 15 December 2024 first-time buyers and buyers of newly built homes can insure up to 30 years. Uninsured mortgages are often available to 30 years. The <em>term</em> (typically 5 years) is how long your rate and lender are fixed: at the end you renew, possibly at a new rate &mdash; use the &ldquo;Renewal&rdquo; box to see the effect.</li>
+					<li><strong>Stress test:</strong> to qualify you must show you can pay at the <em>higher of your contract rate + 2% or 5.25%</em> (OSFI minimum qualifying rate; insured and uninsured). The affordability mode uses it, with the guideline limits GDS 39% and TDS 44% (housing costs: payment + property tax + heating + half of condo fees; total: plus all other debt payments). Lenders may set their own limits.</li>
+				</ul>
+			</div>
+			<div data-r="uk" hidden>
+				<ul class="mc-rules">
+					<li><strong>Interest:</strong> the annual rate divided by 12 on the remaining balance each month (lenders actually accrue interest daily, so a real offer can differ by a few pounds). Choose <em>repayment</em> to pay the loan off over the term, or <em>interest-only</em> to pay just the interest and still owe the whole loan at the end.</li>
+					<li><strong>Stamp Duty Land Tax (England and Northern Ireland, from 1 April 2025):</strong> 0% up to &pound;125,000; 2% from &pound;125,001 to &pound;250,000; 5% from &pound;250,001 to &pound;925,000; 10% from &pound;925,001 to &pound;1.5 million; 12% above. First-time buyers pay 0% up to &pound;300,000 and 5% from &pound;300,001 to &pound;500,000, but get no relief at all if the price is over &pound;500,000. A 5% surcharge applies to additional residential properties. (A 2% non-resident surcharge also exists and is not modelled.)</li>
+					<li><strong>Affordability:</strong> uses the generic 28% / 36% income guideline. UK lenders mostly look at an income multiple and a stressed affordability check, so treat the result as a rough idea.</li>
+				</ul>
+			</div>
+			<div data-r="au" hidden>
+				<ul class="mc-rules">
+					<li><strong>Interest:</strong> the annual rate divided by the payments per year on the remaining balance (monthly compounding). Stamp duty, lenders mortgage insurance and grants differ by state and are not modelled.</li>
+					<li><strong>Affordability:</strong> uses the generic 28% / 36% income guideline, which is not how Australian lenders assess you (they use their own serviceability buffers).</li>
+				</ul>
+			</div>
+			<div data-r="other" hidden>
+				<ul class="mc-rules">
+					<li><strong>Interest:</strong> the annual rate divided by the payments per year on the remaining balance (monthly compounding), the most common method worldwide. Check your lender&rsquo;s method: some compound daily or semi-annually.</li>
+					<li><strong>Affordability:</strong> uses the generic 28% / 36% income guideline.</li>
+				</ul>
+			</div>
+			<p class="tu-note" style="margin:0.8em 0 0;">Rules last verified <strong id="mc-verified"></strong>. Sources: <span id="mc-sources"></span>. Rates, premiums and limits change &mdash; confirm with your lender.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How a mortgage payment is calculated</h2>
+			<p>A standard (&ldquo;amortizing&rdquo;) mortgage is paid back with equal payments. Every payment first covers the interest that has built up on the remaining balance, and whatever is left reduces the balance. Early on most of the payment is interest; later most is principal. The payment that does this exactly is:</p>
+			<p><strong>payment = L &times; i &divide; (1 &minus; (1 + i)<sup>&minus;n</sup>)</strong></p>
+			<p>where <strong>L</strong> is the loan amount, <strong>i</strong> the interest rate per payment period (the annual rate divided by 12 for monthly payments) and <strong>n</strong> the total number of payments (years &times; 12).</p>
+			<p><strong>Worked example:</strong> a $300,000 loan at 6% for 30 years. i = 0.06 &divide; 12 = 0.005 and n = 360, so (1.005)<sup>&minus;360</sup> = 0.1660 and the payment is 300,000 &times; 0.005 &divide; (1 &minus; 0.1660) = <strong>$1,798.65 a month</strong>. In the first month the interest is 300,000 &times; 0.005 = $1,500.00, so only $298.65 reduces the loan; over 30 years you pay about $347,515 in interest &mdash; more than the amount you borrowed. This calculator does the same sum with whole cents and rounds the interest on every payment like a lender does, so the last payment may differ from the others by a few cents.</p>
+
+			<h2>PITI: what you really pay each month</h2>
+			<p><strong>PITI</strong> stands for principal, interest, taxes and insurance. The mortgage payment is only part of the cost of owning: property tax, home insurance, HOA or condo fees and (with a small down payment) mortgage insurance usually come on top. Enter them in &ldquo;Taxes, insurance &amp; other costs&rdquo; to see the all-in payment and a breakdown of where each payment goes. Maintenance, utilities and repairs are not included; a common planning figure is about 1% of the home&rsquo;s value per year.</p>
+
+			<h2>PMI and CMHC insurance</h2>
+			<p><strong>In the US</strong>, a conventional loan with less than 20% down normally needs private mortgage insurance (PMI), an extra monthly cost that protects the lender and can be cancelled once you have built up enough equity (see the rules above). <strong>In Canada</strong>, a mortgage with less than 20% down must be insured (CMHC, Sagen or Canada Guaranty): the one-time premium is 2.80% to 4.00% of the loan, plus 0.20% for amortizations over 25 years, and it is added to the mortgage so you pay interest on it. Putting down exactly 20% avoids both.</p>
+
+			<h2>Amortization vs. term (Canada)</h2>
+			<p>In Canada two numbers matter. The <strong>amortization</strong> (typically 25 or 30 years) is how long the whole loan would take to pay off. The <strong>term</strong> (typically 5 years) is how long your rate, lender and conditions are locked in. At the end of the term you renew the remaining balance at whatever rates are then on offer. Use the Renewal option to enter a different rate after the term and see what it does to your payment and total interest. A <strong>fixed</strong> rate is compounded semi-annually, a <strong>variable</strong> rate monthly, which is why the same &ldquo;5%&rdquo; gives a slightly different payment in Canada than in the US.</p>
+
+			<h2>Fixed vs. variable vs. adjustable (ARM)</h2>
+			<p>A <strong>fixed</strong> rate never changes during its term, so the payment is predictable. A <strong>variable</strong> rate follows a lender benchmark and can move at any time. In the US an <strong>adjustable-rate mortgage (ARM)</strong>, such as a 5/1 ARM, is fixed for an initial period and then resets, usually once a year. This calculator models the simplest version of both: a rate that changes once, after a period you choose, to a rate you type, with the payment recalculated on the balance and years that remain. For a worst case, type a rate several points higher.</p>
+
+			<h2>Monthly vs. bi-weekly vs. accelerated payments</h2>
+			<p><strong>Monthly:</strong> 12 payments a year. <strong>Semi-monthly:</strong> 24 payments, twice a month. <strong>Bi-weekly:</strong> 26 payments, one every two weeks; the payment is simply the monthly payment &times; 12 &divide; 26, so it costs about the same as monthly. <strong>Accelerated bi-weekly:</strong> half of the monthly payment every two weeks. Because there are 26 half-payments, you make the equivalent of one extra monthly payment a year, so the mortgage ends years sooner and saves thousands in interest. <strong>Accelerated weekly</strong> works the same way with a quarter of the monthly payment. Choose the frequency your lender offers; it has to be set up with them.</p>
+
+			<h2>Making extra payments</h2>
+			<p>Anything you pay beyond the scheduled amount goes to principal, so next month&rsquo;s interest is calculated on a smaller balance. Because the early years are mostly interest, extra money paid early saves the most: on the example above, an extra $200 a month shortens a 30-year loan by about 6 years and 9 months and saves about $91,000 in interest. Try the monthly, yearly and one-time lump-sum extras above and watch the &ldquo;interest saved&rdquo; figure.</p>
+
+			<h2>Frequently asked questions</h2>
+			<h3>How much house can I afford?</h3>
+			<p>A common guideline (the 28/36 rule in the US, GDS/TDS 39/44 in Canada) says housing costs should stay under about 28&ndash;39% of your gross income and total debt payments under 36&ndash;44%. Use &ldquo;How much can I afford?&rdquo; to turn your income, debts and down payment into a price. It is a starting point, not an approval: lenders also look at credit score, savings, job history and the loan program, and your own comfort level matters more than a ratio.</p>
+			<h3>Is a 15-year or a 30-year mortgage better?</h3>
+			<p>A 15-year loan has a higher payment but a lower rate (usually) and far less total interest; a 30-year loan keeps the payment low and your budget flexible. The Compare box puts both side by side. A popular middle path is the 30-year loan plus a regular extra payment, which you can stop when money is tight.</p>
+			<h3>How is the interest-to-principal ratio useful?</h3>
+			<p>It shows how many dollars of interest you pay for every dollar you borrow. At 6% for 30 years it is about $1.16 per $1; at 3% it is about $0.52. It makes the cost of a long term or a higher rate easy to compare at a glance.</p>
+			<h3>Why does my lender&rsquo;s payment differ by a few dollars?</h3>
+			<p>Lenders may round differently, accrue interest daily, count the first payment period differently, or add fees and escrow amounts. The result here is the standard textbook calculation with whole-cent rounding; your offer document is the final word.</p>
+			<h3>Do you store what I enter?</h3>
+			<p>No. Everything is calculated in your browser, your last settings are kept only in your own browser storage, and a shared link simply carries the numbers in its address.</p>
+			<p class="tu-note"><strong>Disclaimer:</strong> this calculator gives estimates for information and planning only. It is not financial, mortgage or tax advice and is not a loan offer. Rates, fees, taxes, insurance rules and lender criteria vary and change; confirm everything with your lender, broker or a qualified adviser before you make a decision.</p>
+			<p><a href="/inflationcalculator">Inflation Calculator</a> &middot; <a href="/percentagecalculator">Percentage Calculator</a> &middot; <a href="/days-between-dates-calculator">Days Between Dates</a> &middot; <a href="/vatcalculator">VAT Calculator</a> &middot; <a href="/calculator">Calculator</a> &middot; <a href="/calculators">More MES calculators</a></p>
+		</div>
+	</div>

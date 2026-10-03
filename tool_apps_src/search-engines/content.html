@@ -1,0 +1,103 @@
+	<div class="tu se" id="se">
+		<div class="tu-card se-main">
+			<div class="tu-field">
+				<label for="se-q">What do you want to search for?</label>
+				<div class="se-qrow">
+					<input id="se-q" class="tu-input tu-input--big" type="search" autocomplete="off" spellcheck="true" placeholder="Type or paste your search, then press Enter to open every ticked engine" enterkeyhint="search">
+					<button type="button" class="tu-btn tu-btn--primary se-go" id="se-go">Open 0 selected</button>
+				</div>
+			</div>
+			<div class="se-opts">
+				<div class="se-opt"><span class="tu-label">Search type</span>
+					<div class="tu-seg" id="se-type" role="group" aria-label="Search type">
+						<button type="button" data-t="web" aria-pressed="true">Web</button><button type="button" data-t="images" aria-pressed="false">Images</button>
+						<button type="button" data-t="news" aria-pressed="false">News</button><button type="button" data-t="videos" aria-pressed="false">Videos</button>
+					</div></div>
+				<div class="se-opt"><span class="tu-label">When</span>
+					<div class="tu-seg" id="se-time" role="group" aria-label="Time range">
+						<button type="button" data-t="" aria-pressed="true">Any time</button><button type="button" data-t="d" aria-pressed="false">24 h</button>
+						<button type="button" data-t="w" aria-pressed="false">Week</button><button type="button" data-t="m" aria-pressed="false">Month</button><button type="button" data-t="y" aria-pressed="false">Year</button>
+					</div></div>
+				<div class="se-opt"><span class="tu-label">Open in</span>
+					<div class="tu-seg" id="se-mode" role="group" aria-label="Where results open">
+						<button type="button" data-m="tab" aria-pressed="true" title="Each engine in its own browser tab">New tabs</button>
+						<button type="button" data-m="window" aria-pressed="false" title="Each engine in its own pop-up window, tiled across your screen so you can compare side by side">Tiled windows</button>
+						<button type="button" data-m="same" aria-pressed="false" title="Links open in this tab; Open all needs tabs or windows">Same tab</button>
+					</div></div>
+			</div>
+			<details class="se-more" id="se-more">
+				<summary>More options <small>exact phrase, site:, exclude a site, Google tweaks</small></summary>
+				<div class="tu-row" style="margin-top:0.8em;">
+					<div class="tu-field"><label for="se-site">Only from this site (site:)</label><input id="se-site" class="tu-input" type="text" placeholder="example.com" autocomplete="off"></div>
+					<div class="tu-field"><label for="se-excl">Leave out this site (-site:)</label><input id="se-excl" class="tu-input" type="text" placeholder="pinterest.com" autocomplete="off"></div>
+				</div>
+				<div class="se-checks">
+					<label><input type="checkbox" id="se-exact"> Exact phrase (put the search in quotes)</label>
+					<label><input type="checkbox" id="se-log" checked> Remember my searches in this browser</label>
+				</div>
+				<p class="tu-note" style="margin-bottom:0;">Exact phrase, site: and leave-out apply to the web search engines (they are ignored by video, social and shopping sites, which don't understand them). For a SEO check of your own site, put your domain in <b>site:</b> and leave the search box empty.</p>
+			</details>
+			<div class="se-bar">
+				<span class="tu-label">Pick a set</span>
+				<span class="se-presets" id="se-presets"></span>
+			</div>
+			<div class="se-bar se-tools">
+				<button type="button" class="tu-btn tu-btn--ghost" id="se-selall">Tick all shown</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="se-none">Untick all</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="se-saveset" title="Save the ticked engines as your own named set">★ Save as my set</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="se-copylinks" title="Copy one link per engine">Copy links</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="se-sharelink" title="A link to this page with your search and ticked engines filled in">Copy share link</button>
+				<input id="se-filter" class="tu-input se-filter" type="search" placeholder="Find an engine…" aria-label="Find an engine" autocomplete="off">
+			</div>
+			<div class="se-warn" id="se-warn" role="status" hidden></div>
+		</div>
+
+		<div id="se-out"></div>
+
+		<div class="tu-card se-custom">
+			<h2 style="margin-top:0;">Add your own search engine</h2>
+			<p class="tu-note" style="margin-top:0;">Go to any site's search, search for the word <b>test</b>, and copy the address of the results page. Paste it below and replace <b>test</b> with <b>%s</b> (or <b>{q}</b>). Example: <code>https://example.com/search?q=%s</code></p>
+			<div class="tu-row">
+				<div class="tu-field" style="flex:1 1 12em;"><label for="se-cname">Name</label><input id="se-cname" class="tu-input" type="text" maxlength="40" placeholder="My site" autocomplete="off"></div>
+				<div class="tu-field" style="flex:3 1 22em;"><label for="se-curl">Search address (with %s where the search goes)</label><input id="se-curl" class="tu-input" type="url" placeholder="https://example.com/search?q=%s" autocomplete="off"></div>
+				<button type="button" class="tu-btn tu-btn--primary" id="se-cadd">Add engine</button>
+			</div>
+			<p class="tu-note se-cmsg" id="se-cmsg" role="status"></p>
+			<div class="tu-chips">
+				<button type="button" class="tu-chip" id="se-export">⬇ Back up my engines &amp; sets</button>
+				<button type="button" class="tu-chip" id="se-import">⬆ Restore a backup…</button>
+				<input type="file" id="se-file" accept=".json,application/json" hidden>
+			</div>
+		</div>
+
+		<div class="tu-card se-history" id="se-history" hidden>
+			<h2 style="margin-top:0;">Your recent searches</h2>
+			<ul class="se-hlist" id="se-hlist"></ul>
+			<button type="button" class="tu-btn tu-btn--ghost" id="se-hclear">Clear history</button>
+		</div>
+		<div class="tu-toast" id="se-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>Search every search engine at once</h2>
+			<p>Different search engines show different results: for the same words, Google, Bing, DuckDuckGo, Brave, Yandex and Mojeek can disagree on what comes first, what is missing, and what they refuse to show at all. This page lets you type your search once and open it in as many engines as you like with one click: web search, images, news and videos; AI answer engines; video sites such as YouTube, Rumble and Odysee; social platforms; and research sites. Nothing is sent to us. Your search goes only to the engines you open.</p>
+			<h3>What people use it for</h3>
+			<ul>
+				<li><strong>Censorship and bias checks:</strong> search a sensitive topic in Google, Bing, Yandex, Brave, DuckDuckGo and Mojeek and see which engines bury, remove or promote which sources. The <em>Censorship &amp; bias check</em> set ticks nine engines at once, and <em>Video censorship check</em> does the same for video sites.</li>
+				<li><strong>SEO and rank checks:</strong> see where a page ranks in each engine, check whether your site is indexed (put your domain in <em>site:</em> and leave the search box empty), compare country versions (Google .com, .ca, .co.uk, .com.au… tick as many as you like) and look at the time filters for fresh results.</li>
+				<li><strong>Research and fact-checking:</strong> run one question through general engines, Google Scholar, PubMed, arXiv, the Internet Archive and the Fact Check Explorer in one go.</li>
+				<li><strong>Finding anything:</strong> if one engine gives you rubbish, five more are already open.</li>
+			</ul>
+			<h3>Getting the fairest comparison</h3>
+			<ul>
+				<li>Use a <strong>private / incognito window</strong> and be logged out of the engines: your history and account shape results far more than most people realise.</li>
+				<li>Use the same language and the same location for every engine. A VPN set to another country shows what people there see; ticking <em>Google .ca</em> alone does not change your location.</li>
+				<li>Compare the <strong>first page</strong>, not just the top result, and also look at what is <em>missing</em>. <strong>Tiled windows</strong> puts the engines side by side on your screen.</li>
+				<li>Turn off any extensions that rewrite search results, and repeat the search on another day: results change.</li>
+			</ul>
+			<h3>Opening lots of tabs</h3>
+			<p>Browsers allow a page to open several tabs from one click, but some pop-up blockers stop all but the first. If that happens the page shows the links that were blocked so you can click them, and you can allow pop-ups for mes.fm (the icon in the address bar) so <strong>Open all</strong> works in one go. Safari and some phones are the strictest. <strong>Same tab</strong> turns each engine into a normal link, which also works with middle-click or long-press to open in a new tab.</p>
+			<h3>Your own engines</h3>
+			<p>Add any site's search (a forum, a news site, a shop, your own SearXNG) with <strong>%s</strong> where the search words go. Your engines and sets are saved in this browser, and you can back them up to a file.</p>
+			<p>Everything runs in your browser; your searches are only remembered here if you leave <em>Remember my searches</em> on. <a href="/search">Search mes.fm itself</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

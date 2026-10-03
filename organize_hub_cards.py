@@ -34,7 +34,7 @@ PAGES = {
     "tools.html": dict(noun="tools", popular=["timer", "speedreader", "moon", "emoji"], cats=[
         ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols", "copy-text"]),
         ("time", "Time &amp; Focus", ["speedreader", "timer", "timezone", "calendar"]),
-        ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search"]),
+        ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search", "search-engines"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today"]),
     ]),
 }

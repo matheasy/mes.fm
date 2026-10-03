@@ -1,0 +1,30 @@
+/* node tool_apps_src/search-engines-tests.js */
+const assert = require("assert");
+const E = require("./search-engines/lib.js");
+const g = E.BYID.google;
+assert.strictEqual(E.url(g, "best pizza", {}), "https://www.google.com/search?q=best%20pizza");
+assert.strictEqual(E.url(g, "pizza", {}, g.variants[1]), "https://www.google.ca/search?q=pizza");
+assert.strictEqual(E.url(g, "pizza", { type: "images", time: "w" }, g.variants[2]), "https://www.google.co.uk/search?q=pizza&tbm=isch&tbs=qdr:w");
+assert.strictEqual(E.url(g, "a b", { exact: true, site: "https://Example.com/page", exclude: "bad.org" }), "https://www.google.com/search?q=%22a%20b%22%20site%3AExample.com%20-site%3Abad.org");
+assert.strictEqual(E.url(E.BYID.youtube, "x", { exact: true, site: "a.com" }), "https://www.youtube.com/results?search_query=x", "operators never go to non-web engines");
+assert.strictEqual(E.url(E.BYID.reddit, "x", { type: "images" }), null, "no images search -> null");
+assert.strictEqual(E.url(g, "   ", {}), null, "empty query -> null");
+assert.strictEqual(E.url(g, "", { site: "mes.fm" }), "https://www.google.com/search?q=site%3Ames.fm", "site-only query allowed");
+assert.strictEqual(E.url(E.BYID.yahoo, "q", {}, E.BYID.yahoo.variants[1]), "https://ca.search.yahoo.com/search?p=q");
+assert.strictEqual(E.url(E.BYID.ddg, "q", { time: "m" }, E.BYID.ddg.variants[2]), "https://duckduckgo.com/?q=q&kl=ca-en&df=m");
+assert.strictEqual(E.url(E.BYID.baidu, "中文 test", {}), "https://www.baidu.com/s?wd=%E4%B8%AD%E6%96%87%20test");
+assert.strictEqual(E.url(E.BYID.dailymotion, "a/b?c", {}), "https://www.dailymotion.com/search/a%2Fb%3Fc");
+const t = E.targets(["google", "bing", "reddit"], { google: ["com", "ca"] }, [], "cats", { type: "images" });
+assert.deepStrictEqual(t.list.map(x => x.label), ["Google .com", "Google .ca", "Bing US"]);
+assert.deepStrictEqual(t.skipped, ["Reddit"]);
+const c = [{ id: "mine", name: "Mine", web: "https://example.com/?s={q}" }];
+assert.strictEqual(E.targets(["mine"], {}, c, "x y", {}).list[0].url, "https://example.com/?s=x%20y");
+assert.strictEqual(E.customTemplate("https://e.com/?q=%s"), "https://e.com/?q={q}");
+assert(E.validCustom("https://e.com/?q={q}") && !E.validCustom("javascript:alert({q})") && !E.validCustom("https://e.com/") );
+// every engine builds a valid https URL and templates carry {q}
+E.ENGINES.forEach(e => { assert(/^https:\/\//.test(e.web) && e.web.includes("{q}"), e.id); const u = E.url(e, "test", {}); assert(/^https:\/\/[^ ]+$/.test(u), e.id + " " + u); assert(!u.includes("{")); Object.keys(e.types || {}).forEach(k => assert(e.types[k].includes("{q}"), e.id + k)); });
+assert.strictEqual(new Set(E.ENGINES.map(e => e.id)).size, E.ENGINES.length, "unique ids");
+E.PRESETS.forEach(p => p[2].forEach(id => assert(E.BYID[id], "preset " + p[0] + " unknown " + id)));
+const w = E.tile(6, 1920, 1080, 0, 0); assert.strictEqual(w.length, 6); assert(w.every(r => r.width > 300 && r.height > 300));
+assert.strictEqual(E.tile(1, 1000, 800, 0, 0)[0].width, 1000);
+console.log("search-engines tests passed (" + E.ENGINES.length + " engines)");
