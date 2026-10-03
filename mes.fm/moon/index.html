@@ -166,7 +166,7 @@
     .refresh-btn:disabled { opacity: 0.55; cursor: default; }
 
     .row-builder { position: relative; margin: 0 0 1.6em; padding: 10px 14px; border: 1px solid rgba(128,128,128,0.4); border-radius: 6px;
-      transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease; }
+      }
     .row-builder > summary { cursor: pointer; font-weight: bold; }
     /* Wide / Theater: same left:50%+margin:-W/2 breakout the video embeds use elsewhere on the
        site, so it centers on the viewport regardless of the (centered) .container's own width. */
@@ -562,6 +562,7 @@
         <button id="rowCopyHdr" class="loc-btn" type="button">Copy headers only</button>
         <label class="row-check"><input type="checkbox" id="rowHdrOn" /> Include header row when copying</label>
         <button id="rowReset" class="loc-btn" type="button">Reset to default</button>
+        <button id="rowDefaultToggle" class="loc-btn row-view-btn" type="button" aria-pressed="true">Default view</button>
         <button id="rowWideToggle" class="loc-btn row-view-btn" type="button" aria-pressed="false">Wide view</button>
         <button id="rowTheaterToggle" class="loc-btn row-view-btn" type="button" aria-pressed="false">Theater view</button>
         <span class="updated-line" id="rowMsg" role="status"></span>

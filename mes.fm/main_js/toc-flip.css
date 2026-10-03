@@ -40,6 +40,9 @@ html.page-theatre { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }  /*
   html.page-wide .container { max-width: var(--toc-w); }
   html.page-wide .footer { max-width: var(--toc-w); }
   html.toc-hidden .toc-sidebar { display: none; }
+  /* Theatre with the Jump-to list hidden: nothing to leave room for, so use nearly the whole window */
+  html.page-theatre.toc-hidden { --toc-w: min(2000px, calc(100vw - 80px)); }
+  html.page-theatre.toc-hidden > body > .toc-reopen { display: none; }
   /* small tab where the sidebar was, to bring it back */
   html.toc-hidden > body > .toc-reopen { display: inline-flex; align-items: center; gap: .35em; position: fixed; top: 90px; z-index: 12;
     left: calc(50% + var(--toc-w) / 2 + 30px); padding: .3em .8em; border: 1px solid #b9c2cc; border-radius: 999px; background: #fff; color: #1479c7;

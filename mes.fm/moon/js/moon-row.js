@@ -149,18 +149,18 @@
   // more of the preview table's columns fit without horizontal scrolling. Not persisted
   // (matches the video embeds' Wide/Theater toggle elsewhere on the site).
   var viewMode = 'default';
-  var wideBtn = $('rowWideToggle'), theaterBtn = $('rowTheaterToggle');
+  var defBtn = $('rowDefaultToggle'), wideBtn = $('rowWideToggle'), theaterBtn = $('rowTheaterToggle');
   function applyView() {
     box.classList.toggle('row-wide', viewMode === 'wide');
     box.classList.toggle('row-theater', viewMode === 'theater');
-    wideBtn.textContent = viewMode === 'wide' ? 'Default view' : 'Wide view';
-    wideBtn.setAttribute('aria-pressed', viewMode === 'wide' ? 'true' : 'false');
-    theaterBtn.textContent = viewMode === 'theater' ? 'Default view' : 'Theater view';
-    theaterBtn.setAttribute('aria-pressed', viewMode === 'theater' ? 'true' : 'false');
+    [[defBtn, 'default'], [wideBtn, 'wide'], [theaterBtn, 'theater']].forEach(function (p) {
+      p[0].setAttribute('aria-pressed', viewMode === p[1] ? 'true' : 'false');
+    });
   }
-  function setView(next) { viewMode = viewMode === next ? 'default' : next; applyView(); }
-  if (wideBtn && theaterBtn) {
-    wideBtn.addEventListener('click', function () { setView('wide'); });
-    theaterBtn.addEventListener('click', function () { setView('theater'); });
+  if (defBtn && wideBtn && theaterBtn) {
+    defBtn.addEventListener('click', function () { viewMode = 'default'; applyView(); });
+    wideBtn.addEventListener('click', function () { viewMode = viewMode === 'wide' ? 'default' : 'wide'; applyView(); });
+    theaterBtn.addEventListener('click', function () { viewMode = viewMode === 'theater' ? 'default' : 'theater'; applyView(); });
+    applyView();
   }
 })();
