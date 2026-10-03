@@ -380,6 +380,7 @@
                 if (!content) return;
                 if (!beside()) { if (!count) for (var i = 0; i < 4 && (b = next()); i++) add(b); return; }
                 while (count < MAX && (b = next()) && (count < 3 || need())) add(b);
+                placeAd2();       /* content that grows later (charts, tables) can make room for the tall ad without adding a card */
                 /* the content shrank (sections collapsed, ...): drop cards again so the column never pushes the footer down */
                 while (count > 3 && host2.getBoundingClientRect().height > content.getBoundingClientRect().height + 30) {
                     var lastB = null;

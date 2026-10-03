@@ -416,6 +416,36 @@
       cb.addEventListener('change', function () { logs[cb.getAttribute('data-chart')] = cb.checked; renderCharts(); });
     });
     $$('.ic-expand').forEach(function (b) { b.addEventListener('click', function () { toggleFull(b.closest('.ic-card')); }); });
+    /* fold buttons: every chart / table card can be collapsed to its title bar; "Collapse all" sits beside the Charts heading */
+    function setFold(card, folded) {
+      card.classList.toggle('ic-card--folded', folded);
+      var b = card.querySelector('.ic-fold');
+      if (b) { b.setAttribute('aria-expanded', String(!folded)); b.querySelector('span').textContent = folded ? 'Show' : 'Hide'; b.querySelector('i').textContent = folded ? '\u25B8' : '\u25BE'; }
+      if (!folded) requestAnimationFrame(function () { Object.keys(charts).forEach(function (k) { charts[k] && charts[k].resize(); }); });
+    }
+    var foldCards = $$('.ic-card');
+    foldCards.forEach(function (card) {
+      var tools = card.querySelector('.ic-tools');
+      if (!tools) return;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'ic-tool ic-fold'; b.setAttribute('aria-expanded', 'true');
+      b.title = 'Collapse or expand this section';
+      b.innerHTML = '<i>\u25BE</i><span>Hide</span>';
+      b.addEventListener('click', function () { setFold(card, !card.classList.contains('ic-card--folded')); });
+      tools.insertBefore(b, tools.firstChild);
+    });
+    var chartsH = null;
+    $$('.ic-h2').forEach(function (h) { if (/^Charts/.test(h.textContent)) chartsH = h; });
+    if (chartsH && foldCards.length) {
+      var all = document.createElement('button');
+      all.type = 'button'; all.className = 'ic-tool ic-foldall'; all.textContent = 'Collapse all';
+      all.addEventListener('click', function () {
+        var fold = all.textContent === 'Collapse all';
+        foldCards.forEach(function (c) { if (c.querySelector('.ic-fold')) setFold(c, fold); });
+        all.textContent = fold ? 'Expand all' : 'Collapse all';
+      });
+      chartsH.appendChild(all);
+    }
     $$('.ic-png').forEach(function (b) { b.addEventListener('click', function () { savePng(b.getAttribute('data-chart')); }); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var f = $('.ic-card--full'); if (f) toggleFull(f); } });
 
@@ -701,6 +731,7 @@
   /* ---------- expand / PNG ---------- */
   function toggleFull(card) {
     if (!card) return;
+    if (card.classList.contains('ic-card--folded')) setFold(card, false);
     var on = !card.classList.contains('ic-card--full');
     $$('.ic-card--full').forEach(function (c) { if (c !== card) { c.classList.remove('ic-card--full'); } });
     card.classList.toggle('ic-card--full', on);
