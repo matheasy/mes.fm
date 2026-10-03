@@ -247,7 +247,7 @@
 		{ id: "liketu", name: "Liketu", g: "image", open: "https://liketu.net/",
 			blocks: function (d) { return [["Title", d.title], ["Text", join([fit("", d.desc, "", 600), lk(d)])], ["Tags", plainTags(d.tags, 8).join(" ")]]; },
 			tips: ["Upload the thumbnail as the photo. Hive-based, so links are fine."] },
-		{ id: "pixagram", name: "Pixagram", g: "image", open: "https://pixagram.io/",
+		{ id: "pixagram", name: "Pixagram", g: "image", open: "https://pixagram.com/",
 			blocks: function (d) { return [["Caption", join([d.title, fit("", d.desc, "", 600), lk(d), hashes(d.tags, 5)])]]; },
 			tips: ["Upload the thumbnail as the image. Hive-based, so links are fine."] },
 		{ id: "tiktokphoto", name: "TikTok Photo", g: "image", open: "https://www.tiktok.com/tiktokstudio/upload",

@@ -52,7 +52,7 @@ APPS = {
     "share": dict(title="MES Share Launcher", page_title="Share Launcher",
                   tag="Cross-post one video or link to 30+ sites.", accent="#5b3cc4", dark="#43299a", tint="#eeeafb",
                   desc="Free social media share launcher: paste your post once and get ready-to-paste text for X, Facebook, Instagram, TikTok, YouTube, Threads, Bluesky, Reddit and 20+ more sites, with the link placed where each site wants it.",
-                  js_v="7"),
+                  js_v="8"),
     # site search: the page is only the results UI; the engine + index loader is /main_js/site-search.js (also the header
     # magnifier on every page), loaded first via pre_js. The index itself comes from build_search_index.py.
     "search": dict(title="MES Site Search", page_title="Site Search",
