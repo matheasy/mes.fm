@@ -17,4 +17,15 @@
   .mes-rail-show:hover { background: #1479c7; color: #fff; border-color: #1479c7; }
   :is(body.dark-mode, body.dark) .mes-rail-show { background: #2e2e2e; color: #6cb6f5; border-color: #555; }
   :is(body.dark-mode, body.dark) .mes-rail-show:hover { background: #6cb6f5; color: #111; border-color: #6cb6f5; }
+  /* Theatre with the "Jump to" list hidden: nothing to leave room for on that side. Rail also hidden -> the whole window; rail shown -> the article
+     spans from the rail to the far edge (the rail sits flush at its page edge, the article is not centred around an empty column) */
+  html.jump-rail.page-theatre.aside-hidden { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }
+  html.jump-rail.page-theatre.toc-hidden.aside-hidden { --toc-w: min(2000px, calc(100vw - 80px)); }
+  html.jump-rail.page-theatre.toc-hidden.aside-hidden > body > .mes-rail-show { display: none; }
+  html.jump-rail.page-theatre.toc-hidden:not(.aside-hidden) .container, html.jump-rail.page-theatre.toc-hidden:not(.aside-hidden) .footer {
+    max-width: min(2000px, calc(100vw - 420px)); margin-left: 360px; margin-right: auto; }
+  html.jump-rail.page-theatre.toc-hidden:not(.aside-hidden) .mes-aside--rail { left: 30px; right: auto; }
+  html.jump-rail.page-theatre.toc-hidden.aside-left:not(.aside-hidden) .container, html.jump-rail.page-theatre.toc-hidden.aside-left:not(.aside-hidden) .footer {
+    margin-left: auto; margin-right: 360px; }
+  html.jump-rail.page-theatre.toc-hidden.aside-left:not(.aside-hidden) .mes-aside--rail { left: auto; right: 30px; }
 }
