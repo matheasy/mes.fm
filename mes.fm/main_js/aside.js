@@ -358,6 +358,13 @@
                     io.observe(li);
                 } else request();
             }
+            function keepAd2() {                        /* cards keep arriving after the ad was placed: hold it right after the 7th card in column order */
+                if (!ad2) return;
+                var cards = aside.querySelectorAll("li > a.mes-aside__card");
+                if (cards.length < AD2_AFTER) return;
+                var seventh = cards[AD2_AFTER - 1].parentNode;
+                if (seventh.nextSibling !== ad2) seventh.parentNode.insertBefore(ad2, seventh.nextSibling);
+            }
             function add(b) {
                 var it = b.items.shift();
                 if (!it || have[it.u]) return;
@@ -365,7 +372,7 @@
                 if (!b.ul) b.ul = block(b.h);
                 var li = card(it, b.logo);
                 b.ul.appendChild(li); count++; b.n++;
-                placeAd2();
+                placeAd2(); keepAd2();
             }
             /* blocks are mixed in proportion (3 : 2 : 2 : 1 ...) instead of one after the other, so even a short page's column shows a bit of everything (own pages, livestreams, tools, videos) */
             blocks.forEach(function (b, i) { b.w = [3, 2, 2, 1][i] || 1; b.n = 0; });
@@ -380,7 +387,7 @@
                 if (!content) return;
                 if (!beside()) { if (!count) for (var i = 0; i < 4 && (b = next()); i++) add(b); return; }
                 while (count < MAX && (b = next()) && (count < 3 || need())) add(b);
-                placeAd2();       /* content that grows later (charts, tables) can make room for the tall ad without adding a card */
+                placeAd2(); keepAd2();       /* content that grows later (charts, tables) can make room for the tall ad without adding a card */
                 /* the content shrank (sections collapsed, ...): drop cards again so the column never pushes the footer down */
                 while (count > 3 && host2.getBoundingClientRect().height > content.getBoundingClientRect().height + 30) {
                     var lastB = null;
@@ -393,6 +400,7 @@
                     if (!lastB.ul.lastChild) { lastB.ul.parentNode.parentNode.removeChild(lastB.ul.parentNode); lastB.ul = null; }
                 }
             }
+            if (window.MutationObserver) new MutationObserver(keepAd2).observe(aside, { childList: true, subtree: true });   /* cards can also arrive from elsewhere (random card, other scripts): the ad stays after the 7th */
             fill();
             var t;
             function later() { clearTimeout(t); t = setTimeout(fill, 250); }
