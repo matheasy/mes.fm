@@ -50,6 +50,10 @@
 	.tu .cl-dots {display:none;}
 	.tu .cl-dot {display:inline-block;width:0.55em;height:0.55em;border-radius:50%;background:var(--gc,#888);margin-right:0.2em;flex:0 0 auto;}
 	/* year view */
+	.tu .cl-size[hidden] {display:none;}
+	.tu .cl-size button {line-height:1;}
+	.tu .cl-size button:nth-child(1) {font-size:0.75em;} .tu .cl-size button:nth-child(2) {font-size:0.95em;} .tu .cl-size button:nth-child(3) {font-size:1.2em;}
+	.tu .cl-year[data-size="2"] {font-size:1.25em;} .tu .cl-year[data-size="3"] {font-size:1.6em;}
 	.tu .cl-year {display:grid;grid-template-columns:repeat(auto-fill,minmax(14.5em,1fr));gap:1em;align-items:start;}
 	.tu .cl-mini {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.5em 0.6em 0.6em;}
 	.tu .cl-mini > header {display:flex;align-items:center;justify-content:space-between;}

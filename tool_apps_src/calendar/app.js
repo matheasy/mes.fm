@@ -33,12 +33,12 @@
 
     /* ---------- state ---------- */
     var now = new Date();
-    var state = { view: "month", y: now.getFullYear(), m: now.getMonth(), sel: null, groups: {}, ws: 0, wk: false, md: false, collapsed: {}, sec: {} };
+    var state = { view: "month", y: now.getFullYear(), m: now.getMonth(), sel: null, groups: {}, ws: 0, wk: false, md: false, ys: 2, collapsed: {}, sec: {} };
     GROUPS.forEach(function (g) { state.groups[g.id] = g.on; });
     try { var fd = new Intl.Locale(navigator.language).weekInfo || (new Intl.Locale(navigator.language)).getWeekInfo && new Intl.Locale(navigator.language).getWeekInfo(); if (fd) state.ws = fd.firstDay === 1 ? 1 : 0; } catch (e) {}
     var STORE = "mes-calendar:v1";
-    try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved) { for (var gk in saved.groups || {}) if (gk in state.groups) state.groups[gk] = !!saved.groups[gk]; ["ws", "wk", "md"].forEach(function (k) { if (k in saved) state[k] = saved[k]; }); state.collapsed = saved.collapsed || {}; state.sec = saved.sec || {}; } } catch (e) {}
-    function save() { try { localStorage.setItem(STORE, JSON.stringify({ groups: state.groups, ws: state.ws, wk: state.wk, md: state.md, collapsed: state.collapsed, sec: state.sec })); } catch (e) {} }
+    try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved) { for (var gk in saved.groups || {}) if (gk in state.groups) state.groups[gk] = !!saved.groups[gk]; ["ws", "wk", "md", "ys"].forEach(function (k) { if (k in saved) state[k] = saved[k]; }); state.collapsed = saved.collapsed || {}; state.sec = saved.sec || {}; } } catch (e) {}
+    function save() { try { localStorage.setItem(STORE, JSON.stringify({ groups: state.groups, ws: state.ws, wk: state.wk, md: state.md, ys: state.ys, collapsed: state.collapsed, sec: state.sec })); } catch (e) {} }
 
     /* ---------- date helpers ---------- */
     function pad(n) { return n < 10 ? "0" + n : "" + n; }
@@ -251,8 +251,10 @@
         $("cl-title").textContent = state.view === "year" ? String(y) : MONTHS[m] + " " + y;
         $("cl-prev").setAttribute("aria-label", state.view === "year" ? "Previous year" : "Previous month"); $("cl-next").setAttribute("aria-label", state.view === "year" ? "Next year" : "Next month"); $("cl-side-prev").setAttribute("aria-label", state.view === "year" ? "Previous year" : "Previous month"); $("cl-side-next").setAttribute("aria-label", state.view === "year" ? "Next year" : "Next month");
         $("cl-jm").value = m; $("cl-jy").value = y; if (state.sel) $("cl-jd").value = state.sel;
-        if (state.view === "year") { var h = []; for (var i = 0; i < 12; i++) h.push(miniMonth(y, i)); main.innerHTML = '<div class="cl-year">' + h.join("") + '</div><p class="tu-note cl-legend"><i class="cl-lg cl-lg--new"></i> new moon &nbsp; <i class="cl-lg cl-lg--full"></i> full moon &nbsp; <i class="cl-lg cl-lg--q"></i> quarter moon &nbsp; <b class="cl-lg-red">red</b> public holiday &nbsp; <span class="cl-lg-dot">dotted</span> observance or event. Hover a day for details, click it to open the month.</p>'; }
+        if (state.view === "year") { var h = []; for (var i = 0; i < 12; i++) h.push(miniMonth(y, i)); main.innerHTML = '<div class="cl-year" data-size="' + state.ys + '">' + h.join("") + '</div><p class="tu-note cl-legend"><i class="cl-lg cl-lg--new"></i> new moon &nbsp; <i class="cl-lg cl-lg--full"></i> full moon &nbsp; <i class="cl-lg cl-lg--q"></i> quarter moon &nbsp; <b class="cl-lg-red">red</b> public holiday &nbsp; <span class="cl-lg-dot">dotted</span> observance or event. Hover a day for details, click it to open the month.</p>'; }
         else main.innerHTML = monthGrid(y, m);
+        $("cl-size").hidden = state.view !== "year";
+        [].forEach.call($("cl-size").querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", +b.dataset.ys === state.ys); });
         var fa = $("cl-foldall"); fa.textContent = allFolded() ? "Expand all" : "Collapse all";
         renderFilters(); renderStats(); renderDay(); renderList(); syncUrl();
         document.title = (state.view === "year" ? y : MONTHS[m] + " " + y) + " Calendar – Moon Phases & Holidays | Math Easy Solutions";
@@ -351,6 +353,7 @@
     $("cl-v-month").addEventListener("click", function () { state.view = "month"; save(); render(); });
     $("cl-v-year").addEventListener("click", function () { state.view = "year"; save(); render(); });
     $("cl-foldall").addEventListener("click", foldAll);
+    $("cl-size").addEventListener("click", function (e) { var b = e.target.closest("button[data-ys]"); if (!b) return; state.ys = +b.dataset.ys; save(); render(); });
     $("cl-jm").addEventListener("change", function () { go(state.y, +this.value); });
     $("cl-jy").addEventListener("change", function () { var v = parseInt(this.value, 10); if (!isNaN(v)) go(v, state.m); else render(); });
     $("cl-jd").addEventListener("change", function () { if (this.value) selectKey(this.value, true); });

@@ -292,7 +292,7 @@ of HTML files individually:
   calendars (month *names* are matched, so re-check them if a browser engine changes its labels), and the per-year holiday tables for Canada / USA /
   UK / Australia / Vietnam with weekend "observed" days. The eclipse list (`EC`, 2026-2028) is hand-entered; extend it by hand. `app.js` = month /
   year views (year: per-month fold, Collapse all), filter chips (groups in `GROUPS`; state in localStorage `mes-calendar:v1`), selected-day card,
-  days-between / add-days calculator, `?y=&m=&d=&v=year` links. Same-day events from several regions are merged ("Good Friday CA UK AU").
+  days-between / add-days calculator, `?y=&m=&d=&v=year` links. Year view has a month-size switch (A / A / A = Small, Medium, Large; `state.ys`, default Medium: the `.cl-year` font-size is 1 / 1.25 / 1.6em and the grid's `14.5em` column minimum scales with it, so Large is ~2x and gives more columns in Wide / Theatre). Same-day events from several regions are merged ("Good Friday CA UK AU").
   After editing the sources run `build_tool_apps.py --apply`, `add_tool_page_controls.py --apply`, `add_sidebar.py --apply`,
   `add_bottom_ad.py --apply` (the first strips what the other three add), then `build_search_index.py`. Logo files are placeholders until Grok art lands
   (`calendar/img/logo.png`, `calendar/img/logo-big.png` 1200x630, `img/calendar-logo.png`: same names).
