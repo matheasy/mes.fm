@@ -6,8 +6,14 @@
 					<button type="button" data-deg="1" aria-pressed="true">Deg</button><button type="button" data-deg="0" aria-pressed="false">Rad</button>
 				</div>
 			</div>
+			<div class="mc-display" id="mc-display">
 			<input id="mc-expr" class="tu-input tu-input--big mc-expr" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. 12 × 34 + 5², sqrt(144), 15% of 80" aria-describedby="mc-live">
 			<div class="mc-live" id="mc-live" aria-live="polite">&nbsp;</div>
+			</div>
+			<div class="mc-tools">
+				<button type="button" class="mc-chip" id="mc-sci-toggle" aria-pressed="true">Scientific keys</button>
+				<button type="button" class="mc-chip" id="mc-kbd" aria-pressed="false" hidden title="Use your device keyboard instead of the keypad">&#9000; Keyboard</button>
+			</div>
 
 			<div class="mc-pad" id="mc-pad">
 				<div class="mc-sci" id="mc-sci">
@@ -47,7 +53,6 @@
 			<div class="tu-row mc-actions">
 				<button type="button" class="tu-btn tu-btn--ghost" id="mc-copy">Copy result</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="mc-link">Copy link</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="mc-sci-toggle" aria-expanded="true">Hide scientific keys</button>
 			</div>
 			<p class="tu-note">Works as you type. Understands <code>^</code> powers, <code>%</code>, <code>!</code>, implicit multiplication like <code>2(3+4)</code>, and functions such as <code>sqrt</code>, <code>sin</code>, <code>ln</code>, <code>log</code>, <code>root(3,27)</code>, <code>gcd(12,18)</code>, <code>nCr(5,2)</code>, <code>round(x,2)</code>.</p>
 		</div>

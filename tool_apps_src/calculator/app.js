@@ -3,7 +3,7 @@
 	'use strict';
 	var $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-calculator:v1';
-	var state = { deg: true, hist: [], tab: 'muldiv', sci: true };
+	var state = { deg: true, hist: [], tab: 'muldiv', sci: true, sciPick: false };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved) { for (var k in saved) if (k in state) state[k] = saved[k]; } } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
@@ -58,16 +58,17 @@
 		if (r.err) { showLive(); return; }
 		ans = r.v; addHistory(text, r.v);
 		expr.value = MC.fmt(r.v); live.className = 'mc-live'; live.textContent = '= ' + G(r.v); lastText = G(r.v);
-		expr.dataset.fresh = '1';
+		expr.dataset.fresh = '1'; expr.scrollLeft = 0;
 	}
+	function toEnd(p) { if (p >= expr.value.length) expr.scrollLeft = expr.scrollWidth; }
 	function insert(s) {
 		var fresh = expr.dataset.fresh === '1'; delete expr.dataset.fresh;
 		if (fresh && /^[0-9.π(]|^[a-z]/i.test(s) && !/^(\^|!|%)/.test(s)) expr.value = '';   // typing a new number after "=" starts over; an operator continues the answer
 		var a = expr.selectionStart == null ? expr.value.length : expr.selectionStart, b = expr.selectionEnd == null ? a : expr.selectionEnd;
 		expr.value = expr.value.slice(0, a) + s + expr.value.slice(b);
 		var p = a + s.length; try { expr.setSelectionRange(p, p); } catch (e) {}
-		showLive();
-		if (!window.matchMedia('(pointer: coarse)').matches) expr.focus();
+		showLive(); toEnd(p);
+		if (!coarse.matches) expr.focus();
 	}
 	$('mc-pad').addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });   // keep the caret in the field
 	$('mc-pad').addEventListener('click', function (e) {
@@ -78,7 +79,7 @@
 		else if (act === 'clear') { expr.value = ''; delete expr.dataset.fresh; showLive(); }
 		else if (act === 'back') {
 			var a = expr.selectionStart == null ? expr.value.length : expr.selectionStart, z = expr.selectionEnd == null ? a : expr.selectionEnd;
-			if (a === z && a > 0) a--; expr.value = expr.value.slice(0, a) + expr.value.slice(z); try { expr.setSelectionRange(a, a); } catch (e2) {} showLive();
+			if (a === z && a > 0) a--; expr.value = expr.value.slice(0, a) + expr.value.slice(z); try { expr.setSelectionRange(a, a); } catch (e2) {} showLive(); toEnd(a);
 		}
 	});
 	expr.addEventListener('input', function () { delete expr.dataset.fresh; showLive(); });
@@ -94,8 +95,27 @@
 	});
 	function setAngle() { Array.prototype.forEach.call($('mc-angle').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String((b.dataset.deg === '1') === state.deg)); }); }
 	$('mc-angle').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.deg = b.dataset.deg === '1'; save(); setAngle(); showLive(); });
-	function setSci() { $('mc-sci').hidden = !state.sci; $('mc-sci-toggle').textContent = state.sci ? 'Hide scientific keys' : 'Show scientific keys'; $('mc-sci-toggle').setAttribute('aria-expanded', String(state.sci)); }
-	$('mc-sci-toggle').addEventListener('click', function () { state.sci = !state.sci; save(); setSci(); });
+	var compact = window.matchMedia('(max-width:700px), (max-height:800px)'), coarse = window.matchMedia('(pointer: coarse)');
+	var sciOn = true;
+	function applySci() { $('mc-sci').hidden = !sciOn; $('mc-sci-toggle').setAttribute('aria-pressed', String(sciOn)); }
+	function setSci() {
+		if (state.sciPick) sciOn = !!state.sci;
+		else {   // no explicit choice yet: on a phone-sized / short screen hide the scientific rows when display + full keypad would not fit the viewport
+			sciOn = true; applySci();
+			if (compact.matches) { var d = $('mc-display').getBoundingClientRect(), p = $('mc-pad').getBoundingClientRect(); if (p.bottom - d.top > window.innerHeight - 70) sciOn = false; }
+		}
+		applySci();
+	}
+	$('mc-sci-toggle').addEventListener('click', function () { sciOn = !sciOn; state.sci = sciOn; state.sciPick = true; save(); applySci(); });
+
+	/* on touch screens the field is read-only while the keypad is used (no system keyboard popping up); the Keyboard chip / tapping the field turns it on */
+	function setKbd(on) {
+		expr.readOnly = !on; expr.setAttribute('inputmode', on ? 'text' : 'none'); $('mc-kbd').setAttribute('aria-pressed', String(on));
+		if (on) expr.focus(); else expr.blur();
+	}
+	if (coarse.matches) { $('mc-kbd').hidden = false; setKbd(false); }
+	$('mc-kbd').addEventListener('click', function () { setKbd(expr.readOnly); });
+	expr.addEventListener('click', function () { if (expr.readOnly && coarse.matches) setKbd(true); });
 
 	/* ---------- tabs ---------- */
 	function setTab(name) {
