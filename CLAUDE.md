@@ -705,6 +705,8 @@ reported; if there is a large gap, stage only your own paths rather than `git ad
   social, research, everything) + the user's own named sets (shift-click deletes), own engines (`%s` / `{q}`, http(s) only), recent searches, JSON backup/restore, `?q=&e=&t=&w=&m=` share
   links (`&a=google:images+news` = the per-card extras). Each engine card with image/news/video searches has an "Also: Images / News / Videos" row of chips (`S.extra`, `targets(..., extra)`): ticking one opens that search IN ADDITION to the page-wide type (so Google web + Google Images together; every ticked variant gets each type). localStorage `mes-search-engines:v1`. Engine URL formats drift: re-check a few now and then (the table is the only place to fix). Wide page (not in `add_sidebar.py`).
 
+- `fix_relative_canonicals.py` -- rewrites root-relative `<link rel="canonical" href="/path">` to `https://mes.fm/path` (211 pages on 2026-10-03: all puzzles, the memes/ gallery items, the card hubs, contact / donate / privacy-policy, the homepage; found by the Site Index "Canonical is not absolute" issue). Only the href changes. HTTrack `_http*` folders skipped; idempotent; **dry-runs by default (-v lists pages), `--apply` writes.** New classic pages should carry an absolute canonical from the start.
+
 ### `build.mjs` pages: never rebuild without diffing first
 
 Several pages (currently `911`, `911-alchemy`, `conspiracy`, `crypto`, `cubic-formula`, `djw`, `ferrocell-specular-reflection`,
