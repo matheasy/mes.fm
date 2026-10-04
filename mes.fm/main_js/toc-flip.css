@@ -42,6 +42,17 @@ html.page-theatre { --toc-w: max(760px, min(2000px, calc(100vw - 520px))); }  /*
   html.toc-hidden .toc-sidebar { display: none; }
   /* Theatre with the Jump-to list hidden: nothing to leave room for, so use nearly the whole window */
   html.page-theatre.toc-hidden { --toc-w: min(2000px, calc(100vw - 80px)); }
+  /* Theatre with the sidebar showing: the centred layout reserves a sidebar-sized gutter on BOTH sides (so it equalled Wide below ~1800px).
+     Instead lay article + 200px sidebar out as one centred group, so the article gets everything except the sidebar's own width. */
+  html.page-theatre:not(.toc-hidden) { --toc-w: min(2000px, calc(100vw - 300px)); --toc-ml: calc((100vw - var(--toc-w) - 230px) / 2); }
+  html.page-theatre:not(.toc-hidden) .container { margin-left: var(--toc-ml); margin-right: auto; }
+  html.page-theatre:not(.toc-hidden) .toc-sidebar { left: calc(var(--toc-ml) + var(--toc-w) + 30px); right: auto; }
+  html.page-theatre.aside-left:not(.toc-hidden) .container { margin-left: calc(var(--toc-ml) + 230px); }
+  html.page-theatre.aside-left:not(.toc-hidden) .toc-sidebar { left: var(--toc-ml); right: auto; padding-left: 0; }
+  /* ...and with the "More like this" rail on the other side (pages with .jump-rail, >= 1500px): rail + article + Jump-to as one group */
+  html.jump-rail.page-theatre.aside-hidden:not(.toc-hidden) { --toc-w: min(2000px, calc(100vw - 300px)); --toc-ml: calc((100vw - var(--toc-w) - 230px) / 2); }
+  html.jump-rail.page-theatre:not(.toc-hidden):not(.aside-hidden):not(.aside-left) { --toc-w: min(2000px, calc(100vw - 630px)); --toc-ml: calc((100vw - var(--toc-w) - 560px) / 2 + 330px); }
+  html.jump-rail.page-theatre:not(.toc-hidden):not(.aside-hidden):not(.aside-left) .mes-aside--rail { left: calc(var(--toc-ml) - 330px); right: auto; }
   html.page-theatre.toc-hidden > body > .toc-reopen { display: none; }
   /* small tab where the sidebar was, to bring it back */
   html.toc-hidden > body > .toc-reopen { display: inline-flex; align-items: center; gap: .35em; position: fixed; top: 90px; z-index: 12;
