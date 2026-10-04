@@ -36,9 +36,9 @@ CATS = [("calculators", "Calculators"), ("tools", "Tools"), ("math", "Math"), ("
 CI = {k: i for i, (k, _) in enumerate(CATS)}
 
 CALC_DIRS = {"bmicalculator", "gradecalculator", "percentagecalculator", "mortgagecalculator", "inflationcalculator",
-             "vatcalculator", "pokemongocalculator", "gpacalculator", "youtubemoney", "earth-curvature-calculator",
+             "vatcalculator", "pokemongocalculator", "gpacalculator", "youtubemoney", "how-much-do-youtubers-make", "earth-curvature-calculator",
              "gematria", "impermanent-loss-calculator", "unit-conversion", "calculators", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator"}
-TOOL_DIRS = {"timer", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "calendar", "copy-text", "solar-system-today", "search-engines", "site-index", "how-much-do-youtubers-make",
+TOOL_DIRS = {"timer", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "calendar", "copy-text", "solar-system-today", "search-engines", "site-index",
              "moon", "search", "tools"}
 MATH = re.compile(r"^(math|math-qa.*|problems-plus-.*|cubic-formula.*|quadratic-formula.*|cube-root-unity|vectors?|"
                   r"vector-functions.*|sequences-series|spherical-harmonics|projectile-hits-target|mathiew)$")
@@ -83,7 +83,7 @@ def category(path, doc):
     parts = path.split("/")
     top = parts[0]
     if top in CALC_DIRS:
-        return "calculators" if len(parts) == 1 or top == "youtubemoney" or parts[1] in ("br", "weighted-average-calculator") \
+        return "calculators" if len(parts) == 1 or top in ("youtubemoney", "how-much-do-youtubers-make") or parts[1] in ("br", "weighted-average-calculator") \
             or not (SITE / top / parts[1]).is_dir() else "fun"
     if top in TOOL_DIRS:
         return "tools" if len(parts) == 1 else "fun"

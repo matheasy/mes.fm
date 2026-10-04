@@ -104,8 +104,8 @@ APPS = {
                          tag="How much do YouTubers make?", accent="#cc1f1f", dark="#9a1515", tint="#fbe9e9",
                          desc="Free YouTube money calculator: estimate how much a video or channel earns from views, by topic, Shorts or long-form and viewer location, or work out how many views you need to hit an income goal. Uses your own RPM if you know it.",
                          js_v="2", no_ads=True,
-                         nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youtubemoney/youtubers'>YouTubers</a></li>",
-                         menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/youtubemoney/youtubers\">YouTuber earnings archive</a></li>"),
+                         nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/how-much-do-youtubers-make'>Channels</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youtubemoney/youtubers'>YouTubers</a></li>",
+                         menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/how-much-do-youtubers-make\">How much do YouTubers make? (channels)</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/youtubemoney/youtubers\">YouTuber earnings archive</a></li>"),
     "calendar": dict(title="MES Calendar", page_title="Calendar",
                      tag="Moon phases, holidays and more, month by month.", accent="#2f5fd0", dark="#1f44a0", tint="#e6edfb",
                      desc="Free online calendar for any year: month and year views with today highlighted, new and full moon times, Canada, USA, UK, Australia and Vietnam holidays, Christian, Jewish and Islamic dates, seasons, eclipses, daylight-saving changes and a days-between calculator.",
@@ -158,7 +158,10 @@ APPS = {
     "how-much-do-youtubers-make": dict(title="How Much Do YouTubers Make?", page_title="How Much Do YouTubers Make?",
                                        tag="Estimated YouTube earnings of the biggest channels.", accent="#cc1f1f", dark="#9a1515", tint="#fbe9e9",
                                        desc="How much do YouTubers make? Estimated YouTube ad earnings per month and per year for 50+ of the biggest channels, from subscribers and recent views, by topic and viewer location. Sortable, searchable and clearly labelled estimates.",
-                                       js_v="1", no_ads=True),
+                                       js_v="2", no_ads=True, tab=1,
+                                       brand=dict(slug="youtubemoney", title="YouTube Money Calculator", tag="How much do YouTubers make?"),
+                                       nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/how-much-do-youtubers-make'>Channels</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youtubemoney/youtubers'>YouTubers</a></li>",
+                                       menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/how-much-do-youtubers-make\">How much do YouTubers make? (channels)</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/youtubemoney/youtubers\">YouTuber earnings archive</a></li>"),
 }
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
@@ -296,6 +299,17 @@ def build_from_source(slug, cfg, tpl):
         nav_home = re.search(r'<li class="navbar__item"><a class="navbar__link navbar__link--first" href="/%s">Home</a></li>' % slug, page)
         assert nav_home
         page = page[:nav_home.end()] + cfg["menu_extra"] + page[nav_home.end():]
+    if cfg.get("brand"):              # a sub-page of another site (e.g. the channels page of YouTube Money): the other site's logo, name, tagline and Home link
+        b = cfg["brand"]
+        for pat in ("/%s/img/logo" % slug,):                      # favicon, header logo, og:image / twitter:image
+            page = page.replace(pat, "/%s/img/logo" % b["slug"])
+        page = page.replace('<p class="calculator-title">%s</p>' % cfg["title"], '<p class="calculator-title">%s</p>' % b["title"], 1)
+        page = page.replace('<p class="tag-line">%s</p>' % cfg["tag"], '<p class="tag-line">%s</p>' % b["tag"], 1)
+        page = page.replace("<a class=\"calculator-title-link\" href='/%s'>" % slug, "<a class=\"calculator-title-link\" href='/%s'>" % b["slug"], 1)
+        page = page.replace("<a class=\"logo-image-container\" href='/%s'>" % slug, "<a class=\"logo-image-container\" href='/%s'>" % b["slug"], 1)
+        page = page.replace("href='/%s'>Home</a>" % slug, "href='/%s'>Home</a>" % b["slug"], 1)
+        page = page.replace('class="navbar__link navbar__link--first" href="/%s">Home</a>' % slug, 'class="navbar__link navbar__link--first" href="/%s">Home</a>' % b["slug"], 1)
+        page = page.replace("current_tab:0", "current_tab:%d" % cfg.get("tab", 0), 1)
     js_dir = SITE / slug / "js"
     js_dir.mkdir(parents=True, exist_ok=True)
     js = (d / "app.js").read_text(encoding="utf-8")

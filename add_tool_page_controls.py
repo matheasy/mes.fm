@@ -29,7 +29,7 @@ ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "mes.fm"
 APPLY = "--apply" in sys.argv
 
-TOOLS = [  # (directory, compact-bar title)
+TOOLS = [  # (directory, compact-bar title[, home path of the site the page belongs to])
     ("emoji", "Emoji Copier"),
     ("latex", "LaTeX Render"),
     ("timezone", "Timezone Converter"),
@@ -58,7 +58,7 @@ TOOLS = [  # (directory, compact-bar title)
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)
     ("youtubemoney", "YouTube Money Calculator"),   # also built by build_tool_apps.py (ad-free)
     ("vatcalculator", "VAT Calculator"),   # also built by build_tool_apps.py (VAT Calculator 2.0)
-    ("how-much-do-youtubers-make", "How Much Do YouTubers Make?"),   # also built by build_tool_apps.py (wide page, ad-free)
+    ("how-much-do-youtubers-make", "YouTube Money", "/youtubemoney"),   # a sub-page of the YouTube Money site (brand option in build_tool_apps.py); wide, ad-free
     ("mortgagecalculator", "Mortgage Calculator"),   # also built by build_tool_apps.py (Mortgage Calculator 2.0)
 ]
 
@@ -234,7 +234,7 @@ def compact_css(accent):
                        "display-controls.js pins the A-/A+/moon buttons into its right end.")
 
 
-def patch(text, dirname, title):
+def patch(text, dirname, title, home=None):
     notes = []
     accent = accent_of(text)
     if not accent:
@@ -262,7 +262,7 @@ def patch(text, dirname, title):
         text = text[:m.start()] + css + text[m.start():]
         if text.count(cnb.HTML_ANCHOR) != 1 or text.count(cnb.JS_ANCHOR) != 1:
             return None, ["compact-nav HTML/JS anchor not found"]
-        html = cnb.build_html(title, "/" + dirname).replace("https://mes.fm/img/logo-mark.png", logo)
+        html = cnb.build_html(title, home or "/" + dirname).replace("https://mes.fm/img/logo-mark.png", logo)
         html = re.sub(r'    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>',
                       '    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>', html)
         text = text.replace(cnb.HTML_ANCHOR, html + cnb.HTML_ANCHOR, 1)
@@ -286,10 +286,11 @@ def patch(text, dirname, title):
 
 def main():
     changed = 0
-    for d, title in TOOLS:
+    for entry in TOOLS:
+        d, title = entry[0], entry[1]
         p = SITE / d / "index.html"
         old = p.read_text(encoding="utf-8")
-        new, notes = patch(old, d, title)
+        new, notes = patch(old, d, title, entry[2] if len(entry) > 2 else None)
         if new is None:
             print("%-18s SKIPPED: %s" % (d, "; ".join(notes)))
             continue
