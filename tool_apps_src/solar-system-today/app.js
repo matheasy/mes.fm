@@ -181,9 +181,19 @@
 	}
 	function stepDays() { return Math.max(SPEEDS[speedIx][1], 1 / 24); }
 	function stepLabel() { var s = SPEEDS[speedIx][1]; $("ss-steplabel").textContent = "Step: " + (s <= 1 / 24 ? "1 hour" : SPEEDS[speedIx][0].replace(" / s", "").replace(/^1 /, "1 ")); }
+	/* hide / show the control bar (a phone held sideways has little height to spare): saved, with a mini play button while hidden */
+	function paintMin(min) {
+		$("ss-wrap").classList.toggle("is-min", min);
+		var b = $("ss-collapse"); b.textContent = min ? "▲" : "▼"; b.setAttribute("aria-expanded", String(!min));
+		b.title = min ? "Show the controls" : "Hide the controls to see more of the map"; b.setAttribute("aria-label", min ? "Show the controls" : "Hide the controls");
+		$("ss-mplay").hidden = !min;
+	}
+	$("ss-collapse").onclick = function () { var min = !$("ss-wrap").classList.contains("is-min"); paintMin(min); sset({ min: min }); setTimeout(function () { view.resize(); }, 60); };
+	$("ss-mplay").onclick = function () { $("ss-play").click(); };
+	paintMin(!!saved.min);
 	function setPlaying(dir) {
 		playing = dir; lastT = 0; V.animate = !!dir;
-		$("ss-play").textContent = playing === 1 ? "❚❚ Pause" : "▶ Play"; $("ss-rev").setAttribute("aria-pressed", String(playing === -1));
+		$("ss-play").textContent = playing === 1 ? "❚❚ Pause" : "▶ Play"; $("ss-mplay").textContent = playing === 1 ? "❚❚" : "▶"; $("ss-rev").setAttribute("aria-pressed", String(playing === -1));
 		$("ss-hint").classList.add("is-gone");
 		if (playing) requestAnimationFrame(tick); else { refreshPanels(true); refreshEvents(); urlSoon(); }
 	}

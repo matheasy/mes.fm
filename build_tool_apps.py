@@ -132,7 +132,7 @@ APPS = {
     "solar-system-today": dict(title="MES Solar System Today", page_title="Solar System Today",
                                tag="Where Earth, the Moon and planets are today.", accent="#3730a3", dark="#292477", tint="#e6e5f8",
                                desc="See where Earth, the Moon, the Sun and the planets are in the solar system today, or on any date: an interactive 3D-style map you can rotate and play forward or backward in time, with distances, light travel times, retrograde planets, eclipses and oppositions.",
-                               js_v="2", pre_js=["/moon/js/astronomy.browser.min.js"], js_parts=["view.js"],
+                               js_v="3", pre_js=["/moon/js/astronomy.browser.min.js"], js_parts=["view.js"],
                                extra_js={"orrery-embed.js": ["lib.js", "view.js", "embed.js"]}),
     # Search Engines: type one search and open it in many engines (tabs, tiled windows or same tab); sets for censorship / SEO / privacy comparisons; own engines.
     # lib.js = engine table + URL builder (node-testable: tool_apps_src/search-engines-tests.js), app.js = UI. Wide page, no sidebar.
