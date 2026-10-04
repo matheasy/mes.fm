@@ -359,6 +359,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.se-also button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);border-style:solid;color:#fff;}
 	body.dark-mode #se .se-also {color:#a0a8b3;}
 	body.dark-mode #se .se-also button[aria-pressed="true"] {background:var(--accent);color:#0b1416;}
+	.se-queue {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:center;margin-top:0.6em;}
+	.se-queue span {font-size:0.9em;}
+	.se-next small {font-weight:400;opacity:0.85;}
+	.se-rest, .se-help {margin-top:0.6em;}
+	.se-rest summary, .se-help summary {cursor:pointer;font-weight:700;}
+	.se-rest a {display:inline-block;margin:0.4em 0.8em 0 0;}
+	.se-help p {margin:0.5em 0 0;line-height:1.5;}
+	body.dark-mode #se .se-next {color:#0b1416;}
 
 
 	@media print {
@@ -732,6 +740,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="tu-seg" id="se-mode" role="group" aria-label="Where results open">
 						<button type="button" data-m="tab" aria-pressed="true" title="Each engine in its own browser tab">New tabs</button>
 						<button type="button" data-m="window" aria-pressed="false" title="Each engine in its own pop-up window, tiled across your screen so you can compare side by side">Tiled windows</button>
+						<button type="button" data-m="step" aria-pressed="false" title="One engine per click: the first opens now and an Open next button opens the rest (works in every browser without allowing pop-ups)">One at a time</button>
 						<button type="button" data-m="same" aria-pressed="false" title="Links open in this tab; Open all needs tabs or windows">Same tab</button>
 					</div></div>
 			</div>
@@ -805,7 +814,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li>Turn off any extensions that rewrite search results, and repeat the search on another day: results change.</li>
 			</ul>
 			<h3>Opening lots of tabs</h3>
-			<p>Browsers allow a page to open several tabs from one click, but some pop-up blockers stop all but the first. If that happens the page shows the links that were blocked so you can click them, and you can allow pop-ups for mes.fm (the icon in the address bar) so <strong>Open all</strong> works in one go. Safari and some phones are the strictest. <strong>Same tab</strong> turns each engine into a normal link, which also works with middle-click or long-press to open in a new tab.</p>
+			<p>Chrome, Brave, Edge and Safari let a page open <strong>one new tab per click</strong> until you allow pop-ups for the site. If your browser blocks the rest, this page shows a big <strong>Open next</strong> button: click it once for each remaining engine. To open everything in one click, allow pop-ups for mes.fm (the icon at the right end of the address bar, or the site settings under the lock icon), then press <strong>Open</strong> again. <strong>One at a time</strong> works that way on purpose, in every browser, without changing any settings. <strong>Same tab</strong> turns each engine into a normal link, which also works with middle-click or long-press.</p>
 			<h3>Your own engines</h3>
 			<p>Add any site's search (a forum, a news site, a shop, your own SearXNG) with <strong>%s</strong> where the search words go. Your engines and sets are saved in this browser, and you can back them up to a file.</p>
 			<p>Everything runs in your browser; your searches are only remembered here if you leave <em>Remember my searches</em> on. <a href="/search">Search mes.fm itself</a> · <a href="/tools">More MES tools</a></p>
@@ -866,7 +875,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/search-engines/js/search-engines.js?v=2" defer></script>
+	<script src="/search-engines/js/search-engines.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

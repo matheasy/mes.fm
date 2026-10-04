@@ -82,3 +82,11 @@
 	.se-also button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);border-style:solid;color:#fff;}
 	body.dark-mode #se .se-also {color:#a0a8b3;}
 	body.dark-mode #se .se-also button[aria-pressed="true"] {background:var(--accent);color:#0b1416;}
+	.se-queue {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:center;margin-top:0.6em;}
+	.se-queue span {font-size:0.9em;}
+	.se-next small {font-weight:400;opacity:0.85;}
+	.se-rest, .se-help {margin-top:0.6em;}
+	.se-rest summary, .se-help summary {cursor:pointer;font-weight:700;}
+	.se-rest a {display:inline-block;margin:0.4em 0.8em 0 0;}
+	.se-help p {margin:0.5em 0 0;line-height:1.5;}
+	body.dark-mode #se .se-next {color:#0b1416;}

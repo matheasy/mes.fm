@@ -132,30 +132,59 @@
 			return '<li><button type="button" class="se-hq" data-i="' + i + '" title="Search this again">' + esc(h.q) + '</button><span class="se-hm">' + esc(lbl) + "</span></li>";
 		}).join("");
 	}
+	var queue = [];
+	function helpHtml() {
+		return '<details class="se-help"><summary>How to let this page open all the tabs at once</summary><p>Browsers allow one new tab per click until you allow pop-ups for this site. In <b>Chrome, Edge and Brave</b> click the pop-up icon at the right end of the address bar (or the lock icon, then Site settings) and choose <b>Always allow pop-ups from mes.fm</b>; in Brave also check the shield. In <b>Firefox</b> click <b>Options</b> on the yellow bar and allow pop-ups for this site. In <b>Safari</b> use Safari, Settings for This Website, Pop-up Windows, Allow. Then press <b>Open</b> again.</p></details>';
+	}
+	function showQueue(note) {
+		var warn = $("se-warn");
+		if (!queue.length && !note) { warn.hidden = true; return; }
+		var h = note || "";
+		if (queue.length) {
+			h += '<div class="se-queue"><button type="button" class="tu-btn tu-btn--primary se-next" id="se-next">Open next: ' + esc(queue[0].label) + ' <small>(' + queue.length + " left)</small></button>" +
+				'<span>Your browser lets a page open one tab per click, so click this for each of the rest' + (S.mode === "step" ? "." : ", or allow pop-ups to skip this step.") + "</span></div>" +
+				'<details class="se-rest"><summary>Or click the links yourself</summary>' + queue.map(function (x) { return '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.label) + " ↗</a>"; }).join("") + "</details>" + helpHtml();
+		}
+		warn.innerHTML = h; warn.hidden = false;
+	}
+	function openOne(x, feat, name) {
+		var w = null; try { w = window.open(x.url, name || "_blank", feat || ""); } catch (e) {}
+		if (w) { try { w.opener = null; } catch (e) {} return true; }
+		return false;
+	}
 	function openAll() {
 		if (!hasQuery()) { $("se-q").focus(); return; }
-		var t = tg(), list = t.list, warn = $("se-warn"); warn.hidden = true;
+		var t = tg(), list = t.list; $("se-warn").hidden = true; queue = [];
 		if (!list.length) { toast("Tick at least one engine"); return; }
 		if (S.mode === "same") { logSearch(); location.href = list[0].url; return; }
-		var blocked = [], rects = null;
+		var note = t.skipped.length ? "Skipped (no " + S.type + " search): " + esc(t.skipped.join(", ")) + ". " : "";
+		if (S.mode === "step") {            // one engine per click: open the first, queue the rest
+			openOne(list[0]); queue = list.slice(1); logSearch();
+			if (queue.length) showQueue(note); else if (note) showQueue(note); else toast("Opened 1 search");
+			return;
+		}
+		var rects = null, blocked = [];
 		if (S.mode === "window") {
 			var sc = window.screen || {}, W = sc.availWidth || window.innerWidth, H = sc.availHeight || window.innerHeight;
 			rects = E.tile(list.length, W, H, sc.availLeft || 0, sc.availTop || 0);
 		}
 		list.forEach(function (x, i) {
 			var feat = rects ? "popup=yes,left=" + rects[i].left + ",top=" + rects[i].top + ",width=" + rects[i].width + ",height=" + rects[i].height : "";
-			var w = null; try { w = window.open(x.url, rects ? "se-win-" + i : "_blank", feat); } catch (e) {}
-			if (w) { try { w.opener = null; } catch (e) {} } else blocked.push(x);
+			if (!openOne(x, feat, rects ? "se-win-" + i : "_blank")) blocked.push(x);
 		});
 		logSearch();
-		var msg = "";
-		if (t.skipped.length) msg += "Skipped (no " + S.type + " search): " + esc(t.skipped.join(", ")) + ". ";
+		queue = blocked;
 		if (blocked.length) {
-			msg += "<b>Your browser's pop-up blocker stopped " + blocked.length + " of " + list.length + ".</b> Click to open them, or allow pop-ups for mes.fm (icon in the address bar) and press Open again:<br>" +
-				blocked.map(function (x) { return '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.label) + " ↗</a>"; }).join("");
-		}
-		if (msg) { warn.innerHTML = msg; warn.hidden = false; } else toast("Opened " + list.length + (list.length === 1 ? " search" : " searches"));
+			showQueue(note + "<b>Your browser opened " + (list.length - blocked.length) + " of " + list.length + " and blocked the rest.</b> ");
+		} else if (note) showQueue(note); else toast("Opened " + list.length + (list.length === 1 ? " search" : " searches"));
 	}
+	$("se-warn").addEventListener("click", function (e) {
+		var b = e.target.closest("#se-next"); if (!b || !queue.length) return;
+		var x = queue.shift();
+		if (!openOne(x)) { queue.unshift(x); toast("Still blocked: allow pop-ups for mes.fm, or click the links below"); }
+		showQueue(queue.length ? "" : "");
+		if (!queue.length) { $("se-warn").hidden = true; toast("Opened them all"); }
+	});
 	$("se-go").onclick = openAll;
 	$("se-q").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); openAll(); } });
 	$("se-q").addEventListener("input", function () { $("se-warn").hidden = true; render(); });
