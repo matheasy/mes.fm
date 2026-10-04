@@ -53,6 +53,7 @@ TOOLS = [  # (directory, compact-bar title)
     ("search", "Site Search"),     # also built by build_tool_apps.py
     ("calendar", "Calendar"),      # also built by build_tool_apps.py
     ("search-engines", "Search Engines"),   # also built by build_tool_apps.py (wide page)
+    ("site-index", "Site Index"),   # also built by build_tool_apps.py (wide page, ad-free)
     ("copy-text", "Copy Text"),    # also built by build_tool_apps.py
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)
     ("youtubemoney", "YouTube Money Calculator"),   # also built by build_tool_apps.py (ad-free)

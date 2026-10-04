@@ -1,0 +1,55 @@
+	<div class="tu si" id="si">
+		<p class="si-fresh tu-note" id="si-fresh" role="status">Loading the page inventory…</p>
+		<noscript><p class="tu-note">This page needs JavaScript. The raw data is in <a href="/site-index/pages.json">pages.json</a>.</p></noscript>
+
+		<div class="si-dash" id="si-dash" hidden>
+			<div class="tu-stats si-tiles" id="si-tiles"></div>
+			<div class="si-attn tu-card tu-card--tint" id="si-attn"></div>
+			<div class="si-cols">
+				<section class="tu-card si-panel" aria-labelledby="si-h-tpl"><h2 id="si-h-tpl">By template</h2><p class="tu-note">Which page shell each page is built on. Click a bar to filter.</p><div id="si-bars-tpl" class="si-bars"></div></section>
+				<section class="tu-card si-panel" aria-labelledby="si-h-sec"><h2 id="si-h-sec">By section</h2><p class="tu-note">The part of the site a page belongs to.</p><div id="si-bars-sec" class="si-bars"></div></section>
+				<section class="tu-card si-panel" aria-labelledby="si-h-gen"><h2 id="si-h-gen">By generator</h2><p class="tu-note">What produces the page: a build script, a build.mjs, or a human.</p><div id="si-bars-gen" class="si-bars"></div></section>
+			</div>
+			<div class="si-cols si-cols--2">
+				<section class="tu-card si-panel" aria-labelledby="si-h-feat"><h2 id="si-h-feat">Feature coverage</h2><p class="tu-note">Share of pages that have each feature. <b>has</b> / <b>lacks</b> filter the list below.</p><div id="si-feats"></div></section>
+				<section class="tu-card si-panel" aria-labelledby="si-h-iss"><h2 id="si-h-iss">Issues</h2><p class="tu-note">Counts of pages with each problem. Red ones are worth fixing; amber ones are minor or intentional.</p><div id="si-issues"></div></section>
+			</div>
+		</div>
+
+		<div class="tu-card si-controls" id="si-controls" hidden>
+			<div class="si-tabs" role="tablist" aria-label="View" id="si-tabs">
+				<button type="button" role="tab" data-v="table" aria-selected="true">All pages</button>
+				<button type="button" role="tab" data-v="group" aria-selected="false">Grouped</button>
+				<button type="button" role="tab" data-v="tree" aria-selected="false">URL tree</button>
+				<button type="button" role="tab" data-v="templates" aria-selected="false">Template gallery</button>
+				<button type="button" role="tab" data-v="rules" aria-selected="false">How pages are classified</button>
+			</div>
+			<div class="si-filters" id="si-filters">
+				<div class="tu-field si-f-q"><label for="si-q">Search URL or title</label><input id="si-q" class="tu-input" type="search" placeholder="e.g. gradecalculator, cubic, memes/…" autocomplete="off" spellcheck="false"></div>
+				<div class="tu-field"><label for="si-s">Section</label><select id="si-s" class="tu-select"></select></div>
+				<div class="tu-field"><label for="si-t">Template</label><select id="si-t" class="tu-select"></select></div>
+				<div class="tu-field"><label for="si-g">Generator</label><select id="si-g" class="tu-select"></select></div>
+				<div class="tu-field"><label for="si-f">Feature</label><select id="si-f" class="tu-select"></select></div>
+				<div class="tu-field"><label for="si-i">Issue</label><select id="si-i" class="tu-select"></select></div>
+			</div>
+			<div class="si-actions">
+				<span class="si-count" id="si-count" aria-live="polite"></span>
+				<span class="si-act-btns">
+					<button type="button" class="tu-btn tu-btn--ghost" id="si-clear">Clear filters</button>
+					<button type="button" class="tu-btn" id="si-attn-btn" title="Unclassified pages and pages with a red issue">Unclassified &amp; issues</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="si-csv" title="Download the pages in the current view as a CSV file">Download CSV</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="si-md" title="Copy the pages in the current view as a Markdown table">Copy as Markdown</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="si-link" title="Copy a link to this exact view">Copy link</button>
+				</span>
+			</div>
+		</div>
+
+		<div id="si-view" class="si-view" hidden></div>
+		<div class="tu-toast" id="si-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>A living inventory of every page on mes.fm</h2>
+			<p>This is the site's own page register: every deployable page, the template it is built on, the script or build file that generates it, and a check of the basics (description, share image, canonical link, broken images and scripts). It is generated from the site's files, so it shows what is really deployed, not what was planned. Use it to see which pages share a template, which have drifted away from it, and what is missing.</p>
+			<p>Everything runs in your browser from one small data file. <a href="/search">Search mes.fm</a> · <a href="/tools">More MES tools</a> · <a href="/site-index/pages.json">raw data (JSON)</a></p>
+		</div>
+	</div>

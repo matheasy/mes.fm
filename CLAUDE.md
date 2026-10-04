@@ -284,6 +284,29 @@ of HTML files individually:
   cross-links, tools sidebar family, bottom ad). No `?v=` bump of display-controls.js was needed: Vercel serves `main_js/` with
   `max-age=0, must-revalidate`. Not covered: the 4 pages with no header controls (`links`, `bg`, `911djw`, `chatgpt/calculator`).
 
+- `build_site_index.py` — **Site Index** (2026-10-03, `mes.fm/site-index`, blue `#1d6fa5`; a tools-hub page, card in `tools.html` "Media & Web", ad-free like an internal page, wide, built by
+  `build_tool_apps.py` from `tool_apps_src/site-index/` like `search-engines`). A living page inventory + template audit. The script scans every HTML page under `mes.fm/` (read-only;
+  skips `build.mjs` / `*template*` files; cleanUrls mapping `foo.html` / `foo/index.html` -> `/foo`; the single `_https_` HTTrack capture is kept as a flagged "HTTrack capture") and writes
+  `mes.fm/site-index/pages.json` (~175 KB, ~48 KB gzipped, arrays + a `cols` header; budget 500 KB) with per page: title, description length, **section**, **template**, **generator**,
+  10 feature bits (AdSense, sidebar, bottom ad, Comments, floating bar, A-/A+/moon, site search, Standard|Wide|Theatre switch, theatre restore snippet, dark mode), 21 issue bits (red = no
+  description / og:image file missing on disk / no or wrong canonical / no title or h1 / broken local img-script-css ref / duplicate URL / unclassified / **shell does not match its generator**;
+  amber = short or long description, no og/twitter image, relative canonical, several h1, no lang / viewport, jQuery, Bootstrap, noindex, old-subdomain assets), words, size, last git
+  commit date (one `git log --name-only` pass). **Taxonomy** (ordered rules in `TEMPLATES` / `classify()`, first match wins, documented in the script docstring and on the page's
+  "How pages are classified" tab): httrack, redirect-stub, not-found-stub, gallery-page (`N.html`), tool-shell (has `TOOL-DARK`), jump-to (`toc-sidebar`), qa-mirror, mirror-article (math-hub
+  shell), hub-tiles (`.icon-grid`), hub-section, hub-links (crypto, mathiew), hub-cards, gallery-list (`table.memes`), puzzle-item, gallery-item, classic-calc, classic-info, legacy-bare,
+  and **Unclassified** (a page no rule matches, surfaced on purpose: today `sjwkeyboard`). Generators are learned from the repo (`APPS` keys, each `build.mjs` dir + its `slug:` entries,
+  `math_qa_mirrors.json`, the Nancy builder), not guessed; `EXPECTS` says which shells each generator emits. The app (`app.js`, vanilla, fetches the JSON after load) has a dashboard
+  (clickable bars by template / section / generator, feature coverage with has / lacks, issue counters, "Start here" shortcuts), a filterable sortable paginated table, Grouped view, URL
+  tree, Template gallery (examples per template), CSV export, Copy as Markdown, and shareable `?q=&s=&t=&g=&f=has:ads&i=attention&v=&gb=&sort=&dir=&p=&n=` URLs; cards instead of the table
+  under 700px; hand-written dark rules are `body.dark-mode #si.si` (a bare `#si` loses to the generated TOOL-DARK block, which also mangles light custom properties).
+  **Refresh after structural passes, new pages, rebuilds or shell changes:** `python3 build_sitemap.py` (optional), `python3 build_site_index.py --apply`, commit
+  `mes.fm/site-index/pages.json`; `-v` lists pages per template, `--unclassified` lists the stragglers, `--check /path` explains one page. Idempotent (the `generated` date only moves when
+  the data changes); **dry-runs by default, `--apply` writes.** Self-check: `python3 tool_apps_src/site-index-tests.py` (50 known pages must classify as expected, the unclassified bucket
+  must stay <= 10, pages.json must be in budget and fresh). A new page family or shell needs a `TEMPLATES` entry + a rule in `classify()` and a line in the tests. Registered like `search-engines`
+  (`add_tool_page_controls` TOOLS, `add_cross_links` / `build_search_index` TOOL_DIRS, `organize_hub_cards` media; deliberately NOT in `add_bottom_ad` / `add_sidebar`);
+  redirects `/sitemap-pro`, `/site-map`, `/pages` in `mes.fm/vercel.json`. Logos are PIL placeholders (`site-index/img/logo.png`, `logo-big.png` 1200x630, `img/site-index-logo.png`).
+  First run's findings: `https://mes.fm/img/logo-big.png` (og:image of the homepage, the hubs, contact/donate...) does not exist (20 pages) and ~36 meme pages point og:image at missing full-size
+  images; `youtubemoney` is built by `build_tool_apps.py` but has no tool shell (`add_tool_page_controls.py` skips it: "compact-nav anchor not found" because of `no_ads`); jQuery is loaded on 99.6% of pages.
 - **Calendar** (2026-09-30, `mes.fm/calendar`, a tools-hub tool: card in `tools.html` "Time & Focus", blue `#2f5fd0`). Built like `share`/`search` by
   `build_tool_apps.py` from `tool_apps_src/calendar/`; new here: an optional `lib.js` in an app's source folder is prepended to `app.js` so
   one `js/calendar.js` is served. `lib.js` = pure maths, runs in node too (`require`): moon phases (Meeus ch. 49, checked against the 2026

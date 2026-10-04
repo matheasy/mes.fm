@@ -146,6 +146,12 @@ APPS = {
                                tag="Payments, affordability and amortization for the US, Canada and UK.", accent="#0e7490", dark="#0a5568", tint="#e0f2f7",
                                desc="Free mortgage calculator for the US, Canada, UK and Australia: monthly payment with taxes, insurance, PMI or CMHC premium, how much house you can afford, full amortization schedule and charts, extra payments, bi-weekly and accelerated payments, and side-by-side comparison.",
                                js_v="1"),
+    # Site Index: a page inventory + template audit of the whole of mes.fm. Data = mes.fm/site-index/pages.json written by build_site_index.py (fetched lazily by app.js);
+    # app.js = dashboard, filterable / sortable table, group-by, URL tree, template gallery, CSV / Markdown export; tests: tool_apps_src/site-index-tests.py. Wide page, no sidebar, ad-free (an internal audit page).
+    "site-index": dict(title="MES Site Index", page_title="Site Index",
+                       tag="Every page on mes.fm, by template.", accent="#1d6fa5", dark="#14507a", tint="#e3f0f8",
+                       desc="Complete index of every page on mes.fm, classified by the template, shell and generator it uses, with feature flags and an audit of missing descriptions, share images, canonical tags and broken references. Search, filter, group, browse the URL tree and export to CSV.",
+                       js_v="1", no_ads=True),
 }
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
