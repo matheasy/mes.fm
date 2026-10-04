@@ -4,7 +4,7 @@
    The header's #textSizeDown / #textSizeUp buttons step a scale through the same six steps and the same
    `articleFontScale` localStorage key as the rest of the site, and the page content -- every direct child of
    .container except the header chrome (top bar, nav bar, "Part of" box, footer) -- is scaled with CSS `zoom`, which
-   works whatever units the page's own CSS uses (px, rem, em). The buttons live in .header-controls, so the floating
+   works whatever units the page's own CSS uses (px, rem, em). Viewport units inside it are scaled too, so the theater-mode video rule is re-stated here divided by the zoom. The buttons live in .header-controls, so the floating
    compact bar carries them too. Load with <script src="/main_js/zoom-text-size.js" defer></script>. */
 (function () {
     "use strict";
@@ -16,7 +16,10 @@
     css.id = "mes-zoom-text-size-css";
     css.textContent =
         ".container > :not(.top-bar):not(.info-bar-container):not(.part-of):not(#footer):not(#compact-nav):not(script):not(style){zoom:var(--ts,1)}" +
-        ".header-icon-btn:disabled{opacity:.4;cursor:default}";
+        ".header-icon-btn:disabled{opacity:.4;cursor:default}" +
+        /* CSS zoom also multiplies viewport units, so a 100vw "theater mode" video grew past the window as the text size went up:
+           divide by the zoom so it stays exactly the width (and 85vh height) of the window */
+        ".video-embed.theater-mode{width:calc(100vw / var(--ts,1));max-width:calc(100vw / var(--ts,1));margin-left:calc(-50vw / var(--ts,1));margin-right:calc(-50vw / var(--ts,1));height:min(calc(85vh / var(--ts,1)),calc(56.25vw / var(--ts,1)))}";
     document.head.appendChild(css);
 
     var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];

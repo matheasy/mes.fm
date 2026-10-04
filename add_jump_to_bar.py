@@ -24,7 +24,7 @@ SITE = ROOT / "mes.fm"
 APPLY = "--apply" in sys.argv
 FIT = '<script src="/main_js/info-bar-fit.js" defer></script>'
 JUMP = '<script src="/main_js/jump-to.js?v=2" defer></script>'
-ZOOM = '<script src="/main_js/zoom-text-size.js?v=1" defer></script>'
+ZOOM = '<script src="/main_js/zoom-text-size.js?v=2" defer></script>'
 BUTTONS = ('        <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>\n'
            '        <button id="textSizeUp" class="header-icon-btn" type="button" aria-label="Increase text size" title="Increase text size">A+</button>\n')
 OWN_SHELL_BUILDS = ["911", "hutchison", "vector-functions-problems-plus", "cubic-formula"]

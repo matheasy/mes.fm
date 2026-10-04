@@ -168,7 +168,7 @@ def chrome_swap(old, template):
     tail = fill_brand(tpl[tpl.index('<script src="https://ajax.googleapis.com/ajax/libs/jquery'): tpl.index("</body>")], b, partof)
     # A-/A+ scale the page through zoom-text-size.js (no <article> here); pages with a table of contents also get the
     # floating bar's "Jump to" button
-    extra = '<script src="/main_js/zoom-text-size.js?v=1" defer></script>'
+    extra = '<script src="/main_js/zoom-text-size.js?v=2" defer></script>'
     if "toc-mobile" in old:
         extra += '<script src="/main_js/jump-to.js?v=2" defer></script>'
     tail = tail.replace('<script src="/main_js/info-bar-fit.js" defer></script>', '<script src="/main_js/info-bar-fit.js" defer></script>' + extra, 1)

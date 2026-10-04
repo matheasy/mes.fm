@@ -55,6 +55,7 @@ const PAGES = [
   {
     slug: "hutchison-videos",
     sectionId: "hutchison-videos",
+    iconVersion: 3,
     tileLabel: "Videos",
     title: "Hutchison Effect Videos",
     description:
@@ -63,6 +64,7 @@ const PAGES = [
   {
     slug: "highlights",
     sectionId: "highlights",
+    iconVersion: 3,
     tileLabel: "Highlights",
     title: "Hutchison Effect Highlights",
     description:
@@ -79,6 +81,7 @@ const PAGES = [
   {
     slug: "hutchison-debunking-debunkers",
     sectionId: "hutchison-debunking-debunkers",
+    iconVersion: 3,
     tileLabel: "Debunking “Debunkers”",
     title: "Debunking the “Debunkers” of the Hutchison Effect",
     description:
@@ -87,6 +90,7 @@ const PAGES = [
   {
     slug: "hutchison-news",
     sectionId: "hutchison-news",
+    iconVersion: 3,
     tileLabel: "News Reels",
     title: "Hutchison Effect News Reels",
     description:
@@ -95,6 +99,7 @@ const PAGES = [
   {
     slug: "hutchison-unedited-footage",
     sectionId: "hutchison-unedited-footage",
+    iconVersion: 3,
     tileLabel: "Unedited Footage",
     title: "Unedited Hutchison Effect Footage",
     description:
@@ -103,6 +108,7 @@ const PAGES = [
   {
     slug: "hutchison-interviews",
     sectionId: "hutchison-interviews",
+    iconVersion: 3,
     tileLabel: "Interviews and Presentations",
     title: "Hutchison Effect Interviews and Presentations",
     description:
@@ -111,6 +117,7 @@ const PAGES = [
   {
     slug: "cold-fusion-lenr",
     sectionId: "cold-fusion-lenr",
+    iconVersion: 3,
     tileLabel: "Cold Fusion / LENR",
     title: "Cold Fusion / Low Energy Nuclear Reactions (LENR)",
     description:
