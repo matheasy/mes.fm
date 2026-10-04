@@ -1,0 +1,59 @@
+
+	/* how much do YouTubers make: a wide table page. Ad-free. */
+	html body .outer-container {max-width:min(96vw,80em) !important;}
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
+	.hm-lead {font-size:1.05em;margin:0 0 0.7em;}
+	.hm-disclaimer {margin:0.6em 0 1em;padding:0.8em 1em;border-radius:0.5em;background:#fff4d6;border:1px solid #e8c766;color:#5b4300;font-size:0.95em;line-height:1.5;}
+	.hm-disclaimer a {color:#7a4d00;font-weight:700;}
+	.hm-controls .tu-row {align-items:flex-end;}
+	.hm-search {flex:2 1 14em;}
+	.hm-sortbox {display:none;}
+	.hm-bar {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;margin-top:0.9em;}
+	.hm-count {font-size:0.9em;color:#556;font-weight:700;}
+	.hm-bar__btns {margin-left:auto;display:flex;gap:0.4em;flex-wrap:wrap;}
+	.hm-status {font-size:0.85em;color:#556;margin:0.7em 0 0;}
+	.hm-status.is-warn {color:#8a4b00;}
+	.hm-tablewrap {margin-top:1em;border:1px solid #dfe4ea;border-radius:0.55em;background:#fff;}
+	.hm-table th {position:sticky;top:0;background:#fff;}
+	.hm-table th button {all:unset;cursor:pointer;display:inline-flex;gap:0.3em;align-items:center;text-transform:uppercase;letter-spacing:0.03em;font-size:1em;color:#6a7280;font-weight:700;}
+	.hm-table th button:hover, .hm-table th button:focus-visible {color:var(--accent);}
+	.hm-table th[aria-sort="ascending"] button::after {content:"\25B2";font-size:0.8em;}
+	.hm-table th[aria-sort="descending"] button::after {content:"\25BC";font-size:0.8em;}
+	.hm-table td {vertical-align:middle;}
+	.hm-table td.hm-rank {text-align:center;color:#8a93a0;font-weight:700;width:2.5em;}
+	.hm-table td.hm-ch, .hm-table th.hm-ch {text-align:left;white-space:normal;min-width:14em;}
+	.hm-table td.hm-topic, .hm-table th.hm-topic {text-align:left;}
+	.hm-badge {display:inline-flex;align-items:center;justify-content:center;width:2.2em;height:2.2em;border-radius:50%;color:#fff;font-weight:700;font-size:0.95em;flex:none;}
+	.hm-chwrap {display:flex;gap:0.7em;align-items:center;}
+	.hm-name {font-weight:700;color:#1e2733;line-height:1.2;}
+	.hm-handle {font-size:0.82em;}
+	.hm-pill {display:inline-block;font-size:0.78em;padding:0.2em 0.65em;border-radius:1em;background:var(--tint);color:#333;white-space:nowrap;}
+	.hm-mid {font-weight:700;color:#1e2733;font-size:1.05em;}
+	.hm-range {display:block;font-size:0.78em;color:#6a7280;}
+	.hm-act {white-space:nowrap;}
+	.hm-act .tu-btn {padding:0.35em 0.65em;font-size:0.8em;margin-left:0.3em;}
+	.hm-detail td {background:var(--tint);white-space:normal !important;text-align:left !important;font-size:0.9em;line-height:1.5;}
+	.hm-detail dl {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.4em 1.5em;margin:0;}
+	.hm-detail dt {font-size:0.75em;font-weight:700;text-transform:uppercase;color:#667;}
+	.hm-detail dd {margin:0 0 0.3em;}
+	.hm-cards {display:none;}
+	.hm-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.85em 0.95em;margin-top:0.7em;}
+	.hm-card__top {display:flex;gap:0.7em;align-items:center;}
+	.hm-card__rank {margin-left:auto;font-weight:700;color:#8a93a0;}
+	.hm-card__grid {display:grid;grid-template-columns:1fr 1fr;gap:0.6em 1em;margin-top:0.7em;}
+	.hm-card__k {font-size:0.7em;font-weight:700;text-transform:uppercase;color:#667;letter-spacing:0.03em;}
+	.hm-card details {margin-top:0.6em;font-size:0.88em;}
+	.hm-card summary {cursor:pointer;color:var(--accent);font-weight:700;}
+	.hm-card .tu-btn {margin-top:0.6em;}
+	.hm-empty {padding:1.2em;text-align:center;color:#556;}
+	.hm-foot {font-size:0.85em;color:#556;margin-top:0.8em;}
+	.hm-steps {line-height:1.5;padding-left:1.3em;}
+	.hm-steps li {margin:0.4em 0;}
+	.hm-faq details {border:1px solid #dfe4ea;border-radius:0.45em;background:#fff;margin:0.4em 0;padding:0.2em 0.9em;}
+	.hm-faq summary {cursor:pointer;font-weight:700;padding:0.5em 0;color:#1e2733;}
+	@media (max-width: 700px) {
+		.hm-tablewrap {display:none;}
+		.hm-cards {display:block;}
+		.hm-sortbox {display:flex;}
+		.hm-bar__btns {margin-left:0;}
+	}

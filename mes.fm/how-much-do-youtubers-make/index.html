@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
-<!-- YouTube Money Calculator -- mes.fm/youtubemoney -->
+<!-- How Much Do YouTubers Make? -- mes.fm/how-much-do-youtubers-make -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/youtubemoney/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/youtubemoney" />                    <title>YouTube Money Calculator | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/how-much-do-youtubers-make/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/how-much-do-youtubers-make" />                    <title>How Much Do YouTubers Make? | Math Easy Solutions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -275,43 +275,64 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
 	}
 
-	/* YouTube Money Calculator */
-	.tu #ym-rpm-table tbody tr {cursor:pointer;}
-	.tu #ym-rpm-table tbody tr:hover td {background:#fdf3f3;}
-	.tu #ym-hero .tu-stat__value {font-variant-numeric:tabular-nums;}
-	.tu [hidden] {display:none !important;}
-	.tu #ym-examples .tu-chip {margin:0.15em 0;}
-	@media (max-width: 600px) {.tu #ym-format {margin-left:0 !important;}}
 
-	/* charts */
-	.tu .ym-charts__sum {cursor:pointer;font-weight:700;font-size:1.1em;}
-	.tu .ym-chart-block {margin-top:1.4em;}
-	.tu .ym-chart {width:100%;}
-	.tu .ym-chart svg {display:block;max-width:100%;overflow:visible;font:12px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
-	.tu .ym-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
-	.tu .ym-legend {display:flex;gap:1.2em;flex-wrap:wrap;font-size:0.85em;margin-top:0.4em;}
-	.tu .ym-legend .ym-sw {display:inline-block;width:1.6em;height:0.7em;border-radius:3px;margin-right:0.4em;vertical-align:middle;}
-	.tu .ym-sw--band {background:#f4c0c0;} .tu .ym-sw--line {background:#cc1f1f;height:3px;}
-	#ym .ymc-t {fill:#222;} #ym .ymc-m {fill:#666;}
-	#ym .ymc-track {fill:#eceff3;} #ym .ymc-grid {stroke:#dde1e6;stroke-width:1;} #ym .ymc-axis {stroke:#9aa1ab;stroke-width:1;}
-	#ym .ymc-bar {fill:#c3c9d2;} #ym .ymc-bar--on {fill:#cc1f1f;}
-	#ym .ymc-band {fill:#f4c0c0;} #ym .ymc-line {stroke:#cc1f1f;fill:none;stroke-width:2.5;stroke-linejoin:round;} #ym .ymc-dot {fill:#cc1f1f;}
-	#ym .ymc-tick {stroke:#7a1010;stroke-width:3;} #ym .ymc-whisk {stroke:#222;stroke-width:1.5;}
-	#ym .ymc-mine {stroke:#1a5fb4;stroke-width:2;stroke-dasharray:5 4;} #ym .ymc-minet {fill:#1a5fb4;font-weight:700;}
-	#ym .ymc-row[data-n] {cursor:pointer;} #ym .ymc-row[data-n]:hover .ymc-bar {fill:#e58b8b;} #ym .ymc-row:focus {outline:none;} #ym .ymc-row:focus-visible .ymc-hit {stroke:#1a5fb4;stroke-width:2;}
-	#ym .ymc-hit {fill:transparent;stroke:none;}
-	#ym .ymc-sel {font-weight:700;}
-	body.dark-mode #ym svg .ymc-t {fill:#e6e6e6;} body.dark-mode #ym svg .ymc-m {fill:#aab0b8;}
-	body.dark-mode #ym svg .ymc-track {fill:#2c2f34;} body.dark-mode #ym svg .ymc-grid {stroke:#34383e;} body.dark-mode #ym svg .ymc-axis {stroke:#6b727c;}
-	body.dark-mode #ym svg .ymc-bar {fill:#566070;} body.dark-mode #ym svg .ymc-bar--on {fill:#ff7a7a;}
-	body.dark-mode #ym svg .ymc-band {fill:#6a2a2a;} body.dark-mode #ym svg .ymc-line {stroke:#ff7a7a;} body.dark-mode #ym svg .ymc-dot {fill:#ff7a7a;}
-	body.dark-mode #ym svg .ymc-tick {stroke:#ffd0d0;} body.dark-mode #ym svg .ymc-whisk {stroke:#f1f1f1;}
-	body.dark-mode #ym svg .ymc-mine {stroke:#7db4ff;} body.dark-mode #ym svg .ymc-minet {fill:#7db4ff;}
-	body.dark-mode #ym svg .ymc-row[data-n]:hover .ymc-bar {fill:#8a4a4a;}
-	body.dark-mode #ym .ym-sw--band {background:#6a2a2a;} body.dark-mode #ym .ym-sw--line {background:#ff7a7a;}
-	@media (prefers-reduced-motion: no-preference) {
-		#ym .ym-anim .ymc-grow {transform-box:fill-box;transform-origin:left center;animation:ymc-grow .6s ease-out both;}
-		@keyframes ymc-grow {from {transform:scaleX(0);} to {transform:scaleX(1);}}
+	/* how much do YouTubers make: a wide table page. Ad-free. */
+	html body .outer-container {max-width:min(96vw,80em) !important;}
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
+	.hm-lead {font-size:1.05em;margin:0 0 0.7em;}
+	.hm-disclaimer {margin:0.6em 0 1em;padding:0.8em 1em;border-radius:0.5em;background:#fff4d6;border:1px solid #e8c766;color:#5b4300;font-size:0.95em;line-height:1.5;}
+	.hm-disclaimer a {color:#7a4d00;font-weight:700;}
+	.hm-controls .tu-row {align-items:flex-end;}
+	.hm-search {flex:2 1 14em;}
+	.hm-sortbox {display:none;}
+	.hm-bar {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;margin-top:0.9em;}
+	.hm-count {font-size:0.9em;color:#556;font-weight:700;}
+	.hm-bar__btns {margin-left:auto;display:flex;gap:0.4em;flex-wrap:wrap;}
+	.hm-status {font-size:0.85em;color:#556;margin:0.7em 0 0;}
+	.hm-status.is-warn {color:#8a4b00;}
+	.hm-tablewrap {margin-top:1em;border:1px solid #dfe4ea;border-radius:0.55em;background:#fff;}
+	.hm-table th {position:sticky;top:0;background:#fff;}
+	.hm-table th button {all:unset;cursor:pointer;display:inline-flex;gap:0.3em;align-items:center;text-transform:uppercase;letter-spacing:0.03em;font-size:1em;color:#6a7280;font-weight:700;}
+	.hm-table th button:hover, .hm-table th button:focus-visible {color:var(--accent);}
+	.hm-table th[aria-sort="ascending"] button::after {content:"\25B2";font-size:0.8em;}
+	.hm-table th[aria-sort="descending"] button::after {content:"\25BC";font-size:0.8em;}
+	.hm-table td {vertical-align:middle;}
+	.hm-table td.hm-rank {text-align:center;color:#8a93a0;font-weight:700;width:2.5em;}
+	.hm-table td.hm-ch, .hm-table th.hm-ch {text-align:left;white-space:normal;min-width:14em;}
+	.hm-table td.hm-topic, .hm-table th.hm-topic {text-align:left;}
+	.hm-badge {display:inline-flex;align-items:center;justify-content:center;width:2.2em;height:2.2em;border-radius:50%;color:#fff;font-weight:700;font-size:0.95em;flex:none;}
+	.hm-chwrap {display:flex;gap:0.7em;align-items:center;}
+	.hm-name {font-weight:700;color:#1e2733;line-height:1.2;}
+	.hm-handle {font-size:0.82em;}
+	.hm-pill {display:inline-block;font-size:0.78em;padding:0.2em 0.65em;border-radius:1em;background:#fbe9e9;color:#333;white-space:nowrap;}
+	.hm-mid {font-weight:700;color:#1e2733;font-size:1.05em;}
+	.hm-range {display:block;font-size:0.78em;color:#6a7280;}
+	.hm-act {white-space:nowrap;}
+	.hm-act .tu-btn {padding:0.35em 0.65em;font-size:0.8em;margin-left:0.3em;}
+	.hm-detail td {background:#fbe9e9;white-space:normal !important;text-align:left !important;font-size:0.9em;line-height:1.5;}
+	.hm-detail dl {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.4em 1.5em;margin:0;}
+	.hm-detail dt {font-size:0.75em;font-weight:700;text-transform:uppercase;color:#667;}
+	.hm-detail dd {margin:0 0 0.3em;}
+	.hm-cards {display:none;}
+	.hm-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.85em 0.95em;margin-top:0.7em;}
+	.hm-card__top {display:flex;gap:0.7em;align-items:center;}
+	.hm-card__rank {margin-left:auto;font-weight:700;color:#8a93a0;}
+	.hm-card__grid {display:grid;grid-template-columns:1fr 1fr;gap:0.6em 1em;margin-top:0.7em;}
+	.hm-card__k {font-size:0.7em;font-weight:700;text-transform:uppercase;color:#667;letter-spacing:0.03em;}
+	.hm-card details {margin-top:0.6em;font-size:0.88em;}
+	.hm-card summary {cursor:pointer;color:var(--accent);font-weight:700;}
+	.hm-card .tu-btn {margin-top:0.6em;}
+	.hm-empty {padding:1.2em;text-align:center;color:#556;}
+	.hm-foot {font-size:0.85em;color:#556;margin-top:0.8em;}
+	.hm-steps {line-height:1.5;padding-left:1.3em;}
+	.hm-steps li {margin:0.4em 0;}
+	.hm-faq details {border:1px solid #dfe4ea;border-radius:0.45em;background:#fff;margin:0.4em 0;padding:0.2em 0.9em;}
+	.hm-faq summary {cursor:pointer;font-weight:700;padding:0.5em 0;color:#1e2733;}
+	@media (max-width: 700px) {
+		.hm-tablewrap {display:none;}
+		.hm-cards {display:block;}
+		.hm-sortbox {display:flex;}
+		.hm-bar__btns {margin-left:0;}
 	}
 
 
@@ -388,21 +409,28 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu-svg-line{stroke:#394a60}
 	body.dark-mode .tu-svg-text{fill:#cccccc}
 	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu #ym-rpm-table tbody tr:hover td{background:#221111}
-	body.dark-mode .tu .ym-sw--band{background:#452424}
-	body.dark-mode #ym .ymc-t{fill:#dddddd}
-	body.dark-mode #ym .ymc-m{fill:#9e9e9e}
-	body.dark-mode #ym .ymc-grid{stroke:#2b323b}
-	body.dark-mode #ym .ymc-axis{stroke:#616975}
-	body.dark-mode #ym .ymc-bar{fill:#979da5}
-	body.dark-mode #ym .ymc-bar--on{fill:#e97171}
-	body.dark-mode #ym .ymc-line{stroke:#dd2222}
-	body.dark-mode #ym .ymc-dot{fill:#e97171}
-	body.dark-mode #ym .ymc-tick{stroke:#e11e1e}
-	body.dark-mode #ym .ymc-whisk{stroke:#4c4c4c}
-	body.dark-mode #ym .ymc-mine{stroke:#2076df}
-	body.dark-mode #ym .ymc-minet{fill:#70a7ea}
-	body.dark-mode #ym .ymc-row:focus-visible .ymc-hit{stroke:#2076df}
+	body.dark-mode .hm-disclaimer{background:#342b14;border:1px solid #b18b1b;color:#ffd45c}
+	body.dark-mode .hm-disclaimer a{color:#ffc35c}
+	body.dark-mode .hm-count{color:#9d9da6}
+	body.dark-mode .hm-status{color:#9d9da6}
+	body.dark-mode .hm-status.is-warn{color:#ffb45c}
+	body.dark-mode .hm-tablewrap{border:1px solid #28323e;background:#1a1a1a}
+	body.dark-mode .hm-table th{background:#1a1a1a}
+	body.dark-mode .hm-table th button{color:#9a9da3}
+	body.dark-mode .hm-table td.hm-rank{color:#999da3}
+	body.dark-mode .hm-name{color:#d1d6dc}
+	body.dark-mode .hm-pill{background:#251313;color:#cccccc}
+	body.dark-mode .hm-mid{color:#d1d6dc}
+	body.dark-mode .hm-range{color:#9a9da3}
+	body.dark-mode .hm-detail td{background:#251313}
+	body.dark-mode .hm-detail dt{color:#9a9aa2}
+	body.dark-mode .hm-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .hm-card__rank{color:#999da3}
+	body.dark-mode .hm-card__k{color:#9a9aa2}
+	body.dark-mode .hm-empty{color:#9d9da6}
+	body.dark-mode .hm-foot{color:#9d9da6}
+	body.dark-mode .hm-faq details{border:1px solid #28323e;background:#1a1a1a}
+	body.dark-mode .hm-faq summary{color:#d1d6dc}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -450,16 +478,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://mes.fm/youtubemoney" />            <meta property="og:title" content="YouTube Money Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/youtubemoney/img/logo-big.png" />
-        <meta property="og:description" content="Free YouTube money calculator: estimate how much a video or channel earns from views, by topic, Shorts or long-form and viewer location, or work out how many views you need to hit an income goal. Uses your own RPM if you know it." />
+        <meta property="og:url" content="https://mes.fm/how-much-do-youtubers-make" />            <meta property="og:title" content="How Much Do YouTubers Make? | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/how-much-do-youtubers-make/img/logo-big.png" />
+        <meta property="og:description" content="How much do YouTubers make? Estimated YouTube ad earnings per month and per year for 50+ of the biggest channels, from subscribers and recent views, by topic and viewer location. Sortable, searchable and clearly labelled estimates." />
 
-        <meta name="description" content="Free YouTube money calculator: estimate how much a video or channel earns from views, by topic, Shorts or long-form and viewer location, or work out how many views you need to hit an income goal. Uses your own RPM if you know it.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
-        <meta name="twitter:title" content="YouTube Money Calculator">
-        <meta name="twitter:description" content="Free YouTube money calculator: estimate how much a video or channel earns from views, by topic, Shorts or long-form and viewer location, or work out how many views you need to hit an income goal. Uses your own RPM if you know it.">
-        <meta name="twitter:image" content="https://mes.fm/youtubemoney/img/logo-big.png">
-        <meta name="twitter:image:alt" content="YouTube Money Calculator">
+        <meta name="description" content="How much do YouTubers make? Estimated YouTube ad earnings per month and per year for 50+ of the biggest channels, from subscribers and recent views, by topic and viewer location. Sortable, searchable and clearly labelled estimates.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="How Much Do YouTubers Make?">
+        <meta name="twitter:description" content="How much do YouTubers make? Estimated YouTube ad earnings per month and per year for 50+ of the biggest channels, from subscribers and recent views, by topic and viewer location. Sortable, searchable and clearly labelled estimates.">
+        <meta name="twitter:image" content="https://mes.fm/how-much-do-youtubers-make/img/logo-big.png">
+        <meta name="twitter:image:alt" content="How Much Do YouTubers Make?">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "YouTube Money Calculator", "url": "https://mes.fm/youtubemoney", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free YouTube money calculator: estimate how much a video or channel earns from views, by topic, Shorts or long-form and viewer location, or work out how many views you need to hit an income goal. Uses your own RPM if you know it."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "How Much Do YouTubers Make?", "url": "https://mes.fm/how-much-do-youtubers-make", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "How much do YouTubers make? Estimated YouTube ad earnings per month and per year for 50+ of the biggest channels, from subscribers and recent views, by topic and viewer location. Sortable, searchable and clearly labelled estimates."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -468,13 +496,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
             <!-- End Google Tag Manager -->
 <!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
-    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    </head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/youtubemoney" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/youtubemoney/img/logo.png?v=2"></a>
-  <a class="compact-nav-title" href="/youtubemoney" tabindex="-1">YouTube Money Calculator</a>
+  <a href="/how-much-do-youtubers-make" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/how-much-do-youtubers-make/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/how-much-do-youtubers-make" tabindex="-1">How Much Do YouTubers Make?</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
@@ -485,192 +513,129 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/youtubemoney'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/youtubemoney/img/logo.png?v=2"></a>
+<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/how-much-do-youtubers-make'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/how-much-do-youtubers-make/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
-                                <a class="calculator-title-link" href='/youtubemoney'>
-                                    <p class="calculator-title">YouTube Money Calculator</p>
+                                <a class="calculator-title-link" href='/how-much-do-youtubers-make'>
+                                    <p class="calculator-title">How Much Do YouTubers Make?</p>
                                 </a>
-                                <p class="tag-line">How much do YouTubers make?</p>                            </div>
+                                <p class="tag-line">Estimated YouTube earnings of the biggest channels.</p>                            </div>
 
                             <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/youtubemoney'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/youtubemoney/youtubers'>YouTubers</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/how-much-do-youtubers-make'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">YouTube Money Calculator</h1>                                        <p class="page-description">Free YouTube money calculator: estimate how much a video or channel earns from views, by topic, Shorts or long-form and viewer location, or work out how many views you need to hit an income goal. Uses your own RPM if you know it.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<div class="tu" id="ym">
-		<div class="tu-card">
-			<div class="tu-row" style="align-items:center;">
-				<div class="tu-seg" id="ym-mode" role="group" aria-label="What do you want to work out?">
-					<button type="button" data-mode="earn" aria-pressed="true">Estimate earnings</button>
-					<button type="button" data-mode="goal" aria-pressed="false">Views needed for a goal</button>
-				</div>
-				<div class="tu-seg" id="ym-format" role="group" aria-label="Video format" style="margin-left:auto;">
-					<button type="button" data-format="long" aria-pressed="true">Long-form videos</button>
-					<button type="button" data-format="shorts" aria-pressed="false">Shorts</button>
-				</div>
-			</div>
+                                    <h1 class="page-title">How Much Do YouTubers Make?</h1>                                        <p class="page-description">How much do YouTubers make? Estimated YouTube ad earnings per month and per year for 50+ of the biggest channels, from subscribers and recent views, by topic and viewer location. Sortable, searchable and clearly labelled estimates.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu hm" id="hm">
+		<p class="hm-lead">An estimated ad-revenue range for <span id="hm-n">54</span> of the biggest YouTube channels, from their public subscriber counts and recent views. Pick a topic, change the viewer location or the Shorts share, sort any column, or send a channel to the <a href="/youtubemoney">YouTube Money Calculator</a>.</p>
+		<div class="hm-disclaimer" role="note">
+			<strong>These are estimates, not real income.</strong> Nobody on this list has told us what they earn. The figures are a guess at <em>YouTube ad revenue only</em> from public view counts and typical rates (RPM) for the channel's topic, and they leave out sponsorships, merchandise, memberships, YouTube Premium, licensing, back-catalogue views and Shorts. A real channel can earn far more or far less. See <a href="#hm-how">how the numbers are made</a>.
+		</div>
 
-			<div id="ym-earn-in" class="tu-row" style="margin-top:1em;">
-				<div class="tu-field">
-					<label for="ym-views">Views</label>
-					<input id="ym-views" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 100,000">
+		<div class="tu-card hm-controls">
+			<div class="tu-row">
+				<div class="tu-field hm-search">
+					<label for="hm-q">Find a channel</label>
+					<input id="hm-q" class="tu-input" type="search" autocomplete="off" placeholder="Name, handle, topic or country" enterkeyhint="search">
 				</div>
-				<div class="tu-field tu-field--sm" style="flex-basis:10em;">
-					<label for="ym-per">Views are</label>
-					<select id="ym-per" class="tu-select">
-						<option value="video">per video</option>
-						<option value="day">per day</option>
-						<option value="month">per month</option>
-						<option value="year">per year</option>
+				<div class="tu-field">
+					<label for="hm-geo">Where the viewers are</label>
+					<select id="hm-geo" class="tu-select">
+						<option value="">Each channel's own audience (assumed)</option>
+						<option value="1">Everyone: US, Canada, UK, Australia, W. Europe</option>
+						<option value="0.7">Everyone: a mix of regions</option>
+						<option value="0.35">Everyone: Asia, Africa, Latin America</option>
 					</select>
 				</div>
-				<div class="tu-field tu-field--sm" id="ym-vpm-wrap">
-					<label for="ym-vpm">Videos / month</label>
-					<input id="ym-vpm" class="tu-input" type="number" min="1" max="1000" step="1" value="4" inputmode="numeric">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+					<label for="hm-sh">Share of views that are Shorts</label>
+					<select id="hm-sh" class="tu-select">
+						<option value="0">0% (long-form only)</option>
+						<option value="10">10%</option>
+						<option value="25">25%</option>
+						<option value="50">50%</option>
+						<option value="75">75%</option>
+					</select>
 				</div>
-			</div>
-
-			<div id="ym-goal-in" class="tu-row" style="margin-top:1em;" hidden>
-				<div class="tu-field">
-					<label for="ym-goal">I want to earn</label>
-					<div class="tu-suffix"><input id="ym-goal" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 1,000"><span>USD</span></div>
-				</div>
-				<div class="tu-field tu-field--sm" style="flex-basis:10em;">
-					<label for="ym-goalper">&hellip; each</label>
-					<select id="ym-goalper" class="tu-select">
-						<option value="video">video</option>
-						<option value="month" selected>month</option>
-						<option value="year">year</option>
+				<div class="tu-field tu-field--sm hm-sortbox" style="flex-basis:12em;">
+					<label for="hm-sort">Sort by</label>
+					<select id="hm-sort" class="tu-select">
+						<option value="subs:desc">Subscribers (most first)</option>
+						<option value="month:desc">Earnings per month (high to low)</option>
+						<option value="year:desc">Earnings per year (high to low)</option>
+						<option value="views:desc">Monthly views (high to low)</option>
+						<option value="name:asc">Channel name (A-Z)</option>
+						<option value="topic:asc">Topic (A-Z)</option>
 					</select>
 				</div>
 			</div>
-
-			<div class="tu-row" style="margin-top:1em;">
-				<div class="tu-field" id="ym-niche-wrap">
-					<label for="ym-niche">Channel topic (sets the typical RPM)</label>
-					<select id="ym-niche" class="tu-select"></select>
-				</div>
-				<div class="tu-field">
-					<label for="ym-geo">Where your viewers are</label>
-					<select id="ym-geo" class="tu-select">
-						<option value="1">Mostly US, Canada, UK, Australia, W. Europe</option>
-						<option value="0.7">A mix of regions</option>
-						<option value="0.35">Mostly Asia, Africa, Latin America</option>
-					</select>
-				</div>
-				<div class="tu-field tu-field--sm" style="flex-basis:12em;">
-					<label for="ym-rpm">Your own RPM (optional)</label>
-					<div class="tu-suffix"><input id="ym-rpm" class="tu-input" type="number" min="0" step="0.01" inputmode="decimal" placeholder="auto"><span>$</span></div>
-				</div>
+			<div class="tu-chips" id="hm-topics" role="group" aria-label="Topic"></div>
+			<div class="hm-bar">
+				<span id="hm-count" class="hm-count" aria-live="polite"></span>
+				<span class="hm-bar__btns">
+					<button type="button" class="tu-btn tu-btn--ghost" id="hm-reset">Reset</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="hm-csv">Download CSV</button>
+					<button type="button" class="tu-btn" id="hm-refresh">Refresh live numbers</button>
+				</span>
 			</div>
-			<p class="tu-note" style="margin-bottom:0;">RPM = what <em>you</em> earn per 1,000 views, after YouTube&rsquo;s cut. Find yours in YouTube Studio &rarr; Analytics &rarr; Revenue. Leave it blank to use the topic&rsquo;s typical range.</p>
+			<p class="hm-status" id="hm-status" aria-live="polite">Loading the channel snapshot&hellip;</p>
 		</div>
 
-		<div id="ym-empty" class="tu-card tu-card--tint" style="margin-top:1em;">Enter a number of views above to see an estimate &mdash; or try an example: <span class="tu-chips" id="ym-examples" style="display:inline-flex;margin:0 0 0 0.3em;"></span></div>
-
-		<div id="ym-out" hidden>
-			<div class="tu-stats" id="ym-hero" aria-live="polite"></div>
-			<p class="tu-note" id="ym-basis"></p>
-
-			<div class="tu-card" id="ym-table-card">
-				<div class="tu-label" id="ym-table-title">Earnings by period</div>
-				<div class="tu-table-wrap"><table class="tu-table" id="ym-table"></table></div>
-			</div>
-			<div style="display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.8em;">
-				<button type="button" class="tu-btn tu-btn--primary" id="ym-link">Copy link to these results</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="ym-copy">Copy summary</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="ym-reset">Reset</button>
-			</div>
+		<div class="tu-table-wrap hm-tablewrap">
+			<table class="tu-table hm-table" id="hm-table" aria-describedby="hm-count"></table>
 		</div>
+		<div class="hm-cards" id="hm-cards"></div>
+		<p class="hm-foot">Earnings are shown as <b>typical</b> with the low&ndash;high range underneath. Subscriber counts are rounded by YouTube to three significant figures. Channels, topics and the assumed audience location were chosen by us; the topic decides the RPM, so a different guess gives a different number. Looking for the old numbers? See <a href="/youtubemoney/youtubers">the 2016 estimates</a>.</p>
 
-		<details class="tu-card ym-charts" id="ym-charts" open style="margin-top:1em;" hidden>
-			<summary class="ym-charts__sum">Charts <span class="tu-note" style="font-weight:400;text-transform:none;">&mdash; the same numbers, drawn out</span></summary>
+		<h2 id="hm-how">How these estimates are made</h2>
+		<ol class="hm-steps">
+			<li><b>Monthly views</b> = the median views of a channel's last ~15 long-form uploads that are at least 7 days old &times; how many long-form videos it uploads per month (last 90 days). Views that come from the back catalogue (older videos still being watched) are <em>not</em> counted, and for large channels they can be a big share, so this under-counts those channels.</li>
+			<li><b>RPM</b> (what the creator earns per 1,000 views after YouTube's share) comes from the same table as the <a href="/youtubemoney">YouTube Money Calculator</a>: low, typical and high for the channel's topic, multiplied by a viewer-location factor (&times;1 for audiences mostly in high-income countries, &times;0.7 for a mix, &times;0.35 for Asia, Africa and Latin America). Raising the Shorts share blends in the much lower Shorts RPM.</li>
+			<li><b>Earnings</b> = views &times; RPM &divide; 1,000, for the low, typical and high RPM. Yearly is monthly &times; 12.</li>
+		</ol>
+		<p>When the live API is on, each channel's lifetime views are also compared with a lifetime estimate in the row's details, as a sanity check. Shorts earn very little per view, so a channel that is mostly Shorts earns much less than its views suggest.</p>
 
-			<div class="ym-chart-block" id="ymc-range-wrap">
-				<div class="tu-label">Low, typical and high estimate</div>
-				<p class="tu-note">The bar runs from zero to the high estimate; the shaded part is the low-to-high range and the tick is the typical figure. RPM varies a lot from channel to channel and month to month, so treat the range as the honest answer, not the middle.</p>
-				<div class="ym-chart" id="ymc-range"></div>
-			</div>
+		<h2>How does YouTube pay creators?</h2>
+		<p>Creators in the YouTube Partner Program receive a share of the ad revenue earned on their videos: around 55% of long-form ad revenue, and around 45% of the Shorts revenue pool, split by views of each creator's Shorts. The thresholds to join (subscribers plus watch hours or Shorts views) and the percentages are set by YouTube and change, so check <a href="https://support.google.com/youtube/answer/72857" target="_blank" rel="noopener">YouTube Help</a>. Ads pay differently by country, season and topic, which is why two channels with the same views can earn very different amounts.</p>
+		<h3>RPM vs CPM</h3>
+		<p><b>CPM</b> is what advertisers pay per 1,000 ad impressions. <b>RPM</b> is what the creator actually receives per 1,000 <em>video views</em>, after YouTube's cut and counting views that showed no ad, so it is always lower than the CPM. This page uses RPM. The calculator also lets you type your own RPM if you can read it in YouTube Studio.</p>
+		<h3>Why do other sites show different numbers?</h3>
+		<p>Sites such as Social Blade publish a wide range, usually from a flat CPM range applied to total or recent views, with no knowledge of the topic, the audience's country or how many views were Shorts. A single channel can fall almost anywhere inside the range, and the creator's real income can sit outside it. Treat every public number, including these, as a rough order of magnitude.</p>
+		<h3>What is not included</h3>
+		<p>Sponsorships and brand deals, merchandise, memberships and Super Chat, YouTube Premium revenue, licensing and TV deals, music royalties, other platforms, and business costs. For many of the biggest channels these other sources are larger than the ad revenue, and big channels also spend heavily on production, so none of the figures here should be read as profit or take-home pay.</p>
 
-			<div class="ym-chart-block" id="ymc-proj-wrap">
-				<div class="tu-label">Earnings over the next 12 months</div>
-				<p class="tu-note">Running total of what the entered views would earn, with the low-to-high band. Growth is <strong>your own assumption</strong>, not a prediction: it compounds each month on the monthly views above.</p>
-				<div class="tu-field tu-field--sm" style="flex-basis:auto;max-width:22em;margin-bottom:0.6em;">
-					<label for="ym-growth">Assumed monthly growth in views: <strong id="ym-growth-val">0%</strong></label>
-					<input id="ym-growth" type="range" min="0" max="20" step="1" value="0" style="width:100%;">
-				</div>
-				<div class="ym-chart" id="ymc-proj"></div>
-				<div class="ym-legend"><span><i class="ym-sw ym-sw--band"></i>Low to high</span><span><i class="ym-sw ym-sw--line"></i>Typical</span></div>
-			</div>
-
-			<div class="ym-chart-block" id="ymc-goal-wrap" hidden>
-				<div class="tu-label">Views needed for different income goals</div>
-				<p class="tu-note">Views needed at this topic&rsquo;s typical RPM; your goal is highlighted. The figures in brackets are the fewest (high RPM) and most (low RPM) views that might be needed. Estimates, not guarantees.</p>
-				<div class="ym-chart" id="ymc-goal"></div>
-			</div>
-
-			<div class="ym-chart-block" id="ymc-niche-wrap">
-				<div class="tu-label">Typical RPM by channel topic</div>
-				<p class="tu-note">Bars show the typical RPM per 1,000 views, whiskers the low-to-high range, for the viewer location you picked. Your topic is highlighted; a dashed line marks your own RPM if you typed one. Click a bar to use that topic. RPM differs hugely between topics, and Shorts pay a small fraction of long-form.</p>
-				<div class="ym-chart" id="ymc-niche"></div>
-			</div>
-		</details>
-
-		<h2>Typical RPM by topic <span class="tu-note" style="font-weight:400;text-transform:none;">&mdash; click a row to use it</span></h2>
-		<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="ym-rpm-table"></table></div>
-		<p class="tu-note" style="margin-bottom:0;">US dollars per 1,000 views for long-form videos, after YouTube&rsquo;s share, for an audience mostly in high-paying countries. These are broad creator-reported ballparks, not guarantees &mdash; your own Analytics is always the better number.</p></div>
-
-		<div class="tu-card tu-card--tint" style="margin-top:1em;">
-			<strong>How much do famous YouTubers make?</strong> See estimated earnings for the <a href="/how-much-do-youtubers-make">biggest YouTube channels</a>, worked out with the same RPM numbers as this calculator, and calculate any of them here with one click. Our 2016-era estimates for PewDiePie, Dude Perfect, Vsauce and others are kept as an archive:
-			<a href="/youtubemoney/youtubers">see the YouTuber earnings archive</a>.
-		</div>
-
-		<div class="tu-seo">
-			<h2>How do YouTubers get paid?</h2>
-			<p>Most of a channel&rsquo;s income starts with ads. Once a channel is in the <strong>YouTube Partner Program</strong>, YouTube shows ads (and counts YouTube Premium watch time) against the videos and pays the creator a share of the revenue: <strong>55% of ad revenue on long-form videos</strong>. For Shorts, ad revenue from the feed is pooled and divided among creators by views, and the creator receives <strong>45%</strong> of their share of that pool &mdash; which is why Shorts pay far less per view.</p>
-			<h3>CPM vs. RPM &mdash; which one is this calculator using?</h3>
-			<ul>
-				<li><strong>CPM</strong> is what advertisers pay per 1,000 ad impressions, before YouTube takes its cut. It can look high, but not every view shows an ad.</li>
-				<li><strong>RPM</strong> is what you actually take home per 1,000 <em>views</em>, after YouTube&rsquo;s cut and counting views with no ad. RPM is always lower than CPM, and it is the number this calculator uses.</li>
-			</ul>
-			<h3>Why do different channels earn so differently?</h3>
-			<ul>
-				<li><strong>Topic.</strong> Finance, business and tech attract advertisers who pay more than gaming, music or kids&rsquo; content.</li>
-				<li><strong>Viewer location.</strong> Advertisers pay more to reach viewers in the US, Canada, the UK, Australia and Western Europe.</li>
-				<li><strong>Video length.</strong> Videos over 8 minutes can carry mid-roll ads, which raises RPM.</li>
-				<li><strong>Season.</strong> Ad prices peak in Q4 (around the holidays) and dip in January.</li>
-				<li><strong>Advertiser-friendliness.</strong> Videos with limited ads earn a fraction of full RPM.</li>
-			</ul>
-			<h3>Do I need to be in the Partner Program?</h3>
-			<p>To earn a share of ad revenue you must join the YouTube Partner Program. At the time of writing that takes <strong>1,000 subscribers plus either 4,000 public watch hours in the last 12 months or 10 million public Shorts views in the last 90 days</strong>; a lower tier (500 subscribers) unlocks memberships and fan funding first. Check <a href="https://support.google.com/youtube/answer/72851" target="_blank" rel="noopener">YouTube&rsquo;s own requirements</a> for the current rules in your country.</p>
-			<h3>Ads aren&rsquo;t the only income</h3>
-			<p>Many creators earn more from <strong>sponsorships</strong>, <strong>affiliate links</strong>, <strong>channel memberships</strong>, <strong>Super Chat and Super Thanks</strong>, <strong>merchandise</strong> and their own products or courses. None of those are included in the estimate above.</p>
-			<h3>How accurate is this estimate?</h3>
-			<p>It is a ballpark. The low and high figures come from typical creator-reported RPM ranges for the topic you choose, adjusted for where your viewers live, and the real number can fall outside them. If you run the channel, the true figure is in YouTube Studio&rsquo;s Revenue tab &mdash; type your RPM in the box above to project it forward. Nothing you type leaves your browser.</p>
-			<p><a href="/youtube-thumbnail">YouTube Thumbnail Downloader</a> &middot; <a href="/percentagecalculator">Percentage Calculator</a> &middot; <a href="/calculators">More MES calculators</a></p>
+		<h2>Frequently asked questions</h2>
+		<div class="hm-faq">
+			<details><summary>How much do YouTubers make?</summary><p>It varies enormously. Most channels earn little or nothing; a channel with a few hundred thousand views a month in a typical topic might earn from a few hundred to a few thousand dollars a month in ads. The channels in the table are the exceptional ones, with estimated ad revenue from tens of thousands to millions of dollars a month.</p></details>
+			<details><summary>How much does YouTube pay per 1,000 views?</summary><p>For long-form videos, creator RPM usually lands between about $0.50 and $30 per 1,000 views depending on topic and where the viewers live (kids and music are at the low end, finance and business at the high end). Shorts pay roughly $0.01 to $0.07 per 1,000 views.</p></details>
+			<details><summary>How much does a YouTuber with 1 million subscribers make?</summary><p>Subscribers do not pay anything by themselves; views do. A 1M-subscriber channel can get anywhere from a few thousand to millions of views a month. Put the channel's views in the <a href="/youtubemoney">YouTube Money Calculator</a> for a range.</p></details>
+			<details><summary>Are these the YouTubers' real earnings?</summary><p>No. They are estimates of ad revenue only, calculated from public numbers. We do not know any channel's real income.</p></details>
+			<details><summary>Where do the numbers come from, and how fresh are they?</summary><p>The subscriber counts and recent video views were collected from YouTube's public channel pages (or the YouTube Data API when it is switched on) on the date shown above the table. The page loads that saved snapshot first; &ldquo;Refresh live numbers&rdquo; asks the server for newer ones when that feature is set up.</p></details>
+			<details><summary>Why is a channel's estimate so low or high?</summary><p>The estimate only counts new long-form uploads. A channel that rarely uploads (or that mostly posts Shorts, live streams or music videos that were uploaded years ago) can look far lower than its real earnings. A channel that posts many short clips can look higher. Change the topic RPM assumptions in the calculator to test your own guess.</p></details>
 		</div>
 	</div>
+	<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+	{"@type":"Question","name":"How much do YouTubers make?","acceptedAnswer":{"@type":"Answer","text":"It varies enormously. Most channels earn little or nothing; a channel with a few hundred thousand views a month in a typical topic might earn from a few hundred to a few thousand dollars a month in ads. The channels in the table are the exceptional ones, with estimated ad revenue from tens of thousands to millions of dollars a month."}},
+	{"@type":"Question","name":"How much does YouTube pay per 1,000 views?","acceptedAnswer":{"@type":"Answer","text":"For long-form videos, creator RPM usually lands between about $0.50 and $30 per 1,000 views depending on topic and where the viewers live. Shorts pay roughly $0.01 to $0.07 per 1,000 views."}},
+	{"@type":"Question","name":"Are these the YouTubers' real earnings?","acceptedAnswer":{"@type":"Answer","text":"No. They are estimates of ad revenue only, calculated from public numbers. We do not know any channel's real income."}}]}</script>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
                                         <div id="fastcomments-widget"></div>                                    </div>                            </div>
-                        <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" data-no-ads="1" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot=""></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/vatcalculator"><img class="mes-aside__img mes-aside__img--logo" src="/vatcalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">VAT Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/latex"><img class="mes-aside__img mes-aside__img--logo" src="/latex/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">MES LaTeX Render</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
-<!-- /MES-ASIDE -->
-</div>
+                        </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/youtubemoney">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/youtubemoney/youtubers">YouTuber earnings archive</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/how-much-do-youtubers-make">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
     <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
@@ -711,7 +676,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/youtubemoney/js/youtubemoney.js?v=2" defer></script>
+	<script src="/how-much-do-youtubers-make/js/how-much-do-youtubers-make.js?v=1" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
@@ -766,6 +731,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     window.addEventListener('resize', function () { if (stuck) fit(); });
     update();
   })();
-</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --></body>
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script></body>
 
 </html>

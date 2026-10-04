@@ -84,12 +84,45 @@
 			</div>
 		</div>
 
+		<details class="tu-card ym-charts" id="ym-charts" open style="margin-top:1em;" hidden>
+			<summary class="ym-charts__sum">Charts <span class="tu-note" style="font-weight:400;text-transform:none;">&mdash; the same numbers, drawn out</span></summary>
+
+			<div class="ym-chart-block" id="ymc-range-wrap">
+				<div class="tu-label">Low, typical and high estimate</div>
+				<p class="tu-note">The bar runs from zero to the high estimate; the shaded part is the low-to-high range and the tick is the typical figure. RPM varies a lot from channel to channel and month to month, so treat the range as the honest answer, not the middle.</p>
+				<div class="ym-chart" id="ymc-range"></div>
+			</div>
+
+			<div class="ym-chart-block" id="ymc-proj-wrap">
+				<div class="tu-label">Earnings over the next 12 months</div>
+				<p class="tu-note">Running total of what the entered views would earn, with the low-to-high band. Growth is <strong>your own assumption</strong>, not a prediction: it compounds each month on the monthly views above.</p>
+				<div class="tu-field tu-field--sm" style="flex-basis:auto;max-width:22em;margin-bottom:0.6em;">
+					<label for="ym-growth">Assumed monthly growth in views: <strong id="ym-growth-val">0%</strong></label>
+					<input id="ym-growth" type="range" min="0" max="20" step="1" value="0" style="width:100%;">
+				</div>
+				<div class="ym-chart" id="ymc-proj"></div>
+				<div class="ym-legend"><span><i class="ym-sw ym-sw--band"></i>Low to high</span><span><i class="ym-sw ym-sw--line"></i>Typical</span></div>
+			</div>
+
+			<div class="ym-chart-block" id="ymc-goal-wrap" hidden>
+				<div class="tu-label">Views needed for different income goals</div>
+				<p class="tu-note">Views needed at this topic&rsquo;s typical RPM; your goal is highlighted. The figures in brackets are the fewest (high RPM) and most (low RPM) views that might be needed. Estimates, not guarantees.</p>
+				<div class="ym-chart" id="ymc-goal"></div>
+			</div>
+
+			<div class="ym-chart-block" id="ymc-niche-wrap">
+				<div class="tu-label">Typical RPM by channel topic</div>
+				<p class="tu-note">Bars show the typical RPM per 1,000 views, whiskers the low-to-high range, for the viewer location you picked. Your topic is highlighted; a dashed line marks your own RPM if you typed one. Click a bar to use that topic. RPM differs hugely between topics, and Shorts pay a small fraction of long-form.</p>
+				<div class="ym-chart" id="ymc-niche"></div>
+			</div>
+		</details>
+
 		<h2>Typical RPM by topic <span class="tu-note" style="font-weight:400;text-transform:none;">&mdash; click a row to use it</span></h2>
 		<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="ym-rpm-table"></table></div>
 		<p class="tu-note" style="margin-bottom:0;">US dollars per 1,000 views for long-form videos, after YouTube&rsquo;s share, for an audience mostly in high-paying countries. These are broad creator-reported ballparks, not guarantees &mdash; your own Analytics is always the better number.</p></div>
 
 		<div class="tu-card tu-card--tint" style="margin-top:1em;">
-			<strong>How much do famous YouTubers make?</strong> Our 2016-era estimates for PewDiePie, Dude Perfect, Vsauce and others are kept as an archive:
+			<strong>How much do famous YouTubers make?</strong> See estimated earnings for the <a href="/how-much-do-youtubers-make">biggest YouTube channels</a>, worked out with the same RPM numbers as this calculator, and calculate any of them here with one click. Our 2016-era estimates for PewDiePie, Dude Perfect, Vsauce and others are kept as an archive:
 			<a href="/youtubemoney/youtubers">see the YouTuber earnings archive</a>.
 		</div>
 

@@ -58,6 +58,7 @@ TOOLS = [  # (directory, compact-bar title)
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)
     ("youtubemoney", "YouTube Money Calculator"),   # also built by build_tool_apps.py (ad-free)
     ("vatcalculator", "VAT Calculator"),   # also built by build_tool_apps.py (VAT Calculator 2.0)
+    ("how-much-do-youtubers-make", "How Much Do YouTubers Make?"),   # also built by build_tool_apps.py (wide page, ad-free)
     ("mortgagecalculator", "Mortgage Calculator"),   # also built by build_tool_apps.py (Mortgage Calculator 2.0)
 ]
 

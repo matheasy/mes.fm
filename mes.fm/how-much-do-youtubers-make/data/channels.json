@@ -1,0 +1,1310 @@
+{
+ "v": 1,
+ "generated": "2026-10-03",
+ "source": "yt-dlp",
+ "method": "Public channel pages read with yt-dlp (no API key): subscriber counts as shown on the channel page (rounded by YouTube to 3 significant figures), and the view counts of the newest uploads on the channel's Videos tab as displayed (rounded, e.g. 5.9M). Lifetime views, video count and channel age are not available this way and are left empty.",
+ "notes": [
+  "recent.medianViews = median views of up to 15 of the newest long-form uploads (over 180 seconds) that are at least 7 days old.",
+  "recent.uploadsPerMonth = long-form uploads per month over the last 90 days when that has 3+ uploads, otherwise over the span of the sampled uploads.",
+  "topic = key of the calculator's topic table; geo = ASSUMED audience-location factor (1 / 0.7 / 0.35), not measured.",
+  "Shorts, live streams' watch time, back-catalogue views, sponsorships, merchandise and memberships are not part of these numbers."
+ ],
+ "channels": [
+  {
+   "id": "UCX6OQ3DkcsbYNE6H8uQQuVA",
+   "handle": "MrBeast",
+   "name": "MrBeast",
+   "topic": "entertainment",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 519000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 120000000,
+    "uploadsPerMonth": 2.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCq-Fj5jknLsUf-MWSy4_brA",
+   "handle": "tseries",
+   "name": "T-Series",
+   "topic": "music",
+   "geo": "0.35",
+   "country": "India",
+   "subscribers": 315000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 94000,
+    "uploadsPerMonth": 163.9,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCbCmjCuTUZos6Inko4u57UQ",
+   "handle": "cocomelon",
+   "name": "Cocomelon - Nursery Rhymes",
+   "topic": "kids",
+   "geo": "0.7",
+   "country": "Global mix",
+   "subscribers": 203000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 2100000,
+    "uploadsPerMonth": 9.1,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCpEhnqL0y41EpW2TvWAHD7Q",
+   "handle": "SETIndia",
+   "name": "SET India",
+   "topic": "entertainment",
+   "geo": "0.35",
+   "country": "India",
+   "subscribers": 190000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 47000,
+    "uploadsPerMonth": 940.8,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCvlE5gTbOvjiolFlEm-c_Ow",
+   "handle": "VladandNiki",
+   "name": "Vlad and Niki",
+   "topic": "kids",
+   "geo": "0.7",
+   "country": "Global mix",
+   "subscribers": 151000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 3000000,
+    "uploadsPerMonth": 8.5,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCk8GzjMOrta8yxDcKfylJYw",
+   "handle": "KidsDianaShow",
+   "name": "✿ Kids Diana Show",
+   "topic": "kids",
+   "geo": "0.7",
+   "country": "Global mix",
+   "subscribers": 138000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 681000,
+    "uploadsPerMonth": 12.5,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCJplp5SjeGSdVdwsfb9Q7lQ",
+   "handle": "LikeNastyaofficial",
+   "name": "Like Nastya",
+   "topic": "kids",
+   "geo": "0.7",
+   "country": "Global mix",
+   "subscribers": 133000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 6600000,
+    "uploadsPerMonth": 5.7,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCFFbwnve3yF62-tVXkTyHqg",
+   "handle": "ZeeMusicCompany",
+   "name": "Zee Music Company",
+   "topic": "music",
+   "geo": "0.35",
+   "country": "India",
+   "subscribers": 123000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 136000,
+    "uploadsPerMonth": 87.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCJ5v_MCY6GNUBTO8-D3XoAg",
+   "handle": "WWE",
+   "name": "WWE",
+   "topic": "sports",
+   "geo": "0.7",
+   "country": "Global mix",
+   "subscribers": 114000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 270000,
+    "uploadsPerMonth": 137.6,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UC-lHJZR3Gqxm24_Vd_AJ5Yw",
+   "handle": "PewDiePie",
+   "name": "PewDiePie",
+   "topic": "gaming",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 109000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 2000000,
+    "uploadsPerMonth": 1.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCOmHUn--16B90oW2L6FRR3A",
+   "handle": "BLACKPINK",
+   "name": "BLACKPINK",
+   "topic": "music",
+   "geo": "0.7",
+   "country": "Global mix",
+   "subscribers": 101000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 3800000,
+    "uploadsPerMonth": 1.6,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCBnZ16ahKA2DZ_T5W0FPUXg",
+   "handle": "ChuChuTV",
+   "name": "ChuChu TV Nursery Rhymes & Kids Songs",
+   "topic": "kids",
+   "geo": "0.7",
+   "country": "Global mix",
+   "subscribers": 98200000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 336000,
+    "uploadsPerMonth": 5.7,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCcdwLMPsaU2ezNSJU1nFoBQ",
+   "handle": "Pinkfong",
+   "name": "Baby Shark - Pinkfong Kids’ Songs & Stories",
+   "topic": "kids",
+   "geo": "0.7",
+   "country": "Global mix",
+   "subscribers": 85200000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 578000,
+    "uploadsPerMonth": 13.2,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCY1kMZp36IQSyNx_9h4mpCg",
+   "handle": "MarkRober",
+   "name": "Mark Rober",
+   "topic": "education",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 83500000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 29000000,
+    "uploadsPerMonth": 0.7,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCfM3zsQsOnfWNUppiycmBuw",
+   "handle": "eminem",
+   "name": "EminemMusic",
+   "topic": "music",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 67300000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 9800000,
+    "uploadsPerMonth": 1.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCqECaJ8Gagnn7YCbPEzWH6g",
+   "handle": "TaylorSwift",
+   "name": "Taylor Swift",
+   "topic": "music",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 63500000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 3600000,
+    "uploadsPerMonth": 2.4,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCRijo3ddMTht_IHyNSNXpNQ",
+   "handle": "DudePerfect",
+   "name": "Dude Perfect",
+   "topic": "sports",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 62800000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 6300000,
+    "uploadsPerMonth": 1.7,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UC0C-w0YjGpqDXGB8IHb662A",
+   "handle": "EdSheeran",
+   "name": "Ed Sheeran",
+   "topic": "music",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 59300000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 257000,
+    "uploadsPerMonth": 4.2,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCYiGq8XF7YQD00x7wAd62Zg",
+   "handle": "JuegaGerman",
+   "name": "JuegaGerman",
+   "topic": "gaming",
+   "geo": "0.35",
+   "country": "Latin America",
+   "subscribers": 56800000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 2700000,
+    "uploadsPerMonth": 9.1,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCX8pnu3DYUnx8qy8V_c6oHg",
+   "handle": "TechnoGamerzOfficial",
+   "name": "Techno Gamerz",
+   "topic": "gaming",
+   "geo": "0.35",
+   "country": "India",
+   "subscribers": 53200000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 7900000,
+    "uploadsPerMonth": 7.1,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCj22tfcQrWG7EMEKS0qLeEg",
+   "handle": "CarryMinati",
+   "name": "CarryMinati",
+   "topic": "comedy",
+   "geo": "0.35",
+   "country": "India",
+   "subscribers": 45800000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 35000000,
+    "uploadsPerMonth": 1.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UC7_YxT-KID8kRbqZo7MyscQ",
+   "handle": "markiplier",
+   "name": "Markiplier",
+   "topic": "gaming",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 38900000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 2500000,
+    "uploadsPerMonth": 10.5,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCpB959t8iPrxQWj7G6n0ctQ",
+   "handle": "SSSniperWolf",
+   "name": "SSSniperWolf",
+   "topic": "entertainment",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 35000000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 346000,
+    "uploadsPerMonth": 13.9,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCTkXRDQl0luXxVQrRQvWS6w",
+   "handle": "dream",
+   "name": "Dream",
+   "topic": "gaming",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 34800000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 6300000,
+    "uploadsPerMonth": 1.7,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UC-CSyyi47VX1lD9zyeABW3w",
+   "handle": "dhruvrathee",
+   "name": "Dhruv Rathee",
+   "topic": "news",
+   "geo": "0.35",
+   "country": "India",
+   "subscribers": 32900000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 10000000,
+    "uploadsPerMonth": 4.7,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCYzPXprvl5Y-Sf0g4vX-m6g",
+   "handle": "jacksepticeye",
+   "name": "jacksepticeye",
+   "topic": "gaming",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 31200000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 1500000,
+    "uploadsPerMonth": 6.8,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCAuUUnT6oDeKwE6v1NGQxug",
+   "handle": "TED",
+   "name": "TED",
+   "topic": "education",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 27900000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 100000,
+    "uploadsPerMonth": 22.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCY30JRSgfhYXA6i6xX1erWg",
+   "handle": "smosh",
+   "name": "Smosh",
+   "topic": "comedy",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 27200000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 690000,
+    "uploadsPerMonth": 2.7,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCpVm7bg6pXKo1Pr6k5kxG9A",
+   "handle": "natgeo",
+   "name": "National Geographic",
+   "topic": "education",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 26500000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 422000,
+    "uploadsPerMonth": 20.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCsXVk37bltHxD1rDPwtNM8Q",
+   "handle": "kurzgesagt",
+   "name": "Kurzgesagt – In a Nutshell",
+   "topic": "education",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 25600000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 5000000,
+    "uploadsPerMonth": 1.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UC6nSFpj9HTCZ5t-N3Rm3-HA",
+   "handle": "vsauce",
+   "name": "Vsauce",
+   "topic": "education",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 25200000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 9200000,
+    "uploadsPerMonth": 0.8,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCWJ2lWNubArHWmf3FIHbfcQ",
+   "handle": "NBA",
+   "name": "NBA",
+   "topic": "sports",
+   "geo": "1",
+   "country": "Global mix",
+   "subscribers": 24500000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 49000,
+    "uploadsPerMonth": 49.8,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCvgfXK4nTYKudb0rFR6noLA",
+   "handle": "ufc",
+   "name": "UFC",
+   "topic": "sports",
+   "geo": "1",
+   "country": "Global mix",
+   "subscribers": 23100000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 207000,
+    "uploadsPerMonth": 89.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCBJycsmduvYEL83R_U4JriQ",
+   "handle": "mkbhd",
+   "name": "Marques Brownlee",
+   "topic": "tech",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 21300000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 5600000,
+    "uploadsPerMonth": 6.4,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCHnyfMqiRRG1u-2MsSQLbXA",
+   "handle": "veritasium",
+   "name": "Veritasium",
+   "topic": "education",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 21300000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 9300000,
+    "uploadsPerMonth": 2.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCJFp8uSYCjXOMnkUyb3CQ3Q",
+   "handle": "buzzfeedtasty",
+   "name": "Tasty",
+   "topic": "food",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 21200000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 72000,
+    "uploadsPerMonth": 8.8,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UC16niRr50-MSBwiO3YDb3RA",
+   "handle": "BBCNews",
+   "name": "BBC News",
+   "topic": "news",
+   "geo": "1",
+   "country": "UK / global",
+   "subscribers": 20100000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 78000,
+    "uploadsPerMonth": 311.5,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCupvZG-5ko_eiXAupbDfxWw",
+   "handle": "CNN",
+   "name": "CNN",
+   "topic": "news",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 19900000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 291000,
+    "uploadsPerMonth": 272.2,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCXuqSBlHAE6Xw-yeJA0Tunw",
+   "handle": "LinusTechTips",
+   "name": "Linus Tech Tips",
+   "topic": "tech",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 16900000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 1800000,
+    "uploadsPerMonth": 18.3,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCzTKskwIc_-a0cGvCXA848Q",
+   "handle": "nikkietutorials",
+   "name": "NikkieTutorials",
+   "topic": "beauty",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 15400000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 767000,
+    "uploadsPerMonth": 1.9,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCgoxyzvouZM-tCgsYzrYtyg",
+   "handle": "nishamadhulika",
+   "name": "NishaMadhulika",
+   "topic": "food",
+   "geo": "0.35",
+   "country": "India",
+   "subscribers": 15200000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 299000,
+    "uploadsPerMonth": 8.5,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCiWLfSweyRNmLpgEHekhoAg",
+   "handle": "espn",
+   "name": "ESPN",
+   "topic": "sports",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 14600000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 7,
+    "medianViews": 44000,
+    "uploadsPerMonth": 455.4,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCe0TLA0EsQbE-MjuHXevj2A",
+   "handle": "athleanx",
+   "name": "ATHLEAN-X™",
+   "topic": "health",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 14300000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 335000,
+    "uploadsPerMonth": 4.7,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCJHA_jMfCvEnv-3kRjTCQXw",
+   "handle": "bingingwithbabish",
+   "name": "Binging with Babish",
+   "topic": "food",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 10500000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 746000,
+    "uploadsPerMonth": 2.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCvK4bOhULCpmLabd2pDMtnA",
+   "handle": "YesTheory",
+   "name": "Yes Theory",
+   "topic": "travel",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 10100000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 2600000,
+    "uploadsPerMonth": 1.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UC68TLK0mAEzUyHx5x5k-S1Q",
+   "handle": "JeffNippard",
+   "name": "Jeff Nippard",
+   "topic": "health",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 8690000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 4900000,
+    "uploadsPerMonth": 1.4,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCYO_jab_esuFRV4b17AJtAw",
+   "handle": "3blue1brown",
+   "name": "3Blue1Brown",
+   "topic": "education",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 8670000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 1600000,
+    "uploadsPerMonth": 1.1,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCpSgg_ECBj25s9moCDfSTsA",
+   "handle": "JamieOliver",
+   "name": "Jamie Oliver",
+   "topic": "food",
+   "geo": "1",
+   "country": "UK / global",
+   "subscribers": 6220000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 64000,
+    "uploadsPerMonth": 15.6,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCV6KDgJskWaEckne5aPA0aQ",
+   "handle": "GrahamStephan",
+   "name": "Graham Stephan",
+   "topic": "finance",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 5180000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 424000,
+    "uploadsPerMonth": 4.4,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCctXZhXmG-kf3tlIXgVZUlw",
+   "handle": "garyvee",
+   "name": "GaryVee",
+   "topic": "business",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 4890000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 83000,
+    "uploadsPerMonth": 5.4,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCUyDOdBWhC1MCxEjC46d-zw",
+   "handle": "AlexHormozi",
+   "name": "Alex Hormozi",
+   "topic": "business",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 4540000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 330000,
+    "uploadsPerMonth": 5.4,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UC4ijq8Cg-8zQKx8OH12dUSw",
+   "handle": "KaraandNate",
+   "name": "Kara and Nate",
+   "topic": "travel",
+   "geo": "1",
+   "country": "Global, mostly high-income",
+   "subscribers": 4540000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 1300000,
+    "uploadsPerMonth": 3.0,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCGy7SkBjcIAgTiwkXEtPnYg",
+   "handle": "AndreiJikh",
+   "name": "Andrei Jikh",
+   "topic": "finance",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 3380000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 1600000,
+    "uploadsPerMonth": 4.4,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  },
+  {
+   "id": "UCUvvj5lwue7PspotMDjk5UA",
+   "handle": "MeetKevin",
+   "name": "Meet Kevin",
+   "topic": "finance",
+   "geo": "1",
+   "country": "US",
+   "subscribers": 2050000,
+   "totalViews": null,
+   "videoCount": null,
+   "publishedAt": null,
+   "recent": {
+    "videosSampled": 15,
+    "medianViews": 70000,
+    "uploadsPerMonth": 124.9,
+    "shortsShare": null,
+    "windowDays": 90
+   },
+   "missing": [
+    "totalViews",
+    "videoCount",
+    "publishedAt"
+   ]
+  }
+ ]
+}

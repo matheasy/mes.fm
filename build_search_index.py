@@ -38,7 +38,7 @@ CI = {k: i for i, (k, _) in enumerate(CATS)}
 CALC_DIRS = {"bmicalculator", "gradecalculator", "percentagecalculator", "mortgagecalculator", "inflationcalculator",
              "vatcalculator", "pokemongocalculator", "gpacalculator", "youtubemoney", "earth-curvature-calculator",
              "gematria", "impermanent-loss-calculator", "unit-conversion", "calculators", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator"}
-TOOL_DIRS = {"timer", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "calendar", "copy-text", "solar-system-today", "search-engines", "site-index",
+TOOL_DIRS = {"timer", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "calendar", "copy-text", "solar-system-today", "search-engines", "site-index", "how-much-do-youtubers-make",
              "moon", "search", "tools"}
 MATH = re.compile(r"^(math|math-qa.*|problems-plus-.*|cubic-formula.*|quadratic-formula.*|cube-root-unity|vectors?|"
                   r"vector-functions.*|sequences-series|spherical-harmonics|projectile-hits-target|mathiew)$")

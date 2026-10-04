@@ -1,0 +1,93 @@
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu hm" id="hm">
+		<p class="hm-lead">An estimated ad-revenue range for <span id="hm-n">54</span> of the biggest YouTube channels, from their public subscriber counts and recent views. Pick a topic, change the viewer location or the Shorts share, sort any column, or send a channel to the <a href="/youtubemoney">YouTube Money Calculator</a>.</p>
+		<div class="hm-disclaimer" role="note">
+			<strong>These are estimates, not real income.</strong> Nobody on this list has told us what they earn. The figures are a guess at <em>YouTube ad revenue only</em> from public view counts and typical rates (RPM) for the channel's topic, and they leave out sponsorships, merchandise, memberships, YouTube Premium, licensing, back-catalogue views and Shorts. A real channel can earn far more or far less. See <a href="#hm-how">how the numbers are made</a>.
+		</div>
+
+		<div class="tu-card hm-controls">
+			<div class="tu-row">
+				<div class="tu-field hm-search">
+					<label for="hm-q">Find a channel</label>
+					<input id="hm-q" class="tu-input" type="search" autocomplete="off" placeholder="Name, handle, topic or country" enterkeyhint="search">
+				</div>
+				<div class="tu-field">
+					<label for="hm-geo">Where the viewers are</label>
+					<select id="hm-geo" class="tu-select">
+						<option value="">Each channel's own audience (assumed)</option>
+						<option value="1">Everyone: US, Canada, UK, Australia, W. Europe</option>
+						<option value="0.7">Everyone: a mix of regions</option>
+						<option value="0.35">Everyone: Asia, Africa, Latin America</option>
+					</select>
+				</div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+					<label for="hm-sh">Share of views that are Shorts</label>
+					<select id="hm-sh" class="tu-select">
+						<option value="0">0% (long-form only)</option>
+						<option value="10">10%</option>
+						<option value="25">25%</option>
+						<option value="50">50%</option>
+						<option value="75">75%</option>
+					</select>
+				</div>
+				<div class="tu-field tu-field--sm hm-sortbox" style="flex-basis:12em;">
+					<label for="hm-sort">Sort by</label>
+					<select id="hm-sort" class="tu-select">
+						<option value="subs:desc">Subscribers (most first)</option>
+						<option value="month:desc">Earnings per month (high to low)</option>
+						<option value="year:desc">Earnings per year (high to low)</option>
+						<option value="views:desc">Monthly views (high to low)</option>
+						<option value="name:asc">Channel name (A-Z)</option>
+						<option value="topic:asc">Topic (A-Z)</option>
+					</select>
+				</div>
+			</div>
+			<div class="tu-chips" id="hm-topics" role="group" aria-label="Topic"></div>
+			<div class="hm-bar">
+				<span id="hm-count" class="hm-count" aria-live="polite"></span>
+				<span class="hm-bar__btns">
+					<button type="button" class="tu-btn tu-btn--ghost" id="hm-reset">Reset</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="hm-csv">Download CSV</button>
+					<button type="button" class="tu-btn" id="hm-refresh">Refresh live numbers</button>
+				</span>
+			</div>
+			<p class="hm-status" id="hm-status" aria-live="polite">Loading the channel snapshot&hellip;</p>
+		</div>
+
+		<div class="tu-table-wrap hm-tablewrap">
+			<table class="tu-table hm-table" id="hm-table" aria-describedby="hm-count"></table>
+		</div>
+		<div class="hm-cards" id="hm-cards"></div>
+		<p class="hm-foot">Earnings are shown as <b>typical</b> with the low&ndash;high range underneath. Subscriber counts are rounded by YouTube to three significant figures. Channels, topics and the assumed audience location were chosen by us; the topic decides the RPM, so a different guess gives a different number. Looking for the old numbers? See <a href="/youtubemoney/youtubers">the 2016 estimates</a>.</p>
+
+		<h2 id="hm-how">How these estimates are made</h2>
+		<ol class="hm-steps">
+			<li><b>Monthly views</b> = the median views of a channel's last ~15 long-form uploads that are at least 7 days old &times; how many long-form videos it uploads per month (last 90 days). Views that come from the back catalogue (older videos still being watched) are <em>not</em> counted, and for large channels they can be a big share, so this under-counts those channels.</li>
+			<li><b>RPM</b> (what the creator earns per 1,000 views after YouTube's share) comes from the same table as the <a href="/youtubemoney">YouTube Money Calculator</a>: low, typical and high for the channel's topic, multiplied by a viewer-location factor (&times;1 for audiences mostly in high-income countries, &times;0.7 for a mix, &times;0.35 for Asia, Africa and Latin America). Raising the Shorts share blends in the much lower Shorts RPM.</li>
+			<li><b>Earnings</b> = views &times; RPM &divide; 1,000, for the low, typical and high RPM. Yearly is monthly &times; 12.</li>
+		</ol>
+		<p>When the live API is on, each channel's lifetime views are also compared with a lifetime estimate in the row's details, as a sanity check. Shorts earn very little per view, so a channel that is mostly Shorts earns much less than its views suggest.</p>
+
+		<h2>How does YouTube pay creators?</h2>
+		<p>Creators in the YouTube Partner Program receive a share of the ad revenue earned on their videos: around 55% of long-form ad revenue, and around 45% of the Shorts revenue pool, split by views of each creator's Shorts. The thresholds to join (subscribers plus watch hours or Shorts views) and the percentages are set by YouTube and change, so check <a href="https://support.google.com/youtube/answer/72857" target="_blank" rel="noopener">YouTube Help</a>. Ads pay differently by country, season and topic, which is why two channels with the same views can earn very different amounts.</p>
+		<h3>RPM vs CPM</h3>
+		<p><b>CPM</b> is what advertisers pay per 1,000 ad impressions. <b>RPM</b> is what the creator actually receives per 1,000 <em>video views</em>, after YouTube's cut and counting views that showed no ad, so it is always lower than the CPM. This page uses RPM. The calculator also lets you type your own RPM if you can read it in YouTube Studio.</p>
+		<h3>Why do other sites show different numbers?</h3>
+		<p>Sites such as Social Blade publish a wide range, usually from a flat CPM range applied to total or recent views, with no knowledge of the topic, the audience's country or how many views were Shorts. A single channel can fall almost anywhere inside the range, and the creator's real income can sit outside it. Treat every public number, including these, as a rough order of magnitude.</p>
+		<h3>What is not included</h3>
+		<p>Sponsorships and brand deals, merchandise, memberships and Super Chat, YouTube Premium revenue, licensing and TV deals, music royalties, other platforms, and business costs. For many of the biggest channels these other sources are larger than the ad revenue, and big channels also spend heavily on production, so none of the figures here should be read as profit or take-home pay.</p>
+
+		<h2>Frequently asked questions</h2>
+		<div class="hm-faq">
+			<details><summary>How much do YouTubers make?</summary><p>It varies enormously. Most channels earn little or nothing; a channel with a few hundred thousand views a month in a typical topic might earn from a few hundred to a few thousand dollars a month in ads. The channels in the table are the exceptional ones, with estimated ad revenue from tens of thousands to millions of dollars a month.</p></details>
+			<details><summary>How much does YouTube pay per 1,000 views?</summary><p>For long-form videos, creator RPM usually lands between about $0.50 and $30 per 1,000 views depending on topic and where the viewers live (kids and music are at the low end, finance and business at the high end). Shorts pay roughly $0.01 to $0.07 per 1,000 views.</p></details>
+			<details><summary>How much does a YouTuber with 1 million subscribers make?</summary><p>Subscribers do not pay anything by themselves; views do. A 1M-subscriber channel can get anywhere from a few thousand to millions of views a month. Put the channel's views in the <a href="/youtubemoney">YouTube Money Calculator</a> for a range.</p></details>
+			<details><summary>Are these the YouTubers' real earnings?</summary><p>No. They are estimates of ad revenue only, calculated from public numbers. We do not know any channel's real income.</p></details>
+			<details><summary>Where do the numbers come from, and how fresh are they?</summary><p>The subscriber counts and recent video views were collected from YouTube's public channel pages (or the YouTube Data API when it is switched on) on the date shown above the table. The page loads that saved snapshot first; &ldquo;Refresh live numbers&rdquo; asks the server for newer ones when that feature is set up.</p></details>
+			<details><summary>Why is a channel's estimate so low or high?</summary><p>The estimate only counts new long-form uploads. A channel that rarely uploads (or that mostly posts Shorts, live streams or music videos that were uploaded years ago) can look far lower than its real earnings. A channel that posts many short clips can look higher. Change the topic RPM assumptions in the calculator to test your own guess.</p></details>
+		</div>
+	</div>
+	<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+	{"@type":"Question","name":"How much do YouTubers make?","acceptedAnswer":{"@type":"Answer","text":"It varies enormously. Most channels earn little or nothing; a channel with a few hundred thousand views a month in a typical topic might earn from a few hundred to a few thousand dollars a month in ads. The channels in the table are the exceptional ones, with estimated ad revenue from tens of thousands to millions of dollars a month."}},
+	{"@type":"Question","name":"How much does YouTube pay per 1,000 views?","acceptedAnswer":{"@type":"Answer","text":"For long-form videos, creator RPM usually lands between about $0.50 and $30 per 1,000 views depending on topic and where the viewers live. Shorts pay roughly $0.01 to $0.07 per 1,000 views."}},
+	{"@type":"Question","name":"Are these the YouTubers' real earnings?","acceptedAnswer":{"@type":"Answer","text":"No. They are estimates of ad revenue only, calculated from public numbers. We do not know any channel's real income."}}]}</script>

@@ -5,3 +5,34 @@
 	.tu [hidden] {display:none !important;}
 	.tu #ym-examples .tu-chip {margin:0.15em 0;}
 	@media (max-width: 600px) {.tu #ym-format {margin-left:0 !important;}}
+
+	/* charts */
+	.tu .ym-charts__sum {cursor:pointer;font-weight:700;font-size:1.1em;}
+	.tu .ym-chart-block {margin-top:1.4em;}
+	.tu .ym-chart {width:100%;}
+	.tu .ym-chart svg {display:block;max-width:100%;overflow:visible;font:12px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+	.tu .ym-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+	.tu .ym-legend {display:flex;gap:1.2em;flex-wrap:wrap;font-size:0.85em;margin-top:0.4em;}
+	.tu .ym-legend .ym-sw {display:inline-block;width:1.6em;height:0.7em;border-radius:3px;margin-right:0.4em;vertical-align:middle;}
+	.tu .ym-sw--band {background:#f4c0c0;} .tu .ym-sw--line {background:#cc1f1f;height:3px;}
+	#ym .ymc-t {fill:#222;} #ym .ymc-m {fill:#666;}
+	#ym .ymc-track {fill:#eceff3;} #ym .ymc-grid {stroke:#dde1e6;stroke-width:1;} #ym .ymc-axis {stroke:#9aa1ab;stroke-width:1;}
+	#ym .ymc-bar {fill:#c3c9d2;} #ym .ymc-bar--on {fill:#cc1f1f;}
+	#ym .ymc-band {fill:#f4c0c0;} #ym .ymc-line {stroke:#cc1f1f;fill:none;stroke-width:2.5;stroke-linejoin:round;} #ym .ymc-dot {fill:#cc1f1f;}
+	#ym .ymc-tick {stroke:#7a1010;stroke-width:3;} #ym .ymc-whisk {stroke:#222;stroke-width:1.5;}
+	#ym .ymc-mine {stroke:#1a5fb4;stroke-width:2;stroke-dasharray:5 4;} #ym .ymc-minet {fill:#1a5fb4;font-weight:700;}
+	#ym .ymc-row[data-n] {cursor:pointer;} #ym .ymc-row[data-n]:hover .ymc-bar {fill:#e58b8b;} #ym .ymc-row:focus {outline:none;} #ym .ymc-row:focus-visible .ymc-hit {stroke:#1a5fb4;stroke-width:2;}
+	#ym .ymc-hit {fill:transparent;stroke:none;}
+	#ym .ymc-sel {font-weight:700;}
+	body.dark-mode #ym svg .ymc-t {fill:#e6e6e6;} body.dark-mode #ym svg .ymc-m {fill:#aab0b8;}
+	body.dark-mode #ym svg .ymc-track {fill:#2c2f34;} body.dark-mode #ym svg .ymc-grid {stroke:#34383e;} body.dark-mode #ym svg .ymc-axis {stroke:#6b727c;}
+	body.dark-mode #ym svg .ymc-bar {fill:#566070;} body.dark-mode #ym svg .ymc-bar--on {fill:#ff7a7a;}
+	body.dark-mode #ym svg .ymc-band {fill:#6a2a2a;} body.dark-mode #ym svg .ymc-line {stroke:#ff7a7a;} body.dark-mode #ym svg .ymc-dot {fill:#ff7a7a;}
+	body.dark-mode #ym svg .ymc-tick {stroke:#ffd0d0;} body.dark-mode #ym svg .ymc-whisk {stroke:#f1f1f1;}
+	body.dark-mode #ym svg .ymc-mine {stroke:#7db4ff;} body.dark-mode #ym svg .ymc-minet {fill:#7db4ff;}
+	body.dark-mode #ym svg .ymc-row[data-n]:hover .ymc-bar {fill:#8a4a4a;}
+	body.dark-mode #ym .ym-sw--band {background:#6a2a2a;} body.dark-mode #ym .ym-sw--line {background:#ff7a7a;}
+	@media (prefers-reduced-motion: no-preference) {
+		#ym .ym-anim .ymc-grow {transform-box:fill-box;transform-origin:left center;animation:ymc-grow .6s ease-out both;}
+		@keyframes ymc-grow {from {transform:scaleX(0);} to {transform:scaleX(1);}}
+	}
