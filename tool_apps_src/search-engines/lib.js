@@ -150,16 +150,24 @@
 		if (o.time && e.time && e.time[o.time]) u += e.time[o.time];
 		return u;
 	}
-	/* every address to open for the selection: [{ id, name, label, url }] plus the engines skipped for the chosen type */
-	function targets(sel, vsel, custom, q, o) {
+	/* every address to open for the selection: [{ id, name, label, url }] plus the engines skipped for the chosen type.
+	 * extra: { engineId: ["images", "news", "videos"] } = ticks on the engine's card that open those searches IN ADDITION to the page-wide type */
+	var TYPE_LABEL = { web: "", images: " Images", news: " News", videos: " Videos" };
+	function targets(sel, vsel, custom, q, o, extra) {
 		var out = [], skipped = [];
+		o = o || {};
 		sel.forEach(function (id) {
 			var e = BYID[id] || (custom || []).filter(function (c) { return c.id === id; })[0]; if (!e) return;
 			var vs = e.variants && e.variants.length ? (vsel && vsel[id] && vsel[id].length ? e.variants.filter(function (x) { return vsel[id].indexOf(x.id) >= 0; }) : [e.variants[0]]) : [null];
+			var types = [o.type || "web"];
+			((extra && extra[id]) || []).forEach(function (t) { if (types.indexOf(t) < 0 && e.types && e.types[t]) types.push(t); });
 			var any = false;
-			vs.forEach(function (v) {
-				var u = url(e, q, o, v);
-				if (u) { any = true; out.push({ id: id, name: e.name, label: e.name + (v && e.variants.length > 1 ? " " + v.label : ""), url: u }); }
+			types.forEach(function (t) {
+				var oo = {}; for (var k in o) oo[k] = o[k]; oo.type = t;
+				vs.forEach(function (v) {
+					var u = url(e, q, oo, v);
+					if (u) { any = true; out.push({ id: id, name: e.name, type: t, label: e.name + TYPE_LABEL[t] + (v && e.variants.length > 1 ? " " + v.label : ""), url: u }); }
+				});
 			});
 			if (!any && clean(q)) skipped.push(e.name);
 		});

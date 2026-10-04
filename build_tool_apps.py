@@ -139,7 +139,7 @@ APPS = {
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",
                            tag="One search, every search engine.", accent="#c2410c", dark="#9a3412", tint="#fdeadf",
                            desc="Type your search once and open it in Google (.com, .ca, .co.uk and more), Bing, DuckDuckGo, Brave, Yandex and 60+ other search engines, AI assistants and video sites, in tabs or tiled windows. Compare results, check censorship and bias, and add your own engines.",
-                           js_v="1"),
+                           js_v="2"),
     # Mortgage Calculator 2.0 (rewritten 2026-10-03 from the 2013-2018 jQuery page): lib.js = exact-cents maths + the country rules tables (CMHC, minimum down payment, stress test, SDLT;
     # node-testable: tool_apps_src/mortgagecalculator-tests.js), app.js = UI. Keeps ads; old /mortgagecalculator/s/<id> links still resolve via /api/share?calc=mc.
     "mortgagecalculator": dict(title="Mortgage Calculator", page_title="Mortgage Calculator",

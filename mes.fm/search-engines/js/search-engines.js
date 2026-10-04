@@ -150,16 +150,24 @@
 		if (o.time && e.time && e.time[o.time]) u += e.time[o.time];
 		return u;
 	}
-	/* every address to open for the selection: [{ id, name, label, url }] plus the engines skipped for the chosen type */
-	function targets(sel, vsel, custom, q, o) {
+	/* every address to open for the selection: [{ id, name, label, url }] plus the engines skipped for the chosen type.
+	 * extra: { engineId: ["images", "news", "videos"] } = ticks on the engine's card that open those searches IN ADDITION to the page-wide type */
+	var TYPE_LABEL = { web: "", images: " Images", news: " News", videos: " Videos" };
+	function targets(sel, vsel, custom, q, o, extra) {
 		var out = [], skipped = [];
+		o = o || {};
 		sel.forEach(function (id) {
 			var e = BYID[id] || (custom || []).filter(function (c) { return c.id === id; })[0]; if (!e) return;
 			var vs = e.variants && e.variants.length ? (vsel && vsel[id] && vsel[id].length ? e.variants.filter(function (x) { return vsel[id].indexOf(x.id) >= 0; }) : [e.variants[0]]) : [null];
+			var types = [o.type || "web"];
+			((extra && extra[id]) || []).forEach(function (t) { if (types.indexOf(t) < 0 && e.types && e.types[t]) types.push(t); });
 			var any = false;
-			vs.forEach(function (v) {
-				var u = url(e, q, o, v);
-				if (u) { any = true; out.push({ id: id, name: e.name, label: e.name + (v && e.variants.length > 1 ? " " + v.label : ""), url: u }); }
+			types.forEach(function (t) {
+				var oo = {}; for (var k in o) oo[k] = o[k]; oo.type = t;
+				vs.forEach(function (v) {
+					var u = url(e, q, oo, v);
+					if (u) { any = true; out.push({ id: id, name: e.name, type: t, label: e.name + TYPE_LABEL[t] + (v && e.variants.length > 1 ? " " + v.label : ""), url: u }); }
+				});
 			});
 			if (!any && clean(q)) skipped.push(e.name);
 		});
@@ -202,7 +210,8 @@
 		sets: Array.isArray(saved.sets) ? saved.sets : [],
 		type: saved.type || "web", time: saved.time || "", mode: saved.mode || "tab",
 		exact: !!saved.exact, site: saved.site || "", excl: saved.excl || "", log: saved.log !== false, hist: Array.isArray(saved.hist) ? saved.hist : [],
-		fold: saved.fold && typeof saved.fold === "object" ? saved.fold : {}
+		fold: saved.fold && typeof saved.fold === "object" ? saved.fold : {},
+		extra: saved.extra && typeof saved.extra === "object" ? saved.extra : {}
 	};
 	// a shared link overrides the saved choices for this visit
 	if (qs.get("e")) S.sel = qs.get("e").split(",").filter(function (id) { return E.BYID[id]; });
@@ -211,14 +220,15 @@
 	if (/^(tab|window|same)$/.test(qs.get("m") || "")) S.mode = qs.get("m");
 	if (qs.get("site")) S.site = qs.get("site");
 	if (qs.get("x") === "1") S.exact = true;
+	if (qs.get("a")) { S.extra = {}; qs.get("a").split(",").forEach(function (p) { var m = p.split(":"); if (E.BYID[m[0]] && m[1]) S.extra[m[0]] = m[1].split("+").filter(function (t) { return /^(images|news|videos)$/.test(t); }); }); }
 	if (qs.get("q")) $("se-q").value = qs.get("q");
-	function persist() { sset({ sel: S.sel, vsel: S.vsel, custom: S.custom, sets: S.sets, type: S.type, time: S.time, mode: S.mode, exact: S.exact, site: S.site, excl: S.excl, log: S.log, hist: S.hist, fold: S.fold }); }
+	function persist() { sset({ sel: S.sel, vsel: S.vsel, custom: S.custom, sets: S.sets, type: S.type, time: S.time, mode: S.mode, exact: S.exact, site: S.site, excl: S.excl, log: S.log, hist: S.hist, fold: S.fold, extra: S.extra }); }
 
 	function all() { return E.ENGINES.concat(S.custom.map(function (c) { return { id: c.id, g: "mine", name: c.name, badge: [c.name.slice(0, 2), "#5a6270"], web: c.web, custom: true }; })); }
 	function opts() { return { type: S.type, time: S.time, exact: S.exact, site: S.site, exclude: S.excl }; }
 	function q() { return E.clean($("se-q").value); }
 	function engineById(id) { return E.BYID[id] || all().filter(function (e) { return e.id === id; })[0]; }
-	function tg() { return E.targets(S.sel, S.vsel, S.custom, q(), opts()); }
+	function tg() { return E.targets(S.sel, S.vsel, S.custom, q(), opts(), S.extra); }
 	function hasQuery() { return !!(q() || E.clean(S.site)); }
 
 	/* ---------- toast + clipboard ---------- */
@@ -245,6 +255,12 @@
 		if (e.variants && e.variants.length > 1) {
 			h += '<div class="se-var" role="group" aria-label="' + esc(e.name) + ' versions">' + e.variants.map(function (v) {
 				return '<button type="button" data-v="' + esc(v.id) + '" aria-pressed="' + (vs.indexOf(v.id) >= 0) + '">' + esc(v.label) + "</button>";
+			}).join("") + "</div>";
+		}
+		if (e.types) {
+			var ex = S.extra[e.id] || [];
+			h += '<div class="se-also" role="group" aria-label="Also search ' + esc(e.name) + ' for"><span>Also:</span>' + ["images", "news", "videos"].filter(function (t) { return e.types[t]; }).map(function (t) {
+				return '<button type="button" data-x="' + t + '" aria-pressed="' + (ex.indexOf(t) >= 0) + '" title="Open the ' + esc(e.name) + " " + t + ' search too">' + t.charAt(0).toUpperCase() + t.slice(1) + "</button>";
 			}).join("") + "</div>";
 		}
 		if (na) h += '<div class="se-na">No ' + S.type + " search here</div>";
@@ -343,6 +359,14 @@
 			S.sel = S.sel.filter(function (id) { return ids.indexOf(id) < 0; }); if (!allOn) S.sel = S.sel.concat(ids);
 			persist(); render(); return;
 		}
+		var xb = e.target.closest(".se-also button");
+		if (xb) {
+			var xid = xb.closest(".se-card").dataset.id, cur2 = S.extra[xid] ? S.extra[xid].slice() : [], t2 = xb.dataset.x, k2 = cur2.indexOf(t2);
+			if (k2 >= 0) cur2.splice(k2, 1); else cur2.push(t2);
+			if (cur2.length) S.extra[xid] = cur2; else delete S.extra[xid];
+			if (cur2.length && S.sel.indexOf(xid) < 0) S.sel.push(xid);
+			persist(); render(); return;
+		}
 		var vb = e.target.closest(".se-var button");
 		if (vb) {
 			var id = vb.closest(".se-card").dataset.id, e0 = engineById(id), cur = S.vsel[id] && S.vsel[id].length ? S.vsel[id].slice() : [e0.variants[0].id], v = vb.dataset.v, k = cur.indexOf(v);
@@ -391,6 +415,7 @@
 	$("se-sharelink").onclick = function () {
 		var p = new URLSearchParams(); if (q()) p.set("q", q()); p.set("e", S.sel.join(","));
 		if (S.type !== "web") p.set("t", S.type); if (S.time) p.set("w", S.time); if (S.mode !== "tab") p.set("m", S.mode); if (S.site) p.set("site", S.site); if (S.exact) p.set("x", "1");
+		var ax = Object.keys(S.extra).filter(function (id) { return S.sel.indexOf(id) >= 0 && S.extra[id].length; }).map(function (id) { return id + ":" + S.extra[id].join("+"); }); if (ax.length) p.set("a", ax.join(","));
 		copy(location.origin + location.pathname + "?" + p.toString()).then(function (ok) { toast(ok ? "Share link copied" : "Copy failed"); });
 	};
 

@@ -15,8 +15,11 @@ assert.strictEqual(E.url(E.BYID.ddg, "q", { time: "m" }, E.BYID.ddg.variants[2])
 assert.strictEqual(E.url(E.BYID.baidu, "中文 test", {}), "https://www.baidu.com/s?wd=%E4%B8%AD%E6%96%87%20test");
 assert.strictEqual(E.url(E.BYID.dailymotion, "a/b?c", {}), "https://www.dailymotion.com/search/a%2Fb%3Fc");
 const t = E.targets(["google", "bing", "reddit"], { google: ["com", "ca"] }, [], "cats", { type: "images" });
-assert.deepStrictEqual(t.list.map(x => x.label), ["Google .com", "Google .ca", "Bing US"]);
+assert.deepStrictEqual(t.list.map(x => x.label), ["Google Images .com", "Google Images .ca", "Bing Images US"]);
 assert.deepStrictEqual(t.skipped, ["Reddit"]);
+const x = E.targets(["google", "reddit"], { google: ["com", "ca"] }, [], "cats", {}, { google: ["images"], reddit: ["images"] });
+assert.deepStrictEqual(x.list.map(i => i.label), ["Google .com", "Google .ca", "Google Images .com", "Google Images .ca", "Reddit"], "extras add Images per variant; unsupported extra ignored");
+assert.strictEqual(x.list[2].url, "https://www.google.com/search?q=cats&tbm=isch");
 const c = [{ id: "mine", name: "Mine", web: "https://example.com/?s={q}" }];
 assert.strictEqual(E.targets(["mine"], {}, c, "x y", {}).list[0].url, "https://example.com/?s=x%20y");
 assert.strictEqual(E.customTemplate("https://e.com/?q=%s"), "https://e.com/?q={q}");
