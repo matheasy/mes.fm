@@ -116,3 +116,15 @@
 		.ss-wrap.is-min .ss-stage {height:calc(100vh - 1.5em);height:calc(100dvh - 1.5em);}
 		.ss-wrap.is-min:fullscreen .ss-stage {height:auto;}
 	}
+	/* phones (portrait or held sideways): keep the middle of the map clear. Tool buttons become a slim column down the right edge, smaller; Theatre is pointless on a phone;
+	   the hide / show dock sits in the bottom-right corner instead of the centre */
+	@media (max-width:640px), (max-height:560px) {
+		.ss-tools {flex-direction:column;flex-wrap:nowrap;align-items:flex-end;max-width:none;top:0.4em;right:0.4em;gap:0.25em;}
+		.ss-tools button {min-width:1.9em;height:1.9em;padding:0 0.4em;font-size:0.8em;border-radius:0.35em;}
+		.ss-tools #ss-theatre {display:none;}
+		.ss-dock {left:auto;right:0.4em;bottom:0.4em;transform:none;gap:0.3em;}
+		.ss-dockbtn {min-width:2.1em;height:1.9em;padding:0 0.5em;font-size:0.8em;}
+		#ss-date-big {font-size:1em;}
+		#ss-date-sub {font-size:0.68em;}
+		.ss-datebox {left:0.6em;top:0.45em;}
+	}
