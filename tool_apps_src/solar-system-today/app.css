@@ -9,7 +9,7 @@
 	.ss-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--ss-line);background:var(--ss-bg);}
 	.ss-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;}
 	.ss-stage {position:relative;height:min(70vh,640px);min-height:340px;background:var(--ss-bg);}
-	.ss-wrap:fullscreen .ss-stage {flex:1 1 auto;height:auto;}
+	.ss-wrap:fullscreen .ss-stage {flex:1 1 auto;height:auto;min-height:0;}
 	#ss-canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;}
 	#ss-canvas:focus-visible {box-shadow:inset 0 0 0 2px var(--accent);}
 	.ss-datebox {position:absolute;left:0.9em;top:0.7em;pointer-events:none;color:var(--ss-text);text-shadow:0 1px 6px rgba(0,0,0,0.9);}
@@ -95,3 +95,14 @@
 		.ss-btn--main {min-width:5em;}
 	}
 	body.dark-mode #ss .ss-btn--main, body.dark-mode #ss .ss-btn[aria-pressed="true"], body.dark-mode #ss .ss-tools button[aria-pressed="true"] {color:#0b1016;}
+	/* short screens (a phone held sideways): the stage may not push the transport bar off the bottom, so it takes what is left after the controls */
+	@media (max-height:560px) {
+		.ss-stage {height:calc(100vh - 9em);height:calc(100dvh - 9em);min-height:190px;}
+		.ss-transport {padding:0.35em 0.6em;}
+		.ss-trow + .ss-trow {margin-top:0.3em;}
+		.ss-jumps, .ss-yr, .ss-step {display:none;}
+		.ss-btn {padding:0.3em 0.55em;}
+		.ss-wrap:fullscreen .ss-stage {height:auto;min-height:0;}
+		#ss-date-big {font-size:1em;}
+		.ss-hint {display:none;}
+	}

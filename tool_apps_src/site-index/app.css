@@ -156,3 +156,9 @@
 		#si .si-pager .si-ps {margin-left:0;}
 		#si .si-act-btns .tu-btn {flex:1 1 auto;}
 	}
+
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
+	.si-theatrebar {display:flex;justify-content:flex-end;margin:0 0 0.4em;}
+	.si-theatrebar .tu-btn {padding:0.3em 0.8em;font-size:0.85em;}
+	.si-theatrebar .tu-btn[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	body.dark-mode #si .si-theatrebar .tu-btn[aria-pressed="true"] {color:#0b1016;}

@@ -434,6 +434,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		#si .si-act-btns .tu-btn {flex:1 1 auto;}
 	}
 
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
+	.si-theatrebar {display:flex;justify-content:flex-end;margin:0 0 0.4em;}
+	.si-theatrebar .tu-btn {padding:0.3em 0.8em;font-size:0.85em;}
+	.si-theatrebar .tu-btn[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	body.dark-mode #si .si-theatrebar .tu-btn[aria-pressed="true"] {color:#0b1016;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -610,7 +616,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Site Index</h1>                                        <p class="page-description">Complete index of every page on mes.fm, classified by the template, shell and generator it uses, with feature flags and an audit of missing descriptions, share images, canonical tags and broken references. Search, filter, group, browse the URL tree and export to CSV.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
 	<div class="tu si" id="si">
+		<div class="si-theatrebar"><button type="button" class="tu-btn tu-btn--ghost" id="si-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button></div>
 		<p class="si-fresh tu-note" id="si-fresh" role="status">Loading the page inventory…</p>
 		<noscript><p class="tu-note">This page needs JavaScript. The raw data is in <a href="/site-index/pages.json">pages.json</a>.</p></noscript>
 
@@ -716,7 +724,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/site-index/js/site-index.js?v=1" defer></script>
+	<script src="/site-index/js/site-index.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

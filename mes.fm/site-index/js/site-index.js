@@ -475,3 +475,16 @@
 	}
 	if (document.readyState === "complete") start(); else window.addEventListener("load", start);
 })();
+
+/* Theatre: nearly the whole window, same saved preference (pageMode / pageWide) as the other wide pages */
+(function () {
+	var b = document.getElementById("si-theatre");
+	if (!b) return;
+	function paint() { b.setAttribute("aria-pressed", String(document.documentElement.classList.contains("page-theatre"))); }
+	b.addEventListener("click", function () {
+		var on = document.documentElement.classList.toggle("page-theatre");
+		try { localStorage.setItem("pageMode", on ? "theatre" : "std"); localStorage.setItem("pageWide", on ? "1" : "0"); } catch (e) {}
+		paint();
+	});
+	paint();
+})();
