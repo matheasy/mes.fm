@@ -123,12 +123,16 @@
 	var lastInput = null;
 	function isSurf(r) { return r.desc && (r.desc.kind === 'surface' || r.desc.kind === 'psurface' || r.desc.kind === 'implicit'); }
 	function wireOn(r) { return r.wire === -1 ? !(r.desc && r.desc.kind === 'implicit') : !!r.wire; }
+	function autosize(t) { if (!t) return; t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; }
+	function autosizeAll() { Array.prototype.forEach.call(document.querySelectorAll('.g3-in'), autosize); }
+	window.addEventListener('resize', autosizeAll);
+	if (window.ResizeObserver) { var __rw = 0; new ResizeObserver(function (en) { var w = Math.round(en[0].contentRect.width); if (w !== __rw) { __rw = w; autosizeAll(); } }).observe(document.getElementById('g3-rows')); }
 	function renderRows() {
 		var box = $('g3-rows'); box.innerHTML = '';
 		rows.forEach(function (r) {
 			var el = document.createElement('div'); el.className = 'g3-row' + (r.id === activeId ? ' is-active' : ''); el.dataset.id = r.id;
 			el.innerHTML = '<input type="color" class="g3-color" aria-label="Colour" value="' + r.color + '">' +
-				'<div class="g3-rowmain"><input class="g3-in" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="z = x^2 - y^2" aria-label="Expression"><div class="g3-msg"></div></div>' +
+				'<div class="g3-rowmain"><textarea class="g3-in" rows="1" wrap="soft" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="z = x^2 - y^2" aria-label="Expression"></textarea><div class="g3-msg"></div></div>' +
 				'<button type="button" class="g3-ibtn g3-eye" aria-label="Show or hide" aria-pressed="' + r.show + '" title="Show / hide">◉</button>' +
 				'<button type="button" class="g3-ibtn g3-gear" aria-label="Style options" aria-expanded="' + r.open + '" title="Colour, grid lines, opacity">⚙</button>' +
 				'<button type="button" class="g3-ibtn g3-del" aria-label="Delete" title="Delete">✕</button>' +
@@ -139,7 +143,7 @@
 			el.querySelector('.g3-in').value = r.text;
 			el.querySelector('.g3-style').value = r.style;
 			el.querySelector('.g3-op').value = r.op;
-			box.appendChild(el); updateMsg(r);
+			box.appendChild(el); autosize(el.querySelector('.g3-in')); updateMsg(r);
 		});
 	}
 	function rowEl(r) { return $('g3-rows').querySelector('[data-id="' + r.id + '"]'); }
@@ -152,7 +156,7 @@
 	var boxRows = $('g3-rows');
 	boxRows.addEventListener('input', function (e) {
 		var el = e.target.closest('.g3-row'); if (!el) return; var r = rowById(el.dataset.id), c = e.target.classList;
-		if (c.contains('g3-in')) { r.text = e.target.value; changed(); }
+		if (c.contains('g3-in')) { if (/[\r\n]/.test(e.target.value)) e.target.value = e.target.value.replace(/[\r\n]+/g, ' '); autosize(e.target); r.text = e.target.value; changed(); }
 		else if (c.contains('g3-color')) { r.color = e.target.value; restyle(r); saveSoon(); }
 		else if (c.contains('g3-op')) { r.op = parseFloat(e.target.value); restyle(r); saveSoon(); }
 	});
@@ -226,7 +230,7 @@
 	}
 	function setParam(n, v) {
 		P[n] = v; var m = pmeta[n];
-		if (m && m.row) { var r = rowById(m.row); if (r) { r.text = n + ' = ' + G3.fmtn(v); var inp = rowEl(r) && rowEl(r).querySelector('.g3-in'); if (inp && document.activeElement !== inp) inp.value = r.text; r.desc.value = v; updateMsg(r); } }
+		if (m && m.row) { var r = rowById(m.row); if (r) { r.text = n + ' = ' + G3.fmtn(v); var inp = rowEl(r) && rowEl(r).querySelector('.g3-in'); if (inp && document.activeElement !== inp) { inp.value = r.text; autosize(inp); } r.desc.value = v; updateMsg(r); } }
 		scheduleBuild(true); saveSoon();
 	}
 	$('g3-params').addEventListener('input', function (e) {

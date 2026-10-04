@@ -441,16 +441,20 @@ if (typeof module !== 'undefined' && module.exports) module.exports = GC;
 
 	/* ---------- rows UI ---------- */
 	var lastInput = null;
+	function autosize(t) { if (!t) return; t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; }
+	function autosizeAll() { Array.prototype.forEach.call(document.querySelectorAll('.gc-in'), autosize); }
+	window.addEventListener('resize', autosizeAll);
+	if (window.ResizeObserver) { var __rw = 0; new ResizeObserver(function (en) { var w = Math.round(en[0].contentRect.width); if (w !== __rw) { __rw = w; autosizeAll(); } }).observe(document.getElementById('gc-rows')); }
 	function renderRows() {
 		var box = $('gc-rows'); box.innerHTML = '';
 		rows.forEach(function (r) {
 			var el = document.createElement('div'); el.className = 'gc-row' + (r.id === activeId ? ' is-active' : ''); el.dataset.id = r.id;
 			el.innerHTML = '<input type="color" class="gc-color" aria-label="Colour" value="' + r.color + '">' +
-				'<div class="gc-rowmain"><input class="gc-in" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="y = x^2" aria-label="Expression"><div class="gc-msg"></div></div>' +
+				'<div class="gc-rowmain"><textarea class="gc-in" rows="1" wrap="soft" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="y = x^2" aria-label="Expression"></textarea><div class="gc-msg"></div></div>' +
 				'<button type="button" class="gc-ibtn gc-eye" aria-label="Show or hide" aria-pressed="' + r.show + '" title="Show / hide">◉</button>' +
 				'<button type="button" class="gc-ibtn gc-del" aria-label="Delete" title="Delete">✕</button>';
 			el.querySelector('.gc-in').value = r.text;
-			box.appendChild(el); updateMsg(r);
+			box.appendChild(el); autosize(el.querySelector('.gc-in')); updateMsg(r);
 		});
 	}
 	function rowEl(r) { return $('gc-rows').querySelector('[data-id="' + r.id + '"]'); }
@@ -460,7 +464,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = GC;
 	var boxRows = $('gc-rows');
 	boxRows.addEventListener('input', function (e) {
 		var el = e.target.closest('.gc-row'); if (!el) return; var r = rowById(el.dataset.id);
-		if (e.target.classList.contains('gc-in')) { r.text = e.target.value; changed(); }
+		if (e.target.classList.contains('gc-in')) { if (/[\r\n]/.test(e.target.value)) e.target.value = e.target.value.replace(/[\r\n]+/g, ' '); autosize(e.target); r.text = e.target.value; changed(); }
 		else if (e.target.classList.contains('gc-color')) { r.color = e.target.value; draw(); saveSoon(); }
 	});
 	boxRows.addEventListener('focusin', function (e) { var el = e.target.closest('.gc-row'); if (!el) return; if (e.target.classList.contains('gc-in')) lastInput = e.target; setActive(+el.dataset.id); });
@@ -520,7 +524,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = GC;
 	}
 	function setParam(n, v, fromRow) {
 		P[n] = v; var m = pmeta[n];
-		if (m && m.row && !fromRow) { var r = rowById(m.row); if (r) { r.text = n + ' = ' + GC.fmtn(v); var inp = rowEl(r) && rowEl(r).querySelector('.gc-in'); if (inp && document.activeElement !== inp) inp.value = r.text; r.desc.value = v; updateMsg(r); } }
+		if (m && m.row && !fromRow) { var r = rowById(m.row); if (r) { r.text = n + ' = ' + GC.fmtn(v); var inp = rowEl(r) && rowEl(r).querySelector('.gc-in'); if (inp && document.activeElement !== inp) { inp.value = r.text; autosize(inp); } r.desc.value = v; updateMsg(r); } }
 		draw(); scheduleKeys(); saveSoon();
 	}
 	$('gc-params').addEventListener('input', function (e) {
