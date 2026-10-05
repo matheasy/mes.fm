@@ -38,6 +38,7 @@ function call(method, q, body, ip) {
 }
 (async () => {
   assert.deepStrictEqual(T.parseBoard('time-30-medium'), { mode: 'time', len: 30, diff: 'medium' });
+  assert.deepStrictEqual(T.parseBoard('tr-120-long'), { mode: 'tr', len: 'long', diff: null, pace: 120 }); assert.strictEqual(T.parseBoard('tr-121-long'), null); assert.strictEqual(T.parseBoard('tr-120-huge'), null);
   assert.strictEqual(T.parseBoard('time-31-medium'), null); assert.strictEqual(T.parseBoard('passage-long').len, 'long'); assert.strictEqual(T.parseBoard('x'), null);
   assert.strictEqual(T.weekLabel(new Date('2026-10-05T12:00:00Z')), '2026-W41'); assert.strictEqual(T.weekLabel(new Date('2026-01-01T00:00:00Z')), '2026-W01'); assert.strictEqual(T.weekLabel(new Date('2024-12-30T00:00:00Z')), '2025-W01');
   assert.deepStrictEqual(T.decode(T.encode(87.4, 96.3)), { w: 87.4, a: 96.3 });
@@ -76,6 +77,12 @@ function call(method, q, body, ip) {
   assert.strictEqual((await call('GET', { mine: pid, board: 'time-30-hard', period: 'all' })).b.rows.length, 0);
   assert.strictEqual((await call('GET', { mine: pid, board: 'all', period: 'day' })).b.rows.length, 2);
   assert.strictEqual((await call('GET', { mine: 'nope', period: 'all' })).c, 400);
+  // transcription boards stay apart from the typing boards
+  t = await tok(); fake += 31000; r = await sub({ board: 'tr-120-medium', secs: 30, pid: pid2, name: 'Ana', wpm: 70, acc: 97 }, t); assert.strictEqual(r.c, 200, JSON.stringify(r.b));
+  assert.strictEqual((await call('GET', { board: 'tr-all', period: 'all' })).b.rows.length, 1); assert.strictEqual((await call('GET', { board: 'tr-120-medium', period: 'all' })).b.rows[0].n, 'Ana');
+  assert.strictEqual((await call('GET', { board: 'all', period: 'all' })).b.rows.every((x) => !x.b.startsWith('tr-')), true);
+  assert.deepStrictEqual((await call('GET', { summary: '1', period: 'all', set: 'tr' })).b.counts, { 'tr-120-medium': 1 });
+  assert.strictEqual((await call('GET', { mine: pid2, board: 'tr-all', period: 'all' })).b.rows.length, 1); assert.strictEqual((await call('GET', { mine: pid2, board: 'all', period: 'all' })).b.rows.length, 1);
   // remove needs the admin key
   assert.strictEqual((await call('POST', {}, { a: 'remove', key: 'k', pid })).c, 403);
   process.env.TYPING_ADMIN_KEY = 'secret'; assert.strictEqual((await call('POST', {}, { a: 'remove', key: 'wrong!', pid })).c, 403);

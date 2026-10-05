@@ -16,9 +16,11 @@
 // real time has passed as the test claims to have lasted), a speed ceiling, an accuracy floor, a per-IP rate
 // limit, and only the best score per player id per board counts.
 //
+// Transcription boards (mes.fm/typing-test-transcribe): tr-<pace wpm 80..180>-<short|medium|long>; board=tr-all merges them, kept apart from the typing boards.
 // Boards: time 15/30/60/120 s, words 10/25/50/100, passage short/medium/long; time and words per difficulty.
 const crypto = require('crypto');
 
+const TR_PACES = [80, 100, 120, 140, 160, 180];
 const DIFFS = ['beginner', 'easy', 'medium', 'hard', 'expert'];
 const LENS = { time: [15, 30, 60, 120], words: [10, 25, 50, 100], passage: ['short', 'medium', 'long'] };
 const MAX_WPM = 350;       // the fastest verified typists are ~300 for a burst
@@ -46,6 +48,7 @@ async function redis(commands) {
 
 function parseBoard(b) {
   const p = String(b || '').split('-');
+  if (p[0] === 'tr') { const pace = Number(p[1]); return p.length === 3 && TR_PACES.includes(pace) && LENS.passage.includes(p[2]) ? { mode: 'tr', len: p[2], diff: null, pace } : null; }
   if (p[0] === 'passage') return p.length === 2 && LENS.passage.includes(p[1]) ? { mode: 'passage', len: p[1], diff: null } : null;
   if ((p[0] === 'time' || p[0] === 'words') && p.length === 3) {
     const len = Number(p[1]);
@@ -81,7 +84,9 @@ function resetsAt(period, now) {
 // (one half above 99.9): it still sorts above 99.9 on a speed tie and older stored scores keep decoding the same.
 const encode = (wpm, acc) => { const a = Math.round(acc * 10); return Math.round(wpm * 10) * 1000 + Math.min(999, a) + (a >= 1000 ? 0.5 : 0); };
 const decode = (s) => { const base = Math.floor(s / 1000) * 1000, rem = s - base; return { w: base / 10000, a: rem >= 999.5 ? 100 : Math.floor(rem) / 10 }; };
-const allBoards = () => {
+const isTr = (b) => String(b).startsWith('tr-');
+const allBoards = (tr) => {
+  if (tr) { const t = []; for (const pc of TR_PACES) for (const l of LENS.passage) t.push(`tr-${pc}-${l}`); return t; }
   const o = [];
   for (const m of ['time', 'words']) for (const l of LENS[m]) for (const d of DIFFS) o.push(`${m}-${l}-${d}`);
   for (const l of LENS.passage) o.push(`passage-${l}`);
@@ -118,8 +123,8 @@ async function readBoard(board, period, me, now) {
 }
 
 // "All tests": the top entries of every board merged by score. Each row says which test it was (b); a person appears once per test.
-async function readAll(period, me, now) {
-  const boards = allBoards();
+async function readAll(period, me, now, tr) {
+  const boards = allBoards(tr);
   const cmds = [];
   boards.forEach((b) => { const key = keyFor(b, period, now); cmds.push(['ZREVRANGE', key, '0', String(TOP_PER_BOARD - 1), 'WITHSCORES'], ['ZCARD', key]); });
   const r = await redis(cmds);
@@ -147,7 +152,7 @@ module.exports = async (req, res) => {
     if (req.method === 'GET' && req.query.summary) {
       const period = String(req.query.period || 'day');
       if (!['day', 'week', 'all'].includes(period)) { res.status(400).json({ error: 'bad period' }); return; }
-      const boards = allBoards();
+      const boards = allBoards(String(req.query.set) === 'tr');
       const r = await redis(boards.map((b) => ['ZCARD', keyFor(b, period, now)]));
       const counts = {};
       boards.forEach((b, i) => { const n = Number(r[i] && r[i].result) || 0; if (n) counts[b] = n; });
@@ -157,13 +162,13 @@ module.exports = async (req, res) => {
     }
     if (req.method === 'GET' && req.query.mine !== undefined) {
       const pid = String(req.query.mine), period = String(req.query.period || 'all'), board = String(req.query.board || 'all');
-      if (!ID_RE.test(pid) || !['day', 'week', 'all'].includes(period) || (board !== 'all' && !parseBoard(board))) { res.status(400).json({ error: 'bad request' }); return; }
+      if (!ID_RE.test(pid) || !['day', 'week', 'all'].includes(period) || (board !== 'all' && board !== 'tr-all' && !parseBoard(board))) { res.status(400).json({ error: 'bad request' }); return; }
       const r = await redis([['LRANGE', `ttlb:h:${pid}`, '0', String(HIST - 1)]]);
       const all = (((r[0] && r[0].result) || []).map((x) => { try { return JSON.parse(x); } catch (e) { return null; } })).filter((x) => x && parseBoard(x.b));
       const best = {};
       all.forEach((x) => { if (!(best[x.b] >= x.w)) best[x.b] = x.w; });
       const label = period === 'day' ? dayLabel : weekLabel, cur = label(now);
-      const rows = all.filter((x) => (board === 'all' || x.b === board) && (period === 'all' || label(new Date(x.t)) === cur)).map((x) => ({ t: x.t, b: x.b, w: x.w, a: x.a, pb: x.w >= best[x.b] ? 1 : undefined }));
+      const rows = all.filter((x) => (board === 'all' ? !isTr(x.b) : board === 'tr-all' ? isTr(x.b) : x.b === board) && (period === 'all' || label(new Date(x.t)) === cur)).map((x) => ({ t: x.t, b: x.b, w: x.w, a: x.a, pb: x.w >= best[x.b] ? 1 : undefined }));
       res.setHeader('Cache-Control', 'no-store');
       res.status(200).json({ rows, total: all.length, mine: true });
       return;
@@ -172,8 +177,8 @@ module.exports = async (req, res) => {
       const board = String(req.query.board || '');
       const period = String(req.query.period || 'day');
       const me = ID_RE.test(String(req.query.me || '')) ? String(req.query.me) : '';
-      if ((board !== 'all' && !parseBoard(board)) || !['day', 'week', 'all'].includes(period)) { res.status(400).json({ error: 'bad board' }); return; }
-      const out = board === 'all' ? await readAll(period, me, now) : await readBoard(board, period, me, now);
+      if ((board !== 'all' && board !== 'tr-all' && !parseBoard(board)) || !['day', 'week', 'all'].includes(period)) { res.status(400).json({ error: 'bad board' }); return; }
+      const out = (board === 'all' || board === 'tr-all') ? await readAll(period, me, now, board === 'tr-all') : await readBoard(board, period, me, now);
       res.setHeader('Cache-Control', me ? 'no-store' : 'public, max-age=10, s-maxage=20, stale-while-revalidate=60');
       res.status(200).json(out);
       return;
@@ -196,6 +201,7 @@ module.exports = async (req, res) => {
         crypto.timingSafeEqual(Buffer.from(body.key), Buffer.from(admin));
       if (!ok || !ID_RE.test(String(body.pid || ''))) { res.status(403).json({ error: 'forbidden' }); return; }
       const cmds = [];
+      for (const b of allBoards(true)) cmds.push(...['day', 'week', 'all'].map((p) => ['ZREM', keyFor(b, p, now), body.pid]));
       for (const mode of ['time', 'words']) for (const len of LENS[mode]) for (const d of DIFFS) cmds.push(...['day', 'week', 'all'].map((p) => ['ZREM', keyFor(`${mode}-${len}-${d}`, p, now), body.pid]));
       for (const len of LENS.passage) cmds.push(...['day', 'week', 'all'].map((p) => ['ZREM', keyFor(`passage-${len}`, p, now), body.pid]));
       cmds.push(['HDEL', 'ttlb:names', body.pid], ['DEL', `ttlb:h:${body.pid}`]);
@@ -245,4 +251,4 @@ module.exports = async (req, res) => {
   }
 };
 
-module.exports._test = { allBoards, parseBoard, weekLabel, dayLabel, encode, decode, NAME_RE, BAD };
+module.exports._test = { allBoards, TR_PACES, parseBoard, weekLabel, dayLabel, encode, decode, NAME_RE, BAD };

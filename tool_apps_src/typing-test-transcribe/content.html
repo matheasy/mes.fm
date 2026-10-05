@@ -1,0 +1,99 @@
+	<div class="tu tt tc" id="tc">
+		<div class="tu-card tt-main">
+			<div class="tt-opts">
+				<div class="tt-opt"><span class="tu-label">What you hear</span>
+					<div class="tu-seg" id="tc-src" role="group" aria-label="Kind of text">
+						<button type="button" data-v="passage" aria-pressed="true">Passage</button><button type="button" data-v="words" aria-pressed="false">Random words</button><button type="button" data-v="custom" aria-pressed="false">Your text</button>
+					</div></div>
+				<div class="tt-opt" id="tc-lenwrap"><span class="tu-label" id="tc-lenlabel">Length</span>
+					<div class="tu-seg" id="tc-len" role="group" aria-label="Length"></div></div>
+				<div class="tt-opt" id="tc-diffwrap" hidden><span class="tu-label">Difficulty</span>
+					<div class="tu-seg" id="tc-diff" role="group" aria-label="Word difficulty">
+						<button type="button" data-v="easy" aria-pressed="false">Easy</button><button type="button" data-v="medium" aria-pressed="true">Medium</button><button type="button" data-v="hard" aria-pressed="false">Hard</button>
+					</div></div>
+			</div>
+			<div class="tt-opts tt-opts2">
+				<div class="tt-opt"><span class="tu-label">Speaking pace (words per minute)</span>
+					<div class="tu-seg" id="tc-pace" role="group" aria-label="Speaking pace"></div></div>
+				<div class="tt-opt"><span class="tu-label">Phrase length</span>
+					<div class="tu-seg" id="tc-chunk" role="group" aria-label="Words per phrase">
+						<button type="button" data-v="3" aria-pressed="false">3 words</button><button type="button" data-v="5" aria-pressed="true">5 words</button><button type="button" data-v="8" aria-pressed="false">8 words</button><button type="button" data-v="0" aria-pressed="false">Sentence</button>
+					</div></div>
+			</div>
+			<div class="tt-opts tt-opts2">
+				<div class="tt-chips" id="tc-rules" role="group" aria-label="Rules">
+					<button type="button" class="tu-chip" data-f="wait" aria-pressed="false" title="The next phrase is spoken only when you have nearly finished typing the last one">Wait for me</button>
+					<button type="button" class="tu-chip" data-f="caps" aria-pressed="false" title="Show each phrase as text once it has been spoken">Captions</button>
+					<button type="button" class="tu-chip" data-f="strict" aria-pressed="false" title="Count capital letters and punctuation as well as the words">Strict (capitals + punctuation)</button>
+				</div>
+			</div>
+			<div class="tc-voices">
+				<div class="tu-field"><label for="tc-voice">Voice</label><select id="tc-voice" class="tu-select"></select></div>
+				<div class="tc-sliders">
+					<div class="tu-field"><label for="tc-vol">Volume <output id="tc-vol-o">100%</output></label><input type="range" id="tc-vol" class="tc-range" min="0" max="1" step="0.05" value="1"></div>
+					<div class="tu-field"><label for="tc-pitch">Pitch <output id="tc-pitch-o">1.0</output></label><input type="range" id="tc-pitch" class="tc-range" min="0.5" max="2" step="0.1" value="1"></div>
+				</div>
+			</div>
+			<p class="tt-diffnote" id="tc-note"></p>
+			<div class="tt-banner" id="tc-banner" hidden></div>
+
+			<div class="tt-custom" id="tc-custom" hidden>
+				<label for="tc-customtext" class="tu-label">Paste the text you want to hear read out (first 1,500 words)</label>
+				<textarea id="tc-customtext" class="tu-input" rows="4" maxlength="12000" placeholder="Paste any text: meeting notes, a speech, a court transcript to practise on. It stays in your browser." spellcheck="false"></textarea>
+			</div>
+
+			<div class="tt-live" id="tc-live" aria-live="off">
+				<span class="tt-stat"><b id="tc-t">0:00</b><small>time</small></span>
+				<span class="tt-stat"><b id="tc-w">0</b><small id="tc-wl">words typed</small></span>
+				<span class="tt-stat"><b id="tc-r">0</b><small>replays</small></span>
+			</div>
+			<div class="tc-status" id="tc-status" role="status">Press <b>Start</b>, then type what you hear. You will not see the words.</div>
+			<div class="tc-caption" id="tc-caption" hidden aria-live="polite"></div>
+			<textarea id="tc-in" class="tu-input tc-in" rows="6" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-label="Type what you hear here" placeholder="Type what you hear here…"></textarea>
+			<div class="tt-bar">
+				<button type="button" class="tu-btn tu-btn--primary" id="tc-start">▶ Start</button>
+				<button type="button" class="tu-btn" id="tc-replay" title="Hear the last phrase again (Tab)" disabled>↻ Replay phrase</button>
+				<button type="button" class="tu-btn" id="tc-done" title="Finish and score (Ctrl+Enter)" disabled>✓ Done</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tc-new" title="Stop and start again with new text (Esc)">New text</button>
+				<span class="tt-keys"><kbd>Tab</kbd> replay · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> done · <kbd>Esc</kbd> new text</span>
+			</div>
+		</div>
+
+		<div class="tu-card tt-result" id="tc-result" hidden aria-live="polite"></div>
+
+		<div class="tu-card tt-lb" id="tc-lb">
+			<div class="tt-histhead"><h2>Leaderboard</h2><span class="tu-note" id="tc-lbnote"></span></div>
+			<div class="tt-lbopts">
+				<div class="tu-seg" id="tc-lbperiod" role="group" aria-label="Leaderboard period"></div>
+				<select id="tc-lbboard" class="tu-input" aria-label="Which test"></select>
+				<input type="search" id="tc-lbfilter" class="tu-input" placeholder="Filter by name or test…" aria-label="Filter the leaderboard by name or test" autocomplete="off">
+				<button type="button" class="tu-chip" id="tc-lbmine" aria-pressed="false" title="Show only the results you posted from this browser">Only mine</button>
+			</div>
+			<div id="tc-lbbody"></div>
+		</div>
+
+		<div class="tu-card tt-hist" id="tc-hist">
+			<div class="tt-histhead"><h2>Your progress</h2><span class="tu-note" id="tc-histsub"></span></div>
+			<div id="tc-histbody"></div>
+		</div>
+		<div class="tu-toast" id="tc-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>Transcription typing test: type what you hear</h2>
+			<p>This is the <strong>listening version of the <a href="/typing-test">MES Typing Test</a></strong>. Instead of copying words from the screen, you <strong>hear the text read aloud</strong> and type it as you go, which is the real skill behind <strong>transcription, court reporting, captioning, medical dictation and meeting minutes</strong>. It scores your <strong>words per minute</strong> and <strong>accuracy</strong> against what was actually said, then shows every word you got wrong, missed or added. Free, no account, and your text and voice stay on your device.</p>
+			<h3>How it works</h3>
+			<ul>
+				<li><strong>Press Start and listen.</strong> The text is spoken a short phrase at a time (3, 5 or 8 words, or a whole sentence) by a voice from your browser. You can change the voice, pitch and volume, and search the voice list by name, language or country.</li>
+				<li><strong>Type what you hear</strong> in the box. The words are not shown, so you have to listen. <kbd>Tab</kbd> replays the last phrase (replays are counted).</li>
+				<li><strong>Pick a pace.</strong> 80 to 180 words per minute. Natural speech is about 150, a typical court reporter or captioner handles 180 or more, and most people start comfortably at 100.</li>
+				<li><strong>Wait for me</strong> speaks the next phrase only once you have nearly finished the last one, a good way to start. <strong>Captions</strong> shows each phrase after it has been spoken, as a safety net while you learn.</li>
+				<li><strong>Press Done</strong> (<kbd>Ctrl</kbd>+<kbd>Enter</kbd>) when you have finished, or just stop once the audio ends.</li>
+			</ul>
+			<h3>How is it scored?</h3>
+			<p><strong>Accuracy</strong> is how close your text is to what was said, measured letter by letter (typos cost a little, a missed word costs more). Capital letters and punctuation are ignored unless you turn on <em>Strict</em>, because a speaker does not say them out loud. <strong>WPM</strong> counts the correct characters divided by five, divided by the minutes from the first sound to the moment you finished. Ranked scores need 90% accuracy or more and use the passage text at one of the preset paces, without captions or Wait for me. Everything else is practice.</p>
+			<h3>Why practise transcription?</h3>
+			<p>Taking notes in a meeting, typing up an interview, keeping the record in a courtroom or captioning a video all mean typing while someone else sets the pace. It trains listening, short-term memory and typing at the same time. Start slow, aim for 95% accuracy, then raise the pace.</p>
+			<p>More free tools: <a href="/typing-test">Typing Test</a> · <a href="/speedreader">Speed Reader and Read Aloud</a> · <a href="/tools">All MES tools</a></p>
+		</div>
+		<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a transcription typing test?","acceptedAnswer":{"@type":"Answer","text":"It plays text aloud and you type what you hear, without seeing the words. It measures words per minute and accuracy against the spoken text, and is useful practice for transcription, court reporting, captioning and taking meeting minutes."}},{"@type":"Question","name":"How fast do people speak?","acceptedAnswer":{"@type":"Answer","text":"Natural conversation is about 120 to 160 words per minute. Presenters and news readers are often at 150 to 180, and professional court reporters and captioners work at 180 words per minute or more."}},{"@type":"Question","name":"How is accuracy calculated in a transcription test?","acceptedAnswer":{"@type":"Answer","text":"Your text is compared with the spoken text letter by letter and word by word. Capital letters and punctuation are ignored unless strict mode is on, because speech does not say them."}}]}</script>
+	</div>

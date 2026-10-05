@@ -121,7 +121,7 @@ APPS = {
     "speedreader": dict(title="Speed Reader and Read Aloud", page_title="Speed Reader",
                         tag="Read faster, or have any text read aloud.", accent="#e52503", dark="#bf190d", tint="#fdeceb",
                         desc="Free online speed reader and read-aloud tool: flash text one word at a time with a red focus letter at 60 to 1500 words per minute, or listen with the spoken word highlighted. Paste text or drop a file; nothing leaves your browser.",
-                        js_v="1"),
+                        js_v="2", pre_js=["/main_js/voice-picker.js?v=1"]),
     # Copy Text: a clipboard shelf (notes on boards, click to copy, localStorage only). Normal-width tool with the "More like this" sidebar.
     "copy-text": dict(title="MES Copy Text", page_title="Copy Text",
                       tag="Save text once, copy it again anytime.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
@@ -132,7 +132,19 @@ APPS = {
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",
                         tag="How fast and accurate is your typing?", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                         desc="Free typing speed test: measure your words per minute (WPM), accuracy and consistency. Timed, word-count, passage and your-own-text tests, five difficulty levels, a keyboard map of your weak keys, personal bests and challenge links. No sign-up.",
-                        js_v="3"),
+                        js_v="4",
+                        nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-transcribe'>Transcribe</a></li>",
+                        menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-transcribe\">Transcription Typing Test</a></li>"),
+    # Transcription Typing Test (mes.fm/typing-test-transcribe): the text is spoken (Web Speech API) and you type what you hear; scored against the spoken text. A sub-page of the Typing Test
+    # brand (same logo / header; brand option). lib.js = passages, chunking, pacing, alignment + scoring (node-testable: tool_apps_src/typing-transcribe-tests.js) on top of typing-test's lib (lib_from);
+    # the voice list uses the shared searchable picker main_js/voice-picker.js. Ranked boards "tr-<pace>-<length>" live in api/typing-leaderboard.js.
+    "typing-test-transcribe": dict(title="MES Transcription Typing Test", page_title="Transcription Typing Test",
+                        tag="Type what you hear: transcription practice.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
+                        desc="Free transcription typing test: listen to text read aloud and type what you hear. Measures words per minute and accuracy against the spoken text, with adjustable pace, voice, phrase length, a wait-for-me mode, a word-by-word diff and daily, weekly and all-time leaderboards. Practice for transcription, court reporting, captioning and meeting minutes.",
+                        js_v="1", lib_from=["typing-test"], pre_js=["/main_js/voice-picker.js?v=1"], tab=1,
+                        brand=dict(slug="typing-test", title="MES Typing Test", tag="Type what you hear: transcription practice."),
+                        nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-transcribe'>Transcribe</a></li>",
+                        menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-transcribe\">Transcription Typing Test</a></li>"),
     # Solar System Today: where the Sun, planets, Moon and Halley's Comet are on any date. lib.js = Astronomy Engine wrapper (node-testable), view.js = canvas renderer
     # (shared with the mes.fm/moon widget through the extra_js bundle), app.js = UI. Astronomy Engine itself is the copy that /moon already ships (pre_js).
     "solar-system-today": dict(title="MES Solar System Today", page_title="Solar System Today",
