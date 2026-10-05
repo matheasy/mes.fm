@@ -1,0 +1,88 @@
+	<div class="tu tt" id="tt">
+		<div class="tu-card tt-main">
+			<div class="tt-opts">
+				<div class="tt-opt"><span class="tu-label">Test</span>
+					<div class="tu-seg" id="tt-mode" role="group" aria-label="Test type">
+						<button type="button" data-v="time" aria-pressed="true">Time</button><button type="button" data-v="words" aria-pressed="false">Words</button><button type="button" data-v="passage" aria-pressed="false">Passage</button><button type="button" data-v="custom" aria-pressed="false">Your text</button>
+					</div></div>
+				<div class="tt-opt" id="tt-lenwrap"><span class="tu-label" id="tt-lenlabel">Seconds</span>
+					<div class="tu-seg" id="tt-len" role="group" aria-label="Test length"></div></div>
+				<div class="tt-opt" id="tt-diffwrap"><span class="tu-label">Difficulty</span>
+					<div class="tu-seg" id="tt-diff" role="group" aria-label="Difficulty">
+						<button type="button" data-v="beginner" aria-pressed="false">Beginner</button><button type="button" data-v="easy" aria-pressed="false">Easy</button><button type="button" data-v="medium" aria-pressed="true">Medium</button><button type="button" data-v="hard" aria-pressed="false">Hard</button><button type="button" data-v="expert" aria-pressed="false">Expert</button>
+					</div></div>
+			</div>
+			<div class="tt-opts tt-opts2">
+				<div class="tt-chips" id="tt-mix" role="group" aria-label="Add to the words">
+					<button type="button" class="tu-chip" data-f="caps" aria-pressed="false">Aa Capitals</button>
+					<button type="button" class="tu-chip" data-f="punct" aria-pressed="false">, . ? Punctuation</button>
+					<button type="button" class="tu-chip" data-f="nums" aria-pressed="false">123 Numbers</button>
+				</div>
+				<div class="tt-chips" id="tt-rules" role="group" aria-label="Rules">
+					<button type="button" class="tu-chip" data-f="strict" aria-pressed="false" title="A wrong letter is refused until you type the right one">Stop on error</button>
+					<button type="button" class="tu-chip" data-f="nobs" aria-pressed="false" title="Backspace is disabled: no correcting mistakes">No backspace</button>
+					<button type="button" class="tu-chip" data-f="live" aria-pressed="true" title="Show your speed while you type">Live speed</button>
+				</div>
+			</div>
+			<p class="tt-diffnote" id="tt-diffnote"></p>
+			<div class="tt-banner" id="tt-banner" hidden></div>
+
+			<div class="tt-custom" id="tt-custom" hidden>
+				<label for="tt-customtext" class="tu-label">Paste the text you want to practise on</label>
+				<textarea id="tt-customtext" class="tu-input" rows="4" maxlength="6000" placeholder="Paste any text: an essay, code comments, a speech. The test ends when you finish it (first 600 words)." spellcheck="false"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary" id="tt-customgo">Start typing this</button>
+			</div>
+
+			<div class="tt-live" id="tt-live" aria-live="off">
+				<span class="tt-stat"><b id="tt-t">30</b><small id="tt-tl">seconds left</small></span>
+				<span class="tt-stat tt-stat--wpm"><b id="tt-w">0</b><small>WPM</small></span>
+				<span class="tt-stat tt-stat--acc"><b id="tt-a">100%</b><small>accuracy</small></span>
+			</div>
+
+			<div class="tt-stage" id="tt-stage">
+				<div class="tt-view" id="tt-view"><div class="tt-words" id="tt-words" aria-hidden="true"><span class="tt-caret" id="tt-caret"></span></div></div>
+				<input id="tt-in" class="tt-in" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Typing area: type the words shown above" enterkeyhint="done">
+				<div class="tt-focus" id="tt-focus">Click here or just start typing</div>
+			</div>
+			<div class="tt-bar">
+				<button type="button" class="tu-btn" id="tt-restart" title="Same text again (Esc)">↻ Restart</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tt-new" title="A new text">New text</button>
+				<span class="tt-keys"><kbd>Esc</kbd> restart · <kbd>Enter</kbd> new text after a test</span>
+			</div>
+		</div>
+
+		<div class="tu-card tt-result" id="tt-result" hidden aria-live="polite"></div>
+
+		<div class="tu-card tt-hist" id="tt-hist">
+			<div class="tt-histhead"><h2>Your progress</h2><span class="tu-note" id="tt-histsub"></span></div>
+			<div id="tt-histbody"></div>
+		</div>
+		<div class="tu-toast" id="tt-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>Free typing speed test: WPM, accuracy and consistency</h2>
+			<p>Type the words you see, and the clock does the rest. This typing test measures your <strong>words per minute (WPM)</strong>, your <strong>accuracy</strong> and how <strong>consistent</strong> your speed is, then shows which keys cost you the most time and mistakes. Choose a timed test (15, 30, 60 or 120 seconds), a fixed number of words, a short or long passage, or paste your own text. Five difficulty levels run from home-row-friendly beginner words to expert text full of capitals, punctuation and numbers. It is free, needs no account and works on phones and tablets as well as keyboards. Your history stays in your browser.</p>
+			<h3>How is WPM calculated?</h3>
+			<p>One "word" is five characters, spaces included, which is the standard used by typing tests and typing teachers. <strong>WPM</strong> (net speed) counts only characters in words you typed correctly, divided by five, divided by the minutes taken. <strong>Raw WPM</strong> counts every character you typed, right or wrong. <strong>Accuracy</strong> is the share of key presses that were correct, so a mistake you fix with backspace still counts against it: slow, clean typing and fast, messy typing score differently on purpose. <strong>Consistency</strong> compares your speed second by second: 100 means a steady pace, low numbers mean bursts and stalls.</p>
+			<h3>What is a good typing speed?</h3>
+			<ul>
+				<li><strong>Under 20 WPM:</strong> just starting, or hunting for keys.</li>
+				<li><strong>About 40 WPM:</strong> roughly the average adult speed.</li>
+				<li><strong>50 to 65 WPM:</strong> comfortable for school and office work.</li>
+				<li><strong>65 to 80 WPM:</strong> professional level, typical for transcription and data entry jobs.</li>
+				<li><strong>100+ WPM:</strong> expert level. Beyond this, accuracy matters more than raw speed.</li>
+			</ul>
+			<h3>How to type faster</h3>
+			<ul>
+				<li><strong>Accuracy first.</strong> Slow down until you hit 95% or better; speed follows once the finger movements are automatic.</li>
+				<li><strong>Don't look at the keyboard.</strong> Use the home row (<kbd>A S D F</kbd> and <kbd>J K L ;</kbd>) and let each finger return to it.</li>
+				<li><strong>Look ahead.</strong> Read two or three words in front of the one you are typing.</li>
+				<li><strong>Practise your weak keys.</strong> After every test the keyboard map shows which keys you miss or hit slowly; <em>Practise my weak keys</em> builds the next test from the words that contain them.</li>
+				<li><strong>Short and often.</strong> Ten minutes a day beats an hour once a week.</li>
+			</ul>
+			<h3>Challenge a friend</h3>
+			<p>After a test, <em>Copy challenge link</em> gives you a link with the exact same text and your score to beat. Whoever opens it types the same words.</p>
+			<p>More free tools: <a href="/speedreader">Speed Reader and Read Aloud</a> · <a href="/timer">Timer</a> · <a href="/tools">All MES tools</a></p>
+		</div>
+		<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How is WPM calculated in a typing test?","acceptedAnswer":{"@type":"Answer","text":"A word is five characters including spaces. Net WPM is the number of correctly typed characters divided by five, divided by the minutes taken. Raw WPM counts all typed characters, including mistakes."}},{"@type":"Question","name":"What is a good typing speed?","acceptedAnswer":{"@type":"Answer","text":"The average adult types about 40 words per minute. 50 to 65 WPM is comfortable for office work, 65 to 80 WPM is professional level, and 100 WPM or more is expert level."}},{"@type":"Question","name":"How can I improve my typing speed and accuracy?","acceptedAnswer":{"@type":"Answer","text":"Focus on accuracy first, use touch typing with all fingers on the home row, look ahead at upcoming words, practise the keys you miss most, and practise a little every day."}}]}</script>
+	</div>
