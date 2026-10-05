@@ -71,9 +71,9 @@
 	.tu .tt-tabs {display:inline-flex;gap:0.3em;margin-left:0.6em;vertical-align:middle;}
 	.tu .tt-tabs button {font-size:0.8em;padding:0.1em 0.6em;border-radius:1em;border:1px solid #c3c9d2;background:#fff;color:#555;cursor:pointer;}
 	.tu .tt-tabs button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
-	.tu .tt-kb {display:flex;flex-direction:column;gap:0.25em;align-items:center;}
-	.tu .tt-kbrow {display:flex;gap:0.25em;}
-	.tu .tt-key {width:2.1em;height:2.1em;border-radius:0.35em;border:1px solid #c3c9d2;background:#fff;color:#333;display:inline-flex;align-items:center;justify-content:center;font-size:0.82em;font-weight:600;text-transform:uppercase;position:relative;overflow:hidden;}
+	.tu .tt-kb {display:flex;flex-direction:column;gap:0.25em;width:100%;max-width:27em;margin:0 auto;}
+	.tu .tt-kbrow {display:grid;grid-template-columns:repeat(20,minmax(0,1fr));column-gap:0.25em;}
+	.tu .tt-key {min-width:0;aspect-ratio:1;border-radius:0.35em;border:1px solid #c3c9d2;background:#fff;color:#333;display:inline-flex;align-items:center;justify-content:center;font-size:0.82em;font-weight:600;text-transform:uppercase;position:relative;overflow:hidden;}
 	.tu .tt-key i {position:absolute;inset:0;background:#d93025;opacity:0;}
 	.tu .tt-key span {position:relative;}
 	.tu .tt-kbnote {font-size:0.8em;color:#6a7280;text-align:center;margin-top:0.4em;}

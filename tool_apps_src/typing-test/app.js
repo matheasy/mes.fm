@@ -37,6 +37,7 @@
 
 	/* ---------- test state ---------- */
 	var T = { seed: "", gen: null, sess: null, wordEls: [], letterEls: [], limit: 0, running: false, timer: 0, practice: null, lastResult: null, tok: "", R: null, replay: false, lastPassage: "", customText: "", lastCfg: null };
+	var COARSE = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
 	var ENDS = { time: false, words: true, passage: true, custom: true };
 
 	function cfg() { return { mode: S.mode, len: S.len[S.mode], diff: S.diff, caps: S.caps, punct: S.punct, nums: S.nums, strict: S.strict, nobs: S.nobs, practice: T.practice ? 1 : 0 }; }
@@ -178,12 +179,19 @@
 		var prev = s.cur, now = el.in.value, p = 0;
 		while (p < prev.length && p < now.length && prev.charAt(p) === now.charAt(p)) p++;
 		var del = prev.length - p, add = now.slice(p);
-		if (add.length > 8) { el.in.value = prev; return; }   // a paste or a keyboard autocorrect of a whole word
+		// Refuse pastes / drops, but let a swipe ("glide") keyboard commit a whole word (plus its space) in one go: that can be 20+ letters.
+		if (/^insertFrom(Paste|Drop|Yank)/.test(e.inputType || "") || add.length > 60) { el.in.value = prev; return; }
 		var t = performance.now();
 		if (del >= prev.length && del > 1 && add === "") { if (!s.clearWord()) s.backspace(); }
 		else for (var i = 0; i < del; i++) s.backspace();
 		var typedAny = false;
-		for (var j = 0; j < add.length; j++) { if (s.type(add.charAt(j), t)) typedAny = true; else if (add.charAt(j) !== " " && s.opts.strict) { /* refused */ } if (s.finished) break; }
+		for (var j = 0; j < add.length; j++) {
+			var ch = add.charAt(j);
+			// Phone keyboards capitalise the first letter of an empty field (and swipe keyboards the first word of a swipe): forgive that when the text wants a lower-case letter.
+			if (COARSE && s.cur === "" && ch !== ch.toLowerCase() && s.words[s.idx] && s.words[s.idx].charAt(0) === ch.toLowerCase()) ch = ch.toLowerCase();
+			if (s.type(ch, t)) typedAny = true; else if (ch !== " " && s.opts.strict) { /* refused */ }
+			if (s.finished) break;
+		}
 		if (!T.running && s.start !== null && !s.finished) startRun();
 		sync();
 	});
@@ -275,14 +283,14 @@
 		ms.sort(function (a, b) { return a - b; }); var med = ms.length ? ms[Math.floor(ms.length / 2)] : 200;
 		var html = "";
 		KB.forEach(function (row, ri) {
-			html += '<div class="tt-kbrow" style="margin-left:' + (ri * 1.1) + 'em">';
-			row.split("").forEach(function (c) {
+			html += '<div class="tt-kbrow">';
+			row.split("").forEach(function (c, ci) {
 				var o = perKey[c] || perKey[c.toUpperCase()], inten = 0, tip = c.toUpperCase() + ": no data";
 				var a = (perKey[c] ? perKey[c].a : 0) + (perKey[c.toUpperCase()] ? perKey[c.toUpperCase()].a : 0), m = (perKey[c] ? perKey[c].m : 0) + (perKey[c.toUpperCase()] ? perKey[c.toUpperCase()].m : 0);
 				var msum = (perKey[c] ? perKey[c].ms : 0) + (perKey[c.toUpperCase()] ? perKey[c.toUpperCase()].ms : 0), mn = (perKey[c] ? perKey[c].n : 0) + (perKey[c.toUpperCase()] ? perKey[c.toUpperCase()].n : 0);
 				if (mode === "err") { if (a) { inten = Math.min(1, (m / a) / 0.2); tip = c.toUpperCase() + ": " + m + " wrong of " + a + " (" + fmt(100 * m / a, 1) + "%)"; } }
 				else if (mn >= 2) { var avg = msum / mn; inten = Math.max(0, Math.min(1, (avg - med) / Math.max(med, 120))); tip = c.toUpperCase() + ": " + Math.round(avg) + " ms on average"; }
-				html += '<span class="tt-key" title="' + tip + '"><i style="opacity:' + (inten * 0.85).toFixed(2) + '"></i><span>' + c + "</span></span>";
+				html += '<span class="tt-key" style="grid-column:' + (ci === 0 ? 1 + ri * (ri + 1) / 2 : "auto") + ' / span 2" title="' + tip + '"><i style="opacity:' + (inten * 0.85).toFixed(2) + '"></i><span>' + c + "</span></span>";
 			});
 			html += "</div>";
 		});

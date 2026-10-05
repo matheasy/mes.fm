@@ -75,8 +75,10 @@ function resetsAt(period, now) {
   }
   return null;
 }
-const encode = (wpm, acc) => Math.round(wpm * 10) * 1000 + Math.min(999, Math.round(acc * 10));
-const decode = (s) => ({ w: Math.floor(s / 1000) / 10, a: (s % 1000) / 10 });
+// Accuracy has 1001 possible values (0.0-100.0) but only 1000 slots below the speed digits, so exactly 100.0 is stored as ...999.5
+// (one half above 99.9): it still sorts above 99.9 on a speed tie and older stored scores keep decoding the same.
+const encode = (wpm, acc) => { const a = Math.round(acc * 10); return Math.round(wpm * 10) * 1000 + Math.min(999, a) + (a >= 1000 ? 0.5 : 0); };
+const decode = (s) => { const base = Math.floor(s / 1000) * 1000, rem = s - base; return { w: base / 10000, a: rem >= 999.5 ? 100 : Math.floor(rem) / 10 }; };
 const allBoards = () => {
   const o = [];
   for (const m of ['time', 'words']) for (const l of LENS[m]) for (const d of DIFFS) o.push(`${m}-${l}-${d}`);

@@ -37,6 +37,7 @@ function call(method, q, body, ip) {
   assert.strictEqual(T.parseBoard('time-31-medium'), null); assert.strictEqual(T.parseBoard('passage-long').len, 'long'); assert.strictEqual(T.parseBoard('x'), null);
   assert.strictEqual(T.weekLabel(new Date('2026-10-05T12:00:00Z')), '2026-W41'); assert.strictEqual(T.weekLabel(new Date('2026-01-01T00:00:00Z')), '2026-W01'); assert.strictEqual(T.weekLabel(new Date('2024-12-30T00:00:00Z')), '2025-W01');
   assert.deepStrictEqual(T.decode(T.encode(87.4, 96.3)), { w: 87.4, a: 96.3 });
+  assert.deepStrictEqual(T.decode(T.encode(122, 100)), { w: 122, a: 100 }); assert.deepStrictEqual(T.decode(T.encode(122, 99.9)), { w: 122, a: 99.9 }); assert(T.encode(122, 100) > T.encode(122, 99.9) && T.encode(122, 100) < T.encode(122.1, 90));
   assert(T.encode(80, 99) > T.encode(80, 95) && T.encode(81, 90) > T.encode(80, 100));
   const realNow = Date.now; let fake = Math.floor(realNow() / 3600000) * 3600000 + 1000; // start of an hour: the rate-limit bucket must not roll over mid-test
   Date.now = () => fake;
