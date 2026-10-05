@@ -38,6 +38,9 @@
 	.tu .tt-stage.is-done .tt-in, .tu .tt-stage.is-done .tt-focus {display:none;}
 	.tu .tt-bar {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-top:0.8em;}
 	.tu .tt-bar .tu-btn {display:inline-block;}
+	.tu .tt-legend {margin:0.7em 0 0;font-size:0.85em;color:#6a7280;line-height:1.5;}
+	.tu .tt-legend .tt-l {font-family:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;}
+	.tu .tt-leg-bad {text-decoration:underline;text-decoration-color:#d93025;text-decoration-thickness:2px;text-underline-offset:0.18em;}
 	.tu .tt-keys {margin-left:auto;font-size:0.82em;color:#6a7280;}
 	.tu kbd {display:inline-block;padding:0.05em 0.45em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;font:inherit;font-size:0.85em;color:#333;white-space:nowrap;}
 

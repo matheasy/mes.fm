@@ -315,6 +315,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .tt-stage.is-done .tt-in, .tu .tt-stage.is-done .tt-focus {display:none;}
 	.tu .tt-bar {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-top:0.8em;}
 	.tu .tt-bar .tu-btn {display:inline-block;}
+	.tu .tt-legend {margin:0.7em 0 0;font-size:0.85em;color:#6a7280;line-height:1.5;}
+	.tu .tt-legend .tt-l {font-family:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;}
+	.tu .tt-leg-bad {text-decoration:underline;text-decoration-color:#d93025;text-decoration-thickness:2px;text-underline-offset:0.18em;}
 	.tu .tt-keys {margin-left:auto;font-size:0.82em;color:#6a7280;}
 	.tu kbd {display:inline-block;padding:0.05em 0.45em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;font:inherit;font-size:0.85em;color:#333;white-space:nowrap;}
 
@@ -471,6 +474,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tt-l.w{color:#e77b74}
 	body.dark-mode .tu .tt-l.x{color:#e77b74}
 	body.dark-mode .tu .tt-focus{color:#d4d9df;background:rgba(21,25,30,0.78)}
+	body.dark-mode .tu .tt-legend{color:#9a9da3}
 	body.dark-mode .tu .tt-keys{color:#9a9da3}
 	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
 	body.dark-mode .tu .tt-rank small{color:#9a9da3}
@@ -482,7 +486,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tt-chart .l-raw{stroke:#606976}
 	body.dark-mode .tu .tt-chart .l-acc{stroke:#3ac56c}
 	body.dark-mode .tu .tt-chart .e{fill:#e77b74}
-	body.dark-mode .tu .tt-legend{color:#9a9da3}
 	body.dark-mode .tu .tt-tabs button{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
 	body.dark-mode .tu .tt-key{border:1px solid #3a424d;background:#1a1a1a;color:#cccccc}
 	body.dark-mode .tu .tt-kbnote{color:#9a9da3}
@@ -765,6 +768,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-chip" data-f="strict" aria-pressed="false" title="A wrong letter is refused until you type the right one">Stop on error</button>
 					<button type="button" class="tu-chip" data-f="nobs" aria-pressed="false" title="Backspace is disabled: no correcting mistakes">No backspace</button>
 					<button type="button" class="tu-chip" data-f="live" aria-pressed="true" title="Show your speed while you type">Live speed</button>
+					<button type="button" class="tu-chip" data-f="show" aria-pressed="false" title="A wrong letter shows the key you actually pressed instead of the letter you were meant to type">Show my typing</button>
 				</div>
 			</div>
 			<p class="tt-diffnote" id="tt-diffnote"></p>
@@ -792,6 +796,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="tu-btn tu-btn--ghost" id="tt-new" title="A new text">New text</button>
 				<span class="tt-keys"><kbd>Esc</kbd> restart · <kbd>Enter</kbd> new text after a test</span>
 			</div>
+			<p class="tt-legend">Letters brighten as you type them correctly (<span class="tt-l c">like this</span>), turn <span class="tt-l w">red</span> when wrong, and a finished word with a mistake is <span class="tt-leg-bad">underlined</span>. Turn on <b>Show my typing</b> to see the key you actually hit.</p>
 		</div>
 
 		<div class="tu-card tt-result" id="tt-result" hidden aria-live="polite"></div>
@@ -884,7 +889,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/typing-test/js/typing-test.js?v=2" defer></script>
+	<script src="/typing-test/js/typing-test.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

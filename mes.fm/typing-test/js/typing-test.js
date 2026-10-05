@@ -222,7 +222,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 	var KEY = "mes-typingtest:v1";
 	var LENS = { time: [15, 30, 60, 120], words: [10, 25, 50, 100], passage: ["short", "medium", "long"] };
 	var LEN_LABEL = { time: "Seconds", words: "Words", passage: "Length" };
-	var DEF = { mode: "time", len: { time: 30, words: 25, passage: "medium" }, diff: "medium", caps: false, punct: false, nums: false, strict: false, nobs: false, live: true };
+	var DEF = { mode: "time", len: { time: 30, words: 25, passage: "medium" }, diff: "medium", caps: false, punct: false, nums: false, strict: false, nobs: false, live: true, show: false };
 
 	/* ---------- storage ---------- */
 	var store = { opts: JSON.parse(JSON.stringify(DEF)), hist: [], keys: {} }, memOnly = false;
@@ -273,7 +273,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		var d = TT.DIFFS[S.diff];
 		el.diffnote.textContent = T.practice ? "Weak-key practice: words that contain " + T.practice.map(function (c) { return c.toUpperCase(); }).join(", ") + "." : S.mode === "passage" ? "Original passages of different lengths: real sentences with capitals and punctuation." : S.mode === "custom" ? "Your own text. It stays in your browser." : d.note;
 		Array.prototype.forEach.call(el.mix.querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", String(!!S[b.getAttribute("data-f")])); });
-		Array.prototype.forEach.call(el.rules.querySelectorAll("button"), function (b) { var f = b.getAttribute("data-f"); b.setAttribute("aria-pressed", String(f === "strict" ? S.strict : f === "nobs" ? S.nobs : S.live)); });
+		Array.prototype.forEach.call(el.rules.querySelectorAll("button"), function (b) { var f = b.getAttribute("data-f"); b.setAttribute("aria-pressed", String(f === "strict" ? S.strict : f === "nobs" ? S.nobs : f === "show" ? S.show : S.live)); });
 		el.live.classList.toggle("is-hidden", !S.live && T.running);
 	}
 	function applyDiffDefaults(d) { var x = TT.DIFFS[d]; S.caps = x.caps; S.punct = x.punct; S.nums = x.nums; }
@@ -282,7 +282,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 	el.len.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var v = b.getAttribute("data-v"); S.len[S.mode] = isNaN(+v) ? v : +v; challenge = null; save(); build(true); });
 	el.diff.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.diff = b.getAttribute("data-v"); applyDiffDefaults(S.diff); T.practice = null; challenge = null; save(); build(true); });
 	el.mix.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var f = b.getAttribute("data-f"); S[f] = !S[f]; challenge = null; save(); build(true); });
-	el.rules.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var f = b.getAttribute("data-f"); if (f === "strict") S.strict = !S.strict; else if (f === "nobs") S.nobs = !S.nobs; else S.live = !S.live; save(); build(f === "live" ? false : true); });
+	el.rules.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var f = b.getAttribute("data-f"); if (f === "strict") S.strict = !S.strict; else if (f === "nobs") S.nobs = !S.nobs; else if (f === "show") S.show = !S.show; else S.live = !S.live; save();
+		if (f === "show") { drawControls(); T.wordEls.forEach(function (_, i) { paintWord(i); }); focusIn(); } else build(f === "live" ? false : true); });
 	el.customgo.addEventListener("click", function () { T.customText = el.customtext.value; if (!TT.customWords(T.customText).length) { toast("Paste some text first."); return; } build(true); focusIn(); });
 	el.restart.addEventListener("click", function () { build(false); focusIn(); });
 	el.new.addEventListener("click", function () { build(true); focusIn(); });
@@ -340,6 +341,9 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 			var c = L[k], st = "tt-l";
 			if (typed !== null && k < typed.length) st += typed.charAt(k) === w.charAt(k) ? " c" : " w";
 			if (c.className !== st) c.className = st;
+			// "Show my typing": a wrong letter shows the key that was actually hit (same width, the font is monospaced); otherwise the target letter
+			var want = S.show && typed !== null && k < typed.length && typed.charAt(k) !== w.charAt(k) ? typed.charAt(k) : w.charAt(k);
+			if (c.textContent !== want) c.textContent = want;
 		}
 		if (typed !== null && typed.length > w.length) { for (var x = w.length; x < typed.length; x++) { var sp = document.createElement("span"); sp.className = "tt-l x"; sp.textContent = typed.charAt(x); d.appendChild(sp); } }
 		d.classList.toggle("bad", committed && typed !== w);

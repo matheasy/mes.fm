@@ -132,7 +132,7 @@ APPS = {
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",
                         tag="How fast and accurate is your typing?", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                         desc="Free typing speed test: measure your words per minute (WPM), accuracy and consistency. Timed, word-count, passage and your-own-text tests, five difficulty levels, a keyboard map of your weak keys, personal bests and challenge links. No sign-up.",
-                        js_v="2"),
+                        js_v="3"),
     # Solar System Today: where the Sun, planets, Moon and Halley's Comet are on any date. lib.js = Astronomy Engine wrapper (node-testable), view.js = canvas renderer
     # (shared with the mes.fm/moon widget through the extra_js bundle), app.js = UI. Astronomy Engine itself is the copy that /moon already ships (pre_js).
     "solar-system-today": dict(title="MES Solar System Today", page_title="Solar System Today",
