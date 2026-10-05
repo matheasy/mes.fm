@@ -120,6 +120,8 @@
     { "source": "/pgo/:path*", "destination": "/pokemongocalculator/:path*", "permanent": true },
     { "source": "/sr", "destination": "/speedreader", "permanent": true },
     { "source": "/sr/:path*", "destination": "/speedreader/:path*", "permanent": true },
+    { "source": "/youtubemoney/youtubers/1", "destination": "/youtubemoney/youtubers", "permanent": true },
+    { "source": "/inflationcalculator/money-facts/1", "destination": "/inflationcalculator/money-facts", "permanent": true },
     { "source": "/youtubers-earnings", "destination": "/how-much-do-youtubers-make", "permanent": true },
     { "source": "/youtuber-earnings", "destination": "/how-much-do-youtubers-make", "permanent": true },
     { "source": "/youtuber-income", "destination": "/how-much-do-youtubers-make", "permanent": true },
