@@ -67,10 +67,11 @@ const MIRRORS = {
   XXeHqPUgbLU: { href: "https://mes.fm/livestream-141-trailer-hutchison-tom-sky-levitation", scrape: true },
 };
 
-// Stats-screen pages (the Stats tab), newest first.
+// Stats-screen pages (the Stats tab), newest first. `cats` are the filter chip ids (CATEGORIES) the stream
+// belongs to, so the chips filter this tab too: 141 is a Hutchison Effect stream, 140 is 9/11 Truth + MES Truth.
 const STATS = [
-  { href: "https://mes.fm/livestream-141-stats", title: "141: Stats" },
-  { href: "https://mes.fm/livestream-140-stats", title: "140: Stats" },
+  { href: "https://mes.fm/livestream-141-stats", title: "141: Stats", cats: "hutchison" },
+  { href: "https://mes.fm/livestream-140-stats", title: "140: Stats", cats: "911 mestruth" },
 ];
 
 // Filter chips above the tabs (same idea as the chips on mes.fm/calculators). A video can be in
@@ -1833,8 +1834,8 @@ ${viewToggleWiring}
 
   // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
   // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
-  // items each chip would give in the pane that is showing. The Stats tab has nothing to filter, so
-  // the filter bar hides there. #<category> in the URL preselects a chip; Esc clears.
+  // items each chip would give in the pane that is showing. Stats items carry their stream's
+  // cats too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
   function wireFilter(id) {
     var box = document.getElementById(id + 'Filter');
     var input = document.getElementById(id + 'Search');
@@ -1842,7 +1843,7 @@ ${viewToggleWiring}
     var empty = document.getElementById(id + 'Empty');
     var plBox = document.getElementById(id + 'Playlist');
     if (!box || !input || !chips) return;
-    var panes = ['Grid', 'List', 'Trailers'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
     var cat = 'all';
 
     function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }

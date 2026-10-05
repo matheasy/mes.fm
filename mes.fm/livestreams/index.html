@@ -2862,12 +2862,12 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </div>
     </div>
 <div class="list-view list-view--compact view-hidden" id="livestreamsStats">
-    <div class="list-row">
+    <div class="list-row" data-cats="hutchison">
       <h3>141: Stats</h3>
       <p><a href="https://mes.fm/livestream-141-stats" target="_blank" rel="noopener">MES</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2xkkignwj" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35612" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmaqQmrbvJv218AGjLFQSVzwCAEyQKESV8jupMwmhQgsjv/telegram-cloud-photo-size-1-5048700796681260142-x.jpg" alt="141: Stats">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="911 mestruth">
       <h3>140: Stats</h3>
       <p><a href="https://mes.fm/livestream-140-stats" target="_blank" rel="noopener">MES</a> - <a href="https://inleo.io/threads/view/mestruth/re-leothreads-2ewkknca8" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35495" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmfRVtM8XN6qMTdvgtDBsUz9muqG8f7kQwKBu2WAzuDZgb/telegram-cloud-photo-size-1-4981403203228339310-x.jpg" alt="140: Stats">
@@ -3331,8 +3331,8 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 
   // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
   // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
-  // items each chip would give in the pane that is showing. The Stats tab has nothing to filter, so
-  // the filter bar hides there. #<category> in the URL preselects a chip; Esc clears.
+  // items each chip would give in the pane that is showing. Stats items carry their stream's
+  // cats too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
   function wireFilter(id) {
     var box = document.getElementById(id + 'Filter');
     var input = document.getElementById(id + 'Search');
@@ -3340,7 +3340,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     var empty = document.getElementById(id + 'Empty');
     var plBox = document.getElementById(id + 'Playlist');
     if (!box || !input || !chips) return;
-    var panes = ['Grid', 'List', 'Trailers'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
     var cat = 'all';
 
     function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
