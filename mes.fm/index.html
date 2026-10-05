@@ -297,6 +297,16 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.milestones-grid .icon-grid__link {
 		flex: 0 1 260px;
 	}
+
+	/* popular-section: top pages from /api/stats?slim=1, tiles reuse .icon-grid__link look */
+	.popular-tabs { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0.8em 0; }
+	.popular-tabs button { font: inherit; font-size: 0.95em; padding: 0.35em 0.9em; border: 2px solid #277bb6; border-radius: 999px; background: #fff; color: #1a5f94; cursor: pointer; }
+	.popular-tabs button[aria-pressed="true"] { background: #277bb6; color: #fff; }
+	.popular-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1em; margin: 1em 0; min-height: 12em; }
+	.popular-grid .icon-grid__label small { display: block; font-size: 0.75em; opacity: 0.85; margin-top: 0.2em; }
+	.popular-note { font-size: 0.9em; margin: 0.5em 0 0; }
+	body.dark-mode .popular-tabs button { background: #1f1f1f; color: #9cc9ec; border-color: #5aa5da; }
+	body.dark-mode .popular-tabs button[aria-pressed="true"] { background: #2d6fa1; color: #fff; border-color: #5aa5da; }
 		/* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -567,6 +577,50 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<a class="icon-grid__link icon-grid__link--labeled" href="https://mes.fm/conspiracy"><span class="icon-grid__thumb" style="background-image:url('img/conspiracy-icon.jpg')"></span><span class="icon-grid__label">Conspiracy</span></a>
 			<a class="icon-grid__link icon-grid__link--labeled" href="https://mes.fm/livestreams"><span class="icon-grid__thumb" style="background-image:url('img/livestreams-icon.jpg?v=3')"></span><span class="icon-grid__label">Livestreams</span></a>
 		</div>
+
+		<h2 class="header2" id="popular">What's Popular on MES</h2>
+		<p class="sentence">The most-visited pages right now.</p>
+		<div class="popular-tabs" id="popular-tabs" role="group" aria-label="Time range">
+			<button type="button" data-range="24h" aria-pressed="false">24 hours</button>
+			<button type="button" data-range="7d" aria-pressed="true">7 days</button>
+			<button type="button" data-range="30d" aria-pressed="false">30 days</button>
+			<button type="button" data-range="365d" aria-pressed="false">365 days</button>
+			<button type="button" data-range="all" aria-pressed="false">All time</button>
+		</div>
+		<div class="icon-grid popular-grid" id="popular-grid" aria-live="polite"></div>
+		<p class="popular-note"><a href="/stats">See all stats &rarr;</a></p>
+		<script>
+		(function () {
+			var grid = document.getElementById('popular-grid'), tabs = document.getElementById('popular-tabs');
+			if (!grid || !tabs) return;
+			var SKIP = {'/': 1, '/stats': 1, '/search': 1, '/contact': 1, '/donate': 1, '/privacy-policy': 1, '/site-index': 1};
+			var index = null, cache = {}, range = '7d', started = false, token = 0;
+			try { var saved = localStorage.getItem('popularRange'); if (saved && tabs.querySelector('[data-range="' + saved + '"]')) range = saved; } catch (e) {}
+			function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+			function setPressed() { [].forEach.call(tabs.querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', b.dataset.range === range ? 'true' : 'false'); }); }
+			function render(pages) {
+				var byPath = {}; index.p.forEach(function (p) { byPath[p[0]] = p; });
+				var out = [];
+				for (var i = 0; i < pages.length && out.length < 6; i++) {
+					var pg = pages[i]; if (pg.site !== 'mes.fm' || SKIP[pg.path]) continue;
+					var e = byPath[pg.path]; if (!e) continue;
+					out.push('<a class="icon-grid__link icon-grid__link--labeled" href="' + esc(pg.path) + '"><span class="icon-grid__thumb" style="background-image:url(\'' + esc(e[5] || '/img/logo.png') + '\')"></span><span class="icon-grid__label">' + esc(e[1]) + '<small>' + pg.views.toLocaleString() + ' views</small></span></a>');
+				}
+				grid.innerHTML = out.join('') || '<p>No data for this range yet.</p>';
+			}
+			function load() {
+				setPressed(); var my = ++token;
+				try { localStorage.setItem('popularRange', range); } catch (e) {}
+				var need = [];
+				if (!index) need.push(fetch('/search/index.json').then(function (r) { return r.json(); }).then(function (j) { index = j; }));
+				if (!cache[range]) need.push(fetch('/api/stats?slim=1&range=' + range).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) { cache[range] = j.topPages || []; }));
+				Promise.all(need).then(function () { if (my === token) render(cache[range]); }).catch(function () { if (my === token) grid.innerHTML = '<p>Popular pages are unavailable right now. <a href="/stats">See the stats page</a>.</p>'; });
+			}
+			tabs.addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (!b) return; range = b.dataset.range; load(); });
+			function start() { if (started) return; started = true; load(); }
+			if ('IntersectionObserver' in window) { new IntersectionObserver(function (en, o) { if (en[0].isIntersecting) { o.disconnect(); start(); } }, {rootMargin: '300px'}).observe(grid); } else { start(); }
+		})();
+		</script>
 
 		<h2 class="header2" id="milestones">Milestones</h2>
 		<p class="sentence">Big moments along the way.</p>

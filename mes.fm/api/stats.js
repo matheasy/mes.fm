@@ -96,20 +96,35 @@ module.exports = async (req, res) => {
     ? (config.unit === 'hourly' ? lastNHourKeys(config.count, new Date()) : lastNDayKeys(config.count, new Date()))
     : null;
 
+  // ?slim=1 (homepage "Popular" section): leaderboard only -- no device/source
+  // totals and no per-page breakdown round trip, so the Redis work is one union + one range.
+  const slim = req.query.slim === '1';
+  const topN = slim ? 30 : TOP_N;
+
   let commands;
   let leaderboardResultIndex;
   let deviceTotalsResultIndex;
   let sourceTotalsResultIndex;
 
-  if (!config) {
+  if (slim && config) {
+    const slimKeys = bucketKeys.map((k) => `pageviews:leaderboard:${config.unit}:${k}`);
+    const destSlim = randomKey('lb');
     commands = [
-      ['ZREVRANGE', 'pageviews:leaderboard', '0', String(TOP_N - 1), 'WITHSCORES'],
-      ['HGETALL', 'pageviews:device-totals'],
-      ['HGETALL', 'pageviews:source-totals'],
+      ['ZUNIONSTORE', destSlim, String(slimKeys.length), ...slimKeys],
+      ['ZREVRANGE', destSlim, '0', String(topN - 1), 'WITHSCORES'],
+      ['DEL', destSlim],
+    ];
+    leaderboardResultIndex = 1;
+    deviceTotalsResultIndex = -1;
+    sourceTotalsResultIndex = -1;
+  } else if (!config) {
+    commands = [
+      ['ZREVRANGE', 'pageviews:leaderboard', '0', String(topN - 1), 'WITHSCORES'],
+      ...(slim ? [] : [['HGETALL', 'pageviews:device-totals'], ['HGETALL', 'pageviews:source-totals']]),
     ];
     leaderboardResultIndex = 0;
-    deviceTotalsResultIndex = 1;
-    sourceTotalsResultIndex = 2;
+    deviceTotalsResultIndex = slim ? -1 : 1;
+    sourceTotalsResultIndex = slim ? -1 : 2;
   } else {
     const leaderboardKeys = bucketKeys.map((k) => `pageviews:leaderboard:${config.unit}:${k}`);
     const deviceTotalsKeys = bucketKeys.map((k) => `pageviews:devicetotals:${config.unit}:${k}`);
@@ -120,7 +135,7 @@ module.exports = async (req, res) => {
 
     commands = [
       ['ZUNIONSTORE', destLeaderboard, String(leaderboardKeys.length), ...leaderboardKeys],
-      ['ZREVRANGE', destLeaderboard, '0', String(TOP_N - 1), 'WITHSCORES'],
+      ['ZREVRANGE', destLeaderboard, '0', String(topN - 1), 'WITHSCORES'],
       ['DEL', destLeaderboard],
       ['ZUNIONSTORE', destDeviceTotals, String(deviceTotalsKeys.length), ...deviceTotalsKeys],
       ['ZREVRANGE', destDeviceTotals, '0', '-1', 'WITHSCORES'],
@@ -170,6 +185,12 @@ module.exports = async (req, res) => {
     sourceTotals.push({ source: sourceTotalsRaw[i], views: Number(sourceTotalsRaw[i + 1]) });
   }
   sourceTotals.sort((a, b) => b.views - a.views);
+
+  if (slim) {
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+    res.status(200).json({ range, topPages, updatedAt: new Date().toISOString() });
+    return;
+  }
 
   // Second round trip: now that we know which pages made the cut, pull their
   // per-device and per-source breakdown via ZMSCORE (one command each, many
