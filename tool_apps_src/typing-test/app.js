@@ -337,7 +337,8 @@
 
 	/* ---------- leaderboard (api/typing-leaderboard.js; daily / weekly resets 00:00 UTC) ---------- */
 	var API = "/api/typing-leaderboard", MIN_ACC = 90, PER = { day: "Today", week: "This week", all: "All time" };
-	var LB = { period: "day", board: "time-30-medium", loaded: false };
+	var LB = { period: "day", board: "time-30-medium", loaded: false, counts: {}, picked: false };
+	function lbSave() { try { localStorage.setItem(KEY + ":lb", JSON.stringify({ period: LB.period, board: LB.board })); } catch (e) {} }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return c.mode === "passage" ? "passage-" + c.len : c.mode + "-" + c.len + "-" + c.diff; }
 	function boardName(b) { var p = b.split("-"); if (p[0] === "passage") return "Passage: " + p[1]; var d = TT.DIFFS[p[2]].name; return (p[0] === "time" ? p[1] + " seconds" : p[1] + " words") + " · " + d; }
@@ -356,7 +357,7 @@
 	}
 	function drawLbControls() {
 		el.lbperiod.innerHTML = ["day", "week", "all"].map(function (p) { return '<button type="button" data-v="' + p + '" aria-pressed="' + (LB.period === p) + '">' + PER[p] + "</button>"; }).join("");
-		if (!el.lbboard.options.length) el.lbboard.innerHTML = boardOptions().map(function (b) { return '<option value="' + b + '">' + esc(boardName(b)) + "</option>"; }).join("");
+		el.lbboard.innerHTML = boardOptions().map(function (b) { var n = LB.counts[b]; return '<option value="' + b + '">' + esc(boardName(b)) + (n ? " (" + n + ")" : "") + "</option>"; }).join("");
 		el.lbboard.value = LB.board;
 	}
 	function until(ms) { var m = Math.max(1, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? Math.round(h / 24) + " days" : h ? h + " h " + (m % 60) + " min" : m + " min"; }
@@ -371,12 +372,23 @@
 			el.lbnote.textContent = (j.total ? j.total + " typist" + (j.total > 1 ? "s" : "") + ". " : "") + (j.resets ? PER[period] + " resets at 00:00 UTC, in " + until(j.resets) + ". " : "") + "Best score per person; accuracy of " + MIN_ACC + "% or more counts.";
 		}).catch(function () { if (board === LB.board && period === LB.period) { el.lbbody.innerHTML = '<p class="tt-empty">The leaderboard could not be loaded. Try again in a moment.</p>'; el.lbnote.textContent = ""; } });
 	}
-	el.lbperiod.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; LB.period = b.getAttribute("data-v"); drawLbControls(); loadBoard(); });
-	el.lbboard.addEventListener("change", function () { LB.board = el.lbboard.value; loadBoard(); });
+	// how many typists each board has for the chosen period (boards with scores show "(n)" in the picker)
+	function loadCounts(then) {
+		var period = LB.period;
+		fetch(API + "?summary=1&period=" + period).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) { if (period !== LB.period) return; LB.counts = j.counts || {}; if (then) then(); drawLbControls(); }).catch(function () { if (then) then(); });
+	}
+	el.lbperiod.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; LB.period = b.getAttribute("data-v"); LB.picked = true; lbSave(); drawLbControls(); loadBoard(); loadCounts(); });
+	el.lbboard.addEventListener("change", function () { LB.board = el.lbboard.value; LB.picked = true; lbSave(); loadBoard(); });
+	// On load: the board last viewed or posted to (remembered), else the current test's board; if that board is empty for the period but
+	// others have scores, jump to the busiest one, so the leaderboard never looks erased just because the settings point at an empty board.
 	function lbStart() {
 		var c = cfg(); if (lbEligible(c)) LB.board = boardOf(c);
+		try { var sv = JSON.parse(localStorage.getItem(KEY + ":lb") || "null"); if (sv && PER[sv.period] && boardOptions().indexOf(sv.board) >= 0) { LB.period = sv.period; LB.board = sv.board; LB.picked = true; } } catch (e) {}
 		drawLbControls();
-		if ("IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { io.disconnect(); if (!LB.loaded) loadBoard(); } }, { rootMargin: "300px" }); io.observe(el.lb); } else loadBoard();
+		loadCounts(function () {
+			if (!LB.picked && !LB.counts[LB.board]) { var best = null; Object.keys(LB.counts).forEach(function (b) { if (!best || LB.counts[b] > LB.counts[best]) best = b; }); if (best) LB.board = best; }
+			drawLbControls(); loadBoard();
+		});
 	}
 	// R = the finished test as the leaderboard sees it: { r: result, c: config, tok: one-time code from the start of the test, posted: null | ranks }
 	function canPost(R) { return rankable(R.c) && R.r.acc >= MIN_ACC; }
@@ -384,7 +396,7 @@
 		if (R.posted) return Promise.resolve({ ok: true, ranks: R.posted });
 		if (!R.tok) return Promise.resolve({ ok: false, error: "Still getting a verification code for this test… try again in a second." });
 		return lbApi({ a: "submit", t: R.tok, pid: store.pid, name: name, board: boardOf(R.c), wpm: Math.round(R.r.wpm * 10) / 10, acc: Math.round(R.r.acc * 10) / 10, secs: R.c.mode === "time" ? R.c.len : Math.round(R.r.secs * 10) / 10 }).then(function (j) {
-			if (j.ok) { R.posted = j.ranks; R.tok = ""; store.name = name; save(); LB.board = boardOf(R.c); LB.period = "day"; drawLbControls(); loadBoard(); }
+			if (j.ok) { R.posted = j.ranks; R.tok = ""; store.name = name; save(); LB.board = boardOf(R.c); LB.period = "day"; LB.picked = true; lbSave(); drawLbControls(); loadBoard(); loadCounts(); }
 			return j;
 		}, function () { return { ok: false, error: "Could not reach the leaderboard. Try again." }; });
 	}

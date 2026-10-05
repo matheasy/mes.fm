@@ -4,6 +4,7 @@
 // board + period, member = the player's random id, score = wpm*10 * 1000 + accuracy*10 (so ties on speed are
 // broken by accuracy and one number decodes to both). Names live in a hash, id -> name.
 //
+//   GET  ?summary=1&period=day|week|all                        -> { counts:{ board: players } } (only boards that have scores)
 //   GET  ?board=time-30-medium&period=day|week|all[&me=<id>]   -> { rows:[{r,n,w,a,me?}], total, you:{r,w,a}|null, resets }
 //   POST { a:"start" }                                        -> { t: <one-time token> }  (when a test starts)
 //   POST { a:"submit", t, pid, name, board, wpm, acc, secs }   -> { ok, ranks:{day,week,all} }
@@ -75,6 +76,12 @@ function resetsAt(period, now) {
 }
 const encode = (wpm, acc) => Math.round(wpm * 10) * 1000 + Math.min(999, Math.round(acc * 10));
 const decode = (s) => ({ w: Math.floor(s / 1000) / 10, a: (s % 1000) / 10 });
+const allBoards = () => {
+  const o = [];
+  for (const m of ['time', 'words']) for (const l of LENS[m]) for (const d of DIFFS) o.push(`${m}-${l}-${d}`);
+  for (const l of LENS.passage) o.push(`passage-${l}`);
+  return o;
+};
 const ID_RE = /^[a-f0-9]{16}$/;
 
 function clientIp(req) {
@@ -112,6 +119,17 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   const now = new Date();
   try {
+    if (req.method === 'GET' && req.query.summary) {
+      const period = String(req.query.period || 'day');
+      if (!['day', 'week', 'all'].includes(period)) { res.status(400).json({ error: 'bad period' }); return; }
+      const boards = allBoards();
+      const r = await redis(boards.map((b) => ['ZCARD', keyFor(b, period, now)]));
+      const counts = {};
+      boards.forEach((b, i) => { const n = Number(r[i] && r[i].result) || 0; if (n) counts[b] = n; });
+      res.setHeader('Cache-Control', 'public, max-age=10, s-maxage=20, stale-while-revalidate=60');
+      res.status(200).json({ counts });
+      return;
+    }
     if (req.method === 'GET') {
       const board = String(req.query.board || '');
       const period = String(req.query.period || 'day');
@@ -187,4 +205,4 @@ module.exports = async (req, res) => {
   }
 };
 
-module.exports._test = { parseBoard, weekLabel, dayLabel, encode, decode, NAME_RE, BAD };
+module.exports._test = { allBoards, parseBoard, weekLabel, dayLabel, encode, decode, NAME_RE, BAD };

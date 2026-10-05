@@ -61,6 +61,8 @@ function call(method, q, body, ip) {
   assert.strictEqual((await call('GET', { board: 'time-30-hard', period: 'all' })).b.rows.length, 0);
   const me = await call('GET', { board: 'time-30-medium', period: 'all', me: pid }); assert.strictEqual(me.b.you.r, 2); assert.strictEqual(me.b.rows[1].me, 1); assert.strictEqual(me.h['Cache-Control'], 'no-store');
   assert.strictEqual((await call('GET', { board: 'nope', period: 'all' })).c, 400);
+  const sm = await call('GET', { summary: '1', period: 'all' }); assert.deepStrictEqual(sm.b.counts, { 'time-30-medium': 2 });
+  assert.strictEqual(T.allBoards().length, 43); assert.strictEqual((await call('GET', { summary: '1', period: 'x' })).c, 400);
   // remove needs the admin key
   assert.strictEqual((await call('POST', {}, { a: 'remove', key: 'k', pid })).c, 403);
   process.env.TYPING_ADMIN_KEY = 'secret'; assert.strictEqual((await call('POST', {}, { a: 'remove', key: 'wrong!', pid })).c, 403);
