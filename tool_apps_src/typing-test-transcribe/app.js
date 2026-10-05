@@ -305,9 +305,16 @@
 	var PER = { day: "Today", week: "This week", all: "All time" };
 	var LB = { period: "day", board: "tr-all", counts: {}, data: null, mine: false, dev: "", sort: { k: "r", d: 1 }, shown: 25 };
 	// "k" keyboard / "p" phone or tablet touch: self-reported with a score, shown as an icon and usable as a filter
-	function myDevice() { try { var ua = navigator.userAgent || "", touch = (navigator.maxTouchPoints || 0) > 0; return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || (touch && /Android|iPhone|iPad|iPod|Mobile/i.test(ua)) ? "p" : "k"; } catch (e) { return "k"; } }
-	var DEVS = { "": ["All devices", ""], k: ["⌨ Keyboard", "⌨"], p: ["📱 Phone", "📱"] };
-	function devIcon(d) { return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone or tablet (touch)" aria-label="phone">📱</span>' : ""; }
+	function myDevice() {
+		try {
+			var ua = navigator.userAgent || "", pts = navigator.maxTouchPoints || 0, coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+			var ipad = /iPad/i.test(ua) || (/Macintosh/i.test(ua) && pts > 1), tab = ipad || /Tablet|PlayBook|Silk|Kindle/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua));
+			if (tab && (pts > 0 || coarse)) return "t";
+			return coarse || (pts > 0 && /Android|iPhone|iPod|Mobile/i.test(ua)) ? "p" : "k";
+		} catch (e) { return "k"; }
+	}
+	var DEVS = { "": "All devices", k: "⌨ Keyboard", p: "📱 Phone", t: '<span class="tt-tabicon"></span> Tablet' };
+	function devIcon(d) { return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone (touch)" aria-label="phone">📱</span>' : d === "t" ? ' <span class="tt-dev" title="Typed on a tablet (touch)" aria-label="tablet"><span class="tt-tabicon"></span></span>' : ""; }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return "tr-" + c.pace + "-" + c.len; }
 	function boardName(b) { if (b === "tr-all") return "All paces combined"; var p = b.split("-"); return p[1] + " WPM · " + p[2].charAt(0).toUpperCase() + p[2].slice(1) + " passage"; }
@@ -316,7 +323,7 @@
 	function drawLbControls() {
 		el.lbperiod.innerHTML = ["day", "week", "all"].map(function (p) { return '<button type="button" data-v="' + p + '" aria-pressed="' + (LB.period === p) + '">' + PER[p] + "</button>"; }).join("");
 		el.lbboard.innerHTML = boardOptions().map(function (b) { var n = b === "tr-all" ? Object.keys(LB.counts).reduce(function (a, k) { return a + LB.counts[k]; }, 0) : LB.counts[b]; return '<option value="' + b + '">' + esc(boardName(b)) + (n ? " (" + n + ")" : "") + "</option>"; }).join("");
-		el.lbdev.innerHTML = ["", "k", "p"].map(function (v) { return '<button type="button" data-v="' + v + '" aria-pressed="' + (LB.dev === v) + '">' + DEVS[v][0] + "</button>"; }).join("");
+		el.lbdev.innerHTML = ["", "k", "p", "t"].map(function (v) { return '<button type="button" data-v="' + v + '" aria-pressed="' + (LB.dev === v) + '">' + DEVS[v] + "</button>"; }).join("");
 		el.lbboard.value = LB.board; el.lbmine.setAttribute("aria-pressed", String(LB.mine));
 	}
 	function until(ms) { var m = Math.max(1, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? Math.round(h / 24) + " days" : h ? h + " h " + (m % 60) + " min" : m + " min"; }

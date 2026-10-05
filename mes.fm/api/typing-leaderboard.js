@@ -4,7 +4,7 @@
 // board + period, member = the player's random id, score = wpm*10 * 1000 + accuracy*10 (so ties on speed are
 // broken by accuracy and one number decodes to both). Names live in a hash, id -> name.
 //
-//   Device: a submit may carry d = "k" (keyboard) or "p" (phone / touch). Rows return d ("" for scores posted before this existed); GET ?dev=k|p keeps one kind (ranks renumbered).
+//   Device: a submit may carry d = "k" (keyboard), "p" (phone) or "t" (tablet). Rows return d ("" for scores posted before this existed); GET ?dev=k|p|t keeps one kind (ranks renumbered).
 //   GET  ?summary=1&period=day|week|all                        -> { counts:{ board: players } } (only boards that have scores)
 //   GET  ?mine=<id>&board=all|<board>&period=day|week|all     -> { rows:[{t,b,w,a,pb?}] } the player's own posted results, newest first (pb = best on that test)
 //   GET  ?board=time-30-medium|all&period=day|week|all[&me=<id>] -> { rows:[{r,n,w,a,b,me?}], total, you:{r,w,a}|null, resets }   (board=all merges every board)
@@ -83,11 +83,11 @@ function resetsAt(period, now) {
 }
 // Accuracy has 1001 possible values (0.0-100.0) but only 1000 slots below the speed digits, so exactly 100.0 is stored as ...999.5
 // (one half above 99.9): it still sorts above 99.9 on a speed tie and older stored scores keep decoding the same.
-// Device rides in the fraction too: +0.125 keyboard, +0.25 phone / touch (0 = unknown, i.e. scores posted before the device was recorded).
-const encode = (wpm, acc, dev) => { const a = Math.round(acc * 10); return Math.round(wpm * 10) * 1000 + Math.min(999, a) + (a >= 1000 ? 0.5 : 0) + (dev === 'p' ? 0.25 : dev === 'k' ? 0.125 : 0); };
+// Device rides in the fraction too: +0.125 keyboard, +0.25 phone, +0.375 tablet (0 = unknown, i.e. scores posted before the device was recorded).
+const encode = (wpm, acc, dev) => { const a = Math.round(acc * 10); return Math.round(wpm * 10) * 1000 + Math.min(999, a) + (a >= 1000 ? 0.5 : 0) + (dev === 't' ? 0.375 : dev === 'p' ? 0.25 : dev === 'k' ? 0.125 : 0); };
 const decode = (s) => {
   const base = Math.floor(s / 1000) * 1000, rem = s - base, whole = Math.floor(rem), f = rem - whole, half = f >= 0.5, g = f - (half ? 0.5 : 0);
-  return { w: base / 10000, a: whole === 999 && half ? 100 : whole / 10, d: g >= 0.25 ? 'p' : g >= 0.125 ? 'k' : '' };
+  return { w: base / 10000, a: whole === 999 && half ? 100 : whole / 10, d: g >= 0.375 ? 't' : g >= 0.25 ? 'p' : g >= 0.125 ? 'k' : '' };
 };
 const isTr = (b) => String(b).startsWith('tr-');
 const allBoards = (tr) => {
@@ -183,7 +183,7 @@ module.exports = async (req, res) => {
       const board = String(req.query.board || '');
       const period = String(req.query.period || 'day');
       const me = ID_RE.test(String(req.query.me || '')) ? String(req.query.me) : '';
-      const dev = ['k', 'p'].includes(String(req.query.dev)) ? String(req.query.dev) : '';
+      const dev = ['k', 'p', 't'].includes(String(req.query.dev)) ? String(req.query.dev) : '';
       if ((board !== 'all' && board !== 'tr-all' && !parseBoard(board)) || !['day', 'week', 'all'].includes(period)) { res.status(400).json({ error: 'bad board' }); return; }
       const out = (board === 'all' || board === 'tr-all') ? await readAll(period, me, now, board === 'tr-all', dev) : await readBoard(board, period, me, now, dev);
       res.setHeader('Cache-Control', me ? 'no-store' : 'public, max-age=10, s-maxage=20, stale-while-revalidate=60');
@@ -234,7 +234,7 @@ module.exports = async (req, res) => {
     const started = Number(rl[2] && rl[2].result);
     if (!started || Date.now() - started < secs * 1000 * 0.9) { res.status(400).json({ error: 'That test could not be verified. Finish a new test and post it.' }); return; }
 
-    const dev = body.d === 'p' ? 'p' : body.d === 'k' ? 'k' : '';
+    const dev = ['k', 'p', 't'].includes(body.d) ? body.d : '';
     const score = encode(wpm, acc, dev);
     const cmds = [['HSET', 'ttlb:names', body.pid, name]];
     const periods = ['day', 'week', 'all'];
