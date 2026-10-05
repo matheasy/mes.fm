@@ -133,8 +133,12 @@
 	function moveCaret(initial) {
 		var s = T.sess, i = Math.min(s.idx, T.wordEls.length - 1), d = T.wordEls[i]; if (!d) return;
 		var L = d.children, n = s.cur.length, x, y;
-		if (n < s.words[i].length && L[n]) { x = d.offsetLeft + L[n].offsetLeft; y = d.offsetTop + L[n].offsetTop; }
-		else { var last = L[L.length - 1]; x = d.offsetLeft + last.offsetLeft + last.offsetWidth; y = d.offsetTop + last.offsetTop; }
+		// Measured from real boxes, relative to the (transformed) .tt-words box: offsetLeft/offsetTop are relative to whichever ancestor the browser
+		// treats as the offset parent (that differs between engines), which put the caret a line / a word's width off and below the text's middle.
+		var base = el.words.getBoundingClientRect(), box, atEnd = !(n < s.words[i].length && L[n]);
+		box = (atEnd ? L[L.length - 1] : L[n]).getBoundingClientRect();
+		x = (atEnd ? box.right : box.left) - base.left;
+		y = box.top - base.top + (box.height - el.caret.offsetHeight) / 2;
 		if (s.finished && s.idx >= s.words.length) { /* stay */ }
 		el.caret.style.left = x + "px"; el.caret.style.top = y + "px";
 		var lh = d.offsetHeight || 40, line = Math.round(d.offsetTop / (lh || 1)), shift = Math.max(0, line - 1) * lh;
