@@ -1159,6 +1159,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 		el.wpmplus.addEventListener("click", function () { nudgeWpm(1); });
 		el.presets.addEventListener("click", function (e) { var b = e.target.closest("button[data-w]"); if (b) setWpm(+b.getAttribute("data-w")); });
 
+		if (window.MESVoicePicker) MESVoicePicker.enhance(el.voice, { sample: "Hello, this is how I will read your text aloud." });   // searchable list with a preview button per voice
 		el.voice.addEventListener("change", function () { S.voice = el.voice.value; resolveVoice(); refreshVoiceLabel(); persist(); restartSpeechSoon(); });
 		el.rate.addEventListener("input", function () { setRate(+el.rate.value); });
 		el.pitch.addEventListener("input", function () { S.pitch = +el.pitch.value; el.pitcho.textContent = S.pitch.toFixed(1); persist(); restartSpeechSoon(); });
