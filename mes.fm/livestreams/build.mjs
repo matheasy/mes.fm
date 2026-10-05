@@ -78,12 +78,12 @@ const STATS = [
 // are title matches; "MES Truth" is a channel filter (videos uploaded to youtube.com/@mestruth --
 // the rest of the playlist is on the Math Easy Solutions channel). To add a chip, add an entry here.
 const CATEGORIES = [
-  { id: "hutchison", label: "Hutchison Effect", test: (v) => /hutchison/i.test(v.title) },
-  { id: "911", label: "9/11 Truth", test: (v) => /9\/11|\bWTC\b|towers|judy wood/i.test(v.title) },
+  { id: "hutchison", label: "Hutchison Effect", test: (v) => /hutchison/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X" },
+  { id: "911", label: "9/11 Truth", test: (v) => /9\/11|\bWTC\b|towers|judy wood/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh" },
   { id: "planes", label: "9/11 Planes Research", test: (v) => /planes research/i.test(v.title) },
-  { id: "mh370", label: "MH370", test: (v) => /mh370/i.test(v.title) },
-  { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title) },
-  { id: "mestruth", label: "MES Truth", test: (v) => v.channel === "@mestruth" },
+  { id: "mh370", label: "MH370", test: (v) => /mh370/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EJGgDKXr-wW8z1jd7pZ069" },
+  { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX" },
+  { id: "mestruth", label: "MES Truth", test: (v) => v.channel === "@mestruth", playlist: "https://www.youtube.com/playlist?list=PL7uKZq8byj6EavTGBYXn5u7Wy6_RH_O6Z" },
 ];
 const catsOf = (v) => CATEGORIES.filter((c) => c.test(v)).map((c) => c.id).join(" ");
 
@@ -496,12 +496,13 @@ function capitalize(str) {
 function buildFilter(section) {
   const count = (id) => section.items.filter((i) => i.id === undefined && (id === "all" || (i.cats || "").split(" ").includes(id))).length;
   const chips = [{ id: "all", label: "All" }, ...section.filter]
-    .map((c) => `<button type="button" data-c="${c.id}" data-label="${escapeHtml(c.label)}" aria-pressed="${c.id === "all"}">${escapeHtml(c.label)} (${count(c.id)})</button>`)
+    .map((c) => `<button type="button" data-c="${c.id}" data-label="${escapeHtml(c.label)}"${c.playlist ? ` data-pl="${escapeHtml(c.playlist)}"` : ""} aria-pressed="${c.id === "all"}">${escapeHtml(c.label)} (${count(c.id)})</button>`)
     .join("");
   return `<div class="ls-filter" id="${section.id}Filter">
       <input type="search" id="${section.id}Search" placeholder="Search livestreams&hellip;" aria-label="Search livestreams" autocomplete="off">
       <div class="ls-chips" id="${section.id}Chips">${chips}</div>
     </div>
+    <p class="ls-playlist" id="${section.id}Playlist" hidden><a href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="22" height="16" aria-hidden="true"><path fill="#f00" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.500 0-9.400.5A3 3 0 0 0 .5 6.200C0 8.100 0 12 0 12s0 3.900.5 5.800a3 3 0 0 0 2.100 2.100c1.900.5 9.400.5 9.400.5s7.500 0 9.400-.5a3 3 0 0 0 2.100-2.100c.5-1.900.5-5.800.5-5.800s0-3.900-.5-5.800z"/><path fill="#fff" d="M9.600 15.600V8.400l6.200 3.600z"/></svg><span></span></a></p>
     <p class="ls-empty" id="${section.id}Empty" hidden>No livestreams match. Try fewer words or a different filter.</p>`;
 }
 
@@ -1011,6 +1012,9 @@ sub {vertical-align:sub;}
 }
 .ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
 .ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-playlist { margin: 0.2em 0 0.9em; }
+.ls-playlist a { display: inline-flex; align-items: center; gap: 0.45em; font-weight: 600; }
+.ls-playlist[hidden] { display: none !important; }
 .ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
 /* a bare [hidden] loses to .link-card { display: flex } etc. */
 [data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
@@ -1836,6 +1840,7 @@ ${viewToggleWiring}
     var input = document.getElementById(id + 'Search');
     var chips = document.getElementById(id + 'Chips');
     var empty = document.getElementById(id + 'Empty');
+    var plBox = document.getElementById(id + 'Playlist');
     if (!box || !input || !chips) return;
     var panes = ['Grid', 'List', 'Trailers'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
     var cat = 'all';
@@ -1858,6 +1863,11 @@ ${viewToggleWiring}
           el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
         });
       });
+      var plBtn = chips.querySelector('button[data-c="' + cat + '"]'), pl = plBtn && plBtn.getAttribute('data-pl');
+      if (plBox) {
+        plBox.hidden = !pl;
+        if (pl) { var a = plBox.querySelector('a'); a.href = pl; plBox.querySelector('span').textContent = plBtn.getAttribute('data-label') + ' playlist on YouTube'; }
+      }
       var pane = activePane();
       box.hidden = !pane;
       if (!pane) { if (empty) empty.hidden = true; return; }
