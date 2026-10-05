@@ -51,6 +51,14 @@ const PAGES = [
     description:
       "MES conspiracy videos: disinfo agents as energy vampires, Stephen A. Smith's presidential bid, the one-armed twin in Star Wars, 9/11 and The Matrix, and Ashton Forbes' letter.",
   },
+  {
+    // Tile only: no page is written. Links to the MH370 Teleportation Psyop hub (mes.fm/mh370, its own build.mjs);
+    // the icon is img/mh370-icon.jpg (a crop of MH370.jpeg) -- bump iconVersion if it is replaced.
+    slug: "mh370",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "MH370 Teleportation Psyop",
+  },
 ];
 
 // ---------------------------------------------------------------------------
