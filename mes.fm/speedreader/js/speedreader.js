@@ -438,7 +438,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 	var el = {};
 	["reader", "stage", "word", "pre", "orp", "post", "ctx", "ctxl", "ctxr", "msg", "progress", "seek", "pos", "eta", "play", "restart", "prevs", "prevw", "nextw", "nexts",
 	 "speedrow", "wpm", "wpmr", "wpmminus", "wpmplus", "presets", "voicerow", "voice", "rate", "rateo", "pitch", "pitcho", "vol", "volo", "note", "settings", "chunk", "smart", "ramp", "rewind",
-	 "font", "size", "sizeo", "th", "orpon", "guideon", "ctxon", "progon", "link", "reset", "tv", "tvtoggle", "tvbody", "tvnav", "tvprev", "tvnext", "tvpage", "pane", "live", "modes", "focus",
+	 "font", "size", "sizeo", "th", "orpon", "guideon", "ctxon", "progon", "link", "reset", "tv", "tvtoggle", "tvbody", "tvnav", "tvprev", "tvnext", "tvpage", "pane", "grip", "live", "modes", "focus",
 	 "input", "text", "count", "drop", "paste", "open", "here", "measurebtn", "clear", "file", "warn", "stw", "stc", "stl1", "stt1", "sts1", "stt2", "stt3", "measure", "mtext", "mstart", "mdone", "mclose", "mtime", "mresult", "toast"].forEach(function (id) {
 		var map = { wpmr: "wpm-r", wpmminus: "wpm-minus", wpmplus: "wpm-plus", rateo: "rate-o", pitcho: "pitch-o", volo: "vol-o", sizeo: "size-o", orpon: "orpon", measurebtn: "measure-btn",
 			stw: "st-w", stc: "st-c", stl1: "st-l1", stt1: "st-t1", sts1: "st-s1", stt2: "st-t2", stt3: "st-t3", mstart: "m-start", mdone: "m-done", mclose: "m-close", mtime: "m-time", mresult: "m-result", mtext: "mtext",
@@ -1269,6 +1269,19 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 			else handled = false;
 			if (handled) e.preventDefault();
 		});
+		/* drag the grip under the text view to make it taller / shorter (default is short so a phone page still scrolls) */
+		(function () {
+			var y0 = 0, h0 = 0, drag = false, g = el.grip;
+			if (!g) return;
+			g.addEventListener("pointerdown", function (e) { drag = true; y0 = e.clientY; h0 = el.pane.getBoundingClientRect().height; try { g.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
+			g.addEventListener("pointermove", function (e) {
+				if (!drag) return;
+				var h = Math.max(96, Math.min(window.innerHeight * 0.9, h0 + e.clientY - y0));
+				el.pane.style.setProperty("--sr-ph", Math.round(h) + "px");
+			});
+			function end() { drag = false; }
+			g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
+		})();
 		document.addEventListener("fullscreenchange", function () { if (!fsElement() && P.focus) setFocus(false); });
 		document.addEventListener("webkitfullscreenchange", function () { if (!fsElement() && P.focus) setFocus(false); });
 

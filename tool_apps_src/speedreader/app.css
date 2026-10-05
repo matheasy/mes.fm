@@ -109,7 +109,12 @@
 	.tu .sr-reader[data-mode="aloud"] .sr-tv {order:2;margin-top:0;}
 	.tu .sr-reader[data-mode="aloud"] .sr-tvtoggle {display:none;}
 	.tu .sr-reader[data-mode="aloud"] .sr-tvbody {margin-top:0;}
-	.tu .sr-reader[data-mode="aloud"] .sr-pane {max-height:26em;min-height:14em;font-size:1.15em;}
+	.tu .sr-reader[data-mode="aloud"] .sr-pane {height:var(--sr-ph,22em);max-height:none;min-height:6em;font-size:1.15em;}
+	@media (max-width:700px) {.tu .sr-reader[data-mode="aloud"] .sr-pane {height:var(--sr-ph,12.5em);}}
+	.tu .sr-grip {display:none;touch-action:none;cursor:ns-resize;height:1.6em;margin-top:0.2em;align-items:center;justify-content:center;color:#8a93a0;font-size:0.8em;user-select:none;-webkit-user-select:none;}
+	.tu .sr-grip::before {content:"";width:3.2em;height:0.35em;border-radius:1em;background:currentColor;opacity:0.6;margin-right:0.6em;}
+	.tu .sr-reader[data-mode="aloud"] .sr-grip {display:flex;}
+	.tu .sr-reader.is-focus .sr-grip {display:none !important;}
 	.tu .sr-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 
 	/* focus mode (also the fallback where the Fullscreen API is missing, e.g. iPhone Safari) */
@@ -118,7 +123,8 @@
 	.tu .sr-reader.is-focus .sr-stage {flex:1 1 auto;height:auto;min-height:12em;}
 	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-tv {flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
 	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-tvbody {flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
-	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-pane {flex:1 1 auto;max-height:none;}
+	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-pane {flex:1 1 auto;height:auto;max-height:none;min-height:0;}
+	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-tv {min-height:10em;overflow:hidden;}
 	.tu .sr-reader.is-focus .sr-settings, .tu .sr-reader.is-focus .sr-tv, .tu .sr-reader.is-focus .sr-note {max-width:60em;width:100%;margin-left:auto;margin-right:auto;}
 	.tu .sr-reader.is-focus .sr-progress, .tu .sr-reader.is-focus .sr-transport, .tu .sr-reader.is-focus .sr-speedrow, .tu .sr-reader.is-focus .sr-voicerow {max-width:48em;width:100%;margin-left:auto;margin-right:auto;}
 	.tu .sr-reader.is-focus .sr-top {max-width:48em;width:100%;margin-left:auto;margin-right:auto;}
