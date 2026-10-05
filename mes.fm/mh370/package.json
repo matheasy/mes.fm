@@ -1,0 +1,9 @@
+{
+  "name": "mes-mh370-builder",
+  "private": true,
+  "description": "Build-time generator for the Videos card grid on mes.fm/mh370. Not deployed; run manually before committing.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}
