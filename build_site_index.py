@@ -180,9 +180,10 @@ def url_of(rel):
 
 
 def meta(doc, attr, name):
-    m = (re.search(r'<meta\s+[^>]*%s=["\']%s["\'][^>]*content=["\']([^"\']*)' % (attr, re.escape(name)), doc, re.I)
-         or re.search(r'<meta\s+[^>]*content=["\']([^"\']*)["\'][^>]*%s=["\']%s["\']' % (attr, re.escape(name)), doc, re.I))
-    return htmlmod.unescape(m.group(1)).strip() if m else None
+    # content may hold the other quote character (an apostrophe in "MES's"), so match the opening quote
+    m = (re.search(r'<meta\s+[^>]*%s=["\']%s["\'][^>]*content=(["\'])(.*?)\1' % (attr, re.escape(name)), doc, re.I | re.S)
+         or re.search(r'<meta\s+[^>]*content=(["\'])(.*?)\1[^>]*%s=["\']%s["\']' % (attr, re.escape(name)), doc, re.I | re.S))
+    return htmlmod.unescape(m.group(2)).strip() if m else None
 
 
 def strip_noise(doc):
