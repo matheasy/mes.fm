@@ -10,6 +10,10 @@ function cmd(a) {
     case 'GETDEL': { const v = kv.get(k); kv.delete(k); return v === undefined ? null : v; }
     case 'INCR': kv.set(k, (Number(kv.get(k)) || 0) + 1); return kv.get(k);
     case 'EXPIRE': return 1;
+    case 'LPUSH': { if (!Array.isArray(kv.get(k))) kv.set(k, []); kv.get(k).unshift(r[0]); return kv.get(k).length; }
+    case 'LTRIM': { const l = kv.get(k) || []; kv.set(k, l.slice(Number(r[0]), Number(r[1]) + 1)); return 'OK'; }
+    case 'LRANGE': return (kv.get(k) || []).slice(Number(r[0]), Number(r[1]) + 1);
+    case 'DEL': kv.delete(k); return 1;
     case 'HSET': { if (!kv.has(k)) kv.set(k, new Map()); kv.get(k).set(r[0], r[1]); return 1; }
     case 'HDEL': (kv.get(k) || new Map()).delete(r[0]); return 1;
     case 'HMGET': return r.map((f) => (kv.get(k) || new Map()).get(f) ?? null);
@@ -66,6 +70,12 @@ function call(method, q, body, ip) {
   assert.deepStrictEqual(al.b.rows.map((x) => [x.n, x.w, x.b]), [['Ana', 95, 'time-30-medium'], ['Joe', 80, 'time-30-medium']]); assert.strictEqual(al.b.rows[1].me, 1);
   const sm = await call('GET', { summary: '1', period: 'all' }); assert.deepStrictEqual(sm.b.counts, { 'time-30-medium': 2 });
   assert.strictEqual(T.allBoards().length, 43); assert.strictEqual((await call('GET', { summary: '1', period: 'x' })).c, 400);
+  // "Only mine": every posted result is remembered, newest first, with a star on the best per test
+  const mine = await call('GET', { mine: pid, board: 'all', period: 'all' });
+  assert.deepStrictEqual(mine.b.rows.map((x) => [x.w, x.pb]), [[60, undefined], [80, 1]], JSON.stringify(mine.b));
+  assert.strictEqual((await call('GET', { mine: pid, board: 'time-30-hard', period: 'all' })).b.rows.length, 0);
+  assert.strictEqual((await call('GET', { mine: pid, board: 'all', period: 'day' })).b.rows.length, 2);
+  assert.strictEqual((await call('GET', { mine: 'nope', period: 'all' })).c, 400);
   // remove needs the admin key
   assert.strictEqual((await call('POST', {}, { a: 'remove', key: 'k', pid })).c, 403);
   process.env.TYPING_ADMIN_KEY = 'secret'; assert.strictEqual((await call('POST', {}, { a: 'remove', key: 'wrong!', pid })).c, 403);

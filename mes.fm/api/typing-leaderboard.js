@@ -5,6 +5,7 @@
 // broken by accuracy and one number decodes to both). Names live in a hash, id -> name.
 //
 //   GET  ?summary=1&period=day|week|all                        -> { counts:{ board: players } } (only boards that have scores)
+//   GET  ?mine=<id>&board=all|<board>&period=day|week|all     -> { rows:[{t,b,w,a,pb?}] } the player's own posted results, newest first (pb = best on that test)
 //   GET  ?board=time-30-medium|all&period=day|week|all[&me=<id>] -> { rows:[{r,n,w,a,b,me?}], total, you:{r,w,a}|null, resets }   (board=all merges every board)
 //   POST { a:"start" }                                        -> { t: <one-time token> }  (when a test starts)
 //   POST { a:"submit", t, pid, name, board, wpm, acc, secs }   -> { ok, ranks:{day,week,all} }
@@ -24,6 +25,7 @@ const MAX_WPM = 350;       // the fastest verified typists are ~300 for a burst
 const MIN_ACC = 90;        // percent; a leaderboard of 400 WPM mashing is no use to anyone
 const TOP = 100;           // rows returned (the page shows 25 at a time and sorts / filters them)
 const TOP_PER_BOARD = 50;  // taken from each board when merging "all tests"
+const HIST = 100;          // posted results remembered per player ("Only mine")
 const KEEP = 500;          // rows kept per board
 const TOKEN_TTL = 1800;    // seconds a test token stays valid
 const RATE_PER_HOUR = 40;  // submissions per IP per hour
@@ -153,6 +155,19 @@ module.exports = async (req, res) => {
       res.status(200).json({ counts });
       return;
     }
+    if (req.method === 'GET' && req.query.mine !== undefined) {
+      const pid = String(req.query.mine), period = String(req.query.period || 'all'), board = String(req.query.board || 'all');
+      if (!ID_RE.test(pid) || !['day', 'week', 'all'].includes(period) || (board !== 'all' && !parseBoard(board))) { res.status(400).json({ error: 'bad request' }); return; }
+      const r = await redis([['LRANGE', `ttlb:h:${pid}`, '0', String(HIST - 1)]]);
+      const all = (((r[0] && r[0].result) || []).map((x) => { try { return JSON.parse(x); } catch (e) { return null; } })).filter((x) => x && parseBoard(x.b));
+      const best = {};
+      all.forEach((x) => { if (!(best[x.b] >= x.w)) best[x.b] = x.w; });
+      const label = period === 'day' ? dayLabel : weekLabel, cur = label(now);
+      const rows = all.filter((x) => (board === 'all' || x.b === board) && (period === 'all' || label(new Date(x.t)) === cur)).map((x) => ({ t: x.t, b: x.b, w: x.w, a: x.a, pb: x.w >= best[x.b] ? 1 : undefined }));
+      res.setHeader('Cache-Control', 'no-store');
+      res.status(200).json({ rows, total: all.length, mine: true });
+      return;
+    }
     if (req.method === 'GET') {
       const board = String(req.query.board || '');
       const period = String(req.query.period || 'day');
@@ -183,7 +198,7 @@ module.exports = async (req, res) => {
       const cmds = [];
       for (const mode of ['time', 'words']) for (const len of LENS[mode]) for (const d of DIFFS) cmds.push(...['day', 'week', 'all'].map((p) => ['ZREM', keyFor(`${mode}-${len}-${d}`, p, now), body.pid]));
       for (const len of LENS.passage) cmds.push(...['day', 'week', 'all'].map((p) => ['ZREM', keyFor(`passage-${len}`, p, now), body.pid]));
-      cmds.push(['HDEL', 'ttlb:names', body.pid]);
+      cmds.push(['HDEL', 'ttlb:names', body.pid], ['DEL', `ttlb:h:${body.pid}`]);
       await redis(cmds);
       res.status(200).json({ ok: true });
       return;
@@ -216,6 +231,8 @@ module.exports = async (req, res) => {
       if (p === 'day') cmds.push(['EXPIRE', key, String(3 * 86400)]);
       if (p === 'week') cmds.push(['EXPIRE', key, String(15 * 86400)]);
     }
+    const hk = `ttlb:h:${body.pid}`;
+    cmds.push(['LPUSH', hk, JSON.stringify({ t: Date.now(), b: body.board, w: Math.round(wpm * 10) / 10, a: Math.round(acc * 10) / 10 })], ['LTRIM', hk, '0', String(HIST - 1)], ['EXPIRE', hk, String(400 * 86400)]);
     for (const p of periods) cmds.push(['ZREVRANK', keyFor(body.board, p, now), body.pid]);
     const r = await redis(cmds);
     if (r.some((x) => x && x.error)) { res.status(502).json({ error: 'storage unavailable' }); return; }
