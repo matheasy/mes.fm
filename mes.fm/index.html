@@ -307,6 +307,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	html.page-theatre .popular-grid { grid-template-columns: repeat(6, 1fr); }
 	.popular-grid .icon-grid__label small { display: block; font-size: 0.8em; color: #fff; opacity: 0.9; margin-top: 0.2em; }
 	.popular-note { font-size: 0.9em; margin: 0.5em 0 0; }
+	.popular-grid--static { min-height: 0; }
 	body.dark-mode .popular-tabs button { background: #1f1f1f; color: #9cc9ec; border-color: #5aa5da; }
 	body.dark-mode .popular-tabs button[aria-pressed="true"] { background: #2d6fa1; color: #fff; border-color: #5aa5da; }
 		/* Floating compact header bar: once the full header + nav scroll out of
@@ -623,6 +624,24 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			if ('IntersectionObserver' in window) { new IntersectionObserver(function (en, o) { if (en[0].isIntersecting) { o.disconnect(); start(); } }, {rootMargin: '300px'}).observe(grid); } else { start(); }
 		})();
 		</script>
+
+		<h2 class="header2" id="newest-calculators">Newest Calculators</h2>
+		<p class="sentence">The latest free calculators we have built.</p>
+		<div class="icon-grid popular-grid popular-grid--static">
+			<a class="icon-grid__link icon-grid__link--labeled" href="/integral-calculator"><span class="icon-grid__thumb" style="background-image:url('/integral-calculator/img/logo.png')"></span><span class="icon-grid__label">MES Integral Calculator</span></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="/derivative-calculator"><span class="icon-grid__thumb" style="background-image:url('/derivative-calculator/img/logo.png')"></span><span class="icon-grid__label">MES Derivative Calculator</span></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="/cas-calculator"><span class="icon-grid__thumb" style="background-image:url('/cas-calculator/img/logo.png')"></span><span class="icon-grid__label">MES CAS Calculator</span></a>
+		</div>
+		<p class="popular-note"><a href="/calculators">See all calculators &rarr;</a></p>
+
+		<h2 class="header2" id="newest-tools">Newest Tools</h2>
+		<p class="sentence">The latest free tools, fresh off the bench.</p>
+		<div class="icon-grid popular-grid popular-grid--static">
+			<a class="icon-grid__link icon-grid__link--labeled" href="/typing-test-transcribe"><span class="icon-grid__thumb" style="background-image:url('/typing-test/img/logo.png')"></span><span class="icon-grid__label">MES Transcription Typing Test</span></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="/typing-test"><span class="icon-grid__thumb" style="background-image:url('/typing-test/img/logo.png')"></span><span class="icon-grid__label">MES Typing Test</span></a>
+			<a class="icon-grid__link icon-grid__link--labeled" href="/search-engines"><span class="icon-grid__thumb" style="background-image:url('/search-engines/img/logo.png')"></span><span class="icon-grid__label">MES Search Engines</span></a>
+		</div>
+		<p class="popular-note"><a href="/tools">See all tools &rarr;</a></p>
 
 		<h2 class="header2" id="milestones">Milestones</h2>
 		<p class="sentence">Big moments along the way.</p>
