@@ -463,7 +463,9 @@ def issues_of(doc, f, url, tpl, resolver):
         if not re.match(r"https?://", c):
             bits |= ISS["canonrel"]
         norm = re.sub(r"^https?://(www\.)?mes\.fm", "", c).rstrip("/") or ""
-        if norm != (url if url != "/" else ""):
+        # `<gallery>/1` pagination page duplicates the gallery root, so canonicalising to the parent is correct
+        page1_of = re.sub(r"/1$", "", url) if re.search(r"/1$", url) else None
+        if norm != (url if url != "/" else "") and norm != page1_of:
             bits |= ISS["canonbad"]
     if not f["title"]:
         bits |= ISS["notitle"]
