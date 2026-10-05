@@ -89,6 +89,7 @@ const CATEGORIES = [
 // Videos whose title/channel don't say which chips they belong to: video id -> extra chip ids (added to the automatic ones).
 const EXTRA_CATS = {
   lRxpPXnrLgo: ["911", "planes", "mestruth"], // Trailer for 55 (Debbie Welsh, UA93): about 9/11 planes research, shown with MES Truth
+  PiJhwXKbRNU: ["911", "planes", "mestruth"], // Trailer for 130 (Impossible Crash Physics on 9/11): same as the 55 trailer
 };
 const catsOf = (v) => [...new Set([...CATEGORIES.filter((c) => c.test(v)).map((c) => c.id), ...(EXTRA_CATS[v.id] || [])])].join(" ");
 
