@@ -105,6 +105,21 @@
 	.tu .tt-post .tu-input {width:12em;max-width:100%;}
 	.tu .tt-post .tu-btn {display:inline-block;}
 	.tu .tt-post .tu-note {flex-basis:100%;}
+	/* "save your result" pop-up */
+	.tu .tt-modal {position:fixed;inset:0;z-index:100000;background:rgba(10,15,25,0.55);display:flex;align-items:center;justify-content:center;padding:1em;}
+	.tu .tt-mcard {background:#fff;color:#222;border-radius:0.7em;padding:1.2em 1.3em;width:min(26em,100%);box-shadow:0 12px 40px rgba(0,0,0,0.35);}
+	.tu .tt-mcard h2 {margin:0 0 0.3em;font-size:1.3em;}
+	.tu .tt-mscore {font-size:1.1em;margin:0.2em 0 0.4em;}
+	.tu .tt-mscore b {font-size:1.7em;color:var(--accent);}
+	.tu .tt-mscore span {color:#8a93a0;}
+	.tu .tt-mcard .tu-input {width:100%;box-sizing:border-box;margin-top:0.2em;}
+	.tu .tt-mmsg {min-height:1.3em;margin:0.4em 0 0;font-size:0.9em;color:#b3261e;}
+	.tu .tt-mbtns {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.5em;}
+	.tu .tt-mbtns .tu-btn {display:inline-block;}
+	.tu .tt-mlink {display:block;margin:0.9em 0 0;padding:0;border:0;background:none;color:#6a7280;font-size:0.8em;text-decoration:underline;cursor:pointer;}
+	body.dark-mode #tt .tt-mcard {background:#23272e;color:#eceff4;}
+	body.dark-mode #tt .tt-mmsg {color:#ff8a80;}
+	body.dark-mode #tt .tt-mlink {color:#b6bdc7;}
 	body.dark-mode #tt .tt-lbtable tr.me td {background:rgba(143,208,255,0.14);}
 	body.dark-mode #tt .tt-post {border-top-color:#3a3f47;}
 	body.dark-mode #tt .tt-stage {background:#1f2329;border-color:#3a3f47;}

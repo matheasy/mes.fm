@@ -382,6 +382,21 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .tt-post .tu-input {width:12em;max-width:100%;}
 	.tu .tt-post .tu-btn {display:inline-block;}
 	.tu .tt-post .tu-note {flex-basis:100%;}
+	/* "save your result" pop-up */
+	.tu .tt-modal {position:fixed;inset:0;z-index:100000;background:rgba(10,15,25,0.55);display:flex;align-items:center;justify-content:center;padding:1em;}
+	.tu .tt-mcard {background:#fff;color:#222;border-radius:0.7em;padding:1.2em 1.3em;width:min(26em,100%);box-shadow:0 12px 40px rgba(0,0,0,0.35);}
+	.tu .tt-mcard h2 {margin:0 0 0.3em;font-size:1.3em;}
+	.tu .tt-mscore {font-size:1.1em;margin:0.2em 0 0.4em;}
+	.tu .tt-mscore b {font-size:1.7em;color:var(--accent);}
+	.tu .tt-mscore span {color:#8a93a0;}
+	.tu .tt-mcard .tu-input {width:100%;box-sizing:border-box;margin-top:0.2em;}
+	.tu .tt-mmsg {min-height:1.3em;margin:0.4em 0 0;font-size:0.9em;color:#b3261e;}
+	.tu .tt-mbtns {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.5em;}
+	.tu .tt-mbtns .tu-btn {display:inline-block;}
+	.tu .tt-mlink {display:block;margin:0.9em 0 0;padding:0;border:0;background:none;color:#6a7280;font-size:0.8em;text-decoration:underline;cursor:pointer;}
+	body.dark-mode #tt .tt-mcard {background:#23272e;color:#eceff4;}
+	body.dark-mode #tt .tt-mmsg {color:#ff8a80;}
+	body.dark-mode #tt .tt-mlink {color:#b6bdc7;}
 	body.dark-mode #tt .tt-lbtable tr.me td {background:rgba(143,208,255,0.14);}
 	body.dark-mode #tt .tt-post {border-top-color:#3a3f47;}
 	body.dark-mode #tt .tt-stage {background:#1f2329;border-color:#3a3f47;}
@@ -505,6 +520,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tt-table th{color:#9a9da3}
 	body.dark-mode .tu .tt-empty{color:#9a9da3}
 	body.dark-mode .tu .tt-post{border-top:1px solid #29323d}
+	body.dark-mode .tu .tt-mcard{background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu .tt-mscore span{color:#999da3}
+	body.dark-mode .tu .tt-mmsg{color:#e87973}
+	body.dark-mode .tu .tt-mlink{color:#9a9da3}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -805,9 +824,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tt-focus" id="tt-focus">Click here or just start typing</div>
 			</div>
 			<div class="tt-bar">
-				<button type="button" class="tu-btn" id="tt-restart" title="Same text again (Esc)">↻ Restart</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="tt-new" title="A new text">New text</button>
-				<span class="tt-keys"><kbd>Esc</kbd> restart · <kbd>Enter</kbd> new text after a test</span>
+				<button type="button" class="tu-btn" id="tt-restart" title="Start again with new words (Esc)">↻ New words</button>
+				<span class="tt-keys"><kbd>Esc</kbd> restart with new words · <kbd>Enter</kbd> next test after a test</span>
 			</div>
 			<p class="tt-legend">Letters brighten as you type them correctly (<span class="tt-l c">like this</span>), turn <span class="tt-l w">red</span> when wrong, and a finished word with a mistake is <span class="tt-leg-bad">underlined</span>. Turn on <b>Show my typing</b> to see the key you actually hit.</p>
 		</div>
@@ -851,7 +869,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li><strong>Short and often.</strong> Ten minutes a day beats an hour once a week.</li>
 			</ul>
 			<h3>Leaderboard</h3>
-				<p>Finish a timed test, a word-count test or a passage and you can post your name, WPM and accuracy to the <strong>daily, weekly and all-time leaderboard</strong> for that exact test (the length and difficulty form one board). Daily and weekly boards reset at 00:00 UTC; only your best score on each board counts, and you need 90% accuracy or more. Tests on your own text, weak-key practice, and tests with capitals, punctuation or numbers that do not match the difficulty are for practice and are not ranked.</p>
+				<p>Finish a timed test, a word-count test or a passage and you can post your name, WPM and accuracy to the <strong>daily, weekly and all-time leaderboard</strong> for that exact test (the length and difficulty form one board). Daily and weekly boards reset at 00:00 UTC; only your best score on each board counts, and you need 90% accuracy or more. Restart and Esc always give you brand-new words, so a text cannot be memorised; replaying the same text with "Same text again" is practice and is not ranked. Tests on your own text, weak-key practice, and tests with capitals, punctuation or numbers that do not match the difficulty are for practice and are not ranked.</p>
 				<h3>Challenge a friend</h3>
 			<p>After a test, <em>Copy challenge link</em> gives you a link with the exact same text and your score to beat. Whoever opens it types the same words.</p>
 			<p>More free tools: <a href="/speedreader">Speed Reader and Read Aloud</a> · <a href="/timer">Timer</a> · <a href="/tools">All MES tools</a></p>

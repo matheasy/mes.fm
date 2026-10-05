@@ -10,10 +10,10 @@
 	var DEF = { mode: "time", len: { time: 30, words: 25, passage: "medium" }, diff: "medium", caps: false, punct: false, nums: false, strict: false, nobs: false, live: true, show: false };
 
 	/* ---------- storage ---------- */
-	var store = { opts: JSON.parse(JSON.stringify(DEF)), hist: [], keys: {}, pid: "", name: "" }, memOnly = false;
+	var store = { opts: JSON.parse(JSON.stringify(DEF)), hist: [], keys: {}, pid: "", name: "", noPop: false }, memOnly = false;
 	try {
 		var raw = localStorage.getItem(KEY);
-		if (raw) { var o = JSON.parse(raw); if (o && typeof o === "object") { store.opts = Object.assign(store.opts, o.opts || {}); store.opts.len = Object.assign({}, DEF.len, (o.opts || {}).len || {}); store.hist = Array.isArray(o.hist) ? o.hist : []; store.keys = o.keys || {}; store.pid = /^[a-f0-9]{16}$/.test(o.pid) ? o.pid : ""; store.name = typeof o.name === "string" ? o.name.slice(0, 16) : ""; } }
+		if (raw) { var o = JSON.parse(raw); if (o && typeof o === "object") { store.opts = Object.assign(store.opts, o.opts || {}); store.opts.len = Object.assign({}, DEF.len, (o.opts || {}).len || {}); store.hist = Array.isArray(o.hist) ? o.hist : []; store.keys = o.keys || {}; store.pid = /^[a-f0-9]{16}$/.test(o.pid) ? o.pid : ""; store.name = typeof o.name === "string" ? o.name.slice(0, 16) : ""; store.noPop = !!o.noPop; } }
 	} catch (e) { memOnly = true; }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { memOnly = true; } }
 	if (!store.pid) { var rb = new Uint8Array(8); (window.crypto || window.msCrypto).getRandomValues(rb); store.pid = Array.prototype.map.call(rb, function (b) { return ("0" + b.toString(16)).slice(-2); }).join(""); save(); }
@@ -33,10 +33,10 @@
 
 	/* ---------- elements ---------- */
 	var el = {};
-	["mode", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "mix", "rules", "diffnote", "banner", "custom", "customtext", "customgo", "live", "t", "tl", "w", "a", "stage", "view", "words", "caret", "in", "focus", "restart", "new", "result", "hist", "histbody", "histsub", "toast", "lb", "lbperiod", "lbboard", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tt-" + k); });
+	["mode", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "mix", "rules", "diffnote", "banner", "custom", "customtext", "customgo", "live", "t", "tl", "w", "a", "stage", "view", "words", "caret", "in", "focus", "restart", "result", "hist", "histbody", "histsub", "toast", "lb", "lbperiod", "lbboard", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tt-" + k); });
 
 	/* ---------- test state ---------- */
-	var T = { seed: "", gen: null, sess: null, wordEls: [], letterEls: [], limit: 0, running: false, timer: 0, practice: null, lastResult: null, tok: "", customText: "", lastCfg: null };
+	var T = { seed: "", gen: null, sess: null, wordEls: [], letterEls: [], limit: 0, running: false, timer: 0, practice: null, lastResult: null, tok: "", R: null, replay: false, lastPassage: "", customText: "", lastCfg: null };
 	var ENDS = { time: false, words: true, passage: true, custom: true };
 
 	function cfg() { return { mode: S.mode, len: S.len[S.mode], diff: S.diff, caps: S.caps, punct: S.punct, nums: S.nums, strict: S.strict, nobs: S.nobs, practice: T.practice ? 1 : 0 }; }
@@ -71,17 +71,24 @@
 	el.rules.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var f = b.getAttribute("data-f"); if (f === "strict") S.strict = !S.strict; else if (f === "nobs") S.nobs = !S.nobs; else if (f === "show") S.show = !S.show; else S.live = !S.live; save();
 		if (f === "show") { drawControls(); T.wordEls.forEach(function (_, i) { paintWord(i); }); focusIn(); } else build(f === "live" ? false : true); });
 	el.customgo.addEventListener("click", function () { T.customText = el.customtext.value; if (!TT.customWords(T.customText).length) { toast("Paste some text first."); return; } build(true); focusIn(); });
-	el.restart.addEventListener("click", function () { build(false); focusIn(); });
-	el.new.addEventListener("click", function () { build(true); focusIn(); });
+	// Restart (button, Esc) always gives fresh words, so a text can't be memorised and replayed for a better score. The one exception is a
+	// challenge link's own text, which restarts as itself; "Same text again" on the result is the other deliberate way to replay.
+	function restart() { if (challenge && T.seed === challenge.seed && S.mode !== "custom") { build(false); T.replay = true; } else build(true); focusIn(); }
+	el.restart.addEventListener("click", restart);
 
 	/* ---------- building a test ---------- */
 	function build(fresh) {
 		clearInterval(T.timer); T.running = false; T.lastResult = null;
-		if (fresh || !T.seed) T.seed = (challenge && challenge.seed && !T.usedChallenge) ? challenge.seed : TT.newSeed();
+		if (fresh) T.replay = false;
+		if (fresh || !T.seed) {
+			T.seed = (challenge && challenge.seed && !T.usedChallenge) ? challenge.seed : TT.newSeed();
+			// passages come from a short list: never serve the one just typed
+			if (S.mode === "passage" && !(challenge && T.seed === challenge.seed)) for (var tries = 0; tries < 8 && TT.passageWords(S.len.passage, T.seed).join(" ") === T.lastPassage; tries++) T.seed = TT.newSeed();
+		}
 		if (challenge && T.seed === challenge.seed) T.usedChallenge = true;
 		var words, mode = S.mode;
 		if (mode === "custom") { words = TT.customWords(T.customText, 600); if (!words.length) words = ["Paste", "your", "own", "text", "above", "and", "press", "start."]; T.gen = null; }
-		else if (mode === "passage") { words = TT.passageWords(S.len.passage, T.seed); T.gen = null; }
+		else if (mode === "passage") { words = TT.passageWords(S.len.passage, T.seed); T.lastPassage = words.join(" "); T.gen = null; }
 		else { T.gen = TT.makeGenerator(textOpts(), T.seed); words = T.gen(mode === "time" ? 60 : S.len.words); }
 		T.limit = mode === "time" ? S.len.time * 1000 : 0;
 		T.sess = new TT.Session(words, { strict: S.strict, backspace: !S.nobs, endOnLast: ENDS[mode] });
@@ -160,7 +167,7 @@
 	el.stage.classList.add("is-blur");
 	el.in.addEventListener("paste", function (e) { e.preventDefault(); });
 	el.in.addEventListener("keydown", function (e) {
-		if (e.key === "Escape") { e.preventDefault(); build(false); return; }
+		if (e.key === "Escape") { e.preventDefault(); restart(); return; }
 		if (e.key === "Enter") { e.preventDefault(); if (T.sess.finished) { build(true); } return; }
 		if (e.key === "Backspace" && el.in.value === "") { e.preventDefault(); if (T.sess.backspace()) { sync(); } }
 		else if ((e.ctrlKey || e.altKey || e.metaKey) && e.key.toLowerCase() === "z") e.preventDefault();
@@ -198,7 +205,7 @@
 
 	/* ---------- running ---------- */
 	function startRun() {
-		T.tok = ""; if (lbEligible(cfg())) lbApi({ a: "start" }).then(function (r) { if (r && r.t) T.tok = r.t; }, function () {});
+		T.tok = ""; if (rankable(cfg())) lbApi({ a: "start" }).then(function (r) { if (r && r.t) T.tok = r.t; }, function () {});
 		T.running = true; T.t0 = performance.now(); el.live.classList.toggle("is-hidden", !S.live);
 		clearInterval(T.timer);
 		T.timer = setInterval(tick, 120);
@@ -238,7 +245,10 @@
 		TT.mergeKeys(store.keys, r.perKey);
 		save();
 		el.stage.classList.add("is-done"); el.stage.classList.remove("is-typing", "is-blur");
+		T.R = { r: r, c: c, tok: T.tok, posted: null };
 		showResult(r, pb && best !== null, avgBefore, c);
+		// a moment after the test ends (so stray keystrokes of the last word don't land in the name box), offer to save it
+		if (canPost(T.R) && !store.noPop) { try { el.in.blur(); } catch (e) {} var R0 = T.R; setTimeout(function () { if (T.R === R0 && T.sess.finished && !R0.posted) openModal(R0); }, 900); }
 		drawHistory(); drawBanner();
 		try { el.result.scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (e) {}
 	}
@@ -305,17 +315,17 @@
 			'<div class="tt-cols"><div><h3 class="tt-h3">Speed through the test</h3>' + chart(r) + "</div>" +
 			'<div><h3 class="tt-h3">Keys<span class="tt-tabs" id="tt-kbtabs"><button type="button" data-m="err" aria-pressed="true">Mistakes</button><button type="button" data-m="spd" aria-pressed="false">Speed</button></span></h3><div id="tt-kbbox">' + keyboard(r.perKey, "err") + "</div>" +
 			(weak.length ? '<div class="tt-weak"><span>Hardest for you: <b>' + weak.join(" ") + '</b></span><button type="button" class="tu-btn tu-btn--primary" id="tt-practice">Practise my weak keys</button></div>' : '<div class="tt-kbnote">No weak keys this time. Clean typing!</div>') + "</div></div>" +
-			'<div class="tt-actions"><button type="button" class="tu-btn tu-btn--primary" id="tt-again">Next test</button><button type="button" class="tu-btn" id="tt-same">Same text again</button><button type="button" class="tu-btn" id="tt-copy">Copy result</button>' +
-			(c.mode !== "custom" ? '<button type="button" class="tu-btn" id="tt-chal">Copy challenge link</button>' : "") + (navigator.share ? '<button type="button" class="tu-btn tu-btn--ghost" id="tt-share">Share…</button>' : "") + "</div>" + postBox(r, c);
+			'<div class="tt-actions"><button type="button" class="tu-btn tu-btn--primary" id="tt-again">Next test</button><button type="button" class="tu-btn" id="tt-same" title="Practice only: a repeat of the same text is not ranked">Same text again</button><button type="button" class="tu-btn" id="tt-copy">Copy result</button>' +
+			(c.mode !== "custom" ? '<button type="button" class="tu-btn" id="tt-chal">Copy challenge link</button>' : "") + (navigator.share ? '<button type="button" class="tu-btn tu-btn--ghost" id="tt-share">Share…</button>' : "") + "</div>" + postBox(T.R);
 		el.result.hidden = false;
 		$("tt-again").onclick = function () { build(true); focusIn(); window.scrollTo({ top: Math.max(0, el.stage.getBoundingClientRect().top + window.pageYOffset - 140), behavior: "smooth" }); };
-		$("tt-same").onclick = function () { build(false); focusIn(); };
+		$("tt-same").onclick = function () { build(false); T.replay = true; focusIn(); };
 		var text = "I typed " + fmt(r.wpm, 0) + " WPM with " + fmt(r.acc, 0) + "% accuracy (" + describe(c) + ") on the MES Typing Test: https://mes.fm/typing-test";
 		$("tt-copy").onclick = function () { copy(text, "Result copied."); };
 		if ($("tt-chal")) $("tt-chal").onclick = function () { copy(challengeLink(c, r), "Challenge link copied: same text, beat " + fmt(r.wpm, 0) + " WPM."); };
 		if ($("tt-share")) $("tt-share").onclick = function () { navigator.share({ title: "MES Typing Test", text: text, url: c.mode !== "custom" ? challengeLink(c, r) : "https://mes.fm/typing-test" }).catch(function () {}); };
 		if ($("tt-practice")) $("tt-practice").onclick = function () { T.practice = weak; S.mode = "words"; S.len.words = 25; challenge = null; save(); build(true); focusIn(); };
-		wirePost(r, c);
+		wirePost(T.R);
 		$("tt-kbtabs").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; var m = b.getAttribute("data-m"); Array.prototype.forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); $("tt-kbbox").innerHTML = keyboard(r.perKey, m); };
 	}
 	function copy(text, msg) {
@@ -337,6 +347,7 @@
 		if (c.mode === "passage") return true;
 		var d = TT.DIFFS[c.diff]; return c.caps === d.caps && c.punct === d.punct && c.nums === d.nums;
 	}
+	function rankable(c) { return lbEligible(c) && !T.replay; }
 	function boardOptions() {
 		var o = [], diffs = Object.keys(TT.DIFFS);
 		["time", "words"].forEach(function (m) { LENS[m].forEach(function (l) { diffs.forEach(function (d) { o.push(m + "-" + l + "-" + d); }); }); });
@@ -367,29 +378,76 @@
 		drawLbControls();
 		if ("IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { io.disconnect(); if (!LB.loaded) loadBoard(); } }, { rootMargin: "300px" }); io.observe(el.lb); } else loadBoard();
 	}
-	function postBox(r, c) {
-		var b = '<div class="tt-post" id="tt-post">';
+	// R = the finished test as the leaderboard sees it: { r: result, c: config, tok: one-time code from the start of the test, posted: null | ranks }
+	function canPost(R) { return rankable(R.c) && R.r.acc >= MIN_ACC; }
+	function postScore(R, name) {
+		if (R.posted) return Promise.resolve({ ok: true, ranks: R.posted });
+		if (!R.tok) return Promise.resolve({ ok: false, error: "Still getting a verification code for this test… try again in a second." });
+		return lbApi({ a: "submit", t: R.tok, pid: store.pid, name: name, board: boardOf(R.c), wpm: Math.round(R.r.wpm * 10) / 10, acc: Math.round(R.r.acc * 10) / 10, secs: R.c.mode === "time" ? R.c.len : Math.round(R.r.secs * 10) / 10 }).then(function (j) {
+			if (j.ok) { R.posted = j.ranks; R.tok = ""; store.name = name; save(); LB.board = boardOf(R.c); LB.period = "day"; drawLbControls(); loadBoard(); }
+			return j;
+		}, function () { return { ok: false, error: "Could not reach the leaderboard. Try again." }; });
+	}
+	function ranksText(k) { return "You are #" + k.day + " today, #" + k.week + " this week, #" + k.all + " all time."; }
+	function postBox(R) {
+		var r = R.r, c = R.c, b = '<div class="tt-post" id="tt-post">';
 		if (!lbEligible(c)) return b + '<span class="tu-note">This kind of test is not on the leaderboard (' + (c.mode === "custom" ? "your own text" : c.practice ? "weak-key practice" : "capitals, punctuation and numbers have to match the difficulty") + ").</span></div>";
+		if (T.replay) return b + '<span class="tu-note">A repeat of the same text is for practice and is not ranked. New words (Esc) are.</span></div>';
 		if (r.acc < MIN_ACC) return b + '<span class="tu-note">Leaderboard scores need ' + MIN_ACC + "% accuracy or more.</span></div>";
 		return b + '<label for="tt-name" class="tu-label">Post to the leaderboard</label><input id="tt-name" class="tu-input" maxlength="16" placeholder="Your name" autocomplete="nickname" spellcheck="false" value="' + esc(store.name) + '"><button type="button" class="tu-btn tu-btn--primary" id="tt-postgo">Post my score</button><span class="tu-note" id="tt-postmsg">Posts your name, speed and accuracy to the public board for ' + esc(boardName(boardOf(c))) + ".</span></div>";
 	}
-	function wirePost(r, c) {
+	function wirePost(R) {
 		var go = $("tt-postgo"); if (!go) return;
-		var msg = $("tt-postmsg"), inp = $("tt-name"), posted = false;
+		var msg = $("tt-postmsg"), inp = $("tt-name");
+		function done() { go.disabled = true; go.textContent = "Posted ✓"; msg.textContent = ranksText(R.posted); }
+		if (R.posted) { done(); return; }
+		R.onPosted = done;
 		function post() {
 			var name = inp.value.trim().replace(/\s+/g, " ");
 			if (!name) { msg.textContent = "Type a name first."; inp.focus(); return; }
-			if (posted) return;
-			if (!T.tok) { msg.textContent = "Still getting a verification code for this test… try again in a second."; return; }
 			go.disabled = true; msg.textContent = "Posting…";
-			lbApi({ a: "submit", t: T.tok, pid: store.pid, name: name, board: boardOf(c), wpm: Math.round(r.wpm * 10) / 10, acc: Math.round(r.acc * 10) / 10, secs: c.mode === "time" ? c.len : Math.round(r.secs * 10) / 10 }).then(function (j) {
-				if (!j.ok) { go.disabled = false; msg.textContent = j.error || "Could not post the score."; return; }
-				posted = true; T.tok = ""; store.name = name; save();
-				go.textContent = "Posted ✓"; msg.textContent = "You are #" + j.ranks.day + " today, #" + j.ranks.week + " this week, #" + j.ranks.all + " all time.";
-				LB.board = boardOf(c); LB.period = "day"; drawLbControls(); loadBoard();
-			}, function () { go.disabled = false; msg.textContent = "Could not reach the leaderboard. Try again."; });
+			postScore(R, name).then(function (j) { if (j.ok) done(); else { go.disabled = false; msg.textContent = j.error || "Could not post the score."; } });
 		}
 		go.onclick = post; inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); post(); } });
+	}
+
+	/* ---------- "save your result" pop-up, shown right after a ranked test ---------- */
+	var modal = null;
+	function closeModal() { if (!modal) return; modal.remove(); modal = null; document.removeEventListener("keydown", modalKey, true); }
+	function modalKey(e) { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closeModal(); } }
+	function openModal(R) {
+		if (modal) return;
+		var r = R.r, c = R.c;
+		modal = document.createElement("div"); modal.className = "tt-modal"; modal.setAttribute("role", "dialog"); modal.setAttribute("aria-modal", "true"); modal.setAttribute("aria-labelledby", "tt-mtitle");
+		modal.innerHTML = '<div class="tt-mcard"><h2 id="tt-mtitle">Save your result</h2>' +
+			'<div class="tt-mscore"><b>' + fmt(r.wpm, 0) + '</b> WPM <span>·</span> <b>' + fmt(r.acc, 1).replace(/\.0$/, "") + '%</b> accuracy</div>' +
+			'<p class="tu-note">' + esc(boardName(boardOf(c))) + '. Put it on the daily, weekly and all-time leaderboard.</p>' +
+			'<label for="tt-mname" class="tu-label">Your name (shown publicly)</label><input id="tt-mname" class="tu-input" maxlength="16" placeholder="Your name" autocomplete="nickname" spellcheck="false" value="' + esc(store.name) + '">' +
+			'<p class="tt-mmsg" id="tt-mmsg" aria-live="polite"></p>' +
+			'<div class="tt-mbtns"><button type="button" class="tu-btn tu-btn--primary" id="tt-mgo">Post my score</button><button type="button" class="tu-btn" id="tt-mno">Not now</button></div>' +
+			'<button type="button" class="tt-mlink" id="tt-mnever">Don\'t show this pop-up again</button></div>';
+		root.appendChild(modal);
+		var inp = $("tt-mname"), go = $("tt-mgo"), msg = $("tt-mmsg"), card = modal.firstChild;
+		function post() {
+			var name = inp.value.trim().replace(/\s+/g, " ");
+			if (!name) { msg.textContent = "Type a name first."; inp.focus(); return; }
+			go.disabled = true; msg.textContent = "Posting…";
+			postScore(R, name).then(function (j) {
+				if (!j.ok) { go.disabled = false; msg.textContent = j.error || "Could not post the score."; return; }
+				if (R.onPosted) R.onPosted();
+				card.innerHTML = '<h2 id="tt-mtitle">Posted ✓</h2><p class="tt-mscore">' + esc(ranksText(j.ranks)) + '</p><div class="tt-mbtns"><button type="button" class="tu-btn tu-btn--primary" id="tt-mview">See the leaderboard</button><button type="button" class="tu-btn" id="tt-mnext">Next test</button></div>';
+				$("tt-mview").onclick = function () { closeModal(); try { el.lb.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} };
+				$("tt-mnext").onclick = function () { closeModal(); build(true); focusIn(); };
+				$("tt-mview").focus();
+			});
+		}
+		go.onclick = post;
+		inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); post(); } });
+		$("tt-mno").onclick = closeModal;
+		$("tt-mnever").onclick = function () { store.noPop = true; save(); closeModal(); toast("OK. You can still post from the result below."); };
+		modal.addEventListener("pointerdown", function (e) { if (e.target === modal) closeModal(); });
+		document.addEventListener("keydown", modalKey, true);
+		if (store.name) go.focus(); else inp.focus();
 	}
 
 	/* ---------- history ---------- */
