@@ -376,6 +376,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .tt-lb {margin-top:1em;}
 	.tu .tt-lbopts {display:flex;flex-wrap:wrap;gap:0.6em;align-items:center;margin:0.7em 0 0.3em;}
 	.tu .tt-lbopts select {width:auto;max-width:100%;}
+	.tu .tt-lbopts input[type=search] {width:14em;max-width:100%;}
+	.tu .tt-lbtable th button {all:unset;cursor:pointer;font:inherit;text-transform:inherit;letter-spacing:inherit;color:inherit;white-space:nowrap;}
+	.tu .tt-lbtable th button:hover, .tu .tt-lbtable th button:focus-visible {color:var(--accent);text-decoration:underline;}
+	.tu .tt-lbtable th[aria-sort="ascending"], .tu .tt-lbtable th[aria-sort="descending"] {color:var(--accent);}
 	.tu .tt-lbtable tr.me td {background:rgba(37,99,235,0.1);font-weight:600;}
 	.tu .tt-lbtable td:first-child, .tu .tt-lbtable th:first-child {width:2.5em;}
 	.tu .tt-post {margin-top:1em;padding-top:0.8em;border-top:1px solid #e3e7ec;display:flex;flex-wrap:wrap;gap:0.5em 0.6em;align-items:center;}
@@ -837,6 +841,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="tt-lbopts">
 				<div class="tu-seg" id="tt-lbperiod" role="group" aria-label="Leaderboard period"></div>
 				<select id="tt-lbboard" class="tu-input" aria-label="Which test"></select>
+				<input type="search" id="tt-lbfilter" class="tu-input" placeholder="Filter by name or test…" aria-label="Filter the leaderboard by name or test" autocomplete="off">
 			</div>
 			<div id="tt-lbbody"></div>
 		</div>

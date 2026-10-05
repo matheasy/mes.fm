@@ -22,7 +22,8 @@ const DIFFS = ['beginner', 'easy', 'medium', 'hard', 'expert'];
 const LENS = { time: [15, 30, 60, 120], words: [10, 25, 50, 100], passage: ['short', 'medium', 'long'] };
 const MAX_WPM = 350;       // the fastest verified typists are ~300 for a burst
 const MIN_ACC = 90;        // percent; a leaderboard of 400 WPM mashing is no use to anyone
-const TOP = 25;            // rows returned
+const TOP = 100;           // rows returned (the page shows 25 at a time and sorts / filters them)
+const TOP_PER_BOARD = 50;  // taken from each board when merging "all tests"
 const KEEP = 500;          // rows kept per board
 const TOKEN_TTL = 1800;    // seconds a test token stays valid
 const RATE_PER_HOUR = 40;  // submissions per IP per hour
@@ -116,7 +117,7 @@ async function readBoard(board, period, me, now) {
 async function readAll(period, me, now) {
   const boards = allBoards();
   const cmds = [];
-  boards.forEach((b) => { const key = keyFor(b, period, now); cmds.push(['ZREVRANGE', key, '0', String(TOP - 1), 'WITHSCORES'], ['ZCARD', key]); });
+  boards.forEach((b) => { const key = keyFor(b, period, now); cmds.push(['ZREVRANGE', key, '0', String(TOP_PER_BOARD - 1), 'WITHSCORES'], ['ZCARD', key]); });
   const r = await redis(cmds);
   const all = []; let total = 0;
   boards.forEach((b, i) => {

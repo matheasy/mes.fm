@@ -248,7 +248,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 
 	/* ---------- elements ---------- */
 	var el = {};
-	["mode", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "mix", "rules", "diffnote", "banner", "custom", "customtext", "customgo", "live", "t", "tl", "w", "a", "stage", "view", "words", "caret", "in", "focus", "restart", "result", "hist", "histbody", "histsub", "toast", "lb", "lbperiod", "lbboard", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tt-" + k); });
+	["mode", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "mix", "rules", "diffnote", "banner", "custom", "customtext", "customgo", "live", "t", "tl", "w", "a", "stage", "view", "words", "caret", "in", "focus", "restart", "result", "hist", "histbody", "histsub", "toast", "lb", "lbperiod", "lbboard", "lbfilter", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tt-" + k); });
 
 	/* ---------- test state ---------- */
 	var T = { seed: "", gen: null, sess: null, wordEls: [], letterEls: [], limit: 0, running: false, timer: 0, practice: null, lastResult: null, tok: "", R: null, replay: false, lastPassage: "", customText: "", lastCfg: null };
@@ -552,7 +552,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 
 	/* ---------- leaderboard (api/typing-leaderboard.js; daily / weekly resets 00:00 UTC) ---------- */
 	var API = "/api/typing-leaderboard", MIN_ACC = 90, PER = { day: "Today", week: "This week", all: "All time" };
-	var LB = { period: "day", board: "all", loaded: false, counts: {}, picked: false };
+	var LB = { period: "day", board: "all", loaded: false, counts: {}, picked: false, data: null, sort: { k: "r", d: 1 }, shown: 25 };
 	function lbSave() { try { localStorage.setItem(KEY + ":lb", JSON.stringify({ period: LB.period, board: LB.board })); } catch (e) {} }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return c.mode === "passage" ? "passage-" + c.len : c.mode + "-" + c.len + "-" + c.diff; }
@@ -581,13 +581,35 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		el.lbbody.innerHTML = '<p class="tt-empty">Loading…</p>';
 		fetch(API + "?board=" + encodeURIComponent(board) + "&period=" + period + "&me=" + store.pid).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
 			if (board !== LB.board || period !== LB.period) return;
-			var combined = board === "all";
-			var rows = j.rows.map(function (x) { return '<tr' + (x.me ? ' class="me"' : "") + "><td>" + x.r + "</td><td>" + esc(x.n) + (x.me ? " (you)" : "") + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + fmt(x.w, 1).replace(/\.0$/, "") + "</strong></td><td>" + fmt(x.a, 1).replace(/\.0$/, "") + "%</td></tr>"; }).join("");
-			if (j.you && !j.rows.some(function (x) { return x.me; })) rows += '<tr class="me"><td>' + j.you.r + "</td><td>" + esc(store.name || "You") + " (you)</td><td><strong>" + fmt(j.you.w, 1).replace(/\.0$/, "") + "</strong></td><td>" + fmt(j.you.a, 1).replace(/\.0$/, "") + "%</td></tr>";
-			el.lbbody.innerHTML = j.rows.length ? '<div class="tt-tablewrap"><table class="tt-table tt-lbtable"><thead><tr><th>#</th><th>Name</th>' + (combined ? '<th>Test</th>' : '') + '<th>WPM</th><th>Accuracy</th></tr></thead><tbody>' + rows + "</tbody></table></div>" : '<p class="tt-empty">No scores here yet. Finish a test and post yours to be first.</p>';
-			el.lbnote.textContent = (j.total ? j.total + " typist" + (j.total > 1 ? "s" : "") + ". " : "") + (j.resets ? PER[period] + " resets at 00:00 UTC, in " + until(j.resets) + ". " : "") + "Best score per person; accuracy of " + MIN_ACC + "% or more counts.";
+			LB.data = j; LB.shown = 25; drawTable();
+			el.lbnote.textContent = (j.total ? j.total + " score" + (j.total > 1 ? "s" : "") + ". " : "") + (j.resets ? PER[period] + " resets at 00:00 UTC, in " + until(j.resets) + ". " : "") + "Accuracy of " + MIN_ACC + "% or more counts.";
 		}).catch(function () { if (board === LB.board && period === LB.period) { el.lbbody.innerHTML = '<p class="tt-empty">The leaderboard could not be loaded. Try again in a moment.</p>'; el.lbnote.textContent = ""; } });
 	}
+	// Sortable, filterable table over the rows the API returned (the best 100). "#" is always the WPM rank, whatever the sort.
+	var SORTS = { r: ["#", 1], n: ["Name", 1], b: ["Test", 1], w: ["WPM", -1], a: ["Accuracy", -1] };
+	function drawTable() {
+		var j = LB.data; if (!j) return;
+		var combined = LB.board === "all", words = el.lbfilter.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+		var cols = ["r", "n"].concat(combined ? ["b"] : [], ["w", "a"]);
+		if (cols.indexOf(LB.sort.k) < 0) LB.sort = { k: "r", d: 1 };
+		var rows = j.rows.filter(function (x) { var hay = (x.n + " " + (combined ? boardName(x.b) : "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
+		var k = LB.sort.k, d = LB.sort.d;
+		rows = rows.slice().sort(function (x, y) {
+			var a = k === "b" ? boardName(x.b) : x[k], b = k === "b" ? boardName(y.b) : y[k], c = typeof a === "string" ? a.localeCompare(b) : a - b;
+			return (c * d) || (x.r - y.r);
+		});
+		function num(v) { return fmt(v, 1).replace(/\.0$/, ""); }
+		function tr(x) { return '<tr' + (x.me ? ' class="me"' : "") + "><td>" + x.r + "</td><td>" + esc(x.n) + (x.me ? " (you)" : "") + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + num(x.w) + "</strong></td><td>" + num(x.a) + "%</td></tr>"; }
+		var body = rows.slice(0, LB.shown).map(tr).join("");
+		if (j.you && !words.length && !j.rows.some(function (x) { return x.me; })) body += tr({ r: j.you.r, n: store.name || "You", w: j.you.w, a: j.you.a, me: 1, b: LB.board });
+		var head = cols.map(function (c) { var on = LB.sort.k === c; return '<th scope="col" aria-sort="' + (on ? (LB.sort.d > 0 ? "ascending" : "descending") : "none") + '"><button type="button" data-k="' + c + '">' + SORTS[c][0] + (on ? (LB.sort.d > 0 ? " ▲" : " ▼") : "") + "</button></th>"; }).join("");
+		var more = rows.length > LB.shown ? '<div class="tt-hbtns"><button type="button" class="tu-btn tu-btn--ghost" id="tt-lbmore">Show more (' + (rows.length - LB.shown) + ")</button></div>" : "";
+		el.lbbody.innerHTML = !j.rows.length ? '<p class="tt-empty">No scores here yet. Finish a test and post yours to be first.</p>' : !rows.length ? '<p class="tt-empty">No scores match "' + esc(el.lbfilter.value) + '".</p>' :
+			'<div class="tt-tablewrap"><table class="tt-table tt-lbtable"><thead><tr>' + head + "</tr></thead><tbody>" + body + "</tbody></table></div>" + more;
+		if ($("tt-lbmore")) $("tt-lbmore").onclick = function () { LB.shown += 25; drawTable(); };
+	}
+	el.lbbody.addEventListener("click", function (e) { var b = e.target.closest("th button"); if (!b) return; var k = b.getAttribute("data-k"); LB.sort = LB.sort.k === k ? { k: k, d: -LB.sort.d } : { k: k, d: SORTS[k][1] }; drawTable(); });
+	el.lbfilter.addEventListener("input", function () { LB.shown = 25; drawTable(); });
 	// how many typists each board has for the chosen period (boards with scores show "(n)" in the picker)
 	function loadCounts(then) {
 		var period = LB.period;
