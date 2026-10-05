@@ -86,7 +86,11 @@ const CATEGORIES = [
   { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX" },
   { id: "mestruth", label: "MES Truth", test: (v) => v.channel === "@mestruth", playlist: "https://www.youtube.com/playlist?list=PL7uKZq8byj6EavTGBYXn5u7Wy6_RH_O6Z" },
 ];
-const catsOf = (v) => CATEGORIES.filter((c) => c.test(v)).map((c) => c.id).join(" ");
+// Videos whose title/channel don't say which chips they belong to: video id -> extra chip ids (added to the automatic ones).
+const EXTRA_CATS = {
+  lRxpPXnrLgo: ["911", "planes", "mestruth"], // Trailer for 55 (Debbie Welsh, UA93): about 9/11 planes research, shown with MES Truth
+};
+const catsOf = (v) => [...new Set([...CATEGORIES.filter((c) => c.test(v)).map((c) => c.id), ...(EXTRA_CATS[v.id] || [])])].join(" ");
 
 // Extra platform links per stream number (Hive, Rumble, Odysee, BitChute, X, Summary, Trailer, ...),
 // shown after the YouTube link in List View. Carried over from the old mes.fm/hutchison-livestreams
