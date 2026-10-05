@@ -95,6 +95,10 @@
 	.tu .tt-hbtns .tu-btn {display:inline-block;}
 	.tu .tt-empty {color:#6a7280;font-style:italic;margin:0.6em 0 0;}
 
+	.tu .tt-how {margin:0.2em 0 0.8em;font-size:0.9em;color:#555;}
+	.tu .tt-how summary {cursor:pointer;color:var(--accent);font-weight:600;}
+	.tu .tt-how p {margin:0.4em 0 0;line-height:1.55;}
+	body.dark-mode #tt .tt-how {color:#b6bdc7;}
 	/* leaderboard */
 	.tu .tt-lb {margin-top:1em;}
 	.tu .tt-lbopts {display:flex;flex-wrap:wrap;gap:0.6em;align-items:center;margin:0.7em 0 0.3em;}

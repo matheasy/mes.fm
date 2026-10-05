@@ -353,6 +353,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .tt-hbtns .tu-btn {display:inline-block;}
 	.tu .tt-empty {color:#6a7280;font-style:italic;margin:0.6em 0 0;}
 
+	.tu .tt-how {margin:0.2em 0 0.8em;font-size:0.9em;color:#555;}
+	.tu .tt-how summary {cursor:pointer;color:var(--accent);font-weight:600;}
+	.tu .tt-how p {margin:0.4em 0 0;line-height:1.55;}
+	body.dark-mode #tc .tt-how {color:#b6bdc7;}
 	/* leaderboard */
 	.tu .tt-lb {margin-top:1em;}
 	.tu .tt-lbopts {display:flex;flex-wrap:wrap;gap:0.6em;align-items:center;margin:0.7em 0 0.3em;}
@@ -507,6 +511,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tt-table th,body.dark-mode .tu .tt-table td{border-bottom:1px solid #29323d}
 	body.dark-mode .tu .tt-table th{color:#9a9da3}
 	body.dark-mode .tu .tt-empty{color:#9a9da3}
+	body.dark-mode .tu .tt-how{color:#aaaaaa}
 	body.dark-mode .tu .tt-star{color:#ffd75c}
 	body.dark-mode .tu .tt-post{border-top:1px solid #29323d}
 	body.dark-mode .tu .tt-mcard{background:#1a1a1a;color:#dddddd}
@@ -917,7 +922,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/typing-test-transcribe/js/typing-test-transcribe.js?v=1" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/typing-test-transcribe/js/typing-test-transcribe.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
