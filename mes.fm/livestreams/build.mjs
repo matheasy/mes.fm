@@ -81,6 +81,7 @@ const CATEGORIES = [
   { id: "hutchison", label: "Hutchison Effect", test: (v) => /hutchison/i.test(v.title) },
   { id: "911", label: "9/11 Truth", test: (v) => /9\/11|\bWTC\b|towers|judy wood/i.test(v.title) },
   { id: "planes", label: "9/11 Planes Research", test: (v) => /planes research/i.test(v.title) },
+  { id: "mh370", label: "MH370", test: (v) => /mh370/i.test(v.title) },
   { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title) },
   { id: "mestruth", label: "MES Truth", test: (v) => v.channel === "@mestruth" },
 ];
@@ -96,11 +97,11 @@ const EXTRA_LINKS = existsSync(join(__dirname, "extra-links.json"))
 const YT = (id) => `https://www.youtube.com/watch?v=${id}`;
 
 // "livestream" (main tab), "trailer" (Trailers tab) or "skip". The playlist also holds a few short
-// clips (e.g. "9/11 Mystery Object on Roof Before 2nd Impact") and a "MES Livestream BLANK"
-// placeholder that are neither -- they are left out and listed in the build log so a new one
+// clips (e.g. "9/11 Mystery Object on Roof Before 2nd Impact") that are neither -- they are left out and listed in the build log so a new one
 // doesn't go missing unnoticed.
 function classify(v) {
-  if (/^MES Livestream \d+/.test(v.title) || EXTRA_LIVESTREAM_IDS.has(v.id)) return "livestream";
+  // "MES Livestream BLANK" is the placeholder title for a stream that has no number yet (a possible upcoming one).
+  if (/^MES Livestream (\d+|BLANK)/.test(v.title) || EXTRA_LIVESTREAM_IDS.has(v.id)) return "livestream";
   if (/trailer/i.test(v.title) || /^UPCOMING LIVESTREAM/i.test(v.title)) return "trailer";
   return "skip";
 }
@@ -108,7 +109,7 @@ function classify(v) {
 // "MES Livestream 138: X" / "Trailer for MES Livestream 138: X" -> "138: X" (the page and tab already
 // say what it is; the number is what people scan for), same convention as mes.fm/math-qa.
 function shortTitle(v) {
-  const m = v.title.match(/^(?:Trailer for )?(?:MES )?Livestream (\d+):\s*(.+)$/i);
+  const m = v.title.match(/^(?:Trailer for )?(?:MES )?Livestream (\d+|BLANK):\s*(.+)$/i);
   const t = m ? `${m[1]}: ${m[2]}` : v.title;
   return v.status === "upcoming" ? `${t} (upcoming)` : t;
 }

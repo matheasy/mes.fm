@@ -213,7 +213,7 @@ var TT = (function () {
 })();
 if (typeof module !== "undefined" && module.exports) module.exports = TT;
 
-/* MES Typing Test -- UI. Logic lives in lib.js (TT). State: localStorage "mes-typingtest:v1" (settings, history, lifetime key stats); nothing is uploaded. */
+/* MES Typing Test -- UI. Logic lives in lib.js (TT). State: localStorage "mes-typingtest:v1" (settings, history, lifetime key stats); nothing is uploaded unless you post a score to the leaderboard (name, speed, accuracy). */
 (function () {
 	"use strict";
 	var $ = function (id) { return document.getElementById(id); };
@@ -225,12 +225,13 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 	var DEF = { mode: "time", len: { time: 30, words: 25, passage: "medium" }, diff: "medium", caps: false, punct: false, nums: false, strict: false, nobs: false, live: true, show: false };
 
 	/* ---------- storage ---------- */
-	var store = { opts: JSON.parse(JSON.stringify(DEF)), hist: [], keys: {} }, memOnly = false;
+	var store = { opts: JSON.parse(JSON.stringify(DEF)), hist: [], keys: {}, pid: "", name: "" }, memOnly = false;
 	try {
 		var raw = localStorage.getItem(KEY);
-		if (raw) { var o = JSON.parse(raw); if (o && typeof o === "object") { store.opts = Object.assign(store.opts, o.opts || {}); store.opts.len = Object.assign({}, DEF.len, (o.opts || {}).len || {}); store.hist = Array.isArray(o.hist) ? o.hist : []; store.keys = o.keys || {}; } }
+		if (raw) { var o = JSON.parse(raw); if (o && typeof o === "object") { store.opts = Object.assign(store.opts, o.opts || {}); store.opts.len = Object.assign({}, DEF.len, (o.opts || {}).len || {}); store.hist = Array.isArray(o.hist) ? o.hist : []; store.keys = o.keys || {}; store.pid = /^[a-f0-9]{16}$/.test(o.pid) ? o.pid : ""; store.name = typeof o.name === "string" ? o.name.slice(0, 16) : ""; } }
 	} catch (e) { memOnly = true; }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { memOnly = true; } }
+	if (!store.pid) { var rb = new Uint8Array(8); (window.crypto || window.msCrypto).getRandomValues(rb); store.pid = Array.prototype.map.call(rb, function (b) { return ("0" + b.toString(16)).slice(-2); }).join(""); save(); }
 	var S = store.opts;
 
 	/* ---------- URL (challenge / share links) ---------- */
@@ -247,10 +248,10 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 
 	/* ---------- elements ---------- */
 	var el = {};
-	["mode", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "mix", "rules", "diffnote", "banner", "custom", "customtext", "customgo", "live", "t", "tl", "w", "a", "stage", "view", "words", "caret", "in", "focus", "restart", "new", "result", "hist", "histbody", "histsub", "toast"].forEach(function (k) { el[k] = $("tt-" + k); });
+	["mode", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "mix", "rules", "diffnote", "banner", "custom", "customtext", "customgo", "live", "t", "tl", "w", "a", "stage", "view", "words", "caret", "in", "focus", "restart", "new", "result", "hist", "histbody", "histsub", "toast", "lb", "lbperiod", "lbboard", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tt-" + k); });
 
 	/* ---------- test state ---------- */
-	var T = { seed: "", gen: null, sess: null, wordEls: [], letterEls: [], limit: 0, running: false, timer: 0, practice: null, lastResult: null, customText: "", lastCfg: null };
+	var T = { seed: "", gen: null, sess: null, wordEls: [], letterEls: [], limit: 0, running: false, timer: 0, practice: null, lastResult: null, tok: "", customText: "", lastCfg: null };
 	var ENDS = { time: false, words: true, passage: true, custom: true };
 
 	function cfg() { return { mode: S.mode, len: S.len[S.mode], diff: S.diff, caps: S.caps, punct: S.punct, nums: S.nums, strict: S.strict, nobs: S.nobs, practice: T.practice ? 1 : 0 }; }
@@ -412,6 +413,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 
 	/* ---------- running ---------- */
 	function startRun() {
+		T.tok = ""; if (lbEligible(cfg())) lbApi({ a: "start" }).then(function (r) { if (r && r.t) T.tok = r.t; }, function () {});
 		T.running = true; T.t0 = performance.now(); el.live.classList.toggle("is-hidden", !S.live);
 		clearInterval(T.timer);
 		T.timer = setInterval(tick, 120);
@@ -519,7 +521,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 			'<div><h3 class="tt-h3">Keys<span class="tt-tabs" id="tt-kbtabs"><button type="button" data-m="err" aria-pressed="true">Mistakes</button><button type="button" data-m="spd" aria-pressed="false">Speed</button></span></h3><div id="tt-kbbox">' + keyboard(r.perKey, "err") + "</div>" +
 			(weak.length ? '<div class="tt-weak"><span>Hardest for you: <b>' + weak.join(" ") + '</b></span><button type="button" class="tu-btn tu-btn--primary" id="tt-practice">Practise my weak keys</button></div>' : '<div class="tt-kbnote">No weak keys this time. Clean typing!</div>') + "</div></div>" +
 			'<div class="tt-actions"><button type="button" class="tu-btn tu-btn--primary" id="tt-again">Next test</button><button type="button" class="tu-btn" id="tt-same">Same text again</button><button type="button" class="tu-btn" id="tt-copy">Copy result</button>' +
-			(c.mode !== "custom" ? '<button type="button" class="tu-btn" id="tt-chal">Copy challenge link</button>' : "") + (navigator.share ? '<button type="button" class="tu-btn tu-btn--ghost" id="tt-share">Share…</button>' : "") + "</div>";
+			(c.mode !== "custom" ? '<button type="button" class="tu-btn" id="tt-chal">Copy challenge link</button>' : "") + (navigator.share ? '<button type="button" class="tu-btn tu-btn--ghost" id="tt-share">Share…</button>' : "") + "</div>" + postBox(r, c);
 		el.result.hidden = false;
 		$("tt-again").onclick = function () { build(true); focusIn(); window.scrollTo({ top: Math.max(0, el.stage.getBoundingClientRect().top + window.pageYOffset - 140), behavior: "smooth" }); };
 		$("tt-same").onclick = function () { build(false); focusIn(); };
@@ -528,6 +530,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		if ($("tt-chal")) $("tt-chal").onclick = function () { copy(challengeLink(c, r), "Challenge link copied: same text, beat " + fmt(r.wpm, 0) + " WPM."); };
 		if ($("tt-share")) $("tt-share").onclick = function () { navigator.share({ title: "MES Typing Test", text: text, url: c.mode !== "custom" ? challengeLink(c, r) : "https://mes.fm/typing-test" }).catch(function () {}); };
 		if ($("tt-practice")) $("tt-practice").onclick = function () { T.practice = weak; S.mode = "words"; S.len.words = 25; challenge = null; save(); build(true); focusIn(); };
+		wirePost(r, c);
 		$("tt-kbtabs").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; var m = b.getAttribute("data-m"); Array.prototype.forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); $("tt-kbbox").innerHTML = keyboard(r.perKey, m); };
 	}
 	function copy(text, msg) {
@@ -535,6 +538,73 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { fallback(); });
 		else fallback();
 		function fallback() { var ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) { toast("Copy failed."); } document.body.removeChild(ta); }
+	}
+
+	/* ---------- leaderboard (api/typing-leaderboard.js; daily / weekly resets 00:00 UTC) ---------- */
+	var API = "/api/typing-leaderboard", MIN_ACC = 90, PER = { day: "Today", week: "This week", all: "All time" };
+	var LB = { period: "day", board: "time-30-medium", loaded: false };
+	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
+	function boardOf(c) { return c.mode === "passage" ? "passage-" + c.len : c.mode + "-" + c.len + "-" + c.diff; }
+	function boardName(b) { var p = b.split("-"); if (p[0] === "passage") return "Passage: " + p[1]; var d = TT.DIFFS[p[2]].name; return (p[0] === "time" ? p[1] + " seconds" : p[1] + " words") + " · " + d; }
+	// Only comparable tests count: no custom text, no weak-key practice, and the capitals / punctuation / numbers must be the difficulty's own.
+	function lbEligible(c) {
+		if (c.mode === "custom" || c.practice || !LENS[c.mode]) return false;
+		if (c.mode === "passage") return true;
+		var d = TT.DIFFS[c.diff]; return c.caps === d.caps && c.punct === d.punct && c.nums === d.nums;
+	}
+	function boardOptions() {
+		var o = [], diffs = Object.keys(TT.DIFFS);
+		["time", "words"].forEach(function (m) { LENS[m].forEach(function (l) { diffs.forEach(function (d) { o.push(m + "-" + l + "-" + d); }); }); });
+		LENS.passage.forEach(function (l) { o.push("passage-" + l); });
+		return o;
+	}
+	function drawLbControls() {
+		el.lbperiod.innerHTML = ["day", "week", "all"].map(function (p) { return '<button type="button" data-v="' + p + '" aria-pressed="' + (LB.period === p) + '">' + PER[p] + "</button>"; }).join("");
+		if (!el.lbboard.options.length) el.lbboard.innerHTML = boardOptions().map(function (b) { return '<option value="' + b + '">' + esc(boardName(b)) + "</option>"; }).join("");
+		el.lbboard.value = LB.board;
+	}
+	function until(ms) { var m = Math.max(1, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? Math.round(h / 24) + " days" : h ? h + " h " + (m % 60) + " min" : m + " min"; }
+	function loadBoard() {
+		LB.loaded = true; var board = LB.board, period = LB.period;
+		el.lbbody.innerHTML = '<p class="tt-empty">Loading…</p>';
+		fetch(API + "?board=" + encodeURIComponent(board) + "&period=" + period + "&me=" + store.pid).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+			if (board !== LB.board || period !== LB.period) return;
+			var rows = j.rows.map(function (x) { return '<tr' + (x.me ? ' class="me"' : "") + "><td>" + x.r + "</td><td>" + esc(x.n) + (x.me ? " (you)" : "") + "</td><td><strong>" + fmt(x.w, 1).replace(/\.0$/, "") + "</strong></td><td>" + fmt(x.a, 1).replace(/\.0$/, "") + "%</td></tr>"; }).join("");
+			if (j.you && !j.rows.some(function (x) { return x.me; })) rows += '<tr class="me"><td>' + j.you.r + "</td><td>" + esc(store.name || "You") + " (you)</td><td><strong>" + fmt(j.you.w, 1).replace(/\.0$/, "") + "</strong></td><td>" + fmt(j.you.a, 1).replace(/\.0$/, "") + "%</td></tr>";
+			el.lbbody.innerHTML = j.rows.length ? '<div class="tt-tablewrap"><table class="tt-table tt-lbtable"><thead><tr><th>#</th><th>Name</th><th>WPM</th><th>Accuracy</th></tr></thead><tbody>' + rows + "</tbody></table></div>" : '<p class="tt-empty">No scores here yet. Finish a ' + esc(boardName(board)) + " test and post yours to be first.</p>";
+			el.lbnote.textContent = (j.total ? j.total + " typist" + (j.total > 1 ? "s" : "") + ". " : "") + (j.resets ? PER[period] + " resets at 00:00 UTC, in " + until(j.resets) + ". " : "") + "Best score per person; accuracy of " + MIN_ACC + "% or more counts.";
+		}).catch(function () { if (board === LB.board && period === LB.period) { el.lbbody.innerHTML = '<p class="tt-empty">The leaderboard could not be loaded. Try again in a moment.</p>'; el.lbnote.textContent = ""; } });
+	}
+	el.lbperiod.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; LB.period = b.getAttribute("data-v"); drawLbControls(); loadBoard(); });
+	el.lbboard.addEventListener("change", function () { LB.board = el.lbboard.value; loadBoard(); });
+	function lbStart() {
+		var c = cfg(); if (lbEligible(c)) LB.board = boardOf(c);
+		drawLbControls();
+		if ("IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { io.disconnect(); if (!LB.loaded) loadBoard(); } }, { rootMargin: "300px" }); io.observe(el.lb); } else loadBoard();
+	}
+	function postBox(r, c) {
+		var b = '<div class="tt-post" id="tt-post">';
+		if (!lbEligible(c)) return b + '<span class="tu-note">This kind of test is not on the leaderboard (' + (c.mode === "custom" ? "your own text" : c.practice ? "weak-key practice" : "capitals, punctuation and numbers have to match the difficulty") + ").</span></div>";
+		if (r.acc < MIN_ACC) return b + '<span class="tu-note">Leaderboard scores need ' + MIN_ACC + "% accuracy or more.</span></div>";
+		return b + '<label for="tt-name" class="tu-label">Post to the leaderboard</label><input id="tt-name" class="tu-input" maxlength="16" placeholder="Your name" autocomplete="nickname" spellcheck="false" value="' + esc(store.name) + '"><button type="button" class="tu-btn tu-btn--primary" id="tt-postgo">Post my score</button><span class="tu-note" id="tt-postmsg">Posts your name, speed and accuracy to the public board for ' + esc(boardName(boardOf(c))) + ".</span></div>";
+	}
+	function wirePost(r, c) {
+		var go = $("tt-postgo"); if (!go) return;
+		var msg = $("tt-postmsg"), inp = $("tt-name"), posted = false;
+		function post() {
+			var name = inp.value.trim().replace(/\s+/g, " ");
+			if (!name) { msg.textContent = "Type a name first."; inp.focus(); return; }
+			if (posted) return;
+			if (!T.tok) { msg.textContent = "Still getting a verification code for this test… try again in a second."; return; }
+			go.disabled = true; msg.textContent = "Posting…";
+			lbApi({ a: "submit", t: T.tok, pid: store.pid, name: name, board: boardOf(c), wpm: Math.round(r.wpm * 10) / 10, acc: Math.round(r.acc * 10) / 10, secs: c.mode === "time" ? c.len : Math.round(r.secs * 10) / 10 }).then(function (j) {
+				if (!j.ok) { go.disabled = false; msg.textContent = j.error || "Could not post the score."; return; }
+				posted = true; T.tok = ""; store.name = name; save();
+				go.textContent = "Posted ✓"; msg.textContent = "You are #" + j.ranks.day + " today, #" + j.ranks.week + " this week, #" + j.ranks.all + " all time.";
+				LB.board = boardOf(c); LB.period = "day"; drawLbControls(); loadBoard();
+			}, function () { go.disabled = false; msg.textContent = "Could not reach the leaderboard. Try again."; });
+		}
+		go.onclick = post; inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); post(); } });
 	}
 
 	/* ---------- history ---------- */
@@ -572,7 +642,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 
 	/* ---------- go ---------- */
 	if (challenge) { /* a challenge link fixes the config it came with */ }
-	drawControls(); build(true);
+	drawControls(); build(true); lbStart();
 	window.addEventListener("resize", function () { moveCaret(true); });
 	if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { moveCaret(true); });
 })();

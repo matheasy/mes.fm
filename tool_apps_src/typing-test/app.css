@@ -95,6 +95,18 @@
 	.tu .tt-hbtns .tu-btn {display:inline-block;}
 	.tu .tt-empty {color:#6a7280;font-style:italic;margin:0.6em 0 0;}
 
+	/* leaderboard */
+	.tu .tt-lb {margin-top:1em;}
+	.tu .tt-lbopts {display:flex;flex-wrap:wrap;gap:0.6em;align-items:center;margin:0.7em 0 0.3em;}
+	.tu .tt-lbopts select {width:auto;max-width:100%;}
+	.tu .tt-lbtable tr.me td {background:rgba(37,99,235,0.1);font-weight:600;}
+	.tu .tt-lbtable td:first-child, .tu .tt-lbtable th:first-child {width:2.5em;}
+	.tu .tt-post {margin-top:1em;padding-top:0.8em;border-top:1px solid #e3e7ec;display:flex;flex-wrap:wrap;gap:0.5em 0.6em;align-items:center;}
+	.tu .tt-post .tu-input {width:12em;max-width:100%;}
+	.tu .tt-post .tu-btn {display:inline-block;}
+	.tu .tt-post .tu-note {flex-basis:100%;}
+	body.dark-mode #tt .tt-lbtable tr.me td {background:rgba(143,208,255,0.14);}
+	body.dark-mode #tt .tt-post {border-top-color:#3a3f47;}
 	body.dark-mode #tt .tt-stage {background:#1f2329;border-color:#3a3f47;}
 	body.dark-mode #tt .tt-words {color:#7d8591;}
 	body.dark-mode #tt .tt-l.c {color:#eceff4;}

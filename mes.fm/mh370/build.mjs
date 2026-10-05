@@ -40,7 +40,17 @@ const PAGES = [
     iconVersion: 1, // icon = crop of the MH370 artwork (img/mh370-videos-icon.jpg); bump when refreshed
     title: "MH370 Teleportation Psyop Videos",
     description:
-      "MES videos on the MH370 teleportation psyop: contrails out of sync with the plane, clouds stock footage found, the UFO orb hole in cloud hoax, duplicate frames, and livestreams with Bob Greenyer and Ashton Forbes debunks.",
+      "MES videos on the MH370 teleportation psyop: contrails out of sync with the plane, clouds stock footage found, the UFO orb hole in cloud hoax, duplicate frames, and the Bob Greenyer and Ashton Forbes responses.",
+  },
+  {
+    // Tile only: the MES livestreams and trailers about MH370 are the "MH370" filter chip of mes.fm/livestreams.
+    // Icon = crop of the thumbnail of the newest *public* livestream on the topic (Livestream 92); the upcoming
+    // "Livestream BLANK" and its trailer are in the list but deliberately not used for the tile.
+    slug: "mh370-livestreams",
+    href: "/livestreams#mh370",
+    tileLabel: "Livestreams",
+    iconVersion: 1,
+    tileOnly: true,
   },
 ];
 
