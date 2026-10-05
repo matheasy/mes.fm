@@ -302,8 +302,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.popular-tabs { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0.8em 0; }
 	.popular-tabs button { font: inherit; font-size: 0.95em; padding: 0.35em 0.9em; border: 2px solid #277bb6; border-radius: 999px; background: #fff; color: #1a5f94; cursor: pointer; }
 	.popular-tabs button[aria-pressed="true"] { background: #277bb6; color: #fff; }
-	.popular-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1em; margin: 1em 0; min-height: 12em; }
-	.popular-grid .icon-grid__label small { display: block; font-size: 0.75em; opacity: 0.85; margin-top: 0.2em; }
+	.popular-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em; margin: 1em 0; min-height: 12em; }
+	@media (max-width: 600px) { .popular-grid { grid-template-columns: repeat(2, 1fr); } }
+	html.page-theatre .popular-grid { grid-template-columns: repeat(6, 1fr); }
+	.popular-grid .icon-grid__label small { display: block; font-size: 0.8em; color: #fff; opacity: 0.9; margin-top: 0.2em; }
 	.popular-note { font-size: 0.9em; margin: 0.5em 0 0; }
 	body.dark-mode .popular-tabs button { background: #1f1f1f; color: #9cc9ec; border-color: #5aa5da; }
 	body.dark-mode .popular-tabs button[aria-pressed="true"] { background: #2d6fa1; color: #fff; border-color: #5aa5da; }
