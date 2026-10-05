@@ -337,11 +337,11 @@
 
 	/* ---------- leaderboard (api/typing-leaderboard.js; daily / weekly resets 00:00 UTC) ---------- */
 	var API = "/api/typing-leaderboard", MIN_ACC = 90, PER = { day: "Today", week: "This week", all: "All time" };
-	var LB = { period: "day", board: "time-30-medium", loaded: false, counts: {}, picked: false };
+	var LB = { period: "day", board: "all", loaded: false, counts: {}, picked: false };
 	function lbSave() { try { localStorage.setItem(KEY + ":lb", JSON.stringify({ period: LB.period, board: LB.board })); } catch (e) {} }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return c.mode === "passage" ? "passage-" + c.len : c.mode + "-" + c.len + "-" + c.diff; }
-	function boardName(b) { var p = b.split("-"); if (p[0] === "passage") return "Passage: " + p[1]; var d = TT.DIFFS[p[2]].name; return (p[0] === "time" ? p[1] + " seconds" : p[1] + " words") + " · " + d; }
+	function boardName(b) { if (b === "all") return "All tests combined"; var p = b.split("-"); if (p[0] === "passage") return "Passage: " + p[1]; var d = TT.DIFFS[p[2]].name; return (p[0] === "time" ? p[1] + " seconds" : p[1] + " words") + " · " + d; }
 	// Only comparable tests count: no custom text, no weak-key practice, and the capitals / punctuation / numbers must be the difficulty's own.
 	function lbEligible(c) {
 		if (c.mode === "custom" || c.practice || !LENS[c.mode]) return false;
@@ -350,14 +350,14 @@
 	}
 	function rankable(c) { return lbEligible(c) && !T.replay; }
 	function boardOptions() {
-		var o = [], diffs = Object.keys(TT.DIFFS);
+		var o = ["all"], diffs = Object.keys(TT.DIFFS);
 		["time", "words"].forEach(function (m) { LENS[m].forEach(function (l) { diffs.forEach(function (d) { o.push(m + "-" + l + "-" + d); }); }); });
 		LENS.passage.forEach(function (l) { o.push("passage-" + l); });
 		return o;
 	}
 	function drawLbControls() {
 		el.lbperiod.innerHTML = ["day", "week", "all"].map(function (p) { return '<button type="button" data-v="' + p + '" aria-pressed="' + (LB.period === p) + '">' + PER[p] + "</button>"; }).join("");
-		el.lbboard.innerHTML = boardOptions().map(function (b) { var n = LB.counts[b]; return '<option value="' + b + '">' + esc(boardName(b)) + (n ? " (" + n + ")" : "") + "</option>"; }).join("");
+		el.lbboard.innerHTML = boardOptions().map(function (b) { var n = b === "all" ? Object.keys(LB.counts).reduce(function (a, k) { return a + LB.counts[k]; }, 0) : LB.counts[b]; return '<option value="' + b + '">' + esc(boardName(b)) + (n ? " (" + n + ")" : "") + "</option>"; }).join("");
 		el.lbboard.value = LB.board;
 	}
 	function until(ms) { var m = Math.max(1, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? Math.round(h / 24) + " days" : h ? h + " h " + (m % 60) + " min" : m + " min"; }
@@ -366,9 +366,10 @@
 		el.lbbody.innerHTML = '<p class="tt-empty">Loading…</p>';
 		fetch(API + "?board=" + encodeURIComponent(board) + "&period=" + period + "&me=" + store.pid).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
 			if (board !== LB.board || period !== LB.period) return;
-			var rows = j.rows.map(function (x) { return '<tr' + (x.me ? ' class="me"' : "") + "><td>" + x.r + "</td><td>" + esc(x.n) + (x.me ? " (you)" : "") + "</td><td><strong>" + fmt(x.w, 1).replace(/\.0$/, "") + "</strong></td><td>" + fmt(x.a, 1).replace(/\.0$/, "") + "%</td></tr>"; }).join("");
+			var combined = board === "all";
+			var rows = j.rows.map(function (x) { return '<tr' + (x.me ? ' class="me"' : "") + "><td>" + x.r + "</td><td>" + esc(x.n) + (x.me ? " (you)" : "") + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + fmt(x.w, 1).replace(/\.0$/, "") + "</strong></td><td>" + fmt(x.a, 1).replace(/\.0$/, "") + "%</td></tr>"; }).join("");
 			if (j.you && !j.rows.some(function (x) { return x.me; })) rows += '<tr class="me"><td>' + j.you.r + "</td><td>" + esc(store.name || "You") + " (you)</td><td><strong>" + fmt(j.you.w, 1).replace(/\.0$/, "") + "</strong></td><td>" + fmt(j.you.a, 1).replace(/\.0$/, "") + "%</td></tr>";
-			el.lbbody.innerHTML = j.rows.length ? '<div class="tt-tablewrap"><table class="tt-table tt-lbtable"><thead><tr><th>#</th><th>Name</th><th>WPM</th><th>Accuracy</th></tr></thead><tbody>' + rows + "</tbody></table></div>" : '<p class="tt-empty">No scores here yet. Finish a ' + esc(boardName(board)) + " test and post yours to be first.</p>";
+			el.lbbody.innerHTML = j.rows.length ? '<div class="tt-tablewrap"><table class="tt-table tt-lbtable"><thead><tr><th>#</th><th>Name</th>' + (combined ? '<th>Test</th>' : '') + '<th>WPM</th><th>Accuracy</th></tr></thead><tbody>' + rows + "</tbody></table></div>" : '<p class="tt-empty">No scores here yet. Finish a test and post yours to be first.</p>';
 			el.lbnote.textContent = (j.total ? j.total + " typist" + (j.total > 1 ? "s" : "") + ". " : "") + (j.resets ? PER[period] + " resets at 00:00 UTC, in " + until(j.resets) + ". " : "") + "Best score per person; accuracy of " + MIN_ACC + "% or more counts.";
 		}).catch(function () { if (board === LB.board && period === LB.period) { el.lbbody.innerHTML = '<p class="tt-empty">The leaderboard could not be loaded. Try again in a moment.</p>'; el.lbnote.textContent = ""; } });
 	}
@@ -379,14 +380,11 @@
 	}
 	el.lbperiod.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; LB.period = b.getAttribute("data-v"); LB.picked = true; lbSave(); drawLbControls(); loadBoard(); loadCounts(); });
 	el.lbboard.addEventListener("change", function () { LB.board = el.lbboard.value; LB.picked = true; lbSave(); loadBoard(); });
-	// On load: the board last viewed or posted to (remembered), else the current test's board; if that board is empty for the period but
-	// others have scores, jump to the busiest one, so the leaderboard never looks erased just because the settings point at an empty board.
+	// On load: the board last viewed (remembered), else every test combined, so the leaderboard is never empty just because the current settings point at a quiet board.
 	function lbStart() {
-		var c = cfg(); if (lbEligible(c)) LB.board = boardOf(c);
 		try { var sv = JSON.parse(localStorage.getItem(KEY + ":lb") || "null"); if (sv && PER[sv.period] && boardOptions().indexOf(sv.board) >= 0) { LB.period = sv.period; LB.board = sv.board; LB.picked = true; } } catch (e) {}
 		drawLbControls();
 		loadCounts(function () {
-			if (!LB.picked && !LB.counts[LB.board]) { var best = null; Object.keys(LB.counts).forEach(function (b) { if (!best || LB.counts[b] > LB.counts[best]) best = b; }); if (best) LB.board = best; }
 			drawLbControls(); loadBoard();
 		});
 	}
@@ -396,7 +394,7 @@
 		if (R.posted) return Promise.resolve({ ok: true, ranks: R.posted });
 		if (!R.tok) return Promise.resolve({ ok: false, error: "Still getting a verification code for this test… try again in a second." });
 		return lbApi({ a: "submit", t: R.tok, pid: store.pid, name: name, board: boardOf(R.c), wpm: Math.round(R.r.wpm * 10) / 10, acc: Math.round(R.r.acc * 10) / 10, secs: R.c.mode === "time" ? R.c.len : Math.round(R.r.secs * 10) / 10 }).then(function (j) {
-			if (j.ok) { R.posted = j.ranks; R.tok = ""; store.name = name; save(); LB.board = boardOf(R.c); LB.period = "day"; LB.picked = true; lbSave(); drawLbControls(); loadBoard(); loadCounts(); }
+			if (j.ok) { R.posted = j.ranks; R.tok = ""; store.name = name; save(); LB.period = "day"; LB.picked = true; lbSave(); drawLbControls(); loadBoard(); loadCounts(); }
 			return j;
 		}, function () { return { ok: false, error: "Could not reach the leaderboard. Try again." }; });
 	}

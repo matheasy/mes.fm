@@ -5,7 +5,7 @@
 // broken by accuracy and one number decodes to both). Names live in a hash, id -> name.
 //
 //   GET  ?summary=1&period=day|week|all                        -> { counts:{ board: players } } (only boards that have scores)
-//   GET  ?board=time-30-medium&period=day|week|all[&me=<id>]   -> { rows:[{r,n,w,a,me?}], total, you:{r,w,a}|null, resets }
+//   GET  ?board=time-30-medium|all&period=day|week|all[&me=<id>] -> { rows:[{r,n,w,a,b,me?}], total, you:{r,w,a}|null, resets }   (board=all merges every board)
 //   POST { a:"start" }                                        -> { t: <one-time token> }  (when a test starts)
 //   POST { a:"submit", t, pid, name, board, wpm, acc, secs }   -> { ok, ranks:{day,week,all} }
 //   POST { a:"remove", key, pid }  (needs env TYPING_ADMIN_KEY; unset = disabled) -> { ok }
@@ -104,12 +104,32 @@ async function readBoard(board, period, me, now) {
   const ids = [], scores = [];
   for (let i = 0; i < flat.length; i += 2) { ids.push(flat[i]); scores.push(Number(flat[i + 1])); }
   const nm = await names(ids);
-  const rows = ids.map((id, i) => ({ r: i + 1, n: nm[i] || 'Anonymous', ...decode(scores[i]), me: me && id === me ? 1 : undefined }));
+  const rows = ids.map((id, i) => ({ r: i + 1, n: nm[i] || 'Anonymous', ...decode(scores[i]), b: board, me: me && id === me ? 1 : undefined }));
   let you = null;
   if (me && r[2] && r[2].result !== null && r[2].result !== undefined && r[3] && r[3].result != null) {
     you = { r: Number(r[2].result) + 1, ...decode(Number(r[3].result)) };
   }
   return { rows, total: Number((r[1] && r[1].result) || 0), you, resets: resetsAt(period, now) };
+}
+
+// "All tests": the top entries of every board merged by score. Each row says which test it was (b); a person appears once per test.
+async function readAll(period, me, now) {
+  const boards = allBoards();
+  const cmds = [];
+  boards.forEach((b) => { const key = keyFor(b, period, now); cmds.push(['ZREVRANGE', key, '0', String(TOP - 1), 'WITHSCORES'], ['ZCARD', key]); });
+  const r = await redis(cmds);
+  const all = []; let total = 0;
+  boards.forEach((b, i) => {
+    const flat = (r[i * 2] && r[i * 2].result) || [];
+    for (let k = 0; k < flat.length; k += 2) all.push({ id: flat[k], s: Number(flat[k + 1]), b });
+    total += Number((r[i * 2 + 1] && r[i * 2 + 1].result) || 0);
+  });
+  all.sort((x, y) => y.s - x.s);
+  const top = all.slice(0, TOP);
+  const nm = await names([...new Set(top.map((x) => x.id))]);
+  const byId = {}; [...new Set(top.map((x) => x.id))].forEach((id, i) => { byId[id] = nm[i]; });
+  const rows = top.map((x, i) => ({ r: i + 1, n: byId[x.id] || 'Anonymous', ...decode(x.s), b: x.b, me: me && x.id === me ? 1 : undefined }));
+  return { rows, total, you: null, resets: resetsAt(period, now) };
 }
 
 module.exports = async (req, res) => {
@@ -134,8 +154,8 @@ module.exports = async (req, res) => {
       const board = String(req.query.board || '');
       const period = String(req.query.period || 'day');
       const me = ID_RE.test(String(req.query.me || '')) ? String(req.query.me) : '';
-      if (!parseBoard(board) || !['day', 'week', 'all'].includes(period)) { res.status(400).json({ error: 'bad board' }); return; }
-      const out = await readBoard(board, period, me, now);
+      if ((board !== 'all' && !parseBoard(board)) || !['day', 'week', 'all'].includes(period)) { res.status(400).json({ error: 'bad board' }); return; }
+      const out = board === 'all' ? await readAll(period, me, now) : await readBoard(board, period, me, now);
       res.setHeader('Cache-Control', me ? 'no-store' : 'public, max-age=10, s-maxage=20, stale-while-revalidate=60');
       res.status(200).json(out);
       return;
