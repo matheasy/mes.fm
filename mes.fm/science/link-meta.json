@@ -1,4 +1,18 @@
 {
+  "https://mes.fm/fungi-poop": {
+    "image": "https://mes.fm/fungi-poop/img/fungi-poop-1.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35613"
+      },
+      {
+        "label": "More science",
+        "href": "https://mes.fm/science"
+      }
+    ]
+  },
   "https://mes.fm/america-gov-ai-chat": {
     "image": "https://mes.fm/america-gov-ai-chat/img/america-gov-ai-chat.jpg",
     "title": "USA Launches America.gov, an AI Chat Site for Government Services",

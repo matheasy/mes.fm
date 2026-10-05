@@ -37,7 +37,7 @@ const PAGES = [
     slug: "science-posts",
     sectionId: "science-posts",
     tileLabel: "Posts",
-    iconVersion: 1, // icon = crop of the newest post's thumbnail; bump when you refresh img/science-posts-icon.jpg
+    iconVersion: 2, // icon = crop of the newest post's thumbnail; bump when you refresh img/science-posts-icon.jpg
     title: "MES Science Posts",
     description:
       "MES science posts, newest first: the America.gov AI chat site, Mendeleev's periodic table dream, Martin Fleischmann's cold fusion and corn starch, and the ferrocell.",
