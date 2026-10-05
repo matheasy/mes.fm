@@ -104,6 +104,8 @@
 	.tu .tt-lbtable th button:hover, .tu .tt-lbtable th button:focus-visible {color:var(--accent);text-decoration:underline;}
 	.tu .tt-lbtable th[aria-sort="ascending"], .tu .tt-lbtable th[aria-sort="descending"] {color:var(--accent);}
 	.tu .tt-lbtable tr.me td {background:rgba(37,99,235,0.1);font-weight:600;}
+	.tu .tt-dev {font-size:0.85em;opacity:0.8;margin-left:0.25em;white-space:nowrap;}
+	.tu .tt-lbopts .tu-seg button {padding:0.45em 0.7em;font-size:0.9em;}
 	.tu .tt-star {color:#d9a400;font-size:1.05em;}
 	body.dark-mode #tt .tt-star {color:#ffd866;}
 	.tu .tt-lbtable td:first-child, .tu .tt-lbtable th:first-child {width:2.5em;}

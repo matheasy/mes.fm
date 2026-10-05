@@ -248,7 +248,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 
 	/* ---------- elements ---------- */
 	var el = {};
-	["mode", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "mix", "rules", "diffnote", "banner", "custom", "customtext", "customgo", "live", "t", "tl", "w", "a", "stage", "view", "words", "caret", "in", "focus", "restart", "result", "hist", "histbody", "histsub", "toast", "lb", "lbperiod", "lbboard", "lbfilter", "lbmine", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tt-" + k); });
+	["mode", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "mix", "rules", "diffnote", "banner", "custom", "customtext", "customgo", "live", "t", "tl", "w", "a", "stage", "view", "words", "caret", "in", "focus", "restart", "result", "hist", "histbody", "histsub", "toast", "lb", "lbperiod", "lbboard", "lbfilter", "lbdev", "lbmine", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tt-" + k); });
 
 	/* ---------- test state ---------- */
 	var T = { seed: "", gen: null, sess: null, wordEls: [], letterEls: [], limit: 0, running: false, timer: 0, practice: null, lastResult: null, tok: "", R: null, replay: false, lastPassage: "", customText: "", lastCfg: null };
@@ -560,8 +560,12 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 
 	/* ---------- leaderboard (api/typing-leaderboard.js; daily / weekly resets 00:00 UTC) ---------- */
 	var API = "/api/typing-leaderboard", MIN_ACC = 90, PER = { day: "Today", week: "This week", all: "All time" };
-	var LB = { period: "day", board: "all", loaded: false, counts: {}, picked: false, data: null, mine: false, sort: { k: "r", d: 1 }, shown: 25 };
+	var LB = { period: "day", board: "all", loaded: false, counts: {}, picked: false, data: null, mine: false, dev: "", sort: { k: "r", d: 1 }, shown: 25 };
 	function lbSave() { try { localStorage.setItem(KEY + ":lb", JSON.stringify({ period: LB.period, board: LB.board })); } catch (e) {} }
+	// "k" keyboard / "p" phone or tablet touch: self-reported with a score, shown as an icon and usable as a filter
+	function myDevice() { try { var ua = navigator.userAgent || "", touch = (navigator.maxTouchPoints || 0) > 0; return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || (touch && /Android|iPhone|iPad|iPod|Mobile/i.test(ua)) ? "p" : "k"; } catch (e) { return "k"; } }
+	var DEVS = { "": ["All devices", ""], k: ["⌨ Keyboard", "⌨"], p: ["📱 Phone", "📱"] };
+	function devIcon(d) { return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone or tablet (touch)" aria-label="phone">📱</span>' : ""; }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return c.mode === "passage" ? "passage-" + c.len : c.mode + "-" + c.len + "-" + c.diff; }
 	function boardName(b) { if (b === "all") return "All tests combined"; var p = b.split("-"); if (p[0] === "passage") return "Passage: " + p[1]; var d = TT.DIFFS[p[2]].name; return (p[0] === "time" ? p[1] + " seconds" : p[1] + " words") + " · " + d; }
@@ -581,6 +585,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 	function drawLbControls() {
 		el.lbperiod.innerHTML = ["day", "week", "all"].map(function (p) { return '<button type="button" data-v="' + p + '" aria-pressed="' + (LB.period === p) + '">' + PER[p] + "</button>"; }).join("");
 		el.lbboard.innerHTML = boardOptions().map(function (b) { var n = b === "all" ? Object.keys(LB.counts).reduce(function (a, k) { return a + LB.counts[k]; }, 0) : LB.counts[b]; return '<option value="' + b + '">' + esc(boardName(b)) + (n ? " (" + n + ")" : "") + "</option>"; }).join("");
+		el.lbdev.innerHTML = ["", "k", "p"].map(function (v) { return '<button type="button" data-v="' + v + '" aria-pressed="' + (LB.dev === v) + '">' + DEVS[v][0] + "</button>"; }).join("");
 		el.lbboard.value = LB.board;
 	}
 	function until(ms) { var m = Math.max(1, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? Math.round(h / 24) + " days" : h ? h + " h " + (m % 60) + " min" : m + " min"; }
@@ -588,7 +593,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		LB.loaded = true; var board = LB.board, period = LB.period;
 		el.lbbody.innerHTML = '<p class="tt-empty">Loading…</p>';
 		var mine = LB.mine;
-		fetch(API + (mine ? "?mine=" + store.pid + "&board=" : "?me=" + store.pid + "&board=") + encodeURIComponent(board) + "&period=" + period).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+		fetch(API + (mine ? "?mine=" + store.pid + "&board=" : "?me=" + store.pid + "&board=") + encodeURIComponent(board) + "&period=" + period + (LB.dev && !mine ? "&dev=" + LB.dev : "")).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
 			if (board !== LB.board || period !== LB.period || mine !== LB.mine) return;
 			LB.data = j; LB.shown = 25; drawTable();
 			if (mine) el.lbnote.textContent = j.total ? "Your last " + j.total + " posted result" + (j.total > 1 ? "s" : "") + ", newest first. ★ = your best on that test." : "";
@@ -603,7 +608,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		var mine = !!j.mine;
 		var cols = mine ? ["d"].concat(combined ? ["b"] : [], ["w", "a"]) : ["r", "n"].concat(combined ? ["b"] : [], ["w", "a"]);
 		if (cols.indexOf(LB.sort.k) < 0) LB.sort = mine ? { k: "d", d: -1 } : { k: "r", d: 1 };
-		var rows = j.rows.filter(function (x) { var hay = ((mine ? "" : x.n) + " " + (combined ? boardName(x.b) : "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
+		var rows = j.rows.filter(function (x) { if (mine && LB.dev && x.d !== LB.dev) return false; var hay = ((mine ? "" : x.n) + " " + (combined ? boardName(x.b) : "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
 		var k = LB.sort.k, d = LB.sort.d;
 		rows = rows.slice().sort(function (x, y) {
 			var a = k === "b" ? boardName(x.b) : x[k], b = k === "b" ? boardName(y.b) : y[k], c = typeof a === "string" ? a.localeCompare(b) : a - b;
@@ -611,8 +616,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		});
 		function num(v) { return fmt(v, 1).replace(/\.0$/, ""); }
 		function when(t) { var dt = new Date(t); return dt.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " + dt.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
-		function trMine(x) { return "<tr><td>" + esc(when(x.t)) + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + num(x.w) + "</strong>" + (x.pb ? ' <span class="tt-star" title="Your best on this test">★</span>' : "") + "</td><td>" + num(x.a) + "%</td></tr>"; }
-		function tr(x) { return '<tr' + (x.me ? ' class="me"' : "") + "><td>" + x.r + "</td><td>" + esc(x.n) + (x.me ? " (you)" : "") + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + num(x.w) + "</strong></td><td>" + num(x.a) + "%</td></tr>"; }
+		function trMine(x) { return "<tr><td>" + esc(when(x.t)) + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + num(x.w) + "</strong>" + devIcon(x.d) + (x.pb ? ' <span class="tt-star" title="Your best on this test">★</span>' : "") + "</td><td>" + num(x.a) + "%</td></tr>"; }
+		function tr(x) { return '<tr' + (x.me ? ' class="me"' : "") + "><td>" + x.r + "</td><td>" + esc(x.n) + (x.me ? " (you)" : "") + devIcon(x.d) + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + num(x.w) + "</strong></td><td>" + num(x.a) + "%</td></tr>"; }
 		var body = rows.slice(0, LB.shown).map(mine ? trMine : tr).join("");
 		if (!mine && j.you && !words.length && !j.rows.some(function (x) { return x.me; })) body += tr({ r: j.you.r, n: store.name || "You", w: j.you.w, a: j.you.a, me: 1, b: LB.board });
 		var head = cols.map(function (c) { var on = LB.sort.k === c; return '<th scope="col" aria-sort="' + (on ? (LB.sort.d > 0 ? "ascending" : "descending") : "none") + '"><button type="button" data-k="' + c + '">' + SORTS[c][0] + (on ? (LB.sort.d > 0 ? " ▲" : " ▼") : "") + "</button></th>"; }).join("");
@@ -630,6 +635,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 	}
 	el.lbperiod.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; LB.period = b.getAttribute("data-v"); LB.picked = true; lbSave(); drawLbControls(); loadBoard(); loadCounts(); });
 	el.lbboard.addEventListener("change", function () { LB.board = el.lbboard.value; LB.picked = true; lbSave(); loadBoard(); });
+	el.lbdev.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; LB.dev = b.getAttribute("data-v"); drawLbControls(); if (LB.mine) drawTable(); else loadBoard(); });
 	el.lbmine.addEventListener("click", function () { LB.mine = !LB.mine; LB.sort = LB.mine ? { k: "d", d: -1 } : { k: "r", d: 1 }; el.lbmine.setAttribute("aria-pressed", String(LB.mine)); loadBoard(); });
 	// On load: the board last viewed (remembered), else every test combined, so the leaderboard is never empty just because the current settings point at a quiet board.
 	function lbStart() {
@@ -644,7 +650,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 	function postScore(R, name) {
 		if (R.posted) return Promise.resolve({ ok: true, ranks: R.posted });
 		if (!R.tok) return Promise.resolve({ ok: false, error: "Still getting a verification code for this test… try again in a second." });
-		return lbApi({ a: "submit", t: R.tok, pid: store.pid, name: name, board: boardOf(R.c), wpm: Math.round(R.r.wpm * 10) / 10, acc: Math.round(R.r.acc * 10) / 10, secs: R.c.mode === "time" ? R.c.len : Math.round(R.r.secs * 10) / 10 }).then(function (j) {
+		return lbApi({ a: "submit", t: R.tok, pid: store.pid, name: name, board: boardOf(R.c), wpm: Math.round(R.r.wpm * 10) / 10, acc: Math.round(R.r.acc * 10) / 10, secs: R.c.mode === "time" ? R.c.len : Math.round(R.r.secs * 10) / 10, d: myDevice() }).then(function (j) {
 			if (j.ok) { R.posted = j.ranks; R.tok = ""; store.name = name; save(); LB.period = "day"; LB.picked = true; lbSave(); drawLbControls(); loadBoard(); loadCounts(); }
 			return j;
 		}, function () { return { ok: false, error: "Could not reach the leaderboard. Try again." }; });

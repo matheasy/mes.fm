@@ -41,8 +41,10 @@ function call(method, q, body, ip) {
   assert.deepStrictEqual(T.parseBoard('tr-120-long'), { mode: 'tr', len: 'long', diff: null, pace: 120 }); assert.strictEqual(T.parseBoard('tr-121-long'), null); assert.strictEqual(T.parseBoard('tr-120-huge'), null);
   assert.strictEqual(T.parseBoard('time-31-medium'), null); assert.strictEqual(T.parseBoard('passage-long').len, 'long'); assert.strictEqual(T.parseBoard('x'), null);
   assert.strictEqual(T.weekLabel(new Date('2026-10-05T12:00:00Z')), '2026-W41'); assert.strictEqual(T.weekLabel(new Date('2026-01-01T00:00:00Z')), '2026-W01'); assert.strictEqual(T.weekLabel(new Date('2024-12-30T00:00:00Z')), '2025-W01');
-  assert.deepStrictEqual(T.decode(T.encode(87.4, 96.3)), { w: 87.4, a: 96.3 });
-  assert.deepStrictEqual(T.decode(T.encode(122, 100)), { w: 122, a: 100 }); assert.deepStrictEqual(T.decode(T.encode(122, 99.9)), { w: 122, a: 99.9 }); assert(T.encode(122, 100) > T.encode(122, 99.9) && T.encode(122, 100) < T.encode(122.1, 90));
+  assert.deepStrictEqual(T.decode(T.encode(87.4, 96.3)), { w: 87.4, a: 96.3, d: '' });
+  assert.deepStrictEqual(T.decode(T.encode(122, 100)), { w: 122, a: 100, d: '' }); assert.deepStrictEqual(T.decode(T.encode(122, 99.9)), { w: 122, a: 99.9, d: '' }); assert(T.encode(122, 100) > T.encode(122, 99.9) && T.encode(122, 100) < T.encode(122.1, 90));
+  assert.deepStrictEqual(T.decode(T.encode(122, 100, 'p')), { w: 122, a: 100, d: 'p' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 97.3, 'k')), { w: 80.4, a: 97.3, d: 'k' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 99.9, 'p')), { w: 80.4, a: 99.9, d: 'p' });
+  assert.strictEqual(T.decode(T.encode(80, 97)).d, ''); assert(T.encode(80, 100, 'k') > T.encode(80, 99.9, 'p'));
   assert(T.encode(80, 99) > T.encode(80, 95) && T.encode(81, 90) > T.encode(80, 100));
   const realNow = Date.now; let fake = Math.floor(realNow() / 3600000) * 3600000 + 1000; // start of an hour: the rate-limit bucket must not roll over mid-test
   Date.now = () => fake;
@@ -77,12 +79,19 @@ function call(method, q, body, ip) {
   assert.strictEqual((await call('GET', { mine: pid, board: 'time-30-hard', period: 'all' })).b.rows.length, 0);
   assert.strictEqual((await call('GET', { mine: pid, board: 'all', period: 'day' })).b.rows.length, 2);
   assert.strictEqual((await call('GET', { mine: 'nope', period: 'all' })).c, 400);
+  // device: icon data + filter (ranks renumbered inside the filter)
+  t = await tok(); fake += 31000; r = await sub({ board: 'time-30-hard', pid: pid2, name: 'Ana', wpm: 70, acc: 97, d: 'p' }, t); assert.strictEqual(r.c, 200);
+  t = await tok(); fake += 31000; r = await sub({ board: 'time-30-hard', pid, name: 'Joe', wpm: 90, acc: 96, d: 'k' }, t); assert.strictEqual(r.c, 200);
+  let dv = await call('GET', { board: 'time-30-hard', period: 'all' }); assert.deepStrictEqual(dv.b.rows.map((x) => [x.n, x.d]), [['Joe', 'k'], ['Ana', 'p']]);
+  dv = await call('GET', { board: 'time-30-hard', period: 'all', dev: 'p' }); assert.deepStrictEqual(dv.b.rows.map((x) => [x.r, x.n, x.d]), [[1, 'Ana', 'p']]); assert.strictEqual(dv.b.total, 1);
+  dv = await call('GET', { board: 'all', period: 'all', dev: 'k' }); assert(dv.b.rows.length >= 1 && dv.b.rows.every((x) => x.d === 'k')); assert.strictEqual(dv.b.rows[0].r, 1);
+  assert.strictEqual((await call('GET', { mine: pid, board: 'time-30-hard', period: 'all' })).b.rows[0].d, 'k');
   // transcription boards stay apart from the typing boards
   t = await tok(); fake += 31000; r = await sub({ board: 'tr-120-medium', secs: 30, pid: pid2, name: 'Ana', wpm: 70, acc: 97 }, t); assert.strictEqual(r.c, 200, JSON.stringify(r.b));
   assert.strictEqual((await call('GET', { board: 'tr-all', period: 'all' })).b.rows.length, 1); assert.strictEqual((await call('GET', { board: 'tr-120-medium', period: 'all' })).b.rows[0].n, 'Ana');
   assert.strictEqual((await call('GET', { board: 'all', period: 'all' })).b.rows.every((x) => !x.b.startsWith('tr-')), true);
   assert.deepStrictEqual((await call('GET', { summary: '1', period: 'all', set: 'tr' })).b.counts, { 'tr-120-medium': 1 });
-  assert.strictEqual((await call('GET', { mine: pid2, board: 'tr-all', period: 'all' })).b.rows.length, 1); assert.strictEqual((await call('GET', { mine: pid2, board: 'all', period: 'all' })).b.rows.length, 1);
+  assert.strictEqual((await call('GET', { mine: pid2, board: 'tr-all', period: 'all' })).b.rows.length, 1); assert.strictEqual((await call('GET', { mine: pid2, board: 'all', period: 'all' })).b.rows.length, 2);
   // remove needs the admin key
   assert.strictEqual((await call('POST', {}, { a: 'remove', key: 'k', pid })).c, 403);
   process.env.TYPING_ADMIN_KEY = 'secret'; assert.strictEqual((await call('POST', {}, { a: 'remove', key: 'wrong!', pid })).c, 403);

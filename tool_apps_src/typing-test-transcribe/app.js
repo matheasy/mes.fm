@@ -29,7 +29,7 @@
 	/* ---------- elements ---------- */
 	var el = {};
 	["src", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "pace", "chunk", "rules", "voice", "vol", "vol-o", "pitch", "pitch-o", "note", "banner", "custom", "customtext", "live", "t", "w", "wl", "r", "status", "caption", "in", "start", "replay", "done", "new", "result", "hist", "histbody", "histsub", "toast",
-		"lb", "lbperiod", "lbboard", "lbfilter", "lbmine", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tc-" + k); });
+		"lb", "lbperiod", "lbboard", "lbfilter", "lbdev", "lbmine", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tc-" + k); });
 	function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	function fmt(n, d) { return (Math.round(n * Math.pow(10, d || 0)) / Math.pow(10, d || 0)).toFixed(d || 0); }
 	function toast(msg) { el.toast.textContent = msg; el.toast.classList.add("is-on"); clearTimeout(toast.t); toast.t = setTimeout(function () { el.toast.classList.remove("is-on"); }, 2400); }
@@ -302,7 +302,11 @@
 
 	/* ---------- leaderboard (same API as the Typing Test; tr- boards) ---------- */
 	var PER = { day: "Today", week: "This week", all: "All time" };
-	var LB = { period: "day", board: "tr-all", counts: {}, data: null, mine: false, sort: { k: "r", d: 1 }, shown: 25 };
+	var LB = { period: "day", board: "tr-all", counts: {}, data: null, mine: false, dev: "", sort: { k: "r", d: 1 }, shown: 25 };
+	// "k" keyboard / "p" phone or tablet touch: self-reported with a score, shown as an icon and usable as a filter
+	function myDevice() { try { var ua = navigator.userAgent || "", touch = (navigator.maxTouchPoints || 0) > 0; return (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || (touch && /Android|iPhone|iPad|iPod|Mobile/i.test(ua)) ? "p" : "k"; } catch (e) { return "k"; } }
+	var DEVS = { "": ["All devices", ""], k: ["⌨ Keyboard", "⌨"], p: ["📱 Phone", "📱"] };
+	function devIcon(d) { return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone or tablet (touch)" aria-label="phone">📱</span>' : ""; }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return "tr-" + c.pace + "-" + c.len; }
 	function boardName(b) { if (b === "tr-all") return "All paces combined"; var p = b.split("-"); return p[1] + " WPM · " + p[2].charAt(0).toUpperCase() + p[2].slice(1) + " passage"; }
@@ -311,13 +315,14 @@
 	function drawLbControls() {
 		el.lbperiod.innerHTML = ["day", "week", "all"].map(function (p) { return '<button type="button" data-v="' + p + '" aria-pressed="' + (LB.period === p) + '">' + PER[p] + "</button>"; }).join("");
 		el.lbboard.innerHTML = boardOptions().map(function (b) { var n = b === "tr-all" ? Object.keys(LB.counts).reduce(function (a, k) { return a + LB.counts[k]; }, 0) : LB.counts[b]; return '<option value="' + b + '">' + esc(boardName(b)) + (n ? " (" + n + ")" : "") + "</option>"; }).join("");
+		el.lbdev.innerHTML = ["", "k", "p"].map(function (v) { return '<button type="button" data-v="' + v + '" aria-pressed="' + (LB.dev === v) + '">' + DEVS[v][0] + "</button>"; }).join("");
 		el.lbboard.value = LB.board; el.lbmine.setAttribute("aria-pressed", String(LB.mine));
 	}
 	function until(ms) { var m = Math.max(1, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? Math.round(h / 24) + " days" : h ? h + " h " + (m % 60) + " min" : m + " min"; }
 	function loadBoard() {
 		var board = LB.board, period = LB.period, mine = LB.mine;
 		el.lbbody.innerHTML = '<p class="tt-empty">Loading…</p>';
-		fetch(API + (mine ? "?mine=" + store.pid + "&board=" : "?me=" + store.pid + "&board=") + encodeURIComponent(board) + "&period=" + period).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+		fetch(API + (mine ? "?mine=" + store.pid + "&board=" : "?me=" + store.pid + "&board=") + encodeURIComponent(board) + "&period=" + period + (LB.dev && !mine ? "&dev=" + LB.dev : "")).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
 			if (board !== LB.board || period !== LB.period || mine !== LB.mine) return;
 			LB.data = j; LB.shown = 25; drawTable();
 			if (mine) el.lbnote.textContent = j.total ? "Your last " + j.total + " posted result" + (j.total > 1 ? "s" : "") + ", newest first. ★ = your best on that test." : "";
@@ -330,13 +335,13 @@
 		var combined = LB.board === "tr-all", mine = !!j.mine, words = el.lbfilter.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
 		var cols = mine ? ["d"].concat(combined ? ["b"] : [], ["w", "a"]) : ["r", "n"].concat(combined ? ["b"] : [], ["w", "a"]);
 		if (cols.indexOf(LB.sort.k) < 0) LB.sort = mine ? { k: "d", d: -1 } : { k: "r", d: 1 };
-		var rows = j.rows.filter(function (x) { var hay = ((mine ? "" : x.n) + " " + (combined ? boardName(x.b) : "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
+		var rows = j.rows.filter(function (x) { if (mine && LB.dev && x.d !== LB.dev) return false; var hay = ((mine ? "" : x.n) + " " + (combined ? boardName(x.b) : "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
 		var k = LB.sort.k, d = LB.sort.d;
 		rows = rows.slice().sort(function (x, y) { var a = k === "b" ? boardName(x.b) : x[k], b = k === "b" ? boardName(y.b) : y[k], c = typeof a === "string" ? a.localeCompare(b) : a - b; return (c * d) || (mine ? y.t - x.t : x.r - y.r); });
 		function num(v) { return fmt(v, 1).replace(/\.0$/, ""); }
 		function when(t) { var dt = new Date(t); return dt.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " + dt.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
-		function trMine(x) { return "<tr><td>" + esc(when(x.t)) + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + num(x.w) + "</strong>" + (x.pb ? ' <span class="tt-star" title="Your best on this test">★</span>' : "") + "</td><td>" + num(x.a) + "%</td></tr>"; }
-		function tr(x) { return '<tr' + (x.me ? ' class="me"' : "") + "><td>" + x.r + "</td><td>" + esc(x.n) + (x.me ? " (you)" : "") + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + num(x.w) + "</strong></td><td>" + num(x.a) + "%</td></tr>"; }
+		function trMine(x) { return "<tr><td>" + esc(when(x.t)) + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + num(x.w) + "</strong>" + devIcon(x.d) + (x.pb ? ' <span class="tt-star" title="Your best on this test">★</span>' : "") + "</td><td>" + num(x.a) + "%</td></tr>"; }
+		function tr(x) { return '<tr' + (x.me ? ' class="me"' : "") + "><td>" + x.r + "</td><td>" + esc(x.n) + (x.me ? " (you)" : "") + devIcon(x.d) + "</td>" + (combined ? "<td>" + esc(boardName(x.b)) + "</td>" : "") + "<td><strong>" + num(x.w) + "</strong></td><td>" + num(x.a) + "%</td></tr>"; }
 		var body = rows.slice(0, LB.shown).map(mine ? trMine : tr).join("");
 		if (!mine && j.you && !words.length && !j.rows.some(function (x) { return x.me; })) body += tr({ r: j.you.r, n: store.name || "You", w: j.you.w, a: j.you.a, me: 1, b: LB.board });
 		var head = cols.map(function (c) { var on = LB.sort.k === c; return '<th scope="col" aria-sort="' + (on ? (LB.sort.d > 0 ? "ascending" : "descending") : "none") + '"><button type="button" data-k="' + c + '">' + SORTS[c][0] + (on ? (LB.sort.d > 0 ? " ▲" : " ▼") : "") + "</button></th>"; }).join("");
@@ -349,6 +354,7 @@
 	el.lbfilter.addEventListener("input", function () { LB.shown = 25; drawTable(); });
 	el.lbperiod.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; LB.period = b.getAttribute("data-v"); lbSave(); drawLbControls(); loadBoard(); loadCounts(); });
 	el.lbboard.addEventListener("change", function () { LB.board = el.lbboard.value; lbSave(); loadBoard(); });
+	el.lbdev.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; LB.dev = b.getAttribute("data-v"); drawLbControls(); if (LB.mine) drawTable(); else loadBoard(); });
 	el.lbmine.addEventListener("click", function () { LB.mine = !LB.mine; LB.sort = LB.mine ? { k: "d", d: -1 } : { k: "r", d: 1 }; drawLbControls(); loadBoard(); });
 	function loadCounts(then) {
 		var period = LB.period;
@@ -364,7 +370,7 @@
 	function postScore(R, name) {
 		if (R.posted) return Promise.resolve({ ok: true, ranks: R.posted });
 		if (!R.tok) return Promise.resolve({ ok: false, error: "This test could not be verified. Finish a new ranked test and post that." });
-		return lbApi({ a: "submit", t: R.tok, pid: store.pid, name: name, board: boardOf(R.c), wpm: Math.round(R.r.wpm * 10) / 10, acc: Math.round(R.r.acc * 10) / 10, secs: Math.round(R.r.secs * 10) / 10 }).then(function (j) {
+		return lbApi({ a: "submit", t: R.tok, pid: store.pid, name: name, board: boardOf(R.c), wpm: Math.round(R.r.wpm * 10) / 10, acc: Math.round(R.r.acc * 10) / 10, secs: Math.round(R.r.secs * 10) / 10, d: myDevice() }).then(function (j) {
 			if (j.ok) { R.posted = j.ranks; R.tok = ""; store.name = name; save(); LB.period = "day"; lbSave(); drawLbControls(); loadBoard(); loadCounts(); }
 			return j;
 		}, function () { return { ok: false, error: "Could not reach the leaderboard. Try again." }; });
