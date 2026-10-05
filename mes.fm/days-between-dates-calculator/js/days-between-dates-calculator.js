@@ -435,6 +435,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = DC;
 		// hero
 		var heroText = time ? DC.breakdown(A, Beff, { d: true, h: true, n: true, s: true }).text : N(wholeDays) + (wholeDays === 1 ? ' day' : ' days');
 		$('db-big').textContent = heroText;
+		// the same span in the chosen units (6 years, 6 months, 6 days) right under the headline, so one screenshot has both
+		$('db-ymd').hidden = time || sel.d && Object.keys(sel).length === 1; $('db-ymd').textContent = bd.text;
 		var dirNote = '';
 		var today = todayMs() + (time ? 0 : 0);
 		$('db-sub').innerHTML = esc(fmtDate(A, time)) + '<br>to ' + esc(fmtDate(B, time)) + '<br><span class="tu-note">' + (incl ? 'End date included (both days counted)' : time ? 'Clock difference' : 'End date not counted') + (swapped ? ' &middot; the dates were in reverse order' : '') + '</span>';
