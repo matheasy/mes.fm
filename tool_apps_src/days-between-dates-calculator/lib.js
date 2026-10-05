@@ -54,7 +54,8 @@ var DC = (function () {
 			vals[last] += rem / size;
 		}
 		var out = [];
-		chosen.forEach(function (u) { var v = vals[u]; if (v > 0 || (u === last && !out.length)) out.push({ u: u, v: v, text: num(v) + ' ' + LABEL[u][Math.round(v * 100) / 100 === 1 ? 0 : 1] }); });
+		// leading zero units are dropped (no "0 years"), but once the first non-zero one appears every ticked unit is shown, zeros included ("6 days, 0 hours, 0 minutes")
+		chosen.forEach(function (u) { var v = vals[u]; if (v > 0 || out.length || u === last) out.push({ u: u, v: v, text: num(v) + ' ' + LABEL[u][Math.round(v * 100) / 100 === 1 ? 0 : 1] }); });
 		return { parts: out, text: out.map(function (p) { return p.text; }).join(', ') };
 	}
 
