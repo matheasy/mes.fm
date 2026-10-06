@@ -300,7 +300,18 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		#input-div input { margin-left: 0; width: 100%; box-sizing: border-box; height: 2.4em; font-size: 1em; }
 		#result-input-container input { width: 100%; box-sizing: border-box; height: 2.4em; font-size: 1em; }
 		#main-content { overflow-x: auto; }
-		#ass-table { min-width: 32em; }
+		/* assignments table: fit the phone instead of a fixed 32em-wide table that scrolled sideways
+		   (header text and the "add another assignment" button were cut off, the red X squeezed to 10px) */
+		#right-side-container { padding-left: 0; }
+		#ass-table { width: 100%; min-width: 0; table-layout: fixed; }
+		#main-content #ass-table th { font-size: 0.8em; line-height: 1.15; padding-left: 0.1em; padding-right: 0.1em; }
+		#main-content #ass-table td { padding-left: 0.2em; padding-right: 0.2em; }
+		#ass-table th:first-child, #ass-table td:first-child { width: 1.9em; }
+		#ass-table th:nth-child(2) { width: 36%; }
+		#ass-table th:last-child, #ass-table td:last-child { width: 2.4em; }
+		#ass-table input { width: 100%; min-width: 0; box-sizing: border-box; height: 2.2em; font-size: 16px; padding: 0.2em 0.25em; text-align: center; }
+		#ass-table .scores-input { width: 40%; }
+		#right-side-container #ass-table img { width: 1.5em; height: 1.5em; }
 
 		/* footer: stack columns instead of squeezing table-cells side by side */
 		.footer { padding: 1.25em 0.75em; }
