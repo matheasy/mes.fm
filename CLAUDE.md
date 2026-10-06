@@ -263,7 +263,9 @@ of HTML files individually:
   **`share`** (2026-09-28, `mes.fm/share`, the MES Share Launcher) is built the same way but is a *tool* (card on `tools.html`,
   Media & Web): paste a post once and get per-site text for ~33 social sites (link in post / in reply / in description / "link in
   bio"), Open copies + opens the compose page. All state is localStorage (`mes-share:*`). Its art is Grok's (one combined image cut into
-  `share/img/logo.png` + `img/share-logo.png` at 90% fill with transparent corners, and the 1200x630 `share/img/logo-big.png`). The `tools` sidebar family no
+  `share/img/logo.png` + `img/share-logo.png` at 90% fill with transparent corners, and the 1200x630 `share/img/logo-big.png`).
+  **Parsed-field copy icons** (2026-10-06): every field in Share's "Parsed fields" (title, link, description, hashtags, video link, thumbnail, Odysee slug, extra links = `F` in `app.js`) is wrapped in `.sl-iw` with a two-sheets SVG
+  `.sl-fcopy` button inside its top-right corner (input gets `padding-right:2.6em`; a first version used absolutely-positioned "Copy" text pills that overlapped labels / borders). Empty field -> "Nothing to copy yet". Dark rule is `body.dark-mode #sl .sl-fcopy`. The `tools` sidebar family no
   longer lists `stats` (its wide table has no sidebar, commit 7d9da3f98), so `add_sidebar.py --family tools` can't re-add it.
 
 - **Site search** (2026-09-28, `mes.fm/search` + a magnifier button left of A-/A+/moon on every page). Three parts:
@@ -701,7 +703,12 @@ reported; if there is a large gap, stage only your own paths rather than `git ad
   `build_tool_apps.py` from `tool_apps_src/copy-text/`: notes on boards, click a note to copy, pin / colour / drag-reorder, search across boards, `{date}` `{time}` `{weekday}` `{year}` `{iso}`
   placeholders filled in at copy time (`{{date}}` = literal), undo for deletes, .txt / .json export, JSON restore (merges, skips duplicates), cross-tab sync via the `storage` event. All state is
   localStorage `mes-copytext:v1` (draft in `:draft`); nothing is uploaded. Normal-width page in `add_sidebar.py`'s tools collection. `mes.fm/share` got a small "My own text" card (same idea, own
-  storage `mes-share:snippets`, links to Copy Text). Logos are PIL placeholders (`copy-text/img/logo.png`, `logo-big.png` 1200x630, `img/copy-text-logo.png`) until Grok art lands.
+  storage `mes-share:snippets`, links to Copy Text).
+  **Split into texts** (2026-10-06): the "✂ Split into texts" button beside Save runs `splitParts()` in `tool_apps_src/copy-text/app.js` on the pasted text and shows a preview list (`#cp-splitbox`) before
+  saving anything: Full text (as pasted), Title (first line minus URLs / markdown, leading `#`s and trailing separators), each URL as Link / Link N (markdown links count), Description (the other paragraphs, minus URL-only lines,
+  hashtag-only paragraphs and a trailing hashtag run), Hashtags (de-duplicated, as typed) are ticked by default; Title + link, each Paragraph N (when more than one) and Hashtags (no #) start unticked. Rows have an editable name + text, a tick
+  box and their own Copy button; "Save ticked" adds them to the current board in list order (`addNote(..., atTop)` run in reverse). One-piece text says "Nothing to split". Same parsing idea as `share`'s `parse()` but kept separate
+  (no "split the title at ` - `"); change both by hand if the rules should stay in step. Logos are PIL placeholders (`copy-text/img/logo.png`, `logo-big.png` 1200x630, `img/copy-text-logo.png`) until Grok art lands.
 - **Transcription Typing Test** (2026-10-05, `mes.fm/typing-test-transcribe`; `/transcribe`, `/transcription`, `/transcription-typing-test`, `/typing-test-listen` 308 to it; card in `tools.html` "Time & Focus"). The Typing Test's
   listening twin: the text is *spoken* (Web Speech API) a phrase at a time and you type what you hear, never seeing the words. A sub-page of the Typing Test brand (the `brand` option in `build_tool_apps.py`: same logo / header /
   favicon / og:image, info bar `Home | Transcribe`, the Typing Test page carries the same tab). Built by `build_tool_apps.py` from `tool_apps_src/typing-test-transcribe/` (`lib.js` = spoken passages (3 per length), chunking, pacing
