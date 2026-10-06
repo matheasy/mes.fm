@@ -303,7 +303,13 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.popular-tabs button { font: inherit; font-size: 0.95em; padding: 0.35em 0.9em; border: 2px solid #277bb6; border-radius: 999px; background: #fff; color: #1a5f94; cursor: pointer; }
 	.popular-tabs button[aria-pressed="true"] { background: #277bb6; color: #fff; }
 	.popular-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em; margin: 1em 0; min-height: 12em; }
-	@media (max-width: 600px) { .popular-grid { grid-template-columns: repeat(2, 1fr); } }
+	@media (max-width: 600px) {
+		.popular-grid { grid-template-columns: repeat(2, 1fr); gap: 0.7em; }
+		/* phones: the caption sits under the thumbnail instead of over it -- an overlaid 2-4 line caption
+		   covered most of a ~160px tile, so the picture was a sliver next to the text */
+		.popular-grid .icon-grid__link--labeled { display: flex; flex-direction: column; background: rgba(51, 51, 51, 0.92); }
+		.popular-grid .icon-grid__label { position: static; flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0.45em 0.4em 0.5em; font-size: 0.95em; line-height: 1.2; background: none; }
+	}
 	html.page-theatre .popular-grid { grid-template-columns: repeat(6, 1fr); }
 	.popular-grid .icon-grid__label small { display: block; font-size: 0.8em; color: #fff; opacity: 0.9; margin-top: 0.2em; }
 	.popular-note { font-size: 0.9em; margin: 0.5em 0 0; }
