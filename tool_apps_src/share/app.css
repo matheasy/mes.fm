@@ -78,8 +78,8 @@
 	.tu .sl-snip-h .sl-snip-label {flex:1;min-width:0;font-weight:700;}
 	body.dark-mode .tu .sl-snip {background:rgba(255,255,255,0.05);border-color:#3a3a3a;}
 
-	.tu .sl-fwrap {position:relative;}
-	.tu .sl-fwrap > label {padding-right:4.2em;}
-	.tu .sl-fcopy {position:absolute;top:0;right:0;cursor:pointer;border:1px solid var(--accent);border-radius:0.4em;background:#fff;color:var(--accent);font-size:0.78em;font-weight:700;padding:0.15em 0.65em;line-height:1.4;}
-	.tu .sl-fcopy:hover {background:var(--tint);}
+	.tu .sl-iw {position:relative;}
+	.tu .sl-iw > .tu-input {padding-right:2.6em;}
+	.tu .sl-fcopy {position:absolute;top:0.35em;right:0.35em;display:inline-flex;align-items:center;justify-content:center;width:1.9em;height:1.9em;padding:0;cursor:pointer;border:1px solid transparent;border-radius:0.4em;background:transparent;color:var(--accent);}
+	.tu .sl-fcopy:hover {background:var(--tint);border-color:var(--accent);}
 	body.dark-mode #sl .sl-fcopy {background:transparent;}

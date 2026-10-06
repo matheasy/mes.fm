@@ -569,15 +569,17 @@
 	if (snips.length) $("sl-snips").open = true;
 
 	/* ---------- a Copy button on every parsed field ---------- */
+	var COPY_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
 	F.forEach(function (k) {
-		var inp = $("sl-" + k), box = inp.closest(".tu-field"); if (!box) return;
+		var inp = $("sl-" + k), w = document.createElement("div");
+		w.className = "sl-iw"; inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
 		var b = document.createElement("button");
-		b.type = "button"; b.className = "sl-fcopy"; b.textContent = "Copy"; b.title = "Copy this field"; b.setAttribute("aria-label", "Copy " + k);
+		b.type = "button"; b.className = "sl-fcopy"; b.innerHTML = COPY_ICON; b.title = "Copy this field"; b.setAttribute("aria-label", "Copy " + k);
 		b.onclick = function () {
 			var t = inp.value.trim(); if (!t) { toast("Nothing to copy yet"); return; }
 			copy(t).then(function (ok) { toast(ok ? "Copied " + k : "Copy failed: select the text instead"); });
 		};
-		box.classList.add("sl-fwrap"); box.appendChild(b);
+		w.appendChild(b);
 	});
 
 	var saved = store.get("post", null);
