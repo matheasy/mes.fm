@@ -59,7 +59,9 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("copy-text", "Copy Text"),    # also built by build_tool_apps.py
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)
     ("youtubemoney", "YouTube Money Calculator"),   # also built by build_tool_apps.py (ad-free)
-    ("gradecalculator", "Grade Calculator"),   # also built by build_tool_apps.py (Grade Calculator 2.0)
+    ("gpacalculator", "GPA Calculator"),   # also built by build_tool_apps.py (GPA Calculator 2.0)
+    ("gradecalculator", "Grade Calculator"),
+    ("gradecalculator/weighted-average-calculator.html", "Grade Calculator", "/gradecalculator"),   # Weighted Average 2.0: a page inside the Grade Calculator folder   # also built by build_tool_apps.py (Grade Calculator 2.0)
     ("vatcalculator", "VAT Calculator"),   # also built by build_tool_apps.py (VAT Calculator 2.0)
     ("how-much-do-youtubers-make", "YouTube Money", "/youtubemoney"),   # a sub-page of the YouTube Money site (brand option in build_tool_apps.py); wide, ad-free
     ("mortgagecalculator", "Mortgage Calculator"),   # also built by build_tool_apps.py (Mortgage Calculator 2.0)
@@ -291,7 +293,7 @@ def main():
     changed = 0
     for entry in TOOLS:
         d, title = entry[0], entry[1]
-        p = SITE / d / "index.html"
+        p = SITE / d if d.endswith(".html") else SITE / d / "index.html"   # "<folder>/<page>.html" = a page inside another site's folder
         old = p.read_text(encoding="utf-8")
         new, notes = patch(old, d, title, entry[2] if len(entry) > 2 else None)
         if new is None:

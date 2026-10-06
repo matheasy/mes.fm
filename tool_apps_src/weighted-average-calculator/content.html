@@ -1,0 +1,65 @@
+	<div class="tu" id="wa">
+		<div id="wa-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
+
+		<div class="tu-card" id="wa-setup">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:2 1 14em;">
+					<label for="wa-title">List name (optional)</label>
+					<input id="wa-title" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Fall semester">
+				</div>
+				<div class="tu-field tu-field--sm" style="flex:1 1 8em;">
+					<label for="wa-dec">Decimals</label>
+					<select id="wa-dec" class="tu-select"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select>
+				</div>
+			</div>
+			<p class="tu-note" style="margin:0.8em 0 0.2em;">Enter each grade (or any number) and how much it counts: credits, hours, points or a percentage. Only the weights relative to each other matter.</p>
+			<div id="wa-rows"></div>
+			<div class="wa-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="wa-add">+ Add a row</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wa-equal" title="Give every row the weight 1 to get a plain average">Equal weights</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wa-paste" title="Paste a column of numbers from a spreadsheet">Paste from a spreadsheet</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wa-clear">Clear</button>
+			</div>
+			<div id="wa-pastebox" hidden style="margin-top:0.8em;">
+				<label for="wa-pastetext" class="tu-label">Paste two or three columns: grade, weight (and a name first if you like). One row per line, separated by tabs, commas or spaces.</label>
+				<textarea id="wa-pastetext" class="tu-input" rows="5" placeholder="Math&#9;91&#9;4&#10;History&#9;84&#9;3"></textarea>
+				<div class="wa-btns"><button type="button" class="tu-btn tu-btn--primary" id="wa-pastego">Use these rows</button><button type="button" class="tu-btn tu-btn--ghost" id="wa-pastecancel">Cancel</button></div>
+			</div>
+		</div>
+
+		<div id="wa-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter at least one grade and its weight to see the average &mdash; or try an example: </span><span class="tu-chips" id="wa-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="wa-out" hidden>
+			<div class="tu-stats" id="wa-hero" aria-live="polite"></div>
+			<div class="tu-card" id="wa-steps-card">
+				<div class="tu-label">How it is worked out</div>
+				<div class="tu-table-wrap"><table class="tu-table" id="wa-table"></table></div>
+				<p class="wa-formula" id="wa-formula"></p>
+			</div>
+			<div class="wa-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="wa-link">Copy link to this list</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wa-copy">Copy result</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wa-csv">Copy as a spreadsheet table</button>
+				<button type="button" class="tu-btn tu-btn--ghost wa-print">Print</button>
+			</div>
+			<p class="tu-note" id="wa-store-note"></p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>About the weighted average calculator</h2>
+			<p>Although a weighted average calculator is often used to find an overall semester average for courses that count for different numbers of credits, the same calculation works for any group of numbers: assignments, tests, courses or whole semesters. It can also give a plain, unweighted average: set every weight to the same value (the <em>Equal weights</em> button sets them all to 1).</p>
+			<h3>How does it work?</h3>
+			<p>A basic average adds up the grades and divides by how many there are. A weighted average multiplies each grade by its weight, adds those up, and divides by the total weight:</p>
+			<ul>
+				<li>Basic average = (Grade1 + Grade2 + &hellip;) &divide; (number of grades)</li>
+				<li>Weighted average = (Grade1 &times; Weight1 + Grade2 &times; Weight2 + &hellip;) &divide; (Weight1 + Weight2 + &hellip;)</li>
+			</ul>
+			<p>For example, grades of 90, 80 and 70 with credits 3, 4 and 2 give (90&times;3 + 80&times;4 + 70&times;2) &divide; 9 = 730 &divide; 9 = <b>81.11</b>, a little higher than the plain average of 80 because the 90 counts for more than the 70.</p>
+			<h3>Good to know</h3>
+			<ul>
+				<li><strong>Percentage weights</strong> (e.g. 20%, 30%, 50%) work the same way; they do not have to add up to 100.</li>
+				<li><strong>Saving:</strong> your list is saved in this browser. Use <em>Copy link to this list</em> to open it on another device &mdash; the link holds the whole list, nothing is uploaded.</li>
+				<li><strong>Need the grade for a final exam?</strong> Use the <a href="/gradecalculator">Final Grade Calculator</a>. <strong>GPA?</strong> Use the <a href="/gpacalculator">GPA Calculator</a>. <a href="/gradecalculator/weighted-average-tutorial">Weighted Average Tutorial</a></li>
+			</ul>
+		</div>
+	</div>

@@ -1,0 +1,87 @@
+	<div class="tu" id="gp">
+		<div id="gp-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
+
+		<div class="tu-card" id="gp-opts">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:1 1 12em;">
+					<span class="tu-label" id="gp-scale-label">GPA scale</span>
+					<div class="tu-seg" id="gp-scale" role="group" aria-labelledby="gp-scale-label" style="margin-top:0.3em;display:flex;">
+						<button type="button" data-scale="4" aria-pressed="true">4.0</button>
+						<button type="button" data-scale="433" aria-pressed="false">4.33</button>
+					</div>
+				</div>
+				<div class="tu-field" style="flex:2 1 16em;">
+					<label class="gp-check"><input type="checkbox" id="gp-weighted"> Weighted GPA <small>(honors +0.5, AP / IB +1.0)</small></label>
+				</div>
+			</div>
+			<details class="gp-prior" id="gp-priorbox">
+				<summary>Add GPA and credits from before these terms <small>(for a cumulative GPA)</small></summary>
+				<div class="tu-row" style="margin-top:0.6em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="gp-pgpa">Current cumulative GPA</label><input id="gp-pgpa" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 3.45"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="gp-pcr">Credits earned so far</label><input id="gp-pcr" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 60"></div>
+				</div>
+			</details>
+		</div>
+
+		<div class="gp-terms" id="gp-terms" role="tablist" aria-label="Terms"></div>
+
+		<div class="tu-card" id="gp-setup">
+			<div class="tu-field" style="max-width:20em;margin-bottom:0.4em;"><label for="gp-tname">Term name</label><input id="gp-tname" class="tu-input" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Fall 2026"></div>
+			<p class="tu-note" style="margin:0.4em 0 0.2em;">For each course type the grade as a <b>letter</b> (A, B+, C-) <i>or</i> a <b>percentage</b> (92) &mdash; you can mix them &mdash; and its credits. Leave credits blank if your school does not use them (each course then counts as 1).</p>
+			<div id="gp-rows"></div>
+			<div class="gp-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="gp-add">+ Add a course</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="gp-clear">Clear this term</button>
+			</div>
+			<datalist id="gp-letters"></datalist>
+		</div>
+
+		<div id="gp-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter a grade for at least one course to see your GPA &mdash; or try an example: </span><span class="tu-chips" id="gp-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="gp-out" hidden>
+			<div class="tu-stats" id="gp-hero" aria-live="polite"></div>
+			<div class="tu-card" id="gp-courses-card"><div class="tu-table-wrap"><table class="tu-table" id="gp-table"></table></div></div>
+			<div id="gp-termsum-card" hidden>
+				<h2>All terms</h2>
+				<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="gp-termsum"></table></div></div>
+			</div>
+
+			<h2>What GPA do I need next?</h2>
+			<div class="tu-card" id="gp-plan">
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="gp-ptarget">Cumulative GPA I want</label><input id="gp-ptarget" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 3.5"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="gp-pnext">Credits I will take next</label><input id="gp-pnext" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 15"></div>
+				</div>
+				<p id="gp-plan-out" class="gp-plan-out" aria-live="polite"></p>
+			</div>
+		</div>
+
+		<h2>Save and share</h2>
+		<div class="tu-card" id="gp-save">
+			<p style="margin:0 0 0.6em;"><b>Your terms and courses are saved in this browser automatically.</b> To carry them to another phone or computer, copy a link and open it there. The link holds everything, so there is no account and nothing is uploaded.</p>
+			<div class="gp-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="gp-link-all">Copy link to everything</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="gp-link-one">Copy link to this term</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="gp-copy">Copy my GPA</button>
+				<button type="button" class="tu-btn tu-btn--ghost gp-print">Print</button>
+			</div>
+			<p class="tu-note" id="gp-store-note" style="margin-bottom:0;"></p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How GPA is calculated</h2>
+			<p>GPA is a credit-weighted average of grade points. Each grade is turned into points on your school&rsquo;s scale, multiplied by the course&rsquo;s credits, added up and divided by the total credits:</p>
+			<p style="text-align:center;"><b>GPA = &Sigma; (grade points &times; credits) &divide; &Sigma; credits</b></p>
+			<p>For example an A (4.0) in a 3-credit course and a B (3.0) in a 4-credit course give (4.0&times;3 + 3.0&times;4) &divide; 7 = <b>3.43</b>. A cumulative GPA works the same way across all your terms, which is why adding your earlier GPA and credits above gives your new overall figure.</p>
+			<h3>Scales used here</h3>
+			<div class="tu-table-wrap"><table class="tu-table" id="gp-ref"></table></div>
+			<p class="tu-note">Schools differ, especially around A+ and the lowest passing grade. See the <a href="/gpacalculator/gpa-scale-4">4.0 GPA scale</a> and <a href="/gpacalculator/gpa-scale-433">4.33 GPA scale</a> pages for the conversion tables. Percentages are rounded to the nearest whole number first.</p>
+			<h3>Questions</h3>
+			<h4>What is a weighted GPA?</h4>
+			<p>A weighted GPA adds a bonus for harder courses. Tick <em>Weighted GPA</em> and mark each course Honors (+0.5) or AP / IB (+1.0). The bonus is not added to an F.</p>
+			<h4>What GPA do I need next term?</h4>
+			<p>Use <em>What GPA do I need next?</em>: enter the cumulative GPA you want and the credits you will take, and the calculator tells you what your next term has to average, or that the goal is out of reach.</p>
+			<h4>Is my data private?</h4>
+			<p>Yes. Everything stays in your browser. <a href="/gpacalculator/grade-point-average">What is GPA?</a> &middot; <a href="/gpacalculator/tutorial">Tutorial</a> &middot; <a href="/gradecalculator">Final Grade Calculator</a> &middot; <a href="/gradecalculator/weighted-average-calculator">Weighted Average Calculator</a></p>
+		</div>
+	</div>

@@ -104,7 +104,7 @@ FAMILIES = {
         "name": "MES Tools",
         "hub": {"url": "/tools", "title": "All MES Tools", "kind": "Gallery", "img": "/img/tools-icon.jpg"},
         "collection": [
-            ("emoji", "Tool"), ("youtubemoney", "Calculator"), ("vatcalculator", "Calculator"), ("mortgagecalculator", "Calculator"), ("gradecalculator", "Calculator"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
+            ("emoji", "Tool"), ("youtubemoney", "Calculator"), ("vatcalculator", "Calculator"), ("mortgagecalculator", "Calculator"), ("gradecalculator", "Calculator"), ("gpacalculator", "Calculator"), ("gradecalculator/weighted-average-calculator.html", "Calculator"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
             ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("share", "Tool"), ("search", "Tool"), ("calendar", "Tool"), ("copy-text", "Tool"), ("unit-conversion", "Calculator"), ("calculator", "Calculator"), ("days-between-dates-calculator", "Calculator"),
             ("cas-calculator", "Calculator"), ("derivative-calculator", "Calculator"), ("integral-calculator", "Calculator"),
             ("gematria", "Calculator"), ("impermanent-loss-calculator", "Calculator"), ("earth-curvature-calculator", "Calculator"),
@@ -207,8 +207,10 @@ def build_catalog(family, cfg):
     if cfg.get("collection"):
         items = []
         for slug, kind in cfg["collection"]:
-            path = os.path.join(SITE, slug, "index.html")
-            logo_url = "/%s/img/logo.png" % slug
+            sub_page = slug.endswith(".html")   # "<folder>/<page>.html": a tool page inside another site's folder (Weighted Average Calculator)
+            path = os.path.join(SITE, slug) if sub_page else os.path.join(SITE, slug, "index.html")
+            logo_url = "/%s/img/logo.png" % slug.split("/")[0]
+            if sub_page: slug = slug[:-5]
             items.append({"path": path, "url": "/" + slug, "title": title_of(read(path), slug), "img": logo_url, "logo": True,
                           "kind": kind, "section": 0, "hide": False})
         cat["sections"].append(items)

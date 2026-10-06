@@ -1,0 +1,27 @@
+	/* Weighted Average Calculator 2.0 */
+	.tu [hidden] {display:none !important;}
+	.tu .wa-row {display:flex;flex-wrap:wrap;gap:0.4em 0.6em;align-items:flex-end;padding:0.55em 0;border-bottom:1px solid #e3e7ec;}
+	.tu .wa-n {flex:0 0 1.6em;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;text-align:right;}
+	.tu .wa-f {flex:1 1 6em;min-width:5em;}
+	.tu .wa-f-n {flex:3 1 10em;}
+	.tu .wa-f label {display:block;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;margin-bottom:0.15em;}
+	.tu .wa-f:not(.wa-f-n) .tu-input {text-align:center;}
+	.tu .wa-del {padding:0.45em 0.8em;font-size:1.05em;}
+	.tu .wa-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.9em;}
+	.tu .wa-formula {margin:0.8em 0 0;font-size:1.05em;}
+	.tu .wa-warn {color:#9a5200;font-weight:700;}
+	.tu #wa-table td, .tu #wa-table th {font-variant-numeric:tabular-nums;}
+	.tu #wa-table .wa-total td {font-weight:700;border-top:2px solid #b9c1cc;}
+	body.dark-mode #wa .wa-row {border-bottom-color:#3a3a3a;}
+	body.dark-mode #wa .wa-f label, body.dark-mode #wa .wa-n {color:#a0a8b3;}
+	body.dark-mode #wa .wa-warn {color:#ffb74d;}
+	body.dark-mode #wa #wa-table .wa-total td {border-top-color:#666;}
+	@media (max-width: 600px) {
+		.tu .wa-n {display:none;}
+		.tu .wa-f-n {flex:1 1 calc(100% - 4em);order:0;}
+		.tu .wa-del {order:1;margin-left:auto;}
+		.tu .wa-f:not(.wa-f-n) {flex:1 1 40%;order:2;}
+	}
+	@media print {
+		.tu-seo, .wa-btns, .wa-del, #wa-setup .tu-note {display:none !important;}
+	}

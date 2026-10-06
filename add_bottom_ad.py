@@ -38,7 +38,7 @@ RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator
                        "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles", "tools", "math"}
 # stand-alone tool / rebuilt-calculator pages (tool shell, one index.html per folder): included on purpose, unlike the timer etc. skip below
 TOOL_DIRS = ["emoji", "latex", "timezone", "symbols", "stats", "speedreader", "timer", "youtube-thumbnail", "unit-conversion",
-             "gematria", "impermanent-loss-calculator", "earth-curvature-calculator", "share", "search", "calendar", "copy-text", "typing-test", "typing-test-transcribe", "solar-system-today", "search-engines", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "vatcalculator", "mortgagecalculator", "gradecalculator"]
+             "gematria", "impermanent-loss-calculator", "earth-curvature-calculator", "share", "search", "calendar", "copy-text", "typing-test", "typing-test-transcribe", "solar-system-today", "search-engines", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "vatcalculator", "mortgagecalculator", "gradecalculator", "gpacalculator", "gradecalculator/weighted-average-calculator.html"]
 FAMILIES = ["percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator",
             "inflationcalculator", "timer", "pokemongocalculator", "memes", "puzzles"]
 
@@ -105,7 +105,7 @@ def main():
     jobs = []  # (path, family, allow_tool) -- tool pages first, so timer/index.html is taken as a tool page, not skipped as one
     if not args.family or "tools" in args.family:
         for d in TOOL_DIRS:
-            jobs.append((os.path.join(SITE, d, "index.html"), "tools", True))
+            jobs.append((os.path.join(SITE, d) if d.endswith(".html") else os.path.join(SITE, d, "index.html"), "tools", True))   # "<folder>/<page>.html" = a tool page inside another site's folder
     for family in FAMILIES:
         if args.family and family not in args.family:
             continue

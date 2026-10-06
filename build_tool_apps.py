@@ -172,6 +172,24 @@ APPS = {
                             js_v="1",
                             nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/weighted-average-calculator'>Weighted Average</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/memes'>Memes</a></li>",
                             menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/weighted-average-calculator\">Weighted Average</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/study-tips\">Study Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/tutorial\">Tutorial</a></li>"),
+    # Weighted Average Calculator 2.0 (rewritten 2026-10-06 from the 2013 jQuery page): lives at /gradecalculator/weighted-average-calculator (the old URL is kept: ~2,300 views / 30 days) as a sub-page of the
+    # Grade Calculator brand (brand + url + out + js_path options). lib.js = maths + share encoding (tests: tool_apps_src/weighted-average-tests.js), app.js = UI. Keeps ads.
+    "weighted-average-calculator": dict(title="Weighted Average Calculator", page_title="Weighted Average Calculator",
+                            tag="Average grades that count for different amounts.", accent="#575fab", dark="#434a8a", tint="#e9eaf6",
+                            desc="Free weighted average calculator: enter grades with their weights, credits or percentages and get the weighted average, the plain average and a step-by-step table. Paste from a spreadsheet, save your list and open it on any device with a link.",
+                            js_v="1", url="gradecalculator/weighted-average-calculator", out="gradecalculator/weighted-average-calculator.html",
+                            js_path="gradecalculator/js/weighted-average-calculator.js", tab=1,
+                            brand=dict(slug="gradecalculator", title="Grade Calculator", tag="What do you need on your final exam?"),
+                            nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/weighted-average-calculator'>Weighted Average</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/memes'>Memes</a></li>",
+                            menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/weighted-average-calculator\">Weighted Average</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/study-tips\">Study Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/tutorial\">Tutorial</a></li>"),
+    # GPA Calculator 2.0 (rewritten 2026-10-06 from the 2013 jQuery page; old js/calculatorffaf.js deleted): letters or percentages (mixed) per course, 4.0 / 4.33 scales, honors / AP weighting, several terms +
+    # prior GPA / credits for a cumulative GPA, "what GPA do I need next". lib.js = maths + share encoding (tests: tool_apps_src/gpa-tests.js). Keeps ads; old /gpacalculator/s/<id> links resolve via /api/share?calc=gpa.
+    "gpacalculator": dict(title="GPA Calculator", page_title="GPA Calculator",
+                          tag="Grade point average, term by term.", accent="#5a812d", dark="#436022", tint="#edf3dc",
+                          desc="Free GPA calculator: enter letter grades or percentages with credits and get your GPA on the 4.0 or 4.33 scale. Weighted GPA for honors and AP, a cumulative GPA across terms, a what-GPA-do-I-need-next planner, and links to save your work on any device.",
+                          js_v="1",
+                          nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gpacalculator/tutorial'>Tutorial</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gpacalculator/grade-point-average'>What is GPA?</a></li>",
+                          menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gpacalculator/tutorial\">Tutorial</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gpacalculator/grade-point-average\">What is GPA?</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gpacalculator/gpa-scale-4\">4.0 GPA Scale</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gpacalculator/gpa-scale-433\">4.33 GPA Scale</a></li>"),
     # Site Index: a page inventory + template audit of the whole of mes.fm. Data = mes.fm/site-index/pages.json written by build_site_index.py (fetched lazily by app.js);
     # app.js = dashboard, filterable / sortable table, group-by, URL tree, template gallery, CSV / Markdown export; tests: tool_apps_src/site-index-tests.py. Wide page, no sidebar, ad-free (an internal audit page).
     "site-index": dict(title="MES Site Index", page_title="Site Index",
@@ -301,7 +319,8 @@ def build_from_source(slug, cfg, tpl):
                      "url": "https://mes.fm/" + slug, "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any",
                      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": desc}, ensure_ascii=False)
     scripts = "".join('<script src="%s" defer></script>' % u for u in cfg.get("pre_js", []))
-    scripts += '<script src="/%s/js/%s.js?v=%s" defer></script>' % (slug, slug, cfg["js_v"])
+    jsrel = cfg.get("js_path", "%s/js/%s.js" % (slug, slug))       # where the page script is served from (js_path: a page that lives inside another site's folder)
+    scripts += '<script src="/%s?v=%s" defer></script>' % (jsrel, cfg["js_v"])
     page = tpl
     for k, v in (("@@TOOL_CSS@@", css), ("@@CONTENT@@", content.strip("\n")), ("@@LDJSON@@", ld)):
         page = page.replace(k, v)
@@ -336,7 +355,10 @@ def build_from_source(slug, cfg, tpl):
         page = page.replace("href='/%s'>Home</a>" % slug, "href='/%s'>Home</a>" % b["slug"], 1)
         page = page.replace('class="navbar__link navbar__link--first" href="/%s">Home</a>' % slug, 'class="navbar__link navbar__link--first" href="/%s">Home</a>' % b["slug"], 1)
         page = page.replace("current_tab:0", "current_tab:%d" % cfg.get("tab", 0), 1)
-    js_dir = SITE / slug / "js"
+    if cfg.get("url"):                # the public path differs from the slug (e.g. gradecalculator/weighted-average-calculator): canonical / og:url / JSON-LD
+        for old_u in ('href="https://mes.fm/%s"' % slug, 'content="https://mes.fm/%s"' % slug, '"url": "https://mes.fm/%s"' % slug):
+            page = page.replace(old_u, old_u.replace("/" + slug + '"', "/" + cfg["url"] + '"'))
+    js_dir = (SITE / jsrel).parent
     js_dir.mkdir(parents=True, exist_ok=True)
     js = (d / "app.js").read_text(encoding="utf-8")
     for part in reversed(cfg.get("js_parts", [])):   # more of the app's own source files (e.g. a canvas renderer), between lib.js and app.js
@@ -349,7 +371,7 @@ def build_from_source(slug, cfg, tpl):
         bundle = "\n".join((d / x).read_text(encoding="utf-8") for x in parts)
         if APPLY:
             (js_dir / out_name).write_text(bundle, encoding="utf-8")
-    return page, js, js_dir / (slug + ".js")
+    return page, js, SITE / jsrel
 
 
 def main():
@@ -358,7 +380,7 @@ def main():
     for slug, cfg in APPS.items():
         if only and slug not in only:
             continue
-        p = SITE / slug / "index.html"
+        p = SITE / cfg.get("out", slug + "/index.html")
         if (SRC / slug / "content.html").exists():
             new, js, jsp = build_from_source(slug, cfg, tpl)
             print("%-30s source mode -> %d bytes html, %d bytes js" % (slug, len(new), len(js)))
