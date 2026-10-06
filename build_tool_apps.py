@@ -140,7 +140,7 @@ APPS = {
     # the voice list uses the shared searchable picker main_js/voice-picker.js. Ranked boards "tr-<pace>-<length>" live in api/typing-leaderboard.js.
     "typing-test-transcribe": dict(title="MES Transcription Typing Test", page_title="Transcription Typing Test",
                         tag="Type what you hear: transcription practice.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
-                        desc="Free transcription typing test: listen to text read aloud and type what you hear. Measures words per minute and accuracy against the spoken text, with adjustable pace, voice, phrase length, a wait-for-me mode, a word-by-word diff and daily, weekly and all-time leaderboards. Practice for transcription, court reporting, captioning and meeting minutes.",
+                        desc="Free transcription typing test: listen to text read aloud and type what you hear. Scores your words per minute and accuracy against the spoken text, with adjustable pace and voice and leaderboards.",
                         js_v="4", lib_from=["typing-test"], pre_js=["/main_js/voice-picker.js?v=1", "/main_js/ad-quiet.js?v=1"], tab=1,
                         brand=dict(slug="typing-test", title="MES Typing Test", tag="Type what you hear: transcription practice."),
                         nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-transcribe'>Transcribe</a></li>",
