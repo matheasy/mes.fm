@@ -580,12 +580,36 @@ $(document).ready(function(){
 			if (r) r.style.display = (state.order.join() === DEFAULT.join() && !state.collapsed.length) ? 'none' : '';
 		}
 
+		// Smooth re-ordering (FLIP): note where every card is, re-order the DOM, then slide each card from where it
+		// was to where it now is. A card passed in `skip` (the one being dragged) is positioned by the drag instead.
+		var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		function layoutTop(n) { var t = 0; while (n) { t += n.offsetTop; n = n.offsetParent; } return t; }   // ignores transforms
+		function animatedPaint(skip) {
+			if (reduceMotion) { paint(); return; }
+			var cards = DEFAULT.map(el).filter(function (c) { return c !== skip; });
+			var first = cards.map(function (c) { return c.getBoundingClientRect().top; });
+			paint();
+			cards.forEach(function (c) { c.style.transition = 'none'; c.style.transform = ''; });
+			var moves = [];
+			cards.forEach(function (c, i) {
+				var d = first[i] - c.getBoundingClientRect().top;
+				if (Math.abs(d) > 1) { c.style.transform = 'translateY(' + d + 'px)'; moves.push(c); }
+			});
+			if (!moves.length) return;
+			void parent.offsetHeight;   // commit the start positions
+			moves.forEach(function (c) {
+				c.style.transition = 'transform 220ms cubic-bezier(.2,.8,.3,1)';
+				c.style.transform = '';
+				c.addEventListener('transitionend', function f(ev) { if (ev.target !== c) return; c.removeEventListener('transitionend', f); c.style.transition = ''; });
+			});
+		}
+
 		function move(id, dir, focusSel) {
 			var i = state.order.indexOf(id), j = i + dir;
 			if (j < 0 || j >= state.order.length) return;
 			state.order.splice(i, 1);
 			state.order.splice(j, 0, id);
-			save(); paint();
+			save(); animatedPaint();
 			var b = el(id).querySelector(focusSel);
 			if (b && !b.disabled) b.focus(); else el(id).querySelector('.pc-toggle').focus();
 		}
@@ -596,26 +620,36 @@ $(document).ready(function(){
 			if (e.pointerType === 'mouse' && e.button !== 0) return;
 			e.preventDefault();
 			var pid = e.pointerId, lastY = e.clientY, raf = 0, active = true;
+			// the card is lifted and follows the pointer; where it was grabbed stays under the finger
+			var grab = e.clientY - eq.getBoundingClientRect().top;
+			eq.style.transition = 'none'; eq.style.zIndex = 30;
 			eq.classList.add('pc-dragging');
 			parent.classList.add('pc-sorting');
+			follow();
+
+			function follow() {
+				var dy = (lastY - grab) - (layoutTop(eq) - window.pageYOffset);
+				eq.style.transform = 'translateY(' + dy + 'px) scale(1.015)';
+			}
 
 			function place() {
 				var others = state.order.filter(function (id) { return id !== eq.id; });
-				var idx = 0;
+				var idx = 0, y = lastY + window.pageYOffset;
 				others.forEach(function (id) {
-					var r = el(id).getBoundingClientRect();
-					if (lastY > r.top + r.height / 2) idx++;
+					var o = el(id);   // untransformed layout, so cards still gliding don't confuse the slot choice
+					if (y > layoutTop(o) + o.offsetHeight / 2) idx++;
 				});
 				var next = others.slice();
 				next.splice(idx, 0, eq.id);
-				if (next.join() !== state.order.join()) { state.order = next; paint(); }
+				if (next.join() !== state.order.join()) { state.order = next; animatedPaint(eq); }
+				follow();
 			}
 			function tick() {
 				if (!active) return;
 				var edge = 70, speed = 0;
 				if (lastY < edge) speed = -Math.ceil((edge - lastY) / 5);
 				else if (lastY > window.innerHeight - edge) speed = Math.ceil((lastY - (window.innerHeight - edge)) / 5);
-				if (speed) { window.scrollBy(0, speed); place(); }
+				if (speed) { window.scrollBy(0, speed); place(); } else follow();
 				raf = requestAnimationFrame(tick);
 			}
 			// Listen on the window, not the handle: re-ordering re-inserts the dragged card into the page, and the
@@ -632,6 +666,14 @@ $(document).ready(function(){
 				eq.classList.remove('pc-dragging');
 				parent.classList.remove('pc-sorting');
 				save(); paint();
+				// settle: ease the card from where it was let go into its slot
+				if (reduceMotion) { eq.style.transition = ''; eq.style.transform = ''; eq.style.zIndex = ''; }
+				else {
+					void eq.offsetHeight;
+					eq.style.transition = 'transform 200ms cubic-bezier(.2,.8,.3,1)'; eq.style.transform = '';
+					var fin = function () { eq.removeEventListener('transitionend', fin); eq.style.transition = ''; eq.style.zIndex = ''; };
+					eq.addEventListener('transitionend', fin); setTimeout(fin, 300);
+				}
 			}
 			window.addEventListener('pointermove', onMove, true);
 			window.addEventListener('pointerup', end, true);
