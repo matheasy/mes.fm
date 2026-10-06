@@ -289,20 +289,35 @@ $(document).ready(function(){
 				CALCULATOR.calcAll();
 				return true;
 			},
+			LABELS: 'mes-percentagecalculator:labels',     // { "1": "Personal taxes", ... } (equation number -> text)
+			SAVES: 'mes-percentagecalculator:saves',       // { name: { d: <rows of raw input text>, l: <labels>, ts } }
+			LSHOW: 'mes-percentagecalculator:labels-shown',
+			readJ: function (k, fb) { try { var v = localStorage.getItem(k); return v == null ? fb : JSON.parse(v); } catch (e) { return fb; } },
+			writeJ: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+			labels: {},
+			getLabel: function (eqId) { return (CALCULATOR.labels[String(eqId).replace('equation-', '')] || '').trim(); },
+			setLabels: function (l) {
+				CALCULATOR.labels = {};
+				for (var k in (l || {})) if (/^\d+$/.test(k) && typeof l[k] === 'string' && l[k].trim()) CALCULATOR.labels[k] = l[k].slice(0, 40);
+				CALCULATOR.writeJ(CALCULATOR.LABELS, CALCULATOR.labels);
+				$('.calc-label-field input').each(function () { $(this).val(CALCULATOR.labels[$(this).attr('data-eq')] || ''); });
+				if (window.PCLayout && window.PCLayout.refreshSummaries) window.PCLayout.refreshSummaries();
+			},
 			b64e: function (s) { return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); },
 			b64d: function (s) { s = String(s).replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return decodeURIComponent(escape(atob(s))); },
-			shareLink: function () { return window.location.origin + '/percentagecalculator?s=1' + CALCULATOR.b64e(JSON.stringify(CALCULATOR.collect())); },
-			decodeLink: function (s) { try { if (String(s).charAt(0) !== '1') return null; var d = JSON.parse(CALCULATOR.b64d(String(s).slice(1))); return Array.isArray(d) ? d : null; } catch (e) { return null; } },
+			shareLink: function () { var l = CALCULATOR.labels, has = Object.keys(l).some(function (k) { return l[k]; }), d = CALCULATOR.collect(); return window.location.origin + '/percentagecalculator?s=1' + CALCULATOR.b64e(JSON.stringify(has ? { d: d, l: l } : d)); },
+			decodeLink: function (s) { try { if (String(s).charAt(0) !== '1') return null; var d = JSON.parse(CALCULATOR.b64d(String(s).slice(1))); if (Array.isArray(d)) return { d: d, l: {} }; return d && Array.isArray(d.d) ? { d: d.d, l: d.l || {} } : null; } catch (e) { return null; } },
 
-			toast: function (msg) {
+			toast: function (msg, undo) {
 				var t = document.getElementById('pc-toast');
 				if (!t) {
 					t = document.createElement('div'); t.id = 'pc-toast'; t.setAttribute('role', 'status');
 					t.style.cssText = 'position:fixed;left:50%;bottom:1.5em;transform:translateX(-50%);background:#222;color:#fff;padding:0.55em 1em;border-radius:0.4em;z-index:99999;font-size:0.95em;opacity:0;transition:opacity .2s;pointer-events:none;';
 					document.body.appendChild(t);
 				}
-				t.textContent = msg; t.style.opacity = '1';
-				clearTimeout(CALCULATOR._tt); CALCULATOR._tt = setTimeout(function () { t.style.opacity = '0'; }, 1600);
+				t.textContent = msg; t.style.opacity = '1'; t.style.pointerEvents = undo ? 'auto' : 'none'; t.style.cursor = undo ? 'pointer' : '';
+				t.onclick = undo ? function () { undo(); t.style.opacity = '0'; t.style.pointerEvents = 'none'; } : null;
+				clearTimeout(CALCULATOR._tt); CALCULATOR._tt = setTimeout(function () { t.style.opacity = '0'; t.style.pointerEvents = 'none'; }, undo ? 6000 : 1600);
 			},
 			copyText: function (text, msg) {
 				function fb() { var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(ta); ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); CALCULATOR.toast(ok ? msg : 'Copy failed'); }
@@ -314,7 +329,7 @@ $(document).ready(function(){
 				var q = new URLSearchParams(window.location.search), match = window.location.pathname.match(/^\/percentagecalculator\/s\/([A-Za-z0-9]+)\/?$/);
 				if (q.get('s')) {
 					var d = CALCULATOR.decodeLink(q.get('s'));
-					if (d && CALCULATOR.apply(d)) { CALCULATOR.save(); CALCULATOR.toast('Shared calculations loaded'); }
+					if (d && CALCULATOR.apply(d.d)) { if (Object.keys(d.l).length) { CALCULATOR.setLabels(d.l); CALCULATOR.showLabels(true); } CALCULATOR.save(); CALCULATOR.toast('Shared calculations loaded'); }
 					history.replaceState(null, '', window.location.pathname);
 					return true;
 				}
@@ -328,6 +343,42 @@ $(document).ready(function(){
 			},
 			restore: function () {
 				try { var d = JSON.parse(localStorage.getItem(CALCULATOR.STORE) || 'null'); if (d) CALCULATOR.apply(d); } catch (e) {}
+			},
+			showLabels: function (on) {
+				document.body.classList.toggle('pc-show-labels', !!on);
+				CALCULATOR.writeJ(CALCULATOR.LSHOW, on ? 1 : 0);
+				$('#pc-labels').attr('aria-pressed', on ? 'true' : 'false').text(on ? 'Hide labels' : 'Labels');
+			},
+			// named saves: several scenarios side by side (taxes, a discount, a tip...), each with its labels
+			renderSaves: function () {
+				var $strip = $('#pc-saved-strip').empty(), all = CALCULATOR.readJ(CALCULATOR.SAVES, {});
+				Object.keys(all).forEach(function (name) {
+					var $chip = $('<span class="pc-chip"></span>');
+					$('<button type="button" class="pc-chip-open"></button>').text(name).attr('title', "Open '" + name + "'").appendTo($chip).on('click', function () {
+						var e = CALCULATOR.readJ(CALCULATOR.SAVES, {})[name]; if (!e) return;
+						CALCULATOR.clearRows();
+						CALCULATOR.setLabels(e.l || {}); if (Object.keys(e.l || {}).length) CALCULATOR.showLabels(true);
+						CALCULATOR.apply(e.d); CALCULATOR.save(); CALCULATOR.toast("Opened '" + name + "'");
+					});
+					$('<button type="button" class="pc-chip-del">&times;</button>').attr({ title: "Delete '" + name + "'", 'aria-label': "Delete saved calculation " + name }).appendTo($chip).on('click', function () {
+						var cur = CALCULATOR.readJ(CALCULATOR.SAVES, {}), snap = cur[name]; delete cur[name]; CALCULATOR.writeJ(CALCULATOR.SAVES, cur); CALCULATOR.renderSaves();
+						CALCULATOR.toast("Deleted '" + name + "' (click here to undo)", function () { var c2 = CALCULATOR.readJ(CALCULATOR.SAVES, {}); c2[name] = snap; CALCULATOR.writeJ(CALCULATOR.SAVES, c2); CALCULATOR.renderSaves(); });
+					});
+					$strip.append($chip);
+				});
+			},
+			saveCurrent: function () {
+				if (CALCULATOR.isEmpty(CALCULATOR.collect())) { CALCULATOR.toast('Fill in a calculation first'); return; }
+				var raw = window.prompt('Name this saved calculation (up to 20 characters):', ''); if (raw == null) return;
+				var name = raw.trim().slice(0, 20); if (!name) return;
+				var all = CALCULATOR.readJ(CALCULATOR.SAVES, {});
+				if (all[name] && !window.confirm("Replace the existing '" + name + "'?")) return;
+				all[name] = { d: CALCULATOR.collect(), l: CALCULATOR.labels, ts: Date.now() };
+				CALCULATOR.writeJ(CALCULATOR.SAVES, all); CALCULATOR.renderSaves(); CALCULATOR.toast("Saved '" + name + "'");
+			},
+			clearRows: function () {
+				$('.equation').each(function () { $(this).find('.input-row').not(':first').remove(); });
+				$('.input').val(''); $('.answer').html('');
 			},
 			clearAll: function () {
 				var snap = CALCULATOR.collect();
@@ -429,7 +480,9 @@ $(document).ready(function(){
 				else if (n.tagName === 'INPUT') out += '__';
 				else if (!n.classList.contains('button-icon')) out += n.textContent;
 			});
-			return out.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+			out = out.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+			var tag = CALCULATOR.getLabel(eq.id);
+			return tag ? tag + ': ' + out : out;
 		}
 
 		var svg = function (d) { return '<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="' + d + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; };
@@ -627,10 +680,36 @@ $(document).ready(function(){
 		paint();
 
 		return {
-			expandAll: function () { state.collapsed = []; paint(); }
+			expandAll: function () { state.collapsed = []; paint(); },
+			refreshSummaries: function () {
+				DEFAULT.forEach(function (id) {
+					var eq = el(id), t = eq.querySelector('.pc-summary-text'), sum = eq.querySelector('.pc-summary');
+					if (t) { t.textContent = label(eq); if (sum) sum.setAttribute('aria-label', 'Expand: ' + label(eq)); }
+				});
+			}
 		};
 	})();
 
+
+	/* ---- Labels and Save (as in the app): the toolbar buttons, a label field per calculation, the strip of saved scenarios ---- */
+	(function () {
+		var bar = document.querySelector('.pc-toolbar'), main = document.getElementById('main-content');
+		if (!bar || !main) return;
+		CALCULATOR.labels = CALCULATOR.readJ(CALCULATOR.LABELS, {});
+		$('.equation').each(function () {
+			var key = this.id.replace('equation-', ''), $f = $('<div class="calc-label-field"></div>'), $i = $('<input type="text" maxlength="40" autocomplete="off">');
+			$i.attr({ 'data-eq': key, placeholder: 'Label: e.g. Personal taxes, Business, Discount', 'aria-label': 'Label for calculation ' + key }).val(CALCULATOR.labels[key] || '');
+			$i.on('input', function () { var l = $.extend({}, CALCULATOR.labels); l[key] = this.value; CALCULATOR.labels = l; CALCULATOR.writeJ(CALCULATOR.LABELS, l); if (window.PCLayout) window.PCLayout.refreshSummaries(); });
+			$f.append($i); var first = $(this).find('.input-row').first(); if (first.length) $f.insertBefore(first); else $(this).append($f);
+		});
+		var $labels = $('<button type="button" id="pc-labels" class="pc-link" aria-pressed="false">Labels</button>').on('click', function () { CALCULATOR.showLabels(!document.body.classList.contains('pc-show-labels')); });
+		var $save = $('<button type="button" id="pc-save" class="pc-link" title="Keep the current numbers under a name">Save</button>').on('click', CALCULATOR.saveCurrent);
+		$(bar).prepend($save).prepend($labels);
+		$('<div id="pc-saved-strip" class="pc-saved-strip" aria-label="Saved calculations"></div>').insertAfter(bar);
+		CALCULATOR.showLabels(CALCULATOR.readJ(CALCULATOR.LSHOW, 0) == 1);
+		CALCULATOR.renderSaves();
+		if (window.PCLayout) window.PCLayout.refreshSummaries();
+	})();
 
 	// restore the saved values (or open a shared link) once the layout controls exist
 	if (!CALCULATOR.initializeCustomCalculation()) CALCULATOR.restore();
