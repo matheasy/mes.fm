@@ -43,6 +43,37 @@
 		if (d.getTime() <= now.getTime()) d.setDate(d.getDate() + 1);
 		return d.getTime();
 	}
-	var TM = { pad: pad, parts: parts, clock: clock, precise: precise, parseDuration: parseDuration, hmsToMs: hmsToMs, human: human, laps: laps, nextAlarm: nextAlarm };
+	// days / hours / minutes / seconds until (or since) a moment: ms may be negative (-> past: true)
+	function dhms(ms) {
+		var past = ms < 0, t = Math.floor(Math.abs(ms) / 1000), d = Math.floor(t / 86400), h = Math.floor(t % 86400 / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+		return { d: d, h: h, m: m, s: s, past: past };
+	}
+	// local "YYYY-MM-DD" + optional "HH:MM" -> timestamp (local time) or null
+	function parseDateTime(date, time) {
+		var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date || ""); if (!m) return null;
+		var t = /^(\d{1,2}):(\d{2})$/.exec(time || "") || [0, 0, 0], d = new Date(+m[1], +m[2] - 1, +m[3], +t[1], +t[2], 0, 0);
+		return d.getFullYear() === +m[1] && d.getMonth() === +m[2] - 1 && d.getDate() === +m[3] ? d.getTime() : null;
+	}
+	// Pomodoro: which phase follows. round = the focus session just done / being done (1..rounds)
+	function pomoNext(phase, round, rounds) {
+		if (phase === "focus") return { phase: round >= rounds ? "long" : "short", round: round };
+		if (phase === "short") return { phase: "focus", round: round + 1 };
+		return { phase: "focus", round: 1 };
+	}
+	// Interval training: a list of segments { phase: "prep" | "work" | "rest", round, ms } (no rest after the last round) and helpers
+	function itvPlan(c) {
+		var out = [], prep = Math.max(0, +c.prep || 0) * 1000, work = Math.max(1, +c.work || 1) * 1000, rest = Math.max(0, +c.rest || 0) * 1000, rounds = Math.max(1, Math.min(99, Math.floor(+c.rounds || 1)));
+		if (prep) out.push({ phase: "prep", round: 0, ms: prep });
+		for (var r = 1; r <= rounds; r++) { out.push({ phase: "work", round: r, ms: work }); if (rest && r < rounds) out.push({ phase: "rest", round: r, ms: rest }); }
+		return out;
+	}
+	function itvTotal(plan) { return plan.reduce(function (a, s) { return a + s.ms; }, 0); }
+	// where `elapsed` ms into the plan we are: { idx, seg, into, left, done }
+	function itvAt(plan, elapsed) {
+		var acc = 0;
+		for (var i = 0; i < plan.length; i++) { if (elapsed < acc + plan[i].ms) return { idx: i, seg: plan[i], into: elapsed - acc, left: acc + plan[i].ms - elapsed, done: false }; acc += plan[i].ms; }
+		return { idx: plan.length, seg: null, into: 0, left: 0, done: true };
+	}
+	var TM = { dhms: dhms, parseDateTime: parseDateTime, pomoNext: pomoNext, itvPlan: itvPlan, itvTotal: itvTotal, itvAt: itvAt, pad: pad, parts: parts, clock: clock, precise: precise, parseDuration: parseDuration, hmsToMs: hmsToMs, human: human, laps: laps, nextAlarm: nextAlarm };
 	if (typeof module !== "undefined" && module.exports) module.exports = TM; else root.TM = TM;
 })(typeof window !== "undefined" ? window : globalThis);

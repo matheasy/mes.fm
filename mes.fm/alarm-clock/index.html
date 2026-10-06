@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
-<!-- MES CAS Calculator -- mes.fm/cas-calculator -->
+<!-- Alarm Clock -- mes.fm/alarm-clock -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/cas-calculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/cas-calculator" />                    <title>MES CAS Calculator | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/timer/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/alarm-clock" />                    <title>Alarm Clock | Math Easy Solutions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -18,8 +18,8 @@ blockquote:before, blockquote:after,
 q:before, q:after {content:'';content:none;}
 table {border-collapse:collapse;border-spacing:0;}
 a {text-decoration:none;}
-sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#334155;color:white;}
-        .button {color:#334155;border:0.125em solid#334155;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#a86706;color:white;}
+        .button {color:#a86706;border:0.125em solid#a86706;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
         .button--subscribe {line-height:1.2;}
         .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
         .italic {font-style:italic;}
@@ -29,7 +29,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .time {font-style:italic;font-weight:100;color:#939393;}
         .small-text {font-size:0.9em;}
         .big-text {font-size:1.1em;}
-        .link {color:#334155; font-weight:700;}
+        .link {color:#a86706; font-weight:700;}
         .link--dark {color: blue; font-weight: 700;}
         .link--dark:hover {text-decoration: underline;}
         .basic-table {margin:1em auto;}
@@ -37,10 +37,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .basic-table th {background-color: #ededed}
         .basic-table--full {width:100%;}
         .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
-        .box-border {border:0.1em solid#334155; padding:1em;margin-bottom: 1.2em;}
-        .selected {background-color:#334155;color:white;}
-        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#334155;}
-        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#334155;background-color:#fdc010;}
+        .box-border {border:0.1em solid#a86706; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#a86706;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#a86706;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#a86706;background-color:#fdc010;}
         .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
         .scissors-icon {vertical-align:middle;cursor: pointer;}
         .hide {display:none;}
@@ -51,7 +51,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .sentence--indent {margin-left:1.5em;}
 
 .shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
-.link:hover {color:#1e293b;text-decoration:underline; cursor:pointer;}
+.link:hover {color:#7d4c04;text-decoration:underline; cursor:pointer;}
 
 .outer-container {width:68.25em;margin:0 auto;}
 .inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
@@ -66,7 +66,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .social-container {position:absolute;right:0;top:0;}
 .social-container--bottom {position:absolute;right:0;bottom:0;}
 .social {display: table-cell;}
-.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#334155;}.social__logo {float:left;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#a86706;}.social__logo {float:left;}
 .social__logo:not(:last-child) {margin-right:0.5em;}
 .social__link {height:2em;width:2em;display:block;}
 .social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
@@ -97,7 +97,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .side-bar {width:18.75em;float:right;}
 .navbar-container {margin:2.1em 0.8em;}
 .navbar {margin-bottom:-1em;}
-.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#334155;border:0.125em solid#334155;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#a86706;border:0.125em solid#a86706;}
 
 .navbar__item:hover {cursor:pointer;}
 .navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
@@ -124,10 +124,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 #copyright-year {color:white;}
 
 .active-tab {background-color:#fdc010;color: #222222;}
-.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#1e293b;}
-        .info-bar,.color-box,.navbar,.footer {background-color:#334155;}
-        .dropdown-symbol--dark {color:#334155;}
-        .button--active {background-color:#334155;color:white;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#7d4c04;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#a86706;}
+        .dropdown-symbol--dark {color:#a86706;}
+        .button--active {background-color:#a86706;color:white;}
         .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
         .header2--top {margin-top: 0.5em;}
         .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
@@ -196,22 +196,22 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 	/* the tool itself (scoped to #main-content) */
 	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
-	.tu {margin:1em 0;--accent:#334155;--accent-dark:#1e293b;--tint:#e8ecf1;}
+	.tu {margin:1em 0;--accent:#a86706;--accent-dark:#7d4c04;--tint:#fdf0dc;}
 	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
 	.tu a {color:var(--accent);text-decoration:underline !important;}
 	.tu a:hover {color:var(--accent-dark);}
 	.tu button, .tu input, .tu select {font:inherit;}
-	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e8ecf1;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #fdf0dc;}
 	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
 	.tu p {line-height:1.5;margin:0.5em 0;}
 	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
-	.tu-card--tint {background:#e8ecf1;border-color:#e8ecf1;}
+	.tu-card--tint {background:#fdf0dc;border-color:#fdf0dc;}
 	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
 	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
 	.tu-field--sm {flex:0 1 8em;}
 	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
 	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
-	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e8ecf1;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #fdf0dc;}
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
@@ -233,7 +233,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
 	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
 	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
-	.tu-stat--hero {background:#e8ecf1;border-color:#e8ecf1;}
+	.tu-stat--hero {background:#fdf0dc;border-color:#fdf0dc;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
 	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
@@ -244,7 +244,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
 	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
 	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
-	.tu-table tr.is-active td {background:#e8ecf1;font-weight:700;}
+	.tu-table tr.is-active td {background:#fdf0dc;font-weight:700;}
 	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
@@ -254,7 +254,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
 	.tu-svg-fill {fill:var(--accent);}
-	.tu-svg-tint {fill:#e8ecf1;}
+	.tu-svg-tint {fill:#fdf0dc;}
 	.tu-svg-text {font-size:13px;fill:#333;}
 	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
 	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
@@ -266,7 +266,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
 	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
 	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
-	body.dark-mode .tu {--accent:#889cb8 !important;--accent-dark:#889cb8 !important;}
+	body.dark-mode .tu {--accent:#d98508 !important;--accent-dark:#d98508 !important;}
 	@media (max-width:600px) {
 		.tu-stat__value {font-size:1.45em;}
 		.tu-field--sm {flex:1 1 7em;}
@@ -275,124 +275,145 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
 	}
 
-	/* shared by the three CAS pages (cas-calculator, derivative-calculator, integral-calculator); inlined by build_tool_apps.py (css_extra) so
-	   add_tool_page_controls.py can derive its dark theme from it like the rest of the tool CSS */
-	.cs-expr {font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:0.01em;}
-	textarea.cs-expr {resize:vertical;min-height:3.2em;line-height:1.4;}
-	.cs-inrow {display:flex;align-items:center;gap:0.5em;}
-	.cs-inrow .tu-input {flex:1 1 auto;min-width:0;}
-	.cs-op {font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:1.25em;color:#1e2733;white-space:nowrap;}
-	.cs-chips {display:flex;flex-wrap:wrap;gap:0.35em;margin:0.55em 0 0.2em;}
-	.cs-chips button {cursor:pointer;min-width:2.4em;padding:0.35em 0.6em;border:1px solid #cfd5dd;border-radius:0.4em;background:#f5f6f9;color:#222;font-size:0.95em;line-height:1.1;}
-	.cs-chips button:hover {border-color:var(--accent);color:var(--accent);background:#fff;}
-	.cs-preview {min-height:2.6em;margin:0.5em 0 0.2em;padding:0.4em 0.7em;border-radius:0.4em;background:#f7f8fa;border:1px dashed #d5dae1;color:#1e2733;overflow-x:auto;}
-	.cs-preview .cs-math {margin:0.1em 0;}
-	.cs-preview.is-dim, .cs-preview.is-echo {color:#6a7280;font-size:0.92em;display:flex;align-items:center;gap:0.5em;flex-wrap:wrap;}
-	.cs-preview.is-err {color:#b3261e;font-size:0.92em;border-color:#f0c4c0;background:#fdf3f2;}
-	.cs-preview__lbl {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#8a93a0;display:block;}
-	.cs-preview code {background:transparent;padding:0;font-size:1em;color:#333;word-break:break-all;}
-	.cs-opts {margin-top:0.8em;}
-	.cs-actions {margin-top:0.9em;align-items:center;gap:0.6em;}
-	.cs-actions .tu-btn--primary {font-size:1.02em;padding:0.6em 1.4em;font-weight:700;}
-	.cs-actions .tu-btn[disabled] {opacity:0.55;cursor:progress;}
-	.cs-status {margin-top:0.8em;padding:0.6em 0.8em;border-radius:0.45em;background:#e8ecf1;color:#1e2733;font-size:0.92em;}
-	.cs-status[hidden] {display:none;}
-	.cs-status__row {display:flex;align-items:center;gap:0.6em;flex-wrap:wrap;}
-	.cs-status__msg {flex:1 1 12em;}
-	.cs-status .cs-cancel {padding:0.3em 0.8em;font-size:0.85em;background:#fff;}
-	.cs-status .cs-cancel[hidden] {display:none;}
-	.cs-bar {display:none;height:5px;border-radius:3px;background:rgba(0,0,0,0.08);margin-top:0.5em;overflow:hidden;}
-	.cs-status.has-bar .cs-bar {display:block;}
-	.cs-bar span {display:block;height:100%;width:0;background:var(--accent);transition:width 0.4s;}
-	.cs-spin {width:1em;height:1em;border-radius:50%;border:2px solid rgba(0,0,0,0.15);border-top-color:var(--accent);animation:cs-spin 0.8s linear infinite;flex:0 0 auto;}
-	@keyframes cs-spin {to {transform:rotate(360deg);}}
-	.cs-out {margin-top:1em;}
-	.cs-out[hidden] {display:none;}
-	.cs-error {padding:0.8em 1em;border-radius:0.5em;background:#fdf3f2;border:1px solid #f0c4c0;color:#8c1d16;line-height:1.45;}
-	.cs-result {background:#e8ecf1;border:1px solid #e8ecf1;border-radius:0.55em;padding:0.9em 1.1em;}
-	.cs-result .cs-math {font-size:1.12em;}
-	.cs-result__label, .cs-sec__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;margin-bottom:0.2em;}
-	.cs-math {overflow-x:auto;overflow-y:hidden;padding:0.1em 0;max-width:100%;}
-	.cs-math--l {padding:0.25em 0;font-size:1.08em;}
-	.cs-sols li .cs-math--l {padding:0.1em 0;}
-	.cs-nomj .cs-math {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.9em;white-space:pre-wrap;word-break:break-all;}
-	.cs-btns {display:flex;flex-wrap:wrap;gap:0.45em;margin-top:0.6em;}
-	.cs-btns .tu-btn {padding:0.35em 0.8em;font-size:0.85em;background:#fff;}
-	.cs-badge {display:inline-block;font-size:0.78em;font-weight:700;padding:0.15em 0.6em;border-radius:1em;background:#e3f3e6;color:#1f6b33;margin:0.4em 0.4em 0 0;}
-	.cs-badge--warn {background:#fff4dd;color:#8a5300;}
-	.cs-badge--info {background:#e8ecf1;color:#334155;}
-	.cs-sec {margin-top:1em;}
-	.cs-kv {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.6em;margin-top:0.8em;}
-	.cs-kv > div {background:#fff;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.6em 0.8em;min-width:0;}
-	.cs-steps-card {margin-top:1em;}
-	.cs-steps-card > summary {cursor:pointer;font-weight:700;color:var(--accent);padding:0.2em 0;font-size:1.02em;}
-	.cs-steps {list-style:none;counter-reset:cs;margin:0.6em 0 0;padding:0;}
-	.cs-steps > .cs-step {counter-increment:cs;position:relative;padding:0.55em 0 0.55em 2.3em;border-top:1px solid #e8ebef;}
-	.cs-steps > .cs-step::before {content:counter(cs);position:absolute;left:0.1em;top:0.6em;width:1.6em;height:1.6em;border-radius:50%;background:#e8ecf1;color:var(--accent-dark);font-weight:700;font-size:0.82em;display:flex;align-items:center;justify-content:center;}
-	.cs-steps--sub {margin:0.4em 0 0 0.2em;border-left:3px solid #e8ecf1;padding-left:0.4em;}
-	.cs-steps--sub > .cs-step {padding-left:2em;border-top:0;}
-	.cs-steps--sub > .cs-step::before {content:counter(cs, lower-alpha);background:transparent;border:1px solid #cfd5dd;color:#667;}
-	.cs-step__h {font-weight:700;color:#1e2733;}
-	.cs-step__t {margin:0.2em 0 0.1em;color:#444;font-size:0.95em;}
-	.cs-step .cs-math {font-size:0.97em;}
-	.cs-sols {list-style:none;margin:0.4em 0 0;padding:0;display:grid;gap:0.45em;}
-	.cs-sols li {background:#fff;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.45em 0.8em;display:flex;flex-wrap:wrap;align-items:center;gap:0.2em 1.2em;}
-	.cs-sols li .cs-math {flex:0 1 auto;}
-	.cs-sols .cs-dec {color:#444;font-variant-numeric:tabular-nums;font-size:0.95em;}
-	.cs-sols .cs-deg {color:#6a7280;font-size:0.9em;}
-	.cs-pending {font-size:0.88em;color:#6a7280;margin-top:0.6em;display:flex;align-items:center;gap:0.5em;}
-	.cs-plotwrap {margin-top:1em;background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.5em;}
-	.cs-plot {display:block;width:100%;height:260px;}
-	.cs-legend {display:flex;flex-wrap:wrap;gap:0.4em 1.2em;font-size:0.85em;color:#555;padding:0.3em 0.3em 0;align-items:center;}
-	.cs-legend i {display:inline-block;width:1.4em;height:3px;border-radius:2px;vertical-align:middle;margin-right:0.35em;background:#1e2733;}
-	.cs-legend i.cs-l2 {background:var(--accent);}
-	.cs-legend i.cs-l3 {height:0.8em;width:0.8em;border-radius:50%;background:var(--accent);}
-	.cs-legend i.cs-l4 {height:0.8em;background:#e8ecf1;border:1px solid var(--accent);}
-	.cs-legend a {margin-left:auto;}
-	.cs-hist {list-style:none;margin:0.5em 0 0;padding:0;max-height:16em;overflow-y:auto;}
-	.cs-hist li {display:flex;gap:1em;justify-content:space-between;padding:0.45em 0.2em;border-bottom:1px solid #e8ebef;cursor:pointer;font-size:0.93em;}
-	.cs-hist li:hover {background:#e8ecf1;}
-	.cs-hist .cs-h-q {color:#334;font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;}
-	.cs-hist .cs-h-r {color:#6a7280;text-align:right;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-	.cs-tabs {display:flex;flex-wrap:wrap;margin-bottom:0.8em;}
-	.cs-tabs button {flex:1 1 auto;}
-	.cs-mode[hidden], .cs-only[hidden] {display:none !important;}
-	.cs-links {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.6em;margin:0.6em 0 1em;}
-	.cs-link {display:block;padding:0.7em 0.9em;border:1px solid #dfe4ea;border-radius:0.5em;background:#fff;font-weight:700;text-decoration:none !important;}
-	.cs-link span {display:block;font-weight:400;font-size:0.85em;color:#6a7280;margin-top:0.15em;}
-	.cs-link:hover {border-color:var(--accent);background:#e8ecf1;}
-	.tu code {background:#eef1f5;padding:0.05em 0.35em;border-radius:0.25em;font-size:0.92em;}
-	.tu-seo dl {margin:0.5em 0;}
-	.tu-seo dt {font-weight:700;margin-top:0.7em;color:#1e2733;}
-	.tu-seo dd {margin:0.2em 0 0 0;line-height:1.5;color:#333;}
-	.tu-seo dt {color:#1e2733;}
-	body.dark-mode .tu .tu-seo dd {color:#d6d6d6;}
-	body.dark-mode .tu .tu-seo dt {color:#ececec;}
-	/* dark: selected / filled states and the canvas card */
-	body.dark-mode .tu .cs-result {background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12);}
-	body.dark-mode .tu .cs-status {background:rgba(255,255,255,0.07);color:#e6e6e6;}
-	body.dark-mode .tu .cs-steps > .cs-step::before {background:rgba(255,255,255,0.1);color:var(--accent);}
-	body.dark-mode .tu .cs-steps--sub {border-left-color:rgba(255,255,255,0.14);}
-	body.dark-mode .tu .cs-plotwrap {background:#1b1d21;border-color:#3a3f47;}
-	body.dark-mode .tu .cs-badge {background:rgba(80,190,110,0.18);color:#8fdca4;}
-	body.dark-mode .tu .cs-badge--warn {background:rgba(255,180,60,0.16);color:#ffc977;}
-	body.dark-mode .tu .cs-badge--info {background:rgba(255,255,255,0.1);color:#cbd5e1;}
-	body.dark-mode .tu .cs-error {background:rgba(220,60,50,0.14);border-color:rgba(220,60,50,0.4);color:#ffb4ab;}
-	body.dark-mode .tu .cs-preview.is-err {background:rgba(220,60,50,0.12);border-color:rgba(220,60,50,0.35);color:#ffb4ab;}
-	body.dark-mode .tu .cs-spin {border-color:rgba(255,255,255,0.18);border-top-color:var(--accent);}
-	body.dark-mode .tu .cs-legend i {background:#e8ecf1;}
-	body.dark-mode .tu .cs-legend i.cs-l2, body.dark-mode .tu .cs-legend i.cs-l3 {background:var(--accent);}
-	body.dark-mode .tu .cs-legend i.cs-l4 {background:rgba(255,255,255,0.12);}
-	@media (max-width:600px) {
-		.cs-op {font-size:1.05em;}
-		.cs-chips button {min-width:2.2em;padding:0.4em 0.5em;}
-		.cs-tabs button {padding:0.5em 0.6em;font-size:0.85em;}
-		.cs-steps > .cs-step {padding-left:2em;}
-		.cs-steps--sub {margin-left:0;}
-		.cs-steps--sub > .cs-step {padding-left:1.7em;}
-		.cs-result {padding:0.7em 0.75em;}
-		.cs-hist .cs-h-r {display:none;}
+	/* Timer 2.0 */
+	.tu [hidden] {display:none !important;}
+	.tu kbd {font:0.85em ui-monospace,Menlo,monospace;padding:0.1em 0.4em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;color:#333;}
+	/* the ringing banner */
+	.tu .tm-ring {position:sticky;top:3.6em;z-index:40;margin:0 0 0.8em;padding:0.9em 1em;border-radius:0.6em;background:#d1453b;color:#fff;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.35);animation:tm-pulse 1s ease-in-out infinite;}
+	.tu .tm-ring__msg {font-size:1.25em;font-weight:700;margin-bottom:0.5em;word-break:break-word;}
+	.tu .tm-ring__btns {display:flex;flex-wrap:wrap;gap:0.5em;}
+	.tu .tm-ring__btns button {cursor:pointer;border:2px solid #fff;border-radius:0.4em;background:#fff;color:#a52a22;font:inherit;font-weight:700;padding:0.5em 1em;}
+	.tu .tm-ring__btns button.alt {background:transparent;color:#fff;}
+	@keyframes tm-pulse {50% {background:#b3342b;}}
+	@media (prefers-reduced-motion: reduce) {.tu .tm-ring {animation:none;}}
+	/* one countdown card */
+	.tu .tm-timer {border:1px solid #e3e7ec;border-radius:0.6em;padding:0.8em 0.9em 1em;margin-bottom:0.9em;background:#fff;}
+	.tu .tm-timer.is-running {border-color:var(--accent);box-shadow:0 0 0 2px #fdf0dc;}
+	.tu .tm-timer.is-done {border-color:#d1453b;background:#fff4f3;}
+	.tu .tm-head {display:flex;gap:0.5em;align-items:center;margin-bottom:0.4em;}
+	.tu .tm-label {flex:1 1 auto;min-width:0;border:0;border-bottom:1px dashed #c3c9d2;border-radius:0;background:transparent;padding:0.3em 0.1em;font-size:1em;font-weight:700;color:#333;}
+	.tu .tm-label:focus {outline:none;border-bottom-color:var(--accent);}
+	.tu .tm-icon {cursor:pointer;border:1px solid #c3c9d2;border-radius:0.4em;background:#fff;color:#555;padding:0.25em 0.6em;font-size:0.95em;line-height:1.3;}
+	.tu .tm-icon:hover {border-color:var(--accent);color:var(--accent);}
+	.tu .tm-face {font-variant-numeric:tabular-nums;font-weight:700;text-align:center;line-height:1.05;color:#1e2733;font-size:clamp(2.6em,12vw,5.2em);letter-spacing:0.01em;margin:0.1em 0 0.2em;}
+	.tu .tm-face small {font-size:0.45em;font-weight:400;color:#6a7280;}
+	.tu .tm-face--al {font-size:clamp(2em,9vw,3.4em);}
+	.tu .tm-bar {height:0.5em;border-radius:0.5em;background:#e8ebf0;overflow:hidden;margin:0.2em 0 0.8em;}
+	.tu .tm-bar > i {display:block;height:100%;width:0;background:var(--accent);transition:width 0.2s linear;}
+	.tu .tm-presets {display:flex;flex-wrap:wrap;gap:0.35em;justify-content:center;margin-bottom:0.6em;}
+	.tu .tm-set {display:flex;flex-wrap:wrap;gap:0.4em;justify-content:center;align-items:center;margin-bottom:0.7em;}
+	.tu .tm-set input {width:4.2em;text-align:center;}
+	.tu .tm-set span {color:#6a7280;font-weight:700;}
+	.tu .tm-btns {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.7em;}
+	.tu .tm-btns--center {justify-content:center;}
+	.tu .tm-big {font-size:1.1em;padding:0.6em 1.4em;min-width:6.5em;}
+	.tu .tm-status {text-align:center;margin:0.8em 0 0;font-size:1.05em;min-height:1.4em;}
+	.tu .tm-check {display:flex;align-items:center;gap:0.5em;cursor:pointer;padding:0.25em 0;font-size:0.95em;}
+	.tu .tm-check input {width:1.1em;height:1.1em;cursor:pointer;}
+	.tu .tm-checks {display:grid;grid-template-columns:repeat(auto-fit,minmax(17em,1fr));gap:0 1em;margin-top:0.6em;}
+	.tu .tm-settings {margin-top:1em;}
+	.tu #tm-laps td, .tu #tm-laps th {font-variant-numeric:tabular-nums;}
+	.tu #tm-laps .tm-fast td {color:#1f7a3d;font-weight:700;} .tu #tm-laps .tm-slow td {color:#b3261e;font-weight:700;}
+	/* full screen: one card fills the screen, the digits scale to the window */
+	.tu .tm-fs {position:fixed !important;inset:0;z-index:99998;margin:0 !important;border-radius:0 !important;display:flex !important;flex-direction:column;justify-content:center;align-items:center;background:#fff;padding:2vh 3vw !important;overflow:auto;}
+	.tu .tm-fs .tm-face {font-size:min(26vw,38vh);}
+	.tu .tm-fs .tm-label {text-align:center;font-size:clamp(1em,3vw,2em);max-width:80vw;}
+	.tu .tm-fs .tm-bar {width:70vw;height:1.2vh;}
+	.tu .tm-fs .tm-presets, .tu .tm-fs .tm-set {display:none;}
+	.tu .tm-fs .tm-btns .tu-btn {font-size:clamp(1em,2.4vw,1.8em);}
+	body.dark-mode #tm .tm-timer {background:#262626;border-color:#3a3a3a;}
+	body.dark-mode #tm .tm-timer.is-running {border-color:var(--accent);}
+	body.dark-mode #tm .tm-timer.is-done {background:#3a1f1c;border-color:#d1453b;}
+	body.dark-mode #tm .tm-face {color:#f1f1f1;} body.dark-mode #tm .tm-face small, body.dark-mode #tm .tm-set span {color:#a0a8b3;}
+	body.dark-mode #tm .tm-label {color:#e8e8e8;border-bottom-color:#555;}
+	body.dark-mode #tm .tm-icon {background:#262626;color:#d1d6dc;border-color:#555;}
+	body.dark-mode #tm .tm-bar {background:#3a3a3a;}
+	body.dark-mode #tm .tm-fs {background:#161616;}
+	body.dark-mode #tm kbd {background:#2e2e2e;color:#ddd;border-color:#555;}
+	body.dark-mode #tm #tm-laps .tm-fast td {color:#7bd88f;} body.dark-mode #tm #tm-laps .tm-slow td {color:#ff8a80;}
+	/* ---- panels (all of them on one page), layout, drag ---- */
+	.tu .tm-addbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0 0 0.9em;}
+	.tu .tm-addbar__l {font-size:0.85em;font-weight:700;color:#6a7280;margin-right:0.2em;}
+	.tu .tm-addbar__sp {flex:1;}
+	.tu .tm-lay {display:inline-flex;} .tu .tm-lay button {padding:0.4em 0.8em;font-size:0.88em;}
+	.tu .tm-secs {display:grid;grid-template-columns:1fr;gap:0.9em;align-items:start;}
+	.tu .tm-secs.tm-row {grid-template-columns:repeat(auto-fit,minmax(20em,1fr));}
+	.tu .tm-secs.tm-solo {display:block;}
+	.tu .tm-sec {margin:0;padding:0;overflow:hidden;position:relative;}
+	.tu .tm-solo .tm-sec {padding:1em;overflow:visible;}
+	.tu .tm-sec__h {display:flex;align-items:center;gap:0.4em;background:var(--accent);color:#fff;padding:0;}
+	.tu .tm-sec__t {flex:1;cursor:pointer;border:0;background:transparent;color:#fff;font:inherit;font-weight:700;font-size:1.02em;text-align:center;padding:0.6em 0.4em;}
+	.tu .tm-sec__t::after {content:"–";margin-left:0.6em;opacity:0.8;} .tu .is-collapsed .tm-sec__t::after {content:"+";}
+	.tu .tm-sec__l {color:#fff;font-size:0.74em;text-decoration:none;opacity:0.85;padding:0 0.8em;white-space:nowrap;} .tu .tm-sec__l:hover {opacity:1;text-decoration:underline;}
+	.tu .tm-sec__b {padding:0.9em;} .tu .is-collapsed .tm-sec__b {display:none;}
+	.tu .tm-grip {cursor:grab;border:0;background:transparent;color:inherit;font-size:1.25em;line-height:1;padding:0.35em 0.5em;touch-action:none;user-select:none;opacity:0.8;}
+	.tu .tm-grip:hover {opacity:1;} .tu .tm-grip:active {cursor:grabbing;}
+	.tu .tm-timer .tm-grip {color:#8a93a0;padding:0.2em 0.35em;}
+	.tu .tm-grip:focus-visible {outline:2px solid #fff;outline-offset:-2px;} .tu .tm-timer .tm-grip:focus-visible {outline-color:var(--accent);}
+	.tu .tm-dragging {z-index:60;box-shadow:0 0.8em 2.2em rgba(0,0,0,0.3);opacity:0.97;cursor:grabbing;}
+	.tu .tm-sorting {user-select:none;-webkit-user-select:none;}
+	.tu .tm-secs .tm-timer {margin-bottom:0.7em;}
+	.tu .tm-face {font-size:clamp(2.4em,9vw,3.6em);}
+	.tu .tm-solo .tm-face {font-size:clamp(2.6em,12vw,5.2em);}
+	.tu .tm-solo .tm-sec__b {padding:0;}
+	/* alarms */
+	.tu .tm-alarm {border:1px solid #e3e7ec;border-radius:0.6em;padding:0.6em 0.7em;margin-bottom:0.6em;background:#fff;}
+	.tu .tm-alarm.is-on {border-color:var(--accent);box-shadow:0 0 0 2px #fdf0dc;}
+	.tu .tm-alarm__row {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;}
+	.tu .tm-alarm .tm-time {flex:0 1 9em;min-width:7.5em;} .tu .tm-alarm .tm-label {flex:1 1 9em;}
+	.tu .tm-alarm__st {font-size:0.85em;color:#6a7280;margin-top:0.35em;}
+	/* pomodoro + interval */
+	.tu .tm-po-tabs {display:flex;flex-wrap:wrap;gap:0.4em;justify-content:center;margin-bottom:0.4em;}
+	.tu .tm-po-tabs button {cursor:pointer;border:1px solid #c3c9d2;border-radius:2em;background:#fff;color:#555;padding:0.35em 1em;font:inherit;font-size:0.92em;}
+	.tu .tm-po-tabs button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	.tu [data-phase="short"] .tm-face, .tu [data-phase="long"] .tm-face {color:#1f7a3d;}
+	.tu .tm-po-set {display:flex;flex-wrap:wrap;gap:0.5em 1.1em;justify-content:center;align-items:center;margin-top:0.9em;font-size:0.92em;}
+	.tu .tm-po-set input.tu-input {width:3.6em;text-align:center;padding:0.3em;display:inline-block;margin:0 0.2em;}
+	.tu .tm-iv-face {text-align:center;border-radius:0.7em;padding:0.5em 0.4em 0.7em;transition:background 0.25s;}
+	.tu .tm-iv-phase {font-size:1.3em;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#6a7280;}
+	.tu .tm-iv-info {font-size:0.95em;color:#6a7280;min-height:1.3em;}
+	.tu .tm-iv-face[data-phase="work"] {background:#e1f6e7;} .tu .tm-iv-face[data-phase="work"] .tm-iv-phase, .tu .tm-iv-face[data-phase="work"] .tm-face {color:#13803a;}
+	.tu .tm-iv-face[data-phase="rest"] {background:#e5effc;} .tu .tm-iv-face[data-phase="rest"] .tm-iv-phase, .tu .tm-iv-face[data-phase="rest"] .tm-face {color:#1f5fb0;}
+	.tu .tm-iv-face[data-phase="prep"] {background:#fff1d9;} .tu .tm-iv-face[data-phase="prep"] .tm-iv-phase, .tu .tm-iv-face[data-phase="prep"] .tm-face {color:#a86706;}
+	.tu .tm-iv-face[data-phase="done"] {background:#fdeeb8;}
+	/* date countdowns */
+	.tu .tm-ev-form {display:flex;flex-wrap:wrap;gap:0.6em;align-items:flex-end;}
+	.tu .tm-event {border:1px solid #e3e7ec;border-radius:0.6em;padding:0.7em 0.9em 0.9em;margin-bottom:0.7em;background:#fff;}
+	.tu .tm-event .tm-ev-name {flex:1;font-size:1.05em;} .tu .tm-ev-when {color:#6a7280;font-size:0.88em;margin-bottom:0.3em;}
+	.tu .tm-ev-face {display:flex;flex-wrap:wrap;gap:0.4em 1.3em;justify-content:center;font-size:clamp(1em,4vw,1.5em);font-variant-numeric:tabular-nums;}
+	.tu .tm-ev-face span {text-align:center;color:#6a7280;font-size:0.8em;} .tu .tm-ev-face b {display:block;font-size:2.2em;color:#1e2733;line-height:1.1;}
+	.tu .tm-event.is-past {background:#fff9e5;} .tu .tm-ev-past {font-size:1.2em;font-weight:700;}
+	/* full screen for any panel / card */
+	.tu .tm-fs {position:fixed !important;inset:0;z-index:99998;margin:0 !important;border-radius:0 !important;display:flex !important;flex-direction:column;justify-content:center;align-items:center;background:#fff;padding:2vh 3vw !important;overflow:auto;box-shadow:none !important;}
+	.tu .tm-fs .tm-hide-fs, .tu .tm-fs .tm-presets, .tu .tm-fs .tm-set, .tu .tm-fs .tm-po-set {display:none !important;}
+	.tu .tm-fs .tm-face {font-size:min(26vw,38vh);} .tu .tm-fs .tm-ev-face {font-size:min(4.2vw,6vh);}
+	.tu .tm-fs .tm-iv-phase {font-size:min(7vw,9vh);} .tu .tm-fs .tm-iv-info {font-size:min(2.6vw,4vh);}
+	.tu .tm-fs .tm-bar {width:70vw;height:1.2vh;} .tu .tm-fs .tm-btns .tu-btn {font-size:clamp(1em,2.4vw,1.8em);}
+	.tu .tm-fs .tm-label, .tu .tm-fs .tm-ev-name {text-align:center;font-size:clamp(1em,3vw,2em);max-width:80vw;}
+	.tu .tm-fs-x {position:absolute;top:1.2vh;right:1.5vw;cursor:pointer;border:1px solid #c3c9d2;border-radius:0.4em;background:#fff;color:#444;padding:0.4em 0.9em;font:inherit;}
+	.tu .tm-others__l a {text-decoration:none;}
+	.tu .tm-solo-label {margin:0 0 0.5em;} .tu .tm-solo-label .tm-label {width:100%;box-sizing:border-box;text-align:center;}
+	.tu .tm-onmain {margin-top:0.9em;padding:0.6em 0.9em;} .tu .tm-onmain a {color:var(--accent);font-weight:700;}
+	.tu .tm-swc .tm-laps td, .tu .tm-swc .tm-laps th {font-variant-numeric:tabular-nums;}
+	.tu .tm-swc .tm-fast td {color:#1f7a3d;font-weight:700;} .tu .tm-swc .tm-slow td {color:#b3261e;font-weight:700;}
+	body.dark-mode #tm .tm-swc .tm-fast td {color:#7bd88f;} body.dark-mode #tm .tm-swc .tm-slow td {color:#ff8a80;}
+	body.dark-mode #tm .tm-addbar__l {color:#a0a8b3;}
+	body.dark-mode #tm .tm-alarm, body.dark-mode #tm .tm-event {background:#262626;border-color:#3a3a3a;} body.dark-mode #tm .tm-alarm.is-on {border-color:var(--accent);} body.dark-mode #tm .tm-alarm__st, body.dark-mode #tm .tm-ev-when {color:#a0a8b3;}
+	body.dark-mode #tm .tm-event.is-past {background:#3a321a;} body.dark-mode #tm .tm-ev-face b {color:#f1f1f1;} body.dark-mode #tm .tm-ev-face span {color:#a0a8b3;}
+	body.dark-mode #tm .tm-po-tabs button {background:#262626;color:#d1d6dc;border-color:#555;} body.dark-mode #tm .tm-po-tabs button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode #tm [data-phase="short"] .tm-face, body.dark-mode #tm [data-phase="long"] .tm-face {color:#7bd88f;} body.dark-mode #tm .tm-iv-phase, body.dark-mode #tm .tm-iv-info {color:#a0a8b3;}
+	body.dark-mode #tm .tm-iv-face[data-phase="work"] {background:#14301c;} body.dark-mode #tm .tm-iv-face[data-phase="work"] .tm-iv-phase, body.dark-mode #tm .tm-iv-face[data-phase="work"] .tm-face {color:#7bd88f;}
+	body.dark-mode #tm .tm-iv-face[data-phase="rest"] {background:#142234;} body.dark-mode #tm .tm-iv-face[data-phase="rest"] .tm-iv-phase, body.dark-mode #tm .tm-iv-face[data-phase="rest"] .tm-face {color:#7ab4ff;}
+	body.dark-mode #tm .tm-iv-face[data-phase="prep"] {background:#33280f;} body.dark-mode #tm .tm-iv-face[data-phase="prep"] .tm-iv-phase, body.dark-mode #tm .tm-iv-face[data-phase="prep"] .tm-face {color:#ffc766;} body.dark-mode #tm .tm-iv-face[data-phase="done"] {background:#3a3412;}
+	body.dark-mode #tm .tm-dragging {box-shadow:0 0.8em 2.2em rgba(0,0,0,0.7);}
+	body.dark-mode #tm .tm-fs-x {background:#262626;color:#ddd;border-color:#555;}
+	body.dark-mode #tm .tm-sec__h {background:var(--accent);} body.dark-mode #tm .tm-sec__t, body.dark-mode #tm .tm-sec__l, body.dark-mode #tm .tm-sec .tm-grip {color:#0b1416;}
+	@media (max-width: 600px) {.tu .tm-secs.tm-row {grid-template-columns:1fr;}}
+	@media (max-width: 600px) {
+		.tu .tm-big {flex:1 1 40%;padding:0.7em 0.5em;min-width:0;}
+		.tu .tm-set input {width:3.6em;}
 	}
+	@media print {.tu .tm-settings, .tu-seo, .tm-btns {display:none !important;}}
 
 
 	@media print {
@@ -432,6 +453,80 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#f79b13;--accent-dark:#f79a12}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #533405}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#2f2514;border-color:#533405}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#2f2514;border-color:#533405}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#2f2514}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
+	body.dark-mode .tu .tm-ring__btns button{border:2px solid #333333;background:#1a1a1a;color:#e37e78}
+	body.dark-mode .tu .tm-timer{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .tu .tm-timer.is-done{border-color:#a52f27;background:#25100e}
+	body.dark-mode .tu .tm-label{border-bottom:1px dashed #3a424d;color:#cccccc}
+	body.dark-mode .tu .tm-icon{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu .tm-face{color:#d1d6dc}
+	body.dark-mode .tu .tm-face small{color:#9a9da3}
+	body.dark-mode .tu .tm-bar{background:#1f2126}
+	body.dark-mode .tu .tm-set span{color:#9a9da3}
+	body.dark-mode .tu #tm-laps .tm-fast td{color:#7dde9d}
+	body.dark-mode .tu #tm-laps .tm-slow td{color:#e87973}
+	body.dark-mode .tu .tm-fs{background:#1a1a1a}
+	body.dark-mode .tu .tm-addbar__l{color:#9a9da3}
+	body.dark-mode .tu .tm-timer .tm-grip{color:#999da3}
+	body.dark-mode .tu .tm-grip:focus-visible{outline:2px solid #333333}
+	body.dark-mode .tu .tm-alarm{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .tu .tm-alarm__st{color:#9a9da3}
+	body.dark-mode .tu .tm-po-tabs button{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu [data-phase="short"] .tm-face,body.dark-mode .tu [data-phase="long"] .tm-face{color:#7dde9d}
+	body.dark-mode .tu .tm-iv-phase{color:#9a9da3}
+	body.dark-mode .tu .tm-iv-info{color:#9a9da3}
+	body.dark-mode .tu .tm-iv-face[data-phase="work"]{background:#1a2b1f}
+	body.dark-mode .tu .tm-iv-face[data-phase="work"] .tm-iv-phase,body.dark-mode .tu .tm-iv-face[data-phase="work"] .tm-face{color:#71ea9c}
+	body.dark-mode .tu .tm-iv-face[data-phase="rest"]{background:#131c28}
+	body.dark-mode .tu .tm-iv-face[data-phase="rest"] .tm-iv-phase,body.dark-mode .tu .tm-iv-face[data-phase="rest"] .tm-face{color:#74a7e7}
+	body.dark-mode .tu .tm-iv-face[data-phase="prep"]{background:#322613}
+	body.dark-mode .tu .tm-iv-face[data-phase="prep"] .tm-iv-phase,body.dark-mode .tu .tm-iv-face[data-phase="prep"] .tm-face{color:#f9bc61}
+	body.dark-mode .tu .tm-iv-face[data-phase="done"]{background:#4a401e}
+	body.dark-mode .tu .tm-event{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .tu .tm-ev-when{color:#9a9da3}
+	body.dark-mode .tu .tm-ev-face span{color:#9a9da3}
+	body.dark-mode .tu .tm-ev-face b{color:#d1d6dc}
+	body.dark-mode .tu .tm-event.is-past{background:#292310}
+	body.dark-mode .tu .tm-fs-x{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
+	body.dark-mode .tu .tm-swc .tm-fast td{color:#7dde9d}
+	body.dark-mode .tu .tm-swc .tm-slow td{color:#e87973}
+	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -450,7 +545,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
   display: none; align-items: center; gap: 12px;
   padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #334155;
+  background: #ffffff; border-bottom: 3px solid #a86706;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   transform: translateY(-110%); transition: transform 0.2s ease;
 }
@@ -463,8 +558,8 @@ body.is-stuck #compact-nav { transform: none; }
 }
 #compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
 #compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #334155; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(51,65,85,0.12); }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #a86706; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(168,103,6,0.12); }
 body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
 body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 700px) {
@@ -474,101 +569,20 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent-dark:#5d7bac}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #27323f}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#1e2125;border-color:#27323f}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#1e2125;border-color:#27323f}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#1e2125}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .cs-op{color:#d1d6dc}
-	body.dark-mode .cs-chips button{border:1px solid #2f3742;background:#17181c;color:#dddddd}
-	body.dark-mode .cs-chips button:hover{background:#1a1a1a}
-	body.dark-mode .cs-preview{background:#17191c;border:1px dashed #2b323c;color:#d1d6dc}
-	body.dark-mode .cs-preview.is-dim,body.dark-mode .cs-preview.is-echo{color:#9a9da3}
-	body.dark-mode .cs-preview.is-err{color:#e87973;border-color:#681f19;background:#221311}
-	body.dark-mode .cs-preview__lbl{color:#999da3}
-	body.dark-mode .cs-preview code{color:#cccccc}
-	body.dark-mode .cs-status{background:#1e2125;color:#d1d6dc}
-	body.dark-mode .cs-status .cs-cancel{background:#1a1a1a}
-	body.dark-mode .cs-bar{background:rgba(82,82,82,0.08)}
-	body.dark-mode .cs-spin{border:2px solid rgba(76,76,76,0.15)}
-	body.dark-mode .cs-error{background:#221311;border:1px solid #681f19;color:#e97972}
-	body.dark-mode .cs-result{background:#1e2125;border:1px solid #27323f}
-	body.dark-mode .cs-result__label,body.dark-mode .cs-sec__label{color:#9a9aa2}
-	body.dark-mode .cs-btns .tu-btn{background:#1a1a1a}
-	body.dark-mode .cs-badge{background:#1d2a1f;color:#80da98}
-	body.dark-mode .cs-badge--warn{background:#2f2512;color:#ffbe5c}
-	body.dark-mode .cs-badge--info{background:#1e2125;color:#b3bac4}
-	body.dark-mode .cs-kv > div{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .cs-steps > .cs-step{border-top:1px solid #2a323c}
-	body.dark-mode .cs-steps > .cs-step::before{background:#1e2125}
-	body.dark-mode .cs-steps--sub{border-left:3px solid #27323f}
-	body.dark-mode .cs-steps--sub > .cs-step::before{border:1px solid #2f3742;color:#9a9aa2}
-	body.dark-mode .cs-step__h{color:#d1d6dc}
-	body.dark-mode .cs-step__t{color:#bbbbbb}
-	body.dark-mode .cs-sols li{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .cs-sols .cs-dec{color:#bbbbbb}
-	body.dark-mode .cs-sols .cs-deg{color:#9a9da3}
-	body.dark-mode .cs-pending{color:#9a9da3}
-	body.dark-mode .cs-plotwrap{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .cs-legend{color:#aaaaaa}
-	body.dark-mode .cs-legend i{background:#3c4f67}
-	body.dark-mode .cs-legend i.cs-l4{background:#1e2125}
-	body.dark-mode .cs-hist li{border-bottom:1px solid #2a323c}
-	body.dark-mode .cs-hist li:hover{background:#1e2125}
-	body.dark-mode .cs-hist .cs-h-q{color:#bfbfc8}
-	body.dark-mode .cs-hist .cs-h-r{color:#9a9da3}
-	body.dark-mode .cs-link{border:1px solid #28323e;background:#1a1a1a}
-	body.dark-mode .cs-link span{color:#9a9da3}
-	body.dark-mode .cs-link:hover{background:#1e2125}
-	body.dark-mode .tu code{background:#191c20}
-	body.dark-mode .tu-seo dt{color:#d1d6dc}
-	body.dark-mode .tu-seo dd{color:#cccccc}
-	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://mes.fm/cas-calculator" />            <meta property="og:title" content="MES CAS Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/cas-calculator/img/logo-big.png" />
-        <meta property="og:description" content="Free online CAS calculator (computer algebra system): solve equations, systems and inequalities with steps, find every real root of hard equations numerically, simplify, factor, expand, partial fractions, limits, series, sums and matrices." />
+        <meta property="og:url" content="https://mes.fm/alarm-clock" />            <meta property="og:title" content="Alarm Clock | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/timer/img/logo-big.png" />
+        <meta property="og:description" content="Free online alarm clock: set up to six alarms with labels, repeat daily, snooze, and choose your sound. Rings from your browser while the page is open. No sign-up." />
 
-        <meta name="description" content="Free online CAS calculator (computer algebra system): solve equations, systems and inequalities with steps, find every real root of hard equations numerically, simplify, factor, expand, partial fractions, limits, series, sums and matrices.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
-        <meta name="twitter:title" content="MES CAS Calculator">
-        <meta name="twitter:description" content="Free online CAS calculator (computer algebra system): solve equations, systems and inequalities with steps, find every real root of hard equations numerically, simplify, factor, expand, partial fractions, limits, series, sums and matrices.">
-        <meta name="twitter:image" content="https://mes.fm/cas-calculator/img/logo-big.png">
-        <meta name="twitter:image:alt" content="MES CAS Calculator">
+        <meta name="description" content="Free online alarm clock: set up to six alarms with labels, repeat daily, snooze, and choose your sound. Rings from your browser while the page is open. No sign-up.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="Alarm Clock">
+        <meta name="twitter:description" content="Free online alarm clock: set up to six alarms with labels, repeat daily, snooze, and choose your sound. Rings from your browser while the page is open. No sign-up.">
+        <meta name="twitter:image" content="https://mes.fm/timer/img/logo-big.png">
+        <meta name="twitter:image:alt" content="Alarm Clock">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES CAS Calculator", "url": "https://mes.fm/cas-calculator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free online CAS calculator (computer algebra system): solve equations, systems and inequalities with steps, find every real root of hard equations numerically, simplify, factor, expand, partial fractions, limits, series, sums and matrices."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Alarm Clock", "url": "https://mes.fm/alarm-clock", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free online alarm clock: set up to six alarms with labels, repeat daily, snooze, and choose your sound. Rings from your browser while the page is open. No sign-up."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -733,8 +747,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/cas-calculator" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/cas-calculator/img/logo.png?v=2"></a>
-  <a class="compact-nav-title" href="/cas-calculator" tabindex="-1">CAS Calculator</a>
+  <a href="/timer" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/timer/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/timer" tabindex="-1">Timer</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
@@ -745,121 +759,83 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/cas-calculator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/cas-calculator/img/logo.png?v=2"></a>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/timer'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/timer/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
-                                <a class="calculator-title-link" href='/cas-calculator'>
-                                    <p class="calculator-title">MES CAS Calculator</p>
+                                <a class="calculator-title-link" href='/timer'>
+                                    <p class="calculator-title">Timer by MES</p>
                                 </a>
-                                <p class="tag-line">Solve, simplify, factor, limits and series.</p>                            </div>
+                                <p class="tag-line">Online timer, stopwatch, alarm clock and inspirational quotes!</p>                            </div>
 
                             <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/cas-calculator'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/timer'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/countdown-timer'>Countdown</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/stopwatch'>Stopwatch</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/alarm-clock'>Alarm</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/pomodoro-timer'>Pomodoro</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/interval-timer'>Interval</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/countdown-to-date'>Date countdown</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/timer/inspirational-quotes'>Quotes</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">CAS Calculator</h1>                                        <p class="page-description">Free online CAS calculator (computer algebra system): solve equations, systems and inequalities with steps, find every real root of hard equations numerically, simplify, factor, expand, partial fractions, limits, series, sums and matrices.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<div class="tu cs" id="cs">
-		<div class="tu-seg cs-tabs" id="cs-tabs" role="tablist" aria-label="What to do">
-			<button type="button" data-mode="solve" aria-pressed="true">Solve</button>
-			<button type="button" data-mode="simplify" aria-pressed="false">Simplify &amp; factor</button>
-			<button type="button" data-mode="limit" aria-pressed="false">Limit</button>
-			<button type="button" data-mode="series" aria-pressed="false">Series</button>
-			<button type="button" data-mode="sum" aria-pressed="false">Sum &amp; product</button>
-			<button type="button" data-mode="matrix" aria-pressed="false">Matrix</button>
-			<button type="button" data-mode="evaluate" aria-pressed="false">Evaluate</button>
-			<button type="button" data-mode="calculus" aria-pressed="false">d/dx &amp; ∫</button>
+                                    <h1 class="page-title">Online Alarm Clock</h1>                                        <p class="page-description">Free online alarm clock: set up to six alarms with labels, repeat daily, snooze, and choose your sound. Rings from your browser while the page is open. No sign-up.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="tm" data-views="al" data-customize="0">
+		<div id="tm-ring" class="tm-ring" role="alertdialog" aria-live="assertive" hidden>
+			<div class="tm-ring__msg" id="tm-ring-msg"></div>
+			<div class="tm-ring__btns" id="tm-ring-btns"></div>
 		</div>
-		<div class="tu-card">
-			<label class="tu-label" for="cs-in" id="cs-inlabel">Equation, inequality or system</label>
-			<textarea id="cs-in" class="tu-input tu-input--big cs-expr" rows="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. x^2 - 5x + 6 = 0" aria-describedby="cs-preview"></textarea>
-			<div class="cs-chips" id="cs-chips" aria-label="Insert a symbol">
-				<button type="button" data-ins="=">=</button><button type="button" data-ins="≤">≤</button><button type="button" data-ins="≥">≥</button>
-				<button type="button" data-ins="^" title="Power">xʸ</button><button type="button" data-ins="sqrt(" title="Square root">√</button>
-				<button type="button" data-ins="π">π</button><button type="button" data-ins="e^(" title="e to the power">eˣ</button><button type="button" data-ins="ln(">ln</button>
-				<button type="button" data-ins="sin(">sin</button><button type="button" data-ins="cos(">cos</button><button type="button" data-ins="tan(">tan</button>
-				<button type="button" data-ins="|" title="Absolute value">|x|</button><button type="button" data-ins="α">α</button><button type="button" data-ins="θ">θ</button>
-				<button type="button" data-ins="∞" title="Infinity">∞</button><button type="button" data-ins="·" title="Multiply">·</button><button type="button" data-ins=", " title="Separate equations">,</button>
-			</div>
-			<div class="cs-preview is-dim" id="cs-preview" aria-live="polite"></div>
 
-			<div class="tu-row cs-opts">
-				<div class="tu-field tu-field--sm cs-mode" data-modes="solve simplify limit series sum"><label for="cs-var" id="cs-varlabel">Variable(s)</label><input id="cs-var" class="tu-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="auto"></div>
-				<div class="tu-field tu-field--sm cs-mode" data-modes="solve"><label for="cs-lo">Search from</label><input id="cs-lo" class="tu-input" type="text" autocomplete="off" spellcheck="false" placeholder="auto"></div>
-				<div class="tu-field tu-field--sm cs-mode" data-modes="solve"><label for="cs-hi">Search to</label><input id="cs-hi" class="tu-input" type="text" autocomplete="off" spellcheck="false" placeholder="auto"></div>
-				<div class="tu-field cs-mode" data-modes="simplify" hidden><label for="cs-op">Operation</label>
-					<select id="cs-op" class="tu-select">
-						<option value="simplify">Simplify</option><option value="factor">Factor</option><option value="expand">Expand</option>
-						<option value="apart">Partial fractions (apart)</option><option value="together">Combine into one fraction (together)</option>
-						<option value="cancel">Cancel common factors</option><option value="trigsimp">Trig simplify</option><option value="rationalize">Rationalize the denominator</option>
+		<div class="tm-addbar" id="tm-addbar" hidden></div>
+		<div class="tm-secs" id="tm-secs"></div>
+		<div class="tu-card tm-onmain" id="tm-onmain" hidden><label class="tm-check"><input type="checkbox" id="tm-onmain-box"> <span id="tm-onmain-txt"></span></label></div>
+
+		<div class="tu-card tm-settings" id="tm-settings">
+			<div class="tu-label">Sound and options</div>
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:1 1 13em;"><label for="tm-sound">When time is up</label>
+					<select id="tm-sound" class="tu-select">
+						<option value="friendly">Friendly (grandfather clock)</option>
+						<option value="annoying">Annoying (alarm clock)</option>
+						<option value="beep">Beeps</option>
+						<option value="chime">Chime</option>
+						<option value="off">Silent</option>
 					</select></div>
-				<div class="tu-field tu-field--sm cs-mode" data-modes="limit series" hidden><label for="cs-at" id="cs-atlabel">Approaches</label><input id="cs-at" class="tu-input" type="text" autocomplete="off" spellcheck="false" placeholder="0" value="0"></div>
-				<div class="tu-field tu-field--sm cs-mode" data-modes="limit" hidden><label for="cs-dir">Direction</label>
-					<select id="cs-dir" class="tu-select"><option value="+-">Two-sided</option><option value="+">From the right (+)</option><option value="-">From the left (−)</option></select></div>
-				<div class="tu-field tu-field--sm cs-mode" data-modes="series" hidden><label for="cs-n">Order (terms up to)</label><input id="cs-n" class="tu-input" type="number" min="1" max="20" value="6"></div>
-				<div class="tu-field tu-field--sm cs-mode" data-modes="sum" hidden><label for="cs-kind">Sum or product</label>
-					<select id="cs-kind" class="tu-select"><option value="sum">Sum Σ</option><option value="product">Product Π</option></select></div>
-				<div class="tu-field tu-field--sm cs-mode" data-modes="sum" hidden><label for="cs-from">From</label><input id="cs-from" class="tu-input" type="text" autocomplete="off" spellcheck="false" value="1"></div>
-				<div class="tu-field tu-field--sm cs-mode" data-modes="sum" hidden><label for="cs-to">To</label><input id="cs-to" class="tu-input" type="text" autocomplete="off" spellcheck="false" value="oo"></div>
-				<div class="tu-field tu-field--sm cs-mode" data-modes="evaluate" hidden><label for="cs-digits">Digits</label><input id="cs-digits" class="tu-input" type="number" min="5" max="100" value="15"></div>
-				<div class="tu-field cs-mode" data-modes="solve simplify limit series sum matrix evaluate"><label for="cs-ex">Examples</label>
-					<select id="cs-ex" class="tu-select"><option value="">Choose an example…</option></select></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="tm-repeat">Repeat</label>
+					<select id="tm-repeat" class="tu-select"><option value="1">Once</option><option value="3">3 times</option><option value="0">Until I stop it</option></select></div>
+				<div class="tu-field" style="flex:1 1 10em;"><label for="tm-vol">Volume</label><input id="tm-vol" type="range" min="0" max="100" step="5" style="width:100%;"></div>
+				<div class="tu-field tu-field--sm" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--ghost" id="tm-test">▶ Test sound</button></div>
 			</div>
-			<div class="cs-mode" data-modes="calculus" hidden>
-				<p class="tu-note">Derivatives and integrals have their own pages, with full step-by-step solutions and plots. Type a function above, then:</p>
-				<div class="cs-links" style="margin-bottom:0;">
-					<a class="cs-link" id="cs-to-d" href="/derivative-calculator">Differentiate →<span>MES Derivative Calculator</span></a>
-					<a class="cs-link" id="cs-to-i" href="/integral-calculator">Integrate →<span>MES Integral Calculator</span></a>
-				</div>
+			<div class="tm-checks">
+				<label class="tm-check"><input type="checkbox" id="tm-opt-title"> Show the time in the browser tab</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-awake"> Keep the screen awake while running</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-notify"> Pop-up notification when time is up</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-tenths"> Show tenths of a second</label>
 			</div>
-			<div class="tu-row cs-actions cs-mode" data-modes="solve simplify limit series sum matrix evaluate">
-				<button type="button" class="tu-btn tu-btn--primary" id="cs-go">Solve</button>
-				<span class="tu-note" id="cs-tip">Press Enter to run (Shift+Enter for a new line). Separate the equations of a system with commas, semicolons or new lines.</span>
-			</div>
-			<div class="cs-status" id="cs-status" role="status" hidden></div>
+			<p class="tu-note" id="tm-store-note" style="margin-bottom:0;"></p>
 		</div>
 
-		<div class="cs-out" id="cs-out" aria-live="polite" hidden></div>
-
-		<div class="tu-card" id="cs-hist-card" style="margin-top:1em;" hidden>
-			<div class="tu-row" style="justify-content:space-between;align-items:center;">
-				<h3 style="margin:0;">History</h3>
-				<button type="button" class="tu-btn tu-btn--ghost" id="cs-hist-clear">Clear</button>
+		<div class="tu-card tm-others">
+			<div class="tu-label">More timers and clocks</div>
+			<div class="tu-chips tm-others__l">
+				<a class="tu-chip" href="/timer">All timers</a><a class="tu-chip" href="/countdown-timer">Countdown timer</a><a class="tu-chip" href="/stopwatch">Stopwatch</a><a class="tu-chip" href="/alarm-clock">Alarm clock</a>
+				<a class="tu-chip" href="/pomodoro-timer">Pomodoro</a><a class="tu-chip" href="/interval-timer">Interval timer</a><a class="tu-chip" href="/countdown-to-date">Countdown to a date</a><a class="tu-chip" href="/clock">Clock</a><a class="tu-chip" href="/timezone">Time zones</a>
 			</div>
-			<ul class="cs-hist" id="cs-hist"></ul>
 		</div>
 
-		<section class="tu-seo">
-			<h2>More from MES</h2>
-			<div class="cs-links">
-				<a class="cs-link" href="/derivative-calculator">Derivative Calculator<span>derivatives with every rule explained</span></a>
-				<a class="cs-link" href="/integral-calculator">Integral Calculator<span>indefinite &amp; definite integrals with steps</span></a>
-				<a class="cs-link" href="/2d-graphing-calculator">2D Graphing Calculator<span>see the roots of an equation</span></a>
-				<a class="cs-link" href="/3d-graphing-calculator">3D Graphing Calculator<span>surfaces and equations in x, y, z</span></a>
-				<a class="cs-link" href="/calculator">Calculator<span>everyday arithmetic and scientific keys</span></a>
-				<a class="cs-link" href="/latex">LaTeX Render<span>paste the LaTeX of an answer</span></a>
-			</div>
-			<h2>Free online CAS calculator (computer algebra system)</h2>
-			<p>A computer algebra system works with exact symbols instead of decimals: it solves <code>x^2 - 5x + 6 = 0</code> as x = 2 or x = 3, keeps √2 and π exact, factors, expands and simplifies expressions, and finds limits, series and sums in closed form. This one runs <a href="https://www.sympy.org/" rel="noopener">SymPy</a> right in your browser.</p>
+		<div class="tu-seo">
+			<h2>Online alarm clock</h2>
+			<p>Set one or more alarms for a time of day and let your browser ring them: wake-up reminders, meetings, medication, a break. Pick the time, add a label, tick <em>Daily</em> to repeat it every day, and turn it on. When it rings you can stop it or snooze for 5 or 10 minutes.</p>
+			<h3>Good to know</h3>
 			<ul>
-				<li><strong>Solve</strong> equations, systems (separate them with commas, semicolons or new lines) and inequalities, with steps for linear and quadratic equations (factoring or the quadratic formula with the discriminant), polynomials (rational root theorem), equations with fractions, substitutions such as s = sin α, and linear systems.</li>
-				<li><strong>Hard equations too</strong>: when there is no closed form, every real root in the search interval is found numerically (sign changes plus touching roots, refined to 30 digits), shown in radians and degrees for trigonometric equations, with the periodic general solution and a plot of the roots.</li>
-				<li><strong>Simplify, factor, expand</strong>, partial fractions, combine fractions, trigonometric simplification and rationalizing denominators.</li>
-				<li><strong>Limits</strong> (two-sided, left, right, at ±∞), <strong>Taylor and Maclaurin series</strong>, <strong>sums and products</strong>, <strong>matrices</strong> (determinant, inverse, eigenvalues, rank, row-reduced form) and exact or high-precision <strong>evaluation</strong>.</li>
+				<li><strong>Keep the page open.</strong> A website cannot ring after you close it, so leave the tab open (it can be in the background) and your computer awake and unmuted. For overnight use, a phone&rsquo;s built-in alarm is the safer choice.</li>
+				<li><strong>Up to six alarms</strong> at once, each with its own label and daily switch.</li>
+				<li>Alarms use <strong>your device&rsquo;s local time</strong> and daylight saving time automatically.</li>
+				<li>If an alarm went off while the page was closed, you are told when you come back.</li>
+				<li>Choose a friendly or annoying alarm, beeps or a chime, and the volume, in <em>Sound and options</em>. Press <em>Test sound</em> once so your browser allows audio.</li>
 			</ul>
-			<h2>Example: the optimal launch angle equation</h2>
-			<p>Type <code>0 = 2 - sin α · ln((1+sin α)/(1−sin α))</code> exactly like that. The calculator notices that α only appears through sin α, substitutes s = sin α (so the equation is 2 = 2s·artanh(s)), solves for s ≈ ±0.8336 and back-substitutes, giving α ≈ 0.98551 rad ≈ 56.47° and the other solutions in [0, 2π].</p>
-			<h2>Tips</h2>
-			<dl>
-				<dt>Typing maths</dt><dd><code>2x</code>, <code>x^2</code>, <code>sqrt x</code>, <code>sin x</code>, <code>e^x</code>, <code>ln</code>, <code>|x|</code>, <code>pi</code>, and the symbols × ÷ − √ π · ≤ ≥ all work. Greek letters are variables.</dd>
-				<dt>Privacy</dt><dd>Everything is computed on your own device: the first run downloads Python and SymPy (about 10 MB, cached afterwards). Your history is kept in your browser only.</dd>
-			</dl>
-		</section>
+			<h3>Questions</h3>
+			<h4>Can I set an alarm for a few minutes from now?</h4>
+			<p>Yes, but a <a href="/countdown-timer">countdown timer</a> is simpler for that: type 10 and press Start.</p>
+		</div>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
@@ -870,7 +846,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/derivative-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/derivative-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Derivative Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/impermanent-loss-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/impermanent-loss-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Impermanent Loss Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/pomodoro-timer"><img class="mes-aside__img mes-aside__img--logo" src="/pomodoro-timer/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Pomodoro Timer</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/youtube-thumbnail"><img class="mes-aside__img mes-aside__img--logo" src="/youtube-thumbnail/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">YouTube Thumbnail Grabber</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -878,7 +854,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/cas-calculator">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/timer">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/countdown-timer">Countdown Timer</a></li><li class="navbar__item"><a class="navbar__link" href="/stopwatch">Stopwatch</a></li><li class="navbar__item"><a class="navbar__link" href="/alarm-clock">Alarm Clock</a></li><li class="navbar__item"><a class="navbar__link" href="/pomodoro-timer">Pomodoro Timer</a></li><li class="navbar__item"><a class="navbar__link" href="/interval-timer">Interval Timer</a></li><li class="navbar__item"><a class="navbar__link" href="/countdown-to-date">Countdown to a Date</a></li><li class="navbar__item"><a class="navbar__link" href="/clock">Clock</a></li><li class="navbar__item"><a class="navbar__link" href="/timer/inspirational-quotes">Inspirational Quotes</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
     <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
@@ -917,9 +893,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         var MES_Vars = {
             mobile:false,
             hide_search:false,
-            current_tab:0
+            current_tab:3
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/cas/cas-client.js?v=1" defer></script><script src="/main_js/cas/cas-ui.js?v=1" defer></script><script src="/cas-calculator/js/cas-calculator.js?v=1" defer></script>
+	<script src="/timer/js/timer.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -37,7 +37,7 @@ RESPONSIVE_SLOT = "1532113018"
 RESPONSIVE_FAMILIES = {"percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator", "inflationcalculator",
                        "timer", "vatcalculator", "pokemongocalculator", "memes", "puzzles", "tools", "math"}
 # stand-alone tool / rebuilt-calculator pages (tool shell, one index.html per folder): included on purpose, unlike the timer etc. skip below
-TOOL_DIRS = ["emoji", "latex", "timezone", "symbols", "stats", "speedreader", "timer", "clock", "youtube-thumbnail", "unit-conversion",
+TOOL_DIRS = ["emoji", "latex", "timezone", "symbols", "stats", "speedreader", "timer", "clock", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "youtube-thumbnail", "unit-conversion",
              "gematria", "impermanent-loss-calculator", "earth-curvature-calculator", "share", "search", "calendar", "copy-text", "typing-test", "typing-test-transcribe", "solar-system-today", "search-engines", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "vatcalculator", "mortgagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "gradecalculator/weighted-average-calculator.html"]
 FAMILIES = ["percentagecalculator", "gradecalculator", "gpacalculator", "bmicalculator", "mortgagecalculator",
             "inflationcalculator", "timer", "pokemongocalculator", "memes", "puzzles"]

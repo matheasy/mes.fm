@@ -278,11 +278,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	/* Timer 2.0 */
 	.tu [hidden] {display:none !important;}
 	.tu kbd {font:0.85em ui-monospace,Menlo,monospace;padding:0.1em 0.4em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;color:#333;}
-	.tu .tm-tabs {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 0.8em;padding-bottom:0.2em;border-bottom:2px solid #fdf0dc;}
-	.tu .tm-tabs button {cursor:pointer;border:1px solid #c3c9d2;border-bottom:0;border-radius:0.5em 0.5em 0 0;background:#fff;color:#444;padding:0.55em 1em;font-size:1em;margin-bottom:-2px;}
-	.tu .tm-tabs button:hover {border-color:var(--accent);color:var(--accent);}
-	.tu .tm-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
-	.tu .tm-panel {margin-top:0;}
 	/* the ringing banner */
 	.tu .tm-ring {position:sticky;top:3.6em;z-index:40;margin:0 0 0.8em;padding:0.9em 1em;border-radius:0.6em;background:#d1453b;color:#fff;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.35);animation:tm-pulse 1s ease-in-out infinite;}
 	.tu .tm-ring__msg {font-size:1.25em;font-weight:700;margin-bottom:0.5em;word-break:break-word;}
@@ -326,8 +321,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .tm-fs .tm-bar {width:70vw;height:1.2vh;}
 	.tu .tm-fs .tm-presets, .tu .tm-fs .tm-set {display:none;}
 	.tu .tm-fs .tm-btns .tu-btn {font-size:clamp(1em,2.4vw,1.8em);}
-	body.dark-mode #tm .tm-tabs button {background:#262626;color:#d1d6dc;border-color:#444;}
-	body.dark-mode #tm .tm-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
 	body.dark-mode #tm .tm-timer {background:#262626;border-color:#3a3a3a;}
 	body.dark-mode #tm .tm-timer.is-running {border-color:var(--accent);}
 	body.dark-mode #tm .tm-timer.is-done {background:#3a1f1c;border-color:#d1453b;}
@@ -338,6 +331,84 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode #tm .tm-fs {background:#161616;}
 	body.dark-mode #tm kbd {background:#2e2e2e;color:#ddd;border-color:#555;}
 	body.dark-mode #tm #tm-laps .tm-fast td {color:#7bd88f;} body.dark-mode #tm #tm-laps .tm-slow td {color:#ff8a80;}
+	/* ---- panels (all of them on one page), layout, drag ---- */
+	.tu .tm-addbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0 0 0.9em;}
+	.tu .tm-addbar__l {font-size:0.85em;font-weight:700;color:#6a7280;margin-right:0.2em;}
+	.tu .tm-addbar__sp {flex:1;}
+	.tu .tm-lay {display:inline-flex;} .tu .tm-lay button {padding:0.4em 0.8em;font-size:0.88em;}
+	.tu .tm-secs {display:grid;grid-template-columns:1fr;gap:0.9em;align-items:start;}
+	.tu .tm-secs.tm-row {grid-template-columns:repeat(auto-fit,minmax(20em,1fr));}
+	.tu .tm-secs.tm-solo {display:block;}
+	.tu .tm-sec {margin:0;padding:0;overflow:hidden;position:relative;}
+	.tu .tm-solo .tm-sec {padding:1em;overflow:visible;}
+	.tu .tm-sec__h {display:flex;align-items:center;gap:0.4em;background:var(--accent);color:#fff;padding:0;}
+	.tu .tm-sec__t {flex:1;cursor:pointer;border:0;background:transparent;color:#fff;font:inherit;font-weight:700;font-size:1.02em;text-align:center;padding:0.6em 0.4em;}
+	.tu .tm-sec__t::after {content:"–";margin-left:0.6em;opacity:0.8;} .tu .is-collapsed .tm-sec__t::after {content:"+";}
+	.tu .tm-sec__l {color:#fff;font-size:0.74em;text-decoration:none;opacity:0.85;padding:0 0.8em;white-space:nowrap;} .tu .tm-sec__l:hover {opacity:1;text-decoration:underline;}
+	.tu .tm-sec__b {padding:0.9em;} .tu .is-collapsed .tm-sec__b {display:none;}
+	.tu .tm-grip {cursor:grab;border:0;background:transparent;color:inherit;font-size:1.25em;line-height:1;padding:0.35em 0.5em;touch-action:none;user-select:none;opacity:0.8;}
+	.tu .tm-grip:hover {opacity:1;} .tu .tm-grip:active {cursor:grabbing;}
+	.tu .tm-timer .tm-grip {color:#8a93a0;padding:0.2em 0.35em;}
+	.tu .tm-grip:focus-visible {outline:2px solid #fff;outline-offset:-2px;} .tu .tm-timer .tm-grip:focus-visible {outline-color:var(--accent);}
+	.tu .tm-dragging {z-index:60;box-shadow:0 0.8em 2.2em rgba(0,0,0,0.3);opacity:0.97;cursor:grabbing;}
+	.tu .tm-sorting {user-select:none;-webkit-user-select:none;}
+	.tu .tm-secs .tm-timer {margin-bottom:0.7em;}
+	.tu .tm-face {font-size:clamp(2.4em,9vw,3.6em);}
+	.tu .tm-solo .tm-face {font-size:clamp(2.6em,12vw,5.2em);}
+	.tu .tm-solo .tm-sec__b {padding:0;}
+	/* alarms */
+	.tu .tm-alarm {border:1px solid #e3e7ec;border-radius:0.6em;padding:0.6em 0.7em;margin-bottom:0.6em;background:#fff;}
+	.tu .tm-alarm.is-on {border-color:var(--accent);box-shadow:0 0 0 2px #fdf0dc;}
+	.tu .tm-alarm__row {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;}
+	.tu .tm-alarm .tm-time {flex:0 1 9em;min-width:7.5em;} .tu .tm-alarm .tm-label {flex:1 1 9em;}
+	.tu .tm-alarm__st {font-size:0.85em;color:#6a7280;margin-top:0.35em;}
+	/* pomodoro + interval */
+	.tu .tm-po-tabs {display:flex;flex-wrap:wrap;gap:0.4em;justify-content:center;margin-bottom:0.4em;}
+	.tu .tm-po-tabs button {cursor:pointer;border:1px solid #c3c9d2;border-radius:2em;background:#fff;color:#555;padding:0.35em 1em;font:inherit;font-size:0.92em;}
+	.tu .tm-po-tabs button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	.tu [data-phase="short"] .tm-face, .tu [data-phase="long"] .tm-face {color:#1f7a3d;}
+	.tu .tm-po-set {display:flex;flex-wrap:wrap;gap:0.5em 1.1em;justify-content:center;align-items:center;margin-top:0.9em;font-size:0.92em;}
+	.tu .tm-po-set input.tu-input {width:3.6em;text-align:center;padding:0.3em;display:inline-block;margin:0 0.2em;}
+	.tu .tm-iv-face {text-align:center;border-radius:0.7em;padding:0.5em 0.4em 0.7em;transition:background 0.25s;}
+	.tu .tm-iv-phase {font-size:1.3em;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#6a7280;}
+	.tu .tm-iv-info {font-size:0.95em;color:#6a7280;min-height:1.3em;}
+	.tu .tm-iv-face[data-phase="work"] {background:#e1f6e7;} .tu .tm-iv-face[data-phase="work"] .tm-iv-phase, .tu .tm-iv-face[data-phase="work"] .tm-face {color:#13803a;}
+	.tu .tm-iv-face[data-phase="rest"] {background:#e5effc;} .tu .tm-iv-face[data-phase="rest"] .tm-iv-phase, .tu .tm-iv-face[data-phase="rest"] .tm-face {color:#1f5fb0;}
+	.tu .tm-iv-face[data-phase="prep"] {background:#fff1d9;} .tu .tm-iv-face[data-phase="prep"] .tm-iv-phase, .tu .tm-iv-face[data-phase="prep"] .tm-face {color:#a86706;}
+	.tu .tm-iv-face[data-phase="done"] {background:#fdeeb8;}
+	/* date countdowns */
+	.tu .tm-ev-form {display:flex;flex-wrap:wrap;gap:0.6em;align-items:flex-end;}
+	.tu .tm-event {border:1px solid #e3e7ec;border-radius:0.6em;padding:0.7em 0.9em 0.9em;margin-bottom:0.7em;background:#fff;}
+	.tu .tm-event .tm-ev-name {flex:1;font-size:1.05em;} .tu .tm-ev-when {color:#6a7280;font-size:0.88em;margin-bottom:0.3em;}
+	.tu .tm-ev-face {display:flex;flex-wrap:wrap;gap:0.4em 1.3em;justify-content:center;font-size:clamp(1em,4vw,1.5em);font-variant-numeric:tabular-nums;}
+	.tu .tm-ev-face span {text-align:center;color:#6a7280;font-size:0.8em;} .tu .tm-ev-face b {display:block;font-size:2.2em;color:#1e2733;line-height:1.1;}
+	.tu .tm-event.is-past {background:#fff9e5;} .tu .tm-ev-past {font-size:1.2em;font-weight:700;}
+	/* full screen for any panel / card */
+	.tu .tm-fs {position:fixed !important;inset:0;z-index:99998;margin:0 !important;border-radius:0 !important;display:flex !important;flex-direction:column;justify-content:center;align-items:center;background:#fff;padding:2vh 3vw !important;overflow:auto;box-shadow:none !important;}
+	.tu .tm-fs .tm-hide-fs, .tu .tm-fs .tm-presets, .tu .tm-fs .tm-set, .tu .tm-fs .tm-po-set {display:none !important;}
+	.tu .tm-fs .tm-face {font-size:min(26vw,38vh);} .tu .tm-fs .tm-ev-face {font-size:min(4.2vw,6vh);}
+	.tu .tm-fs .tm-iv-phase {font-size:min(7vw,9vh);} .tu .tm-fs .tm-iv-info {font-size:min(2.6vw,4vh);}
+	.tu .tm-fs .tm-bar {width:70vw;height:1.2vh;} .tu .tm-fs .tm-btns .tu-btn {font-size:clamp(1em,2.4vw,1.8em);}
+	.tu .tm-fs .tm-label, .tu .tm-fs .tm-ev-name {text-align:center;font-size:clamp(1em,3vw,2em);max-width:80vw;}
+	.tu .tm-fs-x {position:absolute;top:1.2vh;right:1.5vw;cursor:pointer;border:1px solid #c3c9d2;border-radius:0.4em;background:#fff;color:#444;padding:0.4em 0.9em;font:inherit;}
+	.tu .tm-others__l a {text-decoration:none;}
+	.tu .tm-solo-label {margin:0 0 0.5em;} .tu .tm-solo-label .tm-label {width:100%;box-sizing:border-box;text-align:center;}
+	.tu .tm-onmain {margin-top:0.9em;padding:0.6em 0.9em;} .tu .tm-onmain a {color:var(--accent);font-weight:700;}
+	.tu .tm-swc .tm-laps td, .tu .tm-swc .tm-laps th {font-variant-numeric:tabular-nums;}
+	.tu .tm-swc .tm-fast td {color:#1f7a3d;font-weight:700;} .tu .tm-swc .tm-slow td {color:#b3261e;font-weight:700;}
+	body.dark-mode #tm .tm-swc .tm-fast td {color:#7bd88f;} body.dark-mode #tm .tm-swc .tm-slow td {color:#ff8a80;}
+	body.dark-mode #tm .tm-addbar__l {color:#a0a8b3;}
+	body.dark-mode #tm .tm-alarm, body.dark-mode #tm .tm-event {background:#262626;border-color:#3a3a3a;} body.dark-mode #tm .tm-alarm.is-on {border-color:var(--accent);} body.dark-mode #tm .tm-alarm__st, body.dark-mode #tm .tm-ev-when {color:#a0a8b3;}
+	body.dark-mode #tm .tm-event.is-past {background:#3a321a;} body.dark-mode #tm .tm-ev-face b {color:#f1f1f1;} body.dark-mode #tm .tm-ev-face span {color:#a0a8b3;}
+	body.dark-mode #tm .tm-po-tabs button {background:#262626;color:#d1d6dc;border-color:#555;} body.dark-mode #tm .tm-po-tabs button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode #tm [data-phase="short"] .tm-face, body.dark-mode #tm [data-phase="long"] .tm-face {color:#7bd88f;} body.dark-mode #tm .tm-iv-phase, body.dark-mode #tm .tm-iv-info {color:#a0a8b3;}
+	body.dark-mode #tm .tm-iv-face[data-phase="work"] {background:#14301c;} body.dark-mode #tm .tm-iv-face[data-phase="work"] .tm-iv-phase, body.dark-mode #tm .tm-iv-face[data-phase="work"] .tm-face {color:#7bd88f;}
+	body.dark-mode #tm .tm-iv-face[data-phase="rest"] {background:#142234;} body.dark-mode #tm .tm-iv-face[data-phase="rest"] .tm-iv-phase, body.dark-mode #tm .tm-iv-face[data-phase="rest"] .tm-face {color:#7ab4ff;}
+	body.dark-mode #tm .tm-iv-face[data-phase="prep"] {background:#33280f;} body.dark-mode #tm .tm-iv-face[data-phase="prep"] .tm-iv-phase, body.dark-mode #tm .tm-iv-face[data-phase="prep"] .tm-face {color:#ffc766;} body.dark-mode #tm .tm-iv-face[data-phase="done"] {background:#3a3412;}
+	body.dark-mode #tm .tm-dragging {box-shadow:0 0.8em 2.2em rgba(0,0,0,0.7);}
+	body.dark-mode #tm .tm-fs-x {background:#262626;color:#ddd;border-color:#555;}
+	body.dark-mode #tm .tm-sec__h {background:var(--accent);} body.dark-mode #tm .tm-sec__t, body.dark-mode #tm .tm-sec__l, body.dark-mode #tm .tm-sec .tm-grip {color:#0b1416;}
+	@media (max-width: 600px) {.tu .tm-secs.tm-row {grid-template-columns:1fr;}}
 	@media (max-width: 600px) {
 		.tu .tm-big {flex:1 1 40%;padding:0.7em 0.5em;min-width:0;}
 		.tu .tm-set input {width:3.6em;}
@@ -382,6 +453,80 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#f79b13;--accent-dark:#f79a12}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #533405}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#2f2514;border-color:#533405}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#2f2514;border-color:#533405}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#2f2514}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
+	body.dark-mode .tu .tm-ring__btns button{border:2px solid #333333;background:#1a1a1a;color:#e37e78}
+	body.dark-mode .tu .tm-timer{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .tu .tm-timer.is-done{border-color:#a52f27;background:#25100e}
+	body.dark-mode .tu .tm-label{border-bottom:1px dashed #3a424d;color:#cccccc}
+	body.dark-mode .tu .tm-icon{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu .tm-face{color:#d1d6dc}
+	body.dark-mode .tu .tm-face small{color:#9a9da3}
+	body.dark-mode .tu .tm-bar{background:#1f2126}
+	body.dark-mode .tu .tm-set span{color:#9a9da3}
+	body.dark-mode .tu #tm-laps .tm-fast td{color:#7dde9d}
+	body.dark-mode .tu #tm-laps .tm-slow td{color:#e87973}
+	body.dark-mode .tu .tm-fs{background:#1a1a1a}
+	body.dark-mode .tu .tm-addbar__l{color:#9a9da3}
+	body.dark-mode .tu .tm-timer .tm-grip{color:#999da3}
+	body.dark-mode .tu .tm-grip:focus-visible{outline:2px solid #333333}
+	body.dark-mode .tu .tm-alarm{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .tu .tm-alarm__st{color:#9a9da3}
+	body.dark-mode .tu .tm-po-tabs button{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu [data-phase="short"] .tm-face,body.dark-mode .tu [data-phase="long"] .tm-face{color:#7dde9d}
+	body.dark-mode .tu .tm-iv-phase{color:#9a9da3}
+	body.dark-mode .tu .tm-iv-info{color:#9a9da3}
+	body.dark-mode .tu .tm-iv-face[data-phase="work"]{background:#1a2b1f}
+	body.dark-mode .tu .tm-iv-face[data-phase="work"] .tm-iv-phase,body.dark-mode .tu .tm-iv-face[data-phase="work"] .tm-face{color:#71ea9c}
+	body.dark-mode .tu .tm-iv-face[data-phase="rest"]{background:#131c28}
+	body.dark-mode .tu .tm-iv-face[data-phase="rest"] .tm-iv-phase,body.dark-mode .tu .tm-iv-face[data-phase="rest"] .tm-face{color:#74a7e7}
+	body.dark-mode .tu .tm-iv-face[data-phase="prep"]{background:#322613}
+	body.dark-mode .tu .tm-iv-face[data-phase="prep"] .tm-iv-phase,body.dark-mode .tu .tm-iv-face[data-phase="prep"] .tm-face{color:#f9bc61}
+	body.dark-mode .tu .tm-iv-face[data-phase="done"]{background:#4a401e}
+	body.dark-mode .tu .tm-event{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .tu .tm-ev-when{color:#9a9da3}
+	body.dark-mode .tu .tm-ev-face span{color:#9a9da3}
+	body.dark-mode .tu .tm-ev-face b{color:#d1d6dc}
+	body.dark-mode .tu .tm-event.is-past{background:#292310}
+	body.dark-mode .tu .tm-fs-x{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
+	body.dark-mode .tu .tm-swc .tm-fast td{color:#7dde9d}
+	body.dark-mode .tu .tm-swc .tm-slow td{color:#e87973}
+	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -424,72 +569,20 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent:#f79b13;--accent-dark:#f79a12}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #533405}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#2f2514;border-color:#533405}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#2f2514;border-color:#533405}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#2f2514}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
-	body.dark-mode .tu .tm-tabs{border-bottom:2px solid #533405}
-	body.dark-mode .tu .tm-tabs button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
-	body.dark-mode .tu .tm-ring__btns button{border:2px solid #333333;background:#1a1a1a;color:#e37e78}
-	body.dark-mode .tu .tm-timer{border:1px solid #29323d;background:#1a1a1a}
-	body.dark-mode .tu .tm-timer.is-done{border-color:#a52f27;background:#25100e}
-	body.dark-mode .tu .tm-label{border-bottom:1px dashed #3a424d;color:#cccccc}
-	body.dark-mode .tu .tm-icon{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu .tm-face{color:#d1d6dc}
-	body.dark-mode .tu .tm-face small{color:#9a9da3}
-	body.dark-mode .tu .tm-bar{background:#1f2126}
-	body.dark-mode .tu .tm-set span{color:#9a9da3}
-	body.dark-mode .tu #tm-laps .tm-fast td{color:#7dde9d}
-	body.dark-mode .tu #tm-laps .tm-slow td{color:#e87973}
-	body.dark-mode .tu .tm-fs{background:#1a1a1a}
-	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/timer" />            <meta property="og:title" content="Timer by MES | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/timer/img/logo-big.png" />
-        <meta property="og:description" content="Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up." />
+        <meta property="og:description" content="Free online timer: a countdown timer, stopwatch and alarm clock all on one page, plus Pomodoro, interval and date countdowns. Run several at once, stacked or side by side, drag to reorder, full screen, sounds you choose, time in your browser tab. No sign-up." />
 
-        <meta name="description" content="Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="description" content="Free online timer: a countdown timer, stopwatch and alarm clock all on one page, plus Pomodoro, interval and date countdowns. Run several at once, stacked or side by side, drag to reorder, full screen, sounds you choose, time in your browser tab. No sign-up.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="Timer by MES">
-        <meta name="twitter:description" content="Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up.">
+        <meta name="twitter:description" content="Free online timer: a countdown timer, stopwatch and alarm clock all on one page, plus Pomodoro, interval and date countdowns. Run several at once, stacked or side by side, drag to reorder, full screen, sounds you choose, time in your browser tab. No sign-up.">
         <meta name="twitter:image" content="https://mes.fm/timer/img/logo-big.png">
         <meta name="twitter:image:alt" content="Timer by MES">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Timer by MES", "url": "https://mes.fm/timer", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Timer by MES", "url": "https://mes.fm/timer", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free online timer: a countdown timer, stopwatch and alarm clock all on one page, plus Pomodoro, interval and date countdowns. Run several at once, stacked or side by side, drag to reorder, full screen, sounds you choose, time in your browser tab. No sign-up."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -677,63 +770,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/timer'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/clock'>Clock</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/timer/inspirational-quotes'>Inspirational Quotes</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/timer'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/countdown-timer'>Countdown</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/stopwatch'>Stopwatch</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/alarm-clock'>Alarm</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/pomodoro-timer'>Pomodoro</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/interval-timer'>Interval</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/countdown-to-date'>Date countdown</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/timer/inspirational-quotes'>Quotes</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Timer</h1>                                        <p class="page-description">Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<div class="tu" id="tm">
-		<div class="tm-tabs" id="tm-tabs" role="tablist" aria-label="Timer tools">
-			<button type="button" role="tab" data-tab="cd" aria-selected="true">⏱ Countdown</button>
-			<button type="button" role="tab" data-tab="sw" aria-selected="false">⏲ Stopwatch</button>
-			<button type="button" role="tab" data-tab="al" aria-selected="false">⏰ Alarm</button>
-		</div>
-
+                                    <h1 class="page-title">Timer</h1>                                        <p class="page-description">Free online timer: a countdown timer, stopwatch and alarm clock all on one page, plus Pomodoro, interval and date countdowns. Run several at once, stacked or side by side, drag to reorder, full screen, sounds you choose, time in your browser tab. No sign-up.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="tm" data-views="cd,sw,al" data-customize="1">
 		<div id="tm-ring" class="tm-ring" role="alertdialog" aria-live="assertive" hidden>
 			<div class="tm-ring__msg" id="tm-ring-msg"></div>
 			<div class="tm-ring__btns" id="tm-ring-btns"></div>
 		</div>
 
-		<section id="tm-cd" class="tu-card tm-panel" role="tabpanel">
-			<div id="tm-timers"></div>
-			<div class="tm-btns">
-				<button type="button" class="tu-btn tu-btn--ghost" id="tm-add">+ Add another timer</button>
-			</div>
-			<p class="tu-note">Quick start: type a time in the box, such as <code>25</code>, <code>1h 30m</code> or <code>2:30</code>, or press a preset. <kbd>Space</kbd> starts or pauses the first timer.</p>
-		</section>
-
-		<section id="tm-sw" class="tu-card tm-panel" role="tabpanel" hidden>
-			<div class="tm-face tm-face--sw" id="tm-sw-face" aria-live="off">00:00<small>.00</small></div>
-			<div class="tm-btns tm-btns--center">
-				<button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-sw-go">Start</button>
-				<button type="button" class="tu-btn tm-big" id="tm-sw-lap" disabled>Lap</button>
-				<button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-sw-reset">Reset</button>
-				<button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-sw-full" title="Full screen">⤢ Full screen</button>
-			</div>
-			<div id="tm-laps-box" hidden>
-				<div class="tu-table-wrap"><table class="tu-table" id="tm-laps"></table></div>
-				<div class="tm-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tm-laps-copy">Copy laps</button></div>
-			</div>
-			<p class="tu-note"><kbd>Space</kbd> start / pause &middot; <kbd>L</kbd> lap &middot; keeps counting if you reload the page.</p>
-		</section>
-
-		<section id="tm-al" class="tu-card tm-panel" role="tabpanel" hidden>
-			<div class="tm-face tm-face--al" id="tm-al-now" aria-live="off">--:--:--</div>
-			<div class="tu-row" style="align-items:flex-end;justify-content:center;">
-				<div class="tu-field tu-field--sm" style="flex:0 1 11em;"><label for="tm-al-time">Ring at</label><input id="tm-al-time" class="tu-input tu-input--big" type="time" step="60"></div>
-				<div class="tu-field" style="flex:1 1 12em;max-width:18em;"><label for="tm-al-label">Label (optional)</label><input id="tm-al-label" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Meeting"></div>
-			</div>
-			<label class="tm-check" style="justify-content:center;"><input type="checkbox" id="tm-al-daily"> Repeat every day</label>
-			<div class="tm-btns tm-btns--center">
-				<button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-al-set">Set alarm</button>
-				<button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-al-clear" hidden>Cancel alarm</button>
-			</div>
-			<p class="tm-status" id="tm-al-status" aria-live="polite"></p>
-			<p class="tu-note"><b>Keep this page open.</b> The alarm rings from your browser, so the tab has to stay open (it can be in the background) and your computer awake. For a phone, a countdown timer with the screen kept awake is more reliable.</p>
-		</section>
+		<div class="tm-addbar" id="tm-addbar" hidden></div>
+		<div class="tm-secs" id="tm-secs"></div>
+		<div class="tu-card tm-onmain" id="tm-onmain" hidden><label class="tm-check"><input type="checkbox" id="tm-onmain-box"> <span id="tm-onmain-txt"></span></label></div>
 
 		<div class="tu-card tm-settings" id="tm-settings">
 			<div class="tu-label">Sound and options</div>
@@ -760,24 +813,33 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p class="tu-note" id="tm-store-note" style="margin-bottom:0;"></p>
 		</div>
 
+		<div class="tu-card tm-others">
+			<div class="tu-label">More timers and clocks</div>
+			<div class="tu-chips tm-others__l">
+				<a class="tu-chip" href="/timer">All timers</a><a class="tu-chip" href="/countdown-timer">Countdown timer</a><a class="tu-chip" href="/stopwatch">Stopwatch</a><a class="tu-chip" href="/alarm-clock">Alarm clock</a>
+				<a class="tu-chip" href="/pomodoro-timer">Pomodoro</a><a class="tu-chip" href="/interval-timer">Interval timer</a><a class="tu-chip" href="/countdown-to-date">Countdown to a date</a><a class="tu-chip" href="/clock">Clock</a><a class="tu-chip" href="/timezone">Time zones</a>
+			</div>
+		</div>
+
 		<div class="tu-seo">
-			<h2>Online timer, stopwatch and alarm clock</h2>
-			<p>This free online timer works on your computer and your phone, with no sign-up and nothing to install. Use it as a <strong>countdown timer</strong> for cooking, workouts, studying, tests and meetings, as a <strong>stopwatch</strong> with lap times, or as an <strong>alarm clock</strong> for a specific time of day.</p>
-			<h3>What it can do</h3>
+			<h2>Online timer, stopwatch and alarm clock, all on one page</h2>
+			<p>This free online timer puts a <strong>countdown timer</strong>, a <strong>stopwatch</strong> and an <strong>alarm clock</strong> on the same page, so you can run all of them at once: a pasta timer, a stopwatch for your workout and a meeting alarm, side by side. It works on your computer and your phone, with no sign-up and nothing to install.</p>
+			<h3>Make the page yours</h3>
 			<ul>
-				<li><strong>Several timers at once.</strong> Press <em>+ Add another timer</em> and give each one a label: pasta, laundry, tea.</li>
-				<li><strong>See the time in the browser tab.</strong> While a timer runs, its time is in the tab title, so you can work in another window and still check it at a glance.</li>
-				<li><strong>Keeps counting.</strong> Reload the page or close the tab: a running timer or stopwatch carries on from the real clock, and a timer that finished while you were away says so.</li>
-				<li><strong>Full screen.</strong> The expand button makes a huge, easy-to-read countdown for a classroom, a presentation or the gym wall.</li>
-				<li><strong>Your sound, your volume.</strong> Friendly or annoying alarm, beeps, a chime or silence; once, three times or until you stop it. Use <em>Test sound</em> to check your speakers.</li>
-				<li><strong>Share a timer.</strong> A link like <code>mes.fm/timer?t=25m&amp;label=Focus</code> opens a ready-to-start 25-minute timer. Add <code>&amp;start=1</code> to start it at once.</li>
+				<li><strong>Add more timers.</strong> Use <em>Show</em> to add a Pomodoro timer, an interval (HIIT) timer or a countdown to a date next to the three main ones.</li>
+				<li><strong>Stacked or side by side.</strong> Choose a layout, then drag the &#10303; handle on any timer to put them in the order you like. Your layout is remembered.</li>
+				<li><strong>Several countdowns.</strong> Press <em>+ Add another timer</em> and label each one: pasta, laundry, tea.</li>
+				<li><strong>See the time in the browser tab.</strong> While a timer runs its time is in the tab title, so you can work in another window and still check it.</li>
+				<li><strong>Keeps counting.</strong> Reload the page or close the tab and a running timer or stopwatch carries on from the real clock; a timer that finished while you were away tells you so.</li>
+				<li><strong>Full screen.</strong> A huge, easy-to-read display for a classroom, a presentation or the gym wall.</li>
+				<li><strong>Your sound.</strong> Friendly or annoying alarm, beeps, a chime or silence; once, three times or until you stop it.</li>
+				<li><strong>Share a timer.</strong> <code>mes.fm/timer?t=25m&amp;label=Focus</code> opens a ready-to-start 25-minute timer; add <code>&amp;start=1</code> to start it at once.</li>
 			</ul>
 			<h3>Questions</h3>
 			<h4>Will the timer still work if I switch tabs?</h4>
-			<p>Yes. It measures time from your computer&rsquo;s clock, not by counting ticks, so it stays accurate in a background tab. Browsers may delay the alert by up to a second or so when a tab is hidden.</p>
+			<p>Yes. It measures time from your computer&rsquo;s clock instead of counting ticks, so it stays accurate in a background tab. Browsers may delay the alert by up to a second or so when a tab is hidden.</p>
 			<h4>Why did I not hear the sound?</h4>
-			<p>Browsers only allow sound after you have clicked something on the page, so press <em>Start</em> (or <em>Test sound</em>) at least once. Check your volume, and that the tab is not muted.</p>
-			<p>Related: <a href="/clock">Clock</a> &middot; <a href="/timezone">Time Zone Converter</a> &middot; <a href="/calendar">Calendar</a> &middot; <a href="/timer/inspirational-quotes">Inspirational quotes</a></p>
+			<p>Browsers only allow sound after you have clicked something on the page, so press <em>Start</em> or <em>Test sound</em> at least once. Check your volume and that the tab is not muted.</p>
 		</div>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
@@ -789,7 +851,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/clock"><img class="mes-aside__img mes-aside__img--logo" src="/clock/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Online Clock</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/search"><img class="mes-aside__img mes-aside__img--logo" src="/search/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Site Search</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/clock"><img class="mes-aside__img mes-aside__img--logo" src="/clock/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Online Clock</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/alarm-clock"><img class="mes-aside__img mes-aside__img--logo" src="/alarm-clock/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Online Alarm Clock</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -797,7 +859,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/timer">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/clock">Clock</a></li><li class="navbar__item"><a class="navbar__link" href="/timer/inspirational-quotes">Inspirational Quotes</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/timer">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/countdown-timer">Countdown Timer</a></li><li class="navbar__item"><a class="navbar__link" href="/stopwatch">Stopwatch</a></li><li class="navbar__item"><a class="navbar__link" href="/alarm-clock">Alarm Clock</a></li><li class="navbar__item"><a class="navbar__link" href="/pomodoro-timer">Pomodoro Timer</a></li><li class="navbar__item"><a class="navbar__link" href="/interval-timer">Interval Timer</a></li><li class="navbar__item"><a class="navbar__link" href="/countdown-to-date">Countdown to a Date</a></li><li class="navbar__item"><a class="navbar__link" href="/clock">Clock</a></li><li class="navbar__item"><a class="navbar__link" href="/timer/inspirational-quotes">Inspirational Quotes</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
     <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
@@ -838,7 +900,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=1" defer></script>
+	<script src="/timer/js/timer.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

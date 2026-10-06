@@ -1,52 +1,12 @@
-	<div class="tu" id="tm">
-		<div class="tm-tabs" id="tm-tabs" role="tablist" aria-label="Timer tools">
-			<button type="button" role="tab" data-tab="cd" aria-selected="true">⏱ Countdown</button>
-			<button type="button" role="tab" data-tab="sw" aria-selected="false">⏲ Stopwatch</button>
-			<button type="button" role="tab" data-tab="al" aria-selected="false">⏰ Alarm</button>
-		</div>
-
+	<div class="tu" id="tm" data-views="{{VIEWS}}" data-customize="{{CUSTOMIZE}}">
 		<div id="tm-ring" class="tm-ring" role="alertdialog" aria-live="assertive" hidden>
 			<div class="tm-ring__msg" id="tm-ring-msg"></div>
 			<div class="tm-ring__btns" id="tm-ring-btns"></div>
 		</div>
 
-		<section id="tm-cd" class="tu-card tm-panel" role="tabpanel">
-			<div id="tm-timers"></div>
-			<div class="tm-btns">
-				<button type="button" class="tu-btn tu-btn--ghost" id="tm-add">+ Add another timer</button>
-			</div>
-			<p class="tu-note">Quick start: type a time in the box, such as <code>25</code>, <code>1h 30m</code> or <code>2:30</code>, or press a preset. <kbd>Space</kbd> starts or pauses the first timer.</p>
-		</section>
-
-		<section id="tm-sw" class="tu-card tm-panel" role="tabpanel" hidden>
-			<div class="tm-face tm-face--sw" id="tm-sw-face" aria-live="off">00:00<small>.00</small></div>
-			<div class="tm-btns tm-btns--center">
-				<button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-sw-go">Start</button>
-				<button type="button" class="tu-btn tm-big" id="tm-sw-lap" disabled>Lap</button>
-				<button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-sw-reset">Reset</button>
-				<button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-sw-full" title="Full screen">⤢ Full screen</button>
-			</div>
-			<div id="tm-laps-box" hidden>
-				<div class="tu-table-wrap"><table class="tu-table" id="tm-laps"></table></div>
-				<div class="tm-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tm-laps-copy">Copy laps</button></div>
-			</div>
-			<p class="tu-note"><kbd>Space</kbd> start / pause &middot; <kbd>L</kbd> lap &middot; keeps counting if you reload the page.</p>
-		</section>
-
-		<section id="tm-al" class="tu-card tm-panel" role="tabpanel" hidden>
-			<div class="tm-face tm-face--al" id="tm-al-now" aria-live="off">--:--:--</div>
-			<div class="tu-row" style="align-items:flex-end;justify-content:center;">
-				<div class="tu-field tu-field--sm" style="flex:0 1 11em;"><label for="tm-al-time">Ring at</label><input id="tm-al-time" class="tu-input tu-input--big" type="time" step="60"></div>
-				<div class="tu-field" style="flex:1 1 12em;max-width:18em;"><label for="tm-al-label">Label (optional)</label><input id="tm-al-label" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Meeting"></div>
-			</div>
-			<label class="tm-check" style="justify-content:center;"><input type="checkbox" id="tm-al-daily"> Repeat every day</label>
-			<div class="tm-btns tm-btns--center">
-				<button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-al-set">Set alarm</button>
-				<button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-al-clear" hidden>Cancel alarm</button>
-			</div>
-			<p class="tm-status" id="tm-al-status" aria-live="polite"></p>
-			<p class="tu-note"><b>Keep this page open.</b> The alarm rings from your browser, so the tab has to stay open (it can be in the background) and your computer awake. For a phone, a countdown timer with the screen kept awake is more reliable.</p>
-		</section>
+		<div class="tm-addbar" id="tm-addbar" hidden></div>
+		<div class="tm-secs" id="tm-secs"></div>
+		<div class="tu-card tm-onmain" id="tm-onmain" hidden><label class="tm-check"><input type="checkbox" id="tm-onmain-box"> <span id="tm-onmain-txt"></span></label></div>
 
 		<div class="tu-card tm-settings" id="tm-settings">
 			<div class="tu-label">Sound and options</div>
@@ -73,23 +33,15 @@
 			<p class="tu-note" id="tm-store-note" style="margin-bottom:0;"></p>
 		</div>
 
+		<div class="tu-card tm-others">
+			<div class="tu-label">More timers and clocks</div>
+			<div class="tu-chips tm-others__l">
+				<a class="tu-chip" href="/timer">All timers</a><a class="tu-chip" href="/countdown-timer">Countdown timer</a><a class="tu-chip" href="/stopwatch">Stopwatch</a><a class="tu-chip" href="/alarm-clock">Alarm clock</a>
+				<a class="tu-chip" href="/pomodoro-timer">Pomodoro</a><a class="tu-chip" href="/interval-timer">Interval timer</a><a class="tu-chip" href="/countdown-to-date">Countdown to a date</a><a class="tu-chip" href="/clock">Clock</a><a class="tu-chip" href="/timezone">Time zones</a>
+			</div>
+		</div>
+
 		<div class="tu-seo">
-			<h2>Online timer, stopwatch and alarm clock</h2>
-			<p>This free online timer works on your computer and your phone, with no sign-up and nothing to install. Use it as a <strong>countdown timer</strong> for cooking, workouts, studying, tests and meetings, as a <strong>stopwatch</strong> with lap times, or as an <strong>alarm clock</strong> for a specific time of day.</p>
-			<h3>What it can do</h3>
-			<ul>
-				<li><strong>Several timers at once.</strong> Press <em>+ Add another timer</em> and give each one a label: pasta, laundry, tea.</li>
-				<li><strong>See the time in the browser tab.</strong> While a timer runs, its time is in the tab title, so you can work in another window and still check it at a glance.</li>
-				<li><strong>Keeps counting.</strong> Reload the page or close the tab: a running timer or stopwatch carries on from the real clock, and a timer that finished while you were away says so.</li>
-				<li><strong>Full screen.</strong> The expand button makes a huge, easy-to-read countdown for a classroom, a presentation or the gym wall.</li>
-				<li><strong>Your sound, your volume.</strong> Friendly or annoying alarm, beeps, a chime or silence; once, three times or until you stop it. Use <em>Test sound</em> to check your speakers.</li>
-				<li><strong>Share a timer.</strong> A link like <code>mes.fm/timer?t=25m&amp;label=Focus</code> opens a ready-to-start 25-minute timer. Add <code>&amp;start=1</code> to start it at once.</li>
-			</ul>
-			<h3>Questions</h3>
-			<h4>Will the timer still work if I switch tabs?</h4>
-			<p>Yes. It measures time from your computer&rsquo;s clock, not by counting ticks, so it stays accurate in a background tab. Browsers may delay the alert by up to a second or so when a tab is hidden.</p>
-			<h4>Why did I not hear the sound?</h4>
-			<p>Browsers only allow sound after you have clicked something on the page, so press <em>Start</em> (or <em>Test sound</em>) at least once. Check your volume, and that the tab is not muted.</p>
-			<p>Related: <a href="/clock">Clock</a> &middot; <a href="/timezone">Time Zone Converter</a> &middot; <a href="/calendar">Calendar</a> &middot; <a href="/timer/inspirational-quotes">Inspirational quotes</a></p>
+{{SEO}}
 		</div>
 	</div>

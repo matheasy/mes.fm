@@ -36,7 +36,13 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("symbols", "Symbol Copier"),
     ("speedreader", "Speed Reader"),
     ("timer", "Timer"),
-    ("clock", "Clock"),   # also built by build_tool_apps.py (new 2026-10-06)
+    ("clock", "Clock"),
+    ("countdown-timer", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)
+    ("stopwatch", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)
+    ("alarm-clock", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)
+    ("pomodoro-timer", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)
+    ("interval-timer", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)
+    ("countdown-to-date", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)   # also built by build_tool_apps.py (new 2026-10-06)
     ("youtube-thumbnail", "YouTube Thumbnail"),
     ("stats", "Stats"),
     ("earth-curvature-calculator", "Earth Curvature Calculator"),   # these four were rebuilt as tools-hub pages by build_tool_apps.py
