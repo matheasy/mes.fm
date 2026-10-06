@@ -40,7 +40,7 @@ const PAGES = [
     slug: "911-posts",
     sectionId: "911-posts",
     tileLabel: "Posts",
-    iconVersion: 2, // icon = crop of the newest post's thumbnail; bump when you refresh img/911-posts-icon.jpg
+    iconVersion: 3, // icon = crop of the newest post's thumbnail; bump when you refresh img/911-posts-icon.jpg
     title: "9/11 Truth Posts",
     description:
       "MES posts on 9/11: alleged hijacker IDs, disinfo spooks, Dr. Judy Wood interviews, mystery plane photos, toasted cars and more, newest first.",

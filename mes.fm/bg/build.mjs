@@ -46,7 +46,7 @@ const PAGES = [
     slug: "bg-posts",
     sectionId: "bg-posts",
     tileLabel: "Posts",
-    iconVersion: 1, // icon = the newest post's screenshot on a matching dark tile (img/bg-posts-icon.jpg); bump when refreshed
+    iconVersion: 2, // icon = the newest post's screenshot on a matching dark tile (img/bg-posts-icon.jpg); bump when refreshed
     title: "🗣 Bob Greenyer says the darnedest things 😹: Posts",
     description:
       "MES posts on Bob Greenyer: a subscriber calls him a rich fake con man, plus the 9/11 revisionist spammer and the dust baggie nonsense.",
