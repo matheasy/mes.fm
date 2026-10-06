@@ -32,7 +32,7 @@ export const SECTIONS = [
       { href: "https://mes.fm/911-spook-ryan-banister", title: "9/11 Spooky Drama: Ryan Banister Wildin'" },
       { href: "https://mes.fm/911-hiroshima-fumes", title: "Photo of Hiroshima One Day After the Atomic Bomb Shows Similar Fuming as 9/11" },
       { href: "https://mes.fm/hughes-911-spammer-ryan-spooks", title: "9/11 Brings Out the Spooks: David Hughes, 9/11 Revisionist, Ryan Bannister" },
-      { href: "https://mes.fm/bg", title: "Bob Greenyer's Claims About Dr. Judy Wood & 9/11" },
+      { href: "https://mes.fm/bg-notes", title: "Bob Greenyer's Claims About Dr. Judy Wood & 9/11" },
       { href: "https://mes.fm/norman-patricia-ai-email", title: "9/11 Jersey Girl Patricia Casazza's Bizarre AI Generated Email to MES" },
       { href: "https://mes.fm/judy-wood-john-wells-live", title: "Dr. Judy Wood Live on the John B. Wells – Caravan to Midnight Show" },
       { href: "https://mes.fm/chris-hampton-big-idea", title: "THE Chris Hampton Comments on the 9/11 Alchemy – A Big Idea Documentary" },

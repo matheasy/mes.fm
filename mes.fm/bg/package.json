@@ -1,0 +1,9 @@
+{
+  "name": "mes-bg-builder",
+  "private": true,
+  "description": "Build-time generator for the Videos card grid on mes.fm/bg. Not deployed; run manually before committing.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

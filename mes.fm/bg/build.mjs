@@ -1,11 +1,482 @@
+// Build-time generator for mes.fm/bg ("Bob Greenyer") and its Videos and Posts pages (cloned from mh370/build.mjs).
+//
+// mes.fm/bg is a small tile hub (a Videos tile, a Posts tile + the "Important Links" list) like mes.fm/mh370. The content lives
+// in sections.mjs (hand-maintained, newest first; the Videos mirror the YouTube playlist behind mes.fm/bg-wildin).
+//
+// Pages written (see PAGES): the hub mes.fm/bg/index.html plus mes.fm/bg-videos/index.html and mes.fm/bg-posts/index.html.
+// Never hand-edit those generated files.
+//
+// Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600), a crop of each section's newest thumbnail --
+// replace the file (same name) with custom art whenever, no rebuild needed.
+//
+// Usage:
+//   npm run build
 
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { SECTIONS, IMPORTANT_LINKS_HTML } from "./sections.mjs";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Committed cache of scraped {image, watchLinks} per item URL. Kept in git so
+// a later build still has thumbnails/links if a source page is briefly
+// unreachable.
+const META_CACHE_PATH = join(__dirname, "link-meta.json");
+
+// Output layout: mes.fm/911 is a tile hub (one icon tile per section, each linking to its own page); each
+// section then lives at mes.fm/<slug> with the Grid View / List View toggle. `sectionId` matches an `id` in
+// sections.mjs; `title` is the page's <h1>/<title> and `tileLabel` the (shorter) text overlaid on the hub tile.
+const HUB_TITLE = "Bob Greenyer (BG)";
+const HUB_DESCRIPTION =
+  "Bob Greenyer (BG): MES videos, posts and links checking Bob Greenyer's claims about 9/11, Dr. Judy Wood, atomic clocks, the MH370 teleportation cartoons and more.";
+
+const PAGES = [
+  {
+    slug: "bg-videos",
+    sectionId: "bg-videos",
+    tileLabel: "Videos",
+    iconVersion: 1, // icon = crop of the newest video's thumbnail (img/bg-videos-icon.jpg); bump when refreshed
+    title: "Bob Greenyer Videos",
+    description:
+      "MES videos on Bob Greenyer: analyzing the MH370 cartoons, the steel firetruck, Dr. Judy Wood's book cover and dust baggie, atomic clocks and the Global Consciousness Project on 9/11, and more.",
+  },
+  {
+    slug: "bg-posts",
+    sectionId: "bg-posts",
+    tileLabel: "Posts",
+    iconVersion: 1, // icon = the newest post's screenshot on a matching dark tile (img/bg-posts-icon.jpg); bump when refreshed
+    title: "Bob Greenyer Posts",
+    description:
+      "MES posts on Bob Greenyer: a subscriber calls him a rich fake con man, plus the 9/11 revisionist spammer and the dust baggie nonsense.",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Scraping: og:image / "Watch on: ..." row per item, with a committed cache.
+// ---------------------------------------------------------------------------
+
+function loadMetaCache() {
+  if (!existsSync(META_CACHE_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(META_CACHE_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function saveMetaCache(cache) {
+  const sorted = Object.fromEntries(Object.keys(cache).sort().map((k) => [k, cache[k]]));
+  writeFileSync(META_CACHE_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
+}
+
+function decodeEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&rsquo;/g, "’")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+// Backreference-matched quotes (not a naive ["'] class) so a content value
+// containing the *other* quote character doesn't truncate the match.
+function readMetaTag(html, prop) {
+  const p = prop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const m = html.match(new RegExp(`<meta[^>]+property=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"));
+  return m ? decodeEntities(m[3]).trim() : "";
+}
+
+// Pull every {label, href} pair out of a page's own `<li>Watch on: <a...>3Speak</a>
+// &middot; <a...>YouTube</a> ...</li>` source-list row. Only mes.fm-hosted
+// mirror pages have this markup -- a raw YouTube playlist page will simply
+// yield [] here, which is expected.
+function readWatchOnLinks(html) {
+  const m = html.match(/<li>\s*Watch on:([\s\S]*?)<\/li>/i);
+  if (!m) return [];
+  const linkRe = /<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
+  const links = [];
+  let lm;
+  while ((lm = linkRe.exec(m[1]))) {
+    links.push({ label: decodeEntities(lm[2]).trim(), href: lm[1] });
+  }
+  return links;
+}
+
+// Some mes.fm mirror pages (e.g. math-qa-71-stats, a plain stats-screen
+// post with no "Watch on:" video row at all) instead carry a source link
+// per line: `<li>Hive: <a href="...">...</a></li>`, `<li>Telegram:
+// <a href="...">...</a></li>`. Pulled out generically here; callers filter
+// to whichever labels they care about.
+function readNamedLinks(html) {
+  const re = /<li>\s*([A-Za-z ]+):\s*<a\s+href="([^"]+)"[^>]*>[^<]*<\/a>\s*<\/li>/g;
+  const links = [];
+  let m;
+  while ((m = re.exec(html))) {
+    links.push({ label: m[1].trim(), href: m[2] });
+  }
+  return links;
+}
+
+// peakd.com is a client-rendered SPA -- a plain fetch() only gets its
+// server-rendered <head> (og:image etc.), never the article body, so
+// readWatchOnLinks() above always finds nothing there. The real per-video
+// platform links still exist, in the underlying Hive post's raw markdown
+// (e.g. "[Watch on 3Speak](url) - [YouTube](url) - [Odysee](url) - ..."),
+// fetched straight from the Hive blockchain instead of peakd's own HTML.
+const PEAKD_URL_RE = /^https:\/\/peakd\.com\/(?:[^/]+\/)?@([^/]+)\/([^/?#]+)/;
+
+// Known video platforms -- used both to sort a List View row's links into
+// this canonical order and, below, to filter a Hive post's raw "Watch on"
+// markdown line down to just these (dropping trailing "[PDF notes]"/
+// "[Playlist]"/"[MES Links]" entries on the same line).
+const PLATFORM_ORDER = ["3Speak", "YouTube", "Telegram", "BitChute", "Odysee", "Rumble"];
+
+async function hiveCall(method, params) {
+  const res = await fetch("https://api.hive.blog", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
+  });
+  if (!res.ok) throw new Error(`Hive API request failed: HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(`Hive API error: ${JSON.stringify(data.error)}`);
+  return data.result;
+}
+
+// Matches "[Watch on 3Speak](url) - [YouTube](url) - [Odysee](url) - ..."
+// (MES's standard markdown watch-links line). The label of the first link
+// carries a "Watch on " prefix; every [label](url) pair in the next 900
+// characters is a candidate, filtered down to only the known video
+// platforms so trailing "[PDF notes]"/"[Playlist]"/"[MES Links]" entries on
+// the same line are dropped. A fixed (not paragraph-bounded) window: the
+// full line with every platform plus the PDF/playlist/MES-links extras can
+// run past 700 characters, and anchoring the end to the paragraph's "\n\n"
+// with a *lazy* quantifier made the whole match fail outright whenever that
+// boundary sat beyond the capped length (no shorter position satisfies it,
+// so the lazy expansion just runs out and backtracks to no match).
+function readWatchOnLinksMarkdown(markdown) {
+  const m = markdown.match(/\[Watch on ([^\]]+)\]\(([^)]+)\)([\s\S]{0,900})/i);
+  if (!m) return [];
+  const links = [{ label: m[1].trim(), href: m[2] }];
+  const restRe = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let rm;
+  while ((rm = restRe.exec(m[3]))) {
+    links.push({ label: rm[1].trim(), href: rm[2] });
+  }
+  return links.filter((l) => PLATFORM_ORDER.includes(l.label));
+}
+
+async function fetchPeakdWatchLinks(url) {
+  const m = url.match(PEAKD_URL_RE);
+  if (!m) return [];
+  const [, author, permlink] = m;
+  const post = await hiveCall("bridge.get_post", { author, permlink });
+  if (!post || !post.body) return [];
+  return readWatchOnLinksMarkdown(post.body);
+}
+
+async function fetchLinkMeta(url) {
+  const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+  const watchLinks = PEAKD_URL_RE.test(url) ? await fetchPeakdWatchLinks(url) : readWatchOnLinks(html);
+  return {
+    image: readMetaTag(html, "og:image"),
+    watchLinks,
+    namedLinks: readNamedLinks(html),
+  };
+}
+
+async function resolveAllMeta(sections, concurrency = 8) {
+  const cache = loadMetaCache();
+  // Items with explicit `links` (see sections.mjs) and playlist lines need no scraping.
+  const urls = sections.flatMap((s) => s.items.filter((i) => !i.links && !i.standalone).map((i) => i.href));
+  let i = 0;
+  async function worker() {
+    while (i < urls.length) {
+      const url = urls[i++];
+      try {
+        cache[url] = await fetchLinkMeta(url);
+        console.log(`  meta ok:   ${url}`);
+      } catch (err) {
+        console.warn(`  meta FAIL: ${url} (${err.message}) — using cached value`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  saveMetaCache(cache);
+  return cache;
+}
+
+// Only these platforms, in this order -- anything else scraped (e.g.
+// math-qa-70-lorentz-force's own "Watch on:" row also lists Twitch) is
+// dropped rather than tacked on at the end.
+function sortWatchLinks(links) {
+  return PLATFORM_ORDER.map((label) => links.find((l) => l.label === label)).filter(Boolean);
+}
+
+function cssSafeUrl(url) {
+  return String(url).split("'").join("%27");
+}
+
+// Lazy-load remote thumbnails (mirrors optimize_pagespeed.py's transform_images
+// lazy-loading pass, part 5, applied to the whole generated page here so a
+// rebuild doesn't silently undo it): every <img> whose src is a non-mes.fm
+// http(s) URL gets loading="lazy", except the first "real" (non-data:) image
+// on the page, which stays eager so it doesn't delay LCP.
+const IMG_TAG_RE = /<img\b[^>]*?\/?>/gi;
+
+function imgAttr(tag, name) {
+  const m = tag.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, "i"));
+  return m ? m[1] : null;
+}
+
+function addImageLazyLoading(html) {
+  const imgs = [...html.matchAll(IMG_TAG_RE)];
+  if (imgs.length === 0) return html;
+
+  let firstReal = -1;
+  for (let idx = 0; idx < imgs.length; idx++) {
+    const s = imgAttr(imgs[idx][0], "src");
+    if (s && !s.trim().startsWith("data:")) {
+      firstReal = idx;
+      break;
+    }
+  }
+
+  let out = "";
+  let last = 0;
+  imgs.forEach((m, idx) => {
+    const tag = m[0];
+    let newTag = tag;
+    const src = imgAttr(tag, "src");
+    if (
+      src &&
+      idx !== firstReal &&
+      /^https?:\/\//i.test(src.trim()) &&
+      !src.includes("mes.fm") &&
+      !/\bloading\s*=/i.test(tag)
+    ) {
+      newTag = tag.replace(/^<img\b/i, '<img loading="lazy"');
+    }
+    out += html.slice(last, m.index) + newTag;
+    last = m.index + tag.length;
+  });
+  out += html.slice(last);
+  return out;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// Notes link first, then every scraped platform link (sorted), falling back
+// to the item's own hand-curated playlistHref as its "YouTube" entry only
+// when the scrape didn't already turn up a YouTube link of its own.
+// Notes link first, then every real per-video platform link the item's own
+// Hive post actually has (scraped by fetchLinkMeta -- from the page's own
+// "Watch on:" HTML row for a mes.fm mirror, or from the underlying Hive
+// post's raw markdown for a peakd article). No more falling back to a
+// hand-curated playlist link mislabeled as "YouTube" -- if the post has no
+// watch-on row, the List View row just shows Notes alone.
+function buildLinksForItem(item, meta) {
+  if (item.links) return item.links.map(([label, href]) => ({ label, href }));
+  const m = meta[item.href] || {};
+  const sorted = sortWatchLinks(m.watchLinks || []);
+  // An item whose own link is a YouTube video (a livestream not mirrored to
+  // mes.fm yet) is labeled "YouTube", not "Notes".
+  const primaryLabel = /^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)\//.test(item.href) ? "YouTube" : "Notes";
+  return [{ label: primaryLabel, href: item.href }, ...sorted];
+}
+
+// For extraViews items (see e.g. MES Math Q/A Livestreams' "Stats" view):
+// these are always mes.fm-hosted pages, so the item's own link is labeled
+// "MES" rather than "Notes", followed by whichever of its own named source
+// links (readNamedLinks -- "Hive:"/"Telegram:" list items, not a "Watch
+// on:" row) match this fixed label set, in this fixed order.
+const EXTRA_VIEW_LINK_ORDER = ["Hive", "Telegram"];
+function buildExtraViewLinksForItem(item, meta) {
+  const m = meta[item.href] || {};
+  const named = EXTRA_VIEW_LINK_ORDER.map((label) => (m.namedLinks || []).find((l) => l.label === label)).filter(
+    Boolean
+  );
+  return [{ label: "MES", href: item.href }, ...named];
+}
+
+// Where a card goes: the item's own href (mes.fm mirror pages), or for explicit-links items the
+// first mes.fm link, else the Hive/peakd link, else the first link in the row.
+function itemHref(item) {
+  if (item.href) return item.href;
+  const links = item.links || [];
+  const pick =
+    links.find(([, h]) => /^https?:\/\/(?:www\.)?mes\.fm\//.test(h)) ||
+    links.find(([, h]) => /^https?:\/\/peakd\.com\//.test(h)) ||
+    links[0];
+  return pick ? pick[1] : "#";
+}
+
+function itemImage(item, meta) {
+  return item.image || (meta[item.href] || {}).image || "";
+}
+
+function buildCard(item, meta) {
+  const image = itemImage(item, meta);
+  const href = itemHref(item);
+  const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(href);
+  const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
+  return `<a class="link-card" href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
+      <span class="link-card-thumb"${thumbStyle}></span>
+      <span class="link-card-body">
+        <span class="link-card-title">${escapeHtml(item.title)}</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>`;
+}
+
+function buildRow(item, meta, linksBuilder) {
+  const image = itemImage(item, meta);
+  const links = (linksBuilder || buildLinksForItem)(item, meta);
+  const linksHtml = links
+    .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
+    .join(" - ");
+  const imgHtml = image ? `<img class="list-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}">` : "";
+  return `<div class="list-row">
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${linksHtml}</p>
+      ${imgHtml}
+    </div>`;
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Renders one section's heading row + Grid View (default) / List View toggle,
+// plus any extraViews (see e.g. MES Math Q/A Livestreams' "Stats" view) as
+// further toggle buttons/panes. All views are pre-rendered at build time;
+// the client-side script just shows/hides whichever one is active (see the
+// view-toggle script at the bottom of buildPage). Items flagged `standalone`
+// (a whole-channel/whole-playlist link, not a single video/article) are
+// pulled out of the grid/list entirely and rendered as a plain link line
+// above the view-toggle buttons instead. extraViews items never appear in
+// Grid/List at all -- they exist only in their own pane.
+//
+// Each section now renders on its own page (see PAGES), so the collapsible
+// <h2> heading is dropped (the page's own <h1> already names it). A section
+// flagged `single` (one video/article only) skips the Grid/List toggle
+// entirely and renders just the List View row as a featured item.
+function buildSection(section, meta) {
+  const standaloneItems = section.standalone || [];
+  const cardItems = section.items;
+  // One line of links (icon + label, separated by dots) rather than one paragraph each, so the playlist and
+  // the troubleshooting notes sit side by side; external links open in a new tab.
+  const standaloneHtml = standaloneItems.length
+    ? `<p class="section-standalone-link">${standaloneItems
+        .map((item) => {
+          const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(item.href);
+          return `<a href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>${item.icon || "&#9654;&#65039;"} ${escapeHtml(item.title)}</a>`;
+        })
+        .join('<span class="standalone-sep">&middot;</span>')}</p>`
+    : "";
+  const cards = cardItems.map((item) => buildCard(item, meta)).join("\n    ");
+  const rows = cardItems.map((item) => buildRow(item, meta)).join("\n    ");
+  const listViewClass = section.compactList ? "list-view list-view--compact" : "list-view";
+
+  const extraViews = section.extraViews || [];
+  const extraButtons = extraViews
+    .map((view) => `<button type="button" class="view-toggle-btn" id="${section.id}${capitalize(view.id)}Btn">${escapeHtml(view.label)}</button>`)
+    .join("\n      ");
+  const extraPanes = extraViews
+    .map((view) => {
+      const extraRows = view.items.map((item) => buildRow(item, meta, buildExtraViewLinksForItem)).join("\n    ");
+      return `<div class="list-view list-view--compact view-hidden" id="${section.id}${capitalize(view.id)}">
+    ${extraRows}
+    </div>`;
+    })
+    .join("\n");
+
+  if (section.single) {
+    return `<div class="list-container">
+  <div id="${section.id}" class="section-body">
+  ${standaloneHtml}
+    <div class="list-view list-view--single" id="${section.id}List">
+    ${rows}
+    </div>
+  </div>
+</div>`;
+  }
+
+  return `<div class="list-container">
+  <div id="${section.id}" class="section-body">
+  ${standaloneHtml}
+    <div class="view-toggle">
+      <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
+      <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
+      ${extraButtons}
+    </div>
+    <div class="card-grid" id="${section.id}Grid">
+    ${cards}
+    </div>
+    <div class="${listViewClass} view-hidden" id="${section.id}List">
+    ${rows}
+    </div>
+${extraPanes}
+  </div>
+</div>`;
+}
+
+// Icon tile for the hub page: text-free thumbnail + real overlaid label,
+// same .icon-grid markup/CSS as mes.fm's homepage.
+function buildTile(page) {
+  const icon = `/img/${page.icon || page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}`;
+  return `<a class="icon-grid__link icon-grid__link--labeled" href="${page.href || `/${page.slug}`}"><span class="icon-grid__thumb" style="background-image:url('${icon}')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
+}
+
+function buildImportantLinks() {
+  return `<div class="hub-links">
+  <h2>Important Links</h2>
+${IMPORTANT_LINKS_HTML}
+</div>`;
+}
+
+// page: the hub ({ hub: true, slug: "bg" }) or one entry of PAGES.
+function buildPage(meta, page) {
+  const isHub = !!page.hub;
+  const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
+  const sectionsHtml = isHub
+    ? `<div class="icon-grid">\n${PAGES.map(buildTile).join("\n")}\n</div>\n${buildImportantLinks()}`
+    : sections.map((s) => buildSection(s, meta)).join("\n\n");
+  const viewToggleWiring = sections
+    .filter((s) => !s.single)
+    .map((s) => {
+      const extraIds = (s.extraViews || []).map((v) => capitalize(v.id));
+      return `      wireViewToggle('${s.id}', ${JSON.stringify(extraIds)});`;
+    })
+    .join("\n");
+
+  const CANONICAL = `https://mes.fm/${page.slug}`;
+  const pageTitle = isHub ? HUB_TITLE : page.title;
+  const description = isHub ? HUB_DESCRIPTION : page.description;
+  const ogImage = isHub ? "https://mes.fm/img/bg-logo-big.jpg" : `https://mes.fm/img/${page.icon || page.slug}-icon.jpg`;
+  const breadcrumbHtml = isHub
+    ? ""
+    : `<p class="page-breadcrumb"><a href="/bg">&larr; Bob Greenyer</a></p>\n        `;
+
+  return `
 <!DOCTYPE html>
 <html lang="en">
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
   <link rel="icon" href="https://mes.fm/img/bg-logo.jpg?v=1.0" type="image/jpeg" />
-  <link rel="canonical" href="https://mes.fm/bg" />
-  <title>Bob Greenyer (BG) | Math Easy Solutions</title>
+  <link rel="canonical" href="${CANONICAL}" />
+  <title>${escapeHtml(pageTitle)} | Math Easy Solutions</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
@@ -960,20 +1431,20 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <meta name="author" content="MES">
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="MES Truth" />
-<meta property="og:url" content="https://mes.fm/bg" />
-<meta property="og:title" content="Bob Greenyer (BG)" />
-<meta property="og:image" content="https://mes.fm/img/bg-logo-big.jpg" />
-<meta property="og:description" content="Bob Greenyer (BG): MES videos, posts and links checking Bob Greenyer's claims about 9/11, Dr. Judy Wood, atomic clocks, the MH370 teleportation cartoons and more." />
-<meta name="description" content="Bob Greenyer (BG): MES videos, posts and links checking Bob Greenyer's claims about 9/11, Dr. Judy Wood, atomic clocks, the MH370 teleportation cartoons and more.">
+<meta property="og:url" content="${CANONICAL}" />
+<meta property="og:title" content="${escapeHtml(pageTitle)}" />
+<meta property="og:image" content="${ogImage}" />
+<meta property="og:description" content="${escapeHtml(description)}" />
+<meta name="description" content="${escapeHtml(description)}">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@MathEasySolns">
-<meta name="twitter:title" content="Bob Greenyer (BG)">
-<meta name="twitter:description" content="Bob Greenyer (BG): MES videos, posts and links checking Bob Greenyer's claims about 9/11, Dr. Judy Wood, atomic clocks, the MH370 teleportation cartoons and more.">
-<meta name="twitter:image" content="https://mes.fm/img/bg-logo-big.jpg">
-<meta name="twitter:image:alt" content="Bob Greenyer (BG)">
+<meta name="twitter:title" content="${escapeHtml(pageTitle)}">
+<meta name="twitter:description" content="${escapeHtml(description)}">
+<meta name="twitter:image" content="${ogImage}">
+<meta name="twitter:image:alt" content="${escapeHtml(pageTitle)}">
 <script>
 /* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
-   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   class \`google-auto-placed\`), plus Google's separate "annotation" text-ad
    formats, which are a different Auto ads mechanism than the in-page blocks
    above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
    is relocated to just below the whole header+nav+logo-badge complex
@@ -981,8 +1452,8 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
    (max-width: 768px, this repo's existing responsive breakpoint) it is
    hidden outright instead -- no ad shows below the nav bar on mobile at
    all. 2) Annotation/related-entry chips -- any element carrying the
-   `google-anno-skip` class -- and 3) in-text link ads (`<a class="google-anno">`
-   wrapping a `<span class="google-anno-t">` around an ordinary word): both are
+   \`google-anno-skip\` class -- and 3) in-text link ads (\`<a class="google-anno">\`
+   wrapping a \`<span class="google-anno-t">\` around an ordinary word): both are
    only guarded inside #header, #footer, the top .info-bar-container nav, or
    the .side-bar "Site Navigation" widget -- chips are hidden outright there,
    and in-text links are unwrapped back to plain text there, so the word
@@ -1165,25 +1636,12 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>
     <div class="outer-page-content">
       <div class="page-content" role="main">
-        <div class="color-box"></div>
-        <h1 class="page-title">Bob Greenyer (BG)</h1>
-        <p class="page-description">Bob Greenyer (BG): MES videos, posts and links checking Bob Greenyer's claims about 9/11, Dr. Judy Wood, atomic clocks, the MH370 teleportation cartoons and more.</p>
+        ${breadcrumbHtml}<div class="color-box"></div>
+        <h1 class="page-title">${escapeHtml(pageTitle)}</h1>
+        <p class="page-description">${escapeHtml(description)}</p>
         <div id="main-content">
           <div class="wide">
-<div class="icon-grid">
-<a class="icon-grid__link icon-grid__link--labeled" href="/bg-videos"><span class="icon-grid__thumb" style="background-image:url('/img/bg-videos-icon.jpg?v=1')"></span><span class="icon-grid__label">Videos</span></a>
-<a class="icon-grid__link icon-grid__link--labeled" href="/bg-posts"><span class="icon-grid__thumb" style="background-image:url('/img/bg-posts-icon.jpg?v=1')"></span><span class="icon-grid__label">Posts</span></a>
-</div>
-<div class="hub-links">
-  <h2>Important Links</h2>
-<ul>
-<li><a href="https://www.youtube.com/playlist?list=PLdwkvCI5-tzw">Bob Greenyer Says the Darnedest Things (YouTube playlist)</a> &mdash; short URL: <a href="https://mes.fm/bg-wildin">mes.fm/bg-wildin</a></li>
-<li><a href="https://mes.fm/bg-notes">Bob Greenyer's Claims About Dr. Judy Wood &amp; 9/11</a> (notes and links)</li>
-<li><a href="https://www.youtube.com/watch?v=xLe2uhz4ANs">MES Livestream 42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect</a></li>
-<li><a href="https://mes.fm/mh370">MH370 Teleportation Psyop</a></li>
-</ul>
-
-</div>
+${sectionsHtml}
           </div>
         </div>
         <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
@@ -1265,7 +1723,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 
   function toggleSubList(listId) {
     const list = document.getElementById(listId);
-    const arrowIcon = document.getElementById(`arrowIcon-${listId}`);
+    const arrowIcon = document.getElementById(\`arrowIcon-\${listId}\`);
     list.classList.toggle('hidden');
     arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
   }
@@ -1305,7 +1763,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     });
   }
 
-
+${viewToggleWiring}
 </script>
 
 <script>
@@ -1628,7 +2086,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 var MES_Vars = {
     mobile:false,
     hide_search:false,
-    current_tab:0,
+    current_tab:${isHub ? 0 : page.slug === "bg-posts" ? 2 : 1},
     info_bar_tab:0
 }
 </script>
@@ -1638,3 +2096,28 @@ var MES_Vars = {
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
 <script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
 </html>
+`;
+}
+
+async function main() {
+  console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
+  const meta = await resolveAllMeta(SECTIONS);
+
+  const pages = [{ hub: true, slug: "bg", outDir: __dirname }].concat(
+    PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
+  );
+  for (const page of pages) {
+    mkdirSync(page.outDir, { recursive: true });
+    const outPath = join(page.outDir, "index.html");
+    writeFileSync(outPath, addImageLazyLoading(buildPage(meta, page)), "utf8");
+    console.log(`Wrote ${outPath}`);
+  }
+  // The phone-width header fixes (A-/A+/moon on their own row, no sideways scroll) are patched into generated pages by
+  // fix_mobile_header_controls.py, so a rebuild would silently drop them; re-apply (idempotent).
+  execFileSync("python3", [join(__dirname, "..", "..", "fix_mobile_header_controls.py"), "--apply"], { stdio: "inherit" });
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

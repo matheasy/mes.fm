@@ -852,6 +852,12 @@ entry at the TOP of the right section and `npm run build`). Tile art is `img/con
 thumbnail; bump `iconVersion` in `PAGES` when refreshed). The "Part of MES Links" box is gone with the old shell. A not-yet-deployed new mirror
 page must be seeded by hand in `conspiracy/link-meta.json` (image) until it is live, since the scrape 404s.
 
+`mes.fm/bg/build.mjs` (2026-10-06, cloned from `mh370/build.mjs`) emits **three** pages: the tile hub `mes.fm/bg` ("Bob Greenyer (BG)": Videos + Posts tiles and an Important Links list) plus `mes.fm/{bg-videos,bg-posts}/index.html`, from `bg/sections.mjs` (hand-maintained, newest first; items with explicit
+`image` + `links` need no network). **Videos** mirror the YouTube playlist `PLdwkvCI5-tzw` ("Bob Greenyer says the darnedest things", short URL `mes.fm/bg-wildin` -> `vercel.json`) in playlist order; **Posts** are the mes.fm mirrors `bob-greenyer-con-man-subscriber`, `911-revisionist-spammer`, `911-spammer-dust-baggie` (their "Part of" boxes gain `Bob Greenyer · Posts`
+via `add_bg_links.py`, which reads the Posts list; re-run it after adding a post). Tile art = the newest item of each section: `img/bg-videos-icon.jpg` (3:2 crop of the newest video's maxres thumbnail), `img/bg-posts-icon.jpg` (the Telegram screenshot fitted whole onto a matching dark 900x600 tile, since a 3:2 crop cut the message off),
+`img/bg-logo.jpg` / `bg-logo-big.jpg` (square favicon / header logo and 1200x630 og:image from the newest video's thumbnail); replace those files (same names) for real art. The **old `mes.fm/bg` page** ("BG & NS Links": Bob Greenyer's claims about Dr. Judy Wood and 9/11) moved to `mes.fm/bg-notes`; every link to it (911-posts, 911 `sections.mjs` + `link-meta.json`,
+the Amaterasu mirror, sitemap) was repointed, and the hub lists it. Registered like mh370: `improve_meta_descriptions.GENERATED`, `add_hub_theatre.GENERATORS`.
+
 `mes.fm/science/build.mjs` (2026-10-01) was converted the same way (cloned from `conspiracy/build.mjs`): tile hub + `mes.fm/{science-posts,science-videos}/index.html`
 from `science/sections.mjs`, tile art `img/science-{posts,videos}-icon.jpg`. It now uses the shared blue family look, not its old amber accent. Its Videos are external
 YouTube playlists (scraped for their thumbnail). The info-bar of the conspiracy and science families shows `Conspiracy|Science | Posts | Videos` (hub builds, and
