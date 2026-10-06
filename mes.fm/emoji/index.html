@@ -209,6 +209,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.emo__search input {font:inherit;font-size:1em;padding:0.6em 0.75em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;width:100%;}
 	.emo__search input:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(224,80,122,0.18);}
 
+	.emo__tonebar {flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 0.8em;}
+	.emo__tonelabel {font-size:0.9em;color:#555;}
+	.emo__tones {display:flex;gap:0.45em;}
+	.emo__tone {width:2.1em;height:2.1em;border-radius:50%;border:2px solid #c3c9d2;cursor:pointer;padding:0;}
+	.emo__tone[aria-pressed="true"] {border-color:var(--accent);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--accent);}
+	body.dark-mode .emo__tonelabel{color:#aaaaaa}
+	body.dark-mode .emo__tone{border-color:#555}
+	body.dark-mode .emo__tone[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px #1a1a1a,0 0 0 4px var(--accent)}
 	.emo__recent {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em;margin-bottom:1.2em;padding:0.6em 0.75em;background:#fbeef2;border:1px solid #f2d9e2;border-radius:0.5em;}
 	.emo__recent-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#99566c;margin-right:0.3em;}
 	.emo__recent-list {display:flex;flex-wrap:wrap;gap:0.35em;}
@@ -616,6 +624,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="emo__search">
 				<input type="search" id="emo-search" placeholder="Search emojis&hellip; try &ldquo;laughing&rdquo;, &ldquo;heart&rdquo;, &ldquo;rocket&rdquo;" autocomplete="off" aria-label="Search emojis">
 			</div>
+			<div class="emo__tonebar"><span class="emo__tonelabel" id="emo-tone-label">Skin tone for hands &amp; people</span><div class="emo__tones" id="emo-tones" role="group" aria-labelledby="emo-tone-label"></div></div>
 		</div>
 
 		<div class="emo__recent hide" id="emo-recent">
@@ -739,7 +748,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
 	<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@17.0.3/dist/twemoji.min.js" defer></script>
-	<script src="/emoji/js/emoji.js" defer></script>
+	<script src="/emoji/js/emoji.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

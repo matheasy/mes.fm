@@ -664,12 +664,40 @@
 		return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 	}
 
+	/* ---- skin tone ------------------------------------------------------ */
+	// Emoji_Modifier_Base ranges (Unicode): only these take a U+1F3FB..1F3FF modifier
+	var MOD_BASES = [[0x261D,0x261D],[0x26F9,0x26F9],[0x270A,0x270D],[0x1F385,0x1F385],[0x1F3C2,0x1F3C4],[0x1F3C7,0x1F3C7],[0x1F3CA,0x1F3CC],[0x1F442,0x1F443],[0x1F446,0x1F450],[0x1F466,0x1F478],[0x1F47C,0x1F47C],[0x1F481,0x1F483],[0x1F485,0x1F487],[0x1F48F,0x1F48F],[0x1F491,0x1F491],[0x1F4AA,0x1F4AA],[0x1F574,0x1F575],[0x1F57A,0x1F57A],[0x1F590,0x1F590],[0x1F595,0x1F596],[0x1F645,0x1F647],[0x1F64B,0x1F64F],[0x1F6A3,0x1F6A3],[0x1F6B4,0x1F6B6],[0x1F6C0,0x1F6C0],[0x1F6CC,0x1F6CC],[0x1F90C,0x1F90C],[0x1F90F,0x1F90F],[0x1F918,0x1F91F],[0x1F926,0x1F926],[0x1F930,0x1F939],[0x1F93C,0x1F93E],[0x1F977,0x1F977],[0x1F9B5,0x1F9B6],[0x1F9B8,0x1F9B9],[0x1F9BB,0x1F9BB],[0x1F9CD,0x1F9CF],[0x1F9D1,0x1F9DD],[0x1FAC3,0x1FAC5],[0x1FAF0,0x1FAF8]];
+	var TONES = [
+		{ k: "", name: "Default (yellow)", sw: "#f7c948" },
+		{ k: "\u{1F3FB}", name: "Light", sw: "#f7d7c4" },
+		{ k: "\u{1F3FC}", name: "Medium-light", sw: "#d8b094" },
+		{ k: "\u{1F3FD}", name: "Medium", sw: "#b38567" },
+		{ k: "\u{1F3FE}", name: "Medium-dark", sw: "#8a5a3c" },
+		{ k: "\u{1F3FF}", name: "Dark", sw: "#5b3a29" }
+	];
+	var TONE_KEY = "mes-emoji-tone-v1";
+	var tone = 0;
+	try { tone = Math.min(5, Math.max(0, parseInt(localStorage.getItem(TONE_KEY), 10) || 0)); } catch (e) {}
+	function takesTone(ch) {
+		var cp = ch.codePointAt(0);
+		var rest = ch.slice(cp > 0xFFFF ? 2 : 1);
+		if (rest !== "" && rest !== "\uFE0F") return false; // ZWJ sequences, flags, keycaps: leave alone
+		return MOD_BASES.some(function (r) { return cp >= r[0] && cp <= r[1]; });
+	}
+	function toned(ch) {
+		if (!tone || !takesTone(ch)) return ch;
+		var cp = ch.codePointAt(0);
+		return String.fromCodePoint(cp) + TONES[tone].k;
+	}
+	function untone(ch) { return String(ch).replace(/[\u{1F3FB}-\u{1F3FF}]/gu, ""); }
+
 	function tileHtml(item) {
+		var c = toned(item.c);
 		return '<div class="emo__tile-wrap">' +
-			'<button type="button" class="emo__tile" data-emoji="' + esc(item.c) + '" data-name="' + esc(item.n) + '" title="' + esc(item.n) + '">' +
-			'<span class="emo__tile-glyph">' + item.c + '</span>' +
+			'<button type="button" class="emo__tile" data-emoji="' + esc(c) + '" data-name="' + esc(item.n) + '" title="' + esc(item.n) + '">' +
+			'<span class="emo__tile-glyph">' + c + '</span>' +
 			'<span class="emo__tile-name">' + esc(item.n) + '</span></button>' +
-			'<button type="button" class="emo__tile-expand" data-expand="' + esc(item.c) + '" data-expand-name="' + esc(item.n) + '" title="Expand to large PNG" aria-label="Expand ' + esc(item.n) + ' to large PNG">' + EXPAND_ICON + '</button>' +
+			'<button type="button" class="emo__tile-expand" data-expand="' + esc(c) + '" data-expand-name="' + esc(item.n) + '" title="Expand to large PNG" aria-label="Expand ' + esc(item.n) + ' to large PNG">' + EXPAND_ICON + '</button>' +
 			'</div>';
 	}
 
@@ -727,6 +755,7 @@
 	});
 
 	function findItem(ch) {
+		ch = untone(ch);
 		for (var i = 0; i < CATEGORIES.length; i++) {
 			for (var j = 0; j < CATEGORIES[i].items.length; j++) {
 				if (CATEGORIES[i].items[j].c === ch) return CATEGORIES[i].items[j];
@@ -771,6 +800,7 @@
 		try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch (e) {}
 	}
 	function pushRecent(ch) {
+		ch = untone(ch);
 		var list = loadRecent().filter(function (c) { return c !== ch; });
 		list.unshift(ch);
 		list = list.slice(0, MAX_RECENT);
@@ -1033,6 +1063,19 @@
 
 	/* ---- boot -------------------------------------------------------- */
 
+	var toneBox = $("emo-tones");
+	if (toneBox) {
+		toneBox.innerHTML = TONES.map(function (t, i) {
+			return '<button type="button" class="emo__tone" data-tone="' + i + '" title="' + t.name + '" aria-label="Skin tone: ' + t.name + '" aria-pressed="' + (i === tone) + '" style="background:' + t.sw + '"></button>';
+		}).join("");
+		toneBox.addEventListener("click", function (e) {
+			var b = e.target.closest("[data-tone]"); if (!b) return;
+			tone = +b.getAttribute("data-tone");
+			try { localStorage.setItem(TONE_KEY, String(tone)); } catch (x) {}
+			Array.prototype.forEach.call(toneBox.children, function (c, i) { c.setAttribute("aria-pressed", String(i === tone)); });
+			renderCategories(); renderRecent(); applySearch();
+		});
+	}
 	renderCategories();
 	renderRecent();
 	applySearch();
