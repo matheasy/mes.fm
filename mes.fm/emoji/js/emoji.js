@@ -201,14 +201,35 @@
 				{ c: "😿", n: "crying cat" },
 				{ c: "😾", n: "pouting cat" },
 				{ c: "🧟", n: "zombie" },
+				{ c: "🧟‍♀️", n: "woman zombie", k: "female zombie" },
+				{ c: "🧟‍♂️", n: "man zombie", k: "male zombie" },
 				{ c: "🧛", n: "vampire" },
+				{ c: "🧛‍♀️", n: "woman vampire", k: "female vampire" },
+				{ c: "🧛‍♂️", n: "man vampire", k: "male vampire dracula" },
 				{ c: "🧙", n: "mage", k: "wizard witch" },
+				{ c: "🧙‍♀️", n: "woman mage", k: "witch female wizard" },
+				{ c: "🧙‍♂️", n: "man mage", k: "wizard male" },
 				{ c: "🧜", n: "merperson", k: "mermaid" },
+				{ c: "🧜‍♀️", n: "mermaid", k: "female merperson" },
+				{ c: "🧜‍♂️", n: "merman", k: "male merperson" },
 				{ c: "🧚", n: "fairy" },
+				{ c: "🧚‍♀️", n: "woman fairy", k: "female fairy" },
+				{ c: "🧚‍♂️", n: "man fairy", k: "male fairy" },
+				{ c: "🧝", n: "elf" },
+				{ c: "🧝‍♀️", n: "woman elf", k: "female elf" },
+				{ c: "🧝‍♂️", n: "man elf", k: "male elf" },
+				{ c: "🧞", n: "genie" },
+				{ c: "🧞‍♀️", n: "woman genie", k: "female genie" },
+				{ c: "🧞‍♂️", n: "man genie", k: "male genie" },
+				{ c: "🧌", n: "troll" },
 				{ c: "🎅", n: "santa claus" },
 				{ c: "🤶", n: "mrs claus" },
 				{ c: "🦸", n: "superhero" },
-				{ c: "🦹", n: "supervillain" }
+				{ c: "🦸‍♀️", n: "woman superhero", k: "female superhero heroine supergirl" },
+				{ c: "🦸‍♂️", n: "man superhero", k: "male superhero" },
+				{ c: "🦹", n: "supervillain" },
+				{ c: "🦹‍♀️", n: "woman supervillain", k: "female supervillain villainess" },
+				{ c: "🦹‍♂️", n: "man supervillain", k: "male supervillain" }
 			]
 		},
 		{
@@ -681,13 +702,14 @@
 	function takesTone(ch) {
 		var cp = ch.codePointAt(0);
 		var rest = ch.slice(cp > 0xFFFF ? 2 : 1);
-		if (rest !== "" && rest !== "\uFE0F") return false; // ZWJ sequences, flags, keycaps: leave alone
+		// plain emoji (with or without FE0F) or gendered ones like woman superhero (base + ZWJ + female/male sign); not families, flags, keycaps
+		if (!/^\uFE0F?(\u200D[\u2640\u2642]\uFE0F?)?$/.test(rest)) return false;
 		return MOD_BASES.some(function (r) { return cp >= r[0] && cp <= r[1]; });
 	}
 	function toned(ch) {
 		if (!tone || !takesTone(ch)) return ch;
-		var cp = ch.codePointAt(0);
-		return String.fromCodePoint(cp) + TONES[tone].k;
+		var cp = ch.codePointAt(0), rest = ch.slice(cp > 0xFFFF ? 2 : 1).replace(/^\uFE0F/, "");
+		return String.fromCodePoint(cp) + TONES[tone].k + rest;
 	}
 	function untone(ch) { return String(ch).replace(/[\u{1F3FB}-\u{1F3FF}]/gu, ""); }
 
