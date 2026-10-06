@@ -164,6 +164,14 @@ APPS = {
                                tag="Payments, affordability and amortization for the US, Canada and UK.", accent="#0e7490", dark="#0a5568", tint="#e0f2f7",
                                desc="Free mortgage calculator for the US, Canada, UK and Australia: monthly payment with taxes, insurance, PMI or CMHC premium, how much house you can afford, full amortization schedule and charts, extra payments, bi-weekly and accelerated payments, and side-by-side comparison.",
                                js_v="1"),
+    # Grade Calculator 2.0 (rewritten 2026-10-06 from the 2013 jQuery page; old js/calculatorffaf.js deleted): lib.js = maths + share encoding (node-testable:
+    # tool_apps_src/gradecalculator-tests.js), app.js = UI (saved courses, assignments, what-if). Keeps ads. Old /gradecalculator/s/<id> links resolve via /api/share?calc=gc.
+    "gradecalculator": dict(title="Grade Calculator", page_title="Final Grade Calculator",
+                            tag="What do you need on your final exam?", accent="#575fab", dark="#434a8a", tint="#e9eaf6",
+                            desc="Free final grade calculator: find out what grade you need on your final exam to get the course grade you want. Enter your current grade or your assignments, save all your courses, try what-if scores and share your results to another device.",
+                            js_v="1",
+                            nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/weighted-average-calculator'>Weighted Average</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/memes'>Memes</a></li>",
+                            menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/weighted-average-calculator\">Weighted Average</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/study-tips\">Study Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/tutorial\">Tutorial</a></li>"),
     # Site Index: a page inventory + template audit of the whole of mes.fm. Data = mes.fm/site-index/pages.json written by build_site_index.py (fetched lazily by app.js);
     # app.js = dashboard, filterable / sortable table, group-by, URL tree, template gallery, CSV / Markdown export; tests: tool_apps_src/site-index-tests.py. Wide page, no sidebar, ad-free (an internal audit page).
     "site-index": dict(title="MES Site Index", page_title="Site Index",

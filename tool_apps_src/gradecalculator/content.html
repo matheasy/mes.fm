@@ -1,0 +1,123 @@
+	<div class="tu" id="gc">
+		<div id="gc-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
+
+		<div class="gc-courses" id="gc-courses" role="tablist" aria-label="Your courses"></div>
+
+		<div class="tu-card" id="gc-setup">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:2 1 13em;">
+					<label for="gc-name">Course name</label>
+					<input id="gc-name" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Calculus 101">
+				</div>
+				<div class="tu-field tu-field--sm" style="flex:1 1 9em;">
+					<label for="gc-target">Grade I want in the course</label>
+					<div class="tu-suffix"><input id="gc-target" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="80"><span>%</span></div>
+				</div>
+			</div>
+			<div class="tu-chips" id="gc-targets" role="group" aria-label="Common target grades" style="margin-top:0.6em;"></div>
+
+			<span class="tu-label" id="gc-mode-label" style="margin-top:1em;display:block;">Do you know your current grade?</span>
+			<div class="tu-seg" id="gc-mode" role="group" aria-labelledby="gc-mode-label" style="margin-top:0.4em;display:flex;flex-wrap:wrap;">
+				<button type="button" data-mode="known" aria-pressed="true">Yes, I know it</button>
+				<button type="button" data-mode="items" aria-pressed="false">No, work it out from my assignments</button>
+			</div>
+
+			<div id="gc-known" class="tu-row" style="margin-top:1em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+					<label for="gc-cur">My current grade</label>
+					<div class="tu-suffix"><input id="gc-cur" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 78"><span>%</span></div>
+				</div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+					<label for="gc-fw">Weight of the final exam</label>
+					<div class="tu-suffix"><input id="gc-fw" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 40"><span>%</span></div>
+				</div>
+			</div>
+
+			<div id="gc-items" hidden>
+				<p class="tu-note" style="margin:0.8em 0 0.2em;">Enter what you have been graded on so far: a score and what it was out of (or just the grade %), and how much it counts towards the course. Rows with a weight but no score yet are treated as still to come. Whatever weight is left is your final exam.</p>
+				<div id="gc-rows"></div>
+				<div class="gc-btns">
+					<button type="button" class="tu-btn tu-btn--primary" id="gc-add">+ Add an assignment</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="gc-even" title="Give every row the same weight">Even weights&hellip;</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="gc-clearrows">Clear scores</button>
+				</div>
+				<p class="gc-summary" id="gc-summary" aria-live="polite"></p>
+			</div>
+		</div>
+
+		<div id="gc-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Fill in the boxes above and your answer appears instantly &mdash; or try an example: </span><span class="tu-chips" id="gc-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="gc-out" hidden>
+			<div class="tu-stats" id="gc-hero" aria-live="polite"></div>
+			<div class="tu-card gc-verdict" id="gc-verdict" aria-live="polite"></div>
+
+			<div class="tu-card" id="gc-meter-card">
+				<div class="tu-label">Where your course grade can end up</div>
+				<div class="gc-meter" id="gc-meter" aria-hidden="true"></div>
+				<p class="tu-note" id="gc-meter-note" style="margin:0.4em 0 0;"></p>
+			</div>
+
+			<div class="tu-card" id="gc-whatif">
+				<div class="tu-label">What if I score&hellip;</div>
+				<div class="tu-row" style="align-items:center;">
+					<div class="tu-field tu-field--sm" style="flex:0 1 8em;">
+						<div class="tu-suffix"><input id="gc-wi" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="75" aria-label="Score on the final exam"><span>%</span></div>
+					</div>
+					<div class="tu-field" style="flex:3 1 14em;"><input id="gc-wi-r" type="range" min="0" max="100" step="1" value="75" aria-label="Score on the final exam, slider" style="width:100%;"></div>
+				</div>
+				<p id="gc-wi-out" class="gc-wi-out" aria-live="polite"></p>
+			</div>
+
+			<h2>What you need for each target</h2>
+			<div class="tu-card" id="gc-table-card">
+				<div class="tu-table-wrap"><table class="tu-table" id="gc-table"></table></div>
+				<p class="tu-note" style="margin-bottom:0;">Letter labels use the common US scale (90% = A-); your school's cut-offs may differ.</p>
+			</div>
+		</div>
+
+		<div id="gc-overview-card" hidden>
+			<h2>All my courses</h2>
+			<div class="tu-card">
+				<div class="tu-table-wrap"><table class="tu-table" id="gc-overview"></table></div>
+				<p class="tu-note" id="gc-overview-note" style="margin-bottom:0;"></p>
+			</div>
+		</div>
+
+		<h2>Save and share</h2>
+		<div class="tu-card" id="gc-save">
+			<p style="margin:0 0 0.6em;"><b>Your courses are saved in this browser automatically.</b> To carry them to another phone or computer, copy a link and open it there. The link holds everything, so there is no account and nothing is uploaded.</p>
+			<div class="gc-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="gc-link-all">Copy link to all my courses</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="gc-link-one">Copy link to this course</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="gc-backup">Download a backup</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="gc-restore">Restore a backup&hellip;</button>
+				<button type="button" class="tu-btn tu-btn--ghost gc-print">Print</button>
+			</div>
+			<input type="file" id="gc-file" accept=".json,application/json" hidden>
+			<p class="tu-note" id="gc-store-note" style="margin-bottom:0;"></p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the final grade calculator works</h2>
+			<p>Your course grade is a weighted average: each part of the course counts for a share of the total. Once you know how much of the course is already graded, the grade you need on what is left follows from one formula:</p>
+			<p style="text-align:center;"><b>needed on the final = (target &minus; current &times; (100 &minus; final weight) / 100) &divide; final weight &times; 100</b></p>
+			<p>For example, with a current grade of 78%, a final worth 40% and a target of 80%: 78 &times; 60 / 100 = 46.8 points are already banked, so you need (80 &minus; 46.8) &divide; 40 &times; 100 = <b>83%</b> on the final. If the answer is above 100% the target is out of reach; if it is zero or below, you have already secured it.</p>
+			<h3>Using it</h3>
+			<ul>
+				<li><strong>Know your current grade?</strong> Choose <em>Yes</em>, type it with the weight of the final exam.</li>
+				<li><strong>Don&rsquo;t?</strong> Choose <em>No</em> and list your assignments, tests and labs with their scores and weights. The calculator works out your current grade, and the weight left over is your final exam.</li>
+				<li><strong>Several courses?</strong> Press <em>+ Course</em>. Each course keeps its own target and assignments, and the <em>All my courses</em> table shows what you need in every one.</li>
+				<li><strong>What if?</strong> Slide the what-if score to see the course grade you would finish with.</li>
+				<li><strong>Another device?</strong> Copy the link under <em>Save and share</em> and open it on the other device.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>What grade do I need on my final to get an A?</h4>
+			<p>Set the target to 90 (an A- on the common US scale) or 93 (an A), enter your current grade and the final&rsquo;s weight, and read the result. The table lists every target from 40% to 100% at once.</p>
+			<h4>Can I use it if my final is worth 100%?</h4>
+			<p>Yes. With a weight of 100 your current grade does not matter: you need the target grade itself on the exam.</p>
+			<h4>What if my course uses points instead of percentages?</h4>
+			<p>Enter each assignment&rsquo;s points earned and points possible as the score and out-of, and its share of the course as the weight. If every assignment simply counts by its points, use <em>Even weights&hellip;</em> or the <a href="/gradecalculator/weighted-average-calculator">Weighted Average Calculator</a>.</p>
+			<h4>Is my data private?</h4>
+			<p>Yes. Everything stays in your browser (localStorage) and only leaves it if you copy a link and share it yourself. Clearing your browser&rsquo;s site data deletes your courses, so use a backup or a link if they matter. <a href="/gpacalculator">GPA Calculator</a> &middot; <a href="/gradecalculator/study-tips">Study tips</a> &middot; <a href="/gradecalculator/tutorial">Tutorial</a></p>
+		</div>
+	</div>

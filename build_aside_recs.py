@@ -94,6 +94,8 @@ CTX = {   # page path regex -> [(target, title, kind-label, logo path)]
                                             ("/inflationcalculator?c=United+Kingdom&s=UK+ONS&from=1950&amt=100", "What 100 pounds from 1950 is worth in the UK", "/inflationcalculator")],
     r"^/percentagecalculator$": [("/vatcalculator?mode=gross&gross=120&rate=20&c=GB", "Take 20% VAT out of a price that includes it", "/vatcalculator"),
                                  ("/vatcalculator?mode=net&net=250&rate=13&c=CA&g=ON", "Add Ontario's 13% HST to a $250 price", "/vatcalculator")],
+    r"^/gradecalculator$": [("/gradecalculator?target=90&current=82&weight=30", "What you need on a 30% final to finish with an A-", "/gradecalculator"),
+                            ("/gradecalculator?target=70&current=65&weight=50", "A 50% final: can you still get a 70?", "/gradecalculator")],
     r"^/mortgagecalculator$": [("/mortgagecalculator?r=ca&p=650000&dp=10&i=4.5&y=25", "Canada: 10% down on $650,000, with the CMHC premium", "/mortgagecalculator"),
                                ("/mortgagecalculator?r=us&p=450000&dp=20&i=6.5&y=30&cy=15&cr=5.75", "Compare a 30-year and a 15-year US mortgage", "/mortgagecalculator"),
                                ("/mortgagecalculator?r=us&p=450000&dp=20&i=6.5&y=30&xm=250", "See what an extra $250 a month does", "/mortgagecalculator")],

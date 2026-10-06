@@ -59,6 +59,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("copy-text", "Copy Text"),    # also built by build_tool_apps.py
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)
     ("youtubemoney", "YouTube Money Calculator"),   # also built by build_tool_apps.py (ad-free)
+    ("gradecalculator", "Grade Calculator"),   # also built by build_tool_apps.py (Grade Calculator 2.0)
     ("vatcalculator", "VAT Calculator"),   # also built by build_tool_apps.py (VAT Calculator 2.0)
     ("how-much-do-youtubers-make", "YouTube Money", "/youtubemoney"),   # a sub-page of the YouTube Money site (brand option in build_tool_apps.py); wide, ad-free
     ("mortgagecalculator", "Mortgage Calculator"),   # also built by build_tool_apps.py (Mortgage Calculator 2.0)
