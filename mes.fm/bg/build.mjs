@@ -52,6 +52,14 @@ const PAGES = [
       "MES posts on Bob Greenyer: a subscriber calls him a rich fake con man, plus the 9/11 revisionist spammer and the dust baggie nonsense.",
   },
   {
+    // Tile only: the old "BG & NS Links" page (mes.fm/bg-notes, hand-built). Icon = the thumbnail of the YouTube playlist behind mes.fm/bg-wildin
+    // (the "word salad" playlist cover, video 5OHeLE6DiM8); img/bg-notes-icon.jpg, bump iconVersion if replaced.
+    slug: "bg-notes",
+    tileLabel: "BG & NS Links",
+    iconVersion: 1,
+    tileOnly: true,
+  },
+  {
     // Tile only: no page is written. Links to the MH370 Teleportation Psyop hub (mes.fm/mh370, its own build.mjs), as mes.fm/conspiracy does;
     // the icon is img/mh370-icon.jpg -- bump iconVersion if it is replaced.
     slug: "mh370",

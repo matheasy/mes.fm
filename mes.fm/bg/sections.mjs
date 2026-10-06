@@ -41,7 +41,6 @@ export const SECTIONS = [
 
 export const IMPORTANT_LINKS_HTML = `<ul>
 <li><a href="https://www.youtube.com/playlist?list=PLdwkvCI5-tzw">Bob Greenyer Says the Darnedest Things (YouTube playlist)</a> &mdash; short URL: <a href="https://mes.fm/bg-wildin">mes.fm/bg-wildin</a></li>
-<li><a href="https://mes.fm/bg-notes">Bob Greenyer's Claims About Dr. Judy Wood &amp; 9/11</a> (notes and links)</li>
 <li><a href="https://www.youtube.com/watch?v=xLe2uhz4ANs">MES Livestream 42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect</a></li>
 </ul>
 `;
