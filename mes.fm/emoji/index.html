@@ -265,6 +265,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.emo-zoom__sizes {display:flex;flex-wrap:wrap;gap:0.4em;}
 	.emo-zoom__size {font:inherit;font-size:0.9em;cursor:pointer;padding:0.4em 0.85em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
 	.emo-zoom__size:hover {border-color:var(--accent, #e0507a);color:var(--accent, #e0507a);}
+	.emo-zoom__sizes--off {opacity:0.35;pointer-events:none;}
 	.emo-zoom__size--active {background:#e0507a;border-color:#e0507a;color:#fff;}
 	.emo-zoom__close {font:inherit;font-size:1.7em;line-height:1;cursor:pointer;border:none;background:none;color:#555;padding:0 0.3em;flex:0 0 auto;}
 	.emo-zoom__close:hover {color:#000;}
@@ -653,6 +654,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<div id="emo-zoom" class="emo-zoom hide">
 		<div class="emo-zoom__bar">
 			<span class="emo-zoom__title" id="emo-zoom-title"></span>
+			<div class="emo-zoom__sizes emo-zoom__styles-wrap"><button type="button" class="emo-zoom__size emo-zoom__style" data-style="art" title="Twemoji vector art, sharp at any size">Sharp art</button><button type="button" class="emo-zoom__size emo-zoom__style" data-style="device" title="Your device's own emoji, matches the tiles but smaller">My device</button></div>
 			<div class="emo-zoom__sizes">
 				<button type="button" class="emo-zoom__size" data-size="512">512px</button>
 				<button type="button" class="emo-zoom__size emo-zoom__size--active" data-size="1024">1024px</button>
@@ -667,7 +669,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" id="emo-zoom-download" class="emo__btn emo__btn--primary">Download PNG</button>
 			<button type="button" id="emo-zoom-copy" class="emo__btn emo__btn--ghost">Copy image</button>
 		</div>
-		<p class="emo-zoom__hint">Transparent background, high-resolution artwork &mdash; Esc to close</p>
+		<p class="emo-zoom__hint" id="emo-zoom-note">Transparent background, high-resolution artwork &mdash; Esc to close</p>
 	</div>
 
 	<div class="emo-seo">
@@ -748,7 +750,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
 	<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@17.0.3/dist/twemoji.min.js" defer></script>
-	<script src="/emoji/js/emoji.js?v=3" defer></script>
+	<script src="/emoji/js/emoji.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

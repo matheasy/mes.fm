@@ -923,8 +923,12 @@
 	/* ---- expand to large transparent PNG -------------------------------- */
 
 	var zoom = $("emo-zoom"), zoomImg = $("emo-zoom-img"), zoomTitle = $("emo-zoom-title");
-	var zoomSizes = document.querySelectorAll(".emo-zoom__size");
+	var zoomSizes = document.querySelectorAll(".emo-zoom__size[data-size]");
+	var zoomSizesBox = document.querySelector(".emo-zoom__sizes:not(.emo-zoom__styles-wrap)"), zoomNote = document.getElementById("emo-zoom-note");
 	var currentEmoji = "", currentName = "", currentSize = 1024;
+	// "art" = Twemoji vector art at any size; "device" = this device's own emoji font, matching the tiles but only ~192px of real detail
+	var STYLE_KEY = "mes-emoji-style-v1", DEVICE_PX = 192, currentStyle = "art";
+	try { if (localStorage.getItem(STYLE_KEY) === "device") currentStyle = "device"; } catch (e) {}
 	var lastFocused = null;
 
 	// Twemoji's own vector artwork -- true SVG, so drawImage()ing it onto a
@@ -985,6 +989,7 @@
 	// the Twemoji SVG is async; falls back to the font-rendered canvas if
 	// this emoji has no Twemoji artwork or the fetch fails.
 	function renderEmojiCanvas(emoji, size) {
+		if (currentStyle === "device") return Promise.resolve(renderEmojiCanvasFromFont(emoji, DEVICE_PX));
 		var codepoint = twemojiCodePoint(emoji);
 		if (!codepoint) return Promise.resolve(renderEmojiCanvasFromFont(emoji, size));
 		return loadTwemojiImage(codepoint).then(
@@ -1017,7 +1022,10 @@
 			zoomImg.classList.remove("emo-zoom__img--loading");
 		});
 		var em = PREVIEW_EM[size] || 15;
-		zoomImg.style.width = zoomImg.style.height = em + "em";
+		zoomImg.style.width = zoomImg.style.height = currentStyle === "device" ? DEVICE_PX + "px" : em + "em";
+		zoomSizesBox.classList.toggle("emo-zoom__sizes--off", currentStyle === "device");
+		zoomNote.textContent = currentStyle === "device" ? "Drawn by your device's own emoji font, so it matches the tiles. It is only " + DEVICE_PX + "px of real detail." : "Transparent background, high-resolution artwork — Esc to close";
+		[].forEach.call(document.querySelectorAll(".emo-zoom__style"), function (b) { b.classList.toggle("emo-zoom__size--active", b.getAttribute("data-style") === currentStyle); });
 	}
 
 	function openZoom(emoji, name) {
@@ -1051,6 +1059,14 @@
 		});
 	}
 
+	[].forEach.call(document.querySelectorAll(".emo-zoom__style"), function (b) {
+		b.addEventListener("click", function () {
+			currentStyle = this.getAttribute("data-style");
+			try { localStorage.setItem(STYLE_KEY, currentStyle); } catch (e) {}
+			renderZoomPreview();
+		});
+	});
+
 	function slugify(name) {
 		return (name || "emoji").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "emoji";
 	}
@@ -1058,7 +1074,7 @@
 	$("emo-zoom-download").addEventListener("click", function () {
 		renderEmojiCanvas(currentEmoji, currentSize).then(function (canvas) {
 			var a = document.createElement("a");
-			a.download = "emoji-" + slugify(currentName) + "-" + currentSize + ".png";
+			a.download = "emoji-" + slugify(currentName) + "-" + canvas.width + ".png";
 			a.href = canvas.toDataURL("image/png");
 			document.body.appendChild(a);
 			a.click();
