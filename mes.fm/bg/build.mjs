@@ -490,7 +490,7 @@ function buildPage(meta, page) {
 <html lang="en">
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
-  <link rel="icon" href="https://mes.fm/img/bg-logo.jpg?v=1.0" type="image/jpeg" />
+  <link rel="icon" href="https://mes.fm/img/bg-logo.jpg?v=1.1" type="image/jpeg" />
   <link rel="canonical" href="${CANONICAL}" />
   <title>${escapeHtml(pageTitle)} | Math Easy Solutions</title>
   <meta charset="UTF-8">
