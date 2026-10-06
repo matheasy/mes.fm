@@ -35,10 +35,14 @@ BRANDS = {
     "/hutchison": dict(logo="/img/hutchison-logo.jpg", title="MES Hutchison Effect", tag="Antigravity, materials transmutation, and John Hutchison's demonstrations.", href="/hutchison", label="MES Hutchison Effect"),
     "/science": dict(logo="/img/science-logo.png", title="MES Science", tag="Links, videos and posts on science topics.", href="/science", label="MES Science"),
     "/crypto": dict(logo="/img/crypto-logo.jpg", title="MES Crypto", tag="Blockchain and crypto: news, tutorials, Hive, tools and posts.", href="/crypto", label="MES Crypto"),
+    "/bg": dict(logo="/img/bg-logo.jpg", title="🗣 Bob Greenyer says the darnedest things 😹", tag="Videos, posts and links on Bob Greenyer's word salads.", href="/bg", label="Bob Greenyer"),
     "/conspiracy": dict(logo="/img/conspiracy-logo.jpg", title="MES Conspiracy", tag="Alt-news checkups, videos and posts on conspiracies.", href="/conspiracy", label="MES Conspiracy"),
 }
 # pages that get their own brand / "Part of" box instead of the one implied by their back link
 PAGE_BRANDS = {
+    # BG & NS Links (the old mes.fm/bg page): part of the Bob Greenyer hub (mes.fm/bg); favicon / social image = the word-salad art (img/bg-logo.jpg, bg-logo-big.jpg)
+    "bg-notes": (dict(logo="/img/bg-logo.jpg", title="🗣 Bob Greenyer says the darnedest things 😹", tag="Videos, posts and links on Bob Greenyer's word salads.", href="/bg"),
+                 'Part of <a href="/bg">Bob Greenyer</a> &middot; <a href="/bg-posts">Posts</a> &middot; <a href="/bg-videos">Videos</a>'),
     "moon": (dict(logo="/moon/img/logo.png", title="MES Moon", tag="Live sky dashboard: moon phase, sun, planets and astronomy.", href="/moon"),
              'Part of <a href="/tools">MES Tools</a> &middot; <a href="/science">MES Science</a>'),
 }
@@ -178,8 +182,9 @@ def chrome_swap(old, template):
 
     new = old[: style.start()] + "<style>" + css + "</style>" + old[style.end():]
     if cm and cm.group(1) in PAGE_BRANDS:  # own artwork: favicon + social preview image
-        big = "https://mes.fm%s-big.png" % b["logo"][:-4]
-        new = re.sub(r'<link rel="icon"[^>]*>', '<link rel="icon" href="https://mes.fm%s?v=1.0" type="image/png" />' % b["logo"], new, count=1)
+        base, ext = b["logo"].rsplit(".", 1)
+        big = "https://mes.fm%s-big.%s" % (base, ext)
+        new = re.sub(r'<link rel="icon"[^>]*>', '<link rel="icon" href="https://mes.fm%s?v=1.0" type="image/%s" />' % (b["logo"], "jpeg" if ext == "jpg" else ext), new, count=1)
         if "og:image" in new:
             new = re.sub(r'(<meta property="og:image" content=")[^"]*', lambda mm: mm.group(1) + big, new, count=1)
             new = re.sub(r'(<meta name="twitter:image" content=")[^"]*', lambda mm: mm.group(1) + big, new, count=1)
@@ -334,6 +339,7 @@ BRAND_TABS = {
     'class="site-brand-title" href="/crypto"': ("/crypto", "MES Crypto"),
     # Conspiracy and Science also list their two section pages (Posts, Videos) right after the hub tab.
     'class="site-brand-title" href="/conspiracy"': ("/conspiracy", "Conspiracy", [("/conspiracy-posts", "Posts"), ("/conspiracy-videos", "Videos")]),
+    'class="site-brand-title" href="/bg"': ("/bg", "BG", [("/bg-posts", "Posts"), ("/bg-videos", "Videos")]),
     'class="site-brand-title" href="/science"': ("/science", "Science", [("/science-posts", "Posts"), ("/science-videos", "Videos")]),
 }
 HUTCH_MARK = 'class="site-brand-title" href="/hutchison"'  # kept for callers that import it

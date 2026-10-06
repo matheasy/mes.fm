@@ -480,7 +480,7 @@ function buildPage(meta, page) {
   const CANONICAL = `https://mes.fm/${page.slug}`;
   const pageTitle = isHub ? HUB_TITLE : page.title;
   const description = isHub ? HUB_DESCRIPTION : page.description;
-  const ogImage = isHub ? "https://mes.fm/img/bg-logo-big.jpg" : `https://mes.fm/img/${page.icon || page.slug}-icon.jpg`;
+  const ogImage = "https://mes.fm/img/bg-logo-big.jpg"; // the word-salad art for the hub and its section pages (tile icons are only for the hub grid)
   const breadcrumbHtml = isHub
     ? ""
     : `<p class="page-breadcrumb"><a href="/bg">&larr; Bob Greenyer</a></p>\n        `;
