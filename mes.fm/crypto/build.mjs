@@ -203,7 +203,7 @@ function buildPage(meta) {
 
   return `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <link rel="canonical" href="https://mes.fm/crypto" />
   <meta charset="UTF-8">

@@ -204,12 +204,17 @@ function buildPage(meta) {
 
   return `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <link rel="canonical" href="https://mes.fm/mathiew" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Mathiew Personal Content - personal videos and articles by Mathiew Estepho, collected in one place on Math Easy Solutions.">
+  <meta property="og:image" content="https://mes.fm/img/logo-big.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://mes.fm/img/logo-big.png">
   <meta name="keywords" content="Mathiew, Personal, Math Easy Solutions">
   <meta name="author" content="Mathiew Estepho">
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
