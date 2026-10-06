@@ -129,6 +129,9 @@ def thumbnail(path, img, thumbs):
         if big:
             for ext in ("png", "jpg", "jpeg"):
                 if (SITE / (big.group(1).lstrip("/") + "logo." + ext)).is_file():
+                    # the 2013-2018 sites' logo.png is only 176px (blurry at tile size): make_hires_logos.py writes a 512px twin
+                    if ext == "png" and (SITE / (big.group(1).lstrip("/") + "logo-512.png")).is_file():
+                        return big.group(1) + "logo-512.png"
                     return big.group(1) + "logo." + ext
         top = rel.split("/")[1]
         stem = re.sub(r"\.\w+$", "", rel.rsplit("/", 1)[-1])
