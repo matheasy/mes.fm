@@ -304,7 +304,7 @@ function wrapChaptersInToggles(html) {
     // chapter header doesn't end up with a nested <center>.
     const cleanTitle = titleInner.replace(/^\s*<center>|<\/center>\s*$/g, "").trim();
     out += `<hr>\n<div class="chapter-toggle" id="${id}">\n`;
-    out += `<h1 class="chapter-toggle-header" onclick="toggleChapter('${id}-list')"><center>${cleanTitle} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></center></h1>\n`;
+    out += `<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('${id}-list')"><center>${cleanTitle} <span id="arrowIcon-${id}-list" class="arrow-icon">&#9660;</span></center></h2>\n`;
     out += `<div id="${id}-list" class="chapter-toggle-list">${content}</div>\n`;
     out += `</div>\n`;
   });
@@ -341,7 +341,7 @@ async function buildPage(post) {
     : "";
 
   const overviewChapter = `<div class="chapter-toggle" id="overview">
-<h1 class="chapter-toggle-header" onclick="toggleChapter('overview-list')"><center>Overview <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h1>
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('overview-list')"><center>Overview <span id="arrowIcon-overview-list" class="arrow-icon">&#9660;</span></center></h2>
 <div id="overview-list" class="chapter-toggle-list">
 ${leadingHtml}
 </div>
@@ -474,6 +474,12 @@ ${leadingHtml}
     }
 
     .post-body h1 {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.8em 0 0.8em;
+    }
+
+    .post-body h2.chapter-top {
       text-align: center;
       font-size: 1.5em;
       margin: 1.8em 0 0.8em;

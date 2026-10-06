@@ -252,9 +252,9 @@ def build(pdf):
     out, toc = [], []
     state = dict(part=None, sub=False, nodes=[])
     def chap_open(cid, title, sub=False):
-        tag, cls = ("h2", "chapter-toggle chapter-sub") if sub else ("h1", "chapter-toggle")
+        tag, cls = ("h2", "chapter-toggle chapter-sub") if sub else ("h2", "chapter-toggle")
         out.append(f'<div class="{cls}" id="{cid}">')
-        out.append(f'<{tag} class="chapter-toggle-header" onclick="toggleChapter(\'{cid}-list\')">'
+        out.append(f'<{tag} class="chapter-toggle-header{" chapter-top" if not sub else ""}" onclick="toggleChapter(\'{cid}-list\')">'
                    + ("" if sub else "<center>") + f'{esc(title)} <span id="arrowIcon-{cid}-list" class="arrow-icon">&#9650;</span>'
                    + ("" if sub else "</center>") + f'</{tag}>')
         out.append(f'<div id="{cid}-list" class="chapter-toggle-list">')

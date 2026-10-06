@@ -26,6 +26,7 @@ EXPECT = {
     "/": ("hub-tiles", HUB, "site"),
     "/contact": ("classic-info", HAND, "site"),
     "/privacy-policy": ("classic-info", HAND, "site"),
+    "/sjwkeyboard": ("classic-info", HAND, "other"),
     "/calculators": ("hub-cards", "organize_hub_cards.py", "site"),
     "/tools": ("hub-cards", "organize_hub_cards.py", "site"),
     "/gradecalculator": ("classic-calc", HAND, "grade"),

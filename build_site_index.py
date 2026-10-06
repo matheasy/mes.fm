@@ -44,7 +44,7 @@ and is shown on its own on the page, on purpose.
  14  puzzle-item      classic shell page under /puzzles (puzzle or solution)
  15  gallery-item     classic shell page whose URL sits under a gallery root (meme, quote, dream home, tip, fact)
  16  classic-calc     classic shell with the "More like this" sidebar or `#left-side-container` (calculator mini-site pages)
- 17  classic-info     classic shell, top-level page without sidebar (contact, donate, privacy policy)
+ 17  classic-info     classic shell, top-level page or one-page folder without sidebar (contact, donate, privacy policy, sjwkeyboard)
  18  legacy-bare      no info-bar and no outer container (links, bg, 911djw, chatgpt)
  19  (no rule)        "Unclassified" -- including a classic-shell page below the top level with neither sidebar nor
                       calculator container (that is drift worth looking at, not a default bucket)
@@ -102,7 +102,7 @@ TEMPLATES = [
     ("puzzle-item", "Puzzle page", "A page inside /puzzles (puzzle or its solution) on the classic shell."),
     ("gallery-item", "Gallery item", "Classic-shell page inside a gallery folder: a meme, quote, dream home, tip, fact or YouTuber page."),
     ("classic-calc", "Classic calculator page", "Classic calculator shell (info-bar + `#outer-container` + side nav): calculator mini-site home, formula / tutorial pages."),
-    ("classic-info", "Classic info page", "Classic shell, site page with no sidebar: contact, donate, privacy policy."),
+    ("classic-info", "Classic info page", "Classic shell, site page with no sidebar: contact, donate, privacy policy, and one-page folders like sjwkeyboard."),
     ("legacy-bare", "Bare legacy page", "Pre-shell page with no info-bar or outer container: links, bg, 911djw, chatgpt."),
 ]
 TPL = {t[0]: i for i, t in enumerate(TEMPLATES)}
@@ -266,7 +266,7 @@ def classify(f, gallery_roots):
         return "gallery-item"
     if classic and ("mes-aside" in ids or "left-side-container" in ids):
         return "classic-calc"
-    if classic and len(parts) == 1:
+    if classic and (len(parts) == 1 or (len(parts) == 2 and name == "index.html")):   # donate.html, or a one-page folder (sjwkeyboard)
         return "classic-info"
     if "info-bar" not in ids and "outer-container" not in ids:
         return "legacy-bare"
