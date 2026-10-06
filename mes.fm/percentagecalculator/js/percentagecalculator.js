@@ -312,12 +312,12 @@ $(document).ready(function(){
 				var t = document.getElementById('pc-toast');
 				if (!t) {
 					t = document.createElement('div'); t.id = 'pc-toast'; t.setAttribute('role', 'status');
-					t.style.cssText = 'position:fixed;left:50%;bottom:1.5em;transform:translateX(-50%);background:#222;color:#fff;padding:0.55em 1em;border-radius:0.4em;z-index:99999;font-size:0.95em;opacity:0;transition:opacity .2s;pointer-events:none;';
+					t.style.cssText = 'position:fixed;left:50%;top:4.2em;transform:translateX(-50%);max-width:92vw;text-align:center;background:#222;color:#fff;border:2px solid #fff;box-shadow:0 0.3em 1em rgba(0,0,0,0.45);padding:0.7em 1.2em;border-radius:0.5em;z-index:99999;font-size:1.05em;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;';
 					document.body.appendChild(t);
 				}
 				t.textContent = msg; t.style.opacity = '1'; t.style.pointerEvents = undo ? 'auto' : 'none'; t.style.cursor = undo ? 'pointer' : '';
 				t.onclick = undo ? function () { undo(); t.style.opacity = '0'; t.style.pointerEvents = 'none'; } : null;
-				clearTimeout(CALCULATOR._tt); CALCULATOR._tt = setTimeout(function () { t.style.opacity = '0'; t.style.pointerEvents = 'none'; }, undo ? 6000 : 1600);
+				clearTimeout(CALCULATOR._tt); CALCULATOR._tt = setTimeout(function () { t.style.opacity = '0'; t.style.pointerEvents = 'none'; }, undo ? 6000 : 2600);
 			},
 			copyText: function (text, msg) {
 				function fb() { var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(ta); ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); CALCULATOR.toast(ok ? msg : 'Copy failed'); }
@@ -368,7 +368,7 @@ $(document).ready(function(){
 				});
 			},
 			saveCurrent: function () {
-				if (CALCULATOR.isEmpty(CALCULATOR.collect())) { CALCULATOR.toast('Fill in a calculation first'); return; }
+				if (CALCULATOR.isEmpty(CALCULATOR.collect())) { CALCULATOR.toast('Type some numbers into a calculation first, then press Save'); return; }
 				var raw = window.prompt('Name this saved calculation (up to 20 characters):', ''); if (raw == null) return;
 				var name = raw.trim().slice(0, 20); if (!name) return;
 				var all = CALCULATOR.readJ(CALCULATOR.SAVES, {});
