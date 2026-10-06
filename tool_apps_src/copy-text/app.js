@@ -181,6 +181,78 @@
 		}, function () { toast("Clipboard access was blocked: paste into the box instead"); $("cp-new-text").focus(); });
 	};
 
+	/* ---------- split one pasted text into several notes ---------- */
+	function hashWords(t) { var o = []; (t.match(/#[\p{L}\p{N}_]+/gu) || []).forEach(function (w) { if (o.indexOf(w) < 0) o.push(w); }); return o; }
+	function splitParts(raw) {
+		var t = raw.replace(/\r/g, "").trim(), parts = [];
+		if (!t) return parts;
+		var urls = [];
+		t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, function (m, l, u) { urls.push(u); return l; });
+		(t.match(/https?:\/\/[^\s<>"')\]]+/g) || []).forEach(function (u) { u = u.replace(/[.,;:!?]+$/, ""); if (urls.indexOf(u) < 0) urls.push(u); });
+		var lines = t.split("\n"), first = "";
+		for (var i = 0; i < lines.length; i++) if (lines[i].trim()) { first = lines[i].trim(); break; }
+		var title = first.replace(/https?:\/\/\S+/g, " ").replace(/\*\*|__/g, "").replace(/^#+\s+/, "").replace(/\s+/g, " ").replace(/[\s:–—|-]+$/, "").trim();
+		if (/^(#[\p{L}\p{N}_]+\s*)+$/u.test(title)) title = "";
+		var rest = t.slice(t.indexOf(first) + first.length);
+		var paras = rest.split(/\n\s*\n/).map(function (p) {
+			return p.split("\n").filter(function (l) { return !/^\s*https?:\/\/\S+\s*$/.test(l); }).join("\n").trim();
+		}).filter(function (p) { return p && !/^(#[\p{L}\p{N}_]+\s*)+$/u.test(p); }).map(function (p) { return p.replace(/(\s#[\p{L}\p{N}_]+)+\s*$/u, "").trim(); }).filter(Boolean);
+		var tags = hashWords(t);
+		parts.push({ title: "Full text", text: raw.replace(/\s+$/, ""), on: true });
+		if (title) parts.push({ title: "Title", text: title, on: true });
+		urls.forEach(function (u, i) { parts.push({ title: urls.length > 1 ? "Link " + (i + 1) : "Link", text: u, on: i === 0 || urls.length < 4 }); });
+		if (paras.length) parts.push({ title: "Description", text: paras.join("\n\n"), on: true });
+		if (tags.length) parts.push({ title: "Hashtags", text: tags.join(" "), on: true });
+		if (title && urls.length) parts.push({ title: "Title + link", text: title + " " + urls[0], on: false });
+		if (paras.length > 1) paras.forEach(function (p, i) { parts.push({ title: "Paragraph " + (i + 1), text: p, on: false }); });
+		if (tags.length > 1) parts.push({ title: "Hashtags (no #)", text: tags.map(function (w) { return w.slice(1); }).join(" "), on: false });
+		return parts;
+	}
+	var splitting = [];
+	function renderSplit() {
+		var box = $("cp-splitbox");
+		box.hidden = !splitting.length;
+		if (!splitting.length) { box.innerHTML = ""; return; }
+		box.innerHTML = '<div class="cp-split-h"><b>Split into ' + splitting.length + ' texts</b> <span class="tu-note" style="margin:0;">Tick the ones to save to “' + esc(cur().name) + '”. Edit the name or text if you like.</span></div>' +
+			splitting.map(function (p, i) {
+				return '<div class="cp-sp-row" data-i="' + i + '"><label class="cp-sp-on"><input type="checkbox" class="cp-sp-chk"' + (p.on ? " checked" : "") + ' aria-label="Save this text"></label>' +
+					'<div class="cp-sp-main"><input class="tu-input cp-sp-title" type="text" maxlength="80" value="' + esc(p.title) + '" aria-label="Name">' +
+					'<textarea class="tu-input cp-sp-text" rows="' + Math.min(6, Math.max(1, p.text.split("\n").length)) + '" aria-label="Text">' + esc(p.text) + "</textarea></div>" +
+					'<button type="button" class="tu-btn tu-btn--ghost cp-sp-copy" title="Copy this text" aria-label="Copy this text">Copy</button></div>';
+			}).join("") +
+			'<div class="cp-foot" style="margin-top:0.7em;"><button type="button" class="tu-btn tu-btn--primary" id="cp-sp-save">Save ticked</button><button type="button" class="tu-btn tu-btn--ghost" id="cp-sp-cancel">Cancel</button>' +
+			'<span class="cp-sp"></span><button type="button" class="tu-btn tu-btn--ghost" id="cp-sp-all">Tick all</button><button type="button" class="tu-btn tu-btn--ghost" id="cp-sp-none">Tick none</button></div>';
+	}
+	$("cp-split").onclick = function () {
+		var parts = splitParts($("cp-new-text").value);
+		if (!parts.length) { toast("Paste some text first"); $("cp-new-text").focus(); return; }
+		if (parts.length < 2) { toast("Nothing to split: it is just one text"); return; }
+		splitting = parts; renderSplit(); $("cp-splitbox").scrollIntoView({ block: "nearest", behavior: "smooth" });
+	};
+	$("cp-splitbox").addEventListener("input", function (e) {
+		var row = e.target.closest(".cp-sp-row"); if (!row) return;
+		var p = splitting[+row.dataset.i];
+		if (e.target.classList.contains("cp-sp-chk")) p.on = e.target.checked;
+		else if (e.target.classList.contains("cp-sp-title")) p.title = e.target.value;
+		else if (e.target.classList.contains("cp-sp-text")) p.text = e.target.value;
+	});
+	$("cp-splitbox").addEventListener("click", function (e) {
+		var btn = e.target.closest("button"); if (!btn) return;
+		if (btn.classList.contains("cp-sp-copy")) {
+			var p = splitting[+btn.closest(".cp-sp-row").dataset.i];
+			copy(p.text).then(function (ok) { toast(ok ? "Copied “" + p.title + "”" : "Copy failed: select the text instead"); });
+		} else if (btn.id === "cp-sp-cancel") { splitting = []; renderSplit(); }
+		else if (btn.id === "cp-sp-all" || btn.id === "cp-sp-none") { splitting.forEach(function (p) { p.on = btn.id === "cp-sp-all"; }); renderSplit(); }
+		else if (btn.id === "cp-sp-save") {
+			var pick = splitting.filter(function (p) { return p.on && p.text.trim(); });
+			if (!pick.length) { toast("Tick at least one text"); return; }
+			query = ""; $("cp-search").value = "";
+			for (var i = pick.length - 1; i >= 0; i--) addNote(pick[i].text.replace(/\s+$/, ""), pick[i].title, true);  // keeps the list's order at the top
+			$("cp-new-text").value = ""; $("cp-new-title").value = ""; draft();
+			splitting = []; renderSplit(); render(); toast("Saved " + pick.length + (pick.length === 1 ? " text" : " texts") + " to “" + cur().name + "”");
+		}
+	});
+
 	/* ---------- boards ---------- */
 	$("cp-boards").addEventListener("click", function (e) {
 		var add = e.target.closest("#cp-addboard");

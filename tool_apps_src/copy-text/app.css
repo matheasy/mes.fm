@@ -90,3 +90,14 @@
 		.tu .cp-grip {display:none;}
 	}
 	.tu #cp-file {display:none !important;}
+	.tu .cp-splitbox {margin-top:0.8em;border-left:5px solid var(--accent);}
+	.tu .cp-splitbox[hidden] {display:none;}
+	.tu .cp-split-h {margin-bottom:0.6em;display:flex;flex-wrap:wrap;gap:0.3em 0.8em;align-items:baseline;}
+	.tu .cp-sp-row {display:flex;gap:0.6em;align-items:flex-start;padding:0.5em 0;border-top:1px solid #e3e7ec;}
+	.tu .cp-sp-on {padding-top:0.55em;}
+	.tu .cp-sp-on input {width:1.15em;height:1.15em;cursor:pointer;}
+	.tu .cp-sp-main {flex:1;min-width:0;display:flex;flex-direction:column;gap:0.3em;}
+	.tu .cp-sp-title {font-weight:700;}
+	.tu .cp-sp-text {font:0.88em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical;}
+	.tu .cp-sp-copy {padding:0.35em 0.7em;font-size:0.85em;margin-top:0.2em;}
+	body.dark-mode #cp .cp-sp-row {border-top-color:#3a3a3a;}

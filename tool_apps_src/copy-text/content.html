@@ -8,12 +8,15 @@
 				<div class="tu-field" style="flex:1 1 14em;"><input id="cp-new-title" class="tu-input" type="text" maxlength="80" placeholder="Title (optional)" aria-label="Title (optional)" autocomplete="off"></div>
 				<div class="cp-add-btns">
 					<button type="button" class="tu-btn tu-btn--primary" id="cp-save">Save to this board</button>
+					<button type="button" class="tu-btn" id="cp-split" title="Split the text into separate texts: the whole thing, title, link, description, hashtags...">✂ Split into texts</button>
 					<button type="button" class="tu-btn" id="cp-paste" title="Read your clipboard and save it as a new text">📋 Paste &amp; save</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="cp-new-clear">Clear</button>
 				</div>
 			</div>
 			<p class="tu-note" style="margin-bottom:0;">Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to save. Everything stays in this browser: nothing is uploaded.</p>
 		</div>
+
+		<div class="tu-card cp-splitbox" id="cp-splitbox" hidden></div>
 
 		<div class="cp-boards" id="cp-boards" role="tablist" aria-label="Boards"></div>
 
@@ -44,6 +47,7 @@
 			<h3>How to use it</h3>
 			<ul>
 				<li><strong>Save:</strong> paste or type into the box at the top and press <em>Save</em> (or <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd>). <em>Paste &amp; save</em> grabs whatever is on your clipboard in one click.</li>
+				<li><strong>Split:</strong> paste a post and press <em>✂ Split into texts</em> to save it as several notes at once: the full text, the title, the link, the description and the hashtags. Tick the ones you want and edit them before saving.</li>
 				<li><strong>Copy:</strong> click a note, or its <em>Copy</em> button. Then paste it where you need it.</li>
 				<li><strong>Boards:</strong> keep different sets apart (Work, Home, Social, Code…). <em>+ Board</em> makes a new one. Search looks across every board.</li>
 				<li><strong>Pin, colour, reorder:</strong> pin your favourites to the top, colour-code notes, and drag the ⠿ handle to put them in your order.</li>

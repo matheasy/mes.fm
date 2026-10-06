@@ -568,6 +568,18 @@
 	renderSnips();
 	if (snips.length) $("sl-snips").open = true;
 
+	/* ---------- a Copy button on every parsed field ---------- */
+	F.forEach(function (k) {
+		var inp = $("sl-" + k), box = inp.closest(".tu-field"); if (!box) return;
+		var b = document.createElement("button");
+		b.type = "button"; b.className = "sl-fcopy"; b.textContent = "Copy"; b.title = "Copy this field"; b.setAttribute("aria-label", "Copy " + k);
+		b.onclick = function () {
+			var t = inp.value.trim(); if (!t) { toast("Nothing to copy yet"); return; }
+			copy(t).then(function (ok) { toast(ok ? "Copied " + k : "Copy failed: select the text instead"); });
+		};
+		box.classList.add("sl-fwrap"); box.appendChild(b);
+	});
+
 	var saved = store.get("post", null);
 	if (saved) { $("sl-blob").value = saved.blob || ""; fill(saved); }
 	$("sl-label").value = store.get("label", "🔗 Full post:");
