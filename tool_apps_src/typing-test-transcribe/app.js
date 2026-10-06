@@ -118,7 +118,7 @@
 	}
 	function stopAll() { T.gen++; clearTimers(); try { speechSynthesis.cancel(); } catch (e) {} SP.keep = []; }
 	function reset(newText) {
-		stopAll(); closeModal();
+		stopAll(); closeModal(); window.MESAdQuiet && MESAdQuiet.release(3000);
 		T.state = "idle"; T.idx = -1; T.spokenIdx = -1; T.replays = 0; T.R = null; T.tok = "";
 		if (newText || !T.seed) T.seed = TC.newSeed();
 		el.in.value = ""; el.in.disabled = false; el.result.hidden = true; el.caption.hidden = true; el.caption.textContent = "";
@@ -190,7 +190,7 @@
 		if (S.src === "custom" && !String(el.customtext.value).trim()) { toast("Paste some text first."); return; }
 		T.text = textFor(); T.cfg = { src: S.src, len: S.len[S.src], diff: S.diff, pace: S.pace, chunk: S.chunk, wait: S.wait, caps: S.caps, strict: S.strict };
 		T.chunks = TC.chunkify(T.text, S.chunk); if (!T.chunks.length) { toast("There is nothing to read."); return; }
-		T.state = "playing"; T.t0 = 0; T.replays = 0; T.gen++; T.tok = "";
+		window.MESAdQuiet && MESAdQuiet.hold(); T.state = "playing"; T.t0 = 0; T.replays = 0; T.gen++; T.tok = "";
 		if (ranked(T.cfg)) lbApi({ a: "start" }).then(function (r) { if (r && r.t) T.tok = r.t; }, function () {});
 		el.start.disabled = true; el.start.textContent = "Listening…"; el.done.disabled = false; el.replay.disabled = true; drawControls(); resolveVoice();
 		setStatus("Get ready…", true); el.in.focus();
@@ -230,7 +230,7 @@
 	/* ---------- finishing and results ---------- */
 	function finish() {
 		if (T.state !== "playing" && T.state !== "audioDone") return;
-		var now = performance.now(), started = T.t0 || now; stopAll(); clearTimeout(idleT);
+		var now = performance.now(), started = T.t0 || now; stopAll(); clearTimeout(idleT); window.MESAdQuiet && MESAdQuiet.release(7000);
 		T.state = "done"; el.start.disabled = false; el.start.textContent = "▶ Start again"; el.replay.disabled = true; el.done.disabled = true; el.in.disabled = true; el.caption.hidden = true;
 		var typed = el.in.value, minutes = Math.max(0.05, (now - started) / 60000), c = T.cfg;
 		if (!typed.trim()) { reset(false); toast("Nothing typed, so no score."); return; }
@@ -314,7 +314,7 @@
 		} catch (e) { return "k"; }
 	}
 	var DEVS = { "": "All devices", k: "⌨ Keyboard", p: "📱 Phone", t: '<span class="tt-tabicon"></span> Tablet' };
-	function devIcon(d) { return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone (touch)" aria-label="phone">📱</span>' : d === "t" ? ' <span class="tt-dev" title="Typed on a tablet (touch)" aria-label="tablet"><span class="tt-tabicon"></span></span>' : ""; }
+	function devIcon(d) { d = d || "k"; /* scores posted before the label existed were typed on a keyboard */ return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone (touch)" aria-label="phone">📱</span>' : d === "t" ? ' <span class="tt-dev" title="Typed on a tablet (touch)" aria-label="tablet"><span class="tt-tabicon"></span></span>' : ""; }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return "tr-" + c.pace + "-" + c.len; }
 	function boardName(b) { if (b === "tr-all") return "All paces combined"; var p = b.split("-"); return p[1] + " WPM · " + p[2].charAt(0).toUpperCase() + p[2].slice(1) + " passage"; }
@@ -343,7 +343,7 @@
 		var combined = LB.board === "tr-all", mine = !!j.mine, words = el.lbfilter.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
 		var cols = mine ? ["d"].concat(combined ? ["b"] : [], ["w", "a"]) : ["r", "n"].concat(combined ? ["b"] : [], ["w", "a"]);
 		if (cols.indexOf(LB.sort.k) < 0) LB.sort = mine ? { k: "d", d: -1 } : { k: "r", d: 1 };
-		var rows = j.rows.filter(function (x) { if (mine && LB.dev && x.d !== LB.dev) return false; var hay = ((mine ? "" : x.n) + " " + (combined ? boardName(x.b) : "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
+		var rows = j.rows.filter(function (x) { if (mine && LB.dev && (x.d || "k") !== LB.dev) return false; var hay = ((mine ? "" : x.n) + " " + (combined ? boardName(x.b) : "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
 		var k = LB.sort.k, d = LB.sort.d;
 		rows = rows.slice().sort(function (x, y) { var a = k === "b" ? boardName(x.b) : x[k], b = k === "b" ? boardName(y.b) : y[k], c = typeof a === "string" ? a.localeCompare(b) : a - b; return (c * d) || (mine ? y.t - x.t : x.r - y.r); });
 		function num(v) { return fmt(v, 1).replace(/\.0$/, ""); }

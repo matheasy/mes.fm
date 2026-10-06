@@ -4,7 +4,7 @@
 // board + period, member = the player's random id, score = wpm*10 * 1000 + accuracy*10 (so ties on speed are
 // broken by accuracy and one number decodes to both). Names live in a hash, id -> name.
 //
-//   Device: a submit may carry d = "k" (keyboard), "p" (phone) or "t" (tablet). Rows return d ("" for scores posted before this existed); GET ?dev=k|p|t keeps one kind (ranks renumbered).
+//   Device: a submit may carry d = "k" (keyboard), "p" (phone) or "t" (tablet). Rows return d ("" for scores posted before this existed; the board and ?dev=k treat those as keyboard); GET ?dev=k|p|t keeps one kind (ranks renumbered).
 //   GET  ?summary=1&period=day|week|all                        -> { counts:{ board: players } } (only boards that have scores)
 //   GET  ?mine=<id>&board=all|<board>&period=day|week|all     -> { rows:[{t,b,w,a,pb?}] } the player's own posted results, newest first (pb = best on that test)
 //   GET  ?board=time-30-medium|all&period=day|week|all[&me=<id>] -> { rows:[{r,n,w,a,b,me?}], total, you:{r,w,a}|null, resets }   (board=all merges every board)
@@ -87,7 +87,7 @@ function resetsAt(period, now) {
 const encode = (wpm, acc, dev) => { const a = Math.round(acc * 10); return Math.round(wpm * 10) * 1000 + Math.min(999, a) + (a >= 1000 ? 0.5 : 0) + (dev === 't' ? 0.375 : dev === 'p' ? 0.25 : dev === 'k' ? 0.125 : 0); };
 const decode = (s) => {
   const base = Math.floor(s / 1000) * 1000, rem = s - base, whole = Math.floor(rem), f = rem - whole, half = f >= 0.5, g = f - (half ? 0.5 : 0);
-  return { w: base / 10000, a: whole === 999 && half ? 100 : whole / 10, d: g >= 0.375 ? 't' : g >= 0.25 ? 'p' : g >= 0.125 ? 'k' : '' };
+  return { w: base / 10000, a: whole === 999 && half ? 100 : whole / 10, d: g >= 0.375 ? 't' : g >= 0.25 ? 'p' : 'k' }; // no device bits = posted before the device was recorded: those were all keyboards
 };
 const isTr = (b) => String(b).startsWith('tr-');
 const allBoards = (tr) => {
@@ -118,7 +118,7 @@ async function readBoard(board, period, me, now, dev) {
   const flat = (r[0] && r[0].result) || [];
   const ids = [], scores = [];
   for (let i = 0; i < flat.length; i += 2) { ids.push(flat[i]); scores.push(Number(flat[i + 1])); }
-  const keep = ids.map((id, i) => i).filter((i) => !dev || decode(scores[i]).d === dev).slice(0, TOP);
+  const keep = ids.map((id, i) => i).filter((i) => !dev || (decode(scores[i]).d || 'k') === dev).slice(0, TOP);
   const nm = await names(keep.map((i) => ids[i]));
   const rows = keep.map((i, k) => ({ r: k + 1, n: nm[k] || 'Anonymous', ...decode(scores[i]), b: board, me: me && ids[i] === me ? 1 : undefined }));
   let you = null;
@@ -141,7 +141,7 @@ async function readAll(period, me, now, tr, dev) {
     total += Number((r[i * 2 + 1] && r[i * 2 + 1].result) || 0);
   });
   all.sort((x, y) => y.s - x.s);
-  const top = (dev ? all.filter((x) => decode(x.s).d === dev) : all).slice(0, TOP);
+  const top = (dev ? all.filter((x) => (decode(x.s).d || 'k') === dev) : all).slice(0, TOP);
   const nm = await names([...new Set(top.map((x) => x.id))]);
   const byId = {}; [...new Set(top.map((x) => x.id))].forEach((id, i) => { byId[id] = nm[i]; });
   const rows = top.map((x, i) => ({ r: i + 1, n: byId[x.id] || 'Anonymous', ...decode(x.s), b: x.b, me: me && x.id === me ? 1 : undefined }));

@@ -79,7 +79,7 @@
 
 	/* ---------- building a test ---------- */
 	function build(fresh) {
-		clearInterval(T.timer); T.running = false; T.lastResult = null;
+		clearInterval(T.timer); T.running = false; window.MESAdQuiet && MESAdQuiet.release(3000); T.lastResult = null;
 		if (fresh) T.replay = false;
 		if (fresh || !T.seed) {
 			T.seed = (challenge && challenge.seed && !T.usedChallenge) ? challenge.seed : TT.newSeed();
@@ -214,7 +214,7 @@
 	/* ---------- running ---------- */
 	function startRun() {
 		T.tok = ""; if (rankable(cfg())) lbApi({ a: "start" }).then(function (r) { if (r && r.t) T.tok = r.t; }, function () {});
-		T.running = true; T.t0 = performance.now(); el.live.classList.toggle("is-hidden", !S.live);
+		window.MESAdQuiet && MESAdQuiet.hold(); T.running = true; T.t0 = performance.now(); el.live.classList.toggle("is-hidden", !S.live);
 		clearInterval(T.timer);
 		T.timer = setInterval(tick, 120);
 	}
@@ -238,7 +238,7 @@
 	/* ---------- results ---------- */
 	function fmt(n, d) { return (Math.round(n * Math.pow(10, d || 0)) / Math.pow(10, d || 0)).toFixed(d || 0); }
 	function finish() {
-		clearInterval(T.timer); T.running = false;
+		clearInterval(T.timer); T.running = false; window.MESAdQuiet && MESAdQuiet.release(7000);
 		var s = T.sess, dur = S.mode === "time" ? T.limit : Math.max(1, s.end - s.start);
 		if (s.keys.length < 3 || dur < 800) { build(false); return; }
 		var r = TT.result(s, dur), c = cfg(), key = cfgKey(c);
@@ -358,7 +358,7 @@
 		} catch (e) { return "k"; }
 	}
 	var DEVS = { "": "All devices", k: "⌨ Keyboard", p: "📱 Phone", t: '<span class="tt-tabicon"></span> Tablet' };
-	function devIcon(d) { return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone (touch)" aria-label="phone">📱</span>' : d === "t" ? ' <span class="tt-dev" title="Typed on a tablet (touch)" aria-label="tablet"><span class="tt-tabicon"></span></span>' : ""; }
+	function devIcon(d) { d = d || "k"; /* scores posted before the label existed were typed on a keyboard */ return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone (touch)" aria-label="phone">📱</span>' : d === "t" ? ' <span class="tt-dev" title="Typed on a tablet (touch)" aria-label="tablet"><span class="tt-tabicon"></span></span>' : ""; }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return c.mode === "passage" ? "passage-" + c.len : c.mode + "-" + c.len + "-" + c.diff; }
 	function boardName(b) { if (b === "all") return "All tests combined"; var p = b.split("-"); if (p[0] === "passage") return "Passage: " + p[1]; var d = TT.DIFFS[p[2]].name; return (p[0] === "time" ? p[1] + " seconds" : p[1] + " words") + " · " + d; }
@@ -401,7 +401,7 @@
 		var mine = !!j.mine;
 		var cols = mine ? ["d"].concat(combined ? ["b"] : [], ["w", "a"]) : ["r", "n"].concat(combined ? ["b"] : [], ["w", "a"]);
 		if (cols.indexOf(LB.sort.k) < 0) LB.sort = mine ? { k: "d", d: -1 } : { k: "r", d: 1 };
-		var rows = j.rows.filter(function (x) { if (mine && LB.dev && x.d !== LB.dev) return false; var hay = ((mine ? "" : x.n) + " " + (combined ? boardName(x.b) : "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
+		var rows = j.rows.filter(function (x) { if (mine && LB.dev && (x.d || "k") !== LB.dev) return false; var hay = ((mine ? "" : x.n) + " " + (combined ? boardName(x.b) : "")).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
 		var k = LB.sort.k, d = LB.sort.d;
 		rows = rows.slice().sort(function (x, y) {
 			var a = k === "b" ? boardName(x.b) : x[k], b = k === "b" ? boardName(y.b) : y[k], c = typeof a === "string" ? a.localeCompare(b) : a - b;

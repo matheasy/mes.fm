@@ -41,10 +41,10 @@ function call(method, q, body, ip) {
   assert.deepStrictEqual(T.parseBoard('tr-120-long'), { mode: 'tr', len: 'long', diff: null, pace: 120 }); assert.strictEqual(T.parseBoard('tr-121-long'), null); assert.strictEqual(T.parseBoard('tr-120-huge'), null);
   assert.strictEqual(T.parseBoard('time-31-medium'), null); assert.strictEqual(T.parseBoard('passage-long').len, 'long'); assert.strictEqual(T.parseBoard('x'), null);
   assert.strictEqual(T.weekLabel(new Date('2026-10-05T12:00:00Z')), '2026-W41'); assert.strictEqual(T.weekLabel(new Date('2026-01-01T00:00:00Z')), '2026-W01'); assert.strictEqual(T.weekLabel(new Date('2024-12-30T00:00:00Z')), '2025-W01');
-  assert.deepStrictEqual(T.decode(T.encode(87.4, 96.3)), { w: 87.4, a: 96.3, d: '' });
-  assert.deepStrictEqual(T.decode(T.encode(122, 100)), { w: 122, a: 100, d: '' }); assert.deepStrictEqual(T.decode(T.encode(122, 99.9)), { w: 122, a: 99.9, d: '' }); assert(T.encode(122, 100) > T.encode(122, 99.9) && T.encode(122, 100) < T.encode(122.1, 90));
+  assert.deepStrictEqual(T.decode(T.encode(87.4, 96.3)), { w: 87.4, a: 96.3, d: 'k' });
+  assert.deepStrictEqual(T.decode(T.encode(122, 100)), { w: 122, a: 100, d: 'k' }); assert.deepStrictEqual(T.decode(T.encode(122, 99.9)), { w: 122, a: 99.9, d: 'k' }); assert(T.encode(122, 100) > T.encode(122, 99.9) && T.encode(122, 100) < T.encode(122.1, 90));
   assert.deepStrictEqual(T.decode(T.encode(122, 100, 'p')), { w: 122, a: 100, d: 'p' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 97.3, 'k')), { w: 80.4, a: 97.3, d: 'k' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 99.9, 'p')), { w: 80.4, a: 99.9, d: 'p' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 100, 't')), { w: 80.4, a: 100, d: 't' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 96.2, 't')), { w: 80.4, a: 96.2, d: 't' });
-  assert.strictEqual(T.decode(T.encode(80, 97)).d, ''); assert(T.encode(80, 100, 'k') > T.encode(80, 99.9, 'p'));
+  assert.strictEqual(T.decode(T.encode(80, 97)).d, 'k'); assert(T.encode(80, 100, 'k') > T.encode(80, 99.9, 'p'));
   assert(T.encode(80, 99) > T.encode(80, 95) && T.encode(81, 90) > T.encode(80, 100));
   const realNow = Date.now; let fake = Math.floor(realNow() / 3600000) * 3600000 + 1000; // start of an hour: the rate-limit bucket must not roll over mid-test
   Date.now = () => fake;
