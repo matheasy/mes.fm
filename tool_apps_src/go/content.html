@@ -1,0 +1,39 @@
+	<div class="tu" id="go">
+		<div id="go-note" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
+
+		<div class="tu-stats" id="go-stats" aria-live="polite"></div>
+
+		<div class="tu-card" id="go-filters">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:3 1 16em;"><label for="go-q">Search short links</label><input id="go-q" class="tu-input tu-input--big" type="search" autocomplete="off" placeholder="Type a short name, a page, a playlist, a topic…" spellcheck="false"></div>
+				<div class="tu-field" style="flex:1 1 10em;"><label for="go-t">Topic</label><select id="go-t" class="tu-select"><option value="">All topics</option></select></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="go-sort">Sort</label><select id="go-sort" class="tu-select"><option value="az">A to Z</option><option value="cat">By category</option><option value="new">Newest first</option><option value="old">Oldest first</option></select></div>
+			</div>
+			<div class="tu-chips" id="go-cats" role="group" aria-label="Categories" style="margin-top:0.7em;"></div>
+			<div class="go-kinds" id="go-kinds" role="group" aria-label="Where it goes"></div>
+		</div>
+
+		<div class="go-count" id="go-count" aria-live="polite"></div>
+		<div class="tu-card go-list-card"><div id="go-list"></div></div>
+		<div class="go-btns"><button type="button" class="tu-btn tu-btn--ghost" id="go-export-md">Copy this list (Markdown)</button><button type="button" class="tu-btn tu-btn--ghost" id="go-export-csv">Copy as a spreadsheet table</button></div>
+
+		<h2 id="go-add-h">Add a short link</h2>
+		<div class="tu-card" id="go-add">
+			<p class="tu-note" style="margin-top:0;">Short links are redirects in <code>mes.fm/vercel.json</code>. Fill this in to get the exact line to paste into the <code>"redirects"</code> list, and a check for a name that is already taken.</p>
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:1 1 12em;"><label for="go-src">Short name</label><div class="tu-suffix go-pre"><span>mes.fm/</span><input id="go-src" class="tu-input" type="text" autocomplete="off" placeholder="newname" spellcheck="false"></div></div>
+				<div class="tu-field" style="flex:2 1 18em;"><label for="go-dst">Goes to</label><input id="go-dst" class="tu-input" type="text" autocomplete="off" placeholder="https://youtube.com/…   or   /a-page-on-mes-fm" spellcheck="false"></div>
+				<div class="tu-field" style="flex:0 1 11em;"><label for="go-perm">Type</label><select id="go-perm" class="tu-select"><option value="1">Permanent (308)</option><option value="0">Temporary (307)</option></select></div>
+			</div>
+			<div id="go-add-msg" class="go-msg" aria-live="polite"></div>
+			<pre class="go-snip" id="go-snip" hidden></pre>
+			<div class="go-btns"><button type="button" class="tu-btn tu-btn--primary" id="go-snip-copy" disabled>Copy the line</button><button type="button" class="tu-btn tu-btn--ghost" id="go-try" disabled>Open the destination</button></div>
+			<p class="tu-note" style="margin-bottom:0;">After you save <code>vercel.json</code>: run <code>python3 build_redirects_index.py --apply</code> so this page lists it, then commit and push. Add a note or a category for a link in <code>mes.fm/go/notes.json</code>.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What are MES short links?</h2>
+			<p>Short links are easy-to-remember addresses that send you straight to a page, a video playlist, a download or an app. <code>mes.fm/pomodoro</code> opens the Pomodoro timer, <code>mes.fm/physics-playlist</code> opens the MES physics playlist on YouTube. This page lists every one of them so you can search, copy and share them.</p>
+			<p>Looking for a page on the site rather than a short link? Try <a href="/search">Site Search</a>, or browse <a href="/tools">tools</a> and <a href="/calculators">calculators</a>. Private areas are not listed here.</p>
+		</div>
+	</div>

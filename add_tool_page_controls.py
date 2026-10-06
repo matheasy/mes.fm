@@ -60,7 +60,8 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("search", "Site Search"),     # also built by build_tool_apps.py
     ("calendar", "Calendar"),      # also built by build_tool_apps.py
     ("search-engines", "Search Engines"),   # also built by build_tool_apps.py (wide page)
-    ("site-index", "Site Index"),   # also built by build_tool_apps.py (wide page, ad-free)
+    ("site-index", "Site Index"),
+    ("go", "Short Links"),   # also built by build_tool_apps.py (wide, ad-free)   # also built by build_tool_apps.py (wide page, ad-free)
     ("typing-test", "Typing Test"),   # also built by build_tool_apps.py
     ("typing-test-transcribe", "Typing Test", "/typing-test"),   # transcription test: a sub-page of the Typing Test brand (brand option in build_tool_apps.py)
     ("copy-text", "Copy Text"),    # also built by build_tool_apps.py
