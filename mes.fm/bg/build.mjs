@@ -28,7 +28,7 @@ const META_CACHE_PATH = join(__dirname, "link-meta.json");
 // Output layout: mes.fm/911 is a tile hub (one icon tile per section, each linking to its own page); each
 // section then lives at mes.fm/<slug> with the Grid View / List View toggle. `sectionId` matches an `id` in
 // sections.mjs; `title` is the page's <h1>/<title> and `tileLabel` the (shorter) text overlaid on the hub tile.
-const HUB_TITLE = "Bob Greenyer (BG)";
+const HUB_TITLE = "🗣 Bob Greenyer says the darnedest things 😹";
 const HUB_DESCRIPTION =
   "Bob Greenyer (BG): MES videos, posts and links checking Bob Greenyer's claims about 9/11, Dr. Judy Wood, atomic clocks, the MH370 teleportation cartoons and more.";
 
@@ -38,7 +38,7 @@ const PAGES = [
     sectionId: "bg-videos",
     tileLabel: "Videos",
     iconVersion: 1, // icon = crop of the newest video's thumbnail (img/bg-videos-icon.jpg); bump when refreshed
-    title: "Bob Greenyer Videos",
+    title: "🗣 Bob Greenyer says the darnedest things 😹: Videos",
     description:
       "MES videos on Bob Greenyer: analyzing the MH370 cartoons, the steel firetruck, Dr. Judy Wood's book cover and dust baggie, atomic clocks and the Global Consciousness Project on 9/11, and more.",
   },
@@ -47,7 +47,7 @@ const PAGES = [
     sectionId: "bg-posts",
     tileLabel: "Posts",
     iconVersion: 1, // icon = the newest post's screenshot on a matching dark tile (img/bg-posts-icon.jpg); bump when refreshed
-    title: "Bob Greenyer Posts",
+    title: "🗣 Bob Greenyer says the darnedest things 😹: Posts",
     description:
       "MES posts on Bob Greenyer: a subscriber calls him a rich fake con man, plus the 9/11 revisionist spammer and the dust baggie nonsense.",
   },
@@ -1577,7 +1577,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <body>
 <div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/bg" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/bg-logo.jpg"></a>
-  <a class="compact-nav-title" href="/bg" tabindex="-1">Bob Greenyer (BG)</a>
+  <a class="compact-nav-title" href="/bg" tabindex="-1">🗣 Bob Greenyer says the darnedest things 😹</a>
   <ul class="compact-nav-links">
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
     <li><a href="/tools" tabindex="-1">Tools</a></li>
@@ -1595,12 +1595,12 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/bg'><img width="88" height="88" id="logo" class="logo lazyload" alt="Bob Greenyer logo" data-src="https://mes.fm/img/bg-logo.jpg"></a>
+      <a class="logo-image-container" href='/bg'><img width="88" height="88" id="logo" class="logo lazyload" alt="Bob Greenyer says the darnedest things logo" data-src="https://mes.fm/img/bg-logo.jpg"></a>
       <div class="logo-text-container">
         <a class="calculator-title-link" href='/bg'>
-          <p class="calculator-title">Bob Greenyer (BG)</p>
+          <p class="calculator-title">🗣 Bob Greenyer says the darnedest things 😹</p>
         </a>
-        <p class="tag-line">Videos, posts and links on Bob Greenyer's claims.</p>
+        <p class="tag-line">Videos, posts and links on Bob Greenyer's word salads.</p>
       </div>
 
       <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
@@ -1668,7 +1668,7 @@ ${sectionsHtml}
             <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
           </ul></div></li>
           <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
-          <li class="navbar__item"><a target="_self" class="navbar__link" href="/bg">Bob Greenyer (BG)</a></li><li class="navbar__item"><a class="navbar__link" href="/bg-videos">Videos</a></li><li class="navbar__item"><a class="navbar__link" href="/bg-posts">Posts</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/bg">🗣 Bob Greenyer says the darnedest things 😹</a></li><li class="navbar__item"><a class="navbar__link" href="/bg-videos">Videos</a></li><li class="navbar__item"><a class="navbar__link" href="/bg-posts">Posts</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="/conspiracy">Conspiracy</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
