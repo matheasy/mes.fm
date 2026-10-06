@@ -455,6 +455,7 @@ $(document).ready(function(){
 		$(".no-button").removeClass("active-button");
 		$(".yes-button").addClass("active-button");
 		$("#right-side-container").css("display","none");
+		$("#right-hint").show();
 		$("#fec-box-ad").css("position","absolute");
 		$("#fec-box-ad").css("padding-left","0.5em");
 
@@ -462,16 +463,25 @@ $(document).ready(function(){
 		CALCULATOR.calcAnswerWithoutAssignments();
 	});
 
-	$(".no-button").click(function() { //no button pressed
+	$(".no-button").click(function(e) { //no button pressed
 		$(".yes-button").removeClass("active-button");
 		$(".no-button").addClass("active-button");
 		$("#right-side-container").css("display","table-cell");
+		$("#right-hint").hide();
+		// make it obvious the assignments table just appeared: on phones it is stacked below the result, so scroll to it
+		var rsc = document.getElementById("right-side-container");
+		rsc.classList.remove("flash"); void rsc.offsetWidth; rsc.classList.add("flash");
+		if (e && e.originalEvent && window.matchMedia("(max-width: 600px)").matches && rsc.scrollIntoView) {
+			try { rsc.scrollIntoView({behavior: "smooth", block: "start"}); } catch (e) { rsc.scrollIntoView(); }
+		}
 		$("#fec-box-ad").css("position","static");
 		$("#fec-box-ad").css("padding-left","0");
 
 		CALCULATOR.userKnowsCurrentGrade = false;
 		CALCULATOR.calcAnswerWithAssignments();
 	});
+
+	$("#hint-no").on("click keydown", function(e) { if (e.type === "click" || e.key === "Enter" || e.key === " ") { e.preventDefault(); $(".no-button").click(); } });
 
 	$("#current-grade-input").click(function() {
     	if(!CALCULATOR.userKnowsCurrentGrade) {

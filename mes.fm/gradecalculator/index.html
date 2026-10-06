@@ -261,6 +261,20 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	#graph-table {display: none;}
 	#graph-table th {width:50%;}
 	.add-ass-button {cursor: pointer;}
+	/* dark mode: the result box keeps its dark text on the derived dark background, so make it a readable light-on-dark field */
+	body.dark-mode #result-input-container input {background-color:#2b2b2b;color:#f2f2f2;border-color:#6b6b6b;font-weight:700;}
+	/* empty space beside the inputs while "yes" is picked: a hint instead of a blank column */
+	#right-hint {display:none;}
+	@media (min-width: 601px) {
+		#right-hint {display:table-cell;vertical-align:top;padding-left:1.2em;}
+		#right-hint .hint-box {border:0.125em dashed #8d93d6;border-radius:0.5em;padding:1em;max-width:19em;line-height:1.4;}
+		#right-hint .hint-box b {display:block;margin-bottom:0.4em;}
+		#right-hint .hint-btn {display:inline-block;margin-top:0.7em;padding:0.4em 0.9em;border:0.0625em solid #575fab;border-radius:0.3em;color:#575fab;cursor:pointer;}
+		#right-hint .hint-btn:hover {background:#575fab;color:#fff;}
+	}
+	#right-side-container {scroll-margin-top:4.5em;}
+	@keyframes ass-flash {0% {box-shadow:0 0 0 0.25em rgba(87,95,171,0.55);} 100% {box-shadow:0 0 0 0.25em rgba(87,95,171,0);}}
+	#right-side-container.flash {animation:ass-flash 1.6s ease-out;border-radius:0.4em;}
 	
 	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
 	@media (max-width: 600px) {
@@ -562,6 +576,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 			</div>		
 		</div>
 
+		<div id="right-hint"><div class="hint-box"><b>Don't know your current grade?</b>Press <em>no</em> and enter your assignment, test and lab scores here. We'll work out your current grade for you.<br><span class="hint-btn" id="hint-no" role="button" tabindex="0">Enter my assignments</span></div></div>
 		<div id="right-side-container">
 			<p class="thin-font">Enter your assignment scores here to automatically calculate your current grade! (eg midterms, tests, homework, labs, etc.)</p>
 			<div class="add-ass-button button hover">add another assignment</div>
@@ -707,7 +722,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script>$.getScript("/gradecalculator/js/calculatorffaf.js?v=1.4");</script>
+	<script>$.getScript("/gradecalculator/js/calculatorffaf.js?v=1.5");</script>
 	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 	<script type="text/javascript">
 	google.load("visualization", "1", {packages:["corechart"]});

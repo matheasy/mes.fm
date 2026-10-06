@@ -412,6 +412,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode #tc kbd {background:#2a2f36;border-color:#4a515b;color:#e6e9ee;}
 	html body .outer-container {max-width:min(96vw,64em) !important;}
 
+	.tu .tt-lbtable .tt-sub {display:none;}
+	@media (max-width:640px) {
+		.tu .tt-lbtable .tt-c-b {display:none;}
+		.tu .tt-lbtable .tt-sub {display:block;font-size:0.78em;font-weight:400;color:#6a7280;line-height:1.25;margin-top:0.1em;}
+		.tu .tt-lbtable td, .tu .tt-lbtable th {padding-left:0.4em;padding-right:0.4em;}
+	}
+	body.dark-mode #tt .tt-lbtable .tt-sub {color:#a0a8b3;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -519,6 +527,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tt-mscore span{color:#999da3}
 	body.dark-mode .tu .tt-mmsg{color:#e87973}
 	body.dark-mode .tu .tt-mlink{color:#9a9da3}
+	body.dark-mode .tu .tt-lbtable .tt-sub{color:#9a9da3}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)

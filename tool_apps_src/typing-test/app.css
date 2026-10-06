@@ -154,3 +154,11 @@
 	body.dark-mode #tt .tt-tabs button {background:#2a2f36;border-color:#4a515b;color:#d6dbe2;}
 	body.dark-mode #tt .tt-tabs button[aria-pressed="true"] {background:var(--accent);color:#111;border-color:var(--accent);}
 	html body .outer-container {max-width:min(96vw,64em) !important;}
+
+	.tu .tt-lbtable .tt-sub {display:none;}
+	@media (max-width:640px) {
+		.tu .tt-lbtable .tt-c-b {display:none;}
+		.tu .tt-lbtable .tt-sub {display:block;font-size:0.78em;font-weight:400;color:#6a7280;line-height:1.25;margin-top:0.1em;}
+		.tu .tt-lbtable td, .tu .tt-lbtable th {padding-left:0.4em;padding-right:0.4em;}
+	}
+	body.dark-mode #tt .tt-lbtable .tt-sub {color:#a0a8b3;}
