@@ -23,7 +23,7 @@
 	function newSw() { return { id: uid(), label: "", st: "idle", startAt: 0, base: 0, laps: [] }; }
 	function newAlarm() { return { id: uid(), time: "", label: "", daily: false, on: false, at: 0, snooze: 0 }; }
 	var S = {
-		show: ["cd", "sw", "al"], display: null, order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "stack", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, optAwake: true, optNotify: false, optTenths: false,
+		show: ["cd", "sw", "al"], display: null, order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, optAwake: true, optNotify: false, optTenths: false,
 		timers: [newTimer(300000)], sws: [newSw()], alarms: [newAlarm()],
 		po: { label: "", focus: 25, short: 5, long: 15, rounds: 4, auto: true, phase: "focus", round: 1, st: "idle", end: 0, rem: 25 * 60000, day: "", done: 0 },
 		iv: { label: "", prep: 10, work: 20, rest: 10, rounds: 8, st: "idle", startAt: 0, base: 0 },
@@ -39,7 +39,8 @@
 			["optTitle", "optAwake", "optNotify", "optTenths"].forEach(function (k) { if (typeof s[k] === "boolean") S[k] = s[k]; });
 			if (Array.isArray(s.show)) S.show = s.show.filter(function (v) { return PANELS[v]; });
 			if (Array.isArray(s.order)) { var o = s.order.filter(function (v) { return PANELS[v]; }); ORDER.forEach(function (v) { if (o.indexOf(v) < 0) o.push(v); }); S.order = o; }
-			if (s.layout === "row" || s.layout === "stack") S.layout = s.layout;
+			S.layout = s.layout === "stack" ? "stack" : "auto";
+			S.zoom = num(s.zoom, 1, 0.4, 2.5); S.fit = !!s.fit; S.win = !!s.win; if (s.fs === "screen") S.fs = "screen";
 			if (s.collapsed && typeof s.collapsed === "object") S.collapsed = s.collapsed;
 			if (Array.isArray(s.display)) S.display = s.display.filter(function (k) { return typeof k === "string"; }).slice(0, 60);
 			if (Array.isArray(s.timers) && s.timers.length) S.timers = s.timers.slice(0, 8).map(function (t) { return { id: String(t.id || uid()), label: String(t.label || "").slice(0, 60), total: +t.total > 0 ? +t.total : 300000, rem: +t.rem >= 0 ? +t.rem : (+t.total || 300000), end: +t.end || 0, st: /^(idle|run|pause|done)$/.test(t.st) ? t.st : "idle" }; });
@@ -144,22 +145,65 @@
 	function chosen() { return CUSTOM ? S.order.filter(function (v) { return S.show.indexOf(v) >= 0; }) : PAGE_VIEWS; }
 	function buildPanels() {
 		visible = chosen(); if (!visible.length) visible = ["cd"];
-		$("tm-secs").className = "tm-secs" + (SOLO ? " tm-solo" : "") + " tm-n" + visible.length + (!SOLO && S.layout === "row" ? " tm-row" : "");
+		$("tm-secs").className = "tm-secs" + (SOLO ? " tm-solo" : "") + " tm-n" + visible.length + (!SOLO && S.layout !== "stack" ? " tm-row" : "");
 		$("tm-secs").innerHTML = visible.map(function (v) {
 			var col = !SOLO && S.collapsed[v];
 			return '<section class="tu-card tm-sec' + (col ? " is-collapsed" : "") + '" data-v="' + v + '" id="tm-s-' + v + '">' + (SOLO ? "" : '<div class="tm-sec__h">' + (CUSTOM && visible.length > 1 ? '<button type="button" class="tm-grip" title="Drag to move this timer" aria-label="Move ' + PANELS[v][0] + ': drag, or use the arrow keys" data-grip="sec">⠿</button>' : "") + '<button type="button" class="tm-sec__t" aria-expanded="' + !col + '">' + PANELS[v][0] + '</button><a class="tm-sec__l" href="' + PANELS[v][1] + '" title="Open ' + PANELS[v][0] + ' on its own page">Full page ↗</a></div>') + '<div class="tm-sec__b tm-fsable" id="tm-b-' + v + '" data-v="' + v + '">' + BODY[v] + "</div></section>";
 		}).join("");
-		drawAddBar();
-		bindPanels(); renderAll();
+		drawAddBar(); applyZoom();
+		bindPanels(); renderAll(); scheduleFit();
+	}
+	function toolsHtml() {
+		return '<button type="button" class="tu-btn tu-btn--ghost tm-dpbtn" data-dp="1" title="Show just the times, big (D)">📺 Display</button>' +
+			'<button type="button" class="tu-btn tu-btn--ghost" data-win="1" aria-pressed="' + winOn + '" title="Hide the rest of the page and fill the browser window with just the timers (W)">' + (winOn ? "✕ Exit window view" : "⤢ Window view") + '</button>' +
+			'<span class="tm-size" role="group" aria-label="Size of the timers"><button type="button" data-z="-" title="Smaller (-)" aria-label="Smaller">−</button><button type="button" class="tm-zl" data-z="0" title="Back to 100% (0)">' + Math.round(S.zoom * 100) + '%</button><button type="button" data-z="+" title="Bigger (+)" aria-label="Bigger">+</button><button type="button" data-z="fit" aria-pressed="' + S.fit + '" title="Fit every timer into the window and keep it fitted as the window changes">⤡ Fit</button></span>';
 	}
 	function drawAddBar() {
 		var bar = $("tm-addbar"); bar.hidden = false;
-		if (!CUSTOM) { bar.innerHTML = '<button type="button" class="tu-btn tu-btn--ghost tm-dpbtn" data-dp="1">📺 Display mode: show my timers full screen</button>'; return; }
-		bar.innerHTML = '<span class="tm-addbar__l">Show:</span>' + ORDER.map(function (v) { var on = visible.indexOf(v) >= 0; return '<button type="button" class="tu-chip" data-v="' + v + '" aria-pressed="' + on + '">' + (on ? "✓ " : "+ ") + PANELS[v][0] + "</button>"; }).join("") + '<span class="tm-addbar__sp"></span><button type="button" class="tu-btn tu-btn--ghost tm-dpbtn" data-dp="1" title="Show just the times, big, on a full-screen display">📺 Display</button><span class="tm-addbar__l">Layout:</span><span class="tu-seg tm-lay" role="group" aria-label="Layout"><button type="button" data-l="stack" aria-pressed="' + (S.layout === "stack") + '" title="One under the other">☰ Stacked</button><button type="button" data-l="row" aria-pressed="' + (S.layout === "row") + '" title="Side by side">▥ Side by side</button></span>';
+		if (!CUSTOM || SOLO) { bar.innerHTML = '<span class="tm-addbar__sp"></span>' + toolsHtml(); return; }
+		bar.innerHTML = '<span class="tm-addbar__l">Show:</span>' + ORDER.map(function (v) { var on = visible.indexOf(v) >= 0; return '<button type="button" class="tu-chip" data-v="' + v + '" aria-pressed="' + on + '">' + (on ? "✓ " : "+ ") + PANELS[v][0] + "</button>"; }).join("") + '<span class="tm-addbar__sp"></span>' + toolsHtml() + '<span class="tm-addbar__l">Layout:</span><span class="tu-seg tm-lay" role="group" aria-label="Layout"><button type="button" data-l="auto" aria-pressed="' + (S.layout !== "stack") + '" title="As many side by side as fit the window">▥ Auto</button><button type="button" data-l="stack" aria-pressed="' + (S.layout === "stack") + '" title="One under the other">☰ Stacked</button></span>';
 	}
+	/* ---- size, fit and window view ---- */
+	var winOn = false, fitLastH = 0, fitT = 0, zSaveT = 0;
+	function applyZoom() { var sc = $("tm-secs"); if (sc) sc.style.fontSize = S.zoom === 1 ? "" : S.zoom + "em"; [].forEach.call(document.querySelectorAll(".tm-zl"), function (l) { l.textContent = Math.round(S.zoom * 100) + "%"; }); [].forEach.call(document.querySelectorAll('[data-z="fit"]'), function (b) { b.setAttribute("aria-pressed", String(S.fit)); }); }
+	function setZoom(z, keepFit) { S.zoom = Math.round(Math.max(0.4, Math.min(2.5, z)) * 100) / 100; if (!keepFit) S.fit = false; applyZoom(); clearTimeout(zSaveT); zSaveT = setTimeout(save, 300); }
+	function fitNow() {
+		var box = $("tm"), sc = $("tm-secs"); if (!winOn || !box || !sc) return;
+		function ok(z) { sc.style.fontSize = z + "em"; return box.scrollHeight <= box.clientHeight + 1; }
+		var lo = 0.4, hi = 2.5, best = 0.4;
+		if (ok(hi)) best = hi; else { for (var i = 0; i < 14; i++) { var mid = (lo + hi) / 2; if (ok(mid)) { lo = mid; best = mid; } else hi = mid; } }
+		setZoom(best, true); fitLastH = sc.offsetHeight;
+	}
+	function scheduleFit() { if (!S.fit || !winOn) return; clearTimeout(fitT); fitT = setTimeout(fitNow, 200); }
+	window.addEventListener("resize", scheduleFit);
+	if (window.MutationObserver) new MutationObserver(function () { if (S.fit && winOn && Math.abs($("tm-secs").offsetHeight - fitLastH) > 2) scheduleFit(); }).observe($("tm-secs"), { childList: true, subtree: true });
+	function setWin(on) {
+		winOn = on; S.win = on; document.body.classList.toggle("tm-win", on); drawAddBar(); save();
+		if (on) { $("tm").scrollTop = 0; if (S.fit) fitNow(); }
+	}
+	(function sizeGestures() {
+		var box = $("tm"), grip = document.createElement("div"); grip.id = "tm-grip"; grip.title = "Drag to resize the timers (up-left smaller, down-right bigger). Pinching or Ctrl+scroll also works."; grip.setAttribute("aria-hidden", "true");
+		grip.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 9L9 21M21 15l-6 6M21 3L3 21"/></svg>'; box.appendChild(grip);
+		grip.addEventListener("pointerdown", function (e) {
+			e.preventDefault(); try { grip.setPointerCapture(e.pointerId); } catch (x) {}
+			var x0 = e.clientX, y0 = e.clientY, z0 = S.zoom;
+			function mv(ev) { setZoom(z0 * Math.exp(((ev.clientX - x0) + (ev.clientY - y0)) / 500)); }
+			function up() { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up); }
+			grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+		});
+		var pts = {}, pd = 0, pz = 1;
+		function dist() { var k = Object.keys(pts); if (k.length < 2) return 0; var a = pts[k[0]], b = pts[k[1]]; return Math.hypot(a[0] - b[0], a[1] - b[1]); }
+		box.addEventListener("pointerdown", function (e) { if (!winOn || e.pointerType !== "touch") return; pts[e.pointerId] = [e.clientX, e.clientY]; if (Object.keys(pts).length === 2) { pd = dist(); pz = S.zoom; } });
+		box.addEventListener("pointermove", function (e) { if (!pts[e.pointerId]) return; pts[e.pointerId] = [e.clientX, e.clientY]; if (pd && Object.keys(pts).length === 2) setZoom(pz * dist() / pd); });
+		function end(e) { delete pts[e.pointerId]; pd = 0; }
+		box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
+		box.addEventListener("wheel", function (e) { if (!winOn || !e.ctrlKey) return; e.preventDefault(); setZoom(S.zoom * Math.exp(-e.deltaY / 200)); }, { passive: false });
+	})();
 	$("tm-addbar").addEventListener("click", function (e) {
 		var b = e.target.closest("button"); if (!b) return;
 		if (b.dataset.dp) { openDisplay(); return; }
+		if (b.dataset.win) { setWin(!winOn); return; }
+		if (b.dataset.z) { var z = b.dataset.z; if (z === "fit") { S.fit = !S.fit; if (S.fit) { if (!winOn) setWin(true); else fitNow(); } applyZoom(); save(); } else if (z === "0") setZoom(1); else setZoom(S.zoom * (z === "+" ? 1.1 : 1 / 1.1)); return; }
 		if (!CUSTOM) return;
 		if (b.dataset.l) { S.layout = b.dataset.l; save(); buildPanels(); return; }
 		var v = b.dataset.v, i = S.show.indexOf(v);
@@ -463,10 +507,10 @@
 	function ensureDisplay() {
 		var el = $("tm-dp"); if (el) return el;
 		el = document.createElement("div"); el.id = "tm-dp"; el.className = "tm-dp"; el.hidden = true; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Timer display");
-		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
+		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
 		document.body.appendChild(el);
 		el.addEventListener("click", function (e) {
-			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
+			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
 			if (e.target.matches("#tm-dp-pick input[type=checkbox]")) {
 				var cur = S.display || dpSelected(dpItems()), k = e.target.dataset.k, i = cur.indexOf(k); cur = cur.slice(); if (e.target.checked && i < 0) cur.push(k); else if (!e.target.checked && i >= 0) cur.splice(i, 1);
 				S.display = cur; save(); dpKeys = ""; renderDisplay();
@@ -496,21 +540,35 @@
 	function openDisplay() {
 		var el = ensureDisplay(); dpOpen = true; dpKeys = ""; el.hidden = false; $("tm-dp-pick").hidden = true; document.body.classList.add("tm-dp-on");
 		if (!S.display) { var items = dpItems(), act = dpSelected(items); if (!act.length) { S.display = items.filter(function (i) { return /^[tsp]/.test(i.key) && i.key !== "iv" && i.key !== "po"; }).map(function (i) { return i.key; }); } }
-		renderDisplay(); try { if (el.requestFullscreen) el.requestFullscreen().catch(function () {}); } catch (e) {}
+		renderDisplay(); updateDpFs(); if (S.fs === "screen") enterScreen();
 		if ("wakeLock" in navigator && !lock) navigator.wakeLock.request("screen").then(function (l) { lock = l; l.addEventListener("release", function () { lock = null; }); }, function () {});
 	}
-	function closeDisplay() { dpOpen = false; var el = $("tm-dp"); if (el) el.hidden = true; document.body.classList.remove("tm-dp-on"); if (document.fullscreenElement && document.exitFullscreen) { try { document.exitFullscreen(); } catch (e) {} } updateAwake(); }
-	document.addEventListener("fullscreenchange", function () { if (!document.fullscreenElement && dpOpen) closeDisplay(); });
-	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && dpOpen) closeDisplay(); else if ((e.key === "d" || e.key === "D") && !/^(input|textarea|select)$/i.test(e.target.tagName || "") && !e.ctrlKey && !e.metaKey && !e.altKey) { dpOpen ? closeDisplay() : openDisplay(); } });
+	function closeDisplay() { dpOpen = false; var el = $("tm-dp"); if (el) el.hidden = true; document.body.classList.remove("tm-dp-on"); leaveScreen(); updateAwake(); }
+	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && dpOpen) closeDisplay(); else if (e.key === "Escape" && document.querySelector(".tm-fs")) toggleFull(document.querySelector(".tm-fs")); else if (e.key === "Escape" && winOn && !inScreen()) setWin(false); else if ((e.key === "d" || e.key === "D") && !/^(input|textarea|select)$/i.test(e.target.tagName || "") && !e.ctrlKey && !e.metaKey && !e.altKey) { dpOpen ? closeDisplay() : openDisplay(); } });
 
 	/* ---------- full screen ---------- */
+	function inScreen() { return !!document.fullscreenElement; }
+	function enterScreen() { try { var r = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (r && r.catch) r.catch(function () {}); } catch (e) {} }
+	function leaveScreen() { if (document.fullscreenElement && document.exitFullscreen) { try { document.exitFullscreen(); } catch (e) {} } }
+	function toggleScreen() { if (inScreen()) { S.fs = "win"; leaveScreen(); } else { S.fs = "screen"; enterScreen(); } save(); drawFsBar(); updateDpFs(); }
+	function updateDpFs() { var b = document.querySelector('#tm-dp [data-d="fs"]'); if (b) b.textContent = inScreen() ? "⛶ Exit full screen" : "⛶ Full screen"; }
+	function drawFsBar() {
+		var any = document.querySelector(".tm-fs"), bar = $("tm-fsbar");
+		if (!any) { if (bar) bar.remove(); return; }
+		if (!bar) {
+			bar = document.createElement("div"); bar.id = "tm-fsbar"; bar.className = "tm-fsbar"; bar.innerHTML = '<button type="button" data-f="screen"></button><button type="button" data-f="close">✕ Close</button>';
+			bar.onclick = function (e) { var x = e.target.closest("button"); if (!x) return; if (x.dataset.f === "screen") toggleScreen(); else { var c = document.querySelector(".tm-fs"); if (c) toggleFull(c); } };
+			document.body.appendChild(bar);
+		}
+		bar.firstChild.textContent = inScreen() ? "⛶ Exit full screen" : "⛶ Full screen";
+	}
+	// fills the browser window; the bar's "Full screen" button (remembered) also asks the browser for real full screen
 	function toggleFull(el) {
 		var on = !el.classList.contains("tm-fs"); document.querySelectorAll(".tm-fs").forEach(function (x) { x.classList.remove("tm-fs"); });
-		if (on) { el.classList.add("tm-fs"); if (!el.querySelector(".tm-fs-x")) { var x = document.createElement("button"); x.type = "button"; x.className = "tm-fs-x"; x.textContent = "✕ Close"; x.onclick = function () { toggleFull(el); }; el.appendChild(x); } try { if (el.requestFullscreen) el.requestFullscreen().catch(function () {}); } catch (e) {} }
-		else { var xb = el.querySelector(".tm-fs-x"); if (xb) xb.remove(); if (document.fullscreenElement && document.exitFullscreen) { try { document.exitFullscreen(); } catch (e) {} } }
-		renderTimers(); renderSw();
+		if (on) { el.classList.add("tm-fs"); if (S.fs === "screen") enterScreen(); } else leaveScreen();
+		drawFsBar(); renderTimers(); renderSw();
 	}
-	document.addEventListener("fullscreenchange", function () { if (!document.fullscreenElement) { document.querySelectorAll(".tm-fs").forEach(function (x) { x.classList.remove("tm-fs"); var xb = x.querySelector(".tm-fs-x"); if (xb) xb.remove(); }); renderTimers(); renderSw(); } });
+	document.addEventListener("fullscreenchange", function () { drawFsBar(); updateDpFs(); });
 
 	/* ---------- settings ---------- */
 	function fillSettings() { $("tm-sound").value = S.sound; $("tm-repeat").value = String(S.repeat); $("tm-vol").value = S.vol; $("tm-opt-title").checked = S.optTitle; $("tm-opt-awake").checked = S.optAwake; $("tm-opt-notify").checked = S.optNotify; $("tm-opt-tenths").checked = S.optTenths; }
@@ -607,6 +665,10 @@
 			if (SOLO) b = { po: $("tm-po-go"), iv: $("tm-iv-go") }[visible[0]] || b;
 			if (b) { e.preventDefault(); b.click(); }
 		} else if ((e.key === "l" || e.key === "L") && $("tm-sws")) { var lb = document.querySelector("#tm-sws .tm-swc.is-running [data-a=lap]"); if (lb) lb.click(); }
+		else if (e.key === "w" || e.key === "W") setWin(!winOn);
+		else if (e.key === "+" || e.key === "=") setZoom(S.zoom * 1.1);
+		else if (e.key === "-" || e.key === "_") setZoom(S.zoom / 1.1);
+		else if (e.key === "0") setZoom(1);
 		else if (e.key === "f" || e.key === "F") { var first = document.querySelector(SOLO ? ".tm-timer, .tm-sec__b" : ".tm-timer"); if (first) toggleFull(first); }
 	});
 
@@ -626,6 +688,7 @@
 	}
 	if (q.get("date") && $("tm-events")) { var at = TM.parseDateTime(q.get("date"), q.get("time") || ""); if (at && !S.ev.some(function (x) { return x.at === at && x.name === (q.get("name") || ""); })) { S.ev.push({ id: uid(), name: (q.get("name") || "").slice(0, 60), at: at }); renderEvents(); } }
 	if (q.toString()) history.replaceState(null, "", location.pathname);
+	if (S.win || q.get("window") === "1") setWin(true);
 	save(); updateAwake();
 	if (q.get("display") === "1") setTimeout(function () { try { openDisplay(); } catch (e) {} }, 300);
 	if (missed.length) { var box = $("tm-ring"); box.hidden = false; $("tm-ring-msg").textContent = "While this page was closed: " + missed.join("; ") + "."; $("tm-ring-btns").innerHTML = '<button type="button" data-r="stop">OK</button>'; ringing = []; box.style.animation = "none"; }

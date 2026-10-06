@@ -434,6 +434,32 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	}
 	@media print {.tu .tm-settings, .tu-seo, .tm-btns {display:none !important;}}
 
+	/* ---- size, fit, window view ---- */
+	.tu .tm-size {display:inline-flex;}
+	.tu .tm-size button {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#444;padding:0.4em 0.7em;font:inherit;font-size:0.88em;margin-left:-1px;line-height:1.2;}
+	.tu .tm-size button:first-child {border-radius:0.4em 0 0 0.4em;margin-left:0;} .tu .tm-size button:last-child {border-radius:0 0.4em 0.4em 0;}
+	.tu .tm-size button:hover {border-color:var(--accent);color:var(--accent);position:relative;}
+	.tu .tm-size button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu .tm-zl {min-width:3.6em;font-variant-numeric:tabular-nums;}
+	.tu [data-win][aria-pressed="true"] {border-color:var(--accent);color:var(--accent);}
+	.tu .tm-secs.tm-row {grid-template-columns:repeat(auto-fit,minmax(min(20em,100%),1fr));}
+	#tm-grip {display:none;}
+	body.tm-win {overflow:hidden !important;}
+	body.tm-win #tm {position:fixed;inset:0;z-index:99990;overflow:auto;background:#fff;padding:0.6em 1em 3em;box-sizing:border-box;touch-action:pan-x pan-y;margin:0;max-width:none;}
+	body.tm-win #tm > :not(#tm-ring):not(#tm-addbar):not(#tm-secs):not(#tm-grip) {display:none !important;}
+	body.tm-win #tm .tm-ring {top:0;}
+	body.tm-win #tm .tm-addbar {position:sticky;top:-0.6em;z-index:5;background:inherit;padding:0.5em 0;margin:0 0 0.4em;}
+	body.tm-win #tm-grip {display:flex;align-items:center;justify-content:center;position:fixed;right:8px;bottom:8px;width:2.6rem;height:2.6rem;border-radius:0.6rem;cursor:nwse-resize;touch-action:none;z-index:99991;color:#5a6472;background:rgba(255,255,255,0.8);border:1px solid #c3c9d2;opacity:0.7;}
+	body.tm-win #tm-grip:hover {opacity:1;}
+	body.dark-mode.tm-win #tm {background:#161616;}
+	body.dark-mode.tm-win #tm-grip {background:rgba(30,30,30,0.85);color:#aab2bd;border-color:#555;}
+	body.dark-mode #tm .tm-size button {background:#262626;color:#d1d6dc;border-color:#555;}
+	body.dark-mode #tm .tm-size button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	.tm-fsbar {--fbbg:rgba(24,28,36,0.88);--fbfg:#ffffff;--fbbd:#5b6577;position:fixed;top:1.2vh;right:1.5vw;z-index:99999;display:flex;gap:0.5em;}
+	.tm-fsbar button {cursor:pointer;border:1px solid var(--fbbd);border-radius:0.4em;background:var(--fbbg);color:var(--fbfg);padding:0.45em 0.9em;font:inherit;font-size:0.95rem;}
+	.tm-fsbar button:hover {border-color:var(--fbfg);}
+	body.tm-win #tm .tm-addbar {font-size:0.85em;gap:0.3em;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -546,6 +572,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tm-swc .tm-fast td{color:#7dde9d}
 	body.dark-mode .tu .tm-swc .tm-slow td{color:#e87973}
 	body.dark-mode .tm-dp{--dp6:#c14848;--dp15:#2edb6e}
+	body.dark-mode .tu .tm-size button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -920,7 +947,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:4
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=3" defer></script>
+	<script src="/timer/js/timer.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
