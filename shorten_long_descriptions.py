@@ -20,7 +20,7 @@ import improve_meta_descriptions as imd
 ROOT = imd.ROOT
 TRIGGER = 320   # only descriptions longer than this are touched
 LIMIT = 158     # how long the new description may be
-FLOOR = 100     # a sentence end earlier than this is not used (too short for Bing)
+FLOOR = 120     # a sentence end earlier than this is not used (Bing wants >= 120)
 META_RE, CONTENT_RE = imd.META_RE, imd.CONTENT_RE
 
 
