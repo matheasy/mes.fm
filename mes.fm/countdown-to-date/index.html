@@ -408,6 +408,25 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode #tm .tm-dragging {box-shadow:0 0.8em 2.2em rgba(0,0,0,0.7);}
 	body.dark-mode #tm .tm-fs-x {background:#262626;color:#ddd;border-color:#555;}
 	body.dark-mode #tm .tm-sec__h {background:var(--accent);} body.dark-mode #tm .tm-sec__t, body.dark-mode #tm .tm-sec__l, body.dark-mode #tm .tm-sec .tm-grip {color:#0b1416;}
+	/* ---- display mode ---- */
+	.tm-dp {--dpfg:#ffffff;--dp0:#8993a6; --dp1:#131822; --dp2:#7a86a0; --dp3:#3b82f6; --dp4:#3a4152; --dp5:#6b7280; --dp6:#3b1414; --dp7:#232a38; --dp8:#ef4444; --dp9:#9aa3b2; --dp10:#4ade80; --dp11:#c4cbd9; --dp12:#0b0e13; --dp13:#d6dbe6; --dp14:#60a5fa; --dp15:#22c55e; --dp16:#171c26; --dp17:#fff;position:fixed;inset:0;z-index:99997;background:var(--dp12);color:var(--dp17);display:flex;flex-direction:column;font-family:system-ui,-apple-system,Helvetica,Arial,sans-serif;}
+	.tm-dp[hidden] {display:none;}
+	.tm-dp__bar {display:flex;gap:0.6em;align-items:center;justify-content:flex-end;padding:1.2vmin 2vmin;} .tm-dp__hint {flex:1;color:var(--dp9);font-size:1.1em;}
+	.tm-dp__btn {cursor:pointer;border:1px solid var(--dp4);border-radius:0.5em;background:var(--dp16);color:var(--dp13);padding:0.5em 1em;font:inherit;font-size:1em;} .tm-dp__btn:hover {border-color:var(--dp2);color:var(--dp17);}
+	.tm-dp__pick {position:absolute;top:4.2em;right:2vmin;z-index:3;background:var(--dp16);border:1px solid var(--dp4);border-radius:0.7em;padding:0.8em 1em;max-height:70vh;overflow:auto;min-width:16em;box-shadow:0 1em 2.4em rgba(0,0,0,0.6);}
+	.tm-dp__pick[hidden] {display:none;} .tm-dp__pt {font-weight:700;margin-bottom:0.5em;color:var(--dp17);} .tm-dp__pick label {display:flex;align-items:center;gap:0.5em;padding:0.3em 0;color:var(--dp13);cursor:pointer;} .tm-dp__pick small {color:var(--dp0);margin-left:auto;padding-left:0.8em;}
+	.tm-dp__grid {flex:1;display:grid;gap:2vmin;padding:1vmin 2vmin 3vmin;align-content:center;grid-template-columns:repeat(auto-fit,minmax(min(24em,100%),1fr));}
+	.tm-dp__tile {background:var(--dp1);border:2px solid var(--dp7);border-radius:2vmin;padding:2vmin 2.5vmin;text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+	.tm-dp__tile.is-run {border-color:var(--dp3);} .tm-dp__tile.is-pause {border-color:var(--dp5);} .tm-dp__tile.is-done {border-color:var(--dp8);animation:tm-dpflash 1s ease-in-out infinite;}
+	@keyframes tm-dpflash {50% {background:var(--dp6);}}
+	.tm-dp__l {font-size:clamp(1em,3.2vmin,2.2em);color:var(--dp11);font-weight:600;overflow-wrap:anywhere;} .tm-dp__s {font-size:clamp(0.8em,2.4vmin,1.6em);color:var(--dp0);margin-top:0.2em;}
+	.tm-dp__t {color:var(--dpfg);font-variant-numeric:tabular-nums;font-weight:800;line-height:1.05;font-size:clamp(2.2em,16vmin,15em);overflow-wrap:anywhere;}
+	.tm-dp__n1 .tm-dp__t {font-size:min(30vmin,22vw);} .tm-dp__n2 .tm-dp__t {font-size:min(21vmin,15vw);} .tm-dp__n3 .tm-dp__t, .tm-dp__n4 .tm-dp__t {font-size:min(15vmin,11vw);} .tm-dp__n5 .tm-dp__t, .tm-dp__n6 .tm-dp__t {font-size:min(11vmin,8vw);} .tm-dp__n7 .tm-dp__t, .tm-dp__n8 .tm-dp__t, .tm-dp__n9 .tm-dp__t {font-size:min(8.5vmin,6.5vw);}
+	.tm-dp__b {height:1.1vmin;border-radius:1vmin;background:var(--dp7);overflow:hidden;margin:1.4vmin 4vmin 0;} .tm-dp__b i {display:block;height:100%;background:var(--dp3);width:0;}
+	.tm-dp__tile.ph-work {border-color:var(--dp15);} .tm-dp__tile.ph-work .tm-dp__t {color:var(--dp10);} .tm-dp__tile.ph-rest {border-color:var(--dp3);} .tm-dp__tile.ph-rest .tm-dp__t {color:var(--dp14);}
+	.tm-dp__tile.is-idle .tm-dp__t {color:var(--dp5);}
+	body.tm-dp-on {overflow:hidden;}
+	@media (prefers-reduced-motion: reduce) {.tm-dp__tile.is-done {animation:none;}}
 	@media (max-width: 600px) {.tu .tm-secs.tm-row {grid-template-columns:1fr;}}
 	@media (max-width: 600px) {
 		.tu .tm-big {flex:1 1 40%;padding:0.7em 0.5em;min-width:0;}
@@ -526,6 +545,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tm-fs-x{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
 	body.dark-mode .tu .tm-swc .tm-fast td{color:#7dde9d}
 	body.dark-mode .tu .tm-swc .tm-slow td{color:#e87973}
+	body.dark-mode .tm-dp{--dp6:#c14848;--dp15:#2edb6e}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
