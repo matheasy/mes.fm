@@ -60,7 +60,16 @@
         "href": "https://odysee.com/@mestruth:9/North-Tower-vs-Bethlehem-Steel-HQ"
       }
     ],
-    "namedLinks": []
+    "namedLinks": [
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/24315"
+      },
+      {
+        "label": "More links",
+        "href": "https://mes.fm/911"
+      }
+    ]
   },
   "https://mes.fm/911-hiroshima-fumes": {
     "image": "https://snipboard.io/0XfKeg.jpg",
@@ -133,6 +142,20 @@
       {
         "label": "More links",
         "href": "https://mes.fm/911"
+      }
+    ]
+  },
+  "https://mes.fm/911-revisionist-slander-MES": {
+    "image": "https://mes.fm/img/911-revisionist-slander-MES-thumbnail.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive article",
+        "href": "https://inleo.io/@mestruth/911-revisionist-slanders-mes-ezq"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35617"
       }
     ]
   },
@@ -289,7 +312,7 @@
     ]
   },
   "https://mes.fm/bg-notes": {
-    "image": "https://files.peakd.com/file/peakd-hive/mes/23w2si519gxiqpjgyH1bCDuidgiCWwf12UQRiPVUr1fRg9Ls7Azy2PvGgMbZUzTAUXy6t.png",
+    "image": "https://mes.fm/img/bg-logo-big.jpg",
     "watchLinks": [],
     "namedLinks": []
   },
