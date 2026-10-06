@@ -482,7 +482,15 @@
       .header-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
       body.is-stuck .header-controls { bottom: auto; }
     }
-</style>
+
+    /* bg: the logo stretches to the height of the (long, wrapping) title + tagline so its top and bottom line up with the text */
+    @media (min-width: 481px) {
+      .site-brand { align-items: stretch; }
+      .site-brand-logo-link { display: flex; align-self: stretch; }
+      .site-brand-logo { height: 100%; width: auto; min-height: 64px; max-height: 104px; aspect-ratio: 1 / 1; object-fit: cover; }
+      .site-brand-text { align-self: center; }
+    }
+  </style>
 <script>
 /* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
    class `google-auto-placed`), plus Google's separate "annotation" text-ad

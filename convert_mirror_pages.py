@@ -46,6 +46,8 @@ PAGE_BRANDS = {
     "moon": (dict(logo="/moon/img/logo.png", title="MES Moon", tag="Live sky dashboard: moon phase, sun, planets and astronomy.", href="/moon"),
              'Part of <a href="/tools">MES Tools</a> &middot; <a href="/science">MES Science</a>'),
 }
+# extra CSS appended to a page's own style when it is converted
+PAGE_CSS = {"bg-notes": '\n    /* bg: the logo stretches to the height of the (long, wrapping) title + tagline so its top and bottom line up with the text */\n    @media (min-width: 481px) {\n      .site-brand { align-items: stretch; }\n      .site-brand-logo-link { display: flex; align-self: stretch; }\n      .site-brand-logo { height: 100%; width: auto; min-height: 64px; max-height: 104px; aspect-ratio: 1 / 1; object-fit: cover; }\n      .site-brand-text { align-self: center; }\n    }\n'}
 LEGACY = re.compile(r"theme-toggle-btn|text-size|top-bar-controls|^\.outer-|\.page-box|\.side-bar|^img$|^table$|site-footer-note|^hr$")
 
 
@@ -179,6 +181,8 @@ def chrome_swap(old, template):
     tcss = re.search(r"<style>(.*?)</style>", tpl, re.S).group(1)
     chrome = [txt for sel, txt in css_items(tcss) if CHROME_SEL.search(sel) or (sel.startswith("@media") and CHROME_SEL.search(txt))]
     css = style.group(1).rstrip() + "\n\n    /* site chrome (branded header, nav bar, floating bar, footer) */\n    " + "\n    ".join(chrome) + "\n"
+    if cm and cm.group(1) in PAGE_CSS:
+        css += PAGE_CSS[cm.group(1)]
 
     new = old[: style.start()] + "<style>" + css + "</style>" + old[style.end():]
     if cm and cm.group(1) in PAGE_BRANDS:  # own artwork: favicon + social preview image
