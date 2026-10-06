@@ -53,10 +53,10 @@ const PAGES = [
   },
   {
     // Tile only: the old "BG & NS Links" page (mes.fm/bg-notes, hand-built). Icon = the thumbnail of the YouTube playlist behind mes.fm/bg-wildin
-    // (the "word salad" playlist cover, video 5OHeLE6DiM8); img/bg-notes-icon.jpg, bump iconVersion if replaced.
+    // (the "Buzzword Bobby's Bowl of Babble" word-salad image from the article itself, 3:2 crop); img/bg-notes-icon.jpg, bump iconVersion if replaced.
     slug: "bg-notes",
     tileLabel: "BG & NS Links",
-    iconVersion: 1,
+    iconVersion: 2,
     tileOnly: true,
   },
   {
