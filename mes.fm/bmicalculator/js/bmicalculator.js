@@ -243,6 +243,7 @@
 		if (q.get("scale") === "asia") st.scale = "asia"; history.replaceState(null, "", location.pathname);
 	}
 	$("bm-scale").value = st.scale; showUnits(); fillOthers(); save(); update();
+	if (m && !q.get("s")) loadOld(m[1]);
 	// the reference table
 	(function () { var h = "<thead><tr><th>Category</th><th>WHO standard</th><th>Asian</th></tr></thead><tbody>"; [["Severe thinness", "&lt; 16", "&lt; 16"], ["Moderate thinness", "16 &ndash; 16.9", "16 &ndash; 16.9"], ["Mild thinness", "17 &ndash; 18.4", "17 &ndash; 18.4"], ["Normal weight", "18.5 &ndash; 24.9", "18.5 &ndash; 22.9"], ["Overweight", "25 &ndash; 29.9", "23 &ndash; 27.4"], ["Obese", "30 and over (class I 30&ndash;34.9, II 35&ndash;39.9, III 40+)", "27.5 and over"]].forEach(function (r) { h += "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] + "</td></tr>"; }); $("bm-ref").innerHTML = h + "</tbody>"; })();
 	window.addEventListener("storage", function (e) { if (e.key !== KEY || (document.activeElement && root.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName))) return; try { var s = JSON.parse(e.newValue); if (s) { load(); fillOthers(); update(); } } catch (x) {} });
