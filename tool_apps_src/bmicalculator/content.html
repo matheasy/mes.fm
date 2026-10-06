@@ -1,0 +1,86 @@
+	<div class="tu" id="bm">
+		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
+
+		<div class="tu-card" id="bm-setup">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:1 1 14em;">
+					<span class="tu-label" id="bm-units-label">Units</span>
+					<div class="tu-seg" id="bm-units" role="group" aria-labelledby="bm-units-label" style="margin-top:0.3em;display:flex;">
+						<button type="button" data-u="m" aria-pressed="false">Metric (kg, cm)</button>
+						<button type="button" data-u="i" aria-pressed="true">US (lb, ft, in)</button>
+					</div>
+				</div>
+				<div class="tu-field" style="flex:1 1 14em;">
+					<label for="bm-scale">BMI scale</label>
+					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option></select>
+				</div>
+			</div>
+
+			<div class="tu-row" style="margin-top:1em;" id="bm-metric">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-kg">Weight</label><div class="tu-suffix"><input id="bm-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 65.8"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-cm">Height</label><div class="tu-suffix"><input id="bm-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 182.9"><span>cm</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:1em;" id="bm-imperial">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-lb">Weight</label><div class="tu-suffix"><input id="bm-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 145.1"><span>lb</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-ft">Height</label><div class="tu-suffix"><input id="bm-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 6"><span>ft</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-in">&nbsp;</label><div class="tu-suffix"><input id="bm-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0"><span>in</span></div></div>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Both unit systems stay in step: type in either and the other fills in. Adults 20 and over only; see the notes below.</p>
+		</div>
+
+		<div id="bm-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your weight and height to see your BMI &mdash; or try an example: </span><span class="tu-chips" id="bm-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="bm-out" hidden>
+			<div class="tu-stats" id="bm-hero" aria-live="polite"></div>
+			<div class="tu-card bm-verdict" id="bm-verdict" aria-live="polite"></div>
+			<div class="tu-card" id="bm-gauge-card">
+				<div class="tu-label">Where you are on the scale</div>
+				<div class="bm-gauge" id="bm-gauge" aria-hidden="true"></div>
+				<ul class="bm-cats" id="bm-cats"></ul>
+			</div>
+			<div class="bm-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copy link to this result</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="bm-save">Save this measurement</button>
+				<button type="button" class="tu-btn tu-btn--ghost bm-print">Print</button>
+			</div>
+		</div>
+
+		<div id="bm-hist-card" hidden>
+			<h2>My measurements</h2>
+			<div class="tu-card">
+				<div class="tu-row" style="align-items:flex-end;" id="bm-addrow" hidden>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="bm-date">Date</label><input id="bm-date" class="tu-input" type="date"></div>
+					<div class="tu-field" style="flex:2 1 12em;"><label for="bm-note">Note (optional)</label><input id="bm-note" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. after holiday"></div>
+					<div class="tu-field tu-field--sm" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--primary" id="bm-add">Save</button> <button type="button" class="tu-btn tu-btn--ghost" id="bm-addcancel">Cancel</button></div>
+				</div>
+				<div id="bm-chart" class="bm-chart" role="img" aria-label="Chart of your saved BMI over time"></div>
+				<div class="tu-table-wrap"><table class="tu-table" id="bm-table"></table></div>
+				<div class="bm-btns">
+					<button type="button" class="tu-btn tu-btn--ghost" id="bm-csv">Copy as a spreadsheet table</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="bm-link-all">Copy link with my history</button>
+				</div>
+				<p class="tu-note" id="bm-store-note" style="margin-bottom:0;"></p>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How BMI is calculated</h2>
+			<p>Body Mass Index is your weight divided by your height squared:</p>
+			<p style="text-align:center;"><b>BMI = weight (kg) &divide; height (m)&sup2;</b> &nbsp;or&nbsp; <b>703 &times; weight (lb) &divide; height (in)&sup2;</b></p>
+			<p>For example, 65.8 kg at 182.9 cm is 65.8 &divide; (1.829 &times; 1.829) = <b>19.7</b>, in the normal range.</p>
+			<h3>BMI categories for adults</h3>
+			<div class="tu-table-wrap"><table class="tu-table" id="bm-ref"></table></div>
+			<p class="tu-note">The WHO standard cut-offs are used by most countries. The WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5) reflect the higher health risk at lower BMI in many Asian populations. Switch the <em>BMI scale</em> above to use them.</p>
+			<h3>Important notes on BMI</h3>
+			<p>BMI is a general screening tool, not a diagnosis. It assumes a &ldquo;normal&rdquo; proportion of weight to height for people of average build and activity, which has some limits:</p>
+			<ul>
+				<li>It does not tell muscle from fat: athletes and bodybuilders can have a high BMI with low body fat.</li>
+				<li>Body shape, bone structure, age, sex and ethnicity all change what a healthy weight looks like.</li>
+				<li>It does not show where fat is carried; a larger waist measurement is a separate risk marker.</li>
+				<li><strong>Children and teens</strong> (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use a growth chart such as the <a href="https://www.cdc.gov/bmi/child-teen-calculator/index.html" rel="nofollow noopener" target="_blank">CDC child and teen BMI calculator</a>.</li>
+			</ul>
+			<p>BMI is still popular because it is the simplest index to compute and has decades of research behind it. Talk to a doctor or dietitian before starting a new diet or fitness plan. <a href="/bmicalculator/body-mass-index">What is BMI?</a> &middot; <a href="/bmicalculator/bmi-chart">BMI chart</a> &middot; <a href="/bmicalculator/bmi-formula">BMI formula</a> &middot; <a href="/bmicalculator/health-tips">Health tips</a></p>
+			<h3>Is my data private?</h3>
+			<p>Yes. Your numbers and saved measurements stay in this browser. Nothing is uploaded unless you copy a link and share it yourself.</p>
+		</div>
+	</div>

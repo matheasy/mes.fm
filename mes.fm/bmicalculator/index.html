@@ -1,8 +1,8 @@
-<!DOCTYPE html>    <html lang="en">    
-<!-- Mirrored from bmicalculator.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:42:32 GMT -->
+<!DOCTYPE html>    <html lang="en">
+<!-- BMI Calculator -- mes.fm/bmicalculator -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head><base href="/bmicalculator/"><!-- keeps js/img/css/etc's relative paths resolving correctly when this same index.html is served at a nested path too, e.g. the /s/:id share-link rewrite -->                    <link rel="icon" href="/bmicalculator/img/faviconc619.ico?v=1.0" type="image/x-icon" /><link rel="canonical" href="https://mes.fm/bmicalculator" />                    <title>BMI Calculator | Math Easy Solutions</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>                    <link rel="icon" href="/bmicalculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/bmicalculator" />                    <title>BMI Calculator | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
 tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
@@ -40,7 +40,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .box-border {border:0.1em solid#b3529d; padding:1em;margin-bottom: 1.2em;}
         .selected {background-color:#b3529d;color:white;}
         .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#b3529d;}
-        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#b3529d;background-color:#f8e2ed;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#b3529d;background-color:#fdc010;}
         .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
         .scissors-icon {vertical-align:middle;cursor: pointer;}
         .hide {display:none;}
@@ -51,7 +51,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .sentence--indent {margin-left:1.5em;}
 
 .shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
-.link:hover {color:#8f5282;text-decoration:underline; cursor:pointer;}
+.link:hover {color:#8a3d79;text-decoration:underline; cursor:pointer;}
 
 .outer-container {width:68.25em;margin:0 auto;}
 .inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
@@ -66,8 +66,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .social-container {position:absolute;right:0;top:0;}
 .social-container--bottom {position:absolute;right:0;bottom:0;}
 .social {display: table-cell;}
-.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#b3529d;}
-.social__logo {float:left;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#b3529d;}.social__logo {float:left;}
 .social__logo:not(:last-child) {margin-right:0.5em;}
 .social__link {height:2em;width:2em;display:block;}
 .social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
@@ -98,7 +97,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .side-bar {width:18.75em;float:right;}
 .navbar-container {margin:2.1em 0.8em;}
 .navbar {margin-bottom:-1em;}
-.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#b3529d;border:0.125em solid #b3529d;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#b3529d;border:0.125em solid#b3529d;}
 
 .navbar__item:hover {cursor:pointer;}
 .navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
@@ -124,12 +123,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .footer__separator {color:white;}
 #copyright-year {color:white;}
 
-.active-tab {background-color: #f8e2ed;color: #222222;}
-.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color: #8f5282;}
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#8a3d79;}
         .info-bar,.color-box,.navbar,.footer {background-color:#b3529d;}
         .dropdown-symbol--dark {color:#b3529d;}
         .button--active {background-color:#b3529d;color:white;}
-        .navbar__dropdown-container {color: #222222;background-color:#f8e2ed;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
         .header2--top {margin-top: 0.5em;}
         .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
         /* RESPONSIVE-FIX-INSERTED */
@@ -141,21 +140,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
 
-  /* keep only the site-content links in the header row on mobile (Home/
-     Donate/Subscribe/Links live in the hamburger dropdown instead, see
-     the unconditional block below the media query) -- kept mobile-only
-     since the full row already fits fine as a normal top nav on wider
-     screens */
   #info-bar > .info-bar__item:has(a[href$="index.html"]),
   #info-bar > .info-bar__item:has(a[href*="donate"]),
   #info-bar > .info-bar__item:has(a[href*="substack.com"]),
   #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
 }
 
-/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
-   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
-   panel instead of the always-visible sidebar, at every screen width
-   (not just mobile), so no page reserves a right-hand column for it */
 .inner-container { position: relative !important; }
 .header .social-container { display: none !important; }
 .side-bar { width: auto !important; float: none !important; }
@@ -172,11 +162,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   font-size: 0;
 }
 
-/* on narrow screens the title/logo-text can wrap wide enough that its
-   flex-item bounding box runs under the absolutely-positioned hamburger
-   button (out of normal flow, so nothing naturally reserves space for
-   it) -- give the header a bit of right padding on mobile so wrapped
-   title text never renders underneath the button */
 @media (max-width: 768px) {
   .header { padding-right: 4em !important; box-sizing: border-box; }
 }
@@ -187,7 +172,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 }
 #navbar { display: none; }
 #navbar.hide {
-  display: block; box-sizing: border-box;
+  display: block !important; box-sizing: border-box;
   position: absolute; top: 76px; right: 16px; z-index: 19;
   width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
   scrollbar-gutter: stable;
@@ -195,55 +180,143 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   border-radius: 0.25em;
 }
 
-/* dropdown polish: fix the icon/logo row overlapping the next nav item
-   (.info-bar__logo-container's global `display: table-cell` doesn't
-   behave without a table/table-row ancestor), and move "Follow us!" to
-   the bottom of the list instead of the top -- via flex order, not an
-   HTML move, since locating the true closing </ul> among the nested
-   .navbar__dropdown-container <ul>s isn't worth the risk */
-#navbar.hide { display: flex; flex-direction: column; }
+#navbar.hide { display: flex !important; flex-direction: column; }
 .navbar__item--social { order: 999; }
 .navbar__item--social .info-bar__logo-container { display: block !important; }
 
-/* now that the sidebar is gone, center the main content column in a
-   narrower page instead of leaving it flush-left in a wide, mostly-empty
-   .outer-container -- matches the plain centered-column layout
-   mes.fm/ufo already uses */
 .outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 
-</style>    <style>
-	.calculator-header {font-size: 1.1em;margin-bottom:1em;font-weight: 700;}
-	.input {height:2em;width:5em;font-size: 1em;text-align: center;}
-	.input-answer {height:2em;width:5em;font-size: 1em;text-align: center;}
-	#left-side-container {display:table-cell;/*padding-right:0.5em;border-right: 0.15em solid #e1e1e1;*/width:55%;}
-	#left-side-container input {margin-left:0.3em;}
-	.height-div {margin-top: 0.5em;}
-	#left-side-container span {display: inline-block;width:10em;font-size: 1em;font-weight: 400;}
-	#imperial-container .height-div input:last-child {margin-left:0.5em;}
-	#imperial-container {margin-top:1.2em;}
-	#right-side-container {display: table-cell;padding-left:2em;width:45%;}
-	#bmi-input-container {display: table-cell;}
-	#bmi-input-container input {display: block;background-color: #EEEEEE;border: 0.0625em #b2b2b2 solid;}
-	#check-mark-container {display: none;vertical-align: middle;}
-	#check-mark-container img {height: 2em;	width: auto;display: block;margin-left:1.2em;}
-	#result-text {color:black;margin-top:0.8em;line-height: 1.3;font-style: italic;font-weight: 400;}
-	#result-text span {font-weight: 700;}
-	#bmi-categories-container {margin-top:0.8em;}
-	#bmi-categories-container .category {line-height: 1.5;font-weight: 400;}
-	/*#note {line-height: 1.2;font-weight: 400;margin-top: 1.2em;display: inline-block;}*/
-	#note {line-height: 1.5;font-weight: 400;display: inline-block;}
-	#note span {line-height: 1.2;font-weight: normal;}
-	#bmi-categories-container .healthy-category {font-weight: normal;color:#62b52d;}
-	#bmi-categories-container .unhealthy-category {font-weight: normal;color:#cb3434;}
-	.button--share-calc {margin-bottom: 1em;}
-    
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#b3529d;--accent-dark:#8a3d79;--tint:#f8e2ed;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #f8e2ed;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#f8e2ed;border-color:#f8e2ed;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #f8e2ed;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#f8e2ed;border-color:#f8e2ed;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#f8e2ed;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#f8e2ed;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#c984b9 !important;--accent-dark:#c984b9 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+	/* BMI Calculator 2.0 */
+	.tu [hidden] {display:none !important;}
+	.tu #bm-units {display:flex;flex-wrap:wrap;max-width:100%;}
+	.tu #bm-units button {flex:1 1 auto;border-bottom:1px solid #dfe4ea;}
+	.tu .bm-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.9em;}
+	.tu .bm-verdict {font-size:1.05em;line-height:1.5;border-left:5px solid #aab2bd;}
+	.tu .bm-verdict.is-normal {border-left-color:#2e9b57;} .tu .bm-verdict.is-under {border-left-color:#e0a21c;} .tu .bm-verdict.is-over {border-left-color:#e07b1c;} .tu .bm-verdict.is-obese {border-left-color:#d1453b;}
+	.tu .bm-small {color:#6a7280;font-size:0.82em;}
+	.tu .bm-gauge {position:relative;margin:2.2em 0.4em 1.8em;}
+	.tu .bm-bar {display:flex;height:1.1em;border-radius:0.6em;overflow:hidden;}
+	.tu .bm-band--under {background:#f0c75e;} .tu .bm-band--normal {background:#5cb87a;} .tu .bm-band--over {background:#ee9a4d;} .tu .bm-band--obese {background:#e0605a;}
+	.tu .bm-pin {position:absolute;top:-0.4em;height:1.9em;width:0.2em;margin-left:-0.1em;background:#1e2733;border-radius:0.1em;}
+	.tu .bm-pin span {position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-weight:700;font-size:0.95em;background:#1e2733;color:#fff;border-radius:0.35em;padding:0.05em 0.45em;margin-bottom:0.15em;white-space:nowrap;}
+	.tu .bm-ticks {position:relative;height:1.2em;margin-top:0.2em;font-size:0.75em;color:#6a7280;}
+	.tu .bm-ticks span {position:absolute;transform:translateX(-50%);}
+	.tu .bm-cats {list-style:none;margin:0.4em 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.3em 1em;}
+	.tu .bm-cat {display:flex;justify-content:space-between;gap:0.6em;padding:0.3em 0.6em;border-radius:0.4em;border-left:4px solid #ccc;font-size:0.92em;color:#444;}
+	.tu .bm-cat--under {border-left-color:#f0c75e;} .tu .bm-cat--normal {border-left-color:#5cb87a;} .tu .bm-cat--over {border-left-color:#ee9a4d;} .tu .bm-cat--obese {border-left-color:#e0605a;}
+	.tu .bm-cat.is-on {background:#f8e2ed;font-weight:700;color:#1e2733;}
+	.tu .bm-chart svg {width:100%;height:auto;display:block;margin-bottom:0.8em;}
+	.tu .bm-cb--under {fill:#f0c75e;opacity:0.28;} .tu .bm-cb--normal {fill:#5cb87a;opacity:0.28;} .tu .bm-cb--over {fill:#ee9a4d;opacity:0.28;} .tu .bm-cb--obese {fill:#e0605a;opacity:0.28;}
+	.tu .bm-gl {stroke:#c3c9d2;stroke-width:0.5;} .tu .bm-ct {fill:#6a7280;font-size:11px;}
+	.tu .bm-line {fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linejoin:round;} .tu .bm-dot {fill:var(--accent);stroke:#fff;stroke-width:1.5;}
+	.tu #bm-table td {font-variant-numeric:tabular-nums;}
+	.tu .bm-del {cursor:pointer;border:0;background:transparent;color:#8a93a0;font-size:1.05em;padding:0.1em 0.4em;} .tu .bm-del:hover {color:#d1453b;}
+	body.dark-mode #bm .bm-small, body.dark-mode #bm .bm-ticks, body.dark-mode #bm .bm-ct {color:#a0a8b3;fill:#a0a8b3;}
+	body.dark-mode #bm .bm-pin, body.dark-mode #bm .bm-pin span {background:#e4e4e4;color:#1a1a1a;}
+	body.dark-mode #bm .bm-cat {color:#d1d6dc;} body.dark-mode #bm .bm-cat.is-on {background:rgba(255,255,255,0.1);color:#fff;}
+	body.dark-mode #bm .bm-gl {stroke:#555;} body.dark-mode #bm .bm-dot {stroke:#232323;}
+	body.dark-mode #bm #bm-units button {border-bottom-color:#444;}
+	@media (max-width: 600px) { .tu .bm-cats {grid-template-columns:1fr;} .tu #bm-units button {flex:1 1 100%;} }
+	@media print { .tu-seo, .bm-btns, #bm-setup .tu-note, #bm-examples, .bm-del {display:none !important;} }
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
 	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
 	@media (max-width: 600px) {
 		.inner-container { padding: 1em 0.75em; }
 
-		/* header: stack logo/title and follow-us icons instead of overlapping */
 		.header { display: flex; flex-wrap: wrap; align-items: center; }
 		.logo-image-container { flex: 0 0 auto; }
 		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
@@ -256,7 +329,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.social-container .info-bar__logo-container { margin-left: auto; }
 		#mes-logo { width: 110px; height: auto; }
 
-		/* nav bar: wrap since Donate/Subscribe/Links brings this to 9 items */
 		.info-bar-container { display: block; width: 100%; }
 		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
 		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
@@ -268,42 +340,137 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 		.page-content { padding: 1.2em 0 0 0; }
 
-		/* calculator inputs: stack the metric/imperial input panel above the
-		   BMI result panel instead of squeezing them into table-cells side
-		   by side */
-		#left-side-container, #right-side-container { display: block; width: 100%; box-sizing: border-box; padding-left: 0; }
-		#left-side-container { padding-bottom: 1em; margin-bottom: 1em; border-bottom: 0.15em solid #e1e1e1; }
-		#left-side-container span { display: block; width: auto; margin-bottom: 0.3em; }
-		#left-side-container input, .input, .input-answer { margin-left: 0; width: 100%; box-sizing: border-box; height: 2.4em; font-size: 1em; }
-		#imperial-container .height-div input { width: 48%; }
-		#imperial-container .height-div input:last-child { margin-left: 4% !important; }
-		#bmi-input-container input { width: 100%; box-sizing: border-box; height: 2.4em; font-size: 1em; }
-
-		/* footer: stack columns instead of squeezing table-cells side by side */
 		.footer { padding: 1.25em 0.75em; }
 		.footer__item-container { display: block; }
 		.footer__item { display: block; margin-bottom: 0.75em; }
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#b4559f;--accent-dark:#b4559f}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #46112c}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#2a1821;border-color:#46112c}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#2a1821;border-color:#46112c}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#2a1821}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu #bm-units button{border-bottom:1px solid #28323e}
+	body.dark-mode .tu .bm-verdict{border-left:5px solid #4f5966}
+	body.dark-mode .tu .bm-verdict.is-normal{border-left-color:#3ac56e}
+	body.dark-mode .tu .bm-verdict.is-under{border-left-color:#e3a41c}
+	body.dark-mode .tu .bm-verdict.is-over{border-left-color:#e37c1c}
+	body.dark-mode .tu .bm-verdict.is-obese{border-left-color:#a52f27}
+	body.dark-mode .tu .bm-small{color:#9a9da3}
+	body.dark-mode .tu .bm-pin{background:#3c4f67}
+	body.dark-mode .tu .bm-pin span{background:#3c4f67}
+	body.dark-mode .tu .bm-ticks{color:#9a9da3}
+	body.dark-mode .tu .bm-cat{border-left:4px solid #424242;color:#bbbbbb}
+	body.dark-mode .tu .bm-cat--under{border-left-color:#bb8b11}
+	body.dark-mode .tu .bm-cat--normal{border-left-color:#3e8e58}
+	body.dark-mode .tu .bm-cat--over{border-left-color:#ba6212}
+	body.dark-mode .tu .bm-cat--obese{border-left-color:#ac2720}
+	body.dark-mode .tu .bm-cat.is-on{background:#2a1821;color:#d1d6dc}
+	body.dark-mode .tu .bm-cb--under{fill:#f1cb6a}
+	body.dark-mode .tu .bm-cb--normal{fill:#8dcda2}
+	body.dark-mode .tu .bm-cb--over{fill:#f1aa6a}
+	body.dark-mode .tu .bm-cb--obese{fill:#e57b76}
+	body.dark-mode .tu .bm-gl{stroke:#3a424d}
+	body.dark-mode .tu .bm-ct{fill:#9a9da3}
+	body.dark-mode .tu .bm-dot{stroke:#333333}
+	body.dark-mode .tu .bm-del{color:#999da3}
+	body.dark-mode .tu .bm-del:hover{color:#e0827b}
+	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #b3529d;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #b3529d; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(179,82,157,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 </style>
-        <meta property="fb:app_id" content="1441259629447913" />
-        <meta name="author" content="BMI Calculator Staff">
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/bmicalculator" />            <meta property="og:title" content="BMI Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/bmicalculator/img/logo-big.png" />
-        <meta property="og:description" content="Use this BMI Calculator to calculate your body mass index by entering your height and weight! Free BMI Calculator and health tips on MES.fm." />
+        <meta property="og:description" content="Free BMI calculator: enter your weight and height in kg/cm or lb/ft/in to get your body mass index, your category, your healthy weight range and how much to gain or lose. WHO or Asian cut-offs, a gauge, and saved measurements with a BMI-over-time chart." />
 
-        <meta name="description" content="Use this BMI Calculator to calculate your body mass index by entering your height and weight! Free BMI Calculator and health tips on MES.fm.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@bmicalculator__">
+        <meta name="description" content="Free BMI calculator: enter your weight and height in kg/cm or lb/ft/in to get your body mass index, your category, your healthy weight range and how much to gain or lose. WHO or Asian cut-offs, a gauge, and saved measurements with a BMI-over-time chart.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="BMI Calculator">
-        <meta name="twitter:description" content="Use this BMI Calculator to calculate your body mass index by entering your height and weight! Free BMI Calculator and health tips on MES.fm.">
+        <meta name="twitter:description" content="Free BMI calculator: enter your weight and height in kg/cm or lb/ft/in to get your body mass index, your category, your healthy weight range and how much to gain or lose. WHO or Asian cut-offs, a gauge, and saved measurements with a BMI-over-time chart.">
         <meta name="twitter:image" content="https://mes.fm/bmicalculator/img/logo-big.png">
-        <meta name="twitter:image:alt" content="BMI Calculator">            <!-- Google Tag Manager -->
+        <meta name="twitter:image:alt" content="BMI Calculator">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "BMI Calculator", "url": "https://mes.fm/bmicalculator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free BMI calculator: enter your weight and height in kg/cm or lb/ft/in to get your body mass index, your category, your healthy weight range and how much to gain or lose. WHO or Asian cut-offs, a gauge, and saved measurements with a BMI-over-time chart."}
+        </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-K28F7WZ');</script>
-            <!-- End Google Tag Manager -->            
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
 <!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
     <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -458,135 +625,149 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 </script>
     <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
-            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K28F7WZ"
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/bmicalculator'><img height="88" width="88" id="logo" class="logo lazyload" alt="BMI Calculator logo" data-src="/bmicalculator/img/logo.png"></a>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/bmicalculator" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/bmicalculator/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/bmicalculator" tabindex="-1">BMI Calculator</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/bmicalculator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/bmicalculator/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/bmicalculator'>
-                                    <p class="calculator-title">BMI Calculator by MES</p>
+                                    <p class="calculator-title">BMI Calculator</p>
                                 </a>
-                                <p class="tag-line">The one stop for Health, Fitness, and Nutrition</p>                            </div>
+                                <p class="tag-line">Body mass index, healthy weight range and progress.</p>                            </div>
 
-                            <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
-		<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
-    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li>
-    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/BMICalculatorMES" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/bmicalculator__" target="_blank"></a></li>    <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/bmicalculator" target="_blank"></a></li>    <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/BMI_Calculator" target="_blank"></a></li>        </ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/bmicalculator'>Home</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/bmicalculator/health-tips'>Health Tips</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/bmicalculator/memes'>Memes</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/bmicalculator/body-mass-index'>What is BMI?</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/bmicalculator/bmi-chart'>BMI Chart</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/bmicalculator/bmi-formula'>BMI Formula</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/bmicalculator/sports'>Sports Articles</a></li>                            <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
-                                <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/bmicalculator'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/bmicalculator/health-tips'>Health Tips</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/bmicalculator/memes'>Memes</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/bmicalculator/body-mass-index'>What is BMI?</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">BMI Calculator</h1>                                        <p class="page-description">This BMI calculator calculates your BMI (Body Mass Index) by entering your height and weight. The BMI is meant to give you a general idea of what your weight should be for your height.<br><br>The formula used to calculate BMI can be found here: <a class="link" href="/bmicalculator/bmi-formula">BMI Formula</a>.
-            <br><br>Note that this index should only be used to give you a general idea of where body weight should be, so make sure to read the Important Notes below for more information.</p>                                    	<div id="main-content">
-		<div id="share-calc-button" class="button button--share-calc">Share Your BMI</div>
-		<div id="share-calc-url-container" class="share-calc-url-container hide">
-			<span class="right-arrow">&#9654;</span>
-			<input aria-label="url to share" id="url-to-share" class="share-calc-url">
-			<img src="https://mes.fm/main_img/scissors-icon.png" height="32" width="19" id="copy-link-button" class="scissors-icon">
-		</div>
-		<div id="left-side-container">
-			<div id="metric-container">
-				<p class="calculator-header">Metric Measurements</p>
-				<div class="weight-div">
-					<span>Weight (Kilograms)</span><input class="input" id="kilograms-input" placeholder="eg 65.8" type="text" autocomplete="off">
+                                    <h1 class="page-title">BMI Calculator</h1>                                        <p class="page-description">Free BMI calculator: enter your weight and height in kg/cm or lb/ft/in to get your body mass index, your category, your healthy weight range and how much to gain or lose. WHO or Asian cut-offs, a gauge, and saved measurements with a BMI-over-time chart.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="bm">
+		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
+
+		<div class="tu-card" id="bm-setup">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:1 1 14em;">
+					<span class="tu-label" id="bm-units-label">Units</span>
+					<div class="tu-seg" id="bm-units" role="group" aria-labelledby="bm-units-label" style="margin-top:0.3em;display:flex;">
+						<button type="button" data-u="m" aria-pressed="false">Metric (kg, cm)</button>
+						<button type="button" data-u="i" aria-pressed="true">US (lb, ft, in)</button>
+					</div>
 				</div>
-				<div class="height-div">
-					<span>Height (Centimeters)</span><input class="input" id="centimeters-input" placeholder = "eg 182.9" type="text" autocomplete="off">
+				<div class="tu-field" style="flex:1 1 14em;">
+					<label for="bm-scale">BMI scale</label>
+					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option></select>
 				</div>
 			</div>
-			<div id="imperial-container">
-				<p class="calculator-header">Imperial Measurements</p>
-				<div class="weight-div">
-					<span>Weight (Pounds)</span><input class="input" id="pounds-input" placeholder="eg 145.1" type="text" autocomplete="off">
-				</div>
-				<div class="height-div">
-					<span>Height (Feet - Inches)</span><input class="input" id="feet-input" placeholder = "eg 6" type="text" autocomplete="off"><input class="input" id="inches-input" placeholder = "eg 0" type="text" autocomplete="off">
-				</div>
-			</div>		
+
+			<div class="tu-row" style="margin-top:1em;" id="bm-metric">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-kg">Weight</label><div class="tu-suffix"><input id="bm-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 65.8"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-cm">Height</label><div class="tu-suffix"><input id="bm-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 182.9"><span>cm</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:1em;" id="bm-imperial">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-lb">Weight</label><div class="tu-suffix"><input id="bm-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 145.1"><span>lb</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-ft">Height</label><div class="tu-suffix"><input id="bm-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 6"><span>ft</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-in">&nbsp;</label><div class="tu-suffix"><input id="bm-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0"><span>in</span></div></div>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Both unit systems stay in step: type in either and the other fills in. Adults 20 and over only; see the notes below.</p>
 		</div>
 
-		<div id="right-side-container">
-			<div id="bmi-container">
-				<p class="calculator-header">BMI (Body Mass Index)</p>
-				<div class="bmi-div">
-					<div id="bmi-input-container">
-						<input aria-label="BMI Body Mass Index" id="bmi-input-result" class="input-answer" readonly="readonly" type="text" autocomplete="off">
-					</div>
-					<div id="check-mark-container">
-						<img width="85" height="60" src="https://mes.fm/main_img/green-check-mark.png" alt="green check mark">
-					</div>
-				</div>
-				<p id="result-text">Please enter your weight and height in the fields to the left.</p>
+		<div id="bm-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your weight and height to see your BMI &mdash; or try an example: </span><span class="tu-chips" id="bm-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="bm-out" hidden>
+			<div class="tu-stats" id="bm-hero" aria-live="polite"></div>
+			<div class="tu-card bm-verdict" id="bm-verdict" aria-live="polite"></div>
+			<div class="tu-card" id="bm-gauge-card">
+				<div class="tu-label">Where you are on the scale</div>
+				<div class="bm-gauge" id="bm-gauge" aria-hidden="true"></div>
+				<ul class="bm-cats" id="bm-cats"></ul>
 			</div>
-			<div id="bmi-categories-container">
-				<p class="category">Underweight: &lt; 18.5</p>
-				<p class="category">Normal weight: 18.5 - 24.9</p>
-				<p class="category">Overweight: 25 - 29.9</p>
-				<p class="category">Obese: &ge; 30</p>
+			<div class="bm-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copy link to this result</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="bm-save">Save this measurement</button>
+				<button type="button" class="tu-btn tu-btn--ghost bm-print">Print</button>
 			</div>
 		</div>
 
-		<div class="hide-div-button button selected">Important Notes on BMI</div>
-		<div class="box-border">
-			<h2 class="header2 header2--top">Important Notes on BMI</h2>
-		    <p class="sentence">It is important to note that the Body Mass Index is to be used as a general tool for determining a healthy body weight. Basically the BMI assumes a "normal" body weight for men and women of average height and average fitness or activity level. Several issues arise with this method and those are listed below:</p>
-			<ul class="list">
-				<li class="list__indent">The "normal" proportion is used for all heights and weights even though not everyone has the same body type</li>
-				<li class="list__indent">Even though taller people tend to be thinner on average, their larger bone mass usually skews their BMI to slightly larger values</li>
-				<li class="list__indent">Having high muscle mass can result in a higher BMI because muscle is more dense than fat and thus for the same height someone with a lot of muscle can weigh as much as someone with high body fat</li>
-				<li class="list__indent">In reality, the "normal" body weights for people vary from age, gender, and population</li>
+		<div id="bm-hist-card" hidden>
+			<h2>My measurements</h2>
+			<div class="tu-card">
+				<div class="tu-row" style="align-items:flex-end;" id="bm-addrow" hidden>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="bm-date">Date</label><input id="bm-date" class="tu-input" type="date"></div>
+					<div class="tu-field" style="flex:2 1 12em;"><label for="bm-note">Note (optional)</label><input id="bm-note" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. after holiday"></div>
+					<div class="tu-field tu-field--sm" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--primary" id="bm-add">Save</button> <button type="button" class="tu-btn tu-btn--ghost" id="bm-addcancel">Cancel</button></div>
+				</div>
+				<div id="bm-chart" class="bm-chart" role="img" aria-label="Chart of your saved BMI over time"></div>
+				<div class="tu-table-wrap"><table class="tu-table" id="bm-table"></table></div>
+				<div class="bm-btns">
+					<button type="button" class="tu-btn tu-btn--ghost" id="bm-csv">Copy as a spreadsheet table</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="bm-link-all">Copy link with my history</button>
+				</div>
+				<p class="tu-note" id="bm-store-note" style="margin-bottom:0;"></p>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How BMI is calculated</h2>
+			<p>Body Mass Index is your weight divided by your height squared:</p>
+			<p style="text-align:center;"><b>BMI = weight (kg) &divide; height (m)&sup2;</b> &nbsp;or&nbsp; <b>703 &times; weight (lb) &divide; height (in)&sup2;</b></p>
+			<p>For example, 65.8 kg at 182.9 cm is 65.8 &divide; (1.829 &times; 1.829) = <b>19.7</b>, in the normal range.</p>
+			<h3>BMI categories for adults</h3>
+			<div class="tu-table-wrap"><table class="tu-table" id="bm-ref"></table></div>
+			<p class="tu-note">The WHO standard cut-offs are used by most countries. The WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5) reflect the higher health risk at lower BMI in many Asian populations. Switch the <em>BMI scale</em> above to use them.</p>
+			<h3>Important notes on BMI</h3>
+			<p>BMI is a general screening tool, not a diagnosis. It assumes a &ldquo;normal&rdquo; proportion of weight to height for people of average build and activity, which has some limits:</p>
+			<ul>
+				<li>It does not tell muscle from fat: athletes and bodybuilders can have a high BMI with low body fat.</li>
+				<li>Body shape, bone structure, age, sex and ethnicity all change what a healthy weight looks like.</li>
+				<li>It does not show where fat is carried; a larger waist measurement is a separate risk marker.</li>
+				<li><strong>Children and teens</strong> (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use a growth chart such as the <a href="https://www.cdc.gov/bmi/child-teen-calculator/index.html" rel="nofollow noopener" target="_blank">CDC child and teen BMI calculator</a>.</li>
 			</ul>
-
-			<p class="sentence">
-			Thus it is important to take all this into account when trying to understand your BMI reading and also speak with a doctor or nutritionist before undergoing any new fitness routine or diet. One last thing to remember is that the "overweight", "underweight" readings shown in this BMI Calculator are relative to a pre-defined average "normal" body weight. This means that for bodybuilders and very fit people, sometimes it’s better being "overweight" because to them the BMI is stating they are heavier than "normal" people, which is in fact the goal most bodybuilders want to obtain.</p>
-
-			<h2 class="header2">Why is the BMI still used?</h2>
-			<p class="sentence">
-			Despite all the downfalls and limitations shown above that come with the body mass index, ironically those same limitations play a role in why it is still widely used. These same limitations still arise in many different health indices and frankly will always have limitations, to different degrees, because for the simple reason that every person is different and thus no single index can comprise all people. Since each and every health index has its limitations, the BMI is still used because it is the broadest and by far simplest index to calculate: just weight divided by height squared.</p>
-			<p class="sentence">
-			Even though different health indices exist such as Body Fat Percentage that are more accurate in predicting whether a certain person has a healthy body weight or not, the problem with those is that they require slightly more effort in obtaining the appropriate measurements for each individual. Not only that but the fact that there are many different indices and formulas for these methods, it makes comparing them more difficult as well.</p>
-
-			<p class="sentence">
-			The body mass index was developed in the 1800’s and has been widely used after World War 2 when it was used to link body weight with cardiovascular disease. Since then it has spread across the world and has thus already has amassed a great deal of data, not just people’s BMIs’ but in scholarly articles that use the simple BMI to link it to different health problems and diseases. Another major reason the BMI is still used is that it has the ability to compare many groups of people and even entire countries by their BMI. This is again simply possible because all that is needed is the height and weight of a person. With other indices, it would be substantially harder to obtain all the necessary data for even a few thousand people let alone in the millions! For example most Driver’s Licenses already have the height and weights listed on the card as well as stored online!</p>
-			<p class="sentence">
-			Thus for these reasons, the body mass index, despite its limitations, is still a useful tool to get a general idea of your body weight but at the end of the day, how healthy you feel is still the best calculator!</p>
+			<p>BMI is still popular because it is the simplest index to compute and has decades of research behind it. Talk to a doctor or dietitian before starting a new diet or fitness plan. <a href="/bmicalculator/body-mass-index">What is BMI?</a> &middot; <a href="/bmicalculator/bmi-chart">BMI chart</a> &middot; <a href="/bmicalculator/bmi-formula">BMI formula</a> &middot; <a href="/bmicalculator/health-tips">Health tips</a></p>
+			<h3>Is my data private?</h3>
+			<p>Yes. Your numbers and saved measurements stay in this browser. Nothing is uploaded unless you copy a link and share it yourself.</p>
 		</div>
 	</div>
-                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
                                         <div id="fastcomments-widget"></div>                                    </div>
 <!-- MES-BOTTOM-AD -->
 <div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
 <!-- /MES-BOTTOM-AD -->
-                                                                    </div>
+                            </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="bmicalculator" aria-label="More from BMI Calculator"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/bmicalculator/bmi-chart"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Chart</span><span class="mes-aside__tag">Guide</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator/bmi-formula"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Formula</span><span class="mes-aside__tag">Guide</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator/memes/day-after-leg-day"><img class="mes-aside__img" src="/bmicalculator/img/memes-thumbnail/day-after-leg-day-thumbnail-2.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Day After Leg Day</span><span class="mes-aside__tag">Meme</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/gradecalculator/weighted-average-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Weighted Average Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/timezone"><img class="mes-aside__img mes-aside__img--logo" src="/timezone/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Time Zone Converter</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
-    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><p class="social__text">Follow us!</p><ul class="social">
-		<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
-    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
-    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/BMICalculatorMES" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/bmicalculator__" target="_blank"></a></li>    <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/bmicalculator" target="_blank"></a></li>    <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/BMI_Calculator" target="_blank"></a></li>        </ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-    <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/bmicalculator">Home</a></li>
-                        <li class="navbar__item"><a target="_self" class="navbar__link" href="/bmicalculator/health-tips">Health Tips</a></li>
-                                <li class="navbar__item"><a target="_self" class="navbar__link" href="/bmicalculator/memes">Memes</a></li>
-                                <li class="navbar__item"><a target="_self" class="navbar__link" href="/bmicalculator/body-mass-index">What is BMI?</a></li>
-                                <li class="navbar__item"><a target="_self" class="navbar__link" href="/bmicalculator/bmi-chart">BMI Chart</a></li>
-                                <li class="navbar__item"><a target="_self" class="navbar__link" href="/bmicalculator/bmi-formula">BMI Formula</a></li>
-                                <li class="navbar__item"><a target="_self" class="navbar__link" href="/bmicalculator/sports">Sports Articles</a></li>
-                        <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/bmicalculator">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/bmicalculator/health-tips">Health Tips</a></li><li class="navbar__item"><a class="navbar__link" href="/bmicalculator/memes">Memes</a></li><li class="navbar__item"><a class="navbar__link" href="/bmicalculator/body-mass-index">What is BMI?</a></li><li class="navbar__item"><a class="navbar__link" href="/bmicalculator/bmi-chart">BMI Chart</a></li><li class="navbar__item"><a class="navbar__link" href="/bmicalculator/bmi-formula">BMI Formula</a></li><li class="navbar__item"><a class="navbar__link" href="/bmicalculator/sports">Sports Articles</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
-    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li>
-    </ul>
-                                    </div>                                                                            <!-- (Responsive) Vertical -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
                             </div>                            <!-- (Responsive) Horizontal -->
                                             </div><div id="footer" class="footer" role="contentinfo">
             <div class="footer__item-container">
@@ -622,8 +803,61 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script>$.getScript("/bmicalculator/js/calculatorffaf.js?v=1.4");</script>
-            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/display-controls.js?v=1.7" data-scale="main" data-dark="derive" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+	<script src="/bmicalculator/js/bmicalculator.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
 
-<!-- Mirrored from bmicalculator.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:42:51 GMT -->
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
 </html>

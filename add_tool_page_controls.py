@@ -60,6 +60,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)
     ("youtubemoney", "YouTube Money Calculator"),   # also built by build_tool_apps.py (ad-free)
     ("gpacalculator", "GPA Calculator"),   # also built by build_tool_apps.py (GPA Calculator 2.0)
+    ("bmicalculator", "BMI Calculator"),   # also built by build_tool_apps.py (BMI Calculator 2.0)
     ("gradecalculator", "Grade Calculator"),
     ("gradecalculator/weighted-average-calculator.html", "Grade Calculator", "/gradecalculator"),   # Weighted Average 2.0: a page inside the Grade Calculator folder   # also built by build_tool_apps.py (Grade Calculator 2.0)
     ("vatcalculator", "VAT Calculator"),   # also built by build_tool_apps.py (VAT Calculator 2.0)

@@ -51,6 +51,14 @@ const PAGES = [
     description:
       "MES posts on Bob Greenyer: a subscriber calls him a rich fake con man, plus the 9/11 revisionist spammer and the dust baggie nonsense.",
   },
+  {
+    // Tile only: no page is written. Links to the MH370 Teleportation Psyop hub (mes.fm/mh370, its own build.mjs), as mes.fm/conspiracy does;
+    // the icon is img/mh370-icon.jpg -- bump iconVersion if it is replaced.
+    slug: "mh370",
+    tileLabel: "MH370 Teleportation Psyop",
+    iconVersion: 1,
+    tileOnly: true,
+  },
 ];
 
 // ---------------------------------------------------------------------------

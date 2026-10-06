@@ -104,7 +104,7 @@ FAMILIES = {
         "name": "MES Tools",
         "hub": {"url": "/tools", "title": "All MES Tools", "kind": "Gallery", "img": "/img/tools-icon.jpg"},
         "collection": [
-            ("emoji", "Tool"), ("youtubemoney", "Calculator"), ("vatcalculator", "Calculator"), ("mortgagecalculator", "Calculator"), ("gradecalculator", "Calculator"), ("gpacalculator", "Calculator"), ("gradecalculator/weighted-average-calculator.html", "Calculator"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
+            ("emoji", "Tool"), ("youtubemoney", "Calculator"), ("vatcalculator", "Calculator"), ("mortgagecalculator", "Calculator"), ("gradecalculator", "Calculator"), ("gpacalculator", "Calculator"), ("bmicalculator", "Calculator"), ("gradecalculator/weighted-average-calculator.html", "Calculator"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
             ("speedreader", "Tool"), ("timer", "Tool"), ("youtube-thumbnail", "Tool"), ("share", "Tool"), ("search", "Tool"), ("calendar", "Tool"), ("copy-text", "Tool"), ("unit-conversion", "Calculator"), ("calculator", "Calculator"), ("days-between-dates-calculator", "Calculator"),
             ("cas-calculator", "Calculator"), ("derivative-calculator", "Calculator"), ("integral-calculator", "Calculator"),
             ("gematria", "Calculator"), ("impermanent-loss-calculator", "Calculator"), ("earth-curvature-calculator", "Calculator"),
