@@ -1,0 +1,64 @@
+	<div class="tu" id="ck">
+		<div class="tu-card ck-main" id="ck-main" data-theme="auto">
+			<div class="ck-bar">
+				<span class="ck-tz" id="ck-tzline"></span>
+				<span class="ck-sp"></span>
+				<button type="button" class="ck-icon" id="ck-full" title="Full screen (F)" aria-label="Full screen">⤢ Full screen</button>
+			</div>
+			<div class="ck-stage" id="ck-stage" aria-live="off">
+				<div class="ck-analog" id="ck-analog" hidden></div>
+				<div class="ck-digital" id="ck-digital">--:--:--</div>
+				<div class="ck-date" id="ck-date"></div>
+			</div>
+		</div>
+
+		<div class="tu-card" id="ck-opts">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:1 1 14em;"><span class="tu-label" id="ck-mode-l">Style</span>
+					<div class="tu-seg ck-seg" id="ck-mode" role="group" aria-labelledby="ck-mode-l" style="margin-top:0.3em;"><button type="button" data-m="digital" aria-pressed="true">Digital</button><button type="button" data-m="analog" aria-pressed="false">Analog</button><button type="button" data-m="both" aria-pressed="false">Both</button></div></div>
+				<div class="tu-field" style="flex:1 1 11em;"><span class="tu-label" id="ck-h-l">Hours</span>
+					<div class="tu-seg ck-seg" id="ck-h" role="group" aria-labelledby="ck-h-l" style="margin-top:0.3em;"><button type="button" data-h="12" aria-pressed="false">12 h</button><button type="button" data-h="24" aria-pressed="false">24 h</button></div></div>
+				<div class="tu-field" style="flex:2 1 16em;"><label for="ck-tz">Time zone</label>
+					<input id="ck-tz" class="tu-input" list="ck-zones" type="text" autocomplete="off" placeholder="Type a city: Tokyo, New York, London…"><datalist id="ck-zones"></datalist></div>
+			</div>
+			<div class="tu-row" style="align-items:flex-end;margin-top:0.8em;">
+				<div class="tu-field" style="flex:1 1 15em;"><span class="tu-label">Colours</span><div class="tu-chips ck-themes" id="ck-themes" role="group" aria-label="Clock colours" style="margin-top:0.3em;"></div></div>
+				<div class="tu-field" style="flex:1 1 11em;"><label for="ck-size">Size</label><input id="ck-size" type="range" min="1" max="5" step="1" style="width:100%;"></div>
+			</div>
+			<div class="ck-checks">
+				<label class="ck-check"><input type="checkbox" id="ck-sec"> Seconds</label>
+				<label class="ck-check"><input type="checkbox" id="ck-showdate"> Date</label>
+				<label class="ck-check"><input type="checkbox" id="ck-extra"> Week number and day of the year</label>
+				<label class="ck-check"><input type="checkbox" id="ck-title"> Time in the browser tab</label>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Press <kbd>F</kbd> for full screen: a big clock for a wall display, a classroom or a presentation, with the screen kept awake. Your choices are saved in this browser.</p>
+		</div>
+
+		<h2>More clocks</h2>
+		<div class="tu-card">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:2 1 16em;"><label for="ck-add">Add a city or time zone</label><input id="ck-add" class="tu-input" list="ck-zones" type="text" autocomplete="off" placeholder="e.g. Tokyo, Europe/Paris, Asia/Kolkata"></div>
+				<div class="tu-field tu-field--sm" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--primary" id="ck-add-go">+ Add</button></div>
+			</div>
+			<div class="tu-chips" id="ck-quick" role="group" aria-label="Popular cities" style="margin-top:0.6em;"></div>
+			<div class="ck-world" id="ck-world"></div>
+			<p class="tu-note" id="ck-world-note" style="margin-bottom:0;"></p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Online clock</h2>
+			<p>A big, clean online clock that shows the exact time for your location or any city in the world. Show it as a digital clock, an analog clock face with a smooth second hand, or both, in 12-hour or 24-hour format, and choose colours that suit the room, including a red night mode that is easy on the eyes.</p>
+			<h3>Ways to use it</h3>
+			<ul>
+				<li><strong>Full screen display.</strong> Press <em>Full screen</em> (or <kbd>F</kbd>) for a huge clock that fills the screen: great for a classroom wall, a stream or a meeting room.</li>
+				<li><strong>World clocks.</strong> Add as many as eight cities under <em>More clocks</em> to see what time it is for friends, family or colleagues, with day or night and how many hours ahead or behind they are.</li>
+				<li><strong>Time in the browser tab.</strong> Turn on <em>Time in the browser tab</em> to glance at the time while you work in another window.</li>
+				<li><strong>Share a clock.</strong> A link like <code>mes.fm/clock?tz=Asia/Tokyo&amp;mode=analog</code> opens the clock for Tokyo in analog style.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Is this the exact time?</h4>
+			<p>It shows your device&rsquo;s own clock, which phones and computers keep in step with internet time servers, so it is normally accurate to within a second or two. Daylight saving time is applied automatically for every time zone.</p>
+			<h4>Need to convert a meeting time, or count down?</h4>
+			<p>Use the <a href="/timezone">Time Zone Converter</a> to plan a meeting across zones, the <a href="/timer">Timer</a> for countdowns, stopwatch and alarms, and the <a href="/calendar">Calendar</a> for dates, moon phases and holidays.</p>
+		</div>
+	</div>

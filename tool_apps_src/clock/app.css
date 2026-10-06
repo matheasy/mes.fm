@@ -1,0 +1,53 @@
+	/* Clock */
+	.tu [hidden] {display:none !important;}
+	.tu kbd {font:0.85em ui-monospace,Menlo,monospace;padding:0.1em 0.4em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;color:#333;}
+	.tu .ck-seg {display:flex;flex-wrap:wrap;max-width:100%;}
+	.tu .ck-seg button {flex:1 1 auto;border-bottom:1px solid #dfe4ea;}
+	/* the clock face: colours come from the chosen theme (custom properties, literals so the dark-theme pass leaves them alone) */
+	.tu .ck-main {--ck-bg:#ffffff;--ck-fg:#1e2733;--ck-sub:#6a7280;--ck-line:#e3e7ec;--ck-acc:var(--accent);background:var(--ck-bg);border-color:var(--ck-line);transition:background 0.2s;}
+	.tu .ck-main[data-theme="dark"] {--ck-bg:#161a22;--ck-fg:#f2f4f8;--ck-sub:#9aa3b2;--ck-line:#2a303c;--ck-acc:#6cb2ff;}
+	.tu .ck-main[data-theme="night"] {--ck-bg:#000000;--ck-fg:#ff3b30;--ck-sub:#a8231c;--ck-line:#2a0a08;--ck-acc:#ff3b30;}
+	.tu .ck-main[data-theme="green"] {--ck-bg:#031a07;--ck-fg:#3dff6b;--ck-sub:#1fa83f;--ck-line:#0c3a14;--ck-acc:#3dff6b;}
+	.tu .ck-main[data-theme="amber"] {--ck-bg:#140c00;--ck-fg:#ffb000;--ck-sub:#a67200;--ck-line:#3a2700;--ck-acc:#ffb000;}
+	.tu .ck-main[data-theme="blue"] {--ck-bg:#0a1a3a;--ck-fg:#e8f1ff;--ck-sub:#8fb2ec;--ck-line:#1c3366;--ck-acc:#6cb2ff;}
+	.tu .ck-bar {display:flex;align-items:center;gap:0.6em;color:var(--ck-sub);font-size:0.9em;}
+	.tu .ck-sp {flex:1;}
+	.tu .ck-icon {cursor:pointer;border:1px solid var(--ck-line);border-radius:0.4em;background:transparent;color:var(--ck-sub);padding:0.25em 0.7em;font:inherit;font-size:0.95em;}
+	.tu .ck-icon:hover {color:var(--ck-fg);border-color:var(--ck-sub);}
+	.tu .ck-stage {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.3em;padding:0.8em 0 1em;--ck-scale:1;}
+	.tu .ck-stage[data-size="1"] {--ck-scale:0.55;} .tu .ck-stage[data-size="2"] {--ck-scale:0.78;} .tu .ck-stage[data-size="4"] {--ck-scale:1.2;} .tu .ck-stage[data-size="5"] {--ck-scale:1.45;}
+	.tu .ck-digital {font-variant-numeric:tabular-nums;font-weight:700;line-height:1.05;color:var(--ck-fg);font-size:calc(clamp(2.4em,10.5vw,5.6em) * var(--ck-scale));letter-spacing:0.01em;text-align:center;white-space:nowrap;max-width:100%;}
+	.tu .ck-digital small {font-size:0.38em;font-weight:600;margin-left:0.25em;color:var(--ck-sub);letter-spacing:0.04em;}
+	.tu .ck-date {color:var(--ck-sub);font-size:calc(1.15em * var(--ck-scale));text-align:center;line-height:1.35;}
+	.tu .ck-analog {width:calc(min(88%, 17em) * var(--ck-scale));}
+	.tu .ck-analog svg {width:100%;height:auto;display:block;}
+	.tu .ck-face {fill:none;stroke:var(--ck-line);stroke-width:2;} .tu .ck-tick {stroke:var(--ck-sub);stroke-width:1.2;} .tu .ck-tick--5 {stroke:var(--ck-fg);stroke-width:2.6;}
+	.tu .ck-num {fill:var(--ck-fg);font:600 15px system-ui,Helvetica,Arial,sans-serif;text-anchor:middle;dominant-baseline:central;}
+	.tu .ck-hand {stroke:var(--ck-fg);stroke-linecap:round;} .tu .ck-hand--s {stroke:var(--ck-acc);stroke-width:1.8;} .tu .ck-cap {fill:var(--ck-acc);}
+	.tu .ck-checks {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0 1em;margin:0.8em 0 0.5em;}
+	.tu .ck-check {display:flex;align-items:center;gap:0.5em;cursor:pointer;padding:0.25em 0;font-size:0.95em;}
+	.tu .ck-check input {width:1.1em;height:1.1em;cursor:pointer;}
+	.tu .ck-themes .tu-chip {display:inline-flex;align-items:center;gap:0.4em;}
+	.tu .ck-dot {width:0.9em;height:0.9em;border-radius:50%;border:1px solid #9aa3af;display:inline-block;}
+	.tu .ck-world {display:grid;grid-template-columns:repeat(auto-fill,minmax(14.5em,1fr));gap:0.7em;margin-top:0.9em;}
+	.tu .ck-w {border:1px solid #e3e7ec;border-radius:0.6em;padding:0.65em 0.8em;background:#fff;position:relative;}
+	.tu .ck-w b {display:block;font-size:1.02em;padding-right:1.6em;}
+	.tu .ck-w small {display:block;color:#6a7280;font-size:0.78em;line-height:1.35;}
+	.tu .ck-w .ck-wt {font-size:1.9em;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;margin:0.1em 0;color:#1e2733;}
+	.tu .ck-w .ck-x {position:absolute;top:0.4em;right:0.4em;cursor:pointer;border:0;background:transparent;color:#8a93a0;font-size:1.05em;padding:0.1em 0.4em;}
+	.tu .ck-w .ck-x:hover {color:#d1453b;}
+	/* full screen */
+	.tu .ck-main.ck-fs {position:fixed !important;inset:0;z-index:99998;margin:0 !important;border-radius:0 !important;border:0;display:flex !important;flex-direction:column;padding:1.5vh 2vw !important;}
+	.tu .ck-fs .ck-stage {flex:1;--ck-scale:1;padding:0;}
+	.tu .ck-fs .ck-digital {font-size:min(17vw,30vh);}
+	.tu .ck-fs .ck-date {font-size:min(3.4vw,5vh);}
+	.tu .ck-fs .ck-analog {width:min(80vh,60vw);}
+	.tu .ck-fs .ck-bar {font-size:min(2.4vw,3.2vh);}
+	body.dark-mode #ck .ck-w {background:#262626;border-color:#3a3a3a;} body.dark-mode #ck .ck-w .ck-wt {color:#f1f1f1;} body.dark-mode #ck .ck-w small {color:#a0a8b3;}
+	body.dark-mode #ck .ck-seg button {border-bottom-color:#444;} body.dark-mode #ck kbd {background:#2e2e2e;color:#ddd;border-color:#555;}
+	body.dark-mode #ck .ck-main[data-theme="auto"] {--ck-bg:#232323;--ck-fg:#f1f1f1;--ck-sub:#a0a8b3;--ck-line:#3a3a3a;--ck-acc:#6cb2ff;}
+	/* the page's dark-mode text colour would otherwise win over the clock's own theme colours */
+	body.dark-mode #ck .ck-main .ck-digital {color:var(--ck-fg);} body.dark-mode #ck .ck-main .ck-digital small, body.dark-mode #ck .ck-main .ck-date, body.dark-mode #ck .ck-main .ck-bar, body.dark-mode #ck .ck-main .ck-icon {color:var(--ck-sub);}
+	body.dark-mode #ck .ck-main .ck-icon:hover {color:var(--ck-fg);}
+	@media (max-width: 600px) {.tu .ck-seg button {flex:1 1 30%;}}
+	@media print {.tu-seo, #ck-opts, .ck-icon {display:none !important;}}

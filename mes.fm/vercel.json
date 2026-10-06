@@ -104,6 +104,7 @@
 
     { "source": "/pc", "destination": "/percentagecalculator", "permanent": true },
     { "source": "/pc/:path*", "destination": "/percentagecalculator/:path*", "permanent": true },
+    { "source": "/online-clock", "destination": "/clock", "permanent": true },
     { "source": "/gc", "destination": "/gradecalculator", "permanent": true },
     { "source": "/gc/:path*", "destination": "/gradecalculator/:path*", "permanent": true },
     { "source": "/gpa", "destination": "/gpacalculator", "permanent": true },

@@ -1,8 +1,8 @@
-<!DOCTYPE html>    <html lang="en">    
-<!-- Mirrored from timer.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:44:03 GMT -->
+<!DOCTYPE html>    <html lang="en">
+<!-- Timer by MES -- mes.fm/timer -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/timer/img/faviconc619.ico?v=1.0" type="image/x-icon" /><link rel="canonical" href="https://mes.fm/timer" />                    <title>Timer | Math Easy Solutions</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>                    <link rel="icon" href="/timer/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/timer" />                    <title>Timer by MES | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
 tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
@@ -40,7 +40,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .box-border {border:0.1em solid#a86706; padding:1em;margin-bottom: 1.2em;}
         .selected {background-color:#a86706;color:white;}
         .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#a86706;}
-        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#a86706;background-color:#ffebcf;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#a86706;background-color:#fdc010;}
         .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
         .scissors-icon {vertical-align:middle;cursor: pointer;}
         .hide {display:none;}
@@ -51,7 +51,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .sentence--indent {margin-left:1.5em;}
 
 .shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
-.link:hover {color:#935d0c;text-decoration:underline; cursor:pointer;}
+.link:hover {color:#7d4c04;text-decoration:underline; cursor:pointer;}
 
 .outer-container {width:68.25em;margin:0 auto;}
 .inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
@@ -66,8 +66,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .social-container {position:absolute;right:0;top:0;}
 .social-container--bottom {position:absolute;right:0;bottom:0;}
 .social {display: table-cell;}
-.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#a86706;}
-.social__logo {float:left;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#a86706;}.social__logo {float:left;}
 .social__logo:not(:last-child) {margin-right:0.5em;}
 .social__link {height:2em;width:2em;display:block;}
 .social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
@@ -98,7 +97,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .side-bar {width:18.75em;float:right;}
 .navbar-container {margin:2.1em 0.8em;}
 .navbar {margin-bottom:-1em;}
-.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#a86706;border:0.125em solid #a86706;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#a86706;border:0.125em solid#a86706;}
 
 .navbar__item:hover {cursor:pointer;}
 .navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
@@ -124,12 +123,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .footer__separator {color:white;}
 #copyright-year {color:white;}
 
-.active-tab {background-color: #ffebcf;color: #222222;}
-.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color: #935d0c;}
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#7d4c04;}
         .info-bar,.color-box,.navbar,.footer {background-color:#a86706;}
         .dropdown-symbol--dark {color:#a86706;}
         .button--active {background-color:#a86706;color:white;}
-        .navbar__dropdown-container {color: #222222;background-color:#ffebcf;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
         .header2--top {margin-top: 0.5em;}
         .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
         /* RESPONSIVE-FIX-INSERTED */
@@ -141,21 +140,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   img { max-width: 100% !important; height: auto !important; }
   table { max-width: 100% !important; }
 
-  /* keep only the site-content links in the header row on mobile (Home/
-     Donate/Subscribe/Links live in the hamburger dropdown instead, see
-     the unconditional block below the media query) -- kept mobile-only
-     since the full row already fits fine as a normal top nav on wider
-     screens */
   #info-bar > .info-bar__item:has(a[href$="index.html"]),
   #info-bar > .info-bar__item:has(a[href*="donate"]),
   #info-bar > .info-bar__item:has(a[href*="substack.com"]),
   #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
 }
 
-/* hamburger nav: reuses the existing #navbar-button/#navbar show/hide
-   (already wired up in main.js) -- CSS-only hamburger icon + dropdown
-   panel instead of the always-visible sidebar, at every screen width
-   (not just mobile), so no page reserves a right-hand column for it */
 .inner-container { position: relative !important; }
 .header .social-container { display: none !important; }
 .side-bar { width: auto !important; float: none !important; }
@@ -172,11 +162,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   font-size: 0;
 }
 
-/* on narrow screens the title/logo-text can wrap wide enough that its
-   flex-item bounding box runs under the absolutely-positioned hamburger
-   button (out of normal flow, so nothing naturally reserves space for
-   it) -- give the header a bit of right padding on mobile so wrapped
-   title text never renders underneath the button */
 @media (max-width: 768px) {
   .header { padding-right: 4em !important; box-sizing: border-box; }
 }
@@ -187,7 +172,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 }
 #navbar { display: none; }
 #navbar.hide {
-  display: block; box-sizing: border-box;
+  display: block !important; box-sizing: border-box;
   position: absolute; top: 76px; right: 16px; z-index: 19;
   width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
   scrollbar-gutter: stable;
@@ -195,86 +180,179 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
   border-radius: 0.25em;
 }
 
-/* dropdown polish: fix the icon/logo row overlapping the next nav item
-   (.info-bar__logo-container's global `display: table-cell` doesn't
-   behave without a table/table-row ancestor), and move "Follow us!" to
-   the bottom of the list instead of the top -- via flex order, not an
-   HTML move, since locating the true closing </ul> among the nested
-   .navbar__dropdown-container <ul>s isn't worth the risk */
-#navbar.hide { display: flex; flex-direction: column; }
+#navbar.hide { display: flex !important; flex-direction: column; }
 .navbar__item--social { order: 999; }
 .navbar__item--social .info-bar__logo-container { display: block !important; }
 
-/* now that the sidebar is gone, center the main content column in a
-   narrower page instead of leaving it flush-left in a wide, mostly-empty
-   .outer-container -- matches the plain centered-column layout
-   mes.fm/ufo already uses */
 .outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
 .outer-page-content { width: 100% !important; display: block !important; }
 .page-content { padding-right: 0 !important; }
 
 </style>	<style>
-	.timer-tool {text-align: center;}
-	.box-border {border:0.1em solid #a86706; padding:0.7em;}
-	.inputs {margin-top:1em; display: inline-block;}
-	.inputs__div {display: inline-block;text-align: left;}
-	.inputs__div--not-last {margin-right:1em;}
-	.inputs__div--bottom {margin-bottom:0;}
-	.bold {font-weight: 700;}
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
 
-	.inputs__input {height:1.5em;width:5em;font-size:1em;text-align: center;margin-left:0.5em;margin-right:0.3em;}
-	.inputs__input {margin-left: 0;}
-	.inputs__answer {height:2.15em;width:3em;font-size:1em;background-color: #EEEEEE;border: 0.1em solid #b2b2b2;display: table-cell;vertical-align: middle;text-align: center;}
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#a86706;--accent-dark:#7d4c04;--tint:#fdf0dc;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #fdf0dc;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#fdf0dc;border-color:#fdf0dc;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #fdf0dc;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#fdf0dc;border-color:#fdf0dc;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#fdf0dc;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#fdf0dc;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#d98508 !important;--accent-dark:#d98508 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
 
-	.digits {display: inline-block;vertical-align: bottom;}
-	.digits--small {font-size: 0.9em;}
-	.digit {font-size:2.5em;margin:0 0.2em 0 0.5em;}
-	.digit-first {margin-left: 0;}
-	.digit--milli {font-size:1.2em;}
+	/* Timer 2.0 */
+	.tu [hidden] {display:none !important;}
+	.tu kbd {font:0.85em ui-monospace,Menlo,monospace;padding:0.1em 0.4em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;color:#333;}
+	.tu .tm-tabs {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 0.8em;padding-bottom:0.2em;border-bottom:2px solid #fdf0dc;}
+	.tu .tm-tabs button {cursor:pointer;border:1px solid #c3c9d2;border-bottom:0;border-radius:0.5em 0.5em 0 0;background:#fff;color:#444;padding:0.55em 1em;font-size:1em;margin-bottom:-2px;}
+	.tu .tm-tabs button:hover {border-color:var(--accent);color:var(--accent);}
+	.tu .tm-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	.tu .tm-panel {margin-top:0;}
+	/* the ringing banner */
+	.tu .tm-ring {position:sticky;top:3.6em;z-index:40;margin:0 0 0.8em;padding:0.9em 1em;border-radius:0.6em;background:#d1453b;color:#fff;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.35);animation:tm-pulse 1s ease-in-out infinite;}
+	.tu .tm-ring__msg {font-size:1.25em;font-weight:700;margin-bottom:0.5em;word-break:break-word;}
+	.tu .tm-ring__btns {display:flex;flex-wrap:wrap;gap:0.5em;}
+	.tu .tm-ring__btns button {cursor:pointer;border:2px solid #fff;border-radius:0.4em;background:#fff;color:#a52a22;font:inherit;font-weight:700;padding:0.5em 1em;}
+	.tu .tm-ring__btns button.alt {background:transparent;color:#fff;}
+	@keyframes tm-pulse {50% {background:#b3342b;}}
+	@media (prefers-reduced-motion: reduce) {.tu .tm-ring {animation:none;}}
+	/* one countdown card */
+	.tu .tm-timer {border:1px solid #e3e7ec;border-radius:0.6em;padding:0.8em 0.9em 1em;margin-bottom:0.9em;background:#fff;}
+	.tu .tm-timer.is-running {border-color:var(--accent);box-shadow:0 0 0 2px #fdf0dc;}
+	.tu .tm-timer.is-done {border-color:#d1453b;background:#fff4f3;}
+	.tu .tm-head {display:flex;gap:0.5em;align-items:center;margin-bottom:0.4em;}
+	.tu .tm-label {flex:1 1 auto;min-width:0;border:0;border-bottom:1px dashed #c3c9d2;border-radius:0;background:transparent;padding:0.3em 0.1em;font-size:1em;font-weight:700;color:#333;}
+	.tu .tm-label:focus {outline:none;border-bottom-color:var(--accent);}
+	.tu .tm-icon {cursor:pointer;border:1px solid #c3c9d2;border-radius:0.4em;background:#fff;color:#555;padding:0.25em 0.6em;font-size:0.95em;line-height:1.3;}
+	.tu .tm-icon:hover {border-color:var(--accent);color:var(--accent);}
+	.tu .tm-face {font-variant-numeric:tabular-nums;font-weight:700;text-align:center;line-height:1.05;color:#1e2733;font-size:clamp(2.6em,12vw,5.2em);letter-spacing:0.01em;margin:0.1em 0 0.2em;}
+	.tu .tm-face small {font-size:0.45em;font-weight:400;color:#6a7280;}
+	.tu .tm-face--al {font-size:clamp(2em,9vw,3.4em);}
+	.tu .tm-bar {height:0.5em;border-radius:0.5em;background:#e8ebf0;overflow:hidden;margin:0.2em 0 0.8em;}
+	.tu .tm-bar > i {display:block;height:100%;width:0;background:var(--accent);transition:width 0.2s linear;}
+	.tu .tm-presets {display:flex;flex-wrap:wrap;gap:0.35em;justify-content:center;margin-bottom:0.6em;}
+	.tu .tm-set {display:flex;flex-wrap:wrap;gap:0.4em;justify-content:center;align-items:center;margin-bottom:0.7em;}
+	.tu .tm-set input {width:4.2em;text-align:center;}
+	.tu .tm-set span {color:#6a7280;font-weight:700;}
+	.tu .tm-btns {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.7em;}
+	.tu .tm-btns--center {justify-content:center;}
+	.tu .tm-big {font-size:1.1em;padding:0.6em 1.4em;min-width:6.5em;}
+	.tu .tm-status {text-align:center;margin:0.8em 0 0;font-size:1.05em;min-height:1.4em;}
+	.tu .tm-check {display:flex;align-items:center;gap:0.5em;cursor:pointer;padding:0.25em 0;font-size:0.95em;}
+	.tu .tm-check input {width:1.1em;height:1.1em;cursor:pointer;}
+	.tu .tm-checks {display:grid;grid-template-columns:repeat(auto-fit,minmax(17em,1fr));gap:0 1em;margin-top:0.6em;}
+	.tu .tm-settings {margin-top:1em;}
+	.tu #tm-laps td, .tu #tm-laps th {font-variant-numeric:tabular-nums;}
+	.tu #tm-laps .tm-fast td {color:#1f7a3d;font-weight:700;} .tu #tm-laps .tm-slow td {color:#b3261e;font-weight:700;}
+	/* full screen: one card fills the screen, the digits scale to the window */
+	.tu .tm-fs {position:fixed !important;inset:0;z-index:99998;margin:0 !important;border-radius:0 !important;display:flex !important;flex-direction:column;justify-content:center;align-items:center;background:#fff;padding:2vh 3vw !important;overflow:auto;}
+	.tu .tm-fs .tm-face {font-size:min(26vw,38vh);}
+	.tu .tm-fs .tm-label {text-align:center;font-size:clamp(1em,3vw,2em);max-width:80vw;}
+	.tu .tm-fs .tm-bar {width:70vw;height:1.2vh;}
+	.tu .tm-fs .tm-presets, .tu .tm-fs .tm-set {display:none;}
+	.tu .tm-fs .tm-btns .tu-btn {font-size:clamp(1em,2.4vw,1.8em);}
+	body.dark-mode #tm .tm-tabs button {background:#262626;color:#d1d6dc;border-color:#444;}
+	body.dark-mode #tm .tm-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode #tm .tm-timer {background:#262626;border-color:#3a3a3a;}
+	body.dark-mode #tm .tm-timer.is-running {border-color:var(--accent);}
+	body.dark-mode #tm .tm-timer.is-done {background:#3a1f1c;border-color:#d1453b;}
+	body.dark-mode #tm .tm-face {color:#f1f1f1;} body.dark-mode #tm .tm-face small, body.dark-mode #tm .tm-set span {color:#a0a8b3;}
+	body.dark-mode #tm .tm-label {color:#e8e8e8;border-bottom-color:#555;}
+	body.dark-mode #tm .tm-icon {background:#262626;color:#d1d6dc;border-color:#555;}
+	body.dark-mode #tm .tm-bar {background:#3a3a3a;}
+	body.dark-mode #tm .tm-fs {background:#161616;}
+	body.dark-mode #tm kbd {background:#2e2e2e;color:#ddd;border-color:#555;}
+	body.dark-mode #tm #tm-laps .tm-fast td {color:#7bd88f;} body.dark-mode #tm #tm-laps .tm-slow td {color:#ff8a80;}
+	@media (max-width: 600px) {
+		.tu .tm-big {flex:1 1 40%;padding:0.7em 0.5em;min-width:0;}
+		.tu .tm-set input {width:3.6em;}
+	}
+	@media print {.tu .tm-settings, .tu-seo, .tm-btns {display:none !important;}}
 
-	.hand {font-size:2em;}
-	.hand--milli {font-size:1em;}
-	.hand--small {font-size:1.2em;}
 
-	.text-title {font-weight: 700; text-align: center;margin-bottom: 1em;}
-	.text-title--large {max-width:100%;text-align: center;}
-	.text-title--underline {text-decoration: underline;}
-
-	.buttons-container {display: inline-block;}
-	.buttons-container--top {vertical-align: top;}
-
-	.button-switch {display:inline-block;margin-left:1em;width:18em;border-collapse: collapse;table-layout: fixed;}
-	.button-switch__cell {display: table-cell;width: 2%;} /* 2% because magic... (triggers the table-layout:fixed property) */
-
-	.button--browser {width:30%;display:inline-block;margin:0 0 0.5em 0;}
-	.button--more-margin {margin-bottom: 1em;}
-	.button--small {width:6em; display:inline-block; margin:0 0 0 2em;}
-	.button--last {margin-left:0.5em;}
-	.button--blue {color:#7a7ecb;border-color:#7a7ecb;}
-	.button--red {color:red;border-color:red;}
-	.button--green {color:green;border-color:green;}
-	.button--gray {color:gray;border-color:gray;}
-
-	.active-button {background-color:#a86706;color:white;}
-	.active-button--blue {background-color: #7a7ecb; color:white;}
-	.hover:hover {background-color: #a86706;color:white;}
-	.hover--red:hover {background-color: red;color:white;}
-	.hover--green:hover {background-color: green;color:white;}
-
-	.selected {background-color: #a86706;color:white;}
-	.selected--gray {background-color: gray;color:white;}
-	.hide {display: none;}
-
-	.split {width:90%;margin-left: auto;margin-right: auto;}
-	.split__table {width:100%;}
-	.split__table__cell {display: table-cell;padding:0.5em 0;border:0.1em solid #888;}
-
-		
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
 	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
 	@media (max-width: 600px) {
 		.inner-container { padding: 1em 0.75em; }
 
-		/* header: stack logo/title and follow-us icons instead of overlapping */
 		.header { display: flex; flex-wrap: wrap; align-items: center; }
 		.logo-image-container { flex: 0 0 auto; }
 		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
@@ -287,7 +365,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.social-container .info-bar__logo-container { margin-left: auto; }
 		#mes-logo { width: 110px; height: auto; }
 
-		/* nav bar: wrap since Donate/Subscribe/Links brings this to 9 items */
 		.info-bar-container { display: block; width: 100%; }
 		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
 		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
@@ -299,19 +376,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 		.page-content { padding: 1.2em 0 0 0; }
 
-		/* timer/stopwatch digits and the fixed-width button-switch/box-border
-		   are sized in em for a desktop-width column; shrink the digits and
-		   let the fixed-width controls go full-width instead of overflowing */
-		.digit { font-size: 1.6em; margin: 0 0.1em 0 0.25em; }
-		.hand { font-size: 1.3em; }
-		.box-border { width: 100%; box-sizing: border-box; }
-		.button-switch { width: 100%; margin-left: 0; }
-		.button--browser { width: 100%; }
-		.button--small { width: auto; margin: 0.3em; }
-		.buttons-container { display: flex; flex-wrap: wrap; justify-content: center; }
-		.inputs__input { width: 3.5em; }
-
-		/* footer: stack columns instead of squeezing table-cells side by side */
 		.footer { padding: 1.25em 0.75em; }
 		.footer__item-container { display: block; }
 		.footer__item { display: block; margin-bottom: 0.75em; }
@@ -360,38 +424,79 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
-	/* dark-mode contrast fixes (hand-written; outside the generated block) */
-	body.dark-mode .selected--gray{background-color:#5c5c5c;color:#fff !important}
-	body.dark-mode .active-button--blue{background-color:#4a4fa8;color:#fff !important;border-color:#4a4fa8}
-
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
 	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
 	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .box-border{border:0.1em solid #f69709}
-	body.dark-mode .inputs__answer{background-color:#202020;border:0.1em solid #5c5c5c}
-	body.dark-mode .button--blue{color:#8a8dd1;border-color:#393e93}
-	body.dark-mode .split__table__cell{border:0.1em solid #6b6b6b}
+	body.dark-mode .tu{--accent:#f79b13;--accent-dark:#f79a12}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #533405}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#2f2514;border-color:#533405}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#2f2514;border-color:#533405}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#2f2514}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
+	body.dark-mode .tu .tm-tabs{border-bottom:2px solid #533405}
+	body.dark-mode .tu .tm-tabs button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
+	body.dark-mode .tu .tm-ring__btns button{border:2px solid #333333;background:#1a1a1a;color:#e37e78}
+	body.dark-mode .tu .tm-timer{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .tu .tm-timer.is-done{border-color:#a52f27;background:#25100e}
+	body.dark-mode .tu .tm-label{border-bottom:1px dashed #3a424d;color:#cccccc}
+	body.dark-mode .tu .tm-icon{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu .tm-face{color:#d1d6dc}
+	body.dark-mode .tu .tm-face small{color:#9a9da3}
+	body.dark-mode .tu .tm-bar{background:#1f2126}
+	body.dark-mode .tu .tm-set span{color:#9a9da3}
+	body.dark-mode .tu #tm-laps .tm-fast td{color:#7dde9d}
+	body.dark-mode .tu #tm-laps .tm-slow td{color:#e87973}
+	body.dark-mode .tu .tm-fs{background:#1a1a1a}
 	/* TOOL-DARK:END */
 </style>
-        <meta property="fb:app_id" content="1180556328628368" />
-        <meta name="author" content="Timer Staff">
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://mes.fm/timer" />            <meta property="og:title" content="Timer | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/timer/img/logo-big.png" />
-        <meta property="og:description" content="This is an online timer website that has a countdown timer, alarm clock, and stopwatch that also shows up in the browser tab!" />
+        <meta property="og:url" content="https://mes.fm/timer" />            <meta property="og:title" content="Timer by MES | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/timer/img/logo-big.png" />
+        <meta property="og:description" content="Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up." />
 
-        <meta name="description" content="This is an online timer website that has a countdown timer, alarm clock, and stopwatch that also shows up in the browser tab!">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@timermes">
-        <meta name="twitter:title" content="Timer">
-        <meta name="twitter:description" content="This is an online timer website that has a countdown timer, alarm clock, and stopwatch that also shows up in the browser tab!">
+        <meta name="description" content="Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="Timer by MES">
+        <meta name="twitter:description" content="Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up.">
         <meta name="twitter:image" content="https://mes.fm/timer/img/logo-big.png">
-        <meta name="twitter:image:alt" content="Timer">            <!-- Google Tag Manager -->
+        <meta name="twitter:image:alt" content="Timer by MES">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Timer by MES", "url": "https://mes.fm/timer", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up."}
+        </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-PDDGRDZ');</script>
-            <!-- End Google Tag Manager --><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">            
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
 <!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
     <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -546,10 +651,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 </script>
     <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
-            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PDDGRDZ"
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/timer" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/timer/img/logo.png"></a>
+  <a href="/timer" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/timer/img/logo.png?v=2"></a>
   <a class="compact-nav-title" href="/timer" tabindex="-1">Timer</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
@@ -561,157 +666,143 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/timer'><img height="88" width="88" id="logo" class="logo lazyload" alt="Timer logo" data-src="/timer/img/logo.png"></a>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/timer'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/timer/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/timer'>
                                     <p class="calculator-title">Timer by MES</p>
                                 </a>
                                 <p class="tag-line">Online timer, stopwatch, alarm clock and inspirational quotes!</p>                            </div>
 
-                            <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
-		<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
-    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li>
-    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/mestimer" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/timermes" target="_blank"></a></li>    <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/timermes" target="_blank"></a></li>    <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/timermes" target="_blank"></a></li>        </ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/timer'>Home</a></li>                                    <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/timer/inspirational-quotes'>Inspirational Quotes</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/timer'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/clock'>Clock</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/timer/inspirational-quotes'>Inspirational Quotes</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Timer</h1>                                        <p class="page-description">This is an online timer website that has a countdown timer, alarm clock, and stopwatch that also shows up in the browser tab!<br><br>
-			This means that when you are working on your computer, you will always know what the timer is at just by looking at the browser tab, without having to view the webpage itself, thus saving you time!</p>                                    <div id="main-content" data-tool data-text-scale>
-	<div class="hide-div-button button selected">Countdown Timer</div>
-	<div class="box-border">
-		<div class="button button--gray button--browser selected--gray">Show on Browser Tab</div>
-		<div class="timer-tool">
-			<div class="digits digits--small">
-				<span class="digit digit--first" id="hours-result">00</span><span class="hand">h</span>
-				<span class="digit" id="minutes-result">05</span><span class="hand">m</span>
-				<span class="digit" id="seconds-result">00</span><span class="hand">s</span>
-				<span class="digit digit--milli" id="milli-result">000</span><span class="hand hand--milli">ms</span>
+                                    <h1 class="page-title">Timer</h1>                                        <p class="page-description">Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="tm">
+		<div class="tm-tabs" id="tm-tabs" role="tablist" aria-label="Timer tools">
+			<button type="button" role="tab" data-tab="cd" aria-selected="true">⏱ Countdown</button>
+			<button type="button" role="tab" data-tab="sw" aria-selected="false">⏲ Stopwatch</button>
+			<button type="button" role="tab" data-tab="al" aria-selected="false">⏰ Alarm</button>
+		</div>
+
+		<div id="tm-ring" class="tm-ring" role="alertdialog" aria-live="assertive" hidden>
+			<div class="tm-ring__msg" id="tm-ring-msg"></div>
+			<div class="tm-ring__btns" id="tm-ring-btns"></div>
+		</div>
+
+		<section id="tm-cd" class="tu-card tm-panel" role="tabpanel">
+			<div id="tm-timers"></div>
+			<div class="tm-btns">
+				<button type="button" class="tu-btn tu-btn--ghost" id="tm-add">+ Add another timer</button>
 			</div>
-			<div class="button-switch">
-				<div class="button button--blue active-button--blue button-switch__cell" id="friendly-sound-button">Friendly Sound</div>
-				<div class="button button--blue button-switch__cell" id="annoying-sound-button">Annoying Sound</div>
-				<div class="button button--blue button-switch__cell" id="sound-off-button">Sound Off</div>
+			<p class="tu-note">Quick start: type a time in the box, such as <code>25</code>, <code>1h 30m</code> or <code>2:30</code>, or press a preset. <kbd>Space</kbd> starts or pauses the first timer.</p>
+		</section>
+
+		<section id="tm-sw" class="tu-card tm-panel" role="tabpanel" hidden>
+			<div class="tm-face tm-face--sw" id="tm-sw-face" aria-live="off">00:00<small>.00</small></div>
+			<div class="tm-btns tm-btns--center">
+				<button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-sw-go">Start</button>
+				<button type="button" class="tu-btn tm-big" id="tm-sw-lap" disabled>Lap</button>
+				<button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-sw-reset">Reset</button>
+				<button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-sw-full" title="Full screen">⤢ Full screen</button>
 			</div>
-			<div class="inputs">
-				<div class="inputs__div">
-					<input type="number" id="hours-input" class="inputs__input" value ="00" placeholder="eg 2" step="1" min="0"><span class="hand--small">h</span>
-				</div>
-				<div class="inputs__div">
-					<input type="number" id="minutes-input" class="inputs__input" value="05" placeholder="eg 5" step="1" min="0"><span class="hand--small">m</span>
-				</div>
-				<div class="inputs__div">
-					<input type="number" id="seconds-input" class="inputs__input" value="00" placeholder="eg 30" step="1" min="0"><span class="hand--small hand--last">s</span>
-				</div>
+			<div id="tm-laps-box" hidden>
+				<div class="tu-table-wrap"><table class="tu-table" id="tm-laps"></table></div>
+				<div class="tm-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tm-laps-copy">Copy laps</button></div>
 			</div>
-			<div class="buttons-container">
-				<div class="button button--small hover" id="start-button">Start</div>
-				<div class="button button--small hover hide" id="pause-button">Pause</div>
-				<div class="button button--small hover hide" id="resume-button">Resume</div>
-				<div class="button button--small hover hide" id="stop-button">Stop</div>
-				<div class="button button--small button--last button--red hover--red" id="reset-button">Reset</div>
+			<p class="tu-note"><kbd>Space</kbd> start / pause &middot; <kbd>L</kbd> lap &middot; keeps counting if you reload the page.</p>
+		</section>
+
+		<section id="tm-al" class="tu-card tm-panel" role="tabpanel" hidden>
+			<div class="tm-face tm-face--al" id="tm-al-now" aria-live="off">--:--:--</div>
+			<div class="tu-row" style="align-items:flex-end;justify-content:center;">
+				<div class="tu-field tu-field--sm" style="flex:0 1 11em;"><label for="tm-al-time">Ring at</label><input id="tm-al-time" class="tu-input tu-input--big" type="time" step="60"></div>
+				<div class="tu-field" style="flex:1 1 12em;max-width:18em;"><label for="tm-al-label">Label (optional)</label><input id="tm-al-label" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Meeting"></div>
 			</div>
-			<div class="split">
-				<div class="button button--green hover--green button--split" id="split-button">Split Time</div>
-				<table class="split__table" id="countdown-split-table"></table>
+			<label class="tm-check" style="justify-content:center;"><input type="checkbox" id="tm-al-daily"> Repeat every day</label>
+			<div class="tm-btns tm-btns--center">
+				<button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-al-set">Set alarm</button>
+				<button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-al-clear" hidden>Cancel alarm</button>
 			</div>
+			<p class="tm-status" id="tm-al-status" aria-live="polite"></p>
+			<p class="tu-note"><b>Keep this page open.</b> The alarm rings from your browser, so the tab has to stay open (it can be in the background) and your computer awake. For a phone, a countdown timer with the screen kept awake is more reliable.</p>
+		</section>
+
+		<div class="tu-card tm-settings" id="tm-settings">
+			<div class="tu-label">Sound and options</div>
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:1 1 13em;"><label for="tm-sound">When time is up</label>
+					<select id="tm-sound" class="tu-select">
+						<option value="friendly">Friendly (grandfather clock)</option>
+						<option value="annoying">Annoying (alarm clock)</option>
+						<option value="beep">Beeps</option>
+						<option value="chime">Chime</option>
+						<option value="off">Silent</option>
+					</select></div>
+				<div class="tu-field" style="flex:1 1 9em;"><label for="tm-repeat">Repeat</label>
+					<select id="tm-repeat" class="tu-select"><option value="1">Once</option><option value="3">3 times</option><option value="0">Until I stop it</option></select></div>
+				<div class="tu-field" style="flex:1 1 10em;"><label for="tm-vol">Volume</label><input id="tm-vol" type="range" min="0" max="100" step="5" style="width:100%;"></div>
+				<div class="tu-field tu-field--sm" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--ghost" id="tm-test">▶ Test sound</button></div>
+			</div>
+			<div class="tm-checks">
+				<label class="tm-check"><input type="checkbox" id="tm-opt-title"> Show the time in the browser tab</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-awake"> Keep the screen awake while running</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-notify"> Pop-up notification when time is up</label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-tenths"> Show tenths of a second</label>
+			</div>
+			<p class="tu-note" id="tm-store-note" style="margin-bottom:0;"></p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Online timer, stopwatch and alarm clock</h2>
+			<p>This free online timer works on your computer and your phone, with no sign-up and nothing to install. Use it as a <strong>countdown timer</strong> for cooking, workouts, studying, tests and meetings, as a <strong>stopwatch</strong> with lap times, or as an <strong>alarm clock</strong> for a specific time of day.</p>
+			<h3>What it can do</h3>
+			<ul>
+				<li><strong>Several timers at once.</strong> Press <em>+ Add another timer</em> and give each one a label: pasta, laundry, tea.</li>
+				<li><strong>See the time in the browser tab.</strong> While a timer runs, its time is in the tab title, so you can work in another window and still check it at a glance.</li>
+				<li><strong>Keeps counting.</strong> Reload the page or close the tab: a running timer or stopwatch carries on from the real clock, and a timer that finished while you were away says so.</li>
+				<li><strong>Full screen.</strong> The expand button makes a huge, easy-to-read countdown for a classroom, a presentation or the gym wall.</li>
+				<li><strong>Your sound, your volume.</strong> Friendly or annoying alarm, beeps, a chime or silence; once, three times or until you stop it. Use <em>Test sound</em> to check your speakers.</li>
+				<li><strong>Share a timer.</strong> A link like <code>mes.fm/timer?t=25m&amp;label=Focus</code> opens a ready-to-start 25-minute timer. Add <code>&amp;start=1</code> to start it at once.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Will the timer still work if I switch tabs?</h4>
+			<p>Yes. It measures time from your computer&rsquo;s clock, not by counting ticks, so it stays accurate in a background tab. Browsers may delay the alert by up to a second or so when a tab is hidden.</p>
+			<h4>Why did I not hear the sound?</h4>
+			<p>Browsers only allow sound after you have clicked something on the page, so press <em>Start</em> (or <em>Test sound</em>) at least once. Check your volume, and that the tab is not muted.</p>
+			<p>Related: <a href="/clock">Clock</a> &middot; <a href="/timezone">Time Zone Converter</a> &middot; <a href="/calendar">Calendar</a> &middot; <a href="/timer/inspirational-quotes">Inspirational quotes</a></p>
 		</div>
 	</div>
-
-	<div class="hide-div-button button selected">Stopwatch</div>
-	<div class="box-border">
-		<div class="button button--gray button--browser button--more-margin">Show on Browser Tab</div>
-		<div class="timer-tool">
-			<div class="digits">
-				<span class="digit digit--first" id="hours-result-2">00</span><span class="hand">h</span>
-				<span class="digit" id="minutes-result-2">00</span><span class="hand">m</span>
-				<span class="digit" id="seconds-result-2">00</span><span class="hand">s</span>
-				<span class="digit digit--milli" id="milli-result-2">000</span><span class="hand hand--milli">ms</span>
-			</div>
-			<div class="buttons-container buttons-container--top">
-				<div class="button button--small hover" id="start-button-2">Start</div>
-				<div class="button button--small hover hide" id="pause-button-2">Pause</div>
-				<div class="button button--small hover hide" id="resume-button-2">Resume</div>
-								<div class="button button--small button--last button--red hover--red" id="reset-button-2">Reset</div>
-			</div>
-			<div class="split">
-				<div class="button button--green hover--green button--split" id="split-button-2">Split Time</div>
-				<table class="split__table" id="countdown-split-table-2"></table>
-			</div>
-		</div>
-	</div>
-
-	<div class="hide-div-button button selected">Alarm Clock</div>
-	<div class="box-border">
-		<div class="button button--gray button--browser">Show on Browser Tab</div>
-		<div class="timer-tool">
-			<div class="digits">
-				<span class="digit digit--first" id="hours-result-alarm">00</span><span class="hand">h</span>
-				<span class="digit" id="minutes-result-alarm">00</span><span class="hand">m</span>
-				<span class="digit" id="seconds-result-alarm">00</span><span class="hand">s</span>
-			</div>
-			<div class="button-switch">
-				<div class="button button--blue active-button--blue button-switch__cell" id="friendly-sound-button-alarm">Friendly Sound</div>
-				<div class="button button--blue button-switch__cell" id="annoying-sound-button-alarm">Annoying Sound</div>
-				<div class="button button--blue button-switch__cell" id="sound-off-button-alarm">Sound Off</div>
-			</div>
-			<div class="inputs">
-				<div class="inputs__div">
-					<input type="number" id="hours-input-alarm" class="inputs__input" placeholder="h" step="1" min="0" max="23"><span class="hand--small">:</span>
-				</div>
-				<div class="inputs__div">
-					<input type="number" id="minutes-input-alarm" class="inputs__input inputs__input--alarm" placeholder="m" step="1" min="0" max="59"><span class="hand--small">:</span>
-				</div>
-				<div class="inputs__div">
-					<input type="number" id="seconds-input-alarm" class="inputs__input inputs__input--alarm" placeholder="s" step="1" min="0" max="59">				</div>
-				<select id="am-pm-alarm" class="inputs__input inputs__input--ampm">
-					<option value="am" selected>AM</option>
-					<option value="pm">PM</option>
-					<option value="24">24 HR</option>
-				</select>
-			</div>
-			<div class="buttons-container">
-				<div class="button button--small hover" id="start-button-alarm">Start</div>
-				<div class="button button--small hover hide" id="stop-button-alarm">Stop</div>
-			</div>
-		</div>
-	</div>
-
-</div>
-                                    <!-- (Responsive) Rectangle Ad -->
-                                                                        <!-- PC (Responsive/Rectangle) Matched Content -->
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
                                         <div id="fastcomments-widget"></div>                                    </div>
 <!-- MES-BOTTOM-AD -->
 <div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
 <!-- /MES-BOTTOM-AD -->
-                                                                    </div>
+                            </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/youtube-thumbnail"><img class="mes-aside__img mes-aside__img--logo" src="/youtube-thumbnail/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">YouTube Thumbnail Grabber</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/search"><img class="mes-aside__img mes-aside__img--logo" src="/search/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Site Search</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/clock"><img class="mes-aside__img mes-aside__img--logo" src="/clock/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Online Clock</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/search"><img class="mes-aside__img mes-aside__img--logo" src="/search/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Site Search</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
-    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><p class="social__text">Follow us!</p><ul class="social">
-		<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
-    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
-    <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/mestimer" target="_blank"></a></li>    <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/timermes" target="_blank"></a></li>    <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/timermes" target="_blank"></a></li>    <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/timermes" target="_blank"></a></li>        </ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-    <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/timer">Home</a></li>
-                        <li class="navbar__item"><a target="_self" class="navbar__link" href="/timer/inspirational-quotes">Inspirational Quotes</a></li>
-                        <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/timer">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/clock">Clock</a></li><li class="navbar__item"><a class="navbar__link" href="/timer/inspirational-quotes">Inspirational Quotes</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
-    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li>
-    </ul>
-                                    </div>                                                                            <!-- (Responsive) Vertical -->
-                                        
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
                             </div>                            <!-- (Responsive) Horizontal -->
                                             </div><div id="footer" class="footer" role="contentinfo">
             <div class="footer__item-container">
@@ -747,7 +838,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script>$.getScript("/timer/js/calculator3661.js?v=2.0");</script>
+	<script src="/timer/js/timer.js?v=1" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
@@ -804,5 +895,4 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   })();
 </script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
-<!-- Mirrored from timer.mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:44:10 GMT -->
 </html>

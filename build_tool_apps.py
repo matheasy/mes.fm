@@ -199,6 +199,22 @@ APPS = {
                           js_v="1",
                           nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bmicalculator/health-tips'>Health Tips</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bmicalculator/memes'>Memes</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bmicalculator/body-mass-index'>What is BMI?</a></li>",
                           menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/health-tips\">Health Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/body-mass-index\">What is BMI?</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/bmi-chart\">BMI Chart</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/bmi-formula\">BMI Formula</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/sports\">Sports Articles</a></li>"),
+    # Timer 2.0 (rewritten 2026-10-06; keeps its orange accent + logo, the timer/ folder's quote galleries and audio are untouched): several countdown timers, stopwatch with laps, alarm clock,
+    # full screen, sounds (the two old mp3s + synthesised beeps / chime), tab-title time, wake lock, notifications, ?t=25m&label=&start=1 links. lib.js = pure helpers (tests: tool_apps_src/timer-tests.js).
+    "timer": dict(title="Timer by MES", page_title="Timer",
+                  tag="Online timer, stopwatch, alarm clock and inspirational quotes!", accent="#a86706", dark="#7d4c04", tint="#fdf0dc",
+                  desc="Free online timer: a countdown timer (run several at once), a stopwatch with lap times and an alarm clock. Full-screen big display, the time in your browser tab, sounds you choose, and share links. No sign-up.",
+                  js_v="1",
+                  nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/clock'>Clock</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer/inspirational-quotes'>Inspirational Quotes</a></li>",
+                  menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/clock\">Clock</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer/inspirational-quotes\">Inspirational Quotes</a></li>"),
+    # Clock (new 2026-10-06, mes.fm/clock; companion of the Timer): big digital / analog / both clock for any time zone, colour themes (incl. a red night mode), full screen with wake lock, up to eight
+    # world clocks. lib.js = Intl-based zone maths (tests: tool_apps_src/clock-tests.js). Placeholder PIL logos until Grok art.
+    "clock": dict(title="Clock by MES", page_title="Online Clock",
+                  tag="A big, clean clock for any time zone.", accent="#2563a8", dark="#1c4a80", tint="#e3eefb",
+                  desc="Free online clock: a big digital, analog or both clock for your location or any city, 12 or 24 hour, with colour themes including a red night mode, a full-screen display that keeps your screen awake, and world clocks for up to eight cities.",
+                  js_v="1",
+                  nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li>",
+                  menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li>"),
     # Site Index: a page inventory + template audit of the whole of mes.fm. Data = mes.fm/site-index/pages.json written by build_site_index.py (fetched lazily by app.js);
     # app.js = dashboard, filterable / sortable table, group-by, URL tree, template gallery, CSV / Markdown export; tests: tool_apps_src/site-index-tests.py. Wide page, no sidebar, ad-free (an internal audit page).
     "site-index": dict(title="MES Site Index", page_title="Site Index",
