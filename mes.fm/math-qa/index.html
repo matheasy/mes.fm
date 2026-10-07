@@ -2057,7 +2057,12 @@ body.dark-mode .ls-empty { color: #aaa; }
     </div>
     </div>
 <div class="list-view list-view--compact view-hidden" id="mathQaLivestreamsStats">
-    <div class="list-row">
+    <div class="list-row" data-cats="">
+      <h3>72: Stats</h3>
+      <p><a href="https://mes.fm/math-qa-72-stats" target="_blank" rel="noopener">MES</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2kwmaev5u" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35628" target="_blank" rel="noopener">Telegram</a></p>
+      <img class="list-thumb" src="https://mes.fm/math-qa-72-stats/img/stats-screen.png" alt="">
+    </div>
+    <div class="list-row" data-cats="">
       <h3>71: Stats</h3>
       <p><a href="https://mes.fm/math-qa-71-stats" target="_blank" rel="noopener">MES</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-65mktyu4" target="_blank" rel="noopener">Hive</a> - <a href="https://t.me/meslinks/35530" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmWkDaYKKRygyeMcskvkUXxg39C7YPvnNUhCYZdY2oX8hr/telegram-cloud-photo-size-1-4997088063016078455-y.jpg" alt="">
@@ -2187,15 +2192,15 @@ body.dark-mode .ls-empty { color: #aaa; }
       wireViewToggle('mathQaLivestreams', ["Stats"]);
   // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
   // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
-  // items each chip would give in the pane that is showing. The Stats tab has nothing to filter, so
-  // the filter bar hides there. #<category> in the URL preselects a chip; Esc clears.
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
   function wireFilter(id) {
     var box = document.getElementById(id + 'Filter');
     var input = document.getElementById(id + 'Search');
     var chips = document.getElementById(id + 'Chips');
     var empty = document.getElementById(id + 'Empty');
     if (!box || !input || !chips) return;
-    var panes = ['Grid', 'List', 'Trailers'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
     var cat = 'all';
 
     function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }

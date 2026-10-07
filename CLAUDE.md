@@ -848,7 +848,7 @@ its `PAGES` array) — never hand-edit those generated files, and `git status` a
 `mes.fm/math-qa` also has the search box + category chips of `/livestreams` (2026-09-26): `QA_CATEGORIES` in `math/build.mjs` (title regexes:
 Aether -- Ionel Dinu's series, "What is the Aether?", Michelson-Morley, stellar aberration; Electromagnetism; Free Energy; Moon; 9/11), items
 get `data-cats`, and the CSS/JS (`FILTER_CSS`/`FILTER_JS`, a copy of the widget in `livestreams/build.mjs` -- keep the two in step) are emitted
-only for a section that sets `filter`, so the other five pages stay byte-identical. After a `math` build, `git checkout math/link-meta.json`.
+only for a section that sets `filter`, so the other five pages stay byte-identical. **Stats tab (2026-10-07):** each entry of the Q/A `extraViews` "Stats" list (`math-qa-72-stats`, `math-qa-71-stats`, newest first) inherits the `cats` of the Q/A with the same number (the build throws if none matches), and `wireFilter` now includes the Stats pane, so the search box and chips filter that tab like `/livestreams` does (the filter bar no longer hides there). New stats page: mirror it (clone the last `math-qa-N-stats` page), add it to `extraViews` in `math/build.mjs`, seed its `math/link-meta.json` entry by hand, rebuild and `git checkout` the rest of `link-meta.json`. After a `math` build, `git checkout math/link-meta.json`.
 
 `mes.fm/hutchison/build.mjs` (2026-09-26) is **no longer a Hive mirror**: it was re-cloned from `math/build.mjs`, so `mes.fm/hutchison`
 is a tile hub like `mes.fm/math` (10 icon tiles + an "Important Links" list) and emits **ten** pages -- the hub plus

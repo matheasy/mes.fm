@@ -1955,6 +1955,24 @@
       }
     ]
   },
+  "https://mes.fm/math-qa-72-stats": {
+    "image": "https://mes.fm/math-qa-72-stats/img/stats-screen.png",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mes/re-leothreads-2kwmaev5u"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35628"
+      },
+      {
+        "label": "More math links",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
   "https://mes.fm/math-qa-8-high-frequency-radio-waves": {
     "image": "https://i.ytimg.com/vi/lprjXQDvA3I/maxresdefault.jpg",
     "watchLinks": [

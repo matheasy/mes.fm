@@ -115,7 +115,12 @@ const SECTIONS = [
       {
         id: "stats",
         label: "Stats",
-        items: [{ href: "https://mes.fm/math-qa-71-stats", title: "71: Stats" }],
+        // Newest first. Each stats page gets the filter chips (`cats`) of the Q/A it belongs to, copied
+        // from the Q/A item with the same number (see the QA_CATEGORIES block below).
+        items: [
+          { href: "https://mes.fm/math-qa-72-stats", title: "72: Stats" },
+          { href: "https://mes.fm/math-qa-71-stats", title: "71: Stats" },
+        ],
       },
     ],
     items: [
@@ -279,6 +284,12 @@ qaSection.filterPlaceholder = "Search Q/A livestreams\u2026";
 qaSection.items.forEach((item) => {
   if (!item.standalone) item.cats = QA_CATEGORIES.filter((c) => c.test(item.title)).map((c) => c.id).join(" ");
 });
+// Stats pages belong to their Q/A ("72: Stats" -> the chips of "72: What is a Ground Rod ...").
+qaSection.extraViews.forEach((view) => view.items.forEach((item) => {
+  const qa = qaSection.items.find((q) => !q.standalone && q.title.startsWith(item.title.split(":")[0] + ":"));
+  if (qa) item.cats = qa.cats;
+  else throw new Error("No Q/A item found for stats page: " + item.title);
+}));
 
 const FILTER_CSS = `/* Search box + category chips (same look as the chips on mes.fm/calculators). */
 .ls-filter { margin: 0 0 1em; }
@@ -308,15 +319,15 @@ body.dark-mode .ls-empty { color: #aaa; }
 // Client script for the filter (see buildFilter()); String.raw so the regex backslashes survive.
 const FILTER_JS = String.raw`  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
   // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
-  // items each chip would give in the pane that is showing. The Stats tab has nothing to filter, so
-  // the filter bar hides there. #<category> in the URL preselects a chip; Esc clears.
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
   function wireFilter(id) {
     var box = document.getElementById(id + 'Filter');
     var input = document.getElementById(id + 'Search');
     var chips = document.getElementById(id + 'Chips');
     var empty = document.getElementById(id + 'Empty');
     if (!box || !input || !chips) return;
-    var panes = ['Grid', 'List', 'Trailers'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
     var cat = 'all';
 
     function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }

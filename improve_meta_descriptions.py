@@ -179,6 +179,7 @@ HAND_WRITTEN = {
     "mortgagecalculator/dream-homes/tepoztlan-lounge-in-tepoztlan-mexico.html": "The Tepoztlan Lounge near Mexico City, designed by Cadaval & Sol\u00e0-Morales, is a concrete lounge built around living trees as a tribute to nature. A dream home feature.",
     "percentagecalculator/interesting-facts/40-of-the-world-is-free.html": "According to Freedom House, only about 40% of the world's countries are free. See what the 2016 report says about freedom of expression, politics and economics.",
     "math-qa-71-stats/index.html": "MES Math Q/A 71 livestream stats: views, watch time and audience numbers for the livestream. Mirrored from Hive and Telegram.",
+    "math-qa-72-stats/index.html": "MES Math Q/A 72 livestream stats: views, watch time and audience numbers for the livestream. Mirrored from Hive and Telegram.",
 }
 
 
