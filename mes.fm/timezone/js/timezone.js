@@ -755,14 +755,15 @@
 		commit();
 	});
 
-	$("tz-copy").addEventListener("click", function () {
+	function copyLink(btn) {
 		var link = linkFor();
 		$("tz-link").value = link;
 		try { history.replaceState(null, "", link); } catch (e) {}   // only on explicit share
 		function ok() {
-			var c = $("tz-copied");
+			var c = $("tz-copied"), old = btn.textContent;
 			c.classList.remove("hide");
-			setTimeout(function () { c.classList.add("hide"); }, 1600);
+			btn.textContent = "Copied \u2713";   // the button you pressed confirms too (the top one is far from the "Copied" note)
+			setTimeout(function () { c.classList.add("hide"); btn.textContent = old; }, 1600);
 		}
 		if (navigator.clipboard && navigator.clipboard.writeText) {
 			navigator.clipboard.writeText(link).then(ok, function () { $("tz-link").select(); document.execCommand("copy"); ok(); });
@@ -771,7 +772,9 @@
 			document.execCommand("copy");
 			ok();
 		}
-	});
+	}
+	$("tz-copy").addEventListener("click", function () { copyLink(this); });
+	$("tz-copy-top").addEventListener("click", function () { copyLink(this); });
 
 	window.addEventListener("hashchange", function () {
 		var q = readHash();
