@@ -94,12 +94,12 @@
 	var KEY = "mes-bmicalculator:v1", memOnly = false;
 	var EXAMPLES = [["6 ft, 145 lb", { kg: "65.77", cm: "182.88" }], ["170 cm, 85 kg", { kg: "85", cm: "170" }], ["5 ft 4 in, 120 lb", { kg: "54.43", cm: "162.56" }]];
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-	var st = { kg: "", cm: "", units: /^en-(US|LR|MM)$/i.test(navigator.language || "") ? "i" : "m", scale: "who", history: [] };
+	var st = { kg: "", cm: "", units: "b", scale: "who", history: [] };
 	function load() {
-		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { st.kg = String(s.kg || ""); st.cm = String(s.cm || ""); st.units = s.units === "m" ? "m" : s.units === "i" ? "i" : st.units; st.scale = s.scale === "asia" ? "asia" : "who"; st.history = (Array.isArray(s.history) ? s.history : []).map(BM.cleanEntry).filter(Boolean); } } catch (e) { memOnly = true; }
+		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { st.kg = String(s.kg || ""); st.cm = String(s.cm || ""); st.units = s.ru === "m" || s.ru === "i" ? s.ru : "b"; st.scale = s.scale === "asia" ? "asia" : "who"; st.history = (Array.isArray(s.history) ? s.history : []).map(BM.cleanEntry).filter(Boolean); } } catch (e) { memOnly = true; }
 	}
 	function save() {
-		try { localStorage.setItem(KEY, JSON.stringify(st)); memOnly = false; } catch (e) { memOnly = true; }
+		try { localStorage.setItem(KEY, JSON.stringify(Object.assign({ ru: st.units }, st))); memOnly = false; } catch (e) { memOnly = true; }
 		$("bm-store-note").textContent = memOnly ? "Your browser is blocking storage, so your measurements will be lost when you close this tab. Copy a link to keep them." : st.history.length + (st.history.length === 1 ? " measurement" : " measurements") + " saved in this browser.";
 	}
 	function toast(msg) {
@@ -130,18 +130,17 @@
 	}
 	["bm-kg", "bm-cm"].forEach(function (id) { $(id).addEventListener("input", function () { fromMetric(); save(); update(); }); });
 	["bm-lb", "bm-ft", "bm-in"].forEach(function (id) { $(id).addEventListener("input", function () { fromImperial(); save(); update(); }); });
-	$("bm-units").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.units = b.dataset.u; save(); showUnits(); });
+	$("bm-units").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.units = b.dataset.u; save(); showUnits(); update(); });
 	$("bm-scale").addEventListener("change", function () { st.scale = this.value; save(); update(); });
 	function showUnits() {
 		[].forEach.call($("bm-units").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.u === st.units)); });
-		$("bm-metric").hidden = st.units !== "m"; $("bm-imperial").hidden = st.units !== "i";
 	}
 
 	$("bm-examples").innerHTML = EXAMPLES.map(function (x, i) { return '<button type="button" class="tu-chip" data-i="' + i + '">' + esc(x[0]) + "</button>"; }).join("");
 	$("bm-examples").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var x = EXAMPLES[+b.dataset.i][1]; st.kg = x.kg; st.cm = x.cm; fillOthers(); save(); update(); });
 
 	/* ---------- result ---------- */
-	function wt(kg) { return st.units === "i" ? BM.trim(BM.kgToLb(kg), 1) + " lb" : BM.trim(kg, 1) + " kg"; }
+	function wt(kg) { var lb = BM.trim(BM.kgToLb(kg), 1) + " lb", k = BM.trim(kg, 1) + " kg"; return st.units === "i" ? lb : st.units === "m" ? k : lb + " (" + k + ")"; }
 	function stat(l, v, s, c) { return '<div class="tu-stat' + (c ? " " + c : "") + '"><div class="tu-stat__label">' + l + '</div><div class="tu-stat__value">' + v + '</div><div class="tu-stat__sub">' + s + "</div></div>"; }
 	var cur = null;
 	var GAUGE = { min: 14, max: 42 };

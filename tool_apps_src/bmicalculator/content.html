@@ -4,10 +4,11 @@
 		<div class="tu-card" id="bm-setup">
 			<div class="tu-row" style="align-items:flex-end;">
 				<div class="tu-field" style="flex:1 1 14em;">
-					<span class="tu-label" id="bm-units-label">Units</span>
+					<span class="tu-label" id="bm-units-label">Show results in</span>
 					<div class="tu-seg" id="bm-units" role="group" aria-labelledby="bm-units-label" style="margin-top:0.3em;display:flex;">
-						<button type="button" data-u="m" aria-pressed="false">Metric (kg, cm)</button>
-						<button type="button" data-u="i" aria-pressed="true">US (lb, ft, in)</button>
+						<button type="button" data-u="b" aria-pressed="true">Both</button>
+						<button type="button" data-u="m" aria-pressed="false">Metric</button>
+						<button type="button" data-u="i" aria-pressed="false">US</button>
 					</div>
 				</div>
 				<div class="tu-field" style="flex:1 1 14em;">
@@ -16,6 +17,7 @@
 				</div>
 			</div>
 
+			<p class="tu-note" style="margin:1em 0 0;"><b>Mix units freely:</b> type weight in kg or lb and height in cm or ft + in, in any combination &mdash; the other fields fill in as you type.</p>
 			<div class="tu-row" style="margin-top:1em;" id="bm-metric">
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-kg">Weight</label><div class="tu-suffix"><input id="bm-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 65.8"><span>kg</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-cm">Height</label><div class="tu-suffix"><input id="bm-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 182.9"><span>cm</span></div></div>
@@ -25,7 +27,7 @@
 				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-ft">Height</label><div class="tu-suffix"><input id="bm-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 6"><span>ft</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-in">&nbsp;</label><div class="tu-suffix"><input id="bm-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0"><span>in</span></div></div>
 			</div>
-			<p class="tu-note" style="margin-bottom:0;">Both unit systems stay in step: type in either and the other fills in. Adults 20 and over only; see the notes below.</p>
+			<p class="tu-note" style="margin-bottom:0;">Every field stays in step with its twin. Adults 20 and over only; see the notes below.</p>
 		</div>
 
 		<div id="bm-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your weight and height to see your BMI &mdash; or try an example: </span><span class="tu-chips" id="bm-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
