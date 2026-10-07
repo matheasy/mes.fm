@@ -475,7 +475,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tm-dp__tile {position:relative;} .tm-dp .tm-grip {position:absolute;top:0.5vmin;left:0.8vmin;cursor:grab;border:0;background:transparent;color:var(--dp9);font-size:2.2vmin;line-height:1;padding:0.6vmin 0.9vmin;touch-action:none;user-select:none;opacity:0.7;} .tm-dp .tm-grip:hover {opacity:1;color:var(--dp17);} .tm-dp .tm-grip:active {cursor:grabbing;} .tm-dp .tm-grip:focus-visible {outline:2px solid var(--dp17);border-radius:0.4em;}
 	.tm-dp .tm-dragging {z-index:60;box-shadow:0 1.4vmin 4vmin rgba(0,0,0,0.75);cursor:grabbing;} .tm-dp .tm-sorting {user-select:none;-webkit-user-select:none;}
 
-	.tm-dp__tile.is-clock .tm-dp__t {white-space:nowrap;font-size:clamp(1.6em,9.5vmin,9em);} .tm-dp__n1 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(17vmin,13vw);} .tm-dp__n2 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(12vmin,8.5vw);} .tm-dp__n3 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n4 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(8.5vmin,6.2vw);} .tm-dp__n5 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n6 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(6.5vmin,4.6vw);} .tm-dp__n7 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n8 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n9 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(5vmin,3.7vw);}
+	.tm-dp__tile.is-clock .tm-dp__t {white-space:nowrap;font-size:clamp(1.8em,12vmin,11em);} .tm-dp__n1 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(24vmin,17vw);} .tm-dp__n2 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(16vmin,11vw);} .tm-dp__n3 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n4 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(11vmin,8vw);} .tm-dp__n5 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n6 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(6.5vmin,4.6vw);} .tm-dp__n7 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n8 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n9 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(5vmin,3.7vw);}
 
 	.tu .tm-tabpin {display:inline-flex;align-items:center;gap:0.15em;} .tu .tm-tabpin b {font-size:0.85em;line-height:1;}
 	.tu .tm-tabpin[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
@@ -498,6 +498,13 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 	body.tm-compact #tm #tm-secs .tu-note, body.tm-compact #tm .tm-addrow, body.tm-compact #tm .tm-others, body.tm-compact #tm .tu-seo, body.tm-compact #tm .tm-onmain {display:none !important;}
 	.tu [data-compact][aria-pressed="true"] {border-color:var(--accent);color:var(--accent);}
+
+	.tu .tm-alarm__cd {display:none !important;}
+	.tu .tm-al-cds {margin:0 0 0.6em;} .tu .tm-al-cds:empty {display:none;} .tu .tm-al-cd {display:flex;flex-direction:column;align-items:center;line-height:1.1;} .tu .tm-al-cd__t {font-size:3.4em;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent);} .tu .tm-al-cd__l {font-size:0.85em;color:#6a7280;margin-top:0.15em;}
+	.tu .tm-al-cd--more {margin-top:0.5em;} .tu .tm-al-cd--more .tm-al-cd__t {font-size:1.8em;}
+	body.dark-mode #tm .tm-al-cd__l {color:#a0a8b3;}
+	.tm-dp__t2 {color:var(--dp14);font-variant-numeric:tabular-nums;font-weight:800;line-height:1.05;font-size:clamp(2.2em,16vmin,15em);} .tm-dp__t2[hidden] {display:none;}
+	.tm-dp__n1 .tm-dp__t2 {font-size:min(30vmin,22vw);} .tm-dp__n2 .tm-dp__t2 {font-size:min(21vmin,15vw);} .tm-dp__n3 .tm-dp__t2, .tm-dp__n4 .tm-dp__t2 {font-size:min(15vmin,11vw);} .tm-dp__n5 .tm-dp__t2, .tm-dp__n6 .tm-dp__t2 {font-size:min(11vmin,8vw);} .tm-dp__n7 .tm-dp__t2, .tm-dp__n8 .tm-dp__t2, .tm-dp__n9 .tm-dp__t2 {font-size:min(8.5vmin,6.5vw);}
 
 
 	@media print {
@@ -613,6 +620,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tm-dp{--dp6:#c14848;--dp15:#2edb6e}
 	body.dark-mode .tu .tm-size button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
 	body.dark-mode .tm-dp__rb button{border:2px solid #333333;background:#1a1a1a;color:#e48077}
+	body.dark-mode .tu .tm-al-cd__l{color:#9a9da3}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -982,7 +990,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=17" defer></script>
+	<script src="/timer/js/timer.js?v=18" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
