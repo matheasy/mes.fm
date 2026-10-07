@@ -809,6 +809,14 @@ if (typeof module !== 'undefined' && module.exports) module.exports = GC;
 		paintTheatre(); setTimeout(resize, 60);
 	});
 	paintTheatre();
+	/* Fill window: cover the whole browser window (not the Fullscreen API), Esc leaves */
+	function setWin(on) {
+		document.body.classList.toggle('gc-win', on); $('gc-win').setAttribute('aria-pressed', String(on));
+		$('gc-win').textContent = on ? 'Exit window' : 'Fill window'; if (on) window.scrollTo(0, 0);
+		setTimeout(function () { setTimeout(resize, 60); }, 40);
+	}
+	$('gc-win').addEventListener('click', function () { setWin(!document.body.classList.contains('gc-win')); });
+	document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.body.classList.contains('gc-win') && !document.fullscreenElement) setWin(false); });
 	$('gc-full').addEventListener('click', function () { if (document.fullscreenElement) document.exitFullscreen(); else if (stage.requestFullscreen) stage.requestFullscreen(); });
 	document.addEventListener('fullscreenchange', function () { setTimeout(resize, 50); });
 	if (window.ResizeObserver) new ResizeObserver(resize).observe(stage); else window.addEventListener('resize', resize);

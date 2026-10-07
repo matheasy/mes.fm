@@ -1182,6 +1182,14 @@ if (typeof module !== 'undefined' && module.exports) module.exports = G3;
 		paintTheatre(); setTimeout(function () { resize(); }, 60);
 	});
 	paintTheatre();
+	/* Fill window: cover the whole browser window (not the Fullscreen API), Esc leaves */
+	function setWin(on) {
+		document.body.classList.toggle('g3-win', on); $('g3-win').setAttribute('aria-pressed', String(on));
+		$('g3-win').textContent = on ? 'Exit window' : 'Fill window'; if (on) window.scrollTo(0, 0);
+		setTimeout(function () { setTimeout(function () { resize(); }, 60); }, 40);
+	}
+	$('g3-win').addEventListener('click', function () { setWin(!document.body.classList.contains('g3-win')); });
+	document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.body.classList.contains('g3-win') && !document.fullscreenElement) setWin(false); });
 	$('g3-full').addEventListener('click', function () { if (document.fullscreenElement) document.exitFullscreen(); else if (stage.requestFullscreen) stage.requestFullscreen(); });
 	document.addEventListener('fullscreenchange', function () { setTimeout(function () { resize(); }, 50); });
 	if (window.ResizeObserver) new ResizeObserver(function () { resize(); }).observe(stage); else window.addEventListener('resize', function () { resize(); });
