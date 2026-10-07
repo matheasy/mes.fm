@@ -493,6 +493,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .tm-timer .tm-big {font-size:1em;padding:0.45em 1em;min-width:5.2em;} .tu .tm-timer .tm-presets {margin-bottom:0.45em;} .tu .tm-timer .tm-bar {margin-bottom:0.5em;}
 	@media (max-width:600px) {.tu .tm-timer .tm-big {flex:0 1 auto;padding:0.5em 0.9em;min-width:4.6em;}}
 
+	.tu .tm-timer .tm-presets, .tu .tm-presets {flex-wrap:nowrap;overflow-x:auto;justify-content:safe center;scrollbar-width:thin;padding-bottom:0.15em;} .tu .tm-presets .tu-chip {flex:0 0 auto;padding:0.25em 0.7em;}
+	.tu .tm-solo-label {display:flex;align-items:center;gap:0.4em;} .tu .tm-solo-label .tm-label {flex:1;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -886,8 +889,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-field tu-field--sm" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--ghost" id="tm-test">▶ Test sound</button></div>
 			</div>
 			<div class="tm-checks">
-				<label class="tm-check"><input type="checkbox" id="tm-opt-title"> Show the time in the browser tab</label>
-				<label class="tm-check tm-titlepick">Show in the tab: <select class="tu-select tm-titlesel" aria-label="Which timer shows in the browser tab"></select></label>
+				<label class="tm-check"><input type="checkbox" id="tm-opt-title"> Show the time in the browser tab (pick which with the tab icon on a timer)</label>
 				<label class="tm-check"><input type="checkbox" id="tm-opt-awake"> Keep the screen awake while running</label>
 				<label class="tm-check"><input type="checkbox" id="tm-opt-notify"> Pop-up notification when time is up</label>
 				<label class="tm-check"><input type="checkbox" id="tm-opt-tenths"> Show tenths of a second</label>
@@ -972,7 +974,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:5
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=13" defer></script>
+	<script src="/timer/js/timer.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
