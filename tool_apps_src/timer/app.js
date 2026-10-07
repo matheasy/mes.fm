@@ -21,9 +21,9 @@
 	/* ---------- state ---------- */
 	function newTimer(total) { return { id: uid(), label: "", total: total || 300000, rem: total || 300000, end: 0, st: "idle" }; }
 	function newSw() { return { id: uid(), label: "", st: "idle", startAt: 0, base: 0, laps: [] }; }
-	function newAlarm() { return { id: uid(), time: "", label: "", daily: false, on: false, at: 0, snooze: 0 }; }
+	function newAlarm() { return { id: uid(), time: "", label: "", daily: false, cd: false, on: false, at: 0, snooze: 0 }; }
 	var S = {
-		show: ["cd", "sw", "al"], display: null, order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, optAwake: true, optNotify: false, optTenths: false,
+		show: ["cd", "sw", "al"], display: null, order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, nobar: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, optAwake: true, optNotify: false, optTenths: false,
 		timers: [newTimer(300000)], sws: [newSw()], alarms: [newAlarm()],
 		po: { label: "", focus: 25, short: 5, long: 15, rounds: 4, auto: true, phase: "focus", round: 1, st: "idle", end: 0, rem: 25 * 60000, day: "", done: 0 },
 		iv: { label: "", prep: 10, work: 20, rest: 10, rounds: 8, st: "idle", startAt: 0, base: 0 },
@@ -40,14 +40,14 @@
 			if (Array.isArray(s.show)) S.show = s.show.filter(function (v) { return PANELS[v]; });
 			if (Array.isArray(s.order)) { var o = s.order.filter(function (v) { return PANELS[v]; }); ORDER.forEach(function (v) { if (o.indexOf(v) < 0) o.push(v); }); S.order = o; }
 			S.layout = s.layout === "stack" ? "stack" : "auto";
-			S.zoom = num(s.zoom, 1, 0.4, 2.5); S.fit = !!s.fit; S.win = !!s.win; if (s.fs === "screen") S.fs = "screen";
+			S.zoom = num(s.zoom, 1, 0.4, 2.5); S.fit = !!s.fit; S.win = !!s.win; S.nobar = !!s.nobar; if (s.fs === "screen") S.fs = "screen";
 			if (s.collapsed && typeof s.collapsed === "object") S.collapsed = s.collapsed;
 			if (Array.isArray(s.display)) S.display = s.display.filter(function (k) { return typeof k === "string"; }).slice(0, 60);
 			if (Array.isArray(s.timers) && s.timers.length) S.timers = s.timers.slice(0, 8).map(function (t) { return { id: String(t.id || uid()), label: String(t.label || "").slice(0, 60), total: +t.total > 0 ? +t.total : 300000, rem: +t.rem >= 0 ? +t.rem : (+t.total || 300000), end: +t.end || 0, st: /^(idle|run|pause|done)$/.test(t.st) ? t.st : "idle" }; });
 			var swl = Array.isArray(s.sws) ? s.sws : (s.sw && typeof s.sw === "object" ? [s.sw] : []);
 			if (swl.length) S.sws = swl.slice(0, 6).map(function (w) { return { id: String(w.id || uid()), label: String(w.label || "").slice(0, 60), st: /^(idle|run|pause)$/.test(w.st) ? w.st : "idle", startAt: +w.startAt || 0, base: +w.base || 0, laps: Array.isArray(w.laps) ? w.laps.map(Number).filter(isFinite).slice(0, 500) : [] }; });
 			var al = Array.isArray(s.alarms) ? s.alarms : (s.al && typeof s.al === "object" ? [s.al] : []);
-			if (al.length) S.alarms = al.slice(0, 6).map(function (a) { return { id: String(a.id || uid()), time: String(a.time || ""), label: String(a.label || "").slice(0, 60), daily: !!a.daily, on: !!a.on, at: +a.at || 0, snooze: +a.snooze || 0 }; });
+			if (al.length) S.alarms = al.slice(0, 6).map(function (a) { return { id: String(a.id || uid()), time: String(a.time || ""), label: String(a.label || "").slice(0, 60), daily: !!a.daily, cd: !!a.cd, on: !!a.on, at: +a.at || 0, snooze: +a.snooze || 0 }; });
 			if (s.po && typeof s.po === "object") { var p = s.po; S.po = { label: String(p.label || "").slice(0, 60), focus: num(p.focus, 25, 1, 180), short: num(p.short, 5, 1, 60), long: num(p.long, 15, 1, 90), rounds: Math.round(num(p.rounds, 4, 1, 12)), auto: p.auto !== false, phase: /^(focus|short|long)$/.test(p.phase) ? p.phase : "focus", round: Math.round(num(p.round, 1, 1, 12)), st: /^(idle|run|pause)$/.test(p.st) ? p.st : "idle", end: +p.end || 0, rem: +p.rem > 0 ? +p.rem : 25 * 60000, day: String(p.day || ""), done: Math.round(num(p.done, 0, 0, 999)) }; }
 			if (s.iv && typeof s.iv === "object") { var v = s.iv; S.iv = { label: String(v.label || "").slice(0, 60), prep: num(v.prep, 10, 0, 120), work: num(v.work, 20, 1, 3600), rest: num(v.rest, 10, 0, 3600), rounds: Math.round(num(v.rounds, 8, 1, 99)), st: /^(idle|run|pause)$/.test(v.st) ? v.st : "idle", startAt: +v.startAt || 0, base: +v.base || 0 }; }
 			if (Array.isArray(s.ev)) S.ev = s.ev.slice(0, 12).map(function (e) { return { id: String(e.id || uid()), name: String(e.name || "").slice(0, 60), at: +e.at || 0 }; }).filter(function (e) { return e.at; });
@@ -155,7 +155,7 @@
 	}
 	function toolsHtml() {
 		return '<button type="button" class="tu-btn tu-btn--ghost tm-dpbtn" data-dp="1" title="Show just the times, big (D)">📺 Display</button>' +
-			'<button type="button" class="tu-btn tu-btn--ghost" data-win="1" aria-pressed="' + winOn + '" title="Hide the rest of the page and fill the browser window with just the timers (W)">' + (winOn ? "✕ Exit window view" : "⤢ Window view") + '</button>' +
+			(winOn ? '<button type="button" class="tu-btn tu-btn--ghost" data-nobar="1" title="Hide this menu bar to save space (M). A small Menu button stays in the corner.">▲ Hide menu</button>' : "") + '<button type="button" class="tu-btn tu-btn--ghost" data-win="1" aria-pressed="' + winOn + '" title="Hide the rest of the page and fill the browser window with just the timers (W)">' + (winOn ? "✕ Exit window view" : "⤢ Window view") + '</button>' +
 			'<span class="tm-size" role="group" aria-label="Size of the timers"><button type="button" data-z="-" title="Smaller (-)" aria-label="Smaller">−</button><button type="button" class="tm-zl" data-z="0" title="Back to 100% (0)">' + Math.round(S.zoom * 100) + '%</button><button type="button" data-z="+" title="Bigger (+)" aria-label="Bigger">+</button><button type="button" data-z="fit" aria-pressed="' + S.fit + '" title="Fit every timer into the window and keep it fitted as the window changes">⤡ Fit</button></span>';
 	}
 	function drawAddBar() {
@@ -177,8 +177,11 @@
 	function scheduleFit() { if (!S.fit || !winOn) return; clearTimeout(fitT); fitT = setTimeout(fitNow, 200); }
 	window.addEventListener("resize", scheduleFit);
 	if (window.MutationObserver) new MutationObserver(function () { if (S.fit && winOn && Math.abs($("tm-secs").offsetHeight - fitLastH) > 2) scheduleFit(); }).observe($("tm-secs"), { childList: true, subtree: true });
+	function applyBar() { document.body.classList.toggle("tm-nobar", winOn && S.nobar); }
+	function setBar(hide) { S.nobar = hide; applyBar(); save(); scheduleFit(); }
+	(function () { var b = document.createElement("button"); b.type = "button"; b.id = "tm-barbtn"; b.textContent = "☰ Menu"; b.title = "Show the menu bar (M)"; b.onclick = function () { setBar(false); }; $("tm").appendChild(b); })();
 	function setWin(on) {
-		winOn = on; S.win = on; document.body.classList.toggle("tm-win", on); drawAddBar(); save();
+		winOn = on; S.win = on; document.body.classList.toggle("tm-win", on); applyBar(); drawAddBar(); save();
 		if (on) { $("tm").scrollTop = 0; if (S.fit) fitNow(); }
 	}
 	(function sizeGestures() {
@@ -203,6 +206,7 @@
 		var b = e.target.closest("button"); if (!b) return;
 		if (b.dataset.dp) { openDisplay(); return; }
 		if (b.dataset.win) { setWin(!winOn); return; }
+		if (b.dataset.nobar) { setBar(true); return; }
 		if (b.dataset.z) { var z = b.dataset.z; if (z === "fit") { S.fit = !S.fit; if (S.fit) { if (!winOn) setWin(true); else fitNow(); } applyZoom(); save(); } else if (z === "0") setZoom(1); else setZoom(S.zoom * (z === "+" ? 1.1 : 1 / 1.1)); return; }
 		if (!CUSTOM) return;
 		if (b.dataset.l) { S.layout = b.dataset.l; save(); buildPanels(); return; }
@@ -275,12 +279,17 @@
 		var d = new Date(next), when = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) + (d.toDateString() !== new Date().toDateString() ? " tomorrow" : "");
 		return (a.snooze > now ? "Snoozed until " : "Rings at ") + when + (a.daily && a.snooze <= now ? ", every day" : "") + " (in " + TM.human(next - now) + ")";
 	}
+	function alarmCd(a) {
+		var next = alarmNext(a); if (!a.cd || !a.on || !next) return "";
+		var t = Math.max(0, Math.ceil((next - Date.now()) / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), sec = t % 60;
+		return (h ? h + ":" + TM.pad(m) : m) + ":" + TM.pad(sec);
+	}
 	function renderAlarms() {
 		var box = $("tm-alarms"); if (!box) return;
 		var af = document.activeElement, focusId = af && af.closest && af.closest(".tm-alarm") && /tm-label/.test(af.className || "") ? af.closest(".tm-alarm").dataset.id : null;
 		box.innerHTML = S.alarms.map(function (a, i) {
 			return '<div class="tm-alarm' + (a.on ? " is-on" : "") + '" data-id="' + a.id + '"><div class="tm-alarm__row"><input class="tu-input tu-input--big tm-time" data-k="time" type="time" step="60" value="' + esc(a.time) + '" aria-label="Alarm ' + (i + 1) + ' time"><input class="tm-label" data-k="label" type="text" maxlength="60" autocomplete="off" placeholder="Label (optional)" value="' + esc(a.label) + '" aria-label="Alarm ' + (i + 1) + ' label">' +
-				'<label class="tm-check"><input type="checkbox" data-k="daily"' + (a.daily ? " checked" : "") + '> Daily</label><button type="button" class="tu-btn ' + (a.on ? "tu-btn--ghost" : "tu-btn--primary") + '" data-a="toggle">' + (a.on ? "Turn off" : "Turn on") + "</button>" + (S.alarms.length > 1 ? '<button type="button" class="tm-icon" data-a="del" aria-label="Remove alarm" title="Remove">✕</button>' : "") + '</div><div class="tm-alarm__st" data-st>' + esc(alarmStatus(a)) + "</div></div>";
+				'<label class="tm-check"><input type="checkbox" data-k="daily"' + (a.daily ? " checked" : "") + '> Daily</label><label class="tm-check" title="Show a big countdown to this alarm"><input type="checkbox" data-k="cd"' + (a.cd ? " checked" : "") + '> Countdown</label><button type="button" class="tu-btn ' + (a.on ? "tu-btn--ghost" : "tu-btn--primary") + '" data-a="toggle">' + (a.on ? "Turn off" : "Turn on") + "</button>" + (S.alarms.length > 1 ? '<button type="button" class="tm-icon" data-a="del" aria-label="Remove alarm" title="Remove">✕</button>' : "") + '</div><div class="tm-alarm__cd" data-cd' + (alarmCd(a) ? "" : " hidden") + '>' + esc(alarmCd(a)) + '</div><div class="tm-alarm__st" data-st>' + esc(alarmStatus(a)) + "</div></div>";
 		}).join("");
 		if (focusId) { var el = box.querySelector('.tm-alarm[data-id="' + focusId + '"] .tm-label'); if (el) { el.focus(); var v = el.value; el.value = ""; el.value = v; } }
 		var add = $("tm-al-add"); if (add) add.hidden = S.alarms.length >= 6;
@@ -392,7 +401,7 @@
 			};
 			ab.onchange = ab.oninput = function (e) {
 				var row = e.target.closest(".tm-alarm"); if (!row) return; var a = findAlarm(row.dataset.id); if (!a) return; var k = e.target.dataset.k; if (!k) return;
-				if (k === "daily") a.daily = e.target.checked; else a[k] = e.target.value;
+				if (k === "daily" || k === "cd") { a[k] = e.target.checked; if (k === "cd") { var cdEl = row.querySelector("[data-cd]"); cdEl.textContent = alarmCd(a); cdEl.hidden = !a.cd || !alarmCd(a); } } else a[k] = e.target.value;
 				if (k === "time" && a.on) { a.at = TM.nextAlarm(a.time, new Date()); a.snooze = 0; }
 				save();
 			};
@@ -648,7 +657,7 @@
 			if (cache[t.id] !== f) { cache[t.id] = f; card.querySelector("[data-face]").innerHTML = faceText(t); card.querySelector("[data-bar]").style.width = barPct(t) + "%"; }
 		});
 		if (visible.indexOf("sw") >= 0) [].forEach.call(document.querySelectorAll("#tm-sws .tm-swc"), function (card) { var w = findSw(card.dataset.id); if (w && w.st === "run") card.querySelector("[data-face]").innerHTML = swText(w); });
-		if (visible.indexOf("al") >= 0) { var nw = new Date().toLocaleTimeString(); if (cache.al !== nw) { cache.al = nw; $("tm-al-now").textContent = nw; [].forEach.call(document.querySelectorAll("#tm-alarms .tm-alarm"), function (row) { var a = findAlarm(row.dataset.id); if (a) row.querySelector("[data-st]").textContent = alarmStatus(a); }); } }
+		if (visible.indexOf("al") >= 0) { var nw = new Date().toLocaleTimeString(); if (cache.al !== nw) { cache.al = nw; $("tm-al-now").textContent = nw; [].forEach.call(document.querySelectorAll("#tm-alarms .tm-alarm"), function (row) { var a = findAlarm(row.dataset.id); if (a) row.querySelector("[data-st]").textContent = alarmStatus(a); }); } [].forEach.call(document.querySelectorAll("#tm-alarms .tm-alarm"), function (row) { var a = findAlarm(row.dataset.id), c = a && alarmCd(a), el = row.querySelector("[data-cd]"); if (el) { el.hidden = !c; if (c && el.textContent !== c) el.textContent = c; } }); }
 		if (visible.indexOf("po") >= 0 && p.st === "run") poFace();
 		if (visible.indexOf("iv") >= 0 && v.st === "run") ivFace();
 		if (visible.indexOf("ev") >= 0) { var sk = Math.floor(now / 1000); if (cache.ev !== sk) { cache.ev = sk; [].forEach.call(document.querySelectorAll("#tm-events .tm-event"), function (card) { var e = S.ev.filter(function (x) { return x.id === card.dataset.id; })[0]; if (e) { var pp = TM.dhms(e.at - now); card.classList.toggle("is-past", pp.past); card.querySelector("[data-evface]").innerHTML = evFace(pp); } }); } }
@@ -666,6 +675,7 @@
 			if (b) { e.preventDefault(); b.click(); }
 		} else if ((e.key === "l" || e.key === "L") && $("tm-sws")) { var lb = document.querySelector("#tm-sws .tm-swc.is-running [data-a=lap]"); if (lb) lb.click(); }
 		else if (e.key === "w" || e.key === "W") setWin(!winOn);
+		else if ((e.key === "m" || e.key === "M") && winOn) setBar(!S.nobar);
 		else if (e.key === "+" || e.key === "=") setZoom(S.zoom * 1.1);
 		else if (e.key === "-" || e.key === "_") setZoom(S.zoom / 1.1);
 		else if (e.key === "0") setZoom(1);
