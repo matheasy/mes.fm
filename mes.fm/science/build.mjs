@@ -51,6 +51,30 @@ const PAGES = [
     description:
       "MES science and physics videos: 360-degree fog image projection, laser plasma 3D displays, Tesla coil performances, tornado and ball lightning footage, Francis McCabe's gyro prototype and more.",
   },
+  {
+    // Tile only: no page is written; links to the tool. Icon = img/earth-curvature-icon.jpg (900x600 crop of the tool's share image).
+    slug: "earth-curvature",
+    href: "/earth-curvature-calculator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Earth Curvature Calculator",
+  },
+  {
+    // Tile only: no page is written; links to the tool. Icon = img/moon-icon.jpg (900x600 crop of the tool's share image).
+    slug: "moon",
+    href: "/moon",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Moon, Sun & Planets",
+  },
+  {
+    // Tile only: no page is written; links to the tool. Icon = img/solar-system-today-icon.jpg (900x600 crop of the tool's share image).
+    slug: "solar-system-today",
+    href: "/solar-system-today",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Solar System Today",
+  },
 ];
 
 // ---------------------------------------------------------------------------

@@ -50,6 +50,8 @@ export const SECTIONS = [
 
 export const IMPORTANT_LINKS_HTML = `<ul>
 <li><a href="https://mes.fm/moon">MES Moon, Sun, Planets &amp; Astronomy</a> &ndash; live Sun &amp; Moon dashboard for Richmond, BC (times, constellation, distance, magnitude)</li>
+<li><a href="https://mes.fm/solar-system-today">MES Solar System Today</a> &ndash; where the Sun, planets, Moon and Halley's Comet are on any date</li>
+<li><a href="https://mes.fm/earth-curvature-calculator">MES Earth Curvature Calculator</a> &ndash; drop, horizon distance and hidden height over any distance</li>
 <li><a href="https://peakd.com/c/hive-128780">HIVE community</a></li>
 <li><a href="https://www.reddit.com/r/AMAZINGMathStuff/">Reddit r/AMAZINGMathStuff</a></li>
 <li><a href="https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic">Vortex Math</a></li>
