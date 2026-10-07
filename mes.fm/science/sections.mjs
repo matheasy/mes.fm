@@ -2,7 +2,7 @@
 //
 // mes.fm/science used to be a flat page with Posts/Videos card grids and a link list. It is now a tile hub
 // like mes.fm/911 and mes.fm/hutchison (build.mjs is cloned from 911/build.mjs): one icon tile each for
-// Posts and Videos, linking to mes.fm/science-posts and mes.fm/science-videos. The Videos are the last 14 of the "MES Physics" YouTube playlist
+// Posts, Videos and Tutorials, linking to mes.fm/science-posts, mes.fm/science-videos and mes.fm/science-tutorials (the "MES Science Tutorials" playlist, PLai3U8-WIK0GhjCHmTw1XbqMD_EdVKdd9, newest first). The Videos are the last 14 of the "MES Physics" YouTube playlist
 // (PLai3U8-WIK0EAUu0aAxoZmkS83RI65m1N), in playlist order (replaced the five playlist cards, 2026-10-06). Add new things at the
 // TOP of the right section (newest first) and run `npm run build`.
 //
@@ -44,6 +44,20 @@ export const SECTIONS = [
   { title: "500 mph steel plow splits car in half + Super-slow motion", image: "https://i.ytimg.com/vi/GgAtdqZ-s-A/sddefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=GgAtdqZ-s-A"]] },
   { title: "WARNING: Tesla coil sparks can burst your ear drums when wearing earbuds headphones! ⚠️⚡️", image: "https://i.ytimg.com/vi/0v9ErjS3op4/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=0v9ErjS3op4"]] },
   { title: "Shadow on the Moon can move faster than the speed of light because a shadow is not a physical object", image: "https://i.ytimg.com/vi/ZAvQccbPRH0/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=ZAvQccbPRH0"]] },
+    ],
+  },
+  {
+    id: "science-tutorials",
+    title: "Tutorials",
+    standalone: [
+      { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0GhjCHmTw1XbqMD_EdVKdd9", title: "MES Science Tutorials Playlist" },
+    ],
+    items: [
+  { title: "🔥#MESScience 4: Review of COVID-19 \"Virus\" Isolation Paper", image: "https://i.ytimg.com/vi/cvDO85Rw4d8/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=cvDO85Rw4d8"], ["Hive", "https://peakd.com/hive-128780/@mes/messcience-4-review-of-covid-19-virus-isolation-paper"]] },
+  { title: "🔥#MESScience 3: Overview of Biology", image: "https://i.ytimg.com/vi/WX_qzT0nZFY/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=WX_qzT0nZFY"], ["Hive", "https://peakd.com/hive-128780/@mes/messcience-3-overview-of-biology"]] },
+  { title: "🔥#MESScience 3: Progress and Update", image: "https://i.ytimg.com/vi/9qztFaK8kmQ/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=9qztFaK8kmQ"]] },
+  { title: "🔥#MESScience 2: Vortex Math Part 1: Number Theory and Modular Arithmetic", image: "https://i.ytimg.com/vi/mTeZD8rsiTs/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=mTeZD8rsiTs"], ["Hive", "https://peakd.com/hive-128780/@mes/messcience-2-vortex-math-part-1-number-theory-and-modular-arithmetic"]] },
+  { title: "🔥#MESScience 1: How Does a Powerball Gyroscope Work? + Gyros Are Inverted Pendulums", image: "https://i.ytimg.com/vi/6cRkjWN8Uds/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=6cRkjWN8Uds"]] },
     ],
   },
 ];

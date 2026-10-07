@@ -344,7 +344,7 @@ BRAND_TABS = {
     # Conspiracy and Science also list their two section pages (Posts, Videos) right after the hub tab.
     'class="site-brand-title" href="/conspiracy"': ("/conspiracy", "Conspiracy", [("/conspiracy-posts", "Posts"), ("/conspiracy-videos", "Videos")]),
     'class="site-brand-title" href="/bg"': ("/bg", "BG", [("/bg-posts", "Posts"), ("/bg-videos", "Videos")]),
-    'class="site-brand-title" href="/science"': ("/science", "Science", [("/science-posts", "Posts"), ("/science-videos", "Videos")]),
+    'class="site-brand-title" href="/science"': ("/science", "Science", [("/science-posts", "Posts"), ("/science-videos", "Videos"), ("/science-tutorials", "Tutorials")]),
 }
 HUTCH_MARK = 'class="site-brand-title" href="/hutchison"'  # kept for callers that import it
 

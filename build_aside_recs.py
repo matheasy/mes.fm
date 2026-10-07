@@ -147,7 +147,7 @@ def main():
     # Families come from each page's own data-aside-family; hubs and the graphic jumper clips are left out (thumbnails of the latter are not for cards).
     HUBS = {"911", "911-posts", "911-videos", "911truth", "911-short-videos", "911-observable-evidence", "1109-keo-meteor-music", "hutchison", "hutchison-posts", "hutchison-videos",
             "highlights", "articles", "hutchison-debunking-debunkers", "hutchison-news", "hutchison-unedited-footage", "hutchison-interviews", "cold-fusion-lenr",
-            "conspiracy", "conspiracy-posts", "conspiracy-videos", "crypto", "science", "science-posts", "science-videos"}
+            "conspiracy", "conspiracy-posts", "conspiracy-videos", "crypto", "science", "science-posts", "science-videos", "science-tutorials"}
     BAD = re.compile(r"jumper|jumping|falling-man|eyesiswatchin|coat-jumper")
     LABEL = {"911": "9/11 Truth", "hutchison": "Hutchison Effect", "conspiracy": "Conspiracy", "crypto": "Crypto", "science": "Science"}
     fam_re = re.compile(r'data-aside-family="([^"]+)"')
