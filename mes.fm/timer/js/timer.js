@@ -198,19 +198,22 @@
 	}
 	function drawRing() {
 		var box = $("tm-ring"); box.hidden = !ringing.length; box.style.animation = "";
+		var dr = $("tm-dp-ring"); if (dr) dr.hidden = !ringing.length;
 		if (!ringing.length) { clearInterval(blinkT); blinkT = null; lastTitle = ""; updateTitle(); return; }
 		$("tm-ring-msg").innerHTML = "⏰ " + esc(ringing.map(function (r) { return r.msg; }).join(" · "));
 		var hasAlarm = ringing.some(function (r) { return r.type === "a"; }), hasTimer = ringing.some(function (r) { return r.type === "t"; });
+		if (dr) { dr.firstChild.innerHTML = "⏰ " + esc(ringing.map(function (r) { return r.msg; }).join(" · ")); dr.lastChild.innerHTML = '<button type="button" data-r="stop">Stop</button>' + (hasAlarm ? '<button type="button" data-r="snooze5">Snooze 5 min</button><button type="button" data-r="snooze10">Snooze 10 min</button>' : "") + (hasTimer ? '<button type="button" data-r="add1">+1 min</button><button type="button" data-r="add5">+5 min</button>' : ""); }
 		$("tm-ring-btns").innerHTML = '<button type="button" data-r="stop">Stop</button>' + (hasAlarm ? '<button type="button" class="alt" data-r="snooze5">Snooze 5 min</button><button type="button" class="alt" data-r="snooze10">Snooze 10 min</button>' : "") + (hasTimer ? '<button type="button" class="alt" data-r="add1">+1 min</button><button type="button" class="alt" data-r="add5">+5 min</button>' : "");
 	}
-	$("tm-ring-btns").addEventListener("click", function (e) {
-		var b = e.target.closest("button"); if (!b) return; var a = b.dataset.r, now = Date.now(); stopSound();
+	function ringAct(a) {
+		var now = Date.now(); stopSound();
 		ringing.forEach(function (r) {
 			if (r.type === "t") { var t = findTimer(r.id); if (t && (a === "add1" || a === "add5")) { var ms = a === "add1" ? 60000 : 300000; t.st = "run"; t.total = ms; t.end = now + ms; } }
 			else if (r.type === "a") { var al = findAlarm(r.id); if (al && (a === "snooze5" || a === "snooze10")) { al.snooze = now + (a === "snooze5" ? 300000 : 600000); al.on = true; if (!al.at || al.at < now) al.at = al.snooze; } }
 		});
 		ringing = []; drawRing(); renderTimers(); renderAlarms(); save();
-	});
+	}
+	$("tm-ring-btns").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) ringAct(b.dataset.r); });
 
 	/* ================= panels ================= */
 	var BODY = {
@@ -593,6 +596,46 @@
 		S.ev.slice().sort(function (a, b) { return a.at - b.at; }).forEach(function (e) { var d = TM.dhms(e.at - now); out.push({ key: "e:" + e.id, label: e.name || "Event", kind: "Countdown to a date", time: d.past ? "🎉 now" : (d.d ? d.d + "d " : "") + TM.pad(d.h) + ":" + TM.pad(d.m) + ":" + TM.pad(d.s), state: d.past ? "done" : "run", pct: -1 }); });
 		return out;
 	}
+	function dpCtl(key) {
+		var m = /^([tsa]):(.+)$/.exec(key), n;
+		if (m && m[1] === "t") { var t = findTimer(m[2]); if (!t) return ""; return [["go", t.st === "run" ? "Pause" : t.st === "pause" ? "Resume" : t.st === "done" ? "Restart" : "Start"], ["add1", "+1 min"], ["reset", "Reset"]].map(ctlBtn).join(""); }
+		if (m && m[1] === "s") { var w = findSw(m[2]); if (!w) return ""; return [["go", w.st === "run" ? "Pause" : w.st === "pause" ? "Resume" : "Start"], ["lap", "Lap"], ["reset", "Reset"]].map(ctlBtn).join(""); }
+		if (m && m[1] === "a") { var a = findAlarm(m[2]); return a ? ctlBtn(["go", a.on ? "Turn off" : "Turn on"]) : ""; }
+		if (key === "po") return [["go", S.po.st === "run" ? "Pause" : S.po.st === "pause" ? "Resume" : "Start"], ["skip", "Skip"], ["reset", "Reset"]].map(ctlBtn).join("");
+		if (key === "iv") return [["go", S.iv.st === "run" ? "Pause" : S.iv.st === "pause" ? "Resume" : "Start"], ["reset", "Reset"]].map(ctlBtn).join("");
+		return "";
+	}
+	function ctlBtn(x) { return '<button type="button" data-act="' + x[0] + '">' + x[1] + "</button>"; }
+	function dpAct(key, act) {
+		var m = /^([tsa]):(.+)$/.exec(key), now = Date.now(); unlock();
+		if (m && m[1] === "t") {
+			var t = findTimer(m[2]); if (!t) return;
+			if (act === "go") { if (t.st === "run") { t.rem = Math.max(0, t.end - now); t.st = "pause"; } else { if (t.st === "idle" || t.st === "done") { if (t.total <= 0) { toast("Set a time first"); return; } t.rem = t.total; } t.end = now + t.rem; t.st = "run"; } }
+			else if (act === "add1") { if (t.st === "run") t.end += 60000; else t.rem += 60000; t.total += 60000; }
+			else if (act === "reset") { clearRingFor("t", t.id); t.st = "idle"; t.rem = t.total; }
+			renderTimers();
+		} else if (m && m[1] === "s") {
+			var w = findSw(m[2]); if (!w) return;
+			if (act === "go") { if (w.st === "run") { w.base += now - w.startAt; w.st = "pause"; } else { w.startAt = now; w.st = "run"; } }
+			else if (act === "lap") { if (w.st === "run") w.laps.push(swElapsed(w)); }
+			else if (act === "reset") { w.st = "idle"; w.startAt = 0; w.base = 0; w.laps = []; }
+			renderSw();
+		} else if (m && m[1] === "a") {
+			var a = findAlarm(m[2]); if (!a) return;
+			if (a.on) { a.on = false; a.at = 0; a.snooze = 0; clearRingFor("a", a.id); } else { if (!a.time) { toast("Pick a time first"); return; } a.at = TM.nextAlarm(a.time, new Date()); a.snooze = 0; a.on = true; }
+			renderAlarms();
+		} else if (key === "po") {
+			var p = S.po;
+			if (act === "go") { if (p.st === "run") { p.rem = Math.max(0, p.end - now); p.st = "pause"; } else { if (p.rem <= 0) p.rem = poLen(p.phase); p.end = now + p.rem; p.st = "run"; } renderPo(); }
+			else if (act === "skip") { var nx = TM.pomoNext(p.phase, p.round, p.rounds); poSetPhase(nx.phase, nx.round, p.st === "run"); }
+			else if (act === "reset") { p.phase = "focus"; p.round = 1; p.rem = poLen("focus"); p.st = "idle"; p.end = 0; renderPo(); }
+		} else if (key === "iv") {
+			var v = S.iv;
+			if (act === "go") { if (v.st === "run") { v.base += now - v.startAt; v.st = "pause"; } else { if (TM.itvAt(ivPlan(), v.base).done) v.base = 0; v.startAt = now; v.st = "run"; ivLast = -1; } renderIv(); }
+			else if (act === "reset") { v.st = "idle"; v.base = 0; v.startAt = 0; ivLast = -1; renderIv(); }
+		}
+		updateAwake(); updateTitle(); save(); renderDisplay();
+	}
 	function dpSelected(items) {
 		if (!S.display) return items.filter(function (i) { return i.state === "run" || i.state === "pause" || i.state === "done"; }).map(function (i) { return i.key; }).concat(items.filter(function (i) { return i.state === "idle" && /^[ts]:/.test(i.key); }).map(function (i) { return i.key; }).slice(0, 0));
 		return S.display;
@@ -600,10 +643,12 @@
 	function ensureDisplay() {
 		var el = $("tm-dp"); if (el) return el;
 		el = document.createElement("div"); el.id = "tm-dp"; el.className = "tm-dp"; el.hidden = true; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Timer display");
-		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
+		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__ring" id="tm-dp-ring" hidden><span></span><span class="tm-dp__rb"></span></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
 		document.body.appendChild(el);
 		sortable($("tm-dp-grid"), ".tm-dp__tile", function (els) { var ks = els.map(function (x) { return x.dataset.k; }); S.display = ks.concat((S.display || []).filter(function (k) { return ks.indexOf(k) < 0; })); dpKeys = ks.join(","); save(); });
 		el.addEventListener("click", function (e) {
+			var rb = e.target.closest("#tm-dp-ring [data-r]"); if (rb) { ringAct(rb.dataset.r); return; }
+			var ab = e.target.closest("[data-act]"); if (ab) { var tl = ab.closest(".tm-dp__tile"); if (tl) dpAct(tl.dataset.k, ab.dataset.act); return; }
 			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
 			if (e.target.matches("#tm-dp-pick input[type=checkbox]")) {
 				var cur = S.display || dpSelected(dpItems()), k = e.target.dataset.k, i = cur.indexOf(k); cur = cur.slice(); if (e.target.checked && i < 0) cur.push(k); else if (!e.target.checked && i >= 0) cur.splice(i, 1);
@@ -622,19 +667,20 @@
 		hint.textContent = shown.length ? "" : "Nothing selected yet: press Choose timers, or start a timer.";
 		if (keys !== dpKeys) {   // the set of tiles changed: rebuild
 			dpKeys = keys; grid.className = "tm-dp__grid tm-dp__n" + Math.min(shown.length, 9);
-			grid.innerHTML = shown.map(function (i) { return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + (shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label) + ': drag, or use the arrow keys">⠿</button>' : "") + pinBtn(i.key, "tm-tabpin--dp") + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div></div>'; }).join("");
+			grid.innerHTML = shown.map(function (i) { return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + (shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label) + ': drag, or use the arrow keys">⠿</button>' : "") + pinBtn(i.key, "tm-tabpin--dp") + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div><div class="tm-dp__ctl" data-ctl></div></div>'; }).join("");
 		}
 		shown.forEach(function (i) {
 			var tile = grid.querySelector('.tm-dp__tile[data-k="' + i.key.replace(/"/g, "") + '"]'); if (!tile) return;
 			tile.className = "tm-dp__tile is-" + i.state + (i.phase ? " ph-" + i.phase : "") + (i.kind === "Alarm" ? " is-clock" : "");
 			tile.querySelector("[data-t]").textContent = i.time; tile.querySelector("[data-s]").textContent = i.sub || i.kind + (i.state === "pause" ? " · paused" : i.state === "done" ? " · done" : "");
-			var b = tile.querySelector(".tm-dp__b"); b.style.visibility = i.pct >= 0 ? "visible" : "hidden"; tile.querySelector("[data-b]").style.width = Math.max(0, Math.min(100, i.pct)).toFixed(1) + "%";
+			var cl = tile.querySelector("[data-ctl]"), ch = dpCtl(i.key); if (cl._h !== ch) { cl._h = ch; cl.innerHTML = ch; }
+				var b = tile.querySelector(".tm-dp__b"); b.style.visibility = i.pct >= 0 ? "visible" : "hidden"; tile.querySelector("[data-b]").style.width = Math.max(0, Math.min(100, i.pct)).toFixed(1) + "%";
 		});
 	}
 	function openDisplay() {
 		var el = ensureDisplay(); dpOpen = true; dpKeys = ""; el.hidden = false; $("tm-dp-pick").hidden = true; document.body.classList.add("tm-dp-on");
 		if (!S.display) { var items = dpItems(), act = dpSelected(items); if (!act.length) { S.display = items.filter(function (i) { return /^[tsp]/.test(i.key) && i.key !== "iv" && i.key !== "po"; }).map(function (i) { return i.key; }); } }
-		renderDisplay(); updateDpFs(); if (S.fs === "screen") enterScreen();
+		renderDisplay(); drawRing(); updateDpFs(); if (S.fs === "screen") enterScreen();
 		if ("wakeLock" in navigator && !lock) navigator.wakeLock.request("screen").then(function (l) { lock = l; l.addEventListener("release", function () { lock = null; }); }, function () {});
 	}
 	function closeDisplay() { dpOpen = false; var el = $("tm-dp"); if (el) el.hidden = true; document.body.classList.remove("tm-dp-on"); leaveScreen(); updateAwake(); }

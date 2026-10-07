@@ -485,6 +485,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tm-dp .tm-tabpin {position:absolute;top:0.6vmin;right:0.8vmin;display:inline-flex;align-items:center;gap:0.2em;cursor:pointer;border:1px solid transparent;border-radius:0.5em;background:transparent;color:var(--dp9);padding:0.7vmin 0.9vmin;font:inherit;font-size:2.2vmin;opacity:0.75;} .tm-dp .tm-tabpin:hover {opacity:1;color:var(--dp17);border-color:var(--dp4);} .tm-dp .tm-tabpin svg {width:1em;height:1em;} .tm-dp .tm-tabpin[aria-pressed="true"] {opacity:1;color:var(--dp17);background:var(--dp16);border-color:var(--dp3);}
 	body.dark-mode #tm .tm-tabpin[aria-pressed="true"] {color:#0b1416;}
 
+	.tm-dp__ctl {display:flex;flex-wrap:wrap;gap:1vmin;justify-content:center;margin-top:1.4vmin;} .tm-dp__ctl:empty {display:none;}
+	.tm-dp__ctl button {cursor:pointer;border:1px solid var(--dp4);border-radius:0.6em;background:var(--dp16);color:var(--dp13);font:inherit;font-size:max(14px,2.3vmin);padding:0.5em 1.1em;min-height:2.6em;opacity:0.8;} .tm-dp__ctl button:hover, .tm-dp__ctl button:focus-visible {opacity:1;border-color:var(--dp2);color:var(--dp17);} .tm-dp__ctl button:first-child {border-color:var(--dp3);}
+	.tm-dp__ring {position:absolute;top:4.2em;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:1.2em;align-items:center;flex-wrap:wrap;justify-content:center;max-width:94vw;background:#d1453b;color:#fff;border-radius:0.7em;padding:0.7em 1.2em;font-size:1.3em;font-weight:700;box-shadow:0 0.6em 2em rgba(0,0,0,0.6);} .tm-dp__ring[hidden] {display:none;} .tm-dp__rb {display:flex;gap:0.5em;flex-wrap:wrap;} .tm-dp__rb button {cursor:pointer;border:2px solid #fff;border-radius:0.5em;background:#fff;color:#a02a20;font:inherit;font-size:0.85em;padding:0.35em 0.9em;}
+	#tm-dp .tm-dp__ring > span {color:#fff;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -599,6 +604,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tm-dp{--dp6:#c14848;--dp15:#2edb6e}
 	body.dark-mode .tu .tm-size button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
 	body.dark-mode .tu .tm-volrow label{color:#9a9da3}
+	body.dark-mode .tm-dp__rb button{border:2px solid #333333;background:#1a1a1a;color:#e48077}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -961,7 +967,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:6
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=8" defer></script>
+	<script src="/timer/js/timer.js?v=10" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
