@@ -23,7 +23,7 @@
 	function newSw() { return { id: uid(), label: "", st: "idle", startAt: 0, base: 0, laps: [] }; }
 	function newAlarm() { return { id: uid(), time: "", label: "", daily: false, cd: false, on: false, at: 0, snooze: 0 }; }
 	var S = {
-		show: ["cd", "sw", "al"], display: null, order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, nobar: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, optAwake: true, optNotify: false, optTenths: false,
+		show: ["cd", "sw", "al"], display: null, order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, nobar: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, titleSrc: "auto", optAwake: true, optNotify: false, optTenths: false,
 		timers: [newTimer(300000)], sws: [newSw()], alarms: [newAlarm()],
 		po: { label: "", focus: 25, short: 5, long: 15, rounds: 4, auto: true, phase: "focus", round: 1, st: "idle", end: 0, rem: 25 * 60000, day: "", done: 0 },
 		iv: { label: "", prep: 10, work: 20, rest: 10, rounds: 8, st: "idle", startAt: 0, base: 0 },
@@ -35,7 +35,7 @@
 		try {
 			var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (!s) return;
 			if (typeof s.sound === "string") S.sound = s.sound;
-			S.vol = num(s.vol, 80, 0, 100); if (s.repeat === 0 || s.repeat === 1 || s.repeat === 3) S.repeat = s.repeat;
+			S.vol = num(s.vol, 80, 0, 100); if (typeof s.titleSrc === "string") S.titleSrc = s.titleSrc.slice(0, 40); if (s.repeat === 0 || s.repeat === 1 || s.repeat === 3) S.repeat = s.repeat;
 			["optTitle", "optAwake", "optNotify", "optTenths"].forEach(function (k) { if (typeof s[k] === "boolean") S[k] = s[k]; });
 			if (Array.isArray(s.show)) S.show = s.show.filter(function (v) { return PANELS[v]; });
 			if (Array.isArray(s.order)) { var o = s.order.filter(function (v) { return PANELS[v]; }); ORDER.forEach(function (v) { if (o.indexOf(v) < 0) o.push(v); }); S.order = o; }
@@ -136,7 +136,7 @@
 	var BODY = {
 		cd: '<div id="tm-timers"></div><div class="tm-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tm-add">+ Add another timer</button></div><p class="tu-note">Type a time such as <code>25</code>, <code>1h 30m</code> or <code>2:30</code>, or press a preset. <kbd>Space</kbd> starts or pauses the first timer.</p>',
 		sw: '<div id="tm-sws"></div><div class="tm-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tm-sw-add">+ Add another stopwatch</button></div><p class="tu-note"><kbd>Space</kbd> starts or pauses the first stopwatch &middot; <kbd>L</kbd> records a lap &middot; they keep counting if you reload the page.</p>',
-		al: '<div class="tm-face tm-face--al" id="tm-al-now" aria-live="off">--:--:--</div><div id="tm-alarms"></div><div class="tm-btns tm-btns--center"><button type="button" class="tu-btn tu-btn--ghost" id="tm-al-add">+ Add another alarm</button></div><p class="tu-note"><b>Keep this page open.</b> The alarm rings from your browser, so the tab has to stay open (a background tab is fine) and your computer awake. On a phone, a countdown timer with the screen kept awake is more reliable.</p>',
+		al: '<div class="tm-face tm-face--al" id="tm-al-now" aria-live="off">--:--:--</div><div id="tm-alarms"></div><div class="tm-btns tm-btns--center"><button type="button" class="tu-btn tu-btn--ghost" id="tm-al-add">+ Add another alarm</button></div><div class="tm-volrow"><label for="tm-al-vol">🔔 Alarm volume</label><input id="tm-al-vol" type="range" min="0" max="100" step="5" aria-label="Alarm volume"><button type="button" class="tu-btn tu-btn--ghost" id="tm-al-test">▶ Test</button></div><p class="tu-note"><b>Keep this page open.</b> The alarm rings from your browser, so the tab has to stay open (a background tab is fine) and your computer awake. On a phone, a countdown timer with the screen kept awake is more reliable.</p>',
 		po: '<div class="tm-solo-label"><input class="tm-label" id="tm-po-label" type="text" maxlength="60" autocomplete="off" placeholder="What are you working on? (label)" aria-label="Pomodoro label"></div><div class="tm-po-tabs" id="tm-po-tabs" role="group" aria-label="Pomodoro phase"><button type="button" data-p="focus">Focus</button><button type="button" data-p="short">Short break</button><button type="button" data-p="long">Long break</button></div><div class="tm-face" id="tm-po-face">25:00</div><div class="tm-bar"><i id="tm-po-bar"></i></div><p class="tm-status" id="tm-po-info"></p><div class="tm-btns tm-btns--center"><button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-po-go">Start</button><button type="button" class="tu-btn tm-big" id="tm-po-skip">Skip</button><button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-po-reset">Reset</button><button type="button" class="tu-btn tu-btn--ghost tm-big tm-hide-fs" data-fs-for="po">⤢ Full screen</button></div><div class="tm-po-set tm-hide-fs"><label>Focus <input class="tu-input" data-po="focus" type="text" inputmode="numeric"> min</label><label>Short break <input class="tu-input" data-po="short" type="text" inputmode="numeric"> min</label><label>Long break <input class="tu-input" data-po="long" type="text" inputmode="numeric"> min</label><label>Rounds <input class="tu-input" data-po="rounds" type="text" inputmode="numeric"></label><label class="tm-check"><input type="checkbox" data-po="auto"> Start the next phase automatically</label></div><p class="tu-note tm-hide-fs">The Pomodoro technique: work in focused 25-minute blocks, take a short break after each, and a longer one after four.</p>',
 		iv: '<div class="tm-solo-label"><input class="tm-label" id="tm-iv-label" type="text" maxlength="60" autocomplete="off" placeholder="Workout name (label)" aria-label="Interval label"></div><div class="tm-presets" id="tm-iv-presets"></div><div class="tm-iv-face" id="tm-iv-box" data-phase="idle"><div class="tm-iv-phase" id="tm-iv-phase">Ready</div><div class="tm-face" id="tm-iv-face">00:00</div><div class="tm-iv-info" id="tm-iv-info"></div></div><div class="tm-bar"><i id="tm-iv-bar"></i></div><div class="tm-btns tm-btns--center"><button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-iv-go">Start</button><button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-iv-reset">Reset</button><button type="button" class="tu-btn tu-btn--ghost tm-big tm-hide-fs" data-fs-for="iv">⤢ Full screen</button></div><div class="tm-po-set tm-hide-fs"><label>Get ready <input class="tu-input" data-iv="prep" type="text" inputmode="numeric"> s</label><label>Work <input class="tu-input" data-iv="work" type="text" inputmode="numeric"> s</label><label>Rest <input class="tu-input" data-iv="rest" type="text" inputmode="numeric"> s</label><label>Rounds <input class="tu-input" data-iv="rounds" type="text" inputmode="numeric"></label></div><p class="tu-note tm-hide-fs" id="tm-iv-total"></p>',
 		ev: '<div class="tm-ev-form"><div class="tu-field" style="flex:2 1 12em;"><label for="tm-ev-name">What are you counting down to?</label><input id="tm-ev-name" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Christmas, exam, holiday"></div><div class="tu-field" style="flex:1 1 10em;"><label for="tm-ev-date">Date</label><input id="tm-ev-date" class="tu-input" type="date"></div><div class="tu-field" style="flex:0 1 8em;"><label for="tm-ev-time">Time (optional)</label><input id="tm-ev-time" class="tu-input" type="time"></div><div class="tu-field" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--primary" id="tm-ev-add">+ Add</button></div></div><div class="tm-chips-ev tu-chips" id="tm-ev-quick" style="margin:0.4em 0 0.8em;"></div><div id="tm-events"></div>'
@@ -185,8 +185,8 @@
 		if (on) { $("tm").scrollTop = 0; if (S.fit) fitNow(); }
 	}
 	(function sizeGestures() {
-		var box = $("tm"), grip = document.createElement("div"); grip.id = "tm-grip"; grip.title = "Drag to resize the timers (up-left smaller, down-right bigger). Pinching or Ctrl+scroll also works."; grip.setAttribute("aria-hidden", "true");
-		grip.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 9L9 21M21 15l-6 6M21 3L3 21"/></svg>'; box.appendChild(grip);
+		var box = $("tm"), grip = document.createElement("div"); grip.id = "tm-grip"; grip.title = "Drag to resize the TIMERS (not the browser window): up-left smaller, down-right bigger. Pinching or Ctrl+scroll also works."; grip.setAttribute("aria-hidden", "true");
+		grip.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg><span class="tm-grip__t">Drag to resize timers · <span class="tm-zl">' + Math.round(S.zoom * 100) + '%</span></span>'; box.appendChild(grip);
 		grip.addEventListener("pointerdown", function (e) {
 			e.preventDefault(); try { grip.setPointerCapture(e.pointerId); } catch (x) {}
 			var x0 = e.clientX, y0 = e.clientY, z0 = S.zoom;
@@ -279,8 +279,8 @@
 		var d = new Date(next), when = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) + (d.toDateString() !== new Date().toDateString() ? " tomorrow" : "");
 		return (a.snooze > now ? "Snoozed until " : "Rings at ") + when + (a.daily && a.snooze <= now ? ", every day" : "") + " (in " + TM.human(next - now) + ")";
 	}
-	function alarmCd(a) {
-		var next = alarmNext(a); if (!a.cd || !a.on || !next) return "";
+	function alarmCd(a, any) {
+		var next = alarmNext(a); if ((!a.cd && !any) || !a.on || !next) return "";
 		var t = Math.max(0, Math.ceil((next - Date.now()) / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), sec = t % 60;
 		return (h ? h + ":" + TM.pad(m) : m) + ":" + TM.pad(sec);
 	}
@@ -405,7 +405,7 @@
 				if (k === "time" && a.on) { a.at = TM.nextAlarm(a.time, new Date()); a.snooze = 0; }
 				save();
 			};
-			$("tm-al-add").onclick = function () { if (S.alarms.length >= 6) return; S.alarms.push(newAlarm()); renderAlarms(); save(); };
+			wireAlarmVol(); $("tm-al-add").onclick = function () { if (S.alarms.length >= 6) return; S.alarms.push(newAlarm()); renderAlarms(); save(); };
 		}
 		if ($("tm-po-go")) {
 			$("tm-po-go").onclick = function () {
@@ -503,7 +503,7 @@
 		var out = [], now = Date.now();
 		S.timers.forEach(function (t, i) { out.push({ key: "t:" + t.id, label: t.label || "Timer " + (i + 1), kind: "Countdown", time: plain(remaining(t), true), state: t.st === "run" ? "run" : t.st === "done" ? "done" : t.st === "pause" ? "pause" : "idle", pct: +barPct(t) }); });
 		S.sws.forEach(function (w, i) { var ms = swElapsed(w), p = TM.parts(ms, false); out.push({ key: "s:" + w.id, label: w.label || "Stopwatch " + (i + 1), kind: "Stopwatch", time: (p.h ? p.h + ":" + TM.pad(p.m) : TM.pad(p.m)) + ":" + TM.pad(p.s), state: w.st === "run" ? "run" : w.st === "pause" ? "pause" : "idle", pct: -1 }); });
-		S.alarms.forEach(function (a, i) { if (!a.time && !a.on) return; var next = alarmNext(a); out.push({ key: "a:" + a.id, label: a.label || "Alarm " + (i + 1), kind: "Alarm", time: a.time ? new Date(2000, 0, 1, +a.time.split(":")[0], +a.time.split(":")[1]).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "--", sub: a.on && next ? "rings in " + TM.human(next - now) : "off", state: a.on ? "run" : "idle", pct: -1 }); });
+		S.alarms.forEach(function (a, i) { if (!a.time && !a.on) return; var next = alarmNext(a); var at12 = a.time ? new Date(2000, 0, 1, +a.time.split(":")[0], +a.time.split(":")[1]).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "--"; out.push({ key: "a:" + a.id, label: a.label || "Alarm " + (i + 1), kind: "Alarm", time: new Date(now).toLocaleTimeString(), sub: a.on && next ? "alarm " + at12 + " · rings in " + TM.human(next - now) : "alarm " + at12 + " · off", state: a.on ? "run" : "idle", pct: -1 }); });
 		var p = S.po; out.push({ key: "po", label: p.label || "Pomodoro", kind: PO_LABEL[p.phase], time: plain(poRemaining(), true), state: p.st === "run" ? "run" : p.st === "pause" ? "pause" : "idle", pct: poLen(p.phase) ? (1 - poRemaining() / poLen(p.phase)) * 100 : 0 });
 		var v = S.iv, at = TM.itvAt(ivPlan(), ivElapsed()); out.push({ key: "iv", label: v.label || "Interval", kind: v.st === "idle" && !v.base ? "Ready" : at.done ? "Done" : at.seg.phase === "work" ? "WORK" : at.seg.phase === "rest" ? "REST" : "Get ready", time: at.done || (v.st === "idle" && !v.base) ? plain(at.done ? 0 : (ivPlan()[0] || { ms: 0 }).ms, true) : plain(at.left, true), state: v.st === "run" ? "run" : v.st === "pause" ? "pause" : "idle", pct: -1, phase: !at.done && v.st !== "idle" ? at.seg.phase : "" });
 		S.ev.slice().sort(function (a, b) { return a.at - b.at; }).forEach(function (e) { var d = TM.dhms(e.at - now); out.push({ key: "e:" + e.id, label: e.name || "Event", kind: "Countdown to a date", time: d.past ? "🎉 now" : (d.d ? d.d + "d " : "") + TM.pad(d.h) + ":" + TM.pad(d.m) + ":" + TM.pad(d.s), state: d.past ? "done" : "run", pct: -1 }); });
@@ -516,8 +516,10 @@
 	function ensureDisplay() {
 		var el = $("tm-dp"); if (el) return el;
 		el = document.createElement("div"); el.id = "tm-dp"; el.className = "tm-dp"; el.hidden = true; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Timer display");
-		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
+		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><label class="tm-dp__tab" title="Which one shows in the browser tab title">Browser tab: <select class="tm-titlesel" aria-label="What shows in the browser tab"></select></label><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
 		document.body.appendChild(el);
+		sortable($("tm-dp-grid"), ".tm-dp__tile", function (els) { var ks = els.map(function (x) { return x.dataset.k; }); S.display = ks.concat((S.display || []).filter(function (k) { return ks.indexOf(k) < 0; })); dpKeys = ks.join(","); save(); });
+		var ts = el.querySelector(".tm-titlesel"); ts.onchange = function () { pickTitle(this.value); };
 		el.addEventListener("click", function (e) {
 			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
 			if (e.target.matches("#tm-dp-pick input[type=checkbox]")) {
@@ -532,16 +534,16 @@
 		$("tm-dp-pick").innerHTML = '<div class="tm-dp__pt">Choose what the display shows</div>' + items.map(function (i) { return '<label><input type="checkbox" data-k="' + esc(i.key) + '"' + (sel.indexOf(i.key) >= 0 ? " checked" : "") + '> ' + esc(i.label) + ' <small>' + esc(i.kind) + (i.state === "idle" ? " (not started)" : "") + "</small></label>"; }).join("");
 	}
 	function renderDisplay() {
-		var items = dpItems(), sel = dpSelected(items), shown = items.filter(function (i) { return sel.indexOf(i.key) >= 0; }), keys = shown.map(function (i) { return i.key; }).join(",");
+		var items = dpItems(), sel = dpSelected(items), shown = sel.map(function (k) { return items.filter(function (i) { return i.key === k; })[0]; }).filter(Boolean), keys = shown.map(function (i) { return i.key; }).join(",");
 		var grid = $("tm-dp-grid"), hint = $("tm-dp-hint");
 		hint.textContent = shown.length ? "" : "Nothing selected yet: press Choose timers, or start a timer.";
 		if (keys !== dpKeys) {   // the set of tiles changed: rebuild
 			dpKeys = keys; grid.className = "tm-dp__grid tm-dp__n" + Math.min(shown.length, 9);
-			grid.innerHTML = shown.map(function (i) { return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '"><div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div></div>'; }).join("");
+			grid.innerHTML = shown.map(function (i) { return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + (shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label) + ': drag, or use the arrow keys">⠿</button>' : "") + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div></div>'; }).join("");
 		}
 		shown.forEach(function (i) {
 			var tile = grid.querySelector('.tm-dp__tile[data-k="' + i.key.replace(/"/g, "") + '"]'); if (!tile) return;
-			tile.className = "tm-dp__tile is-" + i.state + (i.phase ? " ph-" + i.phase : "");
+			tile.className = "tm-dp__tile is-" + i.state + (i.phase ? " ph-" + i.phase : "") + (i.kind === "Alarm" ? " is-clock" : "");
 			tile.querySelector("[data-t]").textContent = i.time; tile.querySelector("[data-s]").textContent = i.sub || i.kind + (i.state === "pause" ? " · paused" : i.state === "done" ? " · done" : "");
 			var b = tile.querySelector(".tm-dp__b"); b.style.visibility = i.pct >= 0 ? "visible" : "hidden"; tile.querySelector("[data-b]").style.width = Math.max(0, Math.min(100, i.pct)).toFixed(1) + "%";
 		});
@@ -549,7 +551,7 @@
 	function openDisplay() {
 		var el = ensureDisplay(); dpOpen = true; dpKeys = ""; el.hidden = false; $("tm-dp-pick").hidden = true; document.body.classList.add("tm-dp-on");
 		if (!S.display) { var items = dpItems(), act = dpSelected(items); if (!act.length) { S.display = items.filter(function (i) { return /^[tsp]/.test(i.key) && i.key !== "iv" && i.key !== "po"; }).map(function (i) { return i.key; }); } }
-		renderDisplay(); updateDpFs(); if (S.fs === "screen") enterScreen();
+		renderDisplay(); fillTitleSel(el.querySelector(".tm-titlesel")); updateDpFs(); if (S.fs === "screen") enterScreen();
 		if ("wakeLock" in navigator && !lock) navigator.wakeLock.request("screen").then(function (l) { lock = l; l.addEventListener("release", function () { lock = null; }); }, function () {});
 	}
 	function closeDisplay() { dpOpen = false; var el = $("tm-dp"); if (el) el.hidden = true; document.body.classList.remove("tm-dp-on"); leaveScreen(); updateAwake(); }
@@ -583,9 +585,19 @@
 	function fillSettings() { $("tm-sound").value = S.sound; $("tm-repeat").value = String(S.repeat); $("tm-vol").value = S.vol; $("tm-opt-title").checked = S.optTitle; $("tm-opt-awake").checked = S.optAwake; $("tm-opt-notify").checked = S.optNotify; $("tm-opt-tenths").checked = S.optTenths; }
 	$("tm-sound").onchange = function () { S.sound = this.value; save(); };
 	$("tm-repeat").onchange = function () { S.repeat = +this.value; save(); };
-	$("tm-vol").oninput = function () { S.vol = +this.value; save(); };
+	function wireAlarmVol() { if ($("tm-al-vol")) { $("tm-al-vol").oninput = function () { S.vol = +this.value; syncVol(); save(); }; $("tm-al-test").onclick = function () { stopSound(); unlock(); if (S.sound === "off") { toast("Sound is set to Silent (see Sound and options)"); return; } playOnce(S.sound); }; syncVol(); } }
+	function syncVol() { var a = $("tm-vol"), b = $("tm-al-vol"); if (a) a.value = S.vol; if (b) b.value = S.vol; }
+	$("tm-vol").oninput = function () { S.vol = +this.value; syncVol(); save(); };
 	$("tm-test").onclick = function () { stopSound(); unlock(); if (S.sound === "off") { toast("Sound is set to Silent"); return; } playOnce(S.sound); };
 	$("tm-opt-title").onchange = function () { S.optTitle = this.checked; updateTitle(); save(); };
+	function titleOptions() {
+		var o = [["auto", "Automatic (the timer finishing soonest)"]]; dpItems().forEach(function (i) { if (i.key === "iv" || i.key === "po" ? visible.indexOf(i.key) >= 0 || S.titleSrc === i.key : true) o.push([i.key, i.label + " (" + i.kind + ")"]); });
+		if (!o.some(function (x) { return x[0] === S.titleSrc; })) S.titleSrc = "auto";
+		return o;
+	}
+	function fillTitleSel(sel) { if (!sel || document.activeElement === sel) return; var sig = titleOptions().map(function (x) { return x.join("|"); }).join("~") + S.titleSrc; if (sel._sig === sig) return; sel._sig = sig; sel.innerHTML = titleOptions().map(function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0] === S.titleSrc ? " selected" : "") + ">" + esc(x[1]) + "</option>"; }).join(""); }
+	function pickTitle(v) { S.titleSrc = v; lastTitle = ""; updateTitle(); save(); [].forEach.call(document.querySelectorAll(".tm-titlesel"), function (x) { x._sig = ""; fillTitleSel(x); }); }
+	[].forEach.call(document.querySelectorAll(".tm-titlesel"), function (sel) { fillTitleSel(sel); sel.onchange = function () { pickTitle(this.value); }; });
 	$("tm-opt-awake").onchange = function () { S.optAwake = this.checked; updateAwake(); save(); };
 	$("tm-opt-tenths").onchange = function () { S.optTenths = this.checked; save(); };
 	$("tm-opt-notify").onchange = function () {
@@ -608,15 +620,29 @@
 	}
 	document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") { lock = null; updateAwake(); } });
 	var lastTitle = "";
+	function titleFor(key) {
+		var m = /^([tsa]):(.+)$/.exec(key), now = Date.now();
+		if (m && m[1] === "t") { var t = findTimer(m[2]); return t ? TM.clock(remaining(t), true) + (t.label ? " " + t.label : "") + " | Timer" : null; }
+		if (m && m[1] === "s") { var w = findSw(m[2]); return w ? TM.clock(swElapsed(w), false) + (w.label ? " " + w.label : "") + " | Stopwatch" : null; }
+		if (m && m[1] === "a") { var a = findAlarm(m[2]); if (!a) return null; var c = alarmCd(a, true); return (c || a.time || "") + (a.label ? " " + a.label : "") + " | Alarm" + (c ? "" : " off"); }
+		if (key === "po") return TM.clock(poRemaining(), true) + " " + (S.po.label || PO_LABEL[S.po.phase]) + " | Pomodoro";
+		if (key === "iv") { var at = TM.itvAt(ivPlan(), ivElapsed()); return at.done ? null : TM.clock(at.left, true) + " " + (at.seg.phase === "work" ? "WORK" : at.seg.phase === "rest" ? "REST" : "Get ready") + (S.iv.label ? " " + S.iv.label : "") + " | Interval"; }
+		if (m && m[1] === "e") return null;
+		return null;
+	}
 	function updateTitle() {
 		if (ringing.length) return; var t = BASE_TITLE;
 		if (S.optTitle) {
-			var runs = S.timers.filter(function (x) { return x.st === "run"; }).sort(function (a, b) { return a.end - b.end; }), cands = [];
-			if (runs.length) cands.push([remaining(runs[0]), TM.clock(remaining(runs[0]), true) + (runs[0].label ? " " + runs[0].label : "") + " | Timer"]);
-			if (S.po.st === "run") cands.push([poRemaining(), TM.clock(poRemaining(), true) + " " + (S.po.label || PO_LABEL[S.po.phase]) + " | Pomodoro"]);
-			if (S.iv.st === "run") { var at = TM.itvAt(ivPlan(), ivElapsed()); if (!at.done) cands.push([at.left, TM.clock(at.left, true) + " " + (at.seg.phase === "work" ? "WORK" : at.seg.phase === "rest" ? "REST" : "Get ready") + (S.iv.label ? " " + S.iv.label : "") + " | Interval"]); }
-			cands.sort(function (a, b) { return a[0] - b[0]; });
-			if (cands.length) t = cands[0][1]; else { var rw = S.sws.filter(function (w) { return w.st === "run"; })[0]; if (rw) t = TM.clock(swElapsed(rw), false) + (rw.label ? " " + rw.label : "") + " | Stopwatch"; }
+			var picked = S.titleSrc !== "auto" ? titleFor(S.titleSrc) : null;
+			if (picked) t = picked;
+			else {
+				var runs = S.timers.filter(function (x) { return x.st === "run"; }).sort(function (a, b) { return a.end - b.end; }), cands = [];
+				if (runs.length) cands.push([remaining(runs[0]), TM.clock(remaining(runs[0]), true) + (runs[0].label ? " " + runs[0].label : "") + " | Timer"]);
+				if (S.po.st === "run") cands.push([poRemaining(), TM.clock(poRemaining(), true) + " " + (S.po.label || PO_LABEL[S.po.phase]) + " | Pomodoro"]);
+				if (S.iv.st === "run") { var at = TM.itvAt(ivPlan(), ivElapsed()); if (!at.done) cands.push([at.left, TM.clock(at.left, true) + " " + (at.seg.phase === "work" ? "WORK" : at.seg.phase === "rest" ? "REST" : "Get ready") + (S.iv.label ? " " + S.iv.label : "") + " | Interval"]); }
+				cands.sort(function (a, b) { return a[0] - b[0]; });
+				if (cands.length) t = cands[0][1]; else { var rw = S.sws.filter(function (w) { return w.st === "run"; })[0]; if (rw) t = TM.clock(swElapsed(rw), false) + (rw.label ? " " + rw.label : "") + " | Stopwatch"; }
+			}
 		}
 		if (t !== lastTitle) { document.title = t; lastTitle = t; }
 	}
@@ -662,6 +688,7 @@
 		if (visible.indexOf("iv") >= 0 && v.st === "run") ivFace();
 		if (visible.indexOf("ev") >= 0) { var sk = Math.floor(now / 1000); if (cache.ev !== sk) { cache.ev = sk; [].forEach.call(document.querySelectorAll("#tm-events .tm-event"), function (card) { var e = S.ev.filter(function (x) { return x.id === card.dataset.id; })[0]; if (e) { var pp = TM.dhms(e.at - now); card.classList.toggle("is-past", pp.past); card.querySelector("[data-evface]").innerHTML = evFace(pp); } }); } }
 		if (dpOpen) renderDisplay();
+		var tk = Math.floor(now / 1000); if (cache.ts !== tk) { cache.ts = tk; [].forEach.call(document.querySelectorAll(".tm-titlesel"), fillTitleSel); }
 		updateTitle();
 	}
 
@@ -683,7 +710,7 @@
 	});
 
 	/* ---------- init ---------- */
-	load(); fillSettings();
+	load(); fillSettings(); [].forEach.call(document.querySelectorAll(".tm-titlesel"), function (x) { x._sig = ""; fillTitleSel(x); });
 	var q = new URLSearchParams(location.search);
 	if (SOLO && $("tm-onmain")) {
 		var v0 = PAGE_VIEWS[0], ob = $("tm-onmain-box"); $("tm-onmain").hidden = false; ob.checked = S.show.indexOf(v0) >= 0;
