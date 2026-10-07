@@ -469,10 +469,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.tm-win.tm-nobar #tm-barbtn:hover, body.tm-win.tm-nobar #tm-barbtn:focus {opacity:1;}
 	body.dark-mode.tm-win.tm-nobar #tm-barbtn {background:rgba(30,30,30,0.85);color:#aab2bd;border-color:#555;}
 
-	.tu .tm-volrow {display:flex;align-items:center;gap:0.6em;justify-content:center;margin:0.5em 0;flex-wrap:wrap;} .tu .tm-volrow label {font-size:0.9em;color:#6a7280;} .tu .tm-volrow input[type=range] {flex:0 1 11em;min-width:6em;}
 	.tu .tm-titlepick {display:flex;align-items:center;gap:0.5em;flex-wrap:wrap;} .tu .tm-titlesel {max-width:100%;width:auto;}
 	.tm-dp__tab {display:flex;align-items:center;gap:0.5em;color:var(--dp13);font-size:1em;margin-right:auto;} .tm-dp__tab select {max-width:16em;background:var(--dp16);color:var(--dp13);border:1px solid var(--dp4);border-radius:0.5em;padding:0.4em 0.5em;font:inherit;font-size:0.95em;}
-	body.dark-mode #tm .tm-volrow label {color:#a0a8b3;}
 
 	.tm-dp__tile {position:relative;} .tm-dp .tm-grip {position:absolute;top:0.5vmin;left:0.8vmin;cursor:grab;border:0;background:transparent;color:var(--dp9);font-size:2.2vmin;line-height:1;padding:0.6vmin 0.9vmin;touch-action:none;user-select:none;opacity:0.7;} .tm-dp .tm-grip:hover {opacity:1;color:var(--dp17);} .tm-dp .tm-grip:active {cursor:grabbing;} .tm-dp .tm-grip:focus-visible {outline:2px solid var(--dp17);border-radius:0.4em;}
 	.tm-dp .tm-dragging {z-index:60;box-shadow:0 1.4vmin 4vmin rgba(0,0,0,0.75);cursor:grabbing;} .tm-dp .tm-sorting {user-select:none;-webkit-user-select:none;}
@@ -608,7 +606,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tm-swc .tm-slow td{color:#e87973}
 	body.dark-mode .tm-dp{--dp6:#c14848;--dp15:#2edb6e}
 	body.dark-mode .tu .tm-size button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
-	body.dark-mode .tu .tm-volrow label{color:#9a9da3}
 	body.dark-mode .tm-dp__rb button{border:2px solid #333333;background:#1a1a1a;color:#e48077}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
@@ -979,7 +976,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=12" defer></script>
+	<script src="/timer/js/timer.js?v=13" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
