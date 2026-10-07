@@ -507,24 +507,39 @@
 			var i = kv.indexOf("=");
 			if (i > 0) q[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
 		});
-		if (!q.t && !q.z && !q.f) return null;
+		if (!q.t && !q.z && !q.f && !q.d) return null;
 		return q;
+	}
+	// Short links: a zone is written as its city ("New_York", "Kolkata") when that name is unique among the browser's zones, and a link
+	// leaves out what is the default (Vancouver as the source, the ten default cities). Old long links ("America%2FNew_York") still open.
+	var CITY = null;
+	function cityMap() {
+		if (CITY) return CITY;
+		CITY = {};
+		allZones().forEach(function (z) { var c = z.split("/").pop().toLowerCase(); CITY[c] = CITY[c] === undefined ? z : null; });
+		return CITY;
+	}
+	function shortZone(z) { var c = z.split("/").pop(); return z.indexOf("/") > 0 && cityMap()[c.toLowerCase()] === z ? c : z; }
+	function expandZone(n) {
+		n = String(n || "").trim(); if (!n) return "";
+		if ((n.indexOf("/") > 0 || n.toUpperCase() === "UTC") && isValidZone(n)) return n.toUpperCase() === "UTC" ? "UTC" : n;
+		return cityMap()[n.toLowerCase()] || (isValidZone(n) ? n : "");
 	}
 	function applyHash(q) {
 		if (/^\d{1,2}:\d{2}$/.test(q.t || "")) state.time = q.t;
 		if (/^\d{4}-\d{2}-\d{2}$/.test(q.d || "")) state.date = q.d;
-		if (isValidZone(q.f)) state.from = q.f;
+		var f = expandZone(q.f);
+		if (f) state.from = f; else if (!q.f && (q.t || q.d)) state.from = HOME;   // a short link without f = the default source
 		if (q.z) {
-			var zs = q.z.split(",").map(function (x) { return x.trim(); }).filter(isValidZone);
+			var zs = q.z.split(",").map(expandZone).filter(Boolean);
 			if (zs.length) state.targets = zs;
-		}
+		} else if (q.t || q.d) state.targets = DEFAULT_TARGETS.slice();
 	}
 	function linkFor() {
-		var base = location.href.split("#")[0];
-		return base + "#t=" + encodeURIComponent(state.time) +
-			"&d=" + encodeURIComponent(state.date) +
-			"&f=" + encodeURIComponent(state.from) +
-			"&z=" + encodeURIComponent(state.targets.join(","));
+		var base = location.href.split("#")[0], out = "#t=" + state.time + "&d=" + state.date;
+		if (state.from !== HOME) out += "&f=" + shortZone(state.from);
+		if (state.targets.join(",") !== DEFAULT_TARGETS.join(",")) out += "&z=" + state.targets.map(shortZone).join(",");
+		return base + out;
 	}
 
 	/* ---- rendering ------------------------------------------------- */
