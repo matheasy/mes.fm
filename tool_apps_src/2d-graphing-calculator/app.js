@@ -460,8 +460,16 @@
 	});
 	paintTheatre();
 	/* Fill window: cover the whole browser window (not the Fullscreen API), Esc leaves */
+	var layoutEl = document.querySelector('.gc-layout'), sideBefore = false;
+	function setSide(hide) {
+		layoutEl.classList.toggle('gc-noside', hide); $('gc-sidebtn').setAttribute('aria-pressed', String(hide));
+		$('gc-sidebtn').textContent = hide ? 'Show equations' : 'Hide equations';
+		setTimeout(function () { setTimeout(resize, 60); }, 40);
+	}
+	$('gc-sidebtn').addEventListener('click', function () { setSide(!layoutEl.classList.contains('gc-noside')); });
 	function setWin(on) {
 		document.body.classList.toggle('gc-win', on); $('gc-win').setAttribute('aria-pressed', String(on));
+		if (on) { sideBefore = layoutEl.classList.contains('gc-noside'); setSide(true); } else setSide(sideBefore);
 		$('gc-win').textContent = on ? 'Exit window' : 'Fill window'; if (on) window.scrollTo(0, 0);
 		setTimeout(function () { setTimeout(resize, 60); }, 40);
 	}
