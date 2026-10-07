@@ -33,17 +33,18 @@
 		<div id="bm-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your weight and height to see your BMI &mdash; or try an example: </span><span class="tu-chips" id="bm-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
 
 		<div id="bm-out" hidden>
+			<div class="bm-top"><button type="button" class="tu-btn tu-btn--ghost" id="bm-link-top">&#128279; Copy link to this result</button></div>
 			<div class="tu-stats" id="bm-hero" aria-live="polite"></div>
 			<div class="tu-card bm-verdict" id="bm-verdict" aria-live="polite"></div>
-			<div class="bm-btns">
-				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copy link to this result</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="bm-save">Save this measurement</button>
-				<button type="button" class="tu-btn tu-btn--ghost bm-print">Print</button>
-			</div>
 			<div class="tu-card" id="bm-gauge-card">
 				<div class="tu-label">Where you are on the scale</div>
 				<div class="bm-gauge" id="bm-gauge" aria-hidden="true"></div>
 				<ul class="bm-cats" id="bm-cats"></ul>
+			</div>
+			<div class="bm-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copy link to this result</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="bm-save">Save this measurement</button>
+				<button type="button" class="tu-btn tu-btn--ghost bm-print">Print</button>
 			</div>
 		</div>
 

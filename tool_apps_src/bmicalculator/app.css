@@ -31,8 +31,11 @@
 	@media (max-width: 600px) { .tu .bm-cats {grid-template-columns:1fr;} .tu #bm-units button {flex:1 1 100%;} }
 	@media print { .tu-seo, .bm-btns, #bm-setup .tu-note, #bm-examples, .bm-del {display:none !important;} }
 
-	.tu .bm-btns .tu-btn {transition:background .15s,color .15s,border-color .15s,transform .1s;} .tu .bm-btns .tu-btn:active {transform:scale(0.96);}
-	.tu .bm-btns .bm-copied {background:#2e7d32 !important;border-color:#2e7d32 !important;color:#fff !important;}
-	body.dark-mode #bm .bm-btns .tu-btn:hover {filter:brightness(1.25);}
-	body.dark-mode #bm .bm-btns .bm-copied {background:#66bb6a !important;border-color:#66bb6a !important;color:#0b1a0c !important;}
+	.tu .bm-btns .tu-btn, .tu .bm-top .tu-btn {transition:background .15s,color .15s,border-color .15s,transform .1s;} .tu .bm-btns .tu-btn:active {transform:scale(0.96);}
+	.tu .tu-btn.bm-copied {background:#2e7d32 !important;border-color:#2e7d32 !important;color:#fff !important;}
+	body.dark-mode #bm .tu-btn:hover {filter:brightness(1.25);}
+	body.dark-mode #bm .tu-btn.bm-copied {background:#66bb6a !important;border-color:#66bb6a !important;color:#0b1a0c !important;}
 	body.dark-mode #bm-toast {background:#e8edf2;color:#161616;}
+
+	.tu .bm-top {display:flex;justify-content:flex-end;margin:0 0 0.5em;} .tu .bm-top .tu-btn {font-size:0.85em;padding:0.35em 0.8em;}
+	@media print { .bm-top {display:none !important;} }
