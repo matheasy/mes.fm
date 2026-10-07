@@ -382,8 +382,28 @@
 		opts.timeZone = tzAt(timeZone, instant);
 		return new Intl.DateTimeFormat("en-US", opts).format(instant);
 	}
+	// Time format: auto (the browser's own habit), 12-hour, 24-hour, or both at once. Saved per browser.
+	var FMT_KEY = "mes-timezone:fmt";
+	var fmtMode = "auto";
+	try { var fm = localStorage.getItem(FMT_KEY); if (/^(auto|12|24|both)$/.test(fm)) fmtMode = fm; } catch (e) {}
+	function browserUses12() {
+		try { return !!new Intl.DateTimeFormat(undefined, { hour: "numeric" }).resolvedOptions().hour12; } catch (e) { return true; }
+	}
+	function clock12(timeZone, instant) { return fmt(timeZone, instant, { hour: "numeric", minute: "2-digit", hour12: true }); }
+	function clock24(timeZone, instant) { return fmt(timeZone, instant, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }); }
+	function clockParts(timeZone, instant) {
+		var m = fmtMode === "auto" ? (browserUses12() ? "12" : "24") : fmtMode;
+		if (m === "24") return { main: clock24(timeZone, instant), alt: "" };
+		if (m === "both") return { main: clock12(timeZone, instant), alt: clock24(timeZone, instant) };
+		return { main: clock12(timeZone, instant), alt: "" };
+	}
 	function clockStr(timeZone, instant) {
-		return fmt(timeZone, instant, { hour: "numeric", minute: "2-digit", hour12: true });
+		var c = clockParts(timeZone, instant);
+		return c.alt ? c.main + " (" + c.alt + ")" : c.main;
+	}
+	function clockHtml(timeZone, instant) {
+		var c = clockParts(timeZone, instant);
+		return c.main + (c.alt ? ' <span class="tz__clock24">' + c.alt + "</span>" : "");
 	}
 	function dateStr(timeZone, instant) {
 		return fmt(timeZone, instant, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
@@ -686,7 +706,7 @@
 				'<div class="tz__card__meta">' + metaBits.join(" · ") + "</div>" +
 			"</div>" +
 			'<div class="tz__card__time">' +
-				'<div class="tz__card__clock">' + clockStr(z, instant) + "</div>" +
+				'<div class="tz__card__clock">' + clockHtml(z, instant) + "</div>" +
 				'<div class="tz__card__date">' + dateStr(z, instant) + "</div>" +
 			"</div>" +
 			(isHome ? "" : '<button type="button" class="tz__remove" title="Remove" aria-label="Remove ' + place + '">×</button>');
@@ -809,5 +829,17 @@
 	if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date)) state.date = todayInZone(state.from);
 	if (!/^\d{1,2}:\d{2}$/.test(state.time)) state.time = nowTimeInZone(state.from);
 
+	(function wireFmt() {
+		var box = document.getElementById("tz-fmt");
+		if (!box) return;
+		function paint() { Array.prototype.forEach.call(box.querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-fmt") === fmtMode)); }); }
+		box.addEventListener("click", function (e) {
+			var b = e.target.closest("button[data-fmt]"); if (!b) return;
+			fmtMode = b.getAttribute("data-fmt");
+			try { localStorage.setItem(FMT_KEY, fmtMode); } catch (x) {}
+			paint(); render();
+		});
+		paint();
+	})();
 	render();
 })();
