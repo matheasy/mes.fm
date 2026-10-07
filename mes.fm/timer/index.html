@@ -479,6 +479,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 	.tm-dp__tile.is-clock .tm-dp__t {white-space:nowrap;font-size:clamp(1.6em,9.5vmin,9em);} .tm-dp__n1 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(17vmin,13vw);} .tm-dp__n2 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(12vmin,8.5vw);} .tm-dp__n3 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n4 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(8.5vmin,6.2vw);} .tm-dp__n5 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n6 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(6.5vmin,4.6vw);} .tm-dp__n7 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n8 .tm-dp__tile.is-clock .tm-dp__t, .tm-dp__n9 .tm-dp__tile.is-clock .tm-dp__t {font-size:min(5vmin,3.7vw);}
 
+	.tu .tm-tabpin {display:inline-flex;align-items:center;gap:0.15em;} .tu .tm-tabpin b {font-size:0.85em;line-height:1;}
+	.tu .tm-tabpin[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu .tm-alarm {position:relative;} .tu .tm-tabpin--al {position:absolute;right:0.5em;bottom:0.45em;}
+	.tm-dp .tm-tabpin {position:absolute;top:0.6vmin;right:0.8vmin;display:inline-flex;align-items:center;gap:0.2em;cursor:pointer;border:1px solid transparent;border-radius:0.5em;background:transparent;color:var(--dp9);padding:0.7vmin 0.9vmin;font:inherit;font-size:2.2vmin;opacity:0.75;} .tm-dp .tm-tabpin:hover {opacity:1;color:var(--dp17);border-color:var(--dp4);} .tm-dp .tm-tabpin svg {width:1em;height:1em;} .tm-dp .tm-tabpin[aria-pressed="true"] {opacity:1;color:var(--dp17);background:var(--dp16);border-color:var(--dp3);}
+	body.dark-mode #tm .tm-tabpin[aria-pressed="true"] {color:#0b1416;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -962,7 +968,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=6" defer></script>
+	<script src="/timer/js/timer.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

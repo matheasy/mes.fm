@@ -115,7 +115,7 @@
 		try {
 			var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (!s) return;
 			if (typeof s.sound === "string") S.sound = s.sound;
-			S.vol = num(s.vol, 80, 0, 100); if (typeof s.titleSrc === "string") S.titleSrc = s.titleSrc.slice(0, 40); if (s.repeat === 0 || s.repeat === 1 || s.repeat === 3) S.repeat = s.repeat;
+			S.vol = num(s.vol, 80, 0, 100); if (s.repeat === 0 || s.repeat === 1 || s.repeat === 3) S.repeat = s.repeat;
 			["optTitle", "optAwake", "optNotify", "optTenths"].forEach(function (k) { if (typeof s[k] === "boolean") S[k] = s[k]; });
 			if (Array.isArray(s.show)) S.show = s.show.filter(function (v) { return PANELS[v]; });
 			if (Array.isArray(s.order)) { var o = s.order.filter(function (v) { return PANELS[v]; }); ORDER.forEach(function (v) { if (o.indexOf(v) < 0) o.push(v); }); S.order = o; }
@@ -142,7 +142,7 @@
 	}
 	function today() { var d = new Date(); return d.getFullYear() + "-" + TM.pad(d.getMonth() + 1) + "-" + TM.pad(d.getDate()); }
 	function save() {
-		try { localStorage.setItem(KEY, JSON.stringify(S)); memOnly = false; } catch (e) { memOnly = true; }
+		try { localStorage.setItem(KEY, JSON.stringify(S, function (k, v) { return k === "titleSrc" ? undefined : v; })); memOnly = false; } catch (e) { memOnly = true; }
 		var n = $("tm-store-note"); if (n) n.textContent = memOnly ? "Your browser is blocking storage, so timers will not survive a reload." : "Your timers and settings are saved in this browser.";
 	}
 	function toast(msg) {
@@ -318,7 +318,7 @@
 		var p = TM.parts(t.total, false), idle = t.st === "idle" || t.st === "done", old = $("tm-timers").querySelector('.tm-timer[data-id="' + t.id + '"]'), isFs = old && old.classList.contains("tm-fs");
 		return '<div class="tm-timer tm-fsable is-' + (t.st === "run" ? "running" : t.st) + (isFs ? " tm-fs" : "") + '" data-id="' + t.id + '">' +
 			'<div class="tm-head">' + (S.timers.length > 1 ? '<button type="button" class="tm-grip" title="Drag to move this timer" aria-label="Move timer ' + (i + 1) + ': drag, or use the arrow keys" data-grip="timer">⠿</button>' : "") + '<input class="tm-label" type="text" maxlength="60" autocomplete="off" placeholder="Timer ' + (i + 1) + '" aria-label="Label for timer ' + (i + 1) + '" value="' + esc(t.label) + '">' +
-			'<button type="button" class="tm-icon" data-a="full" title="Full screen" aria-label="Full screen">' + (isFs ? "✕ Close" : "⤢") + "</button>" + (S.timers.length > 1 ? '<button type="button" class="tm-icon" data-a="del" title="Remove this timer" aria-label="Remove this timer">✕</button>' : "") + "</div>" +
+			''+ pinBtn("t:" + t.id) + '<button type="button" class="tm-icon" data-a="full" title="Full screen" aria-label="Full screen">' + (isFs ? "✕ Close" : "⤢") + "</button>" + (S.timers.length > 1 ? '<button type="button" class="tm-icon" data-a="del" title="Remove this timer" aria-label="Remove this timer">✕</button>' : "") + "</div>" +
 			'<div class="tm-face" data-face>' + faceText(t) + '</div><div class="tm-bar"><i data-bar style="width:' + barPct(t) + '%"></i></div>' +
 			(idle ? '<div class="tm-presets">' + PRESETS.map(function (x) { return '<button type="button" class="tu-chip" data-p="' + x[1] + '">' + x[0] + "</button>"; }).join("") + '</div><div class="tm-set"><input class="tu-input" data-k="h" type="text" inputmode="numeric" value="' + p.h + '" aria-label="Hours"><span>h</span><input class="tu-input" data-k="m" type="text" inputmode="numeric" value="' + p.m + '" aria-label="Minutes"><span>m</span><input class="tu-input" data-k="s" type="text" inputmode="numeric" value="' + p.s + '" aria-label="Seconds"><span>s</span></div>' : "") +
 			'<div class="tm-btns tm-btns--center">' + btnsFor(t) + "</div></div>";
@@ -341,7 +341,7 @@
 		var old = $("tm-sws").querySelector('.tm-swc[data-id="' + w.id + '"]'), isFs = old && old.classList.contains("tm-fs"), L = TM.laps(w.laps);
 		var b = function (a, label, cls, dis) { return '<button type="button" class="tu-btn ' + (cls || "") + ' tm-big" data-a="' + a + '"' + (dis ? " disabled" : "") + ">" + label + "</button>"; };
 		return '<div class="tm-timer tm-swc tm-fsable is-' + (w.st === "run" ? "running" : "idle") + (isFs ? " tm-fs" : "") + '" data-id="' + w.id + '"><div class="tm-head">' + (S.sws.length > 1 ? '<button type="button" class="tm-grip" title="Drag to move this stopwatch" aria-label="Move stopwatch ' + (i + 1) + ': drag, or use the arrow keys" data-grip="sw">⠿</button>' : "") +
-			'<input class="tm-label" type="text" maxlength="60" autocomplete="off" placeholder="Stopwatch ' + (i + 1) + '" aria-label="Label for stopwatch ' + (i + 1) + '" value="' + esc(w.label) + '"><button type="button" class="tm-icon" data-a="full" title="Full screen" aria-label="Full screen">' + (isFs ? "✕ Close" : "⤢") + "</button>" + (S.sws.length > 1 ? '<button type="button" class="tm-icon" data-a="del" title="Remove this stopwatch" aria-label="Remove this stopwatch">✕</button>' : "") + "</div>" +
+			'<input class="tm-label" type="text" maxlength="60" autocomplete="off" placeholder="Stopwatch ' + (i + 1) + '" aria-label="Label for stopwatch ' + (i + 1) + '" value="' + esc(w.label) + '">'+ pinBtn("s:" + w.id) + '<button type="button" class="tm-icon" data-a="full" title="Full screen" aria-label="Full screen">' + (isFs ? "✕ Close" : "⤢") + "</button>" + (S.sws.length > 1 ? '<button type="button" class="tm-icon" data-a="del" title="Remove this stopwatch" aria-label="Remove this stopwatch">✕</button>' : "") + "</div>" +
 			'<div class="tm-face tm-face--sw" data-face>' + swText(w) + '</div><div class="tm-btns tm-btns--center">' + b("go", w.st === "run" ? "Pause" : w.st === "pause" ? "Resume" : "Start", "tu-btn--primary") + b("lap", "Lap", "", w.st !== "run") + b("reset", "Reset", "tu-btn--ghost", w.st === "idle" && !w.laps.length) + "</div>" +
 			(L.rows.length ? '<div class="tm-hide-fs"><div class="tu-table-wrap"><table class="tu-table tm-laps"><thead><tr><th>Lap</th><th>Lap time</th><th>Total</th></tr></thead><tbody>' + L.rows.slice().reverse().map(function (r) { var k = r.n - 1; return '<tr class="' + (k === L.fast ? "tm-fast" : k === L.slow ? "tm-slow" : "") + '"><td>' + r.n + (k === L.fast ? " ▲ fastest" : k === L.slow ? " ▼ slowest" : "") + "</td><td>" + TM.precise(r.lap) + "</td><td>" + TM.precise(r.total) + '</td></tr>'; }).join("") + '</tbody></table></div><div class="tm-btns"><button type="button" class="tu-btn tu-btn--ghost" data-a="copy">Copy laps</button></div></div>' : "") + "</div>";
 	}
@@ -364,12 +364,16 @@
 		var t = Math.max(0, Math.ceil((next - Date.now()) / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), sec = t % 60;
 		return (h ? h + ":" + TM.pad(m) : m) + ":" + TM.pad(sec);
 	}
+	var PIN_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 11h18M3 7l2-3h6l2 3"/></svg>';
+	function pinBtn(key) { var on = S.optTitle && S.titleSrc === key; return '<button type="button" class="tm-icon tm-tabpin" data-tabpin="' + esc(key) + '" aria-pressed="' + on + '" title="' + (on ? "Showing in the browser tab. Click to go back to automatic." : "Show this one in the browser tab") + '" aria-label="Show in the browser tab">' + PIN_SVG + (on ? "<b>✓</b>" : "") + "</button>"; }
+	var PIN_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 11h18M3 7l2-3h6l2 3"/></svg>';
+	function pinBtn(key, cls) { var on = S.optTitle && S.titleSrc === key; return '<button type="button" class="tm-icon tm-tabpin ' + (cls || "") + '" data-tabpin="' + esc(key) + '" aria-pressed="' + on + '" title="' + (on ? "Showing in the browser tab. Click to go back to automatic." : "Show this one in the browser tab") + '" aria-label="Show in the browser tab">' + PIN_SVG + (on ? "<b>✓</b>" : "") + "</button>"; }
 	function renderAlarms() {
 		var box = $("tm-alarms"); if (!box) return;
 		var af = document.activeElement, focusId = af && af.closest && af.closest(".tm-alarm") && /tm-label/.test(af.className || "") ? af.closest(".tm-alarm").dataset.id : null;
 		box.innerHTML = S.alarms.map(function (a, i) {
 			return '<div class="tm-alarm' + (a.on ? " is-on" : "") + '" data-id="' + a.id + '"><div class="tm-alarm__row"><input class="tu-input tu-input--big tm-time" data-k="time" type="time" step="60" value="' + esc(a.time) + '" aria-label="Alarm ' + (i + 1) + ' time"><input class="tm-label" data-k="label" type="text" maxlength="60" autocomplete="off" placeholder="Label (optional)" value="' + esc(a.label) + '" aria-label="Alarm ' + (i + 1) + ' label">' +
-				'<label class="tm-check"><input type="checkbox" data-k="daily"' + (a.daily ? " checked" : "") + '> Daily</label><label class="tm-check" title="Show a big countdown to this alarm"><input type="checkbox" data-k="cd"' + (a.cd ? " checked" : "") + '> Countdown</label><button type="button" class="tu-btn ' + (a.on ? "tu-btn--ghost" : "tu-btn--primary") + '" data-a="toggle">' + (a.on ? "Turn off" : "Turn on") + "</button>" + (S.alarms.length > 1 ? '<button type="button" class="tm-icon" data-a="del" aria-label="Remove alarm" title="Remove">✕</button>' : "") + '</div><div class="tm-alarm__cd" data-cd' + (alarmCd(a) ? "" : " hidden") + '>' + esc(alarmCd(a)) + '</div><div class="tm-alarm__st" data-st>' + esc(alarmStatus(a)) + "</div></div>";
+				'<label class="tm-check"><input type="checkbox" data-k="daily"' + (a.daily ? " checked" : "") + '> Daily</label><label class="tm-check" title="Show a big countdown to this alarm"><input type="checkbox" data-k="cd"' + (a.cd ? " checked" : "") + '> Countdown</label><button type="button" class="tu-btn ' + (a.on ? "tu-btn--ghost" : "tu-btn--primary") + '" data-a="toggle">' + (a.on ? "Turn off" : "Turn on") + "</button>" + (S.alarms.length > 1 ? '<button type="button" class="tm-icon" data-a="del" aria-label="Remove alarm" title="Remove">✕</button>' : "") + '</div><div class="tm-alarm__cd" data-cd' + (alarmCd(a) ? "" : " hidden") + '>' + esc(alarmCd(a)) + '</div><div class="tm-alarm__st" data-st>' + esc(alarmStatus(a)) + "</div>" + pinBtn("a:" + a.id, "tm-tabpin--al") + "</div>";
 		}).join("");
 		if (focusId) { var el = box.querySelector('.tm-alarm[data-id="' + focusId + '"] .tm-label'); if (el) { el.focus(); var v = el.value; el.value = ""; el.value = v; } }
 		var add = $("tm-al-add"); if (add) add.hidden = S.alarms.length >= 6;
@@ -596,10 +600,9 @@
 	function ensureDisplay() {
 		var el = $("tm-dp"); if (el) return el;
 		el = document.createElement("div"); el.id = "tm-dp"; el.className = "tm-dp"; el.hidden = true; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Timer display");
-		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><label class="tm-dp__tab" title="Which one shows in the browser tab title">Browser tab: <select class="tm-titlesel" aria-label="What shows in the browser tab"></select></label><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
+		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
 		document.body.appendChild(el);
 		sortable($("tm-dp-grid"), ".tm-dp__tile", function (els) { var ks = els.map(function (x) { return x.dataset.k; }); S.display = ks.concat((S.display || []).filter(function (k) { return ks.indexOf(k) < 0; })); dpKeys = ks.join(","); save(); });
-		var ts = el.querySelector(".tm-titlesel"); ts.onchange = function () { pickTitle(this.value); };
 		el.addEventListener("click", function (e) {
 			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
 			if (e.target.matches("#tm-dp-pick input[type=checkbox]")) {
@@ -619,7 +622,7 @@
 		hint.textContent = shown.length ? "" : "Nothing selected yet: press Choose timers, or start a timer.";
 		if (keys !== dpKeys) {   // the set of tiles changed: rebuild
 			dpKeys = keys; grid.className = "tm-dp__grid tm-dp__n" + Math.min(shown.length, 9);
-			grid.innerHTML = shown.map(function (i) { return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + (shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label) + ': drag, or use the arrow keys">⠿</button>' : "") + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div></div>'; }).join("");
+			grid.innerHTML = shown.map(function (i) { return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + (shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label) + ': drag, or use the arrow keys">⠿</button>' : "") + pinBtn(i.key, "tm-tabpin--dp") + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div></div>'; }).join("");
 		}
 		shown.forEach(function (i) {
 			var tile = grid.querySelector('.tm-dp__tile[data-k="' + i.key.replace(/"/g, "") + '"]'); if (!tile) return;
@@ -631,7 +634,7 @@
 	function openDisplay() {
 		var el = ensureDisplay(); dpOpen = true; dpKeys = ""; el.hidden = false; $("tm-dp-pick").hidden = true; document.body.classList.add("tm-dp-on");
 		if (!S.display) { var items = dpItems(), act = dpSelected(items); if (!act.length) { S.display = items.filter(function (i) { return /^[tsp]/.test(i.key) && i.key !== "iv" && i.key !== "po"; }).map(function (i) { return i.key; }); } }
-		renderDisplay(); fillTitleSel(el.querySelector(".tm-titlesel")); updateDpFs(); if (S.fs === "screen") enterScreen();
+		renderDisplay(); updateDpFs(); if (S.fs === "screen") enterScreen();
 		if ("wakeLock" in navigator && !lock) navigator.wakeLock.request("screen").then(function (l) { lock = l; l.addEventListener("release", function () { lock = null; }); }, function () {});
 	}
 	function closeDisplay() { dpOpen = false; var el = $("tm-dp"); if (el) el.hidden = true; document.body.classList.remove("tm-dp-on"); leaveScreen(); updateAwake(); }
@@ -676,7 +679,8 @@
 		return o;
 	}
 	function fillTitleSel(sel) { if (!sel || document.activeElement === sel) return; var sig = titleOptions().map(function (x) { return x.join("|"); }).join("~") + S.titleSrc; if (sel._sig === sig) return; sel._sig = sig; sel.innerHTML = titleOptions().map(function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0] === S.titleSrc ? " selected" : "") + ">" + esc(x[1]) + "</option>"; }).join(""); }
-	function pickTitle(v) { S.titleSrc = v; lastTitle = ""; updateTitle(); save(); [].forEach.call(document.querySelectorAll(".tm-titlesel"), function (x) { x._sig = ""; fillTitleSel(x); }); }
+	function pickTitle(v) { S.titleSrc = v; try { sessionStorage.setItem(KEY + ":tab", v); } catch (e) {} lastTitle = ""; updateTitle(); save(); [].forEach.call(document.querySelectorAll(".tm-titlesel"), function (x) { x._sig = ""; fillTitleSel(x); }); if ($("tm-timers")) renderTimers(); if ($("tm-sws")) renderSw(); if ($("tm-alarms")) renderAlarms(); dpKeys = ""; if (dpOpen) renderDisplay(); }
+	document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-tabpin]"); if (!b) return; e.stopPropagation(); var k = b.dataset.tabpin, on = S.optTitle && S.titleSrc === k; if (!S.optTitle) { S.optTitle = true; $("tm-opt-title").checked = true; } pickTitle(on ? "auto" : k); toast(on ? "Browser tab: automatic" : "Showing this one in the browser tab"); }, true);
 	[].forEach.call(document.querySelectorAll(".tm-titlesel"), function (sel) { fillTitleSel(sel); sel.onchange = function () { pickTitle(this.value); }; });
 	$("tm-opt-awake").onchange = function () { S.optAwake = this.checked; updateAwake(); save(); };
 	$("tm-opt-tenths").onchange = function () { S.optTenths = this.checked; save(); };
@@ -790,7 +794,7 @@
 	});
 
 	/* ---------- init ---------- */
-	load(); fillSettings(); [].forEach.call(document.querySelectorAll(".tm-titlesel"), function (x) { x._sig = ""; fillTitleSel(x); });
+	load(); try { S.titleSrc = (sessionStorage.getItem(KEY + ":tab") || "auto").slice(0, 40); } catch (e) {} fillSettings(); [].forEach.call(document.querySelectorAll(".tm-titlesel"), function (x) { x._sig = ""; fillTitleSel(x); });
 	var q = new URLSearchParams(location.search);
 	if (SOLO && $("tm-onmain")) {
 		var v0 = PAGE_VIEWS[0], ob = $("tm-onmain-box"); $("tm-onmain").hidden = false; ob.checked = S.show.indexOf(v0) >= 0;
