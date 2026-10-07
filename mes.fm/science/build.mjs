@@ -70,6 +70,14 @@ const PAGES = [
       "MES Physics videos: the magnetic field and the electric field of bound charges, magnetic isopotentials and the Faraday paradox, Planck's constant, and spinning-top and ferrofluid experiments.",
   },
   {
+    // Tile only: no page is written; links to mes.fm/ufo (the build log). Icon = img/ufo-icon.jpg (900x600 crop of the page's share image).
+    slug: "ufo",
+    href: "/ufo",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "UFO Replication",
+  },
+  {
     // Tile only: link to the sibling hub mes.fm/math. Icon = img/math-tutorials-icon.jpg (the homepage's Math tile).
     slug: "math",
     icon: "math-tutorials",
