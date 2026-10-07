@@ -80,16 +80,16 @@ const PAGES = [
     description:
       "Video and written tutorials on vector functions: space curves, derivatives and integrals, arc length and curvature, motion in space, and Kepler's laws.",
   },
-  // Tile only (no page written): MES math tools. Icon = img/<slug>-icon.jpg, a 900x600 crop of the tool's share image.
-  { slug: "latex", href: "/latex", iconVersion: 1, tileOnly: true, tileLabel: "LaTeX Render" },
-  { slug: "symbols", href: "/symbols", iconVersion: 1, tileOnly: true, tileLabel: "Math Symbols Copier" },
-  { slug: "2d-graphing-calculator", href: "/2d-graphing-calculator", iconVersion: 1, tileOnly: true, tileLabel: "2D Graphing Calculator" },
-  { slug: "3d-graphing-calculator", href: "/3d-graphing-calculator", iconVersion: 1, tileOnly: true, tileLabel: "3D Graphing Calculator" },
-  { slug: "cas-calculator", href: "/cas-calculator", iconVersion: 1, tileOnly: true, tileLabel: "CAS Calculator" },
-  { slug: "calculator", href: "/calculator", iconVersion: 1, tileOnly: true, tileLabel: "Calculator" },
-  { slug: "derivative-calculator", href: "/derivative-calculator", iconVersion: 1, tileOnly: true, tileLabel: "Derivative Calculator" },
-  { slug: "integral-calculator", href: "/integral-calculator", iconVersion: 1, tileOnly: true, tileLabel: "Integral Calculator" },
-  { slug: "unit-conversion", href: "/unit-conversion", iconVersion: 1, tileOnly: true, tileLabel: "Unit Conversion" },
+  // Tile only (no page written): MES math tools, shown as small square-logo links in the "Calculators & Tools" section under the tiles (img/<logo>); img/<slug>-icon.jpg (900x600 share-image crops) is kept for use as big tiles.
+  { slug: "latex", href: "/latex", logo: "latex-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "LaTeX Render" },
+  { slug: "symbols", href: "/symbols", logo: "symbols-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Math Symbols Copier" },
+  { slug: "2d-graphing-calculator", href: "/2d-graphing-calculator", logo: "graphing-calculator-2d-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "2D Graphing Calculator" },
+  { slug: "3d-graphing-calculator", href: "/3d-graphing-calculator", logo: "graphing-calculator-3d-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "3D Graphing Calculator" },
+  { slug: "cas-calculator", href: "/cas-calculator", logo: "cas-calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "CAS Calculator" },
+  { slug: "calculator", href: "/calculator", logo: "calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Calculator" },
+  { slug: "derivative-calculator", href: "/derivative-calculator", logo: "derivative-calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Derivative Calculator" },
+  { slug: "integral-calculator", href: "/integral-calculator", logo: "integral-calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Integral Calculator" },
+  { slug: "unit-conversion", href: "/unit-conversion", logo: "unit-conversion-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Unit Conversion" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -751,12 +751,17 @@ function buildTile(page) {
   return `<a class="icon-grid__link icon-grid__link--labeled" href="${page.href || `/${page.slug}`}"><span class="icon-grid__thumb" style="background-image:url('/img/${page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
 }
 
+// "Calculators & Tools" strip under the hub's tiles: small square logos with a label (the tile-only PAGES entries).
+function buildToolLink(page) {
+  return `<a class="tool-grid__link" href="${page.href}"><img src="/img/${page.logo}" alt="" width="64" height="64" loading="lazy"><span>${escapeHtml(page.tileLabel)}</span></a>`;
+}
+
 // page: the hub ({ hub: true, slug: "math" }) or one entry of PAGES.
 function buildPage(meta, page) {
   const isHub = !!page.hub;
   const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
   const sectionsHtml = isHub
-    ? `<div class="icon-grid">\n${PAGES.map(buildTile).join("\n")}\n</div>`
+    ? `<div class="icon-grid">\n${PAGES.filter((p) => !p.tileOnly).map(buildTile).join("\n")}\n</div>\n<h2 class="tool-heading">Calculators &amp; Tools</h2>\n<div class="tool-grid">\n${PAGES.filter((p) => p.tileOnly).map(buildToolLink).join("\n")}\n</div>`
     : sections.map((s) => buildSection(s, meta)).join("\n\n");
   const hasFilter = sections.some((s) => s.filter);
   const filterWiring = sections
@@ -992,6 +997,19 @@ sub {vertical-align:sub;}
   .icon-grid { grid-template-columns: 1fr; }
 }
 .icon-grid__link { display: block; position: relative; overflow: hidden; border-radius: 4px; }
+/* "Calculators & Tools": small square logos under the tiles. */
+.tool-heading { font-size: 1.15em; font-weight: 600; margin: 1.4em 0 0.6em; }
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5em, 1fr)); gap: 0.9em 0.6em; margin: 0 0 1.2em; }
+.tool-grid__link { display: flex; flex-direction: column; align-items: center; gap: 0.35em; text-align: center; text-decoration: none; font-size: 0.85em; line-height: 1.25; }
+.tool-grid__link img { width: 64px; height: 64px; border-radius: 14px; }
+.tool-grid__link:hover img { transform: scale(1.06); }
+.tool-grid__link img { transition: transform 0.15s; }
+.tool-grid__link:hover span { text-decoration: underline; }
+.tool-grid__link span { color: inherit; }
+.tool-heading { color: #222; }
+.tool-grid__link { color: #1b4f8a; }
+body.dark-mode .tool-heading { color: #eee; }
+body.dark-mode .tool-grid__link { color: #8ec5ff; }
 .icon-grid__thumb {
   display: block;
   width: 100%;
