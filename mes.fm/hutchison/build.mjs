@@ -125,6 +125,15 @@ const PAGES = [
       "Cold fusion and low energy nuclear reactions (LENR): Martin Fleischmann's rare interviews, including the 1985 “hole in the floor” palladium electrolysis experiment, plus a free energy playlist.",
   },
   {
+    // Tile only: no page is written; links to mes.fm/ufo (UFO Replication: Tesla coil / free energy build log).
+    // Icon = img/ufo-icon.jpg (900x600 crop of that page's share image, shared with the mes.fm/science tile).
+    slug: "ufo",
+    href: "/ufo",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "UFO Replication",
+  },
+  {
     // Tile only: no page is written. Its icon (img/hutchison-livestreams-icon.jpg) is a crop of the
     // newest Hutchison Effect livestream's thumbnail on mes.fm/livestreams -- refresh it by hand
     // (and bump iconVersion) when a newer Hutchison stream goes up.
