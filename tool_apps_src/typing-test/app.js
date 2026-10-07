@@ -348,8 +348,8 @@
 
 	/* ---------- leaderboard (api/typing-leaderboard.js; daily / weekly resets 00:00 UTC) ---------- */
 	var API = "/api/typing-leaderboard", MIN_ACC = 90, PER = { day: "Today", week: "This week", all: "All time" };
-	var LB = { period: "day", board: "all", loaded: false, counts: {}, picked: false, data: null, mine: false, dev: "", sort: { k: "r", d: 1 }, shown: 25 };
-	function lbSave() { try { localStorage.setItem(KEY + ":lb", JSON.stringify({ period: LB.period, board: LB.board })); } catch (e) {} }
+	var LB = { period: "day", board: "all", loaded: false, counts: {}, picked: false, data: null, mine: false, dev: "", voice: false, sort: { k: "r", d: 1 }, shown: 25 };
+	function lbSave() { try { localStorage.setItem(KEY + ":lb", JSON.stringify({ period: LB.period, board: LB.board, voice: LB.voice })); } catch (e) {} }
 	// "k" keyboard / "p" phone or tablet touch: self-reported with a score, shown as an icon and usable as a filter
 	function myDevice() {
 		try {
@@ -382,13 +382,18 @@
 		el.lbboard.innerHTML = boardOptions().map(function (b) { var n = b === "all" ? Object.keys(LB.counts).reduce(function (a, k) { return a + LB.counts[k]; }, 0) : LB.counts[b]; return '<option value="' + b + '">' + esc(boardName(b)) + (n ? " (" + n + ")" : "") + "</option>"; }).join("");
 		el.lbdev.innerHTML = ["", "k", "p", "t", "v"].map(function (v) { return '<button type="button" data-v="' + v + '" aria-pressed="' + (LB.dev === v) + '">' + DEVS[v] + "</button>"; }).join("");
 		el.lbboard.value = LB.board;
+		// "All devices" leaves out voice typing (dictated scores are not comparable) unless this is ticked
+		var vt = $("tt-lbvoice");
+		if (!vt) { vt = document.createElement("label"); vt.id = "tt-lbvoice"; vt.className = "tt-voicetick"; vt.style.cssText = "display:inline-flex;align-items:center;gap:0.4em;font-size:0.85em;cursor:pointer;margin-left:0.6em;"; vt.innerHTML = '<input type="checkbox" style="width:1.1em;height:1.1em;accent-color:var(--accent);"> Include voice typing 🎤'; el.lbdev.parentNode.insertBefore(vt, el.lbdev.nextSibling);
+			vt.firstChild.addEventListener("change", function () { LB.voice = this.checked; lbSave(); if (!LB.mine) loadBoard(); }); }
+		vt.hidden = !!LB.dev; vt.firstChild.checked = LB.voice;
 	}
 	function until(ms) { var m = Math.max(1, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? Math.round(h / 24) + " days" : h ? h + " h " + (m % 60) + " min" : m + " min"; }
 	function loadBoard() {
 		LB.loaded = true; var board = LB.board, period = LB.period;
 		el.lbbody.innerHTML = '<p class="tt-empty">Loading…</p>';
 		var mine = LB.mine;
-		fetch(API + (mine ? "?mine=" + store.pid + "&board=" : "?me=" + store.pid + "&board=") + encodeURIComponent(board) + "&period=" + period + (LB.dev && !mine ? "&dev=" + LB.dev : "")).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+		fetch(API + (mine ? "?mine=" + store.pid + "&board=" : "?me=" + store.pid + "&board=") + encodeURIComponent(board) + "&period=" + period + (!mine && (LB.dev || !LB.voice) ? "&dev=" + (LB.dev || "nv") : "")).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
 			if (board !== LB.board || period !== LB.period || mine !== LB.mine) return;
 			LB.data = j; LB.shown = 25; drawTable();
 			if (mine) el.lbnote.textContent = j.total ? "Your last " + j.total + " posted result" + (j.total > 1 ? "s" : "") + ", newest first. ★ = your best on that test." : "";
@@ -434,7 +439,7 @@
 	el.lbmine.addEventListener("click", function () { LB.mine = !LB.mine; LB.sort = LB.mine ? { k: "d", d: -1 } : { k: "r", d: 1 }; el.lbmine.setAttribute("aria-pressed", String(LB.mine)); loadBoard(); });
 	// On load: the board last viewed (remembered), else every test combined, so the leaderboard is never empty just because the current settings point at a quiet board.
 	function lbStart() {
-		try { var sv = JSON.parse(localStorage.getItem(KEY + ":lb") || "null"); if (sv && PER[sv.period] && boardOptions().indexOf(sv.board) >= 0) { LB.period = sv.period; LB.board = sv.board; LB.picked = true; } } catch (e) {}
+		try { var sv = JSON.parse(localStorage.getItem(KEY + ":lb") || "null"); if (sv && PER[sv.period] && boardOptions().indexOf(sv.board) >= 0) { LB.period = sv.period; LB.board = sv.board; LB.voice = !!sv.voice; LB.picked = true; } } catch (e) {}
 		drawLbControls();
 		loadCounts(function () {
 			drawLbControls(); loadBoard();

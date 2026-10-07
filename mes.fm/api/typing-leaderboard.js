@@ -104,6 +104,8 @@ const allBoards = (tr) => {
   return o;
 };
 const ID_RE = /^[a-f0-9]{16}$/;
+// ?dev= filter: k / p / t / v = that device only, nv = everything except voice typing (the Typing Test's default "All devices" view)
+const devOk = (d, dev) => (dev === 'nv' ? (d || 'k') !== 'v' : (d || 'k') === dev);
 
 function clientIp(req) {
   const f = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
@@ -124,7 +126,7 @@ async function readBoard(board, period, me, now, dev) {
   const flat = (r[0] && r[0].result) || [];
   const ids = [], scores = [];
   for (let i = 0; i < flat.length; i += 2) { ids.push(flat[i]); scores.push(Number(flat[i + 1])); }
-  const keep = ids.map((id, i) => i).filter((i) => !dev || (decode(scores[i]).d || 'k') === dev).slice(0, TOP);
+  const keep = ids.map((id, i) => i).filter((i) => !dev || devOk(decode(scores[i]).d, dev)).slice(0, TOP);
   const nm = await names(keep.map((i) => ids[i]));
   const rows = keep.map((i, k) => ({ r: k + 1, n: nm[k] || 'Anonymous', ...decode(scores[i]), b: board, me: me && ids[i] === me ? 1 : undefined }));
   let you = null;
@@ -147,7 +149,7 @@ async function readAll(period, me, now, tr, dev) {
     total += Number((r[i * 2 + 1] && r[i * 2 + 1].result) || 0);
   });
   all.sort((x, y) => y.s - x.s);
-  const top = (dev ? all.filter((x) => (decode(x.s).d || 'k') === dev) : all).slice(0, TOP);
+  const top = (dev ? all.filter((x) => devOk(decode(x.s).d, dev)) : all).slice(0, TOP);
   const nm = await names([...new Set(top.map((x) => x.id))]);
   const byId = {}; [...new Set(top.map((x) => x.id))].forEach((id, i) => { byId[id] = nm[i]; });
   const rows = top.map((x, i) => ({ r: i + 1, n: byId[x.id] || 'Anonymous', ...decode(x.s), b: x.b, me: me && x.id === me ? 1 : undefined }));
@@ -189,7 +191,7 @@ module.exports = async (req, res) => {
       const board = String(req.query.board || '');
       const period = String(req.query.period || 'day');
       const me = ID_RE.test(String(req.query.me || '')) ? String(req.query.me) : '';
-      const dev = ['k', 'p', 't', 'v'].includes(String(req.query.dev)) ? String(req.query.dev) : '';
+      const dev = ['k', 'p', 't', 'v', 'nv'].includes(String(req.query.dev)) ? String(req.query.dev) : '';
       if ((!isAllBoard(board) && !parseBoard(board)) || !['day', 'week', 'all'].includes(period)) { res.status(400).json({ error: 'bad board' }); return; }
       const out = isAllBoard(board) ? await readAll(period, me, now, setOf(board), dev) : await readBoard(board, period, me, now, dev);
       res.setHeader('Cache-Control', me ? 'no-store' : 'public, max-age=10, s-maxage=20, stale-while-revalidate=60');
@@ -265,4 +267,4 @@ module.exports = async (req, res) => {
   }
 };
 
-module.exports._test = { allBoards, isTv, TR_PACES, parseBoard, weekLabel, dayLabel, encode, decode, NAME_RE, BAD };
+module.exports._test = { allBoards, isTv, devOk, TR_PACES, parseBoard, weekLabel, dayLabel, encode, decode, NAME_RE, BAD };

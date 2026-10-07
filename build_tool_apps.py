@@ -132,7 +132,7 @@ APPS = {
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",
                         tag="How fast and accurate is your typing?", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                         desc="Free typing speed test: measure your words per minute (WPM), accuracy and consistency. Timed, word-count, passage and your-own-text tests, five difficulty levels, a keyboard map of your weak keys, personal bests and challenge links. No sign-up.",
-                        js_v="8", pre_js=["/main_js/ad-quiet.js?v=1"],
+                        js_v="9", pre_js=["/main_js/ad-quiet.js?v=1"],
                         nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-transcribe'>Transcribe</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-voice'>Voice</a></li>",
                         menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-transcribe\">Transcription Typing Test</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-voice\">Voice Typing Test</a></li>"),
     # Transcription Typing Test (mes.fm/typing-test-transcribe): the text is spoken (Web Speech API) and you type what you hear; scored against the spoken text. A sub-page of the Typing Test

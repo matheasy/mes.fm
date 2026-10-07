@@ -40,6 +40,7 @@ function call(method, q, body, ip) {
   assert.deepStrictEqual(T.parseBoard('time-30-medium'), { mode: 'time', len: 30, diff: 'medium' });
   assert.deepStrictEqual(T.parseBoard('tr-120-long'), { mode: 'tr', len: 'long', diff: null, pace: 120 }); assert.strictEqual(T.parseBoard('tr-121-long'), null); assert.strictEqual(T.parseBoard('tr-120-huge'), null);
   assert.deepStrictEqual(T.parseBoard('tv-medium'), { mode: 'tv', len: 'medium', diff: null }); assert.strictEqual(T.parseBoard('tv-huge'), null); assert.strictEqual(T.parseBoard('tv-short-1'), null); assert.deepStrictEqual(T.allBoards('tv'), ['tv-short', 'tv-medium', 'tv-long']); assert.strictEqual(T.allBoards(false).some(T.isTv), false); assert.strictEqual(T.allBoards(true).some(T.isTv), false);
+  assert.strictEqual(T.devOk('v', 'nv'), false); assert.strictEqual(T.devOk('k', 'nv'), true); assert.strictEqual(T.devOk('', 'nv'), true); assert.strictEqual(T.devOk('p', 'p'), true); assert.strictEqual(T.devOk('v', 'k'), false);
   assert.strictEqual(T.parseBoard('time-31-medium'), null); assert.strictEqual(T.parseBoard('passage-long').len, 'long'); assert.strictEqual(T.parseBoard('x'), null);
   assert.strictEqual(T.weekLabel(new Date('2026-10-05T12:00:00Z')), '2026-W41'); assert.strictEqual(T.weekLabel(new Date('2026-01-01T00:00:00Z')), '2026-W01'); assert.strictEqual(T.weekLabel(new Date('2024-12-30T00:00:00Z')), '2025-W01');
   assert.deepStrictEqual(T.decode(T.encode(87.4, 96.3)), { w: 87.4, a: 96.3, d: 'k' });
