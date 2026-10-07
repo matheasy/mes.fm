@@ -130,6 +130,24 @@
     body.light .spec-table td { border-color: #dddddd; }
     body.dark .spec-table td { border-color: #444444; }
 
+    .ufo-intro { margin: 0 0 1.2em; }
+    .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 0 0.4em; }
+    @media (max-width: 900px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .card-grid { grid-template-columns: 1fr; } }
+    .link-card { display: flex; flex-direction: column; border: 1px solid rgba(128, 128, 128, 0.35); border-radius: 8px; overflow: hidden; text-decoration: none; color: inherit; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .link-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); }
+    .link-card-thumb { width: 100%; aspect-ratio: 3 / 2; background-color: #333333; background-size: cover; background-position: center; }
+    .link-card-body { padding: 0.6rem 0.8rem 0.8rem; display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
+    .link-card-title { font-size: 0.95rem; font-weight: 700; line-height: 1.3; }
+    .link-card-date { font-size: 0.78rem; opacity: 0.75; }
+    .link-card-readmore { font-size: 0.8rem; font-weight: 600; }
+    body.light .link-card { background-color: #fafafa; }
+    body.light .link-card-title { color: #000000; }
+    body.dark .link-card { background-color: #2a2a2a; border-color: rgba(255, 255, 255, 0.15); }
+    body.dark .link-card-title { color: #eeeeee; }
+    body.light .link-card-readmore { color: #1a6fb0; }
+    body.dark .link-card-readmore { color: #6cb6f5; }
+
     .source-link {
       display: inline-block;
       font-size: 0.9em;
@@ -659,7 +677,7 @@
         <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
       </ul>
     </div>
-    <!-- MES-COLS-START --><div class="mes-cols"><div class="mes-col-main"><div class="part-of">Part of <a href="https://mes.fm/links">mes.fm/links</a></div>
+    <!-- MES-COLS-START --><div class="mes-cols"><div class="mes-col-main"><div class="part-of">Part of <a href="https://mes.fm/science">MES Science</a></div>
 
     <h1>UFO Replication</h1>
     <div class="page-subtitle">A running build log of Tesla coil experiments and progress.</div>
@@ -667,20 +685,24 @@
     
     <hr>
 
+    <p class="ufo-intro">Tinkering with Tesla coils and other electromagnetic devices in hopes of replicating the Hutchison Effect and other exotic physical phenomena. Full write-ups are on the Hive blockchain and mirrored here.</p>
+
     <!--
-      To add a new entry: copy an <article class="entry"> block and paste it
-      directly below this comment (newest entries stay at the top).
+      To add a new build log: copy a <a class="link-card"> block and paste it
+      directly below this comment (newest cards stay first).
     -->
 
     <article class="entry">
-      <h2>Build Log 1: Tesla Coil, Faraday Cage, Ground Rod</h2>
-      <div class="entry-date">August 19, 2026</div>
-
-      <img src="https://files.peakd.com/file/peakd-hive/mes/23zm5BEeydojhdL6ydpa8oh7TS1Xt6mAkts8SJpMbRCUnTngdy2i6TLYRAZXtRwq1V1Fg.jpg" alt="250W solid-state Tesla coil (SSTC)" width="500">
-
-      <p>Tinkering with Tesla coils and other electromagnetic devices in hopes of replicating the Hutchison Effect and other exotic physical phenomena &mdash; covering the Tesla coil itself, building a Faraday cage around it, and grounding it to the house ground rod.</p>
-
-      <a class="source-link" href="https://mes.fm/tesla-coil">Read the full article &rarr;</a>
+      <div class="card-grid">
+        <a class="link-card" href="https://mes.fm/tesla-coil">
+          <span class="link-card-thumb" style="background-image:url('/ufo/img/build-log-1.jpg')"></span>
+          <span class="link-card-body">
+            <span class="link-card-title">Build Log 1: Tesla Coil, Faraday Cage, Ground Rod</span>
+            <span class="link-card-date">August 19, 2026</span>
+            <span class="link-card-readmore">Read the full article &rarr;</span>
+          </span>
+        </a>
+      </div>
     </article>
     <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
     <div id="comments-button" class="mes-comments-toggle">Comments</div>
