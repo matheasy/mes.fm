@@ -23,7 +23,7 @@
 	function newSw() { return { id: uid(), label: "", st: "idle", startAt: 0, base: 0, laps: [] }; }
 	function newAlarm() { return { id: uid(), time: "", label: "", daily: false, cd: false, on: false, at: 0, snooze: 0 }; }
 	var S = {
-		show: ["cd", "sw", "al"], display: null, order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, nobar: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, titleSrc: "auto", optAwake: true, optNotify: false, optTenths: false,
+		show: ["cd", "sw", "al"], display: null, order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, nobar: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, compact: false, titleSrc: "auto", optAwake: true, optNotify: false, optTenths: false,
 		timers: [newTimer(300000)], sws: [newSw()], alarms: [newAlarm()],
 		po: { label: "", focus: 25, short: 5, long: 15, rounds: 4, auto: true, phase: "focus", round: 1, st: "idle", end: 0, rem: 25 * 60000, day: "", done: 0 },
 		iv: { label: "", prep: 10, work: 20, rest: 10, rounds: 8, st: "idle", startAt: 0, base: 0 },
@@ -36,7 +36,7 @@
 			var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (!s) return;
 			if (typeof s.sound === "string") S.sound = s.sound;
 			S.vol = num(s.vol, 80, 0, 100); if (s.repeat === 0 || s.repeat === 1 || s.repeat === 3) S.repeat = s.repeat;
-			["optTitle", "optAwake", "optNotify", "optTenths"].forEach(function (k) { if (typeof s[k] === "boolean") S[k] = s[k]; });
+			["optTitle", "optAwake", "optNotify", "optTenths", "compact"].forEach(function (k) { if (typeof s[k] === "boolean") S[k] = s[k]; });
 			if (Array.isArray(s.show)) S.show = s.show.filter(function (v) { return PANELS[v]; });
 			if (Array.isArray(s.order)) { var o = s.order.filter(function (v) { return PANELS[v]; }); ORDER.forEach(function (v) { if (o.indexOf(v) < 0) o.push(v); }); S.order = o; }
 			S.layout = s.layout === "stack" ? "stack" : "auto";
@@ -137,9 +137,9 @@
 
 	/* ================= panels ================= */
 	var BODY = {
-		cd: '<div id="tm-timers"></div><div class="tm-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tm-add">+ Add another timer</button></div><p class="tu-note">Type a time such as <code>25</code>, <code>1h 30m</code> or <code>2:30</code>, or press a preset. <kbd>Space</kbd> starts or pauses the first timer.</p>',
-		sw: '<div id="tm-sws"></div><div class="tm-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tm-sw-add">+ Add another stopwatch</button></div><p class="tu-note"><kbd>Space</kbd> starts or pauses the first stopwatch &middot; <kbd>L</kbd> records a lap &middot; they keep counting if you reload the page.</p>',
-		al: '<div class="tm-face tm-face--al" id="tm-al-now" aria-live="off">--:--:--</div><div id="tm-alarms"></div><div class="tm-btns tm-btns--center"><button type="button" class="tu-btn tu-btn--ghost" id="tm-al-add">+ Add another alarm</button></div><p class="tu-note"><b>Keep this page open.</b> The alarm rings from your browser, so the tab has to stay open (a background tab is fine) and your computer awake. On a phone, a countdown timer with the screen kept awake is more reliable.</p>',
+		cd: '<div id="tm-timers"></div><div class="tm-btns tm-addrow"><button type="button" class="tu-btn tu-btn--ghost" id="tm-add">+ Add another timer</button></div><p class="tu-note">Type a time such as <code>25</code>, <code>1h 30m</code> or <code>2:30</code>, or press a preset. <kbd>Space</kbd> starts or pauses the first timer.</p>',
+		sw: '<div id="tm-sws"></div><div class="tm-btns tm-addrow"><button type="button" class="tu-btn tu-btn--ghost" id="tm-sw-add">+ Add another stopwatch</button></div><p class="tu-note"><kbd>Space</kbd> starts or pauses the first stopwatch &middot; <kbd>L</kbd> records a lap &middot; they keep counting if you reload the page.</p>',
+		al: '<div class="tm-face tm-face--al" id="tm-al-now" aria-live="off">--:--:--</div><div id="tm-alarms"></div><div class="tm-btns tm-btns--center tm-addrow"><button type="button" class="tu-btn tu-btn--ghost" id="tm-al-add">+ Add another alarm</button></div><p class="tu-note"><b>Keep this page open.</b> The alarm rings from your browser, so the tab has to stay open (a background tab is fine) and your computer awake. On a phone, a countdown timer with the screen kept awake is more reliable.</p>',
 		po: '<div class="tm-solo-label"><span data-pinslot="po"></span><input class="tm-label" id="tm-po-label" type="text" maxlength="60" autocomplete="off" placeholder="What are you working on? (label)" aria-label="Pomodoro label"></div><div class="tm-po-tabs" id="tm-po-tabs" role="group" aria-label="Pomodoro phase"><button type="button" data-p="focus">Focus</button><button type="button" data-p="short">Short break</button><button type="button" data-p="long">Long break</button></div><div class="tm-face" id="tm-po-face">25:00</div><div class="tm-bar"><i id="tm-po-bar"></i></div><p class="tm-status" id="tm-po-info"></p><div class="tm-btns tm-btns--center"><button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-po-go">Start</button><button type="button" class="tu-btn tm-big" id="tm-po-skip">Skip</button><button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-po-reset">Reset</button><button type="button" class="tu-btn tu-btn--ghost tm-big tm-hide-fs" data-fs-for="po">⤢ Full screen</button></div><div class="tm-po-set tm-hide-fs"><label>Focus <input class="tu-input" data-po="focus" type="text" inputmode="numeric"> min</label><label>Short break <input class="tu-input" data-po="short" type="text" inputmode="numeric"> min</label><label>Long break <input class="tu-input" data-po="long" type="text" inputmode="numeric"> min</label><label>Rounds <input class="tu-input" data-po="rounds" type="text" inputmode="numeric"></label><label class="tm-check"><input type="checkbox" data-po="auto"> Start the next phase automatically</label></div><p class="tu-note tm-hide-fs">The Pomodoro technique: work in focused 25-minute blocks, take a short break after each, and a longer one after four.</p>',
 		iv: '<div class="tm-solo-label"><span data-pinslot="iv"></span><input class="tm-label" id="tm-iv-label" type="text" maxlength="60" autocomplete="off" placeholder="Workout name (label)" aria-label="Interval label"></div><div class="tm-presets" id="tm-iv-presets"></div><div class="tm-iv-face" id="tm-iv-box" data-phase="idle"><div class="tm-iv-phase" id="tm-iv-phase">Ready</div><div class="tm-face" id="tm-iv-face">00:00</div><div class="tm-iv-info" id="tm-iv-info"></div></div><div class="tm-bar"><i id="tm-iv-bar"></i></div><div class="tm-btns tm-btns--center"><button type="button" class="tu-btn tu-btn--primary tm-big" id="tm-iv-go">Start</button><button type="button" class="tu-btn tu-btn--ghost tm-big" id="tm-iv-reset">Reset</button><button type="button" class="tu-btn tu-btn--ghost tm-big tm-hide-fs" data-fs-for="iv">⤢ Full screen</button></div><div class="tm-po-set tm-hide-fs"><label>Get ready <input class="tu-input" data-iv="prep" type="text" inputmode="numeric"> s</label><label>Work <input class="tu-input" data-iv="work" type="text" inputmode="numeric"> s</label><label>Rest <input class="tu-input" data-iv="rest" type="text" inputmode="numeric"> s</label><label>Rounds <input class="tu-input" data-iv="rounds" type="text" inputmode="numeric"></label></div><p class="tu-note tm-hide-fs" id="tm-iv-total"></p>',
 		ev: '<div class="tm-ev-form"><div class="tu-field" style="flex:2 1 12em;"><label for="tm-ev-name">What are you counting down to?</label><input id="tm-ev-name" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Christmas, exam, holiday"></div><div class="tu-field" style="flex:1 1 10em;"><label for="tm-ev-date">Date</label><input id="tm-ev-date" class="tu-input" type="date"></div><div class="tu-field" style="flex:0 1 8em;"><label for="tm-ev-time">Time (optional)</label><input id="tm-ev-time" class="tu-input" type="time"></div><div class="tu-field" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--primary" id="tm-ev-add">+ Add</button></div></div><div class="tm-chips-ev tu-chips" id="tm-ev-quick" style="margin:0.4em 0 0.8em;"></div><div id="tm-events"></div>'
@@ -157,7 +157,7 @@
 		bindPanels(); renderAll(); scheduleFit();
 	}
 	function toolsHtml() {
-		return '<button type="button" class="tu-btn tu-btn--ghost tm-dpbtn" data-dp="1" title="Show just the times, big (D)">📺 Display</button>' +
+		return '<button type="button" class="tu-btn tu-btn--ghost" data-compact="1" aria-pressed="' + S.compact + '" title="Hide the hint text and the add-another buttons for a tidier page">▤ Compact</button><button type="button" class="tu-btn tu-btn--ghost tm-dpbtn" data-dp="1" title="Show just the times, big (D)">📺 Display</button>' +
 			(winOn ? '<button type="button" class="tu-btn tu-btn--ghost" data-nobar="1" title="Hide this menu bar to save space (M). A small Menu button stays in the corner.">▲ Hide menu</button>' : "") + '<button type="button" class="tu-btn tu-btn--ghost" data-win="1" aria-pressed="' + winOn + '" title="Hide the rest of the page and fill the browser window with just the timers (W)">' + (winOn ? "✕ Exit window view" : "⤢ Window view") + '</button>' +
 			'<span class="tm-size" role="group" aria-label="Size of the timers"><button type="button" data-z="-" title="Smaller (-)" aria-label="Smaller">−</button><button type="button" class="tm-zl" data-z="0" title="Back to 100% (0)">' + Math.round(S.zoom * 100) + '%</button><button type="button" data-z="+" title="Bigger (+)" aria-label="Bigger">+</button><button type="button" data-z="fit" aria-pressed="' + S.fit + '" title="Fit every timer into the window and keep it fitted as the window changes">⤡ Fit</button></span>';
 	}
@@ -180,6 +180,8 @@
 	function scheduleFit() { if (!S.fit || !winOn) return; clearTimeout(fitT); fitT = setTimeout(fitNow, 200); }
 	window.addEventListener("resize", scheduleFit);
 	if (window.MutationObserver) new MutationObserver(function () { if (S.fit && winOn && Math.abs($("tm-secs").offsetHeight - fitLastH) > 2) scheduleFit(); }).observe($("tm-secs"), { childList: true, subtree: true });
+	function applyCompact() { document.body.classList.toggle("tm-compact", !!S.compact); var c = $("tm-opt-compact"); if (c) c.checked = !!S.compact; [].forEach.call(document.querySelectorAll("[data-compact]"), function (b) { b.setAttribute("aria-pressed", String(!!S.compact)); }); }
+	function setCompact(on) { S.compact = !!on; applyCompact(); save(); scheduleFit(); }
 	function applyBar() { document.body.classList.toggle("tm-nobar", winOn && S.nobar); }
 	function setBar(hide) { S.nobar = hide; applyBar(); save(); scheduleFit(); }
 	(function () { var b = document.createElement("button"); b.type = "button"; b.id = "tm-barbtn"; b.textContent = "☰ Menu"; b.title = "Show the menu bar (M)"; b.onclick = function () { setBar(false); }; $("tm").appendChild(b); })();
@@ -208,6 +210,7 @@
 	$("tm-addbar").addEventListener("click", function (e) {
 		var b = e.target.closest("button"); if (!b) return;
 		if (b.dataset.dp) { openDisplay(); return; }
+			if (b.dataset.compact) { setCompact(!S.compact); return; }
 		if (b.dataset.win) { setWin(!winOn); return; }
 		if (b.dataset.nobar) { setBar(true); return; }
 		if (b.dataset.z) { var z = b.dataset.z; if (z === "fit") { S.fit = !S.fit; if (S.fit) { if (!winOn) setWin(true); else fitNow(); } applyZoom(); save(); } else if (z === "0") setZoom(1); else setZoom(S.zoom * (z === "+" ? 1.1 : 1 / 1.1)); return; }
@@ -638,6 +641,7 @@
 	$("tm-repeat").onchange = function () { S.repeat = +this.value; save(); };
 			$("tm-vol").oninput = function () { S.vol = +this.value; save(); };
 	$("tm-test").onclick = function () { stopSound(); unlock(); if (S.sound === "off") { toast("Sound is set to Silent"); return; } playOnce(S.sound); };
+	$("tm-opt-compact").onchange = function () { setCompact(this.checked); };
 	$("tm-opt-title").onchange = function () { S.optTitle = this.checked; updateTitle(); save(); refreshPins(); };
 	function refreshPins() {
 		[].forEach.call(document.querySelectorAll("[data-pinslot]"), function (sl) { if (!sl.firstChild) sl.innerHTML = pinBtn(sl.dataset.pinslot); });
@@ -756,7 +760,7 @@
 	});
 
 	/* ---------- init ---------- */
-	load(); try { S.titleSrc = (sessionStorage.getItem(KEY + ":tab") || "auto").slice(0, 40); } catch (e) {} fillSettings();
+	load(); applyCompact(); try { S.titleSrc = (sessionStorage.getItem(KEY + ":tab") || "auto").slice(0, 40); } catch (e) {} fillSettings();
 	var q = new URLSearchParams(location.search);
 	if (SOLO && $("tm-onmain")) {
 		var v0 = PAGE_VIEWS[0], ob = $("tm-onmain-box"); $("tm-onmain").hidden = false; ob.checked = S.show.indexOf(v0) >= 0;
