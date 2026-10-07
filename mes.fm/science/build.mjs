@@ -64,7 +64,7 @@ const PAGES = [
     slug: "physics",
     sectionId: "physics",
     tileLabel: "Physics",
-    iconVersion: 1, // icon = crop of the first playlist video's thumbnail; bump when you refresh img/physics-icon.jpg
+    iconVersion: 2, // icon = the first playlist video's whole thumbnail on a blurred copy (a 3:2 crop cut off its title text); bump when you refresh img/physics-icon.jpg
     title: "MES Physics",
     description:
       "MES Physics videos: the magnetic field and the electric field of bound charges, magnetic isopotentials and the Faraday paradox, Planck's constant, and spinning-top and ferrofluid experiments.",
