@@ -194,7 +194,7 @@ def build():
     T = re.sub(r'(<nav class="toc-links" aria-label="Table of contents">\n)(.*?)(\n      </nav>)', lambda m: m.group(1) + links + m.group(3), T, count=1, flags=re.S)
 
     # ---- title block + body
-    head = f"""    <div class="part-of">Part of <a href="https://mes.fm/hutchison">MES Hutchison Effect</a> &middot; <a href="https://mes.fm/articles">Articles</a></div>
+    head = f"""    <div class="part-of">Part of <a href="https://mes.fm/hutchison">MES Hutchison Effect</a> &middot; <a href="https://mes.fm/hutchison-articles">Articles</a></div>
 
     <h1>{esc(TITLE)}</h1>
     <div class="page-subtitle">{esc(data["tagline"])}</div>

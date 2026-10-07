@@ -202,5 +202,23 @@
         "href": "https://mes.fm/hutchison"
       }
     ]
+  },
+  "https://mes.fm/los-alamos-appendix-hutchison-effect": {
+    "image": "https://mes.fm/los-alamos-appendix-hutchison-effect/img/appendix-c-share.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/@mes/los-alamos-report-appendix-c-of-the-hutchison-effect-b24"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/32670"
+      },
+      {
+        "label": "Hutchison Effect",
+        "href": "https://mes.fm/hutchison"
+      }
+    ]
   }
 }

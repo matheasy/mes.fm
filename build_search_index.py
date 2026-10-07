@@ -42,7 +42,7 @@ TOOL_DIRS = {"go", "timer", "clock", "enigma", "countdown-timer", "stopwatch", "
              "moon", "search", "tools"}
 MATH = re.compile(r"^(math|math-qa.*|problems-plus-.*|cubic-formula.*|quadratic-formula.*|cube-root-unity|vectors?|"
                   r"vector-functions.*|sequences-series|spherical-harmonics|projectile-hits-target|mathiew)$")
-HUTCHISON = {"highlights", "articles", "cold-fusion-lenr"}
+HUTCHISON = {"highlights", "hutchison-articles", "cold-fusion-lenr"}
 PART_OF = [("Math Q/A", "math"), ("Cubic Formula", "math"), ("Vector Functions", "math"), ("9/11", "911"),
            ("Hutchison", "hutchison"), ("Livestreams", "livestreams"), ("MES Tools", "tools")]
 SITE_NAMES = {"Math Easy Solutions", "MES", "MES.fm", "mes.fm"}

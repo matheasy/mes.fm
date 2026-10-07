@@ -6,7 +6,7 @@
 // sections.mjs (hand-maintained, newest first) -- the Hive post is no longer fetched.
 //
 // Pages written (see PAGES): the hub mes.fm/hutchison/index.html, plus
-// mes.fm/{hutchison-posts,hutchison-videos,highlights,articles,hutchison-debunking-debunkers,
+// mes.fm/{hutchison-posts,hutchison-videos,highlights,hutchison-articles,hutchison-debunking-debunkers,
 // hutchison-news,hutchison-unedited-footage,hutchison-interviews,cold-fusion-lenr,
 // }/index.html (9 pages). Never hand-edit those generated files. The hub's tenth tile, MES
 // Livestreams, is tile-only: it links to mes.fm/livestreams#hutchison (the Hutchison Effect
@@ -71,12 +71,13 @@ const PAGES = [
       "The best of the Hutchison Effect on video: levitating objects, steel that splits like jelly, cold melting, water foaming up, the famous plastic boat, and rare footage from 1988 to 2007.",
   },
   {
-    slug: "articles",
+    slug: "hutchison-articles",
     sectionId: "articles",
+    iconVersion: 4,
     tileLabel: "Articles",
     title: "Hutchison Effect Articles",
     description:
-      "Written Hutchison Effect articles from MES: stop motion photos of levitating water and rare family photos of John Hutchison's parents and grandparents.",
+      "Written Hutchison Effect articles from MES: the 1983 Los Alamos report appendix, Nancy Hutchison's physics report, stop motion photos of levitating water and rare family photos of John Hutchison's family.",
   },
   {
     slug: "hutchison-debunking-debunkers",

@@ -353,7 +353,7 @@ def section_of(url, tpl, f, tool_slugs, calc_slugs):
         return "math"
     if top.startswith("911") or top in ("1109-keo-meteor-music", "bg", "stanley-praimnath-jumpers", "eyesiswatchin-donate"):
         return "911"
-    if top.startswith("hutchison") or top in ("highlights", "articles", "cold-fusion-lenr", "ferrocell-specular-reflection", "norman-patricia-ai-email"):
+    if top.startswith("hutchison") or top in ("highlights", "hutchison-articles", "cold-fusion-lenr", "ferrocell-specular-reflection", "norman-patricia-ai-email"):
         return "hutchison"
     if top.startswith("livestream") or top == "troubleshooting":
         return "livestreams"

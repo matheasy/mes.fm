@@ -57,6 +57,7 @@
     { "source": "/911truth-bitchute", "destination": "https://www.bitchute.com/playlist/MSsLsRJrMPJt/", "permanent": true },
     { "source": "/hutchison-drive", "destination": "https://drive.google.com/drive/folders/1_F1gU5ir6U7QebvXPKWxJiT0hLXgHK8j", "permanent": true },
     { "source": "/meshutchison", "destination": "https://1drv.ms/f/s!As32ynv0LoaIitNiabk7uQmmdV5UJg", "permanent": true },
+    { "source": "/articles", "destination": "/hutchison-articles", "permanent": true },
     { "source": "/hutchison-livestreams", "destination": "/livestreams#hutchison", "permanent": true },
     { "source": "/hutchison-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X", "permanent": true },
     { "source": "/tlbnawki", "destination": "https://drive.google.com/drive/folders/1vzfDkOFwJtuuSS7gZAFGq_e2gaCMlgiF", "permanent": true },

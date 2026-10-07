@@ -117,7 +117,7 @@ of HTML files individually:
 
 - `build_nancy_physics_article.py` — builds `mes.fm/hutchison-nancy-physics-system` (2026-09-30): Nancy Hutchison's 46-page report
   "John Hutchison and the Physics of the System" (Final Draft 7) as a long article, listed first in the `articles` section of
-  `mes.fm/hutchison/sections.mjs` (so on `mes.fm/articles`; the hub's own `img/articles-icon.jpg` tile was deliberately left alone).
+  `mes.fm/hutchison/sections.mjs` (so on `mes.fm/hutchison-articles`, renamed from `/articles` 2026-10-07, which 308s there; the hub's own `img/articles-icon.jpg` tile was deliberately left alone).
   Shell = a copy of `vector-functions-problems-plus/index.html` (Jump-to sidebar + mobile "Jump to section", Collapse All, per-chapter folds)
   re-branded MES Hutchison Effect like `hutchison-cancer-treatment`; no sidebar ad column (Jump-to pages are excluded from
   `add_sidebar_math.py`). Chapters: About This Draft, Part One/Two/Three, Appendix A (top-level folds); every numbered section
