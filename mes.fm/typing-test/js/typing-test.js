@@ -251,7 +251,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 	["mode", "len", "lenwrap", "lenlabel", "diff", "diffwrap", "mix", "rules", "diffnote", "banner", "custom", "customtext", "customgo", "live", "t", "tl", "w", "a", "stage", "view", "words", "caret", "in", "focus", "restart", "result", "hist", "histbody", "histsub", "toast", "lb", "lbperiod", "lbboard", "lbfilter", "lbdev", "lbmine", "lbbody", "lbnote"].forEach(function (k) { el[k] = $("tt-" + k); });
 
 	/* ---------- test state ---------- */
-	var T = { seed: "", gen: null, sess: null, wordEls: [], letterEls: [], limit: 0, running: false, timer: 0, practice: null, lastResult: null, tok: "", R: null, replay: false, lastPassage: "", customText: "", lastCfg: null };
+	var T = { seed: "", gen: null, sess: null, wordEls: [], letterEls: [], limit: 0, running: false, timer: 0, practice: null, lastResult: null, tok: "", R: null, replay: false, lastPassage: "", customText: "", lastCfg: null, vo: { n: 0, dict: 0 } };
 	var COARSE = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
 	var ENDS = { time: false, words: true, passage: true, custom: true };
 
@@ -308,7 +308,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		else { T.gen = TT.makeGenerator(textOpts(), T.seed); words = T.gen(mode === "time" ? 60 : S.len.words); }
 		T.limit = mode === "time" ? S.len.time * 1000 : 0;
 		T.sess = new TT.Session(words, { strict: S.strict, backspace: !S.nobs, endOnLast: ENDS[mode] });
-		el.in.value = "";
+		el.in.value = ""; T.vo = { n: 0, dict: 0 };
 		renderWords();
 		el.result.hidden = true;
 		el.stage.classList.remove("is-done", "is-typing");
@@ -396,6 +396,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		var del = prev.length - p, add = now.slice(p);
 		// Refuse pastes / drops, but let a swipe ("glide") keyboard commit a whole word (plus its space) in one go: that can be 20+ letters.
 		if (/^insertFrom(Paste|Drop|Yank)/.test(e.inputType || "") || add.length > 60) { el.in.value = prev; return; }
+		// Voice typing (dictation) drops whole phrases into the box at once; a keyboard, even a swipe one, adds a single word at a time. Self-reported label, see voiceUsed().
+		if (/Dictation/.test(e.inputType || "")) T.vo.dict++; else if (/\S\s+\S/.test(add.trim())) T.vo.n++;
 		var t = performance.now();
 		if (del >= prev.length && del > 1 && add === "") { if (!s.clearWord()) s.backspace(); }
 		else for (var i = 0; i < del; i++) s.backspace();
@@ -468,7 +470,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		TT.mergeKeys(store.keys, r.perKey);
 		save();
 		el.stage.classList.add("is-done"); el.stage.classList.remove("is-typing", "is-blur");
-		T.R = { r: r, c: c, tok: T.tok, posted: null };
+		T.R = { r: r, c: c, tok: T.tok, posted: null, voice: T.vo.dict > 0 || T.vo.n >= 2 };
 		showResult(r, pb && best !== null, avgBefore, c);
 		// a moment after the test ends (so stray keystrokes of the last word don't land in the name box), offer to save it
 		if (canPost(T.R) && !store.noPop) { try { el.in.blur(); } catch (e) {} var R0 = T.R; setTimeout(function () { if (T.R === R0 && T.sess.finished && !R0.posted) openModal(R0); }, 900); }
@@ -572,8 +574,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 			return coarse || (pts > 0 && /Android|iPhone|iPod|Mobile/i.test(ua)) ? "p" : "k";
 		} catch (e) { return "k"; }
 	}
-	var DEVS = { "": "All devices", k: "⌨ Keyboard", p: "📱 Phone", t: '<span class="tt-tabicon"></span> Tablet' };
-	function devIcon(d) { d = d || "k"; /* scores posted before the label existed were typed on a keyboard */ return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone (touch)" aria-label="phone">📱</span>' : d === "t" ? ' <span class="tt-dev" title="Typed on a tablet (touch)" aria-label="tablet"><span class="tt-tabicon"></span></span>' : ""; }
+	var DEVS = { "": "All devices", k: "⌨ Keyboard", p: "📱 Phone", t: '<span class="tt-tabicon"></span> Tablet', v: "🎤 Voice" };
+	function devIcon(d) { d = d || "k"; /* scores posted before the label existed were typed on a keyboard */ return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone (touch)" aria-label="phone">📱</span>' : d === "t" ? ' <span class="tt-dev" title="Typed on a tablet (touch)" aria-label="tablet"><span class="tt-tabicon"></span></span>' : d === "v" ? ' <span class="tt-dev" title="Spoken with voice typing (dictation)" aria-label="voice typing">🎤</span>' : ""; }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return c.mode === "passage" ? "passage-" + c.len : c.mode + "-" + c.len + "-" + c.diff; }
 	function boardName(b) { if (b === "all") return "All tests combined"; var p = b.split("-"); if (p[0] === "passage") return "Passage: " + p[1]; var d = TT.DIFFS[p[2]].name; return (p[0] === "time" ? p[1] + " seconds" : p[1] + " words") + " · " + d; }
@@ -593,7 +595,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 	function drawLbControls() {
 		el.lbperiod.innerHTML = ["day", "week", "all"].map(function (p) { return '<button type="button" data-v="' + p + '" aria-pressed="' + (LB.period === p) + '">' + PER[p] + "</button>"; }).join("");
 		el.lbboard.innerHTML = boardOptions().map(function (b) { var n = b === "all" ? Object.keys(LB.counts).reduce(function (a, k) { return a + LB.counts[k]; }, 0) : LB.counts[b]; return '<option value="' + b + '">' + esc(boardName(b)) + (n ? " (" + n + ")" : "") + "</option>"; }).join("");
-		el.lbdev.innerHTML = ["", "k", "p", "t"].map(function (v) { return '<button type="button" data-v="' + v + '" aria-pressed="' + (LB.dev === v) + '">' + DEVS[v] + "</button>"; }).join("");
+		el.lbdev.innerHTML = ["", "k", "p", "t", "v"].map(function (v) { return '<button type="button" data-v="' + v + '" aria-pressed="' + (LB.dev === v) + '">' + DEVS[v] + "</button>"; }).join("");
 		el.lbboard.value = LB.board;
 	}
 	function until(ms) { var m = Math.max(1, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? Math.round(h / 24) + " days" : h ? h + " h " + (m % 60) + " min" : m + " min"; }
@@ -658,7 +660,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 	function postScore(R, name) {
 		if (R.posted) return Promise.resolve({ ok: true, ranks: R.posted });
 		if (!R.tok) return Promise.resolve({ ok: false, error: "Still getting a verification code for this test… try again in a second." });
-		return lbApi({ a: "submit", t: R.tok, pid: store.pid, name: name, board: boardOf(R.c), wpm: Math.round(R.r.wpm * 10) / 10, acc: Math.round(R.r.acc * 10) / 10, secs: R.c.mode === "time" ? R.c.len : Math.round(R.r.secs * 10) / 10, d: myDevice() }).then(function (j) {
+		return lbApi({ a: "submit", t: R.tok, pid: store.pid, name: name, board: boardOf(R.c), wpm: Math.round(R.r.wpm * 10) / 10, acc: Math.round(R.r.acc * 10) / 10, secs: R.c.mode === "time" ? R.c.len : Math.round(R.r.secs * 10) / 10, d: R.voice ? "v" : myDevice() }).then(function (j) {
 			if (j.ok) { R.posted = j.ranks; R.tok = ""; store.name = name; save(); LB.period = "day"; LB.picked = true; lbSave(); drawLbControls(); loadBoard(); loadCounts(); }
 			return j;
 		}, function () { return { ok: false, error: "Could not reach the leaderboard. Try again." }; });
@@ -669,7 +671,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = TT;
 		if (!lbEligible(c)) return b + '<span class="tu-note">This kind of test is not on the leaderboard (' + (c.mode === "custom" ? "your own text" : c.practice ? "weak-key practice" : "capitals, punctuation and numbers have to match the difficulty") + ").</span></div>";
 		if (T.replay) return b + '<span class="tu-note">A repeat of the same text is for practice and is not ranked. New words (Esc) are.</span></div>';
 		if (r.acc < MIN_ACC) return b + '<span class="tu-note">Leaderboard scores need ' + MIN_ACC + "% accuracy or more.</span></div>";
-		return b + '<label for="tt-name" class="tu-label">Post to the leaderboard</label><input id="tt-name" class="tu-input" maxlength="16" placeholder="Your name" autocomplete="nickname" spellcheck="false" value="' + esc(store.name) + '"><button type="button" class="tu-btn tu-btn--primary" id="tt-postgo">Post my score</button><span class="tu-note" id="tt-postmsg">Posts your name, speed and accuracy to the public board for ' + esc(boardName(boardOf(c))) + ".</span></div>";
+		return b + '<label for="tt-name" class="tu-label">Post to the leaderboard</label><input id="tt-name" class="tu-input" maxlength="16" placeholder="Your name" autocomplete="nickname" spellcheck="false" value="' + esc(store.name) + '"><button type="button" class="tu-btn tu-btn--primary" id="tt-postgo">Post my score</button><span class="tu-note" id="tt-postmsg">Posts your name, speed and accuracy to the public board for ' + esc(boardName(boardOf(c))) + "." + (R.voice ? " It looks like you used voice typing, so it is marked with a 🎤 on the board." : "") + "</span></div>";
 	}
 	function wirePost(R) {
 		var go = $("tt-postgo"); if (!go) return;

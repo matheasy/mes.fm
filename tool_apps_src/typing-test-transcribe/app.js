@@ -313,8 +313,8 @@
 			return coarse || (pts > 0 && /Android|iPhone|iPod|Mobile/i.test(ua)) ? "p" : "k";
 		} catch (e) { return "k"; }
 	}
-	var DEVS = { "": "All devices", k: "⌨ Keyboard", p: "📱 Phone", t: '<span class="tt-tabicon"></span> Tablet' };
-	function devIcon(d) { d = d || "k"; /* scores posted before the label existed were typed on a keyboard */ return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone (touch)" aria-label="phone">📱</span>' : d === "t" ? ' <span class="tt-dev" title="Typed on a tablet (touch)" aria-label="tablet"><span class="tt-tabicon"></span></span>' : ""; }
+	var DEVS = { "": "All devices", k: "⌨ Keyboard", p: "📱 Phone", t: '<span class="tt-tabicon"></span> Tablet', v: "🎤 Voice" };
+	function devIcon(d) { d = d || "k"; /* scores posted before the label existed were typed on a keyboard */ return d === "k" ? ' <span class="tt-dev" title="Typed on a keyboard" aria-label="keyboard">⌨</span>' : d === "p" ? ' <span class="tt-dev" title="Typed on a phone (touch)" aria-label="phone">📱</span>' : d === "t" ? ' <span class="tt-dev" title="Typed on a tablet (touch)" aria-label="tablet"><span class="tt-tabicon"></span></span>' : d === "v" ? ' <span class="tt-dev" title="Spoken with voice typing (dictation)" aria-label="voice typing">🎤</span>' : ""; }
 	function lbApi(body) { return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); }); }
 	function boardOf(c) { return "tr-" + c.pace + "-" + c.len; }
 	function boardName(b) { if (b === "tr-all") return "All paces combined"; var p = b.split("-"); return p[1] + " WPM · " + p[2].charAt(0).toUpperCase() + p[2].slice(1) + " passage"; }
@@ -323,7 +323,7 @@
 	function drawLbControls() {
 		el.lbperiod.innerHTML = ["day", "week", "all"].map(function (p) { return '<button type="button" data-v="' + p + '" aria-pressed="' + (LB.period === p) + '">' + PER[p] + "</button>"; }).join("");
 		el.lbboard.innerHTML = boardOptions().map(function (b) { var n = b === "tr-all" ? Object.keys(LB.counts).reduce(function (a, k) { return a + LB.counts[k]; }, 0) : LB.counts[b]; return '<option value="' + b + '">' + esc(boardName(b)) + (n ? " (" + n + ")" : "") + "</option>"; }).join("");
-		el.lbdev.innerHTML = ["", "k", "p", "t"].map(function (v) { return '<button type="button" data-v="' + v + '" aria-pressed="' + (LB.dev === v) + '">' + DEVS[v] + "</button>"; }).join("");
+		el.lbdev.innerHTML = ["", "k", "p", "t", "v"].map(function (v) { return '<button type="button" data-v="' + v + '" aria-pressed="' + (LB.dev === v) + '">' + DEVS[v] + "</button>"; }).join("");
 		el.lbboard.value = LB.board; el.lbmine.setAttribute("aria-pressed", String(LB.mine));
 	}
 	function until(ms) { var m = Math.max(1, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60); return h >= 24 ? Math.round(h / 24) + " days" : h ? h + " h " + (m % 60) + " min" : m + " min"; }

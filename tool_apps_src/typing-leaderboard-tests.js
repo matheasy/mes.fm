@@ -44,6 +44,7 @@ function call(method, q, body, ip) {
   assert.deepStrictEqual(T.decode(T.encode(87.4, 96.3)), { w: 87.4, a: 96.3, d: 'k' });
   assert.deepStrictEqual(T.decode(T.encode(122, 100)), { w: 122, a: 100, d: 'k' }); assert.deepStrictEqual(T.decode(T.encode(122, 99.9)), { w: 122, a: 99.9, d: 'k' }); assert(T.encode(122, 100) > T.encode(122, 99.9) && T.encode(122, 100) < T.encode(122.1, 90));
   assert.deepStrictEqual(T.decode(T.encode(122, 100, 'p')), { w: 122, a: 100, d: 'p' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 97.3, 'k')), { w: 80.4, a: 97.3, d: 'k' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 99.9, 'p')), { w: 80.4, a: 99.9, d: 'p' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 100, 't')), { w: 80.4, a: 100, d: 't' }); assert.deepStrictEqual(T.decode(T.encode(80.4, 96.2, 't')), { w: 80.4, a: 96.2, d: 't' });
+  assert.deepStrictEqual(T.decode(T.encode(132.8, 99.4, 'v')), { w: 132.8, a: 99.4, d: 'v' }); assert.deepStrictEqual(T.decode(T.encode(100, 100, 'v')), { w: 100, a: 100, d: 'v' }); assert.strictEqual(T.decode(T.encode(80, 97, 't')).d, 't');
   assert.strictEqual(T.decode(T.encode(80, 97)).d, 'k'); assert(T.encode(80, 100, 'k') > T.encode(80, 99.9, 'p'));
   assert(T.encode(80, 99) > T.encode(80, 95) && T.encode(81, 90) > T.encode(80, 100));
   const realNow = Date.now; let fake = Math.floor(realNow() / 3600000) * 3600000 + 1000; // start of an hour: the rate-limit bucket must not roll over mid-test
