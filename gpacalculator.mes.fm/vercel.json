@@ -1,5 +1,4 @@
 {
-  "ignoreCommand": "if [ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- ./; then exit 0; else exit 1; fi",
   "redirects": [
     { "source": "/", "destination": "https://mes.fm/gpacalculator", "permanent": true },
     { "source": "/(.*)", "destination": "https://mes.fm/gpacalculator/$1", "permanent": true }
