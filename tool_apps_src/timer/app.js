@@ -243,8 +243,9 @@
 			'<div class="tm-head">' + (S.timers.length > 1 ? '<button type="button" class="tm-grip" title="Drag to move this timer" aria-label="Move timer ' + (i + 1) + ': drag, or use the arrow keys" data-grip="timer">⠿</button>' : "") + '<input class="tm-label" type="text" maxlength="60" autocomplete="off" placeholder="Timer ' + (i + 1) + '" aria-label="Label for timer ' + (i + 1) + '" value="' + esc(t.label) + '">' +
 			''+ pinBtn("t:" + t.id) + '<button type="button" class="tm-icon" data-a="full" title="Full screen" aria-label="Full screen">' + (isFs ? "✕ Close" : "⤢") + "</button>" + (S.timers.length > 1 ? '<button type="button" class="tm-icon" data-a="del" title="Remove this timer" aria-label="Remove this timer">✕</button>' : "") + "</div>" +
 			'<div class="tm-face" data-face>' + faceText(t) + '</div><div class="tm-bar"><i data-bar style="width:' + barPct(t) + '%"></i></div>' +
-			(idle ? '<div class="tm-presets">' + PRESETS.map(function (x) { return '<button type="button" class="tu-chip" data-p="' + x[1] + '">' + x[0] + "</button>"; }).join("") + '</div><div class="tm-set"><input class="tu-input" data-k="h" type="text" inputmode="numeric" value="' + p.h + '" aria-label="Hours"><span>h</span><input class="tu-input" data-k="m" type="text" inputmode="numeric" value="' + p.m + '" aria-label="Minutes"><span>m</span><input class="tu-input" data-k="s" type="text" inputmode="numeric" value="' + p.s + '" aria-label="Seconds"><span>s</span></div>' : "") +
-			'<div class="tm-btns tm-btns--center">' + btnsFor(t) + "</div></div>";
+			(idle ? '<div class="tm-presets">' + PRESETS.map(function (x) { return '<button type="button" class="tu-chip" data-p="' + x[1] + '">' + x[0] + "</button>"; }).join("") + '</div>' : "") +
+			'<div class="tm-ctl">' + (idle ? '<div class="tm-set"><input class="tu-input" data-k="h" type="text" inputmode="numeric" value="' + p.h + '" aria-label="Hours"><span>h</span><input class="tu-input" data-k="m" type="text" inputmode="numeric" value="' + p.m + '" aria-label="Minutes"><span>m</span><input class="tu-input" data-k="s" type="text" inputmode="numeric" value="' + p.s + '" aria-label="Seconds"><span>s</span></div>' : "") +
+			'<div class="tm-btns tm-btns--center">' + btnsFor(t) + "</div></div></div>";
 	}
 	function renderTimers() {
 		var box = $("tm-timers"); if (!box) return;
