@@ -37,6 +37,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("speedreader", "Speed Reader"),
     ("timer", "Timer"),
     ("clock", "Clock"),
+    ("enigma", "Enigma Machine"),   # also built by build_tool_apps.py
     ("countdown-timer", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)
     ("stopwatch", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)
     ("alarm-clock", "Timer", "/timer"),   # Timer family page (brand option in build_tool_apps.py)

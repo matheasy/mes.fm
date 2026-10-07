@@ -1,0 +1,120 @@
+	<div class="tu" id="en">
+		<div class="tu-card">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:15em;">
+					<label for="en-model">Machine</label>
+					<select id="en-model" class="tu-select"></select>
+				</div>
+				<div class="tu-field tu-field--sm">
+					<label for="en-refl">Reflector</label>
+					<select id="en-refl" class="tu-select"></select>
+				</div>
+				<div style="margin-left:auto;display:flex;gap:0.5em;flex-wrap:wrap;">
+					<button type="button" class="tu-btn" id="en-random" title="Random rotors, rings, positions and 10 plugs">&#127922; Random key</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="en-reset">Reset</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="en-link">Copy link</button>
+				</div>
+			</div>
+
+			<div class="en-rotors" id="en-rotors" aria-label="Rotors"></div>
+
+			<div class="tu-field" style="margin-top:0.9em;">
+				<label for="en-plugs">Plugboard <span class="tu-note" style="text-transform:none;letter-spacing:0;font-weight:400;" id="en-plugcount"></span></label>
+				<input id="en-plugs" class="tu-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="pairs of letters, e.g. AB CD EF (up to 10)">
+				<div class="en-plugboard" id="en-plugboard" aria-label="Plugboard: click two letters to connect them"></div>
+				<span class="tu-note" id="en-plugerr" role="status"></span>
+			</div>
+
+			<div class="tu-chips" id="en-examples" aria-label="Examples">
+				<button type="button" class="tu-chip" data-ex="test">Test: AAAAA &rarr; BDZGO</button>
+				<button type="button" class="tu-chip" data-ex="hello">Hello, World</button>
+				<button type="button" class="tu-chip" data-ex="secret">Encode a weather report</button>
+				<button type="button" class="tu-chip" data-ex="break">&#128269; Break a message (crib)</button>
+			</div>
+		</div>
+
+		<h2>Message <span class="tu-note" style="font-weight:400;text-transform:none;">&mdash; the machine is its own inverse: the same settings turn plain text into code and code back into plain text</span></h2>
+		<div class="tu-card">
+			<div class="en-io">
+				<div class="tu-field">
+					<label for="en-in">Input (plain text or ciphertext)</label>
+					<textarea id="en-in" class="tu-input" rows="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Type or paste here. Only the letters A to Z go through the machine."></textarea>
+				</div>
+				<div class="tu-field">
+					<label for="en-out">Output</label>
+					<textarea id="en-out" class="tu-input" rows="5" readonly aria-live="polite" placeholder="The result appears here as you type."></textarea>
+				</div>
+			</div>
+			<div class="tu-row" style="margin-top:0.7em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:16em;">
+					<label for="en-fmt">Output style</label>
+					<select id="en-fmt" class="tu-select">
+						<option value="5">Groups of 5 (as radioed)</option>
+						<option value="4">Groups of 4 (Navy)</option>
+						<option value="0">One run of letters</option>
+						<option value="keep">Keep spaces and punctuation</option>
+					</select>
+				</div>
+				<div style="margin-left:auto;display:flex;gap:0.5em;flex-wrap:wrap;">
+					<button type="button" class="tu-btn tu-btn--primary" id="en-copy">Copy output</button>
+					<button type="button" class="tu-btn" id="en-swap" title="Move the output into the Input box. With the machine back at the start position it turns back into the original.">Output &rarr; Input</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="en-clear">Clear</button>
+				</div>
+			</div>
+			<p class="tu-note" id="en-stats"></p>
+		</div>
+
+		<h2>Lampboard <span class="tu-note" style="font-weight:400;text-transform:none;">&mdash; click the keys or type; the lamp shows the last letter</span></h2>
+		<div class="tu-card en-boardcard">
+			<div class="en-now" id="en-now" aria-live="polite"></div>
+			<div class="en-board" id="en-lamps" aria-label="Lampboard"></div>
+			<div class="en-board en-board--keys" id="en-keys" aria-label="Keyboard"></div>
+			<div class="en-keyx"><button type="button" class="tu-btn tu-btn--ghost" id="en-key-space">Space</button><button type="button" class="tu-btn tu-btn--ghost" id="en-key-back">&#9003; Backspace</button></div>
+		</div>
+
+		<h2>The signal path <span class="tu-note" style="font-weight:400;text-transform:none;" id="en-pathnote"></span></h2>
+		<div class="tu-card">
+			<div class="tu-table-wrap"><table class="tu-table en-path" id="en-path"></table></div>
+		</div>
+
+		<h2>Find the settings <span class="tu-note" style="font-weight:400;text-transform:none;">&mdash; crib search: the code-breaker's trick</span></h2>
+		<div class="tu-card" id="en-crib">
+			<p>Paste a coded message in the <strong>Input</strong> box, type a word you think it contains (a <em>crib</em>, such as <code>WETTERBERICHT</code> or <code>KEINEBESONDEREN</code>) and this tries every starting position (and optionally every rotor order) with the rings, reflector and plugboard set above, looking for settings that turn the code into your crib.</p>
+			<div class="tu-row">
+				<div class="tu-field" style="flex-basis:14em;"><label for="en-cribtext">Crib (known or guessed word)</label><input id="en-cribtext" class="tu-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="WETTERBERICHT"></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:15em;"><label for="en-cribwhere">Where in the message?</label>
+					<select id="en-cribwhere" class="tu-select"><option value="start">At the very start</option><option value="at">At letter number&hellip;</option><option value="any">Anywhere (first 60 fits)</option></select></div>
+				<div class="tu-field tu-field--sm" id="en-cribatwrap" hidden><label for="en-cribat">Letter number</label><input id="en-cribat" class="tu-input" type="number" min="1" value="1"></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.7em;">
+				<label style="display:flex;align-items:center;gap:0.5em;cursor:pointer;font-size:0.9em;"><input type="checkbox" id="en-cribord" style="width:1.1em;height:1.1em;accent-color:var(--accent);"> Also try every rotor order (about 15 seconds)</label>
+				<div style="margin-left:auto;display:flex;gap:0.5em;"><button type="button" class="tu-btn tu-btn--primary" id="en-cribgo">Search</button><button type="button" class="tu-btn tu-btn--ghost" id="en-cribstop" hidden>Stop</button></div>
+			</div>
+			<progress id="en-cribprog" value="0" max="1" hidden style="width:100%;margin-top:0.7em;"></progress>
+			<p class="tu-note" id="en-cribinfo" role="status"></p>
+			<div class="tu-table-wrap"><table class="tu-table en-results" id="en-cribres" hidden></table></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the Enigma machine works</h2>
+			<p>Press a key and an electric current runs through the <strong>plugboard</strong> (which swaps up to ten pairs of letters), the <strong>entry wheel</strong>, three or four <strong>rotors</strong>, a <strong>reflector</strong> that sends the current back the way it came, the rotors again in reverse and the plugboard once more, and finally lights one <strong>lamp</strong>. Before each key press the right-hand rotor turns one step, and sometimes carries the middle and left rotors with it, so the same letter is scrambled differently every time. The open-source simulation here follows the real wiring, notches, ring settings and the middle rotor&rsquo;s famous <em>double step</em>.</p>
+			<h3>Models</h3>
+			<ul>
+				<li><strong>Enigma I</strong> &mdash; the standard German Army and Air Force machine: three rotors chosen from I&ndash;V and reflectors A, B or C.</li>
+				<li><strong>M3</strong> &mdash; the Navy&rsquo;s version before 1942: rotors I&ndash;VIII (VI, VII and VIII carry two turnover notches) and reflectors B or C.</li>
+				<li><strong>M4</strong> &mdash; the four-rotor Shark machine of the U-boats: a thin Beta or Gamma rotor that never turns, plus a thin reflector (B or C).</li>
+			</ul>
+			<h3>Using it</h3>
+			<ul>
+				<li><strong>Encode:</strong> choose the rotors, ring settings, start positions and plugboard, then type your message. Read the output (grouped in fives, like the original radio traffic).</li>
+				<li><strong>Decode:</strong> set the <em>same</em> start positions, rings and plugs and type or paste the ciphertext. Enigma is reciprocal: if A becomes Q then Q becomes A at that same step, so no separate &ldquo;decrypt&rdquo; setting exists.</li>
+				<li>Only the letters A&ndash;Z are enciphered; the real machine had no digits or spaces. Operators wrote numbers out in full and used X for a full stop.</li>
+				<li><strong>Check yourself:</strong> Enigma I, rotors I&ndash;II&ndash;III, reflector B, rings and positions AAA turns <code>AAAAA</code> into <code>BDZGO</code>.</li>
+			</ul>
+			<h3>The flaw that helped break it</h3>
+			<p>Because the reflector can never send a signal back to the lamp of the key you pressed, <strong>an Enigma never turns a letter into itself</strong>. That sounds like a strength, but a code-breaker who guesses a word in the message (a <em>crib</em>) can slide it along the ciphertext and rule out every place where a letter would line up with itself. At Bletchley Park such cribs (<code>WETTERBERICHT</code>, &ldquo;weather report&rdquo;, and <code>KEINEBESONDEREN</code>, &ldquo;nothing special to report&rdquo;) fed Alan Turing&rsquo;s Bombe machines. The crib search above does the same job on a modern computer, as long as you know the plugboard.</p>
+			<h3>How many settings are there?</h3>
+			<p>For an army Enigma I: 60 rotor orders &times; 17,576 start positions &times; 676 ring settings (the left ring does not matter) &times; about 150 trillion ways to set ten plugs is roughly <strong>158,962,555,217,826,360,000</strong> (about 1.6 &times; 10<sup>20</sup>) keys. The plugboard alone is responsible for most of that.</p>
+			<p>Everything runs in your browser; nothing you type is sent anywhere. <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>
