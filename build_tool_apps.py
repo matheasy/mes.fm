@@ -133,8 +133,8 @@ APPS = {
                         tag="How fast and accurate is your typing?", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                         desc="Free typing speed test: measure your words per minute (WPM), accuracy and consistency. Timed, word-count, passage and your-own-text tests, five difficulty levels, a keyboard map of your weak keys, personal bests and challenge links. No sign-up.",
                         js_v="8", pre_js=["/main_js/ad-quiet.js?v=1"],
-                        nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-transcribe'>Transcribe</a></li>",
-                        menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-transcribe\">Transcription Typing Test</a></li>"),
+                        nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-transcribe'>Transcribe</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-voice'>Voice</a></li>",
+                        menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-transcribe\">Transcription Typing Test</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-voice\">Voice Typing Test</a></li>"),
     # Transcription Typing Test (mes.fm/typing-test-transcribe): the text is spoken (Web Speech API) and you type what you hear; scored against the spoken text. A sub-page of the Typing Test
     # brand (same logo / header; brand option). lib.js = passages, chunking, pacing, alignment + scoring (node-testable: tool_apps_src/typing-transcribe-tests.js) on top of typing-test's lib (lib_from);
     # the voice list uses the shared searchable picker main_js/voice-picker.js. Ranked boards "tr-<pace>-<length>" live in api/typing-leaderboard.js.
@@ -143,8 +143,17 @@ APPS = {
                         desc="Free transcription typing test: listen to text read aloud and type what you hear. Scores your words per minute and accuracy against the spoken text, with adjustable pace and voice and leaderboards.",
                         js_v="5", lib_from=["typing-test"], pre_js=["/main_js/voice-picker.js?v=1", "/main_js/ad-quiet.js?v=1"], tab=1,
                         brand=dict(slug="typing-test", title="MES Typing Test", tag="Type what you hear: transcription practice."),
-                        nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-transcribe'>Transcribe</a></li>",
-                        menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-transcribe\">Transcription Typing Test</a></li>"),
+                        nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-transcribe'>Transcribe</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-voice'>Voice</a></li>",
+                        menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-transcribe\">Transcription Typing Test</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-voice\">Voice Typing Test</a></li>"),
+    # Voice Typing Test (new 2026-10-06, mes.fm/typing-test-voice; aliases /voice-typing-test /dictation-test /speech-to-text-test /voice-test): you read a passage aloud, the browser's SpeechRecognition types it, scored against
+    # the passage with the transcription test's lib (lib_from). Same Typing Test brand ("Voice" tab). Boards "tv-<short|medium|long>" (+ "tv-all") live in api/typing-leaderboard.js; posted with d="v".
+    "typing-test-voice": dict(title="MES Voice Typing Test", page_title="Voice Typing Speed Test",
+                        tag="How fast can you talk to type?", accent="#0369a1", dark="#075985", tint="#e0f2fe",
+                        desc="Free voice typing speed test: read a passage out loud and your browser's speech recognition types it. Scores your voice-to-text words per minute and accuracy, with a leaderboard kept apart from the keyboard tests.",
+                        js_v="1", lib_from=["typing-test", "typing-test-transcribe"], pre_js=["/main_js/ad-quiet.js?v=1"], tab=2,
+                        brand=dict(slug="typing-test", title="MES Typing Test", tag="How fast can you talk to type?"),
+                        nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-transcribe'>Transcribe</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/typing-test-voice'>Voice</a></li>",
+                        menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-transcribe\">Transcription Typing Test</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-voice\">Voice Typing Test</a></li>"),
     # Solar System Today: where the Sun, planets, Moon and Halley's Comet are on any date. lib.js = Astronomy Engine wrapper (node-testable), view.js = canvas renderer
     # (shared with the mes.fm/moon widget through the extra_js bundle), app.js = UI. Astronomy Engine itself is the copy that /moon already ships (pre_js).
     "solar-system-today": dict(title="MES Solar System Today", page_title="Solar System Today",

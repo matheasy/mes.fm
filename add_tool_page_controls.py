@@ -64,6 +64,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("site-index", "Site Index"),
     ("go", "Short Links"),   # also built by build_tool_apps.py (wide, ad-free)   # also built by build_tool_apps.py (wide page, ad-free)
     ("typing-test", "Typing Test"),   # also built by build_tool_apps.py
+    ("typing-test-voice", "Typing Test", "/typing-test"),   # voice typing test: same brand, built by build_tool_apps.py
     ("typing-test-transcribe", "Typing Test", "/typing-test"),   # transcription test: a sub-page of the Typing Test brand (brand option in build_tool_apps.py)
     ("copy-text", "Copy Text"),    # also built by build_tool_apps.py
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)

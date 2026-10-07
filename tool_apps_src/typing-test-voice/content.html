@@ -1,0 +1,73 @@
+	<div class="tu tt tc" id="tv">
+		<div class="tu-card tt-main">
+			<div class="tt-opts">
+				<div class="tt-opt"><span class="tu-label">Passage length</span>
+					<div class="tu-seg" id="tv-len" role="group" aria-label="Passage length">
+						<button type="button" data-v="short" aria-pressed="false">Short</button><button type="button" data-v="medium" aria-pressed="true">Medium</button><button type="button" data-v="long" aria-pressed="false">Long</button>
+					</div></div>
+				<div class="tt-opt"><span class="tu-label">Accent / language</span>
+					<select id="tv-lang" class="tu-select" aria-label="Speech recognition language">
+						<option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="en-CA">English (Canada)</option><option value="en-AU">English (Australia)</option><option value="en-IN">English (India)</option><option value="en-IE">English (Ireland)</option><option value="en-NZ">English (New Zealand)</option><option value="en-ZA">English (South Africa)</option>
+					</select></div>
+				<div class="tt-chips" id="tv-rules" role="group" aria-label="Rules">
+					<button type="button" class="tu-chip" data-f="strict" aria-pressed="false" title="Count capital letters and punctuation as well as the words (speech recognition adds them itself, so this is harder)">Strict (capitals + punctuation)</button>
+				</div>
+			</div>
+			<p class="tt-diffnote" id="tv-note"></p>
+			<div class="tt-banner" id="tv-banner" hidden></div>
+
+			<div class="tu-label" style="margin-top:0.8em;">Read this out loud</div>
+			<div class="tv-passage" id="tv-passage" aria-live="off"></div>
+
+			<div class="tt-live" id="tv-live" aria-live="off">
+				<span class="tt-stat"><b id="tv-t">0:00</b><small>time</small></span>
+				<span class="tt-stat"><b id="tv-w">0</b><small>words heard</small></span>
+				<span class="tt-stat"><b id="tv-p">0%</b><small>of the passage</small></span>
+			</div>
+			<div class="tc-status" id="tv-status" role="status"><span class="tv-mic" id="tv-mic"></span><span id="tv-statustext">Press <b>Start</b>, allow the microphone, then read the text above out loud.</span></div>
+			<div class="tu-label">What the computer heard</div>
+			<div class="tv-heard" id="tv-heard" aria-live="polite"><i>Your words will appear here as you speak.</i></div>
+			<div class="tt-bar">
+				<button type="button" class="tu-btn tu-btn--primary" id="tv-start">🎤 Start</button>
+				<button type="button" class="tu-btn" id="tv-done" title="Stop and score (Ctrl+Enter)" disabled>✓ Done</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tv-new" title="Stop and use a new passage (Esc)">New passage</button>
+				<span class="tt-keys"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> done · <kbd>Esc</kbd> new passage</span>
+			</div>
+		</div>
+
+		<div class="tu-card tt-result" id="tv-result" hidden aria-live="polite"></div>
+
+		<div class="tu-card tt-lb" id="tv-lb">
+			<div class="tt-histhead"><h2>Leaderboard</h2><span class="tu-note" id="tv-lbnote"></span></div>
+			<div class="tt-lbopts">
+				<div class="tu-seg" id="tv-lbperiod" role="group" aria-label="Leaderboard period"></div>
+				<select id="tv-lbboard" class="tu-input" aria-label="Which passage length"></select>
+				<input type="search" id="tv-lbfilter" class="tu-input" placeholder="Filter by name…" aria-label="Filter the leaderboard by name" autocomplete="off">
+				<button type="button" class="tu-chip" id="tv-lbmine" aria-pressed="false" title="Show only the results you posted from this browser">Only mine</button>
+			</div>
+			<div id="tv-lbbody"></div>
+		</div>
+		<div class="tu-toast" id="tv-toast" role="status"></div>
+
+		<div class="tu-seo">
+			<h2>Voice typing speed test: how fast can you talk to type?</h2>
+			<p>This is the <strong>speaking version of the <a href="/typing-test">MES Typing Test</a></strong>. Read a passage out loud and your browser's <strong>speech recognition (dictation)</strong> types it for you. The test measures your <strong>words per minute</strong> and your <strong>accuracy</strong>: how many of the words the computer understood correctly. It is a fair way to compare <strong>voice-to-text</strong> speeds, and the leaderboard is kept apart from the keyboard tests.</p>
+			<h3>How it works</h3>
+			<ul>
+				<li><strong>Press Start</strong> and allow the microphone. The passage is on screen the whole time.</li>
+				<li><strong>Read it out loud</strong> at your own pace. The clock starts with your first word and stops with your last. Pauses count against you, so keep going.</li>
+				<li><strong>Press Done</strong> (<kbd>Ctrl</kbd>+<kbd>Enter</kbd>), or just stop talking once you have read the whole passage and it finishes by itself.</li>
+				<li>Your result shows the passage with every word <span style="color:#1b6e3c">right</span>, <span style="color:#b3261e">misheard</span> or <span style="color:#7a5200">skipped</span> marked.</li>
+			</ul>
+			<h3>How is it scored?</h3>
+			<p><strong>Accuracy</strong> compares what the computer heard with the passage, letter by letter. Capital letters and punctuation are ignored unless you tick <em>Strict</em>, because dictation adds them its own way. <strong>WPM</strong> is the correct characters divided by five, divided by the minutes from your first word to your last. A score needs <strong>90% accuracy</strong> to be posted to the leaderboard. Scores are reported by your own browser, so treat the board as for fun.</p>
+			<h3>Tips and browser support</h3>
+			<ul>
+				<li>Speech recognition works in <strong>Chrome, Edge and Safari</strong> (desktop and phone). Firefox does not support it yet. On Chrome the audio is processed by Google's speech service; this page never records or stores it.</li>
+				<li>Use a quiet room and a headset or a good microphone. Pick the accent closest to yours.</li>
+				<li>Speak clearly and evenly. Most people dictate at 120 to 160 words per minute; recognition accuracy drops when you rush.</li>
+			</ul>
+			<p>More free tools: <a href="/typing-test">Typing Test</a> · <a href="/typing-test-transcribe">Transcription Typing Test</a> · <a href="/speedreader">Speed Reader and Read Aloud</a> · <a href="/tools">All MES tools</a></p>
+		</div>
+		<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a voice typing speed test?","acceptedAnswer":{"@type":"Answer","text":"You read a passage out loud and your browser's speech recognition types it. The test measures how many words per minute were recognised correctly, and the accuracy."}},{"@type":"Question","name":"Which browsers work?","acceptedAnswer":{"@type":"Answer","text":"Chrome, Edge and Safari support speech recognition. Firefox does not."}},{"@type":"Question","name":"Is my voice recorded?","acceptedAnswer":{"@type":"Answer","text":"This page does not record or store audio. Chrome sends the audio to Google's speech service to turn it into text; Safari uses Apple's service."}}]}</script>
+	</div>
