@@ -106,9 +106,13 @@
 		var t = $("bm-toast"); if (!t) { t = document.createElement("div"); t.id = "bm-toast"; t.className = "tu-toast"; document.body.appendChild(t); }
 		t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 1700);
 	}
-	function copy(text, msg) {
-		function fb() { var ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;left:-9999px;top:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); toast(msg); } catch (e) { toast("Copy failed"); } document.body.removeChild(ta); }
-		if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { toast(msg); }, fb); else fb();
+	function flash(btn) {
+		if (!btn) return; if (btn._o == null) btn._o = btn.textContent; btn.textContent = "Copied \u2713"; btn.classList.add("bm-copied");
+		clearTimeout(btn._t); btn._t = setTimeout(function () { btn.textContent = btn._o; btn._o = null; btn.classList.remove("bm-copied"); }, 1600);
+	}
+	function copy(text, msg, btn) {
+		function fb() { var ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;left:-9999px;top:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); toast(msg); flash(btn); } catch (e) { toast("Copy failed"); } document.body.removeChild(ta); }
+		if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { toast(msg); flash(btn); }, fb); else fb();
 	}
 	function notice(h) { var n = $("bm-notice"); n.innerHTML = h || ""; n.hidden = !h; }
 
@@ -221,8 +225,8 @@
 
 	/* ---------- links ---------- */
 	function shareUrl(withHistory) { return location.origin + "/bmicalculator?" + (withHistory ? "s=" + BM.encode(st) : "kg=" + encodeURIComponent(BM.trim(BM.num(st.kg), 2)) + "&cm=" + encodeURIComponent(BM.trim(BM.num(st.cm), 1)) + (st.scale === "asia" ? "&scale=asia" : "")); }
-	$("bm-link").onclick = function () { copy(shareUrl(false), "Link copied"); };
-	$("bm-link-all").onclick = function () { copy(shareUrl(true), "Link copied: it holds your whole history"); };
+	$("bm-link").onclick = function () { copy(shareUrl(false), "Link copied", this); };
+	$("bm-link-all").onclick = function () { copy(shareUrl(true), "Link copied: it holds your whole history", this); };
 	document.querySelector("#bm .bm-print").onclick = function () { window.print(); };
 
 	function loadOld(id) {

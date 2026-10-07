@@ -308,6 +308,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	@media (max-width: 600px) { .tu .bm-cats {grid-template-columns:1fr;} .tu #bm-units button {flex:1 1 100%;} }
 	@media print { .tu-seo, .bm-btns, #bm-setup .tu-note, #bm-examples, .bm-del {display:none !important;} }
 
+	.tu .bm-btns .tu-btn {transition:background .15s,color .15s,border-color .15s,transform .1s;} .tu .bm-btns .tu-btn:active {transform:scale(0.96);}
+	.tu .bm-btns .bm-copied {background:#2e7d32 !important;border-color:#2e7d32 !important;color:#fff !important;}
+	body.dark-mode #bm .bm-btns .tu-btn:hover {filter:brightness(1.25);}
+	body.dark-mode #bm .bm-btns .bm-copied {background:#66bb6a !important;border-color:#66bb6a !important;color:#0b1a0c !important;}
+	body.dark-mode #bm-toast {background:#e8edf2;color:#161616;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -407,6 +413,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .bm-dot{stroke:#333333}
 	body.dark-mode .tu .bm-del{color:#999da3}
 	body.dark-mode .tu .bm-del:hover{color:#e0827b}
+	body.dark-mode .tu .bm-btns .bm-copied{border-color:#45ba4b !important}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -696,15 +703,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div id="bm-out" hidden>
 			<div class="tu-stats" id="bm-hero" aria-live="polite"></div>
 			<div class="tu-card bm-verdict" id="bm-verdict" aria-live="polite"></div>
-			<div class="tu-card" id="bm-gauge-card">
-				<div class="tu-label">Where you are on the scale</div>
-				<div class="bm-gauge" id="bm-gauge" aria-hidden="true"></div>
-				<ul class="bm-cats" id="bm-cats"></ul>
-			</div>
 			<div class="bm-btns">
 				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copy link to this result</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="bm-save">Save this measurement</button>
 				<button type="button" class="tu-btn tu-btn--ghost bm-print">Print</button>
+			</div>
+			<div class="tu-card" id="bm-gauge-card">
+				<div class="tu-label">Where you are on the scale</div>
+				<div class="bm-gauge" id="bm-gauge" aria-hidden="true"></div>
+				<ul class="bm-cats" id="bm-cats"></ul>
 			</div>
 		</div>
 
@@ -805,7 +812,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/bmicalculator/js/bmicalculator.js?v=2" defer></script>
+	<script src="/bmicalculator/js/bmicalculator.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
