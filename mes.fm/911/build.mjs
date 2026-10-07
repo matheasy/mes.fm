@@ -40,10 +40,19 @@ const PAGES = [
     slug: "911-posts",
     sectionId: "911-posts",
     tileLabel: "Posts",
-    iconVersion: 4, // icon = crop of the newest post's thumbnail; bump when you refresh img/911-posts-icon.jpg
+    iconVersion: 5, // icon = crop of the newest post's thumbnail; bump when you refresh img/911-posts-icon.jpg
     title: "9/11 Truth Posts",
     description:
       "MES posts on 9/11: alleged hijacker IDs, disinfo spooks, Dr. Judy Wood interviews, mystery plane photos, toasted cars and more, newest first.",
+  },
+  {
+    slug: "911-spooks",
+    sectionId: "911-spooks",
+    tileLabel: "Spooks",
+    iconVersion: 1, // icon = crop of the newest spooks post's thumbnail; bump when you refresh img/911-spooks-icon.jpg
+    title: "9/11 Spooks",
+    description:
+      "9/11 disinfo spooks and spammers exposed by MES: 9/11 Revisionist, Ryan Banister, David Hughes, Bob Greenyer, the OffGuardian account, Andrew Mason and more, newest first.",
   },
   {
     slug: "911-videos",
@@ -86,6 +95,15 @@ const PAGES = [
     title: "1109 by Keor Meteor: 9/11 Music Album",
     description:
       "1109 by Keor Meteor, a 9/11 music album track by track (Intro, 1109, Liberty Street, Melted Vehicles, George Comedy Club, Osama, Falling Down) with YouTube and Telegram links and the Bandcamp album.",
+  },
+  {
+    // Tile only: links to the Bob Greenyer hub (mes.fm/bg). Icon = img/bg-icon.jpg, a 900x600 crop of
+    // img/bg-logo-big.jpg.
+    slug: "bg",
+    href: "/bg",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Bob Greenyer (BG)",
   },
   {
     // Tile only: no page is written. Its icon (img/911-livestreams-icon.jpg) is a crop of the newest 9/11
