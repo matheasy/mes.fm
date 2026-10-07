@@ -81,11 +81,12 @@
 		if (!snd.audio.friendly) { snd.audio.friendly = new Audio("/timer/audio/grandfather_alarm_clock.mp3"); snd.audio.annoying = new Audio("/timer/audio/annoying_alarm_clock.mp3"); snd.audio.friendly.preload = snd.audio.annoying.preload = "auto"; }
 	}
 	function vol() { return Math.max(0, Math.min(1, S.vol / 100)); }
+	var live = [];
 	function tone(freq, start, dur, type, peak) {
 		var c = snd.ctx; if (!c || S.sound === "off") return;
 		var o = c.createOscillator(), g = c.createGain(); o.type = type || "sine"; o.frequency.value = freq;
 		g.gain.setValueAtTime(0.0001, c.currentTime + start); g.gain.exponentialRampToValueAtTime(Math.max(0.0002, (peak || 0.5) * vol()), c.currentTime + start + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + start + dur);
-		o.connect(g); g.connect(c.destination); o.start(c.currentTime + start); o.stop(c.currentTime + start + dur + 0.05);
+		o.connect(g); g.connect(c.destination); o.start(c.currentTime + start); o.stop(c.currentTime + start + dur + 0.05); live.push(o); o.onended = function () { var k = live.indexOf(o); if (k >= 0) live.splice(k, 1); };
 	}
 	function cue(freq, dur) { unlock(); tone(freq, 0, dur || 0.18, "sine", 0.5); }   // short cue beeps (interval timer, pomodoro phase change)
 	function playOnce(kind) {
@@ -105,7 +106,7 @@
 			snd.loopT = setTimeout(next, Math.max(800, ms));
 		})();
 	}
-	function stopSound() { snd.active = false; clearTimeout(snd.loopT); ["friendly", "annoying"].forEach(function (k) { if (snd.audio[k]) { try { snd.audio[k].pause(); snd.audio[k].currentTime = 0; } catch (e) {} } }); }
+	function stopSound() { snd.active = false; live.slice().forEach(function (o) { try { o.stop(); } catch (e) {} }); live.length = 0; clearTimeout(snd.loopT); ["friendly", "annoying"].forEach(function (k) { if (snd.audio[k]) { try { snd.audio[k].pause(); snd.audio[k].currentTime = 0; } catch (e) {} } }); }
 
 	/* ---------- ringing banner ---------- */
 	var ringing = [], blinkT = null;     // items: {type: "t"|"a"|"p"|"i", id}
@@ -637,10 +638,16 @@
 
 	/* ---------- settings ---------- */
 	function fillSettings() { $("tm-sound").value = S.sound; $("tm-repeat").value = String(S.repeat); $("tm-vol").value = S.vol; $("tm-opt-title").checked = S.optTitle; $("tm-opt-awake").checked = S.optAwake; $("tm-opt-notify").checked = S.optNotify; $("tm-opt-tenths").checked = S.optTenths; }
-	$("tm-sound").onchange = function () { S.sound = this.value; save(); };
+	$("tm-sound").onchange = function () { S.sound = this.value; save(); if (typeof testT !== "undefined" && testT) { stopSound(); testDone(); } };
 	$("tm-repeat").onchange = function () { S.repeat = +this.value; save(); };
 			$("tm-vol").oninput = function () { S.vol = +this.value; save(); };
-	$("tm-test").onclick = function () { stopSound(); unlock(); if (S.sound === "off") { toast("Sound is set to Silent"); return; } playOnce(S.sound); };
+	var testT = 0;
+	function testDone() { clearTimeout(testT); testT = 0; $("tm-test").textContent = "▶ Test sound"; }
+	$("tm-test").onclick = function () {
+		if (testT) { stopSound(); testDone(); return; }
+		stopSound(); unlock(); if (S.sound === "off") { toast("Sound is set to Silent"); return; }
+		var ms = playOnce(S.sound); if (!ms) return; $("tm-test").textContent = "■ Stop"; testT = setTimeout(testDone, ms);
+	};
 	$("tm-opt-compact").onchange = function () { setCompact(this.checked); };
 	$("tm-opt-title").onchange = function () { S.optTitle = this.checked; updateTitle(); save(); refreshPins(); };
 	function refreshPins() {
