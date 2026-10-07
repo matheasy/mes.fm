@@ -81,6 +81,7 @@ const PAGES = [
   {
     // Tile only: no page is written; links to the tool. Icon = img/earth-curvature-icon.jpg (900x600 crop of the tool's share image).
     slug: "earth-curvature",
+    section: "tools",
     href: "/earth-curvature-calculator",
     iconVersion: 1,
     tileOnly: true,
@@ -89,6 +90,7 @@ const PAGES = [
   {
     // Tile only: no page is written; links to the tool. Icon = img/moon-icon.jpg (900x600 crop of the tool's share image).
     slug: "moon",
+    section: "tools",
     href: "/moon",
     iconVersion: 1,
     tileOnly: true,
@@ -97,6 +99,7 @@ const PAGES = [
   {
     // Tile only: no page is written; links to the tool. Icon = img/solar-system-today-icon.jpg (900x600 crop of the tool's share image).
     slug: "solar-system-today",
+    section: "tools",
     href: "/solar-system-today",
     iconVersion: 1,
     tileOnly: true,
@@ -502,7 +505,7 @@ function buildPage(meta, page) {
   const isHub = !!page.hub;
   const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
   const sectionsHtml = isHub
-    ? `<div class="icon-grid">\n${PAGES.map(buildTile).join("\n")}\n</div>\n${buildImportantLinks()}`
+    ? `<div class="icon-grid">\n${PAGES.filter((p) => p.section !== "tools").map(buildTile).join("\n")}\n</div>\n<h2 class="tool-heading">Calculators &amp; Tools</h2>\n<div class="icon-grid">\n${PAGES.filter((p) => p.section === "tools").map(buildTile).join("\n")}\n</div>\n${buildImportantLinks()}`
     : sections.map((s) => buildSection(s, meta)).join("\n\n");
   const viewToggleWiring = sections
     .filter((s) => !s.single)
@@ -733,6 +736,8 @@ sub {vertical-align:sub;}
   .icon-grid { grid-template-columns: 1fr; }
 }
 .icon-grid__link { display: block; position: relative; overflow: hidden; border-radius: 4px; }
+.tool-heading { font-size: 1.15em; font-weight: 600; margin: 1.4em 0 0.6em; color: #222; }
+body.dark-mode .tool-heading { color: #eee; }
 /* Ten tiles = three full rows of 3 plus one orphan: centre the orphan in the
    3-column layout (generic -- applies whenever the last tile starts a row). */
 @media (min-width: 721px) {
