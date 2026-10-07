@@ -70,6 +70,15 @@ const PAGES = [
       "MES Physics videos: the magnetic field and the electric field of bound charges, magnetic isopotentials and the Faraday paradox, Planck's constant, and spinning-top and ferrofluid experiments.",
   },
   {
+    // Tile only: link to the sibling hub mes.fm/math. Icon = img/math-tutorials-icon.jpg (the homepage's Math tile).
+    slug: "math",
+    icon: "math-tutorials",
+    href: "/math",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "MES Math Tutorials",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/earth-curvature-icon.jpg (900x600 crop of the tool's share image).
     slug: "earth-curvature",
     href: "/earth-curvature-calculator",

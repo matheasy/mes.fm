@@ -80,6 +80,13 @@ const PAGES = [
     description:
       "Video and written tutorials on vector functions: space curves, derivatives and integrals, arc length and curvature, motion in space, and Kepler's laws.",
   },
+  {
+    // Link tile to the sibling hub (its own build: mes.fm/science/build.mjs); icon = img/science-icon.jpg.
+    slug: "science",
+    ownBuild: true,
+    tileLabel: "MES Science",
+    description: "MES Science: videos, posts and tutorials on science topics.",
+  },
   // Tile only (no page written): MES math tools, shown as small square-logo links in the "Calculators & Tools" section under the tiles (img/<logo>); img/<slug>-icon.jpg (900x600 share-image crops) is kept for use as big tiles.
   { slug: "latex", href: "/latex", logo: "latex-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "LaTeX Render" },
   { slug: "symbols", href: "/symbols", logo: "symbols-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Math Symbols Copier" },
@@ -748,12 +755,12 @@ ${extraPanes}
 // Icon tile for the hub page: text-free thumbnail + real overlaid label,
 // same .icon-grid markup/CSS as mes.fm's homepage.
 function buildTile(page) {
-  return `<a class="icon-grid__link icon-grid__link--labeled" href="${page.href || `/${page.slug}`}"><span class="icon-grid__thumb" style="background-image:url('/img/${page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
+  return `<a class="icon-grid__link icon-grid__link--labeled" href="${page.href || `/${page.slug}`}"><span class="icon-grid__thumb" style="background-image:url('/img/${page.icon || page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
 }
 
 // "Calculators & Tools" strip under the hub's tiles: small square logos with a label (the tile-only PAGES entries).
 function buildToolLink(page) {
-  return `<a class="tool-grid__link" href="${page.href}"><img src="/img/${page.logo}" alt="" width="64" height="64" loading="lazy"><span>${escapeHtml(page.tileLabel)}</span></a>`;
+  return `<a class="tool-grid__link" href="${page.href}"><img src="/img/${page.logo}" alt="" width="96" height="96" loading="lazy"><span>${escapeHtml(page.tileLabel)}</span></a>`;
 }
 
 // page: the hub ({ hub: true, slug: "math" }) or one entry of PAGES.
@@ -999,9 +1006,9 @@ sub {vertical-align:sub;}
 .icon-grid__link { display: block; position: relative; overflow: hidden; border-radius: 4px; }
 /* "Calculators & Tools": small square logos under the tiles. */
 .tool-heading { font-size: 1.15em; font-weight: 600; margin: 1.4em 0 0.6em; }
-.tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5em, 1fr)); gap: 0.9em 0.6em; margin: 0 0 1.2em; }
-.tool-grid__link { display: flex; flex-direction: column; align-items: center; gap: 0.35em; text-align: center; text-decoration: none; font-size: 0.85em; line-height: 1.25; }
-.tool-grid__link img { width: 64px; height: 64px; border-radius: 14px; }
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5em, 1fr)); gap: 1.1em 0.6em; margin: 0 0 1.2em; }
+.tool-grid__link { display: flex; flex-direction: column; align-items: center; gap: 0.35em; text-align: center; text-decoration: none; font-size: 0.92em; line-height: 1.25; }
+.tool-grid__link img { width: 96px; height: 96px; border-radius: 20px; }
 .tool-grid__link:hover img { transform: scale(1.06); }
 .tool-grid__link img { transition: transform 0.15s; }
 .tool-grid__link:hover span { text-decoration: underline; }
