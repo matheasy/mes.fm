@@ -60,6 +60,24 @@ export const SECTIONS = [
   { title: "🔥#MESScience 1: How Does a Powerball Gyroscope Work? + Gyros Are Inverted Pendulums", image: "https://i.ytimg.com/vi/6cRkjWN8Uds/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=6cRkjWN8Uds"]] },
     ],
   },
+  {
+    id: "physics",
+    title: "Physics",
+    standalone: [
+      { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EAUu0aAxoZmkS83RI65m1N", title: "MES Physics Videos Playlist" },
+    ],
+    items: [
+  { title: "The Magnetic Field Resembles the Electric Field of 2 Bound Charges", image: "https://i.ytimg.com/vi/0c0k3MgFYcQ/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=0c0k3MgFYcQ"]] },
+  { title: "Magnetic Isopotentials Explain the Faraday Paradox, Stern-Gerlach Experiment, and Atomic Orbitals", image: "https://i.ytimg.com/vi/NOG9VOBtpY4/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=NOG9VOBtpY4"]] },
+  { title: "🔬#MESExperiments 35: Faraday's Paradox using Iron Filings", image: "https://i.ytimg.com/vi/hotOO9bwrrA/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=hotOO9bwrrA"]] },
+  { title: "🔬#MESExperiments 36: Faraday's Paradox using Ferrofluid (and Iron Filings)", image: "https://i.ytimg.com/vi/MgsWBi4Jr5E/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=MgsWBi4Jr5E"]] },
+  { title: "Planck's Constant is the Quantum of Energy and NOT \"Quantum of Action\"", image: "https://i.ytimg.com/vi/W6-FvG8OBAk/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=W6-FvG8OBAk"]] },
+  { title: "🔬#MESExperiments 45: Rotating Cylinders in Water Behave Like Magnets", image: "https://i.ytimg.com/vi/eHZfSHjME90/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=eHZfSHjME90"]] },
+  { title: "🔬#MESExperiments 33: Spinning Tops in Opposing Directions Spin Together", image: "https://i.ytimg.com/vi/fUYl4F6vkg0/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=fUYl4F6vkg0"]] },
+  { title: "🔬#MESExperiments 31: Mechanical Demonstration of Inertia by Francis McCabe", image: "https://i.ytimg.com/vi/hsZgypWKGjE/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=hsZgypWKGjE"]] },
+  { title: "🔬#MESExperiments 32: Comparing Tippe Top, Phi Top, and Gyroscope Rising Tests", image: "https://i.ytimg.com/vi/baaeRfhvJso/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=baaeRfhvJso"]] },
+    ],
+  },
 ];
 
 export const IMPORTANT_LINKS_HTML = `<ul>

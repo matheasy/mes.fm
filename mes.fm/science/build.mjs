@@ -61,6 +61,15 @@ const PAGES = [
       "MES Science tutorials, newest first: a review of the COVID-19 virus isolation paper, an overview of biology, vortex math and number theory, and how a Powerball gyroscope works.",
   },
   {
+    slug: "physics",
+    sectionId: "physics",
+    tileLabel: "Physics",
+    iconVersion: 1, // icon = crop of the first playlist video's thumbnail; bump when you refresh img/physics-icon.jpg
+    title: "MES Physics",
+    description:
+      "MES Physics videos: the magnetic field and the electric field of bound charges, magnetic isopotentials and the Faraday paradox, Planck's constant, and spinning-top and ferrofluid experiments.",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/earth-curvature-icon.jpg (900x600 crop of the tool's share image).
     slug: "earth-curvature",
     href: "/earth-curvature-calculator",
@@ -1653,6 +1662,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
         <li class="info-bar__item"><a class="info-bar__item__text" href='/science-posts'>Posts</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/science-videos'>Videos</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/science-tutorials'>Tutorials</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/physics'>Physics</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/math'>Math Tutorials</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
