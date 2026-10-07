@@ -280,6 +280,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.se-qrow {display:flex;gap:0.6em;flex-wrap:wrap;}
 	.se-qrow .tu-input {flex:1 1 20em;min-width:0;}
 	.se-go {font-size:1.05em;padding:0.6em 1.3em;white-space:nowrap;}
+	.se-share {white-space:nowrap;}
 	.se-go:disabled {opacity:0.55;cursor:not-allowed;}
 	.se-opts {display:flex;flex-wrap:wrap;gap:0.8em 1.6em;margin-top:0.9em;}
 	.se-opt {display:flex;flex-direction:column;gap:0.3em;}
@@ -351,7 +352,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	@media (max-width:600px) {
 		.se-grid {grid-template-columns:1fr;}
 		.se-filter {max-width:none;margin-left:0;}
-		.se-go {width:100%;}
+		.se-go, .se-share {width:100%;}
 	}
 	.se-also {display:flex;flex-wrap:wrap;align-items:center;gap:0.25em;font-size:0.72em;color:#6a7280;}
 	.se-also button {cursor:pointer;font-size:1em;padding:0.15em 0.6em;border-radius:1em;border:1px dashed #b9c1cc;background:#fff;color:#555;}
@@ -723,6 +724,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="se-qrow">
 					<input id="se-q" class="tu-input tu-input--big" type="search" autocomplete="off" spellcheck="true" placeholder="Type or paste your search, then press Enter to open every ticked engine" enterkeyhint="search">
 					<button type="button" class="tu-btn tu-btn--primary se-go" id="se-go">Open 0 selected</button>
+					<button type="button" class="tu-btn tu-btn--ghost se-share" id="se-sharelink2" title="Copy a link to this page with your search, ticked engines and options filled in, to send to someone">🔗 Share this search</button>
 				</div>
 			</div>
 			<div class="se-opts">
@@ -875,7 +877,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/search-engines/js/search-engines.js?v=3" defer></script>
+	<script src="/search-engines/js/search-engines.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

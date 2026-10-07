@@ -1,7 +1,7 @@
 /* MES Search Engines -- mes.fm/search-engines
  * Type one search, tick engines (or pick a set), open them all at once in tabs or tiled windows, or click a single engine link.
  * Engine table + URL builder: lib.js (MESEngines). State: localStorage "mes-search-engines:v1" (ticked engines, Google/Bing/... variants, own engines and sets,
- * options, recent searches). Share links: ?q=&e=google,bing&t=images&w=d&m=tab. Nothing is sent anywhere by this page.
+ * options, recent searches). Share links: ?q=&e=google,bing&t=images&w=d&m=tab&v=google:ca+co.uk&ex=site.com. Nothing is sent anywhere by this page.
  */
 (function () {
 	"use strict";
@@ -30,8 +30,11 @@
 	if (/^[dwmy]$/.test(qs.get("w") || "")) S.time = qs.get("w");
 	if (/^(tab|window|same)$/.test(qs.get("m") || "")) S.mode = qs.get("m");
 	if (qs.get("site")) S.site = qs.get("site");
+	if (qs.get("ex")) S.excl = qs.get("ex");
+	// v=google:ca+co.uk,bing:gb = the variants (Google domains, regions...) each shared engine had ticked
+	if (qs.get("v")) { S.vsel = {}; qs.get("v").split(",").forEach(function (p) { var m = p.split(":"), e = E.BYID[m[0]]; if (e && e.variants && m[1]) { var ids = m[1].split(/[+ ]/).filter(function (v) { return e.variants.some(function (x) { return x.id === v; }); }); if (ids.length) S.vsel[m[0]] = ids; } }); }
 	if (qs.get("x") === "1") S.exact = true;
-	if (qs.get("a")) { S.extra = {}; qs.get("a").split(",").forEach(function (p) { var m = p.split(":"); if (E.BYID[m[0]] && m[1]) S.extra[m[0]] = m[1].split("+").filter(function (t) { return /^(images|news|videos)$/.test(t); }); }); }
+	if (qs.get("a")) { S.extra = {}; qs.get("a").split(",").forEach(function (p) { var m = p.split(":"); if (E.BYID[m[0]] && m[1]) S.extra[m[0]] = m[1].split(/[+ ]/).filter(function (t) { return /^(images|news|videos)$/.test(t); }); }); }
 	if (qs.get("q")) $("se-q").value = qs.get("q");
 	function persist() { sset({ sel: S.sel, vsel: S.vsel, custom: S.custom, sets: S.sets, type: S.type, time: S.time, mode: S.mode, exact: S.exact, site: S.site, excl: S.excl, log: S.log, hist: S.hist, fold: S.fold, extra: S.extra }); }
 
@@ -252,12 +255,21 @@
 		var t = tg(); if (!t.list.length) { toast(hasQuery() ? "Tick some engines first" : "Type a search first"); return; }
 		copy(t.list.map(function (x) { return x.label + ": " + x.url; }).join("\n")).then(function (ok) { toast(ok ? "Copied " + t.list.length + " links" : "Copy failed"); });
 	};
-	$("se-sharelink").onclick = function () {
+	function shareUrl() {
 		var p = new URLSearchParams(); if (q()) p.set("q", q()); p.set("e", S.sel.join(","));
-		if (S.type !== "web") p.set("t", S.type); if (S.time) p.set("w", S.time); if (S.mode !== "tab") p.set("m", S.mode); if (S.site) p.set("site", S.site); if (S.exact) p.set("x", "1");
+		if (S.type !== "web") p.set("t", S.type); if (S.time) p.set("w", S.time); if (S.mode !== "tab") p.set("m", S.mode); if (S.site) p.set("site", S.site); if (S.excl) p.set("ex", S.excl); if (S.exact) p.set("x", "1");
 		var ax = Object.keys(S.extra).filter(function (id) { return S.sel.indexOf(id) >= 0 && S.extra[id].length; }).map(function (id) { return id + ":" + S.extra[id].join("+"); }); if (ax.length) p.set("a", ax.join(","));
-		copy(location.origin + location.pathname + "?" + p.toString()).then(function (ok) { toast(ok ? "Share link copied" : "Copy failed"); });
-	};
+		var vx = S.sel.filter(function (id) { var e = E.BYID[id]; return e && e.variants && S.vsel[id] && S.vsel[id].length; }).map(function (id) { return id + ":" + S.vsel[id].join("+"); }); if (vx.length) p.set("v", vx.join(","));
+		return location.origin + location.pathname + "?" + p.toString();
+	}
+	function shareClick() {
+		if (!S.sel.length) { toast("Tick some engines first"); return; }
+		var u = shareUrl(), n = (S.custom.length && S.sel.some(function (id) { return S.custom.some(function (c) { return c.id === id; }); })) ? " (your own engines are not included)" : "";
+		copy(u).then(function (ok) { toast(ok ? "Share link copied" + n : "Copy failed"); });
+	}
+	$("se-sharelink").onclick = shareClick;
+	$("se-sharelink2").onclick = shareClick;
+	if (qs.get("q") || qs.get("e")) setTimeout(function () { toast("Shared search loaded: press Open to run it"); }, 400);
 
 	/* ---------- history ---------- */
 	$("se-hlist").addEventListener("click", function (e) { var b = e.target.closest(".se-hq"); if (!b) return; $("se-q").value = S.hist[+b.dataset.i].q; render(); $("se-q").focus(); window.scrollTo({ top: root.getBoundingClientRect().top + window.pageYOffset - 20, behavior: "smooth" }); });
