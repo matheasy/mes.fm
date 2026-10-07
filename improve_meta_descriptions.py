@@ -171,7 +171,7 @@ HAND_WRITTEN = {
     "hutchison-health-aug22-2026/index.html": "Prayers up for John Hutchison: a health update on the Hutchison Effect researcher, mirrored from the Hive blockchain and Telegram.",
     "livestream-140-trailer-911-real-avengers/index.html": "Trailer for MES Livestream 140: 9/11, The Real Avengers by Chris Shak. Watch the trailer, mirrored from the Hive blockchain and Telegram.",
     "911-3d-print-pin/index.html": "MES's niece made him a 9/11 pin with her 3D printing pen. A heartwarming family story, mirrored from the Hive blockchain and Telegram.",
-    "ufo/index.html": "MES Science Experiments: a running build log of Tesla coil experiments and progress, with videos and notes from Math Easy Solutions.",
+    "ufo/index.html": "UFO Replication: a running build log of Tesla coil and free energy experiments, with videos and notes from Math Easy Solutions.",
     # Four pages whose <meta name="description"> was corrupted by HTTrack: the whole article body was stuffed into the
     # attribute and the closing quote is missing, so the tag swallows the next <meta> (twitter:card). Rewritten in full.
     "gradecalculator/study-tips/mistakes-grow-your-brain.html": "Studies show your brain grows when you make mistakes, even ones you don't notice. Learn why mistakes help you learn more when studying for exams and math tests.",
