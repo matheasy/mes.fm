@@ -80,13 +80,6 @@ const PAGES = [
     description:
       "Video and written tutorials on vector functions: space curves, derivatives and integrals, arc length and curvature, motion in space, and Kepler's laws.",
   },
-  {
-    // Link tile to the sibling hub (its own build: mes.fm/science/build.mjs); icon = img/science-icon.jpg.
-    slug: "science",
-    ownBuild: true,
-    tileLabel: "MES Science",
-    description: "MES Science: videos, posts and tutorials on science topics.",
-  },
   // Tile only (no page written): MES math tools, shown as small square-logo links in the "Calculators & Tools" section under the tiles (img/<logo>); img/<slug>-icon.jpg (900x600 share-image crops) is kept for use as big tiles.
   { slug: "latex", href: "/latex", logo: "latex-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "LaTeX Render" },
   { slug: "symbols", href: "/symbols", logo: "symbols-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Math Symbols Copier" },
@@ -768,7 +761,7 @@ function buildPage(meta, page) {
   const isHub = !!page.hub;
   const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
   const sectionsHtml = isHub
-    ? `<div class="icon-grid">\n${PAGES.filter((p) => !p.tileOnly).map(buildTile).join("\n")}\n</div>\n<h2 class="tool-heading">Calculators &amp; Tools</h2>\n<div class="tool-grid">\n${PAGES.filter((p) => p.tileOnly).map(buildToolLink).join("\n")}\n</div>`
+    ? `<div class="icon-grid">\n${PAGES.filter((p) => !p.tileOnly).map(buildTile).join("\n")}\n</div>\n<h2 class="tool-heading">Calculators &amp; Tools</h2>\n<div class="tool-grid">\n${PAGES.filter((p) => p.tileOnly).map(buildToolLink).join("\n")}\n</div>\n<p class="hub-more">More from MES: <a href="/science">MES Science</a> &ndash; videos, posts, tutorials and physics</p>`
     : sections.map((s) => buildSection(s, meta)).join("\n\n");
   const hasFilter = sections.some((s) => s.filter);
   const filterWiring = sections
@@ -1013,6 +1006,10 @@ sub {vertical-align:sub;}
 .tool-grid__link img { transition: transform 0.15s; }
 .tool-grid__link:hover span { text-decoration: underline; }
 .tool-grid__link span { color: inherit; }
+.hub-more { margin: 0.2em 0 1.2em; font-size: 0.95em; color: #222; }
+.hub-more a { color: #1b4f8a; }
+body.dark-mode .hub-more { color: #ddd; }
+body.dark-mode .hub-more a { color: #8ec5ff; }
 .tool-heading { color: #222; }
 .tool-grid__link { color: #1b4f8a; }
 body.dark-mode .tool-heading { color: #eee; }
