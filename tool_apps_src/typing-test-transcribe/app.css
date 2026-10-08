@@ -142,3 +142,9 @@
 		.tu .tt-lbtable td, .tu .tt-lbtable th {padding-left:0.4em;padding-right:0.4em;}
 	}
 	body.dark-mode #tt .tt-lbtable .tt-sub {color:#a0a8b3;}
+
+	/* option row: seg buttons, select and chip share one height and sit on one line */
+	.tu .tt-opts .tt-opt .tu-seg button, .tu .tt-opts .tt-opt .tu-select, .tu .tt-opts .tt-chips .tu-chip {box-sizing:border-box;height:2.6em;margin:0;font-size:1em;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;}
+	.tu .tt-opts .tt-opt .tu-select {padding:0 2em 0 0.8em;width:auto;min-width:11em;display:block;line-height:2.6em;height:calc(2.6em + 2px);}
+	.tu .tt-opts .tt-opt .tu-label {line-height:1.2;}
+	@media (max-width:520px) {.tu .tt-opts .tt-opt .tu-seg button {font-size:0.85em;}}

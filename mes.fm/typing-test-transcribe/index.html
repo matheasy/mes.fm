@@ -285,6 +285,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu .tt-opt .tu-seg button {padding:0.5em 0.8em;}
 	@media (max-width:520px) {.tu .tt-opt .tu-seg button {padding:0.5em 0.5em;font-size:0.82em;} .tu .tt-opts {gap:0.7em 0.8em;}}
 	.tu .tt-chips {display:flex;flex-wrap:wrap;gap:0.4em;}
+	/* option row: seg buttons, select and chip share one height and sit on one line */
+	.tu .tt-opts .tt-opt .tu-seg button, .tu .tt-opts .tt-opt .tu-select, .tu .tt-opts .tt-chips .tu-chip {box-sizing:border-box;height:2.6em;margin:0;font-size:1em;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;}
+	.tu .tt-opts .tt-opt .tu-select {padding:0 2em 0 0.8em;width:auto;min-width:11em;display:block;line-height:2.6em;height:calc(2.6em + 2px);}
+	.tu .tt-opts .tt-opt .tu-label {line-height:1.2;}
+	@media (max-width:520px) {.tu .tt-opts .tt-opt .tu-seg button {font-size:0.85em;}}
+
 	.tu .tt-diffnote {margin:0.7em 0 0;font-size:0.88em;color:#6a7280;}
 	.tu .tt-banner {margin:0.7em 0 0;padding:0.5em 0.8em;border-radius:0.4em;background:#e0f2fe;color:var(--accent-dark);font-weight:600;font-size:0.92em;}
 	.tu .tt-custom {margin-top:0.8em;display:flex;flex-direction:column;gap:0.5em;align-items:flex-start;}
