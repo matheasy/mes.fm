@@ -179,18 +179,18 @@ APPS = {
                             tag="What do you need on your final exam?", accent="#575fab", dark="#434a8a", tint="#e9eaf6",
                             desc="Free final grade calculator: find out what grade you need on your final exam to get the course grade you want. Enter your current grade or your assignments, save all your courses, try what-if scores and share your results to another device.",
                             js_v="1",
-                            nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/weighted-average-calculator'>Weighted Average</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/memes'>Memes</a></li>",
-                            menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/weighted-average-calculator\">Weighted Average</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/study-tips\">Study Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/tutorial\">Tutorial</a></li>"),
-    # Weighted Average Calculator 2.0 (rewritten 2026-10-06 from the 2013 jQuery page): lives at /gradecalculator/weighted-average-calculator (the old URL is kept: ~2,300 views / 30 days) as a sub-page of the
+                            nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/weighted-average-calculator'>Weighted Average</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/memes'>Memes</a></li>",
+                            menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/weighted-average-calculator\">Weighted Average</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/study-tips\">Study Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/tutorial\">Tutorial</a></li>"),
+    # Weighted Average Calculator 2.0 (rewritten 2026-10-06 from the 2013 jQuery page): lives at /weighted-average-calculator (the old URL is kept: ~2,300 views / 30 days) as a sub-page of the
     # Grade Calculator brand (brand + url + out + js_path options). lib.js = maths + share encoding (tests: tool_apps_src/weighted-average-tests.js), app.js = UI. Keeps ads.
     "weighted-average-calculator": dict(title="Weighted Average Calculator", page_title="Weighted Average Calculator",
                             tag="Average grades that count for different amounts.", accent="#575fab", dark="#434a8a", tint="#e9eaf6",
                             desc="Free weighted average calculator: enter grades with their weights, credits or percentages and get the weighted average, the plain average and a step-by-step table. Paste from a spreadsheet, save your list and open it on any device with a link.",
-                            js_v="1", url="gradecalculator/weighted-average-calculator", out="gradecalculator/weighted-average-calculator.html",
+                            js_v="1", url="weighted-average-calculator", out="weighted-average-calculator.html",
                             js_path="gradecalculator/js/weighted-average-calculator.js", tab=1,
                             brand=dict(slug="gradecalculator", title="Grade Calculator", tag="What do you need on your final exam?"),
-                            nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/weighted-average-calculator'>Weighted Average</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/memes'>Memes</a></li>",
-                            menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/weighted-average-calculator\">Weighted Average</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/study-tips\">Study Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/tutorial\">Tutorial</a></li>"),
+                            nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/weighted-average-calculator'>Weighted Average</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/memes'>Memes</a></li>",
+                            menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/weighted-average-calculator\">Weighted Average</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/study-tips\">Study Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/tutorial\">Tutorial</a></li>"),
     # GPA Calculator 2.0 (rewritten 2026-10-06 from the 2013 jQuery page; old js/calculatorffaf.js deleted): letters or percentages (mixed) per course, 4.0 / 4.33 scales, honors / AP weighting, several terms +
     # prior GPA / credits for a cumulative GPA, "what GPA do I need next". lib.js = maths + share encoding (tests: tool_apps_src/gpa-tests.js). Keeps ads; old /gpacalculator/s/<id> links resolve via /api/share?calc=gpa.
     "gpacalculator": dict(title="GPA Calculator", page_title="GPA Calculator",
@@ -426,7 +426,7 @@ def build_from_source(slug, cfg, tpl):
         page = page.replace("href='/%s'>Home</a>" % slug, "href='/%s'>Home</a>" % b["slug"], 1)
         page = page.replace('class="navbar__link navbar__link--first" href="/%s">Home</a>' % slug, 'class="navbar__link navbar__link--first" href="/%s">Home</a>' % b["slug"], 1)
         page = page.replace("current_tab:0", "current_tab:%d" % cfg.get("tab", 0), 1)
-    if cfg.get("url"):                # the public path differs from the slug (e.g. gradecalculator/weighted-average-calculator): canonical / og:url / JSON-LD
+    if cfg.get("url"):                # the public path differs from the slug (e.g. weighted-average-calculator): canonical / og:url / JSON-LD
         for old_u in ('href="https://mes.fm/%s"' % slug, 'content="https://mes.fm/%s"' % slug, '"url": "https://mes.fm/%s"' % slug):
             page = page.replace(old_u, old_u.replace("/" + slug + '"', "/" + cfg["url"] + '"'))
     js_dir = (SITE / jsrel).parent

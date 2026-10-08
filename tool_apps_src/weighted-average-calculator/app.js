@@ -1,4 +1,4 @@
-/* MES Weighted Average Calculator 2.0 -- mes.fm/gradecalculator/weighted-average-calculator (UI; maths + share encoding in lib.js, global WA).
+/* MES Weighted Average Calculator 2.0 -- mes.fm/weighted-average-calculator (UI; maths + share encoding in lib.js, global WA).
  * localStorage "mes-weighted-average:v1"; ?s=<encoded list> carries a list to another device; ?g=90,80&w=3,4 simple links.
  */
 (function () {
@@ -106,7 +106,7 @@
 		lines.push("Weighted average\t" + WA.fix(last.avg, st.dec) + "\t" + WA.fix(last.sumW, 4, true)); copy(lines.join("\n"), "Copied: paste it into a spreadsheet");
 	};
 	$("wa-link").onclick = function () {
-		var url = location.origin + "/gradecalculator/weighted-average-calculator?s=" + WA.encode(st.rows, st.title);
+		var url = location.origin + "/weighted-average-calculator?s=" + WA.encode(st.rows, st.title);
 		copy(url, "Link copied: paste it on any device"); notice(url.length > 6000 ? "That link is " + url.length.toLocaleString() + " characters long; a few chat apps cut long links." : "");
 	};
 	document.querySelector("#wa .wa-print").onclick = function () { window.print(); };

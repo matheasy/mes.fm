@@ -72,7 +72,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("gpacalculator", "GPA Calculator"),   # also built by build_tool_apps.py (GPA Calculator 2.0)
     ("bmicalculator", "BMI Calculator"),   # also built by build_tool_apps.py (BMI Calculator 2.0)
     ("gradecalculator", "Grade Calculator"),
-    ("gradecalculator/weighted-average-calculator.html", "Grade Calculator", "/gradecalculator"),   # Weighted Average 2.0: a page inside the Grade Calculator folder   # also built by build_tool_apps.py (Grade Calculator 2.0)
+    ("weighted-average-calculator.html", "Grade Calculator", "/gradecalculator"),   # Weighted Average 2.0: a page inside the Grade Calculator folder   # also built by build_tool_apps.py (Grade Calculator 2.0)
     ("vatcalculator", "VAT Calculator"),   # also built by build_tool_apps.py (VAT Calculator 2.0)
     ("how-much-do-youtubers-make", "YouTube Money", "/youtubemoney"),   # a sub-page of the YouTube Money site (brand option in build_tool_apps.py); wide, ad-free
     ("mortgagecalculator", "Mortgage Calculator"),   # also built by build_tool_apps.py (Mortgage Calculator 2.0)

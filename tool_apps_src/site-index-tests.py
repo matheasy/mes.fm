@@ -30,7 +30,7 @@ EXPECT = {
     "/calculators": ("hub-cards", "organize_hub_cards.py", "site"),
     "/tools": ("hub-cards", "organize_hub_cards.py", "site"),
     "/gradecalculator": ("classic-calc", HAND, "grade"),
-    "/gradecalculator/weighted-average-calculator": ("classic-calc", HAND, "grade"),
+    "/weighted-average-calculator": ("classic-calc", HAND, "grade"),
     "/gradecalculator/memes": ("gallery-list", HAND, "grade"),
     "/gradecalculator/memes/2": ("gallery-page", HAND, "grade"),
     "/percentagecalculator": ("classic-calc", HAND, "percentage"),

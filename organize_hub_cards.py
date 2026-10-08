@@ -24,8 +24,8 @@ TAG = '<script src="/main_js/hub-filter.js?v=3" defer></script>'
 # Picked from mes.fm/stats (curl "https://mes.fm/api/stats?range=30d"): 30-day views Grade 4.8k, Percentage 3.7k,
 # Weighted Average 2.4k (then GPA 1.7k, BMI 1.6k); tools: Timer (45 views/7d) clearly ahead, then Speed Reader and Moon.
 PAGES = {
-    "calculators.html": dict(noun="calculators", popular=["gradecalculator", "percentagecalculator", "gradecalculator/weighted-average-calculator", "gpacalculator"], cats=[
-        ("school", "School &amp; Grades", ["gradecalculator", "gpacalculator", "gradecalculator/weighted-average-calculator", "gradecalculator/br"]),
+    "calculators.html": dict(noun="calculators", popular=["gradecalculator", "percentagecalculator", "weighted-average-calculator", "gpacalculator"], cats=[
+        ("school", "School &amp; Grades", ["gradecalculator", "gpacalculator", "weighted-average-calculator", "gradecalculator/br"]),
         ("money", "Money &amp; Finance", ["mortgagecalculator", "inflationcalculator", "vatcalculator", "youtubemoney/index.html", "impermanent-loss-calculator"]),
         ("algebra", "Algebra &amp; Calculus", ["calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "2d-graphing-calculator", "3d-graphing-calculator"]),
         ("everyday", "Everyday Math &amp; Health", ["days-between-dates-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
