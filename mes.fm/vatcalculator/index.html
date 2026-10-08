@@ -340,6 +340,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	}
 	.tu #vc-mode {width:fit-content;max-width:100%;}
 
+	.tu .mes-optbar {display:flex;justify-content:space-between;align-items:center;gap:0.8em;margin:0 0 0.5em;font-size:0.85em;}
+	.tu .mes-optsum {opacity:0.75;} .tu .mes-optbar .mes-optbtn {margin-left:auto;background:none;border:0;padding:0.2em 0.1em;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer;}
+	.tu .mes-optfold[hidden] {display:none;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -686,7 +690,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</div>
 			</div>
 
-			<div class="tu-row" style="margin-top:1em;">
+			<div class="mes-optbar"><span id="vc-optsum" class="mes-optsum" hidden></span><button type="button" id="vc-opttoggle" class="mes-optbtn" aria-expanded="true">Hide options</button></div>
+			<div class="tu-row mes-optfold" style="margin-top:1em;">
 				<div class="tu-field" style="flex-basis:15em;">
 					<label for="vc-country">Country</label>
 					<select id="vc-country" class="tu-select"></select>
@@ -715,7 +720,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<p class="tu-note" id="vc-cnote" style="margin-bottom:0;"></p>
 			</div>
 
-			<div class="tu-row" style="margin-top:0.9em;">
+			<div class="tu-row mes-optfold" style="margin-top:0.9em;">
 				<div class="tu-field" style="flex-basis:14em;">
 					<label for="vc-round">Rounding</label>
 					<select id="vc-round" class="tu-select"></select>

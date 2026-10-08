@@ -344,6 +344,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	}
 	.tu #gp-scale {width:fit-content;max-width:100%;}
 
+	.tu .mes-optbar {display:flex;justify-content:space-between;align-items:center;gap:0.8em;margin:0 0 0.5em;font-size:0.85em;}
+	.tu .mes-optsum {opacity:0.75;} .tu .mes-optbar .mes-optbtn {margin-left:auto;background:none;border:0;padding:0.2em 0.1em;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer;}
+	.tu .mes-optfold[hidden] {display:none;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -689,7 +693,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div id="gp-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
 
 		<div class="tu-card" id="gp-opts">
-			<div class="tu-row" style="align-items:flex-end;">
+			<div class="mes-optbar"><span id="gp-optsum" class="mes-optsum" hidden></span><button type="button" id="gp-opttoggle" class="mes-optbtn" aria-expanded="true">Hide options</button></div>
+			<div class="tu-row mes-optfold" style="align-items:flex-end;">
 				<div class="tu-field" style="flex:1 1 12em;">
 					<span class="tu-label" id="gp-scale-label">GPA scale</span>
 					<div class="tu-seg" id="gp-scale" role="group" aria-labelledby="gp-scale-label" style="margin-top:0.3em;display:flex;">

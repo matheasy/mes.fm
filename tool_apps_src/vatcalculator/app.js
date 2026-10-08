@@ -526,4 +526,17 @@
 		$("vc-clearlines").addEventListener("click", function () { st.items = [newLine(), newLine()]; buildLines(); sync(); });
 	}
 	init();
+	// "Hide options": collapse the set-once settings to a one-line summary (own localStorage key, not part of the saved state)
+	(function () {
+		var OK = "mes-vatcalculator:optshide", hid = false, tg = $("vc-opttoggle"), sm = $("vc-optsum"), folds = $("vc").querySelectorAll(".mes-optfold");
+		try { hid = localStorage.getItem(OK) === "1"; } catch (e) {}
+		function txt(id) { var e = $(id); return e && e.options ? (e.options[e.selectedIndex] || {}).text || "" : ""; }
+		function paint() {
+			for (var i = 0; i < folds.length; i++) folds[i].hidden = hid;
+			sm.hidden = !hid; sm.textContent = [txt("vc-country"), $("vc-region-wrap").hidden ? "" : txt("vc-region"), txt("vc-cur"), txt("vc-round")].filter(Boolean).join(" \u00b7 "); tg.textContent = hid ? "Options" : "Hide options"; tg.setAttribute("aria-expanded", String(!hid));
+		}
+		tg.addEventListener("click", function () { hid = !hid; try { localStorage.setItem(OK, hid ? "1" : "0"); } catch (e) {} paint(); });
+		var rt = $("vc"); rt.addEventListener("click", function () { setTimeout(paint, 0); }); rt.addEventListener("change", function () { setTimeout(paint, 0); });
+		paint();
+	})();
 })();

@@ -326,4 +326,17 @@
 	renderAll();
 	if (m && !q.get("s")) loadOld(m[1]);
 	window.addEventListener("storage", function (e) { if (e.key !== KEY || (document.activeElement && root.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName))) return; try { var s = JSON.parse(e.newValue); if (s && Array.isArray(s.terms)) { ws = normalise(s); renderAll(); } } catch (x) {} });
+	// "Hide options": collapse the set-once settings to a one-line summary (own localStorage key, not part of the saved state)
+	(function () {
+		var OK = "mes-gpacalculator:optshide", hid = false, tg = $("gp-opttoggle"), sm = $("gp-optsum"), folds = root.querySelectorAll(".mes-optfold");
+		try { hid = localStorage.getItem(OK) === "1"; } catch (e) {}
+		function txt(id) { var e = $(id); return e && e.options ? (e.options[e.selectedIndex] || {}).text || "" : ""; }
+		function paint() {
+			for (var i = 0; i < folds.length; i++) folds[i].hidden = hid;
+			sm.hidden = !hid; sm.textContent = (function(){var b=root.querySelector("#gp-scale [aria-pressed=true]");return (b?b.textContent:"4.0")+" scale \u00b7 "+($("gp-weighted").checked?"weighted":"unweighted");})(); tg.textContent = hid ? "Options" : "Hide options"; tg.setAttribute("aria-expanded", String(!hid));
+		}
+		tg.addEventListener("click", function () { hid = !hid; try { localStorage.setItem(OK, hid ? "1" : "0"); } catch (e) {} paint(); });
+		root.addEventListener("click", function () { setTimeout(paint, 0); }); root.addEventListener("change", function () { setTimeout(paint, 0); });
+		paint();
+	})();
 })();
