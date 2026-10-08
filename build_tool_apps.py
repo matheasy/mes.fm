@@ -115,7 +115,7 @@ APPS = {
     "vatcalculator": dict(title="VAT Calculator", page_title="VAT Calculator",
                           tag="Add or remove VAT, GST and sales tax.", accent="#7a6200", dark="#574600", tint="#f6f0d6",
                           desc="Free VAT calculator for 60+ countries: add VAT to a net price, remove it from a gross price, or find the VAT amount or rate. Itemised invoices grouped by rate, UK, EU, Canada, US, India and more, with up-to-date rates, exact rounding and shareable links.",
-                          js_v="1"),
+                          js_v="2"),
     # Speed Reader 2.0 (rewritten 2026-10-03 from the 2016 jQuery/Bootstrap page; keeps its red accent + Grok logos): lib.js = pure logic (tokenising, focus letter, chunking,
     # pacing, speech chunking, voice choice; node-testable: tool_apps_src/speedreader-tests.js), app.js = RSVP + Web Speech UI. Keeps ads (like the old page).
     "speedreader": dict(title="Speed Reader and Read Aloud", page_title="Speed Reader",
@@ -178,7 +178,7 @@ APPS = {
     "gradecalculator": dict(title="Grade Calculator", page_title="Final Grade Calculator",
                             tag="What do you need on your final exam?", accent="#575fab", dark="#434a8a", tint="#e9eaf6",
                             desc="Free final grade calculator: find out what grade you need on your final exam to get the course grade you want. Enter your current grade or your assignments, save all your courses, try what-if scores and share your results to another device.",
-                            js_v="2",
+                            js_v="3",
                             nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/weighted-average-calculator'>Weighted Average</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gradecalculator/memes'>Memes</a></li>",
                             menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/weighted-average-calculator\">Weighted Average</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/study-tips\">Study Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gradecalculator/tutorial\">Tutorial</a></li>"),
     # Weighted Average Calculator 2.0 (rewritten 2026-10-06 from the 2013 jQuery page): lives at /weighted-average-calculator (the old URL is kept: ~2,300 views / 30 days) as a sub-page of the

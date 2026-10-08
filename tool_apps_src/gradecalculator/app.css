@@ -74,3 +74,4 @@
 		.tu-seo, #gc-save, #gc-examples, #gc-targets, .gc-btns, .gc-del, #gc-whatif, #gc-courses {display:none !important;}
 		.tu .gc-row {break-inside:avoid;}
 	}
+	.tu #gc-mode {width:fit-content;max-width:100%;}

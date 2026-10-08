@@ -44,3 +44,4 @@
 		.tu-seo, #vc-dir-card, #vc-setup .tu-chips, #vc-ref-h, #vc-ref-card, #vc-cmp-card, .vc-del, .vc-btns {display:none !important;}
 		.tu .vc-line {break-inside:avoid;}
 	}
+	.tu #vc-mode {width:fit-content;max-width:100%;}
