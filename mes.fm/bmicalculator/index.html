@@ -334,9 +334,11 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .bm-top {display:flex;justify-content:flex-end;margin:0 0 0.5em;} .tu .bm-top .tu-btn {font-size:0.85em;padding:0.35em 0.8em;}
 	@media print { .bm-top {display:none !important;} }
 
-	.tu .bm-opts {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin:0.9em 0 0.2em;padding-top:0.8em;border-top:1px solid #e3e7ec;}
+	.tu .bm-optbar {display:flex;justify-content:space-between;align-items:center;gap:0.8em;margin:0.9em 0 0;padding-top:0.6em;border-top:1px solid #e3e7ec;font-size:0.85em;}
+	.tu .bm-optsum {opacity:0.75;} .tu .bm-optbar .bm-optbtn {margin-left:auto;background:none;border:0;padding:0.2em 0.1em;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer;}
+	body.dark-mode #bm .bm-optbar {border-top-color:#444;}
+	.tu .bm-opts {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin:0.5em 0 0.2em;} .tu .bm-opts[hidden] {display:none;}
 	.tu .bm-opt {display:flex;flex-direction:column;gap:0.25em;min-width:0;} .tu .bm-opt .tu-label {margin:0;font-size:0.8em;}
-	body.dark-mode #bm .bm-opts {border-top-color:#444;}
 	.tu #bm-ref th, .tu #bm-ref td {white-space:normal;padding:0.45em 0.5em;} .tu #bm-ref th:not(:first-child), .tu #bm-ref td:not(:first-child) {text-align:right;}
 
 
@@ -441,7 +443,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu .bm-del{color:#999da3}
 	body.dark-mode .tu .bm-del:hover{color:#e0827b}
 	body.dark-mode .tu .tu-btn.bm-copied{border-color:#45ba4b !important}
-	body.dark-mode .tu .bm-opts{border-top:1px solid #29323d}
+	body.dark-mode .tu .bm-optbar{border-top:1px solid #29323d}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -708,6 +710,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-ft">Height</label><div class="tu-suffix"><input id="bm-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 6"><span>ft</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-in">&nbsp;</label><div class="tu-suffix"><input id="bm-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0"><span>in</span></div></div>
 			</div>
+			<div class="bm-optbar"><span id="bm-optsum" class="bm-optsum" hidden></span><button type="button" id="bm-opttoggle" class="bm-optbtn" aria-controls="bm-opts" aria-expanded="true">Hide options</button></div>
 			<div class="bm-opts" id="bm-opts">
 				<div class="bm-opt"><span class="tu-label" id="bm-units-label">Show results in</span>
 					<div class="tu-seg" id="bm-units" role="group" aria-labelledby="bm-units-label">

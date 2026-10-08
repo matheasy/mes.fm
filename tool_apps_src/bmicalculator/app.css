@@ -40,7 +40,9 @@
 	.tu .bm-top {display:flex;justify-content:flex-end;margin:0 0 0.5em;} .tu .bm-top .tu-btn {font-size:0.85em;padding:0.35em 0.8em;}
 	@media print { .bm-top {display:none !important;} }
 
-	.tu .bm-opts {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin:0.9em 0 0.2em;padding-top:0.8em;border-top:1px solid #e3e7ec;}
+	.tu .bm-optbar {display:flex;justify-content:space-between;align-items:center;gap:0.8em;margin:0.9em 0 0;padding-top:0.6em;border-top:1px solid #e3e7ec;font-size:0.85em;}
+	.tu .bm-optsum {opacity:0.75;} .tu .bm-optbar .bm-optbtn {margin-left:auto;background:none;border:0;padding:0.2em 0.1em;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer;}
+	body.dark-mode #bm .bm-optbar {border-top-color:#444;}
+	.tu .bm-opts {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin:0.5em 0 0.2em;} .tu .bm-opts[hidden] {display:none;}
 	.tu .bm-opt {display:flex;flex-direction:column;gap:0.25em;min-width:0;} .tu .bm-opt .tu-label {margin:0;font-size:0.8em;}
-	body.dark-mode #bm .bm-opts {border-top-color:#444;}
 	.tu #bm-ref th, .tu #bm-ref td {white-space:normal;padding:0.45em 0.5em;} .tu #bm-ref th:not(:first-child), .tu #bm-ref td:not(:first-child) {text-align:right;}

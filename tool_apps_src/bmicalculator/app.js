@@ -10,9 +10,9 @@
 	var KEY = "mes-bmicalculator:v1", memOnly = false;
 	var EXAMPLES = [["6 ft, 145 lb", { kg: "65.77", cm: "182.88" }], ["170 cm, 85 kg", { kg: "85", cm: "170" }], ["5 ft 4 in, 120 lb", { kg: "54.43", cm: "162.56" }]];
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-	var st = { kg: "", cm: "", units: "b", scale: "who", history: [] };
+	var st = { kg: "", cm: "", units: "b", scale: "who", oh: false, history: [] };
 	function load() {
-		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { st.kg = String(s.kg || ""); st.cm = String(s.cm || ""); st.units = s.ru === "m" || s.ru === "i" ? s.ru : "b"; st.scale = s.scale === "asia" ? "asia" : "who"; st.history = (Array.isArray(s.history) ? s.history : []).map(BM.cleanEntry).filter(Boolean); } } catch (e) { memOnly = true; }
+		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { st.kg = String(s.kg || ""); st.cm = String(s.cm || ""); st.units = s.ru === "m" || s.ru === "i" ? s.ru : "b"; st.scale = s.scale === "asia" ? "asia" : "who"; st.oh = s.oh === true; st.history = (Array.isArray(s.history) ? s.history : []).map(BM.cleanEntry).filter(Boolean); } } catch (e) { memOnly = true; }
 	}
 	function save() {
 		try { localStorage.setItem(KEY, JSON.stringify(Object.assign({ ru: st.units }, st))); memOnly = false; } catch (e) { memOnly = true; }
@@ -50,8 +50,15 @@
 	}
 	["bm-kg", "bm-cm"].forEach(function (id) { $(id).addEventListener("input", function () { fromMetric(); save(); update(); }); });
 	["bm-lb", "bm-ft", "bm-in"].forEach(function (id) { $(id).addEventListener("input", function () { fromImperial(); save(); update(); }); });
-	$("bm-units").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.units = b.dataset.u; save(); showUnits(); update(); });
-	$("bm-scale").addEventListener("change", function () { st.scale = this.value; save(); update(); });
+	$("bm-units").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.units = b.dataset.u; save(); showUnits(); showOpts(); update(); });
+	$("bm-scale").addEventListener("change", function () { st.scale = this.value; save(); showOpts(); update(); });
+	function showOpts() {
+		var h = st.oh, sum = $("bm-optsum");
+		$("bm-opts").hidden = h; sum.hidden = !h;
+		sum.textContent = "Results in " + (st.units === "i" ? "US units" : st.units === "m" ? "metric" : "both units") + " \u00b7 " + (st.scale === "asia" ? "Asian" : "WHO") + " scale";
+		$("bm-opttoggle").textContent = h ? "Options" : "Hide options"; $("bm-opttoggle").setAttribute("aria-expanded", String(!h));
+	}
+	$("bm-opttoggle").addEventListener("click", function () { st.oh = !st.oh; save(); showOpts(); });
 	function showUnits() {
 		[].forEach.call($("bm-units").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.u === st.units)); });
 	}
@@ -162,9 +169,9 @@
 		else { var lb = BM.num(q.get("lb")), ft = BM.num(q.get("ft")), inch = BM.num(q.get("in")); st.kg = lb > 0 ? String(Math.round(BM.lbToKg(lb) * 1000) / 1000) : ""; st.cm = ((ft || 0) * 12 + (inch || 0)) > 0 ? String(Math.round(BM.ftInToCm(ft, inch) * 100) / 100) : ""; }
 		if (q.get("scale") === "asia") st.scale = "asia"; history.replaceState(null, "", location.pathname);
 	}
-	$("bm-scale").value = st.scale; showUnits(); fillOthers(); save(); update();
+	$("bm-scale").value = st.scale; showUnits(); showOpts(); fillOthers(); save(); update();
 	if (m && !q.get("s")) loadOld(m[1]);
 	// the reference table
 	(function () { var h = "<thead><tr><th>Category</th><th>WHO standard</th><th>Asian</th></tr></thead><tbody>"; [["Severe thinness", "&lt; 16", "&lt; 16"], ["Moderate thinness", "16 &ndash; 16.9", "16 &ndash; 16.9"], ["Mild thinness", "17 &ndash; 18.4", "17 &ndash; 18.4"], ["Normal weight", "18.5 &ndash; 24.9", "18.5 &ndash; 22.9"], ["Overweight", "25 &ndash; 29.9", "23 &ndash; 27.4"], ["Obese", "30 and over", "27.5 and over"]].forEach(function (r) { h += "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] + "</td></tr>"; }); $("bm-ref").innerHTML = h + "</tbody>"; var nt = document.createElement("p"); nt.className = "tu-note"; nt.textContent = "WHO obesity classes: class I 30 \u2013 34.9, class II 35 \u2013 39.9, class III 40 and over."; $("bm-ref").parentNode.insertAdjacentElement("afterend", nt); })();
-	window.addEventListener("storage", function (e) { if (e.key !== KEY || (document.activeElement && root.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName))) return; try { var s = JSON.parse(e.newValue); if (s) { load(); fillOthers(); update(); } } catch (x) {} });
+	window.addEventListener("storage", function (e) { if (e.key !== KEY || (document.activeElement && root.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName))) return; try { var s = JSON.parse(e.newValue); if (s) { load(); $("bm-scale").value = st.scale; showUnits(); showOpts(); fillOthers(); update(); } } catch (x) {} });
 })();
