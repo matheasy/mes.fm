@@ -211,6 +211,11 @@ def build_catalog(family, cfg):
             path = os.path.join(SITE, slug) if sub_page else os.path.join(SITE, slug, "index.html")
             logo_url = "/%s/img/logo.png" % slug.split("/")[0]
             if sub_page: slug = slug[:-5]
+            if not os.path.exists(os.path.join(SITE, logo_url.lstrip("/"))):   # sub-pages of a brand (timer family, weighted average) have no folder of their own
+                for alt in ("/img/%s-logo.png" % slug, "/gradecalculator/img/logo-512.png" if slug == "weighted-average-calculator" else ""):
+                    if alt and os.path.exists(os.path.join(SITE, alt.lstrip("/"))):
+                        logo_url = alt
+                        break
             items.append({"path": path, "url": "/" + slug, "title": title_of(read(path), slug), "img": logo_url, "logo": True,
                           "kind": kind, "section": 0, "hide": False})
         cat["sections"].append(items)
