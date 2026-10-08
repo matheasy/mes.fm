@@ -2,22 +2,7 @@
 		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
 
 		<div class="tu-card" id="bm-setup">
-			<div class="tu-row" style="align-items:flex-end;">
-				<div class="tu-field" style="flex:1 1 14em;">
-					<span class="tu-label" id="bm-units-label">Show results in</span>
-					<div class="tu-seg" id="bm-units" role="group" aria-labelledby="bm-units-label" style="margin-top:0.3em;display:flex;">
-						<button type="button" data-u="b" aria-pressed="true">Both</button>
-						<button type="button" data-u="m" aria-pressed="false">Metric</button>
-						<button type="button" data-u="i" aria-pressed="false">US</button>
-					</div>
-				</div>
-				<div class="tu-field" style="flex:1 1 14em;">
-					<label for="bm-scale">BMI scale</label>
-					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option></select>
-				</div>
-			</div>
-
-			<p class="tu-note" style="margin:1em 0 0;"><b>Mix units freely:</b> type weight in kg or lb and height in cm or ft + in, in any combination &mdash; the other fields fill in as you type.</p>
+			<p class="tu-note" style="margin:0;"><b>Mix units freely:</b> type weight in kg or lb and height in cm or ft + in, in any combination &mdash; the other fields fill in as you type.</p>
 			<div class="tu-row" style="margin-top:1em;" id="bm-metric">
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-kg">Weight</label><div class="tu-suffix"><input id="bm-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 65.8"><span>kg</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-cm">Height</label><div class="tu-suffix"><input id="bm-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 182.9"><span>cm</span></div></div>
@@ -26,6 +11,16 @@
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-lb">Weight</label><div class="tu-suffix"><input id="bm-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 145.1"><span>lb</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-ft">Height</label><div class="tu-suffix"><input id="bm-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 6"><span>ft</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-in">&nbsp;</label><div class="tu-suffix"><input id="bm-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0"><span>in</span></div></div>
+			</div>
+			<div class="bm-opts" id="bm-opts">
+				<div class="bm-opt"><span class="tu-label" id="bm-units-label">Show results in</span>
+					<div class="tu-seg" id="bm-units" role="group" aria-labelledby="bm-units-label">
+						<button type="button" data-u="b" aria-pressed="true">Both</button>
+						<button type="button" data-u="m" aria-pressed="false">Metric</button>
+						<button type="button" data-u="i" aria-pressed="false">US</button>
+					</div></div>
+				<div class="bm-opt"><label for="bm-scale" class="tu-label">BMI scale</label>
+					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option></select></div>
 			</div>
 			<p class="tu-note" style="margin-bottom:0;">Every field stays in step with its twin. Adults 20 and over only; see the notes below.</p>
 		</div>

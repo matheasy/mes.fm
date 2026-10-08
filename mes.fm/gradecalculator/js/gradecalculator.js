@@ -189,7 +189,7 @@
 		c.mode = c.mode === "items" ? "items" : "known"; c.cur = String(c.cur || ""); c.fw = String(c.fw || "");
 		if (!Array.isArray(c.rows)) c.rows = [];
 		c.rows = c.rows.map(function (x) { return { n: String(x.n || ""), s: String(x.s || ""), o: String(x.o || ""), w: String(x.w || "") }; });
-		while (c.rows.length < 5) c.rows.push(GC.blankRow());
+		if (!c.rows.length) while (c.rows.length < 5) c.rows.push(GC.blankRow());
 		return c;
 	}
 	function load() {
@@ -291,15 +291,34 @@
 	/* ---------- assignment rows ---------- */
 	function rowHtml(x, i) {
 		var g = GC.gradeOf(x);
-		return '<div class="gc-row" data-i="' + i + '">' +
-			'<div class="gc-f gc-f-n"><label>Name</label><input class="tu-input" data-k="n" type="text" maxlength="60" autocomplete="off" placeholder="' + (i === 0 ? "e.g. Midterm" : "Assignment " + (i + 1)) + '" value="' + esc(x.n) + '"></div>' +
-			'<div class="gc-f gc-f-s"><label>Score</label><input class="tu-input" data-k="s" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.s) + '"></div>' +
-			'<div class="gc-f gc-f-o"><label>Out of</label><input class="tu-input" data-k="o" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.o) + '"></div>' +
-			'<div class="gc-f gc-f-g"><label>Grade %</label><input class="tu-input" data-k="g" type="text" inputmode="decimal" autocomplete="off" value="' + (g == null ? "" : GC.fix(g, 1, true)) + '"></div>' +
-			'<div class="gc-f gc-f-w"><label>Weight %</label><input class="tu-input" data-k="w" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.w) + '"></div>' +
-			'<button type="button" class="tu-btn tu-btn--ghost gc-del" title="Remove this row" aria-label="Remove this row">✕</button></div>';
+		return '<div class="gc-row rw-row" data-i="' + i + '"><span class="gc-n rw-num">' + (i + 1) + '.</span>' +
+			'<div class="gc-f rw-f rw-name gc-f-n"><label>Name</label><input class="tu-input" data-k="n" type="text" maxlength="60" autocomplete="off" placeholder="' + (i === 0 ? "e.g. Midterm" : "Assignment " + (i + 1)) + '" value="' + esc(x.n) + '"></div>' +
+			'<div class="gc-f rw-f gc-f-s"><label>Score</label><input class="tu-input" data-k="s" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.s) + '"></div>' +
+			'<div class="gc-f rw-f gc-f-o"><label>Out of</label><input class="tu-input" data-k="o" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.o) + '"></div>' +
+			'<div class="gc-f rw-f gc-f-g"><label>Grade %</label><input class="tu-input" data-k="g" type="text" inputmode="decimal" autocomplete="off" value="' + (g == null ? "" : GC.fix(g, 1, true)) + '"></div>' +
+			'<div class="gc-f rw-f gc-f-w"><label>Weight %</label><input class="tu-input" data-k="w" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.w) + '"></div>' +
+			'<button type="button" class="tu-btn tu-btn--ghost gc-del rw-del" title="Remove this row" aria-label="Remove this row">✕</button></div>';
 	}
-	function renderRows() { $("gc-rows").innerHTML = course().rows.map(rowHtml).join(""); }
+	
+	/* ---------- row layout options: names on / off, table layout. One preference shared by the grade, GPA and weighted-average calculators ---------- */
+	var RW = { names: true, table: false, KEY: "mes-rowprefs:v1" };
+	try { var rwo = JSON.parse(localStorage.getItem(RW.KEY) || "{}"); if (rwo.names === false) RW.names = false; if (rwo.table === true) RW.table = true; } catch (e) {}
+	function rwBar(box, redraw) {
+		var bar = document.createElement("div"); bar.className = "rw-bar";
+		bar.innerHTML = '<button type="button" class="tu-chip" data-rw="names" title="Show or hide the name field on every row (rows are then just numbered)">Names</button><button type="button" class="tu-chip" data-rw="table" title="Compact table layout for quick entry">Table layout</button>';
+		box.parentNode.insertBefore(bar, box);
+		bar.addEventListener("click", function (e) { var b = e.target.closest("[data-rw]"); if (!b) return; RW[b.dataset.rw] = !RW[b.dataset.rw]; try { localStorage.setItem(RW.KEY, JSON.stringify({ names: RW.names, table: RW.table })); } catch (x) {} redraw(); });
+	}
+	function rwDecorate(box) {
+		box.dataset.names = RW.names ? "1" : "0"; box.dataset.table = RW.table ? "1" : "0";
+		var bar = box.previousElementSibling; if (bar && bar.classList.contains("rw-bar")) [].forEach.call(bar.children, function (b) { b.setAttribute("aria-pressed", String(!!RW[b.dataset.rw])); });
+		var first = box.querySelector(".rw-row"); if (!first) return;
+		var f = [].slice.call(first.querySelectorAll(".rw-f")), nOther = f.filter(function (x) { return !x.classList.contains("rw-name"); }).length, pts = !!first.querySelector(".rw-pts");
+		box.style.setProperty("--rw-cols", "1.7em " + (RW.names ? "minmax(0,1.6fr) " : "") + "repeat(" + nOther + ",minmax(0,1fr)) " + (pts ? "3.6em " : "") + "2.3em");
+		if (RW.table) { var h = '<div class="rw-head"><span>#</span>'; f.forEach(function (x) { if (RW.names || !x.classList.contains("rw-name")) h += "<span>" + esc(x.querySelector("label").textContent) + "</span>"; }); box.insertAdjacentHTML("afterbegin", h + (pts ? "<span>Pts</span>" : "") + "<span></span></div>"); }
+	}
+	function renderRows() { $("gc-rows").innerHTML = course().rows.map(rowHtml).join(""); rwDecorate($("gc-rows")); }
+	rwBar($("gc-rows"), renderRows);
 	$("gc-rows").addEventListener("input", function (e) {
 		var row = e.target.closest(".gc-row"); if (!row) return;
 		var c = course(), x = c.rows[+row.dataset.i], k = e.target.dataset.k, v = e.target.value;
@@ -318,7 +337,6 @@
 		var b = e.target.closest(".gc-del"); if (!b) return;
 		var c = course(), i = +b.closest(".gc-row").dataset.i;
 		if (c.rows.length > 1) c.rows.splice(i, 1); else c.rows[0] = GC.blankRow();
-		while (c.rows.length < 5) c.rows.push(GC.blankRow());
 		save(); renderRows(); update();
 	});
 	$("gc-add").onclick = function () {

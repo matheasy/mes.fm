@@ -156,7 +156,7 @@
 		w.prior = { gpa: String((w.prior || {}).gpa || ""), credits: String((w.prior || {}).credits || "") };
 		w.plan = { target: String((w.plan || {}).target || ""), credits: String((w.plan || {}).credits || "") };
 		if (!Array.isArray(w.terms) || !w.terms.length) w.terms = [GP.blankTerm("Term 1")];
-		w.terms.forEach(function (t) { t.name = String(t.name || "Term"); if (!Array.isArray(t.courses)) t.courses = []; t.courses = t.courses.map(function (c) { return { n: String(c.n || ""), g: String(c.g || ""), c: String(c.c || ""), l: c.l === "h" || c.l === "a" ? c.l : "r" }; }); while (t.courses.length < 5) t.courses.push(GP.blankCourse()); });
+		w.terms.forEach(function (t) { t.name = String(t.name || "Term"); if (!Array.isArray(t.courses)) t.courses = []; t.courses = t.courses.map(function (c) { return { n: String(c.n || ""), g: String(c.g || ""), c: String(c.c || ""), l: c.l === "h" || c.l === "a" ? c.l : "r" }; }); if (!t.courses.length) while (t.courses.length < 5) t.courses.push(GP.blankCourse()); });
 		if (!(w.cur >= 0 && w.cur < w.terms.length)) w.cur = 0;
 		return w;
 	}
@@ -207,15 +207,34 @@
 	/* ---------- course rows ---------- */
 	function rowHtml(c, i) {
 		var g = GP.parseGrade(c.g, ws.scale), bad = c.g.trim() && !g;
-		return '<div class="gp-row" data-i="' + i + '"><span class="gp-n">' + (i + 1) + '</span>' +
-			'<div class="gp-f gp-f-n"><label>Course</label><input class="tu-input" data-k="n" type="text" maxlength="60" autocomplete="off" placeholder="optional" value="' + esc(c.n) + '"></div>' +
-			'<div class="gp-f gp-f-g"><label>Grade</label><input class="tu-input' + (bad ? " gp-bad" : "") + '" data-k="g" type="text" list="gp-letters" autocomplete="off" autocapitalize="characters" placeholder="A- or 92" value="' + esc(c.g) + '" aria-invalid="' + !!bad + '"></div>' +
-			'<div class="gp-f gp-f-c"><label>Credits</label><input class="tu-input" data-k="c" type="text" inputmode="decimal" autocomplete="off" placeholder="1" value="' + esc(c.c) + '"></div>' +
-			(ws.weighted ? '<div class="gp-f gp-f-l"><label>Level</label><select class="tu-select" data-k="l"><option value="r"' + (c.l === "r" ? " selected" : "") + '>Regular</option><option value="h"' + (c.l === "h" ? " selected" : "") + '>Honors</option><option value="a"' + (c.l === "a" ? " selected" : "") + '>AP / IB</option></select></div>' : "") +
-			'<span class="gp-pts" data-pts>' + (g ? GP.fix(g.pts, 2) + " pts" : "") + '</span>' +
-			'<button type="button" class="tu-btn tu-btn--ghost gp-del" title="Remove this course" aria-label="Remove course ' + (i + 1) + '">✕</button></div>';
+		return '<div class="gp-row rw-row" data-i="' + i + '"><span class="gp-n rw-num">' + (i + 1) + '</span>' +
+			'<div class="gp-f rw-f rw-name gp-f-n"><label>Course</label><input class="tu-input" data-k="n" type="text" maxlength="60" autocomplete="off" placeholder="optional" value="' + esc(c.n) + '"></div>' +
+			'<div class="gp-f rw-f gp-f-g"><label>Grade</label><input class="tu-input' + (bad ? " gp-bad" : "") + '" data-k="g" type="text" list="gp-letters" autocomplete="off" autocapitalize="characters" placeholder="A- or 92" value="' + esc(c.g) + '" aria-invalid="' + !!bad + '"></div>' +
+			'<div class="gp-f rw-f gp-f-c"><label>Credits</label><input class="tu-input" data-k="c" type="text" inputmode="decimal" autocomplete="off" placeholder="1" value="' + esc(c.c) + '"></div>' +
+			(ws.weighted ? '<div class="gp-f rw-f gp-f-l"><label>Level</label><select class="tu-select" data-k="l"><option value="r"' + (c.l === "r" ? " selected" : "") + '>Regular</option><option value="h"' + (c.l === "h" ? " selected" : "") + '>Honors</option><option value="a"' + (c.l === "a" ? " selected" : "") + '>AP / IB</option></select></div>' : "") +
+			'<span class="gp-pts rw-pts" data-pts>' + (g ? GP.fix(g.pts, 2) + " pts" : "") + '</span>' +
+			'<button type="button" class="tu-btn tu-btn--ghost gp-del rw-del" title="Remove this course" aria-label="Remove course ' + (i + 1) + '">✕</button></div>';
 	}
-	function renderRows() { $("gp-rows").innerHTML = term().courses.map(rowHtml).join(""); }
+	
+	/* ---------- row layout options: names on / off, table layout. One preference shared by the grade, GPA and weighted-average calculators ---------- */
+	var RW = { names: true, table: false, KEY: "mes-rowprefs:v1" };
+	try { var rwo = JSON.parse(localStorage.getItem(RW.KEY) || "{}"); if (rwo.names === false) RW.names = false; if (rwo.table === true) RW.table = true; } catch (e) {}
+	function rwBar(box, redraw) {
+		var bar = document.createElement("div"); bar.className = "rw-bar";
+		bar.innerHTML = '<button type="button" class="tu-chip" data-rw="names" title="Show or hide the name field on every row (rows are then just numbered)">Names</button><button type="button" class="tu-chip" data-rw="table" title="Compact table layout for quick entry">Table layout</button>';
+		box.parentNode.insertBefore(bar, box);
+		bar.addEventListener("click", function (e) { var b = e.target.closest("[data-rw]"); if (!b) return; RW[b.dataset.rw] = !RW[b.dataset.rw]; try { localStorage.setItem(RW.KEY, JSON.stringify({ names: RW.names, table: RW.table })); } catch (x) {} redraw(); });
+	}
+	function rwDecorate(box) {
+		box.dataset.names = RW.names ? "1" : "0"; box.dataset.table = RW.table ? "1" : "0";
+		var bar = box.previousElementSibling; if (bar && bar.classList.contains("rw-bar")) [].forEach.call(bar.children, function (b) { b.setAttribute("aria-pressed", String(!!RW[b.dataset.rw])); });
+		var first = box.querySelector(".rw-row"); if (!first) return;
+		var f = [].slice.call(first.querySelectorAll(".rw-f")), nOther = f.filter(function (x) { return !x.classList.contains("rw-name"); }).length, pts = !!first.querySelector(".rw-pts");
+		box.style.setProperty("--rw-cols", "1.7em " + (RW.names ? "minmax(0,1.6fr) " : "") + "repeat(" + nOther + ",minmax(0,1fr)) " + (pts ? "3.6em " : "") + "2.3em");
+		if (RW.table) { var h = '<div class="rw-head"><span>#</span>'; f.forEach(function (x) { if (RW.names || !x.classList.contains("rw-name")) h += "<span>" + esc(x.querySelector("label").textContent) + "</span>"; }); box.insertAdjacentHTML("afterbegin", h + (pts ? "<span>Pts</span>" : "") + "<span></span></div>"); }
+	}
+	function renderRows() { $("gp-rows").innerHTML = term().courses.map(rowHtml).join(""); rwDecorate($("gp-rows")); }
+	rwBar($("gp-rows"), renderRows);
 	$("gp-rows").addEventListener("input", function (e) {
 		var row = e.target.closest(".gp-row"); if (!row) return; var c = term().courses[+row.dataset.i], k = e.target.dataset.k; c[k] = e.target.value;
 		if (k === "g") { var g = GP.parseGrade(c.g, ws.scale), bad = c.g.trim() && !g; e.target.classList.toggle("gp-bad", !!bad); e.target.setAttribute("aria-invalid", String(!!bad)); row.querySelector("[data-pts]").textContent = g ? GP.fix(g.pts, 2) + " pts" : ""; }
@@ -225,7 +244,7 @@
 	$("gp-rows").addEventListener("click", function (e) {
 		var b = e.target.closest(".gp-del"); if (!b) return; var i = +b.closest(".gp-row").dataset.i, cs = term().courses;
 		if (cs.length > 1) cs.splice(i, 1); else cs[0] = GP.blankCourse();
-		while (cs.length < 5) cs.push(GP.blankCourse()); save(); renderRows(); update();
+		save(); renderRows(); update();
 	});
 	$("gp-rows").addEventListener("keydown", function (e) {
 		if (e.key !== "Enter" || !e.target.dataset.k) return; e.preventDefault();

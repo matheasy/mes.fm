@@ -48,12 +48,25 @@
 		status(SR ? "Press <b>Start</b>, allow the microphone, then read the text above out loud." : "This browser can't do speech recognition. Try Chrome, Edge or Safari.", false);
 	}
 	function stopRec() { var r = T.rec; T.rec = null; if (r) { r.onend = r.onresult = r.onerror = null; try { r.abort(); } catch (e) {} } }
+	// Chrome on Android (continuous mode) can return every result as the whole sentence so far ("the witness" / "the witness stated" / ...) instead of only the new
+	// words, so joining them double-counted the text (0% accuracy, "64 extra"). A result that extends the previous one replaces it; one it already contains is dropped.
+	function collapse(list) {
+		var out = [];
+		list.forEach(function (t) {
+			var n = String(t || "").replace(/\s+/g, " ").trim().toLowerCase(); if (!n) return;
+			var last = out.length ? out[out.length - 1] : null;
+			if (last && (n === last.n || n.indexOf(last.n + " ") === 0)) { out[out.length - 1] = { n: n, t: String(t).trim() }; return; }
+			if (last && last.n.indexOf(n + " ") === 0) return;
+			out.push({ n: n, t: String(t).trim() });
+		});
+		return out.map(function (x) { return x.t; });
+	}
 	function makeRec() {
 		var r = new SR(); r.lang = S.lang; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
 		r.onresult = function (e) {
-			var fin = "", intr = "", i;
-			for (i = 0; i < e.results.length; i++) { var x = e.results[i]; if (x.isFinal) fin += x[0].transcript + " "; else intr += x[0].transcript; }
-			T.fin = fin; T.int = intr;
+			var fin = [], intr = [], i;
+			for (i = 0; i < e.results.length; i++) { var x = e.results[i]; (x.isFinal ? fin : intr).push(x[0].transcript); }
+			var all = collapse(fin.concat(intr)); T.int = intr.length && all.length ? all.pop() : ""; T.fin = all.join(" ") + (all.length ? " " : "");
 			var now = performance.now(); T.tLast = now;
 			if (!T.t0 && heardText()) { T.t0 = now; startToken(); }
 			paint(); armSilence();

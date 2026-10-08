@@ -1,7 +1,7 @@
 	/* BMI Calculator 2.0 */
 	.tu [hidden] {display:none !important;}
-	.tu #bm-units {display:flex;flex-wrap:wrap;max-width:100%;}
-	.tu #bm-units button {flex:1 1 auto;border-bottom:1px solid #dfe4ea;}
+	.tu #bm-units {display:inline-flex;max-width:100%;}
+	.tu #bm-units button {flex:1 1 auto;padding:0.4em 0.9em;}
 	.tu .bm-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.9em;}
 	.tu .bm-verdict {font-size:1.05em;line-height:1.5;border-left:5px solid #aab2bd;}
 	.tu .bm-verdict.is-normal {border-left-color:#2e9b57;} .tu .bm-verdict.is-under {border-left-color:#e0a21c;} .tu .bm-verdict.is-over {border-left-color:#e07b1c;} .tu .bm-verdict.is-obese {border-left-color:#d1453b;}
@@ -28,7 +28,7 @@
 	body.dark-mode #bm .bm-cat {color:#d1d6dc;} body.dark-mode #bm .bm-cat.is-on {background:rgba(255,255,255,0.1);color:#fff;}
 	body.dark-mode #bm .bm-gl {stroke:#555;} body.dark-mode #bm .bm-dot {stroke:#232323;}
 	body.dark-mode #bm #bm-units button {border-bottom-color:#444;}
-	@media (max-width: 600px) { .tu .bm-cats {grid-template-columns:1fr;} .tu #bm-units button {flex:1 1 100%;} }
+	@media (max-width: 600px) { .tu .bm-cats {grid-template-columns:1fr;} .tu .bm-opt {flex:1 1 100%;} .tu .bm-opt .tu-select {width:100%;} .tu #bm-units {display:flex;} .tu #bm-metric, .tu #bm-imperial {flex-wrap:nowrap;gap:0.6em;} .tu #bm-metric .tu-field, .tu #bm-imperial .tu-field {flex:1 1 0 !important;min-width:0;} .tu #bm-setup .tu-input--big {padding-left:0.55em;padding-right:2.2em;} }
 	@media print { .tu-seo, .bm-btns, #bm-setup .tu-note, #bm-examples, .bm-del {display:none !important;} }
 
 	.tu .bm-btns .tu-btn, .tu .bm-top .tu-btn {transition:background .15s,color .15s,border-color .15s,transform .1s;} .tu .bm-btns .tu-btn:active {transform:scale(0.96);}
@@ -39,3 +39,8 @@
 
 	.tu .bm-top {display:flex;justify-content:flex-end;margin:0 0 0.5em;} .tu .bm-top .tu-btn {font-size:0.85em;padding:0.35em 0.8em;}
 	@media print { .bm-top {display:none !important;} }
+
+	.tu .bm-opts {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin:0.9em 0 0.2em;padding-top:0.8em;border-top:1px solid #e3e7ec;}
+	.tu .bm-opt {display:flex;flex-direction:column;gap:0.25em;min-width:0;} .tu .bm-opt .tu-label {margin:0;font-size:0.8em;}
+	body.dark-mode #bm .bm-opts {border-top-color:#444;}
+	.tu #bm-ref th, .tu #bm-ref td {white-space:normal;padding:0.45em 0.5em;} .tu #bm-ref th:not(:first-child), .tu #bm-ref td:not(:first-child) {text-align:right;}

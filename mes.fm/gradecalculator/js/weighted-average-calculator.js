@@ -79,7 +79,7 @@
 	function pad() { while (st.rows.length < 5) st.rows.push(WA.blankRow()); }
 	function load() {
 		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && Array.isArray(s.rows)) { st.title = String(s.title || ""); st.dec = +s.dec >= 0 && +s.dec <= 4 ? +s.dec : 2; st.rows = s.rows.map(function (x) { return { n: String(x.n || ""), v: String(x.v || ""), w: String(x.w || "") }; }); } } catch (e) { memOnly = true; }
-		pad();
+		if (!st.rows.length) pad();
 	}
 	function save() {
 		try { localStorage.setItem(KEY, JSON.stringify(st)); memOnly = false; } catch (e) { memOnly = true; }
@@ -96,18 +96,37 @@
 	function notice(h) { var n = $("wa-notice"); n.innerHTML = h || ""; n.hidden = !h; }
 
 	function rowHtml(x, i) {
-		return '<div class="wa-row" data-i="' + i + '"><span class="wa-n">' + (i + 1) + '</span>' +
-			'<div class="wa-f wa-f-n"><label>Name</label><input class="tu-input" data-k="n" type="text" maxlength="60" autocomplete="off" placeholder="optional" value="' + esc(x.n) + '"></div>' +
-			'<div class="wa-f"><label>Grade</label><input class="tu-input" data-k="v" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.v) + '"></div>' +
-			'<div class="wa-f"><label>Weight</label><input class="tu-input" data-k="w" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.w) + '"></div>' +
-			'<button type="button" class="tu-btn tu-btn--ghost wa-del" title="Remove this row" aria-label="Remove row ' + (i + 1) + '">✕</button></div>';
+		return '<div class="wa-row rw-row" data-i="' + i + '"><span class="wa-n rw-num">' + (i + 1) + '</span>' +
+			'<div class="wa-f rw-f rw-name wa-f-n"><label>Name</label><input class="tu-input" data-k="n" type="text" maxlength="60" autocomplete="off" placeholder="optional" value="' + esc(x.n) + '"></div>' +
+			'<div class="wa-f rw-f"><label>Grade</label><input class="tu-input" data-k="v" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.v) + '"></div>' +
+			'<div class="wa-f rw-f"><label>Weight</label><input class="tu-input" data-k="w" type="text" inputmode="decimal" autocomplete="off" value="' + esc(x.w) + '"></div>' +
+			'<button type="button" class="tu-btn tu-btn--ghost wa-del rw-del" title="Remove this row" aria-label="Remove row ' + (i + 1) + '">✕</button></div>';
 	}
-	function renderRows() { $("wa-rows").innerHTML = st.rows.map(rowHtml).join(""); }
+	
+	/* ---------- row layout options: names on / off, table layout. One preference shared by the grade, GPA and weighted-average calculators ---------- */
+	var RW = { names: true, table: false, KEY: "mes-rowprefs:v1" };
+	try { var rwo = JSON.parse(localStorage.getItem(RW.KEY) || "{}"); if (rwo.names === false) RW.names = false; if (rwo.table === true) RW.table = true; } catch (e) {}
+	function rwBar(box, redraw) {
+		var bar = document.createElement("div"); bar.className = "rw-bar";
+		bar.innerHTML = '<button type="button" class="tu-chip" data-rw="names" title="Show or hide the name field on every row (rows are then just numbered)">Names</button><button type="button" class="tu-chip" data-rw="table" title="Compact table layout for quick entry">Table layout</button>';
+		box.parentNode.insertBefore(bar, box);
+		bar.addEventListener("click", function (e) { var b = e.target.closest("[data-rw]"); if (!b) return; RW[b.dataset.rw] = !RW[b.dataset.rw]; try { localStorage.setItem(RW.KEY, JSON.stringify({ names: RW.names, table: RW.table })); } catch (x) {} redraw(); });
+	}
+	function rwDecorate(box) {
+		box.dataset.names = RW.names ? "1" : "0"; box.dataset.table = RW.table ? "1" : "0";
+		var bar = box.previousElementSibling; if (bar && bar.classList.contains("rw-bar")) [].forEach.call(bar.children, function (b) { b.setAttribute("aria-pressed", String(!!RW[b.dataset.rw])); });
+		var first = box.querySelector(".rw-row"); if (!first) return;
+		var f = [].slice.call(first.querySelectorAll(".rw-f")), nOther = f.filter(function (x) { return !x.classList.contains("rw-name"); }).length, pts = !!first.querySelector(".rw-pts");
+		box.style.setProperty("--rw-cols", "1.7em " + (RW.names ? "minmax(0,1.6fr) " : "") + "repeat(" + nOther + ",minmax(0,1fr)) " + (pts ? "3.6em " : "") + "2.3em");
+		if (RW.table) { var h = '<div class="rw-head"><span>#</span>'; f.forEach(function (x) { if (RW.names || !x.classList.contains("rw-name")) h += "<span>" + esc(x.querySelector("label").textContent) + "</span>"; }); box.insertAdjacentHTML("afterbegin", h + (pts ? "<span>Pts</span>" : "") + "<span></span></div>"); }
+	}
+	function renderRows() { $("wa-rows").innerHTML = st.rows.map(rowHtml).join(""); rwDecorate($("wa-rows")); }
+	rwBar($("wa-rows"), renderRows);
 	$("wa-rows").addEventListener("input", function (e) { var r = e.target.closest(".wa-row"); if (!r) return; st.rows[+r.dataset.i][e.target.dataset.k] = e.target.value; save(); update(); });
 	$("wa-rows").addEventListener("click", function (e) {
 		var b = e.target.closest(".wa-del"); if (!b) return; var i = +b.closest(".wa-row").dataset.i;
 		if (st.rows.length > 1) st.rows.splice(i, 1); else st.rows[0] = WA.blankRow();
-		pad(); save(); renderRows(); update();
+		save(); renderRows(); update();
 	});
 	$("wa-rows").addEventListener("keydown", function (e) {   // Enter moves down a column; on the last row it adds one
 		if (e.key !== "Enter" || !e.target.dataset.k) return;
