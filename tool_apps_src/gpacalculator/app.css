@@ -48,3 +48,4 @@
 	@media print {
 		.tu-seo, #gp-save, .gp-btns, .gp-del, #gp-plan, #gp-examples, .gp-tab--add, .gp-tab--del {display:none !important;}
 	}
+	.tu #gp-scale {width:fit-content;max-width:100%;}

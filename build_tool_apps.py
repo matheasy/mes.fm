@@ -196,7 +196,7 @@ APPS = {
     "gpacalculator": dict(title="GPA Calculator", page_title="GPA Calculator",
                           tag="Grade point average, term by term.", accent="#5a812d", dark="#436022", tint="#edf3dc",
                           desc="Free GPA calculator: enter letter grades or percentages with credits and get your GPA on the 4.0 or 4.33 scale. Weighted GPA for honors and AP, a cumulative GPA across terms, a what-GPA-do-I-need-next planner, and links to save your work on any device.",
-                          js_v="2",
+                          js_v="3",
                           nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gpacalculator/tutorial'>Tutorial</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/gpacalculator/grade-point-average'>What is GPA?</a></li>",
                           menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gpacalculator/tutorial\">Tutorial</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gpacalculator/grade-point-average\">What is GPA?</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gpacalculator/gpa-scale-4\">4.0 GPA Scale</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/gpacalculator/gpa-scale-433\">4.33 GPA Scale</a></li>"),
     # BMI Calculator 2.0 (rewritten 2026-10-06 from the 2013 jQuery page; old js/calculatorffaf.js deleted; the folder's chart / formula / what-is-BMI / health-tips / memes / sports pages are untouched):
