@@ -578,10 +578,10 @@
 		el = document.createElement("div"); el.id = "tm-dp"; el.className = "tm-dp"; el.hidden = true; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Timer display");
 		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__ring" id="tm-dp-ring" hidden><span></span><span class="tm-dp__rb"></span></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
 		document.body.appendChild(el);
-		sortable($("tm-dp-grid"), ".tm-dp__tile", function (els) { var ks = els.map(function (x) { return x.dataset.k; }); S.display = ks.concat((S.display || []).filter(function (k) { return ks.indexOf(k) < 0; })); dpKeys = ks.join(","); save(); });
+		sortable($("tm-dp-grid"), ".tm-dp__tile", function (els) { var ks = []; els.forEach(function (x) { if (x.dataset.k === "alarms") ks = ks.concat((x.dataset.members || "").split(",").filter(Boolean)); else ks.push(x.dataset.k); }); S.display = ks.concat((S.display || []).filter(function (k) { return ks.indexOf(k) < 0; })); dpKeys = ""; save(); renderDisplay(); });
 		el.addEventListener("click", function (e) {
 			var rb = e.target.closest("#tm-dp-ring [data-r]"); if (rb) { ringAct(rb.dataset.r); return; }
-			var ab = e.target.closest("[data-act]"); if (ab) { var tl = ab.closest(".tm-dp__tile"); if (tl) dpAct(tl.dataset.k, ab.dataset.act); return; }
+			var ab = e.target.closest("[data-act]"); if (ab) { var tl = ab.closest(".tm-dp__tile"); if (tl) dpAct(ab.dataset.ak || tl.dataset.k, ab.dataset.act); return; }
 			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
 			if (e.target.matches("#tm-dp-pick input[type=checkbox]")) {
 				var cur = S.display || dpSelected(dpItems()), k = e.target.dataset.k, i = cur.indexOf(k); cur = cur.slice(); if (e.target.checked && i < 0) cur.push(k); else if (!e.target.checked && i >= 0) cur.splice(i, 1);
@@ -594,16 +594,43 @@
 		var items = dpItems(), sel = dpSelected(items);
 		$("tm-dp-pick").innerHTML = '<div class="tm-dp__pt">Choose what the display shows</div>' + items.map(function (i) { return '<label><input type="checkbox" data-k="' + esc(i.key) + '"' + (sel.indexOf(i.key) >= 0 ? " checked" : "") + '> ' + esc(i.label) + ' <small>' + esc(i.kind) + (i.state === "idle" ? " (not started)" : "") + "</small></label>"; }).join("");
 	}
+	function dpAlarmGroup(shown) {
+		var al = shown.filter(function (i) { return i.kind === "Alarm"; });
+		if (al.length < 2) return shown;
+		var first = shown.indexOf(al[0]), out = shown.filter(function (i) { return i.kind !== "Alarm"; });
+		out.splice(Math.min(first, out.length), 0, { key: "alarms", kind: "AlarmGroup", alarms: al, state: "run", pct: -1 });
+		return out;
+	}
+	function dpGroupFill(tile, g) {
+		var now = Date.now(), rows = g.alarms.map(function (i, n) { var a = findAlarm(i.key.slice(2)); return { i: i, a: a, n: n, nx: a && a.on ? alarmNext(a) : 0 }; });
+		rows.sort(function (x, y) { return (x.nx ? 0 : 1) - (y.nx ? 0 : 1) || (x.nx - y.nx) || x.n - y.n; });
+		var sig = rows.map(function (r) { return r.i.key + (r.nx ? "1" : "0") + r.i.at12; }).join("|");
+		if (tile._sig !== sig) {
+			tile._sig = sig; var hero = rows[0].nx ? rows[0] : null;
+			tile.querySelector("[data-g]").innerHTML = '<div class="tm-dpg__now"><span class="tm-dpg__nl">Now</span> <span data-gnow></span></div>' +
+				(hero ? '<div class="tm-dpg__hero"><div class="tm-dp__l">' + esc(hero.i.label) + '</div><div class="tm-dpg__big" data-gc="' + esc(hero.i.key) + '"></div><div class="tm-dp__s">alarm ' + esc(hero.i.at12) + ' · next to ring</div>' + '<div class="tm-dp__ctl">' + ctlBtn(["go", "Turn off"]).replace("<button", '<button data-ak="' + esc(hero.i.key) + '"') + '</div></div>' : '<div class="tm-dpg__hero"><div class="tm-dp__l">All alarms are off</div></div>') +
+				'<div class="tm-dpg__rows">' + rows.filter(function (r) { return r !== (hero || {}); }).map(function (r) { return '<div class="tm-dpg__row' + (r.nx ? "" : " is-off") + '"><span class="tm-dpg__rl">' + esc(r.i.label) + '</span><span class="tm-dpg__rt">' + esc(r.i.at12) + '</span><span class="tm-dpg__rc" data-gc="' + esc(r.i.key) + '"></span><button type="button" data-act="go" data-ak="' + esc(r.i.key) + '">' + (r.nx ? "Turn off" : "Turn on") + '</button></div>'; }).join("") + '</div>';
+			var pk = tile.querySelector(".tm-tabpin"); if (pk) pk.remove();
+			if (hero) tile.insertAdjacentHTML("afterbegin", pinBtn(hero.i.key, "tm-tabpin--dp"));
+		}
+		tile.querySelector("[data-gnow]").textContent = new Date(now).toLocaleTimeString();
+		rows.forEach(function (r) { var el = tile.querySelector('[data-gc="' + r.i.key.replace(/"/g, "") + '"]'); if (el) { var v = r.nx ? alarmCd(r.a, true) : "off"; if (el.textContent !== v) el.textContent = v; } });
+	}
 	function renderDisplay() {
-		var items = dpItems(), sel = dpSelected(items), shown = sel.map(function (k) { return items.filter(function (i) { return i.key === k; })[0]; }).filter(Boolean), keys = shown.map(function (i) { return i.key; }).join(",");
+		var items = dpItems(), sel = dpSelected(items), picked = sel.map(function (k) { return items.filter(function (i) { return i.key === k; })[0]; }).filter(Boolean);
+		picked.forEach(function (i) { if (i.kind === "Alarm") i.at12 = (i.sub.match(/^alarm (.+?) ·/) || [0, ""])[1]; });
+		var shown = dpAlarmGroup(picked), keys = shown.map(function (i) { return i.key; }).join(",") + "#" + picked.length;
 		var grid = $("tm-dp-grid"), hint = $("tm-dp-hint");
 		hint.textContent = shown.length ? "" : "Nothing selected yet: press Choose timers, or start a timer.";
 		if (keys !== dpKeys) {   // the set of tiles changed: rebuild
 			dpKeys = keys; grid.className = "tm-dp__grid tm-dp__n" + Math.min(shown.length, 9);
-			grid.innerHTML = shown.map(function (i) { return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + (shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label) + ': drag, or use the arrow keys">⠿</button>' : "") + pinBtn(i.key, "tm-tabpin--dp") + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__t2" data-t2></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div><div class="tm-dp__ctl" data-ctl></div></div>'; }).join("");
+			grid.innerHTML = shown.map(function (i) { var grip = shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label || "alarms") + ': drag, or use the arrow keys">\u283f</button>' : "";
+				if (i.kind === "AlarmGroup") return '<div class="tm-dp__tile tm-dp__group" data-k="alarms" data-members="' + esc(i.alarms.map(function (a) { return a.key; }).join(",")) + '">' + grip + '<div data-g></div></div>';
+				return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + grip + pinBtn(i.key, "tm-tabpin--dp") + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__t2" data-t2></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div><div class="tm-dp__ctl" data-ctl></div></div>'; }).join("");
 		}
 		shown.forEach(function (i) {
 			var tile = grid.querySelector('.tm-dp__tile[data-k="' + i.key.replace(/"/g, "") + '"]'); if (!tile) return;
+			if (i.kind === "AlarmGroup") { tile.className = "tm-dp__tile tm-dp__group is-run"; tile.dataset.members = i.alarms.map(function (a) { return a.key; }).join(","); dpGroupFill(tile, i); return; }
 			tile.className = "tm-dp__tile is-" + i.state + (i.phase ? " ph-" + i.phase : "") + (i.kind === "Alarm" ? " is-clock" : "");
 			tile.querySelector("[data-t]").textContent = i.time; var t2 = tile.querySelector("[data-t2]"); t2.hidden = !i.time2; if (t2.textContent !== (i.time2 || "")) t2.textContent = i.time2 || ""; tile.classList.toggle("has-t2", !!i.time2); tile.querySelector("[data-s]").textContent = i.sub || i.kind + (i.state === "pause" ? " · paused" : i.state === "done" ? " · done" : "");
 			var cl = tile.querySelector("[data-ctl]"), ch = dpCtl(i.key); if (cl._h !== ch) { cl._h = ch; cl.innerHTML = ch; }

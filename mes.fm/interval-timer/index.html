@@ -506,6 +506,18 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tm-dp__t2 {color:var(--dp14);font-variant-numeric:tabular-nums;font-weight:800;line-height:1.05;font-size:clamp(2.2em,16vmin,15em);} .tm-dp__t2[hidden] {display:none;}
 	.tm-dp__n1 .tm-dp__t2 {font-size:min(30vmin,22vw);} .tm-dp__n2 .tm-dp__t2 {font-size:min(21vmin,15vw);} .tm-dp__n3 .tm-dp__t2, .tm-dp__n4 .tm-dp__t2 {font-size:min(15vmin,11vw);} .tm-dp__n5 .tm-dp__t2, .tm-dp__n6 .tm-dp__t2 {font-size:min(11vmin,8vw);} .tm-dp__n7 .tm-dp__t2, .tm-dp__n8 .tm-dp__t2, .tm-dp__n9 .tm-dp__t2 {font-size:min(8.5vmin,6.5vw);}
 
+	/* display: several alarms share one tile: clock once, nearest alarm big, the rest listed */
+	.tm-dp__group {align-items:stretch;overflow:auto;justify-content:flex-start;} .tm-dp__group [data-g] {display:flex;flex-direction:column;gap:1.2vmin;margin:auto 0;min-height:0;}
+	.tm-dpg__now {color:var(--dp9);font-size:clamp(14px,2.6vmin,1.6em);font-variant-numeric:tabular-nums;} .tm-dpg__now span:last-child {color:var(--dp17);font-weight:700;}
+	.tm-dpg__big {color:var(--dp14);font-variant-numeric:tabular-nums;font-weight:800;line-height:1.05;font-size:clamp(2em,min(20vmin,13vw),14em);white-space:nowrap;}
+	.tm-dpg__rows {display:flex;flex-direction:column;gap:0.8vmin;border-top:1px solid var(--dp7);padding-top:1.2vmin;}
+	.tm-dpg__row {display:flex;align-items:center;gap:1.4vmin;font-size:clamp(14px,3vmin,1.9em);color:var(--dp13);text-align:left;} .tm-dpg__row.is-off {opacity:0.5;}
+	.tm-dpg__rl {flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;} .tm-dpg__rt {color:var(--dp0);white-space:nowrap;} .tm-dpg__rc {color:var(--dp14);font-weight:800;font-variant-numeric:tabular-nums;min-width:4.6em;text-align:right;white-space:nowrap;}
+	.tm-dpg__row button {cursor:pointer;border:1px solid var(--dp4);border-radius:0.5em;background:var(--dp16);color:var(--dp13);font:inherit;font-size:0.8em;padding:0.3em 0.8em;white-space:nowrap;} .tm-dpg__row button:hover {border-color:var(--dp2);color:var(--dp17);}
+	.tm-dp__tile {overflow:hidden;} .tm-dp__tile.tm-dp__group {overflow:auto;}
+	#tm-dp .tm-dpg__rl {color:var(--dp11);} #tm-dp .tm-dpg__rt {color:var(--dp0);} #tm-dp .tm-dpg__rc {color:var(--dp14);} #tm-dp .tm-dpg__nl {color:var(--dp9);} #tm-dp .tm-dpg__now span:last-child {color:var(--dp17);}
+	.tm-dp__group [data-g] {padding-top:2.4vmin;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -986,7 +998,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:5
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=18" defer></script>
+	<script src="/timer/js/timer.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
