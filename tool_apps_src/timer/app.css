@@ -231,7 +231,7 @@
 
 	/* display: several alarms share one tile: clock once, nearest alarm big, the rest listed */
 	.tm-dp__group {align-items:stretch;overflow:auto;justify-content:flex-start;} .tm-dp__group [data-g] {display:flex;flex-direction:column;gap:1.2vmin;margin:auto 0;min-height:0;}
-	.tm-dpg__now {color:var(--dp9);font-size:clamp(14px,2.6vmin,1.6em);font-variant-numeric:tabular-nums;} .tm-dpg__now span:last-child {color:var(--dp17);font-weight:700;}
+	.tm-dpg__now {color:var(--dp9);font-size:clamp(18px,5.4vmin,3.4em);font-variant-numeric:tabular-nums;} .tm-dpg__now span:last-child {color:var(--dp17);font-weight:700;}
 	.tm-dpg__big {color:var(--dp14);font-variant-numeric:tabular-nums;font-weight:800;line-height:1.05;font-size:clamp(2em,min(20vmin,13vw),14em);white-space:nowrap;}
 	.tm-dpg__rows {display:flex;flex-direction:column;gap:0.8vmin;border-top:1px solid var(--dp7);padding-top:1.2vmin;}
 	.tm-dpg__row {display:flex;align-items:center;gap:1.4vmin;font-size:clamp(14px,3vmin,1.9em);color:var(--dp13);text-align:left;} .tm-dpg__row.is-off {opacity:0.5;}
