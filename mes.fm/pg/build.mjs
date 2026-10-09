@@ -31,7 +31,7 @@ const META_CACHE_PATH = join(__dirname, "link-meta.json");
 // sections.mjs; `title` is the page's <h1>/<title> and `tileLabel` the (shorter) text overlaid on the hub tile.
 const HUB_TITLE = "🍕 #PizzaGate Video Tutorial Series";
 const HUB_DESCRIPTION =
-  "MES PizzaGate video tutorial series, Parts 1-32 (YouTube-deleted): video notes, BitChute, Odysee and 3Speak links, playlists, and the links on YouTube's censorship of PizzaGate research.";
+  "MES PizzaGate video tutorial series (YouTube-deleted): video notes, BitChute, Odysee and 3Speak links, playlists, and the links on YouTube's censorship of PizzaGate research.";
 
 const PAGES = [
   {
@@ -39,9 +39,9 @@ const PAGES = [
     sectionId: "pg-series",
     tileLabel: "Video Series",
     iconVersion: 1, // icon = crop of the newest part's thumbnail (Part 32; img/pg-series-icon.jpg); bump when refreshed
-    title: "🍕 #PizzaGate Video Tutorial Series: Parts 1-32",
+    title: "🍕 #PizzaGate Video Tutorial Series",
     description:
-      "All 32 parts of the MES PizzaGate video tutorial series (YouTube-deleted) in one place: Madeleine McCann, ACORN, Podesta, Spirit Cooking, Hollywood victims, with video notes and BitChute, Odysee and 3Speak links.",
+      "Every part of the MES PizzaGate video tutorial series (YouTube-deleted) in one place: Madeleine McCann, ACORN, Podesta, Spirit Cooking, Hollywood victims, with video notes and BitChute, Odysee and 3Speak links.",
   },
   {
     // Tile only: no page is written. Links to the PizzaGate chip of mes.fm/livestreams; icon = img/pg-livestreams-icon.jpg, bump iconVersion if replaced.
@@ -1579,7 +1579,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
         <a class="calculator-title-link" href='/pg'>
           <p class="calculator-title">🍕 #PizzaGate Video Tutorial Series</p>
         </a>
-        <p class="tag-line">The MES PizzaGate series, Parts 1-32: video notes, links and playlists.</p>
+        <p class="tag-line">The MES PizzaGate series: video notes, links and playlists.</p>
       </div>
 
       <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
