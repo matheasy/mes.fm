@@ -1,13 +1,13 @@
-// Build-time generator for mes.fm/science ("MES Science") and its section pages.
+// Build-time generator for mes.fm/experiments ("MES Science Experiments") and its Series page mes.fm/experiments-series (cloned from bg/build.mjs).
 //
-// Cloned from mes.fm/911/build.mjs (via mes.fm/conspiracy/build.mjs): mes.fm/science is a tile hub (Posts, Videos) like mes.fm/911 and
-// mes.fm/hutchison. The content lives in sections.mjs (hand-maintained, newest first).
+// mes.fm/experiments is a small tile hub (a Series tile, a MES Livestreams tile -> /livestreams#gyroscope, and the "Important Links" list = the top of the Hive post
+// https://peakd.com/mesexperiments/@mes/list plus the MES Experiments section of mes.fm/links). The experiments live in sections.mjs (hand-maintained, newest first).
+// Unlike the PizzaGate pages these pages KEEP AdSense (the deferred loader below; the hub sidebar gets its ad slot from hub-theatre.js because the page loads AdSense).
 //
-// Pages written (see PAGES): the hub mes.fm/science/index.html plus mes.fm/{science-posts,
-// science-videos}/index.html. Never hand-edit those generated files.
+// Pages written (see PAGES): the hub mes.fm/experiments/index.html plus mes.fm/experiments-series/index.html. Never hand-edit those generated files.
 //
-// Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600), a crop of each section's newest thumbnail --
-// replace the file (same name) with custom art whenever, no rebuild needed.
+// Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600): experiments-series = crop of the newest experiment's thumbnail (refresh when one is added),
+// experiments-livestreams = the gyroscope livestream thumbnail. Replace the files (same names) any time, no rebuild needed.
 //
 // Usage:
 //   npm run build
@@ -28,97 +28,28 @@ const META_CACHE_PATH = join(__dirname, "link-meta.json");
 // Output layout: mes.fm/911 is a tile hub (one icon tile per section, each linking to its own page); each
 // section then lives at mes.fm/<slug> with the Grid View / List View toggle. `sectionId` matches an `id` in
 // sections.mjs; `title` is the page's <h1>/<title> and `tileLabel` the (shorter) text overlaid on the hub tile.
-const HUB_TITLE = "MES Science";
+const HUB_TITLE = "🔬 #MESExperiments: MES Science Experiments";
 const HUB_DESCRIPTION =
-  "MES Science: links, videos and posts on science topics investigated by MES, including cold fusion, ferrocell optics, vortex math, biology, virology and the Moon.";
+  "MES science experiments video series: gyroscopes that rise, magnets in copper tubes, Faraday's paradox, Schauberger's egg, metronomes and more, with notes and BitChute, Odysee, Rumble and 3Speak links.";
 
 const PAGES = [
   {
-    slug: "science-posts",
-    sectionId: "science-posts",
-    tileLabel: "Posts",
-    iconVersion: 2, // icon = crop of the newest post's thumbnail; bump when you refresh img/science-posts-icon.jpg
-    title: "MES Science Posts",
+    slug: "experiments-series",
+    sectionId: "experiments-series",
+    tileLabel: "Experiments Series",
+    iconVersion: 1, // icon = crop of the newest experiment's thumbnail (img/experiments-series-icon.jpg); bump when refreshed
+    title: "🔬 #MESExperiments: MES Science Experiments Series",
     description:
-      "MES science posts, newest first: the America.gov AI chat site, Mendeleev's periodic table dream, Martin Fleischmann's cold fusion and corn starch, and the ferrocell.",
+      "Every #MESExperiments video in one place: gyroscopes rising on needles and ice, magnets falling through copper tubes, Faraday's paradox, Schauberger's rising egg, with Hive notes and BitChute, Odysee and 3Speak links.",
   },
   {
-    slug: "science-videos",
-    sectionId: "science-videos",
-    tileLabel: "Videos",
-    iconVersion: 3, // icon = crop of the newest video's thumbnail; bump when you refresh img/science-videos-icon.jpg
-    title: "MES Science Videos",
-    description:
-      "MES science and physics videos: 360-degree fog image projection, laser plasma 3D displays, Tesla coil performances, tornado and ball lightning footage, Francis McCabe's gyro prototype and more.",
-  },
-  {
-    slug: "science-tutorials",
-    sectionId: "science-tutorials",
-    tileLabel: "Tutorials",
-    iconVersion: 1, // icon = crop of the newest tutorial's thumbnail (MESScience 4); bump when you refresh img/science-tutorials-icon.jpg
-    title: "MES Science Tutorials",
-    description:
-      "MES Science tutorials, newest first: a review of the COVID-19 virus isolation paper, an overview of biology, vortex math and number theory, and how a Powerball gyroscope works.",
-  },
-  {
-    slug: "physics",
-    sectionId: "physics",
-    tileLabel: "Physics",
-    iconVersion: 2, // icon = the first playlist video's whole thumbnail on a blurred copy (a 3:2 crop cut off its title text); bump when you refresh img/physics-icon.jpg
-    title: "MES Physics",
-    description:
-      "MES Physics videos: the magnetic field and the electric field of bound charges, magnetic isopotentials and the Faraday paradox, Planck's constant, and spinning-top and ferrofluid experiments.",
-  },
-  {
-    // Tile only: no page is written; links to the MES Science Experiments hub (mes.fm/experiments, its own build.mjs). Icon = img/experiments-icon.jpg (the gyroscope-in-a-torus art, 3:2 crop).
-    slug: "experiments",
+    // Tile only: no page is written. Links to the Gyroscope chip of mes.fm/livestreams; icon = img/experiments-livestreams-icon.jpg, bump iconVersion if replaced.
+    slug: "livestreams",
+    href: "/livestreams#gyroscope",
+    icon: "experiments-livestreams",
+    tileLabel: "Livestreams",
     iconVersion: 1,
     tileOnly: true,
-    tileLabel: "MES Experiments",
-  },
-  {
-    // Tile only: no page is written; links to mes.fm/ufo (the build log). Icon = img/ufo-icon.jpg (900x600 crop of the page's share image).
-    slug: "ufo",
-    href: "/ufo",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "UFO Replication",
-  },
-  {
-    // Tile only: link to the sibling hub mes.fm/math. Icon = img/math-tutorials-icon.jpg (the homepage's Math tile).
-    slug: "math",
-    icon: "math-tutorials",
-    href: "/math",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Math Tutorials",
-  },
-  {
-    // Tile only: no page is written; links to the tool. Icon = img/earth-curvature-icon.jpg (900x600 crop of the tool's share image).
-    slug: "earth-curvature",
-    section: "tools",
-    href: "/earth-curvature-calculator",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "Earth Curvature Calculator",
-  },
-  {
-    // Tile only: no page is written; links to the tool. Icon = img/moon-icon.jpg (900x600 crop of the tool's share image).
-    slug: "moon",
-    section: "tools",
-    href: "/moon",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "Moon, Sun & Planets",
-  },
-  {
-    // Tile only: no page is written; links to the tool. Icon = img/solar-system-today-icon.jpg (900x600 crop of the tool's share image).
-    slug: "solar-system-today",
-    section: "tools",
-    href: "/solar-system-today",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "Solar System Today",
   },
 ];
 
@@ -515,12 +446,12 @@ ${IMPORTANT_LINKS_HTML}
 </div>`;
 }
 
-// page: the hub ({ hub: true, slug: "science" }) or one entry of PAGES.
+// page: the hub ({ hub: true, slug: "bg" }) or one entry of PAGES.
 function buildPage(meta, page) {
   const isHub = !!page.hub;
   const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
   const sectionsHtml = isHub
-    ? `<div class="icon-grid">\n${PAGES.filter((p) => p.section !== "tools").map(buildTile).join("\n")}\n</div>\n<h2 class="tool-heading">Calculators &amp; Tools</h2>\n<div class="icon-grid">\n${PAGES.filter((p) => p.section === "tools").map(buildTile).join("\n")}\n</div>\n${buildImportantLinks()}`
+    ? `<div class="icon-grid">\n${PAGES.map(buildTile).join("\n")}\n</div>\n${buildImportantLinks()}`
     : sections.map((s) => buildSection(s, meta)).join("\n\n");
   const viewToggleWiring = sections
     .filter((s) => !s.single)
@@ -533,17 +464,17 @@ function buildPage(meta, page) {
   const CANONICAL = `https://mes.fm/${page.slug}`;
   const pageTitle = isHub ? HUB_TITLE : page.title;
   const description = isHub ? HUB_DESCRIPTION : page.description;
-  const ogImage = isHub ? "https://mes.fm/img/science-logo-big.png" : `https://mes.fm/img/${page.icon || page.slug}-icon.jpg`;
+  const ogImage = "https://mes.fm/img/experiments-logo-big.jpg"; // one share image for the hub and its series page (tile icons are only for the hub grid)
   const breadcrumbHtml = isHub
     ? ""
-    : `<p class="page-breadcrumb"><a href="/science">&larr; MES Science</a></p>\n        `;
+    : `<p class="page-breadcrumb"><a href="/experiments">&larr; MES Experiments</a></p>\n        `;
 
   return `
 <!DOCTYPE html>
 <html lang="en">
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
-  <link rel="icon" href="https://mes.fm/img/science-logo.png?v=1.0" type="image/png" />
+  <link rel="icon" href="https://mes.fm/img/experiments-logo.jpg?v=1" type="image/jpeg" />
   <link rel="canonical" href="${CANONICAL}" />
   <title>${escapeHtml(pageTitle)} | Math Easy Solutions</title>
   <meta charset="UTF-8">
@@ -751,8 +682,6 @@ sub {vertical-align:sub;}
   .icon-grid { grid-template-columns: 1fr; }
 }
 .icon-grid__link { display: block; position: relative; overflow: hidden; border-radius: 4px; }
-.tool-heading { font-size: 1.15em; font-weight: 600; margin: 1.4em 0 0.6em; color: #222; }
-body.dark-mode .tool-heading { color: #eee; }
 /* Ten tiles = three full rows of 3 plus one orphan: centre the orphan in the
    3-column layout (generic -- applies whenever the last tile starts a row). */
 @media (min-width: 721px) {
@@ -1647,8 +1576,8 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem('pageMode')||'wide',c=document.documentElement.classList;if(m==='theatre')c.add('page-theatre');if(m!=='std')c.add('page-wide');if(localStorage.getItem('asideHidden')==='1')c.add('aside-hidden');if(localStorage.getItem('asideSide')==='left')c.add('aside-left')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
 <body>
 <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/science" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/science-logo.png"></a>
-  <a class="compact-nav-title" href="/science" tabindex="-1">MES Science</a>
+  <a href="/experiments" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/experiments-logo.jpg"></a>
+  <a class="compact-nav-title" href="/experiments" tabindex="-1">🔬 #MESExperiments: MES Science Experiments</a>
   <ul class="compact-nav-links">
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
     <li><a href="/tools" tabindex="-1">Tools</a></li>
@@ -1666,12 +1595,12 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/science'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Science logo" data-src="https://mes.fm/img/science-logo.png"></a>
+      <a class="logo-image-container" href='/experiments'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Science Experiments logo" data-src="https://mes.fm/img/experiments-logo.jpg"></a>
       <div class="logo-text-container">
-        <a class="calculator-title-link" href='/science'>
-          <p class="calculator-title">MES Science</p>
+        <a class="calculator-title-link" href='/experiments'>
+          <p class="calculator-title">🔬 #MESExperiments: MES Science Experiments</p>
         </a>
-        <p class="tag-line">Links, videos and posts on science topics.</p>
+        <p class="tag-line">MES science experiments: gyroscopes, magnets, Faraday's paradox and more.</p>
       </div>
 
       <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
@@ -1687,12 +1616,10 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </div>
     <div class="info-bar-container" role="navigation" aria-label="Primary">
       <ul id="info-bar" class="info-bar shadow">
-        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/science'>Science</a></li>
-        <li class="info-bar__item"><a class="info-bar__item__text" href='/science-posts'>Posts</a></li>
-        <li class="info-bar__item"><a class="info-bar__item__text" href='/science-videos'>Videos</a></li>
-        <li class="info-bar__item"><a class="info-bar__item__text" href='/science-tutorials'>Tutorials</a></li>
-        <li class="info-bar__item"><a class="info-bar__item__text" href='/physics'>Physics</a></li>
-        <li class="info-bar__item"><a class="info-bar__item__text" href='/math'>Math Tutorials</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/experiments'>Experiments</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/experiments-series'>Series</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/conspiracy'>Conspiracy</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/911'>9/11 Truth</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/mobile-apps'>Mobile Apps</a></li>
@@ -1740,7 +1667,8 @@ ${sectionsHtml}
             <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
           </ul></div></li>
           <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
-          <li class="navbar__item"><a target="_self" class="navbar__link" href="/science">Science</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/experiments">🔬 #MESExperiments: MES Science Experiments</a></li><li class="navbar__item"><a class="navbar__link" href="/experiments-series">Series</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/conspiracy">Conspiracy</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
@@ -2157,7 +2085,7 @@ ${viewToggleWiring}
 var MES_Vars = {
     mobile:false,
     hide_search:false,
-    current_tab:1,
+    current_tab:${isHub ? 0 : 1},
     info_bar_tab:0
 }
 </script>
@@ -2174,7 +2102,7 @@ async function main() {
   console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
   const meta = await resolveAllMeta(SECTIONS);
 
-  const pages = [{ hub: true, slug: "science", outDir: __dirname }].concat(
+  const pages = [{ hub: true, slug: "experiments", outDir: __dirname }].concat(
     PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
   );
   for (const page of pages) {

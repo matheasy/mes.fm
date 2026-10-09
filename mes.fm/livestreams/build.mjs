@@ -84,6 +84,7 @@ const CATEGORIES = [
   { id: "planes", label: "9/11 Planes Research", test: (v) => /planes research/i.test(v.title) },
   { id: "mh370", label: "MH370", test: (v) => /mh370/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EJGgDKXr-wW8z1jd7pZ069" },
   { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX" },
+  { id: "gyroscope", label: "Gyroscope", test: (v) => /gyro/i.test(v.title) },
   { id: "pizzagate", label: "PizzaGate", test: (v) => /pizza\s?gate/i.test(v.title) },
   { id: "mestruth", label: "MES Truth", test: (v) => v.channel === "@mestruth", playlist: "https://www.youtube.com/playlist?list=PL7uKZq8byj6EavTGBYXn5u7Wy6_RH_O6Z" },
 ];
