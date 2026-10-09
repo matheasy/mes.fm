@@ -80,6 +80,14 @@ const PAGES = [
     description:
       "Video and written tutorials on vector functions: space curves, derivatives and integrals, arc length and curvature, motion in space, and Kepler's laws.",
   },
+  {
+    slug: "math-youtube",
+    sectionId: "mathYoutube",
+    tileLabel: "MES YouTube: All Videos",
+    iconVersion: 1, // img/math-youtube-icon.jpg (900x600; a "@mes" YouTube-style tile)
+    description:
+      "Every video on the @mes YouTube channel (Math Easy Solutions) in one searchable list: calculus, vectors, series, differential equations and more, plus physics experiments, 9/11 and Hutchison Effect research. Search, filter by topic and sort by views or length.",
+  },
   // Tile only (no page written): MES math tools, shown as small square-logo links in the "Calculators & Tools" section under the tiles (img/<logo>); img/<slug>-icon.jpg (900x600 share-image crops) is kept for use as big tiles.
   { slug: "latex", href: "/latex", logo: "latex-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "LaTeX Render" },
   { slug: "symbols", href: "/symbols", logo: "symbols-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Math Symbols Copier" },
@@ -291,6 +299,69 @@ qaSection.extraViews.forEach((view) => view.items.forEach((item) => {
   else throw new Error("No Q/A item found for stats page: " + item.title);
 }));
 
+// ---------------------------------------------------------------------------
+// mes.fm/math-youtube: every video of https://www.youtube.com/@mes/videos (snapshot written by update_youtube_lists.py into
+// youtube-videos.json, newest first). Topic chips are title tests like QA_CATEGORIES (a video may carry several; "Everything else"
+// catches the rest). Thumbnails are YouTube's own mqdefault image, so no scraping is needed (items with an `image` skip resolveAllMeta).
+// ---------------------------------------------------------------------------
+const YT_CATEGORIES = [
+  { id: "limits", label: "Limits & Continuity", test: (t) => /\blimit|continuity|continuous|squeeze|asymptote|l'?hospital|indeterminate|intermediate value|direct substitution|epsilon/i.test(t) },
+  { id: "deriv", label: "Derivatives", test: (t) => /derivative|differentiat|tangent line|chain rule|product rule|quotient rule|implicit|related rates|mean value|rolle|linear approximation|newton'?s method|optimization|marginal/i.test(t) },
+  { id: "integ", label: "Integrals", test: (t) => /integral|integrat|antiderivative|riemann|simpson|trapezoid|midpoint|volumes?\b|area between|arc length|average value|cylindrical shells|fundamental theorem|improper/i.test(t) },
+  { id: "series", label: "Sequences & Series", test: (t) => /series|sequence|convergen|divergen|taylor|maclaurin|power series|geometric|ratio test|root test|comparison test|alternating|\u2211/i.test(t) },
+  { id: "de", label: "Differential Equations", test: (t) => /differential equation|separable|logistic|population growth|orthogonal trajector|direction field|euler'?s method|linear differential|first-order|predator/i.test(t) },
+  { id: "polar", label: "Parametric, Polar & Conics", test: (t) => /parametric|polar|cycloid|conic|ellipse|parabola|hyperbola\b|bezier/i.test(t) },
+  { id: "vec", label: "Vectors & 3D", test: (t) => /vector|dot product|cross product|space curve|curvature|quadric|planes?\b|3d|spherical|cylindrical coordinates|laplac|partial derivative|multiple integral|gradient|kepler|torsion|acceleration/i.test(t) },
+  { id: "trig", label: "Trig & Functions", test: (t) => /trig|\bsin\b|\bcos\b|\btan\b|sinh|cosh|hyperbolic|inverse|exponential|logarithm|\blog\b|\bln\b|function|identity|identities|radian|unit circle|exponents/i.test(t) },
+  { id: "alg", label: "Algebra, Geometry & Proofs", test: (t) => /algebra|geometry|theorem|proof|prove|triangle|circle|inscribed|matrix|complex number|quadratic|cubic formula|absolute value|polynomial|distance formula|point-to-line|inequalit|interval|denominator|perpendicular|curve sketching/i.test(t) },
+  { id: "basics", label: "Arithmetic & Basics", test: (t) => /by hand|long division|factorial|binary|modulo|percent|fraction|bedmas|celsius|decimal|\bpi\b|\u03c0|multiplication|addition|subtraction|counting|digit sum/i.test(t) },
+  { id: "pp", label: "Problems Plus & Projects", test: (t) => /problems plus|discovery project|applied project|laboratory project|writing project/i.test(t) },
+  { id: "quiz", label: "Quizzes & Review", test: (t) => /quiz|true-false|exercise|concept check|review/i.test(t) },
+  { id: "ex", label: "Worked Examples", test: (t) => /example|question \d/i.test(t) },
+  { id: "phys", label: "Physics & Mechanics", test: (t) => /physics|projectile|force|energy|momentum|gyroscope|torque|speed of light|shadow|inclined|pendulum|gravity|orbit|magnet|tesla|coil|moon|blackbody|planck|laithwaite|inertia/i.test(t) },
+  { id: "exp", label: "MES Experiments", test: (t) => /mesexperiments|experiment/i.test(t) },
+  { id: "fe", label: "Free Energy & Cold Fusion", test: (t) => /free energy|cold fusion|fleischmann|krivit|over-?unity|saucer|otis t\. carr|laithwaite|palladium|aharonov|mccabe|schauberger/i.test(t) },
+  { id: "hut", label: "Hutchison Effect", test: (t) => /hutchison|hathaway|molybdenum/i.test(t) },
+  { id: "s911", label: "9/11 Truth", test: (t) => /9\/11|911|judy wood|towers|wtc|thermite|gage|coste|keor|vehicles/i.test(t) },
+  { id: "live", label: "Livestreams & Trailers", test: (t) => /livestream|trailer/i.test(t) },
+  { id: "research", label: "Other Research & Politics", test: (t) => /trump|mh370|greenyer|tengri|coincidence|covid|roswell|space force|vault ?7|electoral|politic|alien|ufo|megalith|steemit|hive|crypto|bitcoin/i.test(t) },
+  { id: "bio", label: "Biology & Health", test: (t) => /ecolog|biolog|animal|protist|ecosystem|species|evolution|organism|dental|teeth|plaque|athlete|deodorant|nutrition|calories|water from food|ear wax|coffee|espresso|health|diet|soil mechanics|tailings/i.test(t) },
+  { id: "tech", label: "Software & Tech How-To", test: (t) => /excel|microsoft|\bword\b|google|gimp|photoshop|keyboard|file recovery|youtube|drive|loop|caption|windows|computer|infinitelooper|pc inspector|memory card|audacity|camtasia|handbrake|hypercam|mpeg|streamclip|capcut|pdf|snapchat|toolbar|headphone|background from|upscal|faster|\bmov\b|video files/i.test(t) },
+  { id: "life", label: "Sports & Everyday Life", test: (t) => /nba|curry|medley|olympic|swim|betting|odds|sports|world record|ye shiwen|football|basketball|campfire|bike|bicycl|band!|tribute|documentary/i.test(t) },
+];
+const YT_VIDEOS = JSON.parse(readFileSync(join(__dirname, "youtube-videos.json"), "utf8"));
+function fmtDuration(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return h ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`;
+}
+function fmtViews(n) {
+  return n >= 1e6 ? `${(n / 1e6).toFixed(1)}M views` : n >= 1e4 ? `${Math.round(n / 1e3)}K views` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K views` : `${n} views`;
+}
+SECTIONS.push({
+  id: "mathYoutube",
+  title: "MES YouTube: All Videos",
+  compactList: true,
+  sortable: true,
+  big: true,
+  filter: [...YT_CATEGORIES, { id: "other", label: "Everything else" }],
+  filterPlaceholder: `Search all ${YT_VIDEOS.length.toLocaleString("en-US")} videos\u2026`,
+  items: [
+    { href: "https://www.youtube.com/@mes/videos", title: "@mes on YouTube (all videos)", standalone: true },
+    ...YT_VIDEOS.map((v, i) => {
+      const cats = YT_CATEGORIES.filter((c) => c.test(v.title)).map((c) => c.id);
+      return {
+        href: `https://www.youtube.com/watch?v=${v.id}`,
+        title: v.title,
+        image: `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`,
+        listThumb: false,
+        meta: `${fmtDuration(v.dur)} \u00b7 ${fmtViews(v.views)}`,
+        sortKeys: { i, v: v.views, d: v.dur },
+        cats: (cats.length ? cats : ["other"]).join(" "),
+      };
+    }),
+  ],
+});
+
 const FILTER_CSS = `/* Search box + category chips (same look as the chips on mes.fm/calculators). */
 .ls-filter { margin: 0 0 1em; }
 .ls-filter input {
@@ -306,6 +377,15 @@ const FILTER_CSS = `/* Search box + category chips (same look as the chips on me
 .ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
 .ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
 .ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
 /* a bare [hidden] loses to .link-card { display: flex } etc. */
 [data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
 
@@ -361,6 +441,26 @@ const FILTER_JS = String.raw`  // Search + category filter (see buildFilter()). 
       if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
     }
 
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
     function setCat(c) { cat = c; apply(); }
     input.addEventListener('input', apply);
     chips.addEventListener('click', function (e) {
@@ -526,7 +626,7 @@ async function fetchLinkMeta(url) {
 async function resolveAllMeta(sections, concurrency = 8) {
   const cache = loadMetaCache();
   const urls = sections.flatMap((s) =>
-    s.items.map((i) => i.href).concat((s.extraViews || []).flatMap((v) => v.items.map((i) => i.href)))
+    s.items.filter((i) => !i.image).map((i) => i.href).concat((s.extraViews || []).flatMap((v) => v.items.map((i) => i.href)))
   );
   let i = 0;
   async function worker() {
@@ -643,15 +743,22 @@ function buildExtraViewLinksForItem(item, meta) {
   return [{ label: "MES", href: item.href }, ...named];
 }
 
+function sortAttrs(item) {
+  const k = item.sortKeys;
+  return k ? ` data-i="${k.i}" data-v="${k.v}" data-d="${k.d}"` : "";
+}
+
 function buildCard(item, meta) {
   const m = meta[item.href] || {};
-  const thumbStyle = m.image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(m.image))}')"` : "";
+  const image = item.image || m.image;
+  const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
-  return `<a class="link-card"${catsAttr} href="${escapeHtml(item.href)}">
+  const external = item.image && /^https?:\/\/(?:www\.)?youtube\.com\//.test(item.href);
+  return `<a class="link-card"${catsAttr}${sortAttrs(item)} href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
       <span class="link-card-thumb"${thumbStyle}></span>
       <span class="link-card-body">
         <span class="link-card-title">${escapeHtml(item.title)}</span>
-        <span class="link-card-readmore">View &rarr;</span>
+        ${item.meta ? `<span class="link-card-meta">${escapeHtml(item.meta)}</span>` : `<span class="link-card-readmore">View &rarr;</span>`}
       </span>
     </a>`;
 }
@@ -662,11 +769,11 @@ function buildRow(item, meta, linksBuilder) {
   const linksHtml = links
     .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
     .join(" - ");
-  const imgHtml = m.image ? `<img class="list-thumb" src="${escapeHtml(m.image)}" alt="">` : "";
+  const imgHtml = m.image && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(m.image)}" alt="">` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
-  return `<div class="list-row"${catsAttr}>
+  return `<div class="list-row"${catsAttr}${sortAttrs(item)}>
       <h3>${escapeHtml(item.title)}</h3>
-      <p>${linksHtml}</p>
+      <p>${linksHtml}${item.meta ? ` <span class="list-meta">&middot; ${escapeHtml(item.meta)}</span>` : ""}</p>
       ${imgHtml}
     </div>`;
 }
@@ -698,7 +805,8 @@ function buildFilter(section) {
     .join("");
   return `<div class="ls-filter" id="${section.id}Filter">
       <input type="search" id="${section.id}Search" placeholder="${escapeHtml(section.filterPlaceholder || "Search\u2026")}" aria-label="Search" autocomplete="off">
-      <div class="ls-chips" id="${section.id}Chips">${chips}</div>
+      <div class="ls-chips" id="${section.id}Chips">${chips}</div>${section.sortable ? `
+      <label class="ls-sort">Sort by <select id="${section.id}Sort" aria-label="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="views">Most viewed</option><option value="long">Longest</option><option value="short">Shortest</option><option value="az">A to Z</option></select></label>` : ""}
     </div>
     <p class="ls-empty" id="${section.id}Empty" hidden>Nothing matches. Try fewer words or a different filter.</p>`;
 }
@@ -738,7 +846,7 @@ function buildSection(section, meta) {
   }
 
   return `<div class="list-container">
-  <div id="${section.id}" class="section-body">
+  <div id="${section.id}" class="section-body${section.big ? " ls-big" : ""}">
   ${standaloneHtml}${section.filter ? `\n    ${buildFilter(section)}` : ""}
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>

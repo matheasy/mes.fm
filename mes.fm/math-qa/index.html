@@ -955,6 +955,15 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 .ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
 .ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
 .ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
 /* a bare [hidden] loses to .link-card { display: flex } etc. */
 [data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
 
@@ -2234,6 +2243,26 @@ body.dark-mode .ls-empty { color: #aaa; }
       if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
     }
 
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
     function setCat(c) { cat = c; apply(); }
     input.addEventListener('input', apply);
     chips.addEventListener('click', function (e) {
