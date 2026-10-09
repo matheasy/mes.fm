@@ -22,7 +22,7 @@
         if (/^911/.test(top) || top === "1109-keo-meteor-music") return "911";
         if (/^hutchison/.test(top) || /^(highlights|articles|cold-fusion-lenr)$/.test(top)) return "hutchison";
         if (/^(conspiracy|mh370|bg|pg)/.test(top)) return "conspiracy";
-        if (/^(science|physics|experiments|antigravity)/.test(top)) return "science";
+        if (/^(science|physics|experiments|antigravity|free-energy)/.test(top)) return "science";
         if (/^(math|sequences-series|spherical-harmonics|vectors|vector-functions)/.test(top)) return "math";
         if (/^(memes|puzzles|timer|percentagecalculator|gradecalculator|gpacalculator|bmicalculator|mortgagecalculator|inflationcalculator|pokemongocalculator)$/.test(top)) return top;
         return "tools";

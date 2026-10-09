@@ -14,7 +14,7 @@ HEAD = ('<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-thea
         'document.documentElement.classList.add(\'page-theatre\')}catch(e){}</script><!-- /HUB-THEATRE-HEAD -->')
 JS = '<!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->'
 # build.mjs generators of the math-hub family: patched too, so a rebuild keeps the switch (their pages carry the markers, so this is idempotent)
-GENERATORS = ["math", "hutchison", "911", "conspiracy", "mh370", "bg", "pg", "experiments", "antigravity", "science", "livestreams"]
+GENERATORS = ["math", "hutchison", "911", "conspiracy", "mh370", "bg", "pg", "experiments", "antigravity", "free-energy", "science", "livestreams"]
 # bare `.container` shells (hub_swap pages from convert_mirror_pages.py): listed by slug; their build.mjs re-run this script after converting
 EXTRA = ["crypto", "mathiew", "djw",
          # math-shell Hive mirrors that have no "More like this" sidebar (ad-free graphic 9/11 clips + a donate page), so no Standard | Wide | Theatre switch from aside.js

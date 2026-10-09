@@ -127,6 +127,27 @@ const PAGES = [
     tileOnly: true,
     tileLabel: "Solar System Today",
   },
+  {
+    // Tile only: no page is written. Links to mes.fm/free-energy (its own build.mjs or page); icon = img/free-energy-icon.jpg.
+    slug: "free-energy",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "MES Free Energy",
+  },
+  {
+    // Tile only: no page is written. Links to mes.fm/hutchison (its own build.mjs or page); icon = img/hutchison-icon.jpg.
+    slug: "hutchison",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Hutchison Effect",
+  },
+  {
+    // Tile only: no page is written. Links to mes.fm/cold-fusion-lenr (its own build.mjs or page); icon = img/cold-fusion-lenr-icon.jpg.
+    slug: "cold-fusion-lenr",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Cold Fusion / LENR",
+  },
 ];
 
 // ---------------------------------------------------------------------------

@@ -38,7 +38,7 @@ BOILER_RE = re.compile(r"\s[–-]\s.+\s[–-]\s")  # "Title - Category - Site."
 
 # Directories that are generated (edit the generator, not the output) -- see CLAUDE.md.
 GENERATED = {
-    "911", "911-alchemy", "conspiracy", "mh370", "bg", "pg", "experiments", "antigravity", "cubic-formula", "djw", "ferrocell-specular-reflection", "hutchison",
+    "911", "911-alchemy", "conspiracy", "mh370", "bg", "pg", "experiments", "antigravity", "free-energy", "cubic-formula", "djw", "ferrocell-specular-reflection", "hutchison",
     "hutchison-tom-sky", "math", "mathiew", "norman-patricia-ai-email", "science", "vector-functions-problems-plus",
     "spherical-harmonics", "math-qa", "sequences-series", "vectors", "vector-functions",
     # emitted by mes.fm/hutchison/build.mjs (hub + section pages)
@@ -47,7 +47,7 @@ GENERATED = {
     # emitted by mes.fm/livestreams/build.mjs
     "livestreams",
     # emitted by mes.fm/911/build.mjs (hub + section pages)
-    "conspiracy-posts", "conspiracy-videos", "mh370", "mh370-videos", "bg", "bg-videos", "bg-posts", "pg", "pg-series", "experiments", "experiments-series", "antigravity", "antigravity-series", "science-posts", "science-videos", "science-tutorials", "physics", "911-posts", "911-spooks", "911-videos", "911truth", "911-observable-evidence", "911-short-videos", "1109-keo-meteor-music",
+    "conspiracy-posts", "conspiracy-videos", "mh370", "mh370-videos", "bg", "bg-videos", "bg-posts", "pg", "pg-series", "experiments", "experiments-series", "antigravity", "antigravity-series", "free-energy", "free-energy-series", "science-posts", "science-videos", "science-tutorials", "physics", "911-posts", "911-spooks", "911-videos", "911truth", "911-observable-evidence", "911-short-videos", "1109-keo-meteor-music",
 }
 
 # site dir -> (site label, tail options longest -> shortest)

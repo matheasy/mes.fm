@@ -1,32 +1,22 @@
-// Build-time generator for mes.fm/hutchison ("MES Hutchison Effect") and its section pages.
+// Build-time generator for mes.fm/free-energy ("MES Free Energy") and its Series page mes.fm/free-energy-series (cloned from antigravity/build.mjs).
 //
-// mes.fm/hutchison used to mirror the Hive post @mes/hutchisoneffect. It is now a tile hub
-// like mes.fm/math (cloned from math/build.mjs): one icon tile per section, each linking to
-// its own page with the Grid View / List View toggle. The sections' content lives in
-// sections.mjs (hand-maintained, newest first) -- the Hive post is no longer fetched.
+// mes.fm/antigravity is a small tile hub (a Series tile, tiles for the sibling hubs (experiments, antigravity, science, hutchison, cold-fusion-lenr, science-videos) and the "Important Links" list
+// = the Free Energy section of mes.fm/links plus the /freeenergy OneDrive short URL). The videos live in sections.mjs (hand-maintained, newest first).
+// Unlike the PizzaGate pages these pages KEEP AdSense (the deferred loader below; the hub sidebar gets its ad slot from hub-theatre.js because the page loads AdSense).
 //
-// Pages written (see PAGES): the hub mes.fm/hutchison/index.html, plus
-// mes.fm/{hutchison-posts,hutchison-videos,highlights,hutchison-articles,hutchison-debunking-debunkers,
-// hutchison-news,hutchison-unedited-footage,hutchison-interviews,cold-fusion-lenr,
-// }/index.html (9 pages). Never hand-edit those generated files. The hub's tenth tile, MES
-// Livestreams, is tile-only: it links to mes.fm/livestreams#hutchison (the Hutchison Effect
-// filter of the all-livestreams page) instead of having a page of its own.
+// Pages written (see PAGES): the hub mes.fm/free-energy/index.html plus mes.fm/free-energy-series/index.html. Never hand-edit those generated files.
 //
-// Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600). Until a custom icon is made, that file
-// is a crop of the section's newest thumbnail -- replace the file (same name) with custom art
-// whenever, no rebuild needed.
-//
-// Items with explicit `links` (title + thumbnail + one row of platform links, as the Hive
-// article had them) need no network. Items that are just { href, title } (mes.fm mirror pages)
-// get their thumbnail and "Watch on:" row scraped at build time and cached in link-meta.json.
+// Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600): free-energy-series = crop of the newest part's thumbnail (Part 3; refresh when one is added);
+// free-energy-icon = the tile on the sibling hubs. Replace the files (same names) any time, no rebuild needed.
 //
 // Usage:
 //   npm run build
 
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { SECTIONS } from "./sections.mjs";
+import { SECTIONS, IMPORTANT_LINKS_HTML } from "./sections.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -35,120 +25,29 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // unreachable.
 const META_CACHE_PATH = join(__dirname, "link-meta.json");
 
-// Output layout: mes.fm/hutchison is a tile hub (one icon tile per section, each linking to its
-// own page); each section then lives at mes.fm/<slug> with the Grid View / List View toggle.
-// `sectionId` matches an `id` in sections.mjs; `title` is the page's <h1>/<title> and
-// `tileLabel` the (shorter) text overlaid on the hub tile.
-const HUB_TITLE = "Hutchison Effect";
+// Output layout: mes.fm/911 is a tile hub (one icon tile per section, each linking to its own page); each
+// section then lives at mes.fm/<slug> with the Grid View / List View toggle. `sectionId` matches an `id` in
+// sections.mjs; `title` is the page's <h1>/<title> and `tileLabel` the (shorter) text overlaid on the hub tile.
+const HUB_TITLE = "⚡ #FreeEnergy Video Research Series";
 const HUB_DESCRIPTION =
-  "MES coverage of the Hutchison Effect: John Hutchison's antigravity and materials-transmutation demonstrations. Videos, rare unedited footage, interviews, news reels, articles, updates and links.";
+  "MES Free Energy video research series: suppressed technology and science, nuclear physics and cold fusion, atomic physics, with playlists and links to the related MES experiments, anti-gravity and Hutchison Effect research.";
 
 const PAGES = [
   {
-    slug: "hutchison-posts",
-    sectionId: "hutchison-posts",
-    tileLabel: "Posts and Updates",
-    title: "Hutchison Effect Posts and Updates",
+    slug: "free-energy-series",
+    sectionId: "free-energy-series",
+    tileLabel: "Free Energy Series",
+    iconVersion: 1, // icon = crop of the newest part's thumbnail (Part 3; img/free-energy-series-icon.jpg); bump when refreshed
+    title: "⚡ #FreeEnergy Video Research Series: All Videos",
     description:
-      "News and updates about John Hutchison and the Hutchison Effect: health updates, newspaper finds, and other posts from MES, newest first.",
+      "The MES #FreeEnergy video research series in one place: Part 1 suppressed technology and science, Part 2 nuclear physics and cold fusion, Part 3 atomic physics, with the YouTube playlist.",
   },
   {
-    slug: "hutchison-videos",
-    sectionId: "hutchison-videos",
-    iconVersion: 3,
-    tileLabel: "Videos",
-    title: "Hutchison Effect Videos",
-    description:
-      "Recent Hutchison Effect videos from MES: a trailer for Livestream 141 with John Hutchison showing Tom Sky levitation footage he missed, George Hathaway and John Alexander on crumbling steel and bent molybdenum rods, and more.",
-  },
-  {
-    slug: "highlights",
-    sectionId: "highlights",
-    iconVersion: 3,
-    tileLabel: "Highlights",
-    title: "Hutchison Effect Highlights",
-    description:
-      "The best of the Hutchison Effect on video: levitating objects, steel that splits like jelly, cold melting, water foaming up, the famous plastic boat, and rare footage from 1988 to 2007.",
-  },
-  {
-    slug: "hutchison-articles",
-    sectionId: "articles",
-    iconVersion: 4,
-    tileLabel: "Articles",
-    title: "Hutchison Effect Articles",
-    description:
-      "Written Hutchison Effect articles from MES: the 1983 Los Alamos report appendix, Nancy Hutchison's physics report, stop motion photos of levitating water and rare family photos of John Hutchison's family.",
-  },
-  {
-    slug: "hutchison-debunking-debunkers",
-    sectionId: "hutchison-debunking-debunkers",
-    iconVersion: 3,
-    tileLabel: "Debunking “Debunkers”",
-    title: "Debunking the “Debunkers” of the Hutchison Effect",
-    description:
-      "Debunking the “debunkers” of the Hutchison Effect: a video response to the false claims of Robert Murray-Smith and Ace Baker, with links to every platform.",
-  },
-  {
-    slug: "hutchison-news",
-    sectionId: "hutchison-news",
-    iconVersion: 3,
-    tileLabel: "News Reels",
-    title: "Hutchison Effect News Reels",
-    description:
-      "News coverage of the Hutchison Effect: Japanese TV specials from 1993 and 1994, BCIT Magazine's 2007 visit to John Hutchison, rare lab footage, and Thomas Bearden on scalar interferometry.",
-  },
-  {
-    slug: "hutchison-unedited-footage",
-    sectionId: "hutchison-unedited-footage",
-    iconVersion: 3,
-    tileLabel: "Unedited Footage",
-    title: "Unedited Hutchison Effect Footage",
-    description:
-      "Hours of unedited Hutchison Effect footage: Jack Houck's 1985 film and rare 1988, 1989, 2006 and 2007 recordings of experiments in John Hutchison's lab.",
-  },
-  {
-    slug: "hutchison-interviews",
-    sectionId: "hutchison-interviews",
-    iconVersion: 3,
-    tileLabel: "Interviews and Presentations",
-    title: "Hutchison Effect Interviews and Presentations",
-    description:
-      "Interviews and presentations on the Hutchison Effect: John Hutchison with Tom Sky, Brenda Roberts, Elaine Smitha and Kerry Cassidy, George Hathaway's 1993 overview, and Jeane Manning.",
-  },
-  {
+    // Tile only: no page is written. Links to mes.fm/cold-fusion-lenr (its own build.mjs or page); icon = img/cold-fusion-lenr-icon.jpg.
     slug: "cold-fusion-lenr",
-    sectionId: "cold-fusion-lenr",
-    iconVersion: 3,
+    iconVersion: 1,
+    tileOnly: true,
     tileLabel: "Cold Fusion / LENR",
-    title: "Cold Fusion / Low Energy Nuclear Reactions (LENR)",
-    description:
-      "Cold fusion and low energy nuclear reactions (LENR): Martin Fleischmann's rare interviews, including the 1985 “hole in the floor” palladium electrolysis experiment, plus a free energy playlist.",
-  },
-  {
-    // Tile only: no page is written; links to mes.fm/ufo (UFO Replication: Tesla coil / free energy build log).
-    // Icon = img/ufo-icon.jpg (900x600 crop of that page's share image, shared with the mes.fm/science tile).
-    slug: "ufo",
-    href: "/ufo",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "UFO Replication",
-  },
-  {
-    // Tile only: no page is written. Its icon (img/hutchison-livestreams-icon.jpg) is a crop of the
-    // newest Hutchison Effect livestream's thumbnail on mes.fm/livestreams -- refresh it by hand
-    // (and bump iconVersion) when a newer Hutchison stream goes up.
-    slug: "hutchison-livestreams",
-    href: "/livestreams#hutchison",
-    iconVersion: 2,
-    tileOnly: true,
-    tileLabel: "MES Livestreams",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/science (its own build.mjs or page); icon = img/science-icon.jpg.
-    slug: "science",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Science",
   },
   {
     // Tile only: no page is written. Links to mes.fm/experiments (its own build.mjs or page); icon = img/experiments-icon.jpg.
@@ -165,11 +64,11 @@ const PAGES = [
     tileLabel: "MES Anti-Gravity",
   },
   {
-    // Tile only: no page is written. Links to mes.fm/free-energy (its own build.mjs or page); icon = img/free-energy-icon.jpg.
-    slug: "free-energy",
+    // Tile only: no page is written. Links to mes.fm/science (its own build.mjs or page); icon = img/science-icon.jpg.
+    slug: "science",
     iconVersion: 1,
     tileOnly: true,
-    tileLabel: "MES Free Energy",
+    tileLabel: "MES Science",
   },
   {
     // Tile only: no page is written. Links to mes.fm/science-videos (its own build.mjs or page); icon = img/science-videos-icon.jpg.
@@ -178,17 +77,13 @@ const PAGES = [
     tileOnly: true,
     tileLabel: "MES Science Videos",
   },
-];
-
-// "Important Links" block under the hub's tiles (was the Hive article's intro list).
-const IMPORTANT_LINKS = [
-  { label: "This playlist on Hive", href: "https://peakd.com/science/@mes/hutchisoneffect" },
-  { label: "MES Hutchison Effect YouTube playlist", href: "https://mes.fm/hutchison-playlist" },
-  { label: "John Hutchison's official YouTube channel (@HutchisonEffect)", href: "https://www.youtube.com/@HutchisonEffect" },
-  { label: "John Hutchison's YouTube playlist", href: "https://www.youtube.com/playlist?list=PLEhIw6_wPHOjQExywKSeKFVLYSKu2JCY-" },
-  { label: "3 TB hard drive of uncompressed footage (Google Drive)", href: "https://mes.fm/hutchison-drive" },
-  { label: "X thread of the Hutchison Effect", href: "https://x.com/MathEasySolns/status/1752373887814521142" },
-  { label: "Bob Greenyer's Hutchison YouTube playlist", href: "https://www.youtube.com/playlist?list=PLBgQorZu_mLnIFxSsX4zDPJ314MCR9AuN" },
+  {
+    // Tile only: no page is written. Links to mes.fm/hutchison (its own build.mjs or page); icon = img/hutchison-icon.jpg.
+    slug: "hutchison",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Hutchison Effect",
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -511,11 +406,18 @@ function capitalize(str) {
 // flagged `single` (one video/article only) skips the Grid/List toggle
 // entirely and renders just the List View row as a featured item.
 function buildSection(section, meta) {
-  const standaloneItems = section.items.filter((item) => item.standalone);
-  const cardItems = section.items.filter((item) => !item.standalone);
-  const standaloneHtml = standaloneItems
-    .map((item) => `<p class="section-standalone-link"><a href="${escapeHtml(item.href)}">&#9654;&#65039; ${escapeHtml(item.title)}</a></p>`)
-    .join("\n  ");
+  const standaloneItems = section.standalone || [];
+  const cardItems = section.items;
+  // One line of links (icon + label, separated by dots) rather than one paragraph each, so the playlist and
+  // the troubleshooting notes sit side by side; external links open in a new tab.
+  const standaloneHtml = standaloneItems.length
+    ? `<p class="section-standalone-link">${standaloneItems
+        .map((item) => {
+          const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(item.href);
+          return `<a href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>${item.icon || "&#9654;&#65039;"} ${escapeHtml(item.title)}</a>`;
+        })
+        .join('<span class="standalone-sep">&middot;</span>')}</p>`
+    : "";
   const cards = cardItems.map((item) => buildCard(item, meta)).join("\n    ");
   const rows = cardItems.map((item) => buildRow(item, meta)).join("\n    ");
   const listViewClass = section.compactList ? "list-view list-view--compact" : "list-view";
@@ -566,23 +468,18 @@ ${extraPanes}
 // Icon tile for the hub page: text-free thumbnail + real overlaid label,
 // same .icon-grid markup/CSS as mes.fm's homepage.
 function buildTile(page) {
-  const icon = `/img/${page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}`;
+  const icon = `/img/${page.icon || page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}`;
   return `<a class="icon-grid__link icon-grid__link--labeled" href="${page.href || `/${page.slug}`}"><span class="icon-grid__thumb" style="background-image:url('${icon}')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
 }
 
 function buildImportantLinks() {
-  const items = IMPORTANT_LINKS.map(
-    (l) => `<li><a href="${escapeHtml(l.href)}"${/^https?:\/\/(?:www\.)?mes\.fm\//.test(l.href) ? "" : ' target="_blank" rel="noopener"'}>${escapeHtml(l.label)}</a></li>`
-  ).join("\n    ");
   return `<div class="hub-links">
   <h2>Important Links</h2>
-  <ul>
-    ${items}
-  </ul>
+${IMPORTANT_LINKS_HTML}
 </div>`;
 }
 
-// page: the hub ({ hub: true, slug: "hutchison" }) or one entry of PAGES.
+// page: the hub ({ hub: true, slug: "bg" }) or one entry of PAGES.
 function buildPage(meta, page) {
   const isHub = !!page.hub;
   const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
@@ -600,17 +497,17 @@ function buildPage(meta, page) {
   const CANONICAL = `https://mes.fm/${page.slug}`;
   const pageTitle = isHub ? HUB_TITLE : page.title;
   const description = isHub ? HUB_DESCRIPTION : page.description;
-  const ogImage = isHub ? "https://mes.fm/img/hutchison-logo-big.jpg" : `https://mes.fm/img/${page.slug}-icon.jpg`;
+  const ogImage = "https://mes.fm/img/free-energy-logo-big.jpg"; // one share image for the hub and its series page (tile icons are only for the hub grid)
   const breadcrumbHtml = isHub
     ? ""
-    : `<p class="page-breadcrumb"><a href="/hutchison">&larr; Hutchison Effect</a></p>\n        `;
+    : `<p class="page-breadcrumb"><a href="/free-energy">&larr; MES Free Energy</a></p>\n        `;
 
   return `
 <!DOCTYPE html>
 <html lang="en">
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
-  <link rel="icon" href="https://mes.fm/img/hutchison-logo.jpg?v=1.0" type="image/jpeg" />
+  <link rel="icon" href="https://mes.fm/img/free-energy-logo.jpg?v=1" type="image/jpeg" />
   <link rel="canonical" href="${CANONICAL}" />
   <title>${escapeHtml(pageTitle)} | Math Easy Solutions</title>
   <meta charset="UTF-8">
@@ -1025,6 +922,21 @@ sub {vertical-align:sub;}
   margin: 0 0 0.4em;
   line-height: 1.4;
 }
+.hub-links h3 {
+  font-size: 1.05em;
+  margin: 1.3em 0 0.4em;
+}
+.hub-links p {
+  line-height: 1.5;
+  margin: 0 0 0.6em;
+}
+.hub-links ul ul {
+  margin: 0.3em 0 0.4em;
+}
+.standalone-sep {
+  color: #8a93a0;
+  margin: 0 0.7em;
+}
 
 .list-row {
   margin: 0 0 2em;
@@ -1386,6 +1298,8 @@ body.dark-mode .arrow-icon,
 body.dark-mode .list-row h3,
 body.dark-mode .list-row p,
 body.dark-mode .hub-links h2,
+body.dark-mode .hub-links h3,
+body.dark-mode .hub-links p,
 body.dark-mode .hub-links li,
 body.dark-mode .link-card-title {
   color: #eeeeee;
@@ -1695,8 +1609,8 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem('pageMode')||'wide',c=document.documentElement.classList;if(m==='theatre')c.add('page-theatre');if(m!=='std')c.add('page-wide');if(localStorage.getItem('asideHidden')==='1')c.add('aside-hidden');if(localStorage.getItem('asideSide')==='left')c.add('aside-left')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
 <body>
 <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/hutchison" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/hutchison-logo.jpg"></a>
-  <a class="compact-nav-title" href="/hutchison" tabindex="-1">MES Hutchison Effect</a>
+  <a href="/free-energy" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/free-energy-logo.jpg"></a>
+  <a class="compact-nav-title" href="/free-energy" tabindex="-1">⚡ #FreeEnergy Video Research Series</a>
   <ul class="compact-nav-links">
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
     <li><a href="/tools" tabindex="-1">Tools</a></li>
@@ -1714,12 +1628,12 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/hutchison'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Hutchison Effect logo" data-src="https://mes.fm/img/hutchison-logo.jpg"></a>
+      <a class="logo-image-container" href='/free-energy'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Free Energy logo" data-src="https://mes.fm/img/free-energy-logo.jpg"></a>
       <div class="logo-text-container">
-        <a class="calculator-title-link" href='/hutchison'>
-          <p class="calculator-title">MES Hutchison Effect</p>
+        <a class="calculator-title-link" href='/free-energy'>
+          <p class="calculator-title">⚡ #FreeEnergy Video Research Series</p>
         </a>
-        <p class="tag-line">Antigravity, materials transmutation, and John Hutchison's demonstrations.</p>
+        <p class="tag-line">MES Free Energy research: suppressed technology, cold fusion and atomic physics.</p>
       </div>
 
       <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
@@ -1735,7 +1649,10 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </div>
     <div class="info-bar-container" role="navigation" aria-label="Primary">
       <ul id="info-bar" class="info-bar shadow">
-        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/hutchison'>Hutchison Effect</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/free-energy'>Free Energy</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/free-energy-series'>Series</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/conspiracy'>Conspiracy</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/911'>9/11 Truth</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/mobile-apps'>Mobile Apps</a></li>
@@ -1783,7 +1700,8 @@ ${sectionsHtml}
             <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
           </ul></div></li>
           <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
-          <li class="navbar__item"><a target="_self" class="navbar__link" href="/hutchison">Hutchison Effect</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/free-energy">⚡ #FreeEnergy Video Research Series</a></li><li class="navbar__item"><a class="navbar__link" href="/free-energy-series">Series</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/conspiracy">Conspiracy</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
@@ -2200,7 +2118,7 @@ ${viewToggleWiring}
 var MES_Vars = {
     mobile:false,
     hide_search:false,
-    current_tab:1,
+    current_tab:${isHub ? 0 : 1},
     info_bar_tab:0
 }
 </script>
@@ -2217,7 +2135,7 @@ async function main() {
   console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
   const meta = await resolveAllMeta(SECTIONS);
 
-  const pages = [{ hub: true, slug: "hutchison", outDir: __dirname }].concat(
+  const pages = [{ hub: true, slug: "free-energy", outDir: __dirname }].concat(
     PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
   );
   for (const page of pages) {
@@ -2226,6 +2144,9 @@ async function main() {
     writeFileSync(outPath, addImageLazyLoading(buildPage(meta, page)), "utf8");
     console.log(`Wrote ${outPath}`);
   }
+  // The phone-width header fixes (A-/A+/moon on their own row, no sideways scroll) are patched into generated pages by
+  // fix_mobile_header_controls.py, so a rebuild would silently drop them; re-apply (idempotent).
+  execFileSync("python3", [join(__dirname, "..", "..", "fix_mobile_header_controls.py"), "--apply"], { stdio: "inherit" });
 }
 
 main().catch((err) => {

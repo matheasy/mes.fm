@@ -56,6 +56,27 @@ const PAGES = [
     iconVersion: 1,
     tileOnly: true,
   },
+  {
+    // Tile only: no page is written. Links to mes.fm/free-energy (its own build.mjs or page); icon = img/free-energy-icon.jpg.
+    slug: "free-energy",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "MES Free Energy",
+  },
+  {
+    // Tile only: no page is written. Links to mes.fm/hutchison (its own build.mjs or page); icon = img/hutchison-icon.jpg.
+    slug: "hutchison",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Hutchison Effect",
+  },
+  {
+    // Tile only: no page is written. Links to mes.fm/science-videos (its own build.mjs or page); icon = img/science-videos-icon.jpg.
+    slug: "science-videos",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "MES Science Videos",
+  },
 ];
 
 // ---------------------------------------------------------------------------
