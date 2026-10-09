@@ -4,7 +4,7 @@
   html.jump-rail .mes-aside--rail { display: block; position: fixed; top: 90px; width: 300px; max-height: calc(100vh - 110px); overflow-y: auto; z-index: 9;
     right: calc(50% + var(--toc-w) / 2 + 30px); left: auto; scrollbar-width: thin; scrollbar-color: rgba(128, 128, 128, .4) transparent; }
   html.aside-left.jump-rail .mes-aside--rail { right: auto; left: calc(50% + var(--toc-w) / 2 + 30px); }
-  .mes-aside--rail .mes-aside__hide { display: block; }
+  .mes-aside--rail .mes-aside__hide, .mes-aside--rail .mes-aside__flip { display: block; }
   .mes-aside--rail .mes-aside__list { grid-template-columns: 1fr; }
   /* with the rail on the other side the article column may still use the room Wide / Theatre give it, but not the rail's 340px */
   html.jump-rail.page-wide { --toc-w: max(760px, min(1100px, calc(100vw - 860px))); }

@@ -43,11 +43,24 @@
 	.tu .ck-fs .ck-date {font-size:min(3.4vw,5vh);}
 	.tu .ck-fs .ck-analog {width:min(80vh,60vw);}
 	.tu .ck-fs .ck-bar {font-size:min(2.4vw,3.2vh);}
+	.tu .ck-fsctl {display:none;gap:0.3em;flex-wrap:wrap;justify-content:flex-end;}
+	.tu .ck-fs .ck-fsctl {display:inline-flex;}
+	.tu .ck-icon[aria-pressed="true"] {border-color:var(--ck-acc);color:var(--ck-fg);}
+	.tu .ck-fs .ck-bar {transition:opacity 0.4s;} .tu .ck-fs.ck-idle .ck-bar {opacity:0;pointer-events:none;}
+	/* landscape full screen with analog + digital: face on the left, time and date to its right, so the clock stays as big as the screen allows */
+	@media (orientation: landscape) {
+		.tu .ck-fs.ck-both .ck-stage {display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:1fr 1fr;column-gap:3vw;align-items:center;justify-items:center;}
+		.tu .ck-fs.ck-both .ck-analog {grid-column:1;grid-row:1 / span 2;width:min(88vh,46vw);}
+		.tu .ck-fs.ck-both .ck-digital {grid-column:2;grid-row:1;align-self:end;font-size:min(10.5vw,26vh);}
+		.tu .ck-fs.ck-both .ck-date {grid-column:2;grid-row:2;align-self:start;font-size:min(2.8vw,5.5vh);}
+		.tu .ck-fs.ck-both .ck-stage:has(.ck-date[hidden]) .ck-digital {grid-row:1 / span 2;align-self:center;}
+	}
 	body.dark-mode #ck .ck-w {background:#262626;border-color:#3a3a3a;} body.dark-mode #ck .ck-w .ck-wt {color:#f1f1f1;} body.dark-mode #ck .ck-w small {color:#a0a8b3;}
 	body.dark-mode #ck .ck-seg button {border-bottom-color:#444;} body.dark-mode #ck kbd {background:#2e2e2e;color:#ddd;border-color:#555;}
 	body.dark-mode #ck .ck-main[data-theme="auto"] {--ck-bg:#232323;--ck-fg:#f1f1f1;--ck-sub:#a0a8b3;--ck-line:#3a3a3a;--ck-acc:#6cb2ff;}
 	/* the page's dark-mode text colour would otherwise win over the clock's own theme colours */
 	body.dark-mode #ck .ck-main .ck-digital {color:var(--ck-fg);} body.dark-mode #ck .ck-main .ck-digital small, body.dark-mode #ck .ck-main .ck-date, body.dark-mode #ck .ck-main .ck-bar, body.dark-mode #ck .ck-main .ck-icon {color:var(--ck-sub);}
 	body.dark-mode #ck .ck-main .ck-icon:hover {color:var(--ck-fg);}
+	body.dark-mode #ck .ck-main .ck-icon[aria-pressed="true"] {color:var(--ck-fg);border-color:var(--ck-acc);}
 	@media (max-width: 600px) {.tu .ck-seg button {flex:1 1 30%;}}
 	@media print {.tu-seo, #ck-opts, .ck-icon {display:none !important;}}

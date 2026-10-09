@@ -103,7 +103,7 @@
 	function newSw() { return { id: uid(), label: "", st: "idle", startAt: 0, base: 0, laps: [] }; }
 	function newAlarm() { return { id: uid(), time: "", label: "", daily: false, cd: false, on: false, at: 0, snooze: 0 }; }
 	var S = {
-		show: ["cd", "sw", "al"], display: null, order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, nobar: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, compact: false, titleSrc: "auto", optAwake: true, optNotify: false, optTenths: false,
+		show: ["cd", "sw", "al"], display: null, muted: [], order: ["cd", "sw", "al", "po", "iv", "ev"], layout: "auto", zoom: 1, fit: false, win: false, nobar: false, fs: "win", collapsed: {}, sound: "friendly", vol: 80, repeat: 1, optTitle: true, compact: false, titleSrc: "auto", optAwake: true, optNotify: false, optTenths: false,
 		timers: [newTimer(300000)], sws: [newSw()], alarms: [newAlarm()],
 		po: { label: "", focus: 25, short: 5, long: 15, rounds: 4, auto: true, phase: "focus", round: 1, st: "idle", end: 0, rem: 25 * 60000, day: "", done: 0 },
 		iv: { label: "", prep: 10, work: 20, rest: 10, rounds: 8, st: "idle", startAt: 0, base: 0 },
@@ -122,6 +122,7 @@
 			S.layout = s.layout === "stack" ? "stack" : "auto";
 			S.zoom = num(s.zoom, 1, 0.4, 2.5); S.fit = !!s.fit; S.win = !!s.win; S.nobar = !!s.nobar; if (s.fs === "screen") S.fs = "screen";
 			if (s.collapsed && typeof s.collapsed === "object") S.collapsed = s.collapsed;
+			if (Array.isArray(s.muted)) S.muted = s.muted.filter(function (k) { return typeof k === "string"; }).slice(0, 60);
 			if (Array.isArray(s.display)) S.display = s.display.filter(function (k) { return typeof k === "string"; }).slice(0, 60);
 			if (Array.isArray(s.timers) && s.timers.length) S.timers = s.timers.slice(0, 8).map(function (t) { return { id: String(t.id || uid()), label: String(t.label || "").slice(0, 60), total: +t.total > 0 ? +t.total : 300000, rem: +t.rem >= 0 ? +t.rem : (+t.total || 300000), end: +t.end || 0, st: /^(idle|run|pause|done)$/.test(t.st) ? t.st : "idle" }; });
 			var swl = Array.isArray(s.sws) ? s.sws : (s.sw && typeof s.sw === "object" ? [s.sw] : []);
@@ -193,8 +194,26 @@
 	function findTimer(id) { for (var i = 0; i < S.timers.length; i++) if (S.timers[i].id === id) return S.timers[i]; return null; }
 	function findAlarm(id) { for (var i = 0; i < S.alarms.length; i++) if (S.alarms[i].id === id) return S.alarms[i]; return null; }
 	function notify(title) { if (!S.optNotify || !("Notification" in window) || Notification.permission !== "granted") return; try { new Notification(title, { body: "mes.fm/timer", tag: "mes-timer" }); } catch (e) {} }
+	/* per-item mute (Display tiles): a muted timer / alarm / Pomodoro / interval still shows its banner, it just makes no sound */
+	function itemKey(it) { return it.type === "p" ? "po" : it.type === "i" ? "iv" : it.type + ":" + it.id; }
+	function isMuted(k) { return S.muted.indexOf(k) >= 0; }
+	var MUTE_ON = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+	var MUTE_OFF = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>';
+	function muteBtn(keys) { return '<button type="button" class="tm-icon tm-mute" data-mute="' + esc(keys) + '" aria-pressed="false" title="Mute the sound of this one" aria-label="Mute sound">' + MUTE_ON + "</button>"; }
+	function paintMute() {
+		[].forEach.call(document.querySelectorAll("[data-mute]"), function (b) {
+			var ks = b.dataset.mute.split(",").filter(Boolean), on = ks.length && ks.every(isMuted);
+			b.setAttribute("aria-pressed", String(!!on)); var t = on ? "Muted: click to turn the sound back on" : "Mute the sound of this one"; if (b.title !== t) { b.title = t; b.innerHTML = on ? MUTE_OFF : MUTE_ON; }
+		});
+	}
+	function toggleMute(keys) {
+		var ks = keys.split(",").filter(Boolean), all = ks.every(isMuted);
+		S.muted = S.muted.filter(function (k) { return ks.indexOf(k) < 0; }); if (!all) S.muted = S.muted.concat(ks);
+		if (ringing.length && ringing.every(function (r) { return isMuted(itemKey(r)); })) stopSound();
+		save(); paintMute(); toast(all ? "Sound on" : "Muted: still shows, no sound");
+	}
 	function ring(item, msg) {
-		ringing.push(item); item.msg = msg; notify("⏰ " + msg); startRing(S.repeat); drawRing();
+		ringing.push(item); item.msg = msg; notify("⏰ " + msg); if (!isMuted(itemKey(item))) startRing(S.repeat); drawRing();
 		if (!blinkT) blinkT = setInterval(function () { document.title = document.title.charAt(0) === "⏰" ? BASE_TITLE : "⏰ " + (ringing[0] ? ringing[0].msg : "Time's up!"); }, 800);
 	}
 	function drawRing() {
@@ -661,6 +680,7 @@
 		sortable($("tm-dp-grid"), ".tm-dp__tile", function (els) { var ks = []; els.forEach(function (x) { if (x.dataset.k === "alarms") ks = ks.concat((x.dataset.members || "").split(",").filter(Boolean)); else ks.push(x.dataset.k); }); S.display = ks.concat((S.display || []).filter(function (k) { return ks.indexOf(k) < 0; })); dpKeys = ""; save(); renderDisplay(); });
 		el.addEventListener("click", function (e) {
 			var rb = e.target.closest("#tm-dp-ring [data-r]"); if (rb) { ringAct(rb.dataset.r); return; }
+			var mu = e.target.closest("[data-mute]"); if (mu) { toggleMute(mu.dataset.mute); return; }
 			var ab = e.target.closest("[data-act]"); if (ab) { var tl = ab.closest(".tm-dp__tile"); if (tl) dpAct(ab.dataset.ak || tl.dataset.k, ab.dataset.act); return; }
 			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
 			if (e.target.matches("#tm-dp-pick input[type=checkbox]")) {
@@ -705,17 +725,18 @@
 		if (keys !== dpKeys) {   // the set of tiles changed: rebuild
 			dpKeys = keys; grid.className = "tm-dp__grid tm-dp__n" + Math.min(shown.length, 9);
 			grid.innerHTML = shown.map(function (i) { var grip = shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label || "alarms") + ': drag, or use the arrow keys">\u283f</button>' : "";
-				if (i.kind === "AlarmGroup") return '<div class="tm-dp__tile tm-dp__group" data-k="alarms" data-members="' + esc(i.alarms.map(function (a) { return a.key; }).join(",")) + '">' + grip + '<div data-g></div></div>';
-				return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + grip + pinBtn(i.key, "tm-tabpin--dp") + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__t2" data-t2></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div><div class="tm-dp__ctl" data-ctl></div></div>'; }).join("");
+				if (i.kind === "AlarmGroup") return '<div class="tm-dp__tile tm-dp__group" data-k="alarms" data-members="' + esc(i.alarms.map(function (a) { return a.key; }).join(",")) + '">' + grip + muteBtn(i.alarms.map(function (a) { return a.key; }).join(",")) + '<div data-g></div></div>';
+				return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + grip + pinBtn(i.key, "tm-tabpin--dp") + muteBtn(i.key) + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__t2" data-t2></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div><div class="tm-dp__ctl" data-ctl></div></div>'; }).join("");
 		}
 		shown.forEach(function (i) {
 			var tile = grid.querySelector('.tm-dp__tile[data-k="' + i.key.replace(/"/g, "") + '"]'); if (!tile) return;
-			if (i.kind === "AlarmGroup") { tile.className = "tm-dp__tile tm-dp__group is-run"; tile.dataset.members = i.alarms.map(function (a) { return a.key; }).join(","); dpGroupFill(tile, i); return; }
+			if (i.kind === "AlarmGroup") { tile.className = "tm-dp__tile tm-dp__group is-run"; tile.dataset.members = i.alarms.map(function (a) { return a.key; }).join(","); var mb = tile.querySelector("[data-mute]"); if (mb) mb.dataset.mute = tile.dataset.members; dpGroupFill(tile, i); return; }
 			tile.className = "tm-dp__tile is-" + i.state + (i.phase ? " ph-" + i.phase : "") + (i.kind === "Alarm" ? " is-clock" : "");
 			tile.querySelector("[data-t]").textContent = i.time; var t2 = tile.querySelector("[data-t2]"); t2.hidden = !i.time2; if (t2.textContent !== (i.time2 || "")) t2.textContent = i.time2 || ""; tile.classList.toggle("has-t2", !!i.time2); tile.querySelector("[data-s]").textContent = i.sub || i.kind + (i.state === "pause" ? " · paused" : i.state === "done" ? " · done" : "");
 			var cl = tile.querySelector("[data-ctl]"), ch = dpCtl(i.key); if (cl._h !== ch) { cl._h = ch; cl.innerHTML = ch; }
 				var b = tile.querySelector(".tm-dp__b"); b.style.visibility = i.pct >= 0 ? "visible" : "hidden"; tile.querySelector("[data-b]").style.width = Math.max(0, Math.min(100, i.pct)).toFixed(1) + "%";
 		});
+		paintMute();
 	}
 	function openDisplay() {
 		var el = ensureDisplay(); dpOpen = true; dpKeys = ""; el.hidden = false; $("tm-dp-pick").hidden = true; document.body.classList.add("tm-dp-on");
@@ -844,8 +865,8 @@
 			var at = TM.itvAt(ivPlan(), ivElapsed());
 			if (at.done) { v.st = "idle"; v.base = TM.itvTotal(ivPlan()); ring({ type: "i" }, (v.label ? v.label + ": " : "") + "Workout complete: " + v.rounds + " rounds done"); renderIv(); changed = true; }
 			else {
-				if (at.idx !== ivLast) { if (ivLast !== -1 || at.into < 1000) cue(at.seg.phase === "work" ? 988 : at.seg.phase === "rest" ? 523 : 698, 0.35); ivLast = at.idx; ivSec = -1; }
-				var sec = Math.ceil(at.left / 1000); if (sec <= 3 && sec >= 1 && sec !== ivSec) { ivSec = sec; cue(784, 0.12); }
+				if (at.idx !== ivLast) { if (ivLast !== -1 || at.into < 1000) if (!isMuted("iv")) cue(at.seg.phase === "work" ? 988 : at.seg.phase === "rest" ? 523 : 698, 0.35); ivLast = at.idx; ivSec = -1; }
+				var sec = Math.ceil(at.left / 1000); if (sec <= 3 && sec >= 1 && sec !== ivSec) { ivSec = sec; if (!isMuted("iv")) cue(784, 0.12); }
 			}
 		}
 		if (changed) { updateAwake(); save(); }

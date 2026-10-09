@@ -100,6 +100,9 @@
 		[].forEach.call($("ck-h").children, function (b) { b.setAttribute("aria-pressed", String((b.dataset.h === "12") === S.h12)); });
 		[].forEach.call($("ck-themes").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.t === S.theme)); });
 		$("ck-sec").checked = S.sec; $("ck-showdate").checked = S.date; $("ck-extra").checked = S.extra; $("ck-title").checked = S.title; $("ck-size").value = S.size;
+		$("ck-main").classList.toggle("ck-both", S.mode === "both");
+		[].forEach.call($("ck-fsctl").querySelectorAll("[data-fm]"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.fm === S.mode)); });
+		[].forEach.call($("ck-fsctl").querySelectorAll("[data-fx]"), function (b) { var k = b.dataset.fx; if (k === "sec" || k === "date") b.setAttribute("aria-pressed", String(!!S[k])); });
 		$("ck-tz").value = S.tz ? S.tz : ""; $("ck-sh") && ($("ck-sh").style.display = S.sec ? "" : "none");
 	}
 	$("ck-themes").innerHTML = THEMES.map(function (t) { return '<button type="button" class="tu-chip" data-t="' + t[0] + '" aria-pressed="false"><span class="ck-dot" style="background:' + t[2] + '"></span>' + t[1] + "</button>"; }).join("");
@@ -126,10 +129,23 @@
 	$("ck-quick").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) addZone(b.dataset.z); });
 	function toast(msg) { var t = $("ck-toast"); if (!t) { t = document.createElement("div"); t.id = "ck-toast"; t.className = "tu-toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 2200); }
 
+	/* full-screen quick controls: clock style, 12/24 h, seconds, date, theme (same state as the options below) */
+	$("ck-fsctl").addEventListener("click", function (e) {
+		var b = e.target.closest("button"); if (!b) return;
+		if (b.dataset.fm) S.mode = b.dataset.fm;
+		else if (b.dataset.fx === "h") S.h12 = !S.h12; else if (b.dataset.fx === "sec") S.sec = !S.sec; else if (b.dataset.fx === "date") S.date = !S.date;
+		else if (b.dataset.fx === "theme") { var i = 0; THEMES.forEach(function (t, n) { if (t[0] === S.theme) i = n; }); S.theme = THEMES[(i + 1) % THEMES.length][0]; }
+		save(); applyUi(); render(true); cache.w = "";
+	});
+	/* the bar fades out after a few idle seconds in full screen so the clock gets the whole screen; any touch / move / key brings it back */
+	var idleT = null;
+	function wake() { var m = $("ck-main"); m.classList.remove("ck-idle"); clearTimeout(idleT); if (m.classList.contains("ck-fs")) idleT = setTimeout(function () { m.classList.add("ck-idle"); }, 4000); }
+	["pointermove", "pointerdown", "keydown", "touchstart"].forEach(function (ev) { document.addEventListener(ev, wake, { passive: true }); });
+
 	/* ---------- full screen + wake lock ---------- */
 	var lock = null;
 	function setFull(on) {
-		var el = $("ck-main"); el.classList.toggle("ck-fs", on); $("ck-full").textContent = on ? "✕ Close" : "⤢ Full screen";
+		var el = $("ck-main"); el.classList.toggle("ck-fs", on); wake(); $("ck-full").textContent = on ? "✕ Close" : "⤢ Full screen";
 		if (on) { try { if (el.requestFullscreen) el.requestFullscreen().catch(function () {}); } catch (e) {} if ("wakeLock" in navigator) navigator.wakeLock.request("screen").then(function (l) { lock = l; }, function () {}); }
 		else { if (document.fullscreenElement && document.exitFullscreen) { try { document.exitFullscreen(); } catch (e) {} } if (lock) { lock.release().catch(function () {}); lock = null; } }
 	}

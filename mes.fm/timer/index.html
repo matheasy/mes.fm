@@ -275,6 +275,23 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
 	}
 
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+
 	/* Timer 2.0 */
 	.tu [hidden] {display:none !important;}
 	.tu kbd {font:0.85em ui-monospace,Menlo,monospace;padding:0.1em 0.4em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;color:#333;}
@@ -517,6 +534,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tm-dp__tile {overflow:hidden;} .tm-dp__tile.tm-dp__group {overflow:auto;}
 	#tm-dp .tm-dpg__rl {color:var(--dp11);} #tm-dp .tm-dpg__rt {color:var(--dp0);} #tm-dp .tm-dpg__rc {color:var(--dp14);} #tm-dp .tm-dpg__nl {color:var(--dp9);} #tm-dp .tm-dpg__now span:last-child {color:var(--dp17);}
 	.tm-dp__group [data-g] {padding-top:2.4vmin;}
+	.tm-dp .tm-mute {position:absolute;top:0.6vmin;right:7.6vmin;display:inline-flex;align-items:center;cursor:pointer;border:1px solid transparent;border-radius:0.5em;background:transparent;color:var(--dp9);padding:0.7vmin 0.9vmin;font:inherit;font-size:2.2vmin;opacity:0.75;} .tm-dp .tm-mute:hover {opacity:1;color:var(--dp17);border-color:var(--dp4);} .tm-dp .tm-mute svg {width:1em;height:1em;} .tm-dp .tm-mute[aria-pressed="true"] {opacity:1;color:var(--dp8);border-color:var(--dp8);}
 
 
 	@media print {
@@ -592,6 +610,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu-svg-line{stroke:#394a60}
 	body.dark-mode .tu-svg-text{fill:#cccccc}
 	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
 	body.dark-mode .tu .tm-ring__btns button{border:2px solid #333333;background:#1a1a1a;color:#e37e78}
 	body.dark-mode .tu .tm-timer{border:1px solid #29323d;background:#1a1a1a}
@@ -849,7 +870,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    </head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -866,7 +887,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/timer'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/timer/img/logo.png?v=2"></a>
+<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/timer'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/timer/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/timer'>
                                     <p class="calculator-title">Timer by MES</p>
@@ -955,10 +976,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
                                         <div id="fastcomments-widget"></div>                                    </div>                            </div>
-                        <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/clock"><img class="mes-aside__img mes-aside__img--logo" src="/clock/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Online Clock</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/alarm-clock"><img class="mes-aside__img mes-aside__img--logo" src="/img/alarm-clock-logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Online Alarm Clock</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
-<!-- /MES-ASIDE -->
-</div>
+                        </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
@@ -1005,7 +1023,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timer/js/timer.js?v=19" defer></script>
+	<script src="/timer/js/timer.js?v=20" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
@@ -1060,6 +1078,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     window.addEventListener('resize', function () { if (stuck) fit(); });
     update();
   })();
-</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --></body>
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script></body>
 
 </html>

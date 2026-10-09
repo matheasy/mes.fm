@@ -15,7 +15,8 @@
     aside.setAttribute("data-aside-family", fam);
     aside.setAttribute("aria-label", "More like this");
     aside.innerHTML = '<div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div>' +
-        '<div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2></div></div>';
+        '<div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2>' +
+        '<button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div></div>';
     var show = document.createElement("button");
     show.type = "button";
     show.className = "mes-rail-show";
