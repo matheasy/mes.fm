@@ -1,0 +1,49 @@
+	/* fluid simulator: a wide page with a dark stage. Stage colours are custom properties / literals so the derived dark theme leaves them alone. */
+	html body .outer-container {max-width:min(96vw,80em) !important;}
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
+	.tu [hidden] {display:none !important;}
+	.fl {--fl-bg:#080b12;--fl-line:#2a3040;--fl-text:#e8ecf5;--fl-dim:#9aa5bb;}
+	.fl-top {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:flex-end;margin-bottom:0.7em;}
+	.fl-pick {display:flex;flex-direction:column;gap:0.25em;flex:1 1 18em;max-width:30em;}
+	.fl-pick select {width:100%;}
+	.fl-run {display:flex;gap:0.4em;flex-wrap:wrap;}
+	.fl-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--fl-line);background:var(--fl-bg);}
+	.fl-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
+	.fl-stage {position:relative;margin:0 auto;max-width:100%;background:var(--fl-bg);}
+	#fl-canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;cursor:crosshair;}
+	#fl-canvas:focus-visible {box-shadow:inset 0 0 0 2px var(--accent);}
+	.fl-views, .fl-brushes, .fl-tools {position:absolute;display:flex;gap:0.25em;flex-wrap:wrap;}
+	.fl-views {left:0.6em;top:0.6em;max-width:calc(100% - 9em);}
+	.fl-tools {right:0.6em;top:0.6em;}
+	.fl-brushes {left:0.6em;bottom:0.6em;max-width:calc(100% - 1.2em);}
+	.fl-views button, .fl-brushes button, .fl-tools button {cursor:pointer;border:1px solid var(--fl-line);background:rgba(10,13,20,0.78);color:var(--fl-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font-size:0.82em;line-height:1;}
+	.fl-views button:hover, .fl-brushes button:hover, .fl-tools button:hover {border-color:var(--accent);color:#fff;}
+	.fl-views button[aria-pressed="true"], .fl-brushes button[aria-pressed="true"], .fl-tools button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.fl-hint {position:absolute;right:0.7em;bottom:0.7em;font-size:0.78em;color:var(--fl-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;transition:opacity 0.6s;max-width:45%;text-align:right;}
+	.fl-hint.is-gone {opacity:0;}
+	.fl-badge {position:absolute;left:0;top:0;}
+	.fl-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:0.5em;padding:0.6em;background:#0e1118;border-top:1px solid var(--fl-line);}
+	.fl-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
+	.fl-ro span {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--fl-dim);}
+	.fl-ro b {font-size:1.35em;color:var(--fl-text);font-variant-numeric:tabular-nums;line-height:1.15;}
+	.fl-ro small {font-size:0.72em;color:var(--fl-dim);line-height:1.3;}
+	.fl-ro--chart {grid-column:span 2;min-width:12em;}
+	.fl-ro--chart canvas {width:100%;height:4em;display:block;background:rgba(255,255,255,0.03);border-radius:0.3em;}
+	.fl-controls {margin-top:0.9em;}
+	.fl-scenario {margin:0 0 0.8em;font-size:0.92em;}
+	.fl-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.9em 1.4em;}
+	.fl-grid--small {margin-top:0.9em;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));}
+	.fl-controls input[type=range] {width:100%;accent-color:var(--accent);}
+	.fl-checks {display:flex;flex-wrap:wrap;gap:0.5em 1.2em;align-items:center;margin-top:0.9em;}
+	.fl-check {display:inline-flex;align-items:center;gap:0.4em;cursor:pointer;font-size:0.92em;}
+	.fl-try {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.9em;}
+	.fl-try:empty {display:none;}
+	.fl-eq {background:#f4f6f9;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.8em 1em;margin:0.8em 0;font-size:1.05em;line-height:1.9;overflow-x:auto;}
+	.fl-eq__n {display:inline-block;min-width:8.5em;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.fl-eq__f {font-family:"Cambria Math","STIX Two Math",Georgia,serif;white-space:nowrap;}
+	.fl-eq b {font-style:italic;font-weight:600;}
+	body.dark-mode #fl .fl-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #fl .fl-eq__n {color:#a0a8b3;}
+	@media (max-width: 640px) {
+		.fl-views {max-width:calc(100% - 1.2em);top:0.4em;left:0.4em;} .fl-tools {top:auto;bottom:3.1em;right:0.4em;} .fl-brushes {left:0.4em;bottom:0.4em;}
+		.fl-hint {display:none;} .fl-ro--chart {grid-column:1 / -1;}
+	}

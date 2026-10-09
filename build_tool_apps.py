@@ -161,6 +161,12 @@ APPS = {
                                desc="See where Earth, the Moon, the Sun and the planets are in the solar system today, or on any date: an interactive 3D-style map you can rotate and play forward or backward in time, with distances, light travel times, retrograde planets, eclipses and oppositions.",
                                js_v="4", pre_js=["/moon/js/astronomy.browser.min.js"], js_parts=["view.js"],
                                extra_js={"orrery-embed.js": ["lib.js", "view.js", "embed.js"]}),
+    # Fluid Simulator: incompressible Navier-Stokes in 2D (stable-fluids solver with MacCormack advection, node-tested: tool_apps_src/fluid-simulator-tests.js).
+    # lib.js = solver + scenarios, app.js = UI + canvas. Wide page (like the graphing calculators), not in add_sidebar.py.
+    "fluid-simulator": dict(title="MES Fluid Simulator", page_title="Fluid Simulator: Navier-Stokes in 2D",
+                            tag="Stir, heat and block a live fluid.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
+                            desc="A free 2D fluid simulator that solves the Navier-Stokes equations live in your browser: Karman vortex streets behind a cylinder, lid-driven cavity, rising hot plumes, Kelvin-Helmholtz rolls and merging vortices. Change the Reynolds number, stir with your finger, draw walls.",
+                            js_v="1"),
     # Search Engines: type one search and open it in many engines (tabs, tiled windows or same tab); sets for censorship / SEO / privacy comparisons; own engines.
     # lib.js = engine table + URL builder (node-testable: tool_apps_src/search-engines-tests.js), app.js = UI. Wide page, no sidebar.
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",

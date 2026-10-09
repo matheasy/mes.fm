@@ -1,0 +1,111 @@
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu fl" id="fl">
+		<div class="fl-top">
+			<label class="fl-pick"><span class="tu-label" id="fl-pick-l">Scenario</span>
+				<select id="fl-preset" class="tu-select" aria-labelledby="fl-pick-l"></select></label>
+			<div class="fl-run" role="group" aria-label="Simulation controls">
+				<button type="button" class="tu-btn tu-btn--primary" id="fl-play" aria-pressed="true" title="Pause or resume (Space)">❚❚ Pause</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fl-step" title="Advance one step while paused (→)">Step ▸</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fl-reset" title="Start the scenario again (R)">↺ Restart</button>
+			</div>
+		</div>
+
+		<div class="fl-wrap" id="fl-wrap">
+			<div class="fl-stage" id="fl-stage">
+				<canvas id="fl-canvas" tabindex="0" role="img" aria-label="Live 2D fluid simulation. Drag over it to stir the fluid, draw walls or add heat, depending on the tool chosen."></canvas>
+				<div class="fl-badge" id="fl-badge" aria-live="off"></div>
+				<div class="fl-views" role="group" aria-label="What to show">
+					<button type="button" data-view="smoke" aria-pressed="true" title="Coloured smoke carried by the flow">Smoke</button>
+					<button type="button" data-view="vort" aria-pressed="false" title="Vorticity: how fast each bit of fluid spins (blue one way, orange the other)">Spin</button>
+					<button type="button" data-view="speed" aria-pressed="false" title="Speed of the flow">Speed</button>
+					<button type="button" data-view="pressure" aria-pressed="false" title="Pressure (orange high, blue low)">Pressure</button>
+					<button type="button" id="fl-arrows" aria-pressed="false" title="Draw arrows showing the flow direction">Arrows</button>
+				</div>
+				<div class="fl-tools" role="toolbar" aria-label="Page tools">
+					<button type="button" id="fl-png" title="Save this frame as a picture" aria-label="Save as PNG">📷</button>
+					<button type="button" id="fl-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
+					<button type="button" id="fl-full" title="Full screen" aria-label="Full screen">⛶</button>
+				</div>
+				<div class="fl-brushes" role="group" aria-label="What dragging does">
+					<button type="button" data-brush="push" aria-pressed="true" title="Drag to push the fluid and add coloured smoke">✋ Stir</button>
+					<button type="button" data-brush="heat" aria-pressed="false" title="Drag to heat the fluid (hot fluid rises when buoyancy is on)">🔥 Heat</button>
+					<button type="button" data-brush="wall" aria-pressed="false" title="Drag to draw solid walls">▮ Wall</button>
+					<button type="button" data-brush="erase" aria-pressed="false" title="Drag to erase walls you drew">◌ Erase</button>
+				</div>
+				<div class="fl-hint" id="fl-hint">Drag on the flow to stir it</div>
+			</div>
+			<div class="fl-readouts" id="fl-readouts">
+				<div class="fl-ro"><span>Time</span><b id="fl-t">0.0</b><small>flow-through times</small></div>
+				<div class="fl-ro"><span>Reynolds number</span><b id="fl-re">200</b><small id="fl-re-s">set below</small></div>
+				<div class="fl-ro"><span>Top speed</span><b id="fl-vmax">0</b><small>× the inflow speed</small></div>
+				<div class="fl-ro" id="fl-st-box"><span>Shedding</span><b id="fl-st">–</b><small id="fl-st-s">Strouhal number</small></div>
+				<div class="fl-ro fl-ro--chart"><span id="fl-chart-t">Energy in the flow</span><canvas id="fl-chart" width="260" height="64" role="img" aria-label="Kinetic energy over time"></canvas><small id="fl-chart-s"></small></div>
+			</div>
+		</div>
+
+		<div class="tu-card fl-controls" id="fl-controls">
+			<p class="tu-note fl-scenario" id="fl-note"></p>
+			<div class="fl-grid">
+				<div class="tu-field"><span class="tu-label" id="fl-re-l">Reynolds number: <b id="fl-re-v">200</b></span>
+					<input type="range" id="fl-re-in" min="0" max="1000" step="1" aria-labelledby="fl-re-l">
+					<span class="tu-note">Low = thick honey, smooth and orderly. High = water or air: swirling, unsteady.</span></div>
+				<div class="tu-field" id="fl-u-f"><span class="tu-label" id="fl-u-l">Wind speed: <b id="fl-u-v"></b></span>
+					<input type="range" id="fl-u-in" min="0.3" max="2.5" step="0.05" aria-labelledby="fl-u-l">
+					<span class="tu-note">Speed of the incoming flow. Very high speeds look rougher because each step covers more than one cell.</span></div>
+				<div class="tu-field" id="fl-vort-f"><span class="tu-label" id="fl-vort-l">Swirl boost: <b id="fl-vort-v"></b></span>
+					<input type="range" id="fl-vort-in" min="0" max="1" step="0.05" aria-labelledby="fl-vort-l">
+					<span class="tu-note">Adds back small swirls that the grid smooths away (vorticity confinement). Pretty, but not part of the exact equations: keep it at 0 to see the plain physics.</span></div>
+				<div class="tu-field" id="fl-beta-f"><span class="tu-label" id="fl-beta-l">Buoyancy: <b id="fl-beta-v"></b></span>
+					<input type="range" id="fl-beta-in" min="0" max="0.03" step="0.001" aria-labelledby="fl-beta-l">
+					<span class="tu-note">How strongly hot fluid rises (the Boussinesq approximation). Try the Heat tool.</span></div>
+			</div>
+			<div class="fl-grid fl-grid--small">
+				<div class="tu-field tu-field--sm" id="fl-ob-f"><span class="tu-label">Obstacle</span>
+					<select id="fl-ob" class="tu-select" aria-label="Obstacle shape"><option value="cylinder">Cylinder</option><option value="square">Square</option><option value="plate">Flat plate</option><option value="wedge">Wedge</option><option value="tandem">Two in a row</option><option value="pair">Two side by side</option><option value="none">None</option></select></div>
+				<div class="tu-field tu-field--sm" id="fl-sz-f"><span class="tu-label" id="fl-sz-l">Size: <b id="fl-sz-v"></b></span><input type="range" id="fl-sz-in" min="0.08" max="0.4" step="0.01" aria-labelledby="fl-sz-l"></div>
+				<div class="tu-field tu-field--sm" id="fl-ang-f"><span class="tu-label" id="fl-ang-l">Tilt: <b id="fl-ang-v"></b></span><input type="range" id="fl-ang-in" min="-45" max="45" step="1" aria-labelledby="fl-ang-l"></div>
+				<div class="tu-field tu-field--sm"><span class="tu-label">Detail</span>
+					<select id="fl-res" class="tu-select" aria-label="Grid resolution"><option value="64">Fast (64 rows)</option><option value="96">Normal (96 rows)</option><option value="128">Fine (128 rows)</option><option value="192">Very fine (192 rows)</option></select></div>
+				<div class="tu-field tu-field--sm"><span class="tu-label">Speed</span>
+					<select id="fl-speed" class="tu-select" aria-label="Simulation speed"><option value="0.5">Slow</option><option value="1">Normal</option><option value="2">Fast</option><option value="3">Faster</option></select></div>
+			</div>
+			<div class="fl-checks">
+				<label class="fl-check"><input type="checkbox" id="fl-rake" checked> Coloured smoke streams in (tunnel)</label>
+				<label class="fl-check"><input type="checkbox" id="fl-mac" checked> Sharp advection (less blur)</label>
+				<label class="fl-check"><input type="checkbox" id="fl-fade"> Let the smoke fade</label>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fl-clearwalls">Clear drawn walls</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fl-clearsmoke">Clear smoke</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fl-link">🔗 Copy link to this setup</button>
+			</div>
+			<div class="fl-try" id="fl-try"></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What this simulates</h2>
+			<p>This is a real fluid solver running in your browser. It steps the <strong>incompressible Navier–Stokes equations</strong> forward in time on a grid: the equations that describe how water, air, oil and most other fluids move. Every swirl you see (the vortices curling off the cylinder, the rolls where two layers slide past each other, the plume of hot air) comes from the equations, not from an animation.</p>
+			<div class="fl-eq" role="math" aria-label="Navier–Stokes equations">
+				<div><span class="fl-eq__n">momentum</span> <span class="fl-eq__f">∂<b>u</b>/∂t + (<b>u</b>·∇)<b>u</b> = −∇p/ρ + ν ∇²<b>u</b> + <b>f</b></span></div>
+				<div><span class="fl-eq__n">no compression</span> <span class="fl-eq__f">∇·<b>u</b> = 0</span></div>
+			</div>
+			<p><b>u</b> is the velocity of the fluid at each point, p the pressure, ρ the density, ν the viscosity ("thickness") and <b>f</b> any push on the fluid, such as your finger, gravity acting on hot fluid, or a moving lid. The first line is Newton's second law for a small blob of fluid: its acceleration (left) comes from pressure differences, internal friction and outside forces (right). The second line says the fluid cannot be squeezed.</p>
+			<h3>What happens in each step</h3>
+			<ul>
+				<li><strong>Forces:</strong> add your stirring, buoyancy of hot fluid and, if you like, a little extra swirl.</li>
+				<li><strong>Advect:</strong> carry the flow, the smoke and the heat along the flow itself (the (<b>u</b>·∇)<b>u</b> term), using a second-order "MacCormack" scheme so edges stay sharp.</li>
+				<li><strong>Diffuse:</strong> viscosity smooths velocity differences (the ν∇²<b>u</b> term).</li>
+				<li><strong>Project:</strong> solve a Poisson equation for the pressure and subtract its gradient, which removes the compression so ∇·<b>u</b> = 0 again. Walls and obstacles are treated as solid: the flow cannot go through them.</li>
+			</ul>
+			<h3>The Reynolds number</h3>
+			<p>One number decides how a flow behaves: <strong>Re = U·L/ν</strong>, the speed times the size of the obstacle divided by the viscosity. It is the ratio of inertia (the fluid wanting to keep going) to viscosity (friction smoothing it out). Below Re ≈ 1 the flow oozes. Around 10 to 40 it wraps smoothly around a cylinder with two steady eddies behind it. Above Re ≈ 47 the wake wobbles and starts to shed alternating vortices (a <em>Kármán vortex street</em>). By a few thousand it is turbulent. Slide the Reynolds number on the cylinder scenario and watch the change. The page reports the <strong>Strouhal number</strong> St = f·D/U (the shedding frequency made dimensionless); for a cylinder it settles near <strong>0.2</strong>, as measured in real wind tunnels.</p>
+			<h3>How accurate is it?</h3>
+			<p>It is a teaching-grade simulator, not a research code. It is two-dimensional (real turbulence is three-dimensional, where vortices stretch and break into smaller ones, which 2D flows cannot do), the grid is coarse (a few thousand to ten thousand cells), and the numerical method adds a little artificial viscosity, so the <em>effective</em> Reynolds number is somewhat lower than the slider says at high settings. The solver is checked against known answers: the cylinder sheds at St ≈ 0.2, the Taylor–Green vortex decays at close to its exact rate (see that scenario), and the lid-driven cavity flows the right way round. Supercomputer weather and aircraft simulations solve the same equations in 3D on grids with billions of cells, with models for the turbulence they cannot resolve.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Why is Navier–Stokes famous?</strong> Nobody has proved that smooth solutions always exist in 3D, or that they can never blow up. It is one of the seven Clay Millennium Prize problems, with a US$1 million prize. Engineers get by anyway, because the numerical solutions work well in practice.</li>
+				<li><strong>What is vorticity?</strong> How fast a tiny paddle placed in the flow would spin. The <em>Spin</em> view colours it: orange one way, blue the other. Vortex streets show up beautifully there.</li>
+				<li><strong>Why does the flow behind the block start steady and then wobble?</strong> At moderate Re a steady wake is unstable: any tiny disturbance grows until the wake swings from side to side. The simulator nudges the flow slightly to start it off, as real roughness would.</li>
+				<li><strong>Can I use this for homework or a demo?</strong> Yes. It is free, runs offline once loaded and the <em>Copy link</em> button saves your exact setup.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/2d-graphing-calculator">2D graphing calculator</a> · <a href="/3d-graphing-calculator">3D graphing calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>
