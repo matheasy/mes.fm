@@ -356,7 +356,7 @@
 			o = ((ny - j) * nx) * 4;
 			for (i = 1; i <= nx; i++, o += 4) {
 				k = j * S + i;
-				if (this.solid[k]) { data[o] = solidC[0]; data[o + 1] = solidC[1]; data[o + 2] = solidC[2]; data[o + 3] = 255; continue; }
+				if (this.solid[k]) { var hid = opt.hideShape && this.shape[k] && !this.user[k], sc = hid ? bg : solidC; data[o] = sc[0]; data[o + 1] = sc[1]; data[o + 2] = sc[2]; data[o + 3] = 255; continue; }
 				if (view === "smoke") {
 					var t = this.T[k] * 0.35, rr, gg, bb;
 					if (opt.light) { rr = 255 - 255 * Math.min(1, this.g[k] * 0.7 + this.b[k] * 0.7) * 0.9; gg = 255 - 255 * Math.min(1, this.r[k] * 0.7 + this.b[k] * 0.7) * 0.9; bb = 255 - 255 * Math.min(1, this.r[k] * 0.7 + this.g[k] * 0.7) * 0.9; }

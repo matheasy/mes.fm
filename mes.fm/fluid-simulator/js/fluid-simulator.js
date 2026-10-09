@@ -356,7 +356,7 @@
 			o = ((ny - j) * nx) * 4;
 			for (i = 1; i <= nx; i++, o += 4) {
 				k = j * S + i;
-				if (this.solid[k]) { data[o] = solidC[0]; data[o + 1] = solidC[1]; data[o + 2] = solidC[2]; data[o + 3] = 255; continue; }
+				if (this.solid[k]) { var hid = opt.hideShape && this.shape[k] && !this.user[k], sc = hid ? bg : solidC; data[o] = sc[0]; data[o + 1] = sc[1]; data[o + 2] = sc[2]; data[o + 3] = 255; continue; }
 				if (view === "smoke") {
 					var t = this.T[k] * 0.35, rr, gg, bb;
 					if (opt.light) { rr = 255 - 255 * Math.min(1, this.g[k] * 0.7 + this.b[k] * 0.7) * 0.9; gg = 255 - 255 * Math.min(1, this.r[k] * 0.7 + this.b[k] * 0.7) * 0.9; bb = 255 - 255 * Math.min(1, this.r[k] * 0.7 + this.g[k] * 0.7) * 0.9; }
@@ -619,12 +619,32 @@
 	}
 	function draw() {
 		if (!sim || !img) return;
-		sim.render(img.data, view); offctx.putImageData(img, 0, 0);
+		sim.render(img.data, view, { hideShape: true }); offctx.putImageData(img, 0, 0);
 		ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
 		ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
+		drawShapes();
 		if (cfg.arrows) drawArrows();
 		if (cursor && (cfg.brush === "wall" || cfg.brush === "erase")) {
 			var sx = canvas.width / nx, rad = brushWallR() * sx; ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cursor.x * sx, (ny - cursor.y) * sx, rad, 0, 6.2832); ctx.stroke();
+		}
+	}
+	/* The obstacle is a handful of grid cells, which stretched to screen size looks stair-stepped and soft; draw its exact outline as a crisp vector shape instead
+	   (the cells under it are painted as background by render({hideShape})). Same geometry as Fluid.setShape in lib.js. */
+	function drawShapes() {
+		var s = par.shape; if (!s || s.kind === "none") return;
+		var sx = canvas.width / nx, X = function (x) { return x * sx; }, Y = function (y) { return (ny - y) * sx; };
+		var cx = s.cx * nx, cy = s.cy * ny, D = s.size * ny, r = D / 2, i;
+		ctx.fillStyle = "#586276"; ctx.strokeStyle = "#9aa7c0"; ctx.lineWidth = Math.max(1.5, sx * 0.18); ctx.lineJoin = "round";
+		function disc(x, y) { ctx.beginPath(); ctx.arc(X(x), Y(y), r * sx, 0, 6.2832); ctx.fill(); ctx.stroke(); }
+		function poly(pts) { ctx.beginPath(); pts.forEach(function (p, k) { k ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])); }); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+		if (s.kind === "cylinder") disc(cx, cy);
+		else if (s.kind === "tandem") { disc(cx, cy); disc(cx + 2.2 * D, cy + 0.04 * ny); }
+		else if (s.kind === "pair") { disc(cx, cy + 0.65 * D); disc(cx, cy - 0.65 * D); }
+		else if (s.kind === "square") poly([[cx - r, cy - r], [cx + r, cy - r], [cx + r, cy + r], [cx - r, cy + r]]);
+		else if (s.kind === "wedge") poly([[cx - 0.45 * D, cy + r], [cx + 0.45 * D, cy], [cx - 0.45 * D, cy - r]]);
+		else if (s.kind === "plate") {
+			var a = (s.angle || 0) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), hl = D * 0.9, ht = Math.max(1.2, D * 0.045), pts = [[-hl, -ht], [hl, -ht], [hl, ht], [-hl, ht]];
+			poly(pts.map(function (p) { return [cx + p[0] * ca - p[1] * sa, cy + p[0] * sa + p[1] * ca]; }));
 		}
 	}
 	function drawArrows() {
