@@ -1,0 +1,75 @@
+	<div class="tu" id="re">
+		<div class="tu-card">
+			<div class="tu-row">
+				<div class="tu-field" style="flex-basis:16em;"><label for="re-fluid">Fluid</label><select id="re-fluid" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm" id="re-temp-f" style="flex-basis:9em;"><label for="re-temp">Temperature</label>
+					<div class="tu-suffix"><input id="re-temp" class="tu-input" type="number" step="1" value="20" inputmode="decimal"><span>°C</span></div></div>
+				<div class="tu-field" style="flex-basis:18em;"><label for="re-geom">Flow situation</label><select id="re-geom" class="tu-select"></select></div>
+			</div>
+			<div class="tu-row" id="re-custom" style="margin-top:0.8em;" hidden>
+				<div class="tu-field tu-field--sm"><label for="re-rho">Density</label><div class="re-pair"><input id="re-rho" class="tu-input" type="text" value="1000" inputmode="decimal"><select id="re-rho-u" class="tu-select"></select></div></div>
+				<div class="tu-field tu-field--sm"><label for="re-mu">Dynamic viscosity</label><div class="re-pair"><input id="re-mu" class="tu-input" type="text" value="1" inputmode="decimal"><select id="re-mu-u" class="tu-select"></select></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field tu-field--sm" id="re-v-f"><label for="re-v" id="re-v-l">Speed</label><div class="re-pair"><input id="re-v" class="tu-input" type="text" value="1" inputmode="decimal"><select id="re-v-u" class="tu-select"></select></div></div>
+				<div class="tu-field tu-field--sm" id="re-l-f"><label for="re-l" id="re-l-l">Size</label><div class="re-pair"><input id="re-l" class="tu-input" type="text" value="5" inputmode="decimal"><select id="re-l-u" class="tu-select"></select></div></div>
+				<div class="tu-field tu-field--sm" id="re-target-f" hidden><label for="re-target">Target Reynolds number</label><input id="re-target" class="tu-input" type="text" value="2300" inputmode="decimal"></div>
+				<div class="tu-field tu-field--sm" id="re-rough-f" hidden><label for="re-rough">Pipe material</label><select id="re-rough" class="tu-select"></select></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;align-items:center;">
+				<div class="tu-seg" id="re-solve" role="group" aria-label="What to work out">
+					<button type="button" data-s="re" aria-pressed="true">Find Re</button>
+					<button type="button" data-s="v" aria-pressed="false">Find the speed for a target Re</button>
+					<button type="button" data-s="l" aria-pressed="false">Find the size for a target Re</button>
+				</div>
+				<button type="button" class="tu-btn tu-btn--ghost" id="re-link">🔗 Copy link</button>
+			</div>
+		</div>
+
+		<div class="tu-stats">
+			<div class="tu-stat tu-stat--hero"><div class="tu-stat__label" id="re-main-l">Reynolds number</div><div class="tu-stat__value" id="re-main">–</div><div class="tu-stat__sub" id="re-main-s"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Flow regime</div><div class="tu-stat__value re-regime" id="re-regime">–</div><div class="tu-stat__sub" id="re-regime-s"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Kinematic viscosity ν</div><div class="tu-stat__value" id="re-nu">–</div><div class="tu-stat__sub" id="re-nu-s"></div></div>
+		</div>
+
+		<div class="tu-card">
+			<div class="re-scale-t">Where this sits on the Reynolds scale</div>
+			<div id="re-scale" role="img" aria-label="Reynolds number on a logarithmic scale with the flow regimes shaded"></div>
+			<div class="tu-row" style="margin-top:0.6em;align-items:center;">
+				<a class="tu-btn tu-btn--primary" id="re-sim" href="/fluid-simulator">▶ See this Reynolds number in the Fluid Simulator</a>
+				<span class="tu-note" id="re-sim-s"></span>
+			</div>
+		</div>
+
+		<div class="tu-card" id="re-extra-card" hidden>
+			<h2 class="re-h">More results for this situation</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="re-extra"><thead><tr><th>Quantity</th><th>Value</th><th>How</th></tr></thead><tbody></tbody></table></div>
+			<p class="tu-note">These use standard textbook correlations and are good to roughly 10 to 20%, not to the last digit.</p>
+		</div>
+
+		<div class="tu-card">
+			<h2 class="re-h">Typical Reynolds numbers</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="re-examples"><thead><tr><th>Flow</th><th>Re (about)</th></tr></thead><tbody></tbody></table></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What the Reynolds number is</h2>
+			<p>The Reynolds number is the single number that tells you what kind of flow you have. It is the ratio of <strong>inertial forces</strong> (the fluid wanting to keep moving) to <strong>viscous forces</strong> (the internal friction that smooths things out):</p>
+			<div class="re-eq">Re = ρ · v · L / μ = v · L / ν</div>
+			<p>ρ is the density, v the speed, L a size that matters for the flow (a pipe's diameter, a wing's chord, a ball's diameter), μ the dynamic viscosity and ν = μ/ρ the kinematic viscosity. Re has no units, so a small wind tunnel model and a full-size aircraft with the same Reynolds number flow in the same way: the idea behind scale-model testing.</p>
+			<h3>How to use the calculator</h3>
+			<ul>
+				<li><strong>Pick the fluid.</strong> Water and air change with temperature (the page uses accepted formulas for both); other fluids use values at about 20 °C. Choose <em>Custom</em> to enter your own density and viscosity.</li>
+				<li><strong>Pick the situation</strong> so you get the right regime limits. Flow in a pipe turns turbulent near Re 2,300 to 4,000; along a flat plate near 500,000; behind a cylinder a regular vortex street starts at about 47.</li>
+				<li><strong>Enter speed and size</strong> in any units, or choose <em>Find the speed</em> or <em>Find the size</em> to work backwards from a target Reynolds number, for example to see how fast water can flow in a hose and stay laminar.</li>
+			</ul>
+			<h3>Common questions</h3>
+			<ul>
+				<li><strong>What Reynolds number is turbulent?</strong> It depends on the geometry. For pipe flow, below about 2,300 is laminar and above about 4,000 is turbulent. Between them it is unpredictable.</li>
+				<li><strong>Which length do I use?</strong> The one conventional for the shape: inside diameter for a pipe, diameter for a sphere or cylinder, chord for a wing, distance from the leading edge for a plate. For a non-circular duct use the hydraulic diameter, 4 × area ÷ wetted perimeter.</li>
+				<li><strong>Does a high Reynolds number mean fast?</strong> Not only. A huge, slow ship has a far higher Re than a fast but tiny insect, because Re grows with size as well as speed and falls with viscosity.</li>
+				<li><strong>Why do small organisms live at low Re?</strong> A bacterium swimming in water has Re around 0.00001: viscosity dominates and it stops the moment it stops pushing, like swimming through honey.</li>
+			</ul>
+			<p>Related: <a href="/fluid-simulator">Fluid Simulator</a> (watch the flow change as you slide the Reynolds number) · <a href="/unit-conversion">Unit Conversion</a> · <a href="/calculators">More calculators</a></p>
+		</div>
+	</div>

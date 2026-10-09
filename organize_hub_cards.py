@@ -29,7 +29,7 @@ PAGES = {
         ("money", "Money &amp; Finance", ["mortgagecalculator", "inflationcalculator", "vatcalculator", "youtubemoney/index.html", "impermanent-loss-calculator"]),
         ("algebra", "Algebra &amp; Calculus", ["calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "2d-graphing-calculator", "3d-graphing-calculator"]),
         ("everyday", "Everyday Math &amp; Health", ["days-between-dates-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
-        ("fun", "Science &amp; Fun", ["earth-curvature-calculator", "gematria", "pokemongocalculator"]),
+        ("fun", "Science &amp; Fun", ["reynolds-number-calculator", "earth-curvature-calculator", "gematria", "pokemongocalculator"]),
     ]),
     "tools.html": dict(noun="tools", popular=["timer", "speedreader", "moon", "emoji"], cats=[
         ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols", "copy-text", "enigma"]),

@@ -1,0 +1,12 @@
+	.re-pair {display:flex;gap:0.4em;} .re-pair .tu-input {flex:1 1 6em;min-width:0;} .re-pair .tu-select {flex:0 0 auto;width:auto;max-width:9em;}
+	.re-h {font-size:1.1em;margin:0 0 0.6em;border-bottom:0;padding-bottom:0;}
+	.re-scale-t {font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;margin-bottom:0.4em;}
+	#re-scale svg {width:100%;height:auto;display:block;}
+	.re-regime {font-size:1.25em !important;}
+	.re-eq {background:#f4f6f9;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.7em 1em;margin:0.7em 0;font-size:1.15em;font-family:"Cambria Math","STIX Two Math",Georgia,serif;text-align:center;}
+	body.dark-mode #re .re-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #re .re-scale-t {color:#a0a8b3;}
+	#re .re-zone-0 {fill:#bfe3f7;} #re .re-zone-1 {fill:#fde9a6;} #re .re-zone-2 {fill:#f9c08a;} #re .re-zone-3 {fill:#f2a0a0;}
+	#re .re-zl {font:11px system-ui,sans-serif;fill:#223;} #re .re-ax {stroke:#8a93a0;} #re .re-ax-t {font:11px system-ui,sans-serif;fill:#667;text-anchor:middle;}
+	#re .re-mark {stroke:#111;stroke-width:3;} #re .re-mark-t {font:700 13px system-ui,sans-serif;fill:#111;}
+	body.dark-mode #re .re-zone-0 {fill:#1d4a66;} body.dark-mode #re .re-zone-1 {fill:#6b5a1c;} body.dark-mode #re .re-zone-2 {fill:#7a4a1c;} body.dark-mode #re .re-zone-3 {fill:#7a2a2a;}
+	body.dark-mode #re .re-zl {fill:#e8ecf2;} body.dark-mode #re .re-ax-t {fill:#a0a8b3;} body.dark-mode #re .re-mark {stroke:#fff;} body.dark-mode #re .re-mark-t {fill:#fff;}
