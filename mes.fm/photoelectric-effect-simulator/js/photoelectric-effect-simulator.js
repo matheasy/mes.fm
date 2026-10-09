@@ -217,11 +217,10 @@
 		sync();
 	});
 	$("pe-pause").onclick = function () { paused = !paused; this.setAttribute("aria-pressed", String(paused)); this.textContent = paused ? "▶" : "❚❚"; };
-	$("pe-theatre").onclick = function () { var on = !document.documentElement.classList.contains("page-theatre"); document.documentElement.classList.toggle("page-theatre", on); document.documentElement.classList.toggle("page-wide", on); try { localStorage.setItem("pageMode", on ? "theatre" : "std"); localStorage.setItem("pageWide", on ? "1" : "0"); } catch (e) {} this.setAttribute("aria-pressed", String(on)); setTimeout(size, 60); };
-	$("pe-theatre").setAttribute("aria-pressed", String(document.documentElement.classList.contains("page-theatre")));
 	$("pe-full").onclick = function () { var w = $("pe-wrap"); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () {}); };
 	document.addEventListener("fullscreenchange", function () { setTimeout(size, 60); });
 	var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(size, 80); });
+	if (window.ResizeObserver) new ResizeObserver(function () { clearTimeout(rt); rt = setTimeout(size, 60); }).observe($("pe-stage"));
 	var tt; function toast(msg) { var t = $("pe-toast"); if (!t) { t = document.createElement("div"); t.id = "pe-toast"; t.className = "tu-toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(tt); tt = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 2200); }
 	new MutationObserver(drawGraphs).observe(document.body, { attributes: true, attributeFilter: ["class"] });
 	size(); sync(); paintLab(); requestAnimationFrame(frame);

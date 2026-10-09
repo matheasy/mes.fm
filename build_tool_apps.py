@@ -176,7 +176,7 @@ APPS = {
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
                             desc="Free photoelectric effect simulator: change the metal, wavelength, intensity and voltage and watch electrons leave the surface. See the threshold frequency, stopping voltage, kinetic energy and current graphs, and measure Planck's constant from your own data.",
-                            js_v="1"),
+                            js_v="2"),
     # Sum of Integers & Series Calculator: 1..n, any range, k-th powers (Faulhaber, exact BigInt), odd / even, multiples, arithmetic / geometric series, Fibonacci, Sigma of a formula. lib.js node-tested (tool_apps_src/sum-of-integers-tests.js). Keyword aliases redirect in vercel.json.
     "sum-of-integers-calculator": dict(title="MES Sum of Integers Calculator", page_title="Sum of Integers, Squares & Series Calculator",
                             tag="Add up integers, squares, cubes and series.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",

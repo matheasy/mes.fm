@@ -1,11 +1,11 @@
-	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu pe" id="pe">
 		<div class="pe-wrap" id="pe-wrap">
 			<div class="pe-stage" id="pe-stage">
 				<canvas id="pe-canvas" role="img" aria-label="Animated photoelectric effect: light hits a metal plate and knocks electrons toward a collector"></canvas>
-				<div class="pe-tools"><button type="button" id="pe-pause" aria-pressed="false" title="Pause the animation">❚❚</button><button type="button" id="pe-theatre" title="Theatre: use nearly the whole window" aria-pressed="false">Theatre</button><button type="button" id="pe-full" title="Full screen" aria-label="Full screen">⛶</button></div>
-				<div class="pe-verdict" id="pe-verdict" aria-live="polite"></div>
+				<div class="pe-tools"><button type="button" id="pe-pause" aria-pressed="false" title="Pause the animation">❚❚</button><button type="button" id="pe-full" title="Full screen" aria-label="Full screen">⛶</button></div>
 			</div>
+			<div class="pe-verdict" id="pe-verdict" aria-live="polite"></div>
 		</div>
 
 		<div class="tu-card pe-controls">
