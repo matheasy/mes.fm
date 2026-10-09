@@ -271,7 +271,7 @@ APPS = {
     "clock": dict(title="Clock by MES", page_title="Online Clock",
                   tag="A big, clean clock for any time zone.", accent="#2563a8", dark="#1c4a80", tint="#e3eefb",
                   desc="Free online clock: a big digital, analog or both clock for your location or any city, 12 or 24 hour, with colour themes including a red night mode, a full-screen display that keeps your screen awake, and world clocks for up to eight cities.",
-                  js_v="2",
+                  js_v="3",
                   nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timer'>Timer</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/timezone'>Time Zones</a></li>",
                   menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li>"),
     # Short Links (new 2026-10-06, mes.fm/go; aliases /redirects /short-links /shortlinks /urls): every redirect of vercel.json, categorized + searchable + a helper that writes the next line.

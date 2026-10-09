@@ -48,10 +48,10 @@
 	.tu .ck-icon[aria-pressed="true"] {border-color:var(--ck-acc);color:var(--ck-fg);}
 	.tu .ck-fs .ck-bar {transition:opacity 0.4s;} .tu .ck-fs.ck-idle .ck-bar {opacity:0;pointer-events:none;}
 	/* landscape full screen with analog + digital: face on the left, time and date to its right, so the clock stays as big as the screen allows */
-	@media (orientation: landscape) {
+	@media (min-aspect-ratio: 7/5) {
 		.tu .ck-fs.ck-both .ck-stage {display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:1fr 1fr;column-gap:3vw;align-items:center;justify-items:center;}
 		.tu .ck-fs.ck-both .ck-analog {grid-column:1;grid-row:1 / span 2;width:min(88vh,46vw);}
-		.tu .ck-fs.ck-both .ck-digital {grid-column:2;grid-row:1;align-self:end;font-size:min(10.5vw,26vh);}
+		.tu .ck-fs.ck-both .ck-digital {grid-column:2;grid-row:1;align-self:end;font-size:min(7.6vw,24vh);min-width:0;}
 		.tu .ck-fs.ck-both .ck-date {grid-column:2;grid-row:2;align-self:start;font-size:min(2.8vw,5.5vh);}
 		.tu .ck-fs.ck-both .ck-stage:has(.ck-date[hidden]) .ck-digital {grid-row:1 / span 2;align-self:center;}
 	}
