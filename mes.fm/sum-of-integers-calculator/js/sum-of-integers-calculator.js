@@ -191,7 +191,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SUM;
 			r.val = SUM.powRange(k, a2, b2); r.label = "Σ i" + (k === 1 ? "" : sup(k)) + " from " + G(a2.toString()) + " to " + G(b2.toString());
 			p("For the first n whole numbers, the sum of k-th powers has a closed form" + (k <= 5 ? ":" : " (Faulhaber's formula, from Bernoulli numbers):")); eq("1" + sup(k) + " + 2" + sup(k) + " + … + n" + sup(k) + " = " + formulaPow(k));
 			if (a2 > 1n || a2 < 0n) p("For a range, the calculator subtracts the sums up to the two ends" + (a2 < 0n ? ", using that a negative number to an " + (k % 2 ? "odd power stays negative and to an even power turns positive." : "even power is positive.") : ".")); else eq("Sum = S(" + G(b2.toString()) + ")" + (a2 === 0n ? "" : "") );
-			var cn = b2 - a2 + 1n; r.terms = function (i) { return (a2 + BigInt(i) - 1n) ** BigInt(k); }; r.count = cn; r.brute = function () { var t = 0n; for (var i = a2; i <= b2; i++) t += i ** BigInt(k); return t; };
+			var cn = b2 - a2 + 1n; r.terms = function (i) { return (a2 + BigInt(i) - 1n) ** BigInt(k); }; r.termText = function (i) { var b = a2 + BigInt(i) - 1n; return (b < 0n ? "(" + G(b.toString()) + ")" : G(b.toString())) + sup(k); }; r.count = cn; r.brute = function () { var t = 0n; for (var i = a2; i <= b2; i++) t += i ** BigInt(k); return t; };
 			if (k === 0) r.sub = "k = 0 counts every term as 1 (0⁰ = 1).";
 		} else if (S.m === "oddeven") {
 			var odd = v.t === "odd", nn = posInt(v.n, v.x === "upto" ? "N" : "n", BIG), cnt2;
@@ -215,7 +215,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SUM;
 		} else if (S.m === "geom") {
 			var ga = SUM.parseQ(v.a), gr = SUM.parseQ(v.r); if (!ga) throw new Error("First term: enter a number"); if (!gr) throw new Error("Ratio: enter a number, e.g. 2, 0.5 or 1/3");
 			if (v.inf === "1") { var inf = SUM.geometricInfinite(ga, gr); r.label = "Infinite geometric series"; if (inf === null) { r.diverge = true; p("The series only settles on a value when the ratio is between −1 and 1. With r = " + esc(SUM.qstr(gr)) + " the terms do not shrink, so the sum grows without limit."); } else { r.q = inf; eq("Sum = a ÷ (1 − r) = " + SUM.qstr(ga) + " ÷ (1 − " + SUM.qstr(gr) + ")"); p("This works because |r| < 1, so the terms shrink toward zero."); } }
-			else { var gn = posInt(v.n, "Number of terms", 100000n); if (gn < 1n) throw new Error("Use at least 1 term"); r.q = SUM.geometric(ga, gr, gn); r.label = "Geometric series, " + G(gn.toString()) + " terms"; eq(gr.n === gr.d ? "r = 1, so every term equals a: Sum = n × a" : "Sum = a(1 − rⁿ) ÷ (1 − r) = " + SUM.qstr(ga) + " × (1 − " + SUM.qstr(gr) + "^" + gn + ") ÷ (1 − " + SUM.qstr(gr) + ")"); r.terms = function (i) { return SUM.mul(ga, SUM.pow(gr, i - 1)); }; r.count = gn; r.isQ = true; r.brute = function () { var t = SUM.Q(0), c = ga; for (var i = 0n; i < gn; i++) { t = SUM.add(t, c); c = SUM.mul(c, gr); } return t; }; }
+			else { var gn = posInt(v.n, "Number of terms", 100000n); if (gn < 1n) throw new Error("Use at least 1 term"); r.q = SUM.geometric(ga, gr, gn); r.label = "Geometric series, " + G(gn.toString()) + " terms"; eq(gr.n === gr.d ? "r = 1, so every term equals a: Sum = n × a" : "Sum = a(1 − rⁿ) ÷ (1 − r) = " + SUM.qstr(ga) + " × (1 − " + SUM.qstr(gr) + "^" + gn + ") ÷ (1 − " + SUM.qstr(gr) + ")"); r.terms = function (i) { return SUM.mul(ga, SUM.pow(gr, Number(i) - 1)); }; r.count = gn; r.isQ = true; r.brute = function () { var t = SUM.Q(0), c = ga; for (var i = 0n; i < gn; i++) { t = SUM.add(t, c); c = SUM.mul(c, gr); } return t; }; }
 		} else if (S.m === "spec") {
 			var sn = Number(posInt(v.n, "n", v.t === "fib" ? 100000n : BIG));
 			if (v.t === "fib") { r.val = SUM.fibSum(sn); r.label = "F₁ + … + F" + sub(sn); p("The Fibonacci numbers 1, 1, 2, 3, 5, 8, … add up to one less than the number two places further on."); eq("F₁ + … + Fₙ = Fₙ₊₂ − 1 = F" + sub(sn + 2) + " − 1"); r.terms = function (i) { return SUM.fib(i); }; r.count = BigInt(sn); r.brute = function () { var t = 0n; for (var i = 1; i <= sn; i++) t += SUM.fib(i); return t; }; if (sn > 3000) r.brute = null; }
@@ -230,7 +230,33 @@ if (typeof module !== "undefined" && module.exports) module.exports = SUM;
 	}
 	function sup(k) { return String(k).split("").map(function (c) { return "⁰¹²³⁴⁵⁶⁷⁸⁹"[+c]; }).join(""); } function sub(k) { return String(k).split("").map(function (c) { return "₀₁₂₃₄₅₆₇₈₉"[+c]; }).join(""); }
 
-	function render() {
+	/* the label above the answer: the series itself, as many leading terms as fit on one line, then "+ … + last" (re-fitted on resize) */
+	var mctx = document.createElement("canvas").getContext("2d");
+	function termStr(r, i) {
+		if (r.termText) return r.termText(i);
+		var t = r.terms(i), x = r.isQ ? G(SUM.qstr(t)) : G(t.toString());
+		return /^-/.test(x) ? "(" + x + ")" : x;
+	}
+	function setLabel(r) {
+		var el = $("sm-label"); el.title = r.label;
+		if (!r.terms || r.count === undefined || r.count < 1n) { el.classList.remove("sm-series"); el.textContent = r.label; return; }
+		el.classList.add("sm-series");
+		var cs = getComputedStyle(el); mctx.font = cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+		var avail = el.clientWidth || el.parentNode.clientWidth || 300, n = r.count <= 100000n ? Number(r.count) : Infinity, cap = 80, k;
+		function build(kk) {
+			if (n !== Infinity && kk >= n) { var all = []; for (var i = 1; i <= n; i++) all.push(termStr(r, i)); return all.join(" + "); }
+			var head = []; for (var j = 1; j <= kk; j++) head.push(termStr(r, j));
+			return head.join(" + ") + " + … + " + termStr(r, r.count);
+		}
+		var best = build(Math.min(2, n === Infinity ? 2 : n));
+		for (k = 1; k <= cap; k++) {
+			if (n !== Infinity && k > n) break;
+			var cand = build(k); if (mctx.measureText(cand).width > avail) break; best = cand;
+			if (n !== Infinity && k >= n) break;
+		}
+		el.textContent = best;
+	}
+		function render() {
 		[].forEach.call($("sm-modes").children, function (b) { b.setAttribute("aria-selected", String(b.dataset.m === S.m)); });
 		var r; try { r = compute(); } catch (e) { $("sm-val").textContent = "–"; $("sm-val").classList.remove("sm-long"); $("sm-label").textContent = "Sum"; $("sm-sub").textContent = e.message; $("sm-steps-card").hidden = true; $("sm-terms-card").hidden = true; return; }
 		var text, long = false, exact = "";
@@ -239,7 +265,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = SUM;
 		else if (r.q) { var q = r.q, dec = SUM.qdec(q, 15); text = SUM.isInt(q) ? G(q.n.toString()) : SUM.qstr(q); exact = text; if (!SUM.isInt(q)) r.sub = "≈ " + dec; }
 		else { text = G(r.val.toString()); exact = r.val.toString(); }
 		var digits = text.replace(/[^0-9]/g, "").length; long = digits > 22 || text.length > 22;
-		$("sm-val").textContent = text; $("sm-val").classList.toggle("sm-long", long); $("sm-label").textContent = r.label;
+		root._r = r; root._text = text; setLabel(r);
+		$("sm-val").textContent = text; $("sm-val").classList.toggle("sm-long", long); 
 		var subTxt = r.sub || ""; if (!r.q && r.val !== undefined && digits > 12) subTxt = digits + " digits" + (r.val > 10n ** 15n ? " ≈ " + sci(r.val) : "") + (subTxt ? " · " + subTxt : "");
 		$("sm-sub").textContent = subTxt;
 		/* steps + check */
@@ -270,5 +297,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SUM;
 	$("sm-copy").onclick = function () { copy(root._exact || $("sm-val").textContent, "Result copied"); };
 	$("sm-link").onclick = function () { var o = new URLSearchParams(); o.set("m", S.m); Object.keys(S.v[S.m]).forEach(function (k) { o.set(k, S.v[S.m][k]); }); copy(location.origin + location.pathname + "?" + o.toString(), "Link copied"); };
 	form(); render();
+	var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(function () { if (root._r) setLabel(root._r); }, 80); });
+	if (window.ResizeObserver) new ResizeObserver(function () { clearTimeout(rz); rz = setTimeout(function () { if (root._r) setLabel(root._r); }, 60); }).observe($("sm-label").parentNode);
 	if (fromLink) history.replaceState(null, "", location.pathname);
 })();

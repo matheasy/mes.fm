@@ -13,3 +13,5 @@
 	body.dark-mode #sm .sm-modes button {background:#262626;border-color:#4a4a4a;color:#ddd;} body.dark-mode #sm .sm-modes button[aria-selected="true"] {color:#fff;}
 	body.dark-mode #sm #sm-steps .sm-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #sm #sm-steps .sm-ok {color:#6ee79a;}
 	.sm-ftab td {text-align:left;}
+	#sm .sm-hero .tu-stat__label.sm-series {text-transform:none;letter-spacing:0;font-size:0.95em;font-weight:600;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums;color:#4c3a86;}
+	body.dark-mode #sm .sm-hero .tu-stat__label.sm-series {color:#cdbdf5;}

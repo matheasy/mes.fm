@@ -181,7 +181,7 @@ APPS = {
     "sum-of-integers-calculator": dict(title="MES Sum of Integers Calculator", page_title="Sum of Integers, Squares & Series Calculator",
                             tag="Add up integers, squares, cubes and series.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                             desc="Free sum of integers calculator: add 1 to n, any range, squares, cubes or any power, odd or even numbers, multiples, arithmetic and geometric series, Fibonacci numbers, or Σ of your own formula. Exact answers for huge numbers with the formula and worked steps.",
-                            js_v="1"),
+                            js_v="2"),
     # Search Engines: type one search and open it in many engines (tabs, tiled windows or same tab); sets for censorship / SEO / privacy comparisons; own engines.
     # lib.js = engine table + URL builder (node-testable: tool_apps_src/search-engines-tests.js), app.js = UI. Wide page, no sidebar.
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",
