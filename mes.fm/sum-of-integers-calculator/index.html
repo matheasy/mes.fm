@@ -1,0 +1,791 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Sum of Integers Calculator -- mes.fm/sum-of-integers-calculator -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/sum-of-integers-calculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/sum-of-integers-calculator" />                    <title>MES Sum of Integers Calculator | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#7c3aed;color:white;}
+        .button {color:#7c3aed;border:0.125em solid#7c3aed;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#7c3aed; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#7c3aed; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#7c3aed;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#7c3aed;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#7c3aed;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#5b21b6;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#7c3aed;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:100;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#7c3aed;border:0.125em solid#7c3aed;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#5b21b6;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#7c3aed;}
+        .dropdown-symbol--dark {color:#7c3aed;}
+        .button--active {background-color:#7c3aed;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#7c3aed;--accent-dark:#5b21b6;--tint:#f1eafe;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #f1eafe;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#f1eafe;border-color:#f1eafe;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #f1eafe;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#f1eafe;border-color:#f1eafe;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#f1eafe;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#f1eafe;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#ae85f4 !important;--accent-dark:#ae85f4 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+
+	.sm-modes {display:flex;flex-wrap:wrap;gap:0.4em;margin-bottom:0.9em;}
+	.sm-modes button {cursor:pointer;font-size:0.9em;padding:0.45em 0.9em;border-radius:1.4em;border:1px solid #c3c9d2;background:#fff;color:#444;}
+	.sm-modes button:hover {border-color:var(--accent);color:var(--accent);} .sm-modes button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.sm-form {display:flex;flex-wrap:wrap;gap:0.8em 1em;align-items:flex-end;}
+	.sm-form .tu-field {flex:1 1 9em;} .sm-form .tu-field--wide {flex:3 1 18em;}
+	.sm-form .sm-note {flex:1 1 100%;margin:0;} .sm-form .sm-check {display:inline-flex;align-items:center;gap:0.4em;cursor:pointer;font-size:0.92em;padding-bottom:0.5em;}
+	.sm-chips {display:flex;flex-wrap:wrap;gap:0.4em;flex:1 1 100%;}
+	.sm-actions {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.9em;}
+	.sm-val {word-break:break-all;font-variant-numeric:tabular-nums;} .sm-val.sm-long {font-size:1.1em;}
+	.sm-h {font-size:1.1em;margin:0 0 0.6em;border-bottom:0;padding-bottom:0;}
+	#sm-steps p {margin:0.3em 0;line-height:1.55;} #sm-steps .sm-eq {background:#f4f6f9;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.55em 0.9em;margin:0.5em 0;font-family:"Cambria Math","STIX Two Math",Georgia,serif;overflow-x:auto;word-break:break-all;}
+	#sm-steps .sm-ok {color:#15803d;font-weight:600;}
+	body.dark-mode #sm .sm-modes button {background:#262626;border-color:#4a4a4a;color:#ddd;} body.dark-mode #sm .sm-modes button[aria-selected="true"] {color:#fff;}
+	body.dark-mode #sm #sm-steps .sm-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #sm #sm-steps .sm-ok {color:#6ee79a;}
+	.sm-ftab td {text-align:left;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent-dark:#7230d9}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #1b0346}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#171025;border-color:#1b0346}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#171025;border-color:#1b0346}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#171025}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .sm-modes button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
+	body.dark-mode #sm-steps .sm-eq{background:#16191d;border:1px solid #28323e}
+	body.dark-mode #sm-steps .sm-ok{color:#73e89f}
+	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #7c3aed;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #7c3aed; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(124,58,237,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/sum-of-integers-calculator" />            <meta property="og:title" content="MES Sum of Integers Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/sum-of-integers-calculator/img/logo-big.png" />
+        <meta property="og:description" content="Free sum of integers calculator: add 1 to n, any range, squares, cubes or any power, odd or even numbers, multiples, arithmetic and geometric series, Fibonacci numbers, or Σ of your own formula. Exact answers for huge numbers with the formula and worked steps." />
+
+        <meta name="description" content="Free sum of integers calculator: add 1 to n, any range, squares, cubes or any power, odd or even numbers, multiples, arithmetic and geometric series, Fibonacci numbers, or Σ of your own formula. Exact answers for huge numbers with the formula and worked steps.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Sum of Integers Calculator">
+        <meta name="twitter:description" content="Free sum of integers calculator: add 1 to n, any range, squares, cubes or any power, odd or even numbers, multiples, arithmetic and geometric series, Fibonacci numbers, or Σ of your own formula. Exact answers for huge numbers with the formula and worked steps.">
+        <meta name="twitter:image" content="https://mes.fm/sum-of-integers-calculator/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Sum of Integers Calculator">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Sum of Integers Calculator", "url": "https://mes.fm/sum-of-integers-calculator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free sum of integers calculator: add 1 to n, any range, squares, cubes or any power, odd or even numbers, multiples, arithmetic and geometric series, Fibonacci numbers, or Σ of your own formula. Exact answers for huge numbers with the formula and worked steps."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    </head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/sum-of-integers-calculator" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/sum-of-integers-calculator/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/sum-of-integers-calculator" tabindex="-1">Sum of Integers Calculator</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/sum-of-integers-calculator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/sum-of-integers-calculator/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/sum-of-integers-calculator'>
+                                    <p class="calculator-title">MES Sum of Integers Calculator</p>
+                                </a>
+                                <p class="tag-line">Add up integers, squares, cubes and series.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/sum-of-integers-calculator'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Sum of Integers, Squares & Series Calculator</h1>                                        <p class="page-description">Free sum of integers calculator: add 1 to n, any range, squares, cubes or any power, odd or even numbers, multiples, arithmetic and geometric series, Fibonacci numbers, or Σ of your own formula. Exact answers for huge numbers with the formula and worked steps.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="sm">
+		<div class="tu-card">
+			<div class="sm-modes" id="sm-modes" role="tablist" aria-label="What to add up"></div>
+			<div class="sm-form" id="sm-form"></div>
+			<div class="sm-actions"><button type="button" class="tu-btn tu-btn--ghost" id="sm-copy">Copy result</button><button type="button" class="tu-btn tu-btn--ghost" id="sm-link">🔗 Copy link</button></div>
+		</div>
+		<div class="tu-stats">
+			<div class="tu-stat tu-stat--hero sm-hero"><div class="tu-stat__label" id="sm-label">Sum</div><div class="tu-stat__value sm-val" id="sm-val">–</div><div class="tu-stat__sub" id="sm-sub"></div></div>
+		</div>
+		<div class="tu-card" id="sm-steps-card" hidden><h2 class="sm-h">How it is worked out</h2><div id="sm-steps"></div></div>
+		<div class="tu-card" id="sm-terms-card" hidden><h2 class="sm-h">The terms</h2><div class="tu-table-wrap"><table class="tu-table" id="sm-terms"><thead><tr><th>#</th><th>Term</th><th>Running total</th></tr></thead><tbody></tbody></table></div><p class="tu-note" id="sm-terms-note"></p></div>
+		<div class="tu-seo">
+			<h2>Sums of integers, squares, cubes and more</h2>
+			<p>This calculator adds up numbers in the ways students and programmers need most, <strong>exactly</strong>: with arbitrarily large integers, so even the sum of the first 10²⁰ squares comes out with every digit right. It shows the formula it used, a worked example with your numbers and, for small cases, every term with its running total.</p>
+			<h3>The formulas</h3>
+			<table class="tu-table sm-ftab"><tbody>
+				<tr><td>Natural numbers</td><td>1 + 2 + … + n</td><td><b>n(n+1)/2</b></td></tr>
+				<tr><td>Squares</td><td>1² + 2² + … + n²</td><td><b>n(n+1)(2n+1)/6</b></td></tr>
+				<tr><td>Cubes</td><td>1³ + 2³ + … + n³</td><td><b>[n(n+1)/2]²</b></td></tr>
+				<tr><td>Odd numbers</td><td>1 + 3 + … + (2n−1)</td><td><b>n²</b></td></tr>
+				<tr><td>Even numbers</td><td>2 + 4 + … + 2n</td><td><b>n(n+1)</b></td></tr>
+				<tr><td>Arithmetic series</td><td>a + (a+d) + … (n terms)</td><td><b>n(2a + (n−1)d)/2</b></td></tr>
+				<tr><td>Geometric series</td><td>a + ar + … + arⁿ⁻¹</td><td><b>a(1−rⁿ)/(1−r)</b>, or <b>a/(1−r)</b> forever when |r| &lt; 1</td></tr>
+				<tr><td>Fibonacci numbers</td><td>F₁ + F₂ + … + Fₙ</td><td><b>Fₙ₊₂ − 1</b></td></tr>
+			</tbody></table>
+			<p>The story goes that the young Gauss added 1 to 100 in seconds by pairing 1 with 100, 2 with 99 and so on: fifty pairs each worth 101, giving 5,050. Every formula above can be proved by induction. For higher powers (fourth, fifth, up to the 60th) the calculator uses <em>Faulhaber's formula</em>, built from Bernoulli numbers, which gives an exact integer for any n.</p>
+			<h3>Questions people ask</h3>
+			<ul>
+				<li><strong>How do I find the sum of integers from 5 to 20?</strong> Use <em>Any range</em>: it adds every integer between the two ends, negative numbers included. It is (first + last) × (count) ÷ 2.</li>
+				<li><strong>What is the sum of multiples of 3 or 5 below 1000?</strong> Use <em>Multiples</em>. It adds multiples of 3 and of 5 and subtracts the multiples of 15 counted twice: 233,168 (the first Project Euler problem).</li>
+				<li><strong>Can I sum my own formula?</strong> Yes, <em>Σ your formula</em> adds any expression in i, such as <code>1/i^2</code> or <code>i^2 + 3i</code>, for up to five million terms.</li>
+				<li><strong>Why is the sum of the first n odd numbers n²?</strong> Each new odd number wraps an extra L-shaped border around a square of dots, turning an n × n square into (n+1) × (n+1).</li>
+			</ul>
+			<p>Related: <a href="/calculator">Calculator</a> · <a href="/cas-calculator">CAS Calculator</a> · <a href="/calculators">More calculators</a></p>
+		</div>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        </div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/sum-of-integers-calculator">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps.html">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/sum-of-integers-calculator/js/sum-of-integers-calculator.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>

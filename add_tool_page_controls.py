@@ -67,6 +67,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("typing-test-voice", "Typing Test", "/typing-test"),   # voice typing test: same brand, built by build_tool_apps.py
     ("typing-test-transcribe", "Typing Test", "/typing-test"),   # transcription test: a sub-page of the Typing Test brand (brand option in build_tool_apps.py)
     ("copy-text", "Copy Text"),    # also built by build_tool_apps.py
+    ("sum-of-integers-calculator", "Sum of Integers Calculator"),   # also built by build_tool_apps.py
     ("reynolds-number-calculator", "Reynolds Number Calculator"),   # also built by build_tool_apps.py
     ("photoelectric-effect-simulator", "Photoelectric Effect"),   # also built by build_tool_apps.py (wide page, dark apparatus stage)
     ("fluid-simulator", "Fluid Simulator"),   # also built by build_tool_apps.py (wide page, dark simulation stage)

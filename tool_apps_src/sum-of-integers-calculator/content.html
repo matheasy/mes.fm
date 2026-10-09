@@ -1,0 +1,36 @@
+	<div class="tu" id="sm">
+		<div class="tu-card">
+			<div class="sm-modes" id="sm-modes" role="tablist" aria-label="What to add up"></div>
+			<div class="sm-form" id="sm-form"></div>
+			<div class="sm-actions"><button type="button" class="tu-btn tu-btn--ghost" id="sm-copy">Copy result</button><button type="button" class="tu-btn tu-btn--ghost" id="sm-link">🔗 Copy link</button></div>
+		</div>
+		<div class="tu-stats">
+			<div class="tu-stat tu-stat--hero sm-hero"><div class="tu-stat__label" id="sm-label">Sum</div><div class="tu-stat__value sm-val" id="sm-val">–</div><div class="tu-stat__sub" id="sm-sub"></div></div>
+		</div>
+		<div class="tu-card" id="sm-steps-card" hidden><h2 class="sm-h">How it is worked out</h2><div id="sm-steps"></div></div>
+		<div class="tu-card" id="sm-terms-card" hidden><h2 class="sm-h">The terms</h2><div class="tu-table-wrap"><table class="tu-table" id="sm-terms"><thead><tr><th>#</th><th>Term</th><th>Running total</th></tr></thead><tbody></tbody></table></div><p class="tu-note" id="sm-terms-note"></p></div>
+		<div class="tu-seo">
+			<h2>Sums of integers, squares, cubes and more</h2>
+			<p>This calculator adds up numbers in the ways students and programmers need most, <strong>exactly</strong>: with arbitrarily large integers, so even the sum of the first 10²⁰ squares comes out with every digit right. It shows the formula it used, a worked example with your numbers and, for small cases, every term with its running total.</p>
+			<h3>The formulas</h3>
+			<table class="tu-table sm-ftab"><tbody>
+				<tr><td>Natural numbers</td><td>1 + 2 + … + n</td><td><b>n(n+1)/2</b></td></tr>
+				<tr><td>Squares</td><td>1² + 2² + … + n²</td><td><b>n(n+1)(2n+1)/6</b></td></tr>
+				<tr><td>Cubes</td><td>1³ + 2³ + … + n³</td><td><b>[n(n+1)/2]²</b></td></tr>
+				<tr><td>Odd numbers</td><td>1 + 3 + … + (2n−1)</td><td><b>n²</b></td></tr>
+				<tr><td>Even numbers</td><td>2 + 4 + … + 2n</td><td><b>n(n+1)</b></td></tr>
+				<tr><td>Arithmetic series</td><td>a + (a+d) + … (n terms)</td><td><b>n(2a + (n−1)d)/2</b></td></tr>
+				<tr><td>Geometric series</td><td>a + ar + … + arⁿ⁻¹</td><td><b>a(1−rⁿ)/(1−r)</b>, or <b>a/(1−r)</b> forever when |r| &lt; 1</td></tr>
+				<tr><td>Fibonacci numbers</td><td>F₁ + F₂ + … + Fₙ</td><td><b>Fₙ₊₂ − 1</b></td></tr>
+			</tbody></table>
+			<p>The story goes that the young Gauss added 1 to 100 in seconds by pairing 1 with 100, 2 with 99 and so on: fifty pairs each worth 101, giving 5,050. Every formula above can be proved by induction. For higher powers (fourth, fifth, up to the 60th) the calculator uses <em>Faulhaber's formula</em>, built from Bernoulli numbers, which gives an exact integer for any n.</p>
+			<h3>Questions people ask</h3>
+			<ul>
+				<li><strong>How do I find the sum of integers from 5 to 20?</strong> Use <em>Any range</em>: it adds every integer between the two ends, negative numbers included. It is (first + last) × (count) ÷ 2.</li>
+				<li><strong>What is the sum of multiples of 3 or 5 below 1000?</strong> Use <em>Multiples</em>. It adds multiples of 3 and of 5 and subtracts the multiples of 15 counted twice: 233,168 (the first Project Euler problem).</li>
+				<li><strong>Can I sum my own formula?</strong> Yes, <em>Σ your formula</em> adds any expression in i, such as <code>1/i^2</code> or <code>i^2 + 3i</code>, for up to five million terms.</li>
+				<li><strong>Why is the sum of the first n odd numbers n²?</strong> Each new odd number wraps an extra L-shaped border around a square of dots, turning an n × n square into (n+1) × (n+1).</li>
+			</ul>
+			<p>Related: <a href="/calculator">Calculator</a> · <a href="/cas-calculator">CAS Calculator</a> · <a href="/calculators">More calculators</a></p>
+		</div>
+	</div>
