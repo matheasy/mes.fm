@@ -84,7 +84,7 @@ const PAGES = [
     slug: "math-youtube",
     sectionId: "mathYoutube",
     tileLabel: "MES YouTube: All Videos",
-    iconVersion: 1, // img/math-youtube-icon.jpg (900x600; a "@mes" YouTube-style tile)
+    iconVersion: 2, // img/math-youtube-icon.jpg (900x600; a "@mes" YouTube-style tile)
     description:
       "Every video on the @mes YouTube channel (Math Easy Solutions) in one searchable list: calculus, vectors, series, differential equations and more, plus physics experiments, 9/11 and Hutchison Effect research. Search, filter by topic and sort by views or length.",
   },
