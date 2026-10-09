@@ -85,7 +85,7 @@
     { "source": "/tengri137-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0HUv8mv9gzQc3Ej4csHIQb3", "permanent": true },
     { "source": "/milestones-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0GvSFoHzN8fvSUjru3C4Myk", "permanent": true },
     { "source": "/antigravity-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0HkT4DmvQSg0XZfY5Bxkxq1", "permanent": true },
-    { "source": "/antigravity", "destination": "https://1drv.ms/f/s!As32ynv0LoaIh5c5_VSbt05w-H0flw", "permanent": true },
+    { "source": "/antigravity-onedrive", "destination": "https://1drv.ms/f/s!As32ynv0LoaIh5c5_VSbt05w-H0flw", "permanent": true },
     { "source": "/speech-android", "destination": "https://play.google.com/store/apps/details?id=com.naturalsoft.personalweb", "permanent": true },
     { "source": "/science-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0GhjCHmTw1XbqMD_EdVKdd9", "permanent": true },
     { "source": "/science-drive", "destination": "https://1drv.ms/u/s!As32ynv0LoaIh_ZYG7AbhPTTQqUkYg?e=Cj1sCW", "permanent": true },

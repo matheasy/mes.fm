@@ -70,6 +70,13 @@ const PAGES = [
       "MES Physics videos: the magnetic field and the electric field of bound charges, magnetic isopotentials and the Faraday paradox, Planck's constant, and spinning-top and ferrofluid experiments.",
   },
   {
+    // Tile only: no page is written. Links to the MES Anti-Gravity hub (mes.fm/antigravity, its own build.mjs); icon = img/antigravity-icon.jpg, bump iconVersion if replaced.
+    slug: "antigravity",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "MES Anti-Gravity",
+  },
+  {
     // Tile only: no page is written; links to the MES Science Experiments hub (mes.fm/experiments, its own build.mjs). Icon = img/experiments-icon.jpg (the gyroscope-in-a-torus art, 3:2 crop).
     slug: "experiments",
     iconVersion: 1,

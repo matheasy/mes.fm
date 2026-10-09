@@ -43,6 +43,20 @@ const PAGES = [
       "Every #MESExperiments video in one place: gyroscopes rising on needles and ice, magnets falling through copper tubes, Faraday's paradox, Schauberger's rising egg, with Hive notes and BitChute, Odysee and 3Speak links.",
   },
   {
+    // Tile only: no page is written. Links to the MES Anti-Gravity hub (mes.fm/antigravity, its own build.mjs); icon = img/antigravity-icon.jpg, bump iconVersion if replaced.
+    slug: "antigravity",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "MES Anti-Gravity",
+  },
+  {
+    // Tile only: no page is written. Links to the MES Science hub (mes.fm/science, its own build.mjs); icon = img/science-icon.jpg.
+    slug: "science",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "MES Science",
+  },
+  {
     // Tile only: no page is written. Links to the Gyroscope chip of mes.fm/livestreams; icon = img/experiments-livestreams-icon.jpg, bump iconVersion if replaced.
     slug: "livestreams",
     href: "/livestreams#gyroscope",
