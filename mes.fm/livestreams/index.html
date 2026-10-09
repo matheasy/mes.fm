@@ -1052,7 +1052,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       setTimeout(go, 15000);
     })();
     </script>
-<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
+<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem('pageMode')||'wide',c=document.documentElement.classList;if(m==='theatre')c.add('page-theatre');if(m!=='std')c.add('page-wide');if(localStorage.getItem('asideHidden')==='1')c.add('aside-hidden');if(localStorage.getItem('asideSide')==='left')c.add('aside-left')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
 <body>
 <div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/livestreams" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
@@ -1121,7 +1121,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   <p class="section-standalone-link"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0FqwyUa_ICwTlqO0S6Y3kAn" target="_blank" rel="noopener">&#9654;&#65039; Playlist</a><span class="standalone-sep">&middot;</span><a href="https://mes.fm/troubleshooting">&#128736;&#65039; Troubleshooting Notes</a></p>
     <div class="ls-filter" id="livestreamsFilter">
       <input type="search" id="livestreamsSearch" placeholder="Search livestreams&hellip;" aria-label="Search livestreams" autocomplete="off">
-      <div class="ls-chips" id="livestreamsChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (144)</button><button type="button" data-c="hutchison" data-label="Hutchison Effect" data-pl="https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X" aria-pressed="false">Hutchison Effect (16)</button><button type="button" data-c="911" data-label="9/11 Truth" data-pl="https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh" aria-pressed="false">9/11 Truth (50)</button><button type="button" data-c="planes" data-label="9/11 Planes Research" aria-pressed="false">9/11 Planes Research (3)</button><button type="button" data-c="mh370" data-label="MH370" data-pl="https://www.youtube.com/playlist?list=PLai3U8-WIK0EJGgDKXr-wW8z1jd7pZ069" aria-pressed="false">MH370 (9)</button><button type="button" data-c="beneficence" data-label="BeneficenceTV" data-pl="https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX" aria-pressed="false">BeneficenceTV (6)</button><button type="button" data-c="mestruth" data-label="MES Truth" data-pl="https://www.youtube.com/playlist?list=PL7uKZq8byj6EavTGBYXn5u7Wy6_RH_O6Z" aria-pressed="false">MES Truth (7)</button></div>
+      <div class="ls-chips" id="livestreamsChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (144)</button><button type="button" data-c="hutchison" data-label="Hutchison Effect" data-pl="https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X" aria-pressed="false">Hutchison Effect (16)</button><button type="button" data-c="911" data-label="9/11 Truth" data-pl="https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh" aria-pressed="false">9/11 Truth (50)</button><button type="button" data-c="planes" data-label="9/11 Planes Research" aria-pressed="false">9/11 Planes Research (3)</button><button type="button" data-c="mh370" data-label="MH370" data-pl="https://www.youtube.com/playlist?list=PLai3U8-WIK0EJGgDKXr-wW8z1jd7pZ069" aria-pressed="false">MH370 (9)</button><button type="button" data-c="beneficence" data-label="BeneficenceTV" data-pl="https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX" aria-pressed="false">BeneficenceTV (6)</button><button type="button" data-c="pizzagate" data-label="PizzaGate" aria-pressed="false">PizzaGate (1)</button><button type="button" data-c="mestruth" data-label="MES Truth" data-pl="https://www.youtube.com/playlist?list=PL7uKZq8byj6EavTGBYXn5u7Wy6_RH_O6Z" aria-pressed="false">MES Truth (7)</button></div>
     </div>
     <p class="ls-playlist" id="livestreamsPlaylist" hidden><a href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="22" height="16" aria-hidden="true"><path fill="#f00" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.500 0-9.400.5A3 3 0 0 0 .5 6.200C0 8.100 0 12 0 12s0 3.900.5 5.800a3 3 0 0 0 2.100 2.100c1.900.5 9.400.5 9.400.5s7.500 0 9.400-.5a3 3 0 0 0 2.100-2.100c.5-1.900.5-5.800.5-5.800s0-3.900-.5-5.800z"/><path fill="#fff" d="M9.600 15.600V8.400l6.200 3.600z"/></svg><span></span></a></p>
     <p class="ls-empty" id="livestreamsEmpty" hidden>No livestreams match. Try fewer words or a different filter.</p>
@@ -1573,7 +1573,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" data-cats="" href="https://www.youtube.com/watch?v=IeGIXELJehc" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="pizzagate" href="https://www.youtube.com/watch?v=IeGIXELJehc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/IeGIXELJehc/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">79: Epstein and Pizzagate Deep Dive</span>
@@ -2457,7 +2457,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       <p><a href="https://www.youtube.com/watch?v=t_Jq2u6J36o" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/hive-113182/@mes/mes-livestream-80-exterior-lobby-columns-911-ef" target="_blank" rel="noopener">Hive</a> - <a href="https://youtu.be/bKH4PAlv9GE" target="_blank" rel="noopener">Trailer</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/t_Jq2u6J36o/maxresdefault.jpg" alt="80: Exterior Lobby Columns were still Standing on 9/11">
     </div>
-    <div class="list-row" data-cats="">
+    <div class="list-row" data-cats="pizzagate">
       <h3>79: Epstein and Pizzagate Deep Dive</h3>
       <p><a href="https://www.youtube.com/watch?v=IeGIXELJehc" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/IeGIXELJehc/maxresdefault.jpg" alt="79: Epstein and Pizzagate Deep Dive">

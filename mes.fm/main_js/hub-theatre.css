@@ -26,3 +26,18 @@
   html.page-theatre .icon-grid { grid-template-columns: repeat(auto-fill, minmax(17em, 1fr)); }
   html.page-theatre .card-grid { grid-template-columns: repeat(auto-fill, minmax(16em, 1fr)); }
 }
+
+/* Hub pages with the injected "More like this" sidebar (hub-theatre.js; html.hub-sb): Standard = content + sidebar column (aside.css). Wide (the default) and Theatre
+   = one column, the recommendations as a card grid under the content, like aside.css does on 1200-1359px windows; "Show sidebar" (html.aside-force) brings the column back. */
+@media (min-width: 1200px) {
+  html.hub-sb.page-wide:not(.page-theatre):not(.aside-force) .outer-container.has-aside { max-width: 75em !important; }
+  html.hub-sb.page-wide:not(.aside-force):not(.aside-hidden) .has-aside .outer-page-content { grid-template-columns: 1fr; }
+  html.hub-sb.page-wide:not(.aside-force) .has-aside .page-content { grid-column: 1; grid-row: 1; }
+  html.hub-sb.page-wide:not(.aside-force) .has-aside .mes-aside { grid-column: 1; grid-row: 2; margin: 2em 0 1em; }
+  html.hub-sb.page-wide:not(.aside-force) .mes-aside__sticky { position: static; }
+  html.hub-sb.page-wide:not(.aside-force) .mes-aside__ad, html.hub-sb.page-wide:not(.aside-force) .mes-aside__ad:not([data-ad-slot=""]) { display: none !important; }
+  html.hub-sb.page-wide:not(.aside-force) .mes-aside__flip, html.hub-sb.page-wide:not(.aside-force) .mes-aside__hide { display: none !important; }
+  html.hub-sb.page-wide:not(.aside-force) .mes-aside__list { grid-template-columns: repeat(4, 1fr); }
+  html.hub-sb.page-theatre:not(.aside-force) .mes-aside__list { grid-template-columns: repeat(6, 1fr); }
+  html.hub-sb.page-wide:not(.aside-force) .mes-aside-show { display: inline-block !important; }
+}

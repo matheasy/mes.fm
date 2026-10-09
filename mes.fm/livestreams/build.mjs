@@ -84,6 +84,7 @@ const CATEGORIES = [
   { id: "planes", label: "9/11 Planes Research", test: (v) => /planes research/i.test(v.title) },
   { id: "mh370", label: "MH370", test: (v) => /mh370/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EJGgDKXr-wW8z1jd7pZ069" },
   { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX" },
+  { id: "pizzagate", label: "PizzaGate", test: (v) => /pizza\s?gate/i.test(v.title) },
   { id: "mestruth", label: "MES Truth", test: (v) => v.channel === "@mestruth", playlist: "https://www.youtube.com/playlist?list=PL7uKZq8byj6EavTGBYXn5u7Wy6_RH_O6Z" },
 ];
 // Videos whose title/channel don't say which chips they belong to: video id -> extra chip ids (added to the automatic ones).
@@ -1651,7 +1652,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       setTimeout(go, 15000);
     })();
     </script>
-<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
+<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem('pageMode')||'wide',c=document.documentElement.classList;if(m==='theatre')c.add('page-theatre');if(m!=='std')c.add('page-wide');if(localStorage.getItem('asideHidden')==='1')c.add('aside-hidden');if(localStorage.getItem('asideSide')==='left')c.add('aside-left')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
 <body>
 <div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/livestreams" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>

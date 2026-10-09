@@ -52,6 +52,14 @@ const PAGES = [
       "MES conspiracy videos: disinfo agents as energy vampires, Stephen A. Smith's presidential bid, the one-armed twin in Star Wars, 9/11 and The Matrix, and Ashton Forbes' letter.",
   },
   {
+    // Tile only: no page is written. Links to the PizzaGate Video Series hub (mes.fm/pg, its own build.mjs); icon = img/pg-icon.jpg, bump iconVersion if replaced.
+    slug: "pg",
+    icon: "pg",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "PizzaGate Video Series",
+  },
+  {
     // Tile only: no page is written. Links to the MH370 Teleportation Psyop hub (mes.fm/mh370, its own build.mjs);
     // the icon is img/mh370-icon.jpg (a crop of MH370.jpeg) -- bump iconVersion if it is replaced.
     slug: "mh370",
@@ -1581,7 +1589,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       setTimeout(go, 15000);
     })();
     </script>
-<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
+<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem('pageMode')||'wide',c=document.documentElement.classList;if(m==='theatre')c.add('page-theatre');if(m!=='std')c.add('page-wide');if(localStorage.getItem('asideHidden')==='1')c.add('aside-hidden');if(localStorage.getItem('asideSide')==='left')c.add('aside-left')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
 <body>
 <div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/conspiracy" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/conspiracy-logo.jpg"></a>
