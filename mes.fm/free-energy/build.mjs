@@ -49,41 +49,6 @@ const PAGES = [
     tileOnly: true,
     tileLabel: "Cold Fusion / LENR",
   },
-  {
-    // Tile only: no page is written. Links to mes.fm/experiments (its own build.mjs or page); icon = img/experiments-icon.jpg.
-    slug: "experiments",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Experiments",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/antigravity (its own build.mjs or page); icon = img/antigravity-icon.jpg.
-    slug: "antigravity",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Anti-Gravity",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/science (its own build.mjs or page); icon = img/science-icon.jpg.
-    slug: "science",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Science",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/science-videos (its own build.mjs or page); icon = img/science-videos-icon.jpg.
-    slug: "science-videos",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Science Videos",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/hutchison (its own build.mjs or page); icon = img/hutchison-icon.jpg.
-    slug: "hutchison",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "Hutchison Effect",
-  },
 ];
 
 // ---------------------------------------------------------------------------

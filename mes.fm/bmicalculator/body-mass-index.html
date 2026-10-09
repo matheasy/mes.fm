@@ -452,6 +452,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .yt-embed.theater-mode .yt-embed__inner{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;align-items:center;justify-content:center}
 .yt-embed.theater-mode .yt-embed__inner>iframe{width:100%;height:auto;aspect-ratio:16/9;max-height:100vh;max-width:calc(100vh * 16 / 9)}
 .yt-embed.theater-mode .yt-theater-btn{position:fixed}
+/* dark mode: the two BMI charts are transparent (black text, grey lines), so they sit on a white card */
+body.dark-mode img[src*="Body_mass_index_chart"], body.dark-mode img[src*="BMI+Classification"]{background:#fff;padding:.6em !important;box-sizing:border-box;border-radius:.4em}
 </style>
 <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->

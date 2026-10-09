@@ -29,6 +29,13 @@ export const SECTIONS = [
   { title: "Highlights from the Letter that Ashton Forbes totally didn't write to himself 🤣", image: "https://i.ytimg.com/vi/zMXxyKljWA4/maxresdefault.jpg", links: [["mes.fm", "https://mes.fm/ashton-forbes-letter"], ["YouTube", "https://www.youtube.com/watch?v=zMXxyKljWA4"]] },
     ],
   },
+  {
+    id: "mh370-posts",
+    title: "Posts",
+    items: [
+  { title: "Is Drew Ponder Ashton Forbes' AI MH370 Spam Bot?", image: "https://img.leopedia.io/DQme9Zc6tLWjeJwJLbWAqV6vgUp2B3QMP8pwKSFk2mLLJSi/telegram-cloud-photo-size-1-5062375328306632663-y.jpg", links: [["mes.fm", "https://mes.fm/mh370-drew-ponder-spammer"]] },
+    ],
+  },
 ];
 
 export const IMPORTANT_LINKS_HTML = `<ul>

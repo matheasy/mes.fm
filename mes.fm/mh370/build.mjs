@@ -1,9 +1,9 @@
-// Build-time generator for mes.fm/mh370 ("MH370 Teleportation Psyop") and its Videos page (cloned from conspiracy/build.mjs).
+// Build-time generator for mes.fm/mh370 ("MH370 Teleportation Psyop") and its Videos and Posts pages (cloned from conspiracy/build.mjs).
 //
 // mes.fm/mh370 is a small tile hub (one Videos tile + the "Important Links" list) like mes.fm/conspiracy. The content lives
 // in sections.mjs (hand-maintained, newest first; the Videos mirror the MES MH370 YouTube playlist).
 //
-// Pages written (see PAGES): the hub mes.fm/mh370/index.html plus mes.fm/mh370-videos/index.html.
+// Pages written (see PAGES): the hub mes.fm/mh370/index.html plus mes.fm/mh370-videos/index.html and mes.fm/mh370-posts/index.html.
 // Never hand-edit those generated files.
 //
 // Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600), a crop of each section's newest thumbnail --
@@ -41,6 +41,15 @@ const PAGES = [
     title: "MH370 Teleportation Psyop Videos",
     description:
       "MES videos on the MH370 teleportation psyop: contrails out of sync with the plane, clouds stock footage found, the UFO orb hole in cloud hoax, duplicate frames, and the Bob Greenyer and Ashton Forbes responses.",
+  },
+  {
+    slug: "mh370-posts",
+    sectionId: "mh370-posts",
+    tileLabel: "Posts",
+    iconVersion: 1, // icon = crop of the newest post's first image (img/mh370-posts-icon.jpg); bump when refreshed
+    title: "MH370 Teleportation Psyop Posts",
+    description:
+      "MES posts on the MH370 teleportation psyop, newest first: Drew Ponder, the new X account spamming more MH370 teleportation cartoons, and whether it is an Ashton Forbes AI spam bot.",
   },
   {
     // Tile only: the MES livestreams and trailers about MH370 are the "MH370" filter chip of mes.fm/livestreams.
@@ -1619,6 +1628,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       <ul id="info-bar" class="info-bar shadow">
         <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/mh370'>MH370</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/mh370-videos'>Videos</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/mh370-posts'>Posts</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/conspiracy'>Conspiracy</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/911'>9/11 Truth</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
@@ -1668,7 +1678,7 @@ ${sectionsHtml}
             <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
           </ul></div></li>
           <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
-          <li class="navbar__item"><a target="_self" class="navbar__link" href="/mh370">MH370</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/mh370">MH370</a></li><li class="navbar__item"><a class="navbar__link" href="/mh370-videos">Videos</a></li><li class="navbar__item"><a class="navbar__link" href="/mh370-posts">Posts</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="/conspiracy">Conspiracy</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
@@ -2086,7 +2096,7 @@ ${viewToggleWiring}
 var MES_Vars = {
     mobile:false,
     hide_search:false,
-    current_tab:1,
+    current_tab:${isHub ? 0 : page.slug === "mh370-posts" ? 2 : 1},
     info_bar_tab:0
 }
 </script>

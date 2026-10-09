@@ -143,41 +143,6 @@ const PAGES = [
     tileOnly: true,
     tileLabel: "MES Livestreams",
   },
-  {
-    // Tile only: no page is written. Links to mes.fm/science (its own build.mjs or page); icon = img/science-icon.jpg.
-    slug: "science",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Science",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/experiments (its own build.mjs or page); icon = img/experiments-icon.jpg.
-    slug: "experiments",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Experiments",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/antigravity (its own build.mjs or page); icon = img/antigravity-icon.jpg.
-    slug: "antigravity",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Anti-Gravity",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/free-energy (its own build.mjs or page); icon = img/free-energy-icon.jpg.
-    slug: "free-energy",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Free Energy",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/science-videos (its own build.mjs or page); icon = img/science-videos-icon.jpg.
-    slug: "science-videos",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Science Videos",
-  },
 ];
 
 // "Important Links" block under the hub's tiles (was the Hive article's intro list).

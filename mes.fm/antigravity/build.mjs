@@ -42,41 +42,6 @@ const PAGES = [
     description:
       "Every MES #AntiGravity video in one place: Eric Laithwaite's gyroscope lectures, spinning wheels that precess with zero angular momentum or centripetal force, objects in rotation, and the gyrocompass corrections, with notes and links.",
   },
-  {
-    // Tile only: no page is written. Links to the MES Experiments hub (mes.fm/experiments, its own build.mjs); icon = img/experiments-icon.jpg.
-    slug: "experiments",
-    tileLabel: "MES Experiments",
-    iconVersion: 1,
-    tileOnly: true,
-  },
-  {
-    // Tile only: no page is written. Links to the MES Science hub (mes.fm/science, its own build.mjs); icon = img/science-icon.jpg.
-    slug: "science",
-    tileLabel: "MES Science",
-    iconVersion: 1,
-    tileOnly: true,
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/free-energy (its own build.mjs or page); icon = img/free-energy-icon.jpg.
-    slug: "free-energy",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Free Energy",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/hutchison (its own build.mjs or page); icon = img/hutchison-icon.jpg.
-    slug: "hutchison",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "Hutchison Effect",
-  },
-  {
-    // Tile only: no page is written. Links to mes.fm/science-videos (its own build.mjs or page); icon = img/science-videos-icon.jpg.
-    slug: "science-videos",
-    iconVersion: 1,
-    tileOnly: true,
-    tileLabel: "MES Science Videos",
-  },
 ];
 
 // ---------------------------------------------------------------------------
