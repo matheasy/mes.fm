@@ -34,6 +34,7 @@ export const SECTIONS = [
     title: "Posts",
     items: [
   { title: "Is Drew Ponder Ashton Forbes' AI MH370 Spam Bot?", image: "https://img.leopedia.io/DQme9Zc6tLWjeJwJLbWAqV6vgUp2B3QMP8pwKSFk2mLLJSi/telegram-cloud-photo-size-1-5062375328306632663-y.jpg", links: [["mes.fm", "https://mes.fm/mh370-drew-ponder-spammer"]] },
+  { title: "Ashton Forbes and Alex Jones Team Up to Become the Most Unstoppable Clownish Force", image: "https://images.hive.blog/0x0/https://snipboard.io/LYFACI.jpg", links: [["mes.fm", "https://mes.fm/alex-jones-ashton-forbes-clowns"]] },
     ],
   },
 ];
