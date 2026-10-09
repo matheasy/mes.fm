@@ -1,0 +1,79 @@
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu pe" id="pe">
+		<div class="pe-wrap" id="pe-wrap">
+			<div class="pe-stage" id="pe-stage">
+				<canvas id="pe-canvas" role="img" aria-label="Animated photoelectric effect: light hits a metal plate and knocks electrons toward a collector"></canvas>
+				<div class="pe-tools"><button type="button" id="pe-pause" aria-pressed="false" title="Pause the animation">❚❚</button><button type="button" id="pe-theatre" title="Theatre: use nearly the whole window" aria-pressed="false">Theatre</button><button type="button" id="pe-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="pe-verdict" id="pe-verdict" aria-live="polite"></div>
+			</div>
+		</div>
+
+		<div class="tu-card pe-controls">
+			<div class="pe-grid">
+				<div class="tu-field"><label for="pe-metal">Metal surface</label><select id="pe-metal" class="tu-select"></select><span class="tu-note" id="pe-phi-note"></span></div>
+				<div class="tu-field"><span class="tu-label" id="pe-wl-l">Wavelength: <b id="pe-wl-v"></b></span><input type="range" id="pe-wl" min="100" max="800" step="1" aria-labelledby="pe-wl-l">
+					<div class="pe-spec" id="pe-spec" aria-hidden="true"></div></div>
+				<div class="tu-field"><span class="tu-label" id="pe-int-l">Intensity: <b id="pe-int-v"></b></span><input type="range" id="pe-int" min="0" max="100" step="1" aria-labelledby="pe-int-l"><span class="tu-note">More intensity = more photons per second, not more energy per photon.</span></div>
+				<div class="tu-field"><span class="tu-label" id="pe-v-l">Collector voltage: <b id="pe-v-v"></b></span><input type="range" id="pe-v" min="-12" max="6" step="0.05" aria-labelledby="pe-v-l"><span class="tu-note">Positive pulls electrons in, negative pushes them back.</span></div>
+			</div>
+			<div class="pe-chips"><span class="tu-label">Try</span>
+				<button type="button" class="tu-chip" data-try="below">Below threshold: no electrons</button>
+				<button type="button" class="tu-chip" data-try="above">Just above threshold</button>
+				<button type="button" class="tu-chip" data-try="bright">Double the intensity</button>
+				<button type="button" class="tu-chip" data-try="uv">Ultraviolet</button>
+				<button type="button" class="tu-chip" data-try="stop">Find the stopping voltage</button>
+			</div>
+		</div>
+
+		<div class="tu-stats pe-stats">
+			<div class="tu-stat tu-stat--hero"><div class="tu-stat__label">Photon energy</div><div class="tu-stat__value" id="pe-e">–</div><div class="tu-stat__sub" id="pe-e-s"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Max kinetic energy of electrons</div><div class="tu-stat__value" id="pe-ke">–</div><div class="tu-stat__sub" id="pe-ke-s"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Stopping voltage</div><div class="tu-stat__value" id="pe-vs">–</div><div class="tu-stat__sub" id="pe-vs-s"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Threshold of this metal</div><div class="tu-stat__value" id="pe-th">–</div><div class="tu-stat__sub" id="pe-th-s"></div></div>
+			<div class="tu-stat"><div class="tu-stat__label">Photocurrent now</div><div class="tu-stat__value" id="pe-i">–</div><div class="tu-stat__sub" id="pe-i-s"></div></div>
+		</div>
+
+		<div class="pe-graphs">
+			<div class="tu-card"><div class="pe-gt">Current against voltage</div><canvas id="pe-g1" width="560" height="320" role="img" aria-label="Photocurrent against collector voltage"></canvas><div class="tu-note">The current stops at the stopping voltage −V₀, however bright the light. Brighter light only makes the whole curve taller. (Idealised curve.)</div></div>
+			<div class="tu-card"><div class="pe-gt">Electron energy against frequency</div><canvas id="pe-g2" width="560" height="320" role="img" aria-label="Maximum kinetic energy against light frequency: a straight line with slope h"></canvas><div class="tu-note">A straight line whose slope is Planck's constant h and whose intercept is −φ. Nothing is emitted left of the threshold, even with very bright light.</div></div>
+		</div>
+
+		<div class="tu-card" id="pe-lab">
+			<h2 class="pe-h">Measure Planck's constant yourself</h2>
+			<p class="tu-note">Choose a metal, then for several wavelengths find the stopping voltage (or just press <em>Record</em>) and add the point. Four or five different colours are enough for the fit to find h and the work function.</p>
+			<div class="pe-chips">
+				<button type="button" class="tu-btn tu-btn--primary" id="pe-rec">＋ Record this point</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="pe-recall">Record 5 colours for me</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="pe-clear">Clear table</button>
+				<label class="pe-check"><input type="checkbox" id="pe-noise"> Add realistic measurement noise (±0.03 V)</label>
+			</div>
+			<div class="pe-lab-grid">
+				<div class="tu-table-wrap"><table class="tu-table" id="pe-table"><thead><tr><th>Wavelength (nm)</th><th>Frequency (10¹⁴ Hz)</th><th>Stopping voltage (V)</th></tr></thead><tbody></tbody></table></div>
+				<div class="pe-fit" id="pe-fit"><div class="tu-note">Record at least two points above the threshold.</div></div>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>The photoelectric effect</h2>
+			<p>When light shines on a metal, electrons can be knocked out of its surface. In 1905 Einstein explained the puzzling details by treating light as a stream of packets of energy called <strong>photons</strong>, each carrying energy <strong>E = h f</strong>, where f is the frequency and h is Planck's constant. An electron leaves only if one photon gives it at least the metal's <strong>work function φ</strong>, the energy needed to escape. Any energy left over becomes kinetic energy:</p>
+			<div class="pe-eq">KE<sub>max</sub> = h f − φ &nbsp;&nbsp;&nbsp; V<sub>stop</sub> = KE<sub>max</sub> / e &nbsp;&nbsp;&nbsp; f₀ = φ / h</div>
+			<h3>What this simulator shows</h3>
+			<ul>
+				<li><strong>Move the wavelength slider</strong> and watch electrons switch on and off at the threshold. Red light never works on caesium, however intense; blue light does immediately.</li>
+				<li><strong>Change the intensity</strong>: more photons arrive, so more electrons come out and the current rises, but their top energy does not change.</li>
+				<li><strong>Change the collector voltage</strong> to push electrons back. When the voltage reaches the stopping voltage the current falls to zero: that measures the electrons' maximum energy.</li>
+				<li><strong>Measure h:</strong> record the stopping voltage at several frequencies and the table fits a straight line. Its slope times e gives Planck's constant (6.626 × 10⁻³⁴ J·s) and its intercept gives the work function.</li>
+			</ul>
+			<h3>Why it mattered</h3>
+			<table class="tu-table pe-compare"><thead><tr><th>Observation</th><th>Wave theory predicted</th><th>What happens (photons)</th></tr></thead><tbody>
+				<tr><td>Brighter light</td><td>electrons come out faster</td><td>more electrons, same top speed</td></tr>
+				<tr><td>Light of low frequency, very bright</td><td>should eventually work</td><td>never works below the threshold frequency</td></tr>
+				<tr><td>Dim light of high frequency</td><td>a delay while energy builds up</td><td>electrons appear instantly</td></tr>
+				<tr><td>Higher frequency</td><td>no effect on energy</td><td>top energy rises linearly with f</td></tr>
+			</tbody></table>
+			<p>Einstein received the 1921 Nobel Prize for this explanation, a founding step of quantum mechanics. The same effect powers solar cells, light meters, night-vision tubes and photomultipliers.</p>
+			<h3>Notes on accuracy</h3>
+			<p>Energies, wavelengths and stopping voltages follow the exact formulas with CODATA constants. Work functions are typical textbook values; real ones vary by about a tenth of an electronvolt with surface cleanliness and crystal face. The current curve is an idealised shape, and the animation is a qualitative picture: electron speeds are drawn slowly and photon counts are scaled for visibility.</p>
+			<p>Related: <a href="/unit-conversion">Unit Conversion</a> · <a href="/calculator">Calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

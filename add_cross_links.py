@@ -22,7 +22,7 @@ APPLY = "--apply" in sys.argv
 CALC_DIRS = {"reynolds-number-calculator", "bmicalculator", "gradecalculator", "percentagecalculator", "mortgagecalculator", "inflationcalculator", "vatcalculator",
              "pokemongocalculator", "gpacalculator", "youtubemoney", "how-much-do-youtubers-make", "earth-curvature-calculator", "gematria",
              "impermanent-loss-calculator", "unit-conversion", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator"}
-TOOL_DIRS = {"fluid-simulator", "go", "timer", "clock", "enigma", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "search", "calendar", "copy-text", "typing-test", "typing-test-transcribe", "typing-test-voice", "solar-system-today", "search-engines", "site-index"}
+TOOL_DIRS = {"photoelectric-effect-simulator", "fluid-simulator", "go", "timer", "clock", "enigma", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "search", "calendar", "copy-text", "typing-test", "typing-test-transcribe", "typing-test-voice", "solar-system-today", "search-engines", "site-index"}
 LINKS = {"tools": ("Tools", "https://mes.fm/tools", "/tools"), "calculators": ("Calculators", "https://mes.fm/calculators", "/calculators")}
 ITEM = re.compile(r'<li class="info-bar__item([^"]*)"[^>]*>\s*<a[^>]*href=["\']([^"\']*)["\'][^>]*>([^<]*)</a>\s*</li>', re.S)
 UTILITY_LABELS = {"donate", "subscribe", "contact us"}

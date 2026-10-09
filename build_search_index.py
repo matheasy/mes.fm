@@ -38,7 +38,7 @@ CI = {k: i for i, (k, _) in enumerate(CATS)}
 CALC_DIRS = {"reynolds-number-calculator", "bmicalculator", "gradecalculator", "percentagecalculator", "mortgagecalculator", "inflationcalculator",
              "vatcalculator", "pokemongocalculator", "gpacalculator", "youtubemoney", "how-much-do-youtubers-make", "earth-curvature-calculator",
              "gematria", "impermanent-loss-calculator", "unit-conversion", "calculators", "calculator", "2d-graphing-calculator", "3d-graphing-calculator", "days-between-dates-calculator", "cas-calculator", "derivative-calculator", "integral-calculator"}
-TOOL_DIRS = {"fluid-simulator", "go", "timer", "clock", "enigma", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "calendar", "copy-text", "typing-test", "typing-test-transcribe", "typing-test-voice", "solar-system-today", "search-engines", "site-index",
+TOOL_DIRS = {"photoelectric-effect-simulator", "fluid-simulator", "go", "timer", "clock", "enigma", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "speedreader", "emoji", "latex", "timezone", "symbols", "youtube-thumbnail", "stats", "share", "calendar", "copy-text", "typing-test", "typing-test-transcribe", "typing-test-voice", "solar-system-today", "search-engines", "site-index",
              "moon", "search", "tools"}
 MATH = re.compile(r"^(math|math-qa.*|problems-plus-.*|cubic-formula.*|quadratic-formula.*|cube-root-unity|vectors?|"
                   r"vector-functions.*|sequences-series|spherical-harmonics|projectile-hits-target|mathiew)$")
