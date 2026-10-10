@@ -81,7 +81,7 @@
 		c.fillStyle = "rgba(120,150,220,0.06)"; c.fill();
 		/* plates */
 		c.fillStyle = m.color; c.fillRect(g.ex - 10, g.py0, 14, g.py1 - g.py0); c.fillStyle = "#9aa2b4"; c.fillRect(g.cxp, g.py0, 12, g.py1 - g.py0);
-		c.fillStyle = "#e8ecf5"; c.font = "600 " + Math.max(11, W * 0.015) + "px system-ui,sans-serif"; c.textAlign = "center"; c.fillText(m.name.replace(/ \(.*\)/, ""), g.ex - 3, g.py1 + 20); c.fillText("collector", g.cxp + 6, g.py1 + 20);
+		c.fillStyle = "#e8ecf5"; c.font = "600 " + Math.max(11, W * 0.015) + "px system-ui,sans-serif"; c.textAlign = "left"; c.fillText(m.name.replace(/ \(.*\)/, ""), g.ex + 8, g.py1 + 18); c.textAlign = "right"; c.fillText("collector", g.cxp - 2, g.py1 + 18); c.textAlign = "center";
 		/* photons */
 		c.lineWidth = 2.4; c.strokeStyle = col; c.shadowColor = col; c.shadowBlur = 8;
 		photons.forEach(function (p) { c.beginPath(); for (var k = 0; k <= 10; k++) { var t = k / 10, px = p.x - p.ux * 22 * (1 - t) + (-p.uy) * Math.sin(t * 12 + p.ph) * 3, py = p.y - p.uy * 22 * (1 - t) + p.ux * Math.sin(t * 12 + p.ph) * 3; k ? c.lineTo(px, py) : c.moveTo(px, py); } c.stroke(); });
@@ -96,8 +96,9 @@
 		c.fillStyle = "#0a0c1c"; c.fillRect(bx - 50, wy - 22, 100, 44); c.strokeStyle = "#e8ecf5"; c.strokeRect(bx - 50, wy - 22, 100, 44);
 		c.fillStyle = S.v >= 0 ? "#8ee0a0" : "#ffa0a0"; c.font = "700 " + Math.max(13, W * 0.019) + "px system-ui,sans-serif"; c.textAlign = "center"; c.fillText((S.v > 0 ? "+" : "") + S.v.toFixed(2) + " V", bx, wy + 6);
 		c.font = "11px system-ui,sans-serif"; c.fillStyle = "#9aa5bb"; c.fillText(S.v >= 0 ? "collector positive" : "collector negative", bx, wy + 38);
-		var ax = g.cxp + 60, ay = H * 0.4; c.beginPath(); c.strokeStyle = "#e8ecf5"; c.lineWidth = 2; c.arc(ax + 40, ay, 30, 0, 6.2832); c.stroke();
-		var frac = d.emit ? P.iv(S.v, d.v0) * S.i / 100 : 0; c.fillStyle = "#e8ecf5"; c.font = "700 14px system-ui,sans-serif"; c.fillText("A", ax + 40, ay - 8); c.font = "12px system-ui,sans-serif"; c.fillText((frac * 10).toFixed(1) + " µA", ax + 40, ay + 12);
+		/* ammeter sits on the collector's wire, between the tube and the battery row, so it always fits (a side position ran off the canvas on phones) */
+		var ax = g.cxp + 6, ay = (g.py1 + wy) / 2, ar = Math.max(22, Math.min(30, (wy - g.py1) * 0.38)); c.beginPath(); c.fillStyle = "#0f1226"; c.strokeStyle = "#e8ecf5"; c.lineWidth = 2; c.arc(ax, ay, ar, 0, 6.2832); c.fill(); c.stroke();
+		var frac = d.emit ? P.iv(S.v, d.v0) * S.i / 100 : 0; c.fillStyle = "#e8ecf5"; c.font = "700 13px system-ui,sans-serif"; c.fillText("A", ax, ay - 6); c.font = "11px system-ui,sans-serif"; c.fillText((frac * 10).toFixed(1) + " µA", ax, ay + 11);
 	}
 	function frame(t) {
 		requestAnimationFrame(frame); var dt = Math.min(0.05, (t - (lastT || t)) / 1000); lastT = t; if (!W) return;
