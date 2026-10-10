@@ -128,6 +128,15 @@ const PAGES = [
     tileLabel: "Solar System Today",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/michelson-morley-experiment-icon.jpg (900x600 crop of the tool's share image).
+    slug: "michelson-morley-experiment",
+    section: "tools",
+    href: "/michelson-morley-experiment",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Michelson-Morley Experiment Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/atomic-clock-simulator-icon.jpg (900x600 crop of the tool's share image).
     slug: "atomic-clock-simulator",
     section: "tools",

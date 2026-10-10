@@ -1,0 +1,996 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Michelson-Morley Experiment Simulator -- mes.fm/michelson-morley-experiment -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/michelson-morley-experiment/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/michelson-morley-experiment" />                    <title>MES Michelson-Morley Experiment Simulator | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#047857;color:white;}
+        .button {color:#047857;border:0.125em solid#047857;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#047857; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#047857; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#047857;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#047857;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#047857;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#065f46;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#047857;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:100;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#047857;border:0.125em solid#047857;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#065f46;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#047857;}
+        .dropdown-symbol--dark {color:#047857;}
+        .button--active {background-color:#047857;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#047857;--accent-dark:#065f46;--tint:#dcf5ea;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #dcf5ea;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#dcf5ea;border-color:#dcf5ea;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #dcf5ea;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#dcf5ea;border-color:#dcf5ea;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#dcf5ea;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#dcf5ea;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#06ae7e !important;--accent-dark:#06ae7e !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+
+	/* michelson-morley simulator: a wide page with dark stages. Stage colours are custom properties / literals so the derived dark theme leaves them alone. */
+	html body .outer-container {max-width:min(96vw,80em) !important;}
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
+	.tu [hidden] {display:none !important;}
+	.mm {--mm-bg:#070d1f;--mm-line:#26325a;--mm-text:#e6ecfb;--mm-dim:#93a1c4;--mm-gold:#fbbf24;--mm-cyan:#22d3ee;}
+	.mm-bar {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;justify-content:space-between;margin-bottom:0.7em;}
+	.mm-tabs {display:flex;flex-wrap:wrap;gap:0.3em;}
+	.mm-tabs button {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#444;border-radius:0.5em 0.5em 0 0;padding:0.5em 0.9em;font-size:0.95em;line-height:1.2;min-height:2.4em;}
+	.mm-tabs button:hover {border-color:var(--accent);color:var(--accent);}
+	.mm-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	.mm-theatre {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#555;border-radius:1.2em;padding:0.35em 0.9em;font-size:0.82em;}
+	.mm-theatre:hover {border-color:var(--accent);color:var(--accent);}
+	.mm-theatre[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.ac .tu-label b {text-transform:none;letter-spacing:0;}
+	#mm-bl, #mm-fo {touch-action:none;cursor:grab;} #mm-bl.is-drag, #mm-fo.is-drag {cursor:grabbing;}
+	.mm-explain {margin:0.8em 0 0;}
+	.mm-lead {margin:0 0 0.7em;font-size:1em;line-height:1.45;}
+	.mm-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--mm-line);background:var(--mm-bg);}
+	.mm-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
+	.mm-stage {position:relative;background:var(--mm-bg);width:100%;}
+	.mm-stage canvas {position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:pan-y;}
+	#mm-ch {cursor:crosshair;}
+	.mm-tools {position:absolute;right:0.6em;top:0.6em;display:flex;gap:0.25em;}
+	.mm-tools button {cursor:pointer;border:1px solid var(--mm-line);background:rgba(8,13,30,0.78);color:var(--mm-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font-size:0.82em;line-height:1;}
+	.mm-tools button:hover {border-color:var(--accent);color:#fff;}
+	.mm-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:0.5em;padding:0.6em;background:#0b1330;border-top:1px solid var(--mm-line);}
+	.mm-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
+	.mm-ro--wide {grid-column:1 / -1;}
+	.mm-ro span {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--mm-dim);}
+	.mm-ro b {font-size:1.3em;color:var(--mm-text);font-variant-numeric:tabular-nums;line-height:1.15;}
+	.mm-ro small {font-size:0.72em;color:var(--mm-dim);line-height:1.3;}
+	.mm-controls {margin-top:0.9em;}
+	.mm-row {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;}
+	.mm-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.9em 1.4em;margin-top:0.9em;}
+	.mm-controls input[type=range] {width:100%;accent-color:var(--accent);}
+	.mm-chips {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.9em;}
+	.mm-check {display:inline-flex;align-items:center;gap:0.4em;cursor:pointer;font-size:0.92em;margin-left:0.6em;}
+	.mm-inline {display:inline-flex;align-items:center;gap:0.5em;}
+	.mm-inline select {width:auto;font-size:0.95em;}
+	.mm-pair {display:flex;gap:0.5em;align-items:center;}
+	.mm-pair .tu-input {flex:1 1 6em;min-width:0;} .mm-pair .tu-select {flex:0 0 auto;width:auto;}
+	.mm-pairlab {color:#555;white-space:nowrap;}
+	.mm-small {font-size:1.25em !important;}
+	.mm-stats {margin-top:0.9em;}
+	body.dark-mode #mm .mm-tabs button, body.dark-mode #mm .mm-theatre {background:#222;border-color:#444;color:#ccc;}
+	body.dark-mode #mm .mm-tabs button[aria-selected="true"], body.dark-mode #mm .mm-theatre[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	@media (max-width: 700px) {
+		.mm-tabs button {padding:0.45em 0.6em;font-size:0.88em;}
+	}
+
+	.mm-stage--chart canvas {touch-action:pan-y;}
+	.mm-setup {margin-top:0.9em;}
+	.mm-setup[hidden] {display:none !important;}
+	.mm-spd, #mm-presets {display:inline-flex;flex-wrap:wrap;gap:0.3em;margin-top:0.35em;}
+	#mm-presets {margin-top:0;}
+	.mm-spd .tu-chip, #mm-presets .tu-chip {font-size:0.8em;}
+	.mm-grid--calc {grid-template-columns:repeat(auto-fit,minmax(13em,1fr));}
+	.mm-answer {margin:0.9em 0 0.4em;padding:0.8em 1em;border-radius:0.5em;background:#dcf5ea;border:1px solid var(--accent);font-size:1.5em;font-weight:700;line-height:1.3;}
+	.mm-facts {margin:0.4em 0 0.9em;padding-left:1.2em;line-height:1.55;font-size:0.95em;}
+	.mm-hist {padding:0.4em 0.9em;}
+	.mm-h {display:grid;grid-template-columns:minmax(7em,9em) 1fr minmax(10em,16em);gap:0.4em 1em;align-items:start;padding:0.8em 0.2em;border-bottom:1px solid #e3e7ec;}
+	.mm-h:last-child {border-bottom:0;}
+	.mm-h__y {font-weight:700;line-height:1.25;} .mm-h__y small {display:block;font-weight:400;color:#555;margin-top:0.15em;}
+	.mm-h__t {font-size:0.92em;line-height:1.45;}
+	.mm-h__n {font-size:0.92em;line-height:1.4;}
+	.mm-h__bar {height:0.6em;border-radius:0.3em;background:#eef1f5;margin:0.3em 0;overflow:hidden;} .mm-h__bar i {display:block;height:100%;background:var(--accent);}
+	.mm-h__n .tu-btn {margin-top:0.4em;font-size:0.85em;}
+	.mm-seo {margin-top:1.2em;}
+	body.dark-mode #mm .mm-answer {background:#1c2a3a;}
+	body.dark-mode #mm .mm-h {border-bottom-color:#3a3a3a;} body.dark-mode #mm .mm-h__y small {color:#b5bcc7;} body.dark-mode #mm .mm-h__bar {background:#2c2c2c;}
+	@media (max-width: 700px) {
+		.mm-h {grid-template-columns:1fr;}
+		.mm-answer {font-size:1.25em;}
+	}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#12f7b6;--accent-dark:#19f0b4}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #154b33}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1c2f27;border-color:#154b33}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1c2f27;border-color:#154b33}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1c2f27}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .mm{--mm-bg:#375ed2;--mm-line:#536ab6}
+	body.dark-mode .mm-tabs button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
+	body.dark-mode .mm-theatre{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .mm-pairlab{color:#aaaaaa}
+	body.dark-mode .mm-answer{background:#1c2f27}
+	body.dark-mode .mm-h{border-bottom:1px solid #29323d}
+	body.dark-mode .mm-h__y small{color:#aaaaaa}
+	body.dark-mode .mm-h__bar{background:#191c20}
+	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #047857;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #047857; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(4,120,87,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/michelson-morley-experiment" />            <meta property="og:title" content="MES Michelson-Morley Experiment Simulator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/michelson-morley-experiment/img/logo-big.png" />
+        <meta property="og:description" content="Free Michelson-Morley experiment simulator: turn an interferometer through an aether wind and watch the fringes shift, see why the two light paths take different times, run a 16-point turntable measurement with noise, compare the 1881 and 1887 experiments, and calculate the expected fringe shift." />
+
+        <meta name="description" content="Free Michelson-Morley experiment simulator: turn an interferometer through an aether wind and watch the fringes shift, see why the two light paths take different times, run a 16-point turntable measurement with noise, compare the 1881 and 1887 experiments, and calculate the expected fringe shift.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Michelson-Morley Experiment Simulator">
+        <meta name="twitter:description" content="Free Michelson-Morley experiment simulator: turn an interferometer through an aether wind and watch the fringes shift, see why the two light paths take different times, run a 16-point turntable measurement with noise, compare the 1881 and 1887 experiments, and calculate the expected fringe shift.">
+        <meta name="twitter:image" content="https://mes.fm/michelson-morley-experiment/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Michelson-Morley Experiment Simulator">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Michelson-Morley Experiment Simulator", "url": "https://mes.fm/michelson-morley-experiment", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free Michelson-Morley experiment simulator: turn an interferometer through an aether wind and watch the fringes shift, see why the two light paths take different times, run a 16-point turntable measurement with noise, compare the 1881 and 1887 experiments, and calculate the expected fringe shift."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    </head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/michelson-morley-experiment" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/michelson-morley-experiment/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/michelson-morley-experiment" tabindex="-1">Michelson-Morley Simulator</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/michelson-morley-experiment'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/michelson-morley-experiment/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/michelson-morley-experiment'>
+                                    <p class="calculator-title">MES Michelson-Morley Experiment Simulator</p>
+                                </a>
+                                <p class="tag-line">Did the Earth move through the aether?</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/michelson-morley-experiment'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Michelson-Morley Experiment Simulator</h1>                                        <p class="page-description">Free Michelson-Morley experiment simulator: turn an interferometer through an aether wind and watch the fringes shift, see why the two light paths take different times, run a 16-point turntable measurement with noise, compare the 1881 and 1887 experiments, and calculate the expected fringe shift.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu mm" id="mm">
+		<div class="mm-bar">
+			<div class="mm-tabs" role="tablist" aria-label="Michelson-Morley simulator sections">
+				<button type="button" role="tab" id="mm-t-lab" data-tab="lab" aria-selected="true" aria-controls="mm-p-lab">Interferometer</button>
+				<button type="button" role="tab" id="mm-t-frame" data-tab="frame" aria-selected="false" aria-controls="mm-p-frame">Why the times differ</button>
+				<button type="button" role="tab" id="mm-t-rot" data-tab="rot" aria-selected="false" aria-controls="mm-p-rot">Turntable run</button>
+				<button type="button" role="tab" id="mm-t-hist" data-tab="hist" aria-selected="false" aria-controls="mm-p-hist">Real experiments</button>
+				<button type="button" role="tab" id="mm-t-calc" data-tab="calc" aria-selected="false" aria-controls="mm-p-calc">Calculator</button>
+			</div>
+			<button type="button" class="mm-theatre" id="mm-theatre" aria-pressed="false" title="Theatre: use nearly the whole window (saved for the whole site)">Theatre</button>
+		</div>
+
+		<!-- 1. interferometer -->
+		<section class="mm-panel" id="mm-p-lab" role="tabpanel" aria-labelledby="mm-t-lab">
+			<p class="mm-lead">A beam of light is split in two, sent down two arms at right angles, reflected and recombined. If the Earth ploughs through a still aether, the two trips take slightly different times, and <strong>turning the table should slide the interference fringes</strong>. Pick a theory, set up the instrument and turn it.</p>
+			<div class="mm-wrap" id="mm-wrap1">
+				<div class="mm-stage" id="mm-stage1">
+					<canvas id="mm-lab" role="img" aria-label="Top view of a Michelson interferometer on a rotating table with an aether wind blowing across it, beside the circular interference fringes that the eyepiece shows."></canvas>
+					<div class="mm-tools"><button type="button" id="mm-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="mm-readouts" id="mm-ro1">
+					<div class="mm-ro"><span>Fringes moved</span><b id="mm-r-move">–</b><small id="mm-r-move-s">since the table was at 0°</small></div>
+					<div class="mm-ro"><span>Biggest shift (90° turn)</span><b id="mm-r-n">–</b><small id="mm-r-n-s">N = 2 L v² / (λ c²)</small></div>
+					<div class="mm-ro"><span>Light-time difference</span><b id="mm-r-dt">–</b><small id="mm-r-dt-s">between the arms</small></div>
+					<div class="mm-ro"><span>Path difference</span><b id="mm-r-dp">–</b><small id="mm-r-dp-s">c × time difference</small></div>
+					<div class="mm-ro"><span>Verdict</span><b id="mm-r-v">–</b><small id="mm-r-v-s"></small></div>
+				</div>
+			</div>
+			<div class="tu-card mm-controls">
+				<div class="mm-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="mm-spin" aria-pressed="false">↻ Turn the table</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mm-zero" title="Put the table back at 0°, arm 1 pointing into the wind">⟲ Back to 0°</button>
+					<label class="mm-check"><input type="checkbox" id="mm-ghost" checked> Mark where the fringes were at 0°</label>
+					<label class="mm-check"><input type="checkbox" id="mm-pulses" checked> Show light pulses</label>
+				</div>
+				<div class="mm-grid">
+					<div class="tu-field"><span class="tu-label" id="mm-th-l">Table angle: <b id="mm-th-v"></b></span><input type="range" id="mm-th" min="0" max="360" step="0.5" aria-labelledby="mm-th-l">
+						<span class="tu-note">At 0° arm 1 points straight into the aether wind. Drag, or press “Turn the table”.</span></div>
+					<div class="tu-field"><span class="tu-label" id="mm-spinspd-l">Turning speed: <b id="mm-spinspd-v"></b></span><input type="range" id="mm-spinspd" min="5" max="180" step="5" aria-labelledby="mm-spinspd-l">
+						<span class="tu-note">Degrees per second. Michelson and Morley turned theirs slowly, a full turn in about six minutes.</span></div>
+				</div>
+			</div>
+		</section>
+
+		<!-- 2. aether-frame picture -->
+		<section class="mm-panel" id="mm-p-frame" role="tabpanel" aria-labelledby="mm-t-frame" hidden>
+			<p class="mm-lead">The same experiment seen from the aether. The apparatus drifts to the right, so the light that goes <em>with</em> the wind has to catch up with its mirror and then meet the beam splitter coming back, while the other beam travels a long diagonal. <strong>The speed here is exaggerated</strong> so you can see the paths; on Earth v/c is only 0.0001.</p>
+			<div class="mm-wrap" id="mm-wrap2">
+				<div class="mm-stage" id="mm-stage2">
+					<canvas id="mm-fr" role="img" aria-label="Aether-frame diagram: the interferometer moves right; one pulse travels along the direction of motion to its mirror and back, the other travels a diagonal path to the side mirror and back. The two pulses return at different times."></canvas>
+					<div class="mm-tools"><button type="button" id="mm-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="mm-readouts" id="mm-ro2">
+					<div class="mm-ro"><span>With the wind (arm 1)</span><b id="mm-f-t1">–</b><small id="mm-f-t1-s">round trip, in units of 2L/c</small></div>
+					<div class="mm-ro"><span>Across the wind (arm 2)</span><b id="mm-f-t2">–</b><small id="mm-f-t2-s">round trip, in units of 2L/c</small></div>
+					<div class="mm-ro"><span>Difference</span><b id="mm-f-d">–</b><small id="mm-f-d-s">arm 1 minus arm 2</small></div>
+					<div class="mm-ro"><span>First back</span><b id="mm-f-first">–</b><small id="mm-f-first-s"></small></div>
+				</div>
+			</div>
+			<div class="tu-card mm-controls">
+				<div class="mm-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="mm-f-play" aria-pressed="true">❚❚ Pause</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mm-f-replay">↺ Replay</button>
+					<label class="mm-check"><input type="checkbox" id="mm-f-contract"> Contract arm 1 by √(1 − v²/c²) (Lorentz–FitzGerald)</label>
+				</div>
+				<div class="mm-grid">
+					<div class="tu-field"><span class="tu-label" id="mm-f-b-l">Speed in the picture: <b id="mm-f-b-v"></b></span><input type="range" id="mm-f-b" min="5" max="85" step="1" aria-labelledby="mm-f-b-l">
+						<span class="tu-note">As a fraction of the speed of light. The Earth's orbital speed would be 0.0001, far too small to draw.</span></div>
+					<div class="tu-field"><span class="tu-label" id="mm-f-s-l">Playback speed: <b id="mm-f-s-v"></b></span><input type="range" id="mm-f-s" min="1" max="30" step="1" aria-labelledby="mm-f-s-l">
+						<span class="tu-note">Slow it down to follow each pulse.</span></div>
+				</div>
+				<p class="tu-note mm-explain" id="mm-f-explain"></p>
+			</div>
+		</section>
+
+		<!-- 3. turntable run -->
+		<section class="mm-panel" id="mm-p-rot" role="tabpanel" aria-labelledby="mm-t-rot" hidden>
+			<p class="mm-lead">Michelson and Morley did not watch one fringe: they read the fringe position at 16 compass points on every turn of the stone, averaged several turns, and looked for a wobble that repeats <em>twice</em> per turn. Run the same procedure with the instrument you set up below.</p>
+			<div class="mm-wrap" id="mm-wrap3">
+				<div class="mm-stage mm-stage--chart" id="mm-stage3"><canvas id="mm-ch" role="img" aria-label="Chart of fringe position against table azimuth: the predicted curve, the simulated readings with noise, and the best-fit curve."></canvas></div>
+				<div class="mm-readouts" id="mm-ro3">
+					<div class="mm-ro"><span>Predicted swing</span><b id="mm-c-pred">–</b><small id="mm-c-pred-s">top to bottom of the curve</small></div>
+					<div class="mm-ro"><span>Measured swing</span><b id="mm-c-meas">–</b><small id="mm-c-meas-s">from the best fit to the readings</small></div>
+					<div class="mm-ro"><span>Wind this implies</span><b id="mm-c-v">–</b><small id="mm-c-v-s"></small></div>
+					<div class="mm-ro"><span>Signal vs noise</span><b id="mm-c-snr">–</b><small id="mm-c-snr-s"></small></div>
+				</div>
+			</div>
+			<div class="tu-card mm-controls">
+				<div class="mm-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="mm-c-new">🎲 New run</button>
+					<label class="mm-check"><input type="checkbox" id="mm-c-fit" checked> Show the best fit</label>
+					<label class="mm-check"><input type="checkbox" id="mm-c-band" checked> Show ±0.01 fringe</label>
+				</div>
+				<div class="mm-grid">
+					<div class="tu-field"><span class="tu-label" id="mm-c-sig-l">Reading noise: <b id="mm-c-sig-v"></b></span><input type="range" id="mm-c-sig" min="0" max="1000" step="1" aria-labelledby="mm-c-sig-l">
+						<span class="tu-note">Vibration, temperature drift and eye error, per reading, in fringes. A careful observer might manage 0.01.</span></div>
+					<div class="tu-field"><span class="tu-label" id="mm-c-turns-l">Turns averaged: <b id="mm-c-turns-v"></b></span><input type="range" id="mm-c-turns" min="1" max="40" step="1" aria-labelledby="mm-c-turns-l">
+						<span class="tu-note">1887 averaged 6 turns at each of 16 points. Noise falls as 1/√turns.</span></div>
+					<div class="tu-field"><span class="tu-label" id="mm-c-az-l">Wind direction on the table: <b id="mm-c-az-v"></b></span><input type="range" id="mm-c-az" min="0" max="180" step="1" aria-labelledby="mm-c-az-l">
+						<span class="tu-note">Only matters for the aether model. The fit finds it again.</span></div>
+				</div>
+				<p class="tu-note mm-explain" id="mm-c-explain"></p>
+			</div>
+		</section>
+
+		<!-- 4. history -->
+		<section class="mm-panel" id="mm-p-hist" role="tabpanel" aria-labelledby="mm-t-hist" hidden>
+			<p class="mm-lead">Five historic interferometers, with the shift a stationary aether would have produced at the Earth's orbital speed (29.78 km/s) worked out from their arm length and wavelength. Load any of them into the simulator.</p>
+			<div class="tu-card mm-hist" id="mm-hist"></div>
+			<p class="tu-note">Arm length is the effective optical path of one arm, after the folding mirrors. Wavelengths are the typical values of each lamp. Reported results are summarised from the papers and from later reviews; see the sources named in the text below.</p>
+		</section>
+
+		<!-- 5. calculator -->
+		<section class="mm-panel" id="mm-p-calc" role="tabpanel" aria-labelledby="mm-t-calc" hidden>
+			<p class="mm-lead">Three ways round the same formula, <strong>N = 2 L v² / (λ c²)</strong>: the fringe shift an interferometer should show, the wind speed a measured shift would mean, or the arm length you need to see a given wind.</p>
+			<div class="tu-card mm-controls" id="mm-k">
+				<div class="mm-row"><span class="tu-label">Work out</span>
+					<button type="button" class="tu-chip" data-kmode="shift" aria-pressed="true">Fringe shift</button>
+					<button type="button" class="tu-chip" data-kmode="speed" aria-pressed="false">Wind speed</button>
+					<button type="button" class="tu-chip" data-kmode="length" aria-pressed="false">Arm length</button></div>
+				<div class="mm-grid mm-grid--calc">
+					<div class="tu-field" id="mm-k-fL"><label class="tu-label" for="mm-k-L">Arm length, L</label><input type="text" id="mm-k-L" class="tu-input" inputmode="text" autocomplete="off" spellcheck="false" placeholder="11 m"><span class="tu-note">Try 11 m, 2 ft or 50 cm.</span></div>
+					<div class="tu-field" id="mm-k-fl"><label class="tu-label" for="mm-k-l">Wavelength, λ</label><input type="text" id="mm-k-l" class="tu-input" inputmode="text" autocomplete="off" spellcheck="false" placeholder="570 nm"><span class="tu-note">Green light is about 550 nm; a red laser 633 nm.</span></div>
+					<div class="tu-field" id="mm-k-fv"><label class="tu-label" for="mm-k-v">Speed through the aether, v</label><input type="text" id="mm-k-v" class="tu-input" inputmode="text" autocomplete="off" spellcheck="false" placeholder="29.78 km/s"><span class="tu-note">Try 30 km/s, 370 km/s or 0.001 c.</span></div>
+					<div class="tu-field" id="mm-k-fN"><label class="tu-label" for="mm-k-N">Fringe shift on a 90° turn, N</label><input type="text" id="mm-k-N" class="tu-input" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0.01"><span class="tu-note">In fringes. 0.01 is about the smallest 1880s observers could trust.</span></div>
+				</div>
+				<div class="mm-chips"><span class="tu-label">Speeds</span><span id="mm-k-sp"></span></div>
+				<div class="mm-answer" id="mm-k-ans" aria-live="polite"></div>
+				<ul class="mm-facts" id="mm-k-facts"></ul>
+				<div class="mm-row"><button type="button" class="tu-btn tu-btn--ghost" id="mm-k-copy">Copy the answer</button><button type="button" class="tu-btn tu-btn--ghost" id="mm-k-link">Copy link to this calculation</button><button type="button" class="tu-btn tu-btn--ghost" id="mm-k-open">Open it in the simulator</button></div>
+			</div>
+		</section>
+
+		<!-- shared set-up: shown on Interferometer and Turntable run -->
+		<div class="tu-card mm-controls mm-setup" id="mm-setup">
+			<div class="mm-row"><span class="tu-label">Set up the instrument</span>
+				<span id="mm-presets"></span></div>
+			<div class="mm-grid">
+				<div class="tu-field"><span class="tu-label" id="mm-model-l">Theory</span>
+					<select id="mm-model" class="tu-select" aria-labelledby="mm-model-l"></select>
+					<span class="tu-note" id="mm-model-n"></span></div>
+				<div class="tu-field"><span class="tu-label" id="mm-v-l">Speed through the aether: <b id="mm-v-v"></b></span><input type="range" id="mm-v" min="0" max="1000" step="1" aria-labelledby="mm-v-l">
+					<span class="mm-spd" id="mm-v-chips"></span></div>
+				<div class="tu-field"><span class="tu-label" id="mm-L-l">Arm length (light path): <b id="mm-L-v"></b></span><input type="range" id="mm-L" min="0" max="1000" step="1" aria-labelledby="mm-L-l">
+					<span class="tu-note">Mirrors folding the beam back and forth make the path longer than the table.</span></div>
+				<div class="tu-field"><span class="tu-label" id="mm-lam-l">Wavelength: <b id="mm-lam-v"></b></span><input type="range" id="mm-lam" min="400" max="700" step="1" aria-labelledby="mm-lam-l">
+					<span class="tu-note">Shorter waves have finer fringes, so the same delay moves them further.</span></div>
+				<div class="tu-field" id="mm-felt-f"><span class="tu-label" id="mm-felt-l">Wind that reaches the lab: <b id="mm-felt-v"></b></span><input type="range" id="mm-felt" min="0" max="100" step="1" aria-labelledby="mm-felt-l">
+					<span class="tu-note">100% = the full Earth-through-aether wind. Less = the aether is partly dragged along with the Earth (an old idea Michelson himself tested by repeating the experiment on a hill).</span></div>
+			</div>
+		</div>
+
+		<div class="tu-seo mm-seo">
+			<h2>What the Michelson-Morley experiment was</h2>
+			<p>In the 19th century light was known to be a wave, and waves were thought to need a medium. The proposed medium was a <strong>luminiferous aether</strong> filling space. If the Sun sat still in it, the Earth would move through it at about 30 km/s as it orbits, and an observer on Earth would feel an “aether wind”, just as a cyclist feels a wind on a still day. Albert Michelson (alone in Potsdam in 1881, then with Edward Morley in Cleveland in 1887) built an <strong>interferometer</strong> to detect it: a lamp, a half-silvered mirror that splits the light into two beams, two mirrors at the ends of perpendicular arms, and an eyepiece where the recombined beams make fringes. Mounted on a heavy stone that floated in a trough of mercury, the instrument could be turned smoothly through every direction.</p>
+			<h3>The arithmetic</h3>
+			<p>A beam sent along the wind and back takes <strong>2L/c ÷ (1 − v²/c²)</strong>. A beam sent across the wind and back takes <strong>2L/c ÷ √(1 − v²/c²)</strong>. They differ by roughly (L/c)(v²/c²). With L = 11 m and v/c = 10⁻⁴ that is 3.7 × 10⁻¹⁶ s, a path difference of 110 nm, about a fifth of a wavelength. Turning the instrument through 90° swaps the roles of the arms, doubling the change, so the fringes should slide by <strong>N = 2Lv²/(λc²) ≈ 0.4 of a fringe</strong>. Michelson and Morley could see a hundredth of a fringe. They saw no shift of the expected size.</p>
+			<h3>What the null result meant</h3>
+			<p>The numbers are not in dispute; the interpretation is where the choices lie, and the Theory menu above lets you switch between them:</p>
+			<ul>
+				<li><strong>The aether is dragged along with the Earth.</strong> Use the “Wind that reaches the lab” slider. Complete dragging is hard to square with the aberration of starlight, and Michelson himself pursued it.</li>
+				<li><strong>Lorentz–FitzGerald contraction.</strong> Arms shrink along the direction of motion by exactly the factor that cancels the delay (try it on the “Why the times differ” tab). The aether then exists but cannot be detected this way.</li>
+				<li><strong>Special relativity.</strong> There is no preferred frame; light moves at c for every inertial observer, and the null result is expected. Einstein's 1905 paper does not rely on the experiment, but it explains it.</li>
+				<li><strong>Emission theories.</strong> Light travels at c relative to its source. It also gives a null result here, but is contradicted by other observations, such as the light of double stars.</li>
+			</ul>
+			<p>Whichever you favour, the simulation shows the same thing: <em>if</em> the Earth moved through a still aether and nothing compensated, a 11 m instrument would have shown 0.4 fringe, and the reported shifts were many times smaller.</p>
+			<h3>Later experiments</h3>
+			<p>Morley and Miller built a longer instrument in 1902–04. Dayton Miller ran one on Mount Wilson in the 1920s and reported a small signal of about 10 km/s; later analysis (Shankland and colleagues, 1955) found it consistent with temperature effects on the apparatus. Georg Joos in 1930 used a sealed, temperature-controlled instrument and set a limit of about 1.5 km/s. In 1932 Kennedy and Thorndike used arms of unequal length to test whether the result depends on the Earth's speed at different times of year. Modern versions use rotating cryogenic optical resonators and limit any directional difference in the speed of light to a few parts in 10¹⁷ or better. This page covers only the classic fringe-counting version.</p>
+			<h3>What the page simulates, and what it does not</h3>
+			<p>The arm times are the exact formulas, computed in the frame of the aether, not the small-speed approximation (the two agree to better than one part in 10⁸ at 30 km/s). Fringes are drawn from the exact phase difference with an idealised monochromatic source. The turntable run adds Gaussian reading noise and fits cos 2θ and sin 2θ by least squares. Not modelled: the real instrument's flexing, temperature drift, the tilt of the fringe field, and the Earth's changing wind direction over a day and a year. It is a teaching model, not an analysis tool.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Why is the effect second order?</strong> Going out and back along the wind, the first-order gain and loss cancel. What is left is proportional to (v/c)², about 10⁻⁸, which is why it needed a precise interferometer.</li>
+				<li><strong>Why turn the instrument?</strong> The wind direction was unknown, and the sign of the effect changes every 90°, so the signature is a wobble that repeats twice per turn. A fixed offset in the fringes (from imperfect mirror alignment) does not matter.</li>
+				<li><strong>Why not just compare the two arms at rest?</strong> You cannot tell the arms' lengths apart to a fraction of a wavelength, so only the <em>change</em> on rotation is meaningful.</li>
+				<li><strong>Did Michelson get a Nobel Prize for it?</strong> He won the 1907 Physics Nobel “for his optical precision instruments and the spectroscopic and metrological investigations carried out with their aid”.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/math-qa-57-michelson-morley-experiment">MES Math Q/A 57: the Michelson-Morley experiment</a> · <a href="/math-qa">All the Aether Q/As</a> · <a href="/atomic-clock-simulator">Atomic clock simulator</a> · <a href="/photoelectric-effect-simulator">Photoelectric effect simulator</a> · <a href="/earth-curvature-calculator">Earth curvature calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>                            </div>
+                        </div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/michelson-morley-experiment">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps.html">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/michelson-morley-experiment/js/michelson-morley-experiment.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script></body>
+
+</html>

@@ -1,0 +1,181 @@
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu mm" id="mm">
+		<div class="mm-bar">
+			<div class="mm-tabs" role="tablist" aria-label="Michelson-Morley simulator sections">
+				<button type="button" role="tab" id="mm-t-lab" data-tab="lab" aria-selected="true" aria-controls="mm-p-lab">Interferometer</button>
+				<button type="button" role="tab" id="mm-t-frame" data-tab="frame" aria-selected="false" aria-controls="mm-p-frame">Why the times differ</button>
+				<button type="button" role="tab" id="mm-t-rot" data-tab="rot" aria-selected="false" aria-controls="mm-p-rot">Turntable run</button>
+				<button type="button" role="tab" id="mm-t-hist" data-tab="hist" aria-selected="false" aria-controls="mm-p-hist">Real experiments</button>
+				<button type="button" role="tab" id="mm-t-calc" data-tab="calc" aria-selected="false" aria-controls="mm-p-calc">Calculator</button>
+			</div>
+			<button type="button" class="mm-theatre" id="mm-theatre" aria-pressed="false" title="Theatre: use nearly the whole window (saved for the whole site)">Theatre</button>
+		</div>
+
+		<!-- 1. interferometer -->
+		<section class="mm-panel" id="mm-p-lab" role="tabpanel" aria-labelledby="mm-t-lab">
+			<p class="mm-lead">A beam of light is split in two, sent down two arms at right angles, reflected and recombined. If the Earth ploughs through a still aether, the two trips take slightly different times, and <strong>turning the table should slide the interference fringes</strong>. Pick a theory, set up the instrument and turn it.</p>
+			<div class="mm-wrap" id="mm-wrap1">
+				<div class="mm-stage" id="mm-stage1">
+					<canvas id="mm-lab" role="img" aria-label="Top view of a Michelson interferometer on a rotating table with an aether wind blowing across it, beside the circular interference fringes that the eyepiece shows."></canvas>
+					<div class="mm-tools"><button type="button" id="mm-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="mm-readouts" id="mm-ro1">
+					<div class="mm-ro"><span>Fringes moved</span><b id="mm-r-move">–</b><small id="mm-r-move-s">since the table was at 0°</small></div>
+					<div class="mm-ro"><span>Biggest shift (90° turn)</span><b id="mm-r-n">–</b><small id="mm-r-n-s">N = 2 L v² / (λ c²)</small></div>
+					<div class="mm-ro"><span>Light-time difference</span><b id="mm-r-dt">–</b><small id="mm-r-dt-s">between the arms</small></div>
+					<div class="mm-ro"><span>Path difference</span><b id="mm-r-dp">–</b><small id="mm-r-dp-s">c × time difference</small></div>
+					<div class="mm-ro"><span>Verdict</span><b id="mm-r-v">–</b><small id="mm-r-v-s"></small></div>
+				</div>
+			</div>
+			<div class="tu-card mm-controls">
+				<div class="mm-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="mm-spin" aria-pressed="false">↻ Turn the table</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mm-zero" title="Put the table back at 0°, arm 1 pointing into the wind">⟲ Back to 0°</button>
+					<label class="mm-check"><input type="checkbox" id="mm-ghost" checked> Mark where the fringes were at 0°</label>
+					<label class="mm-check"><input type="checkbox" id="mm-pulses" checked> Show light pulses</label>
+				</div>
+				<div class="mm-grid">
+					<div class="tu-field"><span class="tu-label" id="mm-th-l">Table angle: <b id="mm-th-v"></b></span><input type="range" id="mm-th" min="0" max="360" step="0.5" aria-labelledby="mm-th-l">
+						<span class="tu-note">At 0° arm 1 points straight into the aether wind. Drag, or press “Turn the table”.</span></div>
+					<div class="tu-field"><span class="tu-label" id="mm-spinspd-l">Turning speed: <b id="mm-spinspd-v"></b></span><input type="range" id="mm-spinspd" min="5" max="180" step="5" aria-labelledby="mm-spinspd-l">
+						<span class="tu-note">Degrees per second. Michelson and Morley turned theirs slowly, a full turn in about six minutes.</span></div>
+				</div>
+			</div>
+		</section>
+
+		<!-- 2. aether-frame picture -->
+		<section class="mm-panel" id="mm-p-frame" role="tabpanel" aria-labelledby="mm-t-frame" hidden>
+			<p class="mm-lead">The same experiment seen from the aether. The apparatus drifts to the right, so the light that goes <em>with</em> the wind has to catch up with its mirror and then meet the beam splitter coming back, while the other beam travels a long diagonal. <strong>The speed here is exaggerated</strong> so you can see the paths; on Earth v/c is only 0.0001.</p>
+			<div class="mm-wrap" id="mm-wrap2">
+				<div class="mm-stage" id="mm-stage2">
+					<canvas id="mm-fr" role="img" aria-label="Aether-frame diagram: the interferometer moves right; one pulse travels along the direction of motion to its mirror and back, the other travels a diagonal path to the side mirror and back. The two pulses return at different times."></canvas>
+					<div class="mm-tools"><button type="button" id="mm-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="mm-readouts" id="mm-ro2">
+					<div class="mm-ro"><span>With the wind (arm 1)</span><b id="mm-f-t1">–</b><small id="mm-f-t1-s">round trip, in units of 2L/c</small></div>
+					<div class="mm-ro"><span>Across the wind (arm 2)</span><b id="mm-f-t2">–</b><small id="mm-f-t2-s">round trip, in units of 2L/c</small></div>
+					<div class="mm-ro"><span>Difference</span><b id="mm-f-d">–</b><small id="mm-f-d-s">arm 1 minus arm 2</small></div>
+					<div class="mm-ro"><span>First back</span><b id="mm-f-first">–</b><small id="mm-f-first-s"></small></div>
+				</div>
+			</div>
+			<div class="tu-card mm-controls">
+				<div class="mm-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="mm-f-play" aria-pressed="true">❚❚ Pause</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mm-f-replay">↺ Replay</button>
+					<label class="mm-check"><input type="checkbox" id="mm-f-contract"> Contract arm 1 by √(1 − v²/c²) (Lorentz–FitzGerald)</label>
+				</div>
+				<div class="mm-grid">
+					<div class="tu-field"><span class="tu-label" id="mm-f-b-l">Speed in the picture: <b id="mm-f-b-v"></b></span><input type="range" id="mm-f-b" min="5" max="85" step="1" aria-labelledby="mm-f-b-l">
+						<span class="tu-note">As a fraction of the speed of light. The Earth's orbital speed would be 0.0001, far too small to draw.</span></div>
+					<div class="tu-field"><span class="tu-label" id="mm-f-s-l">Playback speed: <b id="mm-f-s-v"></b></span><input type="range" id="mm-f-s" min="1" max="30" step="1" aria-labelledby="mm-f-s-l">
+						<span class="tu-note">Slow it down to follow each pulse.</span></div>
+				</div>
+				<p class="tu-note mm-explain" id="mm-f-explain"></p>
+			</div>
+		</section>
+
+		<!-- 3. turntable run -->
+		<section class="mm-panel" id="mm-p-rot" role="tabpanel" aria-labelledby="mm-t-rot" hidden>
+			<p class="mm-lead">Michelson and Morley did not watch one fringe: they read the fringe position at 16 compass points on every turn of the stone, averaged several turns, and looked for a wobble that repeats <em>twice</em> per turn. Run the same procedure with the instrument you set up below.</p>
+			<div class="mm-wrap" id="mm-wrap3">
+				<div class="mm-stage mm-stage--chart" id="mm-stage3"><canvas id="mm-ch" role="img" aria-label="Chart of fringe position against table azimuth: the predicted curve, the simulated readings with noise, and the best-fit curve."></canvas></div>
+				<div class="mm-readouts" id="mm-ro3">
+					<div class="mm-ro"><span>Predicted swing</span><b id="mm-c-pred">–</b><small id="mm-c-pred-s">top to bottom of the curve</small></div>
+					<div class="mm-ro"><span>Measured swing</span><b id="mm-c-meas">–</b><small id="mm-c-meas-s">from the best fit to the readings</small></div>
+					<div class="mm-ro"><span>Wind this implies</span><b id="mm-c-v">–</b><small id="mm-c-v-s"></small></div>
+					<div class="mm-ro"><span>Signal vs noise</span><b id="mm-c-snr">–</b><small id="mm-c-snr-s"></small></div>
+				</div>
+			</div>
+			<div class="tu-card mm-controls">
+				<div class="mm-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="mm-c-new">🎲 New run</button>
+					<label class="mm-check"><input type="checkbox" id="mm-c-fit" checked> Show the best fit</label>
+					<label class="mm-check"><input type="checkbox" id="mm-c-band" checked> Show ±0.01 fringe</label>
+				</div>
+				<div class="mm-grid">
+					<div class="tu-field"><span class="tu-label" id="mm-c-sig-l">Reading noise: <b id="mm-c-sig-v"></b></span><input type="range" id="mm-c-sig" min="0" max="1000" step="1" aria-labelledby="mm-c-sig-l">
+						<span class="tu-note">Vibration, temperature drift and eye error, per reading, in fringes. A careful observer might manage 0.01.</span></div>
+					<div class="tu-field"><span class="tu-label" id="mm-c-turns-l">Turns averaged: <b id="mm-c-turns-v"></b></span><input type="range" id="mm-c-turns" min="1" max="40" step="1" aria-labelledby="mm-c-turns-l">
+						<span class="tu-note">1887 averaged 6 turns at each of 16 points. Noise falls as 1/√turns.</span></div>
+					<div class="tu-field"><span class="tu-label" id="mm-c-az-l">Wind direction on the table: <b id="mm-c-az-v"></b></span><input type="range" id="mm-c-az" min="0" max="180" step="1" aria-labelledby="mm-c-az-l">
+						<span class="tu-note">Only matters for the aether model. The fit finds it again.</span></div>
+				</div>
+				<p class="tu-note mm-explain" id="mm-c-explain"></p>
+			</div>
+		</section>
+
+		<!-- 4. history -->
+		<section class="mm-panel" id="mm-p-hist" role="tabpanel" aria-labelledby="mm-t-hist" hidden>
+			<p class="mm-lead">Five historic interferometers, with the shift a stationary aether would have produced at the Earth's orbital speed (29.78 km/s) worked out from their arm length and wavelength. Load any of them into the simulator.</p>
+			<div class="tu-card mm-hist" id="mm-hist"></div>
+			<p class="tu-note">Arm length is the effective optical path of one arm, after the folding mirrors. Wavelengths are the typical values of each lamp. Reported results are summarised from the papers and from later reviews; see the sources named in the text below.</p>
+		</section>
+
+		<!-- 5. calculator -->
+		<section class="mm-panel" id="mm-p-calc" role="tabpanel" aria-labelledby="mm-t-calc" hidden>
+			<p class="mm-lead">Three ways round the same formula, <strong>N = 2 L v² / (λ c²)</strong>: the fringe shift an interferometer should show, the wind speed a measured shift would mean, or the arm length you need to see a given wind.</p>
+			<div class="tu-card mm-controls" id="mm-k">
+				<div class="mm-row"><span class="tu-label">Work out</span>
+					<button type="button" class="tu-chip" data-kmode="shift" aria-pressed="true">Fringe shift</button>
+					<button type="button" class="tu-chip" data-kmode="speed" aria-pressed="false">Wind speed</button>
+					<button type="button" class="tu-chip" data-kmode="length" aria-pressed="false">Arm length</button></div>
+				<div class="mm-grid mm-grid--calc">
+					<div class="tu-field" id="mm-k-fL"><label class="tu-label" for="mm-k-L">Arm length, L</label><input type="text" id="mm-k-L" class="tu-input" inputmode="text" autocomplete="off" spellcheck="false" placeholder="11 m"><span class="tu-note">Try 11 m, 2 ft or 50 cm.</span></div>
+					<div class="tu-field" id="mm-k-fl"><label class="tu-label" for="mm-k-l">Wavelength, λ</label><input type="text" id="mm-k-l" class="tu-input" inputmode="text" autocomplete="off" spellcheck="false" placeholder="570 nm"><span class="tu-note">Green light is about 550 nm; a red laser 633 nm.</span></div>
+					<div class="tu-field" id="mm-k-fv"><label class="tu-label" for="mm-k-v">Speed through the aether, v</label><input type="text" id="mm-k-v" class="tu-input" inputmode="text" autocomplete="off" spellcheck="false" placeholder="29.78 km/s"><span class="tu-note">Try 30 km/s, 370 km/s or 0.001 c.</span></div>
+					<div class="tu-field" id="mm-k-fN"><label class="tu-label" for="mm-k-N">Fringe shift on a 90° turn, N</label><input type="text" id="mm-k-N" class="tu-input" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0.01"><span class="tu-note">In fringes. 0.01 is about the smallest 1880s observers could trust.</span></div>
+				</div>
+				<div class="mm-chips"><span class="tu-label">Speeds</span><span id="mm-k-sp"></span></div>
+				<div class="mm-answer" id="mm-k-ans" aria-live="polite"></div>
+				<ul class="mm-facts" id="mm-k-facts"></ul>
+				<div class="mm-row"><button type="button" class="tu-btn tu-btn--ghost" id="mm-k-copy">Copy the answer</button><button type="button" class="tu-btn tu-btn--ghost" id="mm-k-link">Copy link to this calculation</button><button type="button" class="tu-btn tu-btn--ghost" id="mm-k-open">Open it in the simulator</button></div>
+			</div>
+		</section>
+
+		<!-- shared set-up: shown on Interferometer and Turntable run -->
+		<div class="tu-card mm-controls mm-setup" id="mm-setup">
+			<div class="mm-row"><span class="tu-label">Set up the instrument</span>
+				<span id="mm-presets"></span></div>
+			<div class="mm-grid">
+				<div class="tu-field"><span class="tu-label" id="mm-model-l">Theory</span>
+					<select id="mm-model" class="tu-select" aria-labelledby="mm-model-l"></select>
+					<span class="tu-note" id="mm-model-n"></span></div>
+				<div class="tu-field"><span class="tu-label" id="mm-v-l">Speed through the aether: <b id="mm-v-v"></b></span><input type="range" id="mm-v" min="0" max="1000" step="1" aria-labelledby="mm-v-l">
+					<span class="mm-spd" id="mm-v-chips"></span></div>
+				<div class="tu-field"><span class="tu-label" id="mm-L-l">Arm length (light path): <b id="mm-L-v"></b></span><input type="range" id="mm-L" min="0" max="1000" step="1" aria-labelledby="mm-L-l">
+					<span class="tu-note">Mirrors folding the beam back and forth make the path longer than the table.</span></div>
+				<div class="tu-field"><span class="tu-label" id="mm-lam-l">Wavelength: <b id="mm-lam-v"></b></span><input type="range" id="mm-lam" min="400" max="700" step="1" aria-labelledby="mm-lam-l">
+					<span class="tu-note">Shorter waves have finer fringes, so the same delay moves them further.</span></div>
+				<div class="tu-field" id="mm-felt-f"><span class="tu-label" id="mm-felt-l">Wind that reaches the lab: <b id="mm-felt-v"></b></span><input type="range" id="mm-felt" min="0" max="100" step="1" aria-labelledby="mm-felt-l">
+					<span class="tu-note">100% = the full Earth-through-aether wind. Less = the aether is partly dragged along with the Earth (an old idea Michelson himself tested by repeating the experiment on a hill).</span></div>
+			</div>
+		</div>
+
+		<div class="tu-seo mm-seo">
+			<h2>What the Michelson-Morley experiment was</h2>
+			<p>In the 19th century light was known to be a wave, and waves were thought to need a medium. The proposed medium was a <strong>luminiferous aether</strong> filling space. If the Sun sat still in it, the Earth would move through it at about 30 km/s as it orbits, and an observer on Earth would feel an “aether wind”, just as a cyclist feels a wind on a still day. Albert Michelson (alone in Potsdam in 1881, then with Edward Morley in Cleveland in 1887) built an <strong>interferometer</strong> to detect it: a lamp, a half-silvered mirror that splits the light into two beams, two mirrors at the ends of perpendicular arms, and an eyepiece where the recombined beams make fringes. Mounted on a heavy stone that floated in a trough of mercury, the instrument could be turned smoothly through every direction.</p>
+			<h3>The arithmetic</h3>
+			<p>A beam sent along the wind and back takes <strong>2L/c ÷ (1 − v²/c²)</strong>. A beam sent across the wind and back takes <strong>2L/c ÷ √(1 − v²/c²)</strong>. They differ by roughly (L/c)(v²/c²). With L = 11 m and v/c = 10⁻⁴ that is 3.7 × 10⁻¹⁶ s, a path difference of 110 nm, about a fifth of a wavelength. Turning the instrument through 90° swaps the roles of the arms, doubling the change, so the fringes should slide by <strong>N = 2Lv²/(λc²) ≈ 0.4 of a fringe</strong>. Michelson and Morley could see a hundredth of a fringe. They saw no shift of the expected size.</p>
+			<h3>What the null result meant</h3>
+			<p>The numbers are not in dispute; the interpretation is where the choices lie, and the Theory menu above lets you switch between them:</p>
+			<ul>
+				<li><strong>The aether is dragged along with the Earth.</strong> Use the “Wind that reaches the lab” slider. Complete dragging is hard to square with the aberration of starlight, and Michelson himself pursued it.</li>
+				<li><strong>Lorentz–FitzGerald contraction.</strong> Arms shrink along the direction of motion by exactly the factor that cancels the delay (try it on the “Why the times differ” tab). The aether then exists but cannot be detected this way.</li>
+				<li><strong>Special relativity.</strong> There is no preferred frame; light moves at c for every inertial observer, and the null result is expected. Einstein's 1905 paper does not rely on the experiment, but it explains it.</li>
+				<li><strong>Emission theories.</strong> Light travels at c relative to its source. It also gives a null result here, but is contradicted by other observations, such as the light of double stars.</li>
+			</ul>
+			<p>Whichever you favour, the simulation shows the same thing: <em>if</em> the Earth moved through a still aether and nothing compensated, a 11 m instrument would have shown 0.4 fringe, and the reported shifts were many times smaller.</p>
+			<h3>Later experiments</h3>
+			<p>Morley and Miller built a longer instrument in 1902–04. Dayton Miller ran one on Mount Wilson in the 1920s and reported a small signal of about 10 km/s; later analysis (Shankland and colleagues, 1955) found it consistent with temperature effects on the apparatus. Georg Joos in 1930 used a sealed, temperature-controlled instrument and set a limit of about 1.5 km/s. In 1932 Kennedy and Thorndike used arms of unequal length to test whether the result depends on the Earth's speed at different times of year. Modern versions use rotating cryogenic optical resonators and limit any directional difference in the speed of light to a few parts in 10¹⁷ or better. This page covers only the classic fringe-counting version.</p>
+			<h3>What the page simulates, and what it does not</h3>
+			<p>The arm times are the exact formulas, computed in the frame of the aether, not the small-speed approximation (the two agree to better than one part in 10⁸ at 30 km/s). Fringes are drawn from the exact phase difference with an idealised monochromatic source. The turntable run adds Gaussian reading noise and fits cos 2θ and sin 2θ by least squares. Not modelled: the real instrument's flexing, temperature drift, the tilt of the fringe field, and the Earth's changing wind direction over a day and a year. It is a teaching model, not an analysis tool.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Why is the effect second order?</strong> Going out and back along the wind, the first-order gain and loss cancel. What is left is proportional to (v/c)², about 10⁻⁸, which is why it needed a precise interferometer.</li>
+				<li><strong>Why turn the instrument?</strong> The wind direction was unknown, and the sign of the effect changes every 90°, so the signature is a wobble that repeats twice per turn. A fixed offset in the fringes (from imperfect mirror alignment) does not matter.</li>
+				<li><strong>Why not just compare the two arms at rest?</strong> You cannot tell the arms' lengths apart to a fraction of a wavelength, so only the <em>change</em> on rotation is meaningful.</li>
+				<li><strong>Did Michelson get a Nobel Prize for it?</strong> He won the 1907 Physics Nobel “for his optical precision instruments and the spectroscopic and metrological investigations carried out with their aid”.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/math-qa-57-michelson-morley-experiment">MES Math Q/A 57: the Michelson-Morley experiment</a> · <a href="/math-qa">All the Aether Q/As</a> · <a href="/atomic-clock-simulator">Atomic clock simulator</a> · <a href="/photoelectric-effect-simulator">Photoelectric effect simulator</a> · <a href="/earth-curvature-calculator">Earth curvature calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>
