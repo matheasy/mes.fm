@@ -296,6 +296,23 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.st .ts-tip strong {color:#fff;}
 	.st .ts-pt:hover .ts-tip, .st .ts-pt:focus-visible .ts-tip {opacity:1;visibility:visible;}
 	.st .ts-note {font-size:0.8em;color:var(--muted);margin-top:0.75em;}
+	/* Per-page lines: legend chips, crosshair + shared tooltip, tick boxes in the table */
+	.st .ts-legend {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;margin-top:0.5em;font-size:0.8em;}
+	.st .ts-legend[hidden] {display:none;}
+	.st .ts-chip {display:inline-flex;align-items:center;gap:0.4em;max-width:16em;padding:0.2em 0.6em;border-radius:1em;border:1px solid #c3c9d2;background:#fff;color:#333;cursor:pointer;font:inherit;}
+	.st .ts-chip.off {opacity:0.45;}
+	.st .ts-chip i {width:0.7em;height:0.7em;border-radius:50%;flex:none;}
+	.st .ts-chip span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	.st .ts-chip b {font-weight:400;color:#888;}
+	.st .ts-legend .ts-sep {flex:1;}
+	.st .ts-legend .ts-toggle {margin:0;}
+	.st .ts-legend .ts-toggle-btn {font-size:1em;padding:0.2em 0.7em;}
+	.st .ts-clear {background:none;border:none;color:var(--accent);cursor:pointer;font:inherit;padding:0 0.3em;}
+	.st .ts-cross {position:absolute;top:0;bottom:0;width:0;border-left:1px dashed rgba(0,0,0,0.35);pointer-events:none;display:none;}
+	.st .ts-tip2 {position:absolute;z-index:3;padding:0.4em 0.65em;border-radius:6px;font-size:0.78em;line-height:1.35;white-space:nowrap;background:#1e2733;color:#fff;pointer-events:none;display:none;}
+	.st .ts-tip2 strong {color:#fff;}
+	.st .ts-tip2 i {display:inline-block;width:0.6em;height:0.6em;border-radius:50%;margin-right:0.4em;}
+	.st .pg-pick {margin:0 0.4em 0 0;width:13px;height:13px;vertical-align:-2px;cursor:pointer;accent-color:var(--accent);}
 
 	.st-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
 	.st-seo h2 {font-size:1.2em;color:#1e2733;margin:1em 0 0.4em;}
@@ -423,6 +440,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .st-seo a{color:#71adea}
 	body.dark-mode .st-seo a:hover{color:#6facec}
 	/* TOOL-DARK:END */
+	body.dark-mode .st .ts-chip{border:1px solid #3a424d;background:#1a1a1a;color:#d1d6dc}
+	body.dark-mode .st .ts-cross{border-left-color:rgba(242,242,242,0.4)}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -655,6 +674,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="view-btn" data-view="theater" aria-pressed="false">Theater view</button>
 				</div>
 			</div>
+			<div class="ts-legend" id="tsLegend" hidden></div>
 			<div class="ts-wrap" id="tsChart">
 				<svg id="tsSvg" viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Page views over time"></svg>
 				<div id="tsPts"></div>
@@ -784,7 +804,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=4" defer></script>
+	<script src="/stats/js/stats.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

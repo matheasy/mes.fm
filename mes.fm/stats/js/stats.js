@@ -47,6 +47,26 @@ let sourceSort = { key: 'views', dir: 'desc' };
 // more) since it's just a Set, not tied to DOM nodes.
 const expandedPages = new Set();
 
+// Pages ticked in the table to plot in Views Over Time (max 8, kept in tick
+// order). Colors are stable per page while it stays ticked.
+const MAX_PICKS = 8;
+const SERIES_COLORS = ['#e8590c', '#2f9e44', '#9c36b5', '#d6336c', '#f08c00', '#0c8599', '#5f3dc4', '#868e96'];
+let picks = [];
+try {
+  const saved = JSON.parse(localStorage.getItem('statsPicks') || '[]');
+  if (Array.isArray(saved)) picks = saved.filter(function (k) { return typeof k === 'string' && k.indexOf('|') !== -1; }).slice(0, MAX_PICKS);
+} catch (e) { picks = []; }
+const pickColors = {};
+function colorFor(key) {
+  if (!pickColors[key]) {
+    const used = picks.map(function (k) { return pickColors[k]; });
+    pickColors[key] = SERIES_COLORS.find(function (c) { return used.indexOf(c) === -1; }) || SERIES_COLORS[0];
+  }
+  return pickColors[key];
+}
+picks.forEach(colorFor);
+function savePicks() { try { localStorage.setItem('statsPicks', JSON.stringify(picks)); } catch (e) {} }
+
 function pageKey(p) {
   return p.site + '|' + p.path;
 }
@@ -304,7 +324,10 @@ function renderTopPages() {
     const key = pageKey(p);
     const isExpanded = expandedPages.has(key);
     const toggle = '<button type="button" class="expand-toggle" data-page-key="' + escapeHtml(key) + '" aria-expanded="' + isExpanded + '" title="Show device × source breakdown">' + (isExpanded ? '▾' : '▸') + '</button>';
-    const row = '<tr><td class="page-cell sticky-col sticky-left">' + toggle + '<a href="' + escapeHtml(url) + '" title="' + escapeHtml(label) + '" target="_blank" rel="noopener"><span class="page-path">' + escapeHtml(label) + '</span></a></td>' +
+    const picked = picks.indexOf(key) !== -1;
+    const pick = '<input type="checkbox" class="pg-pick" data-page-key="' + escapeHtml(key) + '" title="Show in chart" aria-label="Show ' + escapeHtml(label) + ' in chart"' +
+      (picked ? ' checked style="accent-color:' + colorFor(key) + '"' : (picks.length >= MAX_PICKS ? ' disabled' : '')) + '>';
+    const row = '<tr><td class="page-cell sticky-col sticky-left">' + pick + toggle + '<a href="' + escapeHtml(url) + '" title="' + escapeHtml(label) + '" target="_blank" rel="noopener"><span class="page-path">' + escapeHtml(label) + '</span></a></td>' +
       breakdownKeys.map(function (k) { return breakdownCell(p, k); }).join('') +
       '<td class="views sticky-col sticky-right">' + p.views.toLocaleString() + '</td></tr>';
     if (!isExpanded) return row;
@@ -520,70 +543,111 @@ function niceTicks(max, targetCount) {
   return ticks;
 }
 
-function renderLineChart(svg, ptsEl, data) {
-  const W = 640, H = 220, left = 34, right = 6, top = 10, bottom = 26;
+// series: [{ id, label, color, kind: 'total' | 'page', points: [{key, views, tipLabel?, partialLabel?}] }]
+// (all series share the same keys). mode: 'lines' | 'stacked' (Combined is
+// just one summed series fed in as 'lines').
+const CH = { W: 640, H: 220, left: 34, right: 6, top: 10, bottom: 26 };
+let tsCur = null; // what the hover handler reads
+
+function renderLineChart(svg, ptsEl, series, mode) {
+  const W = CH.W, H = CH.H, left = CH.left, right = CH.right, top = CH.top, bottom = CH.bottom;
   const innerW = W - left - right, innerH = H - top - bottom;
-  const values = data.map(function (d) { return d.views; });
-  const ticks = niceTicks(Math.max.apply(null, values), 4);
+  const base = series[0].points;
+  const n = base.length;
+  const stacked = mode === 'stacked' && series.filter(function (x) { return x.kind === 'page'; }).length > 1;
+  const stackSeries = series.filter(function (x) { return x.kind === 'page'; });
+
+  let maxV = 0;
+  series.forEach(function (x) { x.points.forEach(function (d) { if (d.views > maxV) maxV = d.views; }); });
+  if (stacked) {
+    for (let i = 0; i < n; i++) {
+      const sum = stackSeries.reduce(function (acc, x) { return acc + x.points[i].views; }, 0);
+      if (sum > maxV) maxV = sum;
+    }
+  }
+  const ticks = niceTicks(maxV, 4);
   const topMax = ticks[ticks.length - 1] || 1;
 
-  function xAt(i) { return left + (data.length === 1 ? 0 : (i / (data.length - 1)) * innerW); }
+  function xAt(i) { return left + (n === 1 ? 0 : (i / (n - 1)) * innerW); }
   function yAt(v) { return top + innerH - (v / topMax) * innerH; }
 
   const parts = ['<g>'];
-
   ticks.forEach(function (t) {
     const y = yAt(t);
     parts.push('<line class="ts-gridline" x1="' + left + '" x2="' + (W - right) + '" y1="' + y + '" y2="' + y + '"/>');
     parts.push('<text class="ts-axis-label" x="' + (left - 6) + '" y="' + (y + 2.5) + '" text-anchor="end">' + t.toLocaleString() + '</text>');
   });
-
-  const xStep = Math.max(1, Math.ceil(data.length / 6));
-  data.forEach(function (d, i) {
-    if (i % xStep !== 0 && i !== data.length - 1) return;
+  const xStep = Math.max(1, Math.ceil(n / 6));
+  base.forEach(function (d, i) {
+    if (i % xStep !== 0 && i !== n - 1) return;
     parts.push('<text class="ts-axis-label" x="' + xAt(i) + '" y="' + (H - 6) + '" text-anchor="middle">' + fmtPoint(d.key) + '</text>');
   });
 
-  const linePts = data.map(function (d, i) { return xAt(i) + ',' + yAt(d.views); });
-  const areaPath = 'M' + xAt(0) + ',' + (H - bottom) + ' L' + linePts.join(' L') + ' L' + xAt(data.length - 1) + ',' + (H - bottom) + ' Z';
-  parts.push('<path class="ts-area" d="' + areaPath + '"/>');
-  if (data.length > 2) {
-    parts.push('<path class="ts-line" d="M' + linePts.slice(0, -1).join(' L') + '"/>');
+  function lineParts(x, withArea) {
+    const pts = x.points.map(function (d, i) { return xAt(i) + ',' + yAt(d.views); });
+    const style = ' style="stroke:' + x.color + '"';
+    if (withArea) {
+      parts.push('<path class="ts-area" style="fill:' + x.color + '" d="M' + xAt(0) + ',' + (H - bottom) + ' L' + pts.join(' L') + ' L' + xAt(n - 1) + ',' + (H - bottom) + ' Z"/>');
+    }
+    if (n > 2) parts.push('<path class="ts-line"' + style + ' d="M' + pts.slice(0, -1).join(' L') + '"/>');
+    parts.push('<path class="ts-line partial"' + style + ' d="M' + pts.slice(-2).join(' L') + '"/>');
+    parts.push('<circle class="ts-dot partial" style="stroke:' + x.color + '" cx="' + xAt(n - 1) + '" cy="' + yAt(x.points[n - 1].views) + '" r="3.5"/>');
   }
-  parts.push('<path class="ts-line partial" d="M' + linePts.slice(-2).join(' L') + '"/>');
-  parts.push('<circle class="ts-dot partial" cx="' + xAt(data.length - 1) + '" cy="' + yAt(data[data.length - 1].views) + '" r="4"/>');
+
+  if (stacked) {
+    const cum = new Array(n).fill(0);
+    stackSeries.forEach(function (x) {
+      const lower = cum.slice();
+      for (let i = 0; i < n; i++) cum[i] += x.points[i].views;
+      const upper = cum.map(function (v, i) { return xAt(i) + ',' + yAt(v); });
+      const back = lower.map(function (v, i) { return xAt(i) + ',' + yAt(v); }).reverse();
+      parts.push('<path d="M' + upper.join(' L') + ' L' + back.join(' L') + ' Z" style="fill:' + x.color + ';opacity:0.55"/>');
+      parts.push('<path class="ts-line" style="stroke:' + x.color + ';stroke-width:1.2" d="M' + upper.join(' L') + '"/>');
+    });
+    series.filter(function (x) { return x.kind === 'total'; }).forEach(function (x) { lineParts(x, false); });
+  } else {
+    series.forEach(function (x) { lineParts(x, series.length === 1); });
+  }
   parts.push('</g>');
   svg.innerHTML = parts.join('');
 
-  // Hover/focus hit targets are skipped past ~120 points (365d/all can
-  // fetch that many) -- at that density each point is under 5px apart,
-  // so a 22px hit circle per point would mostly overlap its neighbors'
-  // anyway; the gridlines + line shape carry the story at that zoom.
-  ptsEl.innerHTML = '';
-  if (data.length > 120) return;
-  data.forEach(function (d, i) {
-    const isPartial = i === data.length - 1;
-    const pt = document.createElement('div');
-    pt.className = 'ts-pt';
-    pt.style.left = (xAt(i) / W * 100) + '%';
-    pt.style.top = (yAt(d.views) / H * 100) + '%';
-    pt.tabIndex = 0;
-    const tip = document.createElement('div');
-    tip.className = 'ts-tip';
-    const strong = document.createElement('strong');
-    strong.textContent = d.views.toLocaleString() + ' views';
-    tip.appendChild(strong);
-    tip.appendChild(document.createTextNode(' — ' + (d.tipLabel || fmtPoint(d.key))));
-    // d.partialLabel (weekly points) can flag ANY point partial, e.g.
-    // the first week if tracking started mid-week -- not just the last.
-    // Falls back to the generic label for the one daily/hourly point
-    // that's ever partial: the last (current, still-filling-in) one.
-    if (d.partialLabel) tip.appendChild(document.createTextNode(d.partialLabel));
-    else if (isPartial) tip.appendChild(document.createTextNode(' (partial, so far)'));
-    pt.appendChild(tip);
-    ptsEl.appendChild(pt);
-  });
+  // One crosshair + shared tooltip for every series (pointer-driven, so it
+  // works the same for 24 hourly points or 365 daily ones, and on touch).
+  ptsEl.innerHTML = '<div class="ts-cross"></div><div class="ts-tip2"></div>';
+  tsCur = { n: n, xAt: xAt, series: series, stacked: stacked, W: W, left: left, innerW: innerW, cross: ptsEl.firstChild, tip: ptsEl.lastChild };
 }
+
+function showTsHover(clientX) {
+  const c = tsCur;
+  if (!c) return;
+  const rect = document.getElementById('tsChart').getBoundingClientRect();
+  const vx = (clientX - rect.left) / rect.width * c.W;
+  let i = c.n === 1 ? 0 : Math.round((vx - c.left) / c.innerW * (c.n - 1));
+  i = Math.max(0, Math.min(c.n - 1, i));
+  const pct = c.xAt(i) / c.W * 100;
+  c.cross.style.display = 'block';
+  c.cross.style.left = pct + '%';
+  const d = c.series[0].points[i];
+  let html = '<strong>' + escapeHtml(d.tipLabel || fmtPoint(d.key)) + '</strong>' + (d.partialLabel ? escapeHtml(d.partialLabel) : (i === c.n - 1 ? ' (partial, so far)' : ''));
+  c.series.forEach(function (x) {
+    html += '<br><i style="background:' + x.color + '"></i>' + x.points[i].views.toLocaleString() + ' &middot; ' + escapeHtml(x.label);
+  });
+  c.tip.innerHTML = html;
+  c.tip.style.display = 'block';
+  c.tip.style.top = '4px';
+  if (pct > 55) { c.tip.style.left = ''; c.tip.style.right = (100 - pct) + '%'; c.tip.style.marginRight = '10px'; c.tip.style.marginLeft = ''; }
+  else { c.tip.style.right = ''; c.tip.style.left = pct + '%'; c.tip.style.marginLeft = '10px'; c.tip.style.marginRight = ''; }
+}
+(function () {
+  const wrap = document.getElementById('tsChart');
+  wrap.addEventListener('pointermove', function (e) { showTsHover(e.clientX); });
+  wrap.addEventListener('pointerdown', function (e) { showTsHover(e.clientX); });
+  wrap.addEventListener('pointerleave', function () {
+    if (!tsCur) return;
+    tsCur.cross.style.display = 'none';
+    tsCur.tip.style.display = 'none';
+  });
+})();
 
 // Weekly is the same line chart as daily/hourly, just fed pre-aggregated
 // points instead of raw ones -- a trend is a trend regardless of bucket
@@ -615,31 +679,151 @@ function buildWeeklyPoints(data) {
 const tsNoteEl = document.getElementById('tsNote');
 const tsSvgEl = document.getElementById('tsSvg');
 const tsPtsEl = document.getElementById('tsPts');
+const tsLegendEl = document.getElementById('tsLegend');
 const tsBtnDaily = document.querySelector('#tsToggle [data-ts="daily"]');
 const tsBtnWeekly = document.querySelector('#tsToggle [data-ts="weekly"]');
 let tsRawPoints = []; // whatever was fetched: hourly or daily
 let tsMode = 'daily';
 let tsUnit = 'daily';
+let showTotal = picks.length === 0; // Total line is on until pages are ticked (then it is one click on its chip)
+let chartMode = 'lines'; // lines | stacked | combined
+let tsToken = 0;
+// range -> { "site|path": { bucketKey: views } }; only pages not already
+// here are requested, so ticking/unticking and switching Daily/Weekly cost nothing.
+const pageSeriesCache = {};
+
+function pickLabel(key) {
+  const i = key.indexOf('|');
+  const site = key.slice(0, i), path = key.slice(i + 1);
+  return site === 'mes.fm' ? path : site + path;
+}
+
+function buildSeries(mode) {
+  const out = [];
+  const agg = function (pts) { return mode === 'weekly' ? buildWeeklyPoints(pts) : pts; };
+  const cache = pageSeriesCache[currentRange] || {};
+  const pagePts = picks.filter(function (k) { return cache[k]; }).map(function (k) {
+    return { id: k, key: k, kind: 'page', label: pickLabel(k), color: colorFor(k),
+      points: agg(tsRawPoints.map(function (p) { return { key: p.key, views: cache[k][p.key] || 0 }; })) };
+  });
+  if (showTotal || !pagePts.length) {
+    out.push({ id: 'total', kind: 'total', label: 'Total', color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2272c3', points: agg(tsRawPoints) });
+  }
+  if (chartMode === 'combined' && pagePts.length > 1) {
+    out.push({ id: 'sel', kind: 'page', label: 'Selected pages (' + pagePts.length + ')', color: SERIES_COLORS[0],
+      points: pagePts[0].points.map(function (d, i) {
+        return { key: d.key, tipLabel: d.tipLabel, partialLabel: d.partialLabel, views: pagePts.reduce(function (acc, x) { return acc + x.points[i].views; }, 0) };
+      }) });
+  } else {
+    pagePts.forEach(function (x) { out.push(x); });
+  }
+  return out;
+}
+
+function renderLegend() {
+  if (!picks.length) { tsLegendEl.hidden = true; tsLegendEl.innerHTML = ''; return; }
+  tsLegendEl.hidden = false;
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2272c3';
+  let html = '<button type="button" class="ts-chip' + (showTotal ? '' : ' off') + '" data-total="1" title="Show / hide the site total"><i style="background:' + accent + '"></i><span>Total</span></button>';
+  picks.forEach(function (k) {
+    html += '<button type="button" class="ts-chip" data-remove="' + escapeHtml(k) + '" title="Remove from chart"><i style="background:' + colorFor(k) + '"></i><span>' + escapeHtml(pickLabel(k)) + '</span><b>&times;</b></button>';
+  });
+  html += '<button type="button" class="ts-clear" data-clear="1">Clear</button><span class="ts-sep"></span>';
+  if (picks.length > 1) {
+    html += '<div class="ts-toggle" id="tsCm">' + [['lines', 'Lines'], ['stacked', 'Stacked'], ['combined', 'Combined']].map(function (m) {
+      return '<button type="button" class="ts-toggle-btn' + (chartMode === m[0] ? ' active' : '') + '" data-cm="' + m[0] + '">' + m[1] + '</button>';
+    }).join('') + '</div>';
+  }
+  tsLegendEl.innerHTML = html;
+}
 
 // Weekly reuses the exact same line chart as daily/hourly, just fed
-// buildWeeklyPoints(tsRawPoints) instead -- no refetch, just a
+// buildWeeklyPoints(...) instead -- no refetch, just a
 // re-aggregate-and-redraw of what's already in hand.
 function renderTsChart() {
   const mode = tsUnit === 'hourly' ? 'daily' : tsMode; // no weekly view for a single day
   tsBtnDaily.classList.toggle('active', mode === 'daily');
   tsBtnWeekly.classList.toggle('active', mode === 'weekly');
-  const points = mode === 'weekly' ? buildWeeklyPoints(tsRawPoints) : tsRawPoints;
-  renderLineChart(tsSvgEl, tsPtsEl, points);
+  if (!tsRawPoints.length) return;
+  renderLegend();
+  renderLineChart(tsSvgEl, tsPtsEl, buildSeries(mode), chartMode);
 
   const rangeDesc = currentRange === 'all' ? 'all tracked history' : ('the past ' + RANGE_LABELS[currentRange]);
+  let note;
   if (mode === 'weekly') {
-    tsNoteEl.textContent = 'Monday-start weeks, summed from ' + rangeDesc + '. The first and most recent week are marked partial where fewer than 7 tracked days fall inside them.';
+    note = 'Monday-start weeks, summed from ' + rangeDesc + '. The first and most recent week are marked partial where fewer than 7 tracked days fall inside them.';
   } else {
     const unitWord = tsUnit === 'hourly' ? 'Hourly' : 'Daily';
     const partialWord = tsUnit === 'hourly' ? 'the current hour' : 'today';
-    tsNoteEl.textContent = unitWord + ' totals for ' + rangeDesc + '. The dashed segment is ' + partialWord + ', still filling in.';
+    note = unitWord + ' totals for ' + rangeDesc + '. The dashed segment is ' + partialWord + ', still filling in.';
   }
+  if (!picks.length) note += ' Tick the boxes in Most Viewed Pages to chart individual pages.';
+  tsNoteEl.textContent = note;
 }
+
+// Fetches series for ticked pages not cached for this range yet (one API
+// call, one Redis command per time bucket), then redraws.
+async function ensurePickSeries() {
+  const cache = pageSeriesCache[currentRange] || (pageSeriesCache[currentRange] = {});
+  const need = picks.filter(function (k) { return !cache[k]; });
+  if (!need.length || !tsRawPoints.length) { renderTsChart(); return; }
+  const token = ++tsToken;
+  const range = currentRange;
+  tsNoteEl.textContent = 'Loading page lines…';
+  try {
+    const res = await fetch('/api/stats-series?range=' + encodeURIComponent(range) + '&pages=' + encodeURIComponent(need.join(',')));
+    if (!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    need.forEach(function (k) { pageSeriesCache[range][k] = (data.series && data.series[k]) || {}; });
+  } catch (e) {
+    if (token === tsToken) tsNoteEl.textContent = 'Page lines are temporarily unavailable.';
+    return;
+  }
+  if (token === tsToken && range === currentRange) renderTsChart();
+}
+
+function refreshPickBoxes() {
+  document.querySelectorAll('.pg-pick').forEach(function (box) {
+    const k = box.dataset.pageKey;
+    const on = picks.indexOf(k) !== -1;
+    box.checked = on;
+    box.style.accentColor = on ? colorFor(k) : '';
+    box.disabled = !on && picks.length >= MAX_PICKS;
+  });
+}
+
+function setPick(key, on) {
+  const i = picks.indexOf(key);
+  if (on && i === -1 && picks.length < MAX_PICKS) {
+    if (!picks.length) showTotal = false;
+    colorFor(key);
+    picks.push(key);
+  } else if (!on && i !== -1) {
+    picks.splice(i, 1);
+    delete pickColors[key];
+    if (!picks.length) showTotal = true;
+  }
+  savePicks();
+  refreshPickBoxes();
+  ensurePickSeries();
+}
+
+document.getElementById('topPagesBody').addEventListener('change', function (e) {
+  const box = e.target.closest('.pg-pick');
+  if (box) setPick(box.dataset.pageKey, box.checked);
+});
+
+tsLegendEl.addEventListener('click', function (e) {
+  const chip = e.target.closest('button');
+  if (!chip) return;
+  if (chip.dataset.total) { showTotal = !showTotal; renderTsChart(); return; }
+  if (chip.dataset.remove) { setPick(chip.dataset.remove, false); return; }
+  if (chip.dataset.clear) {
+    picks.slice().forEach(function (k) { delete pickColors[k]; });
+    picks = []; showTotal = true; savePicks(); refreshPickBoxes(); renderTsChart(); return;
+  }
+  if (chip.dataset.cm) { chartMode = chip.dataset.cm; renderTsChart(); }
+});
 
 // A single 24h range has no meaningful "week" to bucket into, so the
 // Weekly button is hidden rather than shown-but-empty for it, and the
@@ -677,6 +861,7 @@ async function loadTimeSeries() {
     }
 
     renderTsChart();
+    ensurePickSeries();
   } catch (e) {
     tsNoteEl.textContent = 'Views-over-time data is temporarily unavailable.';
   }

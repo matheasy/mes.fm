@@ -38,6 +38,53 @@ module.exports = async (req, res) => {
   const now = new Date();
   const keys = (config.unit === 'hourly' ? lastNHourKeys(config.count, now) : lastNDayKeys(config.count, now)).reverse(); // oldest first
   const bucketPrefix = config.unit === 'hourly' ? 'pageviews:devicetotals:hourly:' : 'pageviews:devicetotals:daily:';
+  // ?pages=site|path,site|path (max 8): per-page series instead of the site
+  // total. One ZMSCORE per bucket on the leaderboard bucket (members are
+  // "site|path"), so the cost is the bucket count, not pages x buckets. The
+  // client asks only for pages it has not already cached for this range.
+  if (req.query.pages) {
+    const pages = [...new Set(String(req.query.pages).split(','))]
+      .filter((m) => m.includes('|') && m.length < 300)
+      .slice(0, 8);
+    if (!pages.length) {
+      res.status(400).json({ error: 'invalid pages' });
+      return;
+    }
+    const lbPrefix = `pageviews:leaderboard:${config.unit}:`;
+    let pageResults;
+    try {
+      const upstashRes = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(keys.map((k) => ['ZMSCORE', `${lbPrefix}${k}`, ...pages])),
+      });
+      pageResults = await upstashRes.json();
+    } catch {
+      res.status(502).json({ error: 'stats unavailable' });
+      return;
+    }
+    if (!Array.isArray(pageResults) || pageResults.some((r) => r && r.error)) {
+      res.status(502).json({ error: 'stats unavailable' });
+      return;
+    }
+    // { "site|path": { bucketKey: views } }, zero buckets left out.
+    const series = {};
+    pages.forEach((m) => { series[m] = {}; });
+    keys.forEach((key, i) => {
+      const scores = pageResults[i]?.result || [];
+      pages.forEach((m, j) => {
+        const v = Number(scores[j]);
+        if (v > 0) series[m][key] = v;
+      });
+    });
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+    res.status(200).json({ range, unit: config.unit, series, updatedAt: new Date().toISOString() });
+    return;
+  }
+
   const commands = keys.map((k) => ['ZRANGE', `${bucketPrefix}${k}`, '0', '-1', 'WITHSCORES']);
 
   let results;
