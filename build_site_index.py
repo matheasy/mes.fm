@@ -359,6 +359,8 @@ def section_of(url, tpl, f, tool_slugs, calc_slugs):
         return "livestreams"
     if top.startswith("science") or top in ("moon",):
         return "science" if top.startswith("science") else "tools"
+    if top == "blockchain-tutorials":
+        return "crypto"
     for k in ("conspiracy", "crypto", "mathiew"):
         if top.startswith(k):
             return k

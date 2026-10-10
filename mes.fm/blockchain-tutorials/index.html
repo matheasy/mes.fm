@@ -1,488 +1,11 @@
-// Build-time generator for mes.fm/crypto ("MES Crypto") and its Posts page mes.fm/crypto-posts (cloned from antigravity/build.mjs, AdSense kept).
-//
-// mes.fm/crypto is a small tile hub (a Posts tile + the "Important Links" list = the old flat link list). The posts live in sections.mjs
-// (hand-maintained, newest first). Pages written (see PAGES): the hub mes.fm/crypto/index.html plus mes.fm/crypto-posts/index.html. Never hand-edit those generated files.
-//
-// Tile artwork: mes.fm/img/crypto-posts-icon.jpg (900x600) = crop of the newest post's image (refresh + bump iconVersion when a post is added).
-// Logo / share art: img/crypto-logo.jpg, img/crypto-logo-big.jpg.
-//
-// Usage:
-//   npm run build
 
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
-import { execFileSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-import { SECTIONS, IMPORTANT_LINKS_HTML } from "./sections.mjs";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// Committed cache of scraped {image, watchLinks} per item URL. Kept in git so
-// a later build still has thumbnails/links if a source page is briefly
-// unreachable.
-const META_CACHE_PATH = join(__dirname, "link-meta.json");
-
-// Output layout: mes.fm/911 is a tile hub (one icon tile per section, each linking to its own page); each
-// section then lives at mes.fm/<slug> with the Grid View / List View toggle. `sectionId` matches an `id` in
-// sections.mjs; `title` is the page's <h1>/<title> and `tileLabel` the (shorter) text overlaid on the hub tile.
-const HUB_TITLE = "MES Crypto";
-const HUB_DESCRIPTION =
-  "Crypto posts, tutorials and tools by MES: Bitcoin, XRP, Hive and stablecoin news, blockchain how-tos, an impermanent loss calculator and a portfolio tracker.";
-
-const PAGES = [
-  {
-    slug: "crypto-posts",
-    sectionId: "crypto-posts",
-    tileLabel: "Posts",
-    iconVersion: 1, // icon = crop of the newest post's image (img/crypto-posts-icon.jpg); bump when refreshed
-    title: "MES Crypto: Posts",
-    description:
-      "MES crypto posts: Canada's first stablecoin CADD on Solana, 3Speak sharing ad revenue, the S&P 500 vs oil, Alex Jones on XRP and a $320M Bitcoin hack, and the Hyperliquid flagged wallet.",
-  },
-  {
-    slug: "blockchain-tutorials",
-    sectionId: "crypto-tutorials",
-    tileLabel: "Blockchain Tutorials",
-    iconVersion: 1, // icon = crop of the newest (first) tutorial's thumbnail (img/blockchain-tutorials-icon.jpg); bump when refreshed
-    title: "MES Crypto: Blockchain Tutorials",
-    description:
-      "MES blockchain tutorials: Hive overview and sign-up, Blockchain: The Big Picture (what do you own, tokenization), Bitcoin and cryptography overview, Steemit tutorials and an AI YouTube-summary agent on Hive.",
-  },
-  {
-    // Tile only: no page is written. Links to the Blockchain chip of mes.fm/livestreams (MES Livestream 72); icon = its thumbnail, img/crypto-livestreams-icon.jpg.
-    slug: "livestreams",
-    href: "/livestreams#blockchain",
-    icon: "crypto-livestreams",
-    tileLabel: "MES Livestreams",
-    iconVersion: 1,
-    tileOnly: true,
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Scraping: og:image / "Watch on: ..." row per item, with a committed cache.
-// ---------------------------------------------------------------------------
-
-function loadMetaCache() {
-  if (!existsSync(META_CACHE_PATH)) return {};
-  try {
-    return JSON.parse(readFileSync(META_CACHE_PATH, "utf8"));
-  } catch {
-    return {};
-  }
-}
-
-function saveMetaCache(cache) {
-  const sorted = Object.fromEntries(Object.keys(cache).sort().map((k) => [k, cache[k]]));
-  writeFileSync(META_CACHE_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
-}
-
-function decodeEntities(str) {
-  return str
-    .replace(/&amp;/g, "&")
-    .replace(/&#39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&rsquo;/g, "’")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
-}
-
-// Backreference-matched quotes (not a naive ["'] class) so a content value
-// containing the *other* quote character doesn't truncate the match.
-function readMetaTag(html, prop) {
-  const p = prop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const m = html.match(new RegExp(`<meta[^>]+property=(["'])${p}\\1[^>]*\\bcontent=(["'])([\\s\\S]*?)\\2`, "i"));
-  return m ? decodeEntities(m[3]).trim() : "";
-}
-
-// Pull every {label, href} pair out of a page's own `<li>Watch on: <a...>3Speak</a>
-// &middot; <a...>YouTube</a> ...</li>` source-list row. Only mes.fm-hosted
-// mirror pages have this markup -- a raw YouTube playlist page will simply
-// yield [] here, which is expected.
-function readWatchOnLinks(html) {
-  const m = html.match(/<li>\s*Watch on:([\s\S]*?)<\/li>/i);
-  if (!m) return [];
-  const linkRe = /<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
-  const links = [];
-  let lm;
-  while ((lm = linkRe.exec(m[1]))) {
-    links.push({ label: decodeEntities(lm[2]).trim(), href: lm[1] });
-  }
-  return links;
-}
-
-// Some mes.fm mirror pages (e.g. math-qa-71-stats, a plain stats-screen
-// post with no "Watch on:" video row at all) instead carry a source link
-// per line: `<li>Hive: <a href="...">...</a></li>`, `<li>Telegram:
-// <a href="...">...</a></li>`. Pulled out generically here; callers filter
-// to whichever labels they care about.
-function readNamedLinks(html) {
-  const re = /<li>\s*([A-Za-z ]+):\s*<a\s+href="([^"]+)"[^>]*>[^<]*<\/a>\s*<\/li>/g;
-  const links = [];
-  let m;
-  while ((m = re.exec(html))) {
-    links.push({ label: m[1].trim(), href: m[2] });
-  }
-  return links;
-}
-
-// peakd.com is a client-rendered SPA -- a plain fetch() only gets its
-// server-rendered <head> (og:image etc.), never the article body, so
-// readWatchOnLinks() above always finds nothing there. The real per-video
-// platform links still exist, in the underlying Hive post's raw markdown
-// (e.g. "[Watch on 3Speak](url) - [YouTube](url) - [Odysee](url) - ..."),
-// fetched straight from the Hive blockchain instead of peakd's own HTML.
-const PEAKD_URL_RE = /^https:\/\/peakd\.com\/(?:[^/]+\/)?@([^/]+)\/([^/?#]+)/;
-
-// Known video platforms -- used both to sort a List View row's links into
-// this canonical order and, below, to filter a Hive post's raw "Watch on"
-// markdown line down to just these (dropping trailing "[PDF notes]"/
-// "[Playlist]"/"[MES Links]" entries on the same line).
-const PLATFORM_ORDER = ["3Speak", "YouTube", "Telegram", "BitChute", "Odysee", "Rumble"];
-
-async function hiveCall(method, params) {
-  const res = await fetch("https://api.hive.blog", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
-  });
-  if (!res.ok) throw new Error(`Hive API request failed: HTTP ${res.status}`);
-  const data = await res.json();
-  if (data.error) throw new Error(`Hive API error: ${JSON.stringify(data.error)}`);
-  return data.result;
-}
-
-// Matches "[Watch on 3Speak](url) - [YouTube](url) - [Odysee](url) - ..."
-// (MES's standard markdown watch-links line). The label of the first link
-// carries a "Watch on " prefix; every [label](url) pair in the next 900
-// characters is a candidate, filtered down to only the known video
-// platforms so trailing "[PDF notes]"/"[Playlist]"/"[MES Links]" entries on
-// the same line are dropped. A fixed (not paragraph-bounded) window: the
-// full line with every platform plus the PDF/playlist/MES-links extras can
-// run past 700 characters, and anchoring the end to the paragraph's "\n\n"
-// with a *lazy* quantifier made the whole match fail outright whenever that
-// boundary sat beyond the capped length (no shorter position satisfies it,
-// so the lazy expansion just runs out and backtracks to no match).
-function readWatchOnLinksMarkdown(markdown) {
-  const m = markdown.match(/\[Watch on ([^\]]+)\]\(([^)]+)\)([\s\S]{0,900})/i);
-  if (!m) return [];
-  const links = [{ label: m[1].trim(), href: m[2] }];
-  const restRe = /\[([^\]]+)\]\(([^)]+)\)/g;
-  let rm;
-  while ((rm = restRe.exec(m[3]))) {
-    links.push({ label: rm[1].trim(), href: rm[2] });
-  }
-  return links.filter((l) => PLATFORM_ORDER.includes(l.label));
-}
-
-async function fetchPeakdWatchLinks(url) {
-  const m = url.match(PEAKD_URL_RE);
-  if (!m) return [];
-  const [, author, permlink] = m;
-  const post = await hiveCall("bridge.get_post", { author, permlink });
-  if (!post || !post.body) return [];
-  return readWatchOnLinksMarkdown(post.body);
-}
-
-async function fetchLinkMeta(url) {
-  const res = await fetch(url, { headers: { "User-Agent": "mes.fm-build/1.0" } });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const html = await res.text();
-  const watchLinks = PEAKD_URL_RE.test(url) ? await fetchPeakdWatchLinks(url) : readWatchOnLinks(html);
-  return {
-    image: readMetaTag(html, "og:image"),
-    watchLinks,
-    namedLinks: readNamedLinks(html),
-  };
-}
-
-async function resolveAllMeta(sections, concurrency = 8) {
-  const cache = loadMetaCache();
-  // Items with explicit `links` (see sections.mjs) and playlist lines need no scraping.
-  const urls = sections.flatMap((s) => s.items.filter((i) => !i.links && !i.standalone).map((i) => i.href));
-  let i = 0;
-  async function worker() {
-    while (i < urls.length) {
-      const url = urls[i++];
-      try {
-        cache[url] = await fetchLinkMeta(url);
-        console.log(`  meta ok:   ${url}`);
-      } catch (err) {
-        console.warn(`  meta FAIL: ${url} (${err.message}) — using cached value`);
-      }
-    }
-  }
-  await Promise.all(Array.from({ length: concurrency }, worker));
-  saveMetaCache(cache);
-  return cache;
-}
-
-// Only these platforms, in this order -- anything else scraped (e.g.
-// math-qa-70-lorentz-force's own "Watch on:" row also lists Twitch) is
-// dropped rather than tacked on at the end.
-function sortWatchLinks(links) {
-  return PLATFORM_ORDER.map((label) => links.find((l) => l.label === label)).filter(Boolean);
-}
-
-function cssSafeUrl(url) {
-  return String(url).split("'").join("%27");
-}
-
-// Lazy-load remote thumbnails (mirrors optimize_pagespeed.py's transform_images
-// lazy-loading pass, part 5, applied to the whole generated page here so a
-// rebuild doesn't silently undo it): every <img> whose src is a non-mes.fm
-// http(s) URL gets loading="lazy", except the first "real" (non-data:) image
-// on the page, which stays eager so it doesn't delay LCP.
-const IMG_TAG_RE = /<img\b[^>]*?\/?>/gi;
-
-function imgAttr(tag, name) {
-  const m = tag.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, "i"));
-  return m ? m[1] : null;
-}
-
-function addImageLazyLoading(html) {
-  const imgs = [...html.matchAll(IMG_TAG_RE)];
-  if (imgs.length === 0) return html;
-
-  let firstReal = -1;
-  for (let idx = 0; idx < imgs.length; idx++) {
-    const s = imgAttr(imgs[idx][0], "src");
-    if (s && !s.trim().startsWith("data:")) {
-      firstReal = idx;
-      break;
-    }
-  }
-
-  let out = "";
-  let last = 0;
-  imgs.forEach((m, idx) => {
-    const tag = m[0];
-    let newTag = tag;
-    const src = imgAttr(tag, "src");
-    if (
-      src &&
-      idx !== firstReal &&
-      /^https?:\/\//i.test(src.trim()) &&
-      !src.includes("mes.fm") &&
-      !/\bloading\s*=/i.test(tag)
-    ) {
-      newTag = tag.replace(/^<img\b/i, '<img loading="lazy"');
-    }
-    out += html.slice(last, m.index) + newTag;
-    last = m.index + tag.length;
-  });
-  out += html.slice(last);
-  return out;
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-// Notes link first, then every scraped platform link (sorted), falling back
-// to the item's own hand-curated playlistHref as its "YouTube" entry only
-// when the scrape didn't already turn up a YouTube link of its own.
-// Notes link first, then every real per-video platform link the item's own
-// Hive post actually has (scraped by fetchLinkMeta -- from the page's own
-// "Watch on:" HTML row for a mes.fm mirror, or from the underlying Hive
-// post's raw markdown for a peakd article). No more falling back to a
-// hand-curated playlist link mislabeled as "YouTube" -- if the post has no
-// watch-on row, the List View row just shows Notes alone.
-function buildLinksForItem(item, meta) {
-  if (item.links) return item.links.map(([label, href]) => ({ label, href }));
-  const m = meta[item.href] || {};
-  const sorted = sortWatchLinks(m.watchLinks || []);
-  // An item whose own link is a YouTube video (a livestream not mirrored to
-  // mes.fm yet) is labeled "YouTube", not "Notes".
-  const primaryLabel = /^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)\//.test(item.href) ? "YouTube" : "Notes";
-  return [{ label: primaryLabel, href: item.href }, ...sorted];
-}
-
-// For extraViews items (see e.g. MES Math Q/A Livestreams' "Stats" view):
-// these are always mes.fm-hosted pages, so the item's own link is labeled
-// "MES" rather than "Notes", followed by whichever of its own named source
-// links (readNamedLinks -- "Hive:"/"Telegram:" list items, not a "Watch
-// on:" row) match this fixed label set, in this fixed order.
-const EXTRA_VIEW_LINK_ORDER = ["Hive", "Telegram"];
-function buildExtraViewLinksForItem(item, meta) {
-  const m = meta[item.href] || {};
-  const named = EXTRA_VIEW_LINK_ORDER.map((label) => (m.namedLinks || []).find((l) => l.label === label)).filter(
-    Boolean
-  );
-  return [{ label: "MES", href: item.href }, ...named];
-}
-
-// Where a card goes: the item's own href (mes.fm mirror pages), or for explicit-links items the
-// first mes.fm link, else the Hive/peakd link, else the first link in the row.
-function itemHref(item) {
-  if (item.href) return item.href;
-  const links = item.links || [];
-  const pick =
-    links.find(([, h]) => /^https?:\/\/(?:www\.)?mes\.fm\//.test(h)) ||
-    links.find(([, h]) => /^https?:\/\/peakd\.com\//.test(h)) ||
-    links[0];
-  return pick ? pick[1] : "#";
-}
-
-function itemImage(item, meta) {
-  return item.image || (meta[item.href] || {}).image || "";
-}
-
-function buildCard(item, meta) {
-  const image = itemImage(item, meta);
-  const href = itemHref(item);
-  const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(href);
-  const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
-  return `<a class="link-card" href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
-      <span class="link-card-thumb"${thumbStyle}></span>
-      <span class="link-card-body">
-        <span class="link-card-title">${escapeHtml(item.title)}</span>
-        <span class="link-card-readmore">View &rarr;</span>
-      </span>
-    </a>`;
-}
-
-function buildRow(item, meta, linksBuilder) {
-  const image = itemImage(item, meta);
-  const links = (linksBuilder || buildLinksForItem)(item, meta);
-  const linksHtml = links
-    .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
-    .join(" - ");
-  const imgHtml = image ? `<img class="list-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}">` : "";
-  return `<div class="list-row">
-      <h3>${escapeHtml(item.title)}</h3>
-      <p>${linksHtml}</p>
-      ${imgHtml}
-    </div>`;
-}
-
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// Renders one section's heading row + Grid View (default) / List View toggle,
-// plus any extraViews (see e.g. MES Math Q/A Livestreams' "Stats" view) as
-// further toggle buttons/panes. All views are pre-rendered at build time;
-// the client-side script just shows/hides whichever one is active (see the
-// view-toggle script at the bottom of buildPage). Items flagged `standalone`
-// (a whole-channel/whole-playlist link, not a single video/article) are
-// pulled out of the grid/list entirely and rendered as a plain link line
-// above the view-toggle buttons instead. extraViews items never appear in
-// Grid/List at all -- they exist only in their own pane.
-//
-// Each section now renders on its own page (see PAGES), so the collapsible
-// <h2> heading is dropped (the page's own <h1> already names it). A section
-// flagged `single` (one video/article only) skips the Grid/List toggle
-// entirely and renders just the List View row as a featured item.
-function buildSection(section, meta) {
-  const standaloneItems = section.standalone || [];
-  const cardItems = section.items;
-  // One line of links (icon + label, separated by dots) rather than one paragraph each, so the playlist and
-  // the troubleshooting notes sit side by side; external links open in a new tab.
-  const standaloneHtml = standaloneItems.length
-    ? `<p class="section-standalone-link">${standaloneItems
-        .map((item) => {
-          const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(item.href);
-          return `<a href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>${item.icon || "&#9654;&#65039;"} ${escapeHtml(item.title)}</a>`;
-        })
-        .join('<span class="standalone-sep">&middot;</span>')}</p>`
-    : "";
-  const cards = cardItems.map((item) => buildCard(item, meta)).join("\n    ");
-  const rows = cardItems.map((item) => buildRow(item, meta)).join("\n    ");
-  const listViewClass = section.compactList ? "list-view list-view--compact" : "list-view";
-
-  const extraViews = section.extraViews || [];
-  const extraButtons = extraViews
-    .map((view) => `<button type="button" class="view-toggle-btn" id="${section.id}${capitalize(view.id)}Btn">${escapeHtml(view.label)}</button>`)
-    .join("\n      ");
-  const extraPanes = extraViews
-    .map((view) => {
-      const extraRows = view.items.map((item) => buildRow(item, meta, buildExtraViewLinksForItem)).join("\n    ");
-      return `<div class="list-view list-view--compact view-hidden" id="${section.id}${capitalize(view.id)}">
-    ${extraRows}
-    </div>`;
-    })
-    .join("\n");
-
-  if (section.single) {
-    return `<div class="list-container">
-  <div id="${section.id}" class="section-body">
-  ${standaloneHtml}
-    <div class="list-view list-view--single" id="${section.id}List">
-    ${rows}
-    </div>
-  </div>
-</div>`;
-  }
-
-  return `<div class="list-container">
-  <div id="${section.id}" class="section-body">
-  ${standaloneHtml}
-    <div class="view-toggle">
-      <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
-      <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
-      ${extraButtons}
-    </div>
-    <div class="card-grid" id="${section.id}Grid">
-    ${cards}
-    </div>
-    <div class="${listViewClass} view-hidden" id="${section.id}List">
-    ${rows}
-    </div>
-${extraPanes}
-  </div>
-</div>`;
-}
-
-// Icon tile for the hub page: text-free thumbnail + real overlaid label,
-// same .icon-grid markup/CSS as mes.fm's homepage.
-function buildTile(page) {
-  const icon = `/img/${page.icon || page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}`;
-  return `<a class="icon-grid__link icon-grid__link--labeled" href="${page.href || `/${page.slug}`}"><span class="icon-grid__thumb" style="background-image:url('${icon}')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
-}
-
-function buildImportantLinks() {
-  return `<div class="hub-links">
-  <h2>Important Links</h2>
-${IMPORTANT_LINKS_HTML}
-</div>`;
-}
-
-// page: the hub ({ hub: true, slug: "bg" }) or one entry of PAGES.
-function buildPage(meta, page) {
-  const isHub = !!page.hub;
-  const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
-  const sectionsHtml = isHub
-    ? `<div class="icon-grid">\n${PAGES.map(buildTile).join("\n")}\n</div>\n${buildImportantLinks()}`
-    : sections.map((s) => buildSection(s, meta)).join("\n\n");
-  const viewToggleWiring = sections
-    .filter((s) => !s.single)
-    .map((s) => {
-      const extraIds = (s.extraViews || []).map((v) => capitalize(v.id));
-      return `      wireViewToggle('${s.id}', ${JSON.stringify(extraIds)});`;
-    })
-    .join("\n");
-
-  const CANONICAL = `https://mes.fm/${page.slug}`;
-  const pageTitle = isHub ? HUB_TITLE : page.title;
-  const description = isHub ? HUB_DESCRIPTION : page.description;
-  const ogImage = "https://mes.fm/img/crypto-logo-big.jpg"; // one share image for the hub and its series page (tile icons are only for the hub grid)
-  const breadcrumbHtml = isHub
-    ? ""
-    : `<p class="page-breadcrumb"><a href="/crypto">&larr; MES Crypto</a></p>\n        `;
-
-  return `
 <!DOCTYPE html>
 <html lang="en">
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
   <link rel="icon" href="https://mes.fm/img/crypto-logo.jpg?v=1" type="image/jpeg" />
-  <link rel="canonical" href="${CANONICAL}" />
-  <title>${escapeHtml(pageTitle)} | Math Easy Solutions</title>
+  <link rel="canonical" href="https://mes.fm/blockchain-tutorials" />
+  <title>MES Crypto: Blockchain Tutorials | Math Easy Solutions</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
@@ -1437,20 +960,20 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <meta name="author" content="MES">
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="MES Truth" />
-<meta property="og:url" content="${CANONICAL}" />
-<meta property="og:title" content="${escapeHtml(pageTitle)}" />
-<meta property="og:image" content="${ogImage}" />
-<meta property="og:description" content="${escapeHtml(description)}" />
-<meta name="description" content="${escapeHtml(description)}">
+<meta property="og:url" content="https://mes.fm/blockchain-tutorials" />
+<meta property="og:title" content="MES Crypto: Blockchain Tutorials" />
+<meta property="og:image" content="https://mes.fm/img/crypto-logo-big.jpg" />
+<meta property="og:description" content="MES blockchain tutorials: Hive overview and sign-up, Blockchain: The Big Picture (what do you own, tokenization), Bitcoin and cryptography overview, Steemit tutorials and an AI YouTube-summary agent on Hive." />
+<meta name="description" content="MES blockchain tutorials: Hive overview and sign-up, Blockchain: The Big Picture (what do you own, tokenization), Bitcoin and cryptography overview, Steemit tutorials and an AI YouTube-summary agent on Hive.">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@MathEasySolns">
-<meta name="twitter:title" content="${escapeHtml(pageTitle)}">
-<meta name="twitter:description" content="${escapeHtml(description)}">
-<meta name="twitter:image" content="${ogImage}">
-<meta name="twitter:image:alt" content="${escapeHtml(pageTitle)}">
+<meta name="twitter:title" content="MES Crypto: Blockchain Tutorials">
+<meta name="twitter:description" content="MES blockchain tutorials: Hive overview and sign-up, Blockchain: The Big Picture (what do you own, tokenization), Bitcoin and cryptography overview, Steemit tutorials and an AI YouTube-summary agent on Hive.">
+<meta name="twitter:image" content="https://mes.fm/img/crypto-logo-big.jpg">
+<meta name="twitter:image:alt" content="MES Crypto: Blockchain Tutorials">
 <script>
 /* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
-   class \`google-auto-placed\`), plus Google's separate "annotation" text-ad
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
    formats, which are a different Auto ads mechanism than the in-page blocks
    above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
    is relocated to just below the whole header+nav+logo-badge complex
@@ -1458,8 +981,8 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
    (max-width: 768px, this repo's existing responsive breakpoint) it is
    hidden outright instead -- no ad shows below the nav bar on mobile at
    all. 2) Annotation/related-entry chips -- any element carrying the
-   \`google-anno-skip\` class -- and 3) in-text link ads (\`<a class="google-anno">\`
-   wrapping a \`<span class="google-anno-t">\` around an ordinary word): both are
+   `google-anno-skip` class -- and 3) in-text link ads (`<a class="google-anno">`
+   wrapping a `<span class="google-anno-t">` around an ordinary word): both are
    only guarded inside #header, #footer, the top .info-bar-container nav, or
    the .side-bar "Site Navigation" widget -- chips are hidden outright there,
    and in-text links are unwrapped back to plain text there, so the word
@@ -1642,12 +1165,123 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>
     <div class="outer-page-content">
       <div class="page-content" role="main">
-        ${breadcrumbHtml}<div class="color-box"></div>
-        <h1 class="page-title">${escapeHtml(pageTitle)}</h1>
-        <p class="page-description">${escapeHtml(description)}</p>
+        <p class="page-breadcrumb"><a href="/crypto">&larr; MES Crypto</a></p>
+        <div class="color-box"></div>
+        <h1 class="page-title">MES Crypto: Blockchain Tutorials</h1>
+        <p class="page-description">MES blockchain tutorials: Hive overview and sign-up, Blockchain: The Big Picture (what do you own, tokenization), Bitcoin and cryptography overview, Steemit tutorials and an AI YouTube-summary agent on Hive.</p>
         <div id="main-content">
           <div class="wide">
-${sectionsHtml}
+<div class="list-container">
+  <div id="crypto-tutorials" class="section-body">
+  <p class="section-standalone-link"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Fgp_lR0a0rscxWYrHARtkN" target="_blank" rel="noopener">&#9654;&#65039; Blockchain Tutorials Playlist (YouTube)</a></p>
+    <div class="view-toggle">
+      <button type="button" class="view-toggle-btn active" id="crypto-tutorialsGridBtn">Grid View</button>
+      <button type="button" class="view-toggle-btn" id="crypto-tutorialsListBtn">List View</button>
+      
+    </div>
+    <div class="card-grid" id="crypto-tutorialsGrid">
+    <a class="link-card" href="https://peakd.com/hive-181335/@mes/tdvxnmej" target="_blank" rel="noopener">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ogxTNlTgyLU/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-title">Hive Cryptocurrency Overview and How to Sign Up</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" target="_blank" rel="noopener">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/_LgCufeCjFI/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-title">Ⓑ Blockchain: The Big Picture - Part 2: Tokenization</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" target="_blank" rel="noopener">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sEkip6F4Mv0/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-title">Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" href="https://www.youtube.com/watch?v=8VZBrgRL9KA" target="_blank" rel="noopener">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/8VZBrgRL9KA/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-title">Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" href="https://www.youtube.com/watch?v=JaZRcA1Xut0" target="_blank" rel="noopener">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/JaZRcA1Xut0/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-title">Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" href="https://www.youtube.com/watch?v=Va47UH2k-ww" target="_blank" rel="noopener">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Va47UH2k-ww/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-title">🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" href="https://www.youtube.com/watch?v=F5f1duDJG9Q" target="_blank" rel="noopener">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/F5f1duDJG9Q/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-title">Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    <a class="link-card" href="https://www.youtube.com/watch?v=1RBzUDRScyQ" target="_blank" rel="noopener">
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/1RBzUDRScyQ/maxresdefault.jpg')"></span>
+      <span class="link-card-body">
+        <span class="link-card-title">Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem</span>
+        <span class="link-card-readmore">View &rarr;</span>
+      </span>
+    </a>
+    </div>
+    <div class="list-view view-hidden" id="crypto-tutorialsList">
+    <div class="list-row">
+      <h3>Hive Cryptocurrency Overview and How to Sign Up</h3>
+      <p><a href="https://www.youtube.com/watch?v=ogxTNlTgyLU" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/hive-181335/@mes/tdvxnmej" target="_blank" rel="noopener">Hive</a></p>
+      <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ogxTNlTgyLU/maxresdefault.jpg" alt="Hive Cryptocurrency Overview and How to Sign Up">
+    </div>
+    <div class="list-row">
+      <h3>Ⓑ Blockchain: The Big Picture - Part 2: Tokenization</h3>
+      <p><a href="https://www.youtube.com/watch?v=_LgCufeCjFI" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" target="_blank" rel="noopener">Hive</a></p>
+      <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/_LgCufeCjFI/maxresdefault.jpg" alt="Ⓑ Blockchain: The Big Picture - Part 2: Tokenization">
+    </div>
+    <div class="list-row">
+      <h3>Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?</h3>
+      <p><a href="https://www.youtube.com/watch?v=sEkip6F4Mv0" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" target="_blank" rel="noopener">Hive</a></p>
+      <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/sEkip6F4Mv0/maxresdefault.jpg" alt="Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?">
+    </div>
+    <div class="list-row">
+      <h3>Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds</h3>
+      <p><a href="https://www.youtube.com/watch?v=8VZBrgRL9KA" target="_blank" rel="noopener">YouTube</a></p>
+      <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/8VZBrgRL9KA/maxresdefault.jpg" alt="Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds">
+    </div>
+    <div class="list-row">
+      <h3>Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto</h3>
+      <p><a href="https://www.youtube.com/watch?v=JaZRcA1Xut0" target="_blank" rel="noopener">YouTube</a></p>
+      <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/JaZRcA1Xut0/maxresdefault.jpg" alt="Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto">
+    </div>
+    <div class="list-row">
+      <h3>🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is</h3>
+      <p><a href="https://www.youtube.com/watch?v=Va47UH2k-ww" target="_blank" rel="noopener">YouTube</a></p>
+      <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Va47UH2k-ww/maxresdefault.jpg" alt="🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is">
+    </div>
+    <div class="list-row">
+      <h3>Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem</h3>
+      <p><a href="https://www.youtube.com/watch?v=F5f1duDJG9Q" target="_blank" rel="noopener">YouTube</a></p>
+      <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/F5f1duDJG9Q/maxresdefault.jpg" alt="Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem">
+    </div>
+    <div class="list-row">
+      <h3>Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem</h3>
+      <p><a href="https://www.youtube.com/watch?v=1RBzUDRScyQ" target="_blank" rel="noopener">YouTube</a></p>
+      <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/1RBzUDRScyQ/maxresdefault.jpg" alt="Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem">
+    </div>
+    </div>
+
+  </div>
+</div>
           </div>
         </div>
         <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
@@ -1729,7 +1363,7 @@ ${sectionsHtml}
 
   function toggleSubList(listId) {
     const list = document.getElementById(listId);
-    const arrowIcon = document.getElementById(\`arrowIcon-\${listId}\`);
+    const arrowIcon = document.getElementById(`arrowIcon-${listId}`);
     list.classList.toggle('hidden');
     arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
   }
@@ -1769,7 +1403,7 @@ ${sectionsHtml}
     });
   }
 
-${viewToggleWiring}
+      wireViewToggle('crypto-tutorials', []);
 </script>
 
 <script>
@@ -2092,7 +1726,7 @@ ${viewToggleWiring}
 var MES_Vars = {
     mobile:false,
     hide_search:false,
-    current_tab:${isHub ? 0 : page.slug === "blockchain-tutorials" ? 2 : 1},
+    current_tab:2,
     info_bar_tab:0
 }
 </script>
@@ -2102,28 +1736,3 @@ var MES_Vars = {
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
 <script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
 </html>
-`;
-}
-
-async function main() {
-  console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
-  const meta = await resolveAllMeta(SECTIONS);
-
-  const pages = [{ hub: true, slug: "crypto", outDir: __dirname }].concat(
-    PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
-  );
-  for (const page of pages) {
-    mkdirSync(page.outDir, { recursive: true });
-    const outPath = join(page.outDir, "index.html");
-    writeFileSync(outPath, addImageLazyLoading(buildPage(meta, page)), "utf8");
-    console.log(`Wrote ${outPath}`);
-  }
-  // The phone-width header fixes (A-/A+/moon on their own row, no sideways scroll) are patched into generated pages by
-  // fix_mobile_header_controls.py, so a rebuild would silently drop them; re-apply (idempotent).
-  execFileSync("python3", [join(__dirname, "..", "..", "fix_mobile_header_controls.py"), "--apply"], { stdio: "inherit" });
-}
-
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});

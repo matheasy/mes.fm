@@ -68,7 +68,7 @@ EXPECT = {
     "/911-coat-jumper": ("mirror-article", MIRROR, "911"),
     "/conspiracy": ("hub-tiles", "build.mjs", "conspiracy"),
     "/science": ("hub-tiles", "build.mjs", "science"),
-    "/crypto": ("hub-links", "build.mjs", "crypto"),
+    "/crypto": ("hub-tiles", "build.mjs", "crypto"),
     "/livestreams": ("hub-section", "build.mjs", "livestreams"),
     "/livestream-140-stats": ("mirror-article", MIRROR, "livestreams"),
     "/links": ("legacy-bare", HAND, "other"),
