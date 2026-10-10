@@ -340,7 +340,7 @@ def convert(old, template):
 BRAND_TABS = {
     'class="site-brand-title" href="/hutchison"': ("/hutchison", "Hutchison Effect"),
     'class="site-brand-title" href="/911"': ("/911", "9/11 Truth"),
-    'class="site-brand-title" href="/crypto"': ("/crypto", "MES Crypto"),
+    'class="site-brand-title" href="/crypto"': ("/crypto", "MES Crypto", [("/crypto-posts", "Posts")]),
     # Conspiracy and Science also list their two section pages (Posts, Videos) right after the hub tab.
     'class="site-brand-title" href="/conspiracy"': ("/conspiracy", "Conspiracy", [("/conspiracy-posts", "Posts"), ("/conspiracy-videos", "Videos")]),
     'class="site-brand-title" href="/bg"': ("/bg", "BG", [("/bg-posts", "Posts"), ("/bg-videos", "Videos")]),
