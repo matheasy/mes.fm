@@ -353,52 +353,69 @@ function renderTopPages() {
   }
 }
 
-function renderDeviceTotals() {
-  const deviceTotalsHead = document.getElementById('deviceTotalsHead');
-  const deviceTotalsBody = document.getElementById('deviceTotalsBody');
-  const deviceTotalsFoot = document.getElementById('deviceTotalsFoot');
-  if (!deviceTotalsData.length) {
-    deviceTotalsHead.innerHTML = '<tr>' + thCell('Device', 'device', deviceSort) + thCell('Views', 'views', deviceSort, 'views') + '</tr>';
-    deviceTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
-    deviceTotalsFoot.innerHTML = '';
+const DEVICE_COLORS = { desktop: '#2f80ed', mobile: '#27ae60', tablet: '#f2994a', tv: '#9b51e0', bot: '#8e99a8', unknown: '#c4c9d1' };
+const SOURCE_COLORS = { direct: '#2f80ed', internal: '#8e99a8', google: '#eb5757', search: '#f2994a', social: '#9b51e0', referral: '#27ae60' };
+
+function compactNum(n) {
+  if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M';
+  if (n >= 1e4) return (n / 1e3).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, '') + 'k';
+  return n.toLocaleString();
+}
+function pctText(v, total) {
+  if (!total) return '0%';
+  const p = v / total * 100;
+  return (p >= 10 || p === 0 ? p.toFixed(0) : p.toFixed(1)) + '%';
+}
+
+// Donut of the same rows the table shows (circumference 100, so a slice's
+// dash length is its percentage), with the total in the middle.
+function donutSvg(rows, total, colors, labels, keyName) {
+  let offset = 0;
+  const segs = rows.filter(function (r) { return r.views > 0; }).map(function (r) {
+    const frac = r.views / total * 100;
+    const key = r[keyName];
+    const seg = '<circle class="dn-seg" cx="21" cy="21" r="15.9155" fill="none" stroke="' + (colors[key] || '#c4c9d1') + '" stroke-width="6" stroke-dasharray="' + Math.max(frac - (rows.length > 1 ? 0.35 : 0), 0.05) + ' ' + (100 - frac) + '" stroke-dashoffset="' + (-offset) + '"><title>' + escapeHtml(labels[key] || key) + ': ' + r.views.toLocaleString() + ' (' + pctText(r.views, total) + ')</title></circle>';
+    offset += frac;
+    return seg;
+  }).join('');
+  return '<svg viewBox="0 0 42 42" role="img" aria-label="Share of views"><g transform="rotate(-90 21 21)">' + segs + '</g>' +
+    '<text class="dn-total" x="21" y="21.6" text-anchor="middle">' + compactNum(total) + '</text>' +
+    '<text class="dn-sub" x="21" y="26.4" text-anchor="middle">views</text></svg>';
+}
+
+function renderBreakdown(cfg) {
+  const head = document.getElementById(cfg.id + 'Head');
+  const body = document.getElementById(cfg.id + 'Body');
+  const foot = document.getElementById(cfg.id + 'Foot');
+  const donut = document.getElementById(cfg.id + 'Donut');
+  const headHtml = '<tr>' + thCell(cfg.title, cfg.keyName, cfg.sort) + thCell('Views', 'views', cfg.sort, 'views') + '<th class="views share-h">Share</th></tr>';
+  head.innerHTML = headHtml;
+  if (!cfg.data.length) {
+    body.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+    foot.innerHTML = '';
+    donut.innerHTML = '';
     return;
   }
-
-  const sorted = sortRows(deviceTotalsData, deviceSort);
-
-  deviceTotalsHead.innerHTML = '<tr>' + thCell('Device', 'device', deviceSort) + thCell('Views', 'views', deviceSort, 'views') + '</tr>';
-
-  deviceTotalsBody.innerHTML = sorted.map(function (d) {
-    const label = DEVICE_LABELS[d.device] || escapeHtml(d.device);
-    return '<tr><td>' + label + '</td><td class="views">' + d.views.toLocaleString() + '</td></tr>';
+  const total = cfg.data.reduce(function (sum, r) { return sum + r.views; }, 0);
+  const sorted = sortRows(cfg.data, cfg.sort);
+  body.innerHTML = sorted.map(function (r) {
+    const key = r[cfg.keyName];
+    const color = cfg.colors[key] || '#c4c9d1';
+    const share = total ? r.views / total * 100 : 0;
+    return '<tr><td><span class="dot" style="background:' + color + '"></span>' + (cfg.labels[key] || escapeHtml(key)) + '</td>' +
+      '<td class="views">' + r.views.toLocaleString() + '</td>' +
+      '<td class="views share"><span class="share-bar"><i style="width:' + share.toFixed(1) + '%;background:' + color + '"></i></span>' + pctText(r.views, total) + '</td></tr>';
   }).join('');
+  foot.innerHTML = '<tr><td>Total</td><td class="views">' + total.toLocaleString() + '</td><td class="views share">100%</td></tr>';
+  donut.innerHTML = donutSvg(sorted, total, cfg.colors, cfg.labels, cfg.keyName);
+}
 
-  const totalDeviceViews = deviceTotalsData.reduce(function (sum, d) { return sum + d.views; }, 0);
-  deviceTotalsFoot.innerHTML = '<tr><td>Total</td><td class="views">' + totalDeviceViews.toLocaleString() + '</td></tr>';
+function renderDeviceTotals() {
+  renderBreakdown({ id: 'deviceTotals', title: 'Device', keyName: 'device', data: deviceTotalsData, sort: deviceSort, labels: DEVICE_LABELS, colors: DEVICE_COLORS });
 }
 
 function renderSourceTotals() {
-  const sourceTotalsHead = document.getElementById('sourceTotalsHead');
-  const sourceTotalsBody = document.getElementById('sourceTotalsBody');
-  const sourceTotalsFoot = document.getElementById('sourceTotalsFoot');
-  if (!sourceTotalsData.length) {
-    sourceTotalsHead.innerHTML = '<tr>' + thCell('Source', 'source', sourceSort) + thCell('Views', 'views', sourceSort, 'views') + '</tr>';
-    sourceTotalsBody.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
-    sourceTotalsFoot.innerHTML = '';
-    return;
-  }
-
-  const sorted = sortRows(sourceTotalsData, sourceSort);
-
-  sourceTotalsHead.innerHTML = '<tr>' + thCell('Source', 'source', sourceSort) + thCell('Views', 'views', sourceSort, 'views') + '</tr>';
-
-  sourceTotalsBody.innerHTML = sorted.map(function (s) {
-    const label = SOURCE_LABELS[s.source] || escapeHtml(s.source);
-    return '<tr><td>' + label + '</td><td class="views">' + s.views.toLocaleString() + '</td></tr>';
-  }).join('');
-
-  const totalSourceViews = sourceTotalsData.reduce(function (sum, s) { return sum + s.views; }, 0);
-  sourceTotalsFoot.innerHTML = '<tr><td>Total</td><td class="views">' + totalSourceViews.toLocaleString() + '</td></tr>';
+  renderBreakdown({ id: 'sourceTotals', title: 'Source', keyName: 'source', data: sourceTotalsData, sort: sourceSort, labels: SOURCE_LABELS, colors: SOURCE_COLORS });
 }
 
 showMoreBtn.addEventListener('click', function () {
@@ -685,7 +702,7 @@ const tsBtnWeekly = document.querySelector('#tsToggle [data-ts="weekly"]');
 let tsRawPoints = []; // whatever was fetched: hourly or daily
 let tsMode = 'daily';
 let tsUnit = 'daily';
-let showTotal = picks.length === 0; // Total line is on until pages are ticked (then it is one click on its chip)
+let showTotal = true; // Total stays on when pages are ticked; its legend chip hides it
 let chartMode = 'lines'; // lines | stacked | combined
 let tsToken = 0;
 // range -> { "site|path": { bucketKey: views } }; only pages not already
@@ -795,13 +812,11 @@ function refreshPickBoxes() {
 function setPick(key, on) {
   const i = picks.indexOf(key);
   if (on && i === -1 && picks.length < MAX_PICKS) {
-    if (!picks.length) showTotal = false;
     colorFor(key);
     picks.push(key);
   } else if (!on && i !== -1) {
     picks.splice(i, 1);
     delete pickColors[key];
-    if (!picks.length) showTotal = true;
   }
   savePicks();
   refreshPickBoxes();

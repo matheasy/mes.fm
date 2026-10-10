@@ -296,6 +296,20 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.st .ts-tip strong {color:#fff;}
 	.st .ts-pt:hover .ts-tip, .st .ts-pt:focus-visible .ts-tip {opacity:1;visibility:visible;}
 	.st .ts-note {font-size:0.8em;color:var(--muted);margin-top:0.75em;}
+	/* Device / source breakdown: donut + share bars */
+	.st .brk {display:flex;gap:1.5em;align-items:center;flex-wrap:wrap;}
+	.st .brk-donut {flex:0 0 11em;width:11em;margin:0 auto;}
+	.st .brk-donut:empty {display:none;}
+	.st .brk-donut svg {display:block;width:100%;height:auto;}
+	.st .brk .table-wrap {flex:1 1 20em;min-width:0;}
+	.st .dn-seg {transition:stroke-width 0.12s ease;}
+	.st .dn-seg:hover {stroke-width:7;}
+	.st .dn-total {font-size:6px;font-weight:700;fill:#1e2733;}
+	.st .dn-sub {font-size:2.8px;fill:rgba(0,0,0,0.55);}
+	.st .dot {display:inline-block;width:0.7em;height:0.7em;border-radius:50%;margin-right:0.55em;vertical-align:baseline;}
+	.st td.share, .st th.share-h {width:9em;}
+	.st .share-bar {display:inline-block;width:4.5em;height:0.5em;border-radius:0.25em;background:rgba(128,128,128,0.18);margin-right:0.6em;vertical-align:middle;overflow:hidden;}
+	.st .share-bar i {display:block;height:100%;border-radius:0.25em;}
 	/* Per-page lines: legend chips, crosshair + shared tooltip, tick boxes in the table */
 	.st .ts-legend {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;margin-top:0.5em;font-size:0.8em;}
 	.st .ts-legend[hidden] {display:none;}
@@ -440,6 +454,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .st-seo a{color:#71adea}
 	body.dark-mode .st-seo a:hover{color:#6facec}
 	/* TOOL-DARK:END */
+	body.dark-mode .st .dn-total{fill:#e6e9ed}
+	body.dark-mode .st .dn-sub{fill:rgba(242,242,242,0.6)}
 	body.dark-mode .st .ts-chip{border:1px solid #3a424d;background:#1a1a1a;color:#d1d6dc}
 	body.dark-mode .st .ts-cross{border-left-color:rgba(242,242,242,0.4)}
 </style>
@@ -706,6 +722,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<section class="stats-section">
 			<h2>Views by Device</h2>
+			<div class="brk">
+			<div class="brk-donut" id="deviceTotalsDonut"></div>
 			<div class="table-wrap">
 				<table>
 					<thead id="deviceTotalsHead">
@@ -717,10 +735,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<tfoot id="deviceTotalsFoot"></tfoot>
 				</table>
 			</div>
+			</div>
 		</section>
 
 		<section class="stats-section">
 			<h2>Views by Source</h2>
+			<div class="brk">
+			<div class="brk-donut" id="sourceTotalsDonut"></div>
 			<div class="table-wrap">
 				<table>
 					<thead id="sourceTotalsHead">
@@ -731,6 +752,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</tbody>
 					<tfoot id="sourceTotalsFoot"></tfoot>
 				</table>
+			</div>
 			</div>
 		</section>
 
@@ -804,7 +826,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=5" defer></script>
+	<script src="/stats/js/stats.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
