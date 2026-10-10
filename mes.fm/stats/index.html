@@ -310,6 +310,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.st td.share, .st th.share-h {width:9em;}
 	.st .share-bar {display:inline-block;width:4.5em;height:0.5em;border-radius:0.25em;background:rgba(128,128,128,0.18);margin-right:0.6em;vertical-align:middle;overflow:hidden;}
 	.st .share-bar i {display:block;height:100%;border-radius:0.25em;}
+	.st .ts-break {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;margin-top:0.5em;}
+	.st .ts-break .ts-toggle-btn {font-size:0.8em;padding:0.2em 0.7em;}
+	.st .ts-break .ts-sep {flex:1;}
+	.st .ts-break .ts-grp {display:inline-flex;gap:0.35em;}
 	/* Per-page lines: legend chips, crosshair + shared tooltip, tick boxes in the table */
 	.st .ts-legend {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;margin-top:0.5em;font-size:0.8em;}
 	.st .ts-legend[hidden] {display:none;}
@@ -690,6 +694,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="view-btn" data-view="theater" aria-pressed="false">Theater view</button>
 				</div>
 			</div>
+			<div class="ts-break" id="tsBreak"></div>
 			<div class="ts-legend" id="tsLegend" hidden></div>
 			<div class="ts-wrap" id="tsChart">
 				<svg id="tsSvg" viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Page views over time"></svg>
@@ -826,7 +831,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=7" defer></script>
+	<script src="/stats/js/stats.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

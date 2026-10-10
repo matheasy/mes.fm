@@ -713,6 +713,12 @@ let tsMode = 'daily';
 let tsUnit = 'daily';
 let showTotal = true; // Total stays on when pages are ticked; its legend chip hides it
 let chartMode = 'lines'; // lines | stacked | combined
+// What the Total line is split by: 'all', one device key (Total of just that
+// device), 'devices' (a line per device) or 'sources' (a line per source; its
+// buckets are fetched lazily, once per range).
+let breakdown = 'all';
+const sourceSeriesCache = {}; // range -> { bucketKey: { source: views } }
+const tsBreakEl = document.getElementById('tsBreak');
 let tsToken = 0;
 // range -> { "site|path": { bucketKey: views } }; only pages not already
 // here are requested, so ticking/unticking and switching Daily/Weekly cost nothing.
@@ -724,16 +730,42 @@ function pickLabel(key) {
   return site === 'mes.fm' ? path : site + path;
 }
 
+function splitSeries(mode, agg) {
+  const isSrc = breakdown === 'sources';
+  const cats = isSrc ? DEFAULT_SOURCES : DEFAULT_DEVICES;
+  const labels = isSrc ? SOURCE_LABELS : DEVICE_LABELS;
+  const colors = isSrc ? SOURCE_COLORS : DEVICE_COLORS;
+  const srcCache = sourceSeriesCache[currentRange];
+  if (isSrc && !srcCache) return [];
+  const val = function (p, k) { return isSrc ? ((srcCache[p.key] || {})[k] || 0) : ((p.d || {})[k] || 0); };
+  return cats.map(function (k) {
+    return { id: k, kind: 'page', label: labels[k], color: colors[k], points: agg(tsRawPoints.map(function (p) { return { key: p.key, views: val(p, k) }; })) };
+  }).filter(function (x) { return x.points.some(function (p) { return p.views > 0; }); });
+}
+
 function buildSeries(mode) {
   const out = [];
   const agg = function (pts) { return mode === 'weekly' ? buildWeeklyPoints(pts) : pts; };
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2272c3';
+
+  if (breakdown === 'devices' || breakdown === 'sources') {
+    const split = splitSeries(mode, agg);
+    if (split.length) return split;
+    // sources still loading: fall through to the plain total meanwhile
+  }
+
   const cache = pageSeriesCache[currentRange] || {};
   const pagePts = picks.filter(function (k) { return cache[k]; }).map(function (k) {
     return { id: k, key: k, kind: 'page', label: pickLabel(k), color: colorFor(k),
       points: agg(tsRawPoints.map(function (p) { return { key: p.key, views: cache[k][p.key] || 0 }; })) };
   });
   if (showTotal || !pagePts.length) {
-    out.push({ id: 'total', kind: 'total', label: 'Total', color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2272c3', points: agg(tsRawPoints) });
+    if (DEFAULT_DEVICES.indexOf(breakdown) !== -1) {
+      out.push({ id: 'total', kind: 'total', label: 'Total · ' + DEVICE_LABELS[breakdown], color: DEVICE_COLORS[breakdown] || accent,
+        points: agg(tsRawPoints.map(function (p) { return { key: p.key, views: (p.d || {})[breakdown] || 0 }; })) });
+    } else {
+      out.push({ id: 'total', kind: 'total', label: 'Total', color: accent, points: agg(tsRawPoints) });
+    }
   }
   if (chartMode === 'combined' && pagePts.length > 1) {
     out.push({ id: 'sel', kind: 'page', label: 'Selected pages (' + pagePts.length + ')', color: SERIES_COLORS[0],
@@ -746,7 +778,71 @@ function buildSeries(mode) {
   return out;
 }
 
+const BREAK_BUTTONS = [['all', 'All'], ['desktop', 'Desktop'], ['mobile', 'Mobile'], ['tablet', 'Tablet'], ['tv', 'TV'], ['bot', 'Bots']];
+function renderBreakRow() {
+  const has = function (k) { return tsRawPoints.some(function (p) { return p.d && p.d[k] > 0; }); };
+  const btn = function (attr, key, label, active, title) {
+    return '<button type="button" class="ts-toggle-btn' + (active ? ' active' : '') + '" data-' + attr + '="' + key + '"' + (title ? ' title="' + title + '"' : '') + '>' + label + '</button>';
+  };
+  let html = '<div class="ts-grp">' + BREAK_BUTTONS.filter(function (b) { return b[0] === 'all' || ['desktop', 'mobile', 'tablet'].indexOf(b[0]) !== -1 || has(b[0]); })
+    .map(function (b) { return btn('bk', b[0], b[1], breakdown === b[0]); }).join('') + '</div>';
+  html += '<div class="ts-grp">' + btn('bk', 'devices', 'Split by device', breakdown === 'devices') + btn('bk', 'sources', 'Split by source', breakdown === 'sources', 'Loads the traffic-source history for this range') + '</div>';
+  const split = breakdown === 'devices' || breakdown === 'sources';
+  if (picks.length > 1 || split) {
+    const modes = [['lines', 'Lines'], ['stacked', 'Stacked']];
+    if (!split && picks.length > 1) modes.push(['combined', 'Combined']);
+    html += '<span class="ts-sep"></span><div class="ts-grp">' + modes.map(function (m) {
+      return btn('cm', m[0], m[1], (split && chartMode === 'combined' ? 'lines' : chartMode) === m[0]);
+    }).join('') + '</div>';
+  }
+  tsBreakEl.innerHTML = html;
+}
+
+// Sources are separate buckets, so they're fetched only when asked for
+// (one API call, one Redis command per bucket), then cached for the range.
+async function ensureSourceSeries() {
+  const range = currentRange;
+  if (sourceSeriesCache[range]) return;
+  tsNoteEl.textContent = 'Loading traffic sources…';
+  try {
+    const res = await fetch('/api/stats-series?range=' + encodeURIComponent(range) + '&by=source');
+    if (!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    const map = {};
+    (data.points || []).forEach(function (p) { map[p.key] = p.s || {}; });
+    sourceSeriesCache[range] = map;
+  } catch (e) {
+    breakdown = 'all';
+    renderTsChart();
+    tsNoteEl.textContent = 'Traffic-source history is temporarily unavailable.';
+    return;
+  }
+  if (range === currentRange) renderTsChart();
+}
+
+tsBreakEl.addEventListener('click', function (e) {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.bk) {
+    breakdown = b.dataset.bk;
+    renderTsChart();
+    if (breakdown === 'sources') ensureSourceSeries();
+  } else if (b.dataset.cm) {
+    chartMode = b.dataset.cm;
+    renderTsChart();
+  }
+});
+
 function renderLegend() {
+  if (breakdown === 'devices' || breakdown === 'sources') {
+    const parts = splitSeries('daily', function (pts) { return pts; });
+    tsLegendEl.hidden = !parts.length;
+    tsLegendEl.innerHTML = parts.map(function (x) {
+      const t = x.points.reduce(function (a, p) { return a + p.views; }, 0);
+      return '<span class="ts-chip" style="cursor:default"><i style="background:' + x.color + '"></i><span>' + escapeHtml(x.label) + '</span><b>' + compactNum(t) + '</b></span>';
+    }).join('');
+    return;
+  }
   if (!picks.length) { tsLegendEl.hidden = true; tsLegendEl.innerHTML = ''; return; }
   tsLegendEl.hidden = false;
   const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2272c3';
@@ -755,11 +851,6 @@ function renderLegend() {
     html += '<button type="button" class="ts-chip" data-remove="' + escapeHtml(k) + '" title="Remove from chart"><i style="background:' + colorFor(k) + '"></i><span>' + escapeHtml(pickLabel(k)) + '</span><b>&times;</b></button>';
   });
   html += '<button type="button" class="ts-clear" data-clear="1">Clear</button><span class="ts-sep"></span>';
-  if (picks.length > 1) {
-    html += '<div class="ts-toggle" id="tsCm">' + [['lines', 'Lines'], ['stacked', 'Stacked'], ['combined', 'Combined']].map(function (m) {
-      return '<button type="button" class="ts-toggle-btn' + (chartMode === m[0] ? ' active' : '') + '" data-cm="' + m[0] + '">' + m[1] + '</button>';
-    }).join('') + '</div>';
-  }
   tsLegendEl.innerHTML = html;
 }
 
@@ -771,8 +862,10 @@ function renderTsChart() {
   tsBtnDaily.classList.toggle('active', mode === 'daily');
   tsBtnWeekly.classList.toggle('active', mode === 'weekly');
   if (!tsRawPoints.length) return;
+  renderBreakRow();
   renderLegend();
-  renderLineChart(tsSvgEl, tsPtsEl, buildSeries(mode), chartMode);
+  const split = breakdown === 'devices' || breakdown === 'sources';
+  renderLineChart(tsSvgEl, tsPtsEl, buildSeries(mode), split && chartMode === 'combined' ? 'lines' : chartMode);
 
   const rangeDesc = currentRange === 'all' ? 'all tracked history' : ('the past ' + RANGE_LABELS[currentRange]);
   let note;
@@ -783,7 +876,11 @@ function renderTsChart() {
     const partialWord = tsUnit === 'hourly' ? 'the current hour' : 'today';
     note = unitWord + ' totals for ' + rangeDesc + '. The dashed segment is ' + partialWord + ', still filling in.';
   }
-  if (!picks.length) note += ' Tick the boxes in Most Viewed Pages to chart individual pages.';
+  if (breakdown === 'devices') note += ' One line per device type.';
+  else if (breakdown === 'sources') note += ' One line per traffic source.';
+  else if (DEFAULT_DEVICES.indexOf(breakdown) !== -1) note += ' The Total line counts ' + DEVICE_LABELS[breakdown].toLowerCase() + ' views only; ticked pages always show all devices.';
+  if (!picks.length && breakdown === 'all') note += ' Tick the boxes in Most Viewed Pages to chart individual pages.';
+  else if (picks.length && (breakdown === 'devices' || breakdown === 'sources')) note += ' Ticked pages are hidden while a split is active.';
   tsNoteEl.textContent = note;
 }
 
@@ -846,7 +943,6 @@ tsLegendEl.addEventListener('click', function (e) {
     picks.slice().forEach(function (k) { delete pickColors[k]; });
     picks = []; showTotal = true; savePicks(); refreshPickBoxes(); renderTsChart(); return;
   }
-  if (chip.dataset.cm) { chartMode = chip.dataset.cm; renderTsChart(); }
 });
 
 // A single 24h range has no meaningful "week" to bucket into, so the
@@ -886,6 +982,7 @@ async function loadTimeSeries() {
 
     renderTsChart();
     ensurePickSeries();
+    if (breakdown === 'sources') ensureSourceSeries();
   } catch (e) {
     tsNoteEl.textContent = 'Views-over-time data is temporarily unavailable.';
   }

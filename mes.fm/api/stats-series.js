@@ -37,7 +37,12 @@ module.exports = async (req, res) => {
   // count: every view increments exactly one device slot in that bucket.
   const now = new Date();
   const keys = (config.unit === 'hourly' ? lastNHourKeys(config.count, now) : lastNDayKeys(config.count, now)).reverse(); // oldest first
-  const bucketPrefix = config.unit === 'hourly' ? 'pageviews:devicetotals:hourly:' : 'pageviews:devicetotals:daily:';
+  // ?by=source reads the sourcetotals buckets instead (one extra command per
+  // bucket, so the client only asks when the Sources split is opened). The
+  // device split rides along on the default call for free: the same bucket
+  // read that gives the total already holds every device's score.
+  const bySource = req.query.by === 'source';
+  const bucketPrefix = `pageviews:${bySource ? 'source' : 'device'}totals:${config.unit === 'hourly' ? 'hourly' : 'daily'}:`;
   // ?pages=site|path,site|path (max 8): per-page series instead of the site
   // total. One ZMSCORE per bucket on the leaderboard bucket (members are
   // "site|path"), so the cost is the bucket count, not pages x buckets. The
@@ -111,8 +116,13 @@ module.exports = async (req, res) => {
   const points = keys.map((key, i) => {
     const raw = results[i]?.result || [];
     let views = 0;
-    for (let j = 1; j < raw.length; j += 2) views += Number(raw[j]);
-    return { key, views };
+    const parts = {};
+    for (let j = 0; j + 1 < raw.length; j += 2) {
+      const v = Number(raw[j + 1]);
+      views += v;
+      if (v > 0) parts[raw[j]] = v;
+    }
+    return bySource ? { key, views, s: parts } : { key, views, d: parts };
   });
 
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
