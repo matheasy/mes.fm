@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Snapshot two YouTube lists into the JSON files read by the hub generators.
 
-  * https://www.youtube.com/@mes/videos            -> mes.fm/math/youtube-videos.json      (page mes.fm/math-youtube, built by mes.fm/math/build.mjs)
+  * https://www.youtube.com/@mes/videos            -> mes.fm/math/youtube-videos.json      (page mes.fm/youtube, built by mes.fm/math/build.mjs)
   * playlist PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu    -> mes.fm/experiments/draft-videos.json (page mes.fm/experiments-draft, mes.fm/experiments/build.mjs;
                                                       an unlisted "DRAFT experiments" playlist)
 
