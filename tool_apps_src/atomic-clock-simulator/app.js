@@ -16,7 +16,7 @@
 	function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	var NU0 = A.NU0;
 	var saved = sget(), q = new URLSearchParams(location.search);
-	var TABS = ["loop", "fringe", "race", "stab", "drift"];
+	var TABS = ["loop", "fringe", "bloch", "race", "stab", "drift"];
 	var COL = { bg: "#070d1f", line: "#26325a", text: "#e6ecfb", dim: "#93a1c4", gold: "#fbbf24", cyan: "#22d3ee", blue: "#60a5fa", grey: "#94a3b8", red: "#f87171", grid: "rgba(147,161,196,0.16)" };
 	var coarse = window.matchMedia && matchMedia("(pointer: coarse)").matches;
 
@@ -219,12 +219,12 @@
 		var v = fringeVals();
 		$("ac-T-v").textContent = fmtT(S.T); $("ac-snr-v").textContent = A.fmtSig(S.snr, 3); $("ac-det-v").textContent = (v.det >= 0 ? "+" : "−") + hz(Math.abs(v.det));
 	}
-	$("ac-T").oninput = function () { S.T = Tmap(+this.value); paintFringeLabels(); save(); };
+	$("ac-T").oninput = function () { S.T = Tmap(+this.value); paintFringeLabels(); syncBT(); save(); };
 	$("ac-snr").oninput = function () { S.snr = Smap(+this.value); paintFringeLabels(); save(); };
 	$("ac-det").oninput = function () { paintFringeLabels(); };
 	$("ac-rabi").checked = S.rabi; $("ac-rabi").onchange = function () { S.rabi = this.checked; save(); };
 	[].forEach.call(document.querySelectorAll("[data-try]"), function (b) {
-		b.onclick = function () { var t = b.getAttribute("data-try"); S.T = t === "tube" ? 0.01 : t === "nist" ? 0.5 : 5; S.snr = t === "space" ? 600 : 300; $("ac-T").value = TmapInv(S.T); $("ac-snr").value = SmapInv(S.snr); paintFringeLabels(); save(); };
+		b.onclick = function () { var t = b.getAttribute("data-try"); S.T = t === "tube" ? 0.01 : t === "nist" ? 0.5 : 5; S.snr = t === "space" ? 600 : 300; $("ac-T").value = TmapInv(S.T); $("ac-snr").value = SmapInv(S.snr); paintFringeLabels(); syncBT(); save(); };
 	});
 	var fPhase = 0;
 	function drawFringe(dt) {
@@ -287,6 +287,109 @@
 		$("ac-s1-s").textContent = "after a day of averaging: " + A.fmtFrac(v.s1 / Math.sqrt(86400));
 		$("ac-h").textContent = fmtH(v.h); $("ac-h-s").textContent = "above the cavity (" + A.fmtSig(v.T * 100, 2) + " m of beam at 100 m/s)";
 		$("ac-pp").textContent = Math.round(pp * 100) + "%"; $("ac-pp-s").textContent = "at " + (v.det >= 0 ? "+" : "−") + hz(Math.abs(v.det));
+	}
+
+
+	/* ================= tab 2b: Bloch sphere ================= */
+	var bl = { u: 0, playing: true, hold: 0.4, yaw: -0.65, pitch: 0.38, drag: null, trail: true };
+	var BSEG = [0.2, 0.8];                                  // fractions of the animation: pulse 1 | wait | pulse 2
+	var BCOL = [COL.cyan, COL.gold, "#f472b6"];
+	$("ac-bdet").value = 200; $("ac-bT").value = TmapInv(S.T);
+	function syncBT() { $("ac-bT").value = TmapInv(S.T); $("ac-T").value = TmapInv(S.T); paintBloch(); paintFringeLabels(); }
+	function bdet() { var span = 2.5 / S.T; return (+$("ac-bdet").value / 1000) * span; }
+	var bp = null, bpKey = "";
+	function getPath() { var k = bdet().toFixed(6) + "|" + S.T; if (k !== bpKey) { bp = A.blochPath(bdet(), S.T, Math.min(0.01, S.T / 5), 24, 60); bpKey = k; } return bp; }
+	function bPos(u) {
+		var pts = getPath(), nP = 24, nF = 60, k;
+		if (u < BSEG[0]) k = u / BSEG[0] * nP; else if (u < BSEG[1]) k = nP + (u - BSEG[0]) / (BSEG[1] - BSEG[0]) * nF; else k = nP + nF + (u - BSEG[1]) / (1 - BSEG[1]) * nP;
+		var i = Math.min(Math.floor(k), pts.length - 2), f = k - i, a = pts[i].r, b = pts[i + 1].r, r = [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f], m = Math.hypot(r[0], r[1], r[2]) || 1;
+		return { r: [r[0] / m, r[1] / m, r[2] / m], seg: u < BSEG[0] ? 0 : u < BSEG[1] ? 1 : 2, k: k };
+	}
+	function paintBloch() {
+		var d = bdet(); $("ac-bdet-v").textContent = (d >= 0 ? "+" : "−") + hz(Math.abs(d)); $("ac-bT-v").textContent = fmtT(S.T);
+		$("ac-bu").value = Math.round(bl.u * 1000); $("ac-bu-v").textContent = Math.round(bl.u * 100) + "%";
+		$("ac-b-play").setAttribute("aria-pressed", String(bl.playing)); $("ac-b-play").textContent = bl.playing ? "❚❚ Pause" : "▶ Play";
+	}
+	$("ac-bdet").oninput = function () { paintBloch(); }; $("ac-bT").oninput = function () { S.T = Tmap(+this.value); syncBT(); save(); };
+	$("ac-bu").oninput = function () { bl.u = +this.value / 1000; bl.playing = false; paintBloch(); };
+	$("ac-b-play").onclick = function () { bl.playing = !bl.playing; bl.hold = 0; paintBloch(); };
+	$("ac-b-replay").onclick = function () { bl.u = 0; bl.playing = true; bl.hold = 0.4; paintBloch(); };
+	[].forEach.call(document.querySelectorAll("[data-bstep]"), function (b) { b.onclick = function () { bl.u = +b.getAttribute("data-bstep"); bl.playing = false; paintBloch(); }; });
+	[].forEach.call(document.querySelectorAll("[data-bdet]"), function (b) { b.onclick = function () { $("ac-bdet").value = b.getAttribute("data-bdet"); bl.u = 0; bl.playing = true; bl.hold = 0.4; paintBloch(); }; });
+	$("ac-b-trail").onchange = function () { bl.trail = this.checked; };
+	$("ac-full4").onclick = function () { toggleFull("ac-wrap4"); };
+	function stepBloch(dt) {
+		if (!bl.playing) return;
+		if (bl.hold > 0) { bl.hold -= dt; return; }
+		if (bl.u >= 1) { bl.u = 0; bl.hold = 0.6; } else { bl.u += dt / 7; if (bl.u >= 1) { bl.u = 1; bl.hold = 1.8; } }
+		$("ac-bu").value = Math.round(bl.u * 1000); $("ac-bu-v").textContent = Math.round(bl.u * 100) + "%";
+	}
+	(function () {
+		var cv = $("ac-bl");
+		cv.addEventListener("pointerdown", function (e) { bl.drag = { x: e.clientX, y: e.clientY, yaw: bl.yaw, pitch: bl.pitch }; cv.setPointerCapture(e.pointerId); cv.classList.add("is-drag"); });
+		cv.addEventListener("pointermove", function (e) { if (!bl.drag) return; bl.yaw = bl.drag.yaw + (e.clientX - bl.drag.x) * 0.01; bl.pitch = clamp(bl.drag.pitch + (e.clientY - bl.drag.y) * 0.01, -1.4, 1.4); });
+		function up() { bl.drag = null; cv.classList.remove("is-drag"); }
+		cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+	})();
+	function drawBloch() {
+		var st = $("ac-stage4"), dim = sizeStage(st, 0.5, 1.5), W = dim.w, H = dim.h, c = setup($("ac-bl"), W, H), fs = fontPx(W), narrow = W < 640;
+		c.fillStyle = COL.bg; c.fillRect(0, 0, W, H);
+		var sR = narrow ? { x: 0, y: 0, w: W, h: H * 0.62 } : { x: 0, y: 0, w: W * 0.55, h: H }, pR = narrow ? { x: 0, y: H * 0.62, w: W, h: H * 0.38 } : { x: W * 0.55, y: 0, w: W * 0.45, h: H };
+		var cx = sR.x + sR.w / 2 + 12, cy = sR.y + sR.h / 2, R = Math.min(sR.w - 150, sR.h - 70) / 2; R = Math.max(R, 60);
+		var cyw = Math.cos(bl.yaw), syw = Math.sin(bl.yaw), cp = Math.cos(bl.pitch), sp = Math.sin(bl.pitch);
+		function proj(v) { var x1 = v[0] * cyw - v[1] * syw, y1 = v[0] * syw + v[1] * cyw, z = v[2]; return { x: cx + x1 * R, y: cy - (y1 * sp + z * cp) * R, d: y1 * cp - z * sp }; }   // d > 0: farther from the viewer than the centre
+		var g = c.createRadialGradient(cx - R * 0.3, cy - R * 0.35, R * 0.1, cx, cy, R); g.addColorStop(0, "rgba(96,165,250,0.16)"); g.addColorStop(1, "rgba(14,24,60,0.55)");
+		c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R, 0, 6.3); c.fill(); c.strokeStyle = COL.line; c.lineWidth = 1.5; c.stroke();
+		function circle(fn, col, wd) {
+			var prev = null; for (var i = 0; i <= 96; i++) { var q = proj(fn(i / 96 * 6.2832)); if (prev) { c.strokeStyle = col; c.globalAlpha = (q.d + prev.d) / 2 > 0 ? 0.28 : 0.85; c.lineWidth = wd; c.beginPath(); c.moveTo(prev.x, prev.y); c.lineTo(q.x, q.y); c.stroke(); } prev = q; } c.globalAlpha = 1;
+		}
+		circle(function (t) { return [Math.cos(t), Math.sin(t), 0]; }, "#5b6ea8", 1.6);
+		[0, Math.PI / 2].forEach(function (a) { circle(function (t) { return [Math.cos(t) * Math.cos(a), Math.cos(t) * Math.sin(a), Math.sin(t)]; }, "#33406b", 1); });
+		function axis(v, col, lab) { var o = proj([0, 0, 0]), q = proj(v); c.strokeStyle = col; c.lineWidth = 1.3; c.globalAlpha = 0.7; c.beginPath(); c.moveTo(o.x, o.y); c.lineTo(q.x, q.y); c.stroke(); c.globalAlpha = 1; if (lab) label(c, lab, q.x + (q.x >= cx ? 6 : -6), q.y, col, fs - 2, q.x >= cx ? "left" : "right"); }
+		axis([1.18, 0, 0], "#a78bfa", "x: pulse direction"); axis([0, 1.18, 0], "#64748b", "y");
+		var np = proj([0, 0, 1]), sp2 = proj([0, 0, -1]); c.strokeStyle = "#64748b"; c.globalAlpha = 0.7; c.beginPath(); c.moveTo(sp2.x, sp2.y); c.lineTo(np.x, np.y); c.stroke(); c.globalAlpha = 1;
+		var nt = proj([0, 0, 1.2]), stt = proj([0, 0, -1.2]);
+		label(c, "excited ↑", nt.x, nt.y - 4, COL.gold, fs, "center"); label(c, "ground ↓", stt.x, stt.y + 10, COL.blue, fs, "center");
+		var pos = bPos(bl.u), pts = getPath();
+		if (bl.trail) {
+			for (var i = 1; i <= Math.min(Math.floor(pos.k) + 1, pts.length - 1); i++) {
+				var a = proj(pts[i - 1].r), b = i <= pos.k ? proj(pts[i].r) : proj(pos.r); c.strokeStyle = BCOL[pts[i].seg]; c.lineWidth = 3; c.globalAlpha = ((a.d + b.d) / 2 > 0) ? 0.4 : 1; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+			}
+			c.globalAlpha = 1;
+		}
+		var o = proj([0, 0, 0]), tip = proj(pos.r), col = BCOL[pos.seg];
+		c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 3.5; c.beginPath(); c.moveTo(o.x, o.y); c.lineTo(tip.x, tip.y); c.stroke();
+		var ang = Math.atan2(tip.y - o.y, tip.x - o.x); c.beginPath(); c.moveTo(tip.x, tip.y); c.lineTo(tip.x - 14 * Math.cos(ang - 0.35), tip.y - 14 * Math.sin(ang - 0.35)); c.lineTo(tip.x - 14 * Math.cos(ang + 0.35), tip.y - 14 * Math.sin(ang + 0.35)); c.closePath(); c.fill();
+		c.beginPath(); c.arc(tip.x, tip.y, 5, 0, 6.3); c.fill();
+		var sh = proj([pos.r[0], pos.r[1], 0]); c.setLineDash([3, 4]); c.strokeStyle = "rgba(230,236,251,0.45)"; c.lineWidth = 1; c.beginPath(); c.moveTo(tip.x, tip.y); c.lineTo(sh.x, sh.y); c.stroke(); c.setLineDash([]); c.fillStyle = "rgba(230,236,251,0.5)"; c.beginPath(); c.arc(sh.x, sh.y, 2.5, 0, 6.3); c.fill();
+		var gx = sR.x + 26, gt = cy - R, gb = cy + R; c.strokeStyle = COL.line; c.lineWidth = 8; c.lineCap = "round"; c.beginPath(); c.moveTo(gx, gt); c.lineTo(gx, gb); c.stroke();
+		var gy = cy - pos.r[2] * R; c.strokeStyle = col; c.lineWidth = 8; c.beginPath(); c.moveTo(gx, gb); c.lineTo(gx, gy); c.stroke(); c.lineCap = "butt";
+		label(c, "100%", gx, gt - 12, COL.gold, fs - 3, "center"); label(c, "0%", gx, gb + 12, COL.blue, fs - 3, "center"); label(c, Math.round((1 + pos.r[2]) / 2 * 100) + "%", gx + 14, gy, COL.text, fs - 1, "left");
+		var ly = sR.y + 14; [["pulse 1", BCOL[0]], ["wait", BCOL[1]], ["pulse 2", BCOL[2]]].forEach(function (p, i) { var lx = sR.x + 56 + i * (fs * 6.2); c.fillStyle = p[1]; c.fillRect(lx, ly - 2, 14, 4); label(c, p[0], lx + 20, ly, COL.dim, fs - 2, "left"); });
+		(function () {
+			var R2 = pR, m = { l: 40, r: 14, t: 34, b: 38 }, x0 = R2.x + m.l, x1 = R2.x + R2.w - m.r, y0 = R2.y + R2.h - m.b, y1 = R2.y + m.t, T = S.T, tau = Math.min(0.01, T / 5), span = 2.5 / T;
+			function X(d) { return x0 + (d + span) / (2 * span) * (x1 - x0); } function Yp(p) { return y0 - p * (y0 - y1); }
+			label(c, "Where this detuning lands on the fringes", R2.x + R2.w / 2, R2.y + 14, COL.dim, fs - 1, "center");
+			c.strokeStyle = COL.grid; c.lineWidth = 1; c.beginPath(); for (var g2 = 0; g2 <= 4; g2++) { c.moveTo(x0, Yp(g2 / 4)); c.lineTo(x1, Yp(g2 / 4)); } c.stroke();
+			for (var g3 = 0; g3 <= 4; g3 += 2) label(c, g3 * 25 + "%", x0 - 5, Yp(g3 / 4), COL.dim, fs - 3, "right");
+			c.strokeStyle = COL.line; c.strokeRect(x0, y1, x1 - x0, y0 - y1);
+			c.strokeStyle = COL.gold; c.lineWidth = 2; c.beginPath(); for (var k = 0; k <= 400; k++) { var d = -span + 2 * span * k / 400, xx = X(d), yy = Yp(A.fountainP(d, T, tau)); if (k) c.lineTo(xx, yy); else c.moveTo(xx, yy); } c.stroke();
+			var dd = bdet(), pf = A.fountainP(dd, T, tau); c.strokeStyle = COL.text; c.setLineDash([3, 3]); c.lineWidth = 1.2; c.beginPath(); c.moveTo(X(dd), y1); c.lineTo(X(dd), y0); c.stroke(); c.setLineDash([]);
+			c.fillStyle = "#f472b6"; c.beginPath(); c.arc(X(dd), Yp(pf), 5.5, 0, 6.3); c.fill();
+			var st2 = niceStep(span / 2.5); for (var t = -Math.floor(span / st2) * st2; t <= span + 1e-9; t += st2) { label(c, (t > 0 ? "+" : "") + shortHz(t), X(t), y0 + 14, COL.dim, fs - 3, "center"); }
+			label(c, "detuning from resonance", (x0 + x1) / 2, y0 + 30, COL.dim, fs - 2, "center");
+		})();
+		label(c, "drag to rotate", sR.x + sR.w / 2, sR.y + sR.h - 10, COL.dim, fs - 3, "center");
+	}
+	function readBloch() {
+		var pos = bPos(bl.u), d = bdet(), T = S.T, tau = Math.min(0.01, T / 5), pf = A.fountainP(d, T, tau);
+		var names = ["Pulse 1", "The wait", "Pulse 2"], subs = ["tipping the arrow up to the equator", "the arrow turns around the equator", "the second tip decides where it ends"];
+		$("ac-b-step").textContent = bl.u >= 1 ? "Done" : bl.u <= 0 ? "Start" : names[pos.seg]; $("ac-b-step-s").textContent = bl.u >= 1 ? "final position" : bl.u <= 0 ? "all atoms in the ground state" : subs[pos.seg];
+		$("ac-b-p").textContent = Math.round((1 + pos.r[2]) / 2 * 100) + "%";
+		var ph = A.waitPhase(d, T) * 180 / Math.PI, ph1 = ((ph % 360) + 540) % 360 - 180;
+		$("ac-b-ph").textContent = Math.round(ph1) + "°"; $("ac-b-ph-s").textContent = A.fmtSig(Math.abs(ph) / 360, 3) + " full turns (2π × detuning × T)";
+		$("ac-b-fin").textContent = Math.round(pf * 100) + "%"; $("ac-b-fin-s").textContent = pf > 0.9 ? "top of a fringe: nearly all atoms flip" : pf < 0.1 ? "bottom of a fringe: nearly none flip" : "on the slope of a fringe";
+		$("ac-b-explain").textContent = Math.abs(ph1) < 15 ? "The arrow has barely turned, so the second pulse carries on in the same direction and the atoms end near the north pole." : Math.abs(Math.abs(ph1) - 180) < 15 ? "The arrow has turned half a circle, so the second pulse undoes the first and the atoms go back to the south pole." : "The arrow has turned part of the way round, so the second pulse takes it to a point between the poles.";
 	}
 
 	/* ================= tab 3: race ================= */
@@ -403,13 +506,13 @@
 	function setTab(t, fromUser) {
 		if (TABS.indexOf(t) < 0) t = "loop"; S.tab = t;
 		TABS.forEach(function (k) { var on = k === t; $("ac-p-" + k).hidden = !on; $("ac-t-" + k).setAttribute("aria-selected", String(on)); $("ac-t-" + k).tabIndex = on ? 0 : -1; });
-		if (t === "race") paintRace(); if (t === "stab") stabDirty = true; if (t === "drift") { syncFromFrac(); renderDrift(); } if (t === "fringe") paintFringeLabels();
+		if (t === "race") paintRace(); if (t === "stab") stabDirty = true; if (t === "drift") { syncFromFrac(); renderDrift(); } if (t === "fringe") paintFringeLabels(); if (t === "bloch") { syncBT(); }
 		save();
 		if (fromUser) { var u = new URL(location.href); u.search = ""; history.replaceState(null, "", u.pathname); }
 	}
 	[].forEach.call(document.querySelectorAll(".ac-tabs button"), function (b) {
 		b.onclick = function () { setTab(b.getAttribute("data-tab"), true); };
-		b.onkeydown = function (e) { var i = TABS.indexOf(b.getAttribute("data-tab")); if (e.key === "ArrowRight") { setTab(TABS[(i + 1) % 5], true); $("ac-t-" + S.tab).focus(); e.preventDefault(); } else if (e.key === "ArrowLeft") { setTab(TABS[(i + 4) % 5], true); $("ac-t-" + S.tab).focus(); e.preventDefault(); } };
+		b.onkeydown = function (e) { var i = TABS.indexOf(b.getAttribute("data-tab")); if (e.key === "ArrowRight") { setTab(TABS[(i + 1) % TABS.length], true); $("ac-t-" + S.tab).focus(); e.preventDefault(); } else if (e.key === "ArrowLeft") { setTab(TABS[(i + TABS.length - 1) % TABS.length], true); $("ac-t-" + S.tab).focus(); e.preventDefault(); } };
 	});
 	function paintTheatre() { $("ac-theatre").setAttribute("aria-pressed", String(document.documentElement.classList.contains("page-theatre"))); }
 	$("ac-theatre").onclick = function () {
@@ -435,6 +538,7 @@
 		var dt = last ? Math.min(0.1, (ts - last) / 1000) : 0.016; last = ts;
 		if (S.tab === "loop") { stepLoop(dt); drawLoop(dt); readLoop(); }
 		else if (S.tab === "fringe") { drawFringe(dt); readFringe(); }
+		else if (S.tab === "bloch") { stepBloch(dt); drawBloch(); readBloch(); }
 		else if (S.tab === "race") { if (racePlaying) { A.raceStep(race, S.raceSpeed * dt); paintRace(); } }
 		else if (S.tab === "stab") { if (stabDirty) { drawStab(); stabDirty = false; } }
 	}

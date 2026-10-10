@@ -35,6 +35,18 @@ ok(A.cyclesIn(1) === "9192631770" && A.cyclesIn(2) === "18385263540", "cycles in
 	ok(half2 < half / 4, "10x less... five times the flight time gives a fringe about five times narrower");
 }
 
+// 3b. Bloch sphere reproduces the Ramsey formula
+{
+	const T = 0.5, tau = 0.005; let worst = 0;
+	for (let d = -4; d <= 4; d += 0.137) { const path = A.blochPath(d, T, tau, 60, 120), P = A.blochP(path[path.length - 1].r), want = A.fountainP(d, T, tau); worst = Math.max(worst, Math.abs(P - want)); }
+	ok(worst < 1e-3, "Bloch-sphere evolution equals the Ramsey fringe formula at every detuning, both signs (worst " + worst.toExponential(2) + ")");
+	const p0 = A.blochPath(0, T, tau); near(A.blochP(p0[p0.length - 1].r), 1, 1e-6, "on resonance the arrow ends at the north pole");
+	const mid = p0.find(q => q.seg === 1 && q.f === 1); ok(Math.abs(mid.r[2]) < 1e-9 && Math.abs(Math.hypot(mid.r[0], mid.r[1]) - 1) < 1e-9, "after the first pulse the arrow lies on the equator");
+	const half = A.blochPath(1 / (2 * T), T, tau); ok(A.blochP(half[half.length - 1].r) < 0.01, "half a fringe away (1/(2T)) the arrow returns to the south pole");
+	ok(p0.every(q => Math.abs(Math.hypot(q.r[0], q.r[1], q.r[2]) - 1) < 1e-9), "the arrow stays on the sphere");
+	near(A.waitPhase(0.25, 2), Math.PI, 1e-12, "wait phase = 2 pi delta T");
+}
+
 // 4. Stability formula: narrower line, better signal -> lower noise; and it scales as 1/sqrt(tau)
 {
 	const s = A.sigma1s(1, 300, 1);

@@ -61,6 +61,30 @@
 	function fringeWidth(T) { return 1 / (2 * T); }
 	function beamWidth(tau) { return 0.8 / tau; }          // FWHM of the Rabi pedestal for a pi pulse, about 0.8 / tau
 
+
+	/* ---------------- Bloch sphere ----------------
+	 * The atom's two levels as a unit vector r = (x, y, z): z = -1 is the ground state, z = +1 the excited state, P(excited) = (1 + z) / 2.
+	 * In the frame rotating with the microwaves, dr/dt = W x r, with W = (omega, 0, delta) during a pulse and W = (0, 0, delta) while the atom flies freely.
+	 * Ramsey sequence: pulse (pi/2) - free flight T - pulse (pi/2). The sequence reproduces ramseyP() exactly. */
+	function rotate(r, w, angle) {                       // rotate vector r about axis w (any length) by `angle` radians (Rodrigues; angle >= 0 turns the way W x r does)
+		var m = Math.sqrt(w[0] * w[0] + w[1] * w[1] + w[2] * w[2]); if (m === 0 || angle === 0) return r.slice();
+		var k = [w[0] / m, w[1] / m, w[2] / m], c = Math.cos(angle), s = Math.sin(angle), d = k[0] * r[0] + k[1] * r[1] + k[2] * r[2];
+		var cr = [k[1] * r[2] - k[2] * r[1], k[2] * r[0] - k[0] * r[2], k[0] * r[1] - k[1] * r[0]];
+		return [r[0] * c + cr[0] * s + k[0] * d * (1 - c), r[1] * c + cr[1] * s + k[1] * d * (1 - c), r[2] * c + cr[2] * s + k[2] * d * (1 - c)];
+	}
+	// Whole trajectory for detuning deltaHz (Hz), free time T, pulse length tau: points with the segment they belong to (0 = pulse 1, 1 = free flight, 2 = pulse 2).
+	function blochPath(deltaHz, T, tau, nPulse, nFree) {
+		tau = tau || Math.min(0.01, T / 5); nPulse = nPulse || 24; nFree = nFree || 60;
+		var d = TWO_PI * deltaHz, om = Math.PI / (2 * tau), r = [0, 0, -1], pts = [{ r: r.slice(), seg: 0, f: 0 }], i;
+		for (i = 1; i <= nPulse; i++) { r = rotate(r, [om, 0, d], Math.sqrt(om * om + d * d) * tau / nPulse); pts.push({ r: r.slice(), seg: 0, f: i / nPulse }); }
+		for (i = 1; i <= nFree; i++) { r = rotate(r, [0, 0, d], Math.abs(d) * T / nFree); pts.push({ r: r.slice(), seg: 1, f: i / nFree }); }
+		for (i = 1; i <= nPulse; i++) { r = rotate(r, [om, 0, d], Math.sqrt(om * om + d * d) * tau / nPulse); pts.push({ r: r.slice(), seg: 2, f: i / nPulse }); }
+		return pts;
+	}
+	function blochP(r) { return (1 + r[2]) / 2; }
+	// phase the atom picks up against the microwaves during the wait, in radians (= 2 pi * detuning * T)
+	function waitPhase(deltaHz, T) { return TWO_PI * deltaHz * T; }
+
 	/* ---------------- stability of a locked clock ---------------- */
 	// Fractional frequency noise at 1 s of an atomic clock locked to a line of width dnu (Hz) with signal-to-noise snr per cycle of duration Tc (s).
 	function sigma1s(dnu, snr, Tc) { return (1 / Math.PI) * (dnu / NU0) * (1 / snr) * Math.sqrt(Tc); }
@@ -265,7 +289,7 @@
 
 	var API = {
 		NU0: NU0, C: C, DAY: DAY, YEAR: YEAR, PERIODS: PERIODS, UNIVERSE: UNIVERSE, CLOCKS: CLOCKS, BYID: BYID,
-		rng: rng, rabiP: rabiP, beamP: beamP, ramseyP: ramseyP, fountainP: fountainP, fringeWidth: fringeWidth, beamWidth: beamWidth,
+		rng: rng, rotate: rotate, blochPath: blochPath, blochP: blochP, waitPhase: waitPhase, rabiP: rabiP, beamP: beamP, ramseyP: ramseyP, fountainP: fountainP, fringeWidth: fringeWidth, beamWidth: beamWidth,
 		sigma1s: sigma1s, sigmaAt: sigmaAt, allanModel: allanModel, raceInit: raceInit, raceStep: raceStep, expectedError: expectedError, timeToError: timeToError,
 		Loop: Loop, allan: allan, phaseToFreq: phaseToFreq,
 		parseFraction: parseFraction, parseTime: parseTime, secondsOff: secondsOff, fractionFrom: fractionFrom, timeUntil: timeUntil, lightDistance: lightDistance, cyclesIn: cyclesIn,

@@ -306,6 +306,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.ac-theatre:hover {border-color:var(--accent);color:var(--accent);}
 	.ac-theatre[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
 	.ac .tu-label b {text-transform:none;letter-spacing:0;}
+	#ac-bl {touch-action:none;cursor:grab;} #ac-bl.is-drag {cursor:grabbing;}
+	.ac-b-steps {margin-left:0.6em;} .ac-b-explain {margin:0.8em 0 0;}
 	.ac-lead {margin:0 0 0.7em;font-size:1em;line-height:1.45;}
 	.ac-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--ac-line);background:var(--ac-bg);}
 	.ac-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
@@ -711,6 +713,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="ac-tabs" role="tablist" aria-label="Atomic clock simulator sections">
 				<button type="button" role="tab" id="ac-t-loop" data-tab="loop" aria-selected="true" aria-controls="ac-p-loop">How it works</button>
 				<button type="button" role="tab" id="ac-t-fringe" data-tab="fringe" aria-selected="false" aria-controls="ac-p-fringe">Fountain &amp; fringes</button>
+				<button type="button" role="tab" id="ac-t-bloch" data-tab="bloch" aria-selected="false" aria-controls="ac-p-bloch">Bloch sphere (3D)</button>
 				<button type="button" role="tab" id="ac-t-race" data-tab="race" aria-selected="false" aria-controls="ac-p-race">Clock race</button>
 				<button type="button" role="tab" id="ac-t-stab" data-tab="stab" aria-selected="false" aria-controls="ac-p-stab">Stability chart</button>
 				<button type="button" role="tab" id="ac-t-drift" data-tab="drift" aria-selected="false" aria-controls="ac-p-drift">Drift calculator</button>
@@ -786,6 +789,49 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-chip" data-try="space">Space clock (5 s)</button>
 					<label class="ac-check"><input type="checkbox" id="ac-rabi" checked> Show a single pass for comparison</label>
 				</div>
+			</div>
+		</section>
+
+		<!-- 2b. Bloch sphere -->
+		<section class="ac-panel" id="ac-p-bloch" role="tabpanel" aria-labelledby="ac-t-bloch" hidden>
+			<p class="ac-lead">Each atom's two energy levels are one arrow on a sphere: <strong>south pole = ground state, north pole = excited</strong>. Watch the arrow through the two microwave pulses and see why the fringes appear. <em>Drag the sphere to turn it.</em></p>
+			<div class="ac-wrap" id="ac-wrap4">
+				<div class="ac-stage" id="ac-stage4">
+					<canvas id="ac-bl" role="img" aria-label="A Bloch sphere. An arrow starts at the south pole, is tipped to the equator by the first microwave pulse, turns around the equator while the atom flies, and is tipped again by the second pulse. Beside it, the Ramsey fringe pattern with the current detuning marked."></canvas>
+					<div class="ac-tools"><button type="button" id="ac-full4" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="ac-readouts" id="ac-ro4">
+					<div class="ac-ro"><span>Now</span><b id="ac-b-step">–</b><small id="ac-b-step-s"></small></div>
+					<div class="ac-ro"><span>Atoms flipped so far</span><b id="ac-b-p">–</b><small id="ac-b-p-s">height of the arrow</small></div>
+					<div class="ac-ro"><span>Turn gained while waiting</span><b id="ac-b-ph">–</b><small id="ac-b-ph-s">2π × detuning × T</small></div>
+					<div class="ac-ro"><span>Final result</span><b id="ac-b-fin">–</b><small id="ac-b-fin-s"></small></div>
+				</div>
+			</div>
+			<div class="tu-card ac-controls">
+				<div class="ac-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="ac-b-play" aria-pressed="true">❚❚ Pause</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ac-b-replay">↺ Replay</button>
+					<span class="tu-label ac-b-steps">Jump to</span>
+					<button type="button" class="tu-chip" data-bstep="0">Start</button>
+					<button type="button" class="tu-chip" data-bstep="0.2">After pulse 1</button>
+					<button type="button" class="tu-chip" data-bstep="0.8">After the wait</button>
+					<button type="button" class="tu-chip" data-bstep="1">After pulse 2</button>
+					<label class="ac-check"><input type="checkbox" id="ac-b-trail" checked> Show the path</label>
+				</div>
+				<div class="ac-grid">
+					<div class="tu-field"><span class="tu-label" id="ac-bdet-l">Microwave detuning: <b id="ac-bdet-v"></b></span><input type="range" id="ac-bdet" min="-1000" max="1000" step="1" aria-labelledby="ac-bdet-l">
+						<span class="tu-note">At 0 the microwaves are exactly on resonance: the arrow is tipped the same way twice and ends at the north pole. Slide it and the arrow turns while it waits.</span></div>
+					<div class="tu-field"><span class="tu-label" id="ac-bT-l">Time between the pulses, T: <b id="ac-bT-v"></b></span><input type="range" id="ac-bT" min="0" max="1000" step="1" aria-labelledby="ac-bT-l">
+						<span class="tu-note">The longer the wait, the more sharply the arrow's turn depends on the detuning: that is the narrowing of the fringe. Same T as on the fountain tab.</span></div>
+					<div class="tu-field"><span class="tu-label" id="ac-bu-l">Position in the sequence: <b id="ac-bu-v"></b></span><input type="range" id="ac-bu" min="0" max="1000" step="1" aria-labelledby="ac-bu-l">
+						<span class="tu-note">Drag to scrub through pulse 1, the wait and pulse 2 by hand.</span></div>
+				</div>
+				<div class="ac-chips"><span class="tu-label">Try</span>
+					<button type="button" class="tu-chip" data-bdet="0">On resonance</button>
+					<button type="button" class="tu-chip" data-bdet="100">Quarter turn</button>
+					<button type="button" class="tu-chip" data-bdet="200">Half turn</button>
+					<button type="button" class="tu-chip" data-bdet="400">Full turn</button></div>
+				<p class="tu-note ac-b-explain" id="ac-b-explain"></p>
 			</div>
 		</section>
 
@@ -866,6 +912,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</ol>
 			<h3>Why a fountain beats a tube</h3>
 			<p>The resonance gets narrower the longer the atoms are probed (the time–frequency trade-off: width ≈ 1/(2T)). In a beam clock the atoms zip through a metre-long tube in about 10 ms, giving a line roughly 50 Hz wide. In a <strong>fountain</strong> clock, lasers cool the atoms to a few microkelvin and toss them up about a metre; they fall back through the same cavity half a second later. Two short pulses with a long wait between them make <em>Ramsey fringes</em>: a central fringe about 1 Hz wide, on a line at 9.19 GHz, a quality factor near 10¹⁰. NIST-F2 and its cousins in about a dozen countries realise the SI second to about 1 part in 10¹⁶.</p>
+			<h3>The Bloch sphere: why fringes appear</h3>
+			<p>A two-level atom can be drawn as an arrow on a sphere (the Bloch sphere): the south pole is the lower level, the north pole the upper level, and the equator an equal mix of both. The first microwave pulse is exactly long enough to tip the arrow from the south pole to the equator (a "π/2 pulse"). During the wait the atom's own oscillation turns the arrow around the equator at the rate by which the microwaves are off resonance; if they are exactly on resonance it does not turn at all relative to them. The second pulse then tips it further. If the arrow has not turned, the second pulse continues the same motion and all atoms arrive at the north pole. If it has turned half a circle, the second pulse undoes the first and the atoms return to the south pole. Turning by one full circle brings back the maximum: that repeating pattern is the Ramsey fringes, and the longer the wait, the less detuning it takes to turn the arrow half a circle, so the fringes get narrower.</p>
 			<h3>Why the next clocks use light</h3>
 			<p>Frequency counts cycles, so a clock that ticks 50,000 times faster has more to divide with. Optical lattice clocks probe atoms such as strontium or ytterbium with a laser at about 430 THz, and they are accurate to a few parts in 10¹⁸: they would lose less than a second in the age of the universe. The General Conference on Weights and Measures is preparing to redefine the second on an optical transition. They are so precise that they notice the effect of gravity on time when one clock is raised by a centimetre (general relativity, tested in the lab).</p>
 			<h3>What the page simulates, and what it does not</h3>
