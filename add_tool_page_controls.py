@@ -71,6 +71,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("reynolds-number-calculator", "Reynolds Number Calculator"),   # also built by build_tool_apps.py
     ("photoelectric-effect-simulator", "Photoelectric Effect"),   # also built by build_tool_apps.py (wide page, dark apparatus stage)
     ("atomic-clock-simulator", "Atomic Clock Simulator"),   # also built by build_tool_apps.py (wide page, dark stages)
+    ("3d-fluid-simulator", "3D Fluid Simulator"),   # also built by build_tool_apps.py (wide page, WebGL2 smoke)
     ("fluid-simulator", "Fluid Simulator"),   # also built by build_tool_apps.py (wide page, dark simulation stage)
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)
     ("youtubemoney", "YouTube Money Calculator"),   # also built by build_tool_apps.py (ad-free)

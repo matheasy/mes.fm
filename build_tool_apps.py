@@ -188,6 +188,12 @@ APPS = {
                             tag="Add up integers, squares, cubes and series.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                             desc="Free sum of integers calculator: add 1 to n, any range, squares, cubes or any power, odd or even numbers, multiples, arithmetic and geometric series, Fibonacci numbers, or Σ of your own formula. Exact answers for huge numbers with the formula and worked steps.",
                             js_v="2"),
+    # 3D Fluid Simulator: CPU stable-fluids solver in a 3D box (lib.js, node-tested: tool_apps_src/3d-fluid-simulator-tests.js) + WebGL2 ray-marched smoke with an orbit camera
+    # (flat canvas fallback without WebGL2). Wide page like the 2D simulator (own Theatre button, no sidebar).
+    "3d-fluid-simulator": dict(title="MES 3D Fluid Simulator", page_title="3D Fluid Simulator: Smoke in a Box",
+                            tag="Rotate real 3D smoke, rings and wakes.", accent="#0e7490", dark="#155e75", tint="#e0f4f8",
+                            desc="A free 3D fluid simulator in your browser: a rising hot smoke plume, smoke ring cannon, colliding vortex rings, wind past a sphere and a smoke tank you can stir. The Navier-Stokes equations are solved live in 3D; rotate and zoom the smoke.",
+                            js_v="2"),
     # Search Engines: type one search and open it in many engines (tabs, tiled windows or same tab); sets for censorship / SEO / privacy comparisons; own engines.
     # lib.js = engine table + URL builder (node-testable: tool_apps_src/search-engines-tests.js), app.js = UI. Wide page, no sidebar.
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",

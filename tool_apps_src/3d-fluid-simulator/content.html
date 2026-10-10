@@ -1,0 +1,96 @@
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu f3" id="f3">
+		<div class="f3-top">
+			<label class="f3-pick"><span class="tu-label" id="f3-pick-l">Scenario</span>
+				<select id="f3-preset" class="tu-select" aria-labelledby="f3-pick-l"></select></label>
+			<div class="f3-run" role="group" aria-label="Simulation controls">
+				<button type="button" class="tu-btn tu-btn--primary" id="f3-play" aria-pressed="true" title="Pause or resume (Space)">❚❚ Pause</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-step" title="Advance one step while paused (→)">Step ▸</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-reset" title="Start the scenario again (R)">↺ Restart</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-fire" hidden title="Fire a smoke ring (F)">💨 Fire ring</button>
+			</div>
+		</div>
+
+		<div class="f3-wrap" id="f3-wrap">
+			<div class="f3-stage" id="f3-stage">
+				<canvas id="f3-canvas" tabindex="0" role="img" aria-label="Live 3D smoke simulation. Drag to rotate the view or, with the Stir tool, to swirl the smoke."></canvas>
+				<div id="f3-fallback" hidden></div>
+				<div class="f3-views" role="group" aria-label="What to show">
+					<button type="button" data-view="0" aria-pressed="true" title="Smoke (hot smoke glows orange)">Smoke</button>
+					<button type="button" data-view="1" aria-pressed="false" title="Colour smoke by where it came from">Colours</button>
+					<button type="button" data-view="2" aria-pressed="false" title="Colour smoke by speed">Speed</button>
+					<button type="button" id="f3-spin" aria-pressed="false" title="Slowly rotate the view">Auto-rotate</button>
+				</div>
+				<div class="f3-tools" role="toolbar" aria-label="Page tools">
+					<button type="button" id="f3-png" title="Save this frame as a picture" aria-label="Save as PNG">📷</button>
+					<button type="button" id="f3-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
+					<button type="button" id="f3-full" title="Full screen" aria-label="Full screen">⛶</button>
+				</div>
+				<div class="f3-brushes" role="group" aria-label="What dragging does">
+					<button type="button" data-tool="orbit" aria-pressed="true" title="Drag to rotate the view, scroll or pinch to zoom">⟳ Orbit</button>
+					<button type="button" data-tool="stir" aria-pressed="false" title="Drag to push the smoke (a plane through the middle of the box)">✋ Stir</button>
+				</div>
+				<div class="f3-hint" id="f3-hint">Drag to rotate · scroll to zoom</div>
+			</div>
+			<div class="f3-readouts" id="f3-readouts">
+				<div class="f3-ro"><span>Time</span><b id="f3-t">0</b><small>simulation steps</small></div>
+				<div class="f3-ro"><span>Top speed</span><b id="f3-vmax">0</b><small>cells per step</small></div>
+				<div class="f3-ro"><span>Grid</span><b id="f3-grid">–</b><small id="f3-cells"></small></div>
+				<div class="f3-ro"><span>Speed of this device</span><b id="f3-ms">–</b><small>per simulation step</small></div>
+			</div>
+		</div>
+
+		<div class="tu-card f3-controls" id="f3-controls">
+			<p class="tu-note f3-scenario" id="f3-note"></p>
+			<div class="f3-grid">
+				<div class="tu-field" id="f3-beta-f"><span class="tu-label" id="f3-beta-l">Buoyancy: <b id="f3-beta-v"></b></span>
+					<input type="range" id="f3-beta-in" min="0" max="0.15" step="0.005" aria-labelledby="f3-beta-l">
+					<span class="tu-note">How strongly hot smoke rises (the Boussinesq approximation).</span></div>
+				<div class="tu-field"><span class="tu-label" id="f3-vort-l">Swirl boost: <b id="f3-vort-v"></b></span>
+					<input type="range" id="f3-vort-in" min="0" max="0.6" step="0.01" aria-labelledby="f3-vort-l">
+					<span class="tu-note">Adds back small swirls the grid smooths away (vorticity confinement). Pretty, not part of the exact equations: 0 shows the plain physics.</span></div>
+				<div class="tu-field" id="f3-u-f"><span class="tu-label" id="f3-u-l">Wind speed: <b id="f3-u-v"></b></span>
+					<input type="range" id="f3-u-in" min="0.3" max="1.6" step="0.05" aria-labelledby="f3-u-l"></div>
+				<div class="tu-field"><span class="tu-label" id="f3-dens-l">Smoke thickness: <b id="f3-dens-v"></b></span>
+					<input type="range" id="f3-dens-in" min="0.3" max="3" step="0.05" aria-labelledby="f3-dens-l"></div>
+			</div>
+			<div class="f3-grid f3-grid--small">
+				<div class="tu-field tu-field--sm" id="f3-ob-f"><span class="tu-label">Obstacle</span>
+					<select id="f3-ob" class="tu-select" aria-label="Obstacle shape"><option value="sphere">Sphere</option><option value="cube">Cube</option><option value="none">None</option></select></div>
+				<div class="tu-field tu-field--sm"><span class="tu-label">Detail</span>
+					<select id="f3-res" class="tu-select" aria-label="Grid resolution"><option value="24">Fast (24 cells)</option><option value="32">Normal (32 cells)</option><option value="40">Fine (40 cells)</option><option value="48">Very fine (48 cells)</option></select></div>
+				<div class="tu-field tu-field--sm"><span class="tu-label">Speed</span>
+					<select id="f3-speed" class="tu-select" aria-label="Simulation speed"><option value="0.5">Slow</option><option value="1">Normal</option><option value="2">Fast</option></select></div>
+			</div>
+			<div class="f3-checks">
+				<label class="f3-check" id="f3-auto-w" hidden><input type="checkbox" id="f3-auto"> Fire rings automatically</label>
+				<label class="f3-check"><input type="checkbox" id="f3-fade"> Let the smoke fade</label>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-clearsmoke">Clear smoke</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-link">🔗 Copy link to this setup</button>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>3D smoke that obeys the Navier–Stokes equations</h2>
+			<p>This is a three-dimensional version of the <a href="/fluid-simulator">2D Fluid Simulator</a>. Inside a box, a solver steps the incompressible <strong>Navier–Stokes equations</strong> forward in time on a 3D grid. The smoke you see is carried along by the computed flow and rendered as a glowing volume you can rotate and zoom into. The same four steps as in 2D happen every frame: add forces (buoyancy of hot smoke, your stirring, the swirl boost), carry everything along the flow, then solve for the pressure that keeps the fluid from being squeezed (∇·<b>u</b> = 0) and subtract its gradient.</p>
+			<h3>What to try</h3>
+			<ul>
+				<li><strong>Rising hot smoke plume:</strong> warm smoke rises, rolls up into mushroom-shaped puffs and fills the box. Raise <em>Buoyancy</em> for a more violent plume.</li>
+				<li><strong>Smoke ring cannon:</strong> a short puff of air through a round hole rolls up into a vortex ring that travels on its own. Fire several and watch the later ones pass through the earlier ones.</li>
+				<li><strong>Two rings colliding:</strong> head-on rings flatten and burst outward.</li>
+				<li><strong>Wind past a sphere:</strong> coloured smoke shows how the flow separates and curls into a turbulent wake behind a ball or cube.</li>
+				<li><strong>Stir a smoke tank:</strong> switch to <em>Stir</em> and drag through layered smoke to mix it, then <em>Orbit</em> to inspect it from the side.</li>
+			</ul>
+			<h3>What 3D adds</h3>
+			<p>In two dimensions a swirl can only spin around a point. In three dimensions vortex lines can bend, stretch and twist, which is why a smoke ring is stable but eventually wobbles and breaks up, and why real turbulence cascades into ever smaller eddies. Those effects are exactly what a 2D simulation cannot show.</p>
+			<h3>How accurate is it?</h3>
+			<p>It is a teaching-grade simulator. The grid is small (24 to 48 cells on the short side, the price of running 3D physics in a browser), the scheme is first order and adds a little artificial viscosity (so unlike the 2D page there is no Reynolds-number slider), and the smoke look is partly aesthetic. The solver is checked in code: smoke from a heater rises, the pressure step removes the divergence of the flow, the flow is zero inside obstacles, a wake forms behind the sphere and a smoke ring travels along its axis. For research-grade 3D results, supercomputers use billions of cells and models for the turbulence they cannot resolve.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Why is it slower on my phone?</strong> The physics runs on your device's processor. The box above shows the time per step; lower <em>Detail</em> if it feels sluggish.</li>
+				<li><strong>Why do my smoke rings look blurry?</strong> The grid is coarse. <em>Fine</em> or <em>Very fine</em> gives sharper rings at the cost of speed.</li>
+				<li><strong>Do I need a special browser?</strong> It uses WebGL2 for the 3D view, which every current browser has. Without it the page falls back to a flat top-down picture of the smoke.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/fluid-simulator">2D Fluid Simulator</a> · <a href="/reynolds-number-calculator">Reynolds Number Calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

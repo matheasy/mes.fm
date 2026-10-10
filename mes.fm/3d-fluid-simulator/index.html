@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
-<!-- MES Fluid Simulator -- mes.fm/fluid-simulator -->
+<!-- MES 3D Fluid Simulator -- mes.fm/3d-fluid-simulator -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/fluid-simulator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/fluid-simulator" />                    <title>MES Fluid Simulator | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/3d-fluid-simulator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/3d-fluid-simulator" />                    <title>MES 3D Fluid Simulator | Math Easy Solutions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -18,8 +18,8 @@ blockquote:before, blockquote:after,
 q:before, q:after {content:'';content:none;}
 table {border-collapse:collapse;border-spacing:0;}
 a {text-decoration:none;}
-sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#0369a1;color:white;}
-        .button {color:#0369a1;border:0.125em solid#0369a1;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#0e7490;color:white;}
+        .button {color:#0e7490;border:0.125em solid#0e7490;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
         .button--subscribe {line-height:1.2;}
         .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
         .italic {font-style:italic;}
@@ -29,7 +29,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .time {font-style:italic;font-weight:100;color:#939393;}
         .small-text {font-size:0.9em;}
         .big-text {font-size:1.1em;}
-        .link {color:#0369a1; font-weight:700;}
+        .link {color:#0e7490; font-weight:700;}
         .link--dark {color: blue; font-weight: 700;}
         .link--dark:hover {text-decoration: underline;}
         .basic-table {margin:1em auto;}
@@ -37,10 +37,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
         .basic-table th {background-color: #ededed}
         .basic-table--full {width:100%;}
         .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
-        .box-border {border:0.1em solid#0369a1; padding:1em;margin-bottom: 1.2em;}
-        .selected {background-color:#0369a1;color:white;}
-        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#0369a1;}
-        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#0369a1;background-color:#fdc010;}
+        .box-border {border:0.1em solid#0e7490; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#0e7490;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#0e7490;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#0e7490;background-color:#fdc010;}
         .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
         .scissors-icon {vertical-align:middle;cursor: pointer;}
         .hide {display:none;}
@@ -51,7 +51,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .sentence--indent {margin-left:1.5em;}
 
 .shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
-.link:hover {color:#075985;text-decoration:underline; cursor:pointer;}
+.link:hover {color:#155e75;text-decoration:underline; cursor:pointer;}
 
 .outer-container {width:68.25em;margin:0 auto;}
 .inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
@@ -66,7 +66,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .social-container {position:absolute;right:0;top:0;}
 .social-container--bottom {position:absolute;right:0;bottom:0;}
 .social {display: table-cell;}
-.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#0369a1;}.social__logo {float:left;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#0e7490;}.social__logo {float:left;}
 .social__logo:not(:last-child) {margin-right:0.5em;}
 .social__link {height:2em;width:2em;display:block;}
 .social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
@@ -97,7 +97,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .side-bar {width:18.75em;float:right;}
 .navbar-container {margin:2.1em 0.8em;}
 .navbar {margin-bottom:-1em;}
-.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#0369a1;border:0.125em solid#0369a1;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#0e7490;border:0.125em solid#0e7490;}
 
 .navbar__item:hover {cursor:pointer;}
 .navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
@@ -124,10 +124,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 #copyright-year {color:white;}
 
 .active-tab {background-color:#fdc010;color: #222222;}
-.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#075985;}
-        .info-bar,.color-box,.navbar,.footer {background-color:#0369a1;}
-        .dropdown-symbol--dark {color:#0369a1;}
-        .button--active {background-color:#0369a1;color:white;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#155e75;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#0e7490;}
+        .dropdown-symbol--dark {color:#0e7490;}
+        .button--active {background-color:#0e7490;color:white;}
         .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
         .header2--top {margin-top: 0.5em;}
         .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
@@ -196,22 +196,22 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 	/* the tool itself (scoped to #main-content) */
 	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
-	.tu {margin:1em 0;--accent:#0369a1;--accent-dark:#075985;--tint:#e0f2fe;}
+	.tu {margin:1em 0;--accent:#0e7490;--accent-dark:#155e75;--tint:#e0f4f8;}
 	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
 	.tu a {color:var(--accent);text-decoration:underline !important;}
 	.tu a:hover {color:var(--accent-dark);}
 	.tu button, .tu input, .tu select {font:inherit;}
-	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e0f2fe;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e0f4f8;}
 	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
 	.tu p {line-height:1.5;margin:0.5em 0;}
 	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
-	.tu-card--tint {background:#e0f2fe;border-color:#e0f2fe;}
+	.tu-card--tint {background:#e0f4f8;border-color:#e0f4f8;}
 	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
 	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
 	.tu-field--sm {flex:0 1 8em;}
 	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
 	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
-	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e0f2fe;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e0f4f8;}
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
@@ -233,7 +233,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
 	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
 	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
-	.tu-stat--hero {background:#e0f2fe;border-color:#e0f2fe;}
+	.tu-stat--hero {background:#e0f4f8;border-color:#e0f4f8;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
 	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
@@ -244,7 +244,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
 	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
 	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
-	.tu-table tr.is-active td {background:#e0f2fe;font-weight:700;}
+	.tu-table tr.is-active td {background:#e0f4f8;font-weight:700;}
 	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
@@ -254,7 +254,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
 	.tu-svg-fill {fill:var(--accent);}
-	.tu-svg-tint {fill:#e0f2fe;}
+	.tu-svg-tint {fill:#e0f4f8;}
 	.tu-svg-text {font-size:13px;fill:#333;}
 	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
 	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
@@ -266,7 +266,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
 	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
 	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
-	body.dark-mode .tu {--accent:#05a1f6 !important;--accent-dark:#05a1f6 !important;}
+	body.dark-mode .tu {--accent:#14a5cc !important;--accent-dark:#14a5cc !important;}
 	@media (max-width:600px) {
 		.tu-stat__value {font-size:1.45em;}
 		.tu-field--sm {flex:1 1 7em;}
@@ -292,55 +292,58 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
 body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
 
-	/* fluid simulator: a wide page with a dark stage. Stage colours are custom properties / literals so the derived dark theme leaves them alone. */
+	/* 3D fluid simulator: a wide page with a dark stage. Stage colours are custom properties / literals so the derived dark theme leaves them alone. */
 	html body .outer-container {max-width:min(96vw,80em) !important;}
 	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
 	.tu [hidden] {display:none !important;}
-	.fl {--fl-bg:#080b12;--fl-line:#2a3040;--fl-text:#e8ecf5;--fl-dim:#9aa5bb;}
-	.fl-top {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:flex-end;margin-bottom:0.7em;}
-	.fl-pick {display:flex;flex-direction:column;gap:0.25em;flex:1 1 18em;max-width:30em;}
-	.fl-pick select {width:100%;}
-	.fl-run {display:flex;gap:0.4em;flex-wrap:wrap;}
-	.fl-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--fl-line);background:var(--fl-bg);}
-	.fl-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
-	.fl-stage {position:relative;margin:0 auto;max-width:100%;background:var(--fl-bg);}
-	#fl-canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;cursor:crosshair;}
-	#fl-canvas:focus-visible {box-shadow:inset 0 0 0 2px var(--accent);}
-	.fl-views, .fl-brushes, .fl-tools {position:absolute;display:flex;gap:0.25em;flex-wrap:wrap;}
-	.fl-views {left:0.6em;top:0.6em;max-width:calc(100% - 9em);}
-	.fl-tools {right:0.6em;top:0.6em;}
-	.fl-brushes {left:0.6em;bottom:0.6em;max-width:calc(100% - 1.2em);}
-	.fl-views button, .fl-brushes button, .fl-tools button {cursor:pointer;border:1px solid var(--fl-line);background:rgba(10,13,20,0.78);color:var(--fl-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font-size:0.82em;line-height:1;}
-	.fl-views button:hover, .fl-brushes button:hover, .fl-tools button:hover {border-color:var(--accent);color:#fff;}
-	.fl-views button[aria-pressed="true"], .fl-brushes button[aria-pressed="true"], .fl-tools button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
-	.fl-hint {position:absolute;right:0.7em;bottom:0.7em;font-size:0.78em;color:var(--fl-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;transition:opacity 0.6s;max-width:45%;text-align:right;}
-	.fl-hint.is-gone {opacity:0;}
-	.fl-badge {position:absolute;left:0;top:0;}
-	.fl-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:0.5em;padding:0.6em;background:#0e1118;border-top:1px solid var(--fl-line);}
-	.fl-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
-	.fl-ro span {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--fl-dim);}
-	.fl-ro b {font-size:1.35em;color:var(--fl-text);font-variant-numeric:tabular-nums;line-height:1.15;}
-	.fl-ro small {font-size:0.72em;color:var(--fl-dim);line-height:1.3;}
-	.fl-ro--chart {grid-column:span 2;min-width:12em;}
-	.fl-ro--chart canvas {width:100%;height:4em;display:block;background:rgba(255,255,255,0.03);border-radius:0.3em;}
-	.fl-controls {margin-top:0.9em;}
-	.fl-scenario {margin:0 0 0.8em;font-size:0.92em;}
-	.fl-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.9em 1.4em;}
-	.fl-grid--small {margin-top:0.9em;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));}
-	.fl-controls input[type=range] {width:100%;accent-color:var(--accent);}
-	.fl-checks {display:flex;flex-wrap:wrap;gap:0.5em 1.2em;align-items:center;margin-top:0.9em;}
-	.fl-check {display:inline-flex;align-items:center;gap:0.4em;cursor:pointer;font-size:0.92em;}
-	.fl-try {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.9em;}
-	.fl-try:empty {display:none;}
-	.fl-eq {background:#f4f6f9;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.8em 1em;margin:0.8em 0;font-size:1.05em;line-height:1.9;overflow-x:auto;}
-	.fl-eq__n {display:inline-block;min-width:8.5em;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
-	.fl-eq__f {font-family:"Cambria Math","STIX Two Math",Georgia,serif;white-space:nowrap;}
-	.fl-eq b {font-style:italic;font-weight:600;}
-	body.dark-mode #fl .fl-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #fl .fl-eq__n {color:#a0a8b3;}
+	.f3 {--f3-bg:#080b12;--f3-line:#2a3040;--f3-text:#e8ecf5;--f3-dim:#9aa5bb;}
+	.f3-top {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:flex-end;margin-bottom:0.7em;}
+	.f3-pick {display:flex;flex-direction:column;gap:0.25em;flex:1 1 18em;max-width:30em;}
+	.f3-pick select {width:100%;}
+	.f3-run {display:flex;gap:0.4em;flex-wrap:wrap;}
+	.f3-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--f3-line);background:var(--f3-bg);}
+	.f3-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
+	.f3-stage {position:relative;margin:0 auto;max-width:100%;background:var(--f3-bg);}
+	#f3-canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;cursor:crosshair;}
+	#f3-canvas:focus-visible {box-shadow:inset 0 0 0 2px var(--accent);}
+	.f3-views, .f3-brushes, .f3-tools {position:absolute;display:flex;gap:0.25em;flex-wrap:wrap;}
+	.f3-views {left:0.6em;top:0.6em;max-width:calc(100% - 9em);}
+	.f3-tools {right:0.6em;top:0.6em;}
+	.f3-brushes {left:0.6em;bottom:0.6em;max-width:calc(100% - 1.2em);}
+	.f3-views button, .f3-brushes button, .f3-tools button {cursor:pointer;border:1px solid var(--f3-line);background:rgba(10,13,20,0.78);color:var(--f3-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font-size:0.82em;line-height:1;}
+	.f3-views button:hover, .f3-brushes button:hover, .f3-tools button:hover {border-color:var(--accent);color:#fff;}
+	.f3-views button[aria-pressed="true"], .f3-brushes button[aria-pressed="true"], .f3-tools button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.f3-hint {position:absolute;right:0.7em;bottom:0.7em;font-size:0.78em;color:var(--f3-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;transition:opacity 0.6s;max-width:45%;text-align:right;}
+	.f3-hint.is-gone {opacity:0;}
+	.f3-badge {position:absolute;left:0;top:0;}
+	.f3-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:0.5em;padding:0.6em;background:#0e1118;border-top:1px solid var(--f3-line);}
+	.f3-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
+	.f3-ro span {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--f3-dim);}
+	.f3-ro b {font-size:1.35em;color:var(--f3-text);font-variant-numeric:tabular-nums;line-height:1.15;}
+	.f3-ro small {font-size:0.72em;color:var(--f3-dim);line-height:1.3;}
+	.f3-ro--chart {grid-column:span 2;min-width:12em;}
+	.f3-ro--chart canvas {width:100%;height:4em;display:block;background:rgba(255,255,255,0.03);border-radius:0.3em;}
+	.f3-controls {margin-top:0.9em;}
+	.f3-scenario {margin:0 0 0.8em;font-size:0.92em;}
+	.f3-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.9em 1.4em;}
+	.f3-grid--small {margin-top:0.9em;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));}
+	.f3-controls input[type=range] {width:100%;accent-color:var(--accent);}
+	.f3-checks {display:flex;flex-wrap:wrap;gap:0.5em 1.2em;align-items:center;margin-top:0.9em;}
+	.f3-check {display:inline-flex;align-items:center;gap:0.4em;cursor:pointer;font-size:0.92em;}
+	.f3-try {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.9em;}
+	.f3-try:empty {display:none;}
+	.f3-eq {background:#f4f6f9;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.8em 1em;margin:0.8em 0;font-size:1.05em;line-height:1.9;overflow-x:auto;}
+	.f3-eq__n {display:inline-block;min-width:8.5em;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.f3-eq__f {font-family:"Cambria Math","STIX Two Math",Georgia,serif;white-space:nowrap;}
+	.f3-eq b {font-style:italic;font-weight:600;}
+	body.dark-mode #f3 .f3-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #f3 .f3-eq__n {color:#a0a8b3;}
 	@media (max-width: 640px) {
-		.fl-views {max-width:calc(100% - 1.2em);top:0.4em;left:0.4em;} .fl-tools {top:auto;bottom:3.1em;right:0.4em;} .fl-brushes {left:0.4em;bottom:0.4em;}
-		.fl-hint {display:none;} .fl-ro--chart {grid-column:1 / -1;}
+		.f3-views {max-width:calc(100% - 1.2em);top:0.4em;left:0.4em;} .f3-tools {top:auto;bottom:3.1em;right:0.4em;} .f3-brushes {left:0.4em;bottom:0.4em;}
+		.f3-hint {display:none;} .f3-ro--chart {grid-column:1 / -1;}
 	}
+	.f3-hold {cursor:grab;} #f3-canvas.is-stir {cursor:crosshair;} #f3-canvas.is-orbit {cursor:grab;}
+	.f3-views {max-width:calc(100% - 9em);}
+	#f3-fallback {position:absolute;left:0.7em;bottom:3.4em;font-size:0.8em;color:#e9c46a;background:rgba(10,13,20,0.8);padding:0.3em 0.7em;border-radius:0.5em;}
 
 
 	@media print {
@@ -380,51 +383,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent:#0fa7fb;--accent-dark:#16a6f3}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #033150}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#12222d;border-color:#033150}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#12222d;border-color:#033150}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#12222d}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .fl{--fl-bg:#5672b4}
-	body.dark-mode .fl-readouts{background:#3c4967}
-	body.dark-mode .fl-ro--chart canvas{background:rgba(26,26,26,0.03)}
-	body.dark-mode .fl-eq{background:#16191d;border:1px solid #28323e}
-	body.dark-mode .fl-eq__n{color:#9a9aa2}
-	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -443,7 +401,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
   position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
   display: none; align-items: center; gap: 12px;
   padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #0369a1;
+  background: #ffffff; border-bottom: 3px solid #0e7490;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   transform: translateY(-110%); transition: transform 0.2s ease;
 }
@@ -456,8 +414,8 @@ body.is-stuck #compact-nav { transform: none; }
 }
 #compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
 #compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #0369a1; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(3,105,161,0.12); }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #0e7490; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(14,116,144,0.12); }
 body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
 body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 700px) {
@@ -467,20 +425,66 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#20bee9;--accent-dark:#2fb1da}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #103f49}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#19292c;border-color:#103f49}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#19292c;border-color:#103f49}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#19292c}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .f3{--f3-bg:#5672b4}
+	body.dark-mode .f3-readouts{background:#3c4967}
+	body.dark-mode .f3-ro--chart canvas{background:rgba(26,26,26,0.03)}
+	body.dark-mode .f3-eq{background:#16191d;border:1px solid #28323e}
+	body.dark-mode .f3-eq__n{color:#9a9aa2}
+	body.dark-mode #f3-fallback{color:#eac771}
+	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://mes.fm/fluid-simulator" />            <meta property="og:title" content="MES Fluid Simulator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/fluid-simulator/img/logo-big.png" />
-        <meta property="og:description" content="A free 2D fluid simulator that solves the Navier-Stokes equations live in your browser: Karman vortex streets behind a cylinder, lid-driven cavity, rising hot plumes, Kelvin-Helmholtz rolls and merging vortices. Change the Reynolds number, stir with your finger, draw walls." />
+        <meta property="og:url" content="https://mes.fm/3d-fluid-simulator" />            <meta property="og:title" content="MES 3D Fluid Simulator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/3d-fluid-simulator/img/logo-big.png" />
+        <meta property="og:description" content="A free 3D fluid simulator in your browser: a rising hot smoke plume, smoke ring cannon, colliding vortex rings, wind past a sphere and a smoke tank you can stir. The Navier-Stokes equations are solved live in 3D; rotate and zoom the smoke." />
 
-        <meta name="description" content="A free 2D fluid simulator that solves the Navier-Stokes equations live in your browser: Karman vortex streets behind a cylinder, lid-driven cavity, rising hot plumes, Kelvin-Helmholtz rolls and merging vortices. Change the Reynolds number, stir with your finger, draw walls.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
-        <meta name="twitter:title" content="MES Fluid Simulator">
-        <meta name="twitter:description" content="A free 2D fluid simulator that solves the Navier-Stokes equations live in your browser: Karman vortex streets behind a cylinder, lid-driven cavity, rising hot plumes, Kelvin-Helmholtz rolls and merging vortices. Change the Reynolds number, stir with your finger, draw walls.">
-        <meta name="twitter:image" content="https://mes.fm/fluid-simulator/img/logo-big.png">
-        <meta name="twitter:image:alt" content="MES Fluid Simulator">
+        <meta name="description" content="A free 3D fluid simulator in your browser: a rising hot smoke plume, smoke ring cannon, colliding vortex rings, wind past a sphere and a smoke tank you can stir. The Navier-Stokes equations are solved live in 3D; rotate and zoom the smoke.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES 3D Fluid Simulator">
+        <meta name="twitter:description" content="A free 3D fluid simulator in your browser: a rising hot smoke plume, smoke ring cannon, colliding vortex rings, wind past a sphere and a smoke tank you can stir. The Navier-Stokes equations are solved live in 3D; rotate and zoom the smoke.">
+        <meta name="twitter:image" content="https://mes.fm/3d-fluid-simulator/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES 3D Fluid Simulator">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Fluid Simulator", "url": "https://mes.fm/fluid-simulator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A free 2D fluid simulator that solves the Navier-Stokes equations live in your browser: Karman vortex streets behind a cylinder, lid-driven cavity, rising hot plumes, Kelvin-Helmholtz rolls and merging vortices. Change the Reynolds number, stir with your finger, draw walls."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES 3D Fluid Simulator", "url": "https://mes.fm/3d-fluid-simulator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A free 3D fluid simulator in your browser: a rising hot smoke plume, smoke ring cannon, colliding vortex rings, wind past a sphere and a smoke tank you can stir. The Navier-Stokes equations are solved live in 3D; rotate and zoom the smoke."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -645,8 +649,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/fluid-simulator" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/fluid-simulator/img/logo.png?v=2"></a>
-  <a class="compact-nav-title" href="/fluid-simulator" tabindex="-1">Fluid Simulator</a>
+  <a href="/3d-fluid-simulator" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/3d-fluid-simulator/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/3d-fluid-simulator" tabindex="-1">3D Fluid Simulator</a>
   <ul class="compact-nav-links">
     <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
@@ -657,134 +661,119 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/fluid-simulator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/fluid-simulator/img/logo.png?v=2"></a>
+<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/3d-fluid-simulator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/3d-fluid-simulator/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
-                                <a class="calculator-title-link" href='/fluid-simulator'>
-                                    <p class="calculator-title">MES Fluid Simulator</p>
+                                <a class="calculator-title-link" href='/3d-fluid-simulator'>
+                                    <p class="calculator-title">MES 3D Fluid Simulator</p>
                                 </a>
-                                <p class="tag-line">Stir, heat and block a live fluid.</p>                            </div>
+                                <p class="tag-line">Rotate real 3D smoke, rings and wakes.</p>                            </div>
 
                             <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/fluid-simulator'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/3d-fluid-simulator'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Fluid Simulator: Navier-Stokes in 2D</h1>                                        <p class="page-description">A free 2D fluid simulator that solves the Navier-Stokes equations live in your browser: Karman vortex streets behind a cylinder, lid-driven cavity, rising hot plumes, Kelvin-Helmholtz rolls and merging vortices. Change the Reynolds number, stir with your finger, draw walls.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">3D Fluid Simulator: Smoke in a Box</h1>                                        <p class="page-description">A free 3D fluid simulator in your browser: a rising hot smoke plume, smoke ring cannon, colliding vortex rings, wind past a sphere and a smoke tank you can stir. The Navier-Stokes equations are solved live in 3D; rotate and zoom the smoke.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
-	<div class="tu fl" id="fl">
-		<div class="fl-top">
-			<label class="fl-pick"><span class="tu-label" id="fl-pick-l">Scenario</span>
-				<select id="fl-preset" class="tu-select" aria-labelledby="fl-pick-l"></select></label>
-			<div class="fl-run" role="group" aria-label="Simulation controls">
-				<button type="button" class="tu-btn tu-btn--primary" id="fl-play" aria-pressed="true" title="Pause or resume (Space)">❚❚ Pause</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="fl-step" title="Advance one step while paused (→)">Step ▸</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="fl-reset" title="Start the scenario again (R)">↺ Restart</button>
+	<div class="tu f3" id="f3">
+		<div class="f3-top">
+			<label class="f3-pick"><span class="tu-label" id="f3-pick-l">Scenario</span>
+				<select id="f3-preset" class="tu-select" aria-labelledby="f3-pick-l"></select></label>
+			<div class="f3-run" role="group" aria-label="Simulation controls">
+				<button type="button" class="tu-btn tu-btn--primary" id="f3-play" aria-pressed="true" title="Pause or resume (Space)">❚❚ Pause</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-step" title="Advance one step while paused (→)">Step ▸</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-reset" title="Start the scenario again (R)">↺ Restart</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-fire" hidden title="Fire a smoke ring (F)">💨 Fire ring</button>
 			</div>
 		</div>
 
-		<div class="fl-wrap" id="fl-wrap">
-			<div class="fl-stage" id="fl-stage">
-				<canvas id="fl-canvas" tabindex="0" role="img" aria-label="Live 2D fluid simulation. Drag over it to stir the fluid, draw walls or add heat, depending on the tool chosen."></canvas>
-				<div class="fl-badge" id="fl-badge" aria-live="off"></div>
-				<div class="fl-views" role="group" aria-label="What to show">
-					<button type="button" data-view="smoke" aria-pressed="true" title="Coloured smoke carried by the flow">Smoke</button>
-					<button type="button" data-view="vort" aria-pressed="false" title="Vorticity: how fast each bit of fluid spins (blue one way, orange the other)">Spin</button>
-					<button type="button" data-view="speed" aria-pressed="false" title="Speed of the flow">Speed</button>
-					<button type="button" data-view="pressure" aria-pressed="false" title="Pressure (orange high, blue low)">Pressure</button>
-					<button type="button" id="fl-arrows" aria-pressed="false" title="Draw arrows showing the flow direction">Arrows</button>
+		<div class="f3-wrap" id="f3-wrap">
+			<div class="f3-stage" id="f3-stage">
+				<canvas id="f3-canvas" tabindex="0" role="img" aria-label="Live 3D smoke simulation. Drag to rotate the view or, with the Stir tool, to swirl the smoke."></canvas>
+				<div id="f3-fallback" hidden></div>
+				<div class="f3-views" role="group" aria-label="What to show">
+					<button type="button" data-view="0" aria-pressed="true" title="Smoke (hot smoke glows orange)">Smoke</button>
+					<button type="button" data-view="1" aria-pressed="false" title="Colour smoke by where it came from">Colours</button>
+					<button type="button" data-view="2" aria-pressed="false" title="Colour smoke by speed">Speed</button>
+					<button type="button" id="f3-spin" aria-pressed="false" title="Slowly rotate the view">Auto-rotate</button>
 				</div>
-				<div class="fl-tools" role="toolbar" aria-label="Page tools">
-					<button type="button" id="fl-png" title="Save this frame as a picture" aria-label="Save as PNG">📷</button>
-					<button type="button" id="fl-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
-					<button type="button" id="fl-full" title="Full screen" aria-label="Full screen">⛶</button>
+				<div class="f3-tools" role="toolbar" aria-label="Page tools">
+					<button type="button" id="f3-png" title="Save this frame as a picture" aria-label="Save as PNG">📷</button>
+					<button type="button" id="f3-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
+					<button type="button" id="f3-full" title="Full screen" aria-label="Full screen">⛶</button>
 				</div>
-				<div class="fl-brushes" role="group" aria-label="What dragging does">
-					<button type="button" data-brush="push" aria-pressed="true" title="Drag to push the fluid and add coloured smoke">✋ Stir</button>
-					<button type="button" data-brush="heat" aria-pressed="false" title="Drag to heat the fluid (hot fluid rises when buoyancy is on)">🔥 Heat</button>
-					<button type="button" data-brush="wall" aria-pressed="false" title="Drag to draw solid walls">▮ Wall</button>
-					<button type="button" data-brush="erase" aria-pressed="false" title="Drag to erase walls you drew">◌ Erase</button>
+				<div class="f3-brushes" role="group" aria-label="What dragging does">
+					<button type="button" data-tool="orbit" aria-pressed="true" title="Drag to rotate the view, scroll or pinch to zoom">⟳ Orbit</button>
+					<button type="button" data-tool="stir" aria-pressed="false" title="Drag to push the smoke (a plane through the middle of the box)">✋ Stir</button>
 				</div>
-				<div class="fl-hint" id="fl-hint">Drag on the flow to stir it</div>
+				<div class="f3-hint" id="f3-hint">Drag to rotate · scroll to zoom</div>
 			</div>
-			<div class="fl-readouts" id="fl-readouts">
-				<div class="fl-ro"><span>Time</span><b id="fl-t">0.0</b><small>flow-through times</small></div>
-				<div class="fl-ro"><span>Reynolds number</span><b id="fl-re">200</b><small id="fl-re-s">set below</small></div>
-				<div class="fl-ro"><span>Top speed</span><b id="fl-vmax">0</b><small>× the inflow speed</small></div>
-				<div class="fl-ro" id="fl-st-box"><span>Shedding</span><b id="fl-st">–</b><small id="fl-st-s">Strouhal number</small></div>
-				<div class="fl-ro fl-ro--chart"><span id="fl-chart-t">Energy in the flow</span><canvas id="fl-chart" width="260" height="64" role="img" aria-label="Kinetic energy over time"></canvas><small id="fl-chart-s"></small></div>
+			<div class="f3-readouts" id="f3-readouts">
+				<div class="f3-ro"><span>Time</span><b id="f3-t">0</b><small>simulation steps</small></div>
+				<div class="f3-ro"><span>Top speed</span><b id="f3-vmax">0</b><small>cells per step</small></div>
+				<div class="f3-ro"><span>Grid</span><b id="f3-grid">–</b><small id="f3-cells"></small></div>
+				<div class="f3-ro"><span>Speed of this device</span><b id="f3-ms">–</b><small>per simulation step</small></div>
 			</div>
 		</div>
 
-		<div class="tu-card fl-controls" id="fl-controls">
-			<p class="tu-note fl-scenario" id="fl-note"></p>
-			<div class="fl-grid">
-				<div class="tu-field"><span class="tu-label" id="fl-re-l">Reynolds number: <b id="fl-re-v">200</b></span>
-					<input type="range" id="fl-re-in" min="0" max="1000" step="1" aria-labelledby="fl-re-l">
-					<span class="tu-note">Low = thick honey, smooth and orderly. High = water or air: swirling, unsteady.</span></div>
-				<div class="tu-field" id="fl-u-f"><span class="tu-label" id="fl-u-l">Wind speed: <b id="fl-u-v"></b></span>
-					<input type="range" id="fl-u-in" min="0.3" max="2.5" step="0.05" aria-labelledby="fl-u-l">
-					<span class="tu-note">Speed of the incoming flow. Very high speeds look rougher because each step covers more than one cell.</span></div>
-				<div class="tu-field" id="fl-vort-f"><span class="tu-label" id="fl-vort-l">Swirl boost: <b id="fl-vort-v"></b></span>
-					<input type="range" id="fl-vort-in" min="0" max="1" step="0.05" aria-labelledby="fl-vort-l">
-					<span class="tu-note">Adds back small swirls that the grid smooths away (vorticity confinement). Pretty, but not part of the exact equations: keep it at 0 to see the plain physics.</span></div>
-				<div class="tu-field" id="fl-beta-f"><span class="tu-label" id="fl-beta-l">Buoyancy: <b id="fl-beta-v"></b></span>
-					<input type="range" id="fl-beta-in" min="0" max="0.03" step="0.001" aria-labelledby="fl-beta-l">
-					<span class="tu-note">How strongly hot fluid rises (the Boussinesq approximation). Try the Heat tool.</span></div>
+		<div class="tu-card f3-controls" id="f3-controls">
+			<p class="tu-note f3-scenario" id="f3-note"></p>
+			<div class="f3-grid">
+				<div class="tu-field" id="f3-beta-f"><span class="tu-label" id="f3-beta-l">Buoyancy: <b id="f3-beta-v"></b></span>
+					<input type="range" id="f3-beta-in" min="0" max="0.15" step="0.005" aria-labelledby="f3-beta-l">
+					<span class="tu-note">How strongly hot smoke rises (the Boussinesq approximation).</span></div>
+				<div class="tu-field"><span class="tu-label" id="f3-vort-l">Swirl boost: <b id="f3-vort-v"></b></span>
+					<input type="range" id="f3-vort-in" min="0" max="0.6" step="0.01" aria-labelledby="f3-vort-l">
+					<span class="tu-note">Adds back small swirls the grid smooths away (vorticity confinement). Pretty, not part of the exact equations: 0 shows the plain physics.</span></div>
+				<div class="tu-field" id="f3-u-f"><span class="tu-label" id="f3-u-l">Wind speed: <b id="f3-u-v"></b></span>
+					<input type="range" id="f3-u-in" min="0.3" max="1.6" step="0.05" aria-labelledby="f3-u-l"></div>
+				<div class="tu-field"><span class="tu-label" id="f3-dens-l">Smoke thickness: <b id="f3-dens-v"></b></span>
+					<input type="range" id="f3-dens-in" min="0.3" max="3" step="0.05" aria-labelledby="f3-dens-l"></div>
 			</div>
-			<div class="fl-grid fl-grid--small">
-				<div class="tu-field tu-field--sm" id="fl-ob-f"><span class="tu-label">Obstacle</span>
-					<select id="fl-ob" class="tu-select" aria-label="Obstacle shape"><option value="cylinder">Cylinder</option><option value="square">Square</option><option value="plate">Flat plate</option><option value="wedge">Wedge</option><option value="tandem">Two in a row</option><option value="pair">Two side by side</option><option value="none">None</option></select></div>
-				<div class="tu-field tu-field--sm" id="fl-sz-f"><span class="tu-label" id="fl-sz-l">Size: <b id="fl-sz-v"></b></span><input type="range" id="fl-sz-in" min="0.08" max="0.4" step="0.01" aria-labelledby="fl-sz-l"></div>
-				<div class="tu-field tu-field--sm" id="fl-ang-f"><span class="tu-label" id="fl-ang-l">Tilt: <b id="fl-ang-v"></b></span><input type="range" id="fl-ang-in" min="-45" max="45" step="1" aria-labelledby="fl-ang-l"></div>
+			<div class="f3-grid f3-grid--small">
+				<div class="tu-field tu-field--sm" id="f3-ob-f"><span class="tu-label">Obstacle</span>
+					<select id="f3-ob" class="tu-select" aria-label="Obstacle shape"><option value="sphere">Sphere</option><option value="cube">Cube</option><option value="none">None</option></select></div>
 				<div class="tu-field tu-field--sm"><span class="tu-label">Detail</span>
-					<select id="fl-res" class="tu-select" aria-label="Grid resolution"><option value="64">Fast (64 rows)</option><option value="96">Normal (96 rows)</option><option value="128">Fine (128 rows)</option><option value="192">Very fine (192 rows)</option></select></div>
+					<select id="f3-res" class="tu-select" aria-label="Grid resolution"><option value="24">Fast (24 cells)</option><option value="32">Normal (32 cells)</option><option value="40">Fine (40 cells)</option><option value="48">Very fine (48 cells)</option></select></div>
 				<div class="tu-field tu-field--sm"><span class="tu-label">Speed</span>
-					<select id="fl-speed" class="tu-select" aria-label="Simulation speed"><option value="0.5">Slow</option><option value="1">Normal</option><option value="2">Fast</option><option value="3">Faster</option></select></div>
+					<select id="f3-speed" class="tu-select" aria-label="Simulation speed"><option value="0.5">Slow</option><option value="1">Normal</option><option value="2">Fast</option></select></div>
 			</div>
-			<div class="fl-checks">
-				<label class="fl-check"><input type="checkbox" id="fl-rake" checked> Coloured smoke streams in (tunnel)</label>
-				<label class="fl-check"><input type="checkbox" id="fl-mac" checked> Sharp advection (less blur)</label>
-				<label class="fl-check"><input type="checkbox" id="fl-fade"> Let the smoke fade</label>
-				<button type="button" class="tu-btn tu-btn--ghost" id="fl-clearwalls">Clear drawn walls</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="fl-clearsmoke">Clear smoke</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="fl-link">🔗 Copy link to this setup</button>
+			<div class="f3-checks">
+				<label class="f3-check" id="f3-auto-w" hidden><input type="checkbox" id="f3-auto"> Fire rings automatically</label>
+				<label class="f3-check"><input type="checkbox" id="f3-fade"> Let the smoke fade</label>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-clearsmoke">Clear smoke</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="f3-link">🔗 Copy link to this setup</button>
 			</div>
-			<div class="fl-try" id="fl-try"></div>
 		</div>
 
 		<div class="tu-seo">
-			<h2>What this simulates</h2>
-			<p>This is a real fluid solver running in your browser (and there is a <a href="/3d-fluid-simulator">3D version</a> with smoke rings, plumes and wakes you can rotate). It steps the <strong>incompressible Navier–Stokes equations</strong> forward in time on a grid: the equations that describe how water, air, oil and most other fluids move. Every swirl you see (the vortices curling off the cylinder, the rolls where two layers slide past each other, the plume of hot air) comes from the equations, not from an animation.</p>
-			<div class="fl-eq" role="math" aria-label="Navier–Stokes equations">
-				<div><span class="fl-eq__n">momentum</span> <span class="fl-eq__f">∂<b>u</b>/∂t + (<b>u</b>·∇)<b>u</b> = −∇p/ρ + ν ∇²<b>u</b> + <b>f</b></span></div>
-				<div><span class="fl-eq__n">no compression</span> <span class="fl-eq__f">∇·<b>u</b> = 0</span></div>
-			</div>
-			<p><b>u</b> is the velocity of the fluid at each point, p the pressure, ρ the density, ν the viscosity ("thickness") and <b>f</b> any push on the fluid, such as your finger, gravity acting on hot fluid, or a moving lid. The first line is Newton's second law for a small blob of fluid: its acceleration (left) comes from pressure differences, internal friction and outside forces (right). The second line says the fluid cannot be squeezed.</p>
-			<h3>What happens in each step</h3>
+			<h2>3D smoke that obeys the Navier–Stokes equations</h2>
+			<p>This is a three-dimensional version of the <a href="/fluid-simulator">2D Fluid Simulator</a>. Inside a box, a solver steps the incompressible <strong>Navier–Stokes equations</strong> forward in time on a 3D grid. The smoke you see is carried along by the computed flow and rendered as a glowing volume you can rotate and zoom into. The same four steps as in 2D happen every frame: add forces (buoyancy of hot smoke, your stirring, the swirl boost), carry everything along the flow, then solve for the pressure that keeps the fluid from being squeezed (∇·<b>u</b> = 0) and subtract its gradient.</p>
+			<h3>What to try</h3>
 			<ul>
-				<li><strong>Forces:</strong> add your stirring, buoyancy of hot fluid and, if you like, a little extra swirl.</li>
-				<li><strong>Advect:</strong> carry the flow, the smoke and the heat along the flow itself (the (<b>u</b>·∇)<b>u</b> term), using a second-order "MacCormack" scheme so edges stay sharp.</li>
-				<li><strong>Diffuse:</strong> viscosity smooths velocity differences (the ν∇²<b>u</b> term).</li>
-				<li><strong>Project:</strong> solve a Poisson equation for the pressure and subtract its gradient, which removes the compression so ∇·<b>u</b> = 0 again. Walls and obstacles are treated as solid: the flow cannot go through them.</li>
+				<li><strong>Rising hot smoke plume:</strong> warm smoke rises, rolls up into mushroom-shaped puffs and fills the box. Raise <em>Buoyancy</em> for a more violent plume.</li>
+				<li><strong>Smoke ring cannon:</strong> a short puff of air through a round hole rolls up into a vortex ring that travels on its own. Fire several and watch the later ones pass through the earlier ones.</li>
+				<li><strong>Two rings colliding:</strong> head-on rings flatten and burst outward.</li>
+				<li><strong>Wind past a sphere:</strong> coloured smoke shows how the flow separates and curls into a turbulent wake behind a ball or cube.</li>
+				<li><strong>Stir a smoke tank:</strong> switch to <em>Stir</em> and drag through layered smoke to mix it, then <em>Orbit</em> to inspect it from the side.</li>
 			</ul>
-			<h3>The Reynolds number</h3>
-			<p>One number decides how a flow behaves: <strong>Re = U·L/ν</strong>, the speed times the size of the obstacle divided by the viscosity. It is the ratio of inertia (the fluid wanting to keep going) to viscosity (friction smoothing it out). Below Re ≈ 1 the flow oozes. Around 10 to 40 it wraps smoothly around a cylinder with two steady eddies behind it. Above Re ≈ 47 the wake wobbles and starts to shed alternating vortices (a <em>Kármán vortex street</em>). By a few thousand it is turbulent. Slide the Reynolds number on the cylinder scenario and watch the change. The page reports the <strong>Strouhal number</strong> St = f·D/U (the shedding frequency made dimensionless); for a cylinder it settles near <strong>0.2</strong>, as measured in real wind tunnels.</p>
+			<h3>What 3D adds</h3>
+			<p>In two dimensions a swirl can only spin around a point. In three dimensions vortex lines can bend, stretch and twist, which is why a smoke ring is stable but eventually wobbles and breaks up, and why real turbulence cascades into ever smaller eddies. Those effects are exactly what a 2D simulation cannot show.</p>
 			<h3>How accurate is it?</h3>
-			<p>It is a teaching-grade simulator, not a research code. It is two-dimensional (real turbulence is three-dimensional, where vortices stretch and break into smaller ones, which 2D flows cannot do), the grid is coarse (a few thousand to ten thousand cells), and the numerical method adds a little artificial viscosity, so the <em>effective</em> Reynolds number is somewhat lower than the slider says at high settings. The solver is checked against known answers: the cylinder sheds at St ≈ 0.2, the Taylor–Green vortex decays at close to its exact rate (see that scenario), and the lid-driven cavity flows the right way round. Supercomputer weather and aircraft simulations solve the same equations in 3D on grids with billions of cells, with models for the turbulence they cannot resolve.</p>
+			<p>It is a teaching-grade simulator. The grid is small (24 to 48 cells on the short side, the price of running 3D physics in a browser), the scheme is first order and adds a little artificial viscosity (so unlike the 2D page there is no Reynolds-number slider), and the smoke look is partly aesthetic. The solver is checked in code: smoke from a heater rises, the pressure step removes the divergence of the flow, the flow is zero inside obstacles, a wake forms behind the sphere and a smoke ring travels along its axis. For research-grade 3D results, supercomputers use billions of cells and models for the turbulence they cannot resolve.</p>
 			<h3>Things people ask</h3>
 			<ul>
-				<li><strong>Why is Navier–Stokes famous?</strong> Nobody has proved that smooth solutions always exist in 3D, or that they can never blow up. It is one of the seven Clay Millennium Prize problems, with a US$1 million prize. Engineers get by anyway, because the numerical solutions work well in practice.</li>
-				<li><strong>What is vorticity?</strong> How fast a tiny paddle placed in the flow would spin. The <em>Spin</em> view colours it: orange one way, blue the other. Vortex streets show up beautifully there.</li>
-				<li><strong>Why does the flow behind the block start steady and then wobble?</strong> At moderate Re a steady wake is unstable: any tiny disturbance grows until the wake swings from side to side. The simulator nudges the flow slightly to start it off, as real roughness would.</li>
-				<li><strong>Can I use this for homework or a demo?</strong> Yes. It is free, runs offline once loaded and the <em>Copy link</em> button saves your exact setup.</li>
+				<li><strong>Why is it slower on my phone?</strong> The physics runs on your device's processor. The box above shows the time per step; lower <em>Detail</em> if it feels sluggish.</li>
+				<li><strong>Why do my smoke rings look blurry?</strong> The grid is coarse. <em>Fine</em> or <em>Very fine</em> gives sharper rings at the cost of speed.</li>
+				<li><strong>Do I need a special browser?</strong> It uses WebGL2 for the 3D view, which every current browser has. Without it the page falls back to a flat top-down picture of the smoke.</li>
 			</ul>
-			<p>Everything runs on your device; nothing is uploaded. <a href="/3d-fluid-simulator">3D Fluid Simulator</a> (smoke you can rotate) · <a href="/2d-graphing-calculator">2D graphing calculator</a> · <a href="/3d-graphing-calculator">3D graphing calculator</a> · <a href="/tools">More MES tools</a></p>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/fluid-simulator">2D Fluid Simulator</a> · <a href="/reynolds-number-calculator">Reynolds Number Calculator</a> · <a href="/tools">More MES tools</a></p>
 		</div>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
@@ -801,7 +790,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/fluid-simulator">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/3d-fluid-simulator">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
     <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
@@ -842,7 +831,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/fluid-simulator/js/fluid-simulator.js?v=2" defer></script>
+	<script src="/3d-fluid-simulator/js/3d-fluid-simulator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
