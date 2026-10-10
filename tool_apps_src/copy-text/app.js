@@ -271,6 +271,8 @@
 		if (!list.length) { toast("This board is empty"); return; }
 		copy(list.join("\n\n")).then(function (ok) { toast(ok ? "Copied all " + list.length + " texts" : "Copy failed"); });
 	};
+	function delLabel() { var d = document.querySelector('#cp-menu [data-act="delboard"]'); if (d) d.textContent = state.boards.length < 2 ? "🗑 Clear this board" : "🗑 Delete this board"; }
+	$("cp-menu").addEventListener("toggle", delLabel);
 	function menu(act) {
 		$("cp-menu").open = false;
 		var b = cur();
@@ -287,8 +289,14 @@
 		} else if (act === "examples") {
 			examples(); render(); toast("Added examples");
 		} else if (act === "delboard") {
-			if (state.boards.length < 2) { toast("You need at least one board"); return; }
 			var snap = JSON.stringify(state);
+			if (state.boards.length < 2) {
+				if (!b.notes.length) { toast("This board is already empty"); return; }
+				if (!confirm("Clear all " + b.notes.length + " texts from “" + b.name + "”?")) return;
+				b.notes = []; save(); render();
+				toast("Board cleared", function () { state = JSON.parse(snap); save(); render(); });
+				return;
+			}
 			if (b.notes.length && !confirm("Delete the board “" + b.name + "” and its " + b.notes.length + " texts?")) return;
 			state.boards = state.boards.filter(function (x) { return x.id !== b.id; });
 			state.cur = state.boards[0].id; save(); render();
