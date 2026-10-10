@@ -1,10 +1,11 @@
-// Build-time generator for mes.fm/occult ("MES Occult Video Series"), a SINGLE page (cloned from free-energy/build.mjs):
-// the YouTube playlist link above the usual Grid View / List View of the videos, no hub tiles and no second page.
-// Content lives in sections.mjs (hand-maintained, newest first). Like free-energy it KEEPS AdSense.
-// Never hand-edit the generated mes.fm/occult/index.html.
+// Build-time generator for mes.fm/occult ("MES Occult Video Series") and its pages mes.fm/occult-series and mes.fm/occult-videos (cloned from free-energy/build.mjs).
 //
-// Art: mes.fm/img/occult-logo.jpg (512), occult-logo-big.jpg (1200x630 share image), occult-icon.jpg (900x600, the tile on /conspiracy =
-// the newest video's thumbnail). Replace the files (same names) any time, no rebuild needed.
+// mes.fm/occult is a small tile hub: Video Series, Videos and a tile-only Occult Livestreams tile (-> /livestreams#occult), plus the "Important Links" list (the MES Occult
+// YouTube playlist). Content lives in sections.mjs (hand-maintained, newest first). Like free-energy these pages KEEP AdSense.
+// Pages written (see PAGES): the hub mes.fm/occult/index.html plus mes.fm/occult-series/index.html and mes.fm/occult-videos/index.html. Never hand-edit those generated files.
+//
+// Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600): occult-series = newest series video (Trump birthday coincidences), occult-videos = newest video (One-Armed Twin),
+// occult-livestreams = newest video in the livestreams "Occult" filter (Trailer for MES Livestream 134). Replace the files (same names) any time, no rebuild needed.
 //
 // Usage:
 //   npm run build
@@ -27,10 +28,36 @@ const META_CACHE_PATH = join(__dirname, "link-meta.json");
 // sections.mjs; `title` is the page's <h1>/<title> and `tileLabel` the (shorter) text overlaid on the hub tile.
 const HUB_TITLE = "MES Occult Video Series";
 const HUB_DESCRIPTION =
-  "MES Occult Video Series: Donald Trump's birthday coincidences and the Pope Paul VI Audience Hall (the Vatican snake, Fazzini's Resurrection sculpture, St. Peter's keys), with the YouTube playlist.";
+  "MES Occult Video Series: Donald Trump's birthday coincidences, the Pope Paul VI Audience Hall and the one-armed twin in Star Wars, 9/11 and The Matrix, with the YouTube playlist and the occult livestreams.";
 
-// One page only (no section pages, no tiles).
-const PAGES = [];
+const PAGES = [
+  {
+    slug: "occult-series",
+    sectionId: "occult-series",
+    tileLabel: "Video Series",
+    iconVersion: 1, // icon = crop of the newest series video's thumbnail (Trump birthday coincidences; img/occult-series-icon.jpg); bump when refreshed
+    title: "MES Occult Video Series: All Videos",
+    description:
+      "The MES Occult video series in one place: strange coincidences involving Donald Trump's birthday and the Pope Paul VI Audience Hall (the Fazzini Resurrection sculpture and the Vatican snake), with the YouTube playlist.",
+  },
+  {
+    slug: "occult-videos",
+    sectionId: "occult-videos",
+    tileLabel: "Videos",
+    iconVersion: 1, // icon = crop of the newest video's thumbnail (One-Armed Twin; img/occult-videos-icon.jpg); bump when refreshed
+    title: "MES Occult Videos",
+    description:
+      "MES occult videos, newest first: occult connections of the one-armed twin in Star Wars, 9/11 and The Matrix by Brain Graft, with links to the MES Occult video series and livestreams.",
+  },
+  {
+    // Tile only: no page is written. Links to the "Occult" chip of mes.fm/livestreams; icon = img/occult-livestreams-icon.jpg (Trailer for MES Livestream 134, the newest video in that filter).
+    slug: "occult-livestreams",
+    href: "/livestreams#occult",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Occult Livestreams",
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Scraping: og:image / "Watch on: ..." row per item, with a committed cache.
@@ -428,8 +455,10 @@ ${IMPORTANT_LINKS_HTML}
 // page: the hub ({ hub: true, slug: "bg" }) or one entry of PAGES.
 function buildPage(meta, page) {
   const isHub = !!page.hub;
-  const sections = SECTIONS;
-  const sectionsHtml = sections.map((s) => buildSection(s, meta)).join("\n\n");
+  const sections = isHub ? [] : SECTIONS.filter((s) => s.id === page.sectionId);
+  const sectionsHtml = isHub
+    ? `<div class="icon-grid">\n${PAGES.map(buildTile).join("\n")}\n</div>\n${buildImportantLinks()}`
+    : sections.map((s) => buildSection(s, meta)).join("\n\n");
   const viewToggleWiring = sections
     .filter((s) => !s.single)
     .map((s) => {
@@ -1577,7 +1606,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
         <a class="calculator-title-link" href='/occult'>
           <p class="calculator-title">MES Occult Video Series</p>
         </a>
-        <p class="tag-line">MES Occult research: Trump birthday coincidences, the Vatican and more.</p>
+        <p class="tag-line">MES Occult research: coincidences, the Vatican and occult connections.</p>
       </div>
 
       <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
@@ -1594,6 +1623,8 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     <div class="info-bar-container" role="navigation" aria-label="Primary">
       <ul id="info-bar" class="info-bar shadow">
         <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/occult'>Occult</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/occult-series'>Series</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/occult-videos'>Videos</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/conspiracy'>Conspiracy</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/911'>9/11 Truth</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
@@ -1643,7 +1674,7 @@ ${sectionsHtml}
             <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
           </ul></div></li>
           <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
-          <li class="navbar__item"><a target="_self" class="navbar__link" href="/occult">MES Occult Video Series</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/occult">MES Occult Video Series</a></li><li class="navbar__item"><a class="navbar__link" href="/occult-series">Series</a></li><li class="navbar__item"><a class="navbar__link" href="/occult-videos">Videos</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="/conspiracy">Conspiracy</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
@@ -2078,7 +2109,9 @@ async function main() {
   console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
   const meta = await resolveAllMeta(SECTIONS);
 
-  const pages = [{ hub: true, slug: "occult", outDir: __dirname }];
+  const pages = [{ hub: true, slug: "occult", outDir: __dirname }].concat(
+    PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
+  );
   for (const page of pages) {
     mkdirSync(page.outDir, { recursive: true });
     const outPath = join(page.outDir, "index.html");

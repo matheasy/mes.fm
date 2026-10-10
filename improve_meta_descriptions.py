@@ -47,7 +47,7 @@ GENERATED = {
     # emitted by mes.fm/livestreams/build.mjs
     "livestreams",
     # emitted by mes.fm/911/build.mjs (hub + section pages)
-    "conspiracy-posts", "conspiracy-videos", "mh370", "mh370-videos", "bg", "bg-videos", "bg-posts", "pg", "pg-series", "experiments", "experiments-series", "antigravity", "antigravity-series", "crypto", "crypto-posts", "free-energy", "free-energy-series", "occult", "science-posts", "science-videos", "science-tutorials", "physics", "911-posts", "911-spooks", "911-videos", "911truth", "911-observable-evidence", "911-short-videos", "1109-keo-meteor-music",
+    "conspiracy-posts", "conspiracy-videos", "mh370", "mh370-videos", "bg", "bg-videos", "bg-posts", "pg", "pg-series", "experiments", "experiments-series", "antigravity", "antigravity-series", "crypto", "crypto-posts", "free-energy", "free-energy-series", "occult", "occult-series", "occult-videos", "science-posts", "science-videos", "science-tutorials", "physics", "911-posts", "911-spooks", "911-videos", "911truth", "911-observable-evidence", "911-short-videos", "1109-keo-meteor-music",
 }
 
 # site dir -> (site label, tail options longest -> shortest)

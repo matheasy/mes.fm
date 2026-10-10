@@ -42,7 +42,6 @@ export const SECTIONS = [
     items: [
   { href: "https://mes.fm/energy-vampire", title: "Disinfo Agents Literally Are Energy Vampires 😂😅😳" },
   { href: "https://mes.fm/president-stephen-a-smith", title: "Stephen A. Smith Possibly Alluding to His Presidential Bid" },
-  { href: "https://mes.fm/one-armed-twin", title: "Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix" },
   { href: "https://mes.fm/ashton-forbes-letter", title: "Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself" },
     ],
   },
