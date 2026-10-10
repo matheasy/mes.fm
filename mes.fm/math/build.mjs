@@ -100,6 +100,7 @@ const PAGES = [
   { slug: "unit-conversion", href: "/unit-conversion", logo: "unit-conversion-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Unit Conversion" },
   { slug: "sum-of-integers-calculator", href: "/sum-of-integers-calculator", logo: "sum-of-integers-calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Sum of Integers Calculator" },
   { slug: "fluid-simulator", href: "/fluid-simulator", logo: "fluid-simulator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Fluid Simulator (Navier\u2013Stokes)" },
+  { slug: "michelson-morley-experiment", href: "/michelson-morley-experiment", logo: "michelson-morley-experiment-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Michelson\u2013Morley Experiment Simulator" },
 ];
 
 // ---------------------------------------------------------------------------
