@@ -332,10 +332,10 @@
 		cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
 	})();
 	function drawBloch() {
-		var st = $("ac-stage4"), dim = sizeStage(st, 0.5, 1.5), W = dim.w, H = dim.h, c = setup($("ac-bl"), W, H), fs = fontPx(W), narrow = W < 640;
+		var st = $("ac-stage4"), dim = sizeStage(st, 0.56, 1.55), W = dim.w, H = dim.h, c = setup($("ac-bl"), W, H), fs = fontPx(W), narrow = W < 640;
 		c.fillStyle = COL.bg; c.fillRect(0, 0, W, H);
 		var sR = narrow ? { x: 0, y: 0, w: W, h: H * 0.62 } : { x: 0, y: 0, w: W * 0.55, h: H }, pR = narrow ? { x: 0, y: H * 0.62, w: W, h: H * 0.38 } : { x: W * 0.55, y: 0, w: W * 0.45, h: H };
-		var cx = sR.x + sR.w / 2 + 12, cy = sR.y + sR.h / 2, R = Math.min(sR.w - 150, sR.h - 70) / 2; R = Math.max(R, 60);
+		var cx = sR.x + sR.w / 2 + 12, cy = sR.y + sR.h / 2 + 6, R = Math.min(sR.w - 150, sR.h - 150) / 2; R = Math.max(R, 60);
 		var cyw = Math.cos(bl.yaw), syw = Math.sin(bl.yaw), cp = Math.cos(bl.pitch), sp = Math.sin(bl.pitch);
 		function proj(v) { var x1 = v[0] * cyw - v[1] * syw, y1 = v[0] * syw + v[1] * cyw, z = v[2]; return { x: cx + x1 * R, y: cy - (y1 * sp + z * cp) * R, d: y1 * cp - z * sp }; }   // d > 0: farther from the viewer than the centre
 		var g = c.createRadialGradient(cx - R * 0.3, cy - R * 0.35, R * 0.1, cx, cy, R); g.addColorStop(0, "rgba(96,165,250,0.16)"); g.addColorStop(1, "rgba(14,24,60,0.55)");
@@ -348,7 +348,7 @@
 		function axis(v, col, lab) { var o = proj([0, 0, 0]), q = proj(v); c.strokeStyle = col; c.lineWidth = 1.3; c.globalAlpha = 0.7; c.beginPath(); c.moveTo(o.x, o.y); c.lineTo(q.x, q.y); c.stroke(); c.globalAlpha = 1; if (lab) label(c, lab, q.x + (q.x >= cx ? 6 : -6), q.y, col, fs - 2, q.x >= cx ? "left" : "right"); }
 		axis([1.18, 0, 0], "#a78bfa", "x: pulse direction"); axis([0, 1.18, 0], "#64748b", "y");
 		var np = proj([0, 0, 1]), sp2 = proj([0, 0, -1]); c.strokeStyle = "#64748b"; c.globalAlpha = 0.7; c.beginPath(); c.moveTo(sp2.x, sp2.y); c.lineTo(np.x, np.y); c.stroke(); c.globalAlpha = 1;
-		var nt = proj([0, 0, 1.2]), stt = proj([0, 0, -1.2]);
+		var nt = proj([0, 0, 1.14]), stt = proj([0, 0, -1.14]);
 		label(c, "excited ↑", nt.x, nt.y - 4, COL.gold, fs, "center"); label(c, "ground ↓", stt.x, stt.y + 10, COL.blue, fs, "center");
 		var pos = bPos(bl.u), pts = getPath();
 		if (bl.trail) {
@@ -365,7 +365,7 @@
 		var gx = sR.x + 26, gt = cy - R, gb = cy + R; c.strokeStyle = COL.line; c.lineWidth = 8; c.lineCap = "round"; c.beginPath(); c.moveTo(gx, gt); c.lineTo(gx, gb); c.stroke();
 		var gy = cy - pos.r[2] * R; c.strokeStyle = col; c.lineWidth = 8; c.beginPath(); c.moveTo(gx, gb); c.lineTo(gx, gy); c.stroke(); c.lineCap = "butt";
 		label(c, "100%", gx, gt - 12, COL.gold, fs - 3, "center"); label(c, "0%", gx, gb + 12, COL.blue, fs - 3, "center"); label(c, Math.round((1 + pos.r[2]) / 2 * 100) + "%", gx + 14, gy, COL.text, fs - 1, "left");
-		var ly = sR.y + 14; [["pulse 1", BCOL[0]], ["wait", BCOL[1]], ["pulse 2", BCOL[2]]].forEach(function (p, i) { var lx = sR.x + 56 + i * (fs * 6.2); c.fillStyle = p[1]; c.fillRect(lx, ly - 2, 14, 4); label(c, p[0], lx + 20, ly, COL.dim, fs - 2, "left"); });
+		[["pulse 1", BCOL[0]], ["wait", BCOL[1]], ["pulse 2", BCOL[2]]].forEach(function (p, i) { var lx = sR.x + 56, ly = sR.y + 16 + i * (fs + 6); c.fillStyle = p[1]; c.fillRect(lx, ly - 2, 14, 4); label(c, p[0], lx + 20, ly, COL.dim, fs - 2, "left"); });
 		(function () {
 			var R2 = pR, m = { l: 40, r: 14, t: 34, b: 38 }, x0 = R2.x + m.l, x1 = R2.x + R2.w - m.r, y0 = R2.y + R2.h - m.b, y1 = R2.y + m.t, T = S.T, tau = Math.min(0.01, T / 5), span = 2.5 / T;
 			function X(d) { return x0 + (d + span) / (2 * span) * (x1 - x0); } function Yp(p) { return y0 - p * (y0 - y1); }
@@ -379,7 +379,7 @@
 			var st2 = niceStep(span / 2.5); for (var t = -Math.floor(span / st2) * st2; t <= span + 1e-9; t += st2) { label(c, (t > 0 ? "+" : "") + shortHz(t), X(t), y0 + 14, COL.dim, fs - 3, "center"); }
 			label(c, "detuning from resonance", (x0 + x1) / 2, y0 + 30, COL.dim, fs - 2, "center");
 		})();
-		label(c, "drag to rotate", sR.x + sR.w / 2, sR.y + sR.h - 10, COL.dim, fs - 3, "center");
+		label(c, "drag to rotate", sR.x + 56, sR.y + sR.h - 12, COL.dim, fs - 3, "left");
 	}
 	function readBloch() {
 		var pos = bPos(bl.u), d = bdet(), T = S.T, tau = Math.min(0.01, T / 5), pf = A.fountainP(d, T, tau);
