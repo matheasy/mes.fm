@@ -118,7 +118,7 @@ const draftItems = DRAFT_VIDEOS.map((v, i) => ({
   href: `https://www.youtube.com/watch?v=${v.id}`,
   title: v.title,
   image: `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`,
-  listThumb: false,
+  listThumb: true,
   meta: `${fmtDuration(v.dur)} \u00b7 ${fmtViews(v.views)}`,
   sortKeys: { i, v: v.views, d: v.dur },
 }));

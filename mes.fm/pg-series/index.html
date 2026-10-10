@@ -954,6 +954,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1151,230 +1183,235 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="pg-series" class="section-body">
   <p class="section-standalone-link"><a href="/pg-bitchute" target="_blank" rel="noopener">&#127916; BitChute playlist</a><span class="standalone-sep">&middot;</span><a href="https://odysee.com/$/playlist/d93456222ba64e13c31ec872f15a1e43da4d6bee" target="_blank" rel="noopener">&#127916; Odysee playlist</a><span class="standalone-sep">&middot;</span><a href="https://peakd.com/pg/@mes/videos" target="_blank" rel="noopener">&#128221; Hive links and notes</a></p>
+    <div class="ls-filter" id="pg-seriesFilter">
+      <input type="search" id="pg-seriesSearch" placeholder="Search the PizzaGate parts…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="pg-seriesChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (32)</button><button type="button" data-c="mccann" data-label="Madeleine McCann Case" aria-pressed="false">Madeleine McCann Case (10)</button><button type="button" data-c="podesta" data-label="Podesta, ACORN &amp; Politicians" aria-pressed="false">Podesta, ACORN &amp; Politicians (12)</button><button type="button" data-c="logos" data-label="Logos, Symbols &amp; Occult" aria-pressed="false">Logos, Symbols &amp; Occult (8)</button><button type="button" data-c="nyt" data-label="Pedophilia Investigations" aria-pressed="false">Pedophilia Investigations (10)</button><button type="button" data-c="censor" data-label="Censorship &amp; Search Trends" aria-pressed="false">Censorship &amp; Search Trends (9)</button><button type="button" data-c="hollywood" data-label="Hollywood &amp; Celebrities" aria-pressed="false">Hollywood &amp; Celebrities (7)</button><button type="button" data-c="alex" data-label="Alex Jones &amp; Protests" aria-pressed="false">Alex Jones &amp; Protests (5)</button></div>
+    </div>
+    <p class="ls-empty" id="pg-seriesEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="pg-seriesGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="pg-seriesListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="pg-seriesGrid">
-    <a class="link-card" href="https://peakd.com/@mes/pizzagate-part-32-mes-vs-reddit-saga-tamera-luzzatto-rabbit-hole-comet-ping-pong-hacker" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="censor hollywood" href="https://peakd.com/@mes/pizzagate-part-32-mes-vs-reddit-saga-tamera-luzzatto-rabbit-hole-comet-ping-pong-hacker" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/0lKfMjo6-PizzaGate20Part203220Reddit20Saga20and20Luzzatto.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 32: MES vs. Reddit Saga + Tamera Luzzatto Rabbit Hole + Comet Ping Pong Hacker</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/pizzagate-part-31-hollywood-victims-speak-out-pedowood-weinstein-mind-control" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="hollywood" href="https://peakd.com/pizzagate/@mes/pizzagate-part-31-hollywood-victims-speak-out-pedowood-weinstein-mind-control" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/r9QcV1Wa-PizzaGate20Part2031.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 31: Hollywood Victims Speak Out! #PedoWood + Weinstein + Mind Control</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-30-madeleine-mccann-case-goes-right-to-the-top-halligan-psyop-podesta-efits" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann podesta" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-30-madeleine-mccann-case-goes-right-to-the-top-halligan-psyop-podesta-efits" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/I2T4ALdY-PizzaGate20Part203020Madeleine20Case20Reaches20the20Top.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 30: Madeleine McCann Case Goes Right to the Top! + Halligan PsyOp + Podesta Efits</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-29-pool-entertainment-luzzatto-email-wikileaks-9-11-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="censor hollywood" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-29-pool-entertainment-luzzatto-email-wikileaks-9-11-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/Zhg5MYPI-PizzaGate20Part202920Luzzatto20Pool20Entertainment.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 29: Pool Entertainment Luzzatto Email + WikiLeaks + 9/11 + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-28-david-brock-blackmail-scandal-baphomet-united-nations-elsagate-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="podesta logos nyt" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-28-david-brock-blackmail-scandal-baphomet-united-nations-elsagate-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/xYedwdiN-PizzaGate20Part202820David20Brock20Blackmail.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 28: David Brock Blackmail Scandal + Baphomet, United Nations, #ElsaGate + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-27-was-spiritcooking-too-much-for-kanye-west-marina-abramovic-katy-perry" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="logos hollywood" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-27-was-spiritcooking-too-much-for-kanye-west-marina-abramovic-katy-perry" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/koajTYIY-PizzaGate20Part202720Kanye20Katy20Perry20Spirit20Cooking.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 27: Was #SpiritCooking Too Much For Kanye West? + Marina Abramovic + Katy Perry</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-26-is-david-brock-controlled-by-hillary-clinton-david-seaman-contest" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="podesta" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-26-is-david-brock-controlled-by-hillary-clinton-david-seaman-contest" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/IOOaxpOx-PizzaGate20Part202620David20Brock20Overview.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 26: Is David Brock Controlled by Hillary Clinton?</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-25-madeleine-mccann-case-twitter-troll-brenda-leyland-psyop-seth-rich-shawn-lucas" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-25-madeleine-mccann-case-twitter-troll-brenda-leyland-psyop-seth-rich-shawn-lucas" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/PpYj2EoO-PizzaGate20Part202520Brenda20Leyland20Death.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 25: Madeleine McCann Case: Twitter ‘Troll’ Brenda Leyland PsyOp?!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-24-misleading-pizzagate-google-search-trends-gematria-james-comey-antifa" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="logos censor" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-24-misleading-pizzagate-google-search-trends-gematria-james-comey-antifa" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/QnGXT21e-PizzaGate20Part2024.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 24: Misleading ‘PizzaGate’ vs. ‘Fake News’ Google Search Trends + Gematria + James Comey + Antifa</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-23-pedophilia-activism-and-normalization-ronald-bernard-macron-bill-nye-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="podesta nyt hollywood" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-23-pedophilia-activism-and-normalization-ronald-bernard-macron-bill-nye-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/dCrIBgpC-PizzaGate20Part2023.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 23: Pedophilia Activism &amp; Normalization + Ronald Bernard + Macron + Bill Nye + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-22-clogo-origins-google-censorship-haiti-un-trafficking-more-censorship" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="logos nyt censor" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-22-clogo-origins-google-censorship-haiti-un-trafficking-more-censorship" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/QlVscZyM-PizzaGate20Part2022.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 22: CLogo Origins + Google Censorship + Haiti UN Trafficking + MORE Censorship</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-21-glogo-origins-youtube-censorship-craig-sawyer-april-7th-nyc-protest" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="logos censor alex" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-21-glogo-origins-youtube-censorship-craig-sawyer-april-7th-nyc-protest" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/fnWzXvhG-PizzaGate20Part2021.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 21: GLogo Origins + YouTube Censorship + Craig Sawyer + April 7th NYC Protest</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-20-blogo-and-lblogo-origins-alex-jones-apology-dr-phil-red-pill-trudeau-foundation-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="podesta logos hollywood alex" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-20-blogo-and-lblogo-origins-alex-jones-apology-dr-phil-red-pill-trudeau-foundation-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/EzLY2qyT-PizzaGate20Part2020.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 20: BLogo &amp; LBLogo Origins + Alex Jones Apology + Dr. Phil Red Pill + Trudeau Foundation + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-19-memetics-meme-warfare-march-25th-washington-dc-protest" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="logos alex" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-19-memetics-meme-warfare-march-25th-washington-dc-protest" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23w2oL6ZHktymu11BKjLxTqV4mztiuTY4NJFztc8WaNvVsdfXYhu9YThoYg7vY557mjAu.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 19: Memetics / Meme Warfare + March 25th Washington DC Protest</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-18-vault-7-year-zero-and-pedophile-blackmail-and-ken-livingstone" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="podesta nyt censor" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-18-vault-7-year-zero-and-pedophile-blackmail-and-ken-livingstone" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23v4fqwBUV5infnVzpveSTyWX4Fh7JgGCijiMVzUfnAP967bLkhdsvSpktgtoT7gz9AGA.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 18: #Vault7 #YearZero &amp; Pedophile Blackmail &amp; Ken Livingstone</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-17-kurt-eichenwald-vs-bill-moran-google-censorship-cernovich-epstein-lawsuit-ncmec-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="nyt censor alex" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-17-kurt-eichenwald-vs-bill-moran-google-censorship-cernovich-epstein-lawsuit-ncmec-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/suPXRH3P-PizzaGate20Part2017.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 17: Kurt Eichenwald vs. Bill Moran + Google Censorship + Cernovich / Epstein Lawsuit + NCMEC + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-16-alex-jones-vs-bill-clinton" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="podesta alex" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-16-alex-jones-vs-bill-clinton" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/2gCi2oXs-PizzaGate20Part2016.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 16: Alex Jones vs. Bill Clinton</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-15-kurt-eichenwald-and-justin-berry-censorship-cnnleaks-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="nyt censor" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-15-kurt-eichenwald-and-justin-berry-censorship-cnnleaks-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/MrElehIZ-PizzaGate20Part2015.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 15: Kurt Eichenwald and Justin Berry + Censorship + #CNNLeaks + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-14-ny-times-2005-pedophilia-investigation-justin-berry-milo-ted-heath-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="podesta nyt hollywood" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-14-ny-times-2005-pedophilia-investigation-justin-berry-milo-ted-heath-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/dDclEqjD-PizzaGate20Part2014.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 14: NY Times 2005 Pedophilia Investigation: Justin Berry + Milo + Ted Heath + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/pizzagate-part-13-ny-times-2005-pedophilia-investigation-catherine-agnew-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="nyt" href="https://peakd.com/pizzagate/@mes/pizzagate-part-13-ny-times-2005-pedophilia-investigation-catherine-agnew-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/usiMSNhC-PizzaGate20Part2013.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 13: NY Times 2005 Pedophilia Investigation + Catherine Agnew + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-12-fbi-pedophile-logos-and-symbols" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="logos nyt" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-12-fbi-pedophile-logos-and-symbols" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/vvuapza2-PizzaGate20Part2012.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 12: FBI Pedophile Logos and Symbols</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-11-fake-news-search-trends-jeff-sessions-nationalpizzaday-and-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="censor" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-11-fake-news-search-trends-jeff-sessions-nationalpizzaday-and-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/t2vkI3jX-PizzaGate20Part2011.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 11: &quot;Fake News&quot;, Search Trends, Jeff Sessions, #NationalPizzaDay, and MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-10-kate-mccann-s-bizarre-book-madeleine" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-10-kate-mccann-s-bizarre-book-madeleine" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/94uu9sky-PizzaGate20Part2010.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 10: Kate McCann's Bizarre Book &quot;Madeleine&quot;</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-9-mccann-case-what-did-clement-freud-know-about-madeleine" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-9-mccann-case-what-did-clement-freud-know-about-madeleine" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/uglj1wlL-PizzaGate20Part209.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 9: McCann Case: What Did Clement Freud Know About Madeleine?</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-8-mccann-case-clement-freud" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-8-mccann-case-clement-freud" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/evBTgLbR-PizzaGate20Part208.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 8: Madeleine McCann Case: Clement Freud</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-7-mccann-podesta-conspiracy-theories-advice" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann podesta" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-7-mccann-podesta-conspiracy-theories-advice" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/lKG8zQro-PizzaGate20Part207.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 7: McCann / Podesta / Conspiracy Theories ADVICE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-6-mccann-case-yvonne-martin-statements" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-6-mccann-case-yvonne-martin-statements" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/LcMczKGU-PizzaGate20Part206.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 6: McCann Case: Yvonne Martin Statements</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-5-mccann-case-gaspar-statements" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-5-mccann-case-gaspar-statements" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/vBNuuwKy-PizzaGate20Part205.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 5: McCann Case: Gaspar Statements</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-4-mccann-podesta-connection-debunking-snopes-and-new-york-times" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann podesta nyt" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-4-mccann-podesta-connection-debunking-snopes-and-new-york-times" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/bjcOJK7V-PizzaGate20Part204.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 4: McCann / Podesta Connection (Debunking Snopes and New York Times)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-3-obama-s-close-ties-to-acorn" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="podesta" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-3-obama-s-close-ties-to-acorn" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/DHMIRcUI-PizzaGate20Part203.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 3: Barack Obama's Close Ties to ACORN</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-2-acorn-controversy" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="podesta" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-2-acorn-controversy" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/R41S5zZm-PizzaGate20Part202.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 2: ACORN Controversy</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-1-madeleine-mccann-disappearance" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mccann" href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-1-madeleine-mccann-disappearance" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/3wsZnMBB-PizzaGate20Part201.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#PizzaGate Part 1: Madeleine McCann Disappearance</span>
@@ -1383,162 +1420,162 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="pg-seriesList">
-    <div class="list-row">
+    <div class="list-row" data-cats="censor hollywood">
       <h3>#PizzaGate Part 32: MES vs. Reddit Saga + Tamera Luzzatto Rabbit Hole + Comet Ping Pong Hacker</h3>
       <p><a href="https://peakd.com/@mes/pizzagate-part-32-mes-vs-reddit-saga-tamera-luzzatto-rabbit-hole-comet-ping-pong-hacker" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/ygtxlvnq" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/PizzaGate-Part-32-Tamera-Luzzatto-Comet-Ping-Pong:7" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/CTevjtDlQXXD/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/55gkecf1" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/2ZJSD64SG4I" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/0lKfMjo6-PizzaGate20Part203220Reddit20Saga20and20Luzzatto.jpeg" alt="#PizzaGate Part 32: MES vs. Reddit Saga + Tamera Luzzatto Rabbit Hole + Comet Ping Pong Hacker">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="hollywood">
       <h3>#PizzaGate Part 31: Hollywood Victims Speak Out! #PedoWood + Weinstein + Mind Control</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/pizzagate-part-31-hollywood-victims-speak-out-pedowood-weinstein-mind-control" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.co/watch?v=mes/jzadfijk" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/PizzaGate-Part-31-Hollywood-Victims-Speak-Out:7" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/d8tgozSLgNyh/" target="_blank" rel="noopener">BitChute</a> - <a href="https://youtu.be/FpEyRLB_aQU" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/r9QcV1Wa-PizzaGate20Part2031.jpeg" alt="#PizzaGate Part 31: Hollywood Victims Speak Out! #PedoWood + Weinstein + Mind Control">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann podesta">
       <h3>#PizzaGate Part 30: Madeleine McCann Case Goes Right to the Top! + Halligan PsyOp + Podesta Efits</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-30-madeleine-mccann-case-goes-right-to-the-top-halligan-psyop-podesta-efits" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/vckkwztk" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/oRaarht4EWhU/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/m4f7qbx2" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/wrL08JgvD7U" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/I2T4ALdY-PizzaGate20Part203020Madeleine20Case20Reaches20the20Top.jpeg" alt="#PizzaGate Part 30: Madeleine McCann Case Goes Right to the Top! + Halligan PsyOp + Podesta Efits">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="censor hollywood">
       <h3>#PizzaGate Part 29: Pool Entertainment Luzzatto Email + WikiLeaks + 9/11 + MORE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-29-pool-entertainment-luzzatto-email-wikileaks-9-11-more" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/zrkvhcxx" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/P3NVjzoZs7Gi/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/v/mes/xf01f71f" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/MQlaaylj3lM" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/Zhg5MYPI-PizzaGate20Part202920Luzzatto20Pool20Entertainment.jpeg" alt="#PizzaGate Part 29: Pool Entertainment Luzzatto Email + WikiLeaks + 9/11 + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="podesta logos nyt">
       <h3>#PizzaGate Part 28: David Brock Blackmail Scandal + Baphomet, United Nations, #ElsaGate + MORE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-28-david-brock-blackmail-scandal-baphomet-united-nations-elsagate-more" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/yoizmknu" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/rcd5tfkewINv/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/r2lxfvlp" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/RsNk52IWKDA" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/xYedwdiN-PizzaGate20Part202820David20Brock20Blackmail.jpeg" alt="#PizzaGate Part 28: David Brock Blackmail Scandal + Baphomet, United Nations, #ElsaGate + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="logos hollywood">
       <h3>#PizzaGate Part 27: Was #SpiritCooking Too Much For Kanye West? + Marina Abramovic + Katy Perry</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-27-was-spiritcooking-too-much-for-kanye-west-marina-abramovic-katy-perry" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/jgmupgct" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/NGRLFaUuvJuX" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/cmoh4nal" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/GPj5hgkLeb0" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/koajTYIY-PizzaGate20Part202720Kanye20Katy20Perry20Spirit20Cooking.jpeg" alt="#PizzaGate Part 27: Was #SpiritCooking Too Much For Kanye West? + Marina Abramovic + Katy Perry">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="podesta">
       <h3>#PizzaGate Part 26: Is David Brock Controlled by Hillary Clinton?</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-26-is-david-brock-controlled-by-hillary-clinton-david-seaman-contest" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/gjcsicct" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/ZP649m0I1qrc" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/9hku5vrh" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/1xEsnuhFhWs" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/IOOaxpOx-PizzaGate20Part202620David20Brock20Overview.jpeg" alt="#PizzaGate Part 26: Is David Brock Controlled by Hillary Clinton?">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann">
       <h3>#PizzaGate Part 25: Madeleine McCann Case: Twitter ‘Troll’ Brenda Leyland PsyOp?!</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-25-madeleine-mccann-case-twitter-troll-brenda-leyland-psyop-seth-rich-shawn-lucas" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/qhwlhpsq" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/FqBSQMpc5s0o" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/umw5p4jv" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/b2mKpQ3hoDI" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/PpYj2EoO-PizzaGate20Part202520Brenda20Leyland20Death.jpeg" alt="#PizzaGate Part 25: Madeleine McCann Case: Twitter ‘Troll’ Brenda Leyland PsyOp?!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="logos censor">
       <h3>#PizzaGate Part 24: Misleading ‘PizzaGate’ vs. ‘Fake News’ Google Search Trends + Gematria + James Comey + Antifa</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-24-misleading-pizzagate-google-search-trends-gematria-james-comey-antifa" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/tfsiuuvq" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/pizzagate-part-24-misleading-pizzagate:e?lid=d93456222ba64e13c31ec872f15a1e43da4d6bee" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/q7Xl8EBohXjo/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/l11t7zg9" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/6Allk6WGWZ4" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/QnGXT21e-PizzaGate20Part2024.jpeg" alt="#PizzaGate Part 24: Misleading ‘PizzaGate’ vs. ‘Fake News’ Google Search Trends + Gematria + James Comey + Antifa">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="podesta nyt hollywood">
       <h3>#PizzaGate Part 23: Pedophilia Activism &amp; Normalization + Ronald Bernard + Macron + Bill Nye + MORE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-23-pedophilia-activism-and-normalization-ronald-bernard-macron-bill-nye-more" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/awbcjriv" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/wiAzk6BlRiIc" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/f7jjbmao" target="_blank" rel="noopener">DTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/dCrIBgpC-PizzaGate20Part2023.jpeg" alt="#PizzaGate Part 23: Pedophilia Activism &amp; Normalization + Ronald Bernard + Macron + Bill Nye + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="logos nyt censor">
       <h3>#PizzaGate Part 22: CLogo Origins + Google Censorship + Haiti UN Trafficking + MORE Censorship</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-22-clogo-origins-google-censorship-haiti-un-trafficking-more-censorship" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/zbsnuoby" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/xjMTefiRSkzH/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/8o8n50ch" target="_blank" rel="noopener">DTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/QlVscZyM-PizzaGate20Part2022.jpeg" alt="#PizzaGate Part 22: CLogo Origins + Google Censorship + Haiti UN Trafficking + MORE Censorship">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="logos censor alex">
       <h3>#PizzaGate Part 21: GLogo Origins + YouTube Censorship + Craig Sawyer + April 7th NYC Protest</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-21-glogo-origins-youtube-censorship-craig-sawyer-april-7th-nyc-protest" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/zxhytrmm" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/auujv2FWYWAs" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/x7sgedf9" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/lnxUbkHEETw" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/fnWzXvhG-PizzaGate20Part2021.jpeg" alt="#PizzaGate Part 21: GLogo Origins + YouTube Censorship + Craig Sawyer + April 7th NYC Protest">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="podesta logos hollywood alex">
       <h3>#PizzaGate Part 20: BLogo &amp; LBLogo Origins + Alex Jones Apology + Dr. Phil Red Pill + Trudeau Foundation + MORE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-20-blogo-and-lblogo-origins-alex-jones-apology-dr-phil-red-pill-trudeau-foundation-more" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/gK2tHgDkJ6YG/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/9tfju62n" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/T1jSKzfEDNI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/EzLY2qyT-PizzaGate20Part2020.jpeg" alt="#PizzaGate Part 20: BLogo &amp; LBLogo Origins + Alex Jones Apology + Dr. Phil Red Pill + Trudeau Foundation + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="logos alex">
       <h3>#PizzaGate Part 19: Memetics / Meme Warfare + March 25th Washington DC Protest</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-19-memetics-meme-warfare-march-25th-washington-dc-protest" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/byxpx9D4svSu/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/1x5vyw5w" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/EiNKFJ2mJQM" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23w2oL6ZHktymu11BKjLxTqV4mztiuTY4NJFztc8WaNvVsdfXYhu9YThoYg7vY557mjAu.jpg" alt="#PizzaGate Part 19: Memetics / Meme Warfare + March 25th Washington DC Protest">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="podesta nyt censor">
       <h3>#PizzaGate Part 18: #Vault7 #YearZero &amp; Pedophile Blackmail &amp; Ken Livingstone</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-18-vault-7-year-zero-and-pedophile-blackmail-and-ken-livingstone" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/agpjodfj" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/pizzagate-part-18-vault7-yearzero:1" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/xcUfPDHFy1op/" target="_blank" rel="noopener">BitChute</a> - <a href="https://youtu.be/MxQ2Av9NWSI" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23v4fqwBUV5infnVzpveSTyWX4Fh7JgGCijiMVzUfnAP967bLkhdsvSpktgtoT7gz9AGA.jpeg" alt="#PizzaGate Part 18: #Vault7 #YearZero &amp; Pedophile Blackmail &amp; Ken Livingstone">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="nyt censor alex">
       <h3>#PizzaGate Part 17: Kurt Eichenwald vs. Bill Moran + Google Censorship + Cernovich / Epstein Lawsuit + NCMEC + MORE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-17-kurt-eichenwald-vs-bill-moran-google-censorship-cernovich-epstein-lawsuit-ncmec-more" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/7ajV3ULgToo5/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/qcu6depg" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/7cVlEU_ZqFA" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/suPXRH3P-PizzaGate20Part2017.jpeg" alt="#PizzaGate Part 17: Kurt Eichenwald vs. Bill Moran + Google Censorship + Cernovich / Epstein Lawsuit + NCMEC + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="podesta alex">
       <h3>#PizzaGate Part 16: Alex Jones vs. Bill Clinton</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-16-alex-jones-vs-bill-clinton" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/S5VLDQNYdpSg/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/jf9jgi2f" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/3uNI42WBz2Q" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/2gCi2oXs-PizzaGate20Part2016.jpeg" alt="#PizzaGate Part 16: Alex Jones vs. Bill Clinton">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="nyt censor">
       <h3>#PizzaGate Part 15: Kurt Eichenwald and Justin Berry + Censorship + #CNNLeaks + MORE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-15-kurt-eichenwald-and-justin-berry-censorship-cnnleaks-more" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/gzN1DesInwW7/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/p96tfu0e" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/pcyvthBKAfM" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/MrElehIZ-PizzaGate20Part2015.jpeg" alt="#PizzaGate Part 15: Kurt Eichenwald and Justin Berry + Censorship + #CNNLeaks + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="podesta nyt hollywood">
       <h3>#PizzaGate Part 14: NY Times 2005 Pedophilia Investigation: Justin Berry + Milo + Ted Heath + MORE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-14-ny-times-2005-pedophilia-investigation-justin-berry-milo-ted-heath-more" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/xX2tUssxvjYl/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/ng0tnswh" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/r0gDGMnkyZg" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/dDclEqjD-PizzaGate20Part2014.jpeg" alt="#PizzaGate Part 14: NY Times 2005 Pedophilia Investigation: Justin Berry + Milo + Ted Heath + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="nyt">
       <h3>#PizzaGate Part 13: NY Times 2005 Pedophilia Investigation + Catherine Agnew + MORE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/pizzagate-part-13-ny-times-2005-pedophilia-investigation-catherine-agnew-more" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/FvFjdchAJlBi/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/ng0tnswh" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/r0gDGMnkyZg" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/usiMSNhC-PizzaGate20Part2013.jpeg" alt="#PizzaGate Part 13: NY Times 2005 Pedophilia Investigation + Catherine Agnew + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="logos nyt">
       <h3>#PizzaGate Part 12: FBI Pedophile Logos and Symbols</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-12-fbi-pedophile-logos-and-symbols" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/BG2Ie09vOHKW/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/s3rvajzl" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/bANFRekPNqk" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/vvuapza2-PizzaGate20Part2012.jpeg" alt="#PizzaGate Part 12: FBI Pedophile Logos and Symbols">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="censor">
       <h3>#PizzaGate Part 11: &quot;Fake News&quot;, Search Trends, Jeff Sessions, #NationalPizzaDay, and MORE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-11-fake-news-search-trends-jeff-sessions-nationalpizzaday-and-more" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/CBdntgCsT4ca/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/quegne25" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/TxB8pVmzVY0" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/t2vkI3jX-PizzaGate20Part2011.jpeg" alt="#PizzaGate Part 11: &quot;Fake News&quot;, Search Trends, Jeff Sessions, #NationalPizzaDay, and MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann">
       <h3>#PizzaGate Part 10: Kate McCann's Bizarre Book &quot;Madeleine&quot;</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-10-kate-mccann-s-bizarre-book-madeleine" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/231D7V1VXuuW/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/clr65yw1" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/y_f3Rmibe1k" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/94uu9sky-PizzaGate20Part2010.jpeg" alt="#PizzaGate Part 10: Kate McCann's Bizarre Book &quot;Madeleine&quot;">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann">
       <h3>#PizzaGate Part 9: McCann Case: What Did Clement Freud Know About Madeleine?</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-9-mccann-case-what-did-clement-freud-know-about-madeleine" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/uspszzr49emJ/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/dltisuer" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/PfwJUzUYHfk" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/uglj1wlL-PizzaGate20Part209.jpeg" alt="#PizzaGate Part 9: McCann Case: What Did Clement Freud Know About Madeleine?">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann">
       <h3>#PizzaGate Part 8: Madeleine McCann Case: Clement Freud</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-8-mccann-case-clement-freud" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/tWg42VF7QoO6/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/d93pkoc9" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/tVfJCs3m3bw" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/evBTgLbR-PizzaGate20Part208.jpeg" alt="#PizzaGate Part 8: Madeleine McCann Case: Clement Freud">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann podesta">
       <h3>#PizzaGate Part 7: McCann / Podesta / Conspiracy Theories ADVICE</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-7-mccann-podesta-conspiracy-theories-advice" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/d9fdPWHb6iyF/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/9hbe2yxu" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/GdNLuXMer8Y" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/lKG8zQro-PizzaGate20Part207.jpeg" alt="#PizzaGate Part 7: McCann / Podesta / Conspiracy Theories ADVICE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann">
       <h3>#PizzaGate Part 6: McCann Case: Yvonne Martin Statements</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-6-mccann-case-yvonne-martin-statements" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/5jx95JR5gfKK/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/8jhgv2np" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/Vgv5WYb0PbU" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/LcMczKGU-PizzaGate20Part206.jpeg" alt="#PizzaGate Part 6: McCann Case: Yvonne Martin Statements">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann">
       <h3>#PizzaGate Part 5: McCann Case: Gaspar Statements</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-5-mccann-case-gaspar-statements" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/ijxuo0Xq7v6G/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/cvczt2yx" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/rGtb72KFFm0" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/vBNuuwKy-PizzaGate20Part205.jpeg" alt="#PizzaGate Part 5: McCann Case: Gaspar Statements">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann podesta nyt">
       <h3>#PizzaGate Part 4: McCann / Podesta Connection (Debunking Snopes and New York Times)</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-4-mccann-podesta-connection-debunking-snopes-and-new-york-times" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/PlP6WxnELoSg" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/fplpcxr6" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/EIzjickYpEA" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/bjcOJK7V-PizzaGate20Part204.jpeg" alt="#PizzaGate Part 4: McCann / Podesta Connection (Debunking Snopes and New York Times)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="podesta">
       <h3>#PizzaGate Part 3: Barack Obama's Close Ties to ACORN</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-3-obama-s-close-ties-to-acorn" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/iYt5wd6idDyY/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/c8ez1kd4" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/pyYJ4OTVMgo" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/DHMIRcUI-PizzaGate20Part203.jpeg" alt="#PizzaGate Part 3: Barack Obama's Close Ties to ACORN">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="podesta">
       <h3>#PizzaGate Part 2: ACORN Controversy</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-2-acorn-controversy" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/M2UnwOkUIckk" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/1yn2oz65" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/PXO64aActSg" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/R41S5zZm-PizzaGate20Part202.jpeg" alt="#PizzaGate Part 2: ACORN Controversy">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mccann">
       <h3>#PizzaGate Part 1: Madeleine McCann Disappearance</h3>
       <p><a href="https://peakd.com/pizzagate/@mes/video-notes-pizzagate-part-1-madeleine-mccann-disappearance" target="_blank" rel="noopener">Notes</a> - <a href="https://www.bitchute.com/video/aYZB4RhUBIpR/" target="_blank" rel="noopener">BitChute</a> - <a href="https://d.tube/#!/v/mes/vxdt0ze8" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/mdluzbv4MYA" target="_blank" rel="noopener">YouTube (deleted)</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/3wsZnMBB-PizzaGate20Part201.jpeg" alt="#PizzaGate Part 1: Madeleine McCann Disappearance">
@@ -1669,6 +1706,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('pg-series', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return (t ? t.textContent : el.textContent).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('pg-series');
 </script>
 
 <script>
