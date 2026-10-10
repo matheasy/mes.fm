@@ -1,27 +1,19 @@
-// Build-time generator for mes.fm/livestreams ("MES Livestreams").
+// Build-time generator for mes.fm/occult ("MES Occult Video Series"), a SINGLE page (cloned from free-energy/build.mjs):
+// the YouTube playlist link above the usual Grid View / List View of the videos, no hub tiles and no second page.
+// Content lives in sections.mjs (hand-maintained, newest first). Like free-energy it KEEPS AdSense.
+// Never hand-edit the generated mes.fm/occult/index.html.
 //
-// One page listing every video in the MES Truth livestreams playlist
-// (https://www.youtube.com/playlist?list=PLai3U8-WIK0FqwyUa_ICwTlqO0S6Y3kAn), in the same
-// Grid View / List View layout as mes.fm/math-qa, plus two more tabs:
-//   Stats    -- the stats-screen pages (mes.fm/livestream-140-stats, ...), newest first
-//   Trailers -- the trailers from the same playlist, as a card grid
-// Cloned from mes.fm/hutchison/build.mjs (itself cloned from math/build.mjs).
-//
-// Source of truth for the list is playlist.json, a snapshot written by
-// `python3 update_livestreams_playlist.py --apply` (repo root; needs yt-dlp). This build runs
-// offline from it (only the few mes.fm mirror pages / stats pages are scraped, for their thumbnail
-// and "Watch on:" rows, cached in link-meta.json). To publish a new stream or trailer:
-//   1. python3 update_livestreams_playlist.py --apply      (refresh the snapshot)
-//   2. cd mes.fm/livestreams && npm run build              (diff index.html before committing)
-// New stats page: add it to STATS below (newest first). A stream that has a mes.fm mirror page:
-// add it to MIRRORS.
+// Art: mes.fm/img/occult-logo.jpg (512), occult-logo-big.jpg (1200x630 share image), occult-icon.jpg (900x600, the tile on /conspiracy =
+// the newest video's thumbnail). Replace the files (same names) any time, no rebuild needed.
 //
 // Usage:
 //   npm run build
 
-import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { SECTIONS, IMPORTANT_LINKS_HTML } from "./sections.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -30,158 +22,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // unreachable.
 const META_CACHE_PATH = join(__dirname, "link-meta.json");
 
-// The single page this build writes: mes.fm/livestreams (`sectionId` matches an `id` in SECTIONS).
-const PAGE = {
-  slug: "livestreams",
-  sectionId: "livestreams",
-  title: "MES Livestreams",
-};
+// Output layout: mes.fm/911 is a tile hub (one icon tile per section, each linking to its own page); each
+// section then lives at mes.fm/<slug> with the Grid View / List View toggle. `sectionId` matches an `id` in
+// sections.mjs; `title` is the page's <h1>/<title> and `tileLabel` the (shorter) text overlaid on the hub tile.
+const HUB_TITLE = "MES Occult Video Series";
+const HUB_DESCRIPTION =
+  "MES Occult Video Series: Donald Trump's birthday coincidences and the Pope Paul VI Audience Hall (the Vatican snake, Fazzini's Resurrection sculpture, St. Peter's keys), with the YouTube playlist.";
 
-const PLAYLIST_PATH = join(__dirname, "playlist.json");
-const playlist = JSON.parse(readFileSync(PLAYLIST_PATH, "utf8"));
-
-// A livestream that isn't titled "MES Livestream N" but belongs on the main tab.
-const EXTRA_LIVESTREAM_IDS = new Set([
-  "k7tXz_lLDf4", // INTERVIEW: All Things 9/11 with TLBNAWKI (2h25m)
-]);
-
-// Playlist videos that also have a mes.fm mirror page. A trailer mirror ({ scrape: true }) is
-// scraped for its thumbnail and "Watch on:" row; a full-stream mirror is spelled out with `links`
-// (its page has no "Watch on:" row). The card goes to the mes.fm page either way.
-const MIRRORS = {
-  Sde1DG0JhyA: {
-    href: "https://mes.fm/livestream-140-real-911-avengers",
-    extra: [["Hive", "https://peakd.com/hive-113182/@mestruth/livestream-140-real-911-avengers-89c"]],
-  },
-  Bzxr55VZ6OI: {
-    href: "https://mes.fm/livestream-141-hutchison-tom-sky",
-    extra: [["Hive", "https://peakd.com/hive-128780/@mes/-livestream-141-hutchison-tom-sky--cjj"]],
-  },
-  er5y2M8SRr4: {
-    href: "https://mes.fm/livestream-142-amaterasu-solar-money",
-    extra: [["Hive", "https://peakd.com/hive-106474/@mestruth/mes-livestream-142-amaterasu-solar-money-epb"]],
-  },
-  PF0kSCXvZwM: { href: "https://mes.fm/livestream-140-trailer-911-real-avengers", scrape: true },
-  ddmBEjkVXb0: { href: "https://mes.fm/livestream-140-trailer-dust-plumes-911", scrape: true },
-  WbvO8BbKIP0: { href: "https://mes.fm/livestream-66-trailer", scrape: true },
-  XXeHqPUgbLU: { href: "https://mes.fm/livestream-141-trailer-hutchison-tom-sky-levitation", scrape: true },
-};
-
-// Stats-screen pages (the Stats tab), newest first. `cats` are the filter chip ids (CATEGORIES) the stream
-// belongs to, so the chips filter this tab too: 141 is a Hutchison Effect stream, 140 is 9/11 Truth + MES Truth.
-const STATS = [
-  { href: "https://mes.fm/livestream-141-stats", title: "141: Stats", cats: "hutchison" },
-  { href: "https://mes.fm/livestream-140-stats", title: "140: Stats", cats: "911 mestruth" },
-];
-
-// Filter chips above the tabs (same idea as the chips on mes.fm/calculators). A video can be in
-// several (a 9/11 stream on the MES Truth channel is in both); "All" is implicit. The first three
-// are title matches; "MES Truth" is a channel filter (videos uploaded to youtube.com/@mestruth --
-// the rest of the playlist is on the Math Easy Solutions channel). To add a chip, add an entry here.
-// Livestreams and trailers that are in the "MES Occult" YouTube playlist (PLai3U8-WIK0EX_SJASwVeZMA-CMgu6-Ox): 32, 33, 41, 45, 46, 47, 94, 96 and the trailers for 96 and 134.
-// Its non-livestream videos (Trump birthday coincidences, the Pope Paul VI Audience Hall) live on mes.fm/occult. Add a new id when the playlist grows.
-const OCCULT_IDS = new Set(["pPQvYWTc2Xo", "tBWFVtdRYNs", "hrhpo2AWr-g", "BzJmBKk1mhA", "93wsyTbIUbo", "Inv5vYgQ-Hs", "dfrCkqmInN8", "Ds_n7cE4d34", "f4RucRjtKbg", "3ELZsKMcgks"]);
-const CATEGORIES = [
-  { id: "hutchison", label: "Hutchison Effect", test: (v) => /hutchison/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X" },
-  { id: "911", label: "9/11 Truth", test: (v) => /9\/11|\bWTC\b|towers|judy wood/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh" },
-  { id: "planes", label: "9/11 Planes Research", test: (v) => /planes research/i.test(v.title) },
-  { id: "mh370", label: "MH370", test: (v) => /mh370/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EJGgDKXr-wW8z1jd7pZ069" },
-  { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX" },
-  { id: "gyroscope", label: "Gyroscope", test: (v) => /gyro/i.test(v.title) },
-  { id: "blockchain", label: "Blockchain", test: (v) => /blockchain/i.test(v.title) },
-  { id: "pizzagate", label: "PizzaGate", test: (v) => /pizza\s?gate/i.test(v.title) },
-  // Membership = the videos of the MES Occult playlist (the same playlist that mes.fm/occult links); ids listed in OCCULT_IDS below.
-  { id: "occult", label: "Occult", test: (v) => OCCULT_IDS.has(v.id), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EX_SJASwVeZMA-CMgu6-Ox" },
-  { id: "mestruth", label: "MES Truth", test: (v) => v.channel === "@mestruth", playlist: "https://www.youtube.com/playlist?list=PL7uKZq8byj6EavTGBYXn5u7Wy6_RH_O6Z" },
-];
-// Videos whose title/channel don't say which chips they belong to: video id -> extra chip ids (added to the automatic ones).
-const EXTRA_CATS = {
-  lRxpPXnrLgo: ["911", "planes", "mestruth"], // Trailer for 55 (Debbie Welsh, UA93): about 9/11 planes research, shown with MES Truth
-  PiJhwXKbRNU: ["911", "planes", "mestruth"], // Trailer for 130 (Impossible Crash Physics on 9/11): same as the 55 trailer
-};
-const catsOf = (v) => [...new Set([...CATEGORIES.filter((c) => c.test(v)).map((c) => c.id), ...(EXTRA_CATS[v.id] || [])])].join(" ");
-
-// Extra platform links per stream number (Hive, Rumble, Odysee, BitChute, X, Summary, Trailer, ...),
-// shown after the YouTube link in List View. Carried over from the old mes.fm/hutchison-livestreams
-// page (13 Hutchison streams) when that page was folded into this one; add more entries by hand.
-const EXTRA_LINKS = existsSync(join(__dirname, "extra-links.json"))
-  ? JSON.parse(readFileSync(join(__dirname, "extra-links.json"), "utf8"))
-  : {};
-
-const YT = (id) => `https://www.youtube.com/watch?v=${id}`;
-
-// "livestream" (main tab), "trailer" (Trailers tab) or "skip". The playlist also holds a few short
-// clips (e.g. "9/11 Mystery Object on Roof Before 2nd Impact") that are neither -- they are left out and listed in the build log so a new one
-// doesn't go missing unnoticed.
-function classify(v) {
-  // "MES Livestream BLANK" is the placeholder title for a stream that has no number yet (a possible upcoming one).
-  if (/^MES Livestream (\d+|BLANK)/.test(v.title) || EXTRA_LIVESTREAM_IDS.has(v.id)) return "livestream";
-  if (/trailer/i.test(v.title) || /^UPCOMING LIVESTREAM/i.test(v.title)) return "trailer";
-  return "skip";
-}
-
-// "MES Livestream 138: X" / "Trailer for MES Livestream 138: X" -> "138: X" (the page and tab already
-// say what it is; the number is what people scan for), same convention as mes.fm/math-qa.
-function shortTitle(v) {
-  const m = v.title.match(/^(?:Trailer for )?(?:MES )?Livestream (\d+|BLANK):\s*(.+)$/i);
-  const t = m ? `${m[1]}: ${m[2]}` : v.title;
-  return v.status === "upcoming" ? `${t} (upcoming)` : t;
-}
-
-function toItem(v) {
-  const title = shortTitle(v);
-  const mirror = MIRRORS[v.id];
-  const cats = catsOf(v);
-  if (mirror && mirror.scrape) return { href: mirror.href, title, cats };
-  const number = (v.title.match(/^MES Livestream (\d+)/) || [])[1];
-  const links = [
-    ...(mirror ? [["Notes", mirror.href], ...(mirror.extra || [])] : []),
-    ["YouTube", YT(v.id)],
-    ...(EXTRA_LINKS[number] || []),
-  ];
-  return { title, image: v.thumb, links, cats };
-}
-
-// Newest first by stream number. YouTube appends new playlist videos at the END, so playlist order
-// can't be trusted for "newest first" (the trailer for 141 was added after streams 1-140). A video with
-// no number in its title (the TLBNAWKI interview, "Moon Landing Trailer", ...) takes the number of the
-// numbered video before it in the playlist, so it stays next to its neighbours; ties keep playlist order.
-function newestFirst(videos) {
-  let carried = 0;
-  const keyed = videos.map((v, i) => {
-    const m = v.title.match(/Livestream (\d+)/i);
-    if (m) carried = Number(m[1]);
-    return { v, i, key: carried };
-  });
-  return keyed.sort((a, b) => b.key - a.key || a.i - b.i).map((k) => k.v);
-}
-
-const livestreamItems = newestFirst(playlist.filter((v) => classify(v) === "livestream")).map(toItem);
-const trailerItems = newestFirst(playlist.filter((v) => classify(v) === "trailer")).map(toItem);
-const skipped = playlist.filter((v) => classify(v) === "skip");
-
-const SECTIONS = [
-  {
-    id: "livestreams",
-    title: "MES Livestreams",
-    compactList: true,
-    filter: CATEGORIES,
-    // Whole-playlist / reference links: one line above the search box (see buildSection's standalone row).
-    standalone: [
-      { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0FqwyUa_ICwTlqO0S6Y3kAn", title: "Playlist" },
-      { href: "https://mes.fm/troubleshooting", title: "Troubleshooting Notes", icon: "&#128736;&#65039;" },
-    ],
-    extraViews: [
-      { id: "stats", label: "Stats", items: STATS },
-      { id: "trailers", label: "Trailers", kind: "grid", items: trailerItems },
-    ],
-    items: livestreamItems,
-  },
-];
-
-// Highest stream number in the playlist (may still be upcoming), for the page description.
-const latestStreamNumber = Math.max(...playlist.map((v) => Number((v.title.match(/^MES Livestream (\d+)/) || [])[1] || 0)));
-const PAGE_DESCRIPTION = `Replays of every MES livestream, from #1 to #${latestStreamNumber}, on 9/11, the Hutchison Effect, free energy, math and more, plus ${trailerItems.length} trailers and the latest livestream stats.`;
+// One page only (no section pages, no tiles).
+const PAGES = [];
 
 // ---------------------------------------------------------------------------
 // Scraping: og:image / "Watch on: ..." row per item, with a committed cache.
@@ -322,10 +171,8 @@ async function fetchLinkMeta(url) {
 
 async function resolveAllMeta(sections, concurrency = 8) {
   const cache = loadMetaCache();
-  // Items with explicit `links` need no scraping; the rest are mes.fm pages (trailer mirrors, stats pages).
-  const urls = sections.flatMap((s) =>
-    s.items.concat((s.extraViews || []).flatMap((v) => v.items)).filter((i) => !i.links && !i.standalone).map((i) => i.href)
-  );
+  // Items with explicit `links` (see sections.mjs) and playlist lines need no scraping.
+  const urls = sections.flatMap((s) => s.items.filter((i) => !i.links && !i.standalone).map((i) => i.href));
   let i = 0;
   async function worker() {
     while (i < urls.length) {
@@ -463,8 +310,7 @@ function buildCard(item, meta) {
   const href = itemHref(item);
   const external = !/^https?:\/\/(?:www\.)?mes\.fm\//.test(href);
   const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
-  const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
-  return `<a class="link-card"${catsAttr} href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
+  return `<a class="link-card" href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
       <span class="link-card-thumb"${thumbStyle}></span>
       <span class="link-card-body">
         <span class="link-card-title">${escapeHtml(item.title)}</span>
@@ -480,8 +326,7 @@ function buildRow(item, meta, linksBuilder) {
     .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
     .join(" - ");
   const imgHtml = image ? `<img class="list-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}">` : "";
-  const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
-  return `<div class="list-row"${catsAttr}>
+  return `<div class="list-row">
       <h3>${escapeHtml(item.title)}</h3>
       <p>${linksHtml}</p>
       ${imgHtml}
@@ -496,30 +341,16 @@ function capitalize(str) {
 // plus any extraViews (see e.g. MES Math Q/A Livestreams' "Stats" view) as
 // further toggle buttons/panes. All views are pre-rendered at build time;
 // the client-side script just shows/hides whichever one is active (see the
-// view-toggle script at the bottom of buildPage). The section's `standalone`
-// links (the playlist, the troubleshooting notes: not single videos) are
-// rendered as one plain link line above the search box and view-toggle buttons. extraViews items never appear in
+// view-toggle script at the bottom of buildPage). Items flagged `standalone`
+// (a whole-channel/whole-playlist link, not a single video/article) are
+// pulled out of the grid/list entirely and rendered as a plain link line
+// above the view-toggle buttons instead. extraViews items never appear in
 // Grid/List at all -- they exist only in their own pane.
 //
-// The section renders on its own page (see PAGE), so the collapsible
+// Each section now renders on its own page (see PAGES), so the collapsible
 // <h2> heading is dropped (the page's own <h1> already names it). A section
 // flagged `single` (one video/article only) skips the Grid/List toggle
 // entirely and renders just the List View row as a featured item.
-// Search box + category chips above the view tabs. Counts here are for the default (Grid/List)
-// view; the client script recomputes them for whichever view is showing (Trailers has its own).
-function buildFilter(section) {
-  const count = (id) => section.items.filter((i) => i.id === undefined && (id === "all" || (i.cats || "").split(" ").includes(id))).length;
-  const chips = [{ id: "all", label: "All" }, ...section.filter]
-    .map((c) => `<button type="button" data-c="${c.id}" data-label="${escapeHtml(c.label)}"${c.playlist ? ` data-pl="${escapeHtml(c.playlist)}"` : ""} aria-pressed="${c.id === "all"}">${escapeHtml(c.label)} (${count(c.id)})</button>`)
-    .join("");
-  return `<div class="ls-filter" id="${section.id}Filter">
-      <input type="search" id="${section.id}Search" placeholder="Search livestreams&hellip;" aria-label="Search livestreams" autocomplete="off">
-      <div class="ls-chips" id="${section.id}Chips">${chips}</div>
-    </div>
-    <p class="ls-playlist" id="${section.id}Playlist" hidden><a href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="22" height="16" aria-hidden="true"><path fill="#f00" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.500 0-9.400.5A3 3 0 0 0 .5 6.200C0 8.100 0 12 0 12s0 3.900.5 5.800a3 3 0 0 0 2.100 2.100c1.900.5 9.400.5 9.400.5s7.500 0 9.400-.5a3 3 0 0 0 2.100-2.100c.5-1.900.5-5.800.5-5.800s0-3.900-.5-5.800z"/><path fill="#fff" d="M9.600 15.600V8.400l6.200 3.600z"/></svg><span></span></a></p>
-    <p class="ls-empty" id="${section.id}Empty" hidden>No livestreams match. Try fewer words or a different filter.</p>`;
-}
-
 function buildSection(section, meta) {
   const standaloneItems = section.standalone || [];
   const cardItems = section.items;
@@ -543,12 +374,6 @@ function buildSection(section, meta) {
     .join("\n      ");
   const extraPanes = extraViews
     .map((view) => {
-      if (view.kind === "grid") {
-        const extraCards = view.items.map((item) => buildCard(item, meta)).join("\n    ");
-        return `<div class="card-grid view-hidden" id="${section.id}${capitalize(view.id)}">
-    ${extraCards}
-    </div>`;
-      }
       const extraRows = view.items.map((item) => buildRow(item, meta, buildExtraViewLinksForItem)).join("\n    ");
       return `<div class="list-view list-view--compact view-hidden" id="${section.id}${capitalize(view.id)}">
     ${extraRows}
@@ -570,7 +395,6 @@ function buildSection(section, meta) {
   return `<div class="list-container">
   <div id="${section.id}" class="section-body">
   ${standaloneHtml}
-    ${section.filter ? buildFilter(section) : ""}
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="${section.id}GridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="${section.id}ListBtn">List View</button>
@@ -587,9 +411,24 @@ ${extraPanes}
 </div>`;
 }
 
-// page: PAGE (the one page this build writes).
+// Icon tile for the hub page: text-free thumbnail + real overlaid label,
+// same .icon-grid markup/CSS as mes.fm's homepage.
+function buildTile(page) {
+  const icon = `/img/${page.icon || page.slug}-icon.jpg${page.iconVersion ? `?v=${page.iconVersion}` : ""}`;
+  return `<a class="icon-grid__link icon-grid__link--labeled" href="${page.href || `/${page.slug}`}"><span class="icon-grid__thumb" style="background-image:url('${icon}')"></span><span class="icon-grid__label">${escapeHtml(page.tileLabel)}</span></a>`;
+}
+
+function buildImportantLinks() {
+  return `<div class="hub-links">
+  <h2>Important Links</h2>
+${IMPORTANT_LINKS_HTML}
+</div>`;
+}
+
+// page: the hub ({ hub: true, slug: "bg" }) or one entry of PAGES.
 function buildPage(meta, page) {
-  const sections = SECTIONS.filter((s) => s.id === page.sectionId);
+  const isHub = !!page.hub;
+  const sections = SECTIONS;
   const sectionsHtml = sections.map((s) => buildSection(s, meta)).join("\n\n");
   const viewToggleWiring = sections
     .filter((s) => !s.single)
@@ -600,17 +439,19 @@ function buildPage(meta, page) {
     .join("\n");
 
   const CANONICAL = `https://mes.fm/${page.slug}`;
-  const pageTitle = page.title;
-  const description = PAGE_DESCRIPTION;
-  const ogImage = "https://mes.fm/img/logo-big.png";
-  const breadcrumbHtml = "";
+  const pageTitle = isHub ? HUB_TITLE : page.title;
+  const description = isHub ? HUB_DESCRIPTION : page.description;
+  const ogImage = "https://mes.fm/img/occult-logo-big.jpg";
+  const breadcrumbHtml = isHub
+    ? ""
+    : `<p class="page-breadcrumb"><a href="/occult">&larr; MES Occult</a></p>\n        `;
 
   return `
 <!DOCTYPE html>
 <html lang="en">
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
-  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <link rel="icon" href="https://mes.fm/img/occult-logo.jpg?v=1" type="image/jpeg" />
   <link rel="canonical" href="${CANONICAL}" />
   <title>${escapeHtml(pageTitle)} | Math Easy Solutions</title>
   <meta charset="UTF-8">
@@ -801,6 +642,52 @@ sub {vertical-align:sub;}
   margin: 0 0 1.5em;
 }
 
+/* Hub page (mes.fm/hutchison): one icon tile per section, label overlaid as real
+   text on a text-free thumbnail -- same look as mes.fm's homepage
+   .icon-grid. Fixed 3 columns (6 tiles = 3x2, no orphan row), stepping down
+   to 2 then 1 on narrow screens. */
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1em;
+  margin: 1em 0;
+}
+@media (max-width: 720px) {
+  .icon-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 420px) {
+  .icon-grid { grid-template-columns: 1fr; }
+}
+.icon-grid__link { display: block; position: relative; overflow: hidden; border-radius: 4px; }
+/* Ten tiles = three full rows of 3 plus one orphan: centre the orphan in the
+   3-column layout (generic -- applies whenever the last tile starts a row). */
+@media (min-width: 721px) {
+  .icon-grid__link:last-child:nth-child(3n + 1) { grid-column: 2; }
+}
+.icon-grid__thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  background-size: cover;
+  background-position: center;
+  background-color: #0a1024;
+  transition: transform 0.2s ease;
+}
+.icon-grid__link:hover .icon-grid__thumb { transform: scale(1.03); }
+.icon-grid__label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0.7em 0.5em;
+  background: rgba(51, 51, 51, 0.85);
+  color: #ffffff;
+  text-align: center;
+  font-size: 1.15em;
+  font-weight: bold;
+}
+
 .page-breadcrumb {
   margin: 0 0 0.6em;
   font-size: 0.95em;
@@ -959,8 +846,36 @@ sub {vertical-align:sub;}
   font-weight: 600;
 }
 
-.section-standalone-link a {
+.section-standalone-link a,
+.hub-links a {
   color: #1a6fb0;
+}
+
+.hub-links {
+  margin: 1.8em 0 0.5em;
+}
+.hub-links h2 {
+  font-size: 1.2em;
+  margin: 0 0 0.5em;
+}
+.hub-links ul {
+  list-style: disc;
+  padding-left: 1.4em;
+}
+.hub-links li {
+  margin: 0 0 0.4em;
+  line-height: 1.4;
+}
+.hub-links h3 {
+  font-size: 1.05em;
+  margin: 1.3em 0 0.4em;
+}
+.hub-links p {
+  line-height: 1.5;
+  margin: 0 0 0.6em;
+}
+.hub-links ul ul {
+  margin: 0.3em 0 0.4em;
 }
 .standalone-sep {
   color: #8a93a0;
@@ -1011,28 +926,6 @@ sub {vertical-align:sub;}
 .view-hidden {
   display: none;
 }
-
-/* Search box + category chips (same look as the chips on mes.fm/calculators). */
-.ls-filter { margin: 0 0 1em; }
-.ls-filter input {
-  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
-  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
-}
-.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
-.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
-.ls-chips button {
-  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
-  border: 1px solid #c3c9d2; background: #fff; color: #444;
-}
-.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
-.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
-.ls-playlist { margin: 0.2em 0 0.9em; }
-.ls-playlist a, .ls-playlist a span { color: #1a6fb0; }
-.ls-playlist a { display: inline-flex; align-items: center; gap: 0.45em; font-weight: 600; }
-.ls-playlist[hidden] { display: none !important; }
-.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
-/* a bare [hidden] loses to .link-card { display: flex } etc. */
-[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
 
 /* Full-viewport image lightbox for List View thumbnails -- click to
    zoom, prev/next via on-screen arrows or keyboard, same pattern used
@@ -1348,6 +1241,10 @@ body.dark-mode .sub-heading,
 body.dark-mode .arrow-icon,
 body.dark-mode .list-row h3,
 body.dark-mode .list-row p,
+body.dark-mode .hub-links h2,
+body.dark-mode .hub-links h3,
+body.dark-mode .hub-links p,
+body.dark-mode .hub-links li,
 body.dark-mode .link-card-title {
   color: #eeeeee;
 }
@@ -1363,6 +1260,7 @@ body.dark-mode .link-card {
 
 body.dark-mode .link-card-readmore,
 body.dark-mode .section-standalone-link a,
+body.dark-mode .hub-links a,
 body.dark-mode .list-row a,
 body.dark-mode .page-breadcrumb a,
 body.dark-mode .toc-sidebar a,
@@ -1378,13 +1276,6 @@ body.dark-mode .view-toggle-btn {
   background-color: #3a3a3a;
   color: #ffffff;
 }
-
-body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
-body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
-body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
-body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
-body.dark-mode .ls-empty { color: #aaa; }
-body.dark-mode .ls-playlist a, body.dark-mode .ls-playlist a span { color: #6cb6f5; }
 
 body.dark-mode .view-toggle-btn.active {
   background-color: #4a90d9;
@@ -1662,8 +1553,8 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem('pageMode')||'wide',c=document.documentElement.classList;if(m==='theatre')c.add('page-theatre');if(m!=='std')c.add('page-wide');if(localStorage.getItem('asideHidden')==='1')c.add('aside-hidden');if(localStorage.getItem('asideSide')==='left')c.add('aside-left')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --></head>
 <body>
 <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/livestreams" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
-  <a class="compact-nav-title" href="/livestreams" tabindex="-1">MES Livestreams</a>
+  <a href="/occult" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/occult-logo.jpg"></a>
+  <a class="compact-nav-title" href="/occult" tabindex="-1">MES Occult Video Series</a>
   <ul class="compact-nav-links">
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
     <li><a href="/tools" tabindex="-1">Tools</a></li>
@@ -1681,12 +1572,12 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
         <button type="button" id="textSizeUpBtn" class="header-control-btn" aria-label="Increase text size" title="Increase text size">A+</button>
         <button type="button" id="themeToggleBtn" class="header-control-btn" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
       </div>
-      <a class="logo-image-container" href='/livestreams'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Livestreams logo" data-src="https://mes.fm/img/logo-mark.png"></a>
+      <a class="logo-image-container" href='/occult'><img width="88" height="88" id="logo" class="logo lazyload" alt="MES Occult logo" data-src="https://mes.fm/img/occult-logo.jpg"></a>
       <div class="logo-text-container">
-        <a class="calculator-title-link" href='/livestreams'>
-          <p class="calculator-title">MES Livestreams</p>
+        <a class="calculator-title-link" href='/occult'>
+          <p class="calculator-title">MES Occult Video Series</p>
         </a>
-        <p class="tag-line">Replays, trailers and stats from every MES livestream.</p>
+        <p class="tag-line">MES Occult research: Trump birthday coincidences, the Vatican and more.</p>
       </div>
 
       <div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
@@ -1702,7 +1593,9 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </div>
     <div class="info-bar-container" role="navigation" aria-label="Primary">
       <ul id="info-bar" class="info-bar shadow">
-        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/livestreams'>Livestreams</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/occult'>Occult</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/conspiracy'>Conspiracy</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/911'>9/11 Truth</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/mobile-apps'>Mobile Apps</a></li>
@@ -1750,9 +1643,9 @@ ${sectionsHtml}
             <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
           </ul></div></li>
           <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
-          <li class="navbar__item"><a target="_self" class="navbar__link" href="/livestreams">Livestreams</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/occult">MES Occult Video Series</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/conspiracy">Conspiracy</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
-          <li class="navbar__item"><a target="_self" class="navbar__link" href="/hutchison">Hutchison Effect</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
@@ -1846,81 +1739,6 @@ ${sectionsHtml}
   }
 
 ${viewToggleWiring}
-
-  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
-  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
-  // items each chip would give in the pane that is showing. Stats items carry their stream's
-  // cats too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
-  function wireFilter(id) {
-    var box = document.getElementById(id + 'Filter');
-    var input = document.getElementById(id + 'Search');
-    var chips = document.getElementById(id + 'Chips');
-    var empty = document.getElementById(id + 'Empty');
-    var plBox = document.getElementById(id + 'Playlist');
-    if (!box || !input || !chips) return;
-    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
-    var cat = 'all';
-
-    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
-    function titleOf(el) {
-      var t = el.querySelector('.link-card-title, h3');
-      return (t ? t.textContent : el.textContent).toLowerCase();
-    }
-    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
-    function activePane() {
-      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
-    }
-
-    function apply() {
-      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
-      panes.forEach(function (pane) {
-        items(pane).forEach(function (el) {
-          var title = titleOf(el);
-          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
-        });
-      });
-      var plBtn = chips.querySelector('button[data-c="' + cat + '"]'), pl = plBtn && plBtn.getAttribute('data-pl');
-      if (plBox) {
-        plBox.hidden = !pl;
-        if (pl) { var a = plBox.querySelector('a'); a.href = pl; plBox.querySelector('span').textContent = plBtn.getAttribute('data-label') + ' playlist on YouTube'; }
-      }
-      var pane = activePane();
-      box.hidden = !pane;
-      if (!pane) { if (empty) empty.hidden = true; return; }
-      var els = items(pane);
-      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
-        var c = b.getAttribute('data-c');
-        var n = els.filter(function (el) { return inCat(el, c); }).length;
-        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
-        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
-      });
-      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
-    }
-
-    function setCat(c) { cat = c; apply(); }
-    input.addEventListener('input', apply);
-    chips.addEventListener('click', function (e) {
-      var b = e.target.closest('button');
-      if (b) setCat(b.getAttribute('data-c'));
-    });
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
-    });
-    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
-    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
-      b.addEventListener('click', function () { setTimeout(apply, 0); });
-    });
-    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
-    // /livestreams#hutchison clicked while already on this page).
-    function fromHash() {
-      var h = (location.hash || '').slice(1);
-      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
-    }
-    window.addEventListener('hashchange', function () { fromHash(); apply(); });
-    fromHash();
-    apply();
-  }
-  wireFilter('livestreams');
 </script>
 
 <script>
@@ -1996,6 +1814,7 @@ ${viewToggleWiring}
       { el: document.querySelector('.page-description'), base: 1 },
       { el: document.querySelector('.toc-sidebar'), base: 0.85 },
       { el: document.querySelector('.toc-mobile'), base: 1 },
+      { el: document.querySelector('.hub-links'), base: 1 },
     ].filter(function (t) { return t.el; });
     var downBtn = document.getElementById('textSizeDownBtn');
     var upBtn = document.getElementById('textSizeUpBtn');
@@ -2242,7 +2061,7 @@ ${viewToggleWiring}
 var MES_Vars = {
     mobile:false,
     hide_search:false,
-    current_tab:1,
+    current_tab:${isHub ? 0 : 1},
     info_bar_tab:0
 }
 </script>
@@ -2256,19 +2075,19 @@ var MES_Vars = {
 }
 
 async function main() {
-  console.log(
-    `${livestreamItems.length} livestreams, ${trailerItems.length} trailers, ${STATS.length} stats page(s) from ${playlist.length} playlist videos.`
-  );
-  if (skipped.length) {
-    console.log("Left out (not a livestream or trailer):");
-    skipped.forEach((v) => console.log(`  ${v.id}  ${v.title}`));
-  }
-  console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items.concat((s.extraViews || []).flatMap((v) => v.items))).filter((i) => !i.links && !i.standalone).length} scraped pages ...`);
+  console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
   const meta = await resolveAllMeta(SECTIONS);
 
-  const outPath = join(__dirname, "index.html");
-  writeFileSync(outPath, addImageLazyLoading(buildPage(meta, PAGE)), "utf8");
-  console.log(`Wrote ${outPath}`);
+  const pages = [{ hub: true, slug: "occult", outDir: __dirname }];
+  for (const page of pages) {
+    mkdirSync(page.outDir, { recursive: true });
+    const outPath = join(page.outDir, "index.html");
+    writeFileSync(outPath, addImageLazyLoading(buildPage(meta, page)), "utf8");
+    console.log(`Wrote ${outPath}`);
+  }
+  // The phone-width header fixes (A-/A+/moon on their own row, no sideways scroll) are patched into generated pages by
+  // fix_mobile_header_controls.py, so a rebuild would silently drop them; re-apply (idempotent).
+  execFileSync("python3", [join(__dirname, "..", "..", "fix_mobile_header_controls.py"), "--apply"], { stdio: "inherit" });
 }
 
 main().catch((err) => {

@@ -1,0 +1,9 @@
+{
+  "name": "mes-occult-builder",
+  "private": true,
+  "description": "Build-time generator for the Videos card grid on mes.fm/occult. Not deployed; run manually before committing.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

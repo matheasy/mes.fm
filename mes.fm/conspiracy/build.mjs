@@ -60,6 +60,16 @@ const PAGES = [
     tileLabel: "PizzaGate Video Series",
   },
   {
+    // Tile only: no page is written. Links to the "Occult" chip of mes.fm/livestreams; icon = img/occult-livestreams-icon.jpg (the newest video in that filter:
+    // the Trailer for MES Livestream 134), bump iconVersion when refreshed.
+    slug: "occult",
+    href: "/livestreams#occult",
+    icon: "occult-livestreams",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Occult Livestreams",
+  },
+  {
     // Tile only: no page is written. Links to the MH370 Teleportation Psyop hub (mes.fm/mh370, its own build.mjs);
     // the icon is img/mh370-icon.jpg (a crop of MH370.jpeg) -- bump iconVersion if it is replaced.
     slug: "mh370",
