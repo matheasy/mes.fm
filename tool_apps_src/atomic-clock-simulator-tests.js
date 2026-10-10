@@ -47,6 +47,24 @@ ok(A.cyclesIn(1) === "9192631770" && A.cyclesIn(2) === "18385263540", "cycles in
 	near(A.waitPhase(0.25, 2), Math.PI, 1e-12, "wait phase = 2 pi delta T");
 }
 
+// 3c. Fountain geometry
+{
+	const g = A.fountainGeometry(0.5, 2);
+	near(g.h, 0.3064, 0.01, "T = 0.5 s: apex about 31 cm above the cavity");
+	near(g.vCavity, 2.452, 0.01, "speed through the cavity is g T / 2");
+	ok(Math.abs(A.fountainZ(g, g.tCavity)) < 1e-9, "the parabola passes through the cavity on the way up");
+	ok(Math.abs(A.fountainZ(g, g.tReturn)) < 1e-9, "...and T later on the way down");
+	near(A.fountainZ(g, g.tApex), g.h, 1e-9, "apex height equals g T^2 / 8");
+	near(A.fountainZ(g, g.tDetect), g.detectZ, 1e-6, "atoms reach the detection zone");
+	near(A.fountainGeometry(1, 1).sigmaV, 0.00790, 0.02, "caesium at 1 microkelvin spreads at about 7.9 mm/s");
+	ok(A.fountainGeometry(0.5, 20).fraction < A.fountainGeometry(0.5, 2).fraction, "warmer atoms: fewer return through the cavity");
+	ok(A.fountainGeometry(1, 2).fraction < A.fountainGeometry(0.5, 2).fraction, "longer flight: fewer atoms return");
+	near(A.fountainRelStability(0.5, 2), 1, 1e-12, "reference fountain = 1.0");
+	ok(A.fountainRelStability(0.5, 0.5) < 1, "colder atoms are more stable");
+	ok(A.fountainRelStability(0.05, 2) > 3, "a 50 ms flight is much worse than 0.5 s");
+	ok(A.fountainRelStability(2, 2) > 0.8 * A.fountainRelStability(1, 2), "beyond about a second, losing atoms cancels the gain from the longer flight (warm cloud)");
+}
+
 // 4. Stability formula: narrower line, better signal -> lower noise; and it scales as 1/sqrt(tau)
 {
 	const s = A.sigma1s(1, 300, 1);

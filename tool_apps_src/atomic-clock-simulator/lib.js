@@ -85,6 +85,28 @@
 	// phase the atom picks up against the microwaves during the wait, in radians (= 2 pi * detuning * T)
 	function waitPhase(deltaHz, T) { return TWO_PI * deltaHz * T; }
 
+
+	/* ---------------- fountain geometry ----------------
+	 * Atoms leave the cooling region (d below the microwave cavity) with launch speed v_l, move on one parabola z(t) = -d + v_l t - g t^2 / 2, pass up through the cavity
+	 * (pulse 1), reach an apex h = g T^2 / 8 above it and fall back through it (pulse 2) T later, then drop to the detection zone. Meanwhile the cloud spreads sideways at
+	 * sigma_v = sqrt(kB Temp / m): only atoms still inside the cavity aperture on the way back are detected, so a longer flight (narrower fringe) costs signal. */
+	var G = 9.80665, KB = 1.380649e-23, M_CS = 2.20694650e-25;
+	function fountainGeometry(T, tempUK, opts) {
+		opts = opts || {};
+		var d = opts.d != null ? opts.d : 0.25, a = opts.aperture != null ? opts.aperture : 0.005, s0 = opts.sigma0 != null ? opts.sigma0 : 0.002, dz = opts.detect != null ? opts.detect : 0.10;
+		var vc = G * T / 2, vl = Math.sqrt(vc * vc + 2 * G * d), t1 = (vl - vc) / G, tRet = t1 + T;
+		var sigV = Math.sqrt(KB * tempUK * 1e-6 / M_CS), sigR = Math.sqrt(s0 * s0 + Math.pow(sigV * tRet, 2));
+		var dDown = (-vc + Math.sqrt(vc * vc + 2 * G * dz)) / G;
+		return { d: d, aperture: a, h: G * T * T / 8, vCavity: vc, vLaunch: vl, tCavity: t1, tApex: t1 + T / 2, tReturn: tRet, tDetect: tRet + dDown, detectZ: -dz, sigmaV: sigV, sigmaReturn: sigR,
+		         fraction: 1 - Math.exp(-a * a / (2 * sigR * sigR)) };
+	}
+	function fountainZ(g, t) { return -g.d + g.vLaunch * t - 0.5 * G * t * t; }
+	// stability at 1 s relative to the reference fountain (T = 0.5 s, 2 uK): sigma_y ~ (1/T) / sqrt(atoms detected)
+	function fountainRelStability(T, tempUK, opts) {
+		var f = fountainGeometry(T, tempUK, opts).fraction, r = fountainGeometry(0.5, 2, opts).fraction;
+		return (0.5 / T) * Math.sqrt(r / f);
+	}
+
 	/* ---------------- stability of a locked clock ---------------- */
 	// Fractional frequency noise at 1 s of an atomic clock locked to a line of width dnu (Hz) with signal-to-noise snr per cycle of duration Tc (s).
 	function sigma1s(dnu, snr, Tc) { return (1 / Math.PI) * (dnu / NU0) * (1 / snr) * Math.sqrt(Tc); }
@@ -289,7 +311,7 @@
 
 	var API = {
 		NU0: NU0, C: C, DAY: DAY, YEAR: YEAR, PERIODS: PERIODS, UNIVERSE: UNIVERSE, CLOCKS: CLOCKS, BYID: BYID,
-		rng: rng, rotate: rotate, blochPath: blochPath, blochP: blochP, waitPhase: waitPhase, rabiP: rabiP, beamP: beamP, ramseyP: ramseyP, fountainP: fountainP, fringeWidth: fringeWidth, beamWidth: beamWidth,
+		rng: rng, fountainGeometry: fountainGeometry, fountainZ: fountainZ, fountainRelStability: fountainRelStability, rotate: rotate, blochPath: blochPath, blochP: blochP, waitPhase: waitPhase, rabiP: rabiP, beamP: beamP, ramseyP: ramseyP, fountainP: fountainP, fringeWidth: fringeWidth, beamWidth: beamWidth,
 		sigma1s: sigma1s, sigmaAt: sigmaAt, allanModel: allanModel, raceInit: raceInit, raceStep: raceStep, expectedError: expectedError, timeToError: timeToError,
 		Loop: Loop, allan: allan, phaseToFreq: phaseToFreq,
 		parseFraction: parseFraction, parseTime: parseTime, secondsOff: secondsOff, fractionFrom: fractionFrom, timeUntil: timeUntil, lightDistance: lightDistance, cyclesIn: cyclesIn,
