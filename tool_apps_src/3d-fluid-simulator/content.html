@@ -1,4 +1,4 @@
-	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu f3" id="f3">
 		<div class="f3-top">
 			<label class="f3-pick"><span class="tu-label" id="f3-pick-l">Scenario</span>
@@ -23,7 +23,7 @@
 				</div>
 				<div class="f3-tools" role="toolbar" aria-label="Page tools">
 					<button type="button" id="f3-png" title="Save this frame as a picture" aria-label="Save as PNG">📷</button>
-					<button type="button" id="f3-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
+					
 					<button type="button" id="f3-full" title="Full screen" aria-label="Full screen">⛶</button>
 				</div>
 				<div class="f3-brushes" role="group" aria-label="What dragging does">

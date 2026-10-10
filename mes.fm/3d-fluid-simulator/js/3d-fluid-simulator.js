@@ -481,13 +481,11 @@
 	canvas.addEventListener("dblclick", function () { cam.yaw = 0.65; cam.pitch = 0.32; cam.dist = 2.35; dirty = true; });
 
 	/* ---------- page tools ---------- */
-	function paintTheatre() { $("f3-theatre").setAttribute("aria-pressed", String(document.documentElement.classList.contains("page-theatre"))); }
-	$("f3-theatre").onclick = function () { var on = !document.documentElement.classList.contains("page-theatre"); document.documentElement.classList.toggle("page-theatre", on); document.documentElement.classList.toggle("page-wide", on); try { localStorage.setItem("pageMode", on ? "theatre" : "std"); localStorage.setItem("pageWide", on ? "1" : "0"); } catch (e) {} paintTheatre(); setTimeout(function () { sizeCanvas(); }, 50); };
-	paintTheatre();
 	$("f3-full").onclick = function () { var w = $("f3-wrap"); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not available here"); }); };
 	document.addEventListener("fullscreenchange", function () { setTimeout(sizeCanvas, 60); });
 	$("f3-png").onclick = function () { draw(true); canvas.toBlob(function (b) { if (!b) return; var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "3d-fluid-" + P.id + ".png"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }); };
 	var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(sizeCanvas, 80); });
+	if (window.ResizeObserver) new ResizeObserver(function () { clearTimeout(rt); rt = setTimeout(function () { if (typeof sim !== "undefined" && sim) { sizeCanvas(); draw(true); } }, 60); }).observe($("f3-wrap"));
 	document.addEventListener("keydown", function (e) {
 		var tag = (e.target.tagName || "").toLowerCase(); if (/^(input|textarea|select)$/.test(tag) || e.ctrlKey || e.metaKey || e.altKey) return;
 		if (e.key === " " && (tag === "canvas" || tag === "body")) { e.preventDefault(); setRunning(!running); } else if (e.key === "r" || e.key === "R") restart(); else if ((e.key === "f" || e.key === "F") && P.ring) fireRings(); else if (e.key === "ArrowRight" && tag === "canvas") { e.preventDefault(); $("f3-step").onclick(); }

@@ -1,6 +1,4 @@
 	/* fluid simulator: a wide page with a dark stage. Stage colours are custom properties / literals so the derived dark theme leaves them alone. */
-	html body .outer-container {max-width:min(96vw,80em) !important;}
-	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
 	.tu [hidden] {display:none !important;}
 	.fl {--fl-bg:#080b12;--fl-line:#2a3040;--fl-text:#e8ecf5;--fl-dim:#9aa5bb;}
 	.fl-top {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:flex-end;margin-bottom:0.7em;}

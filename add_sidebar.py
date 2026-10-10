@@ -107,7 +107,7 @@ FAMILIES = {
             ("emoji", "Tool"), ("youtubemoney", "Calculator"), ("vatcalculator", "Calculator"), ("mortgagecalculator", "Calculator"), ("gradecalculator", "Calculator"), ("gpacalculator", "Calculator"), ("bmicalculator", "Calculator"), ("weighted-average-calculator.html", "Calculator"), ("latex", "Tool"), ("timezone", "Tool"), ("symbols", "Tool"),
             ("speedreader", "Tool"), ("timer", "Tool"), ("clock", "Tool"), ("enigma", "Tool"), ("countdown-timer", "Tool"), ("stopwatch", "Tool"), ("alarm-clock", "Tool"), ("pomodoro-timer", "Tool"), ("interval-timer", "Tool"), ("countdown-to-date", "Tool"), ("youtube-thumbnail", "Tool"), ("share", "Tool"), ("search", "Tool"), ("calendar", "Tool"), ("copy-text", "Tool"), ("unit-conversion", "Calculator"), ("calculator", "Calculator"), ("days-between-dates-calculator", "Calculator"),
             ("cas-calculator", "Calculator"), ("derivative-calculator", "Calculator"), ("integral-calculator", "Calculator"),
-            ("photoelectric-effect-simulator", "Tool"), ("reynolds-number-calculator", "Calculator"), ("sum-of-integers-calculator", "Calculator"), ("gematria", "Calculator"), ("impermanent-loss-calculator", "Calculator"), ("earth-curvature-calculator", "Calculator"),
+            ("fluid-simulator", "Tool"), ("3d-fluid-simulator", "Tool"), ("photoelectric-effect-simulator", "Tool"), ("reynolds-number-calculator", "Calculator"), ("sum-of-integers-calculator", "Calculator"), ("gematria", "Calculator"), ("impermanent-loss-calculator", "Calculator"), ("earth-curvature-calculator", "Calculator"),
         ],
         "articles": False,
         "sections": [("", "Tool", None)],
