@@ -118,7 +118,7 @@
     { "source": "/hands", "destination": "https://twitter.com/MathEasySolns/status/1054947652071239680", "permanent": true },
     { "source": "/experiments-onedrive", "destination": "https://1drv.ms/u/s!As32ynv0LoaIh6RmDgwVZknJxaSoVw?e=Cvf7jN", "permanent": true },
     { "source": "/experiments-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0HUHoank-Lj9q6RGAS51QRh", "permanent": true },
-    { "source": "/experiments-draft", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu", "permanent": true },
+    { "source": "/experiments-draft-playlist", "destination": "https://www.youtube.com/playlist?list=PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu", "permanent": true },
     { "source": "/911truth-videos", "destination": "https://1drv.ms/u/s!As32ynv0LoaIh6USengFq-fY-nVmKQ?e=vIO31l", "permanent": true },
     { "source": "/911truth-odysee", "destination": "https://odysee.com/$/playlist/a4981c9731bec068847fd370b593769304b0b181", "permanent": true },
     { "source": "/speech-extension", "destination": "https://chrome.google.com/webstore/detail/read-aloud-a-text-to-spee/hdhinadidafjejdhmfkjgnolgimiaplp", "permanent": true },
