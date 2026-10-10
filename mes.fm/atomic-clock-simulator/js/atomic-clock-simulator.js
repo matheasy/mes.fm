@@ -327,9 +327,12 @@
  */
 (function () {
 	"use strict";
-	var $ = function (id) { return document.getElementById(id); };
-	var root = $("ac");
+	// A page that carries only one panel (data-only, e.g. /fountain-clock) leaves the other tabs\' elements out: lookups of missing ids return a detached stand-in so the rest of the script runs unchanged.
+	var STANDIN = (function () { var t = document.createElement("table"); t.appendChild(document.createElement("tbody")); return t; })();
+	var $ = function (id) { return document.getElementById(id) || STANDIN; };
+	var root = document.getElementById("ac");
 	if (!root) return;
+	var ONLY = root.getAttribute("data-only") || "";
 	var A = window.MESAtomic;
 	var KEY = "mes-atomic-clock-simulator:v1";
 	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
@@ -352,8 +355,9 @@
 		rabi: saved.rabi !== false, hidden: saved.hidden || {}, raceSpeed: num(saved.raceSpeed) || 31557600,
 		frac: A.parseFraction(q.get("f") || saved.frac || "5 ppm"), target: A.parseTime(q.get("t") || saved.target || "1 s"), per: /^(day|week|month|year)$/.test(q.get("per") || saved.per || "") ? (q.get("per") || saved.per) : "month"
 	};
+	if (ONLY) S.tab = ONLY;
 	if (!isFinite(S.frac)) S.frac = 5e-6; if (!isFinite(S.target) || S.target <= 0) S.target = 1;
-	function save() { sset({ temp: S.temp, tab: S.tab, type: S.type, gain: S.gain, speed: S.speed, T: S.T, snr: S.snr, rabi: S.rabi, hidden: S.hidden, raceSpeed: S.raceSpeed, frac: S.frac, target: S.target, per: S.per }); }
+	function save() { var o = { temp: S.temp, tab: S.tab, type: S.type, gain: S.gain, speed: S.speed, T: S.T, snr: S.snr, rabi: S.rabi, hidden: S.hidden, raceSpeed: S.raceSpeed, frac: S.frac, target: S.target, per: S.per }; if (ONLY) delete o.tab; sset(o); }
 
 	/* ---------------- shared helpers ---------------- */
 	var toastT;
@@ -534,7 +538,7 @@
 	var detSlider = 0.15;
 	$("ac-det").value = Math.round(detSlider * 1000);
 	function fringeVals() {
-		var T = S.T, fw = A.fringeWidth(T), s1 = A.sigma1s(fw, S.snr, 1), span = 2.5 / T, det = (+$("ac-det").value / 1000) * span;
+		var T = S.T, fw = A.fringeWidth(T), s1 = A.sigma1s(fw, S.snr, 1), span = 2.5 / T, det = (document.getElementById("ac-det") ? +document.getElementById("ac-det").value / 1000 : 0) * span;
 		return { T: T, fw: fw, s1: s1, span: span, det: det, Q: NU0 / fw, h: 9.80665 * T * T / 8 };
 	}
 	function paintFringeLabels() {
@@ -908,9 +912,9 @@
 		if (!cl) { $("ac-d-like").textContent = "–"; $("ac-d-like-s").textContent = ""; }
 		else if (a > 1e-3) { $("ac-d-like").textContent = "A broken clock"; $("ac-d-like-s").textContent = "Worse than any watch: over 0.1% error"; }
 		else { $("ac-d-like").textContent = cl.short; $("ac-d-like-s").textContent = cl.name + ": typical error " + A.fmtFrac(cl.acc) + ". " + cl.note; }
-		var rows = [["1 hour", 3600], ["1 day", A.DAY], ["1 week", 7 * A.DAY], ["1 month", A.YEAR / 12], ["1 year", A.YEAR], ["10 years", 10 * A.YEAR], ["100 years", 100 * A.YEAR]], tb = $("ac-d-table").querySelector("tbody"), html = "";
+		var rows = [["1 hour", 3600], ["1 day", A.DAY], ["1 week", 7 * A.DAY], ["1 month", A.YEAR / 12], ["1 year", A.YEAR], ["10 years", 10 * A.YEAR], ["100 years", 100 * A.YEAR]], tb = document.querySelector("#ac-d-table tbody"), html = "";
 		rows.forEach(function (r) { var err = a * r[1]; html += "<tr><td>" + r[0] + "</td><td>" + (a === 0 ? "0 s" : A.fmtTime(err, 3)) + "</td><td>" + (a === 0 ? "0" : A.fmtDist(A.lightDistance(err))) + "</td><td>" + groupDigits(A.cyclesIn(r[1])) + "</td></tr>"; });
-		tb.innerHTML = html;
+		if (tb) tb.innerHTML = html;
 		lastAnswer = a === 0 ? "A perfect clock never drifts." : "A clock with a fractional frequency error of " + (y < 0 ? "-" : "") + A.fmtFrac(a) + " " + fast + " " + A.fmtTime(a * A.DAY, 3) + " per day and " + A.fmtTime(a * A.YEAR, 3) + " per year, and is typically off by " + A.fmtTime(S.target, 3) + " after " + A.fmtSpan(A.timeUntil(y, S.target)) + ". (mes.fm/atomic-clock-simulator)";
 		save();
 	}

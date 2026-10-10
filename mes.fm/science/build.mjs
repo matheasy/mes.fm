@@ -146,10 +146,10 @@ const PAGES = [
     tileLabel: "Atomic Clock Simulator",
   },
   {
-    // Tile only: no page is written; links to the 3D fountain tab of the Atomic Clock Simulator. Icon = img/fountain-clock-icon.jpg (Grok art, 900x600 crop).
+    // Tile only: no page is written; links to the Caesium Fountain Clock page. Icon = img/fountain-clock-icon.jpg (Grok art, 900x600 crop).
     slug: "fountain-clock",
     section: "tools",
-    href: "/atomic-clock-simulator?tab=fountain",
+    href: "/fountain-clock",
     iconVersion: 1,
     tileOnly: true,
     tileLabel: "3D Caesium Fountain Clock",

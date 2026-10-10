@@ -172,13 +172,19 @@ APPS = {
     "atomic-clock-simulator": dict(title="MES Atomic Clock Simulator", page_title="Atomic Clock Simulator",
                             tag="How atoms keep time.", accent="#1e4fb3", dark="#173d8a", tint="#e4ecfa",
                             desc="Free atomic clock simulator: see how a caesium clock locks a quartz oscillator to atoms, tune Ramsey fringes in a fountain clock, race quartz against rubidium, caesium and optical clocks, compare their stability, and work out how far any clock drifts.",
-                            js_v="1"),
+                            js_v="3"),
     # Michelson-Morley Experiment Simulator: interferometer on a rotating table with live fringes, the aether-frame light-path picture, a noisy 16-point turntable run + fit, the historic experiments, and a fringe-shift calculator.
     # lib.js = exact arm-time / fringe maths (node-tested: tool_apps_src/michelson-morley-tests.js), app.js = UI. Wide page, dark stages, own Theatre button, no sidebar.
     "michelson-morley-experiment": dict(title="MES Michelson-Morley Experiment Simulator", page_title="Michelson-Morley Experiment Simulator",
                             tag="Did the Earth move through the aether?", accent="#047857", dark="#065f46", tint="#dcf5ea",
                             desc="Free Michelson-Morley experiment simulator: turn an interferometer through an aether wind and watch the fringes shift, see why the two light paths take different times, run a 16-point turntable measurement with noise, compare the 1881 and 1887 experiments, and calculate the expected fringe shift.",
                             js_v="1"),
+    # Fountain Clock: the 3D fountain tab of the Atomic Clock Simulator as its own page (own URL, title, share image and text). Shares that app's source folder (src) and its served script
+    # (js_path); content-fountain.html carries only the fountain panel + its own text (data-only="fountain" tells app.js to run just that panel).
+    "fountain-clock": dict(title="MES Caesium Fountain Clock", page_title="Caesium Fountain Clock Simulator (3D)",
+                            tag="Toss cold atoms up and keep time.", accent="#1e4fb3", dark="#173d8a", tint="#e4ecfa",
+                            desc="Watch a caesium fountain atomic clock in 3D: six lasers cool a ball of atoms, it is launched up through the microwave cavity and falls back. Change the flight time and the atom temperature and see why throwing higher stops helping.",
+                            src="atomic-clock-simulator", content="content-fountain.html", js_path="atomic-clock-simulator/js/atomic-clock-simulator.js", js_v="3"),
     # Reynolds Number Calculator: Re from fluid, speed and size (any units), regime for the geometry, solve for speed / size, pipe friction, drag, shedding, boundary layer. lib.js node-tested.
     "reynolds-number-calculator": dict(title="MES Reynolds Number Calculator", page_title="Reynolds Number Calculator",
                             tag="Laminar or turbulent? Find out.", accent="#0e7490", dark="#155e75", tint="#e0f4f8",

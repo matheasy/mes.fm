@@ -37,7 +37,7 @@ PAGES = {
         ("time", "Time &amp; Focus", ["speedreader", "typing-test", "typing-test-transcribe", "typing-test-voice", "timer", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "clock", "timezone", "calendar"]),
         ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search", "search-engines", "site-index", "go"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today"]),
-        ("sim", "Simulations", ["fluid-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "michelson-morley-experiment"]),
+        ("sim", "Simulations", ["fluid-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment"]),
     ]),
 }
 TD = re.compile(r'[ \t]*<td class="calc-container[^"]*"><a class="calc-link" href="([^"]*)">.*?</td>\n?', re.S)

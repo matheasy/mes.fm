@@ -51,7 +51,6 @@
     { "source": "/caesium-clock", "destination": "/atomic-clock-simulator", "permanent": true },
     { "source": "/clock-drift", "destination": "/atomic-clock-simulator?tab=drift", "permanent": true },
     { "source": "/clock-drift-calculator", "destination": "/atomic-clock-simulator?tab=drift", "permanent": true },
-    { "source": "/fountain-clock", "destination": "/atomic-clock-simulator?tab=fountain", "permanent": true },
     { "source": "/bloch-sphere", "destination": "/atomic-clock-simulator?tab=bloch", "permanent": true },
     { "source": "/ramsey-fringes", "destination": "/atomic-clock-simulator?tab=fringe", "permanent": true },
     { "source": "/allan-deviation", "destination": "/atomic-clock-simulator?tab=stab", "permanent": true },

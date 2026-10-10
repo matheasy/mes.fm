@@ -1,0 +1,66 @@
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu ac" id="ac" data-only="fountain">
+		<div class="ac-bar"><span></span><button type="button" class="ac-theatre" id="ac-theatre" aria-pressed="false" title="Theatre: use nearly the whole window (saved for the whole site)">Theatre</button></div>
+		<!-- 2c. 3D fountain -->
+		<section class="ac-panel" id="ac-p-fountain" role="tabpanel" aria-labelledby="ac-t-fountain">
+			<p class="ac-lead">Watch a caesium fountain clock work, in 3D: six laser beams cool a ball of atoms, one more push tosses it up through the microwave cavity, and gravity brings it back. <em>Drag to look around it.</em> This is one part of the <a href="/atomic-clock-simulator">Atomic Clock Simulator</a>.</p>
+			<div class="ac-wrap" id="ac-wrap5">
+				<div class="ac-stage" id="ac-stage5">
+					<canvas id="ac-fo" role="img" aria-label="A 3D caesium fountain: a ball of laser-cooled atoms is launched up through a microwave cavity, reaches an apex and falls back, then passes a detection zone. The cloud spreads out as it travels and the atoms that miss the cavity opening are lost."></canvas>
+					<div class="ac-tools"><button type="button" id="ac-full5" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="ac-readouts" id="ac-ro5">
+					<div class="ac-ro"><span>Launch speed</span><b id="ac-f-v">–</b><small id="ac-f-v-s"></small></div>
+					<div class="ac-ro"><span>Apex above the cavity</span><b id="ac-f-h">–</b><small>g T² / 8</small></div>
+					<div class="ac-ro"><span>Cloud width on return</span><b id="ac-f-w">–</b><small id="ac-f-w-s"></small></div>
+					<div class="ac-ro"><span>Atoms that return</span><b id="ac-f-n">–</b><small id="ac-f-n-s"></small></div>
+					<div class="ac-ro"><span>Stability at 1 s</span><b id="ac-f-r">–</b><small id="ac-f-r-s"></small></div>
+				</div>
+			</div>
+			<div class="tu-card ac-controls">
+				<div class="ac-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="ac-f-play" aria-pressed="true">❚❚ Pause</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ac-f-replay">↺ Replay</button>
+					<label class="ac-check"><input type="checkbox" id="ac-f-lasers" checked> Show the cooling lasers</label>
+				</div>
+				<div class="ac-grid">
+					<div class="tu-field"><span class="tu-label" id="ac-fT-l">Time between the pulses, T: <b id="ac-fT-v"></b></span><input type="range" id="ac-fT" min="0" max="1000" step="1" aria-labelledby="ac-fT-l">
+						<span class="tu-note">The higher you throw, the longer the wait and the narrower the fringe. Same T as on the other tabs.</span></div>
+					<div class="tu-field"><span class="tu-label" id="ac-ft-l">Atom temperature: <b id="ac-ft-v"></b></span><input type="range" id="ac-ft" min="0" max="1000" step="1" aria-labelledby="ac-ft-l">
+						<span class="tu-note">Colder atoms spread out more slowly, so more of them fall back through the cavity opening. Real fountains reach 1 to 2 microkelvin.</span></div>
+				</div>
+				<div class="ac-chips"><span class="tu-label">Try</span>
+					<button type="button" class="tu-chip" data-ftry="0.5,0.5">Ultracold: 0.5 µK, T = 0.5 s</button>
+					<button type="button" class="tu-chip" data-ftry="2,0.5">Typical: 2 µK, T = 0.5 s</button>
+					<button type="button" class="tu-chip" data-ftry="2,2">Throw higher: T = 2 s</button>
+					<button type="button" class="tu-chip" data-ftry="20,0.5">Warm: 20 µK</button></div>
+				<p class="tu-note ac-b-explain" id="ac-f-explain"></p>
+				<p class="tu-note">Drawn to scale in height; the cloud and the cavity opening are exaggerated sideways (cloud 6×). Atoms that drift outside the 1 cm opening on the way back (red) are lost to the wall. Here the microwaves are exactly on resonance, so every atom that returns flips and turns gold after the second pulse; detune them in the <a href="/atomic-clock-simulator?tab=fringe">full simulator</a>.</p>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How a caesium fountain clock works</h2>
+			<p>A fountain clock is the most accurate kind of caesium clock, and the type national laboratories use to realise the SI second. The idea is simple: instead of letting atoms fly sideways through a tube, <strong>throw them straight up and let gravity bring them back</strong>. The atoms pass the same microwave cavity twice, on the way up and again on the way down, and the time between the two passes (about half a second) is the time over which the clock "listens" to them. The longer the listening time, the sharper the resonance and the better the clock.</p>
+			<h3>The six steps of one cycle</h3>
+			<ol>
+				<li><strong>Cool.</strong> Six laser beams meeting at one point slow caesium atoms from the speed of a jet (hundreds of metres per second) to a few millimetres per second, a temperature of about 1 to 2 microkelvin, a millionth of a degree above absolute zero. About a million atoms collect in a ball a few millimetres across.</li>
+				<li><strong>Launch.</strong> Slightly detuning the upward and downward beams makes the ball move up as a whole ("moving molasses"), at about 3 metres per second for a half-second flight.</li>
+				<li><strong>First microwave pulse.</strong> As the ball passes up through the cavity, a short pulse tips each atom to an even mixture of its two clock levels (a &pi;/2 pulse; see the <a href="/atomic-clock-simulator?tab=bloch">Bloch sphere</a>).</li>
+				<li><strong>Free flight.</strong> The atoms coast up to a peak about 30 centimetres above the cavity and fall back, undisturbed. Each atom's quantum state turns at its own natural rate.</li>
+				<li><strong>Second pulse.</strong> On the way down, the ball passes the cavity again. If the microwaves were exactly on the atoms' frequency, the second pulse finishes what the first started and every atom ends in the other level. If they were off, some do not.</li>
+				<li><strong>Detect.</strong> The atoms fall through a sheet of laser light below the cavity; the glow tells how many flipped. A servo steers the microwave frequency to keep that number at the peak of the fringe.</li>
+			</ol>
+			<h3>Why not throw them higher?</h3>
+			<p>A longer flight makes the fringe narrower (its width is about 1/(2T) for a flight time T), which is what you want. But the atoms are not perfectly still: at 2 microkelvin caesium atoms drift sideways at about 1 centimetre per second, so after a second the cloud has spread to a couple of centimetres, and atoms that miss the cavity opening on the way back are lost. Past about a second, the signal falls as fast as the fringe narrows, so a taller fountain stops helping, unless the atoms are made colder. That is why laboratories work on colder atoms, and why some build clocks for the International Space Station, where microgravity allows flights of many seconds without the atoms falling away.</p>
+			<p>Try it above: choose <em>Ultracold</em> to see more atoms return, or <em>Throw higher</em> to watch red (lost) atoms multiply and the stability figure stop improving. The "stability at 1 s" readout is a simple model (fringe width and the square root of the atoms that return), compared with a reference fountain at half a second and 2 microkelvin.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>How accurate is a fountain clock?</strong> The best ones are accurate to about 1 part in 10<sup>16</sup>: they would neither gain nor lose a second in about 300 million years. Optical clocks, which use light instead of microwaves, are now a hundred times better.</li>
+				<li><strong>Why is caesium used?</strong> It has a convenient microwave transition at 9,192,631,770 Hz, which defines the second, and its atoms are easy to cool and launch with lasers.</li>
+				<li><strong>Is the fountain a real fountain?</strong> No water: the "fountain" is the arc of atoms, up and down, like a jet of water.</li>
+				<li><strong>Is this an accurate simulation?</strong> It is a teaching model. The motion of the atoms is exact ballistic physics, the cloud spread comes from the real thermal speed of caesium at the temperature you choose, and the cloud and cavity opening are exaggerated sideways so you can see them. Not modelled: the 3D shape of the real cavity field, atom-atom collisions, and the many small frequency shifts that metrologists correct.</li>
+			</ul>
+			<p>See the whole clock in the <a href="/atomic-clock-simulator">Atomic Clock Simulator</a>: the <a href="/atomic-clock-simulator?tab=fringe">Ramsey fringes</a>, the <a href="/atomic-clock-simulator?tab=race">clock race</a> and the <a href="/atomic-clock-simulator?tab=drift">drift calculator</a>. Everything runs on your device; nothing is uploaded. <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>
