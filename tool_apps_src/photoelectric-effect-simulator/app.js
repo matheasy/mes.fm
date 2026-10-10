@@ -81,7 +81,10 @@
 		c.fillStyle = "rgba(120,150,220,0.06)"; c.fill();
 		/* plates */
 		c.fillStyle = m.color; c.fillRect(g.ex - 10, g.py0, 14, g.py1 - g.py0); c.fillStyle = "#9aa2b4"; c.fillRect(g.cxp, g.py0, 12, g.py1 - g.py0);
-		c.fillStyle = "#e8ecf5"; c.font = "600 " + Math.max(11, W * 0.015) + "px system-ui,sans-serif"; c.textAlign = "left"; c.fillText(m.name.replace(/ \(.*\)/, ""), g.ex + 8, g.py1 + 18); c.textAlign = "right"; c.fillText("collector", g.cxp - 2, g.py1 + 18); c.textAlign = "center";
+		c.fillStyle = "#e8ecf5"; c.font = "600 " + Math.max(11, W * 0.015) + "px system-ui,sans-serif"; c.textAlign = "center";
+		/* plate names sit above the plates on a small dark pill: below them the wires run straight down and would cross the text */
+		function tag(text, x, y) { var w = c.measureText(text).width + 14, h = Math.max(18, W * 0.026); c.fillStyle = "rgba(10,12,28,0.82)"; c.beginPath(); if (c.roundRect) c.roundRect(x - w / 2, y - h + 4, w, h, 6); else c.rect(x - w / 2, y - h + 4, w, h); c.fill(); c.fillStyle = "#e8ecf5"; c.fillText(text, x, y - 2); }
+		tag(m.name.replace(/ \(.*\)/, ""), g.ex - 3, g.py0 - 6); tag("collector", g.cxp + 6, g.py0 - 6);
 		/* photons */
 		c.lineWidth = 2.4; c.strokeStyle = col; c.shadowColor = col; c.shadowBlur = 8;
 		photons.forEach(function (p) { c.beginPath(); for (var k = 0; k <= 10; k++) { var t = k / 10, px = p.x - p.ux * 22 * (1 - t) + (-p.uy) * Math.sin(t * 12 + p.ph) * 3, py = p.y - p.uy * 22 * (1 - t) + p.ux * Math.sin(t * 12 + p.ph) * 3; k ? c.lineTo(px, py) : c.moveTo(px, py); } c.stroke(); });
