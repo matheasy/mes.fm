@@ -12,7 +12,7 @@
 	.ac-theatre:hover {border-color:var(--accent);color:var(--accent);}
 	.ac-theatre[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
 	.ac .tu-label b {text-transform:none;letter-spacing:0;}
-	#ac-bl {touch-action:none;cursor:grab;} #ac-bl.is-drag {cursor:grabbing;}
+	#ac-bl, #ac-fo {touch-action:none;cursor:grab;} #ac-bl.is-drag, #ac-fo.is-drag {cursor:grabbing;}
 	.ac-b-steps {margin-left:0.6em;} .ac-b-explain {margin:0.8em 0 0;}
 	.ac-lead {margin:0 0 0.7em;font-size:1em;line-height:1.45;}
 	.ac-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--ac-line);background:var(--ac-bg);}

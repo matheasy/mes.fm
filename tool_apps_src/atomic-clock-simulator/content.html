@@ -3,8 +3,9 @@
 		<div class="ac-bar">
 			<div class="ac-tabs" role="tablist" aria-label="Atomic clock simulator sections">
 				<button type="button" role="tab" id="ac-t-loop" data-tab="loop" aria-selected="true" aria-controls="ac-p-loop">How it works</button>
-				<button type="button" role="tab" id="ac-t-fringe" data-tab="fringe" aria-selected="false" aria-controls="ac-p-fringe">Fountain &amp; fringes</button>
-				<button type="button" role="tab" id="ac-t-bloch" data-tab="bloch" aria-selected="false" aria-controls="ac-p-bloch">Bloch sphere (3D)</button>
+				<button type="button" role="tab" id="ac-t-fringe" data-tab="fringe" aria-selected="false" aria-controls="ac-p-fringe">Fringes</button>
+				<button type="button" role="tab" id="ac-t-bloch" data-tab="bloch" aria-selected="false" aria-controls="ac-p-bloch">Bloch sphere</button>
+				<button type="button" role="tab" id="ac-t-fountain" data-tab="fountain" aria-selected="false" aria-controls="ac-p-fountain">3D fountain</button>
 				<button type="button" role="tab" id="ac-t-race" data-tab="race" aria-selected="false" aria-controls="ac-p-race">Clock race</button>
 				<button type="button" role="tab" id="ac-t-stab" data-tab="stab" aria-selected="false" aria-controls="ac-p-stab">Stability chart</button>
 				<button type="button" role="tab" id="ac-t-drift" data-tab="drift" aria-selected="false" aria-controls="ac-p-drift">Drift calculator</button>
@@ -126,6 +127,44 @@
 			</div>
 		</section>
 
+		<!-- 2c. 3D fountain -->
+		<section class="ac-panel" id="ac-p-fountain" role="tabpanel" aria-labelledby="ac-t-fountain" hidden>
+			<p class="ac-lead">A caesium fountain clock in 3D: six laser beams cool a ball of atoms, one more push tosses it up through the microwave cavity, and gravity brings it back. <em>Drag to look around it.</em></p>
+			<div class="ac-wrap" id="ac-wrap5">
+				<div class="ac-stage" id="ac-stage5">
+					<canvas id="ac-fo" role="img" aria-label="A 3D caesium fountain: a ball of laser-cooled atoms is launched up through a microwave cavity, reaches an apex and falls back, then passes a detection zone. The cloud spreads out as it travels and the atoms that miss the cavity opening are lost."></canvas>
+					<div class="ac-tools"><button type="button" id="ac-full5" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="ac-readouts" id="ac-ro5">
+					<div class="ac-ro"><span>Launch speed</span><b id="ac-f-v">–</b><small id="ac-f-v-s"></small></div>
+					<div class="ac-ro"><span>Apex above the cavity</span><b id="ac-f-h">–</b><small>g T² / 8</small></div>
+					<div class="ac-ro"><span>Cloud width on return</span><b id="ac-f-w">–</b><small id="ac-f-w-s"></small></div>
+					<div class="ac-ro"><span>Atoms that return</span><b id="ac-f-n">–</b><small id="ac-f-n-s"></small></div>
+					<div class="ac-ro"><span>Stability at 1 s</span><b id="ac-f-r">–</b><small id="ac-f-r-s"></small></div>
+				</div>
+			</div>
+			<div class="tu-card ac-controls">
+				<div class="ac-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="ac-f-play" aria-pressed="true">❚❚ Pause</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ac-f-replay">↺ Replay</button>
+					<label class="ac-check"><input type="checkbox" id="ac-f-lasers" checked> Show the cooling lasers</label>
+				</div>
+				<div class="ac-grid">
+					<div class="tu-field"><span class="tu-label" id="ac-fT-l">Time between the pulses, T: <b id="ac-fT-v"></b></span><input type="range" id="ac-fT" min="0" max="1000" step="1" aria-labelledby="ac-fT-l">
+						<span class="tu-note">The higher you throw, the longer the wait and the narrower the fringe. Same T as on the other tabs.</span></div>
+					<div class="tu-field"><span class="tu-label" id="ac-ft-l">Atom temperature: <b id="ac-ft-v"></b></span><input type="range" id="ac-ft" min="0" max="1000" step="1" aria-labelledby="ac-ft-l">
+						<span class="tu-note">Colder atoms spread out more slowly, so more of them fall back through the cavity opening. Real fountains reach 1 to 2 microkelvin.</span></div>
+				</div>
+				<div class="ac-chips"><span class="tu-label">Try</span>
+					<button type="button" class="tu-chip" data-ftry="0.5,0.5">Ultracold: 0.5 µK, T = 0.5 s</button>
+					<button type="button" class="tu-chip" data-ftry="2,0.5">Typical: 2 µK, T = 0.5 s</button>
+					<button type="button" class="tu-chip" data-ftry="2,2">Throw higher: T = 2 s</button>
+					<button type="button" class="tu-chip" data-ftry="20,0.5">Warm: 20 µK</button></div>
+				<p class="tu-note ac-b-explain" id="ac-f-explain"></p>
+				<p class="tu-note">Drawn to scale in height; the cloud and the cavity opening are exaggerated sideways (cloud 6×). Atoms that drift outside the 1 cm opening on the way back (red) are lost to the wall. The microwave offset is the probe set on the “Fringes” tab, so atoms that flipped turn gold after the second pulse.</p>
+			</div>
+		</section>
+
 		<!-- 3. race -->
 		<section class="ac-panel" id="ac-p-race" role="tabpanel" aria-labelledby="ac-t-race" hidden>
 			<p class="ac-lead">Seven clocks start together, perfectly set. Speed up time and see how far each one wanders from the true second.</p>
@@ -203,6 +242,8 @@
 			</ol>
 			<h3>Why a fountain beats a tube</h3>
 			<p>The resonance gets narrower the longer the atoms are probed (the time–frequency trade-off: width ≈ 1/(2T)). In a beam clock the atoms zip through a metre-long tube in about 10 ms, giving a line roughly 50 Hz wide. In a <strong>fountain</strong> clock, lasers cool the atoms to a few microkelvin and toss them up about a metre; they fall back through the same cavity half a second later. Two short pulses with a long wait between them make <em>Ramsey fringes</em>: a central fringe about 1 Hz wide, on a line at 9.19 GHz, a quality factor near 10¹⁰. NIST-F2 and its cousins in about a dozen countries realise the SI second to about 1 part in 10¹⁶.</p>
+			<h3>The fountain: why it is tossed up, and why not higher</h3>
+			<p>Six laser beams meeting at one point cool a ball of about a million caesium atoms to a couple of microkelvin, a few millimetres across. Slightly detuning the upward and downward beams then launches the ball (&ldquo;moving molasses&rdquo;) at a few metres per second, so it rises through the microwave cavity, slows, turns around under gravity a metre or less higher, and falls back through the same cavity: two microwave pulses, T apart, with the atoms in free flight and undisturbed in between. A longer flight narrows the fringe, but the cloud spreads sideways as it flies, and atoms that miss the cavity opening on the way back are lost. At some height the signal falls as fast as the fringe narrows, so a taller fountain stops helping unless the atoms are colder; that is why labs chase lower temperatures and why the best clocks of this kind fly their atoms about a second.</p>
 			<h3>The Bloch sphere: why fringes appear</h3>
 			<p>A two-level atom can be drawn as an arrow on a sphere (the Bloch sphere): the south pole is the lower level, the north pole the upper level, and the equator an equal mix of both. The first microwave pulse is exactly long enough to tip the arrow from the south pole to the equator (a "π/2 pulse"). During the wait the atom's own oscillation turns the arrow around the equator at the rate by which the microwaves are off resonance; if they are exactly on resonance it does not turn at all relative to them. The second pulse then tips it further. If the arrow has not turned, the second pulse continues the same motion and all atoms arrive at the north pole. If it has turned half a circle, the second pulse undoes the first and the atoms return to the south pole. Turning by one full circle brings back the maximum: that repeating pattern is the Ramsey fringes, and the longer the wait, the less detuning it takes to turn the arrow half a circle, so the fringes get narrower.</p>
 			<h3>Why the next clocks use light</h3>

@@ -85,6 +85,28 @@
 	// phase the atom picks up against the microwaves during the wait, in radians (= 2 pi * detuning * T)
 	function waitPhase(deltaHz, T) { return TWO_PI * deltaHz * T; }
 
+
+	/* ---------------- fountain geometry ----------------
+	 * Atoms leave the cooling region (d below the microwave cavity) with launch speed v_l, move on one parabola z(t) = -d + v_l t - g t^2 / 2, pass up through the cavity
+	 * (pulse 1), reach an apex h = g T^2 / 8 above it and fall back through it (pulse 2) T later, then drop to the detection zone. Meanwhile the cloud spreads sideways at
+	 * sigma_v = sqrt(kB Temp / m): only atoms still inside the cavity aperture on the way back are detected, so a longer flight (narrower fringe) costs signal. */
+	var G = 9.80665, KB = 1.380649e-23, M_CS = 2.20694650e-25;
+	function fountainGeometry(T, tempUK, opts) {
+		opts = opts || {};
+		var d = opts.d != null ? opts.d : 0.25, a = opts.aperture != null ? opts.aperture : 0.005, s0 = opts.sigma0 != null ? opts.sigma0 : 0.002, dz = opts.detect != null ? opts.detect : 0.10;
+		var vc = G * T / 2, vl = Math.sqrt(vc * vc + 2 * G * d), t1 = (vl - vc) / G, tRet = t1 + T;
+		var sigV = Math.sqrt(KB * tempUK * 1e-6 / M_CS), sigR = Math.sqrt(s0 * s0 + Math.pow(sigV * tRet, 2));
+		var dDown = (-vc + Math.sqrt(vc * vc + 2 * G * dz)) / G;
+		return { d: d, aperture: a, h: G * T * T / 8, vCavity: vc, vLaunch: vl, tCavity: t1, tApex: t1 + T / 2, tReturn: tRet, tDetect: tRet + dDown, detectZ: -dz, sigmaV: sigV, sigmaReturn: sigR,
+		         fraction: 1 - Math.exp(-a * a / (2 * sigR * sigR)) };
+	}
+	function fountainZ(g, t) { return -g.d + g.vLaunch * t - 0.5 * G * t * t; }
+	// stability at 1 s relative to the reference fountain (T = 0.5 s, 2 uK): sigma_y ~ (1/T) / sqrt(atoms detected)
+	function fountainRelStability(T, tempUK, opts) {
+		var f = fountainGeometry(T, tempUK, opts).fraction, r = fountainGeometry(0.5, 2, opts).fraction;
+		return (0.5 / T) * Math.sqrt(r / f);
+	}
+
 	/* ---------------- stability of a locked clock ---------------- */
 	// Fractional frequency noise at 1 s of an atomic clock locked to a line of width dnu (Hz) with signal-to-noise snr per cycle of duration Tc (s).
 	function sigma1s(dnu, snr, Tc) { return (1 / Math.PI) * (dnu / NU0) * (1 / snr) * Math.sqrt(Tc); }
@@ -289,7 +311,7 @@
 
 	var API = {
 		NU0: NU0, C: C, DAY: DAY, YEAR: YEAR, PERIODS: PERIODS, UNIVERSE: UNIVERSE, CLOCKS: CLOCKS, BYID: BYID,
-		rng: rng, rotate: rotate, blochPath: blochPath, blochP: blochP, waitPhase: waitPhase, rabiP: rabiP, beamP: beamP, ramseyP: ramseyP, fountainP: fountainP, fringeWidth: fringeWidth, beamWidth: beamWidth,
+		rng: rng, fountainGeometry: fountainGeometry, fountainZ: fountainZ, fountainRelStability: fountainRelStability, rotate: rotate, blochPath: blochPath, blochP: blochP, waitPhase: waitPhase, rabiP: rabiP, beamP: beamP, ramseyP: ramseyP, fountainP: fountainP, fringeWidth: fringeWidth, beamWidth: beamWidth,
 		sigma1s: sigma1s, sigmaAt: sigmaAt, allanModel: allanModel, raceInit: raceInit, raceStep: raceStep, expectedError: expectedError, timeToError: timeToError,
 		Loop: Loop, allan: allan, phaseToFreq: phaseToFreq,
 		parseFraction: parseFraction, parseTime: parseTime, secondsOff: secondsOff, fractionFrom: fractionFrom, timeUntil: timeUntil, lightDistance: lightDistance, cyclesIn: cyclesIn,
@@ -316,7 +338,7 @@
 	function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	var NU0 = A.NU0;
 	var saved = sget(), q = new URLSearchParams(location.search);
-	var TABS = ["loop", "fringe", "bloch", "race", "stab", "drift"];
+	var TABS = ["loop", "fringe", "bloch", "fountain", "race", "stab", "drift"];
 	var COL = { bg: "#070d1f", line: "#26325a", text: "#e6ecfb", dim: "#93a1c4", gold: "#fbbf24", cyan: "#22d3ee", blue: "#60a5fa", grey: "#94a3b8", red: "#f87171", grid: "rgba(147,161,196,0.16)" };
 	var coarse = window.matchMedia && matchMedia("(pointer: coarse)").matches;
 
@@ -326,12 +348,12 @@
 		tab: TABS.indexOf(q.get("tab")) >= 0 ? q.get("tab") : (TABS.indexOf(saved.tab) >= 0 ? saved.tab : "loop"),
 		type: /^(beam|fountain)$/.test(q.get("c") || saved.type || "") ? (q.get("c") || saved.type) : "fountain",
 		gain: clamp(num(saved.gain) || 0.3, 0.02, 0.9), speed: clamp(num(saved.speed) || 12, 1, 60),
-		T: clamp(num(q.get("T")) || num(saved.T) || 0.5, 0.001, 10), snr: clamp(num(q.get("snr")) || num(saved.snr) || 300, 10, 3000), det: 0.15,
+		T: clamp(num(q.get("T")) || num(saved.T) || 0.5, 0.001, 10), temp: clamp(num(saved.temp) || 2, 0.2, 50), snr: clamp(num(q.get("snr")) || num(saved.snr) || 300, 10, 3000), det: 0.15,
 		rabi: saved.rabi !== false, hidden: saved.hidden || {}, raceSpeed: num(saved.raceSpeed) || 31557600,
 		frac: A.parseFraction(q.get("f") || saved.frac || "5 ppm"), target: A.parseTime(q.get("t") || saved.target || "1 s"), per: /^(day|week|month|year)$/.test(q.get("per") || saved.per || "") ? (q.get("per") || saved.per) : "month"
 	};
 	if (!isFinite(S.frac)) S.frac = 5e-6; if (!isFinite(S.target) || S.target <= 0) S.target = 1;
-	function save() { sset({ tab: S.tab, type: S.type, gain: S.gain, speed: S.speed, T: S.T, snr: S.snr, rabi: S.rabi, hidden: S.hidden, raceSpeed: S.raceSpeed, frac: S.frac, target: S.target, per: S.per }); }
+	function save() { sset({ temp: S.temp, tab: S.tab, type: S.type, gain: S.gain, speed: S.speed, T: S.T, snr: S.snr, rabi: S.rabi, hidden: S.hidden, raceSpeed: S.raceSpeed, frac: S.frac, target: S.target, per: S.per }); }
 
 	/* ---------------- shared helpers ---------------- */
 	var toastT;
@@ -595,7 +617,7 @@
 	var BSEG = [0.2, 0.8];                                  // fractions of the animation: pulse 1 | wait | pulse 2
 	var BCOL = [COL.cyan, COL.gold, "#f472b6"];
 	$("ac-bdet").value = 200; $("ac-bT").value = TmapInv(S.T);
-	function syncBT() { $("ac-bT").value = TmapInv(S.T); $("ac-T").value = TmapInv(S.T); paintBloch(); paintFringeLabels(); }
+	function syncBT() { $("ac-bT").value = TmapInv(S.T); $("ac-T").value = TmapInv(S.T); $("ac-fT").value = TmapInv(S.T); paintBloch(); paintFringeLabels(); paintFo(); }
 	function bdet() { var span = 2.5 / S.T; return (+$("ac-bdet").value / 1000) * span; }
 	var bp = null, bpKey = "";
 	function getPath() { var k = bdet().toFixed(6) + "|" + S.T; if (k !== bpKey) { bp = A.blochPath(bdet(), S.T, Math.min(0.01, S.T / 5), 24, 60); bpKey = k; } return bp; }
@@ -690,6 +712,103 @@
 		$("ac-b-ph").textContent = Math.round(ph1) + "°"; $("ac-b-ph-s").textContent = A.fmtSig(Math.abs(ph) / 360, 3) + " full turns (2π × detuning × T)";
 		$("ac-b-fin").textContent = Math.round(pf * 100) + "%"; $("ac-b-fin-s").textContent = pf > 0.9 ? "top of a fringe: nearly all atoms flip" : pf < 0.1 ? "bottom of a fringe: nearly none flip" : "on the slope of a fringe";
 		$("ac-b-explain").textContent = Math.abs(ph1) < 15 ? "The arrow has barely turned, so the second pulse carries on in the same direction and the atoms end near the north pole." : Math.abs(Math.abs(ph1) - 180) < 15 ? "The arrow has turned half a circle, so the second pulse undoes the first and the atoms go back to the south pole." : "The arrow has turned part of the way round, so the second pulse takes it to a point between the poles.";
+	}
+
+
+	/* ================= tab 2c: 3D fountain ================= */
+	var fo = { u: 0, playing: true, hold: 0.5, yaw: -0.75, pitch: 0.3, drag: null, lasers: true }, EX = 6, FA = [];
+	(function () { var r = A.rng(5); for (var i = 0; i < 260; i++) FA.push({ g: [r.normal(), r.normal(), r.normal()], v: [r.normal(), r.normal(), r.normal()], u: r() }); })();
+	function TmapU(v) { return 0.2 * Math.pow(250, v / 1000); } function TmapUInv(t) { return Math.round(1000 * Math.log(t / 0.2) / Math.log(250)); }
+	function fmtUK(t) { return A.fmtSig(t, 2) + " µK"; }
+	$("ac-ft").value = TmapUInv(S.temp);
+	function paintFo() {
+		$("ac-fT-v").textContent = fmtT(S.T); $("ac-ft-v").textContent = fmtUK(S.temp);
+		$("ac-f-play").setAttribute("aria-pressed", String(fo.playing)); $("ac-f-play").textContent = fo.playing ? "❚❚ Pause" : "▶ Play";
+	}
+	$("ac-fT").oninput = function () { S.T = Tmap(+this.value); syncBT(); save(); };
+	$("ac-ft").oninput = function () { S.temp = TmapU(+this.value); paintFo(); save(); };
+	$("ac-f-play").onclick = function () { fo.playing = !fo.playing; fo.hold = 0; paintFo(); };
+	$("ac-f-replay").onclick = function () { fo.u = 0; fo.playing = true; fo.hold = 0.4; paintFo(); };
+	$("ac-f-lasers").onchange = function () { fo.lasers = this.checked; };
+	$("ac-full5").onclick = function () { toggleFull("ac-wrap5"); };
+	[].forEach.call(document.querySelectorAll("[data-ftry]"), function (b) { b.onclick = function () { var p = b.getAttribute("data-ftry").split(","); S.temp = +p[0]; S.T = +p[1]; $("ac-ft").value = TmapUInv(S.temp); fo.u = 0; fo.playing = true; fo.hold = 0.4; syncBT(); save(); }; });
+	function stepFo(dt) {
+		if (!fo.playing) return;
+		if (fo.hold > 0) { fo.hold -= dt; return; }
+		if (fo.u >= 1) { fo.u = 0; fo.hold = 0.5; } else { fo.u += dt / 13; if (fo.u >= 1) { fo.u = 1; fo.hold = 1.5; } }
+	}
+	(function () {
+		var cv = $("ac-fo");
+		cv.addEventListener("pointerdown", function (e) { fo.drag = { x: e.clientX, y: e.clientY, yaw: fo.yaw, pitch: fo.pitch }; cv.setPointerCapture(e.pointerId); cv.classList.add("is-drag"); });
+		cv.addEventListener("pointermove", function (e) { if (!fo.drag) return; fo.yaw = fo.drag.yaw + (e.clientX - fo.drag.x) * 0.01; fo.pitch = clamp(fo.drag.pitch + (e.clientY - fo.drag.y) * 0.01, -1.2, 1.3); });
+		function up() { fo.drag = null; cv.classList.remove("is-drag"); }
+		cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+	})();
+	function foTimes(G) {            // animation position u -> physical time since launch (s), and the phase
+		var u = fo.u; if (u < 0.16) return { tau: 0, phase: 0, cap: u / 0.16 };
+		if (u < 0.9) return { tau: (u - 0.16) / 0.74 * G.tDetect, phase: 1, cap: 1 };
+		return { tau: G.tDetect, phase: 2, cap: 1 };
+	}
+	function drawFo() {
+		var st = $("ac-stage5"), dim = sizeStage(st, 0.62, 1.5), W = dim.w, H = dim.h, c = setup($("ac-fo"), W, H), fs = fontPx(W);
+		c.fillStyle = COL.bg; c.fillRect(0, 0, W, H);
+		var G = A.fountainGeometry(S.T, S.temp), tm = foTimes(G), tau = tm.tau;
+		var zmin = -G.d - 0.06, zmax = Math.max(G.h, 0.12) + 0.1, zc = (zmin + zmax) / 2, sc = (H - 70) / (zmax - zmin);
+		var cx = W * 0.5, cy = H * 0.5 + 6, cyw = Math.cos(fo.yaw), syw = Math.sin(fo.yaw), cp = Math.cos(fo.pitch), sp = Math.sin(fo.pitch);
+		function pr(x, y, z) { var x1 = x * cyw - y * syw, y1 = x * syw + y * cyw, zz = z - zc; return { x: cx + x1 * sc, y: cy - (y1 * sp + zz * cp) * sc, d: y1 * cp - zz * sp }; }
+		function ring(r, z, col, wd, al, n) { c.strokeStyle = col; c.lineWidth = wd; c.globalAlpha = al; c.beginPath(); n = n || 48; for (var i = 0; i <= n; i++) { var a = i / n * 6.2832, q = pr(r * Math.cos(a), r * Math.sin(a), z); if (i) c.lineTo(q.x, q.y); else c.moveTo(q.x, q.y); } c.stroke(); c.globalAlpha = 1; }
+		function seg(a, b, col, wd, al) { var p = pr(a[0], a[1], a[2]), q = pr(b[0], b[1], b[2]); c.strokeStyle = col; c.lineWidth = wd; c.globalAlpha = al; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(q.x, q.y); c.stroke(); c.globalAlpha = 1; }
+		// vacuum tube
+		var TR = 0.05; for (var a0 = 0; a0 < 8; a0++) { var an = a0 / 8 * 6.2832; seg([TR * Math.cos(an), TR * Math.sin(an), zmin], [TR * Math.cos(an), TR * Math.sin(an), zmax - 0.02], "#2c3a6b", 1, 0.55); }
+		ring(TR, zmin, "#3b4c88", 1.2, 0.8); ring(TR, zmax - 0.02, "#3b4c88", 1.2, 0.8); ring(TR, G.d * -0.5, "#26325a", 1, 0.6); ring(TR, G.h * 0.5, "#26325a", 1, 0.6);
+		// apex marker
+		ring(TR * 0.9, G.h, "rgba(147,161,196,0.8)", 1, 0.7, 40); var ap = pr(TR + 0.01, 0, G.h); var apl = pr(-TR - 0.01, 0, G.h); label(c, "apex " + fmtH(G.h), apl.x - 10, apl.y, COL.dim, fs - 1, "right");
+		// microwave cavity
+		var flash = Math.min(Math.abs(tau - G.tCavity), Math.abs(tau - G.tReturn)) < 0.035 * G.tDetect && tm.phase === 1, cc = flash ? "#fde68a" : COL.gold;
+		[-0.03, 0.03].forEach(function (zz) { ring(0.062, zz, cc, flash ? 3.4 : 2, 0.95); });
+		for (var a1 = 0; a1 < 6; a1++) { var ang = a1 / 6 * 6.2832; seg([0.062 * Math.cos(ang), 0.062 * Math.sin(ang), -0.03], [0.062 * Math.cos(ang), 0.062 * Math.sin(ang), 0.03], cc, 1.2, 0.6); }
+		var cl = pr(0.07, 0, 0); label(c, flash ? "microwave pulse!" : "microwave cavity", cl.x + 12, cl.y, cc, fs - 1, "left");
+		// detection zone
+		var dz = G.detectZ, lit = tau > (G.tReturn + 0.7 * (G.tDetect - G.tReturn)), dq = [[-0.06, -0.06], [0.06, -0.06], [0.06, 0.06], [-0.06, 0.06]];
+		c.fillStyle = lit ? "rgba(74,222,128,0.28)" : "rgba(74,222,128,0.08)"; c.strokeStyle = "#4ade80"; c.lineWidth = 1.2; c.beginPath(); dq.forEach(function (p, i) { var q = pr(p[0], p[1], dz); if (i) c.lineTo(q.x, q.y); else c.moveTo(q.x, q.y); }); c.closePath(); c.fill(); c.stroke();
+		var dl = pr(0.07, 0.07, dz); label(c, "detection (laser sheet)", dl.x + 6, dl.y + 4, "#4ade80", fs - 2, "left");
+		// cooling lasers
+		var mot = fo.lasers && fo.u < 0.2, mz = -G.d;
+		if (mot) {
+			var al = 0.55 + 0.35 * Math.sin(performance.now() / 1000 * 6);
+			[[1, 0, 0], [0, 1, 0], [0, 0, 1]].forEach(function (v) { seg([-v[0] * 0.15, -v[1] * 0.15, mz - v[2] * 0.15], [v[0] * 0.15, v[1] * 0.15, mz + v[2] * 0.15], "#f87171", 2.2, al); });
+			var ml = pr(0.15, 0, mz); label(c, "6 cooling laser beams", ml.x + 6, ml.y - 4, "#f87171", fs - 1, "left");
+		} else { var mm = pr(0.06, 0, mz); label(c, "cooling region", mm.x + 8, mm.y + 12, COL.dim, fs - 2, "left"); }
+		// atoms
+		var P = A.fountainP(fringeVals().det, S.T, Math.min(0.01, S.T / 5)), t0 = tm.phase === 0 ? 0 : tau, grow = tm.phase === 0 ? 0.35 + 0.65 * tm.cap : 1, items = [], lost = 0, kept = 0;
+		var zC = A.fountainZ(G, tau), sv = G.sigmaV, s0 = 0.002;
+		for (var i = 0; i < FA.length; i++) {
+			var at = FA[i], rx = (s0 * at.g[0] + sv * t0 * at.v[0]), ry = (s0 * at.g[1] + sv * t0 * at.v[1]), rz = (s0 * at.g[2] + sv * t0 * at.v[2]);
+			var rRet = Math.hypot(s0 * at.g[0] + sv * G.tReturn * at.v[0], s0 * at.g[1] + sv * G.tReturn * at.v[1]), isLost = rRet > G.aperture, passedRet = tau > G.tReturn;
+			if (isLost) lost++; else kept++;
+			var q = pr(rx * EX * grow, ry * EX * grow, zC + rz * EX * grow), col = COL.blue, a2 = 0.9, rad = Math.max(1.6, W / 330);
+			if (tau > G.tCavity && tau <= G.tReturn) col = "#a78bfa"; else if (tau > G.tReturn) col = (at.u < P) ? COL.gold : COL.blue;
+			if (isLost && passedRet) { col = COL.red; a2 = Math.max(0.12, 0.7 - (tau - G.tReturn) / (G.tDetect - G.tReturn) * 0.6); }
+			var glow = tau > (G.tReturn + 0.7 * (G.tDetect - G.tReturn)) && !(isLost && passedRet) && at.u < P;
+			items.push({ x: q.x, y: q.y, d: q.d, col: col, a: a2, r: rad + (glow ? 1.5 : 0), glow: glow });
+		}
+		items.sort(function (a, b) { return b.d - a.d; });
+		items.forEach(function (it) { if (it.glow) { c.fillStyle = "rgba(251,191,36,0.25)"; c.beginPath(); c.arc(it.x, it.y, it.r * 3, 0, 6.3); c.fill(); } c.globalAlpha = it.a; c.fillStyle = it.col; c.beginPath(); c.arc(it.x, it.y, it.r, 0, 6.3); c.fill(); });
+		c.globalAlpha = 1;
+		// height ruler and phase caption
+		var pc = tm.phase === 0 ? (fo.lasers ? "1. Cool: six laser beams cool the atoms" : "1. Cool the atoms") : tau < G.tCavity ? "2. Launch: the ball is tossed up" : tau < G.tReturn ? (tau < G.tApex ? "3. Pulse 1, then it keeps rising" : "4. Apex: it turns and falls back") : tau < (G.tReturn + 0.7 * (G.tDetect - G.tReturn)) ? "5. Pulse 2, then it falls to the detector" : "6. Detect: count the atoms that flipped";
+		label(c, pc, 14, 18, COL.text, fs + 1, "left");
+		c.fillStyle = COL.dim; c.fillRect(14, H - 20, W - 28, 3); c.fillStyle = COL.cyan; c.fillRect(14, H - 20, (W - 28) * fo.u, 3);
+		label(c, "drag to rotate", W - 14, 18, COL.dim, fs - 3, "right");
+	}
+	function readFo() {
+		var G = A.fountainGeometry(S.T, S.temp), rel = A.fountainRelStability(S.T, S.temp);
+		$("ac-f-v").textContent = A.fmtSig(G.vLaunch, 3) + " m/s"; $("ac-f-v-s").textContent = A.fmtSig(G.vCavity, 3) + " m/s as it passes the cavity";
+		$("ac-f-h").textContent = fmtH(G.h);
+		$("ac-f-w").textContent = A.fmtSig(G.sigmaReturn * 1000 * 2, 3) + " mm"; $("ac-f-w-s").textContent = "spread σ = " + A.fmtSig(G.sigmaReturn * 1000, 2) + " mm; atoms drift at " + A.fmtSig(G.sigmaV * 1000, 2) + " mm/s";
+		$("ac-f-n").textContent = Math.round(G.fraction * 100) + "%"; $("ac-f-n-s").textContent = "inside the " + A.fmtSig(G.aperture * 200, 2) + " cm opening on the way back";
+		$("ac-f-r").textContent = A.fmtSig(rel, 2) + "×"; $("ac-f-r-s").textContent = "vs 0.5 s at 2 µK (lower is better)";
+		$("ac-f-explain").textContent = rel < 0.7 ? "This setup would be a better clock than the reference: the longer flight or colder atoms win more than the lost atoms cost." : rel > 1.6 ? "Worse than the reference: either the flight is too short for a narrow fringe, or too many warm atoms miss the cavity on the way back." : "About as good as the reference fountain. Try colder atoms or a longer flight and watch the red (lost) atoms.";
 	}
 
 	/* ================= tab 3: race ================= */
@@ -806,7 +925,7 @@
 	function setTab(t, fromUser) {
 		if (TABS.indexOf(t) < 0) t = "loop"; S.tab = t;
 		TABS.forEach(function (k) { var on = k === t; $("ac-p-" + k).hidden = !on; $("ac-t-" + k).setAttribute("aria-selected", String(on)); $("ac-t-" + k).tabIndex = on ? 0 : -1; });
-		if (t === "race") paintRace(); if (t === "stab") stabDirty = true; if (t === "drift") { syncFromFrac(); renderDrift(); } if (t === "fringe") paintFringeLabels(); if (t === "bloch") { syncBT(); }
+		if (t === "race") paintRace(); if (t === "stab") stabDirty = true; if (t === "drift") { syncFromFrac(); renderDrift(); } if (t === "fringe") paintFringeLabels(); if (t === "bloch" || t === "fountain") { syncBT(); }
 		save();
 		if (fromUser) { var u = new URL(location.href); u.search = ""; history.replaceState(null, "", u.pathname); }
 	}
@@ -839,6 +958,7 @@
 		if (S.tab === "loop") { stepLoop(dt); drawLoop(dt); readLoop(); }
 		else if (S.tab === "fringe") { drawFringe(dt); readFringe(); }
 		else if (S.tab === "bloch") { stepBloch(dt); drawBloch(); readBloch(); }
+		else if (S.tab === "fountain") { stepFo(dt); drawFo(); readFo(); }
 		else if (S.tab === "race") { if (racePlaying) { A.raceStep(race, S.raceSpeed * dt); paintRace(); } }
 		else if (S.tab === "stab") { if (stabDirty) { drawStab(); stabDirty = false; } }
 	}
