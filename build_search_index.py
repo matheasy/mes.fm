@@ -99,7 +99,7 @@ def category(path, doc):
         return "hutchison"
     if top.startswith("livestream") or top == "troubleshooting":
         return "livestreams"
-    if top in ("science", "conspiracy", "crypto") or "<article" in doc:
+    if top in ("science", "conspiracy", "crypto", "ama") or "<article" in doc:
         return "articles"
     return "more"
 

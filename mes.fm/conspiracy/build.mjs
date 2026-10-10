@@ -74,6 +74,14 @@ const PAGES = [
     tileOnly: true,
     tileLabel: "MH370 Teleportation Psyop",
   },
+  {
+    // Tile only: no page is written. Links to Amaterasu Solar's articles (mes.fm/ama, its own build.mjs); icon = img/ama-icon.jpg
+    // (crop of the newest article's image), bump iconVersion if replaced.
+    slug: "ama",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Amaterasu Solar's Articles",
+  },
 ];
 
 // ---------------------------------------------------------------------------

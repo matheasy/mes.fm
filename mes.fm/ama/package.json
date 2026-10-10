@@ -1,0 +1,9 @@
+{
+  "name": "mes-ama-builder",
+  "private": true,
+  "description": "Build-time generator for mes.fm/ama. Not deployed; run manually before committing.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}
