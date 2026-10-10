@@ -374,7 +374,7 @@ function donutSvg(rows, total, colors, labels, keyName) {
   const segs = rows.filter(function (r) { return r.views > 0; }).map(function (r) {
     const frac = r.views / total * 100;
     const key = r[keyName];
-    const seg = '<circle class="dn-seg" cx="21" cy="21" r="15.9155" fill="none" stroke="' + (colors[key] || '#c4c9d1') + '" stroke-width="6" stroke-dasharray="' + Math.max(frac - (rows.length > 1 ? 0.35 : 0), 0.05) + ' ' + (100 - frac) + '" stroke-dashoffset="' + (-offset) + '"><title>' + escapeHtml(labels[key] || key) + ': ' + r.views.toLocaleString() + ' (' + pctText(r.views, total) + ')</title></circle>';
+    const seg = '<circle class="dn-seg" cx="21" cy="21" r="15.9155" fill="none" stroke="' + (colors[key] || '#c4c9d1') + '" stroke-width="6" stroke-dasharray="' + Math.max(frac - (rows.length > 1 ? 0.35 : 0), 0.05) + ' ' + (100 - frac) + '" stroke-dashoffset="' + (-offset) + '"><title>' + escapeHtml(String(labels[key] || key).replace(/<[^>]*>/g, '')) + ': ' + r.views.toLocaleString() + ' (' + pctText(r.views, total) + ')</title></circle>';
     offset += frac;
     return seg;
   }).join('');
@@ -396,8 +396,9 @@ function renderBreakdown(cfg) {
     donut.innerHTML = '';
     return;
   }
-  const total = cfg.data.reduce(function (sum, r) { return sum + r.views; }, 0);
   const sorted = sortRows(cfg.data, cfg.sort);
+  if (cfg.extra && cfg.extra.views > 0) sorted.push(cfg.extra); // always last, whatever the sort
+  const total = sorted.reduce(function (sum, r) { return sum + r.views; }, 0);
   body.innerHTML = sorted.map(function (r) {
     const key = r[cfg.keyName];
     const color = cfg.colors[key] || '#c4c9d1';
@@ -414,8 +415,16 @@ function renderDeviceTotals() {
   renderBreakdown({ id: 'deviceTotals', title: 'Device', keyName: 'device', data: deviceTotalsData, sort: deviceSort, labels: DEVICE_LABELS, colors: DEVICE_COLORS });
 }
 
+// Source tracking began a week after device tracking (2026-08-27 vs 09-03),
+// so the 365d / all-time device total is larger. Show that gap as its own
+// row so the two tables add up to the same number.
 function renderSourceTotals() {
-  renderBreakdown({ id: 'sourceTotals', title: 'Source', keyName: 'source', data: sourceTotalsData, sort: sourceSort, labels: SOURCE_LABELS, colors: SOURCE_COLORS });
+  const deviceSum = deviceTotalsData.reduce(function (sum, d) { return sum + d.views; }, 0);
+  const sourceSum = sourceTotalsData.reduce(function (sum, d) { return sum + d.views; }, 0);
+  const labels = Object.assign({}, SOURCE_LABELS, { unrecorded: '<span title="Views from before traffic-source tracking started (Sep 3, 2026)">Not recorded</span>' });
+  const colors = Object.assign({}, SOURCE_COLORS, { unrecorded: '#d5d9de' });
+  renderBreakdown({ id: 'sourceTotals', title: 'Source', keyName: 'source', data: sourceTotalsData, sort: sourceSort, labels: labels, colors: colors,
+    extra: { source: 'unrecorded', views: sourceTotalsData.length ? deviceSum - sourceSum : 0 } });
 }
 
 showMoreBtn.addEventListener('click', function () {
