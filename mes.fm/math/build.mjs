@@ -100,6 +100,9 @@ const PAGES = [
   { slug: "unit-conversion", href: "/unit-conversion", logo: "unit-conversion-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Unit Conversion" },
   { slug: "sum-of-integers-calculator", href: "/sum-of-integers-calculator", logo: "sum-of-integers-calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Sum of Integers Calculator" },
   { slug: "fluid-simulator", href: "/fluid-simulator", logo: "fluid-simulator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Fluid Simulator (Navier\u2013Stokes)" },
+  { slug: "reynolds-number-calculator", href: "/reynolds-number-calculator", logo: "reynolds-number-calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Reynolds Number Calculator" },
+  { slug: "photoelectric-effect-simulator", href: "/photoelectric-effect-simulator", logo: "photoelectric-effect-simulator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Photoelectric Effect Simulator" },
+  { slug: "atomic-clock-simulator", href: "/atomic-clock-simulator", logo: "atomic-clock-simulator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Atomic Clock Simulator" },
   { slug: "michelson-morley-experiment", href: "/michelson-morley-experiment", logo: "michelson-morley-experiment-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Michelson\u2013Morley Experiment Simulator" },
 ];
 
