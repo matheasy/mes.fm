@@ -22280,7 +22280,7 @@ body.dark-mode .ls-empty { color: #aaa; }
       var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
       panes.forEach(function (pane) {
         items(pane).forEach(function (el) {
-          var title = titleOf(el);
+          var title = titleOf(el) + ' ' + (el.getAttribute('data-s') || '').toLowerCase();
           el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
         });
       });

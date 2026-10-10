@@ -430,7 +430,7 @@ const FILTER_JS = String.raw`  // Search + category filter (see buildFilter()). 
       var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
       panes.forEach(function (pane) {
         items(pane).forEach(function (el) {
-          var title = titleOf(el);
+          var title = titleOf(el) + ' ' + (el.getAttribute('data-s') || '').toLowerCase();
           el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
         });
       });
@@ -749,9 +749,24 @@ function buildExtraViewLinksForItem(item, meta) {
   return [{ label: "MES", href: item.href }, ...named];
 }
 
+// Extra text the search box also matches (data-s): for an item that is a mes.fm mirror page, its meta description plus the opening of its article, read from the
+// page already on disk (items without a local page, e.g. YouTube-only videos, are searched by title only).
+function localDesc(href) {
+  const m = /^https:\/\/mes\.fm\/([^/?#]+)\/?$/.exec(href || "");
+  if (!m) return "";
+  const file = join(__dirname, "..", m[1], "index.html");
+  if (!existsSync(file)) return "";
+  const html = readFileSync(file, "utf8");
+  const md = /<meta name="description" content="([^"]*)"/.exec(html);
+  const art = /<article[\s\S]*?<\/article>/.exec(html);
+  const body = art ? art[0].replace(/<(script|style)[\s\S]*?<\/\1>/g, " ").replace(/<[^>]+>/g, " ") : "";
+  return decodeEntities(((md ? md[1] : "") + " " + body).replace(/\s+/g, " ").trim()).slice(0, 700);
+}
+
 function sortAttrs(item) {
   const k = item.sortKeys;
-  return k ? ` data-i="${k.i}" data-v="${k.v}" data-d="${k.d}"` : "";
+  const srch = item.desc ? ` data-s="${escapeHtml(item.desc)}"` : "";
+  return k ? ` data-i="${k.i}" data-v="${k.v}" data-d="${k.d}"${srch}` : srch;
 }
 
 function buildCard(item, meta) {
@@ -2520,6 +2535,7 @@ var MES_Vars = {
 async function main() {
   console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).length} items ...`);
   const meta = await resolveAllMeta(SECTIONS);
+  SECTIONS.forEach((sec) => sec.items.forEach((i) => { if (!i.desc && i.href) i.desc = localDesc(i.href); }));
 
   const pages = [{ hub: true, slug: "math", outDir: __dirname }].concat(
     PAGES.map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))

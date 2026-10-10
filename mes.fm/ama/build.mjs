@@ -66,7 +66,9 @@ const articleItems = ARTICLES.map((a, i) => ({
   title: a.title,
   tags: a.tags,
   image: proxied(a.image),
-  listThumb: false,
+  listThumb: true,
+  desc: a.desc,
+  links: [["Read on Hive", `https://peakd.com/@amaterasusolar/${a.permlink}`]],
   meta: `${fmtDate(a.date)} · ${a.words.toLocaleString("en-US")} words · ${Math.max(1, Math.round(a.words / 230))} min read`,
   sortKeys: { i, v: a.words, d: a.words },
 }));
@@ -84,7 +86,7 @@ const SECTIONS = [
       { href: "/amaterasu-solar-judy-wood-quote", title: "Amaterasu Solar on Dr. Judy Wood (mes.fm mirror)", icon: "&#128279;" },
     ],
     filter: [...CATEGORIES, OTHER_CATEGORY],
-    filterPlaceholder: `Search all ${ARTICLES.length} Amaterasu Solar articles…`,
+    filterPlaceholder: `Search all ${ARTICLES.length} Amaterasu Solar articles (titles and openings)…`,
     items: articleItems,
   },
 ];
@@ -151,7 +153,7 @@ const FILTER_JS = String.raw`  // Search + category filter (see buildFilter()). 
       var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
       panes.forEach(function (pane) {
         items(pane).forEach(function (el) {
-          var title = titleOf(el);
+          var title = titleOf(el) + ' ' + (el.getAttribute('data-s') || '').toLowerCase();
           el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
         });
       });
@@ -488,7 +490,8 @@ function itemImage(item, meta) {
 
 function sortAttrs(item) {
   const k = item.sortKeys;
-  return k ? ` data-i="${k.i}" data-v="${k.v}" data-d="${k.d}"` : "";
+  const srch = item.desc ? ` data-s="${escapeHtml(item.desc)}"` : "";
+  return k ? ` data-i="${k.i}" data-v="${k.v}" data-d="${k.d}"${srch}` : srch;
 }
 
 function buildCard(item, meta) {
