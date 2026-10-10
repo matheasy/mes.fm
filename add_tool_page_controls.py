@@ -70,6 +70,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("sum-of-integers-calculator", "Sum of Integers Calculator"),   # also built by build_tool_apps.py
     ("reynolds-number-calculator", "Reynolds Number Calculator"),   # also built by build_tool_apps.py
     ("photoelectric-effect-simulator", "Photoelectric Effect"),   # also built by build_tool_apps.py (wide page, dark apparatus stage)
+    ("atomic-clock-simulator", "Atomic Clock Simulator"),   # also built by build_tool_apps.py (wide page, dark stages)
     ("fluid-simulator", "Fluid Simulator"),   # also built by build_tool_apps.py (wide page, dark simulation stage)
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)
     ("youtubemoney", "YouTube Money Calculator"),   # also built by build_tool_apps.py (ad-free)

@@ -128,6 +128,42 @@ const PAGES = [
     tileLabel: "Solar System Today",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/atomic-clock-simulator-icon.jpg (900x600 crop of the tool's share image).
+    slug: "atomic-clock-simulator",
+    section: "tools",
+    href: "/atomic-clock-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Atomic Clock Simulator",
+  },
+  {
+    // Tile only: no page is written; links to the tool. Icon = img/fluid-simulator-icon.jpg (900x600 crop of the tool's share image).
+    slug: "fluid-simulator",
+    section: "tools",
+    href: "/fluid-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Fluid Simulator",
+  },
+  {
+    // Tile only: no page is written; links to the tool. Icon = img/photoelectric-effect-simulator-icon.jpg (900x600 crop of the tool's share image).
+    slug: "photoelectric-effect-simulator",
+    section: "tools",
+    href: "/photoelectric-effect-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Photoelectric Effect Simulator",
+  },
+  {
+    // Tile only: no page is written; links to the tool. Icon = img/reynolds-number-calculator-icon.jpg (900x600 crop of the tool's share image).
+    slug: "reynolds-number-calculator",
+    section: "tools",
+    href: "/reynolds-number-calculator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Reynolds Number Calculator",
+  },
+  {
     // Tile only: no page is written. Links to mes.fm/free-energy (its own build.mjs or page); icon = img/free-energy-icon.jpg.
     slug: "free-energy",
     iconVersion: 1,

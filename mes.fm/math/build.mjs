@@ -81,10 +81,10 @@ const PAGES = [
       "Video and written tutorials on vector functions: space curves, derivatives and integrals, arc length and curvature, motion in space, and Kepler's laws.",
   },
   {
-    slug: "math-youtube",
+    slug: "youtube",
     sectionId: "mathYoutube",
     tileLabel: "MES YouTube: All Videos",
-    iconVersion: 2, // img/math-youtube-icon.jpg (900x600; a "@mes" YouTube-style tile)
+    iconVersion: 2, // img/youtube-icon.jpg (900x600; a "@mes" YouTube-style tile)
     description:
       "Every video on the @mes YouTube channel (Math Easy Solutions) in one searchable list: calculus, vectors, series, differential equations and more, plus physics experiments, 9/11 and Hutchison Effect research. Search, filter by topic and sort by views or length.",
   },
@@ -98,6 +98,8 @@ const PAGES = [
   { slug: "derivative-calculator", href: "/derivative-calculator", logo: "derivative-calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Derivative Calculator" },
   { slug: "integral-calculator", href: "/integral-calculator", logo: "integral-calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Integral Calculator" },
   { slug: "unit-conversion", href: "/unit-conversion", logo: "unit-conversion-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Unit Conversion" },
+  { slug: "sum-of-integers-calculator", href: "/sum-of-integers-calculator", logo: "sum-of-integers-calculator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Sum of Integers Calculator" },
+  { slug: "fluid-simulator", href: "/fluid-simulator", logo: "fluid-simulator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Fluid Simulator (Navier\u2013Stokes)" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -300,7 +302,7 @@ qaSection.extraViews.forEach((view) => view.items.forEach((item) => {
 }));
 
 // ---------------------------------------------------------------------------
-// mes.fm/math-youtube: every video of https://www.youtube.com/@mes/videos (snapshot written by update_youtube_lists.py into
+// mes.fm/youtube: every video of https://www.youtube.com/@mes/videos (snapshot written by update_youtube_lists.py into
 // youtube-videos.json, newest first). Topic chips are title tests like QA_CATEGORIES (a video may carry several; "Everything else"
 // catches the rest). Thumbnails are YouTube's own mqdefault image, so no scraping is needed (items with an `image` skip resolveAllMeta).
 // ---------------------------------------------------------------------------

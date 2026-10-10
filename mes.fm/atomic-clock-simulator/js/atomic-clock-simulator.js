@@ -1,0 +1,724 @@
+/* MES Atomic Clock Simulator -- physics + maths (pure JS, runs in the browser and in node: require('./tool_apps_src/atomic-clock-simulator/lib.js')).
+ *
+ * What is modelled
+ *   - the caesium-133 hyperfine transition that defines the second: 9,192,631,770 cycles (nu0)
+ *   - the two-level atom driven by microwaves: Rabi line shape (one pass through a cavity, a "beam clock")
+ *     and Ramsey fringes (two pi/2 pulses separated by free flight T, a "fountain clock")
+ *   - the stability of a locked clock: sigma_y(tau) = (1/pi) (dnu/nu0) (1/SNR) sqrt(Tc/tau)   (white frequency noise of the servo loop)
+ *   - a quartz oscillator that wanders (random-walk frequency + temperature steps), and a servo that locks it to the atoms
+ *   - a ladder of real clock types with published-ballpark accuracy / short-term stability, for the "race" and the stability chart
+ *   - Allan deviation of a phase record, and the drift calculator (fractional error <-> seconds off, time until off by X)
+ * Everything here is deterministic given a seed (mulberry32), so tests and shared links reproduce.
+ */
+(function (root) {
+	"use strict";
+
+	var NU0 = 9192631770;                 // Hz, the SI definition of the second
+	var C = 299792458;                    // m/s
+	var TWO_PI = 2 * Math.PI;
+
+	/* ---------------- random numbers ---------------- */
+	function rng(seed) {
+		var a = (seed >>> 0) || 1;
+		function u() { a = (a + 0x6D2B79F5) >>> 0; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+		var spare = null;
+		u.normal = function () {
+			if (spare !== null) { var s = spare; spare = null; return s; }
+			var x, y, r;
+			do { x = 2 * u() - 1; y = 2 * u() - 1; r = x * x + y * y; } while (r >= 1 || r === 0);
+			var m = Math.sqrt(-2 * Math.log(r) / r); spare = y * m; return x * m;
+		};
+		return u;
+	}
+
+	/* ---------------- line shapes ---------------- */
+	// Two-level atom, resonant Rabi frequency omega (rad/s), detuning delta (rad/s), pulse length tau (s).
+	function rabiP(delta, omega, tau) {
+		var oe2 = omega * omega + delta * delta, oe = Math.sqrt(oe2);
+		if (oe === 0) return 0;
+		var s = Math.sin(oe * tau / 2);
+		return (omega * omega / oe2) * s * s;
+	}
+	// Beam clock: one interaction region of length L with atoms at speed v; the pulse is pi at resonance (omega * tau = pi).
+	function beamP(deltaHz, tauSec) { var omega = Math.PI / tauSec; return rabiP(TWO_PI * deltaHz, omega, tauSec); }
+
+	// Ramsey: two pulses of length tau (pi/2 on resonance: omega * tau = pi/2) separated by free evolution T.
+	function ramseyP(delta, omega, tau, T) {
+		var oe = Math.sqrt(omega * omega + delta * delta);
+		if (oe === 0) return 0;
+		var a = oe * tau / 2, b = delta * T / 2;
+		var inner = Math.cos(b) * Math.cos(a) - (delta / oe) * Math.sin(b) * Math.sin(a);
+		var s = Math.sin(a);
+		return 4 * (omega * omega / (oe * oe)) * s * s * inner * inner;
+	}
+	// Fountain clock fringes against detuning in Hz (pulse length is a small fraction of T, like a real microwave cavity pass of ~ 10 ms).
+	function fountainP(deltaHz, T, tau) {
+		tau = tau || Math.min(0.01, T / 5);
+		var omega = Math.PI / (2 * tau);
+		return ramseyP(TWO_PI * deltaHz, omega, tau, T);
+	}
+	// Width (FWHM) of the central fringe in Hz: about 1 / (2 T).
+	function fringeWidth(T) { return 1 / (2 * T); }
+	function beamWidth(tau) { return 0.8 / tau; }          // FWHM of the Rabi pedestal for a pi pulse, about 0.8 / tau
+
+	/* ---------------- stability of a locked clock ---------------- */
+	// Fractional frequency noise at 1 s of an atomic clock locked to a line of width dnu (Hz) with signal-to-noise snr per cycle of duration Tc (s).
+	function sigma1s(dnu, snr, Tc) { return (1 / Math.PI) * (dnu / NU0) * (1 / snr) * Math.sqrt(Tc); }
+	function sigmaAt(sig1, tau) { return sig1 / Math.sqrt(tau); }
+
+	/* ---------------- clock ladder ----------------
+	 * acc   = typical fractional frequency error (accuracy) of the standard when it leaves the factory / lab
+	 * a     = sigma_y at 1 s (white frequency noise)
+	 * floor = best stability reached after long averaging (flicker floor)
+	 * Numbers are ballpark figures from manufacturer data sheets and NIST / PTB / JILA papers; they are for teaching, not metrology.
+	 */
+	var CLOCKS = [
+		{ id: "quartz", name: "Quartz wristwatch", short: "Quartz watch", color: "#9aa5bb", acc: 5e-6, a: 1e-7, floor: 1e-8,
+		  note: "A 32,768 Hz crystal. About 15 seconds a month, mostly from temperature.", year: "1969" },
+		{ id: "tcxo", name: "Temperature-compensated crystal (phone / GPS receiver)", short: "TCXO", color: "#c084fc", acc: 5e-7, a: 2e-9, floor: 2e-10,
+		  note: "The oscillator in a phone or a GPS receiver. Corrected by a thermometer.", year: "1980s" },
+		{ id: "rb", name: "Rubidium atomic clock", short: "Rubidium", color: "#34d399", acc: 5e-11, a: 3e-11, floor: 1e-12,
+		  note: "Rubidium-87 vapour cell. Small, cheap atomic clock used in telecom and test labs.", year: "1958" },
+		{ id: "csbeam", name: "Caesium beam clock", short: "Caesium beam", color: "#fbbf24", acc: 5e-13, a: 5e-12, floor: 1e-14,
+		  note: "Atoms fly through a one-metre tube. The commercial workhorse (HP / Symmetricom 5071A).", year: "1955" },
+		{ id: "maser", name: "Hydrogen maser", short: "H maser", color: "#38bdf8", acc: 1e-12, a: 1.5e-13, floor: 1e-15,
+		  note: "Best stability for hours to days. Not a primary standard (its frequency has to be calibrated).", year: "1960" },
+		{ id: "fountain", name: "Caesium fountain (NIST-F2 class)", short: "Caesium fountain", color: "#f97316", acc: 1e-16, a: 1.2e-13, floor: 3e-16,
+		  note: "Laser-cooled atoms tossed up about a metre. These realise the SI second.", year: "1999" },
+		{ id: "optical", name: "Strontium optical lattice clock", short: "Optical (Sr)", color: "#f472b6", acc: 2e-18, a: 3e-16, floor: 1e-18,
+		  note: "Atoms held in a lattice of laser light, probed with a laser at 429 THz. Candidate for the next definition of the second.", year: "2000s" }
+	];
+	var BYID = {}; CLOCKS.forEach(function (c) { BYID[c.id] = c; });
+
+	function allanModel(clock, tau) { return Math.sqrt(clock.a * clock.a / tau + clock.floor * clock.floor); }
+
+	/* ---------------- race simulation ----------------
+	 * time error x (seconds) of each clock against a perfect one: x += y_offset * dt + a * sqrt(dt) * N(0,1)
+	 * (white frequency noise integrates to a random walk of phase with std a*sqrt(dt)). */
+	function raceInit(seed) {
+		var r = rng(seed || 7), st = { t: 0, rnd: r, x: {}, off: {} };
+		CLOCKS.forEach(function (c) {
+			var sgn = r() < 0.5 ? -1 : 1;
+			st.off[c.id] = sgn * c.acc * (0.45 + 0.55 * r());    // this particular clock's systematic offset
+			st.x[c.id] = 0;
+		});
+		return st;
+	}
+	function raceStep(st, dt) {
+		CLOCKS.forEach(function (c) {
+			st.x[c.id] += st.off[c.id] * dt + c.a * Math.sqrt(dt) * st.rnd.normal();
+		});
+		st.t += dt;
+	}
+	// Mean-square-honest expected size of the error after t seconds (for the table).
+	function expectedError(c, t) { return Math.sqrt(Math.pow(c.acc * t, 2) + c.a * c.a * t); }
+	// Seconds until the clock is expected to be off by `target` seconds.
+	function timeToError(c, target) {
+		var lo = 0, hi = 1e25;
+		for (var i = 0; i < 200; i++) { var mid = Math.sqrt(Math.max(lo, 1e-9) * hi); if (expectedError(c, mid) < target) lo = mid; else hi = mid; if (hi / Math.max(lo, 1e-9) < 1.0000001) break; }
+		return Math.sqrt(Math.max(lo, 1e-9) * hi);
+	}
+
+	/* ---------------- servo loop: quartz locked to atoms ----------------
+	 * y_free(t): fractional frequency error of the free-running quartz = y0 + random walk (sigma rw per sqrt s) + temperature steps (kick)
+	 * locked: the servo estimates the quartz error from the atoms (noisy: white, sigma1 at 1 s) and removes it with an integrator of gain g per cycle. */
+	function Loop(opts) {
+		opts = opts || {};
+		this.rnd = rng(opts.seed || 11);
+		this.dt = opts.dt || 1;                   // seconds per servo cycle (one interrogation cycle Tc)
+		this.sig1 = opts.sig1 != null ? opts.sig1 : 1e-12;   // atomic measurement noise at 1 s (fractional)
+		this.rw = opts.rw != null ? opts.rw : 2e-11;           // quartz random walk of frequency (fractional per sqrt(s))
+		this.gain = opts.gain != null ? opts.gain : 0.3;
+		this.y0 = opts.y0 != null ? opts.y0 : 1.5e-6;          // quartz starts this far from the right frequency (fractional)
+		this.free = this.y0;                       // y of the free-running quartz
+		this.corr = 0;                             // servo correction (fractional)
+		this.capture = opts.capture || Infinity;   // the servo only sees the atoms while the quartz is within this fractional error of resonance
+		this.lost = false; this.locked = false; this.hold = 0;
+		this.x = 0; this.xFree = 0;                // time errors (s): of the output with the servo as set, and of the free-running quartz
+		this.t = 0; this.n = 0;
+		this.yOut = this.free;
+	}
+	Loop.prototype.kick = function (dy) { this.free += dy; };
+	Loop.prototype.step = function () {
+		var dt = this.dt;
+		this.free += this.rw * Math.sqrt(dt) * this.rnd.normal();
+		if (this.locked) {
+			var y = this.free + this.corr;                                          // what the quartz is doing after the correction
+			if (Math.abs(y) <= this.capture) {
+				var meas = y + (this.sig1 / Math.sqrt(dt)) * this.rnd.normal();     // atoms report it, with noise
+				this.corr -= this.gain * meas;                                      // integrator: push it back to zero
+				this.lost = false;
+			} else this.lost = true;                                                // off the line: the atoms say nothing, the servo is blind
+		}
+		var out = this.free + (this.locked ? this.corr : 0);
+		// when not locked the correction is frozen at its last value only if "hold" is on; otherwise it decays away (the servo is off)
+		if (!this.locked && this.corr !== 0) { if (!this.hold) this.corr = 0; out = this.free + this.corr; }
+		this.yOut = out; this.yAtoms = this.free + this.corr;
+		this.x += out * dt; this.xFree += this.free * dt;
+		this.t += dt; this.n++;
+		return out;
+	};
+	Loop.prototype.setLock = function (on) { this.locked = !!on; if (!on) { this.corr = 0; this.lost = false; } };
+	// sweep the microwave synthesiser back onto the line (what an operator does after losing lock)
+	Loop.prototype.retune = function () { this.corr = -this.free; this.lost = false; };
+
+	/* ---------------- Allan deviation of a series ---------------- */
+	// y = array of fractional-frequency samples at spacing tau0; returns sigma_y(m * tau0) (overlapping estimator on frequency averages)
+	function allan(y, m) {
+		var n = y.length; if (m < 1 || n < 2 * m + 1) return NaN;
+		var avg = new Array(n - m + 1), s = 0, i;
+		for (i = 0; i < m; i++) s += y[i];
+		avg[0] = s / m;
+		for (i = 1; i <= n - m; i++) { s += y[i + m - 1] - y[i - 1]; avg[i] = s / m; }
+		var sum = 0, cnt = 0;
+		for (i = 0; i + m < avg.length; i++) { var d = avg[i + m] - avg[i]; sum += d * d; cnt++; }
+		return cnt ? Math.sqrt(sum / (2 * cnt)) : NaN;
+	}
+	// phase (time error) record -> frequency samples
+	function phaseToFreq(x, tau0) { var y = []; for (var i = 1; i < x.length; i++) y.push((x[i] - x[i - 1]) / tau0); return y; }
+
+	/* ---------------- drift calculator ---------------- */
+	var DAY = 86400, YEAR = 365.25 * DAY;
+	var PERIODS = { second: 1, minute: 60, hour: 3600, day: DAY, week: 7 * DAY, month: YEAR / 12, year: YEAR, decade: 10 * YEAR, century: 100 * YEAR };
+	var UNITS = { as: 1e-18, fs: 1e-15, ps: 1e-12, ns: 1e-9, "µs": 1e-6, us: 1e-6, ms: 1e-3, s: 1, min: 60, h: 3600, hr: 3600, d: DAY, day: DAY, days: DAY, w: 7 * DAY, mo: YEAR / 12, y: YEAR, yr: YEAR, year: YEAR, years: YEAR };
+
+	// "5e-6", "5 ppm", "2 ppb", "3 ppt", "1.5e-13", "0.0005%", "1e-12" -> number (fractional). Returns NaN when it cannot read it.
+	function parseFraction(s) {
+		if (typeof s === "number") return s;
+		s = String(s == null ? "" : s).trim().toLowerCase().replace(/,/g, "").replace(/×\s*10\s*\^?\s*(-?\d+)/g, "e$1").replace(/−/g, "-").replace(/x\s*10\s*\^?\s*(-?\d+)/g, "e$1").replace(/\s+/g, " ");
+		var m = /^([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)\s*(ppm|ppb|ppt|ppq|%|percent)?$/.exec(s);
+		if (!m) return NaN;
+		var v = parseFloat(m[1]), u = m[2];
+		if (u === "ppm") v *= 1e-6; else if (u === "ppb") v *= 1e-9; else if (u === "ppt") v *= 1e-12; else if (u === "ppq") v *= 1e-15; else if (u === "%" || u === "percent") v /= 100;
+		return v;
+	}
+	// seconds gained / lost over a period (given as seconds) for fractional error y
+	function secondsOff(y, period) { return y * period; }
+	function fractionFrom(seconds, period) { return seconds / period; }
+	// how long until a clock with fractional error |y| is off by `target` seconds
+	function timeUntil(y, target) { y = Math.abs(y); return y > 0 ? target / y : Infinity; }
+	// light travel distance for a timing error (GPS-style ranging)
+	function lightDistance(seconds) { return C * Math.abs(seconds); }
+	// cycles of the caesium transition counted in `seconds` (exact BigInt string where available)
+	function cyclesIn(seconds) {
+		if (typeof BigInt === "function" && isFinite(seconds) && Math.abs(seconds) < 9e15 && seconds === Math.round(seconds)) return (BigInt(9192631770) * BigInt(seconds)).toString();
+		return (NU0 * seconds).toPrecision(6);
+	}
+
+	/* ---------------- number formatting ---------------- */
+	var SI = [[1e-18, "as"], [1e-15, "fs"], [1e-12, "ps"], [1e-9, "ns"], [1e-6, "µs"], [1e-3, "ms"], [1, "s"]];
+	function group(s) { return s.replace(/^(\d{4,})(\.\d+)?$/, function (m, i, f) { return i.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (f || ""); }); }
+	function fmtSig(x, d) { d = d || 3; if (!isFinite(x)) return x > 0 ? "∞" : String(x); if (x === 0) return "0"; var s = Math.abs(x).toPrecision(d); if (/e/.test(s)) return (x < 0 ? "-" : "") + group(Number(s).toString()); return (x < 0 ? "-" : "") + group(String(parseFloat(s))); }
+	// 1.2e-7 s -> "120 ns"
+	function fmtTime(sec, d) {
+		if (!isFinite(sec)) return "∞";
+		var a = Math.abs(sec), sgn = sec < 0 ? "-" : "";
+		if (a === 0) return "0 s";
+		if (a < 1) { for (var i = SI.length - 1; i >= 0; i--) if (a >= SI[i][0] * 0.9995) return sgn + fmtSig(a / SI[i][0], d) + " " + SI[i][1]; return sgn + fmtSig(a / 1e-18, d) + " as"; }
+		if (a < 60) return sgn + fmtSig(a, d) + " s";
+		if (a < 3600) return sgn + fmtSig(a / 60, d) + " min";
+		if (a < DAY) return sgn + fmtSig(a / 3600, d) + " hours";
+		if (a < 2 * YEAR / 12) return sgn + fmtSig(a / DAY, d) + " days";
+		if (a < 2 * YEAR) return sgn + fmtSig(a / (YEAR / 12), d) + " months";
+		return sgn + fmtSig(a / YEAR, d) + " years";
+	}
+	// a long span in plain words, with an age-of-the-universe comparison where it matters
+	var UNIVERSE = 13.8e9 * YEAR;
+	function fmtSpan(sec) {
+		if (!isFinite(sec)) return "never";
+		var a = Math.abs(sec);
+		if (a < YEAR * 1e4) return fmtTime(sec, 3);
+		var y = a / YEAR, s;
+		if (y < 1e6) s = fmtSig(y, 3) + " years";
+		else if (y < 1e9) s = fmtSig(y / 1e6, 3) + " million years";
+		else if (y < 1e12) s = fmtSig(y / 1e9, 3) + " billion years";
+		else s = fmtSig(y, 3) + " years";
+		if (a > UNIVERSE * 0.5) s += " (" + fmtSig(a / UNIVERSE, 2) + "× the age of the universe)";
+		return s;
+	}
+	function fmtFrac(y) {
+		if (!isFinite(y)) return "–";
+		if (y === 0) return "0";
+		var a = Math.abs(y);
+		if (a >= 1e-3) return fmtSig(y, 3);
+		var e = Math.floor(Math.log10(a)), m = y / Math.pow(10, e);
+		return fmtSig(m, 3) + "×10" + sup(e);
+	}
+	function sup(n) { var map = { "-": "⁻", 0: "⁰", 1: "¹", 2: "²", 3: "³", 4: "⁴", 5: "⁵", 6: "⁶", 7: "⁷", 8: "⁸", 9: "⁹" }; return String(n).split("").map(function (c) { return map[c]; }).join(""); }
+	function fmtDist(m) {
+		var a = Math.abs(m);
+		if (a >= 1000) return fmtSig(m / 1000, 3) + " km";
+		if (a >= 1) return fmtSig(m, 3) + " m";
+		if (a >= 1e-2) return fmtSig(m * 100, 3) + " cm";
+		if (a >= 1e-3) return fmtSig(m * 1e3, 3) + " mm";
+		if (a >= 1e-6) return fmtSig(m * 1e6, 3) + " µm";
+		return fmtSig(m * 1e9, 3) + " nm";
+	}
+	// "10 ns", "1.5 ms", "2 min", "1 day" -> seconds
+	function parseTime(s) {
+		s = String(s == null ? "" : s).trim().toLowerCase().replace(/,/g, "").replace(/μ|µ/g, "µ").replace(/\s+/g, " ");
+		var m = /^([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)\s*([a-zµ]+)?$/.exec(s);
+		if (!m) return NaN;
+		var v = parseFloat(m[1]), u = m[2] || "s";
+		return UNITS[u] != null ? v * UNITS[u] : NaN;
+	}
+
+	var API = {
+		NU0: NU0, C: C, DAY: DAY, YEAR: YEAR, PERIODS: PERIODS, UNIVERSE: UNIVERSE, CLOCKS: CLOCKS, BYID: BYID,
+		rng: rng, rabiP: rabiP, beamP: beamP, ramseyP: ramseyP, fountainP: fountainP, fringeWidth: fringeWidth, beamWidth: beamWidth,
+		sigma1s: sigma1s, sigmaAt: sigmaAt, allanModel: allanModel, raceInit: raceInit, raceStep: raceStep, expectedError: expectedError, timeToError: timeToError,
+		Loop: Loop, allan: allan, phaseToFreq: phaseToFreq,
+		parseFraction: parseFraction, parseTime: parseTime, secondsOff: secondsOff, fractionFrom: fractionFrom, timeUntil: timeUntil, lightDistance: lightDistance, cyclesIn: cyclesIn,
+		fmtTime: fmtTime, fmtSpan: fmtSpan, fmtFrac: fmtFrac, fmtSig: fmtSig, fmtDist: fmtDist, sup: sup
+	};
+	if (typeof module !== "undefined" && module.exports) module.exports = API; else root.MESAtomic = API;
+})(typeof window !== "undefined" ? window : this);
+
+/* MES Atomic Clock Simulator -- mes.fm/atomic-clock-simulator
+ * UI around MESAtomic (lib.js: line shapes, locked-clock stability, servo loop, clock ladder, drift maths).
+ * Five tabs: How it works (live servo loop), Fountain & fringes (Ramsey), Clock race, Stability chart, Drift calculator.
+ * State: localStorage mes-atomic-clock-simulator:v1; share links ?tab=&c=&T=&snr=&f=&t=&per=. All maths lives in lib.js (node-tested).
+ */
+(function () {
+	"use strict";
+	var $ = function (id) { return document.getElementById(id); };
+	var root = $("ac");
+	if (!root) return;
+	var A = window.MESAtomic;
+	var KEY = "mes-atomic-clock-simulator:v1";
+	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
+	function sset(o) { try { var c = sget(); for (var k in o) c[k] = o[k]; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
+	function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+	function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+	var NU0 = A.NU0;
+	var saved = sget(), q = new URLSearchParams(location.search);
+	var TABS = ["loop", "fringe", "race", "stab", "drift"];
+	var COL = { bg: "#070d1f", line: "#26325a", text: "#e6ecfb", dim: "#93a1c4", gold: "#fbbf24", cyan: "#22d3ee", blue: "#60a5fa", grey: "#94a3b8", red: "#f87171", grid: "rgba(147,161,196,0.16)" };
+	var coarse = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+
+	/* ---------------- state ---------------- */
+	function num(v) { var x = parseFloat(v); return isFinite(x) ? x : null; }
+	var S = {
+		tab: TABS.indexOf(q.get("tab")) >= 0 ? q.get("tab") : (TABS.indexOf(saved.tab) >= 0 ? saved.tab : "loop"),
+		type: /^(beam|fountain)$/.test(q.get("c") || saved.type || "") ? (q.get("c") || saved.type) : "fountain",
+		gain: clamp(num(saved.gain) || 0.3, 0.02, 0.9), speed: clamp(num(saved.speed) || 12, 1, 60),
+		T: clamp(num(q.get("T")) || num(saved.T) || 0.5, 0.001, 10), snr: clamp(num(q.get("snr")) || num(saved.snr) || 300, 10, 3000), det: 0.15,
+		rabi: saved.rabi !== false, hidden: saved.hidden || {}, raceSpeed: num(saved.raceSpeed) || 31557600,
+		frac: A.parseFraction(q.get("f") || saved.frac || "5 ppm"), target: A.parseTime(q.get("t") || saved.target || "1 s"), per: /^(day|week|month|year)$/.test(q.get("per") || saved.per || "") ? (q.get("per") || saved.per) : "month"
+	};
+	if (!isFinite(S.frac)) S.frac = 5e-6; if (!isFinite(S.target) || S.target <= 0) S.target = 1;
+	function save() { sset({ tab: S.tab, type: S.type, gain: S.gain, speed: S.speed, T: S.T, snr: S.snr, rabi: S.rabi, hidden: S.hidden, raceSpeed: S.raceSpeed, frac: S.frac, target: S.target, per: S.per }); }
+
+	/* ---------------- shared helpers ---------------- */
+	var toastT;
+	function toast(msg) { var t = $("ac-toast"); if (!t) { t = document.createElement("div"); t.id = "ac-toast"; t.className = "tu-toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 2200); }
+	function copy(text, ok) {
+		function fallback() { prompt("Copy this:", text); }
+		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast(ok || "Copied"); }, fallback); else fallback();
+	}
+	function hz(x) { var a = Math.abs(x); if (a >= 1e6) return A.fmtSig(x / 1e6, 3) + " MHz"; if (a >= 1e3) return A.fmtSig(x / 1e3, 3) + " kHz"; if (a >= 1) return A.fmtSig(x, 3) + " Hz"; if (a >= 1e-3) return A.fmtSig(x * 1e3, 3) + " mHz"; return A.fmtSig(x * 1e6, 3) + " µHz"; }
+	function sgn(x) { return x > 0 ? "+" : x < 0 ? "−" : ""; }
+	function sfrac(y) { return (y < 0 ? "−" : y > 0 ? "+" : "") + A.fmtFrac(Math.abs(y)); }
+	function setup(canvas, w, h) {
+		var dpr = Math.min(window.devicePixelRatio || 1, 2), c = canvas.getContext("2d");
+		if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+		c.setTransform(dpr, 0, 0, dpr, 0, 0); return c;
+	}
+	function fontPx(w) { return clamp(Math.round(w / 62), 11, 15); }
+	function sizeStage(stage, ratioWide, ratioNarrow) {
+		var w = stage.clientWidth || 600; var h = w < 640 ? w * ratioNarrow : w * ratioWide; h = Math.max(h, 260); stage.style.height = Math.round(h) + "px"; return { w: w, h: h };
+	}
+	function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+	function label(c, txt, x, y, col, size, align) { c.fillStyle = col || COL.text; c.font = (size || 12) + "px system-ui,-apple-system,Segoe UI,Roboto,sans-serif"; c.textAlign = align || "left"; c.textBaseline = "middle"; c.fillText(txt, x, y); }
+	function arrow(c, x1, y1, x2, y2, col, t) {
+		c.strokeStyle = col || COL.dim; c.fillStyle = col || COL.dim; c.lineWidth = 1.6; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+		var a = Math.atan2(y2 - y1, x2 - x1); c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - 8 * Math.cos(a - 0.4), y2 - 8 * Math.sin(a - 0.4)); c.lineTo(x2 - 8 * Math.cos(a + 0.4), y2 - 8 * Math.sin(a + 0.4)); c.closePath(); c.fill();
+		if (t != null) { var L = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.floor(L / 46)); c.fillStyle = COL.cyan; for (var i = 0; i < n; i++) { var u = ((t * 0.5 + i / n) % 1); c.beginPath(); c.arc(x1 + (x2 - x1) * u, y1 + (y2 - y1) * u, 2.4, 0, 6.3); c.fill(); } }
+	}
+	function toggleFull(wrapId, stageId, draw) {
+		var w = $(wrapId); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not available here"); });
+	}
+
+	/* ---------------- clock-type presets for tab 1 ---------------- */
+	var TYPES = {
+		beam: { T: 0.010, snr: 300, rw: 2e-11, name: "Caesium beam", note: "Atoms fly 1 m through a tube at about 100 m/s: 10 ms between the two microwave pulses, so a line about 50 Hz wide." },
+		fountain: { T: 0.5, snr: 300, rw: 1e-11, name: "Caesium fountain", note: "Atoms are tossed up about 0.3 m and fall back: 0.5 s between the pulses, so a line only 1 Hz wide, 50 times narrower." }
+	};
+	var loop = null, hist = { free: [], out: [] }, HN = 360, cyc = 0, loopPlaying = true;
+	function lw() { return A.fringeWidth(TYPES[S.type].T); }          // fringe FWHM of the loop's clock (Hz)
+	function newLoop(keepLock) {
+		var t = TYPES[S.type], cap = 0.9 * (1 / (2 * t.T)) / NU0, wasLocked = keepLock && loop && loop.locked;
+		loop = new A.Loop({ seed: 21 + Math.floor(Math.random() * 1000), dt: 1, sig1: A.sigma1s(lw(), t.snr, 1), rw: t.rw, gain: S.gain, y0: 0.3 * cap, capture: cap });
+		if (wasLocked) loop.setLock(true);
+		hist = { free: [], out: [] }; loop.x = 0; loop.xFree = 0;
+		paintLockBtn();
+	}
+	function paintLockBtn() { var b = $("ac-lock"); b.setAttribute("aria-pressed", String(!!loop.locked)); b.textContent = loop.locked ? "🔓 Unlock (free-run the quartz)" : "🔒 Lock to the atoms"; }
+	$("ac-lock").onclick = function () { loop.setLock(!loop.locked); loop.x = 0; loop.xFree = 0; paintLockBtn(); };
+	$("ac-kick").onclick = function () { var cap = loop.capture; loop.kick((Math.random() < 0.5 ? -1 : 1) * 0.45 * cap); };
+	$("ac-retune").onclick = function () { loop.retune(); loop.x = 0; loop.xFree = 0; };
+	$("ac-loop-play").onclick = function () { loopPlaying = !loopPlaying; this.setAttribute("aria-pressed", String(loopPlaying)); this.textContent = loopPlaying ? "❚❚ Pause" : "▶ Play"; };
+	$("ac-loop-reset").onclick = function () { newLoop(false); };
+	$("ac-type").value = S.type;
+	$("ac-type").onchange = function () { S.type = this.value; save(); $("ac-type-note").textContent = TYPES[S.type].note; newLoop(true); };
+	$("ac-type-note").textContent = TYPES[S.type].note;
+	$("ac-gain").value = S.gain; $("ac-gain-v").textContent = S.gain.toFixed(2);
+	$("ac-gain").oninput = function () { S.gain = +this.value; $("ac-gain-v").textContent = S.gain.toFixed(2); if (loop) loop.gain = S.gain; save(); };
+	$("ac-speed").value = S.speed; $("ac-speed-v").textContent = S.speed + " cycles per second";
+	$("ac-speed").oninput = function () { S.speed = +this.value; $("ac-speed-v").textContent = S.speed + " cycles per second"; save(); };
+
+	var atoms = []; for (var ai = 0; ai < 26; ai++) atoms.push({ u: ai / 26, flip: 0, dec: false });
+	var animT = 0;
+
+	function drawLoop(dt) {
+		var st = $("ac-stage1"), dim = sizeStage(st, 0.56, 1.7), W = dim.w, H = dim.h, c = setup($("ac-loop"), W, H), fs = fontPx(W), narrow = W < 640;
+		c.fillStyle = COL.bg; c.fillRect(0, 0, W, H);
+		var tcfg = TYPES[S.type], yA = loop.free + loop.corr, dA = yA * NU0, fw = lw();
+		var P = A.fountainP(dA, tcfg.T);
+		var dR = narrow ? { x: 0, y: 0, w: W, h: H * 0.34 } : { x: 0, y: 0, w: W * 0.6, h: H * 0.6 };
+		var rR = narrow ? { x: 0, y: H * 0.34, w: W, h: H * 0.34 } : { x: W * 0.6, y: 0, w: W * 0.4, h: H * 0.6 };
+		var sR = narrow ? { x: 0, y: H * 0.68, w: W, h: H * 0.32 } : { x: 0, y: H * 0.6, w: W, h: H * 0.4 };
+
+		/* --- block diagram --- */
+		(function () {
+			var R = dR, px = function (x) { return R.x + R.w * x; }, py = function (y) { return R.y + R.h * y; };
+			function box(x, y, w, h, title, sub, col) {
+				c.fillStyle = "rgba(34,211,238,0.07)"; c.strokeStyle = col || COL.line; c.lineWidth = 1.5; rrect(c, px(x), py(y), R.w * w, R.h * h, 8); c.fill(); c.stroke();
+				label(c, title, px(x + w / 2), py(y + h / 2) - (sub ? fs * 0.55 : 0), COL.text, fs + 1, "center"); if (sub) label(c, sub, px(x + w / 2), py(y + h / 2) + fs * 0.75, COL.dim, fs - 1.5, "center");
+			}
+			var Q = { x: 0.03, y: 0.12, w: 0.22, h: 0.24 }, Y = { x: 0.31, y: 0.12, w: 0.2, h: 0.24 };
+			box(Q.x, Q.y, Q.w, Q.h, "Quartz", "10 MHz", loop.locked ? COL.cyan : COL.grey); box(Y.x, Y.y, Y.w, Y.h, "Synthesiser", "× 919.26 → 9.19 GHz", COL.line);
+			arrow(c, px(Q.x + Q.w), py(0.24), px(Y.x), py(0.24), COL.dim, animT);
+			// atom tube
+			var tx0 = px(0.58), tx1 = px(0.98), ty = py(0.3), th = R.h * 0.2;
+			arrow(c, px(Y.x + Y.w), py(0.24), tx0 - 4, py(0.24), COL.gold, animT);
+			c.fillStyle = "rgba(96,165,250,0.08)"; c.strokeStyle = COL.line; rrect(c, tx0, ty - th / 2, tx1 - tx0, th, 6); c.fill(); c.stroke();
+			var a1 = tx0 + (tx1 - tx0) * 0.22, a2 = tx0 + (tx1 - tx0) * 0.62, aw = (tx1 - tx0) * 0.12;
+			c.fillStyle = "rgba(251,191,36,0.22)"; c.strokeStyle = COL.gold; c.lineWidth = 1.2; c.fillRect(a1, ty - th * 0.9, aw, th * 1.8); c.strokeRect(a1, ty - th * 0.9, aw, th * 1.8); c.fillRect(a2, ty - th * 0.9, aw, th * 1.8); c.strokeRect(a2, ty - th * 0.9, aw, th * 1.8);
+			label(c, "pulse 1", a1 + aw / 2, ty - th * 1.15, COL.gold, fs - 2, "center"); label(c, "pulse 2", a2 + aw / 2, ty - th * 1.15, COL.gold, fs - 2, "center");
+			label(c, "atoms", tx0 + 4, ty + th * 0.95 + fs, COL.dim, fs - 2, "left");
+			for (var i = 0; i < atoms.length; i++) {
+				var a = atoms[i]; a.u += dt * 0.16; if (a.u >= 1) { a.u -= 1; a.dec = false; }
+				if (!a.dec && a.u > 0.78) { a.dec = true; a.flip = Math.random() < P ? 1 : 0; }
+				if (a.u < 0.76) a.dec = false;
+				var ax = tx0 + 8 + (tx1 - tx0 - 16) * a.u, ay = ty + Math.sin(i * 12.9898) * th * 0.32;
+				var col = (a.u > 0.78 && a.flip) ? COL.gold : COL.blue; c.fillStyle = col; c.globalAlpha = 0.92; c.beginPath(); c.arc(ax, ay, Math.max(2.2, W / 230), 0, 6.3); c.fill();
+			}
+			c.globalAlpha = 1;
+			label(c, "detector", tx1 - 2, ty + th * 1.55 + fs * 0.2, COL.dim, fs - 2, "right");
+			var Sv = { x: 0.56, y: 0.66, w: 0.28, h: 0.26 };
+			box(Sv.x, Sv.y, Sv.w, Sv.h, "Servo", loop.locked ? (loop.lost ? "lost the line" : "locked") : "off", loop.locked ? (loop.lost ? COL.red : COL.cyan) : COL.grey);
+			arrow(c, px(0.9), ty + th * 0.9 + 4 + fs * 1.2, px(0.9), py(Sv.y + 0.13), loop.locked ? COL.cyan : COL.line, loop.locked ? animT : null);
+			c.strokeStyle = loop.locked ? COL.cyan : COL.line; c.lineWidth = 1.6; c.beginPath(); c.moveTo(px(0.9), py(Sv.y + 0.13)); c.lineTo(px(Sv.x + Sv.w), py(Sv.y + 0.13)); c.stroke();
+			arrow(c, px(Sv.x), py(Sv.y + 0.13), px(Q.x + Q.w / 2), py(Sv.y + 0.13), loop.locked ? COL.cyan : COL.line, loop.locked ? animT : null);
+			arrow(c, px(Q.x + Q.w / 2), py(Sv.y + 0.13), px(Q.x + Q.w / 2), py(Q.y + Q.h) + 3, loop.locked ? COL.cyan : COL.line, loop.locked ? animT : null);
+			label(c, "steer", px(0.42), py(Sv.y + 0.13) + fs * 0.9, loop.locked ? COL.cyan : COL.dim, fs - 2, "center");
+			// output counter
+			var O = { x: 0.03, y: 0.62, w: 0.4, h: 0.3 };
+			c.strokeStyle = COL.gold; c.lineWidth = 1.4; c.fillStyle = "rgba(251,191,36,0.07)"; rrect(c, px(O.x), py(O.y), R.w * O.w, R.h * O.h, 8); c.fill(); c.stroke();
+			label(c, "Clock output", px(O.x + O.w / 2), py(O.y + 0.07), COL.gold, fs - 1, "center");
+			label(c, A.fmtTime(loop.x, 3) + " off", px(O.x + O.w / 2), py(O.y + 0.17), COL.text, fs + 3, "center");
+			label(c, "quartz alone: " + A.fmtTime(loop.xFree, 3), px(O.x + O.w / 2), py(O.y + 0.25), COL.dim, fs - 2, "center");
+			arrow(c, px(Q.x + 0.05), py(Q.y + Q.h) + 2, px(Q.x + 0.05), py(O.y) - 2, COL.gold, animT);
+		})();
+
+		/* --- resonance --- */
+		(function () {
+			var R = rR, m = { l: 14, r: 12, t: 26, b: 28 }, x0 = R.x + m.l, x1 = R.x + R.w - m.r, y0 = R.y + R.h - m.b, y1 = R.y + m.t;
+			var span = 3 * fw; function X(d) { return x0 + (clamp(d, -span, span) + span) / (2 * span) * (x1 - x0); } function Yp(p) { return y0 - p * (y0 - y1); }
+			label(c, (rR.w < 330 ? "Resonance curve" : "Resonance: atoms flipped vs frequency"), R.x + R.w / 2, R.y + 12, COL.dim, fs - 1, "center");
+			c.strokeStyle = COL.grid; c.lineWidth = 1; c.beginPath(); for (var g = -3; g <= 3; g++) { c.moveTo(X(g * fw), y1); c.lineTo(X(g * fw), y0); } c.stroke();
+			c.strokeStyle = COL.line; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y0); c.stroke();
+			// capture range
+			var cap = loop.capture * NU0; c.fillStyle = "rgba(34,211,238,0.07)"; c.fillRect(X(-cap), y1, X(cap) - X(-cap), y0 - y1);
+			c.strokeStyle = COL.gold; c.lineWidth = 2.2; c.beginPath(); for (var k = 0; k <= 240; k++) { var d = -span + 2 * span * k / 240, xx = X(d), yy = Yp(A.fountainP(d, tcfg.T)); if (k) c.lineTo(xx, yy); else c.moveTo(xx, yy); } c.stroke();
+			// free quartz marker (grey) and servo-corrected (cyan)
+			var df = loop.free * NU0;
+			if (loop.locked) { c.strokeStyle = COL.grey; c.setLineDash([4, 4]); c.beginPath(); c.moveTo(X(df), y1); c.lineTo(X(df), y0); c.stroke(); c.setLineDash([]); label(c, "quartz alone", clamp(X(df), x0 + 30, x1 - 30), y1 - 6, COL.grey, fs - 3, "center"); }
+			var xm = X(dA), out = Math.abs(dA) > span; c.strokeStyle = loop.locked ? COL.cyan : COL.gold; c.lineWidth = 2; c.beginPath(); c.moveTo(xm, y1); c.lineTo(xm, y0); c.stroke();
+			c.fillStyle = c.strokeStyle; c.beginPath(); c.arc(xm, Yp(out ? 0 : P), 5, 0, 6.3); c.fill();
+			label(c, hz(dA), clamp(xm, x0 + 28, x1 - 28), y0 + 14, loop.locked ? COL.cyan : COL.gold, fs - 2, "center");
+			label(c, "−" + hz(3 * fw), x0, y0 + 14, COL.dim, fs - 3, "left"); label(c, "+" + hz(3 * fw), x1, y0 + 14, COL.dim, fs - 3, "right");
+			label(c, "100%", x0 + 2, y1 + 6, COL.dim, fs - 3, "left");
+			if (loop.locked && !loop.lost) { c.fillStyle = COL.cyan; [-fw / 4, fw / 4].forEach(function (d) { c.beginPath(); c.arc(X(xm * 0 + d + dA), Yp(A.fountainP(d + dA, tcfg.T)), 3, 0, 6.3); c.fill(); }); }
+		})();
+
+		/* --- strip chart --- */
+		(function () {
+			var R = sR, m = { l: 76, r: 14, t: 22, b: 22 }, x0 = R.x + m.l, x1 = R.x + R.w - m.r, y0 = R.y + R.h - m.b, y1 = R.y + m.t;
+			var cap = loop.capture, ymax = cap * 1.7; function Yv(v) { return (y0 + y1) / 2 - clamp(v, -ymax, ymax) / ymax * (y0 - y1) / 2; }
+			label(c, "Frequency error, last " + HN + " seconds", R.x + R.w / 2, R.y + 10, COL.dim, fs - 1, "center");
+			c.fillStyle = "rgba(34,211,238,0.06)"; c.fillRect(x0, Yv(cap), x1 - x0, Yv(-cap) - Yv(cap));
+			c.strokeStyle = COL.line; c.lineWidth = 1; c.strokeRect(x0, y1, x1 - x0, y0 - y1);
+			c.setLineDash([3, 4]); c.strokeStyle = "rgba(34,211,238,0.5)"; c.beginPath(); c.moveTo(x0, Yv(cap)); c.lineTo(x1, Yv(cap)); c.moveTo(x0, Yv(-cap)); c.lineTo(x1, Yv(-cap)); c.stroke();
+			c.strokeStyle = COL.grid; c.beginPath(); c.moveTo(x0, Yv(0)); c.lineTo(x1, Yv(0)); c.stroke(); c.setLineDash([]);
+			label(c, "0", x0 - 6, Yv(0), COL.dim, fs - 2, "right"); label(c, "+" + A.fmtFrac(cap), x0 - 6, Yv(cap), COL.cyan, fs - 3, "right"); label(c, "−" + A.fmtFrac(cap), x0 - 6, Yv(-cap), COL.cyan, fs - 3, "right");
+			label(c, "lock range", x1 - 4, Yv(cap) - 8, COL.cyan, fs - 3, "right");
+			function trace(arr, col, lwid) { if (arr.length < 2) return; c.strokeStyle = col; c.lineWidth = lwid; c.beginPath(); for (var i = 0; i < arr.length; i++) { var xx = x1 - (arr.length - 1 - i) / (HN - 1) * (x1 - x0), yy = Yv(arr[i]); if (i) c.lineTo(xx, yy); else c.moveTo(xx, yy); } c.stroke(); }
+			trace(hist.free, COL.grey, 1.4); trace(hist.out, loop.locked ? COL.cyan : COL.gold, 2);
+			var lx = x0 + 8, ly = y1 + 12; c.fillStyle = COL.grey; c.fillRect(lx, ly - 2, 14, 3); label(c, "quartz alone", lx + 20, ly, COL.dim, fs - 2, "left");
+			c.fillStyle = loop.locked ? COL.cyan : COL.gold; c.fillRect(lx + 100, ly - 2, 14, 3); label(c, "clock output", lx + 120, ly, COL.dim, fs - 2, "left");
+		})();
+	}
+
+	function stepLoop(dtReal) {
+		animT += dtReal;
+		if (!loopPlaying) return;
+		cyc += dtReal * S.speed; var n = 0;
+		while (cyc >= 1 && n < 12) { cyc -= 1; n++; loop.step(); hist.free.push(loop.free); hist.out.push(loop.yOut); if (hist.free.length > HN) { hist.free.shift(); hist.out.shift(); } }
+		if (cyc > 12) cyc = 0;
+	}
+	function readLoop() {
+		var cap = loop.capture, yA = loop.free + loop.corr, P = A.fountainP(yA * NU0, TYPES[S.type].T);
+		$("ac-status").textContent = !loop.locked ? "Off" : loop.lost ? "Lost lock" : "Locked"; $("ac-status").style.color = !loop.locked ? "" : loop.lost ? COL.red : COL.cyan;
+		$("ac-status-s").textContent = !loop.locked ? "quartz free-running" : loop.lost ? "kicked off the line: press Re-tune" : "following the atoms";
+		$("ac-yfree").textContent = sfrac(loop.free); $("ac-yout").textContent = sfrac(loop.yOut);
+		$("ac-yout-s").textContent = hz(loop.yOut * NU0) + " at 9.19 GHz";
+		$("ac-pflip").textContent = Math.round(P * 100) + "%";
+		$("ac-day").textContent = A.fmtTime(loop.x, 3); $("ac-day-s").textContent = "quartz alone: " + A.fmtTime(loop.xFree, 3);
+	}
+
+	/* ================= tab 2: fountain + fringes ================= */
+	function Tmap(v) { return 0.001 * Math.pow(10, 4 * v / 1000); }
+	function TmapInv(T) { return Math.round(1000 * Math.log10(T / 0.001) / 4); }
+	function Smap(v) { return 10 * Math.pow(300, v / 1000); }
+	function SmapInv(s) { return Math.round(1000 * Math.log(s / 10) / Math.log(300)); }
+	function fmtT(T) { return T < 1 ? A.fmtSig(T * 1000, 3) + " ms" : A.fmtSig(T, 3) + " s"; }
+	$("ac-T").value = TmapInv(S.T); $("ac-snr").value = SmapInv(S.snr); $("ac-det").value = Math.round(S.det * 1000 / 2.5 * 1.0);
+	var detSlider = 0.15;
+	$("ac-det").value = Math.round(detSlider * 1000);
+	function fringeVals() {
+		var T = S.T, fw = A.fringeWidth(T), s1 = A.sigma1s(fw, S.snr, 1), span = 2.5 / T, det = (+$("ac-det").value / 1000) * span;
+		return { T: T, fw: fw, s1: s1, span: span, det: det, Q: NU0 / fw, h: 9.80665 * T * T / 8 };
+	}
+	function paintFringeLabels() {
+		var v = fringeVals();
+		$("ac-T-v").textContent = fmtT(S.T); $("ac-snr-v").textContent = A.fmtSig(S.snr, 3); $("ac-det-v").textContent = (v.det >= 0 ? "+" : "−") + hz(Math.abs(v.det));
+	}
+	$("ac-T").oninput = function () { S.T = Tmap(+this.value); paintFringeLabels(); save(); };
+	$("ac-snr").oninput = function () { S.snr = Smap(+this.value); paintFringeLabels(); save(); };
+	$("ac-det").oninput = function () { paintFringeLabels(); };
+	$("ac-rabi").checked = S.rabi; $("ac-rabi").onchange = function () { S.rabi = this.checked; save(); };
+	[].forEach.call(document.querySelectorAll("[data-try]"), function (b) {
+		b.onclick = function () { var t = b.getAttribute("data-try"); S.T = t === "tube" ? 0.01 : t === "nist" ? 0.5 : 5; S.snr = t === "space" ? 600 : 300; $("ac-T").value = TmapInv(S.T); $("ac-snr").value = SmapInv(S.snr); paintFringeLabels(); save(); };
+	});
+	var fPhase = 0;
+	function drawFringe(dt) {
+		var st = $("ac-stage2"), dim = sizeStage(st, 0.5, 1.5), W = dim.w, H = dim.h, c = setup($("ac-fr"), W, H), fs = fontPx(W), narrow = W < 640;
+		var v = fringeVals(), tau = Math.min(0.01, v.T / 5);
+		c.fillStyle = COL.bg; c.fillRect(0, 0, W, H);
+		var fR = narrow ? { x: 0, y: 0, w: W, h: H * 0.5 } : { x: 0, y: 0, w: W * 0.32, h: H }, pR = narrow ? { x: 0, y: H * 0.5, w: W, h: H * 0.5 } : { x: W * 0.32, y: 0, w: W * 0.68, h: H };
+		/* fountain */
+		(function () {
+			var R = fR, cx = R.x + R.w * (narrow ? 0.22 : 0.5), top = R.y + 22, bot = R.y + R.h - 20, cavY = bot - (bot - top) * 0.32, mot = bot - 6;
+			var hpx = clamp((cavY - top - 14) * (0.15 + 0.85 * clamp(Math.log10(v.T * 1000) / 4, 0, 1)), 10, cavY - top - 14);
+			label(c, "Caesium fountain", R.x + R.w / 2, R.y + 10, COL.dim, fs - 1, "center");
+			c.strokeStyle = COL.line; c.lineWidth = 1.4; c.fillStyle = "rgba(96,165,250,0.05)"; rrect(c, cx - 26, top, 52, bot - top, 10); c.fill(); c.stroke();
+			c.fillStyle = "rgba(251,191,36,0.18)"; c.strokeStyle = COL.gold; c.fillRect(cx - 40, cavY - 9, 80, 18); c.strokeRect(cx - 40, cavY - 9, 80, 18); label(c, "microwave cavity", cx + 46, cavY, COL.gold, fs - 3, "left");
+			c.fillStyle = "rgba(251,191,36,0.35)"; c.beginPath(); c.arc(cx, mot, 9, 0, 6.3); c.fill(); label(c, "laser-cooled ball", cx + 46, mot, COL.dim, fs - 3, "left");
+			c.strokeStyle = COL.dim; c.setLineDash([3, 4]); c.beginPath(); c.moveTo(cx - 40, cavY - hpx); c.lineTo(cx + 40, cavY - hpx); c.stroke(); c.setLineDash([]); label(c, fmtH(v.h), cx + 46, cavY - hpx, COL.dim, fs - 3, "left");
+			fPhase = (fPhase + dt / (3 + Math.min(4, Math.log10(v.T * 1000)))) % 1;
+			var ph = fPhase, y, flip = false;
+			if (ph < 0.18) { y = mot + (cavY - mot) * (ph / 0.18); } else if (ph < 0.82) { var u = (ph - 0.18) / 0.64; y = cavY - 4 * hpx * u * (1 - u); } else { var w2 = (ph - 0.82) / 0.18; y = cavY + (bot - 28 - cavY) * w2; flip = true; }
+			var P = A.fountainP(v.det, v.T, tau);
+			for (var i = 0; i < 36; i++) { var a = i * 2.399, r = 5 + 7 * Math.sqrt((i + 1) / 36), col = flip && ((i / 36) < P) ? COL.gold : COL.blue; c.fillStyle = col; c.globalAlpha = 0.85; c.beginPath(); c.arc(cx + Math.cos(a) * r * 0.9, y + Math.sin(a) * r * 0.9, 2, 0, 6.3); c.fill(); }
+			c.globalAlpha = 1;
+			if (Math.abs(ph - 0.18) < 0.05 || Math.abs(ph - 0.82) < 0.05) { c.strokeStyle = COL.gold; c.lineWidth = 2; c.strokeRect(cx - 40, cavY - 9, 80, 18); label(c, ph < 0.5 ? "pulse 1" : "pulse 2", cx - 46, cavY, COL.gold, fs - 2, "right"); }
+			label(c, "T = " + fmtT(v.T), cx - 46, cavY - hpx / 2, COL.text, fs - 1, "right");
+			label(c, "detect", cx - 32, bot - 6, COL.dim, fs - 3, "right");
+		})();
+		/* fringes */
+		(function () {
+			var R = pR, m = { l: 40, r: 14, t: 46, b: 38 }, x0 = R.x + m.l, x1 = R.x + R.w - m.r, y0 = R.y + R.h - m.b, y1 = R.y + m.t, span = v.span;
+			function X(d) { return x0 + (d + span) / (2 * span) * (x1 - x0); } function Yp(p) { return y0 - p * (y0 - y1); }
+			label(c, "Atoms flipped vs microwave frequency  (centre = 9,192,631,770 Hz)", R.x + R.w / 2, R.y + 12, COL.dim, fs - 1, "center");
+			c.strokeStyle = COL.grid; c.lineWidth = 1; c.beginPath(); for (var g = 0; g <= 4; g++) { c.moveTo(x0, Yp(g / 4)); c.lineTo(x1, Yp(g / 4)); } c.stroke();
+			for (var g2 = 0; g2 <= 4; g2++) label(c, g2 * 25 + "%", x0 - 5, Yp(g2 / 4), COL.dim, fs - 3, "right");
+			c.strokeStyle = COL.line; c.strokeRect(x0, y1, x1 - x0, y0 - y1);
+			// single-pass Rabi for the same total time T
+			if (S.rabi) { c.strokeStyle = "rgba(147,161,196,0.8)"; c.setLineDash([5, 4]); c.lineWidth = 1.6; c.beginPath(); for (var k = 0; k <= 400; k++) { var d = -span + 2 * span * k / 400, xx = X(d), yy = Yp(A.beamP(d, v.T)); if (k) c.lineTo(xx, yy); else c.moveTo(xx, yy); } c.stroke(); c.setLineDash([]); }
+			c.strokeStyle = COL.gold; c.lineWidth = 2.4; c.beginPath(); var N = 700; for (var k2 = 0; k2 <= N; k2++) { var d2 = -span + 2 * span * k2 / N, xx2 = X(d2), yy2 = Yp(A.fountainP(d2, v.T, tau)); if (k2) c.lineTo(xx2, yy2); else c.moveTo(xx2, yy2); } c.stroke();
+			// width marker
+			var hw = v.fw / 2; c.strokeStyle = COL.cyan; c.lineWidth = 1.6; c.beginPath(); c.moveTo(X(-hw), Yp(0.5)); c.lineTo(X(hw), Yp(0.5)); c.stroke();
+			c.beginPath(); c.moveTo(X(-hw), Yp(0.5) - 5); c.lineTo(X(-hw), Yp(0.5) + 5); c.moveTo(X(hw), Yp(0.5) - 5); c.lineTo(X(hw), Yp(0.5) + 5); c.stroke();
+			label(c, hz(v.fw), X(0) + (X(hw) - X(0)) + 8, Yp(0.5) - 8, COL.cyan, fs - 1, "left");
+			// probe
+			var pp = A.fountainP(v.det, v.T, tau); c.strokeStyle = COL.text; c.lineWidth = 1.2; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(X(v.det), y1); c.lineTo(X(v.det), y0); c.stroke(); c.setLineDash([]);
+			c.fillStyle = COL.text; c.beginPath(); c.arc(X(v.det), Yp(pp), 5, 0, 6.3); c.fill();
+			// axis
+			var step = niceStep(span / 2.5); c.fillStyle = COL.dim; for (var t = -Math.floor(span / step) * step; t <= span + 1e-9; t += step) { label(c, (t > 0 ? "+" : "") + shortHz(t), X(t), y0 + 14, COL.dim, fs - 3, "center"); c.fillRect(X(t), y0, 1, 4); }
+			label(c, "detuning from resonance", (x0 + x1) / 2, y0 + 30, COL.dim, fs - 2, "center");
+			var lgx = x0 + 4, lgy = R.y + 30;
+			c.strokeStyle = COL.gold; c.lineWidth = 2.4; c.beginPath(); c.moveTo(lgx, lgy); c.lineTo(lgx + 20, lgy); c.stroke(); label(c, "two pulses (Ramsey)", lgx + 26, lgy, COL.dim, fs - 3, "left");
+			if (S.rabi) { c.strokeStyle = "rgba(147,161,196,0.8)"; c.setLineDash([5, 4]); c.lineWidth = 1.6; c.beginPath(); c.moveTo(lgx + 150, lgy); c.lineTo(lgx + 170, lgy); c.stroke(); c.setLineDash([]); label(c, "one pass of length T", lgx + 176, lgy, COL.dim, fs - 3, "left"); }
+		})();
+	}
+	function niceStep(x) { var e = Math.pow(10, Math.floor(Math.log10(x))), m = x / e; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * e; }
+	function shortHz(t) { var a = Math.abs(t); if (a === 0) return "0"; if (a >= 1000) return A.fmtSig(t / 1000, 3) + " kHz"; if (a >= 1) return A.fmtSig(t, 3) + " Hz"; return A.fmtSig(t * 1000, 3) + " mHz"; }
+	function bigNum(x) { var e = Math.floor(Math.log10(x)); return A.fmtSig(x / Math.pow(10, e), 3) + "\u00d710" + A.sup(e); }
+	function fmtH(h) { return h >= 1 ? A.fmtSig(h, 3) + " m" : h >= 0.01 ? A.fmtSig(h * 100, 3) + " cm" : A.fmtSig(h * 1000, 3) + " mm"; }
+	function readFringe() {
+		var v = fringeVals(), pp = A.fountainP(v.det, v.T, Math.min(0.01, v.T / 5));
+		$("ac-fw").textContent = hz(v.fw); $("ac-q").textContent = A.fmtFrac(v.Q).replace("×10", "×10"); $("ac-s1").textContent = A.fmtFrac(v.s1);
+		$("ac-s1-s").textContent = "after a day of averaging: " + A.fmtFrac(v.s1 / Math.sqrt(86400));
+		$("ac-h").textContent = fmtH(v.h); $("ac-h-s").textContent = "above the cavity (" + A.fmtSig(v.T * 100, 2) + " m of beam at 100 m/s)";
+		$("ac-pp").textContent = Math.round(pp * 100) + "%"; $("ac-pp-s").textContent = "at " + (v.det >= 0 ? "+" : "−") + hz(Math.abs(v.det));
+	}
+
+	/* ================= tab 3: race ================= */
+	var race = A.raceInit(7), racePlaying = false, lanes = {};
+	(function buildLanes() {
+		var host = $("ac-lanes"), head = document.createElement("div"); head.className = "ac-lane ac-lane--head"; head.setAttribute("role", "row");
+		head.innerHTML = "<div>Clock</div><div>Error now</div><div>Error on a log scale</div><div>Typically off by 1 s after</div>"; host.appendChild(head);
+		A.CLOCKS.forEach(function (cl) {
+			var row = document.createElement("div"); row.className = "ac-lane"; row.setAttribute("role", "row"); row.title = cl.name + ". " + cl.note;
+			row.innerHTML = '<div class="ac-lane__n"><span class="ac-dot" style="background:' + cl.color + '"></span><span>' + esc(cl.short) + '</span></div><div class="ac-lane__e" data-e>0 s</div><div class="ac-lane__bar" aria-hidden="true"><div class="ac-lane__fill" data-f style="background:' + cl.color + ';width:0"></div></div><div class="ac-lane__t">' + esc(A.fmtSpan(A.timeToError(cl, 1))) + '</div>';
+			host.appendChild(row); lanes[cl.id] = { e: row.querySelector("[data-e]"), f: row.querySelector("[data-f]") };
+		});
+	})();
+	function paintRace() {
+		A.CLOCKS.forEach(function (cl) {
+			var x = race.x[cl.id], l = lanes[cl.id], a = Math.abs(x);
+			l.e.textContent = a === 0 ? "0 s" : (x > 0 ? "+" : "−") + A.fmtTime(a, 3);
+			var f = a <= 1e-18 ? 0 : clamp((Math.log10(a) + 18) / 20, 0, 1); l.f.style.width = (f * 100).toFixed(1) + "%";
+		});
+		$("ac-race-t").textContent = A.fmtTime(race.t, 3);
+	}
+	$("ac-race-speed").value = String(S.raceSpeed); if ($("ac-race-speed").value !== String(S.raceSpeed)) $("ac-race-speed").value = "31557600";
+	$("ac-race-speed").onchange = function () { S.raceSpeed = +this.value; save(); };
+	$("ac-race-play").onclick = function () { racePlaying = !racePlaying; this.setAttribute("aria-pressed", String(racePlaying)); this.textContent = racePlaying ? "❚❚ Pause" : "▶ Start"; };
+	$("ac-race-reset").onclick = function () { race = A.raceInit(1 + Math.floor(Math.random() * 99999)); paintRace(); };
+
+	/* ================= tab 4: stability chart ================= */
+	var chips = $("ac-st-chips");
+	A.CLOCKS.forEach(function (cl) {
+		var b = document.createElement("button"); b.type = "button"; b.className = "tu-chip"; b.setAttribute("aria-pressed", String(!S.hidden[cl.id])); b.innerHTML = '<span class="ac-dot" style="display:inline-block;width:0.7em;height:0.7em;margin-right:0.4em;background:' + cl.color + '"></span>' + esc(cl.short);
+		b.onclick = function () { S.hidden[cl.id] = !S.hidden[cl.id]; b.setAttribute("aria-pressed", String(!S.hidden[cl.id])); save(); stabDirty = true; }; chips.appendChild(b);
+	});
+	var yb = document.createElement("button"); yb.type = "button"; yb.className = "tu-chip"; yb.setAttribute("aria-pressed", String(!S.hidden.mine)); yb.textContent = "Your fountain (dashed)";
+	yb.onclick = function () { S.hidden.mine = !S.hidden.mine; yb.setAttribute("aria-pressed", String(!S.hidden.mine)); save(); stabDirty = true; }; chips.appendChild(yb);
+	var stabDirty = true, hover = null, TMIN = 0.1, TMAX = 1e6, YMIN = 1e-19, YMAX = 1e-5;
+	function mineAt(tau) { var s1 = A.sigma1s(A.fringeWidth(S.T), S.snr, 1); return Math.sqrt(s1 * s1 / tau + 1e-16 * 1e-16); }
+	function drawStab() {
+		var st = $("ac-stage3"), dim = sizeStage(st, 0.52, 1.0), W = dim.w, H = dim.h, c = setup($("ac-st"), W, H), fs = fontPx(W);
+		c.fillStyle = COL.bg; c.fillRect(0, 0, W, H);
+		var m = { l: 62, r: W < 640 ? 14 : 112, t: 16, b: 44 }, x0 = m.l, x1 = W - m.r, y0 = H - m.b, y1 = m.t;
+		var lx = Math.log10(TMIN), lX = Math.log10(TMAX) - lx, ly = Math.log10(YMIN), lY = Math.log10(YMAX) - ly;
+		function X(t) { return x0 + (Math.log10(t) - lx) / lX * (x1 - x0); } function Y(v) { return y0 - (Math.log10(clamp(v, YMIN, YMAX)) - ly) / lY * (y0 - y1); }
+		c.lineWidth = 1; c.strokeStyle = COL.grid; c.beginPath();
+		for (var e = Math.ceil(lx); e <= Math.log10(TMAX); e++) { c.moveTo(X(Math.pow(10, e)), y1); c.lineTo(X(Math.pow(10, e)), y0); }
+		for (var f = Math.ceil(ly); f <= Math.log10(YMAX); f++) { c.moveTo(x0, Y(Math.pow(10, f))); c.lineTo(x1, Y(Math.pow(10, f))); } c.stroke();
+		c.strokeStyle = COL.line; c.strokeRect(x0, y1, x1 - x0, y0 - y1);
+		for (var f2 = Math.ceil(ly); f2 <= Math.log10(YMAX); f2 += (H < 380 ? 2 : 1)) label(c, "10" + A.sup(f2), x0 - 6, Y(Math.pow(10, f2)), COL.dim, fs - 2, "right");
+		var tl = [[0.1, "0.1 s"], [1, "1 s"], [10, "10 s"], [60, "1 min"], [3600, "1 h"], [86400, "1 day"], [1e6, "12 days"]];
+		tl.forEach(function (p) { if (W < 640 && (p[0] === 0.1 || p[0] === 10)) return; label(c, p[1], X(p[0]), y0 + 14, COL.dim, fs - 2, "center"); });
+		label(c, "averaging time τ", (x0 + x1) / 2, y0 + 33, COL.dim, fs - 1, "center");
+		c.save(); c.translate(14, (y0 + y1) / 2); c.rotate(-Math.PI / 2); label(c, "fractional frequency instability σy(τ)  ↓ better", 0, 0, COL.dim, fs - 1, "center"); c.restore();
+		function curve(fn, col, wd, dash) { c.strokeStyle = col; c.lineWidth = wd; c.setLineDash(dash || []); c.beginPath(); var N = 160; for (var i = 0; i <= N; i++) { var t = Math.pow(10, lx + lX * i / N), xx = X(t), yy = Y(fn(t)); if (i) c.lineTo(xx, yy); else c.moveTo(xx, yy); } c.stroke(); c.setLineDash([]); }
+		var ends = [];
+		A.CLOCKS.forEach(function (cl) { if (S.hidden[cl.id]) return; curve(function (t) { return A.allanModel(cl, t); }, cl.color, hover ? 1.8 : 2.4); ends.push({ y: Y(A.allanModel(cl, TMAX)), t: cl.short, col: cl.color }); });
+		if (!S.hidden.mine) { curve(mineAt, "#ffffff", 2, [6, 4]); ends.push({ y: Y(mineAt(TMAX)), t: "yours", col: "#fff" }); }
+		if (W >= 640) { ends.sort(function (a, b) { return a.y - b.y; }); for (var i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < fs + 1) ends[i].y = ends[i - 1].y + fs + 1; ends.forEach(function (o) { label(c, o.t, x1 + 6, o.y, o.col, fs - 1, "left"); }); }
+		if (hover) {
+			var t = hover.t, xx = X(t); c.strokeStyle = COL.text; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(xx, y1); c.lineTo(xx, y0); c.stroke(); c.setLineDash([]);
+			A.CLOCKS.forEach(function (cl) { if (S.hidden[cl.id]) return; c.fillStyle = cl.color; c.beginPath(); c.arc(xx, Y(A.allanModel(cl, t)), 4, 0, 6.3); c.fill(); });
+			if (!S.hidden.mine) { c.fillStyle = "#fff"; c.beginPath(); c.arc(xx, Y(mineAt(t)), 4, 0, 6.3); c.fill(); }
+		}
+	}
+	var stCanvas = $("ac-st");
+	function stMove(ev) {
+		var r = stCanvas.getBoundingClientRect(), px = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left, W = r.width, m = { l: 62, r: W < 640 ? 14 : 112 };
+		var u = clamp((px - m.l) / (W - m.l - m.r), 0, 1), t = Math.pow(10, Math.log10(TMIN) + u * (Math.log10(TMAX) - Math.log10(TMIN)));
+		hover = { t: t }; stabDirty = true;
+		var parts = []; A.CLOCKS.forEach(function (cl) { if (!S.hidden[cl.id]) parts.push([cl.short, A.allanModel(cl, t)]); }); parts.sort(function (a, b) { return a[1] - b[1]; });
+		$("ac-st-read").textContent = "τ = " + A.fmtTime(t, 3);
+		$("ac-st-s").textContent = parts.map(function (p) { return p[0] + " " + A.fmtFrac(p[1]); }).join("  ·  ") + (S.hidden.mine ? "" : "  ·  yours " + A.fmtFrac(mineAt(t))) + "   (best first)";
+	}
+	stCanvas.addEventListener("mousemove", stMove); stCanvas.addEventListener("touchstart", stMove, { passive: true }); stCanvas.addEventListener("touchmove", stMove, { passive: true });
+	stCanvas.addEventListener("mouseleave", function () { hover = null; stabDirty = true; });
+
+	/* ================= tab 5: drift calculator ================= */
+	var PER = { day: A.DAY, week: 7 * A.DAY, month: A.YEAR / 12, year: A.YEAR };
+	var dFrac = $("ac-d-frac"), dSec = $("ac-d-sec"), dPer = $("ac-d-per"), dTar = $("ac-d-target");
+	function fmtFracInput(y) { return y === 0 ? "0" : Number(y.toPrecision(4)).toExponential().replace("e+", "e"); }
+	function syncFromFrac() { dFrac.value = fmtFracInput(S.frac); dSec.value = A.fmtSig(S.frac * PER[S.per], 4); dPer.value = S.per; dTar.value = A.fmtTime(S.target, 4).replace(/ years?$/, " y").replace(/ hours$/, " h").replace(/ days$/, " day"); }
+	var DP = $("ac-d-presets");
+	A.CLOCKS.forEach(function (cl) { var b = document.createElement("button"); b.type = "button"; b.className = "tu-chip"; b.textContent = cl.short + " (" + A.fmtFrac(cl.acc) + ")"; b.title = cl.name; b.onclick = function () { S.frac = cl.acc; save(); syncFromFrac(); renderDrift(); }; DP.appendChild(b); });
+	[["1 s per day", A.fractionFrom(1, A.DAY)], ["1 min per year", A.fractionFrom(60, A.YEAR)]].forEach(function (p) { var b = document.createElement("button"); b.type = "button"; b.className = "tu-chip"; b.textContent = p[0]; b.onclick = function () { S.frac = p[1]; save(); syncFromFrac(); renderDrift(); }; DP.appendChild(b); });
+	var DT = $("ac-d-targets");
+	[["1 ns", 1e-9], ["1 µs", 1e-6], ["1 ms", 1e-3], ["1 s", 1], ["1 min", 60], ["1 hour", 3600]].forEach(function (p) { var b = document.createElement("button"); b.type = "button"; b.className = "tu-chip"; b.textContent = p[0]; b.onclick = function () { S.target = p[1]; save(); syncFromFrac(); renderDrift(); }; DT.appendChild(b); });
+	function nearestClock(y) { var a = Math.abs(y), best = null, bd = 1e9; A.CLOCKS.forEach(function (cl) { var d = Math.abs(Math.log10(Math.max(a, 1e-30)) - Math.log10(cl.acc)); if (d < bd) { bd = d; best = cl; } }); return best; }
+	function groupDigits(s) { return /^\d+$/.test(s) ? s.replace(/\B(?=(\d{3})+(?!\d))/g, " ") : s; }
+	var lastAnswer = "";
+	function renderDrift() {
+		var y = S.frac, a = Math.abs(y), fast = y > 0 ? "gains" : "loses";
+		$("ac-d-tl").textContent = A.fmtTime(S.target, 3);
+		if (!isFinite(y)) { $("ac-d-until").textContent = "–"; return; }
+		$("ac-d-until").textContent = a === 0 ? "never" : A.fmtSpan(A.timeUntil(y, S.target));
+		$("ac-d-until-s").textContent = a === 0 ? "A perfect clock never drifts" : "A clock with an error of " + (y < 0 ? "−" : "") + A.fmtFrac(a) + " (" + hz(a * NU0) + " at 9.19 GHz)";
+		$("ac-d-day").textContent = a === 0 ? "0 s" : A.fmtTime(a * A.DAY, 3); $("ac-d-day-s").textContent = a === 0 ? "" : fast + " this much each day";
+		$("ac-d-year").textContent = a === 0 ? "0 s" : A.fmtTime(a * A.YEAR, 3); $("ac-d-year-s").textContent = a === 0 ? "" : fast + " this much each year";
+		var cl = a === 0 ? null : nearestClock(y);
+		if (!cl) { $("ac-d-like").textContent = "–"; $("ac-d-like-s").textContent = ""; }
+		else if (a > 1e-3) { $("ac-d-like").textContent = "A broken clock"; $("ac-d-like-s").textContent = "Worse than any watch: over 0.1% error"; }
+		else { $("ac-d-like").textContent = cl.short; $("ac-d-like-s").textContent = cl.name + ": typical error " + A.fmtFrac(cl.acc) + ". " + cl.note; }
+		var rows = [["1 hour", 3600], ["1 day", A.DAY], ["1 week", 7 * A.DAY], ["1 month", A.YEAR / 12], ["1 year", A.YEAR], ["10 years", 10 * A.YEAR], ["100 years", 100 * A.YEAR]], tb = $("ac-d-table").querySelector("tbody"), html = "";
+		rows.forEach(function (r) { var err = a * r[1]; html += "<tr><td>" + r[0] + "</td><td>" + (a === 0 ? "0 s" : A.fmtTime(err, 3)) + "</td><td>" + (a === 0 ? "0" : A.fmtDist(A.lightDistance(err))) + "</td><td>" + groupDigits(A.cyclesIn(r[1])) + "</td></tr>"; });
+		tb.innerHTML = html;
+		lastAnswer = a === 0 ? "A perfect clock never drifts." : "A clock with a fractional frequency error of " + (y < 0 ? "-" : "") + A.fmtFrac(a) + " " + fast + " " + A.fmtTime(a * A.DAY, 3) + " per day and " + A.fmtTime(a * A.YEAR, 3) + " per year, and is typically off by " + A.fmtTime(S.target, 3) + " after " + A.fmtSpan(A.timeUntil(y, S.target)) + ". (mes.fm/atomic-clock-simulator)";
+		save();
+	}
+	dFrac.addEventListener("input", function () { var v = A.parseFraction(this.value); if (isFinite(v)) { S.frac = v; dSec.value = A.fmtSig(v * PER[S.per], 4); renderDrift(); $("ac-d-frac-n").textContent = "Type 5 ppm, 2 ppb, 3 ppt, 1.5e-13 or 0.0005%"; } else $("ac-d-frac-n").textContent = "Could not read that: try 5 ppm or 2e-9"; });
+	function fromSec() { var v = parseFloat(dSec.value.replace(/,/g, "")); if (isFinite(v)) { S.per = dPer.value; S.frac = A.fractionFrom(v, PER[S.per]); dFrac.value = fmtFracInput(S.frac); renderDrift(); } }
+	dSec.addEventListener("input", fromSec); dPer.addEventListener("change", fromSec);
+	dTar.addEventListener("input", function () { var v = A.parseTime(this.value); if (isFinite(v) && v > 0) { S.target = v; renderDrift(); $("ac-d-target-n").textContent = "Try 1 ns, 1 ms, 1 s, 1 min"; } else $("ac-d-target-n").textContent = "Could not read that: try 1 ms or 2 min"; });
+	$("ac-d-copy").onclick = function () { copy(lastAnswer, "Answer copied"); };
+	$("ac-d-link").onclick = function () { var o = new URLSearchParams(); o.set("tab", "drift"); o.set("f", fmtFracInput(S.frac)); o.set("t", A.fmtSig(S.target, 6) + "s"); o.set("per", S.per); copy(location.origin + location.pathname + "?" + o.toString(), "Link copied"); };
+
+	/* ================= tabs, theatre, full screen ================= */
+	function setTab(t, fromUser) {
+		if (TABS.indexOf(t) < 0) t = "loop"; S.tab = t;
+		TABS.forEach(function (k) { var on = k === t; $("ac-p-" + k).hidden = !on; $("ac-t-" + k).setAttribute("aria-selected", String(on)); $("ac-t-" + k).tabIndex = on ? 0 : -1; });
+		if (t === "race") paintRace(); if (t === "stab") stabDirty = true; if (t === "drift") { syncFromFrac(); renderDrift(); } if (t === "fringe") paintFringeLabels();
+		save();
+		if (fromUser) { var u = new URL(location.href); u.search = ""; history.replaceState(null, "", u.pathname); }
+	}
+	[].forEach.call(document.querySelectorAll(".ac-tabs button"), function (b) {
+		b.onclick = function () { setTab(b.getAttribute("data-tab"), true); };
+		b.onkeydown = function (e) { var i = TABS.indexOf(b.getAttribute("data-tab")); if (e.key === "ArrowRight") { setTab(TABS[(i + 1) % 5], true); $("ac-t-" + S.tab).focus(); e.preventDefault(); } else if (e.key === "ArrowLeft") { setTab(TABS[(i + 4) % 5], true); $("ac-t-" + S.tab).focus(); e.preventDefault(); } };
+	});
+	function paintTheatre() { $("ac-theatre").setAttribute("aria-pressed", String(document.documentElement.classList.contains("page-theatre"))); }
+	$("ac-theatre").onclick = function () {
+		var on = !document.documentElement.classList.contains("page-theatre");
+		document.documentElement.classList.toggle("page-theatre", on); document.documentElement.classList.toggle("page-wide", on);
+		try { localStorage.setItem("pageMode", on ? "theatre" : "std"); localStorage.setItem("pageWide", on ? "1" : "0"); } catch (e) {}
+		paintTheatre(); stabDirty = true;
+	};
+	paintTheatre();
+	$("ac-full1").onclick = function () { toggleFull("ac-wrap1"); }; $("ac-full2").onclick = function () { toggleFull("ac-wrap2"); };
+	document.addEventListener("keydown", function (e) {
+		var tag = (e.target.tagName || "").toLowerCase(); if (/^(input|textarea|select)$/.test(tag) || e.ctrlKey || e.metaKey || e.altKey) return;
+		if (S.tab === "loop") { if (e.key === "l" || e.key === "L") $("ac-lock").click(); else if (e.key === "k" || e.key === "K") $("ac-kick").click(); else if (e.key === " " && tag !== "button") { e.preventDefault(); $("ac-loop-play").click(); } }
+		if (S.tab === "race" && e.key === " " && tag !== "button") { e.preventDefault(); $("ac-race-play").click(); }
+	});
+
+	/* ================= main loop ================= */
+	var last = 0, vis = true;
+	document.addEventListener("visibilitychange", function () { vis = !document.hidden; last = 0; });
+	function frame(ts) {
+		requestAnimationFrame(frame);
+		if (!vis) return;
+		var dt = last ? Math.min(0.1, (ts - last) / 1000) : 0.016; last = ts;
+		if (S.tab === "loop") { stepLoop(dt); drawLoop(dt); readLoop(); }
+		else if (S.tab === "fringe") { drawFringe(dt); readFringe(); }
+		else if (S.tab === "race") { if (racePlaying) { A.raceStep(race, S.raceSpeed * dt); paintRace(); } }
+		else if (S.tab === "stab") { if (stabDirty) { drawStab(); stabDirty = false; } }
+	}
+	var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(function () { stabDirty = true; }, 60); });
+	document.addEventListener("fullscreenchange", function () { stabDirty = true; });
+
+	newLoop(false); paintFringeLabels(); syncFromFrac(); renderDrift();
+	setTab(S.tab, false);
+	if (q.get("tab") || q.get("f") || q.get("c")) history.replaceState(null, "", location.pathname);
+	requestAnimationFrame(frame);
+})();

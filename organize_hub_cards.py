@@ -29,7 +29,7 @@ PAGES = {
         ("money", "Money &amp; Finance", ["mortgagecalculator", "inflationcalculator", "vatcalculator", "youtubemoney/index.html", "impermanent-loss-calculator"]),
         ("algebra", "Algebra &amp; Calculus", ["sum-of-integers-calculator", "calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "2d-graphing-calculator", "3d-graphing-calculator"]),
         ("everyday", "Everyday Math &amp; Health", ["days-between-dates-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
-        ("physics", "Physics &amp; Science", ["reynolds-number-calculator", "photoelectric-effect-simulator", "earth-curvature-calculator"]),   # photoelectric-effect-simulator is listed on tools.html (Simulations) too
+        ("physics", "Physics &amp; Science", ["reynolds-number-calculator", "photoelectric-effect-simulator", "atomic-clock-simulator", "earth-curvature-calculator"]),   # photoelectric-effect-simulator is listed on tools.html (Simulations) too
         ("fun", "Fun", ["gematria", "pokemongocalculator"]),
     ]),
     "tools.html": dict(noun="tools", popular=["timer", "speedreader", "moon", "emoji"], cats=[
@@ -37,7 +37,7 @@ PAGES = {
         ("time", "Time &amp; Focus", ["speedreader", "typing-test", "typing-test-transcribe", "typing-test-voice", "timer", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "clock", "timezone", "calendar"]),
         ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search", "search-engines", "site-index", "go"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today"]),
-        ("sim", "Simulations", ["fluid-simulator", "photoelectric-effect-simulator"]),
+        ("sim", "Simulations", ["fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator"]),
     ]),
 }
 TD = re.compile(r'[ \t]*<td class="calc-container[^"]*"><a class="calc-link" href="([^"]*)">.*?</td>\n?', re.S)
