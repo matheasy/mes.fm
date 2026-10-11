@@ -6,7 +6,7 @@
   window.__mesvsLoaded = true;
 
   var V = window.MESVS;
-  var S = V.merge(null);
+  var S = V.merge(null), P = V.resolveProfile(S, location.hostname).config, profKey = '';
   var on = false, ready = false;
   var media = new Set();
   var observed = new WeakSet();
@@ -19,6 +19,13 @@
 
   // ---- settings -------------------------------------------------------------------------------------------------------
   function enabledHere() { return !V.matchesSite(host, S.disabledSites); }
+
+  function pickProfile() {
+    var rp = V.resolveProfile(S, host);
+    P = rp.config;
+    var k = rp.id + ':' + P.hideByDefault;
+    if (k !== profKey) { profKey = k; hiddenLocal = P.hideByDefault; }
+  }
 
   function load() {
     try {
@@ -46,23 +53,24 @@
 
   function sync() {
     if (!ready) return;
+    pickProfile();
     if (enabledHere()) start(); else stop();
     if (on) { collect(document); tick(); }
   }
 
   function initialSpeed() {
-    if (S.remember === 'global') return globalSpeed;
-    if (S.remember === 'site') return typeof siteSpeeds[host] === 'number' ? siteSpeeds[host] : null;
+    if (P.remember === 'global') return globalSpeed;
+    if (P.remember === 'site') return typeof siteSpeeds[host] === 'number' ? siteSpeeds[host] : null;
     return null;
   }
 
   function persist(v) {
-    if (S.remember === 'off') return;
-    if (S.remember === 'global') globalSpeed = v; else siteSpeeds[host] = v;
+    if (P.remember === 'off') return;
+    if (P.remember === 'global') globalSpeed = v; else siteSpeeds[host] = v;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function () {
       try {
-        if (S.remember === 'global') chrome.storage.local.set({ mesvsSpeed: v });
+        if (P.remember === 'global') chrome.storage.local.set({ mesvsSpeed: v });
         else chrome.storage.local.set({ mesvsSites: siteSpeeds });
       } catch (e) { /* ignore */ }
     }, 300);
@@ -81,14 +89,14 @@
 
   function register(el) {
     if (media.has(el)) return;
-    if (el.tagName === 'AUDIO' && !S.audio) return;
+    if (el.tagName === 'AUDIO' && !P.audio) return;
     media.add(el);
     el.__mesWant = el.playbackRate;
     el.addEventListener('loadedmetadata', function () { if (on) applyInitial(el); });
     el.addEventListener('play', function () { if (!on) return; applyInitial(el); active = el; });
     el.addEventListener('ratechange', function (e) {
       if (!on || Math.abs(el.playbackRate - (el.__mesWant || 1)) < 0.001) return;   // our own change
-      if (S.force && el.__mesWant) { e.stopImmediatePropagation(); setRate(el, el.__mesWant); return; }
+      if (P.force && el.__mesWant) { e.stopImmediatePropagation(); setRate(el, el.__mesWant); return; }
       el.__mesWant = el.playbackRate;   // the page or its own speed menu changed it: follow it
       if (el === active) flash();
     }, true);
@@ -149,22 +157,27 @@
     return v;
   }
 
-  function doAction(a) {
+  function doAction(a, val) {
     var el = pickActive();
     if (!el) return false;
-    var cur = el.playbackRate;
-    if (a === 'slower') userSet(V.stepSpeed(cur, -1, S.step));
-    else if (a === 'faster') userSet(V.stepSpeed(cur, 1, S.step));
+    var cur = el.playbackRate, spec = V.ACT[a], n = val > 0 ? val : (spec && spec.def);
+    if (a === 'slower') userSet(V.stepSpeed(cur, -1, n));
+    else if (a === 'faster') userSet(V.stepSpeed(cur, 1, n));
     else if (a === 'reset') {
-      if (Math.abs(cur - 1) > 0.001) { el.__mesPrev = cur; userSet(1); } else userSet(el.__mesPrev || S.preferred);
+      if (Math.abs(cur - n) > 0.001) { el.__mesPrev = cur; userSet(n); } else if (el.__mesPrev) userSet(el.__mesPrev);
     } else if (a === 'preferred') {
-      if (Math.abs(cur - S.preferred) < 0.001) userSet(1); else userSet(S.preferred);
-    } else if (a === 'rewind') { el.currentTime = Math.max(0, el.currentTime - S.seek); flash(); }
-    else if (a === 'advance') { el.currentTime = el.currentTime + S.seek; flash(); }
+      if (Math.abs(cur - n) < 0.001) userSet(1); else userSet(n);
+    } else if (a === 'rewind') { el.currentTime = Math.max(0, el.currentTime - n); flash(); }
+    else if (a === 'advance') { el.currentTime = el.currentTime + n; flash(); }
     else if (a === 'toggleUi') { hiddenLocal = !hiddenLocal; flash(); }
+    else if (a === 'setMarker') { el.__mesMark = el.currentTime; flash(); }
+    else if (a === 'jumpMarker') { if (typeof el.__mesMark === 'number') el.currentTime = el.__mesMark; flash(); }
     else return false;
     return true;
   }
+
+  // the step / seconds / speed a button on the control uses: the first binding of that action in the current setup
+  function stepOf(action) { var b = V.bindingFor(action, P.bindings); return b ? b.value : undefined; }
 
   function typing(e) {
     var t = (e.composedPath && e.composedPath()[0]) || e.target;
@@ -175,9 +188,9 @@
 
   function onKey(e) {
     if (!on || e.defaultPrevented || typing(e)) return;
-    var a = V.actionForKey(V.keyName(e), S.keys);
-    if (!a || !pickActive()) return;
-    if (doAction(a)) { e.preventDefault(); e.stopImmediatePropagation(); }
+    var bd = V.bindingForKey(V.keyName(e), P.bindings);
+    if (!bd || !pickActive()) return;
+    if (doAction(bd.action, bd.value) && P.exclusive) { e.preventDefault(); e.stopImmediatePropagation(); }
   }
 
   // ---- the on-video control -------------------------------------------------------------------------------------------
@@ -197,25 +210,25 @@
       h.addEventListener(t, function (e) { e.stopPropagation(); });
     });
     var bar = sh.querySelector('.bar'), label = sh.querySelector('.v');
-    sh.querySelector('.m').addEventListener('click', function () { doAction('slower'); });
-    sh.querySelector('.p').addEventListener('click', function () { doAction('faster'); });
+    sh.querySelector('.m').addEventListener('click', function () { doAction('slower', stepOf('slower')); });
+    sh.querySelector('.p').addEventListener('click', function () { doAction('faster', stepOf('faster')); });
     var hold = null;
     label.addEventListener('pointerdown', function (e) {
       var el = pickActive();
       if (!el || e.button > 0) return;
       hold = { x: e.clientX, prev: el.playbackRate, on: false };
       try { label.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
-      hold.t = setTimeout(function () { hold.on = true; label.classList.add('hold'); userSet(S.holdSpeed, true); }, 260);
+      hold.t = setTimeout(function () { hold.on = true; label.classList.add('hold'); userSet(P.holdSpeed, true); }, 260);
     });
     label.addEventListener('pointermove', function (e) {
-      if (hold && hold.on) userSet(V.holdSpeed(S.holdSpeed, Math.trunc((e.clientX - hold.x) / 16)), true);
+      if (hold && hold.on) userSet(V.holdSpeed(P.holdSpeed, Math.trunc((e.clientX - hold.x) / 16)), true);
     });
     function end() {
       if (!hold) return;
       clearTimeout(hold.t);
       var h2 = hold; hold = null;
       label.classList.remove('hold');
-      if (h2.on) { var el = pickActive(); if (el) { setRate(el, h2.prev); flash(); } } else doAction('reset');
+      if (h2.on) { var el = pickActive(); if (el) { setRate(el, h2.prev); flash(); } } else { var rb = V.bindingFor('reset', P.bindings); doAction('reset', rb ? rb.value : 1); }
     }
     label.addEventListener('pointerup', end);
     label.addEventListener('pointercancel', end);
@@ -227,12 +240,12 @@
   function tick() {
     if (!on) return;
     var el = pickActive();
-    if (!ui) { if (!el || S.overlay === 'hidden') return; ui = buildUi(); }
+    if (!ui) { if (!el) return; ui = buildUi(); }
     var show = false, r = null;
-    if (el && S.overlay !== 'hidden' && !hiddenLocal) {
+    if (el && !hiddenLocal) {
       r = el.getBoundingClientRect();
       var big = r.width >= 160 && r.height >= 90 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
-      show = big && (S.overlay === 'always' || Date.now() < showUntil);
+      show = big && (P.overlay === 'always' || Date.now() < showUntil);
     }
     if (!show) { if (ui.host.style.display !== 'none') ui.host.style.display = 'none'; return; }
     var fs = document.fullscreenElement, parent = document.documentElement;
@@ -241,14 +254,14 @@
     ui.host.style.display = 'block';
     ui.host.style.left = Math.max(0, r.left) + 8 + 'px';
     ui.host.style.top = Math.max(0, r.top) + 8 + 'px';
-    ui.bar.style.opacity = String(S.opacity);
+    ui.bar.style.opacity = String(P.opacity);
     var t = V.fmt(el.playbackRate) + '×';
     if (ui.label.textContent !== t) ui.label.textContent = t;
   }
 
   var lastMove = 0;
   function onMove(e) {
-    if (!on || S.overlay !== 'fade') return;
+    if (!on || P.overlay !== 'fade') return;
     var now = Date.now();
     if (now - lastMove < 100) return;
     lastMove = now;
@@ -267,7 +280,7 @@
       var el = pickActive();
       if (!el) return;
       if (m.mesvs === 'set') userSet(m.speed);
-      else if (m.mesvs === 'action') doAction(m.action);
+      else if (m.mesvs === 'action') doAction(m.action, m.value);
       send({ speed: el.playbackRate, paused: el.paused, count: media.size, host: host });
     });
   } catch (e) { /* ignore */ }
