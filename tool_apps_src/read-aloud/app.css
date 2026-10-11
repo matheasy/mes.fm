@@ -1,5 +1,5 @@
 #ra .ra-btns { display: flex; flex-wrap: wrap; gap: 0.6em; margin: 1em 0; }
-#ra .ra-btns .tu-btn { text-decoration: none; display: inline-block; text-align: center; line-height: 1.3; }
+#ra .ra-btns .tu-btn { text-decoration: none !important; display: inline-block; text-align: center; line-height: 1.3; }
 #ra .ra-btns a.tu-btn--primary { color: #fff; }
 #ra .ra-btns a.tu-btn--ghost { color: #555; }
 body.dark-mode #ra .ra-btns a.tu-btn--primary { color: #0b1416; }
