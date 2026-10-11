@@ -653,7 +653,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p class="tu-note" style="margin-bottom:0;">Chrome may show a "disable developer mode extensions" notice when it starts: choose Cancel / Keep. Brave and Edge usually do not. Until the extension is listed in the Chrome Web Store, updates are manual: download the new zip, replace the folder and press the reload arrow on the extensions page. Firefox is not supported yet.</p>
 		</div>
 
-		<h2>Keyboard shortcuts</h2>
+		<h2>Keyboard shortcuts (the Default setup)</h2>
 		<div class="tu-card">
 			<div class="tu-table-wrap"><table class="tu-table">
 				<thead><tr><th>Key</th><th>What it does</th></tr></thead>
@@ -663,21 +663,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<tr><td><kbd>R</kbd></td><td>Back to normal (1.0x). Press again to return to the speed you had.</td></tr>
 					<tr><td><kbd>G</kbd></td><td>Jump to your preferred speed (1.8x to start with) and back</td></tr>
 					<tr><td><kbd>Z</kbd> / <kbd>X</kbd></td><td>Rewind / advance 10 seconds</td></tr>
+					<tr><td><kbd>M</kbd> / <kbd>J</kbd></td><td>Set a marker at the current time / jump back to it</td></tr>
 					<tr><td><kbd>V</kbd></td><td>Show or hide the on-video control</td></tr>
 				</tbody>
 			</table></div>
-			<p class="tu-note" style="margin-bottom:0;">Every key can be changed in the extension's settings. The shortcuts act on the video you last played or moved the mouse over. If a video is inside another frame (some embedded players), click it once so the keys reach it.</p>
+			<p class="tu-note" style="margin-bottom:0;">Every key and every amount can be changed in the extension's settings, and you can keep several <b>setups</b> (below). The shortcuts act on the video you last played or moved the mouse over. If a video is inside another frame (some embedded players), click it once so the keys reach it.</p>
 		</div>
 
 		<h2>What you get</h2>
 		<div class="tu-card">
 			<ul class="vs-list">
+				<li><b>Setups.</b> Save different sets of shortcuts and preferences for different people or purposes (lectures, music, a fast review mode), switch between them in the settings or the toolbar popup, pin one to a site, and export or import them as text. It ships with two: <b>Default</b> and <b>MES's setup</b> (<kbd>[</kbd> and <kbd>]</kbd> change the speed by 0.05, <kbd>Y</kbd> resets, <kbd>P</kbd> jumps to 2x, <kbd>Z</kbd> / <kbd>X</kbd> move 1 second, the controller stays hidden until <kbd>V</kbd>, and the site keeps the keys it uses).</li>
 				<li><b>On-video control.</b> A small pill on the top-left of the video with minus, the current speed and plus. It appears when you move the mouse over the video and fades away (or stays, or hides: your choice).</li>
 				<li><b>Press and hold for fast.</b> Hold the speed label on the video for a temporary 2x, drag left or right to change it (0.1x steps up to 4x, then whole steps up to 10x), let go to get your speed back. The same gesture as the MES 3Speak players.</li>
 				<li><b>Remembers your speed</b> on all sites, per site, or not at all, including when a site loads the next video.</li>
 				<li><b>Works everywhere HTML5 video does</b>, including full screen and videos inside shadow DOM, and optionally audio players (podcasts).</li>
-				<li><b>Popup</b> with presets (0.5x to 3x), a slider and a one-click switch to turn it off on a site.</li>
-				<li><b>Keep my speed</b> option for sites that keep resetting it.</li>
+				<li><b>Popup</b> with presets (0.5x to 3x), a slider, a setup switcher and a one-click switch to turn it off on a site.</li>
+				<li><b>Keep my speed</b> option for sites that keep resetting it, an option to also control audio players, and exclusive keys that stop a website from also reacting to your shortcuts.</li>
 			</ul>
 		</div>
 
