@@ -132,7 +132,7 @@ const PAGES = [
     slug: "faster-than-light-shadow-simulator",
     section: "tools",
     href: "/faster-than-light-shadow-simulator",
-    iconVersion: 1,
+    iconVersion: 2,
     tileOnly: true,
     tileLabel: "Faster-Than-Light Shadow Simulator",
   },
