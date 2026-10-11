@@ -14,6 +14,7 @@ Videos already checked are remembered in mes.fm/math/youtube-hive-checked.json, 
 
     python3 update_youtube_hive_links.py             # dry run: report only, writes nothing
     python3 update_youtube_hive_links.py --apply     # write both JSON files
+    python3 update_youtube_hive_links.py --apply --cookies-from-browser chrome   # when YouTube answers 429 / "confirm you're not a bot"
     cd mes.fm/math && npm run build                  # then diff, and `git checkout math/link-meta.json`
 
 Needs yt-dlp. Failed fetches (rate limit, private video) are not marked checked, so they are retried next run.
@@ -44,9 +45,14 @@ def find_post(desc):
     return None
 
 
+COOKIES = None  # browser name for yt-dlp --cookies-from-browser (set by --cookies-from-browser NAME)
+
+
 def description(vid):
-    p = subprocess.run(["yt-dlp", "--no-update", "--skip-download", "--print", "%(description)j",
-                        f"https://www.youtube.com/watch?v={vid}"], capture_output=True, text=True)
+    cmd = ["yt-dlp", "--no-update", "--skip-download", "--sleep-requests", "1", "--print", "%(description)j"]
+    if COOKIES:
+        cmd += ["--cookies-from-browser", COOKIES, "--extractor-args", "youtube:player_client=mweb"]  # default clients fail with "page needs to be reloaded" on cookies
+    p = subprocess.run(cmd + [f"https://www.youtube.com/watch?v={vid}"], capture_output=True, text=True)
     if p.returncode != 0 or not p.stdout.strip():
         return None
     return json.loads(p.stdout.strip().splitlines()[-1]) or ""
@@ -57,7 +63,10 @@ def load(path, default):
 
 
 def main():
+    global COOKIES
     args = sys.argv[1:]
+    if "--cookies-from-browser" in args:
+        COOKIES = args[args.index("--cookies-from-browser") + 1]
     apply = "--apply" in args
     limit = int(args[args.index("--limit") + 1]) if "--limit" in args else None
     videos = load(VIDEOS, [])
