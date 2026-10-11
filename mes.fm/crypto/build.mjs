@@ -34,10 +34,10 @@ const PAGES = [
     slug: "crypto-posts",
     sectionId: "crypto-posts",
     tileLabel: "Posts",
-    iconVersion: 1, // icon = crop of the newest post's image (img/crypto-posts-icon.jpg); bump when refreshed
+    iconVersion: 2, // icon = crop of the newest post's image (img/crypto-posts-icon.jpg); bump when refreshed
     title: "MES Crypto: Posts",
     description:
-      "MES crypto posts: Canada's first stablecoin CADD on Solana, 3Speak sharing ad revenue, the S&P 500 vs oil, Alex Jones on XRP and a $320M Bitcoin hack, and the Hyperliquid flagged wallet.",
+      "MES crypto posts: Canada's first stablecoin CADD on Solana, 3Speak sharing ad revenue, the S&P 500 vs oil, Alex Jones on XRP and a $320M Bitcoin hack, the Hyperliquid flagged wallet, and getting the funds out with Claude AI.",
   },
   {
     slug: "blockchain-tutorials",

@@ -8,6 +8,7 @@ export const SECTIONS = [
     id: "crypto-posts",
     title: "Posts",
     items: [
+  { title: "I Used Claude AI to Get My Flagged Funds Out of Hyperliquid", image: "https://mes.fm/claude-hyperliquid-flagged-crypto/img/claude-hyperliquid-flagged-crypto.jpg", links: [["mes.fm", "https://mes.fm/claude-hyperliquid-flagged-crypto"]] },
   { title: "Canada's First Stablecoin $CADD Is Live on Solana", image: "https://mes.fm/cadd-stablecoin-solana/img/cadd-stablecoin-solana.jpg", links: [["mes.fm", "https://mes.fm/cadd-stablecoin-solana"]] },
   { title: "3Speak Now Pays Users a 10% Share of Ad Revenue for Watching", image: "https://img.leopedia.io/DQmYC1gpEkjBkby4mqB1xU2SP5Cnv1bvohTQtKzD1kGPjWk/telegram-cloud-photo-size-1-4999448963589021590-y.jpg", links: [["mes.fm", "https://mes.fm/3speak-ad-revenue-sharing"]] },
   { title: "The Top 10 S&P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks", image: "https://img.leopedia.io/DQmdvuyozcMSZ2zM1rVXEqXz7Q2YosiM3Gq5Dog4FQGsdSc/telegram-cloud-photo-size-1-4999448963589020306-y.jpg", links: [["mes.fm", "https://mes.fm/stock-market-vs-oil"]] },
