@@ -1,0 +1,8 @@
+#br .br-list { list-style: none; margin: 1em 0 0; padding: 0; display: grid; gap: 0.7em; }
+#br .br-sub { margin-left: 1.6em; }
+#br .br-item { display: block; padding: 0.8em 1em; border: 1px solid #d9d9d9; border-radius: 10px; text-decoration: none; color: inherit; background: #fff; }
+#br .br-item:hover, #br .br-item:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+#br .br-t { display: block; font-weight: 700; color: var(--accent); font-size: 1.1em; }
+#br .br-d { display: block; margin-top: 0.2em; color: #444; }
+body.dark-mode #br .br-item { background: #242424; border-color: #444; }
+body.dark-mode #br .br-d { color: #cfcfcf; }

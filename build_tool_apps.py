@@ -306,6 +306,11 @@ APPS = {
                   menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timer\">Timer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/timezone\">Time Zone Converter</a></li>"),
     # Short Links (new 2026-10-06, mes.fm/go; aliases /redirects /short-links /shortlinks /urls): every redirect of vercel.json, categorized + searchable + a helper that writes the next line.
     # Data = mes.fm/go/redirects.json written by build_redirects_index.py (only `redirects`, never the private finance `rewrites`); notes in mes.fm/go/notes.json. Wide, ad-free, like Site Index.
+    # Browser: recommended browser extensions / apps (moved from the "Recommended Browser Extensions" list of mes.fm/links). Static list, no app logic. Ad-free like /go.
+    "browser": dict(title="MES Browser Extensions", page_title="Browser Extensions",
+                    tag="Recommended browser extensions and apps.", accent="#2563a8", dark="#1a4a80", tint="#e3edf8",
+                    desc="Recommended free browser extensions for Chrome, Brave and Edge: a video speed controller, a volume booster, text to speech (read aloud) and a web page archiver, plus an Android reader app.",
+                    js_v="1", no_ads=True),
     "go": dict(title="MES Short Links", page_title="Short Links",
                tag="Every mes.fm short link, searchable.", accent="#0e8a6a", dark="#0a6650", tint="#e0f4ee",
                desc="Every MES short link in one searchable list: mes.fm/pomodoro, mes.fm/physics-playlist and more. Filter by category or topic, copy any short link, and get the line for a new one.",
