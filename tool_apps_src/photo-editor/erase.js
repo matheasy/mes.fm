@@ -5,38 +5,17 @@
 (function () {
 	"use strict";
 	var PE = window.PE, P = window.MESPixel, mk = PE.mk, el = PE.el;
-	var ORT = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.all.min.js", MODEL = "https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx", MB = 92.6, CACHE = "mes-photo-editor-models";
-	var ort = null, sess = null, provider = "", marks = null, busy = false, stroke = null;
-	function loadOrt() { return ort ? Promise.resolve(ort) : new Promise(function (res, rej) { if (window.ort) { ort = window.ort; return res(ort); } var s = document.createElement("script"); s.src = ORT; s.onload = function () { ort = window.ort; res(ort); }; s.onerror = function () { rej(new Error("Could not load the AI engine (offline?)")); }; document.head.appendChild(s); }); }
-	function fetchModel(onProg) {
-		var c = window.caches ? caches.open(CACHE) : Promise.resolve(null);
-		return c.then(function (cache) {
-			return (cache ? cache.match(MODEL) : Promise.resolve(null)).then(function (hit) {
-				if (hit) return hit.arrayBuffer();
-				return fetch(MODEL).then(function (r) {
-					if (!r.ok) throw new Error("Model download failed (" + r.status + ")"); var total = +r.headers.get("content-length") || MB * 1e6, rd = r.clone().body.getReader(), got = 0, parts = [];
-					function pump() { return rd.read().then(function (x) { if (x.done) return; parts.push(x.value); got += x.value.length; onProg(got, total); return pump(); }); }
-					return pump().then(function () { var buf = new Uint8Array(got), p = 0; parts.forEach(function (a) { buf.set(a, p); p += a.length; }); if (cache) cache.put(MODEL, new Response(buf, { headers: { "content-type": "application/octet-stream" } })).catch(function () {}); return buf.buffer; });
-				});
-			});
-		});
+	var MODEL = "https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx", MB = 92.6;
+	var provider = "", marks = null, busy = false, stroke = null;
+	var SESSKEY = "lama";
+	function getSession(onProg) { return PE.aiRt.session(SESSKEY, MODEL, MB, onProg).then(function (o) { provider = o.provider; return o; }); }
+	function runSafe(o, img, msk) {
+		var ort = o.ort, feeds = { image: new ort.Tensor("float32", img, [1, 3, 512, 512]), mask: new ort.Tensor("float32", msk, [1, 1, 512, 512]) };
+		return PE.aiRt.run(o, feeds).then(function (r) { provider = r.o.provider; return r.out.output.data; });
 	}
-	function getSession(onProg, force) {
-		if (sess && !force) return Promise.resolve(sess);
-		return Promise.all([loadOrt(), fetchModel(onProg)]).then(function (r) {
-			var tries = force === "wasm" || provider === "wasm" ? ["wasm"] : (navigator.gpu ? ["webgpu", "wasm"] : ["wasm"]);
-			function next(i) { return ort.InferenceSession.create(r[1], { executionProviders: [tries[i]] }).then(function (s) { sess = s; provider = tries[i]; return s; }, function (e) { if (i + 1 < tries.length) return next(i + 1); throw e; }); }
-			return next(0);
-		});
-	}
-	function run(img, msk) {
-		var feeds = { image: new ort.Tensor("float32", img, [1, 3, 512, 512]), mask: new ort.Tensor("float32", msk, [1, 1, 512, 512]) };
-		return sess.run(feeds).then(function (o) { return o.output.data; });
-	}
-	function runSafe(img, msk) { return run(img, msk).catch(function (e) { if (provider === "webgpu") { sess = null; return getSession(function () {}, "wasm").then(function () { return run(img, msk); }); } throw e; }); }
 
 	/* mask (Uint8, document size) -> filled pixels in the active layer */
-	function inpaint(L, docMask, status) {
+	function inpaint(L, o, docMask, status) {
 		PE.bake(L); var d = PE.doc, og = PE.origin(L), lw = L.canvas.width, lh = L.canvas.height, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1, y, x;
 		for (y = 0; y < d.h; y++) for (x = 0; x < d.w; x++) if (docMask[y * d.w + x]) { var lx = x - og.x, ly = y - og.y; if (lx < 0 || ly < 0 || lx >= lw || ly >= lh) continue; if (lx < x0) x0 = lx; if (lx > x1) x1 = lx; if (ly < y0) y0 = ly; if (ly > y1) y1 = ly; }
 		if (x1 < 0) { PE.toast("Mark the object on this layer first"); return Promise.resolve(false); }
@@ -50,7 +29,7 @@
 		for (i = 0; i < n; i++) { img[i] = ad[i * 4] / 255; img[n + i] = ad[i * 4 + 1] / 255; img[2 * n + i] = ad[i * 4 + 2] / 255; mu[i] = md[i * 4 + 3] > 40 ? 255 : 0; }
 		mu = P.growShrinkMask(mu, 512, 512, 2, true); for (i = 0; i < n; i++) msk[i] = mu[i] ? 1 : 0;
 		status("Filling in the area… " + (provider === "wasm" ? "(about 15 seconds on this device)" : ""));
-		return runSafe(img, msk).then(function (out) {
+		return runSafe(o, img, msk).then(function (out) {
 			var rc = mk(512, 512), rid = rc.getContext("2d").createImageData(512, 512); for (var k = 0; k < n; k++) { rid.data[k * 4] = out[k]; rid.data[k * 4 + 1] = out[n + k]; rid.data[k * 4 + 2] = out[2 * n + k]; rid.data[k * 4 + 3] = 255; } rc.getContext("2d").putImageData(rid, 0, 0);
 			var res = mk(ww, wh), rx = res.getContext("2d"); rx.imageSmoothingQuality = "high"; rx.drawImage(rc, 0, 0, ww, wh);
 			var soft = P.featherMask(P.growShrinkMask(wm, ww, wh, 2, true), ww, wh, 3), sc = mk(ww, wh), sid = sc.getContext("2d").createImageData(ww, wh); for (var j = 0; j < soft.length; j++) sid.data[j * 4 + 3] = soft[j]; sc.getContext("2d").putImageData(sid, 0, 0);
@@ -63,7 +42,7 @@
 		var L = PE.active(); if (!PE.doc || !L) { PE.toast("Open an image first"); return; } if (L.locked) { PE.toast("This layer is locked"); return; } if (L.type === "text") { PE.toast("Rasterize the text layer first"); return; } if (busy) return;
 		busy = true; var wrap = el("div"), st = el("div", "pe-hint2"), bar = el("div", "pe-aibar"), fill = el("i"); bar.appendChild(fill); wrap.appendChild(el("p", "pe-hint2", "Everything runs on your device. The first time, a " + Math.round(MB) + " MB AI model is downloaded and kept in your browser.")); wrap.appendChild(bar); wrap.appendChild(st); st.textContent = "Loading the AI engine…";
 		var m = PE.modal({ title: "Erase object (AI)", body: wrap, sticky: true, onClose: function () { busy = false; } });
-		getSession(function (got, total) { fill.style.width = (100 * got / total) + "%"; st.textContent = "Downloading the model… " + Math.round(got / 1e6) + " of " + Math.round(total / 1e6) + " MB"; }).then(function () { fill.style.width = "100%"; return inpaint(L, docMask, function (t) { st.textContent = t; }); })
+		getSession(function (got, total) { fill.style.width = (100 * got / total) + "%"; st.textContent = "Downloading the model… " + Math.round(got / 1e6) + " of " + Math.round(total / 1e6) + " MB"; }).then(function (o) { fill.style.width = "100%"; return inpaint(L, o, docMask, function (t) { st.textContent = t; }); })
 			.then(function (ok) { busy = false; m.close(true); if (ok) { clearMarks(); PE.toast("Erased. Undo with Ctrl+Z if you want it back."); } })
 			.catch(function (e) { busy = false; st.textContent = "Could not erase: " + (e && e.message ? e.message : e); var b = el("button", "pe-btn", "Close"); b.type = "button"; b.addEventListener("click", function () { m.close(true); }); wrap.appendChild(b); });
 	}

@@ -1500,6 +1500,46 @@ var MESPixel = (function () {
 	};
 })();
 
+/* MES Photo Editor: shared onnxruntime-web helpers for the AI tools that run plain ONNX files (object erase, upscaling). onnxruntime-web 1.22.0 from jsDelivr (`ort.all.min.js`: WebGPU + wasm);
+ * models are fetched once with a progress callback and kept with the Cache API (`mes-photo-editor-models`). A session tries WebGPU first and falls back to wasm if creating it or running it fails
+ * (some GPUs, e.g. Apple's, lack features a model needs). */
+(function () {
+	"use strict";
+	var PE = window.PE, ORT = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.all.min.js", CACHE = "mes-photo-editor-models", ortP = null, sessions = {};
+	var rt = PE.aiRt = {
+		ort: function () { return window.ort ? Promise.resolve(window.ort) : (ortP = ortP || new Promise(function (res, rej) { var s = document.createElement("script"); s.src = ORT; s.onload = function () { res(window.ort); }; s.onerror = function () { ortP = null; rej(new Error("Could not load the AI engine (offline?)")); }; document.head.appendChild(s); })); },
+		fetchModel: function (url, mb, onProg) {
+			var c = window.caches ? caches.open(CACHE) : Promise.resolve(null);
+			return c.then(function (cache) {
+				return (cache ? cache.match(url) : Promise.resolve(null)).then(function (hit) {
+					if (hit) return hit.arrayBuffer();
+					return fetch(url).then(function (r) {
+						if (!r.ok) throw new Error("Model download failed (" + r.status + ")"); var total = +r.headers.get("content-length") || mb * 1e6, rd = r.clone().body.getReader(), got = 0, parts = [];
+						function pump() { return rd.read().then(function (x) { if (x.done) return; parts.push(x.value); got += x.value.length; onProg(got, total); return pump(); }); }
+						return pump().then(function () { var buf = new Uint8Array(got), p = 0; parts.forEach(function (a) { buf.set(a, p); p += a.length; }); if (cache) cache.put(url, new Response(buf, { headers: { "content-type": "application/octet-stream" } })).catch(function () {}); return buf.buffer; });
+					});
+				});
+			});
+		},
+		/* -> {run(feeds) -> outputs, provider} */
+		session: function (key, url, mb, onProg, forceWasm) {
+			var s = sessions[key]; if (s && !forceWasm) return Promise.resolve(s);
+			return Promise.all([rt.ort(), rt.fetchModel(url, mb, onProg)]).then(function (r) {
+				var ort = r[0], bytes = r[1], tries = forceWasm || (s && s.provider === "wasm") || !navigator.gpu ? ["wasm"] : ["webgpu", "wasm"];
+				function next(i) { return ort.InferenceSession.create(bytes, { executionProviders: [tries[i]] }).then(function (sess) { var o = { sess: sess, provider: tries[i], ort: ort, key: key, url: url, mb: mb, bytes: bytes }; sessions[key] = o; return o; }, function (e) { if (i + 1 < tries.length) return next(i + 1); throw e; }); }
+				return next(0);
+			});
+		},
+		/* run with automatic fallback from WebGPU to wasm */
+		run: function (o, feeds) {
+			return o.sess.run(feeds).then(function (out) { return { out: out, o: o }; }, function (e) {
+				if (o.provider !== "webgpu") throw e;
+				return rt.session(o.key, o.url, o.mb, function () {}, true).then(function (o2) { return o2.sess.run(feeds).then(function (out) { return { out: out, o: o2 }; }); });
+			});
+		}
+	};
+})();
+
 /* MES Photo Editor: AI object erase (inpainting), in the browser. Paint over what you want gone (or use a selection), press Erase: LaMa fills the area from its surroundings.
  * LaMa (Apache-2.0) as OpenCV's 93 MB ONNX build (huggingface.co/opencv/inpainting_lama, derived from Carve/LaMa-ONNX), run by onnxruntime-web 1.22.0 (jsDelivr; WebGPU when it works,
  * else wasm). The model works on 512 x 512, so a window around the marked area (with context) is resampled to 512, filled, resampled back, and only the marked area (grown 2 px,
@@ -1507,38 +1547,17 @@ var MESPixel = (function () {
 (function () {
 	"use strict";
 	var PE = window.PE, P = window.MESPixel, mk = PE.mk, el = PE.el;
-	var ORT = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.all.min.js", MODEL = "https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx", MB = 92.6, CACHE = "mes-photo-editor-models";
-	var ort = null, sess = null, provider = "", marks = null, busy = false, stroke = null;
-	function loadOrt() { return ort ? Promise.resolve(ort) : new Promise(function (res, rej) { if (window.ort) { ort = window.ort; return res(ort); } var s = document.createElement("script"); s.src = ORT; s.onload = function () { ort = window.ort; res(ort); }; s.onerror = function () { rej(new Error("Could not load the AI engine (offline?)")); }; document.head.appendChild(s); }); }
-	function fetchModel(onProg) {
-		var c = window.caches ? caches.open(CACHE) : Promise.resolve(null);
-		return c.then(function (cache) {
-			return (cache ? cache.match(MODEL) : Promise.resolve(null)).then(function (hit) {
-				if (hit) return hit.arrayBuffer();
-				return fetch(MODEL).then(function (r) {
-					if (!r.ok) throw new Error("Model download failed (" + r.status + ")"); var total = +r.headers.get("content-length") || MB * 1e6, rd = r.clone().body.getReader(), got = 0, parts = [];
-					function pump() { return rd.read().then(function (x) { if (x.done) return; parts.push(x.value); got += x.value.length; onProg(got, total); return pump(); }); }
-					return pump().then(function () { var buf = new Uint8Array(got), p = 0; parts.forEach(function (a) { buf.set(a, p); p += a.length; }); if (cache) cache.put(MODEL, new Response(buf, { headers: { "content-type": "application/octet-stream" } })).catch(function () {}); return buf.buffer; });
-				});
-			});
-		});
+	var MODEL = "https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx", MB = 92.6;
+	var provider = "", marks = null, busy = false, stroke = null;
+	var SESSKEY = "lama";
+	function getSession(onProg) { return PE.aiRt.session(SESSKEY, MODEL, MB, onProg).then(function (o) { provider = o.provider; return o; }); }
+	function runSafe(o, img, msk) {
+		var ort = o.ort, feeds = { image: new ort.Tensor("float32", img, [1, 3, 512, 512]), mask: new ort.Tensor("float32", msk, [1, 1, 512, 512]) };
+		return PE.aiRt.run(o, feeds).then(function (r) { provider = r.o.provider; return r.out.output.data; });
 	}
-	function getSession(onProg, force) {
-		if (sess && !force) return Promise.resolve(sess);
-		return Promise.all([loadOrt(), fetchModel(onProg)]).then(function (r) {
-			var tries = force === "wasm" || provider === "wasm" ? ["wasm"] : (navigator.gpu ? ["webgpu", "wasm"] : ["wasm"]);
-			function next(i) { return ort.InferenceSession.create(r[1], { executionProviders: [tries[i]] }).then(function (s) { sess = s; provider = tries[i]; return s; }, function (e) { if (i + 1 < tries.length) return next(i + 1); throw e; }); }
-			return next(0);
-		});
-	}
-	function run(img, msk) {
-		var feeds = { image: new ort.Tensor("float32", img, [1, 3, 512, 512]), mask: new ort.Tensor("float32", msk, [1, 1, 512, 512]) };
-		return sess.run(feeds).then(function (o) { return o.output.data; });
-	}
-	function runSafe(img, msk) { return run(img, msk).catch(function (e) { if (provider === "webgpu") { sess = null; return getSession(function () {}, "wasm").then(function () { return run(img, msk); }); } throw e; }); }
 
 	/* mask (Uint8, document size) -> filled pixels in the active layer */
-	function inpaint(L, docMask, status) {
+	function inpaint(L, o, docMask, status) {
 		PE.bake(L); var d = PE.doc, og = PE.origin(L), lw = L.canvas.width, lh = L.canvas.height, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1, y, x;
 		for (y = 0; y < d.h; y++) for (x = 0; x < d.w; x++) if (docMask[y * d.w + x]) { var lx = x - og.x, ly = y - og.y; if (lx < 0 || ly < 0 || lx >= lw || ly >= lh) continue; if (lx < x0) x0 = lx; if (lx > x1) x1 = lx; if (ly < y0) y0 = ly; if (ly > y1) y1 = ly; }
 		if (x1 < 0) { PE.toast("Mark the object on this layer first"); return Promise.resolve(false); }
@@ -1552,7 +1571,7 @@ var MESPixel = (function () {
 		for (i = 0; i < n; i++) { img[i] = ad[i * 4] / 255; img[n + i] = ad[i * 4 + 1] / 255; img[2 * n + i] = ad[i * 4 + 2] / 255; mu[i] = md[i * 4 + 3] > 40 ? 255 : 0; }
 		mu = P.growShrinkMask(mu, 512, 512, 2, true); for (i = 0; i < n; i++) msk[i] = mu[i] ? 1 : 0;
 		status("Filling in the area… " + (provider === "wasm" ? "(about 15 seconds on this device)" : ""));
-		return runSafe(img, msk).then(function (out) {
+		return runSafe(o, img, msk).then(function (out) {
 			var rc = mk(512, 512), rid = rc.getContext("2d").createImageData(512, 512); for (var k = 0; k < n; k++) { rid.data[k * 4] = out[k]; rid.data[k * 4 + 1] = out[n + k]; rid.data[k * 4 + 2] = out[2 * n + k]; rid.data[k * 4 + 3] = 255; } rc.getContext("2d").putImageData(rid, 0, 0);
 			var res = mk(ww, wh), rx = res.getContext("2d"); rx.imageSmoothingQuality = "high"; rx.drawImage(rc, 0, 0, ww, wh);
 			var soft = P.featherMask(P.growShrinkMask(wm, ww, wh, 2, true), ww, wh, 3), sc = mk(ww, wh), sid = sc.getContext("2d").createImageData(ww, wh); for (var j = 0; j < soft.length; j++) sid.data[j * 4 + 3] = soft[j]; sc.getContext("2d").putImageData(sid, 0, 0);
@@ -1565,7 +1584,7 @@ var MESPixel = (function () {
 		var L = PE.active(); if (!PE.doc || !L) { PE.toast("Open an image first"); return; } if (L.locked) { PE.toast("This layer is locked"); return; } if (L.type === "text") { PE.toast("Rasterize the text layer first"); return; } if (busy) return;
 		busy = true; var wrap = el("div"), st = el("div", "pe-hint2"), bar = el("div", "pe-aibar"), fill = el("i"); bar.appendChild(fill); wrap.appendChild(el("p", "pe-hint2", "Everything runs on your device. The first time, a " + Math.round(MB) + " MB AI model is downloaded and kept in your browser.")); wrap.appendChild(bar); wrap.appendChild(st); st.textContent = "Loading the AI engine…";
 		var m = PE.modal({ title: "Erase object (AI)", body: wrap, sticky: true, onClose: function () { busy = false; } });
-		getSession(function (got, total) { fill.style.width = (100 * got / total) + "%"; st.textContent = "Downloading the model… " + Math.round(got / 1e6) + " of " + Math.round(total / 1e6) + " MB"; }).then(function () { fill.style.width = "100%"; return inpaint(L, docMask, function (t) { st.textContent = t; }); })
+		getSession(function (got, total) { fill.style.width = (100 * got / total) + "%"; st.textContent = "Downloading the model… " + Math.round(got / 1e6) + " of " + Math.round(total / 1e6) + " MB"; }).then(function (o) { fill.style.width = "100%"; return inpaint(L, o, docMask, function (t) { st.textContent = t; }); })
 			.then(function (ok) { busy = false; m.close(true); if (ok) { clearMarks(); PE.toast("Erased. Undo with Ctrl+Z if you want it back."); } })
 			.catch(function (e) { busy = false; st.textContent = "Could not erase: " + (e && e.message ? e.message : e); var b = el("button", "pe-btn", "Close"); b.type = "button"; b.addEventListener("click", function () { m.close(true); }); wrap.appendChild(b); });
 	}
@@ -1585,6 +1604,60 @@ var MESPixel = (function () {
 		up: function () { if (!stroke) return; stroke = null; if (PE.opt.objerase.auto) PE.aiEraseRun(); },
 		enter: function () { PE.aiEraseRun(); }, cancel: function () { stroke = null; clearMarks(); },
 		overlay: function (x) { if (!marks || !PE.doc) return; var s = PE.toScreen(0, 0), z = PE.view.zoom; x.save(); x.globalAlpha = 0.5; x.imageSmoothingEnabled = false; x.drawImage(marks, s.x, s.y, marks.width * z, marks.height * z); x.restore(); } });
+})();
+
+/* MES Photo Editor: AI upscaling, in the browser. Real-ESRGAN "general x4v3" (SRVGGNetCompact, BSD-3-Clause; 4.9 MB ONNX from huggingface.co/CoderViking/realesr-general-x4v3-onnx) through onnxruntime-web
+ * (see aiort.js). Every raster layer (and its mask) is cut into overlapping tiles (256 px on WebGPU, 128 px on wasm, 16 px of context that is thrown away), each tile goes through the x4 network, and
+ * the central part is drawn into the result at x4, or scaled to x2 with high-quality smoothing; alpha is upscaled separately by plain resampling. Text layers are re-rendered at the new size
+ * (sharper than any model could make them). The document grows by the same factor; it is one undo step. Measured here: ~0.3 s per 256 px tile on WebGPU, ~0.9 s per 128 px tile on wasm. */
+(function () {
+	"use strict";
+	var PE = window.PE, mk = PE.mk, el = PE.el, I = window.MESImg;
+	var MODEL = "https://huggingface.co/CoderViking/realesr-general-x4v3-onnx/resolve/main/realesr-general-x4v3.onnx", MB = 4.9, KEY = "esrgan", busy = false, cancelled = false;
+	function hasAlpha(c) { var d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data; for (var i = 3; i < d.length; i += 4) if (d[i] < 255) return true; return false; }
+	function upscaleCanvas(src, scale, o, prog) {
+		var w = src.width, h = src.height, gpu = o.provider === "webgpu", T = gpu ? 256 : 128, pad = 16, out = mk(w * scale, h * scale), ox = out.getContext("2d"), ort = o.ort; ox.imageSmoothingQuality = "high";
+		var tiles = []; for (var ty = 0; ty < h; ty += T) for (var tx = 0; tx < w; tx += T) tiles.push([tx, ty]);
+		var sx = src.getContext("2d"), idx = 0;
+		function next() {
+			if (cancelled) return Promise.reject(new Error("cancelled")); if (idx >= tiles.length) return Promise.resolve();
+			var t = tiles[idx++], tx = t[0], ty = t[1], tw = Math.min(T, w - tx), th = Math.min(T, h - ty), x0 = Math.max(0, tx - pad), y0 = Math.max(0, ty - pad), x1 = Math.min(w, tx + tw + pad), y1 = Math.min(h, ty + th + pad), rw = x1 - x0, rh = y1 - y0;
+			var id = sx.getImageData(x0, y0, rw, rh).data, n = rw * rh, f = new Float32Array(3 * n); for (var i = 0; i < n; i++) { f[i] = id[i * 4] / 255; f[n + i] = id[i * 4 + 1] / 255; f[2 * n + i] = id[i * 4 + 2] / 255; }
+			return PE.aiRt.run(o, { input: new ort.Tensor("float32", f, [1, 3, rh, rw]) }).then(function (r) {
+				o = r.o; var d = r.out.output.data, W4 = rw * 4, H4 = rh * 4, m = W4 * H4, tc = mk(W4, H4), tid = tc.getContext("2d").createImageData(W4, H4), a = tid.data;
+				for (var k = 0; k < m; k++) { var v0 = d[k], v1 = d[m + k], v2 = d[2 * m + k]; a[k * 4] = v0 < 0 ? 0 : v0 > 1 ? 255 : v0 * 255 + 0.5; a[k * 4 + 1] = v1 < 0 ? 0 : v1 > 1 ? 255 : v1 * 255 + 0.5; a[k * 4 + 2] = v2 < 0 ? 0 : v2 > 1 ? 255 : v2 * 255 + 0.5; a[k * 4 + 3] = 255; }
+				tc.getContext("2d").putImageData(tid, 0, 0); ox.drawImage(tc, (tx - x0) * 4, (ty - y0) * 4, tw * 4, th * 4, tx * scale, ty * scale, tw * scale, th * scale); prog(1, tiles.length);
+				return new Promise(function (res) { setTimeout(res, 0); }).then(next);
+			});
+		}
+		var al = hasAlpha(src);
+		return next().then(function () {
+			if (al) { var a2 = mk(w, h), ax = a2.getContext("2d"); ax.drawImage(src, 0, 0); ax.globalCompositeOperation = "source-in"; ax.fillStyle = "#fff"; ax.fillRect(0, 0, w, h); var big = mk(w * scale, h * scale), bx = big.getContext("2d"); bx.imageSmoothingQuality = "high"; bx.drawImage(a2, 0, 0, big.width, big.height); ox.globalCompositeOperation = "destination-in"; ox.drawImage(big, 0, 0); ox.globalCompositeOperation = "source-over"; }
+			return { canvas: out, o: o };
+		});
+	}
+	PE.aiUpscale = function () {
+		var d = PE.doc; if (!d) { PE.toast("Open an image first"); return; } if (busy) return;
+		var px = 0, count = 0; d.layers.forEach(function (L) { if (L.type !== "text") { px += L.canvas.width * L.canvas.height; count++; } });
+		var wrap = el("div"), f = PE.form([{ k: "s", label: "Make it", type: "seg", options: [["2", "2× bigger"], ["4", "4× bigger"]], val: (PE.savedParams.up && PE.savedParams.up.s) || "2" }], function () { info(); });
+		var info = function () { var s = +f.get().s, W = d.w * s, H = d.h * s, ok = W <= PE.MAXPX && H <= PE.MAXPX && W * H <= PE.MAXAREA, tiles = Math.ceil(px / (128 * 128)); note.innerHTML = "Result: <b>" + W + " × " + H + " px</b> (" + (W * H / 1e6).toFixed(1) + " MP)." + (ok ? "" : ' <span style="color:#ff8a80">Too large for a browser: choose 2× or shrink the image first.</span>') + "<br>About " + tiles + " small tiles to process: seconds on a computer with a GPU, roughly " + Math.max(1, Math.round(tiles * 1.0 / 60)) + " min without one."; };
+		wrap.appendChild(f.el); var note = el("p", "pe-hint2"), bar = el("div", "pe-aibar"), fill = el("i"), st = el("div", "pe-hint2"); bar.appendChild(fill); bar.hidden = true; wrap.appendChild(note); wrap.appendChild(el("p", "pe-hint2", "Adds real detail to small or soft pictures (photos, screenshots, logos). First use downloads a 5 MB AI model and keeps it in your browser; everything runs on your device.")); wrap.appendChild(bar); wrap.appendChild(st); info();
+		cancelled = false; var m = PE.modal({ title: "Upscale with AI", body: wrap, sticky: true, onClose: function () { if (busy) cancelled = true; } , buttons: [{ label: "Cancel", act: function (mm) { mm.close(); } }, { label: "Upscale", primary: true, act: function (mm) { go(mm); } }] });
+		function go(mm) {
+			if (busy) return; var s = +f.get().s, W = d.w * s, H = d.h * s; if (W > PE.MAXPX || H > PE.MAXPX || W * H > PE.MAXAREA) { PE.toast("That result would be too large"); return; }
+			PE.savedParams.up = f.get(); busy = true; cancelled = false; bar.hidden = false; var btns = mm.el.querySelectorAll(".pe-dlg-f .pe-btn"); btns[1].disabled = true; btns[1].textContent = "Working…"; st.textContent = "Loading the AI engine…";
+			PE.aiRt.session(KEY, MODEL, MB, function (g, t) { fill.style.width = (100 * g / t) + "%"; st.textContent = "Downloading the model… " + (g / 1e6).toFixed(1) + " of " + (t / 1e6).toFixed(1) + " MB"; }).then(function (o) {
+				var done = 0, total = 0, layers = d.layers.filter(function (L) { return L.type !== "text"; }); layers.forEach(function (L) { var T = o.provider === "webgpu" ? 256 : 128; total += Math.ceil(L.canvas.width / T) * Math.ceil(L.canvas.height / T); }); var t0 = Date.now();
+				function prog(a) { done += a; fill.style.width = (100 * done / total) + "%"; var el2 = (Date.now() - t0) / 1000, eta = done ? el2 / done * (total - done) : 0; st.textContent = "Upscaling… tile " + done + " of " + total + (eta > 3 ? " (about " + Math.round(eta) + " s left)" : "") + (o.provider === "wasm" ? " · no GPU found, using the CPU" : ""); }
+				var results = []; var chain = Promise.resolve(); layers.forEach(function (L) { chain = chain.then(function () { PE.bake(L); return upscaleCanvas(L.canvas, s, o, prog).then(function (r) { o = r.o; var nm = null; if (L.mask) nm = PE.resample(L.mask, r.canvas.width, r.canvas.height); results.push({ L: L, c: r.canvas, m: nm }); }); }); });
+				return chain.then(function () { return results; });
+			}).then(function (results) {
+				if (cancelled) return; results.forEach(function (r) { r.L.canvas = r.c; if (r.m) r.L.mask = r.m; r.L.rev++; });
+				d.layers.forEach(function (L) { var cx = L.cx * s, cy = L.cy * s; if (L.type === "text") { L.text.size *= s; L.text.strokeW *= s; L.text.shadowBlur *= s; L.text.shadowDx *= s; L.text.shadowDy *= s; L.text.bgPad *= s; L.text.bgRadius *= s; PE.renderText(L); L.cx = cx; L.cy = cy; } else { L.cx = cx; L.cy = cy; } });
+				d.w = W; d.h = H; PE.sel = null; PE.emit("sel"); PE.emit("docsize"); PE.commit("Upscale " + s + "× (AI)"); PE.fit(); busy = false; mm.close(true); PE.toast("Done: " + W + " × " + H + " px");
+			}).catch(function (e) { busy = false; if (cancelled || (e && e.message === "cancelled")) return; btns[1].disabled = false; btns[1].textContent = "Try again"; bar.hidden = true; st.textContent = "Could not upscale: " + (e && e.message ? e.message : e); });
+		}
+	};
 })();
 
 /* MES Photo Editor -- mes.fm/photo-editor. UI: menus, tool + options bars, colour / layers / history panels, files (open, drop, paste, PSD, project),
@@ -1807,7 +1880,7 @@ var MESPixel = (function () {
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",
 			{ label: "Select all", key: MOD + "A", act: function () { if (needDoc()) { PE.selAll(); PE.commit("Select all"); } } }, { label: "Deselect", key: MOD + "D", act: function () { if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } }, { label: "Invert selection", key: MOD + "Shift+I", act: function () { if (needDoc()) { PE.selInvert(); PE.commit("Invert selection"); } } },
 			{ label: "Feather selection…", act: function () { if (needSel()) promptNum("Feather selection", "Radius", 8, 1, 200, function (v) { PE.selFeather(v); PE.commit("Feather"); }); } }, { label: "Grow selection…", act: function () { if (needSel()) promptNum("Grow selection", "By", 4, 1, 100, function (v) { PE.selGrow(v, true); PE.commit("Grow selection"); }); } }, { label: "Shrink selection…", act: function () { if (needSel()) promptNum("Shrink selection", "By", 4, 1, 100, function (v) { PE.selGrow(v, false); PE.commit("Shrink selection"); }); } }] },
-		{ label: "Image", items: [{ label: "Image size…", act: function () { PE.dlgImageSize(); } }, { label: "Canvas size…", act: function () { PE.dlgCanvasSize(); } }, { label: "Crop to selection", act: function () { if (!needDoc()) return; var b = PE.selBounds(); if (!b) { PE.toast("Make a selection first, or use the Crop tool"); return; } PE.cropTo(b.x, b.y, b.w, b.h); } }, { label: "Trim transparent edges", act: function () { if (needDoc()) PE.trim(); } }, "-",
+		{ label: "Image", items: [{ label: "Image size…", act: function () { PE.dlgImageSize(); } }, { label: "Canvas size…", act: function () { PE.dlgCanvasSize(); } }, { label: "Upscale with AI (2× / 4×)…", act: function () { PE.aiUpscale(); } }, { label: "Crop to selection", act: function () { if (!needDoc()) return; var b = PE.selBounds(); if (!b) { PE.toast("Make a selection first, or use the Crop tool"); return; } PE.cropTo(b.x, b.y, b.w, b.h); } }, { label: "Trim transparent edges", act: function () { if (needDoc()) PE.trim(); } }, "-",
 			{ label: "Rotate / straighten…", act: function () { PE.dlgStraighten(); } }, { label: "Rotate 90° clockwise", act: function () { if (needDoc()) PE.rotateImage(90); } }, { label: "Rotate 90° counter-clockwise", act: function () { if (needDoc()) PE.rotateImage(270); } }, { label: "Rotate 180°", act: function () { if (needDoc()) PE.rotateImage(180); } }, { label: "Flip horizontal", act: function () { if (needDoc()) PE.flipImage(true); } }, { label: "Flip vertical", act: function () { if (needDoc()) PE.flipImage(false); } }, "-", { label: "Flatten image", act: function () { if (needDoc()) PE.flattenImage(); } }] },
 		{ label: "Layer", items: [{ label: "New layer", key: MOD + "Shift+N", act: function () { if (needDoc()) PE.newRasterLayer(); } }, { label: "Duplicate layer", key: MOD + "J", act: function () { if (needDoc()) PE.duplicateLayer(); } }, { label: "Delete layer", act: function () { if (needDoc()) PE.deleteLayer(); } }, { label: "Layer via copy (selection)", act: function () { if (needDoc()) PE.layerFromSelection(false); } }, { label: "Layer via cut (selection)", act: function () { if (needDoc()) PE.layerFromSelection(true); } }, "-",
 			{ label: "Merge down", key: MOD + "E", act: function () { if (needDoc()) PE.mergeDown(); } }, { label: "Merge visible", act: function () { if (needDoc()) PE.mergeVisible(); } }, "-", { label: "Remove background (AI)…", act: function () { PE.aiRemoveBackground(); } }, { label: "Add layer mask", act: function () { if (needDoc()) PE.addMask(PE.active(), true); } }, { label: "Apply layer mask", act: function () { if (needDoc()) PE.applyMask(); } }, { label: "Delete layer mask", act: function () { if (needDoc()) PE.deleteMask(); } }, { label: "Rasterize text layer", act: function () { var L = PE.active(); if (L && L.type === "text") { PE.rasterize(L); PE.commit("Rasterize"); } } }, "-",
@@ -1836,7 +1909,7 @@ var MESPixel = (function () {
 		var w = el("div"); w.innerHTML = '<table class="pe-keys">' + rows.map(function (r) { return "<tr><td><kbd>" + esc(r[0]) + "</kbd></td><td>" + esc(r[1]) + "</td></tr>"; }).join("") + "</table>"; PE.modal({ title: "Keyboard shortcuts", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
 	}
 	function tips() {
-		var w = el("div", "pe-tips"); w.innerHTML = "<ul><li><b>Label an image:</b> Text tool, click, type. Turn on <i>Background box</i> (or press <i>Yellow label</i>) for a callout look.</li><li><b>Arrows, boxes, numbers:</b> Shapes tool. Each shape lands on its own layer: move it with the Move tool, delete it from the Layers panel.</li><li><b>Combine images:</b> drag several files onto the canvas (each becomes a layer) or paste with Ctrl+V. Move, resize and rotate with the Move tool.</li><li><b>Transparent background:</b> Magic wand the background, press Delete, then Export as PNG. Or Adjust → Make a colour transparent.</li><li><b>Remove an object or person:</b> Object Erase tool (J): paint over it, press Enter. Or make a selection and use Edit → Erase selection with AI. <b>Cut out a subject:</b> Layer → Remove background (AI).</li><li><b>Hide private info:</b> Shapes → Blur / hide area, then drag over it.</li><li><b>Large file?</b> Export as WebP or JPEG and lower the quality.</li></ul>"; PE.modal({ title: "Tips", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
+		var w = el("div", "pe-tips"); w.innerHTML = "<ul><li><b>Label an image:</b> Text tool, click, type. Turn on <i>Background box</i> (or press <i>Yellow label</i>) for a callout look.</li><li><b>Arrows, boxes, numbers:</b> Shapes tool. Each shape lands on its own layer: move it with the Move tool, delete it from the Layers panel.</li><li><b>Combine images:</b> drag several files onto the canvas (each becomes a layer) or paste with Ctrl+V. Move, resize and rotate with the Move tool.</li><li><b>Transparent background:</b> Magic wand the background, press Delete, then Export as PNG. Or Adjust → Make a colour transparent.</li><li><b>Remove an object or person:</b> Object Erase tool (J): paint over it, press Enter. Or make a selection and use Edit → Erase selection with AI. <b>Cut out a subject:</b> Layer → Remove background (AI).</li><li><b>Make a small picture bigger:</b> Image → Upscale with AI.</li><li><b>Hide private info:</b> Shapes → Blur / hide area, then drag over it.</li><li><b>Large file?</b> Export as WebP or JPEG and lower the quality.</li></ul>"; PE.modal({ title: "Tips", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
 	}
 
 	/* ---------- window mode ---------- */
