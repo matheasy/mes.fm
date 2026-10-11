@@ -70,6 +70,7 @@ const MIRRORS = {
 // Stats-screen pages (the Stats tab), newest first. `cats` are the filter chip ids (CATEGORIES) the stream
 // belongs to, so the chips filter this tab too: 141 is a Hutchison Effect stream, 140 is 9/11 Truth + MES Truth.
 const STATS = [
+  { href: "https://mes.fm/livestream-142-stats", title: "142: Stats", cats: "mestruth" },
   { href: "https://mes.fm/livestream-141-stats", title: "141: Stats", cats: "hutchison" },
   { href: "https://mes.fm/livestream-140-stats", title: "140: Stats", cats: "911 mestruth" },
 ];
