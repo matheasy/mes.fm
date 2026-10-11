@@ -1,0 +1,53 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu cv" id="cv">
+		<div class="tu-card cv-drop" id="cv-drop" tabindex="0" role="button" aria-label="Add images: click, drop files here or paste">
+			<div class="cv-drop-ico" aria-hidden="true">🖼️</div>
+			<div class="cv-drop-t"><b>Drop images here</b> or click to choose</div>
+			<div class="cv-drop-s">PNG, JPG, WebP, GIF, BMP, AVIF, SVG · as many as you like · you can also paste (Ctrl+V)</div>
+			<div class="cv-drop-b"><button type="button" class="tu-btn tu-btn--primary" id="cv-pick">Choose images</button> <button type="button" class="tu-btn tu-btn--ghost" id="cv-folder">Add a folder</button></div>
+			<input type="file" id="cv-file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,.svg,.ico" multiple hidden>
+			<input type="file" id="cv-dir" webkitdirectory multiple hidden>
+		</div>
+
+		<div class="tu-card cv-opts">
+			<div class="cv-grid">
+				<div class="tu-field"><span class="tu-label" id="cv-fmt-l">Convert to</span>
+					<div class="tu-seg" id="cv-fmt" role="group" aria-labelledby="cv-fmt-l">
+						<button type="button" data-f="jpg" aria-pressed="true">JPEG</button><button type="button" data-f="png" aria-pressed="false">PNG</button><button type="button" data-f="webp" aria-pressed="false">WebP</button>
+					</div></div>
+				<div class="tu-field" id="cv-q-f"><span class="tu-label" id="cv-q-l">Quality: <b id="cv-q-v">90</b>%</span>
+					<input type="range" id="cv-q" min="30" max="100" step="1" value="90" aria-labelledby="cv-q-l">
+					<span class="tu-note" id="cv-q-n">90 is visually lossless for most photos. 75 gives much smaller files.</span></div>
+				<div class="tu-field"><span class="tu-label" id="cv-rs-l">Size</span>
+					<div class="cv-rs"><select id="cv-rs" class="tu-select" aria-labelledby="cv-rs-l">
+						<option value="keep">Keep original size</option><option value="width">Max width</option><option value="height">Max height</option><option value="box">Fit inside a box</option><option value="percent">Scale by percent</option></select>
+						<span class="cv-rs-in" id="cv-rs-in" hidden><input type="number" class="tu-input" id="cv-w" min="1" max="30000" placeholder="width px" aria-label="Width in pixels"><input type="number" class="tu-input" id="cv-h" min="1" max="30000" placeholder="height px" aria-label="Height in pixels"><input type="number" class="tu-input" id="cv-p" min="1" max="1000" value="50" aria-label="Percent"></span></div>
+					<span class="tu-note">Smaller images are never enlarged.</span></div>
+				<div class="tu-field" id="cv-bg-f"><span class="tu-label" id="cv-bg-l">Transparent areas become</span>
+					<div class="cv-bg"><input type="color" id="cv-bg" value="#ffffff" aria-labelledby="cv-bg-l"><span class="tu-note" id="cv-bg-n">JPEG has no transparency, so transparent PNG pixels are filled with this colour.</span></div></div>
+				<div class="tu-field"><label class="tu-label" for="cv-name">File names</label>
+					<select id="cv-name" class="tu-select"><option value="">Same name as the original</option><option value="-converted">Add “-converted”</option><option value="-small">Add “-small”</option><option value="image-{n}">image-1, image-2, ...</option><option value="{name}-{w}x{h}">name-1200x800</option></select></div>
+			</div>
+		</div>
+
+		<div class="cv-bar" id="cv-bar" hidden>
+			<div class="cv-sum" id="cv-sum" aria-live="polite"></div>
+			<div class="cv-act"><button type="button" class="tu-btn tu-btn--primary" id="cv-zip" disabled>⬇ Download all (ZIP)</button> <button type="button" class="tu-btn tu-btn--ghost" id="cv-redo">↻ Convert again</button> <button type="button" class="tu-btn tu-btn--ghost" id="cv-clear">Clear all</button></div>
+		</div>
+		<div class="cv-prog" id="cv-prog" hidden><i id="cv-prog-i"></i></div>
+		<ul class="cv-list" id="cv-list" aria-live="polite"></ul>
+
+		<div class="tu-card tu-card--tint cv-priv"><b>Private by design.</b> Your images are converted inside your browser. Nothing is uploaded to any server, and there is no limit on how many you convert. Want to edit them instead? Open them in the <a href="/photo-editor">MES Photo Editor</a>.</div>
+
+		<div class="tu-seo">
+			<h2>Convert PNG to JPEG (and back) in bulk</h2>
+			<p>Drop a whole folder of PNG screenshots or photos, choose JPEG, and download every converted file in one ZIP. JPEG files are usually 5 to 10 times smaller than the same PNG, which makes pages load faster and uploads quicker. Choose PNG when you need transparency or sharp text, or WebP for the smallest files that still keep transparency.</p>
+			<dl>
+				<dt>What happens to transparent PNGs?</dt><dd>JPEG cannot store transparency, so transparent pixels are filled with the colour you pick (white by default). PNG and WebP keep transparency.</dd>
+				<dt>Does it reduce quality?</dt><dd>PNG to PNG is lossless. JPEG and WebP are lossy: at 90% you will not see a difference, at 75% files are much smaller with slight softening.</dd>
+				<dt>Can I resize at the same time?</dt><dd>Yes: set a maximum width, height, a box or a percentage. Smaller images are left alone.</dd>
+				<dt>Is there a file limit?</dt><dd>No limit on count. Very large batches are limited only by your device's memory, so for hundreds of 20 MP photos convert in groups.</dd>
+				<dt>HEIC photos from an iPhone?</dt><dd>Only Safari can read HEIC. In other browsers, set your iPhone camera to “Most Compatible” or share as JPEG.</dd>
+			</dl>
+		</div>
+	</div>

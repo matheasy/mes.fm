@@ -1,0 +1,67 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu pe" id="pe">
+		<div class="pe-top">
+			<div class="pe-menubar" id="pe-menubar" role="menubar"></div>
+			<div class="pe-top-r">
+				<button type="button" class="pe-ib" id="pe-undo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↶</button>
+				<button type="button" class="pe-ib" id="pe-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>↷</button>
+				<span class="pe-vsep"></span>
+				<button type="button" class="pe-ib" id="pe-zout" title="Zoom out" aria-label="Zoom out">−</button>
+				<button type="button" class="pe-zoom" id="pe-zoom" title="Click to switch between 100% and fit">100%</button>
+				<button type="button" class="pe-ib" id="pe-zin" title="Zoom in" aria-label="Zoom in">+</button>
+				<button type="button" class="pe-ib pe-ib--txt" id="pe-fit" title="Fit on screen (Ctrl+0)">Fit</button>
+				<span class="pe-vsep"></span>
+				<button type="button" class="pe-ib pe-ib--txt" id="pe-winbtn" aria-pressed="false" title="Fill the browser window (F)">⤢ Full window</button>
+				<button type="button" class="pe-btn pe-btn--primary" id="pe-export">Export</button>
+			</div>
+		</div>
+		<div class="pe-opts" id="pe-opts" aria-label="Tool options"></div>
+		<div class="pe-main">
+			<div class="pe-tools" id="pe-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical"></div>
+			<div class="pe-stage" id="pe-stage">
+				<canvas id="pe-main" aria-label="Image canvas"></canvas>
+				<canvas id="pe-over" tabindex="0" role="application" aria-label="Editing surface"></canvas>
+				<textarea id="pe-textedit" class="pe-textedit" spellcheck="false" aria-label="Edit text"></textarea>
+				<div class="pe-empty" id="pe-empty">
+					<div class="pe-empty-in">
+						<div class="pe-empty-t">Free photo editor</div>
+						<div class="pe-empty-s">Layers, selections, text labels, arrows, blur, PSD. Everything stays in your browser.</div>
+						<div class="pe-empty-b"><button type="button" class="pe-btn pe-btn--primary" id="pe-e-open">Open image(s)</button> <button type="button" class="pe-btn" id="pe-e-new">New image</button> <button type="button" class="pe-btn" id="pe-e-paste">Paste</button></div>
+						<div class="pe-empty-s">…or drop pictures here, or press Ctrl+V. Drop several to combine them as layers.</div>
+						<button type="button" class="pe-btn pe-btn--ghost" id="pe-restore" hidden></button>
+					</div>
+				</div>
+				<div class="pe-drop">Drop to open / add as layers</div>
+			</div>
+			<div class="pe-side" id="pe-side">
+				<div class="pe-panel"><div class="pe-ph">Colour</div><div id="pe-colors"></div></div>
+				<div class="pe-panel pe-panel--layers">
+					<div class="pe-ph">Layers</div>
+					<div class="pe-lprops">
+						<select id="pe-blend" aria-label="Blend mode"></select>
+						<label class="pe-op">Opacity <input type="range" id="pe-opacity" min="0" max="100" value="100" aria-label="Layer opacity"><span id="pe-opacity-v">100%</span></label>
+					</div>
+					<div class="pe-lbtns">
+						<button type="button" class="pe-mini" id="pe-lnew" title="New layer (Ctrl+Shift+N)">＋</button><button type="button" class="pe-mini" id="pe-ldup" title="Duplicate (Ctrl+J)">⧉</button><button type="button" class="pe-mini" id="pe-lmerge" title="Merge down (Ctrl+E)">⇩</button><button type="button" class="pe-mini" id="pe-mask-btn" title="Layer mask">◑</button><button type="button" class="pe-mini" id="pe-lock" title="Lock layer" aria-pressed="false">🔒</button><button type="button" class="pe-mini" id="pe-ldel" title="Delete layer">🗑</button>
+					</div>
+					<div class="pe-layers" id="pe-layers"></div>
+				</div>
+				<div class="pe-panel pe-panel--hist"><div class="pe-ph">History</div><div class="pe-history" id="pe-history"></div></div>
+			</div>
+		</div>
+		<div class="pe-status"><span id="pe-st-doc">No image</span><span id="pe-st-layer"></span><span id="pe-st-sel"></span><span id="pe-st-xy"></span><span class="pe-hint" id="pe-hint"></span></div>
+		<input type="file" id="pe-file" hidden>
+	</div>
+
+	<div class="tu-seo">
+		<h2>A free online photo editor with layers</h2>
+		<p>MES Photo Editor runs entirely in your browser: pictures are never uploaded. Use layers, selections, the magic wand, a clone stamp, blur and sharpen, levels and curves, and add text labels, arrows, callouts, numbered steps and highlights to screenshots. Open PNG, JPEG, WebP, GIF, BMP and PSD files, combine several images as layers, keep transparency, and export PNG, JPEG, WebP or a layered PSD.</p>
+		<dl>
+			<dt>Can I open Photoshop (PSD) files?</dt><dd>Yes. Layers, opacity, visibility and blend modes come across. Photoshop-only features (smart objects, layer styles, adjustment layers, live text) are flattened. You can also save a layered PSD.</dd>
+			<dt>How do I make a background transparent?</dt><dd>Choose the Magic Wand, click the background, press Delete, then export as PNG or WebP. For soft edges use Adjust → Make a colour transparent.</dd>
+			<dt>How do I add labels and arrows to a screenshot?</dt><dd>Use the Text tool with its Background box option for labels, and the Shapes tool for arrows, boxes, callouts, numbered steps, highlights and blur/hide areas. Each lands on its own layer so you can move or delete it later.</dd>
+			<dt>Is my work saved?</dt><dd>It is auto-saved in this browser while you work, so you can restore your last session after a reload. Use File → Save project to keep a file with all layers.</dd>
+			<dt>Does it work on a phone or tablet?</dt><dd>Yes, with touch and pen support (pinch to zoom, two fingers to pan). A larger screen is more comfortable for detailed work.</dd>
+			<dt>How do I convert many files at once?</dt><dd>Use the <a href="/image-converter">Bulk Image Converter</a> to turn a whole folder of PNG, JPEG or WebP files into another format in one go.</dd>
+		</dl>
+	</div>
