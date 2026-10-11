@@ -79,7 +79,7 @@
 		var key = [w, Math.round(h), Yr.toFixed(3), S.tab].join("|");
 		if (key === lay.key) return lay;
 		var sc = Math.min(w / 1.28, h / (2 * Yr)), ox = (w - 1.28 * sc) / 2 + 0.14 * sc;
-		var gw = w < 500 ? 150 : 210, cell = 1.28 / gw, gh = Math.ceil(2 * Yr / cell);
+		var gw = Math.min(w < 500 ? 150 : 210, GWMAX), cell = 1.28 / gw, gh = Math.ceil(2 * Yr / cell);
 		lay = { key: key, w: w, h: h, sc: sc, ox: ox, Yr: Yr, gw: gw, gh: gh, cell: cell };
 		var n = gw * gh; lay.r = new Float32Array(n); lay.phi = new Float32Array(n); lay.x = new Float32Array(n); lay.sec = new Float32Array(n);
 		for (var j = 0; j < gh; j++) for (var i = 0; i < gw; i++) {
@@ -90,7 +90,7 @@
 		return lay;
 	}
 	var sx = function (x) { return lay.ox + x * lay.sc; }, sy = function (y) { return lay.h / 2 - y * lay.sc; };
-	var FAN = 0.82, BW = 0.03;
+	var FAN = 0.82, BW = 0.03, GWMAX = 210, slowN = 0;
 	function light(x, r, phi, sec, t, hist) {          // 0..1 brightness of the light passing (x, y) at time t
 		if (x < 0 || x > 1.0005) return 0;
 		if (S.tab === "sweep") { var dd = (phi - hist.at(t - r)) / BW; return dd > 3 || dd < -3 ? 0 : Math.exp(-dd * dd); }
@@ -101,7 +101,7 @@
 		return 0.55 * clamp(0.5 + dist / (0.02 * d), 0, 1);
 	}
 	function paintField(c) {
-		BW = rad(S.bw) * 1.75;
+		BW = rad(S.bw) * 1.75; var t0 = performance.now();
 		var a = img.data, n = lay.gw * lay.gh, hist = sim.hist, t = sim.t, k, v, p = 0;
 		var br = S.tab === "sweep" ? 255 : 255, bg = [7, 13, 31];
 		for (k = 0; k < n; k++, p += 4) {
@@ -112,6 +112,8 @@
 		}
 		offc.putImageData(img, 0, 0);
 		c.imageSmoothingEnabled = true;
+		var pt = performance.now() - t0; slowN = pt > 9 ? slowN + 1 : Math.max(0, slowN - 1);
+		if (slowN > 12 && GWMAX > 110) { GWMAX = Math.max(110, Math.round(GWMAX * 0.8)); slowN = 0; lay.key = ""; }
 		c.drawImage(off, sx(-0.14), sy(lay.Yr), lay.gw * lay.cell * lay.sc, lay.gh * lay.cell * lay.sc);
 	}
 	function drawScene(canvas, stage) {
@@ -158,7 +160,7 @@
 		while (sim.chart.length && sim.t - sim.chart[0].t > 3.2) sim.chart.shift();
 		drawChart(S.tab === "sweep" ? $("ftl-ch1") : $("ftl-ch2"));
 		text(c, "screen " + F.fmtLen(S.D) + " away · light needs " + F.fmtTime(T0) + " · animation slowed ×" + F.sig(S.cross / T0, 3), 10, 14, COL.dim, 11, "left");
-		if (S.tab === "sweep" && S.aim) text(c, "move the pointer over the picture to aim", 10, L.h - 12, COL.dim, 11, "left");
+		if ((S.tab === "sweep" && S.aim) || (S.tab === "shadow" && S.sman)) { c.fillStyle = "rgba(251,146,60,0.92)"; c.fillRect(10, 24, 170, 20); text(c, "✋ MANUAL MODE: drag or click", 16, 34, "#1a0f00", 11, "left", true); }
 		return spots;
 	}
 
@@ -268,6 +270,7 @@
 		$("ftl-d-v").textContent = F.fmtLen(S.d / 100 * S.D) + " (" + S.d + "% of the way)";
 		$("ftl-s-v").textContent = fmtMult(sS());
 		$("ftl-bw").value = S.bw; $("ftl-sz").value = S.sz; $("ftl-slide").checked = S.slide; $("ftl-sm-auto").setAttribute("aria-pressed", String(!S.sman)); $("ftl-sm-man").setAttribute("aria-pressed", String(S.sman)); $("ftl-shint").hidden = !S.sman; $("ftl-kf").disabled = S.sman; $("ftl-c2").classList.toggle("is-aim", S.sman);
+		$("ftl-hand1").setAttribute("aria-pressed", String(S.aim)); $("ftl-hand2").setAttribute("aria-pressed", String(S.sman)); $("ftl-hand1").textContent = S.aim ? "↻ Back to auto" : "✋ Manual"; $("ftl-hand2").textContent = S.sman ? "↻ Back to auto" : "✋ Manual";
 		$("ftl-k").value = S.kv; $("ftl-a").value = S.A; $("ftl-kf").value = S.kfv; $("ftl-d").value = S.d; $("ftl-s").value = S.sv;
 		$("ftl-m-auto").setAttribute("aria-pressed", String(!S.aim)); $("ftl-m-aim").setAttribute("aria-pressed", String(S.aim)); $("ftl-aimhint").hidden = !S.aim; $("ftl-k").disabled = S.aim; $("ftl-c1").classList.toggle("is-aim", S.aim);
 		[].forEach.call(document.querySelectorAll("[data-dp]"), function (b) { b.setAttribute("aria-pressed", String(F.PLACES[+b.getAttribute("data-dp")].s === S.Dtxt)); });
@@ -312,6 +315,8 @@
 	$("ftl-d").oninput = function () { S.d = +this.value; save(); paintSetup(); newSim(); };
 	$("ftl-s").oninput = function () { S.sv = +this.value; save(); paintSetup(); drawMsg(); };
 	$("ftl-m-auto").onclick = function () { S.aim = false; paintSetup(); newSim(); }; $("ftl-m-aim").onclick = function () { S.aim = true; sim.target = sim.val; paintSetup(); };
+	$("ftl-hand1").onclick = function () { if (S.aim) { S.aim = false; paintSetup(); newSim(); } else { S.aim = true; sim.target = sim.val; paintSetup(); dirty = true; } };
+	$("ftl-hand2").onclick = function () { if (S.sman) { S.sman = false; S.slide = false; paintSetup(); newSim(); } else { S.sman = true; sim.target = sim.val; paintSetup(); dirty = true; } };
 	$("ftl-sm-auto").onclick = function () { S.sman = false; paintSetup(); newSim(); }; $("ftl-sm-man").onclick = function () { S.sman = true; sim.target = sim.val; paintSetup(); };
 	$("ftl-slide").onchange = function () { S.slide = this.checked; if (S.slide && !S.sman) { S.sman = true; sim.target = sim.val; } paintSetup(); };
 	$("ftl-bw").oninput = function () { S.bw = +this.value; save(); paintSetup(); dirty = true; };

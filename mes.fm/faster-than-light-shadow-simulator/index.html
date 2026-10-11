@@ -316,6 +316,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ftl-c1.is-aim {cursor:crosshair;touch-action:none;}
 	.ftl-tools {position:absolute;right:0.6em;top:0.6em;display:flex;gap:0.25em;}
 	.ftl-tools button {cursor:pointer;border:1px solid var(--ftl-line);background:rgba(8,13,30,0.78);color:var(--ftl-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font-size:0.82em;line-height:1;}
+	.ftl-tools button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
 	.ftl-tools button:hover {border-color:var(--accent);color:#fff;}
 	.ftl-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:0.5em;padding:0.6em;background:#0b1330;border-top:1px solid var(--ftl-line);}
 	.ftl-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
@@ -694,7 +695,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="ftl-split">
 					<div class="ftl-stage" id="ftl-stage1">
 						<canvas id="ftl-c1" role="img" aria-label="Top view: a torch on the left swings its beam; the beam curves because light takes time to travel; a spot moves up and down a screen on the right, its speed shown as a multiple of the speed of light."></canvas>
-						<div class="ftl-tools"><button type="button" id="ftl-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
+						<div class="ftl-tools"><button type="button" id="ftl-hand1" aria-pressed="false" title="Manual mode: drag or click the picture to aim / move it yourself. Touching the picture while it plays switches this on.">✋ Manual</button><button type="button" id="ftl-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
 					</div>
 					<div class="ftl-chartbox"><canvas id="ftl-ch1" role="img" aria-label="Chart of the spot speed against time, as a multiple of the speed of light, with the speed-of-light line marked."></canvas></div>
 				</div>
@@ -727,7 +728,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="ftl-split">
 					<div class="ftl-stage" id="ftl-stage2">
 						<canvas id="ftl-c2" role="img" aria-label="Top view: a lamp on the left, a finger moving up and down in front of it, and its shadow band moving along a screen on the right. The shadow's speed is shown as a multiple of the speed of light."></canvas>
-						<div class="ftl-tools"><button type="button" id="ftl-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
+						<div class="ftl-tools"><button type="button" id="ftl-hand2" aria-pressed="false" title="Manual mode: drag or click the picture to aim / move it yourself. Touching the picture while it plays switches this on.">✋ Manual</button><button type="button" id="ftl-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
 					</div>
 					<div class="ftl-chartbox"><canvas id="ftl-ch2" role="img" aria-label="Chart of the spot speed against time, as a multiple of the speed of light, with the speed-of-light line marked."></canvas></div>
 				</div>
@@ -881,7 +882,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/faster-than-light-shadow-simulator/js/faster-than-light-shadow-simulator.js?v=2" defer></script>
+	<script src="/faster-than-light-shadow-simulator/js/faster-than-light-shadow-simulator.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
