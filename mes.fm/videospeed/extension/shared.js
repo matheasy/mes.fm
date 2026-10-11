@@ -42,7 +42,7 @@
     var c = defaultConfig();
     c.bindings = [b('toggleUi', 'v'), b('slower', '[', 0.05), b('faster', ']', 0.05), b('rewind', 'z', 1), b('advance', 'x', 1),
                   b('reset', 'y', 1), b('preferred', 'p', 2), b('setMarker', 'm'), b('jumpMarker', 'j')];
-    c.remember = 'off'; c.hideByDefault = true; c.exclusive = false;
+    c.remember = 'off'; c.exclusive = false;
     return c;
   }
 

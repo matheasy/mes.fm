@@ -26,7 +26,7 @@ eq(V.bindingForKey('x', M.bindings).value, 1, 'MES X advance 1'); eq(V.bindingFo
 eq(V.bindingForKey('p', M.bindings), { action: 'preferred', key: 'p', value: 2 }, 'MES P preferred 2');
 eq(V.bindingForKey('m', M.bindings).action, 'setMarker', 'MES M marker'); eq(V.bindingForKey('j', M.bindings).action, 'jumpMarker', 'MES J jump');
 eq(V.bindingForKey('v', M.bindings).action, 'toggleUi', 'MES V toggle');
-eq([M.audio, M.remember, M.hideByDefault, M.exclusive], [false, 'off', true, false], 'MES preferences = the screenshot');
+eq([M.audio, M.remember, M.hideByDefault, M.exclusive], [false, 'off', false, false], 'MES preferences: controller shown by default');
 eq([D.remember, D.hideByDefault, D.exclusive], ['global', false, true], 'default preferences');
 for (const c of [D, M]) { const keys = c.bindings.map(b => b.key); eq(new Set(keys).size, keys.length, 'keys unique'); eq(c.bindings.length, V.ACTIONS.length, 'every action bound once'); }
 eq(V.bindingFor('faster', M.bindings).value, 0.05, 'bindingFor');
