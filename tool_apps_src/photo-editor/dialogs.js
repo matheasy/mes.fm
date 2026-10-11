@@ -176,7 +176,7 @@
 			{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download", primary: true, act: function (m) { var v = f.get(); PE.savedParams.export = v; getBlob(v).then(function (b) { PE.download(b, I.cleanFileName(v.name || "image") + "." + I.FORMATS[v.fmt].ext); PE.toast("Saved"); m.close(); }).catch(function (e) { PE.toast(e.message); }); } }] });
 	};
 	/* ---------- layer effects (new layer under the active one) + round corners + straighten ---------- */
-	function flatLayer(L) { var c = mk(L.canvas.width, L.canvas.height); PE.drawLayer(c.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", live: null, preview: null }), [1, 0, 0, 1, 0, 0], "fl", c.width, c.height); return c; }
+	function flatLayer(L) { var c = mk(L.canvas.width, L.canvas.height); PE.drawLayer(c.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", live: null, preview: null, _p: null }), [1, 0, 0, 1, 0, 0], "fl", c.width, c.height); return c; }
 	function effectDialog(kind) {
 		var L = PE.active(); if (!PE.doc || !L) { PE.toast("Open an image first"); return; } if (L.locked) { PE.toast("This layer is locked"); return; }
 		var shadow = kind === "shadow", params = shadow ? [{ k: "c", label: "Colour", type: "color", val: "#000000" }, P2("op", "Opacity", 5, 100, 55, 1, "%"), P2("blur", "Blur", 0, 80, 14, 1, "px"), P2("dx", "Offset X", -80, 80, 6, 1, "px"), P2("dy", "Offset Y", -80, 80, 8, 1, "px")] : [{ k: "c", label: "Colour", type: "color", val: PE.fg }, P2("w", "Width", 1, 60, 6, 1, "px")];
@@ -206,6 +206,26 @@
 		if (expand) { nw = Math.ceil(Math.abs(W * c) + Math.abs(H * s)); nh = Math.ceil(Math.abs(W * s) + Math.abs(H * c)); }
 		d.layers.forEach(function (L) { var dx = L.cx - W / 2, dy = L.cy - H / 2; L.cx = nw / 2 + dx * c - dy * s; L.cy = nh / 2 + dx * s + dy * c; L.rot += a; });
 		d.w = nw; d.h = nh; PE.sel = null; PE.emit("sel"); PE.emit("docsize"); PE.commit("Rotate " + deg + "°"); PE.fit();
+	};
+
+	/* ---------- export all comps as a set of pictures (one ZIP) ---------- */
+	PE.dlgExportComps = function () {
+		var d = PE.doc; if (!d) return; var comps = d.comps || []; if (!comps.length) { PE.toast("Save some comps first (Comps tab, + Save current view)"); return; }
+		var saved = PE.savedParams.expc || { fmt: "jpg", q: 90, mode: "doc", w: 1280, pat: "{project}-{n}-{comp}", bg: "#ffffff" };
+		var wrap = el("div"), f = PE.form([{ k: "fmt", label: "Format", type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"], ["webp", "WebP"]], val: saved.fmt }, { k: "q", label: "Quality", type: "range", min: 30, max: 100, step: 1, val: saved.q, unit: "%" }, { k: "mode", label: "Size", type: "select", options: [["doc", "Same as the image (" + d.w + " × " + d.h + ")"], ["width", "Fixed width"]], val: saved.mode }, { k: "w", label: "Width (px)", type: "number", val: saved.w, min: 16, max: 8000 }, { k: "bg", label: "Background (JPEG)", type: "color", val: saved.bg }, { k: "pat", label: "File names", type: "text", val: saved.pat }], function () { vis(); });
+		wrap.appendChild(f.el); function vis() { var v = f.get(); f.inputs.q.inp.closest(".pe-row").style.display = I.FORMATS[v.fmt].lossy ? "" : "none"; f.inputs.bg.inp.closest(".pe-row").style.display = I.FORMATS[v.fmt].alpha ? "none" : ""; f.inputs.w.inp.closest(".pe-row").style.display = v.mode === "width" ? "" : "none"; } vis();
+		var list = el("div", "pe-complist"); comps.forEach(function (c, i) { var r = el("label", "pe-row pe-row--check"); var cb = el("input"); cb.type = "checkbox"; cb.checked = true; cb.dataset.i = i; r.appendChild(el("span", "pe-row-l", esc((i + 1) + ". " + c.name))); r.appendChild(cb); list.appendChild(r); }); wrap.appendChild(el("p", "pe-hint2", "Comps to export:")); wrap.appendChild(list); var st = el("p", "pe-hint2"); wrap.appendChild(st);
+		PE.modal({ title: "Export all comps", body: wrap, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download ZIP", primary: true, act: function (m) {
+			var v = f.get(), picked = []; list.querySelectorAll("input").forEach(function (cb) { if (cb.checked) picked.push(comps[+cb.dataset.i]); }); if (!picked.length) { PE.toast("Tick at least one comp"); return; }
+			PE.savedParams.expc = v; var back = { st: PE.compCapture() }, files = [], used = {}, F = I.FORMATS[v.fmt], scale = v.mode === "width" ? v.w / d.w : 1, i = 0;
+			function next() {
+				if (i >= picked.length) { PE.compApplyState(back); PE.emit("comps"); var out = files.length === 1 ? new Blob([files[0].data], { type: F.mime }) : new Blob([I.zipStore(files)], { type: "application/zip" }); PE.download(out, files.length === 1 ? files[0].name : I.cleanFileName(d.name) + "-comps.zip"); PE.toast(files.length + " picture" + (files.length === 1 ? "" : "s") + " saved"); m.close(); return Promise.resolve(); }
+				var c = picked[i++]; st.textContent = "Rendering " + i + " of " + picked.length + ": " + c.name; PE.compApplyState(c);
+				return new Promise(function (res) { setTimeout(res, 20); }).then(function () { return PE.exportBlob(v.fmt, v.q / 100, { scale: scale, bg: v.bg }); }).then(function (b) { return b.arrayBuffer(); }).then(function (ab) {
+					var nm = v.pat.replace(/\{project\}/g, I.baseName(d.name)).replace(/\{n\}/g, String(i)).replace(/\{comp\}/g, c.name); files.push({ name: I.uniqueName(I.cleanFileName(nm) + "." + F.ext, used), data: new Uint8Array(ab) }); return next(); });
+			}
+			next().catch(function (e) { PE.compApplyState(back); st.textContent = "Could not export: " + (e && e.message ? e.message : e); });
+		} }] });
 	};
 
 	PE.download = function (blob, name) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000); };

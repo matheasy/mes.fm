@@ -23,30 +23,50 @@
 		o = o || {}; var d = PE.doc, w = o.w || (d ? d.w : 1), h = o.h || (d ? d.h : 1);
 		var c = o.canvas || mk(w, h);
 		return { id: d ? d.next++ : 1, name: o.name || "Layer", type: o.type || "raster", canvas: c, cx: o.cx != null ? o.cx : (o.x || 0) + c.width / 2, cy: o.cy != null ? o.cy : (o.y || 0) + c.height / 2,
-			sx: 1, sy: 1, rot: 0, visible: true, opacity: 1, blend: "source-over", locked: false, text: o.text || null, mask: null, editMask: false, rev: 0, _snap: null };
+			sx: 1, sy: 1, rot: 0, visible: true, opacity: 1, blend: "source-over", locked: false, text: o.text || null, mask: null, editMask: false, rev: 0, _snap: null, group: null, collapsed: false, _p: null };
 	};
 	PE.active = function () { var d = PE.doc; if (!d) return null; for (var i = 0; i < d.layers.length; i++) if (d.layers[i].id === d.activeId) return d.layers[i]; return d.layers[d.layers.length - 1] || null; };
 	PE.layerById = function (id) { var d = PE.doc; for (var i = 0; i < d.layers.length; i++) if (d.layers[i].id === id) return d.layers[i]; return null; };
 	PE.indexOf = function (L) { return PE.doc.layers.indexOf(L); };
 	PE.setActive = function (id) { PE.doc.activeId = id; PE.emit("layers"); PE.emit("active"); };
 	PE.touch = function (L) { if (L) L.rev++; PE.invalidate(); };
+	/* ---------- groups: a group is a header layer (type "group", 1x1 canvas) that comes AFTER its members in the flat array; members point at it with `group` (its id). Members are always contiguous. ---------- */
+	PE.isGroup = function (L) { return !!L && L.type === "group"; };
+	PE.makeGroup = function (name) { var G = PE.makeLayer({ name: name || "Group", w: 1, h: 1, type: "group" }); return G; };
+	PE.relink = function () { var d = PE.doc, m = {}; d.layers.forEach(function (L) { m[L.id] = L; }); d.layers.forEach(function (L) { L._p = L.group != null ? (m[L.group] || null) : null; }); };
+	PE.kidsOf = function (G) { return PE.doc.layers.filter(function (L) { return L.group === G.id; }); };
+	PE.descendants = function (G) { var out = [], d = PE.doc; (function walk(g) { d.layers.forEach(function (L) { if (L.group === g.id) { if (PE.isGroup(L)) walk(L); out.push(L); } }); })(G); return d.layers.filter(function (L) { return out.indexOf(L) >= 0; }); };
+	PE.blockOf = function (L) { return PE.isGroup(L) ? PE.descendants(L).concat([L]) : [L]; };
+	PE.ancestorsOf = function (L) { var out = [], d = PE.doc, p = L.group; while (p != null) { var g = PE.layerById(p); if (!g) break; out.push(g); p = g.group; } return out; };
+	PE.depthOf = function (L) { return PE.ancestorsOf(L).length; };
+	PE.topGroupOf = function (L) { var a = PE.ancestorsOf(L); return a.length ? a[a.length - 1] : L; };
+	PE.effVisible = function (L) { if (!L.visible) return false; for (var p = L._p; p; p = p._p) if (!p.visible) return false; return true; };
+	PE.translate = function (L, dx, dy) { if (PE.isGroup(L)) PE.descendants(L).forEach(function (k) { if (!PE.isGroup(k)) { k.cx += dx; k.cy += dy; k.rev++; } }); else { L.cx += dx; L.cy += dy; } PE.invalidate(); };
+	PE.groupBounds = function (G) { var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, any = false; PE.descendants(G).forEach(function (k) { if (PE.isGroup(k)) return; var b = PE.bounds(k); any = true; x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); }); return any ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : { x: 0, y: 0, w: 0, h: 0 }; };
 	PE.addLayer = function (L, index) {
-		var d = PE.doc; if (index == null) { var a = PE.active(); index = a ? d.layers.indexOf(a) + 1 : d.layers.length; }
-		d.layers.splice(index, 0, L); d.activeId = L.id; PE.emit("layers"); PE.invalidate(); return L;
+		var d = PE.doc;
+		if (index == null) {
+			var a = PE.active();
+			if (!a) index = d.layers.length;
+			else if (PE.isGroup(a)) { if (!a.collapsed) { L.group = a.id; index = d.layers.indexOf(a); } else { L.group = a.group; index = d.layers.indexOf(a) + 1; } }
+			else { L.group = a.group; index = d.layers.indexOf(a) + 1; }
+		}
+		d.layers.splice(index, 0, L); d.activeId = L.id; PE.relink(); PE.emit("layers"); PE.invalidate(); return L;
 	};
 	PE.origin = function (L) { return { x: Math.round(L.cx - L.canvas.width / 2), y: Math.round(L.cy - L.canvas.height / 2) }; };
 	PE.isIdentity = function (L) { return L.sx === 1 && L.sy === 1 && L.rot === 0; };
 	function matrix(L) { var c = Math.cos(L.rot), s = Math.sin(L.rot); return [c * L.sx, s * L.sx, -s * L.sy, c * L.sy, L.cx, L.cy]; }
 	PE.corners = function (L) {
+		if (PE.isGroup(L)) { var gb = PE.groupBounds(L); return [[gb.x, gb.y], [gb.x + gb.w, gb.y], [gb.x + gb.w, gb.y + gb.h], [gb.x, gb.y + gb.h]]; }
 		var m = matrix(L), hw = L.canvas.width / 2, hh = L.canvas.height / 2;
 		return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(function (p) { return [m[0] * p[0] + m[2] * p[1] + m[4], m[1] * p[0] + m[3] * p[1] + m[5]]; });
 	};
-	PE.bounds = function (L) { var c = PE.corners(L), x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; c.forEach(function (p) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; };
+	PE.bounds = function (L) { if (PE.isGroup(L)) return PE.groupBounds(L); var c = PE.corners(L), x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; c.forEach(function (p) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; };
 	PE.toLayerPt = function (L, x, y) { var c = Math.cos(L.rot), s = Math.sin(L.rot), dx = x - L.cx, dy = y - L.cy; return { x: (c * dx + s * dy) / L.sx + L.canvas.width / 2, y: (-s * dx + c * dy) / L.sy + L.canvas.height / 2 }; };
 	PE.layerAt = function (x, y) {
 		var ls = PE.doc.layers;
 		for (var i = ls.length - 1; i >= 0; i--) {
-			var L = ls[i]; if (!L.visible) continue; var p = PE.toLayerPt(L, x, y);
+			var L = ls[i]; if (PE.isGroup(L) || !PE.effVisible(L)) continue; var p = PE.toLayerPt(L, x, y);
 			if (p.x < 0 || p.y < 0 || p.x >= L.canvas.width || p.y >= L.canvas.height) continue;
 			try { if (L.canvas.getContext("2d").getImageData(p.x | 0, p.y | 0, 1, 1).data[3] > 8) return L; } catch (e) { return L; }
 		}
@@ -76,6 +96,7 @@
 	PE.prepare = function (L, quiet, noGrow) {
 		if (!L) { if (!quiet) PE.toast("Add or open an image first"); return false; }
 		if (L.locked) { if (!quiet) PE.toast("This layer is locked"); return false; }
+		if (PE.isGroup(L)) { if (!quiet) PE.toast("This is a group: select a layer inside it"); return false; }
 		if (L.type === "text") { PE.rasterize(L); PE.emit("layers"); }
 		PE.bake(L); if (!noGrow) PE.growLayer(L, { x: 0, y: 0, w: PE.doc.w, h: PE.doc.h }); return true;
 	};
@@ -104,11 +125,11 @@
 
 	/* ---------- compositing ---------- */
 	function drawLayer(ctx, L, base, tmpKey, w, h) {
-		if (!L.visible || L.opacity <= 0) return;
+		if (PE.isGroup(L) || !L.visible) return; var op = L.opacity; for (var gp = L._p; gp; gp = gp._p) { if (!gp.visible) return; op *= gp.opacity; } if (op <= 0) return;
 		var src = L.preview || L.canvas, cw = L.canvas.width, ch = L.canvas.height, m = matrix(L);
 		var needTmp = L.mask || L.live;
 		if (!needTmp) {
-			ctx.save(); ctx.globalAlpha = L.opacity; ctx.globalCompositeOperation = L.blend;
+			ctx.save(); ctx.globalAlpha = op; ctx.globalCompositeOperation = L.blend;
 			ctx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
 			ctx.drawImage(src, -cw / 2, -ch / 2, cw, ch); ctx.restore(); return;
 		}
@@ -122,12 +143,12 @@
 			if (L.live && L.live.target === "mask") { var mm = PE.tmp(tmpKey + "m", L.mask.width, L.mask.height), mc = mm.getContext("2d"); mc.drawImage(L.mask, 0, 0); mc.globalCompositeOperation = L.live.erase ? "destination-out" : "source-over"; mc.globalAlpha = L.live.alpha; mc.drawImage(L.live.buf, 0, 0); tx.drawImage(mm, -cw / 2, -ch / 2); }
 			else tx.drawImage(L.mask, -cw / 2, -ch / 2);
 		}
-		ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = L.opacity; ctx.globalCompositeOperation = L.blend; ctx.drawImage(t, 0, 0); ctx.restore();
+		ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = op; ctx.globalCompositeOperation = L.blend; ctx.drawImage(t, 0, 0); ctx.restore();
 	}
 	PE.drawLayer = drawLayer;
 	/* the whole picture as a document-size canvas (export, copy merged, thumbnails) */
 	PE.flatten = function (o) {
-		o = o || {}; var d = PE.doc, sc = o.scale || 1, W = Math.max(1, Math.round(d.w * sc)), H = Math.max(1, Math.round(d.h * sc)), c = mk(W, H), x = c.getContext("2d");
+		o = o || {}; var d = PE.doc; PE.relink(); var sc = o.scale || 1, W = Math.max(1, Math.round(d.w * sc)), H = Math.max(1, Math.round(d.h * sc)), c = mk(W, H), x = c.getContext("2d");
 		if (o.fill) { x.fillStyle = o.fill; x.fillRect(0, 0, W, H); }
 		x.imageSmoothingQuality = "high";
 		d.layers.forEach(function (L) { if (o.only && o.only.indexOf(L) < 0) return; drawLayer(x, L, [sc, 0, 0, sc, 0, 0], "exp", W, H); });
@@ -159,7 +180,7 @@
 		var W = Math.round(v.w * v.dpr), H = Math.round(v.h * v.dpr);
 		if (c.width !== W || c.height !== H) { c.width = W; c.height = H; checker = null; }
 		var ctx = c.getContext("2d"); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = "#1b1b1f"; ctx.fillRect(0, 0, W, H);
-		var d = PE.doc; if (!d) return;
+		var d = PE.doc; if (!d) return; PE.relink();
 		var z = v.zoom * v.dpr, ox = v.px * v.dpr, oy = v.py * v.dpr, rx = ox, ry = oy, rw = d.w * z, rh = d.h * z;
 		ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = 18 * v.dpr; ctx.fillStyle = "#000"; ctx.fillRect(rx, ry, rw, rh); ctx.restore();
 		ctx.save(); ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.clip();
@@ -229,13 +250,13 @@
 	var H = PE.hist = { stack: [], idx: -1 };
 	function snapLayer(L) {
 		var s = L._snap; if (!s || s.rev !== L.rev || (L.mask ? !s.m : !!s.m)) { s = L._snap = { rev: L.rev, c: clone(L.canvas), m: L.mask ? clone(L.mask) : null }; }
-		return { meta: { id: L.id, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, editMask: L.editMask }, snap: s };
+		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, editMask: L.editMask }, snap: s };
 	}
 	var lastSel = { ver: -1, obj: null };
 	function takeSnapshot(label) {
 		var d = PE.doc, sel = null;
 		if (PE.sel) { if (lastSel.obj && lastSel.ver === PE.sel.ver && lastSel.c === PE.sel.c) sel = lastSel.snap; else { sel = clone(PE.sel.c); lastSel = { ver: PE.sel.ver, c: PE.sel.c, snap: sel, obj: PE.sel }; } }
-		return { label: label, w: d.w, h: d.h, active: d.activeId, layers: d.layers.map(snapLayer), sel: sel, t: Date.now() };
+		return { label: label, w: d.w, h: d.h, active: d.activeId, layers: d.layers.map(snapLayer), sel: sel, comps: JSON.stringify(d.comps || []), t: Date.now() };
 	}
 	PE.commit = function (label) {
 		if (!PE.doc) return; PE.dirty = true;
@@ -248,8 +269,8 @@
 		var d = PE.doc; d.w = e.w; d.h = e.h; d.layers = e.layers.map(function (l) {
 			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text") L[k] = l.meta[k]; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null;
 			L.mask = l.snap.m ? clone(l.snap.m) : null; L.rev = l.snap.rev; L._snap = l.snap; return L; });
-		d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
-		PE.sel = e.sel ? { c: clone(e.sel), ver: ++PE.selSeq } : null; PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("docsize"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
+		d.comps = JSON.parse(e.comps || "[]"); d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
+		PE.sel = e.sel ? { c: clone(e.sel), ver: ++PE.selSeq } : null; PE.relink(); PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("comps"); PE.emit("docsize"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
 	}
 	PE.selSeq = 1000;
 	PE.undo = function () { if (H.idx > 0) { H.idx--; restore(H.stack[H.idx]); } };
@@ -259,7 +280,7 @@
 	/* ---------- documents ---------- */
 	PE.newDoc = function (w, h, bg, name) {
 		w = Math.round(w); h = Math.round(h); if (!(w > 0 && h > 0) || w > PE.MAXPX || h > PE.MAXPX || w * h > PE.MAXAREA) { PE.toast("That size is too large for a browser (max " + PE.MAXPX + " px a side)"); return false; }
-		PE.doc = { w: w, h: h, layers: [], activeId: 0, next: 1, name: name || "Untitled" }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
+		PE.doc = { w: w, h: h, layers: [], activeId: 0, next: 1, name: name || "Untitled", comps: [] }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 		var L = PE.makeLayer({ name: bg ? "Background" : "Layer 1" }); if (bg) { var x = L.canvas.getContext("2d"); x.fillStyle = bg; x.fillRect(0, 0, w, h); }
 		PE.doc.layers.push(L); PE.doc.activeId = L.id; PE.commit("New document"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit(); return true;
 	};
@@ -286,34 +307,62 @@
 	/* ---------- layer commands ---------- */
 	PE.newRasterLayer = function (name) { PE.addLayer(PE.makeLayer({ name: name || "Layer " + PE.doc.next })); PE.commit("New layer"); };
 	PE.duplicateLayer = function (L) {
-		L = L || PE.active(); if (!L) return; var n = PE.makeLayer({ canvas: clone(L.canvas), type: L.type, name: L.name + " copy", text: L.text ? JSON.parse(JSON.stringify(L.text)) : null });
-		["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend"].forEach(function (k) { n[k] = L[k]; }); if (L.mask) n.mask = clone(L.mask);
-		PE.addLayer(n, PE.indexOf(L) + 1); PE.commit("Duplicate layer");
+		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
+			var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (B === L ? " copy" : ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null }); map[B.id] = n;
+			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed"].forEach(function (k) { n[k] = B[k]; }); if (B.mask) n.mask = clone(B.mask); return n; });
+		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
+		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
 	};
 	PE.deleteLayer = function (L) {
-		L = L || PE.active(); if (!L) return; var d = PE.doc, i = d.layers.indexOf(L); d.layers.splice(i, 1);
-		if (!d.layers.length) { d.layers.push(PE.makeLayer({ name: "Layer 1" })); } d.activeId = d.layers[Math.min(i, d.layers.length - 1)].id; PE.commit("Delete layer");
+		L = L || PE.active(); if (!L) return; var d = PE.doc, i = d.layers.indexOf(L), gone = PE.blockOf(L);
+		d.layers = d.layers.filter(function (x) { return gone.indexOf(x) < 0; });
+		if (!d.layers.length) d.layers.push(PE.makeLayer({ name: "Layer 1" })); d.activeId = d.layers[Math.max(0, Math.min(i - gone.length + 1, d.layers.length - 1))].id; PE.relink(); PE.commit("Delete " + (PE.isGroup(L) ? "group" : "layer"));
+	};
+	/* move a layer (with its members, if a group) next to `target`: zone "above" (higher in the stack) / "below" / "into" (target is a group: becomes its top member) */
+	PE.relocate = function (src, target, zone) {
+		var d = PE.doc; if (!src || !target || src === target) return false;
+		if (PE.isGroup(src) && PE.descendants(src).indexOf(target) >= 0) return false;
+		var block = PE.blockOf(src); d.layers = d.layers.filter(function (x) { return block.indexOf(x) < 0; });
+		var ti = d.layers.indexOf(target), at, parent;
+		if (zone === "into" && PE.isGroup(target)) { parent = target.id; at = ti; }
+		else { parent = target.group; if (zone === "below") { at = ti - (PE.isGroup(target) ? PE.descendants(target).length : 0); } else at = ti + 1; }
+		src.group = parent; Array.prototype.splice.apply(d.layers, [Math.max(0, at), 0].concat(block)); PE.relink(); PE.commit("Reorder layers"); return true;
 	};
 	PE.moveLayer = function (L, to) {
-		var d = PE.doc, i = d.layers.indexOf(L); to = Math.max(0, Math.min(d.layers.length - 1, to)); if (i === to) return; d.layers.splice(i, 1); d.layers.splice(to, 0, L); PE.commit("Reorder layers");
+		var d = PE.doc; var sibs = d.layers.filter(function (x) { return x.group === L.group; }), i = sibs.indexOf(L), t = Math.max(0, Math.min(sibs.length - 1, to)); if (i < 0 || i === t) return;
+		var other = sibs[t]; PE.relocate(L, other, t > i ? "above" : "below");
+	};
+	PE.stepLayer = function (L, dir) { var sibs = PE.doc.layers.filter(function (x) { return x.group === L.group; }), i = sibs.indexOf(L); PE.moveLayer(L, i + dir); };
+	PE.groupLayers = function (list) {
+		var d = PE.doc; list = (list || []).filter(Boolean); if (!list.length) { PE.toast("Select the layers to group (Ctrl-click in the Layers panel)"); return null; }
+		list.sort(function (a, b) { return d.layers.indexOf(a) - d.layers.indexOf(b); }); var top = list[list.length - 1], parent = top.group;
+		var members = list.filter(function (L) { return L.group === parent; }); if (!members.length) members = [top];
+		var blocks = []; members.forEach(function (L) { PE.blockOf(L).forEach(function (B) { if (blocks.indexOf(B) < 0) blocks.push(B); }); }); blocks = d.layers.filter(function (x) { return blocks.indexOf(x) >= 0; });
+		var G = PE.makeGroup("Group " + d.next), topIdx = d.layers.indexOf(top), before = d.layers.slice(0, topIdx + 1).filter(function (x) { return blocks.indexOf(x) < 0; }).length;
+		d.layers = d.layers.filter(function (x) { return blocks.indexOf(x) < 0; }); G.group = parent; members.forEach(function (L) { L.group = G.id; });
+		Array.prototype.splice.apply(d.layers, [before, 0].concat(blocks, [G])); d.activeId = G.id; PE.relink(); PE.commit("Group layers"); return G;
+	};
+	PE.ungroup = function (G) {
+		G = G || PE.active(); if (!PE.isGroup(G)) { PE.toast("Select a group first"); return; } var d = PE.doc, kids = PE.kidsOf(G); kids.forEach(function (k) { k.group = G.group; });
+		d.layers = d.layers.filter(function (x) { return x !== G; }); d.activeId = kids.length ? kids[kids.length - 1].id : (d.layers[d.layers.length - 1] || {}).id; PE.relink(); PE.commit("Ungroup");
 	};
 	PE.mergeLayers = function (list, label) {
-		var d = PE.doc; list = d.layers.filter(function (L) { return list.indexOf(L) >= 0; }); if (list.length < 2) return;
+		var d = PE.doc; list = d.layers.filter(function (L) { return list.indexOf(L) >= 0 && !PE.isGroup(L); }); if (list.length < 2) return; PE.relink();
 		var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; list.forEach(function (L) { var b = PE.bounds(L); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); });
 		x0 = Math.floor(x0); y0 = Math.floor(y0); var W = Math.ceil(x1) - x0, Hh = Math.ceil(y1) - y0; if (W * Hh > PE.MAXAREA) { PE.toast("Merged layer would be too large"); return; }
 		var c = mk(W, Hh), x = c.getContext("2d"); x.imageSmoothingQuality = "high"; list.forEach(function (L) { drawLayer(x, L, [1, 0, 0, 1, -x0, -y0], "merge", W, Hh); });
-		var top = list[list.length - 1], n = PE.makeLayer({ canvas: c, name: list[0].name, x: x0, y: y0 }), at = d.layers.indexOf(top);
-		d.layers = d.layers.filter(function (L) { return list.indexOf(L) < 0; }); d.layers.splice(Math.min(at - list.length + 1, d.layers.length), 0, n); d.activeId = n.id; PE.commit(label || "Merge layers");
+		var top = list[list.length - 1], n = PE.makeLayer({ canvas: c, name: list[0].name, x: x0, y: y0 }), at = d.layers.indexOf(top); n.group = top.group;
+		d.layers = d.layers.filter(function (L) { return list.indexOf(L) < 0; }); d.layers.splice(Math.min(at - list.length + 1, d.layers.length), 0, n); d.activeId = n.id; PE.relink(); PE.commit(label || "Merge layers");
 	};
-	PE.mergeDown = function () { var L = PE.active(), i = PE.indexOf(L); if (i < 1) { PE.toast("There is no layer below"); return; } PE.mergeLayers([PE.doc.layers[i - 1], L], "Merge down"); };
-	PE.mergeVisible = function () { PE.mergeLayers(PE.doc.layers.filter(function (L) { return L.visible; }), "Merge visible"); };
-	PE.flattenImage = function () { var all = PE.doc.layers.slice(); if (all.length < 2) return; all.forEach(function (L) { L.visible = true; }); PE.mergeLayers(all, "Flatten image"); var L = PE.active(); L.name = "Background"; };
+	PE.mergeDown = function () { var d = PE.doc, L = PE.active(), i = PE.indexOf(L); if (!L || PE.isGroup(L)) { PE.toast("Select a normal layer to merge"); return; } var below = d.layers[i - 1]; if (!below || PE.isGroup(below) || below.group !== L.group) { PE.toast("There is no layer directly below in this group"); return; } PE.mergeLayers([below, L], "Merge down"); };
+	PE.mergeVisible = function () { PE.relink(); PE.mergeLayers(PE.doc.layers.filter(function (L) { return PE.effVisible(L) && !PE.isGroup(L); }), "Merge visible"); };
+	PE.flattenImage = function () { var d = PE.doc, all = d.layers.filter(function (L) { return !PE.isGroup(L) && PE.effVisible(L); }); if (all.length < 2 && d.layers.length === all.length) return; d.layers.forEach(function (L) { L.group = null; }); PE.relink(); PE.mergeLayers(all, "Flatten image"); d.layers = d.layers.filter(function (L) { return !PE.isGroup(L); }); var L = PE.active(); if (L) L.name = "Background"; PE.commit("Flatten image"); };
 	PE.layerFromSelection = function (cut) {
 		var L = PE.active(), b = PE.selBounds(); if (!L || !b) { PE.toast("Make a selection first"); return; }
 		var c = mk(b.w, b.h), x = c.getContext("2d"); drawLayer(x, L, [1, 0, 0, 1, -b.x, -b.y], "sel", b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h);
 		var n = PE.makeLayer({ canvas: c, name: (cut ? "Cut" : "Copy") + " of " + L.name, x: b.x, y: b.y });
 		if (cut && PE.prepare(L, false, true)) { var o = PE.origin(L), lx = L.canvas.getContext("2d"); lx.save(); lx.globalCompositeOperation = "destination-out"; lx.drawImage(PE.sel.c, -o.x, -o.y); lx.restore(); L.rev++; }
-		PE.addLayer(n, PE.indexOf(L) + 1); PE.commit(cut ? "Layer via cut" : "Layer via copy");
+		n.group = L.group; PE.addLayer(n, PE.indexOf(L) + 1); PE.commit(cut ? "Layer via cut" : "Layer via copy");
 	};
 	PE.addMask = function (L, fromSel) {
 		L = L || PE.active(); if (!L || L.mask) return; PE.bake(L); var m = mk(L.canvas.width, L.canvas.height), x = m.getContext("2d");
@@ -322,6 +371,18 @@
 	};
 	PE.applyMask = function (L) { L = L || PE.active(); if (!L || !L.mask) return; PE.bake(L); var x = L.canvas.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-in"; x.drawImage(L.mask, 0, 0); x.restore(); L.mask = null; L.editMask = false; L.rev++; PE.commit("Apply layer mask"); };
 	PE.deleteMask = function (L) { L = L || PE.active(); if (!L || !L.mask) return; L.mask = null; L.editMask = false; L.rev++; PE.commit("Delete layer mask"); };
+
+	/* ---------- comps (scenes): named states of every layer's visibility, position, scale, rotation, opacity and blend mode (like Photoshop layer comps). Layers that did not exist when a comp was
+	   saved are hidden when it is applied, so a comp always shows what it showed. "Export all comps" turns one project with many groups into a set of pictures. ---------- */
+	PE.compCapture = function () { var st = {}; PE.doc.layers.forEach(function (L) { st[L.id] = { v: L.visible ? 1 : 0, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, o: L.opacity, b: L.blend }; }); return st; };
+	PE.compSave = function (name) { var d = PE.doc; d.comps = d.comps || []; var c = { id: "c" + (d.next++), name: name || "Comp " + (d.comps.length + 1), st: PE.compCapture() }; d.comps.push(c); PE.commit("Save comp \"" + c.name + "\""); PE.emit("comps"); return c; };
+	PE.compUpdate = function (c) { c.st = PE.compCapture(); PE.commit("Update comp \"" + c.name + "\""); PE.emit("comps"); };
+	PE.compApplyState = function (c) { var d = PE.doc; d.layers.forEach(function (L) { var s = c.st[L.id]; if (!s) { L.visible = false; return; } L.visible = !!s.v; L.cx = s.cx; L.cy = s.cy; L.sx = s.sx; L.sy = s.sy; L.rot = s.rot; L.opacity = s.o; L.blend = s.b; L.rev++; }); PE.relink(); PE.invalidate(); };
+	PE.compApply = function (c) { PE.compApplyState(c); PE.commit("Show comp \"" + c.name + "\""); PE.emit("comps"); };
+	PE.compMatches = function (c) { var d = PE.doc, ok = true; d.layers.forEach(function (L) { var s = c.st[L.id]; if (!s) { if (L.visible) ok = false; return; } if (!!s.v !== L.visible || Math.abs(s.cx - L.cx) > 0.01 || Math.abs(s.cy - L.cy) > 0.01 || s.sx !== L.sx || s.sy !== L.sy || s.rot !== L.rot || Math.abs(s.o - L.opacity) > 0.001 || s.b !== L.blend) ok = false; }); return ok; };
+	PE.compDelete = function (c) { var d = PE.doc; d.comps = d.comps.filter(function (x) { return x !== c; }); PE.commit("Delete comp"); PE.emit("comps"); };
+	PE.compRename = function (c, name) { c.name = name; PE.commit("Rename comp"); PE.emit("comps"); };
+	PE.compMove = function (c, dir) { var a = PE.doc.comps, i = a.indexOf(c), j = i + dir; if (j < 0 || j >= a.length) return; a.splice(i, 1); a.splice(j, 0, c); PE.commit("Reorder comps"); PE.emit("comps"); };
 
 	/* ---------- image-level operations ---------- */
 	PE.cropTo = function (x, y, w, h) {
@@ -358,7 +419,7 @@
 		var d = PE.doc; d.layers.forEach(function (L) { if (horizontal) { L.cx = d.w - L.cx; L.sx = -L.sx; L.rot = -L.rot; } else { L.cy = d.h - L.cy; L.sy = -L.sy; L.rot = -L.rot; } });
 		PE.sel = null; PE.emit("sel"); PE.commit("Flip " + (horizontal ? "horizontal" : "vertical")); PE.invalidate();
 	};
-	PE.flipLayer = function (horizontal) { var L = PE.active(); if (!L) return; if (horizontal) { L.sx = -L.sx; L.rot = -L.rot; } else { L.sy = -L.sy; L.rot = -L.rot; } PE.touch(L); PE.commit("Flip layer"); };
+	PE.flipLayer = function (horizontal) { var L = PE.active(); if (!L) return; if (PE.isGroup(L)) { PE.toast("Select a normal layer"); return; } if (horizontal) { L.sx = -L.sx; L.rot = -L.rot; } else { L.sy = -L.sy; L.rot = -L.rot; } PE.touch(L); PE.commit("Flip layer"); };
 	PE.trim = function () {
 		var d = PE.doc, c = PE.flatten(), id = c.getContext("2d").getImageData(0, 0, c.width, c.height), b = P.opaqueBounds(id.data, c.width, c.height, 0);
 		if (!b) { PE.toast("Nothing to trim: the image is empty"); return; } if (b.w === d.w && b.h === d.h) { PE.toast("No transparent edges to trim"); return; } PE.cropTo(b.x, b.y, b.w, b.h);
@@ -376,12 +437,12 @@
 	PE.projectBlob = function () {
 		var d = PE.doc, files = [], metas = [], jobs = [];
 		d.layers.forEach(function (L) {
-			var m = { id: L.id, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask }; metas.push(m);
+			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask }; metas.push(m);
 			jobs.push(canvasBytes(L.canvas).then(function (u) { files.push({ name: "layer-" + L.id + ".png", data: u }); }));
 			if (L.mask) jobs.push(canvasBytes(L.mask).then(function (u) { files.push({ name: "mask-" + L.id + ".png", data: u }); }));
 		});
 		return Promise.all(jobs).then(function () {
-			files.unshift({ name: "project.json", data: new TextEncoder().encode(JSON.stringify({ app: "MES Photo Editor", v: 1, w: d.w, h: d.h, name: d.name, active: d.activeId, next: d.next, layers: metas })) });
+			files.unshift({ name: "project.json", data: new TextEncoder().encode(JSON.stringify({ app: "MES Photo Editor", v: 2, w: d.w, h: d.h, name: d.name, active: d.activeId, next: d.next, layers: metas, comps: d.comps || [] })) });
 			return new Blob([I.zipStore(files)], { type: "application/zip" });
 		});
 	};
@@ -391,9 +452,9 @@
 		var by = {}; files.forEach(function (f) { by[f.name] = f.data; }); if (!by["project.json"]) return Promise.reject(new Error("Not a MES project file"));
 		var p = JSON.parse(new TextDecoder().decode(by["project.json"])), layers = [];
 		return Promise.all(p.layers.map(function (m, i) {
-			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked"].forEach(function (k) { L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
+			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
-			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled" }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
+			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [] }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
 		});
 	};

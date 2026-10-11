@@ -357,30 +357,50 @@ var MESPixel = (function () {
 		o = o || {}; var d = PE.doc, w = o.w || (d ? d.w : 1), h = o.h || (d ? d.h : 1);
 		var c = o.canvas || mk(w, h);
 		return { id: d ? d.next++ : 1, name: o.name || "Layer", type: o.type || "raster", canvas: c, cx: o.cx != null ? o.cx : (o.x || 0) + c.width / 2, cy: o.cy != null ? o.cy : (o.y || 0) + c.height / 2,
-			sx: 1, sy: 1, rot: 0, visible: true, opacity: 1, blend: "source-over", locked: false, text: o.text || null, mask: null, editMask: false, rev: 0, _snap: null };
+			sx: 1, sy: 1, rot: 0, visible: true, opacity: 1, blend: "source-over", locked: false, text: o.text || null, mask: null, editMask: false, rev: 0, _snap: null, group: null, collapsed: false, _p: null };
 	};
 	PE.active = function () { var d = PE.doc; if (!d) return null; for (var i = 0; i < d.layers.length; i++) if (d.layers[i].id === d.activeId) return d.layers[i]; return d.layers[d.layers.length - 1] || null; };
 	PE.layerById = function (id) { var d = PE.doc; for (var i = 0; i < d.layers.length; i++) if (d.layers[i].id === id) return d.layers[i]; return null; };
 	PE.indexOf = function (L) { return PE.doc.layers.indexOf(L); };
 	PE.setActive = function (id) { PE.doc.activeId = id; PE.emit("layers"); PE.emit("active"); };
 	PE.touch = function (L) { if (L) L.rev++; PE.invalidate(); };
+	/* ---------- groups: a group is a header layer (type "group", 1x1 canvas) that comes AFTER its members in the flat array; members point at it with `group` (its id). Members are always contiguous. ---------- */
+	PE.isGroup = function (L) { return !!L && L.type === "group"; };
+	PE.makeGroup = function (name) { var G = PE.makeLayer({ name: name || "Group", w: 1, h: 1, type: "group" }); return G; };
+	PE.relink = function () { var d = PE.doc, m = {}; d.layers.forEach(function (L) { m[L.id] = L; }); d.layers.forEach(function (L) { L._p = L.group != null ? (m[L.group] || null) : null; }); };
+	PE.kidsOf = function (G) { return PE.doc.layers.filter(function (L) { return L.group === G.id; }); };
+	PE.descendants = function (G) { var out = [], d = PE.doc; (function walk(g) { d.layers.forEach(function (L) { if (L.group === g.id) { if (PE.isGroup(L)) walk(L); out.push(L); } }); })(G); return d.layers.filter(function (L) { return out.indexOf(L) >= 0; }); };
+	PE.blockOf = function (L) { return PE.isGroup(L) ? PE.descendants(L).concat([L]) : [L]; };
+	PE.ancestorsOf = function (L) { var out = [], d = PE.doc, p = L.group; while (p != null) { var g = PE.layerById(p); if (!g) break; out.push(g); p = g.group; } return out; };
+	PE.depthOf = function (L) { return PE.ancestorsOf(L).length; };
+	PE.topGroupOf = function (L) { var a = PE.ancestorsOf(L); return a.length ? a[a.length - 1] : L; };
+	PE.effVisible = function (L) { if (!L.visible) return false; for (var p = L._p; p; p = p._p) if (!p.visible) return false; return true; };
+	PE.translate = function (L, dx, dy) { if (PE.isGroup(L)) PE.descendants(L).forEach(function (k) { if (!PE.isGroup(k)) { k.cx += dx; k.cy += dy; k.rev++; } }); else { L.cx += dx; L.cy += dy; } PE.invalidate(); };
+	PE.groupBounds = function (G) { var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, any = false; PE.descendants(G).forEach(function (k) { if (PE.isGroup(k)) return; var b = PE.bounds(k); any = true; x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); }); return any ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : { x: 0, y: 0, w: 0, h: 0 }; };
 	PE.addLayer = function (L, index) {
-		var d = PE.doc; if (index == null) { var a = PE.active(); index = a ? d.layers.indexOf(a) + 1 : d.layers.length; }
-		d.layers.splice(index, 0, L); d.activeId = L.id; PE.emit("layers"); PE.invalidate(); return L;
+		var d = PE.doc;
+		if (index == null) {
+			var a = PE.active();
+			if (!a) index = d.layers.length;
+			else if (PE.isGroup(a)) { if (!a.collapsed) { L.group = a.id; index = d.layers.indexOf(a); } else { L.group = a.group; index = d.layers.indexOf(a) + 1; } }
+			else { L.group = a.group; index = d.layers.indexOf(a) + 1; }
+		}
+		d.layers.splice(index, 0, L); d.activeId = L.id; PE.relink(); PE.emit("layers"); PE.invalidate(); return L;
 	};
 	PE.origin = function (L) { return { x: Math.round(L.cx - L.canvas.width / 2), y: Math.round(L.cy - L.canvas.height / 2) }; };
 	PE.isIdentity = function (L) { return L.sx === 1 && L.sy === 1 && L.rot === 0; };
 	function matrix(L) { var c = Math.cos(L.rot), s = Math.sin(L.rot); return [c * L.sx, s * L.sx, -s * L.sy, c * L.sy, L.cx, L.cy]; }
 	PE.corners = function (L) {
+		if (PE.isGroup(L)) { var gb = PE.groupBounds(L); return [[gb.x, gb.y], [gb.x + gb.w, gb.y], [gb.x + gb.w, gb.y + gb.h], [gb.x, gb.y + gb.h]]; }
 		var m = matrix(L), hw = L.canvas.width / 2, hh = L.canvas.height / 2;
 		return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(function (p) { return [m[0] * p[0] + m[2] * p[1] + m[4], m[1] * p[0] + m[3] * p[1] + m[5]]; });
 	};
-	PE.bounds = function (L) { var c = PE.corners(L), x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; c.forEach(function (p) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; };
+	PE.bounds = function (L) { if (PE.isGroup(L)) return PE.groupBounds(L); var c = PE.corners(L), x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; c.forEach(function (p) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; };
 	PE.toLayerPt = function (L, x, y) { var c = Math.cos(L.rot), s = Math.sin(L.rot), dx = x - L.cx, dy = y - L.cy; return { x: (c * dx + s * dy) / L.sx + L.canvas.width / 2, y: (-s * dx + c * dy) / L.sy + L.canvas.height / 2 }; };
 	PE.layerAt = function (x, y) {
 		var ls = PE.doc.layers;
 		for (var i = ls.length - 1; i >= 0; i--) {
-			var L = ls[i]; if (!L.visible) continue; var p = PE.toLayerPt(L, x, y);
+			var L = ls[i]; if (PE.isGroup(L) || !PE.effVisible(L)) continue; var p = PE.toLayerPt(L, x, y);
 			if (p.x < 0 || p.y < 0 || p.x >= L.canvas.width || p.y >= L.canvas.height) continue;
 			try { if (L.canvas.getContext("2d").getImageData(p.x | 0, p.y | 0, 1, 1).data[3] > 8) return L; } catch (e) { return L; }
 		}
@@ -410,6 +430,7 @@ var MESPixel = (function () {
 	PE.prepare = function (L, quiet, noGrow) {
 		if (!L) { if (!quiet) PE.toast("Add or open an image first"); return false; }
 		if (L.locked) { if (!quiet) PE.toast("This layer is locked"); return false; }
+		if (PE.isGroup(L)) { if (!quiet) PE.toast("This is a group: select a layer inside it"); return false; }
 		if (L.type === "text") { PE.rasterize(L); PE.emit("layers"); }
 		PE.bake(L); if (!noGrow) PE.growLayer(L, { x: 0, y: 0, w: PE.doc.w, h: PE.doc.h }); return true;
 	};
@@ -438,11 +459,11 @@ var MESPixel = (function () {
 
 	/* ---------- compositing ---------- */
 	function drawLayer(ctx, L, base, tmpKey, w, h) {
-		if (!L.visible || L.opacity <= 0) return;
+		if (PE.isGroup(L) || !L.visible) return; var op = L.opacity; for (var gp = L._p; gp; gp = gp._p) { if (!gp.visible) return; op *= gp.opacity; } if (op <= 0) return;
 		var src = L.preview || L.canvas, cw = L.canvas.width, ch = L.canvas.height, m = matrix(L);
 		var needTmp = L.mask || L.live;
 		if (!needTmp) {
-			ctx.save(); ctx.globalAlpha = L.opacity; ctx.globalCompositeOperation = L.blend;
+			ctx.save(); ctx.globalAlpha = op; ctx.globalCompositeOperation = L.blend;
 			ctx.setTransform(base[0] * m[0] + base[2] * m[1], base[1] * m[0] + base[3] * m[1], base[0] * m[2] + base[2] * m[3], base[1] * m[2] + base[3] * m[3], base[0] * m[4] + base[2] * m[5] + base[4], base[1] * m[4] + base[3] * m[5] + base[5]);
 			ctx.drawImage(src, -cw / 2, -ch / 2, cw, ch); ctx.restore(); return;
 		}
@@ -456,12 +477,12 @@ var MESPixel = (function () {
 			if (L.live && L.live.target === "mask") { var mm = PE.tmp(tmpKey + "m", L.mask.width, L.mask.height), mc = mm.getContext("2d"); mc.drawImage(L.mask, 0, 0); mc.globalCompositeOperation = L.live.erase ? "destination-out" : "source-over"; mc.globalAlpha = L.live.alpha; mc.drawImage(L.live.buf, 0, 0); tx.drawImage(mm, -cw / 2, -ch / 2); }
 			else tx.drawImage(L.mask, -cw / 2, -ch / 2);
 		}
-		ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = L.opacity; ctx.globalCompositeOperation = L.blend; ctx.drawImage(t, 0, 0); ctx.restore();
+		ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = op; ctx.globalCompositeOperation = L.blend; ctx.drawImage(t, 0, 0); ctx.restore();
 	}
 	PE.drawLayer = drawLayer;
 	/* the whole picture as a document-size canvas (export, copy merged, thumbnails) */
 	PE.flatten = function (o) {
-		o = o || {}; var d = PE.doc, sc = o.scale || 1, W = Math.max(1, Math.round(d.w * sc)), H = Math.max(1, Math.round(d.h * sc)), c = mk(W, H), x = c.getContext("2d");
+		o = o || {}; var d = PE.doc; PE.relink(); var sc = o.scale || 1, W = Math.max(1, Math.round(d.w * sc)), H = Math.max(1, Math.round(d.h * sc)), c = mk(W, H), x = c.getContext("2d");
 		if (o.fill) { x.fillStyle = o.fill; x.fillRect(0, 0, W, H); }
 		x.imageSmoothingQuality = "high";
 		d.layers.forEach(function (L) { if (o.only && o.only.indexOf(L) < 0) return; drawLayer(x, L, [sc, 0, 0, sc, 0, 0], "exp", W, H); });
@@ -493,7 +514,7 @@ var MESPixel = (function () {
 		var W = Math.round(v.w * v.dpr), H = Math.round(v.h * v.dpr);
 		if (c.width !== W || c.height !== H) { c.width = W; c.height = H; checker = null; }
 		var ctx = c.getContext("2d"); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = "#1b1b1f"; ctx.fillRect(0, 0, W, H);
-		var d = PE.doc; if (!d) return;
+		var d = PE.doc; if (!d) return; PE.relink();
 		var z = v.zoom * v.dpr, ox = v.px * v.dpr, oy = v.py * v.dpr, rx = ox, ry = oy, rw = d.w * z, rh = d.h * z;
 		ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = 18 * v.dpr; ctx.fillStyle = "#000"; ctx.fillRect(rx, ry, rw, rh); ctx.restore();
 		ctx.save(); ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.clip();
@@ -563,13 +584,13 @@ var MESPixel = (function () {
 	var H = PE.hist = { stack: [], idx: -1 };
 	function snapLayer(L) {
 		var s = L._snap; if (!s || s.rev !== L.rev || (L.mask ? !s.m : !!s.m)) { s = L._snap = { rev: L.rev, c: clone(L.canvas), m: L.mask ? clone(L.mask) : null }; }
-		return { meta: { id: L.id, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, editMask: L.editMask }, snap: s };
+		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, editMask: L.editMask }, snap: s };
 	}
 	var lastSel = { ver: -1, obj: null };
 	function takeSnapshot(label) {
 		var d = PE.doc, sel = null;
 		if (PE.sel) { if (lastSel.obj && lastSel.ver === PE.sel.ver && lastSel.c === PE.sel.c) sel = lastSel.snap; else { sel = clone(PE.sel.c); lastSel = { ver: PE.sel.ver, c: PE.sel.c, snap: sel, obj: PE.sel }; } }
-		return { label: label, w: d.w, h: d.h, active: d.activeId, layers: d.layers.map(snapLayer), sel: sel, t: Date.now() };
+		return { label: label, w: d.w, h: d.h, active: d.activeId, layers: d.layers.map(snapLayer), sel: sel, comps: JSON.stringify(d.comps || []), t: Date.now() };
 	}
 	PE.commit = function (label) {
 		if (!PE.doc) return; PE.dirty = true;
@@ -582,8 +603,8 @@ var MESPixel = (function () {
 		var d = PE.doc; d.w = e.w; d.h = e.h; d.layers = e.layers.map(function (l) {
 			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text") L[k] = l.meta[k]; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null;
 			L.mask = l.snap.m ? clone(l.snap.m) : null; L.rev = l.snap.rev; L._snap = l.snap; return L; });
-		d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
-		PE.sel = e.sel ? { c: clone(e.sel), ver: ++PE.selSeq } : null; PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("docsize"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
+		d.comps = JSON.parse(e.comps || "[]"); d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
+		PE.sel = e.sel ? { c: clone(e.sel), ver: ++PE.selSeq } : null; PE.relink(); PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("comps"); PE.emit("docsize"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
 	}
 	PE.selSeq = 1000;
 	PE.undo = function () { if (H.idx > 0) { H.idx--; restore(H.stack[H.idx]); } };
@@ -593,7 +614,7 @@ var MESPixel = (function () {
 	/* ---------- documents ---------- */
 	PE.newDoc = function (w, h, bg, name) {
 		w = Math.round(w); h = Math.round(h); if (!(w > 0 && h > 0) || w > PE.MAXPX || h > PE.MAXPX || w * h > PE.MAXAREA) { PE.toast("That size is too large for a browser (max " + PE.MAXPX + " px a side)"); return false; }
-		PE.doc = { w: w, h: h, layers: [], activeId: 0, next: 1, name: name || "Untitled" }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
+		PE.doc = { w: w, h: h, layers: [], activeId: 0, next: 1, name: name || "Untitled", comps: [] }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 		var L = PE.makeLayer({ name: bg ? "Background" : "Layer 1" }); if (bg) { var x = L.canvas.getContext("2d"); x.fillStyle = bg; x.fillRect(0, 0, w, h); }
 		PE.doc.layers.push(L); PE.doc.activeId = L.id; PE.commit("New document"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit(); return true;
 	};
@@ -620,34 +641,62 @@ var MESPixel = (function () {
 	/* ---------- layer commands ---------- */
 	PE.newRasterLayer = function (name) { PE.addLayer(PE.makeLayer({ name: name || "Layer " + PE.doc.next })); PE.commit("New layer"); };
 	PE.duplicateLayer = function (L) {
-		L = L || PE.active(); if (!L) return; var n = PE.makeLayer({ canvas: clone(L.canvas), type: L.type, name: L.name + " copy", text: L.text ? JSON.parse(JSON.stringify(L.text)) : null });
-		["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend"].forEach(function (k) { n[k] = L[k]; }); if (L.mask) n.mask = clone(L.mask);
-		PE.addLayer(n, PE.indexOf(L) + 1); PE.commit("Duplicate layer");
+		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
+			var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (B === L ? " copy" : ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null }); map[B.id] = n;
+			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed"].forEach(function (k) { n[k] = B[k]; }); if (B.mask) n.mask = clone(B.mask); return n; });
+		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
+		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
 	};
 	PE.deleteLayer = function (L) {
-		L = L || PE.active(); if (!L) return; var d = PE.doc, i = d.layers.indexOf(L); d.layers.splice(i, 1);
-		if (!d.layers.length) { d.layers.push(PE.makeLayer({ name: "Layer 1" })); } d.activeId = d.layers[Math.min(i, d.layers.length - 1)].id; PE.commit("Delete layer");
+		L = L || PE.active(); if (!L) return; var d = PE.doc, i = d.layers.indexOf(L), gone = PE.blockOf(L);
+		d.layers = d.layers.filter(function (x) { return gone.indexOf(x) < 0; });
+		if (!d.layers.length) d.layers.push(PE.makeLayer({ name: "Layer 1" })); d.activeId = d.layers[Math.max(0, Math.min(i - gone.length + 1, d.layers.length - 1))].id; PE.relink(); PE.commit("Delete " + (PE.isGroup(L) ? "group" : "layer"));
+	};
+	/* move a layer (with its members, if a group) next to `target`: zone "above" (higher in the stack) / "below" / "into" (target is a group: becomes its top member) */
+	PE.relocate = function (src, target, zone) {
+		var d = PE.doc; if (!src || !target || src === target) return false;
+		if (PE.isGroup(src) && PE.descendants(src).indexOf(target) >= 0) return false;
+		var block = PE.blockOf(src); d.layers = d.layers.filter(function (x) { return block.indexOf(x) < 0; });
+		var ti = d.layers.indexOf(target), at, parent;
+		if (zone === "into" && PE.isGroup(target)) { parent = target.id; at = ti; }
+		else { parent = target.group; if (zone === "below") { at = ti - (PE.isGroup(target) ? PE.descendants(target).length : 0); } else at = ti + 1; }
+		src.group = parent; Array.prototype.splice.apply(d.layers, [Math.max(0, at), 0].concat(block)); PE.relink(); PE.commit("Reorder layers"); return true;
 	};
 	PE.moveLayer = function (L, to) {
-		var d = PE.doc, i = d.layers.indexOf(L); to = Math.max(0, Math.min(d.layers.length - 1, to)); if (i === to) return; d.layers.splice(i, 1); d.layers.splice(to, 0, L); PE.commit("Reorder layers");
+		var d = PE.doc; var sibs = d.layers.filter(function (x) { return x.group === L.group; }), i = sibs.indexOf(L), t = Math.max(0, Math.min(sibs.length - 1, to)); if (i < 0 || i === t) return;
+		var other = sibs[t]; PE.relocate(L, other, t > i ? "above" : "below");
+	};
+	PE.stepLayer = function (L, dir) { var sibs = PE.doc.layers.filter(function (x) { return x.group === L.group; }), i = sibs.indexOf(L); PE.moveLayer(L, i + dir); };
+	PE.groupLayers = function (list) {
+		var d = PE.doc; list = (list || []).filter(Boolean); if (!list.length) { PE.toast("Select the layers to group (Ctrl-click in the Layers panel)"); return null; }
+		list.sort(function (a, b) { return d.layers.indexOf(a) - d.layers.indexOf(b); }); var top = list[list.length - 1], parent = top.group;
+		var members = list.filter(function (L) { return L.group === parent; }); if (!members.length) members = [top];
+		var blocks = []; members.forEach(function (L) { PE.blockOf(L).forEach(function (B) { if (blocks.indexOf(B) < 0) blocks.push(B); }); }); blocks = d.layers.filter(function (x) { return blocks.indexOf(x) >= 0; });
+		var G = PE.makeGroup("Group " + d.next), topIdx = d.layers.indexOf(top), before = d.layers.slice(0, topIdx + 1).filter(function (x) { return blocks.indexOf(x) < 0; }).length;
+		d.layers = d.layers.filter(function (x) { return blocks.indexOf(x) < 0; }); G.group = parent; members.forEach(function (L) { L.group = G.id; });
+		Array.prototype.splice.apply(d.layers, [before, 0].concat(blocks, [G])); d.activeId = G.id; PE.relink(); PE.commit("Group layers"); return G;
+	};
+	PE.ungroup = function (G) {
+		G = G || PE.active(); if (!PE.isGroup(G)) { PE.toast("Select a group first"); return; } var d = PE.doc, kids = PE.kidsOf(G); kids.forEach(function (k) { k.group = G.group; });
+		d.layers = d.layers.filter(function (x) { return x !== G; }); d.activeId = kids.length ? kids[kids.length - 1].id : (d.layers[d.layers.length - 1] || {}).id; PE.relink(); PE.commit("Ungroup");
 	};
 	PE.mergeLayers = function (list, label) {
-		var d = PE.doc; list = d.layers.filter(function (L) { return list.indexOf(L) >= 0; }); if (list.length < 2) return;
+		var d = PE.doc; list = d.layers.filter(function (L) { return list.indexOf(L) >= 0 && !PE.isGroup(L); }); if (list.length < 2) return; PE.relink();
 		var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; list.forEach(function (L) { var b = PE.bounds(L); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); });
 		x0 = Math.floor(x0); y0 = Math.floor(y0); var W = Math.ceil(x1) - x0, Hh = Math.ceil(y1) - y0; if (W * Hh > PE.MAXAREA) { PE.toast("Merged layer would be too large"); return; }
 		var c = mk(W, Hh), x = c.getContext("2d"); x.imageSmoothingQuality = "high"; list.forEach(function (L) { drawLayer(x, L, [1, 0, 0, 1, -x0, -y0], "merge", W, Hh); });
-		var top = list[list.length - 1], n = PE.makeLayer({ canvas: c, name: list[0].name, x: x0, y: y0 }), at = d.layers.indexOf(top);
-		d.layers = d.layers.filter(function (L) { return list.indexOf(L) < 0; }); d.layers.splice(Math.min(at - list.length + 1, d.layers.length), 0, n); d.activeId = n.id; PE.commit(label || "Merge layers");
+		var top = list[list.length - 1], n = PE.makeLayer({ canvas: c, name: list[0].name, x: x0, y: y0 }), at = d.layers.indexOf(top); n.group = top.group;
+		d.layers = d.layers.filter(function (L) { return list.indexOf(L) < 0; }); d.layers.splice(Math.min(at - list.length + 1, d.layers.length), 0, n); d.activeId = n.id; PE.relink(); PE.commit(label || "Merge layers");
 	};
-	PE.mergeDown = function () { var L = PE.active(), i = PE.indexOf(L); if (i < 1) { PE.toast("There is no layer below"); return; } PE.mergeLayers([PE.doc.layers[i - 1], L], "Merge down"); };
-	PE.mergeVisible = function () { PE.mergeLayers(PE.doc.layers.filter(function (L) { return L.visible; }), "Merge visible"); };
-	PE.flattenImage = function () { var all = PE.doc.layers.slice(); if (all.length < 2) return; all.forEach(function (L) { L.visible = true; }); PE.mergeLayers(all, "Flatten image"); var L = PE.active(); L.name = "Background"; };
+	PE.mergeDown = function () { var d = PE.doc, L = PE.active(), i = PE.indexOf(L); if (!L || PE.isGroup(L)) { PE.toast("Select a normal layer to merge"); return; } var below = d.layers[i - 1]; if (!below || PE.isGroup(below) || below.group !== L.group) { PE.toast("There is no layer directly below in this group"); return; } PE.mergeLayers([below, L], "Merge down"); };
+	PE.mergeVisible = function () { PE.relink(); PE.mergeLayers(PE.doc.layers.filter(function (L) { return PE.effVisible(L) && !PE.isGroup(L); }), "Merge visible"); };
+	PE.flattenImage = function () { var d = PE.doc, all = d.layers.filter(function (L) { return !PE.isGroup(L) && PE.effVisible(L); }); if (all.length < 2 && d.layers.length === all.length) return; d.layers.forEach(function (L) { L.group = null; }); PE.relink(); PE.mergeLayers(all, "Flatten image"); d.layers = d.layers.filter(function (L) { return !PE.isGroup(L); }); var L = PE.active(); if (L) L.name = "Background"; PE.commit("Flatten image"); };
 	PE.layerFromSelection = function (cut) {
 		var L = PE.active(), b = PE.selBounds(); if (!L || !b) { PE.toast("Make a selection first"); return; }
 		var c = mk(b.w, b.h), x = c.getContext("2d"); drawLayer(x, L, [1, 0, 0, 1, -b.x, -b.y], "sel", b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h);
 		var n = PE.makeLayer({ canvas: c, name: (cut ? "Cut" : "Copy") + " of " + L.name, x: b.x, y: b.y });
 		if (cut && PE.prepare(L, false, true)) { var o = PE.origin(L), lx = L.canvas.getContext("2d"); lx.save(); lx.globalCompositeOperation = "destination-out"; lx.drawImage(PE.sel.c, -o.x, -o.y); lx.restore(); L.rev++; }
-		PE.addLayer(n, PE.indexOf(L) + 1); PE.commit(cut ? "Layer via cut" : "Layer via copy");
+		n.group = L.group; PE.addLayer(n, PE.indexOf(L) + 1); PE.commit(cut ? "Layer via cut" : "Layer via copy");
 	};
 	PE.addMask = function (L, fromSel) {
 		L = L || PE.active(); if (!L || L.mask) return; PE.bake(L); var m = mk(L.canvas.width, L.canvas.height), x = m.getContext("2d");
@@ -656,6 +705,18 @@ var MESPixel = (function () {
 	};
 	PE.applyMask = function (L) { L = L || PE.active(); if (!L || !L.mask) return; PE.bake(L); var x = L.canvas.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-in"; x.drawImage(L.mask, 0, 0); x.restore(); L.mask = null; L.editMask = false; L.rev++; PE.commit("Apply layer mask"); };
 	PE.deleteMask = function (L) { L = L || PE.active(); if (!L || !L.mask) return; L.mask = null; L.editMask = false; L.rev++; PE.commit("Delete layer mask"); };
+
+	/* ---------- comps (scenes): named states of every layer's visibility, position, scale, rotation, opacity and blend mode (like Photoshop layer comps). Layers that did not exist when a comp was
+	   saved are hidden when it is applied, so a comp always shows what it showed. "Export all comps" turns one project with many groups into a set of pictures. ---------- */
+	PE.compCapture = function () { var st = {}; PE.doc.layers.forEach(function (L) { st[L.id] = { v: L.visible ? 1 : 0, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, o: L.opacity, b: L.blend }; }); return st; };
+	PE.compSave = function (name) { var d = PE.doc; d.comps = d.comps || []; var c = { id: "c" + (d.next++), name: name || "Comp " + (d.comps.length + 1), st: PE.compCapture() }; d.comps.push(c); PE.commit("Save comp \"" + c.name + "\""); PE.emit("comps"); return c; };
+	PE.compUpdate = function (c) { c.st = PE.compCapture(); PE.commit("Update comp \"" + c.name + "\""); PE.emit("comps"); };
+	PE.compApplyState = function (c) { var d = PE.doc; d.layers.forEach(function (L) { var s = c.st[L.id]; if (!s) { L.visible = false; return; } L.visible = !!s.v; L.cx = s.cx; L.cy = s.cy; L.sx = s.sx; L.sy = s.sy; L.rot = s.rot; L.opacity = s.o; L.blend = s.b; L.rev++; }); PE.relink(); PE.invalidate(); };
+	PE.compApply = function (c) { PE.compApplyState(c); PE.commit("Show comp \"" + c.name + "\""); PE.emit("comps"); };
+	PE.compMatches = function (c) { var d = PE.doc, ok = true; d.layers.forEach(function (L) { var s = c.st[L.id]; if (!s) { if (L.visible) ok = false; return; } if (!!s.v !== L.visible || Math.abs(s.cx - L.cx) > 0.01 || Math.abs(s.cy - L.cy) > 0.01 || s.sx !== L.sx || s.sy !== L.sy || s.rot !== L.rot || Math.abs(s.o - L.opacity) > 0.001 || s.b !== L.blend) ok = false; }); return ok; };
+	PE.compDelete = function (c) { var d = PE.doc; d.comps = d.comps.filter(function (x) { return x !== c; }); PE.commit("Delete comp"); PE.emit("comps"); };
+	PE.compRename = function (c, name) { c.name = name; PE.commit("Rename comp"); PE.emit("comps"); };
+	PE.compMove = function (c, dir) { var a = PE.doc.comps, i = a.indexOf(c), j = i + dir; if (j < 0 || j >= a.length) return; a.splice(i, 1); a.splice(j, 0, c); PE.commit("Reorder comps"); PE.emit("comps"); };
 
 	/* ---------- image-level operations ---------- */
 	PE.cropTo = function (x, y, w, h) {
@@ -692,7 +753,7 @@ var MESPixel = (function () {
 		var d = PE.doc; d.layers.forEach(function (L) { if (horizontal) { L.cx = d.w - L.cx; L.sx = -L.sx; L.rot = -L.rot; } else { L.cy = d.h - L.cy; L.sy = -L.sy; L.rot = -L.rot; } });
 		PE.sel = null; PE.emit("sel"); PE.commit("Flip " + (horizontal ? "horizontal" : "vertical")); PE.invalidate();
 	};
-	PE.flipLayer = function (horizontal) { var L = PE.active(); if (!L) return; if (horizontal) { L.sx = -L.sx; L.rot = -L.rot; } else { L.sy = -L.sy; L.rot = -L.rot; } PE.touch(L); PE.commit("Flip layer"); };
+	PE.flipLayer = function (horizontal) { var L = PE.active(); if (!L) return; if (PE.isGroup(L)) { PE.toast("Select a normal layer"); return; } if (horizontal) { L.sx = -L.sx; L.rot = -L.rot; } else { L.sy = -L.sy; L.rot = -L.rot; } PE.touch(L); PE.commit("Flip layer"); };
 	PE.trim = function () {
 		var d = PE.doc, c = PE.flatten(), id = c.getContext("2d").getImageData(0, 0, c.width, c.height), b = P.opaqueBounds(id.data, c.width, c.height, 0);
 		if (!b) { PE.toast("Nothing to trim: the image is empty"); return; } if (b.w === d.w && b.h === d.h) { PE.toast("No transparent edges to trim"); return; } PE.cropTo(b.x, b.y, b.w, b.h);
@@ -710,12 +771,12 @@ var MESPixel = (function () {
 	PE.projectBlob = function () {
 		var d = PE.doc, files = [], metas = [], jobs = [];
 		d.layers.forEach(function (L) {
-			var m = { id: L.id, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask }; metas.push(m);
+			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask }; metas.push(m);
 			jobs.push(canvasBytes(L.canvas).then(function (u) { files.push({ name: "layer-" + L.id + ".png", data: u }); }));
 			if (L.mask) jobs.push(canvasBytes(L.mask).then(function (u) { files.push({ name: "mask-" + L.id + ".png", data: u }); }));
 		});
 		return Promise.all(jobs).then(function () {
-			files.unshift({ name: "project.json", data: new TextEncoder().encode(JSON.stringify({ app: "MES Photo Editor", v: 1, w: d.w, h: d.h, name: d.name, active: d.activeId, next: d.next, layers: metas })) });
+			files.unshift({ name: "project.json", data: new TextEncoder().encode(JSON.stringify({ app: "MES Photo Editor", v: 2, w: d.w, h: d.h, name: d.name, active: d.activeId, next: d.next, layers: metas, comps: d.comps || [] })) });
 			return new Blob([I.zipStore(files)], { type: "application/zip" });
 		});
 	};
@@ -725,9 +786,9 @@ var MESPixel = (function () {
 		var by = {}; files.forEach(function (f) { by[f.name] = f.data; }); if (!by["project.json"]) return Promise.reject(new Error("Not a MES project file"));
 		var p = JSON.parse(new TextDecoder().decode(by["project.json"])), layers = [];
 		return Promise.all(p.layers.map(function (m, i) {
-			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked"].forEach(function (k) { L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
+			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
-			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled" }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
+			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [] }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
 		});
 	};
@@ -848,28 +909,34 @@ var MESPixel = (function () {
 		return PE.toScreen(L.cx + c * lx - s * ly, L.cy + s * lx + c * ly);
 	}
 	var mv = null;
-	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true },
-		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
+	function pickTarget(hit, L, groupsOn) {
+		if (!groupsOn) return hit; var anc = PE.ancestorsOf(hit); if (!anc.length) return hit; if (L === hit) return hit; if (L && anc.indexOf(L) >= 0) return L;
+		if (L && PE.topGroupOf(L) === PE.topGroupOf(hit)) return hit; return PE.topGroupOf(hit);
+	}
+	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, groups: true },
+		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
 		hint: "Drag to move. Drag a square handle to resize, just outside a corner to rotate (Shift = snap / keep proportions). Arrow keys nudge.",
 		down: function (e) {
 			var L = PE.active(), o = PE.opt.move, z = PE.view.zoom;
-			if (L && o.handles && L.visible) {
+			if (L && o.handles && L.visible && !PE.isGroup(L)) {
 				for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); if (Math.hypot(s.x - (e.sx - PE.els.over.getBoundingClientRect().left), s.y - (e.sy - PE.els.over.getBoundingClientRect().top)) < 9) { mv = { kind: "scale", L: L, h: HANDLES[i], sx0: L.sx, sy0: L.sy, cx0: L.cx, cy0: L.cy, rot: L.rot, p0: e }; return; } }
 				var rect = PE.els.over.getBoundingClientRect(), px = e.sx - rect.left, py = e.sy - rect.top;
 				var corners = [0, 2, 4, 6].map(function (k) { return handleScreen(L, HANDLES[k]); });
 				for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - px, corners[i].y - py); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(L, e.x, e.y)) { mv = { kind: "rot", L: L, a0: Math.atan2(e.y - L.cy, e.x - L.cx), rot0: L.rot }; return; } }
 			}
 			var hit = o.auto ? PE.layerAt(e.x, e.y) : null;
-			if (hit && hit !== L && PE.isBackdrop(hit)) hit = null;       // a full-canvas bottom layer is only moved when it was chosen in the Layers panel
+			if (hit && hit !== L && PE.isBackdrop(hit)) hit = null;
+			if (hit) hit = pickTarget(hit, L, o.groups);
 			if (o.auto && hit && hit !== L) { PE.setActive(hit.id); L = hit; }
 			else if (o.auto && !hit && !(L && PE.layerAtPoint(L, e.x, e.y))) { mv = null; return; }
 			if (!L || L.locked) { if (L && L.locked) PE.toast("This layer is locked"); return; }
-			mv = { kind: "move", L: L, cx0: L.cx, cy0: L.cy, p0: e, moved: false };
+			mv = { kind: "move", L: L, cx0: L.cx, cy0: L.cy, p0: e, moved: false, grp: PE.isGroup(L) ? PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).map(function (k) { return [k, k.cx, k.cy]; }) : null };
 		},
 		move: function (e) {
 			if (!mv) return; var L = mv.L;
 			if (mv.kind === "move") {
 				var dx = Math.round(e.x - mv.p0.x), dy = Math.round(e.y - mv.p0.y); if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; }
+				if (mv.grp) { mv.grp.forEach(function (g) { g[0].cx = g[1] + dx; g[0].cy = g[2] + dy; }); PE.guides = []; mv.moved = true; PE.invalidate(); return; }
 				L.cx = mv.cx0 + dx; L.cy = mv.cy0 + dy; PE.guides = [];
 				if (PE.opt.move.snap && !e.ctrl) {
 					var b = PE.bounds(L), th = 6 / PE.view.zoom, d = PE.doc, ax = [[b.x, 0], [b.x + b.w, d.w], [b.x + b.w / 2, d.w / 2], [b.x, d.w / 2 - b.w / 2 + b.x - b.x]];
@@ -888,16 +955,17 @@ var MESPixel = (function () {
 				L.sx = Math.sign(mv.sx0 || 1) * nw / L.canvas.width; L.sy = Math.sign(mv.sy0 || 1) * nh / L.canvas.height; L.cx = mv.cx0 + c * ncx - s * ncy; L.cy = mv.cy0 + s * ncx + c * ncy; mv.moved = true; PE.invalidate();
 			}
 		},
-		up: function () { var m = mv; mv = null; PE.guides = []; if (m && m.moved) { PE.touch(m.L); PE.commit(m.kind === "move" ? "Move layer" : m.kind === "rot" ? "Rotate layer" : "Resize layer"); } PE.invalidateOverlay(); },
+		up: function () { var m = mv; mv = null; PE.guides = []; if (m && m.moved) { PE.touch(m.L); PE.commit(m.kind === "move" ? (m.grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : "Resize layer"); } PE.invalidateOverlay(); },
 		abort: function () { if (mv) { var m = mv; m.L.cx = m.cx0 || m.L.cx; mv = null; } },
 		overlay: function (x, v) {
 			var L = PE.active(); if (!L || !PE.opt.move.handles || !L.visible) return;
+			if (PE.isGroup(L)) { var gb = PE.groupBounds(L), g0 = PE.toScreen(gb.x, gb.y), g1 = PE.toScreen(gb.x + gb.w, gb.y + gb.h); x.setLineDash([6, 4]); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.setLineDash([]); return; }
 			var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke();
 			for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); PE.handleBox(x, s.x, s.y, 4.5); }
 		} });
 	PE.isBackdrop = function (L) { var d = PE.doc, b = PE.bounds(L); return PE.indexOf(L) === 0 && PE.isIdentity(L) && b.x <= 1 && b.y <= 1 && b.x + b.w >= d.w - 1 && b.y + b.h >= d.h - 1; };
-	PE.layerAtPoint = function (L, x, y) { var p = PE.toLayerPt(L, x, y); return p.x >= 0 && p.y >= 0 && p.x < L.canvas.width && p.y < L.canvas.height; };
-	PE.nudge = function (dx, dy) { var L = PE.active(); if (!L || L.locked) return; L.cx += dx; L.cy += dy; PE.touch(L); clearTimeout(PE._nt); PE._nt = setTimeout(function () { PE.commit("Move layer"); }, 350); };
+	PE.layerAtPoint = function (L, x, y) { if (PE.isGroup(L)) { var gb = PE.groupBounds(L); return x >= gb.x && y >= gb.y && x <= gb.x + gb.w && y <= gb.y + gb.h; } var p = PE.toLayerPt(L, x, y); return p.x >= 0 && p.y >= 0 && p.x < L.canvas.width && p.y < L.canvas.height; };
+	PE.nudge = function (dx, dy) { var L = PE.active(); if (!L || L.locked) return; PE.translate(L, dx, dy); PE.touch(L); clearTimeout(PE._nt); PE._nt = setTimeout(function () { PE.commit("Move layer"); }, 350); };
 
 	/* ---------- selection tools ---------- */
 	function selMode(e) { var o = PE.opt[PE.toolId].mode || "new"; return e.shift && e.alt ? "int" : e.shift ? "add" : e.alt ? "sub" : o; }
@@ -1401,7 +1469,7 @@ var MESPixel = (function () {
 			{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download", primary: true, act: function (m) { var v = f.get(); PE.savedParams.export = v; getBlob(v).then(function (b) { PE.download(b, I.cleanFileName(v.name || "image") + "." + I.FORMATS[v.fmt].ext); PE.toast("Saved"); m.close(); }).catch(function (e) { PE.toast(e.message); }); } }] });
 	};
 	/* ---------- layer effects (new layer under the active one) + round corners + straighten ---------- */
-	function flatLayer(L) { var c = mk(L.canvas.width, L.canvas.height); PE.drawLayer(c.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", live: null, preview: null }), [1, 0, 0, 1, 0, 0], "fl", c.width, c.height); return c; }
+	function flatLayer(L) { var c = mk(L.canvas.width, L.canvas.height); PE.drawLayer(c.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", live: null, preview: null, _p: null }), [1, 0, 0, 1, 0, 0], "fl", c.width, c.height); return c; }
 	function effectDialog(kind) {
 		var L = PE.active(); if (!PE.doc || !L) { PE.toast("Open an image first"); return; } if (L.locked) { PE.toast("This layer is locked"); return; }
 		var shadow = kind === "shadow", params = shadow ? [{ k: "c", label: "Colour", type: "color", val: "#000000" }, P2("op", "Opacity", 5, 100, 55, 1, "%"), P2("blur", "Blur", 0, 80, 14, 1, "px"), P2("dx", "Offset X", -80, 80, 6, 1, "px"), P2("dy", "Offset Y", -80, 80, 8, 1, "px")] : [{ k: "c", label: "Colour", type: "color", val: PE.fg }, P2("w", "Width", 1, 60, 6, 1, "px")];
@@ -1431,6 +1499,26 @@ var MESPixel = (function () {
 		if (expand) { nw = Math.ceil(Math.abs(W * c) + Math.abs(H * s)); nh = Math.ceil(Math.abs(W * s) + Math.abs(H * c)); }
 		d.layers.forEach(function (L) { var dx = L.cx - W / 2, dy = L.cy - H / 2; L.cx = nw / 2 + dx * c - dy * s; L.cy = nh / 2 + dx * s + dy * c; L.rot += a; });
 		d.w = nw; d.h = nh; PE.sel = null; PE.emit("sel"); PE.emit("docsize"); PE.commit("Rotate " + deg + "°"); PE.fit();
+	};
+
+	/* ---------- export all comps as a set of pictures (one ZIP) ---------- */
+	PE.dlgExportComps = function () {
+		var d = PE.doc; if (!d) return; var comps = d.comps || []; if (!comps.length) { PE.toast("Save some comps first (Comps tab, + Save current view)"); return; }
+		var saved = PE.savedParams.expc || { fmt: "jpg", q: 90, mode: "doc", w: 1280, pat: "{project}-{n}-{comp}", bg: "#ffffff" };
+		var wrap = el("div"), f = PE.form([{ k: "fmt", label: "Format", type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"], ["webp", "WebP"]], val: saved.fmt }, { k: "q", label: "Quality", type: "range", min: 30, max: 100, step: 1, val: saved.q, unit: "%" }, { k: "mode", label: "Size", type: "select", options: [["doc", "Same as the image (" + d.w + " × " + d.h + ")"], ["width", "Fixed width"]], val: saved.mode }, { k: "w", label: "Width (px)", type: "number", val: saved.w, min: 16, max: 8000 }, { k: "bg", label: "Background (JPEG)", type: "color", val: saved.bg }, { k: "pat", label: "File names", type: "text", val: saved.pat }], function () { vis(); });
+		wrap.appendChild(f.el); function vis() { var v = f.get(); f.inputs.q.inp.closest(".pe-row").style.display = I.FORMATS[v.fmt].lossy ? "" : "none"; f.inputs.bg.inp.closest(".pe-row").style.display = I.FORMATS[v.fmt].alpha ? "none" : ""; f.inputs.w.inp.closest(".pe-row").style.display = v.mode === "width" ? "" : "none"; } vis();
+		var list = el("div", "pe-complist"); comps.forEach(function (c, i) { var r = el("label", "pe-row pe-row--check"); var cb = el("input"); cb.type = "checkbox"; cb.checked = true; cb.dataset.i = i; r.appendChild(el("span", "pe-row-l", esc((i + 1) + ". " + c.name))); r.appendChild(cb); list.appendChild(r); }); wrap.appendChild(el("p", "pe-hint2", "Comps to export:")); wrap.appendChild(list); var st = el("p", "pe-hint2"); wrap.appendChild(st);
+		PE.modal({ title: "Export all comps", body: wrap, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download ZIP", primary: true, act: function (m) {
+			var v = f.get(), picked = []; list.querySelectorAll("input").forEach(function (cb) { if (cb.checked) picked.push(comps[+cb.dataset.i]); }); if (!picked.length) { PE.toast("Tick at least one comp"); return; }
+			PE.savedParams.expc = v; var back = { st: PE.compCapture() }, files = [], used = {}, F = I.FORMATS[v.fmt], scale = v.mode === "width" ? v.w / d.w : 1, i = 0;
+			function next() {
+				if (i >= picked.length) { PE.compApplyState(back); PE.emit("comps"); var out = files.length === 1 ? new Blob([files[0].data], { type: F.mime }) : new Blob([I.zipStore(files)], { type: "application/zip" }); PE.download(out, files.length === 1 ? files[0].name : I.cleanFileName(d.name) + "-comps.zip"); PE.toast(files.length + " picture" + (files.length === 1 ? "" : "s") + " saved"); m.close(); return Promise.resolve(); }
+				var c = picked[i++]; st.textContent = "Rendering " + i + " of " + picked.length + ": " + c.name; PE.compApplyState(c);
+				return new Promise(function (res) { setTimeout(res, 20); }).then(function () { return PE.exportBlob(v.fmt, v.q / 100, { scale: scale, bg: v.bg }); }).then(function (b) { return b.arrayBuffer(); }).then(function (ab) {
+					var nm = v.pat.replace(/\{project\}/g, I.baseName(d.name)).replace(/\{n\}/g, String(i)).replace(/\{comp\}/g, c.name); files.push({ name: I.uniqueName(I.cleanFileName(nm) + "." + F.ext, used), data: new Uint8Array(ab) }); return next(); });
+			}
+			next().catch(function (e) { PE.compApplyState(back); st.textContent = "Could not export: " + (e && e.message ? e.message : e); });
+		} }] });
 	};
 
 	PE.download = function (blob, name) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000); };
@@ -1487,7 +1575,7 @@ var MESPixel = (function () {
 		function go(mm) {
 			var v = f.get(); PE.savedParams.ai = v; busy = true; var btns = mm.el.querySelectorAll(".pe-dlg-f .pe-btn"); btns[1].disabled = true; btns[1].textContent = "Working…"; bar.hidden = false; var last = {};
 			function prog(p) { if (p && p.status === "progress" && p.total > 1e6) { last[p.file] = p; var l = 0, t = 0; for (var k in last) { l += last[k].loaded; t += last[k].total; } fill.style.width = (100 * l / t) + "%"; st.textContent = "Downloading model… " + Math.round(l / 1e6) + " of " + Math.round(t / 1e6) + " MB"; } }
-			PE.bake(L); var src = mk(L.canvas.width, L.canvas.height); PE.drawLayer(src.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", mask: null, live: null, preview: null }), [1, 0, 0, 1, 0, 0], "ai", src.width, src.height);
+			PE.bake(L); var src = mk(L.canvas.width, L.canvas.height); PE.drawLayer(src.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", mask: null, live: null, preview: null, _p: null }), [1, 0, 0, 1, 0, 0], "ai", src.width, src.height);
 			st.textContent = "Loading the AI engine…";
 			getModel(v.model, prog).then(function (mod) { fill.style.width = "100%"; st.textContent = "Analysing…"; return infer(mod, src, function (t) { st.textContent = t; }); }).then(function (r) {
 				if (cancelled) return; var mc = maskCanvas(r, src.width, src.height, v.edge), o = PE.origin(L);
@@ -1638,7 +1726,7 @@ var MESPixel = (function () {
 	}
 	PE.aiUpscale = function () {
 		var d = PE.doc; if (!d) { PE.toast("Open an image first"); return; } if (busy) return;
-		var px = 0, count = 0; d.layers.forEach(function (L) { if (L.type !== "text") { px += L.canvas.width * L.canvas.height; count++; } });
+		var px = 0, count = 0; d.layers.forEach(function (L) { if (L.type !== "text" && L.type !== "group") { px += L.canvas.width * L.canvas.height; count++; } });
 		var wrap = el("div"), f = PE.form([{ k: "s", label: "Make it", type: "seg", options: [["2", "2× bigger"], ["4", "4× bigger"]], val: (PE.savedParams.up && PE.savedParams.up.s) || "2" }], function () { info(); });
 		var info = function () { var s = +f.get().s, W = d.w * s, H = d.h * s, ok = W <= PE.MAXPX && H <= PE.MAXPX && W * H <= PE.MAXAREA, tiles = Math.ceil(px / (128 * 128)); note.innerHTML = "Result: <b>" + W + " × " + H + " px</b> (" + (W * H / 1e6).toFixed(1) + " MP)." + (ok ? "" : ' <span style="color:#ff8a80">Too large for a browser: choose 2× or shrink the image first.</span>') + "<br>About " + tiles + " small tiles to process: seconds on a computer with a GPU, roughly " + Math.max(1, Math.round(tiles * 1.0 / 60)) + " min without one."; };
 		wrap.appendChild(f.el); var note = el("p", "pe-hint2"), bar = el("div", "pe-aibar"), fill = el("i"), st = el("div", "pe-hint2"); bar.appendChild(fill); bar.hidden = true; wrap.appendChild(note); wrap.appendChild(el("p", "pe-hint2", "Adds real detail to small or soft pictures (photos, screenshots, logos). First use downloads a 5 MB AI model and keeps it in your browser; everything runs on your device.")); wrap.appendChild(bar); wrap.appendChild(st); info();
@@ -1647,7 +1735,7 @@ var MESPixel = (function () {
 			if (busy) return; var s = +f.get().s, W = d.w * s, H = d.h * s; if (W > PE.MAXPX || H > PE.MAXPX || W * H > PE.MAXAREA) { PE.toast("That result would be too large"); return; }
 			PE.savedParams.up = f.get(); busy = true; cancelled = false; bar.hidden = false; var btns = mm.el.querySelectorAll(".pe-dlg-f .pe-btn"); btns[1].disabled = true; btns[1].textContent = "Working…"; st.textContent = "Loading the AI engine…";
 			PE.aiRt.session(KEY, MODEL, MB, function (g, t) { fill.style.width = (100 * g / t) + "%"; st.textContent = "Downloading the model… " + (g / 1e6).toFixed(1) + " of " + (t / 1e6).toFixed(1) + " MB"; }).then(function (o) {
-				var done = 0, total = 0, layers = d.layers.filter(function (L) { return L.type !== "text"; }); layers.forEach(function (L) { var T = o.provider === "webgpu" ? 256 : 128; total += Math.ceil(L.canvas.width / T) * Math.ceil(L.canvas.height / T); }); var t0 = Date.now();
+				var done = 0, total = 0, layers = d.layers.filter(function (L) { return L.type !== "text" && L.type !== "group"; }); layers.forEach(function (L) { var T = o.provider === "webgpu" ? 256 : 128; total += Math.ceil(L.canvas.width / T) * Math.ceil(L.canvas.height / T); }); var t0 = Date.now();
 				function prog(a) { done += a; fill.style.width = (100 * done / total) + "%"; var el2 = (Date.now() - t0) / 1000, eta = done ? el2 / done * (total - done) : 0; st.textContent = "Upscaling… tile " + done + " of " + total + (eta > 3 ? " (about " + Math.round(eta) + " s left)" : "") + (o.provider === "wasm" ? " · no GPU found, using the CPU" : ""); }
 				var results = []; var chain = Promise.resolve(); layers.forEach(function (L) { chain = chain.then(function () { PE.bake(L); return upscaleCanvas(L.canvas, s, o, prog).then(function (r) { o = r.o; var nm = null; if (L.mask) nm = PE.resample(L.mask, r.canvas.width, r.canvas.height); results.push({ L: L, c: r.canvas, m: nm }); }); }); });
 				return chain.then(function () { return results; });
@@ -1739,27 +1827,52 @@ var MESPixel = (function () {
 		var c = PE.mk(36, 36), x = c.getContext("2d"); x.fillStyle = "#555"; x.fillRect(0, 0, 36, 36); x.fillStyle = "#777"; for (var i = 0; i < 36; i += 6) for (var j = 0; j < 36; j += 6) if (((i + j) / 6) % 2 === 0) x.fillRect(i, j, 6, 6);
 		var s = Math.min(36 / L.canvas.width, 36 / L.canvas.height); x.drawImage(L.canvas, (36 - L.canvas.width * s) / 2, (36 - L.canvas.height * s) / 2, L.canvas.width * s, L.canvas.height * s); thumbs[k] = { c: c, rev: L.rev, w: L.canvas.width }; return c;
 	}
-	var dragId = null;
-	function buildLayers() {
-		var list = $("pe-layers"), d = PE.doc; list.innerHTML = ""; if (!d) return; var act = PE.active();
+	var dragId = null, multi = {}, lfilter = "";
+	PE.multi = function () { return PE.doc ? PE.doc.layers.filter(function (L) { return multi[L.id]; }) : []; };
+	function rowsTopDown() {
+		var d = PE.doc, q = lfilter.trim().toLowerCase(), out = [];
 		d.layers.slice().reverse().forEach(function (L) {
-			var row = el("div", "pe-layer" + (L === act ? " is-active" : "") + (L.visible ? "" : " is-hidden")); row.draggable = true; row.dataset.id = L.id;
+			var anc = PE.ancestorsOf(L); if (!q && anc.some(function (a) { return a.collapsed; })) return;
+			if (q) { var hit = L.name.toLowerCase().indexOf(q) >= 0 || (PE.isGroup(L) && PE.descendants(L).some(function (k) { return k.name.toLowerCase().indexOf(q) >= 0; })); if (!hit) return; }
+			out.push({ L: L, depth: anc.length });
+		});
+		return out;
+	}
+	function buildLayers() {
+		var list = $("pe-layers"), d = PE.doc; list.innerHTML = ""; if (!d) return; var act = PE.active(), rows = rowsTopDown(); PE.relink();
+		rows.forEach(function (r) {
+			var L = r.L, grp = PE.isGroup(L), on = L === act || multi[L.id], hidden = !PE.effVisible(L) && !grp ? true : !L.visible;
+			var row = el("div", "pe-layer" + (on ? " is-active" : "") + (hidden ? " is-hidden" : "") + (grp ? " is-group" : "")); row.draggable = true; row.dataset.id = L.id; row.style.paddingLeft = (0.3 + r.depth * 1.1) + "em";
 			var eye = el("button", "pe-eye", L.visible ? "👁" : "—"); eye.type = "button"; eye.title = "Show / hide"; eye.addEventListener("click", function (e) { e.stopPropagation(); L.visible = !L.visible; PE.touch(L); PE.commit("Toggle visibility"); });
-			var th = el("span", "pe-th"); th.appendChild(thumbFor(L)); var nm = el("span", "pe-lname", esc(L.name) + (L.type === "text" ? " ᵀ" : "")); nm.title = "Double-click to rename";
-			row.appendChild(eye); row.appendChild(th);
-			if (L.mask) { var mt = el("span", "pe-th pe-th--mask" + (L.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = true; buildLayers(); }); th.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
+			row.appendChild(eye);
+			if (grp) { var ar = el("button", "pe-arrow", L.collapsed ? "▸" : "▾"); ar.type = "button"; ar.title = L.collapsed ? "Expand group" : "Collapse group"; ar.addEventListener("click", function (e) { e.stopPropagation(); L.collapsed = !L.collapsed; buildLayers(); }); row.appendChild(ar); var th0 = el("span", "pe-th pe-th--grp", "📁"); row.appendChild(th0); }
+			else { var th = el("span", "pe-th"); th.appendChild(thumbFor(L)); row.appendChild(th); }
+			var nm = el("span", "pe-lname", esc(L.name) + (L.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = "Double-click to rename";
+			if (L.mask) { var mt = el("span", "pe-th pe-th--mask" + (L.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = true; buildLayers(); }); row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
 			row.appendChild(nm); if (L.locked) row.appendChild(el("span", "pe-lock", "🔒"));
-			row.addEventListener("click", function () { PE.setActive(L.id); });
+			row.addEventListener("click", function (e) {
+				if (e.ctrlKey || e.metaKey) { multi[L.id] = !multi[L.id]; if (!Object.keys(multi).some(function (k) { return multi[k]; })) multi = {}; else multi[act ? act.id : L.id] = true; buildLayers(); return; }
+				if (e.shiftKey && act) { var order = rowsTopDown().map(function (x) { return x.L; }), i0 = order.indexOf(act), i1 = order.indexOf(L); if (i0 >= 0 && i1 >= 0) { multi = {}; order.slice(Math.min(i0, i1), Math.max(i0, i1) + 1).forEach(function (x) { multi[x.id] = true; }); buildLayers(); return; } }
+				multi = {}; PE.setActive(L.id);
+			});
 			nm.addEventListener("dblclick", function (e) { e.stopPropagation(); var inp = el("input", "pe-rename"); inp.value = L.name; nm.replaceWith(inp); inp.focus(); inp.select(); var done = function (ok) { if (ok && inp.value.trim()) { L.name = inp.value.trim(); PE.commit("Rename layer"); } else buildLayers(); }; inp.addEventListener("keydown", function (ev) { ev.stopPropagation(); if (ev.key === "Enter") done(true); if (ev.key === "Escape") done(false); }); inp.addEventListener("blur", function () { done(true); }); });
 			row.addEventListener("dragstart", function (e) { dragId = L.id; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/x-pe-layer", String(L.id)); });
-			row.addEventListener("dragover", function (e) { if (dragId == null) return; e.preventDefault(); row.classList.add("is-over"); }); row.addEventListener("dragleave", function () { row.classList.remove("is-over"); });
-			row.addEventListener("drop", function (e) { if (dragId == null) return; e.preventDefault(); e.stopPropagation(); var src = PE.layerById(dragId); dragId = null; if (src && src !== L) PE.moveLayer(src, PE.indexOf(L) + (PE.indexOf(src) < PE.indexOf(L) ? 0 : 0)); });
+			function zoneOf(e) { var rc = row.getBoundingClientRect(), y = (e.clientY - rc.top) / rc.height; return grp ? (y < 0.25 ? "above" : "into") : (y < 0.5 ? "above" : "below"); }
+			row.addEventListener("dragover", function (e) { if (dragId == null) return; e.preventDefault(); row.classList.remove("is-over-above", "is-over-below", "is-over-into"); row.classList.add("is-over-" + zoneOf(e)); });
+			row.addEventListener("dragleave", function () { row.classList.remove("is-over-above", "is-over-below", "is-over-into"); });
+			row.addEventListener("drop", function (e) { if (dragId == null) return; e.preventDefault(); e.stopPropagation(); var src = PE.layerById(dragId), z = zoneOf(e); dragId = null; if (src && src !== L) PE.relocate(src, L, z); });
 			list.appendChild(row);
 		});
 		syncLayerProps();
 	}
+	$("pe-layers").addEventListener("dragover", function (e) { if (dragId != null) e.preventDefault(); });
+	$("pe-layers").addEventListener("drop", function (e) { if (dragId == null || !PE.doc) return; e.preventDefault(); var src = PE.layerById(dragId); dragId = null; var tops = PE.doc.layers.filter(function (x) { return x.group == null; }); var top = tops[tops.length - 1]; if (src && top && top !== src) PE.relocate(src, top, "above"); });
+	$("pe-lfilter").addEventListener("input", function () { lfilter = this.value; buildLayers(); });
+	PE.on("layers", function () { if (!PE.doc) return; var ids = {}; PE.doc.layers.forEach(function (L) { ids[L.id] = 1; }); for (var k in multi) if (!ids[k]) delete multi[k]; });
+	function groupSelected() { var m = PE.multi(), act = PE.active(); var list = m.length > 1 ? m : (act ? [act] : []); if (!list.length) { PE.toast("Select layers first (Ctrl-click to select several)"); return; } if (list.length === 1 && PE.isGroup(list[0])) { PE.ungroup(list[0]); return; } multi = {}; PE.groupLayers(list); }
+	PE.groupSelected = groupSelected;
 	function syncLayerProps() {
-		var L = PE.active(); var bl = $("pe-blend"), op = $("pe-opacity"), ov = $("pe-opacity-v"); if (!L) return; bl.value = L.blend; op.value = Math.round(L.opacity * 100); ov.textContent = Math.round(L.opacity * 100) + "%";
+		var L = PE.active(); var bl = $("pe-blend"), op = $("pe-opacity"), ov = $("pe-opacity-v"); if (!L) return; bl.value = L.blend; bl.disabled = PE.isGroup(L); op.value = Math.round(L.opacity * 100); ov.textContent = Math.round(L.opacity * 100) + "%";
 		$("pe-lock").setAttribute("aria-pressed", L.locked ? "true" : "false"); $("pe-mask-btn").title = L.mask ? "Delete layer mask" : "Add layer mask (reveal all; with a selection: reveal the selection)"; $("pe-mask-btn").setAttribute("aria-pressed", L.mask ? "true" : "false");
 	}
 	PE.on("layers", buildLayers); PE.on("active", buildLayers);
@@ -1770,11 +1883,28 @@ var MESPixel = (function () {
 		$("pe-undo").disabled = H.idx <= 0; $("pe-redo").disabled = H.idx >= H.stack.length - 1;
 	}
 	PE.on("history", buildHistory);
+	function askName(title, val, ok) { var w = el("div"), f = PE.form([{ k: "n", label: "Name", type: "text", val: val }], null); w.appendChild(f.el); PE.modal({ title: title, body: w, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "OK", primary: true, act: function (m) { var v = f.get().n.trim(); m.close(); if (v) ok(v); } }] }); }
+	function buildComps() {
+		var box = $("pe-comps"); box.innerHTML = ""; if (!PE.doc) return; var comps = PE.doc.comps || [];
+		if (!comps.length) { box.appendChild(el("p", "pe-hint2", "A comp remembers which layers and groups are shown, and where they are. Set up one thumbnail, press + Save current view, change what is visible, save another... then Export all makes a picture of each.")); return; }
+		comps.forEach(function (c, i) {
+			var on = PE.compMatches(c), row = el("div", "pe-comp" + (on ? " is-active" : "")), nm = el("button", "pe-compname", esc(c.name)); nm.type = "button"; nm.title = on ? "This is what is showing now" : "Click to show this comp"; nm.addEventListener("click", function () { PE.compApply(c); });
+			row.appendChild(nm);
+			[["⟳", "Update this comp with what is showing now", function () { PE.compUpdate(c); }], ["✎", "Rename", function () { askName("Rename comp", c.name, function (v) { PE.compRename(c, v); }); }], ["▲", "Move up", function () { PE.compMove(c, -1); }], ["▼", "Move down", function () { PE.compMove(c, 1); }], ["🗑", "Delete comp", function () { PE.compDelete(c); }]].forEach(function (b) { var bt = el("button", "pe-mini pe-mini--s", b[0]); bt.type = "button"; bt.title = b[1]; bt.addEventListener("click", b[2]); row.appendChild(bt); });
+			box.appendChild(row);
+		});
+	}
+	PE.on("comps", buildComps); PE.on("history", buildComps);
+	function showTab(t) { $("pe-history").hidden = t !== "hist"; $("pe-compspane").hidden = t !== "comps"; $("pe-tab-hist").setAttribute("aria-pressed", t === "hist" ? "true" : "false"); $("pe-tab-comps").setAttribute("aria-pressed", t === "comps" ? "true" : "false"); sset({ tab: t }); }
+	$("pe-tab-hist").addEventListener("click", function () { showTab("hist"); }); $("pe-tab-comps").addEventListener("click", function () { showTab("comps"); });
+	$("pe-comp-new").addEventListener("click", function () { if (!PE.doc) return; askName("Save comp", "Comp " + ((PE.doc.comps || []).length + 1), function (v) { PE.compSave(v); }); });
+	$("pe-comp-exp").addEventListener("click", function () { PE.dlgExportComps(); });
+	function stepComp(dir) { var d = PE.doc; if (!d || !(d.comps || []).length) return; var i = -1; d.comps.forEach(function (c, k) { if (PE.compMatches(c)) i = k; }); var j = i < 0 ? (dir > 0 ? 0 : d.comps.length - 1) : (i + dir + d.comps.length) % d.comps.length; PE.compApply(d.comps[j]); PE.toast(d.comps[j].name); }
 	$("pe-blend").innerHTML = PE.BLENDS.map(function (b) { return '<option value="' + b[0] + '">' + b[1] + "</option>"; }).join("");
 	$("pe-blend").addEventListener("change", function () { var L = PE.active(); if (L) { L.blend = this.value; PE.touch(L); PE.commit("Blend mode"); } });
 	var opTimer = 0; $("pe-opacity").addEventListener("input", function () { var L = PE.active(); if (!L) return; L.opacity = this.value / 100; $("pe-opacity-v").textContent = this.value + "%"; PE.invalidate(); clearTimeout(opTimer); opTimer = setTimeout(function () { PE.commit("Layer opacity"); }, 400); });
 	function lbtn(id, fn) { $(id).addEventListener("click", function () { if (PE.doc) fn(); }); }
-	lbtn("pe-lnew", function () { PE.newRasterLayer(); }); lbtn("pe-ldup", function () { PE.duplicateLayer(); }); lbtn("pe-ldel", function () { PE.deleteLayer(); }); lbtn("pe-lmerge", function () { PE.mergeDown(); });
+	lbtn("pe-lnew", function () { PE.newRasterLayer(); }); lbtn("pe-lgroup", function () { groupSelected(); }); lbtn("pe-ldup", function () { PE.duplicateLayer(); }); lbtn("pe-ldel", function () { PE.deleteLayer(); }); lbtn("pe-lmerge", function () { PE.mergeDown(); });
 	lbtn("pe-lock", function () { var L = PE.active(); L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); });
 	lbtn("pe-mask-btn", function () { var L = PE.active(); if (L.mask) PE.deleteMask(L); else PE.addMask(L, true); });
 
@@ -1813,10 +1943,10 @@ var MESPixel = (function () {
 	function align(how) {
 		var L = PE.active(), d = PE.doc; if (!L) return; var b = PE.bounds(L), dx = 0, dy = 0;
 		if (how === "left") dx = -b.x; if (how === "hcenter") dx = d.w / 2 - (b.x + b.w / 2); if (how === "right") dx = d.w - (b.x + b.w); if (how === "top") dy = -b.y; if (how === "vcenter") dy = d.h / 2 - (b.y + b.h / 2); if (how === "bottom") dy = d.h - (b.y + b.h);
-		L.cx += Math.round(dx); L.cy += Math.round(dy); PE.touch(L); PE.commit("Align layer");
+		PE.translate(L, Math.round(dx), Math.round(dy)); PE.touch(L); PE.commit("Align " + (PE.isGroup(L) ? "group" : "layer"));
 	}
-	function fitLayer(cover) { var L = PE.active(), d = PE.doc; if (!L) return; var w = L.canvas.width, h = L.canvas.height, s = cover ? Math.max(d.w / w, d.h / h) : Math.min(d.w / w, d.h / h); L.sx = Math.sign(L.sx || 1) * s; L.sy = Math.sign(L.sy || 1) * s; L.rot = 0; L.cx = d.w / 2; L.cy = d.h / 2; PE.touch(L); PE.commit(cover ? "Fill canvas" : "Fit to canvas"); }
-	function resetTransform() { var L = PE.active(); if (!L) return; L.sx = L.sy = 1; L.rot = 0; PE.touch(L); PE.commit("Reset transform"); }
+	function fitLayer(cover) { var L = PE.active(), d = PE.doc; if (!L) return; if (PE.isGroup(L)) { PE.toast("Select a normal layer"); return; } var w = L.canvas.width, h = L.canvas.height, s = cover ? Math.max(d.w / w, d.h / h) : Math.min(d.w / w, d.h / h); L.sx = Math.sign(L.sx || 1) * s; L.sy = Math.sign(L.sy || 1) * s; L.rot = 0; L.cx = d.w / 2; L.cy = d.h / 2; PE.touch(L); PE.commit(cover ? "Fill canvas" : "Fit to canvas"); }
+	function resetTransform() { var L = PE.active(); if (!L) return; if (PE.isGroup(L)) { PE.toast("Select a normal layer"); return; } L.sx = L.sy = 1; L.rot = 0; PE.touch(L); PE.commit("Reset transform"); }
 	function promptNum(title, label, val, min, max, fn) { var wrap = el("div"), f = PE.form([{ k: "v", label: label, type: "range", min: min, max: max, step: 1, val: val, unit: "px" }], null); wrap.appendChild(f.el); PE.modal({ title: title, body: wrap, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "OK", primary: true, act: function (m) { var v = f.get().v; m.close(); fn(v); } }] }); }
 	function needSel() { if (!PE.sel) { PE.toast("Make a selection first"); return false; } return true; }
 	function needDoc() { if (!PE.doc) { PE.toast("Open or create an image first"); return false; } return true; }
@@ -1838,7 +1968,7 @@ var MESPixel = (function () {
 	function savePsd() {
 		if (!needDoc()) return; loadScript("https://cdn.jsdelivr.net/npm/ag-psd@30.1.1/dist/bundle.js", function () { return window.agPsd; }).then(function (ag) {
 			var d = PE.doc, MAP = { "source-over": "normal", "color-dodge": "color dodge", "color-burn": "color burn", "hard-light": "hard light", "soft-light": "soft light" };
-			var kids = d.layers.map(function (L) { var c = PE.mk(d.w, d.h), x = c.getContext("2d"); PE.drawLayer(x, Object.assign({}, L, { opacity: 1, blend: "source-over" }), [1, 0, 0, 1, 0, 0], "psd", d.w, d.h); return { name: L.name, canvas: c, left: 0, top: 0, opacity: L.opacity, hidden: !L.visible, blendMode: MAP[L.blend] || L.blend }; });
+			PE.relink(); var kids = d.layers.filter(function (L) { return !PE.isGroup(L); }).map(function (L) { var c = PE.mk(d.w, d.h), x = c.getContext("2d"); PE.drawLayer(x, Object.assign({}, L, { _p: null, opacity: 1, blend: "source-over" }), [1, 0, 0, 1, 0, 0], "psd", d.w, d.h); return { name: L.name, canvas: c, left: 0, top: 0, opacity: L.opacity, hidden: !PE.effVisible(L), blendMode: MAP[L.blend] || L.blend }; });
 			var comp = PE.flatten(), buf = ag.writePsd({ width: d.w, height: d.h, children: kids, canvas: comp }, { generateThumbnail: false }); PE.download(new Blob([buf], { type: "image/vnd.adobe.photoshop" }), I.cleanFileName(d.name) + ".psd"); PE.toast("Saved PSD with " + kids.length + " layers");
 		}).catch(function (e) { PE.toast(e.message); });
 	}
@@ -1875,17 +2005,17 @@ var MESPixel = (function () {
 	function adj(list) { return list.map(function (a) { return { label: a.title, act: function () { if (needDoc()) PE.runAdjust(a.id); } }; }); }
 	var MENUS = [
 		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / project…", act: function () { pickFiles("image/*,.psd,.mesproj", true, function (fs) { openFiles(fs); }); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
-			{ label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Save project (keeps layers)", key: MOD + "S", act: saveProject }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
+			{ label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Save project (keeps layers)", key: MOD + "S", act: saveProject }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
 		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",
 			{ label: "Select all", key: MOD + "A", act: function () { if (needDoc()) { PE.selAll(); PE.commit("Select all"); } } }, { label: "Deselect", key: MOD + "D", act: function () { if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } }, { label: "Invert selection", key: MOD + "Shift+I", act: function () { if (needDoc()) { PE.selInvert(); PE.commit("Invert selection"); } } },
 			{ label: "Feather selection…", act: function () { if (needSel()) promptNum("Feather selection", "Radius", 8, 1, 200, function (v) { PE.selFeather(v); PE.commit("Feather"); }); } }, { label: "Grow selection…", act: function () { if (needSel()) promptNum("Grow selection", "By", 4, 1, 100, function (v) { PE.selGrow(v, true); PE.commit("Grow selection"); }); } }, { label: "Shrink selection…", act: function () { if (needSel()) promptNum("Shrink selection", "By", 4, 1, 100, function (v) { PE.selGrow(v, false); PE.commit("Shrink selection"); }); } }] },
 		{ label: "Image", items: [{ label: "Image size…", act: function () { PE.dlgImageSize(); } }, { label: "Canvas size…", act: function () { PE.dlgCanvasSize(); } }, { label: "Upscale with AI (2× / 4×)…", act: function () { PE.aiUpscale(); } }, { label: "Crop to selection", act: function () { if (!needDoc()) return; var b = PE.selBounds(); if (!b) { PE.toast("Make a selection first, or use the Crop tool"); return; } PE.cropTo(b.x, b.y, b.w, b.h); } }, { label: "Trim transparent edges", act: function () { if (needDoc()) PE.trim(); } }, "-",
 			{ label: "Rotate / straighten…", act: function () { PE.dlgStraighten(); } }, { label: "Rotate 90° clockwise", act: function () { if (needDoc()) PE.rotateImage(90); } }, { label: "Rotate 90° counter-clockwise", act: function () { if (needDoc()) PE.rotateImage(270); } }, { label: "Rotate 180°", act: function () { if (needDoc()) PE.rotateImage(180); } }, { label: "Flip horizontal", act: function () { if (needDoc()) PE.flipImage(true); } }, { label: "Flip vertical", act: function () { if (needDoc()) PE.flipImage(false); } }, "-", { label: "Flatten image", act: function () { if (needDoc()) PE.flattenImage(); } }] },
-		{ label: "Layer", items: [{ label: "New layer", key: MOD + "Shift+N", act: function () { if (needDoc()) PE.newRasterLayer(); } }, { label: "Duplicate layer", key: MOD + "J", act: function () { if (needDoc()) PE.duplicateLayer(); } }, { label: "Delete layer", act: function () { if (needDoc()) PE.deleteLayer(); } }, { label: "Layer via copy (selection)", act: function () { if (needDoc()) PE.layerFromSelection(false); } }, { label: "Layer via cut (selection)", act: function () { if (needDoc()) PE.layerFromSelection(true); } }, "-",
+		{ label: "Layer", items: [{ label: "Group layers", key: MOD + "G", act: function () { if (needDoc()) groupSelected(); } }, { label: "Ungroup", key: MOD + "Shift+G", act: function () { if (needDoc()) PE.ungroup(); } }, "-", { label: "New layer", key: MOD + "Shift+N", act: function () { if (needDoc()) PE.newRasterLayer(); } }, { label: "Duplicate layer", key: MOD + "J", act: function () { if (needDoc()) PE.duplicateLayer(); } }, { label: "Delete layer", act: function () { if (needDoc()) PE.deleteLayer(); } }, { label: "Layer via copy (selection)", act: function () { if (needDoc()) PE.layerFromSelection(false); } }, { label: "Layer via cut (selection)", act: function () { if (needDoc()) PE.layerFromSelection(true); } }, "-",
 			{ label: "Merge down", key: MOD + "E", act: function () { if (needDoc()) PE.mergeDown(); } }, { label: "Merge visible", act: function () { if (needDoc()) PE.mergeVisible(); } }, "-", { label: "Remove background (AI)…", act: function () { PE.aiRemoveBackground(); } }, { label: "Add layer mask", act: function () { if (needDoc()) PE.addMask(PE.active(), true); } }, { label: "Apply layer mask", act: function () { if (needDoc()) PE.applyMask(); } }, { label: "Delete layer mask", act: function () { if (needDoc()) PE.deleteMask(); } }, { label: "Rasterize text layer", act: function () { var L = PE.active(); if (L && L.type === "text") { PE.rasterize(L); PE.commit("Rasterize"); } } }, "-",
 			{ label: "Align: left", act: function () { align("left"); } }, { label: "Align: centre horizontally", act: function () { align("hcenter"); } }, { label: "Align: right", act: function () { align("right"); } }, { label: "Align: top", act: function () { align("top"); } }, { label: "Align: centre vertically", act: function () { align("vcenter"); } }, { label: "Align: bottom", act: function () { align("bottom"); } }, "-",
-			{ label: "Drop shadow / glow…", act: function () { PE.dlgEffect("shadow"); } }, { label: "Outline…", act: function () { PE.dlgEffect("outline"); } }, { label: "Round corners…", act: function () { PE.dlgRoundCorners(); } }, "-", { label: "Fit layer inside canvas", act: function () { fitLayer(false); } }, { label: "Fill canvas with layer", act: function () { fitLayer(true); } }, { label: "Reset layer scale / rotation", act: resetTransform }, { label: "Flip layer horizontally", act: function () { if (needDoc()) PE.flipLayer(true); } }, { label: "Flip layer vertically", act: function () { if (needDoc()) PE.flipLayer(false); } }, "-", { label: "Move layer up", act: function () { var L = PE.active(); if (L) PE.moveLayer(L, PE.indexOf(L) + 1); } }, { label: "Move layer down", act: function () { var L = PE.active(); if (L) PE.moveLayer(L, PE.indexOf(L) - 1); } }, { label: "Bring to front", act: function () { var L = PE.active(); if (L) PE.moveLayer(L, PE.doc.layers.length - 1); } }, { label: "Send to back", act: function () { var L = PE.active(); if (L) PE.moveLayer(L, 0); } }] },
+			{ label: "Drop shadow / glow…", act: function () { PE.dlgEffect("shadow"); } }, { label: "Outline…", act: function () { PE.dlgEffect("outline"); } }, { label: "Round corners…", act: function () { PE.dlgRoundCorners(); } }, "-", { label: "Fit layer inside canvas", act: function () { fitLayer(false); } }, { label: "Fill canvas with layer", act: function () { fitLayer(true); } }, { label: "Reset layer scale / rotation", act: resetTransform }, { label: "Flip layer horizontally", act: function () { if (needDoc()) PE.flipLayer(true); } }, { label: "Flip layer vertically", act: function () { if (needDoc()) PE.flipLayer(false); } }, "-", { label: "Move layer up", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 1); } }, { label: "Move layer down", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -1); } }, { label: "Bring to front", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 999); } }, { label: "Send to back", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -999); } }] },
 		{ label: "Adjust", items: adj(PE.ADJUST) }, { label: "Filter", items: adj(PE.FILTERS) },
 		{ label: "View", items: [{ label: "Zoom in", key: MOD + "+", act: function () { PE.setZoom(PE.view.zoom * 1.25); } }, { label: "Zoom out", key: MOD + "−", act: function () { PE.setZoom(PE.view.zoom / 1.25); } }, { label: "Fit on screen", key: MOD + "0", act: function () { PE.fit(); } }, { label: "Actual pixels (100%)", key: MOD + "1", act: function () { PE.setZoom(1); } }, "-", { label: "Pixel grid (when zoomed in)", act: function () { PE.showGrid = !PE.showGrid; PE.invalidate(); } }, { label: "Full window mode", key: "F", act: function () { toggleWin(); } }] },
 		{ label: "Help", items: [{ label: "Keyboard shortcuts", act: shortcuts }, { label: "Tips for labels, arrows and callouts", act: tips }] }
@@ -1909,7 +2039,7 @@ var MESPixel = (function () {
 		var w = el("div"); w.innerHTML = '<table class="pe-keys">' + rows.map(function (r) { return "<tr><td><kbd>" + esc(r[0]) + "</kbd></td><td>" + esc(r[1]) + "</td></tr>"; }).join("") + "</table>"; PE.modal({ title: "Keyboard shortcuts", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
 	}
 	function tips() {
-		var w = el("div", "pe-tips"); w.innerHTML = "<ul><li><b>Label an image:</b> Text tool, click, type. Turn on <i>Background box</i> (or press <i>Yellow label</i>) for a callout look.</li><li><b>Arrows, boxes, numbers:</b> Shapes tool. Each shape lands on its own layer: move it with the Move tool, delete it from the Layers panel.</li><li><b>Combine images:</b> drag several files onto the canvas (each becomes a layer) or paste with Ctrl+V. Move, resize and rotate with the Move tool.</li><li><b>Transparent background:</b> Magic wand the background, press Delete, then Export as PNG. Or Adjust → Make a colour transparent.</li><li><b>Remove an object or person:</b> Object Erase tool (J): paint over it, press Enter. Or make a selection and use Edit → Erase selection with AI. <b>Cut out a subject:</b> Layer → Remove background (AI).</li><li><b>Make a small picture bigger:</b> Image → Upscale with AI.</li><li><b>Hide private info:</b> Shapes → Blur / hide area, then drag over it.</li><li><b>Large file?</b> Export as WebP or JPEG and lower the quality.</li></ul>"; PE.modal({ title: "Tips", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
+		var w = el("div", "pe-tips"); w.innerHTML = "<ul><li><b>Label an image:</b> Text tool, click, type. Turn on <i>Background box</i> (or press <i>Yellow label</i>) for a callout look.</li><li><b>Arrows, boxes, numbers:</b> Shapes tool. Each shape lands on its own layer: move it with the Move tool, delete it from the Layers panel.</li><li><b>Combine images:</b> drag several files onto the canvas (each becomes a layer) or paste with Ctrl+V. Move, resize and rotate with the Move tool.</li><li><b>Transparent background:</b> Magic wand the background, press Delete, then Export as PNG. Or Adjust → Make a colour transparent.</li><li><b>Remove an object or person:</b> Object Erase tool (J): paint over it, press Enter. Or make a selection and use Edit → Erase selection with AI. <b>Cut out a subject:</b> Layer → Remove background (AI).</li><li><b>Many thumbnails from one project:</b> put each design in a group (select layers with Ctrl-click, Ctrl+G), then use the Comps tab: set up what is visible, + Save current view, repeat, then Export all. Press , and . to flip between comps.</li><li><b>Make a small picture bigger:</b> Image → Upscale with AI.</li><li><b>Hide private info:</b> Shapes → Blur / hide area, then drag over it.</li><li><b>Large file?</b> Export as WebP or JPEG and lower the quality.</li></ul>"; PE.modal({ title: "Tips", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
 	}
 
 	/* ---------- window mode ---------- */
@@ -1927,7 +2057,7 @@ var MESPixel = (function () {
 			if (low === "z") { e.preventDefault(); e.shiftKey ? PE.redo() : PE.undo(); return; } if (low === "y") { e.preventDefault(); PE.redo(); return; }
 			if (!has && low !== "v" && low !== "o") return;
 			if (low === "a") { e.preventDefault(); PE.selAll(); PE.commit("Select all"); } else if (low === "d") { e.preventDefault(); if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } else if (low === "i" && e.shiftKey) { e.preventDefault(); PE.selInvert(); PE.commit("Invert selection"); }
-			else if (low === "c") { e.preventDefault(); e.shiftKey ? copyMerged() : copySel(false); } else if (low === "x") { e.preventDefault(); copySel(true); } else if (low === "j") { e.preventDefault(); PE.duplicateLayer(); } else if (low === "e") { e.preventDefault(); PE.mergeDown(); }
+			else if (low === "c") { e.preventDefault(); e.shiftKey ? copyMerged() : copySel(false); } else if (low === "x") { e.preventDefault(); copySel(true); } else if (low === "j") { e.preventDefault(); PE.duplicateLayer(); } else if (low === "g") { e.preventDefault(); e.shiftKey ? PE.ungroup() : groupSelected(); } else if (low === "e") { e.preventDefault(); PE.mergeDown(); }
 			else if (low === "n" && e.shiftKey) { e.preventDefault(); PE.newRasterLayer(); } else if (low === "s") { e.preventDefault(); e.shiftKey ? PE.dlgExport() : saveProject(); } else if (k === "0") { e.preventDefault(); PE.fit(); } else if (k === "1") { e.preventDefault(); PE.setZoom(1); } else if (k === "=" || k === "+") { e.preventDefault(); PE.setZoom(PE.view.zoom * 1.25); } else if (k === "-") { e.preventDefault(); PE.setZoom(PE.view.zoom / 1.25); }
 			else if (low === "t") { e.preventDefault(); PE.setTool("move"); PE.opt.move.handles = true; buildOpts(); } else if (low === "o") { e.preventDefault(); pickFiles("image/*,.psd,.mesproj", true, function (fs) { openFiles(fs); }); } else if (k === "Backspace") { e.preventDefault(); fillSel(PE.bg); }
 			return;
@@ -1939,7 +2069,7 @@ var MESPixel = (function () {
 		if (k === "Delete" || k === "Backspace") { e.preventDefault(); if (PE.sel) clearSel(); else PE.deleteLayer(); return; }
 		if (k.indexOf("Arrow") === 0 && PE.toolId === "move") { e.preventDefault(); var n = e.shiftKey ? 10 : 1; PE.nudge(k === "ArrowLeft" ? -n : k === "ArrowRight" ? n : 0, k === "ArrowUp" ? -n : k === "ArrowDown" ? n : 0); return; }
 		if (k === "[") { PE.stepBrushSize(-1); return; } if (k === "]") { PE.stepBrushSize(1); return; }
-		if (low === "x") { swapColors(); return; } if (low === "d") { PE.fg = "#000000"; PE.bg = "#ffffff"; PE.emit("color"); return; } if (low === "f") { toggleWin(); return; }
+		if (k === ",") { stepComp(-1); return; } if (k === ".") { stepComp(1); return; } if (low === "x") { swapColors(); return; } if (low === "d") { PE.fg = "#000000"; PE.bg = "#ffffff"; PE.emit("color"); return; } if (low === "f") { toggleWin(); return; }
 		for (var id in PE.tools) if (PE.tools[id].key === low) { PE.setTool(id); return; }
 	});
 	document.addEventListener("keyup", function (e) { if (e.key === " ") { PE.setSpace(false); PE.spaceHeld = false; setCursor(); PE.invalidateOverlay(); } });
@@ -1951,7 +2081,7 @@ var MESPixel = (function () {
 	$("pe-restore").addEventListener("click", restoreAuto);
 	if (S.opt) for (var k in S.opt) if (PE.opt[k]) for (var kk in S.opt[k]) if (kk in PE.opt[k]) PE.opt[k][kk] = S.opt[k][kk];
 	PE.opt.shape.next = 1; PE.opt.text.str = "Text";
-	buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); checkAuto();
+	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); checkAuto();
 	if (S.win) { autoWin = true; toggleWin(true); }
 	var q = new URLSearchParams(location.search); if (q.get("new")) { var wh = (q.get("new") || "").split("x"); if (wh.length === 2) PE.newDoc(+wh[0], +wh[1], "#ffffff"); }
 	window.PEdebug = PE;

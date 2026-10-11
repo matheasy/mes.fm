@@ -42,11 +42,16 @@
 						<label class="pe-op">Opacity <input type="range" id="pe-opacity" min="0" max="100" value="100" aria-label="Layer opacity"><span id="pe-opacity-v">100%</span></label>
 					</div>
 					<div class="pe-lbtns">
-						<button type="button" class="pe-mini" id="pe-lnew" title="New layer (Ctrl+Shift+N)">＋</button><button type="button" class="pe-mini" id="pe-ldup" title="Duplicate (Ctrl+J)">⧉</button><button type="button" class="pe-mini" id="pe-lmerge" title="Merge down (Ctrl+E)">⇩</button><button type="button" class="pe-mini" id="pe-mask-btn" title="Layer mask">◑</button><button type="button" class="pe-mini" id="pe-lock" title="Lock layer" aria-pressed="false">🔒</button><button type="button" class="pe-mini" id="pe-ldel" title="Delete layer">🗑</button>
+						<button type="button" class="pe-mini" id="pe-lnew" title="New layer (Ctrl+Shift+N)">＋</button><button type="button" class="pe-mini" id="pe-lgroup" title="Group the selected layers (Ctrl+G); Ctrl-click to select several. On a group: ungroup (Ctrl+Shift+G)">📁</button><button type="button" class="pe-mini" id="pe-ldup" title="Duplicate (Ctrl+J)">⧉</button><button type="button" class="pe-mini" id="pe-lmerge" title="Merge down (Ctrl+E)">⇩</button><button type="button" class="pe-mini" id="pe-mask-btn" title="Layer mask">◑</button><button type="button" class="pe-mini" id="pe-lock" title="Lock layer" aria-pressed="false">🔒</button><button type="button" class="pe-mini" id="pe-ldel" title="Delete layer">🗑</button>
 					</div>
+					<input type="search" class="pe-lfilter" id="pe-lfilter" placeholder="Find a layer…" aria-label="Find a layer by name">
 					<div class="pe-layers" id="pe-layers"></div>
 				</div>
-				<div class="pe-panel pe-panel--hist"><div class="pe-ph">History</div><div class="pe-history" id="pe-history"></div></div>
+				<div class="pe-panel pe-panel--hist">
+					<div class="pe-tabs" role="tablist"><button type="button" id="pe-tab-hist" aria-pressed="true">History</button><button type="button" id="pe-tab-comps" aria-pressed="false" title="Comps = saved scenes: which layers and groups are shown, and where">Comps</button></div>
+					<div class="pe-history" id="pe-history"></div>
+					<div id="pe-compspane" hidden><div class="pe-compbar"><button type="button" class="pe-btn pe-btn--sm" id="pe-comp-new">+ Save current view</button><button type="button" class="pe-btn pe-btn--sm" id="pe-comp-exp" title="Make a picture of every comp (ZIP)">⬇ Export all</button></div><div class="pe-comps" id="pe-comps"></div></div>
+				</div>
 			</div>
 		</div>
 		<div class="pe-status"><span id="pe-st-doc">No image</span><span id="pe-st-layer"></span><span id="pe-st-sel"></span><span id="pe-st-xy"></span><span class="pe-hint" id="pe-hint"></span></div>

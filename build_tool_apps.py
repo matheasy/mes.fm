@@ -172,7 +172,7 @@ APPS = {
     "photo-editor": dict(title="MES Photo Editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="7", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js"], lib_from=["image-converter"]),
+                         js_v="9", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js"], lib_from=["image-converter"]),
     # Bulk Image Converter: PNG / JPEG / WebP in bulk in the browser (canvas), optional resize, ZIP download. lib.js = MESImg (formats, sizes, names, ZIP writer; node-tested: tool_apps_src/image-converter-tests.js), shared with the photo editor.
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
@@ -321,8 +321,14 @@ APPS = {
     # Browser: recommended browser extensions / apps (moved from the "Recommended Browser Extensions" list of mes.fm/links). Static list, no app logic. Ad-free like /go.
     "browser": dict(title="MES Browser Extensions", page_title="Browser Extensions",
                     tag="Recommended browser extensions and apps.", accent="#2563a8", dark="#1a4a80", tint="#e3edf8",
-                    desc="Recommended free browser extensions for Chrome, Brave and Edge: a video speed controller, a volume booster, text to speech (read aloud) and a web page archiver, plus an Android reader app.",
-                    js_v="1", no_ads=True),
+                    desc="Recommended free browser extensions for Chrome, Brave and Edge: the MES Video Speed Controller, a volume booster, text to speech (read aloud) and a web page archiver, plus an Android reader app.",
+                    js_v="2"),
+    # Video Speed Controller: download + install page of MES's own browser extension (source in mes.fm/videospeed/extension/, zipped by
+    # build_video_speed_extension.py; tests node tool_apps_src/videospeed-tests.js). app.js only fills in the version from the extension's manifest.
+    "videospeed": dict(title="MES Video Speed Controller", page_title="Video Speed Controller",
+                       tag="Play any video faster or slower.", accent="#d9480f", dark="#a8360a", tint="#fdece3",
+                       desc="Free MES Video Speed Controller browser extension for Chrome, Brave and Edge: speed up or slow down any HTML5 video from 0.1x to 16x with keyboard shortcuts or an on-video control. Private, no tracking, with install steps.",
+                       js_v="1"),
     "go": dict(title="MES Short Links", page_title="Short Links",
                tag="Every mes.fm short link, searchable.", accent="#0e8a6a", dark="#0a6650", tint="#e0f4ee",
                desc="Every MES short link in one searchable list: mes.fm/pomodoro, mes.fm/physics-playlist and more. Filter by category or topic, copy any short link, and get the line for a new one.",

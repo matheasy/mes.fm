@@ -49,7 +49,7 @@
 		function go(mm) {
 			var v = f.get(); PE.savedParams.ai = v; busy = true; var btns = mm.el.querySelectorAll(".pe-dlg-f .pe-btn"); btns[1].disabled = true; btns[1].textContent = "Working…"; bar.hidden = false; var last = {};
 			function prog(p) { if (p && p.status === "progress" && p.total > 1e6) { last[p.file] = p; var l = 0, t = 0; for (var k in last) { l += last[k].loaded; t += last[k].total; } fill.style.width = (100 * l / t) + "%"; st.textContent = "Downloading model… " + Math.round(l / 1e6) + " of " + Math.round(t / 1e6) + " MB"; } }
-			PE.bake(L); var src = mk(L.canvas.width, L.canvas.height); PE.drawLayer(src.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", mask: null, live: null, preview: null }), [1, 0, 0, 1, 0, 0], "ai", src.width, src.height);
+			PE.bake(L); var src = mk(L.canvas.width, L.canvas.height); PE.drawLayer(src.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", mask: null, live: null, preview: null, _p: null }), [1, 0, 0, 1, 0, 0], "ai", src.width, src.height);
 			st.textContent = "Loading the AI engine…";
 			getModel(v.model, prog).then(function (mod) { fill.style.width = "100%"; st.textContent = "Analysing…"; return infer(mod, src, function (t) { st.textContent = t; }); }).then(function (r) {
 				if (cancelled) return; var mc = maskCanvas(r, src.width, src.height, v.edge), o = PE.origin(L);

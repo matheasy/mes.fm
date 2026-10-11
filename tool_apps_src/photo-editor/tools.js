@@ -113,28 +113,34 @@
 		return PE.toScreen(L.cx + c * lx - s * ly, L.cy + s * lx + c * ly);
 	}
 	var mv = null;
-	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true },
-		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
+	function pickTarget(hit, L, groupsOn) {
+		if (!groupsOn) return hit; var anc = PE.ancestorsOf(hit); if (!anc.length) return hit; if (L === hit) return hit; if (L && anc.indexOf(L) >= 0) return L;
+		if (L && PE.topGroupOf(L) === PE.topGroupOf(hit)) return hit; return PE.topGroupOf(hit);
+	}
+	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, groups: true },
+		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
 		hint: "Drag to move. Drag a square handle to resize, just outside a corner to rotate (Shift = snap / keep proportions). Arrow keys nudge.",
 		down: function (e) {
 			var L = PE.active(), o = PE.opt.move, z = PE.view.zoom;
-			if (L && o.handles && L.visible) {
+			if (L && o.handles && L.visible && !PE.isGroup(L)) {
 				for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); if (Math.hypot(s.x - (e.sx - PE.els.over.getBoundingClientRect().left), s.y - (e.sy - PE.els.over.getBoundingClientRect().top)) < 9) { mv = { kind: "scale", L: L, h: HANDLES[i], sx0: L.sx, sy0: L.sy, cx0: L.cx, cy0: L.cy, rot: L.rot, p0: e }; return; } }
 				var rect = PE.els.over.getBoundingClientRect(), px = e.sx - rect.left, py = e.sy - rect.top;
 				var corners = [0, 2, 4, 6].map(function (k) { return handleScreen(L, HANDLES[k]); });
 				for (i = 0; i < 4; i++) { var dd = Math.hypot(corners[i].x - px, corners[i].y - py); if (dd >= 9 && dd < 30 && !PE.layerAtPoint(L, e.x, e.y)) { mv = { kind: "rot", L: L, a0: Math.atan2(e.y - L.cy, e.x - L.cx), rot0: L.rot }; return; } }
 			}
 			var hit = o.auto ? PE.layerAt(e.x, e.y) : null;
-			if (hit && hit !== L && PE.isBackdrop(hit)) hit = null;       // a full-canvas bottom layer is only moved when it was chosen in the Layers panel
+			if (hit && hit !== L && PE.isBackdrop(hit)) hit = null;
+			if (hit) hit = pickTarget(hit, L, o.groups);
 			if (o.auto && hit && hit !== L) { PE.setActive(hit.id); L = hit; }
 			else if (o.auto && !hit && !(L && PE.layerAtPoint(L, e.x, e.y))) { mv = null; return; }
 			if (!L || L.locked) { if (L && L.locked) PE.toast("This layer is locked"); return; }
-			mv = { kind: "move", L: L, cx0: L.cx, cy0: L.cy, p0: e, moved: false };
+			mv = { kind: "move", L: L, cx0: L.cx, cy0: L.cy, p0: e, moved: false, grp: PE.isGroup(L) ? PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).map(function (k) { return [k, k.cx, k.cy]; }) : null };
 		},
 		move: function (e) {
 			if (!mv) return; var L = mv.L;
 			if (mv.kind === "move") {
 				var dx = Math.round(e.x - mv.p0.x), dy = Math.round(e.y - mv.p0.y); if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; }
+				if (mv.grp) { mv.grp.forEach(function (g) { g[0].cx = g[1] + dx; g[0].cy = g[2] + dy; }); PE.guides = []; mv.moved = true; PE.invalidate(); return; }
 				L.cx = mv.cx0 + dx; L.cy = mv.cy0 + dy; PE.guides = [];
 				if (PE.opt.move.snap && !e.ctrl) {
 					var b = PE.bounds(L), th = 6 / PE.view.zoom, d = PE.doc, ax = [[b.x, 0], [b.x + b.w, d.w], [b.x + b.w / 2, d.w / 2], [b.x, d.w / 2 - b.w / 2 + b.x - b.x]];
@@ -153,16 +159,17 @@
 				L.sx = Math.sign(mv.sx0 || 1) * nw / L.canvas.width; L.sy = Math.sign(mv.sy0 || 1) * nh / L.canvas.height; L.cx = mv.cx0 + c * ncx - s * ncy; L.cy = mv.cy0 + s * ncx + c * ncy; mv.moved = true; PE.invalidate();
 			}
 		},
-		up: function () { var m = mv; mv = null; PE.guides = []; if (m && m.moved) { PE.touch(m.L); PE.commit(m.kind === "move" ? "Move layer" : m.kind === "rot" ? "Rotate layer" : "Resize layer"); } PE.invalidateOverlay(); },
+		up: function () { var m = mv; mv = null; PE.guides = []; if (m && m.moved) { PE.touch(m.L); PE.commit(m.kind === "move" ? (m.grp ? "Move group" : "Move layer") : m.kind === "rot" ? "Rotate layer" : "Resize layer"); } PE.invalidateOverlay(); },
 		abort: function () { if (mv) { var m = mv; m.L.cx = m.cx0 || m.L.cx; mv = null; } },
 		overlay: function (x, v) {
 			var L = PE.active(); if (!L || !PE.opt.move.handles || !L.visible) return;
+			if (PE.isGroup(L)) { var gb = PE.groupBounds(L), g0 = PE.toScreen(gb.x, gb.y), g1 = PE.toScreen(gb.x + gb.w, gb.y + gb.h); x.setLineDash([6, 4]); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.strokeRect(g0.x, g0.y, g1.x - g0.x, g1.y - g0.y); x.setLineDash([]); return; }
 			var pts = PE.corners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); x.strokeStyle = "#1a73e8"; x.lineWidth = 1.5; x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.stroke();
 			for (var i = 0; i < 8; i++) { var s = handleScreen(L, HANDLES[i]); PE.handleBox(x, s.x, s.y, 4.5); }
 		} });
 	PE.isBackdrop = function (L) { var d = PE.doc, b = PE.bounds(L); return PE.indexOf(L) === 0 && PE.isIdentity(L) && b.x <= 1 && b.y <= 1 && b.x + b.w >= d.w - 1 && b.y + b.h >= d.h - 1; };
-	PE.layerAtPoint = function (L, x, y) { var p = PE.toLayerPt(L, x, y); return p.x >= 0 && p.y >= 0 && p.x < L.canvas.width && p.y < L.canvas.height; };
-	PE.nudge = function (dx, dy) { var L = PE.active(); if (!L || L.locked) return; L.cx += dx; L.cy += dy; PE.touch(L); clearTimeout(PE._nt); PE._nt = setTimeout(function () { PE.commit("Move layer"); }, 350); };
+	PE.layerAtPoint = function (L, x, y) { if (PE.isGroup(L)) { var gb = PE.groupBounds(L); return x >= gb.x && y >= gb.y && x <= gb.x + gb.w && y <= gb.y + gb.h; } var p = PE.toLayerPt(L, x, y); return p.x >= 0 && p.y >= 0 && p.x < L.canvas.width && p.y < L.canvas.height; };
+	PE.nudge = function (dx, dy) { var L = PE.active(); if (!L || L.locked) return; PE.translate(L, dx, dy); PE.touch(L); clearTimeout(PE._nt); PE._nt = setTimeout(function () { PE.commit("Move layer"); }, 350); };
 
 	/* ---------- selection tools ---------- */
 	function selMode(e) { var o = PE.opt[PE.toolId].mode || "new"; return e.shift && e.alt ? "int" : e.shift ? "add" : e.alt ? "sub" : o; }
