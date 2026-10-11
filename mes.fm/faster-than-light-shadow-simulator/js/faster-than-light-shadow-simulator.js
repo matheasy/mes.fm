@@ -123,10 +123,11 @@
 		tab: TABS.indexOf(q.get("tab")) >= 0 ? q.get("tab") : (TABS.indexOf(saved.tab) >= 0 ? saved.tab : "sweep"),
 		Dtxt: Dm ? dq : "384,400 km", D: Dm || 384400e3,
 		kv: clamp(pick("k", "kv", 560), 0, 1000), A: clamp(pick("A", "A", 25), 5, 40), kfv: clamp(pick("kf", "kfv", 560), 0, 1000), d: clamp(pick("d", "d", 25), 2, 90), sv: clamp(pick("s", "sv", 300), 0, 1000),
-		cross: clamp(num(saved.cross) || 3, 1, 10), aim: false, run: true,
+		cross: clamp(num(saved.cross) || 3, 1, 10), aim: false, sman: false, slide: false, run: true,
+		bw: clamp(pick("bw", "bw", 1.7), 1, 10), sz: clamp(pick("sz", "sz", 10), 3, 45),
 		k: { D: q.get("kD") || saved.kD || "384,400 km", w: q.get("kw") || saved.kw || "90 deg/s", d: q.get("kd") || saved.kd || "1 m", f: q.get("kf2") || saved.kf2 || "1 m/s" }
 	};
-	function save() { sset({ tab: S.tab, Dtxt: S.Dtxt, kv: S.kv, A: S.A, kfv: S.kfv, d: S.d, sv: S.sv, cross: S.cross, kD: S.k.D, kw: S.k.w, kd: S.k.d, kf2: S.k.f }); }
+	function save() { sset({ tab: S.tab, Dtxt: S.Dtxt, kv: S.kv, A: S.A, kfv: S.kfv, d: S.d, sv: S.sv, bw: S.bw, sz: S.sz, cross: S.cross, kD: S.k.D, kw: S.k.w, kd: S.k.d, kf2: S.k.f }); }
 	function logk(v) { return 0.05 * Math.pow(600, v / 1000); }              // slider -> multiple of the speed that matches light
 	function logs(v) { return 1.05 * Math.pow(1000 / 1.05, v / 1000); }
 	function kS() { return logk(S.kv); } function kfS() { return logk(S.kfv); } function sS() { return logs(S.sv); }
@@ -147,7 +148,7 @@
 	var sim, T0 = 1;
 	function newSim() {
 		T0 = S.D / C;
-		sim = { t: 0, hist: new F.Hist(H, 1800), val: 0, dir: 1, target: 0, max: 0, trail: [], rate: 0 };
+		sim = { t: 0, hist: new F.Hist(H, 1800), val: 0, dir: 1, target: 0, max: 0, trail: [], chart: [], rate: 0 };
 		sim.hist.push(0); dirty = true;
 	}
 	function advance() {
@@ -157,7 +158,8 @@
 			else { sim.val += sim.dir * kS() * H; if (sim.val > A) { sim.val = 2 * A - sim.val; sim.dir = -1; } else if (sim.val < -A) { sim.val = -2 * A - sim.val; sim.dir = 1; } }
 		} else {
 			var d = S.d / 100, Y = d * Math.tan(rad(32));
-			sim.val += sim.dir * kfS() * d * H; if (sim.val > Y) { sim.val = 2 * Y - sim.val; sim.dir = -1; } else if (sim.val < -Y) { sim.val = -2 * Y - sim.val; sim.dir = 1; }
+			if (S.sman) sim.val += (sim.target - sim.val) * (1 - Math.exp(-H / 0.015));
+			else { sim.val += sim.dir * kfS() * d * H; if (sim.val > Y) { sim.val = 2 * Y - sim.val; sim.dir = -1; } else if (sim.val < -Y) { sim.val = -2 * Y - sim.val; sim.dir = 1; } }
 		}
 		var prev = sim.hist.get(sim.hist.k - 1); sim.hist.push(sim.val); sim.rate = Math.abs(sim.val - prev) / H;
 	}
@@ -167,7 +169,7 @@
 	/* ---------------- layout + field rendering ---------------- */
 	var lay = { key: "" }, off, offc, img;
 	function layout(canvas, stage, Yr) {
-		var w = stage.clientWidth || 640, h = clamp(w * (2 * Yr) / 1.28, 280, w < 640 ? 460 : 560);
+		var w = stage.clientWidth || 640, h = clamp(w * (2 * Yr) / 1.28, 280, w < 640 ? 460 : 620);
 		stage.style.height = Math.round(h) + "px";
 		var key = [w, Math.round(h), Yr.toFixed(3), S.tab].join("|");
 		if (key === lay.key) return lay;
@@ -183,17 +185,18 @@
 		return lay;
 	}
 	var sx = function (x) { return lay.ox + x * lay.sc; }, sy = function (y) { return lay.h / 2 - y * lay.sc; };
-	var FAN = 0.82;
+	var FAN = 0.82, BW = 0.03;
 	function light(x, r, phi, sec, t, hist) {          // 0..1 brightness of the light passing (x, y) at time t
 		if (x < 0 || x > 1.0005) return 0;
-		if (S.tab === "sweep") { var dd = (phi - hist.at(t - r)) / 0.03; return dd > 3 || dd < -3 ? 0 : Math.exp(-dd * dd); }
+		if (S.tab === "sweep") { var dd = (phi - hist.at(t - r)) / BW; return dd > 3 || dd < -3 ? 0 : Math.exp(-dd * dd); }
 		if (phi > FAN || phi < -FAN) return 0;
 		var d = S.d / 100;
 		if (x <= d) return 0.55;
-		var yf = hist.at(t - r + d * sec), dist = Math.abs(d * Math.tan(phi) - yf) - d * 0.1;
+		var yf = hist.at(t - r + d * sec), dist = Math.abs(d * Math.tan(phi) - yf) - d * S.sz / 100;
 		return 0.55 * clamp(0.5 + dist / (0.02 * d), 0, 1);
 	}
 	function paintField(c) {
+		BW = rad(S.bw) * 1.75;
 		var a = img.data, n = lay.gw * lay.gh, hist = sim.hist, t = sim.t, k, v, p = 0;
 		var br = S.tab === "sweep" ? 255 : 255, bg = [7, 13, 31];
 		for (k = 0; k < n; k++, p += 4) {
@@ -227,7 +230,7 @@
 		if (S.tab === "sweep") {             // little aim marker
 			var th = h.get(h.k - 1); c.strokeStyle = "rgba(251,191,36,0.5)"; c.lineWidth = 1; c.setLineDash([3, 4]); c.beginPath(); c.moveTo(sx(0), sy(0)); c.lineTo(sx(0.16 * Math.cos(th)), sy(0.16 * Math.sin(th))); c.stroke(); c.setLineDash([]);
 		} else {                             // the finger
-			var d = S.d / 100, yf = h.get(h.k - 1), fh = d * 0.1;
+			var d = S.d / 100, yf = h.get(h.k - 1), fh = d * S.sz / 100;
 			c.fillStyle = "#d9a679"; c.beginPath(); (c.roundRect || c.rect).call(c, sx(d) - 0.012 * L.sc, sy(yf + fh), 0.024 * L.sc, 2 * fh * L.sc, 3); c.fill();
 			text(c, "finger", sx(d), sy(-0.62 + 0.04), COL.dim, 11, "center");
 			c.strokeStyle = "rgba(147,161,196,0.35)"; c.setLineDash([2, 4]); c.beginPath(); c.moveTo(sx(0), sy(-0.55)); c.lineTo(sx(d), sy(-0.55)); c.stroke(); c.setLineDash([]);
@@ -240,21 +243,41 @@
 		}
 		for (i = 0; i < spots.length; i++) {
 			s = spots[i]; var fast = Math.abs(s.v) > 1, col = fast ? COL.orange : COL.green;
-			if (sim.run) sim.trail.push({ y: s.y, v: s.v, t: sim.t });
+			if (S.run) sim.trail.push({ y: s.y, v: s.v, t: sim.t });
 			var g = c.createRadialGradient(wx + 4, sy(s.y), 1, wx + 4, sy(s.y), 16); g.addColorStop(0, col); g.addColorStop(1, "rgba(0,0,0,0)");
 			c.fillStyle = g; c.beginPath(); c.arc(wx + 4, sy(s.y), 16, 0, 7); c.fill();
 			c.fillStyle = "#fff"; c.beginPath(); c.arc(wx + 4, sy(s.y), 3.5, 0, 7); c.fill();
 			if (sy(s.y) > 12 && sy(s.y) < L.h - 12) text(c, fmtMult(s.v), Math.min(wx + 24, L.w - 4 - 56), sy(s.y), col, 13, "left", true);
 		}
+		if (S.run) for (i = 0; i < spots.length; i++) sim.chart.push({ t: sim.t, v: Math.abs(spots[i].v) });
+		while (sim.chart.length && sim.t - sim.chart[0].t > 3.2) sim.chart.shift();
+		drawChart(S.tab === "sweep" ? $("ftl-ch1") : $("ftl-ch2"));
 		text(c, "screen " + F.fmtLen(S.D) + " away · light needs " + F.fmtTime(T0) + " · animation slowed ×" + F.sig(S.cross / T0, 3), 10, 14, COL.dim, 11, "left");
 		if (S.tab === "sweep" && S.aim) text(c, "move the pointer over the picture to aim", 10, L.h - 12, COL.dim, 11, "left");
 		return spots;
 	}
 
+
+	/* ---------------- speed-versus-time chart ---------------- */
+	function drawChart(canvas) {
+		var box = canvas.parentNode, w = box.clientWidth || 300, h = box.clientHeight || 200, c = setup(canvas, w, h), m = { l: 44, r: 12, t: 30, b: 28 }, X = w - m.l - m.r, Y = h - m.t - m.b;
+		var lo = Math.log10(0.1), hi = Math.log10(100), win = 3;
+		var px = function (t) { return m.l + (t - (sim.t - win)) / win * X; }, py = function (v) { return m.t + (1 - (Math.log10(clamp(v, 0.1, 100)) - lo) / (hi - lo)) * Y; };
+		c.fillStyle = "#0a1124"; c.fillRect(0, 0, w, h);
+		c.fillStyle = "rgba(251,146,60,0.10)"; c.fillRect(m.l, m.t, X, py(1) - m.t);
+		c.strokeStyle = "rgba(147,161,196,0.2)"; c.lineWidth = 1; c.font = "11px system-ui,sans-serif"; c.textAlign = "right"; c.textBaseline = "middle";
+		[0.1, 1, 10, 100].forEach(function (v) { var y = py(v); c.strokeStyle = v === 1 ? COL.orange : "rgba(147,161,196,0.2)"; c.lineWidth = v === 1 ? 2 : 1; c.beginPath(); c.moveTo(m.l, y); c.lineTo(m.l + X, y); c.stroke(); c.fillStyle = v === 1 ? COL.orange : COL.dim; c.fillText(v === 1 ? "c" : v + " c", m.l - 6, y); });
+		text(c, "Spot speed", m.l, 12, COL.text, 12, "left", true); text(c, "faster than light ↑", m.l + X, 12, COL.orange, 11, "right");
+		text(c, "time →  (last " + win + " light-crossings)", m.l + X / 2, h - 10, COL.dim, 11, "center");
+		var i, p;
+		for (i = 0; i < sim.chart.length; i++) { p = sim.chart[i]; var x = px(p.t); if (x < m.l) continue; c.fillStyle = p.v > 1 ? "rgba(251,146,60,0.95)" : "rgba(74,222,128,0.95)"; c.fillRect(x - 1, py(p.v) - 1.2, 2, 2.4); }
+		if (!sim.chart.length) text(c, "waiting for the first light to land…", m.l + X / 2, m.t + Y / 2, COL.dim, 12, "center");
+	}
+
 	/* ---------------- readouts ---------------- */
 	function renderRO(spots) {
 		var sp = null, i, a = 0; for (i = 0; i < spots.length; i++) if (Math.abs(spots[i].v) >= a) { a = Math.abs(spots[i].v); sp = spots[i]; }
-		var v = sp ? Math.abs(sp.v) : 0; if (sim.run || v > sim.max) sim.max = Math.max(sim.max, v);
+		var v = sp ? Math.abs(sp.v) : 0; if (S.run || v > sim.max) sim.max = Math.max(sim.max, v);
 		var cls = v > 1 ? "is-ftl" : "is-slow", vt = sp ? fmtMult(v) : "–", sub = sp ? F.fmtSpeed(v * C) + " along the screen" : "no spot on the screen";
 		var key, html;
 		if (S.tab === "sweep") {
@@ -335,10 +358,11 @@
 	var dirty = true;
 	function paintSetup() {
 		$("ftl-k-v").textContent = multTxt(kS()) + " the speed that matches light (" + F.fmtRate(kS() * F.criticalRate(S.D)) + ")";
-		$("ftl-a-v").textContent = S.A + "°";
+		$("ftl-a-v").textContent = S.A + "°"; $("ftl-bw-v").textContent = S.bw.toFixed(1) + "°"; $("ftl-sz-v").textContent = S.sz + "% of its distance from the lamp";
 		$("ftl-kf-v").textContent = multTxt(kfS()) + " the speed that matches light";
 		$("ftl-d-v").textContent = F.fmtLen(S.d / 100 * S.D) + " (" + S.d + "% of the way)";
 		$("ftl-s-v").textContent = fmtMult(sS());
+		$("ftl-bw").value = S.bw; $("ftl-sz").value = S.sz; $("ftl-slide").checked = S.slide; $("ftl-sm-auto").setAttribute("aria-pressed", String(!S.sman)); $("ftl-sm-man").setAttribute("aria-pressed", String(S.sman)); $("ftl-shint").hidden = !S.sman; $("ftl-kf").disabled = S.sman; $("ftl-c2").classList.toggle("is-aim", S.sman);
 		$("ftl-k").value = S.kv; $("ftl-a").value = S.A; $("ftl-kf").value = S.kfv; $("ftl-d").value = S.d; $("ftl-s").value = S.sv;
 		$("ftl-m-auto").setAttribute("aria-pressed", String(!S.aim)); $("ftl-m-aim").setAttribute("aria-pressed", String(S.aim)); $("ftl-aimhint").hidden = !S.aim; $("ftl-k").disabled = S.aim; $("ftl-c1").classList.toggle("is-aim", S.aim);
 		[].forEach.call(document.querySelectorAll("[data-dp]"), function (b) { b.setAttribute("aria-pressed", String(F.PLACES[+b.getAttribute("data-dp")].s === S.Dtxt)); });
@@ -382,28 +406,37 @@
 	$("ftl-kf").oninput = function () { S.kfv = +this.value; save(); paintSetup(); };
 	$("ftl-d").oninput = function () { S.d = +this.value; save(); paintSetup(); newSim(); };
 	$("ftl-s").oninput = function () { S.sv = +this.value; save(); paintSetup(); drawMsg(); };
-	$("ftl-m-auto").onclick = function () { S.aim = false; paintSetup(); newSim(); }; $("ftl-m-aim").onclick = function () { S.aim = true; paintSetup(); };
+	$("ftl-m-auto").onclick = function () { S.aim = false; paintSetup(); newSim(); }; $("ftl-m-aim").onclick = function () { S.aim = true; sim.target = sim.val; paintSetup(); };
+	$("ftl-sm-auto").onclick = function () { S.sman = false; paintSetup(); newSim(); }; $("ftl-sm-man").onclick = function () { S.sman = true; sim.target = sim.val; paintSetup(); };
+	$("ftl-slide").onchange = function () { S.slide = this.checked; if (S.slide && !S.sman) { S.sman = true; sim.target = sim.val; } paintSetup(); };
+	$("ftl-bw").oninput = function () { S.bw = +this.value; save(); paintSetup(); dirty = true; };
+	$("ftl-sz").oninput = function () { S.sz = +this.value; save(); paintSetup(); dirty = true; };
 	function toggleRun() { S.run = !S.run; paintSetup(); } $("ftl-play1").onclick = toggleRun; $("ftl-play2").onclick = toggleRun;
 	$("ftl-restart1").onclick = $("ftl-restart2").onclick = function () { newSim(); };
 	$("ftl-full1").onclick = function () { toggleFull("ftl-wrap1"); }; $("ftl-full2").onclick = function () { toggleFull("ftl-wrap2"); };
-	/* aiming with the pointer */
-	(function () {
-		var cv = $("ftl-c1");
-		function aim(e) { if (!S.aim || S.tab !== "sweep" || !lay.sc) return; var r = cv.getBoundingClientRect(), x = ((e.clientX - r.left) - lay.ox) / lay.sc, y = (lay.h / 2 - (e.clientY - r.top)) / lay.sc; sim.target = clamp(Math.atan2(y, Math.max(x, 0.05)), -rad(60), rad(60)); }
-		cv.addEventListener("pointermove", aim); cv.addEventListener("pointerdown", function (e) { aim(e); if (S.aim && cv.setPointerCapture) try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
-	})();
+	/* aiming / moving by hand: drag or click on the picture (first touch switches that tab to hand mode) */
+	function pointerWorld(cv, e) { var r = cv.getBoundingClientRect(); return { x: ((e.clientX - r.left) - lay.ox) / lay.sc, y: (lay.h / 2 - (e.clientY - r.top)) / lay.sc }; }
+	function handTo(e) {
+		if (!lay.sc) return; var cv = S.tab === "sweep" ? $("ftl-c1") : $("ftl-c2"), w = pointerWorld(cv, e);
+		if (S.tab === "sweep") sim.target = clamp(Math.atan2(w.y, Math.max(w.x, 0.05)), -rad(60), rad(60));
+		else { sim.target = clamp(w.y, -0.58, 0.58); if (S.slide) { S.d = clamp(Math.round(w.x * 100), 4, 90); paintSetup(); } }
+		dirty = true;
+	}
+	["ftl-c1", "ftl-c2"].forEach(function (id) {
+		var cv = $(id), down = false;
+		cv.addEventListener("pointerdown", function (e) {
+			if ((id === "ftl-c1") !== (S.tab === "sweep")) return;
+			if (id === "ftl-c1" && !S.aim) { S.aim = true; sim.target = sim.val; paintSetup(); }
+			if (id === "ftl-c2" && !S.sman) { S.sman = true; sim.target = sim.val; paintSetup(); }
+			down = true; handTo(e); if (cv.setPointerCapture) try { cv.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault();
+		});
+		cv.addEventListener("pointermove", function (e) { if (down) handTo(e); });
+		cv.addEventListener("pointerup", function () { down = false; }); cv.addEventListener("pointercancel", function () { down = false; });
+	});
 	[].forEach.call(root.querySelectorAll(".ftl-tabs button"), function (b) {
 		b.onclick = function () { setTab(b.getAttribute("data-tab"), true); };
 		b.onkeydown = function (e) { var i = TABS.indexOf(b.getAttribute("data-tab")); if (e.key === "ArrowRight") { setTab(TABS[(i + 1) % TABS.length], true); $("ftl-t-" + S.tab).focus(); e.preventDefault(); } else if (e.key === "ArrowLeft") { setTab(TABS[(i + TABS.length - 1) % TABS.length], true); $("ftl-t-" + S.tab).focus(); e.preventDefault(); } };
 	});
-	function paintTheatre() { $("ftl-theatre").setAttribute("aria-pressed", String(document.documentElement.classList.contains("page-theatre"))); }
-	$("ftl-theatre").onclick = function () {
-		var on = !document.documentElement.classList.contains("page-theatre");
-		document.documentElement.classList.toggle("page-theatre", on); document.documentElement.classList.toggle("page-wide", on);
-		try { localStorage.setItem("pageMode", on ? "theatre" : "std"); localStorage.setItem("pageWide", on ? "1" : "0"); } catch (e) {}
-		paintTheatre(); lay.key = ""; dirty = true; if (S.tab === "msg") drawMsg();
-	};
-	paintTheatre();
 	document.addEventListener("keydown", function (e) {
 		var tag = (e.target.tagName || "").toLowerCase(); if (/^(input|textarea|select)$/.test(tag) || e.ctrlKey || e.metaKey || e.altKey) return;
 		if ((S.tab === "sweep" || S.tab === "shadow") && e.key === " " && tag !== "button") { e.preventDefault(); toggleRun(); }
@@ -423,6 +456,7 @@
 			renderRO(spots);
 		}
 	}
+	if (window.ResizeObserver) [1, 2].forEach(function (n) { new ResizeObserver(function () { setTimeout(function () { var w = $("ftl-wrap" + n).clientWidth, k = w >= 900 ? "wide" : "narrow"; if ($("ftl-wrap" + n).getAttribute("data-w") !== k) $("ftl-wrap" + n).setAttribute("data-w", k); lay.key = ""; dirty = true; }, 0); }).observe($("ftl-wrap" + n)); });
 	var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(function () { lay.key = ""; dirty = true; if (S.tab === "msg") drawMsg(); }, 60); });
 	document.addEventListener("fullscreenchange", function () { lay.key = ""; dirty = true; if (S.tab === "msg") drawMsg(); });
 

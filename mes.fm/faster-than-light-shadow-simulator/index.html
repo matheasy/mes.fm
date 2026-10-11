@@ -293,8 +293,6 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
 
 	/* faster-than-light shadow simulator: a wide page with dark stages. Stage colours are custom properties / literals so the derived dark theme leaves them alone. */
-	html body .outer-container {max-width:min(96vw,80em) !important;}
-	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
 	.tu [hidden] {display:none !important;}
 	.ftl {--ftl-bg:#070d1f;--ftl-line:#26325a;--ftl-text:#e6ecfb;--ftl-dim:#93a1c4;--ftl-gold:#fbbf24;--ftl-cyan:#22d3ee;}
 	.ftl-bar {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;justify-content:space-between;margin-bottom:0.7em;}
@@ -302,10 +300,14 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.ftl-tabs button {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#444;border-radius:0.5em 0.5em 0 0;padding:0.5em 0.9em;font-size:0.95em;line-height:1.2;min-height:2.4em;}
 	.ftl-tabs button:hover {border-color:var(--accent);color:var(--accent);}
 	.ftl-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
-	.ftl-theatre {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#555;border-radius:1.2em;padding:0.35em 0.9em;font-size:0.82em;}
-	.ftl-theatre:hover {border-color:var(--accent);color:var(--accent);}
-	.ftl-theatre[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
 	.ftl .tu-label b {text-transform:none;letter-spacing:0;}
+	.ftl-split {display:grid;grid-template-columns:1fr;}
+	.ftl-wrap[data-w="wide"] .ftl-split {grid-template-columns:minmax(0,1fr) minmax(15em,26em);}
+	.ftl-chartbox {position:relative;height:13em;background:#0a1124;border-top:1px solid var(--ftl-line);}
+	.ftl-wrap[data-w="wide"] .ftl-chartbox {height:auto;border-top:0;border-left:1px solid var(--ftl-line);}
+	.ftl-chartbox canvas {position:absolute;inset:0;display:block;width:100%;height:100%;}
+	.ftl-check {display:inline-flex;align-items:center;gap:0.4em;font-size:0.9em;cursor:pointer;}
+	#ftl-c1.is-aim, #ftl-c2.is-aim {cursor:crosshair;touch-action:none;}
 	.ftl-lead {margin:0 0 0.7em;font-size:1em;line-height:1.45;}
 	.ftl-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--ftl-line);background:var(--ftl-bg);}
 	.ftl-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
@@ -334,8 +336,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.ftl-places td, .ftl-places th {text-align:left;padding:0.35em 0.6em;} .ftl-places td:nth-child(n+2), .ftl-places th:nth-child(n+2) {text-align:right;font-variant-numeric:tabular-nums;}
 	.ftl-distrow {margin-bottom:0.2em;} .ftl-own {display:inline-flex;align-items:center;gap:0.4em;font-size:0.85em;} .ftl-own input {width:11em;} .ftl-slow {margin-left:auto;} .ftl-slow input {width:3.8em;}
 	.ftl-seo {margin-top:1.2em;}
-	body.dark-mode #ftl .ftl-tabs button, body.dark-mode #ftl .ftl-theatre {background:#222;border-color:#444;color:#ccc;}
-	body.dark-mode #ftl .ftl-tabs button[aria-selected="true"], body.dark-mode #ftl .ftl-theatre[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	body.dark-mode #ftl .ftl-tabs button {background:#222;border-color:#444;color:#ccc;}
+	body.dark-mode #ftl .ftl-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
 	@media (max-width: 700px) {
 		.ftl-tabs button {padding:0.45em 0.6em;font-size:0.88em;}
 		.ftl-mode {margin-left:0;}
@@ -420,7 +422,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode .ftl{--ftl-bg:#375ed2;--ftl-line:#536ab6}
 	body.dark-mode .ftl-tabs button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
-	body.dark-mode .ftl-theatre{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
 	body.dark-mode .ftl-ro b.is-ftl{color:#fca65f}
 	body.dark-mode .ftl-ro b.is-slow{color:#75e69e}
 	/* TOOL-DARK:END */
@@ -639,7 +640,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    </head>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -656,7 +657,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/faster-than-light-shadow-simulator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/faster-than-light-shadow-simulator/img/logo.png?v=2"></a>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/faster-than-light-shadow-simulator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/faster-than-light-shadow-simulator/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/faster-than-light-shadow-simulator'>
                                     <p class="calculator-title">MES Faster-Than-Light Shadow Simulator</p>
@@ -675,7 +676,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Faster-Than-Light Shadow Simulator</h1>                                        <p class="page-description">Free faster-than-light shadow simulator: swing a torch beam or move a finger in front of a lamp and watch the spot or shadow on the Moon or a far screen move faster than the speed of light, with the real light-travel delay, and see why no message can ride on it.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu ftl" id="ftl">
 		<div class="ftl-bar">
 			<div class="ftl-tabs" role="tablist" aria-label="Faster-than-light shadow simulator sections">
@@ -684,16 +685,18 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" role="tab" id="ftl-t-msg" data-tab="msg" aria-selected="false" aria-controls="ftl-p-msg">Can it carry a message?</button>
 				<button type="button" role="tab" id="ftl-t-calc" data-tab="calc" aria-selected="false" aria-controls="ftl-p-calc">Calculator</button>
 			</div>
-			<button type="button" class="ftl-theatre" id="ftl-theatre" aria-pressed="false" title="Theatre: use nearly the whole window (saved for the whole site)">Theatre</button>
 		</div>
 
 		<!-- 1. sweep -->
 		<section class="ftl-panel" id="ftl-p-sweep" role="tabpanel" aria-labelledby="ftl-t-sweep">
 			<p class="ftl-lead">Aim a torch at a far-away screen and swing it. Every bit of light moves at exactly the speed of light, but <strong>the spot where the beam lands can move faster</strong>, because it is not a thing: it is a different set of photons at every moment. Pick how far away the screen is and how fast you swing.</p>
 			<div class="ftl-wrap" id="ftl-wrap1">
-				<div class="ftl-stage" id="ftl-stage1">
-					<canvas id="ftl-c1" role="img" aria-label="Top view: a torch on the left swings its beam; the beam curves because light takes time to travel; a spot moves up and down a screen on the right, its speed shown as a multiple of the speed of light."></canvas>
-					<div class="ftl-tools"><button type="button" id="ftl-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="ftl-split">
+					<div class="ftl-stage" id="ftl-stage1">
+						<canvas id="ftl-c1" role="img" aria-label="Top view: a torch on the left swings its beam; the beam curves because light takes time to travel; a spot moves up and down a screen on the right, its speed shown as a multiple of the speed of light."></canvas>
+						<div class="ftl-tools"><button type="button" id="ftl-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
+					</div>
+					<div class="ftl-chartbox"><canvas id="ftl-ch1" role="img" aria-label="Chart of the spot speed against time, as a multiple of the speed of light, with the speed-of-light line marked."></canvas></div>
 				</div>
 				<div class="ftl-readouts" id="ftl-ro1"></div>
 			</div>
@@ -703,7 +706,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-btn tu-btn--ghost" id="ftl-restart1">↺ Restart</button>
 					<span class="ftl-mode" role="group" aria-label="How the torch is aimed">
 						<button type="button" class="tu-chip" id="ftl-m-auto" aria-pressed="true">Sweep back and forth</button>
-						<button type="button" class="tu-chip" id="ftl-m-aim" aria-pressed="false">Aim with the mouse</button>
+						<button type="button" class="tu-chip" id="ftl-m-aim" aria-pressed="false">Aim it yourself (drag or click)</button>
 					</span>
 				</div>
 				<div class="ftl-grid">
@@ -711,8 +714,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="ftl-chips" id="ftl-k-chips"></span></div>
 					<div class="tu-field"><span class="tu-label" id="ftl-a-l">Swing either side by: <b id="ftl-a-v"></b></span><input type="range" id="ftl-a" min="5" max="40" step="1" aria-labelledby="ftl-a-l">
 						<span class="tu-note">The spot's speed grows towards the edge of the screen, where the beam meets it at a slant.</span></div>
+					<div class="tu-field"><span class="tu-label" id="ftl-bw-l">Beam width: <b id="ftl-bw-v"></b></span><input type="range" id="ftl-bw" min="1" max="10" step="0.5" aria-labelledby="ftl-bw-l"></div>
 				</div>
-				<p class="tu-note" id="ftl-aimhint" hidden>Move the pointer (or your finger) over the picture and the torch follows it. Flick it quickly and watch the spot.</p>
+				<p class="tu-note" id="ftl-aimhint" hidden>Drag, or just click, anywhere on the picture and the torch points there. Flick it quickly and watch the speed chart.</p>
 			</div>
 		</section>
 
@@ -720,9 +724,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section class="ftl-panel" id="ftl-p-shadow" role="tabpanel" aria-labelledby="ftl-t-shadow" hidden>
 			<p class="ftl-lead">Hold a finger in front of a lamp and its shadow lands on a distant wall, magnified. <strong>Move the finger a little and the shadow moves a lot</strong>: by the ratio of the two distances. Put the wall far enough away and a gentle wave of the hand sweeps the shadow past the speed of light.</p>
 			<div class="ftl-wrap" id="ftl-wrap2">
-				<div class="ftl-stage" id="ftl-stage2">
-					<canvas id="ftl-c2" role="img" aria-label="Top view: a lamp on the left, a finger moving up and down in front of it, and its shadow band moving along a screen on the right. The shadow's speed is shown as a multiple of the speed of light."></canvas>
-					<div class="ftl-tools"><button type="button" id="ftl-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="ftl-split">
+					<div class="ftl-stage" id="ftl-stage2">
+						<canvas id="ftl-c2" role="img" aria-label="Top view: a lamp on the left, a finger moving up and down in front of it, and its shadow band moving along a screen on the right. The shadow's speed is shown as a multiple of the speed of light."></canvas>
+						<div class="ftl-tools"><button type="button" id="ftl-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
+					</div>
+					<div class="ftl-chartbox"><canvas id="ftl-ch2" role="img" aria-label="Chart of the spot speed against time, as a multiple of the speed of light, with the speed-of-light line marked."></canvas></div>
 				</div>
 				<div class="ftl-readouts" id="ftl-ro2"></div>
 			</div>
@@ -730,12 +737,20 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="ftl-row">
 					<button type="button" class="tu-btn tu-btn--primary" id="ftl-play2" aria-pressed="true">❚❚ Pause</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="ftl-restart2">↺ Restart</button>
+					<span class="ftl-mode" role="group" aria-label="How the object is moved">
+						<button type="button" class="tu-chip" id="ftl-sm-auto" aria-pressed="true">Wave it back and forth</button>
+						<button type="button" class="tu-chip" id="ftl-sm-man" aria-pressed="false">Move it yourself (drag or click)</button>
+					</span>
+					<label class="ftl-check"><input type="checkbox" id="ftl-slide"> also slide it toward or away from the lamp</label>
 				</div>
+				<p class="tu-note" id="ftl-shint" hidden>Drag, or click, anywhere on the picture and the object goes there. The shadow, and the speed chart, follow.</p>
 				<div class="ftl-grid">
 					<div class="tu-field"><span class="tu-label" id="ftl-kf-l">Finger speed: <b id="ftl-kf-v"></b></span><input type="range" id="ftl-kf" min="0" max="1000" step="1" aria-labelledby="ftl-kf-l">
 						<span class="ftl-chips" id="ftl-kf-chips"></span></div>
 					<div class="tu-field"><span class="tu-label" id="ftl-d-l">Finger is <b id="ftl-d-v"></b> from the lamp</span><input type="range" id="ftl-d" min="2" max="90" step="1" aria-labelledby="ftl-d-l">
 						<span class="tu-note">The nearer the finger is to the lamp, the more its shadow is magnified on the wall, so the slower it needs to move.</span></div>
+					<div class="tu-field"><span class="tu-label" id="ftl-sz-l">Object size: <b id="ftl-sz-v"></b></span><input type="range" id="ftl-sz" min="3" max="45" step="1" aria-labelledby="ftl-sz-l">
+						<span class="tu-note">A finger, a hand, a wall: a bigger object casts a bigger shadow. Its edges move at the same speed.</span></div>
 				</div>
 			</div>
 		</section>
@@ -816,7 +831,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
 <!-- /MES-BOTTOM-AD -->
                             </div>
-                        </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/reynolds-number-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/reynolds-number-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Reynolds Number Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/search-engines"><img class="mes-aside__img mes-aside__img--logo" src="/search-engines/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Search Engines</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
@@ -863,7 +881,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/faster-than-light-shadow-simulator/js/faster-than-light-shadow-simulator.js?v=1" defer></script>
+	<script src="/faster-than-light-shadow-simulator/js/faster-than-light-shadow-simulator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
@@ -918,6 +936,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     window.addEventListener('resize', function () { if (stuck) fit(); });
     update();
   })();
-</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
 </html>

@@ -1,4 +1,4 @@
-	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu ftl" id="ftl">
 		<div class="ftl-bar">
 			<div class="ftl-tabs" role="tablist" aria-label="Faster-than-light shadow simulator sections">
@@ -7,16 +7,18 @@
 				<button type="button" role="tab" id="ftl-t-msg" data-tab="msg" aria-selected="false" aria-controls="ftl-p-msg">Can it carry a message?</button>
 				<button type="button" role="tab" id="ftl-t-calc" data-tab="calc" aria-selected="false" aria-controls="ftl-p-calc">Calculator</button>
 			</div>
-			<button type="button" class="ftl-theatre" id="ftl-theatre" aria-pressed="false" title="Theatre: use nearly the whole window (saved for the whole site)">Theatre</button>
 		</div>
 
 		<!-- 1. sweep -->
 		<section class="ftl-panel" id="ftl-p-sweep" role="tabpanel" aria-labelledby="ftl-t-sweep">
 			<p class="ftl-lead">Aim a torch at a far-away screen and swing it. Every bit of light moves at exactly the speed of light, but <strong>the spot where the beam lands can move faster</strong>, because it is not a thing: it is a different set of photons at every moment. Pick how far away the screen is and how fast you swing.</p>
 			<div class="ftl-wrap" id="ftl-wrap1">
-				<div class="ftl-stage" id="ftl-stage1">
-					<canvas id="ftl-c1" role="img" aria-label="Top view: a torch on the left swings its beam; the beam curves because light takes time to travel; a spot moves up and down a screen on the right, its speed shown as a multiple of the speed of light."></canvas>
-					<div class="ftl-tools"><button type="button" id="ftl-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="ftl-split">
+					<div class="ftl-stage" id="ftl-stage1">
+						<canvas id="ftl-c1" role="img" aria-label="Top view: a torch on the left swings its beam; the beam curves because light takes time to travel; a spot moves up and down a screen on the right, its speed shown as a multiple of the speed of light."></canvas>
+						<div class="ftl-tools"><button type="button" id="ftl-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
+					</div>
+					<div class="ftl-chartbox"><canvas id="ftl-ch1" role="img" aria-label="Chart of the spot speed against time, as a multiple of the speed of light, with the speed-of-light line marked."></canvas></div>
 				</div>
 				<div class="ftl-readouts" id="ftl-ro1"></div>
 			</div>
@@ -26,7 +28,7 @@
 					<button type="button" class="tu-btn tu-btn--ghost" id="ftl-restart1">↺ Restart</button>
 					<span class="ftl-mode" role="group" aria-label="How the torch is aimed">
 						<button type="button" class="tu-chip" id="ftl-m-auto" aria-pressed="true">Sweep back and forth</button>
-						<button type="button" class="tu-chip" id="ftl-m-aim" aria-pressed="false">Aim with the mouse</button>
+						<button type="button" class="tu-chip" id="ftl-m-aim" aria-pressed="false">Aim it yourself (drag or click)</button>
 					</span>
 				</div>
 				<div class="ftl-grid">
@@ -34,8 +36,9 @@
 						<span class="ftl-chips" id="ftl-k-chips"></span></div>
 					<div class="tu-field"><span class="tu-label" id="ftl-a-l">Swing either side by: <b id="ftl-a-v"></b></span><input type="range" id="ftl-a" min="5" max="40" step="1" aria-labelledby="ftl-a-l">
 						<span class="tu-note">The spot's speed grows towards the edge of the screen, where the beam meets it at a slant.</span></div>
+					<div class="tu-field"><span class="tu-label" id="ftl-bw-l">Beam width: <b id="ftl-bw-v"></b></span><input type="range" id="ftl-bw" min="1" max="10" step="0.5" aria-labelledby="ftl-bw-l"></div>
 				</div>
-				<p class="tu-note" id="ftl-aimhint" hidden>Move the pointer (or your finger) over the picture and the torch follows it. Flick it quickly and watch the spot.</p>
+				<p class="tu-note" id="ftl-aimhint" hidden>Drag, or just click, anywhere on the picture and the torch points there. Flick it quickly and watch the speed chart.</p>
 			</div>
 		</section>
 
@@ -43,9 +46,12 @@
 		<section class="ftl-panel" id="ftl-p-shadow" role="tabpanel" aria-labelledby="ftl-t-shadow" hidden>
 			<p class="ftl-lead">Hold a finger in front of a lamp and its shadow lands on a distant wall, magnified. <strong>Move the finger a little and the shadow moves a lot</strong>: by the ratio of the two distances. Put the wall far enough away and a gentle wave of the hand sweeps the shadow past the speed of light.</p>
 			<div class="ftl-wrap" id="ftl-wrap2">
-				<div class="ftl-stage" id="ftl-stage2">
-					<canvas id="ftl-c2" role="img" aria-label="Top view: a lamp on the left, a finger moving up and down in front of it, and its shadow band moving along a screen on the right. The shadow's speed is shown as a multiple of the speed of light."></canvas>
-					<div class="ftl-tools"><button type="button" id="ftl-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="ftl-split">
+					<div class="ftl-stage" id="ftl-stage2">
+						<canvas id="ftl-c2" role="img" aria-label="Top view: a lamp on the left, a finger moving up and down in front of it, and its shadow band moving along a screen on the right. The shadow's speed is shown as a multiple of the speed of light."></canvas>
+						<div class="ftl-tools"><button type="button" id="ftl-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
+					</div>
+					<div class="ftl-chartbox"><canvas id="ftl-ch2" role="img" aria-label="Chart of the spot speed against time, as a multiple of the speed of light, with the speed-of-light line marked."></canvas></div>
 				</div>
 				<div class="ftl-readouts" id="ftl-ro2"></div>
 			</div>
@@ -53,12 +59,20 @@
 				<div class="ftl-row">
 					<button type="button" class="tu-btn tu-btn--primary" id="ftl-play2" aria-pressed="true">❚❚ Pause</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="ftl-restart2">↺ Restart</button>
+					<span class="ftl-mode" role="group" aria-label="How the object is moved">
+						<button type="button" class="tu-chip" id="ftl-sm-auto" aria-pressed="true">Wave it back and forth</button>
+						<button type="button" class="tu-chip" id="ftl-sm-man" aria-pressed="false">Move it yourself (drag or click)</button>
+					</span>
+					<label class="ftl-check"><input type="checkbox" id="ftl-slide"> also slide it toward or away from the lamp</label>
 				</div>
+				<p class="tu-note" id="ftl-shint" hidden>Drag, or click, anywhere on the picture and the object goes there. The shadow, and the speed chart, follow.</p>
 				<div class="ftl-grid">
 					<div class="tu-field"><span class="tu-label" id="ftl-kf-l">Finger speed: <b id="ftl-kf-v"></b></span><input type="range" id="ftl-kf" min="0" max="1000" step="1" aria-labelledby="ftl-kf-l">
 						<span class="ftl-chips" id="ftl-kf-chips"></span></div>
 					<div class="tu-field"><span class="tu-label" id="ftl-d-l">Finger is <b id="ftl-d-v"></b> from the lamp</span><input type="range" id="ftl-d" min="2" max="90" step="1" aria-labelledby="ftl-d-l">
 						<span class="tu-note">The nearer the finger is to the lamp, the more its shadow is magnified on the wall, so the slower it needs to move.</span></div>
+					<div class="tu-field"><span class="tu-label" id="ftl-sz-l">Object size: <b id="ftl-sz-v"></b></span><input type="range" id="ftl-sz" min="3" max="45" step="1" aria-labelledby="ftl-sz-l">
+						<span class="tu-note">A finger, a hand, a wall: a bigger object casts a bigger shadow. Its edges move at the same speed.</span></div>
 				</div>
 			</div>
 		</section>

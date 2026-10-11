@@ -195,7 +195,7 @@ APPS = {
     "faster-than-light-shadow-simulator": dict(title="MES Faster-Than-Light Shadow Simulator", page_title="Faster-Than-Light Shadow Simulator",
                             tag="A shadow can outrun light.", accent="#b45309", dark="#92400e", tint="#fdf0dc",
                             desc="Free faster-than-light shadow simulator: swing a torch beam or move a finger in front of a lamp and watch the spot or shadow on the Moon or a far screen move faster than the speed of light, with the real light-travel delay, and see why no message can ride on it.",
-                            js_v="1"),
+                            js_v="2"),
     # Fountain Clock: the 3D fountain tab of the Atomic Clock Simulator as its own page (own URL, title, share image and text). Shares that app's source folder (src) and its served script
     # (js_path); content-fountain.html carries only the fountain panel + its own text (data-only="fountain" tells app.js to run just that panel).
     "fountain-clock": dict(title="MES Caesium Fountain Clock", page_title="Caesium Fountain Clock Simulator (3D)",
