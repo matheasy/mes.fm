@@ -531,7 +531,7 @@ def git_dates():
 def page_files():
     for p in sorted(SITE.rglob("*.html")):
         rel = p.relative_to(SITE).as_posix()
-        if "node_modules" in p.parts or "template" in p.name:
+        if "node_modules" in p.parts or "extension" in p.parts or "template" in p.name:   # extension/ = browser extension popup / options pages
             continue
         yield p, rel
 

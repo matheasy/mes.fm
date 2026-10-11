@@ -28,7 +28,7 @@ import xml.sax.saxutils as sx
 REPO = pathlib.Path("~/Documents/GitHub/mes.fm").expanduser()
 SITE = REPO / "mes.fm"
 ORIGIN = "https://mes.fm"
-SKIP_DIRS = ("_http_", "_https_", "node_modules")
+SKIP_DIRS = ("_http_", "_https_", "node_modules", "extension")   # "extension" = the browser extensions' own popup / options pages (mes.fm/<tool>/extension/)
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
