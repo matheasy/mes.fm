@@ -35,7 +35,7 @@ export const SECTIONS = [
 ];
 
 export const IMPORTANT_LINKS_HTML = `<ul>
-<li><a href="https://peakd.com/hive-181335/@mes/tdvxnmej">Hive Overview and How to Sign Up</a></li>
+<li><a href="https://mes.fm/hive-crypto-tutorial">Hive Overview and How to Sign Up</a></li>
 <li><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Fgp_lR0a0rscxWYrHARtkN">Blockchain Tutorials</a></li>
 <li style="margin-left: 20px;">The Big Picture: <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own">Part 1</a> - <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization">Part 2</a></li>
 <li style="margin-left: 20px;"><a href="https://mes.fm/blockchain-playlist">mes.fm/blockchain</a></li>
