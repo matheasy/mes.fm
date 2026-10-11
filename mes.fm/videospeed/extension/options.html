@@ -6,40 +6,46 @@
 <link rel="stylesheet" href="options.css">
 </head>
 <body>
+<header class="top">
+  <div class="brand">MES Video Speed Controller</div>
+  <div class="tools">
+    <label class="sel">Setup <select id="profile"></select></label>
+    <button id="new" title="Start a new setup from the standard one">New</button>
+    <button id="dup" title="Copy this setup">Duplicate</button>
+    <button id="ren">Rename</button>
+    <button id="del" class="warn">Delete</button>
+    <button id="exp" title="Copy this setup as text to share or back up">Export</button>
+    <button id="imp" title="Paste a setup someone gave you">Import</button>
+    <span id="saved" class="saved" aria-live="polite"></span>
+  </div>
+</header>
 <main>
-  <h1>MES Video Speed Controller</h1>
-  <p class="lead">Settings are saved as you change them. Free, private and built by <a href="https://mes.fm/videospeed">MES</a>.</p>
+  <p class="lead">A <b>setup</b> is a full set of shortcuts and preferences. Make one for each person or purpose (watching lectures, music, a fast review setup), switch between them here or from the toolbar popup, and even pin a setup to a site. Changes save automatically.</p>
 
-  <h2>Keyboard shortcuts</h2>
-  <p class="hint">Click a box, then press the key you want. Press Backspace in a box to clear it. Shortcuts only work when the page is not asking you to type, and Ctrl / Alt / Cmd combinations are left alone.</p>
-  <div id="keys" class="grid"></div>
+  <h2>Shortcuts</h2>
+  <div id="rows"></div>
+  <p><button id="add" class="primary">Add New</button></p>
+  <p class="hint">Click a key box and press the key you want (Backspace clears it). Ctrl, Alt and Cmd combinations are left alone, and shortcuts are ignored while you type in a text box. The amount is the step for speed changes, the seconds for rewind and advance, or the speed to jump to. A marker is remembered per video until the page closes.</p>
 
-  <h2>Speed</h2>
-  <div class="grid">
-    <label>Change by <input type="number" id="step" min="0.01" max="2" step="0.01"> per press</label>
-    <label>Preferred speed (G key) <input type="number" id="preferred" min="0.1" max="16" step="0.05"></label>
-    <label>Press-and-hold speed <input type="number" id="holdSpeed" min="0.1" max="10" step="0.1"></label>
-    <label>Rewind / advance <input type="number" id="seek" min="1" max="600" step="1"> seconds</label>
-  </div>
-  <p class="hint">Press and hold the speed label on a video to play at the hold speed while you keep the button down, and drag left or right to change it (0.1 steps up to 4.0, then whole steps up to 10.0). Letting go puts your speed back.</p>
+  <h2>Preferences</h2>
+  <div class="pref"><div><b>Audio support</b><span>Show speed controls on audio elements (podcasts, music sites).</span></div><input type="checkbox" id="audio"></div>
+  <div class="pref"><div><b>Remember playback speed</b><span>Store and auto-apply the last used speed to new videos.</span></div>
+    <select id="remember"><option value="global">On all sites</option><option value="site">For each site</option><option value="off">No (start at 1.0)</option></select></div>
+  <div class="pref"><div><b>Hide controller by default</b><span>The on-video control stays hidden until toggled with its shortcut.</span></div><input type="checkbox" id="hideByDefault"></div>
+  <div class="pref"><div><b>Exclusive keyboard shortcuts</b><span>When possible, prevent websites from also handling these shortcut keys.</span></div><input type="checkbox" id="exclusive"></div>
+  <div class="pref"><div><b>Keep my speed</b><span>Put the speed back if a website resets it (some sites fight the speed).</span></div><input type="checkbox" id="force"></div>
+  <div class="pref"><div><b>Show the controller</b><span>On mouse move over the video (then it fades), or all the time.</span></div>
+    <select id="overlay"><option value="fade">When the mouse moves</option><option value="always">Always</option></select></div>
+  <div class="pref"><div><b>Controller opacity</b></div><input type="range" id="opacity" min="0.2" max="1" step="0.05"></div>
+  <div class="pref"><div><b>Press-and-hold speed</b><span>Hold the speed label on a video for this speed, drag left or right to change it, let go to go back.</span></div><input type="number" id="holdSpeed" min="0.1" max="10" step="0.1"></div>
 
-  <h2>Behaviour</h2>
-  <div class="grid">
-    <label>Remember my speed
-      <select id="remember"><option value="global">on all sites</option><option value="site">for each site</option><option value="off">no, start at 1.0</option></select>
-    </label>
-    <label>On-video control
-      <select id="overlay"><option value="fade">show when the mouse moves over a video</option><option value="always">always show</option><option value="hidden">hide it (shortcuts still work)</option></select>
-    </label>
-    <label>Control opacity <input type="range" id="opacity" min="0.2" max="1" step="0.05"></label>
-  </div>
-  <label class="chk"><input type="checkbox" id="force"> Put my speed back if a website resets it (some sites fight the speed)</label>
-  <label class="chk"><input type="checkbox" id="audio"> Also control audio players (podcasts, music sites)</label>
+  <h2>All setups</h2>
+  <p class="hint">Sites that always use a setup:</p>
+  <div id="sitemap"></div>
+  <p class="hint">Turned off completely on these sites (one per line):</p>
+  <textarea id="sites" rows="3" placeholder="example.com"></textarea>
 
-  <h2>Turned off on these sites</h2>
-  <textarea id="sites" rows="4" placeholder="one site per line, e.g. example.com"></textarea>
-
-  <p><button id="reset">Restore defaults</button> <span id="saved" class="hint" aria-live="polite"></span></p>
+  <p><button id="factory" title="Put the built-in Default and MES's setup back as they were (your other setups stay)">Restore the two built-in setups</button></p>
 </main>
 <script src="shared.js"></script>
 <script src="options.js"></script>
