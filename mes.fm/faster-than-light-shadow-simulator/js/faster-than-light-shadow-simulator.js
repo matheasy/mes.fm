@@ -249,13 +249,16 @@
 			var g = c.createRadialGradient(wx + 4, sy(s.y), 1, wx + 4, sy(s.y), 16); g.addColorStop(0, col); g.addColorStop(1, "rgba(0,0,0,0)");
 			c.fillStyle = g; c.beginPath(); c.arc(wx + 4, sy(s.y), 16, 0, 7); c.fill();
 			c.fillStyle = "#fff"; c.beginPath(); c.arc(wx + 4, sy(s.y), 3.5, 0, 7); c.fill();
-			if (sy(s.y) > 12 && sy(s.y) < L.h - 12) text(c, fmtMult(s.v), Math.min(wx + 24, L.w - 4 - 56), sy(s.y), col, 13, "left", true);
+			if (sy(s.y) > 12 && sy(s.y) < L.h - 12) { if (wx + 24 + 60 <= L.w) text(c, fmtMult(s.v), wx + 24, sy(s.y), col, 13, "left", true); else text(c, fmtMult(s.v), wx - 10, sy(s.y), col, 13, "right", true); }
 		}
 		if (S.run) for (i = 0; i < spots.length; i++) sim.chart.push({ t: sim.t, v: Math.abs(spots[i].v) });
 		while (sim.chart.length && sim.t - sim.chart[0].t > 3.2) sim.chart.shift();
 		drawChart(S.tab === "sweep" ? $("ftl-ch1") : $("ftl-ch2"));
-		text(c, "screen " + F.fmtLen(S.D) + " away · light needs " + F.fmtTime(T0) + " · animation slowed ×" + F.sig(S.cross / T0, 3), 10, 14, COL.dim, 11, "left");
-		if ((S.tab === "sweep" && S.aim) || (S.tab === "shadow" && S.sman)) { c.fillStyle = "rgba(251,146,60,0.92)"; c.fillRect(10, 24, 170, 20); text(c, "✋ MANUAL MODE: drag or click", 16, 34, "#1a0f00", 11, "left", true); }
+		c.font = "11px system-ui,-apple-system,Segoe UI,Roboto,sans-serif";
+		var room = L.w - 10 - 190, info = ["screen " + F.fmtLen(S.D) + " away · light needs " + F.fmtTime(T0) + " · animation slowed ×" + F.sig(S.cross / T0, 3), "screen " + F.fmtLen(S.D) + " away · light needs " + F.fmtTime(T0), "screen " + F.fmtLen(S.D) + " away", ""], k0 = 0;
+		while (k0 < info.length - 1 && c.measureText(info[k0]).width > room) k0++;
+		if (info[k0]) text(c, info[k0], 10, 14, COL.dim, 11, "left");
+		if ((S.tab === "sweep" && S.aim) || (S.tab === "shadow" && S.sman)) { var bt = L.w < 420 ? "✋ MANUAL" : "✋ MANUAL MODE: drag or click"; c.font = "700 11px system-ui,-apple-system,Segoe UI,Roboto,sans-serif"; var bw = c.measureText(bt).width + 16; c.fillStyle = "rgba(251,146,60,0.92)"; c.fillRect(10, 26, bw, 20); text(c, bt, 18, 36, "#1a0f00", 11, "left", true); }
 		return spots;
 	}
 
