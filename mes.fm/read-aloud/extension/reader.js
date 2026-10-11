@@ -309,8 +309,8 @@
     loadSettings(function () {
       if (!collect(mode)) { showNothing(); return; }
       st.active = true; st.playing = false; st.gotBoundary = false; sentIdx = -1;
-      applyStyle(); buildUi(); fillUi();
-      speakFrom(st.idx);
+      applyStyle();
+      loadUi(function () { buildUi(); fillUi(); speakFrom(st.idx); });
     });
   }
 
@@ -386,7 +386,10 @@
 
   // player position + minimised state, remembered per browser (not per site)
   var uiPos = null, uiMin = false, hlPrev = null;
-  try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; if (ui) { place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini(); } } }); } catch (e) { /* ignore */ }
+  function loadUi(cb) {
+    try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; } if (cb) cb(); }); } catch (e) { if (cb) cb(); }
+  }
+  loadUi();
   function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, min: uiMin } }); } catch (e) { /* ignore */ } }
   function place(pt, keep) {
     if (!ui) return;
