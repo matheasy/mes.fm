@@ -86,7 +86,7 @@
      separated by a blank line, already "clean" for SRLib.tokenize) plus, for every character, the item it came from and the offset in
      that item's text node, so a spoken word can be turned back into a DOM Range. */
   function buildText(items) {
-    var text = [], own = [], off = [], first = [], last = [], started = false, gap = 0, lastBlock = null;
+    var text = [], own = [], off = [], first = [], last = [], started = false, gap = 0, lastBlock = null, po = 0, pf = 0;
     for (var i = 0; i < items.length; i++) {
       var it = items[i], s = String(it.t == null ? '' : it.t), base = it.base || 0;
       first[i] = -1; last[i] = -1;
@@ -97,9 +97,9 @@
         if (started && it.b !== lastBlock) gap = 2;
         if (started && gap > 0) {
           var sep = gap === 2 ? '\n\n' : ' ';
-          for (var k = 0; k < sep.length; k++) { text.push(sep.charAt(k)); own.push(i); off.push(base + j); }
+          for (var k = 0; k < sep.length; k++) { text.push(sep.charAt(k)); own.push(po); off.push(pf); }   // a separator belongs to the character before it
         }
-        text.push(ch); own.push(i); off.push(base + j);
+        text.push(ch); own.push(i); off.push(base + j); po = i; pf = base + j;
         if (first[i] < 0) first[i] = text.length - 1;
         last[i] = text.length - 1;
         started = true; gap = 0; lastBlock = it.b;
