@@ -114,7 +114,7 @@
 	}
 	var mv = null;
 	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true },
-		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }],
+		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
 		hint: "Drag to move. Drag a square handle to resize, just outside a corner to rotate (Shift = snap / keep proportions). Arrow keys nudge.",
 		down: function (e) {
 			var L = PE.active(), o = PE.opt.move, z = PE.view.zoom;

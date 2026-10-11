@@ -83,3 +83,4 @@
 		.pe-stage {height:60vh;flex:none;} .pe-side {width:auto;border-left:0;border-top:1px solid var(--pe-line);max-height:none;overflow:visible;} .pe-opts {gap:0.3em 0.7em;} .pe-opt input[type=range] {width:6em;} .pe-status {gap:0.8em;font-size:0.85em;} .pe-hint {display:none;}
 		.pe.pe-win .pe-stage {height:auto;flex:1;} .pe.pe-win {overflow:auto;}
 	}
+	.pe-aibar {height:0.5em;background:var(--pe-field);border-radius:1em;overflow:hidden;margin-top:0.7em;} .pe-aibar i {display:block;height:100%;width:0;background:var(--pe-on);transition:width 0.15s;}
