@@ -103,3 +103,8 @@
 	body.dark-mode #se .se-def-top span {color:#c9ced6;}
 	body.dark-mode #se .se-def-panel {border-top-color:#5a3a28;}
 	body.dark-mode #se .se-def-panel code {background:#1a1a1a;border-color:#444;color:#eee;}
+	.se-def-btns {display:flex;gap:0.5em;flex-wrap:wrap;}
+	.se-def-mini {margin:0 0 0.8em;}
+	.se-def-mini[hidden], .se-def[hidden] {display:none;}
+	.se-sc-chips {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0.4em 0;}
+	.se-sc-in {width:6em;}

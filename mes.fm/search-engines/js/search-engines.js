@@ -466,10 +466,15 @@
 	(function () {
 		var tpl = "https://mes.fm/search-engines?q=%s", btn = $("se-def-btn"), panel = $("se-def-panel"), steps = $("se-def-steps"), seg = $("se-def-br"), cur = "";
 		function codeRow(txt, label) { return '<div class="se-def-copy"><code>' + esc(txt) + '</code><button type="button" class="tu-chip" data-copy="' + esc(txt) + '">Copy' + (label ? " " + esc(label) : "") + '</button></div>'; }
+		var sc = saved.defsc || "mes", SCS = ["m", "mes", "se", "s"];
+		function scRow() {
+			return '<div class="se-sc-chips">' + SCS.map(function (x) { return '<button type="button" class="tu-chip" data-sc="' + x + '" aria-pressed="' + (x === sc) + '">' + x + '</button>'; }).join("") +
+				'<input class="tu-input se-sc-in" id="se-sc-in" type="text" maxlength="12" value="' + esc(sc) + '" aria-label="Shortcut" autocomplete="off" spellcheck="false"><button type="button" class="tu-chip" id="se-sc-copy" data-copy="' + esc(sc) + '">Copy</button></div>';
+		}
 		function addForm(url, where) {
 			return '<ol><li>Open this settings page: ' + codeRow(url, "address") + '<span class="tu-note">(paste it in a new tab: browsers don\'t allow a link to open their settings)</span></li>' +
 				'<li>Next to <b>' + where + '</b> press <b>Add</b>.</li>' +
-				'<li><b>Name:</b> ' + codeRow("MES Search Engines", "") + '<b>Shortcut:</b> ' + codeRow("mes", "") + '<span class="tu-note">(optional: type <b>mes</b> then Space in the address bar to use it just once)</span></li>' +
+				'<li><b>Name:</b> ' + codeRow("MES Search Engines", "") + '<b>Shortcut</b> (optional, pick a short one):' + scRow() + '<span class="tu-note">Type <b class="se-sc-b">' + esc(sc) + '</b> then Space in the address bar to search here just once, even if it is not your default.</span></li>' +
 				'<li><b>URL with %s in place of query:</b>' + codeRow(tpl, "URL") + '</li>' +
 				'<li>Save, then on the new row open the <b>⋮</b> menu and choose <b>Make default</b>.</li></ol>';
 		}
@@ -490,6 +495,14 @@
 			}
 		};
 		seg.onclick = function (e) { var b = e.target.closest("button"); if (b) show(b.dataset.b); };
+		function setSc(v) { sc = v.replace(/\s+/g, "").slice(0, 12) || "mes"; sset({ defsc: sc }); var c = $("se-sc-copy"); if (c) c.dataset.copy = sc; Array.prototype.forEach.call(steps.querySelectorAll(".se-sc-b"), function (b) { b.textContent = sc; }); Array.prototype.forEach.call(steps.querySelectorAll("[data-sc]"), function (b) { b.setAttribute("aria-pressed", b.dataset.sc === sc ? "true" : "false"); }); }
+		steps.addEventListener("input", function (e) { if (e.target.id === "se-sc-in") setSc(e.target.value); });
+		steps.addEventListener("click", function (e) { var b = e.target.closest("[data-sc]"); if (b) { setSc(b.dataset.sc); $("se-sc-in").value = sc; } });
+		var card = $("se-def"), mini = $("se-def-mini");
+		function hideCard(h, keep) { card.hidden = h; mini.hidden = !h; if (!keep) sset({ defhide: h }); }
+		$("se-def-hide").onclick = function () { hideCard(true); };
+		$("se-def-show").onclick = function () { hideCard(false); if (panel.hidden) btn.click(); card.scrollIntoView({ block: "nearest" }); };
+		if (saved.defhide) hideCard(true, true);
 		steps.onclick = function (e) { var b = e.target.closest("[data-copy]"); if (!b) return; copy(b.dataset.copy).then(function (ok) { toast(ok ? "Copied" : "Copy failed"); }); };
 	})();
 

@@ -397,6 +397,11 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #se .se-def-top span {color:#c9ced6;}
 	body.dark-mode #se .se-def-panel {border-top-color:#5a3a28;}
 	body.dark-mode #se .se-def-panel code {background:#1a1a1a;border-color:#444;color:#eee;}
+	.se-def-btns {display:flex;gap:0.5em;flex-wrap:wrap;}
+	.se-def-mini {margin:0 0 0.8em;}
+	.se-def-mini[hidden], .se-def[hidden] {display:none;}
+	.se-sc-chips {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0.4em 0;}
+	.se-sc-in {width:6em;}
 
 
 	@media print {
@@ -755,10 +760,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">Search Engines</h1>                                        <p class="page-description">Type your search once and open it in Google (.com, .ca, .co.uk and more), Bing, DuckDuckGo, Brave, Yandex and 60+ other search engines, AI assistants and video sites, in tabs or tiled windows. Compare results, check censorship and bias, and add your own engines.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu se" id="se">
+		<p class="se-def-mini" id="se-def-mini" hidden><button type="button" class="tu-chip" id="se-def-show">⭐ Make this my default search…</button></p>
 		<div class="tu-card se-def" id="se-def">
 			<div class="se-def-top">
 				<div><b>⭐ Make this your browser's default search</b><span>Type a search in the address bar and it lands here, ready to open in every engine you picked.</span></div>
-				<button type="button" class="tu-btn tu-btn--primary" id="se-def-btn" aria-expanded="false" aria-controls="se-def-panel">Set as my default search…</button>
+				<div class="se-def-btns"><button type="button" class="tu-btn tu-btn--primary" id="se-def-btn" aria-expanded="false" aria-controls="se-def-panel">Set as my default search…</button><button type="button" class="tu-btn tu-btn--ghost" id="se-def-hide" title="Hide this box (a small link stays below the title)">Hide</button></div>
 			</div>
 			<div class="se-def-panel" id="se-def-panel" hidden>
 				<p class="tu-note" style="margin-top:0;">No website can switch your default search by itself (browsers don't allow it), but it takes about 30 seconds. Pick your browser:</p>

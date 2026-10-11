@@ -1,9 +1,10 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu se" id="se">
+		<p class="se-def-mini" id="se-def-mini" hidden><button type="button" class="tu-chip" id="se-def-show">⭐ Make this my default search…</button></p>
 		<div class="tu-card se-def" id="se-def">
 			<div class="se-def-top">
 				<div><b>⭐ Make this your browser's default search</b><span>Type a search in the address bar and it lands here, ready to open in every engine you picked.</span></div>
-				<button type="button" class="tu-btn tu-btn--primary" id="se-def-btn" aria-expanded="false" aria-controls="se-def-panel">Set as my default search…</button>
+				<div class="se-def-btns"><button type="button" class="tu-btn tu-btn--primary" id="se-def-btn" aria-expanded="false" aria-controls="se-def-panel">Set as my default search…</button><button type="button" class="tu-btn tu-btn--ghost" id="se-def-hide" title="Hide this box (a small link stays below the title)">Hide</button></div>
 			</div>
 			<div class="se-def-panel" id="se-def-panel" hidden>
 				<p class="tu-note" style="margin-top:0;">No website can switch your default search by itself (browsers don't allow it), but it takes about 30 seconds. Pick your browser:</p>
