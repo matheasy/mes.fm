@@ -1,0 +1,25 @@
+:root { color-scheme: light dark; --bg:#fff; --fg:#1d1d1f; --mut:#6b7280; --line:#d9dce1; --acc:#15803d; --accfg:#fff; --chip:#f1f6f2; --warn:#c0392b; }
+@media (prefers-color-scheme: dark) { :root { --bg:#161618; --fg:#f0f0f0; --mut:#a0a4ab; --line:#3a3c41; --acc:#4cc38a; --accfg:#0b2417; --chip:#232427; --warn:#ef7a6c; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.top { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+.brand { font-weight: 700; font-size: 17px; }
+.tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.sel { display: flex; gap: 6px; align-items: center; }
+.saved { color: var(--acc); font-size: 13px; min-width: 50px; }
+main { max-width: 760px; margin: 0 auto; padding: 18px 20px 70px; }
+h2 { margin: 28px 0 6px; font-size: 20px; font-weight: 600; }
+.lead, .hint { color: var(--mut); }
+.hint { font-size: 13px; }
+select, button, input[type=color] { font: inherit; background: var(--chip); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+select { max-width: 280px; }
+button { cursor: pointer; } button:hover { border-color: var(--acc); } button.warn { color: var(--warn); }
+input[type=color] { width: 54px; height: 34px; padding: 2px; }
+.pref { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.pref b { display: block; } .pref span { display: block; color: var(--mut); font-size: 13px; }
+.pref input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--acc); flex: none; }
+.col { display: grid; gap: 6px; justify-items: end; } .col2 { display: flex; gap: 10px; align-items: center; }
+.rng { display: flex; gap: 10px; align-items: center; } .rng input { width: 220px; accent-color: var(--acc); } output { min-width: 44px; text-align: right; }
+.sample { margin: 12px 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; font-size: 18px; }
+kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--chip); }
+.sm { display: flex; gap: 8px; align-items: center; margin: 4px 0; }

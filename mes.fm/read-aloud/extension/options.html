@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MES Read Aloud: settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">MES Read Aloud</div>
+  <div class="tools">
+    <label class="sel">Setup <select id="profile"></select></label>
+    <button id="new">New</button><button id="dup">Duplicate</button><button id="ren">Rename</button><button id="del" class="warn">Delete</button>
+    <button id="exp">Export</button><button id="imp">Import</button>
+    <span id="saved" class="saved" aria-live="polite"></span>
+  </div>
+</header>
+<main>
+  <p class="lead">A <b>setup</b> is a voice, a speed and a highlight style. Make one for each purpose (studying, quick listening, a person who likes it slow) and switch in the player or the toolbar popup. Changes save automatically.</p>
+
+  <h2>Voice and speed</h2>
+  <div class="pref"><div><b>Voice</b><span>Automatic picks the best installed voice for the language of the text. Natural, neural and online voices sound best.</span></div>
+    <div class="col"><select id="voice"></select><button id="test">Test voice</button></div></div>
+  <div class="pref"><div><b>Speed</b></div><div class="rng"><input type="range" id="rate" min="0.5" max="4" step="0.05"><output id="rateout"></output></div></div>
+  <div class="pref"><div><b>Pitch</b></div><div class="rng"><input type="range" id="pitch" min="0.5" max="2" step="0.05"><output id="pitchout"></output></div></div>
+  <div class="pref"><div><b>Volume</b></div><div class="rng"><input type="range" id="volume" min="0" max="1" step="0.05"><output id="volumeout"></output></div></div>
+
+  <h2>Highlighting</h2>
+  <div class="pref"><div><b>Highlight the word being read</b></div><div class="col2"><input type="color" id="wordColor"><input type="checkbox" id="highlightWord"></div></div>
+  <div class="pref"><div><b>Highlight the sentence being read</b></div><div class="col2"><input type="color" id="sentenceColor"><input type="checkbox" id="highlightSentence"></div></div>
+  <div class="pref"><div><b>Scroll to follow the reading</b><span>Pauses for a few seconds after you scroll yourself.</span></div><input type="checkbox" id="autoScroll"></div>
+  <div class="pref"><div><b>Double-click a word to start reading from it</b></div><input type="checkbox" id="doubleClickToJump"></div>
+  <p id="sample" class="sample">The quick brown fox <span class="s">jumps over <span class="w">the</span> lazy</span> dog.</p>
+
+  <h2>What gets read</h2>
+  <div class="pref"><div><b>Page content</b><span>"Article" reads the main content and skips menus, sidebars and footers. "Everything" reads all visible text.</span></div>
+    <select id="scope"><option value="smart">Article / main content</option><option value="page">Everything visible</option></select></div>
+  <div class="pref"><div><b>Skip code blocks</b></div><input type="checkbox" id="skipCode"></div>
+  <div class="pref"><div><b>Skip tables</b></div><input type="checkbox" id="skipTables"></div>
+  <div class="pref"><div><b>Read the page title first</b></div><input type="checkbox" id="readTitle"></div>
+
+  <h2>Player</h2>
+  <div class="pref"><div><b>Position</b></div><select id="playerPosition"><option value="bottom">Bottom of the page</option><option value="top">Top of the page</option></select></div>
+  <div class="pref"><div><b>Close the player when the reading ends</b></div><input type="checkbox" id="closeWhenDone"></div>
+  <p class="hint">While the player is open: <kbd>Space</kbd> pause / resume, <kbd>&larr;</kbd> <kbd>&rarr;</kbd> previous / next sentence, <kbd>&uarr;</kbd> <kbd>&darr;</kbd> speed, <kbd>Esc</kbd> close. The start shortcut (Alt+Shift+R by default) can be changed at <b>chrome://extensions/shortcuts</b> (brave://extensions/shortcuts, edge://extensions/shortcuts).</p>
+
+  <h2>Sites that always use a setup</h2>
+  <div id="sitemap"></div>
+  <p><button id="factory">Restore the built-in setups</button></p>
+</main>
+<script src="shared.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
