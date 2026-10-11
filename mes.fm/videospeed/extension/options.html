@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MES Video Speed Controller: settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<main>
+  <h1>MES Video Speed Controller</h1>
+  <p class="lead">Settings are saved as you change them. Free, private and built by <a href="https://mes.fm/videospeed">MES</a>.</p>
+
+  <h2>Keyboard shortcuts</h2>
+  <p class="hint">Click a box, then press the key you want. Press Backspace in a box to clear it. Shortcuts only work when the page is not asking you to type, and Ctrl / Alt / Cmd combinations are left alone.</p>
+  <div id="keys" class="grid"></div>
+
+  <h2>Speed</h2>
+  <div class="grid">
+    <label>Change by <input type="number" id="step" min="0.01" max="2" step="0.01"> per press</label>
+    <label>Preferred speed (G key) <input type="number" id="preferred" min="0.1" max="16" step="0.05"></label>
+    <label>Press-and-hold speed <input type="number" id="holdSpeed" min="0.1" max="10" step="0.1"></label>
+    <label>Rewind / advance <input type="number" id="seek" min="1" max="600" step="1"> seconds</label>
+  </div>
+  <p class="hint">Press and hold the speed label on a video to play at the hold speed while you keep the button down, and drag left or right to change it (0.1 steps up to 4.0, then whole steps up to 10.0). Letting go puts your speed back.</p>
+
+  <h2>Behaviour</h2>
+  <div class="grid">
+    <label>Remember my speed
+      <select id="remember"><option value="global">on all sites</option><option value="site">for each site</option><option value="off">no, start at 1.0</option></select>
+    </label>
+    <label>On-video control
+      <select id="overlay"><option value="fade">show when the mouse moves over a video</option><option value="always">always show</option><option value="hidden">hide it (shortcuts still work)</option></select>
+    </label>
+    <label>Control opacity <input type="range" id="opacity" min="0.2" max="1" step="0.05"></label>
+  </div>
+  <label class="chk"><input type="checkbox" id="force"> Put my speed back if a website resets it (some sites fight the speed)</label>
+  <label class="chk"><input type="checkbox" id="audio"> Also control audio players (podcasts, music sites)</label>
+
+  <h2>Turned off on these sites</h2>
+  <textarea id="sites" rows="4" placeholder="one site per line, e.g. example.com"></textarea>
+
+  <p><button id="reset">Restore defaults</button> <span id="saved" class="hint" aria-live="polite"></span></p>
+</main>
+<script src="shared.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MES Video Speed Controller</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<header><span class="brand">MES Video Speed</span><a href="https://mes.fm/videospeed" target="_blank" rel="noopener">mes.fm/videospeed</a></header>
+<section id="has" hidden>
+  <div class="big"><button id="m" aria-label="Slower">&minus;</button><output id="cur">1.0&times;</output><button id="p" aria-label="Faster">+</button></div>
+  <input id="sl" type="range" min="0.1" max="4" step="0.05" value="1" aria-label="Speed">
+  <div class="presets" id="presets"></div>
+</section>
+<section id="none" hidden>
+  <p id="nonetext">No video found on this page.</p>
+  <p class="small">Start a video, then open this again. If a video is inside another frame, click it once first.</p>
+</section>
+<section class="opts">
+  <label>Remember speed
+    <select id="remember"><option value="global">on all sites</option><option value="site">per site</option><option value="off">no (start at 1.0)</option></select>
+  </label>
+  <label>On-video control
+    <select id="overlay"><option value="fade">show on hover</option><option value="always">always show</option><option value="hidden">hide</option></select>
+  </label>
+  <label class="chk"><input type="checkbox" id="off"> Turn off on <b id="hostname">this site</b></label>
+</section>
+<footer><a href="options.html" target="_blank" id="more">All settings and shortcuts</a></footer>
+<script src="shared.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>
