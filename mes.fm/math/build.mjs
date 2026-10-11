@@ -336,6 +336,9 @@ const YT_CATEGORIES = [
   { id: "life", label: "Sports & Everyday Life", test: (t) => /nba|curry|medley|olympic|swim|betting|odds|sports|world record|ye shiwen|football|basketball|campfire|bike|bicycl|band!|tribute|documentary/i.test(t) },
 ];
 const YT_VIDEOS = JSON.parse(readFileSync(join(__dirname, "youtube-videos.json"), "utf8"));
+// video id -> peakd.com post found in that video's YouTube description (update_youtube_hive_links.py; steemit.com links already rewritten to peakd.com).
+// A video with one opens the Hive post from its tile and lists both links in List View.
+const YT_HIVE = existsSync(join(__dirname, "youtube-hive-links.json")) ? JSON.parse(readFileSync(join(__dirname, "youtube-hive-links.json"), "utf8")) : {};
 function fmtDuration(sec) {
   const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
   return h ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`;
@@ -355,11 +358,14 @@ SECTIONS.push({
     { href: "https://www.youtube.com/@mes/videos", title: "@mes on YouTube (all videos)", standalone: true },
     ...YT_VIDEOS.map((v, i) => {
       const cats = YT_CATEGORIES.filter((c) => c.test(v.title)).map((c) => c.id);
+      const yt = `https://www.youtube.com/watch?v=${v.id}`;
+      const hive = YT_HIVE[v.id];
       return {
-        href: `https://www.youtube.com/watch?v=${v.id}`,
+        href: hive || yt,
+        links: hive ? [{ label: "Hive", href: hive }, { label: "YouTube", href: yt }] : [{ label: "YouTube", href: yt }],
         title: v.title,
         image: `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`,
-        listThumb: false,
+        listThumb: true,
         meta: `${fmtDuration(v.dur)} \u00b7 ${fmtViews(v.views)}`,
         sortKeys: { i, v: v.views, d: v.dur },
         cats: (cats.length ? cats : ["other"]).join(" "),
@@ -727,6 +733,7 @@ function escapeHtml(str) {
 // hand-curated playlist link mislabeled as "YouTube" -- if the post has no
 // watch-on row, the List View row just shows Notes alone.
 function buildLinksForItem(item, meta) {
+  if (item.links) return item.links;
   const m = meta[item.href] || {};
   const sorted = sortWatchLinks(m.watchLinks || []);
   // An item whose own link is a YouTube video (a livestream not mirrored to
@@ -774,7 +781,7 @@ function buildCard(item, meta) {
   const image = item.image || m.image;
   const thumbStyle = image ? ` style="background-image:url('${cssSafeUrl(escapeHtml(image))}')"` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
-  const external = item.image && /^https?:\/\/(?:www\.)?youtube\.com\//.test(item.href);
+  const external = item.image && /^https?:\/\/(?:www\.)?(?:youtube\.com|peakd\.com)\//.test(item.href);
   return `<a class="link-card"${catsAttr}${sortAttrs(item)} href="${escapeHtml(item.href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
       <span class="link-card-thumb"${thumbStyle}></span>
       <span class="link-card-body">
@@ -790,7 +797,8 @@ function buildRow(item, meta, linksBuilder) {
   const linksHtml = links
     .map((l) => `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
     .join(" - ");
-  const imgHtml = m.image && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(m.image)}" alt="">` : "";
+  const rowImage = item.image || m.image;
+  const imgHtml = rowImage && item.listThumb !== false ? `<img class="list-thumb" src="${escapeHtml(rowImage)}" alt="${escapeHtml(item.title)}">` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
   return `<div class="list-row"${catsAttr}${sortAttrs(item)}>
       <h3>${escapeHtml(item.title)}</h3>
