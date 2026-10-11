@@ -325,21 +325,25 @@
     '.p.bottom{bottom:12px}.p.top{top:12px}.bar{height:5px;border-radius:3px;background:#3a3c41;cursor:pointer;margin:2px 0 8px;position:relative}.fill{height:100%;border-radius:3px;background:#4cc38a;width:0}' +
     '.row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}button{all:unset;cursor:pointer;min-width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 16px/1 system-ui,sans-serif;color:#f2f2f2;background:#2c2e33;padding:0 8px;text-align:center}' +
     'button:hover,button:focus-visible{background:#3d4047;outline:none}button.pl{background:#15803d;min-width:44px}button.pl:hover{background:#1a9a49}select{font:inherit;background:#2c2e33;color:#f2f2f2;border:1px solid #3a3c41;border-radius:8px;height:34px;padding:0 6px;max-width:170px}' +
-    '.rate{min-width:54px;font-size:13px}.st{margin-left:auto;color:#aab0b8;font-size:12px;text-align:right;min-width:90px}.st.err{color:#ff9b8f}.sp{flex:1}';
+    '.rate{min-width:54px;font-size:13px}.st{margin-left:auto;color:#aab0b8;font-size:12px;text-align:right;min-width:90px}.st.err{color:#ff9b8f}.sp{flex:1}' +
+    '.grip{cursor:grab;min-width:22px;padding:0 2px;color:#8a919a;letter-spacing:-2px}.p.dragging,.p.dragging .grip{cursor:grabbing}.p{touch-action:none}' +
+    '.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
+    '.p.moved{left:var(--x);top:var(--y);bottom:auto;transform:none}' +
+    '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}';
 
   function buildUi() {
     if (ui) { ui.host.remove(); ui = null; }
     var h = document.createElement('div'); h.id = 'mesra-host';
     h.style.cssText = 'all:initial';
     var sh = h.attachShadow({ mode: 'closed' });
-    sh.innerHTML = '<style>' + CSS_UI + '</style><div class="p ' + P.playerPosition + '" role="region" aria-label="MES Read Aloud">' +
+    sh.innerHTML = '<style>' + CSS_UI + '</style><div class="p ' + (P.playerPosition === 'top' ? 'top' : 'bottom') + '" role="region" aria-label="MES Read Aloud">' +
       '<div class="bar" title="Click to jump"><div class="fill"></div></div>' +
-      '<div class="row"><button class="prev" title="Previous sentence (Left arrow)">&#9198;</button><button class="pl" title="Pause / resume (Space)">&#9654;</button><button class="next" title="Next sentence (Right arrow)">&#9197;</button>' +
+      '<div class="row"><button class="grip" title="Drag to move the player (double-click to put it back)">&#8942;&#8942;</button><button class="prev" title="Previous sentence (Left arrow)">&#9198;</button><button class="pl" title="Pause / resume (Space)">&#9654;</button><button class="next" title="Next sentence (Right arrow)">&#9197;</button>' +
       '<button class="slow" title="Slower (Down arrow)">&minus;</button><button class="rate" title="Speed">1.0&times;</button><button class="fast" title="Faster (Up arrow)">+</button>' +
       '<select class="voice" title="Voice"></select><select class="setup" title="Setup"></select>' +
-      '<span class="st" aria-live="polite"></span><button class="gear" title="Settings">&#9881;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
+      '<span class="st" aria-live="polite"></span><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
     var q = function (c) { return sh.querySelector(c); };
-    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st') };
+    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), mini: q('.mini'), grip: q('.grip') };
     q('.prev').onclick = function () { jumpSentence(-1); };
     q('.next').onclick = function () { jumpSentence(1); };
     ui.pl.onclick = toggle;
@@ -356,8 +360,49 @@
     };
     ui.voice.onchange = function () { P.voice = ui.voice.value; saveSettings(); if (st.playing) restartSoon(); };
     ui.setup.onchange = function () { S.active = ui.setup.value; saveSettings(); P = RA.resolveProfile(S, host).config; applyStyle(); fillUi(); if (st.playing) restartSoon(); };
+    ui.hl.onclick = toggleHighlight;
+    ui.mini.onclick = toggleMini;
+    ui.grip.ondblclick = function () { place(null); };
+    // drag the player anywhere by its grip or any empty part of it
+    var drag = null;
+    ui.p.addEventListener('pointerdown', function (e) {
+      if (e.button > 0 || (e.target.closest && e.target.closest('button:not(.grip),select,input,.bar'))) return;
+      var r = ui.p.getBoundingClientRect();
+      drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false };
+      try { ui.p.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+    });
+    ui.p.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      drag.moved = true; ui.p.classList.add('dragging');
+      place({ x: e.clientX - drag.dx, y: e.clientY - drag.dy }, true);
+    });
+    function endDrag() { if (!drag) return; var m = drag.moved; drag = null; ui.p.classList.remove('dragging'); if (m) saveUi(); }
+    ui.p.addEventListener('pointerup', endDrag);
+    ui.p.addEventListener('pointercancel', endDrag);
     ['click', 'mousedown', 'mouseup', 'pointerdown', 'dblclick', 'keydown', 'keyup'].forEach(function (t) { h.addEventListener(t, function (e) { e.stopPropagation(); }); });
     (document.body || document.documentElement).appendChild(h);
+    place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini();
+  }
+
+  // player position + minimised state, remembered per browser (not per site)
+  var uiPos = null, uiMin = false, hlPrev = null;
+  try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; if (ui) { place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini(); } } }); } catch (e) { /* ignore */ }
+  function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, min: uiMin } }); } catch (e) { /* ignore */ } }
+  function place(pt, keep) {
+    if (!ui) return;
+    if (!pt) { uiPos = null; ui.p.classList.remove('moved'); if (!keep) saveUi(); return; }
+    var w = ui.p.offsetWidth || 300, h2 = ui.p.offsetHeight || 60;
+    var x = Math.max(8, Math.min(window.innerWidth - w - 8, pt.x)), y = Math.max(8, Math.min(window.innerHeight - h2 - 8, pt.y));
+    uiPos = { x: x, y: y };
+    ui.p.style.setProperty('--x', x + 'px'); ui.p.style.setProperty('--y', y + 'px'); ui.p.classList.add('moved');
+  }
+  window.addEventListener('resize', function () { if (ui && uiPos) place(uiPos, true); });
+  function fillMini() { if (ui) { ui.mini.innerHTML = uiMin ? '&#9652;' : '&#9662;'; ui.mini.title = uiMin ? 'Show the full player (M)' : 'Minimise to a small bar (M)'; } }
+  function toggleMini() { uiMin = !uiMin; if (ui) { ui.p.classList.toggle('min', uiMin); fillMini(); if (uiPos) place(uiPos, true); } saveUi(); }
+  function toggleHighlight() {
+    if (P.highlightWord || P.highlightSentence) { hlPrev = { w: P.highlightWord, s: P.highlightSentence }; P.highlightWord = false; P.highlightSentence = false; clearHighlight(); }
+    else { P.highlightWord = hlPrev ? hlPrev.w : true; P.highlightSentence = hlPrev ? hlPrev.s : true; if (!P.highlightWord && !P.highlightSentence) { P.highlightWord = true; P.highlightSentence = true; } sentIdx = -1; if (st.words) highlight(st.idx); }
+    saveSettings(); fillUi();
   }
 
   function setStatus(msg, err) { if (ui) { ui.st.textContent = msg; ui.st.className = 'st' + (err ? ' err' : ''); } }
@@ -374,7 +419,8 @@
 
   function fillUi() {
     if (!ui) return;
-    ui.p.className = 'p ' + P.playerPosition;
+    ui.p.classList.toggle('top', P.playerPosition === 'top'); ui.p.classList.toggle('bottom', P.playerPosition !== 'top');
+    ui.hl.classList.toggle('on', !!(P.highlightWord || P.highlightSentence));
     ui.pl.innerHTML = st.playing ? '&#10074;&#10074;' : '&#9654;';
     ui.pl.title = st.playing ? 'Pause (Space)' : 'Resume (Space)';
     ui.rate.innerHTML = (Math.round(P.rate * 100) / 100).toFixed(P.rate * 100 % 10 ? 2 : 1).replace(/0$/, '') + '&times;';
@@ -416,6 +462,8 @@
     else if (k === 'ArrowUp') setRate(P.rate + 0.1);
     else if (k === 'ArrowDown') setRate(P.rate - 0.1);
     else if (k === 'Escape') stopAll();
+    else if (k === 'h' || k === 'H') toggleHighlight();
+    else if (k === 'm' || k === 'M') toggleMini();
     else used = false;
     if (used) { e.preventDefault(); e.stopImmediatePropagation(); }
   }, true);
