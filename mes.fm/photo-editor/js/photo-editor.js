@@ -431,6 +431,7 @@ var MESPixel = (function () {
 		if (!L) { if (!quiet) PE.toast("Add or open an image first"); return false; }
 		if (L.locked) { if (!quiet) PE.toast("This layer is locked"); return false; }
 		if (PE.isGroup(L)) { if (!quiet) PE.toast("This is a group: select a layer inside it"); return false; }
+		L.eq = null;
 		if (L.type === "text") { PE.rasterize(L); PE.emit("layers"); }
 		PE.bake(L); if (!noGrow) PE.growLayer(L, { x: 0, y: 0, w: PE.doc.w, h: PE.doc.h }); return true;
 	};
@@ -584,7 +585,7 @@ var MESPixel = (function () {
 	var H = PE.hist = { stack: [], idx: -1 };
 	function snapLayer(L) {
 		var s = L._snap; if (!s || s.rev !== L.rev || (L.mask ? !s.m : !!s.m)) { s = L._snap = { rev: L.rev, c: clone(L.canvas), m: L.mask ? clone(L.mask) : null }; }
-		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, editMask: L.editMask }, snap: s };
+		return { meta: { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text ? JSON.parse(JSON.stringify(L.text)) : null, eq: L.eq ? JSON.parse(JSON.stringify(L.eq)) : null, editMask: L.editMask }, snap: s };
 	}
 	var lastSel = { ver: -1, obj: null };
 	function takeSnapshot(label) {
@@ -601,7 +602,7 @@ var MESPixel = (function () {
 	};
 	function restore(e) {
 		var d = PE.doc; d.w = e.w; d.h = e.h; d.layers = e.layers.map(function (l) {
-			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text") L[k] = l.meta[k]; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null;
+			var L = PE.makeLayer({ canvas: clone(l.snap.c), type: l.meta.type, name: l.meta.name, text: l.meta.text }); for (var k in l.meta) if (k !== "text" && k !== "eq") L[k] = l.meta[k]; L.text = l.meta.text ? JSON.parse(JSON.stringify(l.meta.text)) : null; L.eq = l.meta.eq ? JSON.parse(JSON.stringify(l.meta.eq)) : null;
 			L.mask = l.snap.m ? clone(l.snap.m) : null; L.rev = l.snap.rev; L._snap = l.snap; return L; });
 		d.comps = JSON.parse(e.comps || "[]"); d.activeId = e.active; if (!PE.layerById(d.activeId) && d.layers.length) d.activeId = d.layers[d.layers.length - 1].id;
 		PE.sel = e.sel ? { c: clone(e.sel), ver: ++PE.selSeq } : null; PE.relink(); PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("comps"); PE.emit("docsize"); PE.invalidate(); PE.scheduleAutosave && PE.scheduleAutosave();
@@ -643,7 +644,7 @@ var MESPixel = (function () {
 	PE.duplicateLayer = function (L) {
 		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
 			var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (B === L ? " copy" : ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null }); map[B.id] = n;
-			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed"].forEach(function (k) { n[k] = B[k]; }); if (B.mask) n.mask = clone(B.mask); return n; });
+			["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed"].forEach(function (k) { n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.mask) n.mask = clone(B.mask); return n; });
 		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
 		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
 	};
@@ -771,7 +772,7 @@ var MESPixel = (function () {
 	PE.projectBlob = function () {
 		var d = PE.doc, files = [], metas = [], jobs = [];
 		d.layers.forEach(function (L) {
-			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask }; metas.push(m);
+			var m = { id: L.id, group: L.group, collapsed: L.collapsed, name: L.name, type: L.type, cx: L.cx, cy: L.cy, sx: L.sx, sy: L.sy, rot: L.rot, visible: L.visible, opacity: L.opacity, blend: L.blend, locked: L.locked, text: L.text, w: L.canvas.width, h: L.canvas.height, hasMask: !!L.mask, eq: L.eq || null }; metas.push(m);
 			jobs.push(canvasBytes(L.canvas).then(function (u) { files.push({ name: "layer-" + L.id + ".png", data: u }); }));
 			if (L.mask) jobs.push(canvasBytes(L.mask).then(function (u) { files.push({ name: "mask-" + L.id + ".png", data: u }); }));
 		});
@@ -786,7 +787,7 @@ var MESPixel = (function () {
 		var by = {}; files.forEach(function (f) { by[f.name] = f.data; }); if (!by["project.json"]) return Promise.reject(new Error("Not a MES project file"));
 		var p = JSON.parse(new TextDecoder().decode(by["project.json"])), layers = [];
 		return Promise.all(p.layers.map(function (m, i) {
-			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
+			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
 			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [] }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
@@ -1726,7 +1727,7 @@ var MESPixel = (function () {
 	}
 	PE.aiUpscale = function () {
 		var d = PE.doc; if (!d) { PE.toast("Open an image first"); return; } if (busy) return;
-		var px = 0, count = 0; d.layers.forEach(function (L) { if (L.type !== "text" && L.type !== "group") { px += L.canvas.width * L.canvas.height; count++; } });
+		var px = 0, count = 0; d.layers.forEach(function (L) { if (L.type !== "text" && L.type !== "group" && !L.eq) { px += L.canvas.width * L.canvas.height; count++; } });
 		var wrap = el("div"), f = PE.form([{ k: "s", label: "Make it", type: "seg", options: [["2", "2× bigger"], ["4", "4× bigger"]], val: (PE.savedParams.up && PE.savedParams.up.s) || "2" }], function () { info(); });
 		var info = function () { var s = +f.get().s, W = d.w * s, H = d.h * s, ok = W <= PE.MAXPX && H <= PE.MAXPX && W * H <= PE.MAXAREA, tiles = Math.ceil(px / (128 * 128)); note.innerHTML = "Result: <b>" + W + " × " + H + " px</b> (" + (W * H / 1e6).toFixed(1) + " MP)." + (ok ? "" : ' <span style="color:#ff8a80">Too large for a browser: choose 2× or shrink the image first.</span>') + "<br>About " + tiles + " small tiles to process: seconds on a computer with a GPU, roughly " + Math.max(1, Math.round(tiles * 1.0 / 60)) + " min without one."; };
 		wrap.appendChild(f.el); var note = el("p", "pe-hint2"), bar = el("div", "pe-aibar"), fill = el("i"), st = el("div", "pe-hint2"); bar.appendChild(fill); bar.hidden = true; wrap.appendChild(note); wrap.appendChild(el("p", "pe-hint2", "Adds real detail to small or soft pictures (photos, screenshots, logos). First use downloads a 5 MB AI model and keeps it in your browser; everything runs on your device.")); wrap.appendChild(bar); wrap.appendChild(st); info();
@@ -1735,17 +1736,84 @@ var MESPixel = (function () {
 			if (busy) return; var s = +f.get().s, W = d.w * s, H = d.h * s; if (W > PE.MAXPX || H > PE.MAXPX || W * H > PE.MAXAREA) { PE.toast("That result would be too large"); return; }
 			PE.savedParams.up = f.get(); busy = true; cancelled = false; bar.hidden = false; var btns = mm.el.querySelectorAll(".pe-dlg-f .pe-btn"); btns[1].disabled = true; btns[1].textContent = "Working…"; st.textContent = "Loading the AI engine…";
 			PE.aiRt.session(KEY, MODEL, MB, function (g, t) { fill.style.width = (100 * g / t) + "%"; st.textContent = "Downloading the model… " + (g / 1e6).toFixed(1) + " of " + (t / 1e6).toFixed(1) + " MB"; }).then(function (o) {
-				var done = 0, total = 0, layers = d.layers.filter(function (L) { return L.type !== "text" && L.type !== "group"; }); layers.forEach(function (L) { var T = o.provider === "webgpu" ? 256 : 128; total += Math.ceil(L.canvas.width / T) * Math.ceil(L.canvas.height / T); }); var t0 = Date.now();
+				var done = 0, total = 0, layers = d.layers.filter(function (L) { return L.type !== "text" && L.type !== "group" && !L.eq; }); layers.forEach(function (L) { var T = o.provider === "webgpu" ? 256 : 128; total += Math.ceil(L.canvas.width / T) * Math.ceil(L.canvas.height / T); }); var t0 = Date.now();
 				function prog(a) { done += a; fill.style.width = (100 * done / total) + "%"; var el2 = (Date.now() - t0) / 1000, eta = done ? el2 / done * (total - done) : 0; st.textContent = "Upscaling… tile " + done + " of " + total + (eta > 3 ? " (about " + Math.round(eta) + " s left)" : "") + (o.provider === "wasm" ? " · no GPU found, using the CPU" : ""); }
 				var results = []; var chain = Promise.resolve(); layers.forEach(function (L) { chain = chain.then(function () { PE.bake(L); return upscaleCanvas(L.canvas, s, o, prog).then(function (r) { o = r.o; var nm = null; if (L.mask) nm = PE.resample(L.mask, r.canvas.width, r.canvas.height); results.push({ L: L, c: r.canvas, m: nm }); }); }); });
 				return chain.then(function () { return results; });
 			}).then(function (results) {
 				if (cancelled) return; results.forEach(function (r) { r.L.canvas = r.c; if (r.m) r.L.mask = r.m; r.L.rev++; });
-				d.layers.forEach(function (L) { var cx = L.cx * s, cy = L.cy * s; if (L.type === "text") { L.text.size *= s; L.text.strokeW *= s; L.text.shadowBlur *= s; L.text.shadowDx *= s; L.text.shadowDy *= s; L.text.bgPad *= s; L.text.bgRadius *= s; PE.renderText(L); L.cx = cx; L.cy = cy; } else { L.cx = cx; L.cy = cy; } });
+				d.layers.forEach(function (L) { var cx = L.cx * s, cy = L.cy * s; if (L.type === "text") { L.text.size *= s; L.text.strokeW *= s; L.text.shadowBlur *= s; L.text.shadowDx *= s; L.text.shadowDy *= s; L.text.bgPad *= s; L.text.bgRadius *= s; PE.renderText(L); L.cx = cx; L.cy = cy; } else { L.cx = cx; L.cy = cy; if (L.eq) { L.sx *= s; L.sy *= s; L.eq.size *= s; L.eq.nw *= s; L.eq.pad *= s; L.eq.radius *= s; } } });
 				d.w = W; d.h = H; PE.sel = null; PE.emit("sel"); PE.emit("docsize"); PE.commit("Upscale " + s + "× (AI)"); PE.fit(); busy = false; mm.close(true); PE.toast("Done: " + W + " × " + H + " px");
 			}).catch(function (e) { busy = false; if (cancelled || (e && e.message === "cancelled")) return; btns[1].disabled = false; btns[1].textContent = "Try again"; bar.hidden = true; st.textContent = "Could not upscale: " + (e && e.message ? e.message : e); });
 		}
 	};
+})();
+
+/* MES Photo Editor: LaTeX equations as layers. MathJax 3.2.2 (tex-svg from cdnjs, loaded on first use, `fontCache: none` so the SVG is self-contained) typesets the TeX to SVG at the requested
+ * font size, the SVG is rasterised at 2x (so it stays crisp when enlarged: the layer's scale is 1/2) onto a transparent canvas, optionally on a rounded background box. The TeX source and
+ * options are kept on the layer (`L.eq`), so Equation tool / double-click re-opens the dialog and re-renders it, keeping the position and any scaling you applied. Pasting text that looks like
+ * LaTeX opens the dialog with it. Painting on or adjusting an equation layer turns it into plain pixels (`eq` cleared). */
+(function () {
+	"use strict";
+	var PE = window.PE, mk = PE.mk, el = PE.el, esc = PE.esc;
+	var JS = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js", K = 2, loading = null;
+	function loadMJ() {
+		if (window.MathJax && window.MathJax.tex2svg) return window.MathJax.startup.promise.then(function () { return window.MathJax; });
+		if (loading) return loading;
+		window.MathJax = { tex: { processEnvironments: true, tags: "ams", macros: { xleftrightarrow: ["\\overset{#1}{\\longleftrightarrow}", 1], xLeftrightarrow: ["\\overset{#1}{\\Longleftrightarrow}", 1] } }, svg: { fontCache: "none" }, options: { enableMenu: false }, startup: { typeset: false } };
+		loading = new Promise(function (res, rej) { var s = document.createElement("script"); s.src = JS; s.onload = function () { window.MathJax.startup.promise.then(function () { res(window.MathJax); }); }; s.onerror = function () { loading = null; rej(new Error("Could not load the equation engine (offline?)")); }; document.head.appendChild(s); });
+		return loading;
+	}
+	/* eq = {tex, size, color, display, bgOn, bg, pad, radius} -> Promise<{canvas, k, nw}> (rejects with Error(message) for invalid TeX) */
+	PE.renderEquation = function (eq, k) {
+		k = k || K;
+		return loadMJ().then(function (MJ) {
+			var size = Math.max(8, eq.size || 96), node = MJ.tex2svg(eq.tex || "", { display: eq.display !== false, em: size, ex: size / 2, containerWidth: 1e6 }), bad = node.querySelector("[data-mjx-error]");
+			if (bad) throw new Error(bad.getAttribute("data-mjx-error") || "Invalid LaTeX");
+			var svg = node.querySelector("svg"), ex = size / 2, w = parseFloat(svg.getAttribute("width")) * ex, h = parseFloat(svg.getAttribute("height")) * ex;
+			svg.setAttribute("xmlns", "http://www.w3.org/2000/svg"); svg.setAttribute("width", w * k); svg.setAttribute("height", h * k); svg.removeAttribute("style");
+			var src = new XMLSerializer().serializeToString(svg).replace(/currentColor/g, eq.color || "#000000");
+			return new Promise(function (res, rej) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { rej(new Error("Could not draw the equation")); }; im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(src); }).then(function (im) {
+				var pad = eq.bgOn ? Math.round((eq.pad || 0) * k) : Math.round(size * 0.04 * k), W = Math.ceil(w * k) + pad * 2, H = Math.ceil(h * k) + pad * 2; if (W * H > PE.MAXAREA) throw new Error("That equation is too large");
+				var c = mk(W, H), x = c.getContext("2d");
+				if (eq.bgOn) { var r = Math.min((eq.radius || 0) * k, W / 2, H / 2); x.fillStyle = eq.bg || "#ffffff"; x.beginPath(); x.moveTo(r, 0); x.arcTo(W, 0, W, H, r); x.arcTo(W, H, 0, H, r); x.arcTo(0, H, 0, 0, r); x.arcTo(0, 0, W, 0, r); x.closePath(); x.fill(); }
+				x.drawImage(im, pad, pad, w * k, h * k); return { canvas: c, k: k, nw: W / k };
+			});
+		});
+	};
+	var DEF = { tex: "\\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}", size: 96, color: "#ffffff", display: true, bgOn: false, bg: "#ffffff", pad: 24, radius: 16 };
+	var last = null; try { last = JSON.parse(localStorage.getItem("mes-photo-editor:eq") || "null"); } catch (e) {}
+	var SNIP = [["a/b", "\\frac{a}{b}"], ["√", "\\sqrt{x}"], ["xⁿ", "x^{n}"], ["xₙ", "x_{n}"], ["∫", "\\int_{a}^{b} f(x)\\,dx"], ["∑", "\\sum_{n=1}^{\\infty} a_n"], ["lim", "\\lim_{x \\to 0}"], ["∂", "\\frac{\\partial f}{\\partial x}"], ["vector", "\\vec{r}\\,'(t)"], ["| |", "\\left| x \\right|"], ["matrix", "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"], ["cases", "\\begin{cases} x & x \\ge 0 \\\\ -x & x < 0 \\end{cases}"], ["align", "\\begin{aligned} a &= b + c \\\\ &= d \\end{aligned}"], ["π θ λ", "\\pi \\theta \\lambda \\alpha \\beta"], ["boxed", "\\boxed{x = 1}"]];
+	/* edit: an existing equation layer (re-render it), else insert a new one centred at `at` (doc coordinates) */
+	PE.dlgEquation = function (edit, at, prefill) {
+		if (!PE.doc) { PE.toast("Open or create an image first"); return; }
+		var base = edit && edit.eq ? edit.eq : (last || DEF), eq = JSON.parse(JSON.stringify(base)); if (!edit) { eq.color = PE.fg === "#e53935" && !last ? eq.color : eq.color; if (prefill) eq.tex = prefill; }
+		var wrap = el("div"), ta = el("textarea", "pe-tex"); ta.value = eq.tex; ta.rows = 4; ta.spellcheck = false; ta.setAttribute("aria-label", "LaTeX"); wrap.appendChild(ta);
+		var chips = el("div", "pe-snips"); SNIP.forEach(function (sn) { var b = el("button", "pe-chip2", esc(sn[0])); b.type = "button"; b.title = sn[1]; b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", function () { var a = ta.selectionStart, z = ta.selectionEnd; ta.setRangeText(sn[1], a, z, "end"); ta.focus(); upd(); }); chips.appendChild(b); }); wrap.appendChild(chips);
+		var f = PE.form([{ k: "size", label: "Size", type: "range", min: 16, max: 400, step: 1, val: eq.size, unit: "px" }, { k: "color", label: "Colour", type: "color", val: eq.color }, { k: "display", label: "Large style (display)", type: "check", val: eq.display }, { k: "bgOn", label: "Background box", type: "check", val: eq.bgOn }, { k: "bg", label: "Box colour", type: "color", val: eq.bg }, { k: "pad", label: "Padding", type: "range", min: 0, max: 120, step: 1, val: eq.pad, unit: "px" }, { k: "radius", label: "Corners", type: "range", min: 0, max: 80, step: 1, val: eq.radius, unit: "px" }], function () { vis(); upd(); });
+		wrap.appendChild(f.el); function vis() { var v = f.get(); ["bg", "pad", "radius"].forEach(function (k) { f.inputs[k].inp.closest(".pe-row").style.display = v.bgOn ? "" : "none"; }); } vis();
+		var prev = el("div", "pe-eqprev"), err = el("div", "pe-eqerr"); wrap.appendChild(prev); wrap.appendChild(err);
+		var tmr = 0, token = 0, cur = null;
+		function upd() { clearTimeout(tmr); tmr = setTimeout(draw, 160); }
+		function get() { var v = f.get(); v.tex = ta.value; return v; }
+		function draw() { var my = ++token, v = get(); if (!v.tex.trim()) { prev.innerHTML = ""; err.textContent = ""; cur = null; return; } PE.renderEquation(v, 1).then(function (r) { if (my !== token) return; cur = v; err.textContent = ""; r.canvas.style.maxWidth = "100%"; r.canvas.style.maxHeight = "9em"; prev.innerHTML = ""; prev.appendChild(r.canvas); }).catch(function (e) { if (my !== token) return; err.textContent = e.message; }); }
+		ta.addEventListener("input", upd); ta.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); go(); } });
+		var m = PE.modal({ title: edit ? "Edit equation" : "Insert equation (LaTeX)", wide: true, body: wrap, noFocus: true, buttons: [{ label: "Cancel", act: function (mm) { mm.close(); } }, { label: edit ? "Update" : "Insert", primary: true, act: function () { go(); } }] });
+		setTimeout(function () { ta.focus(); ta.select(); }, 30); draw();
+		function go() {
+			var v = get(); if (!v.tex.trim()) { PE.toast("Type some LaTeX first"); return; }
+			PE.renderEquation(v, K).then(function (r) {
+				last = v; try { localStorage.setItem("mes-photo-editor:eq", JSON.stringify(v)); } catch (e) {} v.k = K; v.nw = r.nw; var name = "Eq: " + v.tex.replace(/\s+/g, " ").slice(0, 24);
+				if (edit) { var ur = Math.abs(edit.sx) * edit.canvas.width / (edit.eq.nw || (edit.canvas.width / K)), sgx = edit.sx < 0 ? -1 : 1, sgy = edit.sy < 0 ? -1 : 1; edit.canvas = r.canvas; edit.sx = sgx * ur / K; edit.sy = sgy * ur / K; edit.eq = v; edit.name = name; edit.mask = null; edit.rev++; PE.commit("Edit equation"); }
+				else { var L = PE.makeLayer({ canvas: r.canvas, name: name, cx: at ? at.x : PE.doc.w / 2, cy: at ? at.y : PE.doc.h / 2 }); L.sx = L.sy = 1 / K; L.eq = v; PE.addLayer(L); PE.commit("Insert equation"); }
+				m.close(true); PE.setTool("move");
+			}).catch(function (e) { err.textContent = e.message; });
+		}
+	};
+	PE.looksLikeLatex = function (t) { t = String(t || "").trim(); return t.length > 1 && t.length < 4000 && (/\\[a-zA-Z]{2,}/.test(t) || /[\^_]\{/.test(t) || /^\$.*\$$/.test(t)); };
+	PE.defTool({ id: "equation", name: "Equation (LaTeX)", key: "q", icon: "∑", opts: {}, ui: [{ type: "button", label: "Insert equation…", act: function () { PE.dlgEquation(null, null); } }, { type: "button", label: "Edit selected equation", act: function () { var L = PE.active(); if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select an equation layer first"); } }],
+		hint: "Click where the equation should go, type LaTeX (a live preview appears), then Insert. Click an existing equation to edit it. Equations stay sharp when you enlarge them.",
+		down: function (e) { var hit = PE.layerAt(e.x, e.y); if (hit && hit.eq) { PE.setActive(hit.id); PE.dlgEquation(hit); return; } PE.dlgEquation(null, { x: e.x, y: e.y }); } });
 })();
 
 /* MES Photo Editor -- mes.fm/photo-editor. UI: menus, tool + options bars, colour / layers / history panels, files (open, drop, paste, PSD, project),
@@ -1775,7 +1843,7 @@ var MESPixel = (function () {
 	var _fit = PE.fit; PE.fit = function (p) { PE.autoFit = true; _fit(p); }; var _sz = PE.setZoom; PE.setZoom = function (z, x, y) { PE.autoFit = false; _sz(z, x, y); }; var _pb = PE.panBy; PE.panBy = function (dx, dy) { PE.autoFit = false; _pb(dx, dy); };
 
 	/* ---------- tool bar ---------- */
-	var ORDER = ["move", "marquee", "lasso", "wand", "crop", "brush", "eraser", "clone", "retouch", "objerase", "bucket", "gradient", "eyedropper", "text", "shape", "hand", "zoom"];
+	var ORDER = ["move", "marquee", "lasso", "wand", "crop", "brush", "eraser", "clone", "retouch", "objerase", "bucket", "gradient", "eyedropper", "text", "equation", "shape", "hand", "zoom"];
 	function buildTools() {
 		var box = $("pe-tools"); box.innerHTML = "";
 		ORDER.forEach(function (id) { var t = PE.tools[id]; if (!t) return; var b = el("button", "pe-tool", esc(t.icon)); b.type = "button"; b.dataset.t = id; b.title = t.name + " (" + t.key.toUpperCase() + ")"; b.setAttribute("aria-label", t.name); b.addEventListener("click", function () { PE.setTool(id); }); box.appendChild(b); });
@@ -1938,6 +2006,7 @@ var MESPixel = (function () {
 	document.addEventListener("paste", function (e) {
 		if (/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || "") || PE.modalOpen()) return; var items = (e.clipboardData && e.clipboardData.items) || [];
 		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
+		var tx = e.clipboardData && e.clipboardData.getData("text/plain"); if (tx && PE.looksLikeLatex(tx)) { e.preventDefault(); PE.dlgEquation(null, null, tx.trim().replace(/^\$+|\$+$/g, "")); return; }
 		if (PE.clipCanvas) { e.preventDefault(); paintClipboardImage(PE.clipCanvas, "Pasted layer"); }
 	});
 	function align(how) {
@@ -2004,7 +2073,7 @@ var MESPixel = (function () {
 	var isMac = /Mac|iPhone|iPad/.test(navigator.platform), MOD = isMac ? "⌘" : "Ctrl+";
 	function adj(list) { return list.map(function (a) { return { label: a.title, act: function () { if (needDoc()) PE.runAdjust(a.id); } }; }); }
 	var MENUS = [
-		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / project…", act: function () { pickFiles("image/*,.psd,.mesproj", true, function (fs) { openFiles(fs); }); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
+		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / project…", act: function () { pickFiles("image/*,.psd,.mesproj", true, function (fs) { openFiles(fs); }); } }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
 			{ label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Save project (keeps layers)", key: MOD + "S", act: saveProject }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
 		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",
@@ -2039,7 +2108,7 @@ var MESPixel = (function () {
 		var w = el("div"); w.innerHTML = '<table class="pe-keys">' + rows.map(function (r) { return "<tr><td><kbd>" + esc(r[0]) + "</kbd></td><td>" + esc(r[1]) + "</td></tr>"; }).join("") + "</table>"; PE.modal({ title: "Keyboard shortcuts", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
 	}
 	function tips() {
-		var w = el("div", "pe-tips"); w.innerHTML = "<ul><li><b>Label an image:</b> Text tool, click, type. Turn on <i>Background box</i> (or press <i>Yellow label</i>) for a callout look.</li><li><b>Arrows, boxes, numbers:</b> Shapes tool. Each shape lands on its own layer: move it with the Move tool, delete it from the Layers panel.</li><li><b>Combine images:</b> drag several files onto the canvas (each becomes a layer) or paste with Ctrl+V. Move, resize and rotate with the Move tool.</li><li><b>Transparent background:</b> Magic wand the background, press Delete, then Export as PNG. Or Adjust → Make a colour transparent.</li><li><b>Remove an object or person:</b> Object Erase tool (J): paint over it, press Enter. Or make a selection and use Edit → Erase selection with AI. <b>Cut out a subject:</b> Layer → Remove background (AI).</li><li><b>Many thumbnails from one project:</b> put each design in a group (select layers with Ctrl-click, Ctrl+G), then use the Comps tab: set up what is visible, + Save current view, repeat, then Export all. Press , and . to flip between comps.</li><li><b>Make a small picture bigger:</b> Image → Upscale with AI.</li><li><b>Hide private info:</b> Shapes → Blur / hide area, then drag over it.</li><li><b>Large file?</b> Export as WebP or JPEG and lower the quality.</li></ul>"; PE.modal({ title: "Tips", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
+		var w = el("div", "pe-tips"); w.innerHTML = "<ul><li><b>Label an image:</b> Text tool, click, type. Turn on <i>Background box</i> (or press <i>Yellow label</i>) for a callout look.</li><li><b>Arrows, boxes, numbers:</b> Shapes tool. Each shape lands on its own layer: move it with the Move tool, delete it from the Layers panel.</li><li><b>Combine images:</b> drag several files onto the canvas (each becomes a layer) or paste with Ctrl+V. Move, resize and rotate with the Move tool.</li><li><b>Transparent background:</b> Magic wand the background, press Delete, then Export as PNG. Or Adjust → Make a colour transparent.</li><li><b>Remove an object or person:</b> Object Erase tool (J): paint over it, press Enter. Or make a selection and use Edit → Erase selection with AI. <b>Cut out a subject:</b> Layer → Remove background (AI).</li><li><b>Many thumbnails from one project:</b> put each design in a group (select layers with Ctrl-click, Ctrl+G), then use the Comps tab: set up what is visible, + Save current view, repeat, then Export all. Press , and . to flip between comps.</li><li><b>Make a small picture bigger:</b> Image → Upscale with AI.</li><li><b>Equations:</b> Equation tool (Q) or File → Insert equation: type LaTeX (or paste LaTeX text with Ctrl+V), see the preview, Insert. Click it again to edit; it stays sharp when enlarged.</li><li><b>Hide private info:</b> Shapes → Blur / hide area, then drag over it.</li><li><b>Large file?</b> Export as WebP or JPEG and lower the quality.</li></ul>"; PE.modal({ title: "Tips", body: w, buttons: [{ label: "Close", primary: true, act: function (m) { m.close(); } }] });
 	}
 
 	/* ---------- window mode ---------- */
@@ -2073,7 +2142,7 @@ var MESPixel = (function () {
 		for (var id in PE.tools) if (PE.tools[id].key === low) { PE.setTool(id); return; }
 	});
 	document.addEventListener("keyup", function (e) { if (e.key === " ") { PE.setSpace(false); PE.spaceHeld = false; setCursor(); PE.invalidateOverlay(); } });
-	root.addEventListener("dblclick", function (e) { if (e.target === PE.els.over && PE.toolId !== "text") { var L = PE.active(); if (L && L.type === "text" && PE.toolId === "move") PE.editActiveText(); } });
+	root.addEventListener("dblclick", function (e) { if (e.target === PE.els.over && PE.toolId !== "text") { var L = PE.active(); if (L && L.type === "text" && PE.toolId === "move") PE.editActiveText(); else if (L && L.eq && PE.toolId === "move") PE.dlgEquation(L); } });
 
 	/* ---------- empty state + init ---------- */
 	$("pe-e-open").addEventListener("click", function () { pickFiles("image/*,.psd,.mesproj", true, function (fs) { openFiles(fs); }); });
