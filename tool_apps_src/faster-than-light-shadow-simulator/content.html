@@ -1,0 +1,133 @@
+	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<div class="tu ftl" id="ftl">
+		<div class="ftl-bar">
+			<div class="ftl-tabs" role="tablist" aria-label="Faster-than-light shadow simulator sections">
+				<button type="button" role="tab" id="ftl-t-sweep" data-tab="sweep" aria-selected="true" aria-controls="ftl-p-sweep">Sweep a light beam</button>
+				<button type="button" role="tab" id="ftl-t-shadow" data-tab="shadow" aria-selected="false" aria-controls="ftl-p-shadow">Move a shadow</button>
+				<button type="button" role="tab" id="ftl-t-msg" data-tab="msg" aria-selected="false" aria-controls="ftl-p-msg">Can it carry a message?</button>
+				<button type="button" role="tab" id="ftl-t-calc" data-tab="calc" aria-selected="false" aria-controls="ftl-p-calc">Calculator</button>
+			</div>
+			<button type="button" class="ftl-theatre" id="ftl-theatre" aria-pressed="false" title="Theatre: use nearly the whole window (saved for the whole site)">Theatre</button>
+		</div>
+
+		<!-- 1. sweep -->
+		<section class="ftl-panel" id="ftl-p-sweep" role="tabpanel" aria-labelledby="ftl-t-sweep">
+			<p class="ftl-lead">Aim a torch at a far-away screen and swing it. Every bit of light moves at exactly the speed of light, but <strong>the spot where the beam lands can move faster</strong>, because it is not a thing: it is a different set of photons at every moment. Pick how far away the screen is and how fast you swing.</p>
+			<div class="ftl-wrap" id="ftl-wrap1">
+				<div class="ftl-stage" id="ftl-stage1">
+					<canvas id="ftl-c1" role="img" aria-label="Top view: a torch on the left swings its beam; the beam curves because light takes time to travel; a spot moves up and down a screen on the right, its speed shown as a multiple of the speed of light."></canvas>
+					<div class="ftl-tools"><button type="button" id="ftl-full1" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="ftl-readouts" id="ftl-ro1"></div>
+			</div>
+			<div class="tu-card ftl-controls">
+				<div class="ftl-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="ftl-play1" aria-pressed="true">❚❚ Pause</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ftl-restart1">↺ Restart</button>
+					<span class="ftl-mode" role="group" aria-label="How the torch is aimed">
+						<button type="button" class="tu-chip" id="ftl-m-auto" aria-pressed="true">Sweep back and forth</button>
+						<button type="button" class="tu-chip" id="ftl-m-aim" aria-pressed="false">Aim with the mouse</button>
+					</span>
+				</div>
+				<div class="ftl-grid">
+					<div class="tu-field"><span class="tu-label" id="ftl-k-l">Sweep speed: <b id="ftl-k-v"></b></span><input type="range" id="ftl-k" min="0" max="1000" step="1" aria-labelledby="ftl-k-l">
+						<span class="ftl-chips" id="ftl-k-chips"></span></div>
+					<div class="tu-field"><span class="tu-label" id="ftl-a-l">Swing either side by: <b id="ftl-a-v"></b></span><input type="range" id="ftl-a" min="5" max="40" step="1" aria-labelledby="ftl-a-l">
+						<span class="tu-note">The spot's speed grows towards the edge of the screen, where the beam meets it at a slant.</span></div>
+				</div>
+				<p class="tu-note" id="ftl-aimhint" hidden>Move the pointer (or your finger) over the picture and the torch follows it. Flick it quickly and watch the spot.</p>
+			</div>
+		</section>
+
+		<!-- 2. shadow -->
+		<section class="ftl-panel" id="ftl-p-shadow" role="tabpanel" aria-labelledby="ftl-t-shadow" hidden>
+			<p class="ftl-lead">Hold a finger in front of a lamp and its shadow lands on a distant wall, magnified. <strong>Move the finger a little and the shadow moves a lot</strong>: by the ratio of the two distances. Put the wall far enough away and a gentle wave of the hand sweeps the shadow past the speed of light.</p>
+			<div class="ftl-wrap" id="ftl-wrap2">
+				<div class="ftl-stage" id="ftl-stage2">
+					<canvas id="ftl-c2" role="img" aria-label="Top view: a lamp on the left, a finger moving up and down in front of it, and its shadow band moving along a screen on the right. The shadow's speed is shown as a multiple of the speed of light."></canvas>
+					<div class="ftl-tools"><button type="button" id="ftl-full2" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="ftl-readouts" id="ftl-ro2"></div>
+			</div>
+			<div class="tu-card ftl-controls">
+				<div class="ftl-row">
+					<button type="button" class="tu-btn tu-btn--primary" id="ftl-play2" aria-pressed="true">❚❚ Pause</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="ftl-restart2">↺ Restart</button>
+				</div>
+				<div class="ftl-grid">
+					<div class="tu-field"><span class="tu-label" id="ftl-kf-l">Finger speed: <b id="ftl-kf-v"></b></span><input type="range" id="ftl-kf" min="0" max="1000" step="1" aria-labelledby="ftl-kf-l">
+						<span class="ftl-chips" id="ftl-kf-chips"></span></div>
+					<div class="tu-field"><span class="tu-label" id="ftl-d-l">Finger is <b id="ftl-d-v"></b> from the lamp</span><input type="range" id="ftl-d" min="2" max="90" step="1" aria-labelledby="ftl-d-l">
+						<span class="tu-note">The nearer the finger is to the lamp, the more its shadow is magnified on the wall, so the slower it needs to move.</span></div>
+				</div>
+			</div>
+		</section>
+
+		<!-- 3. message -->
+		<section class="ftl-panel" id="ftl-p-msg" role="tabpanel" aria-labelledby="ftl-t-msg" hidden>
+			<p class="ftl-lead">If the spot can outrun light, could you use it to send a message faster than light? No, and the picture below shows why. Drag the slider to change how fast the spot moves between <strong>A</strong> and <strong>B</strong>.</p>
+			<div class="ftl-wrap" id="ftl-wrap3">
+				<div class="ftl-stage" id="ftl-stage3">
+					<canvas id="ftl-c3" role="img" aria-label="Space-time diagram: distance along the screen across, time up. The spot's path from A to B is flatter than the light cone from A, so B is outside A's light cone."></canvas>
+				</div>
+				<div class="ftl-readouts" id="ftl-ro3"></div>
+			</div>
+			<div class="tu-card ftl-controls">
+				<div class="ftl-grid">
+					<div class="tu-field"><span class="tu-label" id="ftl-s-l">Spot speed: <b id="ftl-s-v"></b></span><input type="range" id="ftl-s" min="0" max="1000" step="1" aria-labelledby="ftl-s-l">
+						<span class="tu-note">From a bit above the speed of light up to 1,000 times it.</span></div>
+				</div>
+				<div class="ftl-why">
+					<h3>Why nothing is sent</h3>
+					<ol>
+						<li><strong>Nothing travels along the spot.</strong> The photon that lights B was sent from the torch at its own moment; the photon at A is a different one. No photon, and no energy, goes from A to B.</li>
+						<li><strong>A cannot influence B.</strong> Blocking the spot at A (a card on the screen) changes nothing at B: B's light is already on its way from the torch, and the card cannot reach it. Only something done <em>at the torch</em> changes what lands at B, and that effect travels at c.</li>
+						<li><strong>The spot's own “start” is not the cause of its “arrival”.</strong> Both are effects of the same earlier act at the torch. To two observers a long way apart, the order of A and B can even differ; that is fine, because neither causes the other.</li>
+						<li><strong>The message still travels at c.</strong> If you swing the torch in a pattern (a signal) the receiver sees it only when the light from the torch reaches them.</li>
+					</ol>
+				</div>
+			</div>
+		</section>
+
+		<!-- 4. calculator -->
+		<section class="ftl-panel" id="ftl-p-calc" role="tabpanel" aria-labelledby="ftl-t-calc" hidden>
+			<p class="ftl-lead">Work out the sweep rate, finger speed or shadow speed for your own numbers. Type with units: <em>384,400 km</em>, <em>1 AU</em>, <em>2.5 million ly</em>, <em>90 deg/s</em>, <em>2 rpm</em>, <em>0.78 m/s</em>.</p>
+			<div class="tu-card ftl-controls">
+				<div class="ftl-grid ftl-grid--calc">
+					<div class="tu-field"><label class="tu-label" for="ftl-k-D">Distance to the screen</label><input class="tu-input" id="ftl-k-D" type="text" inputmode="text" autocomplete="off" spellcheck="false"><span class="tu-note" id="ftl-k-D-n"></span></div>
+					<div class="tu-field"><label class="tu-label" for="ftl-k-w">How fast you swing the torch</label><input class="tu-input" id="ftl-k-w" type="text" inputmode="text" autocomplete="off" spellcheck="false"><span class="tu-note" id="ftl-k-w-n"></span></div>
+					<div class="tu-field"><label class="tu-label" for="ftl-k-d">Finger distance from the lamp</label><input class="tu-input" id="ftl-k-d" type="text" inputmode="text" autocomplete="off" spellcheck="false"><span class="tu-note" id="ftl-k-d-n"></span></div>
+					<div class="tu-field"><label class="tu-label" for="ftl-k-f">How fast you move the finger</label><input class="tu-input" id="ftl-k-f" type="text" inputmode="text" autocomplete="off" spellcheck="false"><span class="tu-note" id="ftl-k-f-n"></span></div>
+				</div>
+				<div class="ftl-row" id="ftl-k-places"></div>
+				<div class="tu-stats" id="ftl-k-out"></div>
+				<div class="ftl-row"><button type="button" class="tu-btn tu-btn--ghost" id="ftl-k-copy">Copy the answers</button><button type="button" class="tu-btn tu-btn--ghost" id="ftl-k-link">Copy link to this calculation</button></div>
+			</div>
+			<div class="tu-card ftl-places">
+				<h3>How fast must you swing to beat light?</h3>
+				<div class="tu-table-wrap"><table class="tu-table" id="ftl-k-table"></table></div>
+				<p class="tu-note">“Sweep rate” is the angular speed at which the spot, straight ahead, moves at exactly c: ω = c / distance. “Finger speed” is for a finger held 1 metre from the lamp: v = c × (1 m) / distance.</p>
+			</div>
+		</section>
+
+		<div class="tu-seo ftl-seo">
+			<h2>A shadow can move faster than light</h2>
+			<p>Nothing that carries <strong>energy, matter or information</strong> can travel through space faster than light. But some things that are not objects can have any speed at all. The classic example is the spot of a torch beam on a far screen: swing the torch and the spot is a fresh set of photons at every instant. Light from the torch reaches the screen at c, always. Where it lands is a matter of geometry, and geometry is not limited. The same goes for the shadow of a finger on a wall, the point where scissor blades cross, or a wave of lights switched on one after another.</p>
+			<h3>The arithmetic</h3>
+			<p>Swing a torch through an angle at <em>ω</em> radians per second towards a screen at distance <em>D</em>. Straight ahead the spot moves at <strong>v = ωD</strong>, and it passes the speed of light when <strong>ω = c / D</strong>. For the Moon (384,400 km) that is 0.78 radians per second, about <strong>45 degrees per second</strong>: a flick of the wrist. For the Sun it is 0.115 degrees per second. For the Andromeda galaxy it is about one turn in 15 million years; for a sweeping laser pointer, a lazy wave is plenty. For a shadow, similar triangles give <strong>v<sub>shadow</sub> = v<sub>finger</sub> × D / d</strong> (d is the finger's distance from the lamp), so a finger 1 metre from the lamp needs to move at only <strong>0.78 m/s</strong> for its shadow to cross the Moon at the speed of light.</p>
+			<h3>Light takes time, and the simulation shows it</h3>
+			<p>The picture is not a cartoon of a straight beam: every ray is drawn where it really is, by tracking when it left the torch. A swung beam therefore <strong>curves like a garden-hose jet</strong>, and the spot on the screen shows the true arrival times. When the sweep reverses, the spot appears or vanishes in pairs, which is another sign it is not a single object. The speed shown uses the exact formula, v = sec²φ · φ′ / (1 + D φ′ sec φ tan φ), which includes the extra time later rays need to travel (the plain “ωD” rule is its on-axis, small-angle form). The animation is slowed down so the light takes a few seconds to cross the gap; the numbers are for the real distance you choose.</p>
+			<h3>Does this break relativity?</h3>
+			<p>No. Special relativity forbids <em>signals</em> and <em>causal influences</em> from outrunning light. A moving spot or shadow carries neither: the spot at B is not produced by the spot at A, but by an earlier act at the torch. You can see this on the “Can it carry a message?” tab: no light-speed (or slower) path joins A and B, so nobody at A can use the spot to tell anyone at B anything. What you <em>can</em> send is a pattern by swinging the torch, and that arrives at the screen at c.</p>
+			<h3>What the page simulates, and what it does not</h3>
+			<p>The screen is a flat wall straight across from the lamp, the beam is a thin ray fan with a small width, and light travels in a straight line in empty space. Not modelled: the Moon's curved surface (it changes the numbers a little but not the idea), the atmosphere, the beam spreading with distance (a real beam is far wider than a spot by the time it reaches the Moon, so a real torch spot there is faint), and the finite size of the lamp. The finger's shadow edge is treated as sharp. It is a teaching model.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Has anyone done it?</strong> Yes, in effect: lighthouse and pulsar beams sweep across distant clouds of gas faster than light, and the “light echoes” seen around supernovae can appear to move superluminally. None of it carries a signal along the pattern.</li>
+				<li><strong>Could I really do it with a laser pointer and the Moon?</strong> Pointing is easy; the spot is the problem. A laser's beam is hundreds of kilometres wide by the time it reaches the Moon and the spot is very faint, so you would need a big telescope to see it, but its position would still move at ωD.</li>
+				<li><strong>Is a shadow made of anything?</strong> It is the <em>absence</em> of light in a region. A moving shadow is simply different regions going dark at different moments.</li>
+				<li><strong>Why does the speed go up toward the edge of the screen?</strong> The beam meets the screen at a steeper slant, so a small turn of the torch slides the spot farther. That is the sec²φ in the formula.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/michelson-morley-experiment">Michelson-Morley experiment simulator</a> · <a href="/atomic-clock-simulator">Atomic clock simulator</a> · <a href="/earth-curvature-calculator">Earth curvature calculator</a> · <a href="/solar-system-today">Solar System Today</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

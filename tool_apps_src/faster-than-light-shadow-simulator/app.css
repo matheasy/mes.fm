@@ -1,0 +1,48 @@
+	/* faster-than-light shadow simulator: a wide page with dark stages. Stage colours are custom properties / literals so the derived dark theme leaves them alone. */
+	html body .outer-container {max-width:min(96vw,80em) !important;}
+	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
+	.tu [hidden] {display:none !important;}
+	.ftl {--ftl-bg:#070d1f;--ftl-line:#26325a;--ftl-text:#e6ecfb;--ftl-dim:#93a1c4;--ftl-gold:#fbbf24;--ftl-cyan:#22d3ee;}
+	.ftl-bar {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;justify-content:space-between;margin-bottom:0.7em;}
+	.ftl-tabs {display:flex;flex-wrap:wrap;gap:0.3em;}
+	.ftl-tabs button {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#444;border-radius:0.5em 0.5em 0 0;padding:0.5em 0.9em;font-size:0.95em;line-height:1.2;min-height:2.4em;}
+	.ftl-tabs button:hover {border-color:var(--accent);color:var(--accent);}
+	.ftl-tabs button[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	.ftl-theatre {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#555;border-radius:1.2em;padding:0.35em 0.9em;font-size:0.82em;}
+	.ftl-theatre:hover {border-color:var(--accent);color:var(--accent);}
+	.ftl-theatre[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.ftl .tu-label b {text-transform:none;letter-spacing:0;}
+	.ftl-lead {margin:0 0 0.7em;font-size:1em;line-height:1.45;}
+	.ftl-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--ftl-line);background:var(--ftl-bg);}
+	.ftl-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
+	.ftl-stage {position:relative;background:var(--ftl-bg);width:100%;}
+	.ftl-stage canvas {position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:pan-y;}
+	#ftl-c1.is-aim {cursor:crosshair;touch-action:none;}
+	.ftl-tools {position:absolute;right:0.6em;top:0.6em;display:flex;gap:0.25em;}
+	.ftl-tools button {cursor:pointer;border:1px solid var(--ftl-line);background:rgba(8,13,30,0.78);color:var(--ftl-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font-size:0.82em;line-height:1;}
+	.ftl-tools button:hover {border-color:var(--accent);color:#fff;}
+	.ftl-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:0.5em;padding:0.6em;background:#0b1330;border-top:1px solid var(--ftl-line);}
+	.ftl-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
+	.ftl-ro span {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--ftl-dim);}
+	.ftl-ro b {font-size:1.3em;color:var(--ftl-text);font-variant-numeric:tabular-nums;line-height:1.15;}
+	.ftl-ro b.is-ftl {color:#fb923c;} .ftl-ro b.is-slow {color:#4ade80;}
+	.ftl-ro small {font-size:0.72em;color:var(--ftl-dim);line-height:1.3;}
+	.ftl-controls {margin-top:0.9em;}
+	.ftl-row {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;}
+	.ftl-mode {display:inline-flex;flex-wrap:wrap;gap:0.3em;margin-left:0.4em;}
+	.ftl-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(16em,1fr));gap:0.9em 1.4em;margin-top:0.9em;}
+	.ftl-grid--calc {grid-template-columns:repeat(auto-fit,minmax(14em,1fr));}
+	.ftl-controls input[type=range] {width:100%;accent-color:var(--accent);}
+	.ftl-chips {display:inline-flex;flex-wrap:wrap;gap:0.3em;margin-top:0.35em;} .ftl-chips .tu-chip, #ftl-k-places .tu-chip {font-size:0.8em;}
+	#ftl-k-places {margin-top:0.8em;}
+	.ftl-why {margin-top:1em;} .ftl-why h3 {margin:0 0 0.4em;} .ftl-why ol {margin:0;padding-left:1.3em;line-height:1.55;} .ftl-why li {margin-bottom:0.45em;}
+	.ftl-places {margin-top:0.9em;} .ftl-places h3 {margin:0 0 0.5em;}
+	.ftl-places td, .ftl-places th {text-align:left;padding:0.35em 0.6em;} .ftl-places td:nth-child(n+2), .ftl-places th:nth-child(n+2) {text-align:right;font-variant-numeric:tabular-nums;}
+	.ftl-distrow {margin-bottom:0.2em;} .ftl-own {display:inline-flex;align-items:center;gap:0.4em;font-size:0.85em;} .ftl-own input {width:11em;} .ftl-slow {margin-left:auto;} .ftl-slow input {width:3.8em;}
+	.ftl-seo {margin-top:1.2em;}
+	body.dark-mode #ftl .ftl-tabs button, body.dark-mode #ftl .ftl-theatre {background:#222;border-color:#444;color:#ccc;}
+	body.dark-mode #ftl .ftl-tabs button[aria-selected="true"], body.dark-mode #ftl .ftl-theatre[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	@media (max-width: 700px) {
+		.ftl-tabs button {padding:0.45em 0.6em;font-size:0.88em;}
+		.ftl-mode {margin-left:0;}
+	}

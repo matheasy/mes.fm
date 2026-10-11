@@ -128,6 +128,15 @@ const PAGES = [
     tileLabel: "Solar System Today",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/faster-than-light-shadow-simulator-icon.jpg (900x600 crop of the tool's share image).
+    slug: "faster-than-light-shadow-simulator",
+    section: "tools",
+    href: "/faster-than-light-shadow-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Faster-Than-Light Shadow Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/michelson-morley-experiment-icon.jpg (900x600 crop of the tool's share image).
     slug: "michelson-morley-experiment",
     section: "tools",

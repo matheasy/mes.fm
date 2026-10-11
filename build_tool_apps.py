@@ -179,6 +179,12 @@ APPS = {
                             tag="Did the Earth move through the aether?", accent="#047857", dark="#065f46", tint="#dcf5ea",
                             desc="Free Michelson-Morley experiment simulator: turn an interferometer through an aether wind and watch the fringes shift, see why the two light paths take different times, run a 16-point turntable measurement with noise, compare the 1881 and 1887 experiments, and calculate the expected fringe shift.",
                             js_v="1"),
+    # Faster-Than-Light Shadow Simulator: a swung torch beam or a finger's shadow on a far screen moves faster than c; the beam is drawn with true light-travel delay (history buffer), a space-time diagram shows why no message goes with it, calculator.
+    # lib.js = exact spot-speed formula + parsers (node-tested: tool_apps_src/faster-than-light-shadow-tests.js), app.js = UI. Wide page, dark stages, own Theatre button, no sidebar.
+    "faster-than-light-shadow-simulator": dict(title="MES Faster-Than-Light Shadow Simulator", page_title="Faster-Than-Light Shadow Simulator",
+                            tag="A shadow can outrun light.", accent="#b45309", dark="#92400e", tint="#fdf0dc",
+                            desc="Free faster-than-light shadow simulator: swing a torch beam or move a finger in front of a lamp and watch the spot or shadow on the Moon or a far screen move faster than the speed of light, with the real light-travel delay, and see why no message can ride on it.",
+                            js_v="1"),
     # Fountain Clock: the 3D fountain tab of the Atomic Clock Simulator as its own page (own URL, title, share image and text). Shares that app's source folder (src) and its served script
     # (js_path); content-fountain.html carries only the fountain panel + its own text (data-only="fountain" tells app.js to run just that panel).
     "fountain-clock": dict(title="MES Caesium Fountain Clock", page_title="Caesium Fountain Clock Simulator (3D)",

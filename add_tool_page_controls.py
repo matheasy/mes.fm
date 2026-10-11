@@ -72,7 +72,8 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("photoelectric-effect-simulator", "Photoelectric Effect"),   # also built by build_tool_apps.py (wide page, dark apparatus stage)
     ("atomic-clock-simulator", "Atomic Clock Simulator"),   # also built by build_tool_apps.py (wide page, dark stages)
     ("fountain-clock", "Caesium Fountain Clock"),   # the 3D fountain as its own page (shares the simulator's script)   # also built by build_tool_apps.py (wide page, dark stages)
-    ("michelson-morley-experiment", "Michelson-Morley Simulator"),   # also built by build_tool_apps.py (wide page, dark stages)
+    ("michelson-morley-experiment", "Michelson-Morley Simulator"),
+    ("faster-than-light-shadow-simulator", "FTL Shadow Simulator"),   # also built by build_tool_apps.py (wide page, dark stages)   # also built by build_tool_apps.py (wide page, dark stages)
     ("3d-fluid-simulator", "3D Fluid Simulator"),   # also built by build_tool_apps.py (wide page, WebGL2 smoke)
     ("fluid-simulator", "Fluid Simulator"),   # also built by build_tool_apps.py (wide page, dark simulation stage)
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)
