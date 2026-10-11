@@ -1,4 +1,19 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu se" id="se">
+		<div class="tu-card se-def" id="se-def">
+			<div class="se-def-top">
+				<div><b>⭐ Make this your browser's default search</b><span>Type a search in the address bar and it lands here, ready to open in every engine you picked.</span></div>
+				<button type="button" class="tu-btn tu-btn--primary" id="se-def-btn" aria-expanded="false" aria-controls="se-def-panel">Set as my default search…</button>
+			</div>
+			<div class="se-def-panel" id="se-def-panel" hidden>
+				<p class="tu-note" style="margin-top:0;">No website can switch your default search by itself (browsers don't allow it), but it takes about 30 seconds. Pick your browser:</p>
+				<div class="tu-seg" id="se-def-br" role="group" aria-label="Your browser">
+					<button type="button" data-b="brave" aria-pressed="false">Brave</button><button type="button" data-b="chrome" aria-pressed="false">Chrome</button><button type="button" data-b="edge" aria-pressed="false">Edge</button><button type="button" data-b="firefox" aria-pressed="false">Firefox</button><button type="button" data-b="safari" aria-pressed="false">Safari / phone</button>
+				</div>
+				<div id="se-def-steps"></div>
+				<p class="tu-note">Your search words are sent to mes.fm only to fill this page in; mes.fm's visit counter ignores them on this page. Your ticked engines are remembered in this browser, so each search opens the same set. You can switch back any time in the same settings page.</p>
+			</div>
+		</div>
 		<div class="tu-card se-main">
 			<div class="tu-field">
 				<label for="se-q">What do you want to search for?</label>

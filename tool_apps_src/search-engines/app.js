@@ -269,7 +269,40 @@
 	}
 	$("se-sharelink").onclick = shareClick;
 	$("se-sharelink2").onclick = shareClick;
-	if (qs.get("q") || qs.get("e")) setTimeout(function () { toast("Shared search loaded: press Open to run it"); }, 400);
+	if (qs.get("q") || qs.get("e")) setTimeout(function () { toast(qs.get("e") ? "Shared search loaded: press Open to run it" : "Press Enter (or Open) to search in your ticked engines"); }, 400);
+	// arriving from the browser's address bar (?q= only): the browser needs a click or key press before it lets us open tabs, so focus Open and Enter does it
+	if (qs.get("q") && !qs.get("e")) setTimeout(function () { try { $("se-go").focus({ preventScroll: true }); } catch (e) {} }, 50);
+
+	/* ---------- make this the default search ---------- */
+	(function () {
+		var tpl = "https://mes.fm/search-engines?q=%s", btn = $("se-def-btn"), panel = $("se-def-panel"), steps = $("se-def-steps"), seg = $("se-def-br"), cur = "";
+		function codeRow(txt, label) { return '<div class="se-def-copy"><code>' + esc(txt) + '</code><button type="button" class="tu-chip" data-copy="' + esc(txt) + '">Copy' + (label ? " " + esc(label) : "") + '</button></div>'; }
+		function addForm(url, where) {
+			return '<ol><li>Open this settings page: ' + codeRow(url, "address") + '<span class="tu-note">(paste it in a new tab: browsers don\'t allow a link to open their settings)</span></li>' +
+				'<li>Next to <b>' + where + '</b> press <b>Add</b>.</li>' +
+				'<li><b>Name:</b> ' + codeRow("MES Search Engines", "") + '<b>Shortcut:</b> ' + codeRow("mes", "") + '<span class="tu-note">(optional: type <b>mes</b> then Space in the address bar to use it just once)</span></li>' +
+				'<li><b>URL with %s in place of query:</b>' + codeRow(tpl, "URL") + '</li>' +
+				'<li>Save, then on the new row open the <b>⋮</b> menu and choose <b>Make default</b>.</li></ol>';
+		}
+		var HELP = {
+			brave: function () { return addForm("brave://settings/searchEngines", "Site search") + '<p class="tu-note">In Brave this is Settings → Search engine → <i>Manage search engines and site search</i>. Also check Settings → Search engine → <i>Search engine used in the address bar</i> shows MES Search Engines afterwards.</p>'; },
+			chrome: function () { return addForm("chrome://settings/searchEngines", "Site search"); },
+			edge: function () { return addForm("edge://settings/searchEngines", "Search engines"); },
+			firefox: function () { return '<ol><li>Look at this page\'s address bar: click the <b>magnifier / ⋮ menu</b> (or right-click the address bar) and choose <b>Add "MES Search Engines"</b> (this page advertises itself as a search engine).</li><li>Open <b>Settings → Search</b> and pick <b>MES Search Engines</b> under <i>Default Search Engine</i>.</li></ol><p class="tu-note">No Add option? In recent Firefox versions you can also add a custom engine under Settings → Search → Search Shortcuts with the URL below.</p>' + codeRow(tpl, "URL"); },
+			safari: function () { return '<p>Safari and the iPhone / iPad browsers only allow their built-in search engines as the default, so a site can\'t be added. Use this page as a bookmark or Home Screen shortcut instead, or use Brave, Chrome, Edge or Firefox on a computer or Android phone.</p>'; }
+		};
+		function show(b) { cur = b; Array.prototype.forEach.call(seg.querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", x.dataset.b === b ? "true" : "false"); }); steps.innerHTML = HELP[b](); }
+		btn.onclick = function () {
+			var open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", open ? "true" : "false");
+			if (open && !cur) {
+				var b = /Firefox\//.test(navigator.userAgent) ? "firefox" : /Edg\//.test(navigator.userAgent) ? "edge" : /iPhone|iPad|Macintosh.*Safari\/(?!.*Chrome)/.test(navigator.userAgent) && !/Chrome|Chromium|Edg/.test(navigator.userAgent) ? "safari" : "chrome";
+				show(b);
+				if (navigator.brave && navigator.brave.isBrave) navigator.brave.isBrave().then(function (y) { if (y) show("brave"); }).catch(function () {});
+			}
+		};
+		seg.onclick = function (e) { var b = e.target.closest("button"); if (b) show(b.dataset.b); };
+		steps.onclick = function (e) { var b = e.target.closest("[data-copy]"); if (!b) return; copy(b.dataset.copy).then(function (ok) { toast(ok ? "Copied" : "Copy failed"); }); };
+	})();
 
 	/* ---------- history ---------- */
 	$("se-hlist").addEventListener("click", function (e) { var b = e.target.closest(".se-hq"); if (!b) return; $("se-q").value = S.hist[+b.dataset.i].q; render(); $("se-q").focus(); window.scrollTo({ top: root.getBoundingClientRect().top + window.pageYOffset - 20, behavior: "smooth" }); });

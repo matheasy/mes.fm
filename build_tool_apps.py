@@ -196,7 +196,7 @@ APPS = {
                             tag="Laminar or turbulent? Find out.", accent="#0e7490", dark="#155e75", tint="#e0f4f8",
                             desc="Free Reynolds number calculator: enter the fluid, speed and size in any units to get Re, whether the flow is laminar or turbulent, pipe friction and pressure drop, drag and vortex-shedding frequency. Or solve for the speed or size that gives a target Re.",
                             js_v="1"),
-    # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Wide page, no sidebar.
+    # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
                             desc="Free photoelectric effect simulator: change the metal, wavelength, intensity and voltage and watch electrons leave the surface. See the threshold frequency, stopping voltage, kinetic energy and current graphs, and measure Planck's constant from your own data.",
@@ -217,7 +217,8 @@ APPS = {
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",
                            tag="One search, every search engine.", accent="#c2410c", dark="#9a3412", tint="#fdeadf",
                            desc="Type your search once and open it in Google (.com, .ca, .co.uk and more), Bing, DuckDuckGo, Brave, Yandex and 60+ other search engines, AI assistants and video sites, in tabs or tiled windows. Compare results, check censorship and bias, and add your own engines.",
-                           js_v="4"),
+                           js_v="5",
+                           head_extra='<link rel="search" type="application/opensearchdescription+xml" title="MES Search Engines" href="https://mes.fm/search-engines/opensearch.xml" />'),
     # Mortgage Calculator 2.0 (rewritten 2026-10-03 from the 2013-2018 jQuery page): lib.js = exact-cents maths + the country rules tables (CMHC, minimum down payment, stress test, SDLT;
     # node-testable: tool_apps_src/mortgagecalculator-tests.js), app.js = UI. Keeps ads; old /mortgagecalculator/s/<id> links still resolve via /api/share?calc=mc.
     "mortgagecalculator": dict(title="Mortgage Calculator", page_title="Mortgage Calculator",
@@ -451,6 +452,8 @@ def build_from_source(slug, cfg, tpl):
     page = tpl
     for k, v in (("@@TOOL_CSS@@", css), ("@@CONTENT@@", content.strip("\n")), ("@@LDJSON@@", ld)):
         page = page.replace(k, v)
+    if cfg.get("head_extra"):
+        page = page.replace("</title>", "</title>" + cfg["head_extra"], 1)
     for k, v in {"@@SCRIPTS@@": scripts, "@@DESC@@": desc.replace('"', "&quot;"), "@@TITLE@@": cfg["title"], "@@SLUG@@": slug,
                  "@@TAGLINE@@": cfg["tag"], "@@PAGE_TITLE@@": cfg["page_title"], "@@PAGE_DESC@@": desc,
                  "@@ACCENT@@": cfg["accent"], "@@ACCENT_DARK@@": cfg["dark"]}.items():

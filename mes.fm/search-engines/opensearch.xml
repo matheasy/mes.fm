@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>MES Search Engines</ShortName>
+  <Description>Type one search and open it in Google, Bing, DuckDuckGo, Brave and dozens of other engines.</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="64" height="64" type="image/png">https://mes.fm/search-engines/img/logo.png</Image>
+  <Url type="text/html" method="get" template="https://mes.fm/search-engines?q={searchTerms}"/>
+  <moz:SearchForm xmlns:moz="http://www.mozilla.org/2006/browser/search/">https://mes.fm/search-engines</moz:SearchForm>
+</OpenSearchDescription>

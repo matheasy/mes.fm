@@ -1,5 +1,4 @@
-	/* search engines: a wide page (the engine cards want the room) */
-	html body .outer-container {max-width:min(96vw,80em) !important;}
+	/* search engines: normal page with the sidebar; Wide is the default (snippet in content.html) */
 	.se-qrow {display:flex;gap:0.6em;flex-wrap:wrap;}
 	.se-qrow .tu-input {flex:1 1 20em;min-width:0;}
 	.se-go {font-size:1.05em;padding:0.6em 1.3em;white-space:nowrap;}
@@ -91,3 +90,16 @@
 	.se-rest a {display:inline-block;margin:0.4em 0.8em 0 0;}
 	.se-help p {margin:0.5em 0 0;line-height:1.5;}
 	body.dark-mode #se .se-next {color:#0b1416;}
+
+	.se-def {border:2px solid var(--accent);background:var(--tint,#fdeadf);margin-bottom:1em;}
+	.se-def-top {display:flex;flex-wrap:wrap;gap:0.7em 1em;align-items:center;justify-content:space-between;}
+	.se-def-top b {font-size:1.1em;}
+	.se-def-top span {display:block;font-size:0.9em;color:#4a5260;}
+	.se-def-panel {margin-top:0.9em;border-top:1px solid #e3c5b3;padding-top:0.8em;}
+	.se-def-panel ol {margin:0.5em 0 0.5em 1.3em;padding:0;line-height:1.6;}
+	.se-def-panel code {background:#fff;border:1px solid #dfe4ea;border-radius:0.3em;padding:0.05em 0.4em;word-break:break-all;}
+	.se-def-copy {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:0.4em 0;}
+	body.dark-mode #se .se-def {background:#2a1a12;border-color:#e8703a;}
+	body.dark-mode #se .se-def-top span {color:#c9ced6;}
+	body.dark-mode #se .se-def-panel {border-top-color:#5a3a28;}
+	body.dark-mode #se .se-def-panel code {background:#1a1a1a;border-color:#444;color:#eee;}
