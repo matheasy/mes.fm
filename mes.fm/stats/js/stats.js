@@ -717,6 +717,8 @@ let chartMode = 'lines'; // lines | stacked | combined
 // device), 'devices' (a line per device) or 'sources' (a line per source; its
 // buckets are fetched lazily, once per range).
 let breakdown = 'all';
+const hiddenSplit = new Set(); // split categories greyed out by clicking their chip
+let splitTotal = false; // draw the overall total over a split
 const sourceSeriesCache = {}; // range -> { bucketKey: { source: views } }
 const tsBreakEl = document.getElementById('tsBreak');
 let tsToken = 0;
@@ -749,8 +751,13 @@ function buildSeries(mode) {
   const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2272c3';
 
   if (breakdown === 'devices' || breakdown === 'sources') {
-    const split = splitSeries(mode, agg);
-    if (split.length) return split;
+    const all = splitSeries(mode, agg);
+    if (all.length) {
+      let split = all.filter(function (x) { return !hiddenSplit.has(x.id); });
+      if (splitTotal || !split.length) split = split.concat([{ id: 'total', kind: 'total', label: 'Total', color: accent, points: agg(tsRawPoints) }]);
+      // the base (first) series must carry the x-axis keys either way
+      return split;
+    }
     // sources still loading: fall through to the plain total meanwhile
   }
 
@@ -837,10 +844,14 @@ function renderLegend() {
   if (breakdown === 'devices' || breakdown === 'sources') {
     const parts = splitSeries('daily', function (pts) { return pts; });
     tsLegendEl.hidden = !parts.length;
-    tsLegendEl.innerHTML = parts.map(function (x) {
+    const nothingHidden = !parts.some(function (x) { return hiddenSplit.has(x.id); });
+    let html = '<button type="button" class="ts-chip' + (nothingHidden && !splitTotal ? '' : ' off') + '" data-sp="all" title="Show every category"><span>All</span></button>';
+    html += parts.map(function (x) {
       const t = x.points.reduce(function (a, p) { return a + p.views; }, 0);
-      return '<span class="ts-chip" style="cursor:default"><i style="background:' + x.color + '"></i><span>' + escapeHtml(x.label) + '</span><b>' + compactNum(t) + '</b></span>';
+      return '<button type="button" class="ts-chip' + (hiddenSplit.has(x.id) ? ' off' : '') + '" data-sp="' + x.id + '" title="Click to show / hide · shift-click to show only this"><i style="background:' + x.color + '"></i><span>' + escapeHtml(x.label) + '</span><b>' + compactNum(t) + '</b></button>';
     }).join('');
+    html += '<button type="button" class="ts-chip' + (splitTotal ? '' : ' off') + '" data-sp="total" title="Overlay the overall total"><i style="background:' + (getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2272c3') + '"></i><span>Total</span></button>';
+    tsLegendEl.innerHTML = html;
     return;
   }
   if (!picks.length) { tsLegendEl.hidden = true; tsLegendEl.innerHTML = ''; return; }
@@ -934,9 +945,28 @@ document.getElementById('topPagesBody').addEventListener('change', function (e) 
   if (box) setPick(box.dataset.pageKey, box.checked);
 });
 
+function splitChip(chip, dbl) {
+  const k = chip.dataset.sp;
+  if (k === 'all') { hiddenSplit.clear(); splitTotal = false; }
+  else if (k === 'total') { splitTotal = !splitTotal; }
+  else if (dbl) {
+    // solo (shift-click): hide every other category; shift-click the soloed one again to restore all
+    const others = [];
+    tsLegendEl.querySelectorAll('[data-sp]').forEach(function (b) {
+      const o = b.dataset.sp;
+      if (o !== 'all' && o !== 'total' && o !== k) others.push(o);
+    });
+    const alreadySolo = !hiddenSplit.has(k) && others.every(function (o) { return hiddenSplit.has(o); });
+    hiddenSplit.clear();
+    if (!alreadySolo) others.forEach(function (o) { hiddenSplit.add(o); });
+  } else if (hiddenSplit.has(k)) hiddenSplit.delete(k);
+  else hiddenSplit.add(k);
+  renderTsChart();
+}
 tsLegendEl.addEventListener('click', function (e) {
   const chip = e.target.closest('button');
   if (!chip) return;
+  if (chip.dataset.sp) { splitChip(chip, e.shiftKey || e.metaKey || e.ctrlKey); return; }
   if (chip.dataset.total) { showTotal = !showTotal; renderTsChart(); return; }
   if (chip.dataset.remove) { setPick(chip.dataset.remove, false); return; }
   if (chip.dataset.clear) {
