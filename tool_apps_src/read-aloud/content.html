@@ -1,0 +1,68 @@
+	<div class="tu" id="ra">
+		<div class="tu-card tu-card--tint">
+			<h2 style="margin-top:0;">Listen to any web page, with the words highlighted as they are read</h2>
+			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers. Click the toolbar icon (or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>) and it reads the page, or just the text you selected, out loud with your browser's own voices. The <b>word and the sentence being read are highlighted right on the page</b> and the page scrolls to follow, so you can read along, study, proofread or rest your eyes.</p>
+			<div class="ra-btns">
+				<a class="tu-btn tu-btn--primary" id="ra-dl" href="/read-aloud/mes-read-aloud.zip" download>Download <span id="ra-ver">v1.0.0</span> (zip)</a>
+				<a class="tu-btn tu-btn--ghost" href="#ra-install">How to install</a>
+				<a class="tu-btn tu-btn--ghost" href="/read-aloud/extension/reader.js">View the source</a>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Private by design: no accounts, no tracking, and the extension makes no network requests of its own. It only runs on a page when you ask it to. The code is plain JavaScript you can read.</p>
+		</div>
+
+		<h2 id="ra-install">Install it (about a minute)</h2>
+		<div class="tu-card">
+			<ol class="ra-steps">
+				<li><b>Download</b> the zip above and unzip it. You get a folder called <code>mes-read-aloud</code>. Keep it somewhere permanent (Documents is fine): the browser reads the extension from that folder.</li>
+				<li>Open the extensions page: <code>chrome://extensions</code> in Chrome, <code>brave://extensions</code> in Brave, <code>edge://extensions</code> in Edge.</li>
+				<li>Turn on <b>Developer mode</b> (a switch at the top right, or on the left in Edge).</li>
+				<li>Click <b>Load unpacked</b> and choose the unzipped <code>mes-read-aloud</code> folder.</li>
+				<li>Click the puzzle-piece icon in the toolbar and <b>pin</b> MES Read Aloud.</li>
+			</ol>
+			<p class="tu-note" style="margin-bottom:0;">Chrome may show a "disable developer mode extensions" notice when it starts: choose Cancel / Keep. Brave and Edge usually do not. Until the extension is listed in the Chrome Web Store, updates are manual: download the new zip, replace the folder and press the reload arrow on the extensions page. Firefox is not supported yet.</p>
+		</div>
+
+		<h2>How to use it</h2>
+		<div class="tu-card">
+			<ul class="ra-list">
+				<li><b>Read the page:</b> click the toolbar icon and choose <b>Read this page</b>, press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>, or right-click and choose <b>Read this page aloud</b>. It reads the main article and skips menus, sidebars and footers.</li>
+				<li><b>Read from a spot:</b> click inside a paragraph first, then start. Reading begins at that sentence.</li>
+				<li><b>Read a selection:</b> select some text, then use the popup, the shortcut or the right-click menu.</li>
+				<li><b>The player</b> floats at the bottom of the page: previous / next sentence, pause, speed, voice and setup. Click the progress bar to jump. <b>Double-click any word</b> to start reading from it.</li>
+				<li><b>Keys while the player is open:</b> <kbd>Space</kbd> pause or resume, <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> previous / next sentence, <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> speed, <kbd>Esc</kbd> close.</li>
+			</ul>
+		</div>
+
+		<h2>What you get</h2>
+		<div class="tu-card">
+			<ul class="ra-list">
+				<li><b>Highlighting on the page itself.</b> The current word and sentence are marked with colours you choose. The page is not changed: the highlight is drawn by the browser, so layouts, links and selections keep working.</li>
+				<li><b>Smart text finding.</b> Reads the article content, skipping navigation, hidden text, code blocks and (if you like) tables. Or switch to everything visible.</li>
+				<li><b>Setups.</b> Save different voices, speeds and highlight styles for different purposes or people (it ships with <b>Default</b>, <b>Study</b> and <b>Quick listen</b>), switch in the player or the popup, pin a setup to a site, and export or import them as text.</li>
+				<li><b>Your browser's voices.</b> It picks the best installed voice for the language of the text automatically, or you choose one. The same engine as the <a href="/speedreader">MES Speed Reader</a>, which also reads aloud.</li>
+				<li><b>Speed from 0.5x to 4x</b>, pitch and volume, an estimate of the time left, and scrolling that follows the reading and backs off while you scroll yourself.</li>
+			</ul>
+		</div>
+
+		<h2>Voices, privacy and limits</h2>
+		<div class="tu-card">
+			<p style="margin-top:0;">The voices come from your browser and operating system, so what you hear depends on them. <b>Edge</b> has very natural built-in Microsoft voices, <b>Chrome</b> offers Google voices, and <b>Brave</b> uses the voices installed on your computer. A voice marked <i>online</i> in the settings is run by the voice provider, so the text being read is sent to them; pick a voice without that label to keep everything on your computer. Voices that do not report word positions still get the sentence highlighted, and the word highlight then follows an estimate (the player says so).</p>
+			<p>Permissions: <code>activeTab</code> and <code>scripting</code> let the extension add the reader to the page you are on, only when you ask; <code>storage</code> keeps your setups; <code>contextMenus</code> adds the right-click items. It does <b>not</b> ask to read your data on all websites.</p>
+			<p style="margin-bottom:0;">It cannot read browser pages (<code>chrome://</code>), the Web Store, or the built-in PDF viewer, and text drawn inside images or canvas is not text to the browser. Text inside embedded frames can be read by selecting it and using the right-click menu.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Questions</h2>
+			<dl>
+				<dt>Why does the voice sometimes stop in the middle?</dt>
+				<dd>Some online voices stop on long text. MES Read Aloud speaks one sentence at a time to avoid this. If a voice still stalls, pick another in the player.</dd>
+				<dt>Why is the page not scrolling with the reading?</dt>
+				<dd>Scrolling follows the highlight unless you scrolled yourself in the last few seconds. You can turn it off in the settings.</dd>
+				<dt>Can it read other languages?</dt>
+				<dd>Yes, if your browser has a voice for that language. The language is detected from the text and the best matching voice is chosen.</dd>
+				<dt>Is it open source?</dt>
+				<dd>The whole extension is plain, readable JavaScript served from this site: <a href="/read-aloud/extension/reader.js">reader.js</a>, <a href="/read-aloud/extension/shared.js">shared.js</a>, <a href="/read-aloud/extension/manifest.json">manifest.json</a>.</dd>
+			</dl>
+			<p>More free add-ons are listed on <a href="/browser">Browser Extensions</a>. Want to control video speed instead? See the <a href="/videospeed">Video Speed Controller</a>.</p>
+		</div>
+	</div>

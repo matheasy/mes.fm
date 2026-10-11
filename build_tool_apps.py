@@ -329,6 +329,13 @@ APPS = {
                        tag="Play any video faster or slower.", accent="#d9480f", dark="#a8360a", tint="#fdece3",
                        desc="Free MES Video Speed Controller browser extension for Chrome, Brave and Edge: speed up or slow down any HTML5 video from 0.1x to 16x with keyboard shortcuts or an on-video control. Private, no tracking, with install steps.",
                        js_v="1"),
+    # Read Aloud: download + install page of MES's own text-to-speech browser extension with on-page word highlighting (source in
+    # mes.fm/read-aloud/extension/, zipped by build_read_aloud_extension.py, which also copies the Speed Reader's lib.js into it as srlib.js;
+    # tests node tool_apps_src/read-aloud-tests.js). app.js only fills in the version from the extension's manifest.
+    "read-aloud": dict(title="MES Read Aloud", page_title="Read Aloud",
+                       tag="Listen to any page with the words highlighted.", accent="#15803d", dark="#105f2c", tint="#e3f4ea",
+                       desc="Free MES Read Aloud browser extension for Chrome, Brave and Edge: reads any web page or selected text aloud and highlights the word and sentence being read, right on the page. Private, no tracking, setups for different voices and speeds.",
+                       js_v="1"),
     "go": dict(title="MES Short Links", page_title="Short Links",
                tag="Every mes.fm short link, searchable.", accent="#0e8a6a", dark="#0a6650", tint="#e0f4ee",
                desc="Every MES short link in one searchable list: mes.fm/pomodoro, mes.fm/physics-playlist and more. Filter by category or topic, copy any short link, and get the line for a new one.",

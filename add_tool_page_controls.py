@@ -63,7 +63,8 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("search-engines", "Search Engines"),   # also built by build_tool_apps.py (wide page)
     ("site-index", "Site Index"),
     ("browser", "Browser Extensions"),   # also built by build_tool_apps.py
-    ("videospeed", "Video Speed Controller"),   # download page of the MES browser extension   # also built by build_tool_apps.py (ad-free)
+    ("videospeed", "Video Speed Controller"),
+    ("read-aloud", "Read Aloud"),   # download page of the MES text-to-speech browser extension   # download page of the MES browser extension   # also built by build_tool_apps.py (ad-free)
     ("go", "Short Links"),   # also built by build_tool_apps.py (wide, ad-free)   # also built by build_tool_apps.py (wide page, ad-free)
     ("typing-test", "Typing Test"),   # also built by build_tool_apps.py
     ("typing-test-voice", "Typing Test", "/typing-test"),   # voice typing test: same brand, built by build_tool_apps.py
