@@ -343,6 +343,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.f3-views {max-width:calc(100% - 9em);}
 	#f3-fallback {position:absolute;left:0.7em;bottom:3.4em;font-size:0.8em;color:#e9c46a;background:rgba(10,13,20,0.8);padding:0.3em 0.7em;border-radius:0.5em;}
 
+	/* Fill window: the whole simulator covers the browser window (not the Fullscreen API); Esc leaves */
+	body.f3-win {overflow:hidden !important;}
+	body.f3-win #f3 {position:fixed;inset:0;z-index:100000;margin:0;padding:0.6em;box-sizing:border-box;display:flex;flex-direction:column;background:#f5f6f9;overflow:hidden;}
+	body.f3-win #f3 .f3-top {flex:0 0 auto;margin-bottom:0.5em;}
+	body.f3-win #f3 .f3-wrap {flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;}
+	body.f3-win #f3 .f3-wrap ~ * {display:none !important;}
+	body.dark-mode.f3-win #f3 {background:#1a1a1a;}
+	body.f3-win #f3-win {background:var(--accent);border-color:var(--accent);color:#fff;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -704,6 +713,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="f3-tools" role="toolbar" aria-label="Page tools">
 					<button type="button" id="f3-png" title="Save this frame as a picture" aria-label="Save as PNG">📷</button>
 					
+					<button type="button" id="f3-win" title="Fill the browser window (Esc to leave)" aria-pressed="false" aria-label="Fill window">⤢ Window</button>
 					<button type="button" id="f3-full" title="Full screen" aria-label="Full screen">⛶</button>
 				</div>
 				<div class="f3-brushes" role="group" aria-label="What dragging does">
@@ -832,7 +842,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/3d-fluid-simulator/js/3d-fluid-simulator.js?v=3" defer></script>
+	<script src="/3d-fluid-simulator/js/3d-fluid-simulator.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

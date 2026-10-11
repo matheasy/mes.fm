@@ -178,7 +178,7 @@
 	var TAN = Math.tan(22.5 * Math.PI / 180);
 	var cw = 0, ch = 0;
 	function sizeCanvas() {
-		var wrap = $("f3-wrap"), st = $("f3-stage"), full = document.fullscreenElement === wrap, W = wrap.clientWidth, maxH = full ? wrap.clientHeight - 40 : window.innerHeight * 0.78, asp = 16 / 10;
+		var wrap = $("f3-wrap"), st = $("f3-stage"), full = document.fullscreenElement === wrap, win = document.body.classList.contains("f3-win"), W = wrap.clientWidth, ro = wrap.querySelector(".f3-readouts"), maxH = win ? wrap.clientHeight - (ro ? ro.offsetHeight : 0) - 2 : full ? wrap.clientHeight - 40 : window.innerHeight * 0.78, asp = win ? Math.max(1, Math.min(2.4, W / Math.max(200, maxH))) : 16 / 10;
 		var w = Math.max(260, Math.min(W, maxH * asp)); st.style.width = w + "px"; st.style.height = w / asp + "px";
 		var scale = Math.min(window.devicePixelRatio || 1, coarse ? 1 : 1.5); cw = Math.min(1400, Math.round(w * scale)); ch = Math.round(w / asp * scale); canvas.width = cw; canvas.height = ch; dirty = true;
 	}
@@ -234,6 +234,12 @@
 	/* ---------- page tools ---------- */
 	$("f3-full").onclick = function () { var w = $("f3-wrap"); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not available here"); }); };
 	document.addEventListener("fullscreenchange", function () { setTimeout(sizeCanvas, 60); });
+	function setWin(on) {
+		document.body.classList.toggle("f3-win", on); $("f3-win").setAttribute("aria-pressed", String(on)); $("f3-win").textContent = on ? "Exit window" : "⤢ Window";
+		if (on) window.scrollTo(0, 0); setTimeout(function () { sizeCanvas(); draw(true); }, 60);
+	}
+	$("f3-win").onclick = function () { setWin(!document.body.classList.contains("f3-win")); };
+	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && document.body.classList.contains("f3-win") && !document.fullscreenElement) setWin(false); });
 	$("f3-png").onclick = function () { draw(true); canvas.toBlob(function (b) { if (!b) return; var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "3d-fluid-" + P.id + ".png"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }); };
 	var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(sizeCanvas, 80); });
 	if (window.ResizeObserver) new ResizeObserver(function () { clearTimeout(rt); rt = setTimeout(function () { if (typeof sim !== "undefined" && sim) { sizeCanvas(); draw(true); } }, 60); }).observe($("f3-wrap"));

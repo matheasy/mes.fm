@@ -211,7 +211,7 @@ APPS = {
     "3d-fluid-simulator": dict(title="MES 3D Fluid Simulator", page_title="3D Fluid Simulator: Smoke in a Box",
                             tag="Rotate real 3D smoke, rings and wakes.", accent="#0e7490", dark="#155e75", tint="#e0f4f8",
                             desc="A free 3D fluid simulator in your browser: a rising hot smoke plume, smoke ring cannon, colliding vortex rings, wind past a sphere and a smoke tank you can stir. The Navier-Stokes equations are solved live in 3D; rotate and zoom the smoke.",
-                            js_v="3"),
+                            js_v="4"),
     # Search Engines: type one search and open it in many engines (tabs, tiled windows or same tab); sets for censorship / SEO / privacy comparisons; own engines.
     # lib.js = engine table + URL builder (node-testable: tool_apps_src/search-engines-tests.js), app.js = UI. Wide page, no sidebar.
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",

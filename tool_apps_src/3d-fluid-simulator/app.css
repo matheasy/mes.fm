@@ -48,3 +48,12 @@
 	.f3-hold {cursor:grab;} #f3-canvas.is-stir {cursor:crosshair;} #f3-canvas.is-orbit {cursor:grab;}
 	.f3-views {max-width:calc(100% - 9em);}
 	#f3-fallback {position:absolute;left:0.7em;bottom:3.4em;font-size:0.8em;color:#e9c46a;background:rgba(10,13,20,0.8);padding:0.3em 0.7em;border-radius:0.5em;}
+
+	/* Fill window: the whole simulator covers the browser window (not the Fullscreen API); Esc leaves */
+	body.f3-win {overflow:hidden !important;}
+	body.f3-win #f3 {position:fixed;inset:0;z-index:100000;margin:0;padding:0.6em;box-sizing:border-box;display:flex;flex-direction:column;background:#f5f6f9;overflow:hidden;}
+	body.f3-win #f3 .f3-top {flex:0 0 auto;margin-bottom:0.5em;}
+	body.f3-win #f3 .f3-wrap {flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;}
+	body.f3-win #f3 .f3-wrap ~ * {display:none !important;}
+	body.dark-mode.f3-win #f3 {background:#1a1a1a;}
+	body.f3-win #f3-win {background:var(--accent);border-color:var(--accent);color:#fff;}

@@ -90,7 +90,7 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   body.video-theater .has-aside .outer-page-content,
   body.video-wide .mes-cols,
   body.video-theater .mes-cols {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   body.video-wide .has-aside .page-content,
   body.video-theater .has-aside .page-content,
@@ -148,7 +148,7 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
      Wide    -> the frame grows to min(98vw, 1492px): content ~1096px next to the column on a 1560px+ screen
      Theatre -> the frame is min(98vw, 2400px): the content takes everything the column leaves */
 @media (min-width: 1200px) and (max-width: 1359px) {
-  html.page-wide:not(.aside-force) .has-aside .outer-page-content, html.page-wide:not(.aside-force) .mes-cols { grid-template-columns: 1fr; }
+  html.page-wide:not(.aside-force) .has-aside .outer-page-content, html.page-wide:not(.aside-force) .mes-cols { grid-template-columns: minmax(0, 1fr); }
   html.page-wide:not(.aside-force) .has-aside .page-content, html.page-wide:not(.aside-force) .mes-col-main { grid-column: 1; grid-row: 1; }
   html.page-wide:not(.aside-force) .has-aside .mes-aside, html.page-wide:not(.aside-force) .mes-cols > .mes-aside { grid-column: 1; grid-row: 2; margin: 2em 0 1em; }
   html.page-wide:not(.aside-force) .mes-aside__sticky { position: static; }
@@ -171,7 +171,7 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
    restored before first paint by the head snippet (add_page_theatre.py). Only applies where the sidebar sits beside the content (>= 1200px). */
 .mes-aside-show { display: none !important; }
 @media (min-width: 1200px) {
-  html.aside-hidden .has-aside .outer-page-content, html.aside-hidden .mes-cols { grid-template-columns: 1fr; }
+  html.aside-hidden .has-aside .outer-page-content, html.aside-hidden .mes-cols { grid-template-columns: minmax(0, 1fr); }
   html.aside-hidden .has-aside .page-content, html.aside-hidden .mes-col-main { grid-column: 1; grid-row: 1; }
   html.aside-hidden .mes-aside { display: none !important; }
   html.aside-hidden .mes-aside-show { display: inline-block !important; }
