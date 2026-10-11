@@ -22,7 +22,7 @@ export const SECTIONS = [
       { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0Fgp_lR0a0rscxWYrHARtkN", title: "Blockchain Tutorials Playlist (YouTube)" },
     ],
     items: [
-  { title: "Hive Cryptocurrency Overview and How to Sign Up", image: "https://i.ytimg.com/vi/ogxTNlTgyLU/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=ogxTNlTgyLU"], ["Hive", "https://peakd.com/hive-181335/@mes/tdvxnmej"]] },
+  { title: "Hive Cryptocurrency Overview and How to Sign Up", image: "https://i.ytimg.com/vi/ogxTNlTgyLU/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=ogxTNlTgyLU"], ["mes.fm", "https://mes.fm/hive-crypto-tutorial"]] },
   { title: "Ⓑ Blockchain: The Big Picture - Part 2: Tokenization", image: "https://i.ytimg.com/vi/_LgCufeCjFI/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=_LgCufeCjFI"], ["Hive", "https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization"]] },
   { title: "Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?", image: "https://i.ytimg.com/vi/sEkip6F4Mv0/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=sEkip6F4Mv0"], ["Hive", "https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own"]] },
   { title: "Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds", image: "https://i.ytimg.com/vi/8VZBrgRL9KA/maxresdefault.jpg", links: [["YouTube", "https://www.youtube.com/watch?v=8VZBrgRL9KA"]] },
