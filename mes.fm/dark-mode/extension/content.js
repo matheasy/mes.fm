@@ -94,6 +94,7 @@
 
   // photos set as CSS backgrounds would turn into negatives: mark them so the stylesheet flips them back
   var queue = [], scanning = false;
+  function idle(fn) { if (window.requestIdleCallback) window.requestIdleCallback(fn, { timeout: 500 }); else setTimeout(fn, 50); }
   function markBg(el) {
     if (el.nodeType !== 1 || el === document.documentElement || el === document.body) return;
     var bi;
@@ -107,11 +108,11 @@
     scanning = true;
     var n = 0;
     while (queue.length && n < 250) { markBg(queue.pop()); n++; }
-    if (queue.length) (window.requestIdleCallback || setTimeout)(pump, 50); else scanning = false;
+    if (queue.length) idle(pump); else scanning = false;
   }
   function enqueue(nodes) {
     for (var i = 0; i < nodes.length; i++) queue.push(nodes[i]);
-    if (!scanning) (window.requestIdleCallback || setTimeout)(pump, 50);
+    if (!scanning) idle(pump);
   }
   function scanAll() { enqueue(document.querySelectorAll('*')); }
 
