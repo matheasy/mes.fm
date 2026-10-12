@@ -514,10 +514,25 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                         </div>
                         <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->                        <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Mobile Apps</h1>                                        <p class="page-description">Mobile Apps built by Math Easy Solutions.</p>	<div id="main-content">
-		<p class="calc-container" style="padding:2em 1em;text-align:center;">Our mobile apps are being rebuilt from scratch and are temporarily unavailable. Check back soon — they'll be added back here one at a time as each is relaunched.</p>
+                                    <h1 class="page-title">Mobile Apps</h1>                                        <p class="page-description">Mobile apps built by Math Easy Solutions. The Percentage Calculator is on the App Store.</p>	<div id="main-content">
+		<div class="app-card" style="display:flex;flex-wrap:wrap;align-items:center;gap:1em 1.2em;border:0.125em solid #1479c7;border-radius:0.5em;padding:1em;margin:0 0 1.2em;">
+			<img src="/img/percentagecalculator-app-icon.png" alt="MES Percentage Calculator app icon" width="96" height="96" style="width:6em;height:6em;border-radius:22%;flex:0 0 auto;">
+			<div style="flex:1 1 16em;min-width:0;line-height:1.4;">
+				<h2 style="margin:0 0 0.2em;font-size:1.3em;">MES Percentage Calculator</h2>
+				<p style="margin:0 0 0.7em;">The free percentage calculator from <a href="/percentagecalculator">mes.fm/percentagecalculator</a> as an app: ten sentence-style calculations, saved labels and calculations, light and dark themes. No ads, no account.</p>
+				<a id="app-store-link" href="https://apps.apple.com/us/app/mes-percentage-calculator/id6809222891" target="_blank" rel="noopener">Download on the App Store<span style="font-weight:400;"> (iPhone &amp; iPad)</span></a>
+				<span style="display:inline-block;margin:0.4em 0 0 0.6em;">Android: beta testing (below)</span>
+			</div>
+		</div>
+		<style>
+			#app-store-link { display:inline-block; text-decoration:none; padding:0.75em 1.4em; font-size:1.05em; font-weight:700; color:#fff; background-color:#1479c7; border:0.125em solid #1479c7; border-radius:0.3em; }
+			#app-store-link span { color: inherit; }
+			#app-store-link:hover { background-color:#0f5ea3; border-color:#0f5ea3; }
+			body.dark-mode #app-store-link { background-color:#5aa9e6; border-color:#5aa9e6; color:#0f1113; }
+			body.dark-mode #app-store-link:hover { background-color:#7cbdf0; border-color:#7cbdf0; }
+		</style>
 		<div class="android-testers" style="border:0.125em solid #1479c7;background-color:#daf1fd;padding:1em;margin:0 0 1.5em;line-height:1.4;text-align:center;">
-			<strong>Want early access to our new Android app? &#127881;</strong> The first app back is the Percentage Calculator &mdash; we're looking for beta testers before its public launch. It's free and takes a few seconds.
+			<strong>Want early access to the Android app? &#127881;</strong> The Percentage Calculator for Android is in beta testing &mdash; we're looking for testers before its public launch. It's free and takes a few seconds.
 			<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.5em;margin-top:0.6em;">
 				<input type="email" id="beta-tester-email" placeholder="you@example.com" required style="flex:1 1 12em;max-width:20em;min-width:0;padding:0.5em 0.6em;border:0.0625em solid #1479c7;border-radius:0.25em;font-size:1em;">
 				<button type="button" id="beta-tester-submit" class="button" style="white-space:nowrap;">Become a Tester</button>

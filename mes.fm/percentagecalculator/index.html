@@ -375,7 +375,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	   stylesheet rules) and this button had neither -- .button's dark-mode
 	   twin lives in display-controls.js's own injected CSS, several files
 	   away, out of reach of the derive pass here. */
-	#beta-tester-submit {
+	#beta-tester-submit, #app-store-link {
+		display: inline-block;
+		text-decoration: none;
 		padding: 0.75em 1.4em;
 		font-size: 1.05em;
 		font-weight: 700;
@@ -385,9 +387,10 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		border-radius: 0.3em;
 		cursor: pointer;
 	}
-	#beta-tester-submit:hover { background-color: #0f5ea3; border-color: #0f5ea3; }
-	body.dark-mode #beta-tester-submit { background-color: #5aa9e6; border-color: #5aa9e6; color: #0f1113; }
-	body.dark-mode #beta-tester-submit:hover { background-color: #7cbdf0; border-color: #7cbdf0; }
+	#app-store-link span { color: inherit; }
+	#beta-tester-submit:hover, #app-store-link:hover { background-color: #0f5ea3; border-color: #0f5ea3; }
+	body.dark-mode #beta-tester-submit, body.dark-mode #app-store-link { background-color: #5aa9e6; border-color: #5aa9e6; color: #0f1113; }
+	body.dark-mode #beta-tester-submit:hover, body.dark-mode #app-store-link:hover { background-color: #7cbdf0; border-color: #7cbdf0; }
 </style>
         <meta property="fb:app_id" content="1398196443773284" />
         <meta name="author" content="Percentage Calculator Staff">
@@ -576,7 +579,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		<!-- ANDROID-TESTERS-BANNER -->
 		<div id="android-testers-banner" class="android-testers" style="position:relative;border:0.125em solid #1479c7;background-color:#daf1fd;padding:0.8em 2.2em 0.8em 1em;margin:0.7em 0;line-height:1.4;">
 			<button type="button" id="beta-tester-hide" aria-label="Hide this" title="Hide this" style="position:absolute;top:0.4em;right:0.4em;width:1.6em;height:1.6em;padding:0;border:0;background:transparent;color:#0f5ea3;font-size:1.1em;line-height:1;cursor:pointer;">&times;</button>
-			<strong>Want early access to our new Android app? &#127881;</strong> We're looking for beta testers for the Percentage Calculator Android app before its public launch &mdash; it's free and takes a few seconds.
+			<strong>&#128241; The Percentage Calculator is now an app!</strong>
+			<div style="margin:0.5em 0 0.9em;"><a id="app-store-link" href="https://apps.apple.com/us/app/mes-percentage-calculator/id6809222891" target="_blank" rel="noopener">Download on the App Store<span style="font-weight:400;"> (iPhone &amp; iPad)</span></a></div>
+			<strong>Android:</strong> we're looking for beta testers before the public launch &mdash; it's free and takes a few seconds.
 			<div style="display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.6em;">
 				<input type="email" id="beta-tester-email" placeholder="you@example.com" required style="flex:1 1 12em;min-width:0;padding:0.5em 0.6em;border:0.0625em solid #1479c7;border-radius:0.25em;font-size:1em;">
 				<button type="button" id="beta-tester-submit" style="white-space:nowrap;">Become a Tester</button>
@@ -584,7 +589,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		</div>
 		<script>
 		(function () {
-			var HIDDEN_KEY = 'percentagecalculatorBetaBannerHidden';
+			var HIDDEN_KEY = 'percentagecalculatorAppBannerHidden';
 			var banner = document.getElementById('android-testers-banner');
 			var hideBtn = document.getElementById('beta-tester-hide');
 			var btn = document.getElementById('beta-tester-submit');
