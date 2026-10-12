@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "MES Volume Booster",
+  "version": "1.0.0",
+  "minimum_chrome_version": "116",
+  "description": "Boost the volume of any tab up to 600%, with a limiter against distortion and per-site memory. Free, private, no tracking. By MES (mes.fm).",
+  "homepage_url": "https://mes.fm/volume-booster",
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "action": {
+    "default_title": "MES Volume Booster",
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png" }
+  },
+  "options_ui": { "page": "options.html", "open_in_tab": true },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["tabCapture", "offscreen", "activeTab", "storage"],
+  "commands": {
+    "boost-up": { "suggested_key": { "default": "Alt+Shift+Up" }, "description": "Boost the volume of this tab (louder)" },
+    "boost-down": { "suggested_key": { "default": "Alt+Shift+Down" }, "description": "Boost the volume of this tab (quieter)" },
+    "boost-off": { "description": "Turn the boost off for this tab" }
+  }
+}

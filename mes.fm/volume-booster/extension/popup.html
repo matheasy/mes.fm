@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>MES Volume Booster</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<header><span class="brand">MES Volume Booster</span><a href="options.html" target="_blank">Settings</a></header>
+<section>
+  <p class="host" id="host">&nbsp;</p>
+  <div class="big"><output id="level">100%</output></div>
+  <input type="range" id="slider" min="0" max="600" step="5" value="100" aria-label="Volume boost">
+  <div class="presets" id="presets"></div>
+  <p class="msg" id="msg" aria-live="polite">&nbsp;</p>
+</section>
+<section class="opts">
+  <label class="chk"><input type="checkbox" id="limiter"> Limiter (protects against distortion)</label>
+  <button id="off" class="off" hidden>Turn off the boost on this tab</button>
+</section>
+<footer class="small">Shortcuts: Alt+Shift+Up / Down. Chrome shows a recording dot on a boosted tab: that is the browser sharing the tab's sound with this extension, nothing is recorded or sent anywhere.</footer>
+<script src="shared.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>MES Volume Booster: settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<main>
+  <h1>MES Volume Booster</h1>
+  <p class="lead">Settings are saved as you change them. <span id="saved" class="saved" aria-live="polite"></span></p>
+  <div class="pref"><div><b>Highest boost</b><span>The right end of the slider. Very high boosts distort quiet recordings.</span></div>
+    <select id="max"><option value="200">200%</option><option value="400">400%</option><option value="600">600%</option></select></div>
+  <div class="pref"><div><b>Shortcut step</b><span>How much Alt+Shift+Up / Down change the volume.</span></div>
+    <select id="step"><option value="5">5%</option><option value="10">10%</option><option value="25">25%</option><option value="50">50%</option></select></div>
+  <div class="pref"><div><b>Limiter</b><span>Catches loud peaks so the speakers do not clip. Turn off for the raw boost.</span></div><input type="checkbox" id="limiter"></div>
+  <div class="pref"><div><b>Remember the level for each site</b><span>The popup offers the level you last used there (the boost itself always starts from your click).</span></div><input type="checkbox" id="remember"></div>
+  <p><button id="forget">Forget remembered levels</button></p>
+  <p class="hint">Change the shortcuts at chrome://extensions/shortcuts (brave://extensions/shortcuts, edge://extensions/shortcuts). A "boost off" shortcut can be added there too.</p>
+</main>
+<script src="shared.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
