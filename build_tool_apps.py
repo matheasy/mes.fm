@@ -31,6 +31,9 @@ APPLY = "--apply" in sys.argv
 
 SRC = ROOT / "tool_apps_src"
 CAS_JS = ["/main_js/cas/cas-client.js?v=1", "/main_js/cas/cas-ui.js?v=1"]
+# the browser-extension pages (download pages of our extensions + the /browser hub) carry an "Extensions" tab right after Tools in the info bar (the burger menu has Browser Extensions on every page)
+EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/browser'>Extensions</a></li>"
+
 APPS = {
     "earth-curvature-calculator": dict(title="MES Earth Curvature Calculator", page_title="Earth Curvature Calculator",
                                        tag="How much does the Earth curve over a distance?", accent="#0b6f6d", dark="#075250", tint="#e2f3f2",
@@ -331,36 +334,36 @@ APPS = {
     # Short Links (new 2026-10-06, mes.fm/go; aliases /redirects /short-links /shortlinks /urls): every redirect of vercel.json, categorized + searchable + a helper that writes the next line.
     # Data = mes.fm/go/redirects.json written by build_redirects_index.py (only `redirects`, never the private finance `rewrites`); notes in mes.fm/go/notes.json. Wide, ad-free, like Site Index.
     # Browser: recommended browser extensions / apps (moved from the "Recommended Browser Extensions" list of mes.fm/links). Static list, no app logic. Ad-free like /go.
-    "browser": dict(title="MES Browser Extensions", page_title="Browser Extensions",
+    "browser": dict(tools_extra=EXT_TAB, title="MES Browser Extensions", page_title="Browser Extensions",
                     tag="Recommended browser extensions and apps.", accent="#2563a8", dark="#1a4a80", tint="#e3edf8",
                     desc="Recommended free browser extensions for Chrome, Brave and Edge: the MES Video Speed Controller, a volume booster, text to speech (read aloud) and a web page archiver, plus an Android reader app.",
                     js_v="2"),
     # Video Speed Controller: download + install page of MES's own browser extension (source in mes.fm/videospeed/extension/, zipped by
     # build_video_speed_extension.py; tests node tool_apps_src/videospeed-tests.js). app.js only fills in the version from the extension's manifest.
-    "videospeed": dict(title="MES Video Speed Controller", page_title="Video Speed Controller",
+    "videospeed": dict(tools_extra=EXT_TAB, title="MES Video Speed Controller", page_title="Video Speed Controller",
                        tag="Play any video faster or slower.", accent="#d9480f", dark="#a8360a", tint="#fdece3",
                        desc="Free MES Video Speed Controller browser extension for Chrome, Brave and Edge: speed up or slow down any HTML5 video from 0.1x to 16x with keyboard shortcuts or an on-video control. Private, no tracking, with install steps.",
                        js_v="1"),
     # Read Aloud: download + install page of MES's own text-to-speech browser extension with on-page word highlighting (source in
     # mes.fm/read-aloud/extension/, zipped by build_read_aloud_extension.py, which also copies the Speed Reader's lib.js into it as srlib.js;
     # tests node tool_apps_src/read-aloud-tests.js). app.js only fills in the version from the extension's manifest.
-    "read-aloud": dict(title="MES Read Aloud", page_title="Read Aloud",
+    "read-aloud": dict(tools_extra=EXT_TAB, title="MES Read Aloud", page_title="Read Aloud",
                        tag="Listen to any page with the words highlighted.", accent="#15803d", dark="#105f2c", tint="#e3f4ea",
                        desc="Free MES Read Aloud browser extension for Chrome, Brave and Edge: reads any web page or selected text aloud and highlights the word and sentence being read, right on the page. Private, no tracking, setups for different voices and speeds.",
                        js_v="1"),
     # Dark Mode: download + install page of MES's own dark / light mode browser extension (source in mes.fm/dark-mode/extension/, zipped by
     # build_dark_mode_extension.py; tests node tool_apps_src/dark-mode-tests.js). app.js only fills in the version from the extension's manifest.
-    "dark-mode": dict(title="MES Dark Mode", page_title="Dark Mode",
+    "dark-mode": dict(tools_extra=EXT_TAB, title="MES Dark Mode", page_title="Dark Mode",
                       tag="Dark mode (or light mode) for any website.", accent="#4338ca", dark="#312e81", tint="#e9e8fb",
                       desc="Free MES Dark Mode browser extension for Chrome, Brave and Edge: dark mode for any website, or light mode for dark ones, with per-site control, a schedule, setups and brightness, sepia and contrast tweaks. Private, no tracking.",
                       js_v="1"),
     # Volume Booster / Text Size: download + install pages of MES's own browser extensions (sources in mes.fm/<slug>/extension/, zipped by
     # build_<name>_extension.py; tests node tool_apps_src/<name>-tests.js). app.js only fills in the version from the extension's manifest.
-    "volume-booster": dict(title="MES Volume Booster", page_title="Volume Booster",
+    "volume-booster": dict(tools_extra=EXT_TAB, title="MES Volume Booster", page_title="Volume Booster",
                            tag="Make quiet videos louder, up to 600%.", accent="#b45309", dark="#7c3a06", tint="#fdf0e1",
                            desc="Free MES Volume Booster browser extension for Chrome, Brave and Edge: make quiet videos (YouTube and more) louder than the site allows, up to 600%, with a soft limiter, presets, keyboard shortcuts and per-site memory. Private, no tracking.",
                            js_v="1"),
-    "text-size": dict(title="MES Text Size", page_title="Text Size",
+    "text-size": dict(tools_extra=EXT_TAB, title="MES Text Size", page_title="Text Size",
                       tag="Bigger or smaller text on any website.", accent="#0e7490", dark="#0b5568", tint="#e3f4f8",
                       desc="Free MES Text Size browser extension for Chrome, Brave and Edge: A- and A+ for any website, changing only the text (not pictures or layout), remembered per site, from 50% to 300%. Private, no tracking.",
                       js_v="1"),
@@ -513,6 +516,10 @@ def build_from_source(slug, cfg, tpl):
     # these are calculators: the info bar reads Home | Calculators | Tools (cross-link both ways, see add_cross_links.py)
     tools_li = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/tools.html'>Tools</a></li>"
     page = page.replace(tools_li, "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/calculators'>Calculators</a></li>" + tools_li.replace("tools.html", "tools"))
+    if cfg.get("tools_extra"):        # an extra info-bar tab right after Tools (Extensions on the browser-extension pages)
+        tools_here = tools_li.replace("tools.html", "tools")
+        assert tools_here in page
+        page = page.replace(tools_here, tools_here + cfg["tools_extra"], 1)
     if cfg.get("no_ads"):             # ad-free page: drop the deferred AdSense loader + the Auto-ads placement guard (they sit between the GTM block and </head>)
         a = page.find("<!-- ADSENSE-DEFERRED")
         b = page.find("</head>")
