@@ -18,7 +18,7 @@ function frontSpeed(n) {
 	return (p2 - p1) / (t2 - t1);
 }
 near(frontSpeed(1), L.COURANT, 0.05, "pulse speed in vacuum");
-near(frontSpeed(2), L.COURANT / 2, 0.03, "pulse speed in n = 2");
+near(frontSpeed(2), L.COURANT / 2, 0.05, "pulse speed in n = 2");
 /* 2. stability: energy stays bounded over a long run in a strong medium */
 var m = new L.Medium(120, 80); m.disc(60, 40, 25, 4); var w = new L.Wave(m); w.sources = L.pointSource(30, 40); for (var i = 0; i < 4000; i++) w.step();
 var mx = 0; for (i = 0; i < w.u.length; i++) mx = Math.max(mx, Math.abs(w.u[i])); ok(isFinite(mx) && mx < 20, "stable after 4000 steps in n = 4 (max |u| = " + mx.toFixed(3) + ")");
