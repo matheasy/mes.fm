@@ -327,6 +327,7 @@
     'button:hover,button:focus-visible{background:#3d4047;outline:none}button.pl{background:#15803d;min-width:44px}button.pl:hover{background:#1a9a49}select{font:inherit;background:#2c2e33;color:#f2f2f2;border:1px solid #3a3c41;border-radius:8px;height:34px;padding:0 6px;max-width:170px}' +
     '.rate{min-width:54px;font-size:13px}.st{margin-left:auto;color:#aab0b8;font-size:12px;text-align:right;min-width:90px}.st.err{color:#ff9b8f}.sp{flex:1}' +
     '.grip{cursor:grab;min-width:22px;padding:0 2px;color:#8a919a;letter-spacing:-2px}.p.dragging,.p.dragging .grip{cursor:grabbing}.p{touch-action:none}' +
+    '.volr{width:74px;height:34px;margin:0 2px;accent-color:#4cc38a;cursor:pointer;background:transparent}.vol svg{display:block}.vol.muted{color:#ff9b8f}' +
     '.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
     '.p.moved{left:var(--x);top:var(--y);bottom:auto;transform:none}' +
     '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}';
@@ -340,11 +341,12 @@
       '<div class="bar" title="Click to jump"><div class="fill"></div></div>' +
       '<div class="row"><button class="grip" title="Drag to move the player (double-click to put it back)">&#8942;&#8942;</button><button class="prev" title="Previous sentence (Left arrow)">&#9198;</button><button class="pl" title="Pause / resume (Space)">&#9654;</button><button class="next" title="Next sentence (Right arrow)">&#9197;</button>' +
       '<button class="slow" title="Slower (Down arrow)">&minus;</button><button class="rate" title="Speed">1.0&times;</button><button class="fast" title="Faster (Up arrow)">+</button>' +
+      '<button class="vol" title="Mute / unmute"></button><input class="volr" type="range" min="0" max="1" step="0.05" title="Volume" aria-label="Volume">' +
       '<select class="voice" title="Voice"></select><select class="setup" title="Setup"></select>' +
       '<span class="st" aria-live="polite"></span><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
     var q = function (c) { return sh.querySelector(c); };
     if (window.__mesraSite) { var gearBtn = sh.querySelector('.gear'); if (gearBtn) gearBtn.style.display = 'none'; }   // the site player has no options page
-    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), mini: q('.mini'), grip: q('.grip') };
+    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr') };
     q('.prev').onclick = function () { jumpSentence(-1); };
     q('.next').onclick = function () { jumpSentence(1); };
     ui.pl.onclick = toggle;
@@ -362,6 +364,9 @@
     ui.voice.onchange = function () { P.voice = ui.voice.value; saveSettings(); if (st.playing) restartSoon(); };
     ui.setup.onchange = function () { S.active = ui.setup.value; saveSettings(); P = RA.resolveProfile(S, host).config; applyStyle(); fillUi(); if (st.playing) restartSoon(); };
     ui.hl.onclick = toggleHighlight;
+    ui.volr.oninput = function () { P.volume = Number(ui.volr.value); if (P.volume > 0) lastVol = P.volume; paintVol(); saveSettings(); };
+    ui.volr.onchange = function () { if (st.playing) restartSoon(); };   // the voice reads the new volume from the next sentence on, so restart the current one
+    ui.vol.onclick = function () { if (P.volume > 0) { lastVol = P.volume; P.volume = 0; } else P.volume = lastVol || 1; paintVol(); saveSettings(); if (st.playing) restartSoon(); };
     ui.mini.onclick = toggleMini;
     ui.grip.ondblclick = function () { place(null); };
     // drag the player anywhere by its grip or any empty part of it
@@ -383,6 +388,18 @@
     ['click', 'mousedown', 'mouseup', 'pointerdown', 'dblclick', 'keydown', 'keyup'].forEach(function (t) { h.addEventListener(t, function (e) { e.stopPropagation(); }); });
     (document.body || document.documentElement).appendChild(h);
     place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini();
+  }
+
+  var lastVol = 1;
+  function volIcon(v) {
+    return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/>' +
+      (v <= 0 ? '<path d="M15 9.5l6 5M21 9.5l-6 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>'
+        : '<path d="M15.5 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>' + (v > 0.5 ? '<path d="M18 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>' : '')) + '</svg>';
+  }
+  function paintVol() {
+    if (!ui) return;
+    ui.volr.value = P.volume; ui.vol.innerHTML = volIcon(P.volume); ui.vol.classList.toggle('muted', P.volume <= 0);
+    ui.vol.title = P.volume <= 0 ? 'Unmute' : 'Mute'; ui.volr.title = 'Volume ' + Math.round(P.volume * 100) + '%';
   }
 
   // player position + minimised state, remembered per browser (not per site)
@@ -425,6 +442,7 @@
     if (!ui) return;
     ui.p.classList.toggle('top', P.playerPosition === 'top'); ui.p.classList.toggle('bottom', P.playerPosition !== 'top');
     ui.hl.classList.toggle('on', !!(P.highlightWord || P.highlightSentence));
+    paintVol();
     ui.pl.innerHTML = st.playing ? '&#10074;&#10074;' : '&#9654;';
     ui.pl.title = st.playing ? 'Pause (Space)' : 'Resume (Space)';
     ui.rate.innerHTML = (Math.round(P.rate * 100) / 100).toFixed(P.rate * 100 % 10 ? 2 : 1).replace(/0$/, '') + '&times;';
