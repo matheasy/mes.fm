@@ -304,18 +304,49 @@
     P.rate = r; saveSettings(); fillUi(); if (st.playing) restartSoon();
   }
 
+  // ---- text size of the page being read: only the elements holding the text we read are scaled, and every original is put back --------
+  var scaled = [];
+  function restoreText() {
+    scaled.forEach(function (o) { try { o.el.style.fontSize = o.fs; o.el.style.lineHeight = o.lh; } catch (e) { /* node gone */ } });
+    scaled = [];
+  }
+  function applyText() {
+    restoreText();
+    var k = P.textScale || 1;
+    if (Math.abs(k - 1) < 0.01 || !st.nodes) { paintText(); return; }
+    var els = [], seen = new Set(), i, el;
+    for (i = 0; i < st.nodes.length; i++) { el = st.nodes[i].parentElement; if (el && !seen.has(el)) { seen.add(el); els.push(el); } }
+    var info = els.map(function (e) {   // read every size first, then write: scaling a parent must not change what its children report
+      var cs = getComputedStyle(e), lh = parseFloat(cs.lineHeight);
+      return { el: e, fs: e.style.fontSize, lh: e.style.lineHeight, px: parseFloat(cs.fontSize), lpx: isNaN(lh) ? 0 : lh };
+    });
+    info.forEach(function (o) {
+      if (!o.px) return;
+      scaled.push({ el: o.el, fs: o.fs, lh: o.lh });
+      o.el.style.setProperty('font-size', (o.px * k).toFixed(2) + 'px', 'important');
+      if (o.lpx) o.el.style.setProperty('line-height', (o.lpx * k).toFixed(2) + 'px', 'important');
+    });
+    paintText();
+  }
+  function paintText() { if (ui) { var k = Math.round((P.textScale || 1) * 100); ui.sh.querySelector('.tsm').title = 'Smaller text on the page (now ' + k + '%)'; ui.sh.querySelector('.tsp').title = 'Larger text on the page (now ' + k + '%)'; } }
+  function setTextScale(k) {
+    k = Math.round(Math.min(2.5, Math.max(0.7, k)) * 10) / 10;
+    P.textScale = k; saveSettings(); applyText();
+    if (st.active && st.idx != null) { sentIdx = -1; highlight(st.idx); }
+  }
+
   function begin(mode) {
     if (st.active) stopSpeech();
     loadSettings(function () {
       if (!collect(mode)) { showNothing(); return; }
       st.active = true; st.playing = false; st.gotBoundary = false; sentIdx = -1;
       applyStyle();
-      loadUi(function () { buildUi(); fillUi(); speakFrom(st.idx); });
+      loadUi(function () { buildUi(); fillUi(); applyText(); speakFrom(st.idx); });
     });
   }
 
   function stopAll() {
-    stopSpeech(); clearHighlight(); st.active = false; st.playing = false; st.words = null; st.map = null; st.nodes = null;
+    stopSpeech(); clearHighlight(); st.active = false; st.playing = false; st.words = null; st.map = null; restoreText(); st.nodes = null;
     closePip();
     if (ui) { ui.host.remove(); ui = null; }
     if (styleEl) { styleEl.remove(); styleEl = null; }
@@ -343,6 +374,7 @@
       '<div class="bar" title="Click to jump"><div class="fill"></div></div>' +
       '<div class="row"><button class="grip" title="Drag to move the player (double-click to put it back)">&#8942;&#8942;</button><button class="prev" title="Previous sentence (Left arrow)">&#9198;</button><button class="pl" title="Pause / resume (Space)">&#9654;</button><button class="next" title="Next sentence (Right arrow)">&#9197;</button>' +
       '<button class="slow" title="Slower (Down arrow)">&minus;</button><button class="rate" title="Speed">1.0&times;</button><button class="fast" title="Faster (Up arrow)">+</button>' +
+      '<button class="tsm" title="Smaller text on the page" aria-label="Smaller text">A&minus;</button><button class="tsp" title="Larger text on the page" aria-label="Larger text">A+</button>' +
       '<button class="vol" title="Mute / unmute"></button><input class="volr" type="range" min="0" max="1" step="0.05" title="Volume" aria-label="Volume">' +
       '<select class="voice" title="Voice"></select><select class="setup" title="Setup"></select>' +
       '<span class="st" aria-live="polite"></span><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="pip-b" title="Pop out into a floating window you can move anywhere, even outside the browser" aria-label="Pop out"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="8" height="6" fill="currentColor"/></svg></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
@@ -355,6 +387,8 @@
     q('.slow').onclick = function () { setRate(P.rate - 0.1); };
     q('.fast').onclick = function () { setRate(P.rate + 0.1); };
     ui.rate.onclick = function () { setRate(1); };
+    q('.tsm').onclick = function () { setTextScale(P.textScale - 0.1); };
+    q('.tsp').onclick = function () { setTextScale(P.textScale + 0.1); };
     q('.x').onclick = stopAll;
     q('.gear').onclick = function () { try { chrome.runtime.sendMessage({ mesra: 'options' }); } catch (e) { /* ignore */ } };
     ui.bar.onclick = function (e) {

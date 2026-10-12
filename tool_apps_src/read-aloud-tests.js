@@ -15,7 +15,8 @@ eq(m.profiles[0].config.highlightWord, true, 'non-boolean ignored'); eq(m.profil
 eq(R.resolveProfile(m, 'www.y.com').id, 'a', 'site suffix'); eq(R.resolveProfile(m, 'noty.com').id, 'a', 'falls back to active (only one)');
 const S2 = R.merge({ active: 'default', profiles: R.builtins(), siteProfiles: { 'x.org': 'quick' } });
 eq(R.resolveProfile(S2, 'a.x.org').id, 'quick', 'site setup'); eq(R.resolveProfile(S2, 'xx.org').id, 'default', 'suffix needs a dot');
-eq(R.normConfig(JSON.parse(JSON.stringify(B[1].config))), B[1].config, 'config round trip'); eq(R.normConfig(null), R.defaultConfig(), 'null config');
+eq(R.normConfig(JSON.parse(JSON.stringify(B[1].config))), B[1].config, 'config round trip'); eq(R.normConfig({textScale: 9}).textScale, 2.5, 'text scale clamps high'); eq(R.normConfig({textScale: 0.1}).textScale, 0.7, 'text scale clamps low'); eq(R.defaultConfig().textScale, 1, 'text scale default');
+eq(R.normConfig(null), R.defaultConfig(), 'null config');
 eq(R.contrastText('#ffd54a'), '#000000', 'dark text on amber'); eq(R.contrastText('#102030'), '#ffffff', 'light text on navy'); eq(R.contrastText('nope'), '#000000', 'bad colour');
 
 // page text map

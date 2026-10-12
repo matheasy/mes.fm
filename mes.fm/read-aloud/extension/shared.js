@@ -6,7 +6,7 @@
   function defaultConfig() {
     return {
       voice: '',                 // voiceURI of the chosen voice, '' = pick the best one for the text's language
-      rate: 1, pitch: 1, volume: 1,
+      rate: 1, pitch: 1, volume: 1, textScale: 1,
       highlightWord: true, wordColor: '#ffd54a',
       highlightSentence: true, sentenceColor: '#fff1b8',
       autoScroll: true,
@@ -33,7 +33,7 @@
     var out = defaultConfig();
     if (!c || typeof c !== 'object') return out;
     if (typeof c.voice === 'string') out.voice = c.voice.slice(0, 300);
-    out.rate = num(c.rate, 0.5, 4, out.rate); out.pitch = num(c.pitch, 0.5, 2, out.pitch); out.volume = num(c.volume, 0, 1, out.volume);
+    out.rate = num(c.rate, 0.5, 4, out.rate); out.pitch = num(c.pitch, 0.5, 2, out.pitch); out.volume = num(c.volume, 0, 1, out.volume); out.textScale = num(c.textScale, 0.7, 2.5, out.textScale);
     out.wordColor = color(c.wordColor, out.wordColor); out.sentenceColor = color(c.sentenceColor, out.sentenceColor);
     ['highlightWord', 'highlightSentence', 'autoScroll', 'skipCode', 'skipTables', 'readTitle', 'closeWhenDone', 'doubleClickToJump'].forEach(function (k) { if (typeof c[k] === 'boolean') out[k] = c[k]; });
     if (c.scope === 'smart' || c.scope === 'page') out.scope = c.scope;
