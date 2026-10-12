@@ -111,7 +111,23 @@
     var ICON = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false" style="display:block">' +
         '<circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.6"/>' +
         '<line x1="15.5" y1="15.5" x2="21" y2="21" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg>';
-    var btn = null;
+    var btn = null, rbtn = null, loadingRA = false;
+    var RICON = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false" style="display:block">' +
+        '<path d="M3 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/>' +
+        '<path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+    /* the speaker button (read this page aloud, with the word and sentence highlighted): the engine (main_js/site-read-aloud.js, built from the
+       MES Read Aloud browser extension's reader by build_site_read_aloud.py) is only downloaded when it is clicked */
+    function readAloud() {
+        if (window.MESReadAloud) { window.MESReadAloud.toggle(); return; }
+        if (loadingRA) return;
+        loadingRA = true; rbtn.setAttribute("aria-busy", "true");
+        var sc = document.createElement("script");
+        sc.src = "/main_js/site-read-aloud.js?v=1";
+        sc.onload = function () { loadingRA = false; rbtn.removeAttribute("aria-busy"); if (window.MESReadAloud) window.MESReadAloud.toggle(); };
+        sc.onerror = function () { loadingRA = false; rbtn.removeAttribute("aria-busy"); };
+        document.head.appendChild(sc);
+    }
 
     /* on pages where this script runs before display-controls.js has built the controls (e.g. /search, which loads
        it up front), try again once every deferred script has run */
@@ -128,6 +144,17 @@
         btn.innerHTML = ICON;
         group.insertBefore(btn, group.firstChild);
         btn.addEventListener("click", open);
+        if (window.speechSynthesis) {
+            rbtn = document.createElement("button");
+            rbtn.type = "button";
+            rbtn.id = "siteReadBtn";
+            rbtn.className = btn.className;
+            rbtn.setAttribute("aria-label", "Read this page aloud");
+            rbtn.title = "Read this page aloud, highlighting the words (or the text you selected)";
+            rbtn.innerHTML = RICON;
+            group.insertBefore(rbtn, btn);
+            rbtn.addEventListener("click", readAloud);
+        }
         reserve();
         var rt;
         window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(reserve, 100); });
@@ -139,7 +166,8 @@
     function reserve() {
         if (!btn || !btn.offsetWidth) return;
         var gs = getComputedStyle(group);
-        var extra = btn.offsetWidth + (parseFloat(gs.columnGap) || parseFloat(gs.gap) || 6);
+        var gap = parseFloat(gs.columnGap) || parseFloat(gs.gap) || 6;
+        var extra = btn.offsetWidth + gap + (rbtn && rbtn.offsetWidth ? rbtn.offsetWidth + gap : 0);
         var els = [document.getElementById("compact-nav"), group.parentElement,
             document.querySelector("#header .logo-text-container")];
         els.forEach(function (el, i) {

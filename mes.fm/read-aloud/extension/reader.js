@@ -89,7 +89,7 @@
 
   function pickRoot() {
     if (P.scope === 'page') return document.body;
-    var sels = ['article', '[role=main]', 'main', '#content', '.post-content', '.entry-content', '.article-body', '.article', '.post', '#main'], best = null, bestLen = 299;
+    var sels = (window.__mesraRoots || []).concat(['article', '[role=main]', 'main', '#content', '.post-content', '.entry-content', '.article-body', '.article', '.post', '#main']), best = null, bestLen = 299;
     for (var i = 0; i < sels.length; i++) {
       var list = document.querySelectorAll(sels[i]);
       for (var j = 0; j < list.length; j++) {
@@ -343,6 +343,7 @@
       '<select class="voice" title="Voice"></select><select class="setup" title="Setup"></select>' +
       '<span class="st" aria-live="polite"></span><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
     var q = function (c) { return sh.querySelector(c); };
+    if (window.__mesraSite) { var gearBtn = sh.querySelector('.gear'); if (gearBtn) gearBtn.style.display = 'none'; }   // the site player has no options page
     ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), mini: q('.mini'), grip: q('.grip') };
     q('.prev').onclick = function () { jumpSentence(-1); };
     q('.next').onclick = function () { jumpSentence(1); };
