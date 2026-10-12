@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>MES Text Size: settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<main>
+  <h1>MES Text Size</h1>
+  <p class="lead">Settings are saved as you change them. <span id="saved" class="saved" aria-live="polite"></span></p>
+  <div class="pref"><div><b>Step</b><span>How much A&minus; / A+ and Alt+Shift+Up / Down change the size.</span></div>
+    <select id="step"><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="25">25%</option></select></div>
+  <div class="pref"><div><b>Remember a new size for</b><span>This site only, or every site that has no size of its own.</span></div>
+    <select id="applyTo"><option value="site">This site</option><option value="all">All sites</option></select></div>
+  <div class="pref"><div><b>Size on all sites</b><span>Used wherever a site has no size of its own.</span></div>
+    <div class="rng"><input type="range" id="allLevel" min="50" max="300" step="5"><output id="allout"></output></div></div>
+  <h2>Sites with their own size</h2>
+  <div id="sitemap"></div>
+</main>
+<script src="shared.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

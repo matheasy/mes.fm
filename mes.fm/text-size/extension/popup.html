@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>MES Text Size</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<header><span class="brand">MES Text Size</span><a href="options.html" target="_blank">Settings</a></header>
+<section>
+  <p class="host" id="host">&nbsp;</p>
+  <div class="row"><button id="smaller" aria-label="Smaller text" title="Smaller (Alt+Shift+Down)">A&minus;</button><output id="level">100%</output><button id="larger" aria-label="Larger text" title="Larger (Alt+Shift+Up)">A+</button></div>
+  <input type="range" id="slider" min="50" max="300" step="5" value="100" aria-label="Text size">
+  <div class="presets" id="presets"></div>
+</section>
+<section class="opts">
+  <label>Remember for <select id="applyto"><option value="site">this site</option><option value="all">all sites</option></select></label>
+  <p class="msg" id="msg">&nbsp;</p>
+  <button id="reset" class="reset">Back to normal (100%)</button>
+</section>
+<footer class="small">Shortcuts: Alt+Shift+Up / Down / 0. Only the text changes: pictures and layout stay as they are.</footer>
+<script src="shared.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>
