@@ -1,0 +1,60 @@
+	<div class="tu" id="ts">
+		<div class="tu-card tu-card--tint">
+			<h2 style="margin-top:0;">Bigger (or smaller) text on any website</h2>
+			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave, Edge and other Chromium browsers: the <b>A&minus; / A+</b> buttons from the top of mes.fm, for every site. Unlike the browser's zoom, <b>only the text changes</b>: pictures and layout stay where they are. The size is remembered for each site (or for all sites), from 50% to 300%.</p>
+			<div class="ts-btns">
+				<a class="tu-btn tu-btn--primary" id="ts-dl" href="/text-size/mes-text-size.zip" download>Download <span id="ts-ver">v1.0.0</span> (zip)</a>
+				<a class="tu-btn tu-btn--ghost" href="#ts-install">How to install</a>
+				<a class="tu-btn tu-btn--ghost" href="/text-size/extension/content.js">View the source</a>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Private by design: no accounts, no tracking, no network requests. The code is plain JavaScript you can read.</p>
+		</div>
+
+		<h2 id="ts-install">Install it (about a minute)</h2>
+		<div class="tu-card">
+			<ol class="ts-steps">
+				<li><b>Download</b> the zip above and unzip it. You get a folder called <code>mes-text-size</code>. Keep it somewhere permanent (Documents is fine): the browser reads the extension from that folder.</li>
+				<li>Open the extensions page: <code>chrome://extensions</code> in Chrome, <code>brave://extensions</code> in Brave, <code>edge://extensions</code> in Edge.</li>
+				<li>Turn on <b>Developer mode</b> (a switch at the top right, or on the left in Edge).</li>
+				<li>Click <b>Load unpacked</b> and choose the unzipped <code>mes-text-size</code> folder.</li>
+				<li>Click the puzzle-piece icon in the toolbar and <b>pin</b> MES Text Size.</li>
+			</ol>
+			<p class="tu-note" style="margin-bottom:0;">Chrome may show a "disable developer mode extensions" notice when it starts: choose Cancel / Keep. Brave and Edge usually do not. Until the extension is listed in the Chrome Web Store, updates are manual: download the new zip, replace the folder and press the reload arrow on the extensions page. Firefox is not supported yet.</p>
+		</div>
+
+		<h2>How to use it</h2>
+		<div class="tu-card">
+			<ul class="ts-list">
+				<li>Click the toolbar icon and press <b>A+</b> or <b>A&minus;</b>, drag the slider or pick a preset. Every open page of that site follows at once.</li>
+				<li><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd> / <kbd>Down</kbd> change the size, <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>0</kbd> goes back to normal. Change the shortcuts at <code>chrome://extensions/shortcuts</code>.</li>
+				<li><b>Remember for this site or all sites.</b> A site you have changed keeps its own size; sites you have not touched use the all-sites size (100% unless you set it).</li>
+				<li>In the settings: the step (5 to 25%), the all-sites size, and the list of sites that have their own size.</li>
+			</ul>
+		</div>
+
+		<h2>How it works, and its limits</h2>
+		<div class="tu-card">
+			<p style="margin-top:0;">Every piece of text on the page gets its own size (and line height) equal to what it had times your percentage. The original values are remembered, so any size, and 100%, is exact, and text that appears later (menus, comments, infinite scroll) is scaled as it arrives. Sizes that depend on each other (em, percentages, inherited text) are never scaled twice.</p>
+			<p style="margin-bottom:0;">Because only text grows, a page built with fixed-height boxes can overflow or overlap at large sizes; if a site looks wrong, press <b>Back to normal</b> for that site. It cannot change browser pages (<code>chrome://</code>), the Web Store or the built-in PDF viewer. Text inside images or canvas is a picture, so it does not change.</p>
+		</div>
+
+		<h2>Permissions</h2>
+		<div class="tu-card">
+			<p style="margin:0;">It runs on the pages you open (the browser words this as "read and change your data on all websites") because it has to change their text size. It does not read or send any page content. <code>storage</code> keeps your sizes; <code>activeTab</code> lets the popup show the current site.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Questions</h2>
+			<dl>
+				<dt>How is this different from the browser's zoom?</dt>
+				<dd>Zoom (Ctrl +) enlarges everything, so wide pages get scrollbars and layouts change. This changes only the text, which keeps the layout and the pictures as designed.</dd>
+				<dt>Why did the size not change on one site?</dt>
+				<dd>Text drawn as images or inside a canvas or an embedded document from another site cannot be resized, and a site set to "Off" for everything is not affected. Reload the page after changing the size on a very unusual page.</dd>
+				<dt>Does it work with the MES site's own A&minus; / A+ buttons?</dt>
+				<dd>On mes.fm those buttons already exist; using both would resize twice, so keep this extension at 100% on mes.fm.</dd>
+				<dt>Is it open source?</dt>
+				<dd>The whole extension is plain, readable JavaScript served from this site: <a href="/text-size/extension/content.js">content.js</a>, <a href="/text-size/extension/shared.js">shared.js</a>, <a href="/text-size/extension/manifest.json">manifest.json</a>.</dd>
+			</dl>
+			<p>More free add-ons are listed on <a href="/browser">Browser Extensions</a>.</p>
+		</div>
+	</div>

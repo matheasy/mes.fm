@@ -342,6 +342,16 @@ APPS = {
                       tag="Dark mode (or light mode) for any website.", accent="#4338ca", dark="#312e81", tint="#e9e8fb",
                       desc="Free MES Dark Mode browser extension for Chrome, Brave and Edge: dark mode for any website, or light mode for dark ones, with per-site control, a schedule, setups and brightness, sepia and contrast tweaks. Private, no tracking.",
                       js_v="1"),
+    # Volume Booster / Text Size: download + install pages of MES's own browser extensions (sources in mes.fm/<slug>/extension/, zipped by
+    # build_<name>_extension.py; tests node tool_apps_src/<name>-tests.js). app.js only fills in the version from the extension's manifest.
+    "volume-booster": dict(title="MES Volume Booster", page_title="Volume Booster",
+                           tag="Make any tab louder, up to 600%.", accent="#b45309", dark="#7c3a06", tint="#fdf0e1",
+                           desc="Free MES Volume Booster browser extension for Chrome, Brave and Edge: boost the volume of any tab up to 600% with a soft limiter, presets, keyboard shortcuts and per-site memory. Private, no tracking.",
+                           js_v="1"),
+    "text-size": dict(title="MES Text Size", page_title="Text Size",
+                      tag="Bigger or smaller text on any website.", accent="#0e7490", dark="#0b5568", tint="#e3f4f8",
+                      desc="Free MES Text Size browser extension for Chrome, Brave and Edge: A- and A+ for any website, changing only the text (not pictures or layout), remembered per site, from 50% to 300%. Private, no tracking.",
+                      js_v="1"),
     "go": dict(title="MES Short Links", page_title="Short Links",
                tag="Every mes.fm short link, searchable.", accent="#0e8a6a", dark="#0a6650", tint="#e0f4ee",
                desc="Every MES short link in one searchable list: mes.fm/pomodoro, mes.fm/physics-playlist and more. Filter by category or topic, copy any short link, and get the line for a new one.",

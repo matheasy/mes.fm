@@ -1,0 +1,64 @@
+	<div class="tu" id="vb">
+		<div class="tu-card tu-card--tint">
+			<h2 style="margin-top:0;">Make any tab louder, up to 600%</h2>
+			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave and Edge. Quiet video, a soft-spoken lecture, a podcast recorded too low: open the popup, drag the slider (or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd>) and that tab gets louder than the browser's normal maximum. It works on <b>any sound the tab plays</b>, including video and audio from other sites, and a soft limiter keeps the loud peaks from clipping.</p>
+			<div class="vb-btns">
+				<a class="tu-btn tu-btn--primary" id="vb-dl" href="/volume-booster/mes-volume-booster.zip" download>Download <span id="vb-ver">v1.0.0</span> (zip)</a>
+				<a class="tu-btn tu-btn--ghost" href="#vb-install">How to install</a>
+				<a class="tu-btn tu-btn--ghost" href="/volume-booster/extension/shared.js">View the source</a>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Private by design: no accounts, no tracking, no network requests. The sound never leaves your computer. The code is plain JavaScript you can read.</p>
+		</div>
+
+		<h2 id="vb-install">Install it (about a minute)</h2>
+		<div class="tu-card">
+			<ol class="vb-steps">
+				<li><b>Download</b> the zip above and unzip it. You get a folder called <code>mes-volume-booster</code>. Keep it somewhere permanent (Documents is fine): the browser reads the extension from that folder.</li>
+				<li>Open the extensions page: <code>chrome://extensions</code> in Chrome, <code>brave://extensions</code> in Brave, <code>edge://extensions</code> in Edge.</li>
+				<li>Turn on <b>Developer mode</b> (a switch at the top right, or on the left in Edge).</li>
+				<li>Click <b>Load unpacked</b> and choose the unzipped <code>mes-volume-booster</code> folder.</li>
+				<li>Click the puzzle-piece icon in the toolbar and <b>pin</b> MES Volume Booster.</li>
+			</ol>
+			<p class="tu-note" style="margin-bottom:0;">Chrome may show a "disable developer mode extensions" notice when it starts: choose Cancel / Keep. Brave and Edge usually do not. Until the extension is listed in the Chrome Web Store, updates are manual: download the new zip, replace the folder and press the reload arrow on the extensions page. Firefox is not supported yet.</p>
+		</div>
+
+		<h2>How to use it</h2>
+		<div class="tu-card">
+			<ul class="vb-list">
+				<li>Open the page with the quiet sound, click the toolbar icon and drag the slider or tap a preset (150%, 200%, 300%, 400%, 600%). The icon shows the level as a badge.</li>
+				<li><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd> / <kbd>Down</kbd> make the current tab louder / quieter without opening the popup. Change the shortcuts at <code>chrome://extensions/shortcuts</code>.</li>
+				<li><b>Turn off the boost on this tab</b> in the popup to go back to normal and release the tab.</li>
+				<li><b>Settings:</b> the highest boost (200%, 400% or 600%), the shortcut step, the soft limiter, and whether it remembers each site's last level.</li>
+			</ul>
+		</div>
+
+		<h2>Good to know</h2>
+		<div class="tu-card">
+			<ul class="vb-list">
+				<li><b>Protect your ears and speakers.</b> A boost of 300% is about +9.5 dB and 600% about +15.6 dB. Start low and go up slowly, especially with headphones. The popup shows the boost in decibels.</li>
+				<li><b>Why the browser shows a recording dot.</b> To make a tab louder the extension receives that tab's sound from the browser (the browser's tab-capture feature), changes the volume and plays it back. Chrome marks such a tab with a small indicator. Nothing is recorded or sent anywhere.</li>
+				<li><b>The soft limiter</b> rounds off the loud peaks that a big boost creates instead of letting them clip. Quiet sound is boosted by exactly the percentage shown. Turn it off for the raw boost.</li>
+				<li><b>Limits.</b> It cannot boost browser pages (<code>chrome://</code>), the Web Store, or a tab that another extension is already capturing. Chrome 116 or newer is needed. Boosting is per tab: other tabs stay as they are.</li>
+			</ul>
+		</div>
+
+		<h2>Permissions</h2>
+		<div class="tu-card">
+			<p style="margin:0;"><code>tabCapture</code> gets the sound of the tab you boost (only after you click the icon or press the shortcut); <code>offscreen</code> lets a hidden page do the audio processing; <code>activeTab</code> lets the popup know which tab and site you are on; <code>storage</code> keeps your settings and remembered levels. It does <b>not</b> ask to read any website's content.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Questions</h2>
+			<dl>
+				<dt>Why is there no sound after I turn the boost on?</dt>
+				<dd>Another extension or tool may be capturing the same tab. Close it, reload the tab and try again. If the page's audio comes from another tab or a different app, boost that one instead.</dd>
+				<dt>Why does a very loud boost sound harsh?</dt>
+				<dd>Boosting amplifies noise and any distortion that is already in the recording, and the limiter can only smooth the peaks. Use the lowest level that is comfortable.</dd>
+				<dt>Will it make my whole computer louder?</dt>
+				<dd>No, only the tab you pick. Your system volume is not changed.</dd>
+				<dt>Is it open source?</dt>
+				<dd>The whole extension is plain, readable JavaScript served from this site: <a href="/volume-booster/extension/background.js">background.js</a>, <a href="/volume-booster/extension/offscreen.js">offscreen.js</a>, <a href="/volume-booster/extension/shared.js">shared.js</a>, <a href="/volume-booster/extension/manifest.json">manifest.json</a>.</dd>
+			</dl>
+			<p>More free add-ons are listed on <a href="/browser">Browser Extensions</a>.</p>
+		</div>
+	</div>
