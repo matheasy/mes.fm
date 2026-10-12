@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>MES Dark Mode: settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">MES Dark Mode</div>
+  <div class="tools">
+    <label class="sel">Setup <select id="profile"></select></label>
+    <button id="new">New</button><button id="dup">Duplicate</button><button id="ren">Rename</button><button id="del" class="warn">Delete</button>
+    <button id="exp">Export</button><button id="imp">Import</button>
+    <span id="saved" class="saved" aria-live="polite"></span>
+  </div>
+</header>
+<main>
+  <p class="lead">A <b>setup</b> is a mode plus brightness, contrast and colour tweaks. Make one for each purpose (day, night, reading) and switch in the toolbar popup. Changes save automatically. Each site can also be forced dark, light or off from the popup.</p>
+
+  <h2>Mode</h2>
+  <div class="pref"><div><b>Make pages</b><span>Dark makes light pages dark. Light makes dark pages light. System follows your computer's theme. Schedule is dark between two times. A page that already matches is left alone.</span></div>
+    <select id="mode"><option value="dark">Dark</option><option value="light">Light</option><option value="system">Follow the system</option><option value="schedule">Dark on a schedule</option></select></div>
+  <div class="pref" id="schedrow"><div><b>Schedule</b><span>Dark from the first time until the second (it can run past midnight).</span></div><div class="col2"><input type="time" id="scheduleFrom"> to <input type="time" id="scheduleTo"></div></div>
+
+  <h2>Look</h2>
+  <div class="pref"><div><b>Brightness</b></div><div class="rng"><input type="range" id="brightness" min="40" max="150"><output id="brightnessout"></output></div></div>
+  <div class="pref"><div><b>Contrast</b></div><div class="rng"><input type="range" id="contrast" min="40" max="150"><output id="contrastout"></output></div></div>
+  <div class="pref"><div><b>Sepia (warm tint)</b><span>Easier on the eyes in the evening.</span></div><div class="rng"><input type="range" id="sepia" min="0" max="100"><output id="sepiaout"></output></div></div>
+  <div class="pref"><div><b>Grayscale</b></div><div class="rng"><input type="range" id="grayscale" min="0" max="100"><output id="grayscaleout"></output></div></div>
+  <div class="pref"><div><b>Keep photos and videos natural</b><span>Images, video, canvas, embedded frames and CSS background photos keep their real colours. Turn off to invert everything (logos that are dark on transparent show up better).</span></div><input type="checkbox" id="keepImages"></div>
+
+  <h2>Sites with their own choice</h2>
+  <div id="sitemap"></div>
+  <p class="hint">Set from the toolbar popup or with Alt+Shift+D (switches the current site between dark and light). Change the shortcut at chrome://extensions/shortcuts (brave://, edge://).</p>
+  <p><button id="factory">Restore the built-in setups</button></p>
+</main>
+<script src="shared.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
