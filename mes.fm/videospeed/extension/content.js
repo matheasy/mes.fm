@@ -15,7 +15,7 @@
   var globalSpeed = null, siteSpeeds = {};
   var host = location.hostname;
   var hiddenLocal = false, showUntil = 0, tickTimer = 0, scanTimer = 0, saveTimer = 0;
-  var ui = null;
+  var ui = null, off = { dx: 8, dy: 8 }, offSaveTimer = 0;
 
   // ---- settings -------------------------------------------------------------------------------------------------------
   function enabledHere() { return !V.matchesSite(host, S.disabledSites); }
@@ -30,7 +30,8 @@
   function load() {
     try {
       chrome.storage.sync.get('mesvs', function (a) {
-        chrome.storage.local.get(['mesvsSpeed', 'mesvsSites'], function (b) {
+        chrome.storage.local.get(['mesvsSpeed', 'mesvsSites', 'mesvsPos'], function (b) {
+          if (b && b.mesvsPos && isFinite(b.mesvsPos.dx) && isFinite(b.mesvsPos.dy)) off = { dx: b.mesvsPos.dx, dy: b.mesvsPos.dy };
           S = V.merge(a && a.mesvs);
           globalSpeed = b && typeof b.mesvsSpeed === 'number' ? b.mesvsSpeed : null;
           siteSpeeds = (b && b.mesvsSites) || {};
@@ -194,24 +195,60 @@
   }
 
   // ---- the on-video control -------------------------------------------------------------------------------------------
-  var CSS = '*{box-sizing:border-box}.bar{display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:rgba(20,20,24,.82);color:#fff;font:600 13px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.4);user-select:none;-webkit-user-select:none;transition:opacity .2s}' +
-    'button{all:unset;cursor:pointer;color:#fff;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:999px;font:600 15px/1 system-ui,sans-serif}' +
+  var CSS = '*{box-sizing:border-box}.bar{display:flex;align-items:center;gap:0;padding:2px 3px;border-radius:999px;background:rgba(20,20,24,.82);color:#fff;font:600 13px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.4);user-select:none;-webkit-user-select:none;transition:opacity .2s}' +
+    'button{all:unset;cursor:pointer;color:#fff;min-width:22px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:999px;font:600 15px/1 system-ui,sans-serif;touch-action:none}' +
     'button:hover,button:focus-visible{background:rgba(255,255,255,.22)}' +
-    '.v{min-width:56px;padding:0 6px;font-size:13px;font-variant-numeric:tabular-nums;touch-action:none}' +
-    '.v.hold{background:#2563a8}';
+    '.v{min-width:46px;padding:0 3px;font-size:13px;font-variant-numeric:tabular-nums}' +
+    '.v.hold{background:#2563a8}.g{cursor:grab;min-width:14px;font-size:12px;letter-spacing:-2px;color:#c5c9d1}.g.drag{cursor:grabbing}.x{min-width:20px;font-size:14px;color:#c5c9d1}.x:hover{color:#fff}';
 
   function buildUi() {
     var h = document.createElement('div');
     h.setAttribute('data-mesvs', '');
     h.style.cssText = 'all:initial;position:fixed;z-index:2147483647;display:none;left:0;top:0';
     var sh = h.attachShadow({ mode: 'closed' });
-    sh.innerHTML = '<style>' + CSS + '</style><div class="bar" role="group" aria-label="MES Video Speed Controller"><button class="m" title="Slower">&minus;</button><button class="v" title="Click: reset / back. Press and hold: temporary fast speed, drag left or right to change it">1.0&times;</button><button class="p" title="Faster">+</button></div>';
+    sh.innerHTML = '<style>' + CSS + '</style><div class="bar" role="group" aria-label="MES Video Speed Controller"><button class="g" title="Drag to move this control">&#8942;&#8942;</button><button class="m" title="Slower (hold to change faster and faster)">&minus;</button><button class="v" title="Click: reset / back. Press and hold: temporary fast speed, drag left or right to change it">1.00&times;</button><button class="p" title="Faster (hold to change faster and faster)">+</button><button class="x" title="Hide this control. Bring it back with the Show/hide shortcut or the toolbar menu" aria-label="Hide controller">&times;</button></div>';
     ['click', 'dblclick', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'touchstart', 'touchend', 'contextmenu'].forEach(function (t) {
       h.addEventListener(t, function (e) { e.stopPropagation(); });
     });
     var bar = sh.querySelector('.bar'), label = sh.querySelector('.v');
-    sh.querySelector('.m').addEventListener('click', function () { doAction('slower', stepOf('slower')); });
-    sh.querySelector('.p').addEventListener('click', function () { doAction('faster', stepOf('faster')); });
+    // a press steps once; holding repeats and keeps getting faster (every repeat comes 15% sooner, down to 60 ms)
+    function repeater(btn, act) {
+      var t = 0, iv = 200, on2 = false;
+      function stopR() { clearTimeout(t); on2 = false; }
+      btn.addEventListener('pointerdown', function (e) {
+        if (e.button > 0) return;
+        try { btn.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+        act(); iv = 200; on2 = true;
+        t = setTimeout(function loop() { if (!on2) return; act(); iv = Math.max(60, iv * 0.85); t = setTimeout(loop, iv); }, 380);
+      });
+      ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (ev) { btn.addEventListener(ev, stopR); });
+      btn.addEventListener('click', function (e) { if (e.detail === 0) act(); });   // keyboard activation
+    }
+    repeater(sh.querySelector('.m'), function () { doAction('slower', stepOf('slower')); });
+    repeater(sh.querySelector('.p'), function () { doAction('faster', stepOf('faster')); });
+    sh.querySelector('.x').addEventListener('click', function () { hiddenLocal = true; tick(); });
+    var grip = sh.querySelector('.g'), drag = null;
+    grip.addEventListener('pointerdown', function (e) {
+      if (e.button > 0) return;
+      drag = { x: e.clientX, y: e.clientY, dx: off.dx, dy: off.dy };
+      grip.classList.add('drag');
+      try { grip.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+      e.preventDefault();
+    });
+    grip.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      off = { dx: drag.dx + e.clientX - drag.x, dy: drag.dy + e.clientY - drag.y };
+      showUntil = Date.now() + 2800; tick();
+    });
+    function dropGrip() {
+      if (!drag) return;
+      drag = null; grip.classList.remove('drag');
+      clearTimeout(offSaveTimer);
+      offSaveTimer = setTimeout(function () { try { chrome.storage.local.set({ mesvsPos: off }); } catch (e) { /* ignore */ } }, 200);
+    }
+    grip.addEventListener('pointerup', dropGrip);
+    grip.addEventListener('pointercancel', dropGrip);
+    grip.addEventListener('dblclick', function () { off = { dx: 8, dy: 8 }; dropGrip(); tick(); });
     var hold = null;
     label.addEventListener('pointerdown', function (e) {
       var el = pickActive();
@@ -252,10 +289,11 @@
     if (fs && fs.nodeType === 1 && !(fs instanceof HTMLMediaElement)) parent = fs;
     if (ui.host.parentNode !== parent) parent.appendChild(ui.host);
     ui.host.style.display = 'block';
-    ui.host.style.left = Math.max(0, r.left) + 8 + 'px';
-    ui.host.style.top = Math.max(0, r.top) + 8 + 'px';
+    var bw = ui.bar.offsetWidth || 150, bh = ui.bar.offsetHeight || 30;
+    ui.host.style.left = Math.min(Math.max(0, innerWidth - bw), Math.max(0, Math.max(0, r.left) + off.dx)) + 'px';
+    ui.host.style.top = Math.min(Math.max(0, innerHeight - bh), Math.max(0, Math.max(0, r.top) + off.dy)) + 'px';
     ui.bar.style.opacity = String(P.opacity);
-    var t = V.fmt(el.playbackRate) + '×';
+    var t = V.fmt2(el.playbackRate) + '×';
     if (ui.label.textContent !== t) ui.label.textContent = t;
   }
 
@@ -281,7 +319,8 @@
       if (!el) return;
       if (m.mesvs === 'set') userSet(m.speed);
       else if (m.mesvs === 'action') doAction(m.action, m.value);
-      send({ speed: el.playbackRate, paused: el.paused, count: media.size, host: host });
+      else if (m.mesvs === 'ui') { hiddenLocal = !m.show; if (m.show) { showUntil = Date.now() + 4000; } tick(); }
+      send({ speed: el.playbackRate, paused: el.paused, count: media.size, host: host, hidden: hiddenLocal });
     });
   } catch (e) { /* ignore */ }
 

@@ -3,7 +3,7 @@ const V = require('../mes.fm/videospeed/extension/shared.js');
 let n = 0, bad = 0;
 function eq(a, b, m) { n++; if (JSON.stringify(a) !== JSON.stringify(b)) { bad++; console.log('FAIL', m, 'got', JSON.stringify(a), 'want', JSON.stringify(b)); } }
 eq(V.clamp(0), 0.1, 'clamp low'); eq(V.clamp(99), 16, 'clamp high'); eq(V.clamp('1.234'), 1.23, 'clamp rounds'); eq(V.clamp('x'), 1, 'clamp junk');
-eq(V.fmt(1), '1.0', 'fmt 1'); eq(V.fmt(1.5), '1.5', 'fmt 1.5'); eq(V.fmt(1.25), '1.25', 'fmt 1.25'); eq(V.fmt(2.0000001), '2.0', 'fmt float');
+eq(V.fmt(1), '1.0', 'fmt 1'); eq(V.fmt(1.5), '1.5', 'fmt 1.5'); eq(V.fmt(1.25), '1.25', 'fmt 1.25'); eq(V.fmt(2.0000001), '2.0', 'fmt float'); eq(V.fmt2(1), '1.00', 'fmt2 1'); eq(V.fmt2(1.05), '1.05', 'fmt2 1.05'); eq(V.fmt2(0.5), '0.50', 'fmt2 .5'); eq(V.fmt2(2.0000001), '2.00', 'fmt2 float');
 eq(V.stepSpeed(1, 1, 0.1), 1.1, 'step up'); eq(V.stepSpeed(1.1, -1, 0.1), 1, 'step down float'); eq(V.stepSpeed(0.1, -1, 0.1), 0.1, 'floor'); eq(V.stepSpeed(16, 1, 0.1), 16, 'ceiling');
 let s = 1; for (let i = 0; i < 10; i++) s = V.stepSpeed(s, 1, 0.1); eq(s, 2, 'ten steps from 1 = 2 (no float drift)');
 s = 1; for (let i = 0; i < 20; i++) s = V.stepSpeed(s, 1, 0.05); eq(s, 2, 'twenty 0.05 steps = 2');

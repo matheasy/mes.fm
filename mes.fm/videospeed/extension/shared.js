@@ -61,6 +61,9 @@
     return s.indexOf('.') < 0 ? s + '.0' : s;
   }
 
+  // the on-video / popup read-out: always two decimals, so stepping by 0.05 never changes the width of the label
+  function fmt2(v) { return (Math.round(v * 100) / 100).toFixed(2); }
+
   function stepSpeed(v, dir, step) {
     return clamp(Math.round((v + dir * step) * 100) / 100);
   }
@@ -163,7 +166,7 @@
     return profileById(S, S.active);
   }
 
-  var api = { MIN: MIN, MAX: MAX, ACTIONS: ACTIONS, ACT: ACT, defaultConfig: defaultConfig, mesConfig: mesConfig, builtins: builtins, clamp: clamp, fmt: fmt,
+  var api = { MIN: MIN, MAX: MAX, ACTIONS: ACTIONS, ACT: ACT, defaultConfig: defaultConfig, mesConfig: mesConfig, builtins: builtins, clamp: clamp, fmt: fmt, fmt2: fmt2,
               stepSpeed: stepSpeed, holdSpeed: holdSpeed, matchesSite: matchesSite, keyName: keyName, bindingForKey: bindingForKey, bindingFor: bindingFor,
               normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile, uid: uid };
   root.MESVS = api;
