@@ -300,6 +300,7 @@
 				+ ro("Finger 1 m from the lamp", F.fmtSpeed(need1), "is enough to beat light across " + F.fmtLen(S.D), "is-slow");
 			key = [vt, sim.max.toFixed(2), kfS().toFixed(3), S.d, S.Dtxt].join("|");
 		}
+		var sum = $(S.tab === "sweep" ? "ftl-rosum1" : "ftl-rosum2"); if (sum) sum.textContent = (S.tab === "sweep" ? "Spot speed now: " : "Shadow speed now: ") + vt;
 		setHTML($(S.tab === "sweep" ? "ftl-ro1" : "ftl-ro2"), html, key);
 	}
 
@@ -421,6 +422,13 @@
 	$("ftl-sz").oninput = function () { S.sz = +this.value; save(); paintSetup(); dirty = true; };
 	function toggleRun() { S.run = !S.run; paintSetup(); } $("ftl-play1").onclick = toggleRun; $("ftl-play2").onclick = toggleRun;
 	$("ftl-restart1").onclick = $("ftl-restart2").onclick = function () { newSim(); };
+	/* hide / show the readout tiles (they take a lot of a phone's screen); the choice is shared by both pictures and remembered */
+	function paintRO() {
+		var off = !!sget().roOff;
+		[1, 2].forEach(function (n) { var w = $("ftl-wrap" + n), b = w.querySelector(".ftl-rohide"); w.classList.toggle("ro-off", off); b.setAttribute("aria-expanded", String(!off)); b.textContent = off ? "Show readouts \u25be" : "Hide readouts \u25b4"; });
+	}
+	[1, 2].forEach(function (n) { $("ftl-wrap" + n).querySelector(".ftl-rohide").onclick = function () { sset({ roOff: !sget().roOff }); paintRO(); dirty = true; }; });
+	paintRO();
 	$("ftl-full1").onclick = function () { toggleFull("ftl-wrap1"); }; $("ftl-full2").onclick = function () { toggleFull("ftl-wrap2"); };
 	/* aiming / moving by hand: drag or click on the picture (first touch switches that tab to hand mode) */
 	function pointerWorld(cv, e) { var r = cv.getBoundingClientRect(); return { x: ((e.clientX - r.left) - lay.ox) / lay.sc, y: (lay.h / 2 - (e.clientY - r.top)) / lay.sc }; }
