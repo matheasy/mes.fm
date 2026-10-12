@@ -1,0 +1,107 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu mb" id="mb">
+		<div class="mb-tabs" role="tablist" aria-label="Mandelbrot tools">
+			<button type="button" role="tab" data-tab="explore" aria-selected="true">Explorer</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false">Point calculator</button>
+		</div>
+
+		<section data-panel="explore" role="tabpanel">
+			<div class="mb-top">
+				<label class="mb-pick"><span class="tu-label" id="mb-type-l">Fractal</span>
+					<select id="mb-type" class="tu-select" aria-labelledby="mb-type-l"></select></label>
+				<label class="mb-pick"><span class="tu-label" id="mb-place-l">Places to visit</span>
+					<select id="mb-place" class="tu-select" aria-labelledby="mb-place-l"></select></label>
+				<div class="mb-run" role="group" aria-label="View">
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-in" title="Zoom in (+)">＋</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-out" title="Zoom out (−)">－</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-home" title="Back to the whole picture (0)">⌂ Home</button>
+				</div>
+			</div>
+
+			<div class="mb-wrap" id="mb-wrap">
+				<div class="mb-stage" id="mb-stage">
+					<canvas id="mb-canvas" aria-hidden="true"></canvas>
+					<canvas id="mb-over" tabindex="0" role="img" aria-label="Interactive fractal. Drag to move, scroll or pinch to zoom, double-click to zoom in, click a point to inspect it."></canvas>
+					<div class="mb-jbox" id="mb-jbox"><canvas id="mb-jp" width="220" height="124"></canvas><span id="mb-jcap">Julia set of this point</span></div>
+					<div class="mb-badge" id="mb-badge"></div>
+					<div class="mb-tools"><button type="button" id="mb-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="mb-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+				</div>
+				<div class="mb-readouts">
+					<div class="mb-ro"><span>Point under the pointer</span><b id="mb-r-c">–</b><small id="mb-r-s">move over the picture</small></div>
+					<div class="mb-ro"><span>Width of the view</span><b id="mb-r-w">–</b><small id="mb-r-z"></small></div>
+					<div class="mb-ro"><span>Centre</span><b id="mb-r-m">–</b><small id="mb-r-i"></small></div>
+				</div>
+			</div>
+
+			<div class="tu-card mb-controls">
+				<p class="tu-note mb-how">Drag to move · scroll, pinch or double-click to zoom · click a point to inspect it. In the Mandelbrot picture each point is a number <i>c</i>; the colour tells how fast the orbit of <i>z</i> → <i>z</i>² + <i>c</i> runs away. Black points never do.</p>
+				<div class="mb-grid">
+					<div class="tu-field"><span class="tu-label">Colours</span>
+						<select id="mb-pal" class="tu-select" aria-label="Colour scheme"></select></div>
+					<div class="tu-field"><span class="tu-label" id="mb-sp-l">Colour speed: <b id="mb-sp-v"></b></span><input type="range" id="mb-sp-in" min="0.1" max="4" step="0.05" aria-labelledby="mb-sp-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mb-of-l">Colour shift: <b id="mb-of-v"></b></span><input type="range" id="mb-of-in" min="0" max="1" step="0.005" aria-labelledby="mb-of-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mb-it-l">Detail (iterations): <b id="mb-it-v"></b></span><input type="range" id="mb-it-in" min="50" max="6000" step="10" aria-labelledby="mb-it-l">
+						<label class="mb-check"><input type="checkbox" id="mb-auto" checked> Choose automatically from the zoom</label></div>
+				</div>
+				<div class="mb-grid mb-grid--small">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Quality</span>
+						<select id="mb-q" class="tu-select" aria-label="Render quality"><option value="0.5">Draft (fast)</option><option value="1">Normal</option><option value="2">Sharp (slower)</option></select></div>
+				</div>
+				<div class="mb-checks">
+					<label class="mb-check"><input type="checkbox" id="mb-anim"> Cycle the colours</label>
+					<label class="mb-check"><input type="checkbox" id="mb-jprev" checked> Julia preview</label>
+					<label class="mb-check"><input type="checkbox" id="mb-orbit" checked> Show the orbit under the pointer</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-julia" hidden>Open this point's Julia set</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-back" hidden>← Back to the Mandelbrot picture</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-link">🔗 Copy link to this view</button>
+				</div>
+			</div>
+		</section>
+
+		<section data-panel="calc" role="tabpanel" hidden>
+			<p class="tu-note mb-lead">Type a number <i>c</i> = a + b<i>i</i> and see what its orbit does: it either escapes to infinity after some number of steps (outside the set) or stays bounded (inside). For the fractal chosen in the Explorer.</p>
+			<div class="tu-card mb-controls">
+				<div class="mb-grid">
+					<div class="tu-field"><span class="tu-label" id="mb-ca-l">Real part a</span><input type="text" inputmode="decimal" id="mb-ca" class="tu-input" aria-labelledby="mb-ca-l" value="-0.75"></div>
+					<div class="tu-field"><span class="tu-label" id="mb-cb-l">Imaginary part b</span><input type="text" inputmode="decimal" id="mb-cb" class="tu-input" aria-labelledby="mb-cb-l" value="0.1"></div>
+					<div class="tu-field"><span class="tu-label" id="mb-cm-l">Give up after (steps)</span><input type="text" inputmode="numeric" id="mb-cm" class="tu-input" aria-labelledby="mb-cm-l" value="5000"></div>
+				</div>
+				<div class="mb-checks">
+					<button type="button" class="tu-btn tu-btn--primary" id="mb-cgo">Find out</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-cex">Show this point in the Explorer</button>
+					<span class="tu-note">Try: −1 (a 2-cycle), 0.3 + 0.1i (inside the cardioid), 0.26 (just outside: slow escape), −0.75 + 0.1i (the "neck").</span>
+				</div>
+			</div>
+			<div class="tu-card mb-result" id="mb-cres"></div>
+			<div class="tu-card"><h3 class="mb-h">The orbit</h3><div class="tu-table-wrap"><table class="tu-table" id="mb-ctab"><thead><tr><th>step n</th><th>z<sub>n</sub> real</th><th>z<sub>n</sub> imaginary</th><th>|z<sub>n</sub>|</th></tr></thead><tbody></tbody></table></div></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>The Mandelbrot set</h2>
+			<p>Take a complex number <i>c</i> and start with <i>z</i> = 0. Square it, add <i>c</i>, and repeat: <i>z</i> → <i>z</i>² + <i>c</i>. For some <i>c</i> the numbers stay small forever; for the others they shoot off to infinity. The <strong>Mandelbrot set</strong> is the set of all <i>c</i> that stay small. It is drawn black here. Everything else is coloured by <em>how quickly</em> the orbit escapes, and the colours trace out the unimaginably intricate edge of the set.</p>
+			<div class="mb-eq" role="math" aria-label="Mandelbrot iteration">
+				<div><span class="mb-eq__n">iteration</span> <span class="mb-eq__f"><i>z</i><sub>n+1</sub> = <i>z</i><sub>n</sub>² + <i>c</i>,  <i>z</i><sub>0</sub> = 0</span></div>
+				<div><span class="mb-eq__n">in the set when</span> <span class="mb-eq__f">|<i>z</i><sub>n</sub>| ≤ 2 for every n</span></div>
+				<div><span class="mb-eq__n">Julia set</span> <span class="mb-eq__f"><i>z</i><sub>n+1</sub> = <i>z</i><sub>n</sub>² + <i>c</i>,  <i>z</i><sub>0</sub> = the point, <i>c</i> fixed</span></div>
+			</div>
+			<h3>What you are looking at</h3>
+			<ul>
+				<li><strong>The cardioid and the bulbs.</strong> The big heart-shaped region is the set of <i>c</i> whose orbit settles to one fixed point. The round bulb to its left is where the orbit settles into a <em>2-cycle</em>, the bulbs above and below into 3-cycles, and so on: every bulb has its own period, and between them sit infinitely many smaller copies of the whole set (look for the little “Mandelbrots”).</li>
+				<li><strong>Smooth colours.</strong> A plain escape count gives bands. This explorer uses a fractional count (the “normalised iteration count”), which gives smooth gradients you can cycle through with Colour speed and Colour shift.</li>
+				<li><strong>Julia sets.</strong> Every point <i>c</i> of the plane has its own Julia set, a different fractal. If <i>c</i> is inside the Mandelbrot set that Julia set is one connected piece; if <i>c</i> is outside it falls apart into dust. The little window shows the Julia set of the point under your pointer, and “Open this point's Julia set” explores it full size.</li>
+				<li><strong>Other fractals.</strong> The same recipe with a twist gives the Burning Ship (take absolute values first), the Tricorn (use the complex conjugate) and the Multibrot sets (cube or fourth power instead of the square).</li>
+				<li><strong>The orbit.</strong> Tick “Show the orbit under the pointer” to see the path 0, <i>c</i>, <i>c</i>² + <i>c</i>, … of the point you are on: it spirals in for points inside the set and flings out for the rest.</li>
+			</ul>
+			<h3>Facts and limits</h3>
+			<p>The set sits inside a disc of radius 2 (if |<i>z</i>| ever exceeds 2, the orbit escapes). Its area is about 1.5066, but its boundary is so crinkly that it has dimension 2, like a filled region, even though it is a curve (Shishikura, 1998). It is connected, but all attempts to prove that it is also locally connected (the MLC conjecture) have so far failed.</p>
+			<p>This page computes with ordinary 64-bit numbers, so you can zoom in to a view about 10<sup>-13</sup> wide (a magnification of over 10<sup>13</sup>: if the whole set were the size of the Earth you would be looking at a patch smaller than a grain of sand) before the numbers run out of digits and the picture turns into blocks. Zooming further needs special arbitrary-precision methods that this page does not use. Interior points that never escape are drawn black after the chosen number of iterations; near the edge a few points may be coloured as outside that are really inside, and “Detail (iterations)” is the dial for that.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Why is it a fractal?</strong> Zoom in anywhere on the edge and you find new structure, never a smooth curve, and the structure keeps repeating in new variations at every scale.</li>
+				<li><strong>Is it infinite?</strong> The edge is infinitely detailed. The set itself fits in a box 2.5 wide and 2.5 tall.</li>
+				<li><strong>Why do some zooms go black or blocky?</strong> Either the iteration count is too low for the depth (raise Detail) or you reached the limit of 64-bit numbers.</li>
+				<li><strong>Can I save a picture?</strong> Yes: the camera button saves exactly what you see, and “Copy link” saves the place so you can come back to it.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/2d-graphing-calculator">2D graphing calculator</a> · <a href="/cas-calculator">CAS calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

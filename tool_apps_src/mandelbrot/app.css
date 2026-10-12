@@ -1,0 +1,75 @@
+	/* black hole simulator: dark stages; their colours are custom properties / literals so the derived dark theme leaves them alone. */
+	.tu [hidden] {display:none !important;}
+	.mb {--mb-bg:#05070d;--mb-line:#2a3040;--mb-text:#e8ecf5;--mb-dim:#9aa5bb;}
+	.mb-tabs {display:flex;flex-wrap:wrap;gap:0.3em;margin-bottom:0.8em;border-bottom:2px solid #d5dbe3;}
+	.mb-tabs button {cursor:pointer;font:inherit;font-weight:600;padding:0.5em 1em;border:0;border-radius:0.5em 0.5em 0 0;background:transparent;color:#445;border-bottom:3px solid transparent;margin-bottom:-2px;}
+	.mb-tabs button:hover {background:#eef1f5;}
+	.mb-tabs button[aria-selected="true"] {color:var(--accent);border-bottom-color:var(--accent);background:#f4f6f9;}
+	.mb-lead {margin:0 0 0.7em;font-size:0.95em;}
+	.mb-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--mb-line);background:var(--mb-bg);}
+	.mb-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
+	.mb-stage {position:relative;margin:0 auto;max-width:100%;background:var(--mb-bg);}
+	.mb-stage canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;cursor:crosshair;}
+	#mb-ic {cursor:default;}
+	.mb-badge {position:absolute;left:0.7em;top:0.6em;font-size:0.78em;color:var(--mb-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;}
+	.mb-badge:empty {display:none;}
+	.mb-run, .mb-tools {position:absolute;display:flex;gap:0.25em;right:0.6em;top:0.6em;}
+	.mb-run button, .mb-tools button {cursor:pointer;border:1px solid var(--mb-line);background:rgba(10,13,20,0.78);color:var(--mb-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font:inherit;font-size:0.85em;}
+	.mb-run button:hover, .mb-tools button:hover {border-color:var(--accent);color:#fff;}
+	.mb-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:0.5em;padding:0.6em;background:#0e1118;border-top:1px solid var(--mb-line);}
+	.mb-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
+	.mb-ro span {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--mb-dim);}
+	.mb-ro b {font-size:1.25em;color:var(--mb-text);font-variant-numeric:tabular-nums;line-height:1.15;}
+	.mb-ro small {font-size:0.72em;color:var(--mb-dim);line-height:1.3;}
+	.mb-controls {margin-top:0.9em;}
+	.mb-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.9em 1.4em;}
+	.mb-grid--small {margin-top:0.9em;grid-template-columns:repeat(auto-fit,minmax(11em,1fr));}
+	.mb-controls input[type=range] {width:100%;accent-color:var(--accent);}
+	.mb-checks {display:flex;flex-wrap:wrap;gap:0.5em 1.2em;align-items:center;margin-top:0.9em;}
+	.mb-check {display:inline-flex;align-items:center;gap:0.4em;cursor:pointer;font-size:0.92em;}
+	.mb-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 0.9em;}
+	.mb-chips:empty {display:none;}
+	.mb-chips button {cursor:pointer;font:inherit;font-size:0.85em;padding:0.3em 0.8em;border-radius:1em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223;}
+	.mb-chips button:hover {border-color:var(--accent);}
+	.mb-mass {display:flex;gap:0.4em;align-items:center;flex-wrap:wrap;}
+	.mb-mass input {flex:1 1 7em;min-width:0;}
+	.mb-unit {font-size:0.9em;color:#556;}
+	.mb-tables {display:grid;grid-template-columns:repeat(auto-fit,minmax(20em,1fr));gap:0.9em;margin-top:0.9em;}
+	.mb-tables .tu-card {margin:0;}
+	.mb-h {margin:0 0 0.4em;font-size:1.05em;}
+	#mb .tu-table td {white-space:normal;vertical-align:top;}
+	#mb .tu-table td:first-child {width:60%;}
+	#mb .tu-table td:last-child {text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;}
+	#mb .tu-table small {display:block;font-weight:400;color:#667;}
+	.mb-eq {background:#f4f6f9;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.8em 1em;margin:0.8em 0;font-size:1.05em;line-height:1.9;overflow-x:auto;}
+	.mb-eq__n {display:inline-block;min-width:8.5em;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.mb-eq__f {font-family:"Cambria Math","STIX Two Math",Georgia,serif;white-space:nowrap;}
+	body.dark-mode #mb .mb-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #mb .mb-eq__n {color:#a0a8b3;}
+	body.dark-mode #mb .mb-tabs {border-bottom-color:#3a3f48;} body.dark-mode #mb .mb-tabs button {color:#c9ced6;} body.dark-mode #mb .mb-tabs button:hover {background:#2a2d33;} body.dark-mode #mb .mb-tabs button[aria-selected="true"] {background:#23262b;color:#f0a0c4;border-bottom-color:#f0a0c4;}
+	body.dark-mode #mb .mb-chips button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;}
+	body.dark-mode #mb .tu-table small, body.dark-mode #mb .mb-unit {color:#a0a8b3;}
+	@media (max-width: 640px) {
+		.mb-tabs button {padding:0.45em 0.7em;font-size:0.92em;} .mb-badge {font-size:0.7em;}
+	}
+	/* mandelbrot additions */
+	.mb-top {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:flex-end;margin-bottom:0.7em;}
+	.mb-pick {display:flex;flex-direction:column;gap:0.25em;flex:1 1 14em;max-width:22em;}
+	.mb-pick select {width:100%;}
+	.mb-run {display:flex;gap:0.4em;flex-wrap:wrap;}
+	.mb-stage canvas {cursor:grab;}
+	#mb-canvas {pointer-events:none;}
+	#mb-over:active {cursor:grabbing;}
+	.mb-jbox {position:absolute;left:0.6em;bottom:0.6em;width:min(34%,220px);border:1px solid var(--mb-line);border-radius:0.4em;overflow:hidden;background:rgba(5,7,13,0.85);pointer-events:none;}
+	.mb-jbox canvas {position:static !important;width:100%;height:auto;display:block;cursor:default;}
+	.mb-jbox span {display:block;font-size:0.68em;color:var(--mb-dim);padding:0.15em 0.5em;}
+	.mb-badge {left:auto;right:0.6em;top:auto;bottom:0.6em;}
+	.mb-tools {position:absolute;display:flex;gap:0.25em;right:0.6em;top:0.6em;}
+	.mb-tools button {cursor:pointer;border:1px solid var(--mb-line);background:rgba(10,13,20,0.78);color:var(--mb-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font:inherit;font-size:0.85em;}
+	.mb-how {margin:0 0 0.8em;font-size:0.92em;}
+	.mb-result {margin-top:0.9em;font-size:1.02em;line-height:1.5;}
+	.mb-result b {font-variant-numeric:tabular-nums;}
+	.mb-lead {margin:0 0 0.7em;}
+	#mb .tu-table td, #mb .tu-table th {white-space:nowrap;}
+	#mb .tu-table-wrap {max-height:22em;overflow:auto;}
+	@media (max-width: 640px) { .mb-jbox {width:38%;} }
+	.mb-top .mb-run {position:static;display:flex;gap:0.4em;flex-wrap:wrap;right:auto;top:auto;}
