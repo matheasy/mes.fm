@@ -740,7 +740,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     var now = Date.now();
     if (now - userScrollAt < 4000 || now - lastScrollAt < 350) return;
     var rect = r.getBoundingClientRect();
-    var top = P.playerPosition === 'top' ? 140 : 70, bottom = window.innerHeight - (P.playerPosition === 'top' ? 70 : 160);
+    var top = P.playerPosition === 'top' && !pipWin ? 140 : 70, bottom = window.innerHeight - (P.playerPosition === 'top' || pipWin ? 70 : 160);
     if (rect.height && (rect.top < top || rect.bottom > bottom)) {
       lastScrollAt = now;
       var el = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement;
@@ -857,6 +857,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 
   function stopAll() {
     stopSpeech(); clearHighlight(); st.active = false; st.playing = false; st.words = null; st.map = null; st.nodes = null;
+    closePip();
     if (ui) { ui.host.remove(); ui = null; }
     if (styleEl) { styleEl.remove(); styleEl = null; }
   }
@@ -871,6 +872,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     '.volr{width:74px;height:34px;margin:0 2px;accent-color:#4cc38a;cursor:pointer;background:transparent}.vol svg{display:block}.vol.muted{color:#ff9b8f}' +
     '.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
     '.p.moved{left:var(--x);top:var(--y);bottom:auto;transform:none}' +
+    '.p.pip,.p.pip.moved{position:static;left:auto;top:auto;bottom:auto;transform:none;width:100%;border:0;border-radius:0;box-shadow:none}.p.pip .grip,.p.pip .mini{display:none}.pip-b.on{background:#1a4d6b}' +
     '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}';
 
   function buildUi() {
@@ -884,10 +886,10 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
       '<button class="slow" title="Slower (Down arrow)">&minus;</button><button class="rate" title="Speed">1.0&times;</button><button class="fast" title="Faster (Up arrow)">+</button>' +
       '<button class="vol" title="Mute / unmute"></button><input class="volr" type="range" min="0" max="1" step="0.05" title="Volume" aria-label="Volume">' +
       '<select class="voice" title="Voice"></select><select class="setup" title="Setup"></select>' +
-      '<span class="st" aria-live="polite"></span><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
+      '<span class="st" aria-live="polite"></span><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="pip-b" title="Pop out into a floating window you can move anywhere, even outside the browser" aria-label="Pop out"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="8" height="6" fill="currentColor"/></svg></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
     var q = function (c) { return sh.querySelector(c); };
     if (window.__mesraSite) { var gearBtn = sh.querySelector('.gear'); if (gearBtn) gearBtn.style.display = 'none'; }   // the site player has no options page
-    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr') };
+    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b') };
     q('.prev').onclick = function () { jumpSentence(-1); };
     q('.next').onclick = function () { jumpSentence(1); };
     ui.pl.onclick = toggle;
@@ -905,6 +907,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.voice.onchange = function () { P.voice = ui.voice.value; saveSettings(); if (st.playing) restartSoon(); };
     ui.setup.onchange = function () { S.active = ui.setup.value; saveSettings(); P = RA.resolveProfile(S, host).config; applyStyle(); fillUi(); if (st.playing) restartSoon(); };
     ui.hl.onclick = toggleHighlight;
+    ui.pipb.onclick = popOut;
+    if (!window.documentPictureInPicture) ui.pipb.style.display = 'none';
     ui.volr.oninput = function () { P.volume = Number(ui.volr.value); if (P.volume > 0) lastVol = P.volume; paintVol(); saveSettings(); };
     ui.volr.onchange = function () { if (st.playing) restartSoon(); };   // the voice reads the new volume from the next sentence on, so restart the current one
     ui.vol.onclick = function () { if (P.volume > 0) { lastVol = P.volume; P.volume = 0; } else P.volume = lastVol || 1; paintVol(); saveSettings(); if (st.playing) restartSoon(); };
@@ -929,7 +933,40 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ['click', 'mousedown', 'mouseup', 'pointerdown', 'dblclick', 'keydown', 'keyup'].forEach(function (t) { h.addEventListener(t, function (e) { e.stopPropagation(); }); });
     (document.body || document.documentElement).appendChild(h);
     place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini();
+    if (pipWin) mountPip();
   }
+
+  // ---- pop out: Document Picture-in-Picture gives a real, always-on-top window that can be dragged anywhere on the screen ----
+  var pipWin = null;
+  async function popOut() {
+    if (pipWin) { var old = pipWin; old.close(); onPipHide(); return; }
+    var api = window.documentPictureInPicture;
+    if (!api || !ui) return;
+    var w;
+    try { w = await api.requestWindow({ width: 660, height: 150 }); } catch (e) { setStatus('The browser did not open the floating window.', true); return; }
+    pipWin = w;
+    var d = w.document;
+    d.title = 'MES Read Aloud';
+    d.documentElement.style.cssText = 'background:#1f2023';
+    d.body.style.cssText = 'margin:0;background:#1f2023;overflow:hidden';
+    mountPip();
+    w.addEventListener('keydown', onKey, true);
+    w.addEventListener('pagehide', onPipHide);
+    try { var chromeH = w.outerHeight - w.innerHeight; w.resizeTo(w.outerWidth, Math.max(110, ui.p.offsetHeight + chromeH + 2)); } catch (e) { /* the window may not be resizable */ }
+  }
+  function mountPip() {
+    if (!ui || !pipWin) return;
+    ui.p.classList.add('pip');
+    pipWin.document.body.appendChild(ui.host);
+    fillUi();
+  }
+  // the floating window was closed (or the reading ended): the player goes back onto the page
+  function onPipHide() {
+    if (!pipWin) return;
+    pipWin = null;
+    if (ui) { ui.p.classList.remove('pip'); (document.body || document.documentElement).appendChild(ui.host); place(uiPos, true); fillUi(); }
+  }
+  function closePip() { if (!pipWin) return; var w = pipWin; pipWin = null; try { w.close(); } catch (e) { /* ignore */ } }
 
   var lastVol = 1;
   function volIcon(v) {
@@ -951,7 +988,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   loadUi();
   function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, min: uiMin } }); } catch (e) { /* ignore */ } }
   function place(pt, keep) {
-    if (!ui) return;
+    if (!ui || pipWin) return;
     if (!pt) { uiPos = null; ui.p.classList.remove('moved'); if (!keep) saveUi(); return; }
     var w = ui.p.offsetWidth || 300, h2 = ui.p.offsetHeight || 60;
     var x = Math.max(8, Math.min(window.innerWidth - w - 8, pt.x)), y = Math.max(8, Math.min(window.innerHeight - h2 - 8, pt.y));
@@ -984,6 +1021,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.p.classList.toggle('top', P.playerPosition === 'top'); ui.p.classList.toggle('bottom', P.playerPosition !== 'top');
     ui.hl.classList.toggle('on', !!(P.highlightWord || P.highlightSentence));
     paintVol();
+    if (ui.pipb) { ui.pipb.classList.toggle('on', !!pipWin); ui.pipb.title = pipWin ? 'Put the player back on the page' : 'Pop out into a floating window you can move anywhere, even outside the browser'; }
     ui.pl.innerHTML = st.playing ? '&#10074;&#10074;' : '&#9654;';
     ui.pl.title = st.playing ? 'Pause (Space)' : 'Resume (Space)';
     ui.rate.innerHTML = (Math.round(P.rate * 100) / 100).toFixed(P.rate * 100 % 10 ? 2 : 1).replace(/0$/, '') + '&times;';
@@ -1014,7 +1052,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     var t = (e.composedPath && e.composedPath()[0]) || e.target;
     return !!t && t.nodeType === 1 && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
   }
-  window.addEventListener('keydown', function (e) {
+  function onKey(e) {
     if (!st.active || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || typing(e)) return;
     var path = e.composedPath ? e.composedPath() : [];
     if (ui && path.indexOf(ui.host) >= 0 && (e.key === ' ' || e.key === 'Enter')) return;   // a focused player button handles its own press
@@ -1029,7 +1067,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     else if (k === 'm' || k === 'M') toggleMini();
     else used = false;
     if (used) { e.preventDefault(); e.stopImmediatePropagation(); }
-  }, true);
+  }
+  window.addEventListener('keydown', onKey, true);
 
   document.addEventListener('dblclick', function (e) {
     if (!st.active || !P.doubleClickToJump || !st.words) return;
@@ -1046,7 +1085,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     }
   }, true);
 
-  window.addEventListener('pagehide', function () { try { synth.cancel(); } catch (e) { /* ignore */ } });
+  window.addEventListener('pagehide', function () { try { synth.cancel(); } catch (e) { /* ignore */ } closePip(); });
 
   // ---- messages -----------------------------------------------------------------------------------------------------------
   try {
