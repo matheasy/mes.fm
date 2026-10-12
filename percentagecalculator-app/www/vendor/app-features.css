@@ -1,7 +1,8 @@
 /* app-features.css - app-only enhancements layered on the bundled pages by
-   build-www.py: light/dark theme, a compact tool row above the calculators
-   (Labels + Save), saved-calculation chips, and per-calculation labels.
-   Not part of the mes.fm website. */
+   build-www.py: the theme / text-size buttons and the app's dark theme
+   (html[data-theme="dark"]). The toolbar (Labels / Save / Clear all ...), the
+   saved-calculation chips and the label fields are styled by the page's own
+   CSS since v1.1. Not part of the mes.fm website. */
 
 /* ---------- theme toggle + text size: icon-only buttons in their own row
    below the header, left to right "A- A+ [moon/sun]" -- squeezing them
@@ -36,74 +37,6 @@
 /* hide them while the hamburger menu (#navbar gains .hide when open) is up */
 #navbar.hide ~ .pc-theme-toggle,
 #navbar.hide ~ .pc-textsize-btn { display: none; }
-
-/* ---------- tool row above the calculators ---------- */
-.pc-toolbar {
-    display: flex;
-    gap: 0.6em;
-    margin: 0.9em 0 0.4em;
-}
-.pc-tool-btn {
-    flex: 1;
-    font: inherit;
-    font-size: 0.95em;
-    padding: 0.55em 0.4em;
-    color: #1479c7;
-    background: #fff;
-    border: 0.125em solid #1479c7;
-    border-radius: 0.3em;
-    cursor: pointer;
-    user-select: none;
-}
-.pc-tool-btn:hover { background: #eef6fc; }
-.pc-tool-btn[aria-pressed="true"] { background: #1479c7; color: #fff; }
-
-/* ---------- saved-calculation chips ---------- */
-.pc-saved-strip {
-    display: flex;
-    gap: 0.5em;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 0.2em;
-    margin-bottom: 0.6em;
-}
-.pc-saved-strip:empty { display: none; }
-.pc-chip {
-    display: inline-flex;
-    align-items: stretch;
-    flex: 0 0 auto;
-    border: 1px solid #1479c7;
-    border-radius: 1em;
-    overflow: hidden;
-}
-.pc-chip-open,
-.pc-chip-del {
-    font: inherit;
-    background: none;
-    border: 0;
-    color: #1479c7;
-    cursor: pointer;
-    padding: 0.35em 0.5em 0.35em 0.8em;
-    white-space: nowrap;
-}
-.pc-chip-del { padding: 0.35em 0.7em 0.35em 0.35em; font-size: 1.05em; line-height: 1; }
-.pc-chip-open:hover,
-.pc-chip-del:hover { background: #eef6fc; }
-
-/* ---------- per-calculation label fields ---------- */
-.calc-label-field { display: none; margin: 0 0 0.5em; }
-body.pc-show-labels .calc-label-field { display: block; }
-.calc-label-field input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.55em 0.7em;
-    font-size: 0.95em;
-    border: 1px solid #cbcbcb;
-    border-radius: 0.4em;
-    background: #fff;
-    color: #333;
-}
-.calc-label-field input::placeholder { color: #9a9a9a; }
 
 /* ---------- dark theme ---------- */
 html[data-theme="dark"],
@@ -143,14 +76,7 @@ html[data-theme="dark"] .box-border { border-color: #3a6f96; }
 html[data-theme="dark"] .calc-label-field input::placeholder { color: #7c848c; }
 
 html[data-theme="dark"] .pc-textsize-btn { color: #5aa9e6; }
-html[data-theme="dark"] .pc-tool-btn { background: #12161a; color: #5aa9e6; border-color: #5aa9e6; }
-html[data-theme="dark"] .pc-tool-btn:hover { background: #1b2228; }
-html[data-theme="dark"] .pc-tool-btn[aria-pressed="true"] { background: #1479c7; color: #fff; }
-html[data-theme="dark"] .pc-chip { border-color: #5aa9e6; }
-html[data-theme="dark"] .pc-chip-open,
-html[data-theme="dark"] .pc-chip-del { color: #5aa9e6; }
-html[data-theme="dark"] .pc-chip-open:hover,
-html[data-theme="dark"] .pc-chip-del:hover { background: #1b2228; }
+html[data-theme="dark"] .pc-link { color: #5aa9e6; }
 
 /* ---------- collapsed calculation rows (app) ---------- */
 /* The page's own dark rule keys off body.dark-mode, but the app themes with

@@ -334,6 +334,21 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	<p class="sentence">Increase / 0.1 = (12335 - 0.1) / 0.1 * 100 = 12,334,900 ≈ 1.23 x 10<sup>7</sup> %.</p>
 	<p class="sentence">Note that the final answer is rounded up and written in Scientific Notation which to make sure the answer fits into the answer box. Scientific Notation is simply a number written as a multiply of 10 to the power of another number. In our case 1.23 x 10<sup>7</sup> simply means 1.23 * 10,000,000 = 12, 300, 000 which is thus a rounded up version of the actual answer of 12, 334,900. This is especially useful when dealing even bigger numbers such as 1.23x10<sup>22</sup> which if written normally out would be 12,300,000,000,000,000,000,000 which would not fit into our small answer box. Similarly this is can be used for very small numbers as explained further in the homepage of our <a href="index.html" class="link">percentage calculator</a> so make sure to check that out.</p>
 
+	<h2 class="header2">'Percentage difference between' Calculation</h2>
+	<img width="1067" height="206" class="tutorial-img" src="img/tutorial10.png" alt="Screenshot of the calculation 'Percentage difference between 20 and 30?' along with the formula and answer which is 40.00%.">
+	<p class="sentence">In this example, the calculation solves the question: "Percentage difference between 20 and 30?". This calculation is similar to the "Increase from or Decrease from" calculation above since we are once again comparing two numbers, but there is one important difference: here neither number is the "starting" number. We are not asking how much a number has changed, we are simply asking how far apart the two numbers are, written as a percentage. Since there is no starting number to divide by, we instead divide by the average of the two numbers (the number exactly in the middle of them) as shown in the steps below:</p>
+	<p class="sentence">Difference / Average = |20 - 30| / ((20 + 30) / 2) * 100 = 10 / 25 * 100 = 40.00%</p>
+	<p class="sentence">Note that the two vertical bars | | mean the "absolute value" which simply means we ignore any negative sign and just use the size of the difference. In our case 20 - 30 = -10 but we use 10 instead. Thanks to this the answer is the same no matter which of the two numbers is typed first, as shown in the screenshot below where we swapped the numbers and the answer is still 40.00%:</p>
+	<img width="1067" height="206" class="tutorial-img" src="img/tutorial11.png" alt="Screenshot of the same calculation with the numbers swapped, 'Percentage difference between 30 and 20?', which gives the same answer of 40.00%.">
+	<p class="sentence">|30 - 20| / ((30 + 20) / 2) * 100 = 10 / 25 * 100 = 40.00%</p>
+	<p class="sentence">This is different from the "Increase from or Decrease from" calculation where the order does matter, since the first number is the one that we divide by. To see this let's use the same two numbers, 20 and 30, in that calculation. Going up from 20 to 30 gives:</p>
+	<img width="1067" height="206" class="tutorial-img" src="img/tutorial12.png" alt="Screenshot of the calculation 'Increase/Decrease from 20 to 30?' along with the formula and answer which is 50.00%.">
+	<p class="sentence">Increase from 20 to 30 = (30 - 20) / 20 * 100 = 50.00%</p>
+	<p class="sentence">While going down from 30 back to 20 gives:</p>
+	<img width="1067" height="206" class="tutorial-img" src="img/tutorial13.png" alt="Screenshot of the calculation 'Increase/Decrease from 30 to 20?' along with the formula and answer which is -33.33%.">
+	<p class="sentence">Decrease from 30 to 20 = (20 - 30) / 30 * 100 = -33.33%</p>
+	<p class="sentence">So the same two numbers give three different answers: 50.00%, -33.33% and 40.00%. This is because each calculation divides by a different number: the first one divides by 20, the second one by 30 and the percentage difference by their average of 25 which sits right between the two. Thus the percentage difference is the one to use when neither number is the "original" one, for example when comparing the prices of the same item in two different stores or two measurements of the same thing, while the "increase from or decrease from" calculation is the one to use when one number is the old value and the other one is the new value.</p>
+
 	<h2 class="header2">'Percentage of a mixed fraction' Calculation</h2>
 	<img width="1053" height="219" class="tutorial-img" src="img/tutorial5.png" alt="Screenshot of the calculation 'percentage of the mixed fraction 1 3/4?' along with the formula and answer which is 175%.">
 	<p class="sentence">In this example, the calculation solves the question: "Percentage of the mixed fraction: 1 3/4?". To idea behind mixed fractions is basically to simplify and make ratios or fractions more easily understandable. This is done by taking the number in front of the fraction as simply the number of complete fractions there are. Thus in our case since the fraction is 3/4 the number in front which is a 1 simply means that there is 1 whole fraction of 4/4. Thus the calculation, including factoring out the common denominator of 4, would simply be as follows:</p>
@@ -420,7 +435,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
         <script src="vendor/jquery.min.js"></script>
 <script>var MES_Vars={mobile:false,hide_search:true,current_tab:1};</script>
-<script src="js/calculator.js?v=2.2"></script>
+<script src="vendor/app-migrate.js"></script>
+<script src="js/calculator.js?v=3.2"></script>
 <script src="vendor/app-nav.js"></script>
 <script src="vendor/app-features.js"></script>
 <script>var _y=document.getElementById("copyright-year");if(_y)_y.textContent=new Date().getFullYear();</script>

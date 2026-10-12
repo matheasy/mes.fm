@@ -1,9 +1,10 @@
 /* app-features.js - app-only enhancements for the bundled Percentage
    Calculator: light/dark theme toggle + A-/A+ text size (in the nav bar,
-   every page), plus a "Labels" toggle and a "Save" button in a compact
-   toolbar above the calculators. Save snapshots the current inputs + labels
-   under a short name shown as a chip. All state is per-device in
-   localStorage. Loaded after jquery + calculator.js. */
+   every page). Labels, Save and the saved-calculation chips used to live
+   here too (v1.0); since v1.1 the bundled calculator script (the website's
+   js/percentagecalculator.js) provides them, with the same markup and
+   classes, so only the theme and text-size controls remain. All state is
+   per-device in localStorage. Loaded after jquery + calculator.js. */
 (function () {
     "use strict";
 
@@ -36,6 +37,9 @@
     /* ---------------------------------------------------------------- theme */
     function applyTheme(t) {
         document.documentElement.setAttribute("data-theme", t);
+        // the page's own dark rules (the web's body.dark-mode ones: label fields, chips, toast ...) apply too
+        if (document.body) document.body.classList.toggle("dark-mode", t === "dark");
+        else document.addEventListener("DOMContentLoaded", function () { document.body.classList.toggle("dark-mode", t === "dark"); });
     }
     var theme = read(THEME_KEY, null);
     if (theme !== "dark" && theme !== "light") {
@@ -131,130 +135,4 @@
     positionControlRow();
     window.addEventListener("resize", positionControlRow);
 
-    /* --------------------------------------------- calculator-only features */
-    var equations = document.querySelectorAll(".equation");
-    var mainContent = document.getElementById("main-content");
-    if (!equations.length || !mainContent) return;
-
-    var labels = read(LABELS_KEY, {});
-
-    equations.forEach(function (eq) {
-        var key = (eq.id || "").replace("equation-", "") || "x";
-        var field = document.createElement("div");
-        field.className = "calc-label-field";
-        var input = document.createElement("input");
-        input.type = "text";
-        input.maxLength = 40;
-        input.placeholder = "Label - e.g. Personal Taxes, Business, Discount";
-        input.value = labels[key] || "";
-        input.setAttribute("data-eq", key);
-        input.addEventListener("input", function () {
-            labels[key] = input.value;
-            write(LABELS_KEY, labels);
-        });
-        field.appendChild(input);
-        eq.insertBefore(field, eq.firstChild);
-    });
-
-    function refreshLabelFields() {
-        document.querySelectorAll(".calc-label-field input").forEach(function (i) {
-            i.value = labels[i.getAttribute("data-eq")] || "";
-        });
-    }
-
-    var labelsBtn;
-    function setLabelsShown(on) {
-        document.body.classList.toggle("pc-show-labels", !!on);
-        write(LABELS_SHOWN_KEY, on ? 1 : 0);
-        if (labelsBtn) labelsBtn.setAttribute("aria-pressed", on ? "true" : "false");
-    }
-
-    /* ------------------------------------------------------ save / restore */
-    function inputEls() {
-        return Array.prototype.slice.call(
-            document.querySelectorAll(".equation .input"));
-    }
-    function getInputs() {
-        return inputEls().map(function (el) { return el.value; });
-    }
-    function setInputs(vals) {
-        var els = inputEls();
-        (vals || []).forEach(function (v, i) {
-            if (!els[i]) return;
-            els[i].value = v;
-            ["input", "keyup", "change"].forEach(function (t) {
-                els[i].dispatchEvent(new Event(t, { bubbles: true }));
-            });
-            if (window.jQuery) window.jQuery(els[i]).trigger("propertychange");
-        });
-    }
-
-    var strip;
-    function renderChips() {
-        if (!strip) return;
-        strip.textContent = "";
-        var saved = read(SAVED_KEY, {});
-        Object.keys(saved).forEach(function (name) {
-            var chip = document.createElement("span");
-            chip.className = "pc-chip";
-
-            var open = button("pc-chip-open", name, function () {
-                var entry = read(SAVED_KEY, {})[name];
-                if (!entry) return;
-                labels = entry.labels || {};
-                write(LABELS_KEY, labels);
-                refreshLabelFields();
-                setInputs(entry.inputs);
-            });
-            open.title = "Restore '" + name + "'";
-
-            var del = button("pc-chip-del", "\u00D7", function () {
-                if (!window.confirm("Delete saved calculation '" + name + "'?")) return;
-                var all = read(SAVED_KEY, {});
-                delete all[name];
-                write(SAVED_KEY, all);
-                renderChips();
-            });
-            del.title = "Delete '" + name + "'";
-
-            chip.appendChild(open);
-            chip.appendChild(del);
-            strip.appendChild(chip);
-        });
-    }
-
-    function saveCurrent() {
-        var raw = window.prompt(
-            "Name this saved calculation (max " + NAME_MAX + " characters):", "");
-        if (raw == null) return;
-        var name = raw.trim().slice(0, NAME_MAX);
-        if (!name) return;
-        var all = read(SAVED_KEY, {});
-        if (all[name] && !window.confirm("Replace the existing '" + name + "'?")) return;
-        all[name] = {
-            inputs: getInputs(),
-            labels: JSON.parse(JSON.stringify(labels)),
-            ts: Date.now()
-        };
-        write(SAVED_KEY, all);
-        renderChips();
-    }
-
-    /* ------------------------------------------------ build the toolbar */
-    var toolbar = document.createElement("div");
-    toolbar.className = "pc-toolbar";
-    labelsBtn = button("pc-tool-btn", "\u{1F3F7} Labels", function () {
-        setLabelsShown(!document.body.classList.contains("pc-show-labels"));
-    });
-    toolbar.appendChild(labelsBtn);
-    toolbar.appendChild(button("pc-tool-btn", "\u{1F4BE} Save", saveCurrent));
-
-    strip = document.createElement("div");
-    strip.className = "pc-saved-strip";
-
-    mainContent.insertBefore(strip, mainContent.firstChild);
-    mainContent.insertBefore(toolbar, mainContent.firstChild);
-
-    setLabelsShown(read(LABELS_SHOWN_KEY, 0) == 1);
-    renderChips();
 })();

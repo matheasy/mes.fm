@@ -34,10 +34,10 @@ SRC = REPO / "mes.fm" / "percentagecalculator"
 WWW = APP / "www"
 EXT = "https://mes.fm"
 
-# The web calculator page was modernized on 2026-10-06 (js/percentagecalculator.js: saved values, link sharing, copy buttons). The app bundles a pinned copy of the
-# pre-modernization index.html + calculator6da2.js (site-legacy/), because this builder's rewrite rules and app-nav.js were written against that markup and the
-# jQuery calculator (no server share, no /api calls). tutorial.html and the how-to page are still taken from the live site. Re-pin deliberately, after testing the app build.
-LEGACY = APP / "site-legacy"
+# Since v1.1 (2026-10-11) the app builds from the LIVE calculator page and script (js/percentagecalculator.js: saved values, labels + saves, clear all, copy-an-answer,
+# smarter number parsing, link sharing -- most of it ported from this app's own features) instead of the frozen pre-modernisation copy it used for v1.0. The page markup
+# is unchanged, so the rewrite rules and app-nav.js still apply; vendor/app-features.js only adds the theme toggle + A-/A+, and vendor/app-migrate.js copies a v1.0 user's
+# labels (and, when it is safe, saved calculations) into the new storage keys before the calculator starts.
 
 PAGES = ["index.html", "tutorial.html", "how-do-you-calculate-percentages.html"]
 
@@ -52,7 +52,8 @@ def script_tail(page_name: str) -> str:
         '<script src="vendor/jquery.min.js"></script>\n'
         "<script>var MES_Vars={mobile:false,hide_search:true,current_tab:%d};"
         "</script>\n"
-        '<script src="js/calculator.js?v=2.2"></script>\n'
+        '<script src="vendor/app-migrate.js"></script>\n'
+        '<script src="js/calculator.js?v=3.2"></script>\n'
         '<script src="vendor/app-nav.js"></script>\n'
         '<script src="vendor/app-features.js"></script>\n'
         '<script>var _y=document.getElementById("copyright-year");'
@@ -262,7 +263,7 @@ def main() -> None:
         shutil.rmtree(child) if child.is_dir() else child.unlink()
 
     (WWW / "js").mkdir(exist_ok=True)
-    shutil.copy(LEGACY / "js" / "calculator6da2.js", WWW / "js" / "calculator.js")
+    shutil.copy(SRC / "js" / "percentagecalculator.js", WWW / "js" / "calculator.js")
     (WWW / "img").mkdir(exist_ok=True)
     # mes.fm "Math Easy Solutions" header badge — checked in under vendor/
     shutil.copy(WWW / "vendor" / "mes-logo-small.png",
@@ -270,7 +271,7 @@ def main() -> None:
 
     pages = {}
     for name in PAGES:
-        out = clean(((LEGACY if name == "index.html" else SRC) / name).read_text(encoding="utf-8"), name)
+        out = clean((SRC / name).read_text(encoding="utf-8"), name)
         (WWW / name).write_text(out, encoding="utf-8")
         pages[name] = out
 
