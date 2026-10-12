@@ -146,6 +146,15 @@ const PAGES = [
     tileLabel: "Michelson-Morley Experiment Simulator",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/light-in-a-medium-icon.jpg (the user's Grok tile art).
+    slug: "light-in-a-medium",
+    section: "tools",
+    href: "/light-in-a-medium",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Light in a Medium Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/atomic-clock-simulator-icon.jpg (900x600 crop of the tool's share image).
     slug: "atomic-clock-simulator",
     section: "tools",
