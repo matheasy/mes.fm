@@ -1,0 +1,106 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu lm" id="lm">
+		<div class="lm-top">
+			<label class="lm-pick"><span class="tu-label" id="lm-pick-l">Scenario</span>
+				<select id="lm-preset" class="tu-select" aria-labelledby="lm-pick-l"></select></label>
+			<div class="lm-run" role="group" aria-label="Simulation controls">
+				<button type="button" class="tu-btn tu-btn--primary" id="lm-play" aria-pressed="true" title="Pause or resume (Space)">❚❚ Pause</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="lm-step" title="Advance a few steps while paused (→)">Step ▸</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="lm-reset" title="Clear the waves and start again (R)">↺ Restart</button>
+			</div>
+		</div>
+
+		<div class="lm-wrap" id="lm-wrap">
+			<div class="lm-stage" id="lm-stage">
+				<canvas id="lm-canvas" tabindex="0" role="img" aria-label="Live simulation of a light wave moving through a medium. Drag over it to paint glass, draw walls, erase, or move the light source, depending on the tool chosen."></canvas>
+				<div class="lm-views" role="group" aria-label="What to show">
+					<button type="button" data-view="wave" aria-pressed="true" title="The wave itself: orange crests, blue troughs">Wave</button>
+					<button type="button" data-view="int" aria-pressed="false" title="Brightness: where the light is strongest, averaged over the last few wave periods">Brightness</button>
+					<button type="button" id="lm-rays" aria-pressed="false" title="Draw light rays (Snell's law, geometric optics) over the wave">Rays</button>
+				</div>
+				<div class="lm-tools" role="toolbar" aria-label="Page tools">
+					<button type="button" id="lm-png" title="Save this frame as a picture" aria-label="Save as PNG">📷</button>
+					<button type="button" id="lm-full" title="Full screen" aria-label="Full screen">⛶</button>
+				</div>
+				<div class="lm-brushes" role="group" aria-label="What dragging does">
+					<button type="button" data-brush="glass" aria-pressed="true" title="Drag to paint a medium with the refractive index chosen below">◐ Medium</button>
+					<button type="button" data-brush="wall" aria-pressed="false" title="Drag to draw mirror walls (the light bounces off them)">▮ Wall</button>
+					<button type="button" data-brush="erase" aria-pressed="false" title="Drag to erase medium and walls">◌ Erase</button>
+					<button type="button" data-brush="src" aria-pressed="false" title="Click or drag to move the light source">✺ Source</button>
+				</div>
+				<div class="lm-hint" id="lm-hint">Drag on the picture to paint a medium</div>
+			</div>
+			<div class="lm-readouts" id="lm-readouts">
+				<div class="lm-ro"><span>Under the pointer</span><b id="lm-n">n = 1.00</b><small id="lm-c">light moves at 1.00 c</small></div>
+				<div class="lm-ro"><span>Wavelength there</span><b id="lm-wlv">–</b><small>shorter in a slow medium</small></div>
+				<div class="lm-ro"><span>Time</span><b id="lm-t">0.0</b><small>wave periods</small></div>
+				<div class="lm-ro"><span>Light source</span><b id="lm-srcv">–</b><small id="lm-srcs"></small></div>
+			</div>
+		</div>
+
+		<div class="tu-card lm-controls">
+			<p class="tu-note lm-scenario" id="lm-note"></p>
+			<div class="lm-grid">
+				<div class="tu-field"><span class="tu-label" id="lm-bn-l">Medium to paint: refractive index <b id="lm-bn-v"></b></span>
+					<input type="range" id="lm-bn-in" min="1" max="4" step="0.01" aria-labelledby="lm-bn-l">
+					<div class="lm-mats" id="lm-mats" role="group" aria-label="Typical materials"></div>
+					<span class="tu-note">Light moves at <b id="lm-bn-c"></b> in this medium. Higher index = slower light.</span></div>
+				<div class="tu-field"><span class="tu-label" id="lm-bs-l">Brush size: <b id="lm-bs-v"></b></span>
+					<input type="range" id="lm-bs-in" min="2" max="30" step="1" aria-labelledby="lm-bs-l">
+					<span class="tu-note">Edges are softened a little, so you can also paint smooth gradients (a mirage or a lens of slowly changing index).</span></div>
+				<div class="tu-field"><span class="tu-label" id="lm-wl-l">Wavelength in empty space: <b id="lm-wl-v"></b></span>
+					<input type="range" id="lm-wl-in" min="8" max="32" step="1" aria-labelledby="lm-wl-l">
+					<span class="tu-note">Measured in grid cells. Short waves bend more crisply; long waves spread out (diffraction).</span></div>
+				<div class="tu-field"><span class="tu-label" id="lm-br-l">Brightness: <b id="lm-br-v"></b></span>
+					<input type="range" id="lm-br-in" min="0.4" max="3" step="0.05" aria-labelledby="lm-br-l">
+					<span class="tu-note">Only changes how the picture is drawn, not the physics.</span></div>
+			</div>
+			<div class="lm-grid lm-grid--small">
+				<div class="tu-field tu-field--sm"><span class="tu-label">Source</span>
+					<select id="lm-stype" class="tu-select" aria-label="Source type"><option value="point">Point source</option><option value="beam">Beam (flat wave)</option></select></div>
+				<div class="tu-field tu-field--sm" id="lm-ang-f"><span class="tu-label" id="lm-ang-l">Beam direction: <b id="lm-ang-v"></b></span><input type="range" id="lm-ang-in" min="-180" max="180" step="1" aria-labelledby="lm-ang-l"></div>
+				<div class="tu-field tu-field--sm" id="lm-wid-f"><span class="tu-label" id="lm-wid-l">Beam width: <b id="lm-wid-v"></b></span><input type="range" id="lm-wid-in" min="8" max="110" step="1" aria-labelledby="lm-wid-l"></div>
+				<div class="tu-field tu-field--sm"><span class="tu-label">Emission</span>
+					<select id="lm-mode" class="tu-select" aria-label="Continuous waves or single pulse"><option value="cw">Continuous</option><option value="pulse">Single pulse</option></select></div>
+				<div class="tu-field tu-field--sm"><span class="tu-label">Detail</span>
+					<select id="lm-res" class="tu-select" aria-label="Grid size"><option value="192">Fast (192 wide)</option><option value="256">Normal (256 wide)</option><option value="384">Fine (384 wide)</option></select></div>
+				<div class="tu-field tu-field--sm"><span class="tu-label">Speed</span>
+					<select id="lm-speed" class="tu-select" aria-label="Simulation speed"><option value="1">Slow</option><option value="2">Normal</option><option value="4">Fast</option><option value="8">Faster</option></select></div>
+			</div>
+			<div class="lm-checks">
+				<label class="lm-check"><input type="checkbox" id="lm-showmed" checked> Tint the medium</label>
+				<button type="button" class="tu-btn tu-btn--ghost" id="lm-pulse">✺ Send a pulse</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="lm-clear">Clear the medium</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="lm-link">🔗 Copy link to this setup</button>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Light in a medium: what you are looking at</h2>
+			<p>Light does not always move at <strong>c</strong>. In glass, water or air it is slower, by a factor called the <strong>refractive index</strong>: <strong>speed = c / n</strong>. This simulator lets you paint a medium of any index onto a flat sheet of space and watch a light wave move through it. It solves the wave equation on a grid, one tiny time step after another, so everything you see (the bending, the focusing, the reflections, the interference fringes) comes out of that single rule and was not drawn by hand.</p>
+			<div class="lm-eq" role="math" aria-label="Wave equation">
+				<div><span class="lm-eq__n">wave equation</span> <span class="lm-eq__f">∂²u/∂t² = (c/n)² ∇²u</span></div>
+				<div><span class="lm-eq__n">Snell's law</span> <span class="lm-eq__f">n₁ sin θ₁ = n₂ sin θ₂</span></div>
+			</div>
+			<p>Here <i>u</i> is the height of the wave at each point (orange crests, blue troughs). The only thing that changes from place to place is <i>n</i>. Where <i>n</i> is bigger the wave crawls, its crests bunch up (the wavelength shrinks by the same factor n) and a wave front that arrives at an angle gets turned, because one end of it slows down before the other. That turning is refraction, and Snell's law is its summary. Switch on <strong>Rays</strong> to draw the geometric-optics prediction (a ray bends by the same law, and curves smoothly through a changing index) on top of the wave to compare them.</p>
+			<h3>Things to try</h3>
+			<ul>
+				<li><strong>Glass slab:</strong> aim the beam at an angle and watch it bend towards the normal inside the glass, then back out. The wavelength inside is 1/1.5 of the one outside.</li>
+				<li><strong>Total internal reflection:</strong> light inside glass that meets the surface at a shallow angle cannot escape (above about 42° for n = 1.5). This is how optical fibre works; see the Fibre scenario.</li>
+				<li><strong>Lens:</strong> the thick middle of a lens delays the middle of the wave more than its edges, so a flat wave curls into a converging one and focuses.</li>
+				<li><strong>Mirage:</strong> a smooth slope of index (no edges at all) bends a straight beam into a curve. Paint your own gradient with a large brush.</li>
+				<li><strong>Double slit:</strong> draw walls with two gaps and watch the two new waves interfere.</li>
+				<li><strong>Gravity-lens analogue:</strong> a heavy mass slows light nearby as seen from far away, and the optical analogue n = 1 + k/r bends passing waves towards it. Real gravitational lensing bends light twice as much, because space is curved too; this scenario shows only the "slow light" half. (A Black Hole page is planned.)</li>
+			</ul>
+			<h3>How accurate is it?</h3>
+			<p>It is a teaching-grade simulator. The wave is a single number (a scalar wave), so there is no polarisation, and the index is the same for every colour (no rainbow from a prism). It is two-dimensional, the grid is coarse (a wave is only 8 to 32 cells long, so a few percent of numerical error in the wave speed is normal), and the edges of the picture absorb waves instead of reflecting them. The speed of light in empty space is the fastest speed in the picture, so the index cannot go below 1 (the "Medium" brush only slows light down) and stops at 4. Rays follow the bending exactly but know nothing about interference or diffraction, which is why waves and rays disagree where features are only a few wavelengths wide.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Why does a wave front bend when it enters glass?</strong> The part of the front that enters first slows down first, while the rest is still fast, so the front pivots, like a marching line that hits mud at an angle.</li>
+				<li><strong>Does light really slow down in glass?</strong> The wave does: its crests travel at c/n. What happens at the level of photons and atoms is more subtle (the light is absorbed and re-emitted in a coherent way by the atoms), but the crest speed and the wavelength are exactly what is shown here.</li>
+				<li><strong>Can the speed of light change in empty space?</strong> In general relativity the <em>coordinate</em> speed of light changes near a mass, which is what the gravity-lens analogue mimics. Locally, light always passes you at c.</li>
+				<li><strong>Can I use this for homework or a demo?</strong> Yes. It is free, runs offline once loaded, and the <em>Copy link</em> button saves your scenario (paint-your-own media are not stored in the link).</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/michelson-morley-experiment">Michelson-Morley Experiment Simulator</a> · <a href="/fluid-simulator">Fluid Simulator</a> · <a href="/photoelectric-effect-simulator">Photoelectric Effect Simulator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

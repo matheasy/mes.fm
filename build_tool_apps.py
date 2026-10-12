@@ -167,6 +167,12 @@ APPS = {
                             tag="Stir, heat and block a live fluid.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                             desc="A free 2D fluid simulator that solves the Navier-Stokes equations live in your browser: Karman vortex streets behind a cylinder, lid-driven cavity, rising hot plumes, Kelvin-Helmholtz rolls and merging vortices. Change the Reynolds number, stir with your finger, draw walls.",
                             js_v="3"),
+    # Light in a Medium: 2D wave simulator with a painted refractive index (c = 1/n), mirror walls, point / beam sources and a Snell's-law ray overlay (lib.js node-tested:
+    # tool_apps_src/light-in-a-medium-tests.js). Normal-width page in the tools sidebar collection, Wide by default (inline snippet), own fullscreen button.
+    "light-in-a-medium": dict(title="MES Light in a Medium Simulator", page_title="Light in a Medium: Refraction and Slow Light Simulator",
+                              tag="Paint glass. Watch light bend.", accent="#be185d", dark="#9d174d", tint="#fce7f3",
+                              desc="A free simulator of light moving through a medium: paint glass, water or any refractive index and watch a live wave slow down, bend (Snell's law), focus in a lens, reflect inside a fibre or curve through a mirage. Compare the wave with rays, draw mirror walls for a double slit, or try a gravity-lens analogue.",
+                              js_v="1"),
     # Photo Editor: layers, selections, text labels, arrows / callouts / step badges, retouch, adjustments, PSD, all in the browser (canvas). lib.js = MESPixel (pure pixel maths, node-tested:
     # tool_apps_src/photo-editor-tests.js), js_parts = engine (core.js layers / history / selection) + tools + dialogs; lib_from = image-converter's lib (MESImg: formats, zip). Wide page, always-dark workspace.
     "photo-editor": dict(title="MES Photo Editor", page_title="Free Online Photo Editor with Layers",
