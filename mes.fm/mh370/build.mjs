@@ -1683,6 +1683,7 @@ ${sectionsHtml}
           <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+          <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="/memes">Memes</a></li>
           <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->

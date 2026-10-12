@@ -200,6 +200,7 @@ def clean(html: str, page_name: str) -> str:
                   r'[^<]*</a></li>\s*', "", html)
     # the web nav cross-links to the Tools hub (add_cross_links.py) -- not part of the app
     html = re.sub(r'<li class="info-bar__item"><a class="info-bar__item__text" href=\'https://mes\.fm/tools\'>Tools</a></li>\s*', "", html)
+    html = re.sub(r'<li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>\s*', "", html)   # the site menu's Browser Extensions link (add_browser_extensions_nav.py)
     # the responsive CSS hides the info-bar "Home" item on mobile (the site
     # logo links home on the web) -- the path rewrite above turned its
     # selector into a[href="index.html"]; the app wants Home visible, so drop
