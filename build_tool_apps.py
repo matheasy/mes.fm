@@ -336,6 +336,12 @@ APPS = {
                        tag="Listen to any page with the words highlighted.", accent="#15803d", dark="#105f2c", tint="#e3f4ea",
                        desc="Free MES Read Aloud browser extension for Chrome, Brave and Edge: reads any web page or selected text aloud and highlights the word and sentence being read, right on the page. Private, no tracking, setups for different voices and speeds.",
                        js_v="1"),
+    # Dark Mode: download + install page of MES's own dark / light mode browser extension (source in mes.fm/dark-mode/extension/, zipped by
+    # build_dark_mode_extension.py; tests node tool_apps_src/dark-mode-tests.js). app.js only fills in the version from the extension's manifest.
+    "dark-mode": dict(title="MES Dark Mode", page_title="Dark Mode",
+                      tag="Dark mode (or light mode) for any website.", accent="#4338ca", dark="#312e81", tint="#e9e8fb",
+                      desc="Free MES Dark Mode browser extension for Chrome, Brave and Edge: dark mode for any website, or light mode for dark ones, with per-site control, a schedule, setups and brightness, sepia and contrast tweaks. Private, no tracking.",
+                      js_v="1"),
     "go": dict(title="MES Short Links", page_title="Short Links",
                tag="Every mes.fm short link, searchable.", accent="#0e8a6a", dark="#0a6650", tint="#e0f4ee",
                desc="Every MES short link in one searchable list: mes.fm/pomodoro, mes.fm/physics-playlist and more. Filter by category or topic, copy any short link, and get the line for a new one.",
