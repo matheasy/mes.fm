@@ -38,7 +38,7 @@
 			var r = rk4(u, v, dth, accLight), un = r[0], vn = r[1], uPrev = u;
 			th += dth; u = un; v = vn;
 			if (u >= 1) { captured = true; if (pts) { pts.push(-Math.cos(th), sgn * Math.sin(th)); } break; }
-			var rr = 1 / u; if (rr < rmin) rmin = rr;
+			var rr = u > 1e-12 ? 1 / u : R; if (rr < rmin) rmin = rr;
 			if (pts && (n % 2 === 0 || rr < 6)) pts.push(-rr * Math.cos(th), sgn * rr * Math.sin(th));
 			if (u <= u0 && v < 0) {   /* back at the start radius: interpolate the exact angle where u = u0 */
 				var f = (uPrev - u0) / (uPrev - u); th = th - dth * (1 - f); rr = R;
@@ -87,7 +87,7 @@
 		this.r0 = r0; this.L = L; this.k = k;
 		this.u = u0; this.v = 0; this.phi = 0; this.tau = 0; this.t = 0; this.captured = false;
 		this.E = Math.sqrt((1 - u0) * (1 + L * L * u0 * u0));
-		this.peri = []; this.prec = null;
+		this.peri = []; this.prec = null; this.uLow = u0;
 		var c = 1 / (2 * L * L); this.acc = function (u) { return -u + c + 1.5 * u * u; };
 		this.c = c;
 	};
@@ -97,7 +97,9 @@
 		var tauStep = dphi / (this.L * u * u);
 		this.u = r[0]; this.v = r[1]; this.phi += dphi; this.tau += tauStep; this.t += this.E / (1 - 0.5 * (u + this.u)) * tauStep;
 		if (this.u >= 1) { this.captured = true; this.u = 1; return tauStep; }
-		if (vOld > 0 && this.v <= 0) {   /* periapsis: u was rising and has turned */
+		if (this.u < this.uLow) this.uLow = this.u;
+		if (vOld > 0 && this.v <= 0 && this.u - this.uLow > 2e-3 * this.u) {   /* periapsis: u was rising and has turned (a real swing, not the wobble of a circular orbit) */
+			this.uLow = this.u;
 			var f = vOld / (vOld - this.v), ph = this.phi - dphi * (1 - f);
 			this.peri.push(ph);
 			if (this.peri.length > 1) this.prec = this.peri[this.peri.length - 1] - this.peri[this.peri.length - 2] - 2 * PI;
@@ -135,11 +137,11 @@
 		var th = 0, h = opt && opt.h || 0.03, Rfar = opt && opt.Rfar || 60, disk = opt && opt.disk, rin = opt && opt.rin || 3, rout = opt && opt.rout || 9;
 		var n1 = dot(e1, cam.n), n2 = dot(e2, cam.n), prevF = n1, prevU = u, prevTh = 0, steps = 0, passes = 0, hit = null, acc = null;
 		while (steps++ < 700) {
-			var hh = u > 0.35 ? h * 0.6 : h; stepLight(u, v, hh); u = _u; v = _v; th += hh; h = hh === h ? h : h;
+			var hh = u > 0.35 ? h * 0.6 : h; stepLight(u, v, hh); u = _u; v = _v; th += hh;
 			if (u >= 1) return { kind: 2 };
 			var fcur = Math.cos(th) * n1 + Math.sin(th) * n2;
 			if (disk && prevF * fcur < 0) {   /* crossed the disk plane: where? */
-				var s = prevF / (prevF - fcur), uc = prevU + (u - prevU) * s, rc = 1 / uc, thc = prevTh + h * s;
+				var s = prevF / (prevF - fcur), uc = prevU + (u - prevU) * s, rc = 1 / uc, thc = prevTh + (th - prevTh) * s;
 				if (rc >= rin && rc <= rout) {
 					/* disk velocity direction: n x rhat; photon direction (backwards along the traced ray) at the crossing */
 					var ch = Math.cos(thc), sh = Math.sin(thc), rh = [ch * e1[0] + sh * e2[0], ch * e1[1] + sh * e2[1], ch * e1[2] + sh * e2[2]];

@@ -1,0 +1,164 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu bh" id="bh">
+		<div class="bh-tabs" role="tablist" aria-label="Black hole tools">
+			<button type="button" role="tab" data-tab="light" aria-selected="true">Bending light</button>
+			<button type="button" role="tab" data-tab="orbit" aria-selected="false">Orbits</button>
+			<button type="button" role="tab" data-tab="image" aria-selected="false">The picture</button>
+			<button type="button" role="tab" data-tab="numbers" aria-selected="false">Numbers</button>
+		</div>
+
+		<!-- ===== bending light ===== -->
+		<section data-panel="light" role="tabpanel">
+			<p class="tu-note bh-lead">Light arriving from the left passes a non-spinning black hole (Schwarzschild). Rays that pass close enough are bent more and more, and below a critical distance they fall in: that edge is the <b>shadow</b>. Move the pointer over the picture to choose a ray.</p>
+			<div class="bh-wrap"><div class="bh-stage" id="bh-lstage">
+				<canvas id="bh-lc" tabindex="0" role="img" aria-label="Light rays bending around a black hole. Move the pointer up and down to choose the height of the highlighted ray."></canvas>
+				<div class="bh-badge" id="bh-lbadge"></div>
+			</div>
+			<div class="bh-readouts">
+				<div class="bh-ro"><span>Chosen ray: distance from the axis (b)</span><b id="bh-l-b">–</b><small>in Schwarzschild radii, rs</small></div>
+				<div class="bh-ro"><span>Bending (Einstein)</span><b id="bh-l-a">–</b><small id="bh-l-as"></small></div>
+				<div class="bh-ro"><span>Newton's guess</span><b id="bh-l-n">–</b><small>light as a particle: half of Einstein's</small></div>
+				<div class="bh-ro"><span>Closest approach</span><b id="bh-l-r">–</b><small id="bh-l-rs"></small></div>
+			</div></div>
+			<div class="tu-card bh-controls">
+				<div class="bh-grid">
+					<div class="tu-field"><span class="tu-label" id="bh-lb-l">Chosen ray: b = <b id="bh-lb-v"></b> rs</span>
+						<input type="range" id="bh-lb-in" min="-8" max="8" step="0.01" aria-labelledby="bh-lb-l">
+						<span class="tu-note">Positive is above the hole, negative below. The shadow edge is at ±2.598 rs.</span></div>
+					<div class="tu-field"><span class="tu-label" id="bh-ln-l">Number of rays: <b id="bh-ln-v"></b></span>
+						<input type="range" id="bh-ln-in" min="5" max="61" step="2" aria-labelledby="bh-ln-l"></div>
+					<div class="tu-field"><span class="tu-label" id="bh-lz-l">Zoom: <b id="bh-lz-v"></b> rs across</span>
+						<input type="range" id="bh-lz-in" min="6" max="40" step="1" aria-labelledby="bh-lz-l"></div>
+				</div>
+				<div class="bh-checks">
+					<label class="bh-check"><input type="checkbox" id="bh-l-ph" checked> Photon sphere (1.5 rs)</label>
+					<label class="bh-check"><input type="checkbox" id="bh-l-sh" checked> Shadow edge (2.6 rs)</label>
+					<label class="bh-check"><input type="checkbox" id="bh-l-ana"> Optical analogue: same rays through a glass-like medium</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="bh-l-link">🔗 Copy link</button>
+					<a class="tu-btn tu-btn--ghost" href="/light-in-a-medium?p=blackhole" id="bh-l-lim">Try it in Light in a Medium</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- ===== orbits ===== -->
+		<section data-panel="orbit" role="tabpanel" hidden>
+			<p class="tu-note bh-lead">A planet, star or probe orbiting the hole. Far away it follows Newton's ellipse (dashed). Close in, the orbit <b>precesses</b>: the closest point moves round each lap. Inside 3 rs no circular orbit is stable, and below 1.5 rs there is none at all.</p>
+			<div class="bh-wrap"><div class="bh-stage" id="bh-ostage">
+				<canvas id="bh-oc" tabindex="0" role="img" aria-label="Top view of a particle orbiting a black hole, with its trail."></canvas>
+				<div class="bh-badge" id="bh-obadge"></div>
+				<div class="bh-run"><button type="button" id="bh-oplay" aria-pressed="true">❚❚ Pause</button><button type="button" id="bh-oreset">↺ Restart</button></div>
+			</div>
+			<div class="bh-readouts">
+				<div class="bh-ro"><span>Distance</span><b id="bh-o-r">–</b><small>rs from the centre</small></div>
+				<div class="bh-ro"><span>Speed there</span><b id="bh-o-v">–</b><small>measured by a still observer, in c</small></div>
+				<div class="bh-ro"><span>Clock on the particle</span><b id="bh-o-tau">–</b><small id="bh-o-dil"></small></div>
+				<div class="bh-ro"><span>Periapsis advance per orbit</span><b id="bh-o-p">–</b><small id="bh-o-ps"></small></div>
+			</div></div>
+			<div class="tu-card bh-controls">
+				<div class="bh-chips" id="bh-o-try" role="group" aria-label="Examples"></div>
+				<div class="bh-grid">
+					<div class="tu-field"><span class="tu-label" id="bh-or-l">Starting distance: <b id="bh-or-v"></b> rs</span>
+						<input type="range" id="bh-or-in" min="1.6" max="60" step="0.1" aria-labelledby="bh-or-l">
+						<span class="tu-note">The particle starts here, moving sideways.</span></div>
+					<div class="tu-field"><span class="tu-label" id="bh-ok-l">Sideways speed: <b id="bh-ok-v"></b> × the circular-orbit value</span>
+						<input type="range" id="bh-ok-in" min="0.2" max="1.5" step="0.01" aria-labelledby="bh-ok-l">
+						<span class="tu-note">1.00 = a circle. Less: it falls inward (and may plunge). More: it swings out.</span></div>
+					<div class="tu-field"><span class="tu-label" id="bh-os-l">Speed of the animation: <b id="bh-os-v"></b></span>
+						<input type="range" id="bh-os-in" min="0.2" max="4" step="0.1" aria-labelledby="bh-os-l"></div>
+				</div>
+				<div class="bh-checks">
+					<label class="bh-check"><input type="checkbox" id="bh-o-newt" checked> Newton's ellipse (dashed)</label>
+					<label class="bh-check"><input type="checkbox" id="bh-o-isco" checked> Innermost stable circular orbit (3 rs)</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="bh-o-link">🔗 Copy link</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- ===== the picture ===== -->
+		<section data-panel="image" role="tabpanel" hidden>
+			<p class="tu-note bh-lead">What a camera would see: a black hole in front of a field of stars, with a thin glowing disk of gas around it. Every pixel is a light ray traced backwards through the curved space. The disk's far side is bent up over the top and under the bottom, and the side moving towards you is brighter and bluer.</p>
+			<div class="bh-wrap"><div class="bh-stage" id="bh-istage">
+				<canvas id="bh-ic" role="img" aria-label="Simulated image of a black hole with an accretion disk and a gravitationally lensed star field."></canvas>
+				<div class="bh-badge" id="bh-ibadge">Rendering…</div>
+				<div class="bh-tools"><button type="button" id="bh-ipng" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="bh-ifull" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div></div>
+			<div class="tu-card bh-controls">
+				<div class="bh-chips" id="bh-i-try" role="group" aria-label="Examples"></div>
+				<div class="bh-grid">
+					<div class="tu-field"><span class="tu-label" id="bh-ii-l">Viewing angle: <b id="bh-ii-v"></b>°</span>
+						<input type="range" id="bh-ii-in" min="0" max="90" step="1" aria-labelledby="bh-ii-l">
+						<span class="tu-note">0° = looking down on the disk, 90° = edge-on.</span></div>
+					<div class="tu-field"><span class="tu-label" id="bh-id-l">Distance of the camera: <b id="bh-id-v"></b> rs</span>
+						<input type="range" id="bh-id-in" min="6" max="60" step="1" aria-labelledby="bh-id-l"></div>
+					<div class="tu-field"><span class="tu-label" id="bh-if-l">Field of view: <b id="bh-if-v"></b>°</span>
+						<input type="range" id="bh-if-in" min="6" max="90" step="1" aria-labelledby="bh-if-l"></div>
+					<div class="tu-field"><span class="tu-label" id="bh-io-l">Outer edge of the disk: <b id="bh-io-v"></b> rs</span>
+						<input type="range" id="bh-io-in" min="4" max="20" step="0.5" aria-labelledby="bh-io-l"></div>
+				</div>
+				<div class="bh-grid bh-grid--small">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Detail</span>
+						<select id="bh-i-res" class="tu-select" aria-label="Picture detail"><option value="180">Fast (180 wide)</option><option value="270">Normal (270 wide)</option><option value="400">Fine (400 wide)</option></select></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Colours</span>
+						<select id="bh-i-col" class="tu-select" aria-label="Disk colours"><option value="heat">Glowing gas</option><option value="mono">White hot</option><option value="doppler">Doppler (blue = coming, red = going)</option></select></div>
+				</div>
+				<div class="bh-checks">
+					<label class="bh-check"><input type="checkbox" id="bh-i-disk" checked> Accretion disk</label>
+					<label class="bh-check"><input type="checkbox" id="bh-i-stars" checked> Stars</label>
+					<label class="bh-check"><input type="checkbox" id="bh-i-ring"> Mark the shadow edge</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="bh-i-link">🔗 Copy link</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- ===== numbers ===== -->
+		<section data-panel="numbers" role="tabpanel" hidden>
+			<p class="tu-note bh-lead">Pick a mass and see how big its black hole would be, what happens near it, and how hot it is. Everything is for a non-spinning hole.</p>
+			<div class="tu-card bh-controls">
+				<div class="bh-chips" id="bh-n-try" role="group" aria-label="Examples"></div>
+				<div class="bh-grid">
+					<div class="tu-field"><span class="tu-label" id="bh-nm-l">Mass</span>
+						<div class="bh-mass"><input type="text" inputmode="decimal" id="bh-n-m" class="tu-input" aria-labelledby="bh-nm-l" value="1"><select id="bh-n-u" class="tu-select" aria-label="Mass unit"><option value="msun">solar masses (M☉)</option><option value="mearth">Earth masses</option><option value="kg">kilograms</option></select></div>
+						<span class="tu-note">You can type 4.3e6 or 4300000.</span></div>
+					<div class="tu-field"><span class="tu-label" id="bh-nd-l">Distance from the centre: <b id="bh-nd-v"></b></span>
+						<input type="range" id="bh-nd-in" min="0" max="3" step="0.005" aria-labelledby="bh-nd-l">
+						<span class="tu-note">From just outside the horizon to 1,000 times its radius. The numbers under “At that distance” follow it.</span></div>
+					<div class="tu-field"><span class="tu-label" id="bh-nl-l">Length of a falling object (for tides)</span>
+						<div class="bh-mass"><input type="text" inputmode="decimal" id="bh-n-len" class="tu-input" aria-labelledby="bh-nl-l" value="2"><span class="bh-unit">metres</span></div></div>
+				</div>
+			</div>
+			<div class="bh-tables">
+				<div class="tu-card"><h3 class="bh-h">The black hole</h3><table class="tu-table" id="bh-n-t1"><tbody></tbody></table></div>
+				<div class="tu-card"><h3 class="bh-h">At that distance</h3><table class="tu-table" id="bh-n-t2"><tbody></tbody></table></div>
+			</div>
+			<p class="tu-note">Constants: CODATA 2018. For a spinning (Kerr) or charged hole the radii and the shadow change; for a real star-made hole the disk, jets and surrounding matter matter far more than these ideal numbers.</p>
+		</section>
+
+		<div class="tu-seo">
+			<h2>What this shows</h2>
+			<p>A <strong>black hole</strong> is a region of space where gravity is so strong that nothing, not even light, can leave. This page uses the simplest one: <strong>Schwarzschild's</strong> solution of Einstein's general relativity, a hole that does not spin and has no charge. Its only property is its mass, and everything else follows from one number, the <strong>Schwarzschild radius</strong> <i>r<sub>s</sub></i> = 2<i>GM</i>/<i>c</i>². For the Sun that is 2.95 km; for the Earth, 8.9 mm. All distances on this page are measured in units of <i>r<sub>s</sub></i>.</p>
+			<div class="bh-eq" role="math" aria-label="Key equations">
+				<div><span class="bh-eq__n">light path</span> <span class="bh-eq__f">d²u/dθ² = −u + (3/2) <i>r<sub>s</sub></i> u²,  u = 1/r</span></div>
+				<div><span class="bh-eq__n">shadow</span> <span class="bh-eq__f"><i>b</i><sub>c</sub> = (3√3/2) <i>r<sub>s</sub></i> ≈ 2.598 <i>r<sub>s</sub></i></span></div>
+				<div><span class="bh-eq__n">weak bending</span> <span class="bh-eq__f">α ≈ 2 <i>r<sub>s</sub></i> / <i>b</i>  (= 4<i>GM</i> / <i>bc</i>²)</span></div>
+				<div><span class="bh-eq__n">orbit</span> <span class="bh-eq__f">d²u/dφ² = −u + <i>r<sub>s</sub></i>/(2L²) + (3/2) <i>r<sub>s</sub></i> u²</span></div>
+			</div>
+			<h3>Bending light</h3>
+			<p>Far from the hole a ray is bent by a tiny angle, twice what Newton's gravity would give (this was the 1919 eclipse test of general relativity). Closer in, the bending grows fast. At <b>1.5 <i>r<sub>s</sub></i></b> there is a circle, the <b>photon sphere</b>, where light can orbit the hole on an unstable path. A ray that comes in with an impact parameter <i>b</i> smaller than about <b>2.6 <i>r<sub>s</sub></i></b> is captured; one just outside winds around the hole before escaping. The captured circle, seen from far away, is the <b>shadow</b> that the Event Horizon Telescope photographed for M87* and Sagittarius A*. Its size is 2.6 <i>r<sub>s</sub></i>, about 2.6 times bigger than the horizon itself, because the hole also swallows light that was never aimed at it.</p>
+			<h3>The optical analogue</h3>
+			<p>In suitable coordinates, light near a non-rotating black hole behaves exactly like light in a <em>transparent medium</em> whose refractive index grows towards the centre: <i>n</i>(ρ) = (1 + <i>r<sub>s</sub></i>/4ρ)³ / (1 − <i>r<sub>s</sub></i>/4ρ). Tick “Optical analogue” on the first tab: the dashed rays come from a glass-like medium, not from curved space, and they land on top of the real ones. (The test suite checks that they bend by the same angle.) The <a href="/light-in-a-medium?p=blackhole">Light in a Medium</a> simulator has a black-hole scenario that uses this index.</p>
+			<h3>Orbits</h3>
+			<p>For a planet the orbit is nearly Newton's ellipse, but the closest point creeps round a little on every lap: Mercury's creep (43 arc-seconds per century) was another early proof of general relativity. Near a black hole the effect is huge. Two radii matter: no circular orbit is stable inside <b>3 <i>r<sub>s</sub></i></b> (the <b>ISCO</b>, where the orbital speed is half the speed of light), and a particle with less angular momentum than <b>2 <i>r<sub>s</sub></i></b>·<i>c</i> always falls in. Orbits of a particle with a clock aboard show time dilation too: the clock slows as it nears the hole, and the animation shows both the clock on the particle and what a distant observer would count.</p>
+			<h3>The picture</h3>
+			<p>The picture is made by shooting one light ray backwards from each camera pixel and following it with the equation above until it hits the disk, falls in (black) or escapes to the starry sky. The glow of the disk is brighter on the side turning towards the camera (Doppler beaming) and dimmer, and redder, deep in the gravity well (gravitational redshift). Real accretion disks are thicker, hotter and turbulent, and real holes usually spin; this is the idealised thin-disk picture used in textbooks.</p>
+			<h3>How accurate is it?</h3>
+			<p>The geometry is exact for a Schwarzschild hole: the light and orbit equations are integrated numerically, and the test suite checks the shadow size (3√3/2 <i>r<sub>s</sub></i>), the weak-field bending, the periapsis advance, the ISCO and the optical analogue against the textbook values. What is simplified: no spin (Kerr), no charge, a razor-thin disk with made-up brightness and colours, no light from the disk's own gravity or from the plasma around it, and a static sky. It is a teaching tool, not a research code.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Is the shadow the horizon?</strong> No. The horizon is at 1 <i>r<sub>s</sub></i>. The shadow is the apparent size on the sky, 2.6 times bigger, because of the bending of nearby light.</li>
+				<li><strong>What happens at the horizon?</strong> For someone falling in, nothing special is felt there (for a big hole). A distant observer sees their clock slow and the light from them redden and fade, and never sees them cross.</li>
+				<li><strong>Why do small holes pull you apart?</strong> Tides: gravity is stronger at your feet than at your head. Near a stellar-mass hole the difference tears you up well outside the horizon; near a supermassive hole you could cross the horizon unharmed. The Numbers tab computes where a 2-metre body feels a lethal tide.</li>
+				<li><strong>Do black holes evaporate?</strong> In theory, by Hawking radiation, but so slowly for any real hole (a solar-mass one is colder than the cosmic microwave background) that it does not matter. The Numbers tab shows the temperature and the (enormous) lifetime.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/light-in-a-medium">Light in a Medium Simulator</a> · <a href="/fluid-simulator">Fluid Simulator</a> · <a href="/solar-system-today">Solar System Today</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

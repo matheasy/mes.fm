@@ -83,6 +83,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("photo-editor", "Photo Editor"),   # also built by build_tool_apps.py (wide page, always-dark editor workspace)
     ("image-converter", "Image Converter"),   # also built by build_tool_apps.py
     ("3d-fluid-simulator", "3D Fluid Simulator"),   # also built by build_tool_apps.py (wide page, WebGL2 smoke)
+    ("black-hole-simulator", "Black Hole Simulator"),   # also built by build_tool_apps.py (tools sidebar collection, dark stages, four tabs)
     ("light-in-a-medium", "Light in a Medium"),   # also built by build_tool_apps.py (tools sidebar collection, dark stage)
     ("fluid-simulator", "Fluid Simulator"),   # also built by build_tool_apps.py (wide page, dark simulation stage)
     ("solar-system-today", "Solar System Today"),   # also built by build_tool_apps.py (wide page, dark planetarium stage)

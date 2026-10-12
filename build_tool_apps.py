@@ -173,6 +173,12 @@ APPS = {
                               tag="Paint glass. Watch light bend.", accent="#be185d", dark="#9d174d", tint="#fce7f3",
                               desc="A free simulator of light moving through a medium: paint glass, water or any refractive index and watch a live wave slow down, bend (Snell's law), focus in a lens, reflect inside a fibre or curve through a mirage. Compare the wave with rays, draw mirror walls for a double slit, or try a gravity-lens analogue.",
                               js_v="1"),
+    # Black Hole Simulator: Schwarzschild light rays (shadow, photon sphere, optical analogue), orbits (precession, ISCO, plunge, clocks), a ray-traced picture (lensed stars + thin disk) and SI numbers
+    # (lib.js node-tested: tool_apps_src/black-hole-simulator-tests.js). Four tabs. Normal-width page in the tools sidebar collection, Wide by default, own fullscreen button for the picture.
+    "black-hole-simulator": dict(title="MES Black Hole Simulator", page_title="Black Hole Simulator: Light Bending, Orbits and Shadow",
+                                 tag="Bend light. Orbit the dark.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
+                                 desc="A free black hole simulator: watch light bend around a Schwarzschild black hole and find the shadow and photon sphere, follow orbits that precess, plunge or sit at the innermost stable orbit, see a ray-traced picture of a disk and lensed stars, and compute the size, tides and temperature of any black hole. Includes the optical analogue: a glass-like medium that bends light the same way.",
+                                 js_v="1"),
     # Photo Editor: layers, selections, text labels, arrows / callouts / step badges, retouch, adjustments, PSD, all in the browser (canvas). lib.js = MESPixel (pure pixel maths, node-tested:
     # tool_apps_src/photo-editor-tests.js), js_parts = engine (core.js layers / history / selection) + tools + dialogs; lib_from = image-converter's lib (MESImg: formats, zip). Wide page, always-dark workspace.
     "photo-editor": dict(title="MES Photo Editor", page_title="Free Online Photo Editor with Layers",
