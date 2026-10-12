@@ -146,6 +146,15 @@ const PAGES = [
     tileLabel: "Michelson-Morley Experiment Simulator",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/black-hole-simulator-icon.jpg (the user's Grok tile art).
+    slug: "black-hole-simulator",
+    section: "tools",
+    href: "/black-hole-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Black Hole Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/light-in-a-medium-icon.jpg (the user's Grok tile art).
     slug: "light-in-a-medium",
     section: "tools",
