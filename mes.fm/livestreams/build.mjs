@@ -109,6 +109,15 @@ const EXTRA_LINKS = existsSync(join(__dirname, "extra-links.json"))
   ? JSON.parse(readFileSync(join(__dirname, "extra-links.json"), "utf8"))
   : {};
 
+// A short note under a stream's title (List View, as text + links) and in its Grid View card (text only), keyed by stream number.
+// Parts are plain strings or [label, href] links. Add an entry here when something about a stream needs saying.
+const NOTES = {
+  42: ["(Update: Unlisted as Bob is a spook ", ["mes.fm/bg", "https://mes.fm/bg"], ")"],
+};
+const noteText = (parts) => parts.map((p) => (Array.isArray(p) ? p[0] : p)).join("");
+const noteHtml = (parts) =>
+  parts.map((p) => (Array.isArray(p) ? `<a href="${escapeHtml(p[1])}">${escapeHtml(p[0])}</a>` : escapeHtml(p))).join("");
+
 const YT = (id) => `https://www.youtube.com/watch?v=${id}`;
 
 // "livestream" (main tab), "trailer" (Trailers tab) or "skip". The playlist also holds a few short
@@ -140,7 +149,7 @@ function toItem(v) {
     ["YouTube", YT(v.id)],
     ...(EXTRA_LINKS[number] || []),
   ];
-  return { title, image: v.thumb, links, cats };
+  return { title, image: v.thumb, links, cats, ...(NOTES[number] ? { note: NOTES[number] } : {}) };
 }
 
 // Newest first by stream number. YouTube appends new playlist videos at the END, so playlist order
@@ -468,7 +477,8 @@ function buildCard(item, meta) {
   return `<a class="link-card"${catsAttr} href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
       <span class="link-card-thumb"${thumbStyle}></span>
       <span class="link-card-body">
-        <span class="link-card-title">${escapeHtml(item.title)}</span>
+        <span class="link-card-title">${escapeHtml(item.title)}</span>${item.note ? `
+        <span class="link-card-note">${escapeHtml(noteText(item.note))}</span>` : ""}
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>`;
@@ -483,7 +493,8 @@ function buildRow(item, meta, linksBuilder) {
   const imgHtml = image ? `<img class="list-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title)}">` : "";
   const catsAttr = item.cats !== undefined ? ` data-cats="${escapeHtml(item.cats)}"` : "";
   return `<div class="list-row"${catsAttr}>
-      <h3>${escapeHtml(item.title)}</h3>
+      <h3>${escapeHtml(item.title)}</h3>${item.note ? `
+      <p class="list-note">${noteHtml(item.note)}</p>` : ""}
       <p>${linksHtml}</p>
       ${imgHtml}
     </div>`;
@@ -978,6 +989,8 @@ sub {vertical-align:sub;}
   border-bottom: none;
 }
 
+.list-note { font-style: italic; font-size: 0.95em; margin: 0.2em 0 0.4em; }
+.link-card-note { display: block; font-size: 0.8em; font-style: italic; opacity: 0.85; margin-top: 0.3em; }
 .list-row h3 {
   font-size: 1.2em;
   margin: 0 0 0.3em;
