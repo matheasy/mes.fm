@@ -28,25 +28,33 @@
   // the same boost is reported in decibels so people can compare it with other tools
   function decibels(level) { return level <= 0 ? -Infinity : Math.round(20 * Math.log10(level / 100) * 10) / 10; }
 
-  /* ---- Web Audio: source -> gain -> (limiter) -> destination. Returns { gain, comp, setLimiter(on), setLevel(l) } ---- */
+  /* ---- Web Audio: source -> gain -> (soft limiter) -> destination. Returns { gain, limiter, setLimiter(on), setLevel(l) } ----
+     The limiter is a soft clipper (a WaveShaper): signals below about half scale pass through unchanged and the peaks that a big boost creates are
+     rounded off towards +-1 instead of being cut flat by the speakers. (A DynamicsCompressorNode would add make-up gain of its own and make the
+     boost differ from the percentage shown.) */
+  var HEADROOM = 4;   // the shaper sees the boosted signal divided by this, so it can round off peaks up to 4x full scale
+  function softClipCurve(size) {
+    var c = new Float32Array(size), i, x, u;
+    for (i = 0; i < size; i++) { u = i / (size - 1) * 2 - 1; x = u * HEADROOM; c[i] = x / Math.pow(1 + Math.pow(Math.abs(x), 4), 0.25); }
+    return c;
+  }
   function buildGraph(ctx, source, level, limiter) {
-    var gain = ctx.createGain(), comp = ctx.createDynamicsCompressor();
+    var gain = ctx.createGain(), pre = ctx.createGain(), shaper = ctx.createWaveShaper();
     gain.gain.value = gainFor(level);
-    // a fast, hard limiter: catches the peaks a big boost creates instead of letting the speakers clip
-    comp.threshold.value = -4; comp.knee.value = 0; comp.ratio.value = 20; comp.attack.value = 0.002; comp.release.value = 0.12;
-    var api = { gain: gain, comp: comp, limiter: !!limiter };
+    pre.gain.value = 1 / HEADROOM; shaper.curve = softClipCurve(4096); shaper.oversample = '4x';
+    var graph = { gain: gain, limiter: !!limiter };
     function wire() {
-      try { gain.disconnect(); } catch (e) { /* not connected yet */ }
-      try { comp.disconnect(); } catch (e) { /* not connected yet */ }
-      if (api.limiter) { gain.connect(comp); comp.connect(ctx.destination); } else gain.connect(ctx.destination);
+      [gain, pre, shaper].forEach(function (n) { try { n.disconnect(); } catch (e) { /* not connected yet */ } });
+      if (graph.limiter) { gain.connect(pre); pre.connect(shaper); shaper.connect(ctx.destination); } else gain.connect(ctx.destination);
     }
     source.connect(gain); wire();
-    api.setLimiter = function (on) { api.limiter = !!on; wire(); };
-    api.setLevel = function (l) { gain.gain.setTargetAtTime(gainFor(l), ctx.currentTime, 0.015); };
-    return api;
+    graph.setLimiter = function (on) { graph.limiter = !!on; wire(); };
+    graph.setLevel = function (l) { gain.gain.setTargetAtTime(gainFor(l), ctx.currentTime, 0.015); };
+    return graph;
   }
 
-  var api = { DEFAULTS: DEFAULTS, PRESETS: PRESETS, merge: merge, clampLevel: clampLevel, stepLevel: stepLevel, gainFor: gainFor, badge: badge, decibels: decibels, buildGraph: buildGraph };
+  var api = { softClipCurve: softClipCurve, DEFAULTS: DEFAULTS, PRESETS: PRESETS, merge: merge, clampLevel: clampLevel, stepLevel: stepLevel,
+              gainFor: gainFor, badge: badge, decibels: decibels, buildGraph: buildGraph };
   root.MESVB = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof self !== 'undefined' ? self : this);
