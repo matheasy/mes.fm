@@ -3,7 +3,7 @@
 (function (root) {
   'use strict';
 
-  var DEFAULTS = { max: 600, step: 25, limiter: true, remember: true };
+  var DEFAULTS = { max: 600, step: 25, limiter: true, remember: true, mode: 'video' };   // mode: 'video' = boost the page's video player, 'tab' = the whole tab's sound
   var PRESETS = [100, 150, 200, 300, 400, 600];
 
   function merge(stored) {
@@ -13,6 +13,7 @@
       if ([5, 10, 25, 50].indexOf(Number(stored.step)) >= 0) out.step = Number(stored.step);
       if (typeof stored.limiter === 'boolean') out.limiter = stored.limiter;
       if (typeof stored.remember === 'boolean') out.remember = stored.remember;
+      if (stored.mode === 'video' || stored.mode === 'tab') out.mode = stored.mode;
     }
     return out;
   }

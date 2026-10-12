@@ -43,21 +43,39 @@ chrome.runtime.onMessage.addListener(function (m, sender, send) {
 
 chrome.tabs.onRemoved.addListener(function (tabId) { offscreen({ type: 'stop', tabId: tabId }); });
 
-// keyboard shortcuts
+// keyboard shortcuts: in video mode they inject the booster into the active tab's frames (the shortcut counts as the click that allows it) and
+// step the level; in whole-tab mode they use tab capture as before
+async function nudgeVideo(tab, dir, S) {
+  await chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ['shared.js', 'content.js'] });
+  var st = await chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, func: function () { return window.__mesvb ? window.__mesvb.status() : null; } });
+  var boosted = (st || []).filter(function (r) { return r.result && r.result.boosted; });
+  var cur = boosted.length ? Math.max.apply(null, boosted.map(function (r) { return r.result.level; })) : 100;
+  var level = V.stepLevel(cur, dir, S.step, S.max);
+  var res = await chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, func: function (l, lim) { return window.__mesvb ? window.__mesvb.set(l, lim) : null; }, args: [level, S.limiter] });
+  var ok = (res || []).some(function (r) { return r.result && r.result.applied; });
+  if (ok) paintBadge(tab.id, level);
+}
+
 async function nudge(dir) {
   var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   var tab = tabs && tabs[0]; if (!tab) return;
   var S = await settings();
-  var st = await offscreen({ type: 'get', tabId: tab.id }) || { active: false, level: 100 };
-  var level = V.stepLevel(st.active ? st.level : 100, dir, S.step, S.max);
-  if (st.active) { await offscreen({ type: 'set', tabId: tab.id, level: level }); paintBadge(tab.id, level); return; }
   try {
+    if (S.mode === 'video') { await nudgeVideo(tab, dir, S); return; }
+    var st = await offscreen({ type: 'get', tabId: tab.id }) || { active: false, level: 100 };
+    var level = V.stepLevel(st.active ? st.level : 100, dir, S.step, S.max);
+    if (st.active) { await offscreen({ type: 'set', tabId: tab.id, level: level }); paintBadge(tab.id, level); return; }
     var streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tab.id });
     await start(tab.id, streamId, level);
-  } catch (e) { /* a page the browser does not let us capture */ }
+  } catch (e) { /* a page the browser does not let us touch */ }
 }
 chrome.commands.onCommand.addListener(function (cmd) {
   if (cmd === 'boost-up') nudge(1);
   else if (cmd === 'boost-down') nudge(-1);
-  else if (cmd === 'boost-off') chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) { if (tabs && tabs[0]) offscreen({ type: 'stop', tabId: tabs[0].id }); });
+  else if (cmd === 'boost-off') chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
+    var tab = tabs && tabs[0]; if (!tab) return;
+    offscreen({ type: 'stop', tabId: tab.id });
+    try { await chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, func: function () { if (window.__mesvb) window.__mesvb.set(100); } }); } catch (e) { /* ignore */ }
+    chrome.action.setBadgeText({ tabId: tab.id, text: '' });
+  });
 });

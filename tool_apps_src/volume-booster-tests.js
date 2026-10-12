@@ -2,9 +2,9 @@
 const V = require('../mes.fm/volume-booster/extension/shared.js');
 let n = 0, bad = 0;
 function eq(a, b, m) { n++; if (JSON.stringify(a) !== JSON.stringify(b)) { bad++; console.log('FAIL', m, 'got', JSON.stringify(a), 'want', JSON.stringify(b)); } }
-eq(V.merge(null), { max: 600, step: 25, limiter: true, remember: true }, 'defaults');
-eq(V.merge({ max: 400, step: 10, limiter: false, remember: false }), { max: 400, step: 10, limiter: false, remember: false }, 'valid settings kept');
-eq(V.merge({ max: 999, step: 7, limiter: 'no', remember: 1 }), { max: 600, step: 25, limiter: true, remember: true }, 'bad settings fall back');
+eq(V.merge(null), { max: 600, step: 25, limiter: true, remember: true, mode: 'video' }, 'defaults');
+eq(V.merge({ max: 400, step: 10, limiter: false, remember: false, mode: 'tab' }), { max: 400, step: 10, limiter: false, remember: false, mode: 'tab' }, 'valid settings kept');
+eq(V.merge({ max: 999, step: 7, limiter: 'no', remember: 1, mode: 'x' }), { max: 600, step: 25, limiter: true, remember: true, mode: 'video' }, 'bad settings fall back');
 eq(V.merge('junk'), V.DEFAULTS, 'junk');
 eq(V.clampLevel(150, 600), 150, 'in range'); eq(V.clampLevel(-5, 600), 0, 'floor'); eq(V.clampLevel(9999, 400), 400, 'ceiling'); eq(V.clampLevel('x', 600), 100, 'junk -> 100'); eq(V.clampLevel(149.6, 600), 150, 'rounds');
 eq(V.stepLevel(100, 1, 25, 600), 125, 'step up'); eq(V.stepLevel(100, -1, 25, 600), 75, 'step down'); eq(V.stepLevel(590, 1, 25, 600), 600, 'top'); eq(V.stepLevel(10, -1, 25, 600), 0, 'bottom');
