@@ -345,8 +345,8 @@ APPS = {
     # Volume Booster / Text Size: download + install pages of MES's own browser extensions (sources in mes.fm/<slug>/extension/, zipped by
     # build_<name>_extension.py; tests node tool_apps_src/<name>-tests.js). app.js only fills in the version from the extension's manifest.
     "volume-booster": dict(title="MES Volume Booster", page_title="Volume Booster",
-                           tag="Make any tab louder, up to 600%.", accent="#b45309", dark="#7c3a06", tint="#fdf0e1",
-                           desc="Free MES Volume Booster browser extension for Chrome, Brave and Edge: boost the volume of any tab up to 600% with a soft limiter, presets, keyboard shortcuts and per-site memory. Private, no tracking.",
+                           tag="Make quiet videos louder, up to 600%.", accent="#b45309", dark="#7c3a06", tint="#fdf0e1",
+                           desc="Free MES Volume Booster browser extension for Chrome, Brave and Edge: make quiet videos (YouTube and more) louder than the site allows, up to 600%, with a soft limiter, presets, keyboard shortcuts and per-site memory. Private, no tracking.",
                            js_v="1"),
     "text-size": dict(title="MES Text Size", page_title="Text Size",
                       tag="Bigger or smaller text on any website.", accent="#0e7490", dark="#0b5568", tint="#e3f4f8",

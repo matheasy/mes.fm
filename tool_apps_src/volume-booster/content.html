@@ -1,7 +1,7 @@
 	<div class="tu" id="vb">
 		<div class="tu-card tu-card--tint">
-			<h2 style="margin-top:0;">Make any tab louder, up to 600%</h2>
-			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave and Edge. Quiet video, a soft-spoken lecture, a podcast recorded too low: open the popup, drag the slider (or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd>) and that tab gets louder than the browser's normal maximum. It works on <b>any sound the tab plays</b>, including video and audio from other sites, and a soft limiter keeps the loud peaks from clipping.</p>
+			<h2 style="margin-top:0;">Make quiet videos louder, up to 600%</h2>
+			<p style="margin-top:0;">A free browser extension by MES for Chrome, Brave and Edge, made for <b>video playback</b>: a quiet YouTube video, a soft-spoken lecture, a stream recorded too low. Open the popup, drag the slider (or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd>) and the video plays louder than the site's own volume limit allows. The site's volume control keeps working and the boost is added on top, and a soft limiter keeps the loud peaks from clipping.</p>
 			<div class="vb-btns">
 				<a class="tu-btn tu-btn--primary" id="vb-dl" href="/volume-booster/mes-volume-booster.zip" download>Download <span id="vb-ver">v1.0.0</span> (zip)</a>
 				<a class="tu-btn tu-btn--ghost" href="#vb-install">How to install</a>
@@ -25,10 +25,11 @@
 		<h2>How to use it</h2>
 		<div class="tu-card">
 			<ul class="vb-list">
-				<li>Open the page with the quiet sound, click the toolbar icon and drag the slider or tap a preset (150%, 200%, 300%, 400%, 600%). The icon shows the level as a badge.</li>
+				<li>Open the page with the quiet video, start it, click the toolbar icon and drag the slider or tap a preset (150%, 200%, 300%, 400%, 600%). The icon shows the level as a badge.</li>
+				<li><b>Two modes</b> (the switch at the top of the popup): <b>Video</b> (the default) boosts the video player on the page, which covers YouTube and most video sites, with no recording dot. <b>Whole tab</b> boosts all the sound of the tab: use it for a video that sits inside another site's frame, for audio-only pages or when Video mode says it cannot boost a video.</li>
 				<li><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd> / <kbd>Down</kbd> make the current tab louder / quieter without opening the popup. Change the shortcuts at <code>chrome://extensions/shortcuts</code>.</li>
-				<li><b>Turn off the boost on this tab</b> in the popup to go back to normal and release the tab.</li>
-				<li><b>Settings:</b> the highest boost (200%, 400% or 600%), the shortcut step, the soft limiter, and whether it remembers each site's last level.</li>
+				<li>Set the slider back to 100% to return to normal. In Whole tab mode there is also a button to turn the boost off and release the tab.</li>
+				<li><b>Settings:</b> the default mode, the highest boost (200%, 400% or 600%), the shortcut step, the soft limiter, and whether it remembers each site's last level.</li>
 			</ul>
 		</div>
 
@@ -36,28 +37,29 @@
 		<div class="tu-card">
 			<ul class="vb-list">
 				<li><b>Protect your ears and speakers.</b> A boost of 300% is about +9.5 dB and 600% about +15.6 dB. Start low and go up slowly, especially with headphones. The popup shows the boost in decibels.</li>
-				<li><b>Why the browser shows a recording dot.</b> To make a tab louder the extension receives that tab's sound from the browser (the browser's tab-capture feature), changes the volume and plays it back. Chrome marks such a tab with a small indicator. Nothing is recorded or sent anywhere.</li>
+				<li><b>The site's own volume still works.</b> The boost multiplies whatever the video's volume slider is set to, so for the most headroom keep the site's slider at its top.</li>
+				<li><b>Why Whole tab mode shows a recording dot.</b> To make a whole tab louder the extension receives that tab's sound from the browser (its tab-capture feature), changes the volume and plays it back, and Chrome marks such a tab with a small indicator. Nothing is recorded or sent anywhere. Video mode does not need this and shows no dot.</li>
 				<li><b>The soft limiter</b> rounds off the loud peaks that a big boost creates instead of letting them clip. Quiet sound is boosted by exactly the percentage shown. Turn it off for the raw boost.</li>
-				<li><b>Limits.</b> It cannot boost browser pages (<code>chrome://</code>), the Web Store, or a tab that another extension is already capturing. Chrome 116 or newer is needed. Boosting is per tab: other tabs stay as they are.</li>
+				<li><b>Limits.</b> It cannot boost browser pages (<code>chrome://</code>) or the Web Store. Video mode only touches videos that the page itself serves (the normal case for YouTube and other streaming sites); a video file loaded from another site that does not allow it cannot be routed safely, and the popup then suggests Whole tab mode. If the page has not been clicked yet the browser keeps its audio engine paused: click the page once and move the slider again. Whole tab mode needs Chrome 116 or newer and does not work on a tab that another extension is already capturing. Boosting is per tab: other tabs stay as they are.</li>
 			</ul>
 		</div>
 
 		<h2>Permissions</h2>
 		<div class="tu-card">
-			<p style="margin:0;"><code>tabCapture</code> gets the sound of the tab you boost (only after you click the icon or press the shortcut); <code>offscreen</code> lets a hidden page do the audio processing; <code>activeTab</code> lets the popup know which tab and site you are on; <code>storage</code> keeps your settings and remembered levels. It does <b>not</b> ask to read any website's content.</p>
+			<p style="margin:0;"><code>activeTab</code> and <code>scripting</code> let the extension add the booster to the page you are on, only when you click the icon or press the shortcut (Video mode); <code>tabCapture</code> and <code>offscreen</code> are used only in Whole tab mode to receive the tab's sound and process it in a hidden page; <code>storage</code> keeps your settings and remembered levels. It does <b>not</b> ask to read your data on all websites and never reads page content.</p>
 		</div>
 
 		<div class="tu-seo">
 			<h2>Questions</h2>
 			<dl>
 				<dt>Why is there no sound after I turn the boost on?</dt>
-				<dd>Another extension or tool may be capturing the same tab. Close it, reload the tab and try again. If the page's audio comes from another tab or a different app, boost that one instead.</dd>
+				<dd>In Whole tab mode another extension or tool may be capturing the same tab: close it, reload the tab and try again. In Video mode make sure the video is the one playing the sound (not another tab) and that the page was clicked once. If a video is inside another site's frame, switch to Whole tab.</dd>
 				<dt>Why does a very loud boost sound harsh?</dt>
 				<dd>Boosting amplifies noise and any distortion that is already in the recording, and the limiter can only smooth the peaks. Use the lowest level that is comfortable.</dd>
 				<dt>Will it make my whole computer louder?</dt>
-				<dd>No, only the tab you pick. Your system volume is not changed.</dd>
+				<dd>No, only the video or tab you pick. Your system volume is not changed.</dd>
 				<dt>Is it open source?</dt>
-				<dd>The whole extension is plain, readable JavaScript served from this site: <a href="/volume-booster/extension/background.js">background.js</a>, <a href="/volume-booster/extension/offscreen.js">offscreen.js</a>, <a href="/volume-booster/extension/shared.js">shared.js</a>, <a href="/volume-booster/extension/manifest.json">manifest.json</a>.</dd>
+				<dd>The whole extension is plain, readable JavaScript served from this site: <a href="/volume-booster/extension/content.js">content.js</a>, <a href="/volume-booster/extension/background.js">background.js</a>, <a href="/volume-booster/extension/offscreen.js">offscreen.js</a>, <a href="/volume-booster/extension/shared.js">shared.js</a>, <a href="/volume-booster/extension/manifest.json">manifest.json</a>.</dd>
 			</dl>
 			<p>More free add-ons are listed on <a href="/browser">Browser Extensions</a>.</p>
 		</div>
