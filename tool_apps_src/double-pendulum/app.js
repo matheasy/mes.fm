@@ -15,10 +15,10 @@
 	function sig(x, d) { x = +x; if (!isFinite(x)) return "–"; if (x === 0) return "0"; var a = Math.abs(x); if (a < 1e-3 || a >= 1e5) return x.toExponential(Math.max(0, (d || 3) - 1)).replace("e", "×10^").replace("^+", "^").replace(/\^(-?\d+)/, function (m, e) { return String(e).replace(/-/g, "⁻").replace(/\d/g, function (c) { return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c]; }); }); return Number(x.toPrecision(d || 3)).toString(); }
 
 	var tab = /^(sim|map)$/.test(q.get("tab") || "") ? q.get("tab") : "sim";
-	function setTab(t) {
+	function setTab(t, init) {
 		tab = t; Array.prototype.forEach.call(root.querySelectorAll("[data-tab]"), function (b) { b.setAttribute("aria-selected", b.dataset.tab === t ? "true" : "false"); });
 		Array.prototype.forEach.call(root.querySelectorAll("[data-panel]"), function (p) { p.hidden = p.dataset.panel !== t; });
-		try { var u = new URL(location.href); u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {}
+		if (!init) try { var u = new URL(location.href); if (t === "sim") u.searchParams.delete("tab"); else u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {}
 		setTimeout(function () { onResize(); if (t === "map") startMap(false); }, 0);
 	}
 	Array.prototype.forEach.call(root.querySelectorAll("[data-tab]"), function (b) { b.onclick = function () { setTab(b.dataset.tab); }; });
@@ -232,7 +232,7 @@
 	["m1", "m2", "l1", "l2", "g", "c"].forEach(function (k) { $("dp-" + k).value = P[k]; $("dp-" + k + "-v").textContent = k === "c" ? (+P[k]).toFixed(2) : String(Math.round(P[k] * 100) / 100); });
 	$("dp-a1").value = a1; $("dp-a2").value = a2; $("dp-n").value = ncop; $("dp-e").value = eps; $("dp-tr").value = trailN; $("dp-tr-v").textContent = TRAIL_NAME[trailN]; $("dp-n-v").textContent = ncop; $("dp-e-v").textContent = "10^" + eps.toFixed(1); $("dp-a1-v").textContent = a1.toFixed(1); $("dp-a2-v").textContent = a2.toFixed(1); $("dp-spd-v").textContent = SPN[speedI];
 	$("dp-o-trail").checked = flags.trail; $("dp-o-arms").checked = flags.arms; $("dp-o-chart").checked = flags.chart; $("dp-note").textContent = D.PRESETS[3].note; modesNote();
-	seed(); setTab(tab); window.addEventListener("resize", onResize); if (window.ResizeObserver) new ResizeObserver(onResize).observe(stage.parentNode); setTimeout(onResize, 0);
+	seed(); setTab(tab, true); window.addEventListener("resize", onResize); if (window.ResizeObserver) new ResizeObserver(onResize).observe(stage.parentNode); setTimeout(onResize, 0);
 	requestAnimationFrame(function (t) { last = t; requestAnimationFrame(frame); });
 	window.__pend = { get copies() { return copies; }, get hist() { return hist; }, get P() { return P; }, seed: seed };
 })();

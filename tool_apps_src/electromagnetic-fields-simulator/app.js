@@ -26,11 +26,11 @@
 	/* ---------- tabs ---------- */
 	var TABS = ["es", "ms", "pt", "wv", "pw"], tab = TABS.indexOf(q.get("tab")) >= 0 ? q.get("tab") : (TABS.indexOf(saved.tab) >= 0 ? saved.tab : "es");
 	var showers = {};
-	function setTab(t) {
+	function setTab(t, init) {
 		tab = t; sset({ tab: t });
 		Array.prototype.forEach.call(root.querySelectorAll("[data-tab]"), function (b) { b.setAttribute("aria-selected", b.dataset.tab === t ? "true" : "false"); });
 		Array.prototype.forEach.call(root.querySelectorAll("[data-panel]"), function (p) { p.hidden = p.dataset.panel !== t; });
-		try { var u = new URL(location.href); u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {}
+		if (!init) try { var u = new URL(location.href); if (t === "es") u.searchParams.delete("tab"); else u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {}
 		setTimeout(function () { if (showers[t]) showers[t](); }, 0);
 	}
 	Array.prototype.forEach.call(root.querySelectorAll("[data-tab]"), function (b) { b.onclick = function () { setTab(b.dataset.tab); }; });
@@ -474,6 +474,6 @@
 	if (q.get("sp") && SPEC[q.get("sp")]) { PT.sp = q.get("sp"); PT.Bk = num(q.get("B"), -4, 1, 0); PT.E = num(q.get("E"), -1, 1, 0); PT.vk = num(q.get("v"), 3, 8.46, 6); PT.a = num(q.get("a"), -180, 180, 0); if (/^(auto|no|yes)$/.test(q.get("rel") || "")) PT.rel = q.get("rel"); } else { PT.vk = 6; PT.E = 0; }
 	syncEs(); syncMs(); ptSync(); ptLaunch(); $("em-pt-note").textContent = PT_PRE[0].note; $("em-wv-l").value = WV.lam; $("em-wv-l-v").textContent = WV.lam; $("em-wv-e").value = WV.n; $("em-wv-e-v").textContent = WV.n.toFixed(2); $("em-wv-b").value = WV.brush; $("em-wv-b-v").textContent = WV.brush; $("em-wv-s").value = WV.speed; $("em-wv-s-v").textContent = WV.speed; $("em-wv-scale").value = String(WV.scale);
 	wvLoad(WV_PRE[0]); pwSync(); pwReadouts();
-	setTab(tab); requestAnimationFrame(function (t) { last = t; requestAnimationFrame(frame); });
+	setTab(tab, true); requestAnimationFrame(function (t) { last = t; requestAnimationFrame(frame); });
 	window.__em = { ES: ES, MS: MS, PT: PT, WV: WV, Y: Y, PW: PW };
 })();

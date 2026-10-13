@@ -44,7 +44,7 @@
 		tab = t; sset({ tab: t });
 		Array.prototype.forEach.call(document.querySelectorAll("#bh [data-tab]"), function (b) { b.setAttribute("aria-selected", b.dataset.tab === t ? "true" : "false"); });
 		Array.prototype.forEach.call(document.querySelectorAll("#bh [data-panel]"), function (p) { p.hidden = p.dataset.panel !== t; });
-		if (!keepUrl && history.replaceState) { try { var u = new URL(location.href); u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {} }
+		if (!keepUrl && history.replaceState) { try { var u = new URL(location.href); if (t === "light") u.searchParams.delete("tab"); else u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {} }
 		setTimeout(function () { if (loops[t] && loops[t].show) loops[t].show(); }, 0);
 	}
 	Array.prototype.forEach.call(document.querySelectorAll("#bh [data-tab]"), function (b) { b.onclick = function () { setTab(b.dataset.tab); }; });

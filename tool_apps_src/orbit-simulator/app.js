@@ -19,11 +19,11 @@
 
 	/* ---------- tabs ---------- */
 	var tab = /^(sim|calc)$/.test(q.get("tab") || "") ? q.get("tab") : "sim";
-	function setTab(t) {
+	function setTab(t, init) {
 		tab = t; Array.prototype.forEach.call(root.querySelectorAll("[data-tab]"), function (b) { b.setAttribute("aria-selected", b.dataset.tab === t ? "true" : "false"); });
 		Array.prototype.forEach.call(root.querySelectorAll("[data-panel]"), function (p) { p.hidden = p.dataset.panel !== t; });
 		if (t === "sim") setTimeout(onResize, 0);
-		try { var u = new URL(location.href); u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {}
+		if (!init) try { var u = new URL(location.href); if (t === "sim") u.searchParams.delete("tab"); else u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {}
 	}
 	Array.prototype.forEach.call(root.querySelectorAll("[data-tab]"), function (b) { b.onclick = function () { setTab(b.dataset.tab); }; });
 
@@ -342,7 +342,7 @@
 	var initId = O.PRESETS.some(function (p) { return p.id === q.get("p"); }) ? q.get("p") : (O.PRESETS.some(function (p) { return p.id === saved.preset; }) ? saved.preset : "earth-sun"), custom = null, ctime = 0, cw = 0;
 	if (q.get("s")) { try { var d = JSON.parse(b64d(q.get("s"))); if (d && Array.isArray(d.b) && d.b.length && d.b.length < 60 && O.PRESETS.some(function (p) { return p.id === d.p; })) { initId = d.p; custom = d.b.map(function (b) { return [String(b[0]).slice(0, 30), +b[1], +b[2], +b[3], +b[4], +b[5], String(b[6]).replace(/[^#\w]/g, ""), +b[7] || 0, b[8]]; }); ctime = +d.t || 0; cw = +d.w || 0; } } catch (e) {} }
 	resizeInit(); loadSystem(initId, custom); if (custom) { sim.t = ctime; startState = null; if (cw) { view.S = Math.min(W, H) * 1.45 / cw; } }
-	setTab(tab); requestAnimationFrame(function (t) { last = t; requestAnimationFrame(frame); });
+	setTab(tab, true); requestAnimationFrame(function (t) { last = t; requestAnimationFrame(frame); });
 	function resizeInit() { var wrap = stage.parentNode; wrap.setAttribute("data-mes-free", "1"); W = wrap.clientWidth || 600; H = Math.round(W / aspect); }
 	window.addEventListener("resize", onResize); if (window.ResizeObserver) new ResizeObserver(onResize).observe(stage.parentNode); setTimeout(onResize, 0);
 	var pinned = document.body.classList; new MutationObserver(function () {}).observe(document.body, { attributes: true });
