@@ -625,7 +625,8 @@
       setTimeout(go, 15000);
     })();
     </script>
-<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD -->  <link rel="stylesheet" href="/main_js/shot-layout.css?v=1">
+</head>
 <body class="dark">
 
   <div id="compact-nav" aria-hidden="true" style="display:none">
@@ -732,7 +733,14 @@
 
       <h2>Screenshots</h2>
       <p>For reference here are screenshots from the video.</p>
-      <div class="screenshot-grid">
+      <div class="shot-layout" role="group" aria-label="Screenshot layout">
+        <span>Layout:</span>
+        <button type="button" data-cols="auto" aria-pressed="true">Auto</button>
+        <button type="button" data-cols="1" aria-pressed="false">1 column</button>
+        <button type="button" data-cols="2" aria-pressed="false">2 columns</button>
+        <button type="button" data-cols="3" aria-pressed="false">3 columns</button>
+      </div>
+      <div class="screenshot-grid" data-cols="auto">
         <img src="https://files.peakd.com/file/peakd-hive/mes/23tGeHgHMvocwXrqWYNadN5iJKVdgCd5hwJ6wWL99T7C4uPKcoU8N2FuiugYZkrQbuvGm.png" alt="" loading="lazy">
         <img src="https://files.peakd.com/file/peakd-hive/mes/23zGc6YFhEbuB3xbq3dB7Eeai266aAMzeLQBqEyPhZtC9u5mrXTzQeumP86pCo58zi2tm.png" alt="" loading="lazy">
         <img src="https://files.peakd.com/file/peakd-hive/mes/23xAJjmTBgzAwuSBvbxa2cDP9Nfjf7k6nLMEMsFqHcR2BouP8RBLu9ssmXw1Eiu2Uow3f.png" alt="" loading="lazy">
@@ -1195,5 +1203,6 @@
     update();
   })();
 </script>
-<!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=1" defer></script><!-- /MES-ASIDE-JS --><script src="/main_js/site-search.js?v=1" defer></script><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+<!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=1" defer></script><!-- /MES-ASIDE-JS --><script src="/main_js/site-search.js?v=1" defer></script><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS -->  <script src="/main_js/shot-layout.js?v=1" defer></script>
+</body>
 </html>

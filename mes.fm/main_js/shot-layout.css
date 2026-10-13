@@ -1,0 +1,13 @@
+/* Screenshot galleries: Auto / 1 / 2 / 3 columns (add_shot_layout.py; same look as mes.fm/hive-crypto-tutorial). */
+.screenshot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 8px; margin: 0.6em 0 1.4em; }
+.screenshot-grid[data-cols="1"] { grid-template-columns: minmax(0, 1fr); }
+.screenshot-grid[data-cols="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.screenshot-grid[data-cols="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 560px) { .screenshot-grid[data-cols="auto"], .screenshot-grid[data-cols="3"] { grid-template-columns: minmax(0, 1fr); } }
+.screenshot-grid img { width: 100%; height: auto; margin: 0; border-radius: 4px; display: block; }
+.shot-layout { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0.4em 0 0.6em; font-size: 0.9em; }
+.shot-layout button { font: inherit; padding: 0.25em 0.8em; border-radius: 999px; border: 1px solid #2c6fbb; background: transparent; color: inherit; cursor: pointer; }
+.shot-layout button[aria-pressed="true"] { background: #2c6fbb; color: #fff; }
+/* pages with many galleries keep the switch in view just under the floating bar */
+.shot-layout--sticky { position: sticky; top: 58px; z-index: 6; padding: 6px 0; background: #fff; }
+body.dark .shot-layout--sticky, body.dark-mode .shot-layout--sticky { background: #1a1a1a; }
