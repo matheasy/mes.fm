@@ -1,4 +1,18 @@
 {
+  "https://mes.fm/911planesresearch-telegram": {
+    "image": "https://mes.fm/911planesresearch-telegram/img/planes-research.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-2vwcfciug"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35644"
+      }
+    ]
+  },
   "https://mes.fm/911-3d-print-pin": {
     "image": "https://snipboard.io/rRJXk6.jpg",
     "watchLinks": [],
