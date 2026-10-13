@@ -117,16 +117,38 @@
     return out;
   }
 
+  // Text selected inside a form field. window.getSelection() is empty for <textarea> / <input>, and editors such as CodeMirror 5
+  // (PeakD drafts) keep the selection in a hidden textarea whose value *is* the selected text, so read the focused field's own
+  // selection. (A selection in a contenteditable, e.g. Gmail or CodeMirror 6, is a normal DOM selection and needs none of this.)
+  function fieldText() {
+    var el = document.activeElement, guard = 0;
+    while (el && guard++ < 8) {
+      if (el.shadowRoot && el.shadowRoot.activeElement) el = el.shadowRoot.activeElement;
+      else if (el.tagName === 'IFRAME') {
+        var d = null; try { d = el.contentDocument; } catch (e) { /* cross-origin */ }
+        if (d && d.activeElement && d.activeElement !== d.body) el = d.activeElement; else break;
+      } else break;
+    }
+    if (!el || el.nodeType !== 1) return '';
+    if (el.tagName !== 'TEXTAREA' && !(el.tagName === 'INPUT' && /^(text|search|url|email|tel)?$/i.test(el.type || ''))) return '';
+    var v = el.value || '', a = null, b = null;
+    try { a = el.selectionStart; b = el.selectionEnd; } catch (e) { /* ignore */ }
+    return a != null && b > a ? v.slice(a, b) : '';
+  }
+
   // mode: 'selection' | 'page' | 'auto' (selection if there is one, else page). Returns false if there is nothing to read.
   function collect(mode) {
     memo = [new Map(), new Map()]; vmemo = new Map();
     var sel = window.getSelection(), items, startPos = 0, caret = null;
     var hasSel = sel && sel.rangeCount && !sel.isCollapsed && /\S/.test(sel.toString());
-    if (mode === 'auto') mode = hasSel ? 'selection' : 'page';
+    var ft = hasSel ? '' : fieldText();
+    if (mode === 'auto') mode = (hasSel || /\S/.test(ft)) ? 'selection' : 'page';
     if (mode === 'selection') {
-      if (!hasSel) return false;
-      var r = sel.getRangeAt(0), root = r.commonAncestorContainer;
-      items = textNodes(root.nodeType === 1 ? root : root.parentNode, r, false);
+      if (hasSel) {
+        var r = sel.getRangeAt(0), root = r.commonAncestorContainer;
+        items = textNodes(root.nodeType === 1 ? root : root.parentNode, r, false);
+      } else if (/\S/.test(ft)) items = [{ node: null, t: ft, base: 0, b: 0 }];   // field text has no DOM nodes to highlight, like the page title
+      else return false;
     } else {
       if (sel && sel.rangeCount && sel.isCollapsed && sel.anchorNode && sel.anchorNode.nodeType === 3) caret = { node: sel.anchorNode, off: sel.anchorOffset };
       items = textNodes(pickRoot(), null, true);
@@ -608,7 +630,7 @@
       else if (m.mesra === 'stop') { stopAll(); send({ ok: 1 }); }
       else if (m.mesra === 'get') {
         var sel = window.getSelection();
-        send({ active: st.active, playing: st.playing, idx: st.idx, total: st.words ? st.words.length : 0, hasSelection: !!(sel && !sel.isCollapsed && /\S/.test(sel.toString())) });
+        send({ active: st.active, playing: st.playing, idx: st.idx, total: st.words ? st.words.length : 0, hasSelection: !!(sel && !sel.isCollapsed && /\S/.test(sel.toString())) || /\S/.test(fieldText()) });
       }
     });
   } catch (e) { /* ignore */ }

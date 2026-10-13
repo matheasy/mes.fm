@@ -145,13 +145,12 @@ const PAGES = [
       "Written Hutchison Effect articles from MES: the 1983 Los Alamos report appendix, Nancy Hutchison's physics report, stop motion photos of levitating water and rare family photos of John Hutchison's family.",
   },
   {
+    // Tile only: the page is now a hand-made mirror of the Hive video post (mes.fm/hutchison-debunking-debunkers, not written by this build).
     slug: "hutchison-debunking-debunkers",
-    sectionId: "hutchison-debunking-debunkers",
+    href: "/hutchison-debunking-debunkers",
     iconVersion: 3,
-    tileLabel: "Debunking “Debunkers”",
-    title: "Debunking the “Debunkers” of the Hutchison Effect",
-    description:
-      "Debunking the “debunkers” of the Hutchison Effect: a video response to the false claims of Robert Murray-Smith and Ace Baker, with links to every platform.",
+    tileOnly: true,
+    tileLabel: "Debunking \u201cDebunkers\u201d",
   },
   {
     slug: "hutchison-news",

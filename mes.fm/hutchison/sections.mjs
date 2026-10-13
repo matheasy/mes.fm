@@ -114,16 +114,6 @@ export const SECTIONS = [
     ],
   },
   {
-    id: "hutchison-debunking-debunkers",
-    title: "Debunking \"Debunkers\"",
-    single: true,
-    items: [
-      { title: "Hutchison Effect: Debunking the \"Debunkers\" (Liars) Robert Murray-Smith and Ace Baker",
-        image: "https://files.peakd.com/file/peakd-hive/mes/242Nktq4gBzhMiryTReQ8hCXywwgpx1obUvGhBiyLQKFyH6ebN46yGnUY1LCYoEqNL7qb.jpeg",
-        links: [["Hive", "https://peakd.com/hive-128780/@mes/wbvdabyb"], ["3Speak", "https://3speak.tv/watch?v=mes/wbvdabyb"], ["YouTube", "https://youtu.be/Po0vWGJDu6M"], ["BitChute", "https://bitchute.com/video/DP7JfOptA756/"], ["Odysee", "https://odysee.com/@mes:8/Hutchison-Effect-Debunking-Liars-Robert-Murray-Smith-Ace-Baker:f"], ["Rumble", "https://rumble.com/v5bupqs-hutchison-effect-debunking-the-debunkers-liars-robert-murray-smith-and-ace-.html"]] },
-    ],
-  },
-  {
     id: "hutchison-news",
     title: "News Reels",
     items: [
