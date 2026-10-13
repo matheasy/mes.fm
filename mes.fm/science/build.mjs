@@ -155,6 +155,15 @@ const PAGES = [
     tileLabel: "Black Hole Simulator",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/electromagnetic-fields-simulator-icon.jpg (the user's Grok tile art).
+    slug: "electromagnetic-fields-simulator",
+    section: "tools",
+    href: "/electromagnetic-fields-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Electromagnetic Fields Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/double-pendulum-icon.jpg (the real flip-time chaos map, rendered from the tool's own maths).
     slug: "double-pendulum",
     section: "tools",
