@@ -15,6 +15,27 @@
 
     var INDEX_URL = "/search/index.json";
     var data = null, loading = null, prepared = null;
+    var HC_CSS = [
+        ".hc-more{display:none}",
+        ".hc-group #siteReadBtn{order:1}.hc-group #textSizeDownBtn,.hc-group #textSizeDown{order:2}.hc-group #textSizeUpBtn,.hc-group #textSizeUp{order:3}.hc-group #siteSearchBtn{order:4}.hc-group #themeToggleBtn,.hc-group #themeToggle{order:5}.hc-group .hc-more{order:0}",
+        "@media (max-width:768px),(pointer:coarse){",
+        ".hc-group{gap:8px !important;flex-wrap:wrap !important;justify-content:flex-end !important;max-width:calc(100vw - 76px) !important}",
+        ".hc-group .hc-btn{width:44px !important;height:44px !important;font-size:1.05em !important}",
+        ".hc-group .hc-btn svg{width:22px !important;height:22px !important}",
+        ".hc-group .hc-more{display:flex !important}.hc-group .hc-more svg{transition:transform .2s}.hc-group .hc-more[aria-expanded=true] svg{transform:rotate(180deg)}",
+        ".hc-group.hc-collapsed .hc-x{display:none !important}",
+        "body.hc-dc #header{padding-top:3.7em !important}body.hc-dc #header-controls{top:.4em;right:56px}",
+        "#compact-nav{height:60px !important}",
+        "body.is-stuck .hc-group{top:7px !important;right:54px !important;bottom:auto !important;transform:none !important}",
+        "body.is-stuck #navbar-button{top:7px !important}body.is-stuck #navbar.hide{top:64px !important}",
+        "}",
+        "@media (max-width:380px){.hc-group{gap:6px !important}.hc-group .hc-btn{width:40px !important;height:40px !important}body.is-stuck .hc-group{top:9px !important}}",
+        "@media (max-width:480px){",
+        "body.hc-hub .header{padding-bottom:58px !important}body.hc-hub:not(.is-stuck) #header-controls{bottom:6px !important}",
+        "body.hc-math .top-bar{padding-bottom:58px !important}body.hc-math:not(.is-stuck) .header-controls{bottom:6px !important}",
+        "}"
+    ].join("");
+    var mobMQ = window.matchMedia ? window.matchMedia("(max-width:768px),(pointer:coarse)") : null;
 
     /* ---------- engine ---------- */
     function norm(s) {
@@ -155,6 +176,7 @@
             group.insertBefore(rbtn, btn);
             rbtn.addEventListener("click", readAloud);
         }
+        headerMore();
         reserve();
         var rt;
         window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(reserve, 100); });
@@ -162,9 +184,43 @@
     }
     if (!attach()) document.addEventListener("DOMContentLoaded", attach);
 
+    /* ---- phones / touch: recommended 44px header buttons + a chevron that shows or hides the extras (read aloud, A-, A+).
+       Search and the theme button stay visible. The choice is remembered (localStorage hdrMore). Desktop is unchanged. Works for the
+       three header families: display-controls.js pages (body.hc-dc), the hub pages with #header-controls (hc-hub) and the math-hub
+       shell with .header-controls (hc-math). */
+    function headerMore() {
+        if (!group || document.getElementById("hdrMoreBtn")) return;
+        var st = document.createElement("style"); st.id = "mes-hdr-more-css"; st.textContent = HC_CSS; document.head.appendChild(st);
+        group.classList.add("hc-group");
+        document.body.classList.add(document.getElementById("mes-display-controls-css") ? "hc-dc" : group.id === "header-controls" ? "hc-hub" : "hc-math");
+        ["siteReadBtn", "textSizeDownBtn", "textSizeUpBtn", "textSizeDown", "textSizeUp"].forEach(function (id) { var e = document.getElementById(id); if (e) e.classList.add("hc-x"); });
+        Array.prototype.forEach.call(group.querySelectorAll("button"), function (b) { b.classList.add("hc-btn"); });
+        var sib = group.querySelector("button"), more = document.createElement("button");
+        more.type = "button"; more.id = "hdrMoreBtn"; more.className = (sib ? sib.className.replace(/\bhc-x\b/, "") : "header-control-btn") + " hc-more";
+        more.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        group.insertBefore(more, group.firstChild);
+        function set(on, save) {
+            group.classList.toggle("hc-collapsed", !on); more.setAttribute("aria-expanded", on ? "true" : "false");
+            var t = on ? "Hide extra buttons" : "Show more buttons: read aloud, text size"; more.setAttribute("aria-label", t); more.title = t;
+            if (save) try { localStorage.setItem("hdrMore", on ? "1" : "0"); } catch (e) { /* ignore */ }
+            reserve();
+        }
+        var was = false; try { was = localStorage.getItem("hdrMore") === "1"; } catch (e) { /* ignore */ }
+        set(was, false);
+        more.addEventListener("click", function () { set(more.getAttribute("aria-expanded") !== "true", true); });
+        if (mobMQ && mobMQ.addEventListener) mobMQ.addEventListener("change", reserve);
+    }
+
     /* the headers reserve room on the right for the controls (padding-right 150-180px); add the button's share */
     function reserve() {
-        if (!btn || !btn.offsetWidth) return;
+        if (!btn || !btn.offsetWidth && !(group.classList.contains("hc-group") && mobMQ && mobMQ.matches)) return;
+        if (group.classList.contains("hc-group") && mobMQ && mobMQ.matches) {   /* phones: the stuck bar needs room for exactly the visible buttons + the hamburger */
+            var bar = document.getElementById("compact-nav");
+            if (bar) { bar.style.removeProperty("padding-right"); bar.style.setProperty("padding-right", (group.offsetWidth + 54 + 14) + "px", "important"); }
+            var pe = group.parentElement, lt = document.querySelector("#header .logo-text-container");
+            if (pe) pe.style.removeProperty("padding-right"); if (lt) lt.style.removeProperty("padding-right");
+            return;
+        }
         var gs = getComputedStyle(group);
         var gap = parseFloat(gs.columnGap) || parseFloat(gs.gap) || 6;
         var extra = btn.offsetWidth + gap + (rbtn && rbtn.offsetWidth ? rbtn.offsetWidth + gap : 0);
