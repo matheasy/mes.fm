@@ -17,6 +17,7 @@ const S2 = R.merge({ active: 'default', profiles: R.builtins(), siteProfiles: { 
 eq(R.resolveProfile(S2, 'a.x.org').id, 'quick', 'site setup'); eq(R.resolveProfile(S2, 'xx.org').id, 'default', 'suffix needs a dot');
 eq(R.normConfig(JSON.parse(JSON.stringify(B[1].config))), B[1].config, 'config round trip'); eq(R.normConfig({textScale: 9}).textScale, 2.5, 'text scale clamps high'); eq(R.normConfig({textScale: 0.1}).textScale, 0.7, 'text scale clamps low'); eq(R.defaultConfig().textScale, 1, 'text scale default');
 eq(R.normConfig(null), R.defaultConfig(), 'null config');
+eq(R.defaultConfig().textPanel, 'auto', 'text box default auto'); eq(R.normConfig({textPanel: 'on'}).textPanel, 'on', 'text box on'); eq(R.normConfig({textPanel: 'x'}).textPanel, 'auto', 'bad text box mode'); eq(R.normConfig({panelScale: 9}).panelScale, 2.5, 'panel scale clamps');
 eq(R.contrastText('#ffd54a'), '#000000', 'dark text on amber'); eq(R.contrastText('#102030'), '#ffffff', 'light text on navy'); eq(R.contrastText('nope'), '#000000', 'bad colour');
 
 // page text map

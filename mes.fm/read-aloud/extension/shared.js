@@ -14,7 +14,9 @@
       skipCode: true, skipTables: false, readTitle: false,
       playerPosition: 'bottom',  // 'bottom' | 'top'
       closeWhenDone: false,
-      doubleClickToJump: true
+      doubleClickToJump: true,
+      textPanel: 'auto',         // text box above the player: 'auto' = only where the page cannot highlight (text boxes), 'on', 'off'
+      panelScale: 1
     };
   }
 
@@ -36,6 +38,8 @@
     out.rate = num(c.rate, 0.5, 4, out.rate); out.pitch = num(c.pitch, 0.5, 2, out.pitch); out.volume = num(c.volume, 0, 1, out.volume); out.textScale = num(c.textScale, 0.7, 2.5, out.textScale);
     out.wordColor = color(c.wordColor, out.wordColor); out.sentenceColor = color(c.sentenceColor, out.sentenceColor);
     ['highlightWord', 'highlightSentence', 'autoScroll', 'skipCode', 'skipTables', 'readTitle', 'closeWhenDone', 'doubleClickToJump'].forEach(function (k) { if (typeof c[k] === 'boolean') out[k] = c[k]; });
+    out.panelScale = num(c.panelScale, 0.7, 2.5, out.panelScale);
+    if (c.textPanel === 'auto' || c.textPanel === 'on' || c.textPanel === 'off') out.textPanel = c.textPanel;
     if (c.scope === 'smart' || c.scope === 'page') out.scope = c.scope;
     if (c.playerPosition === 'top' || c.playerPosition === 'bottom') out.playerPosition = c.playerPosition;
     return out;

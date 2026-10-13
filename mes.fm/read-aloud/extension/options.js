@@ -14,7 +14,7 @@
   }
 
   var RANGES = ['rate', 'pitch', 'volume'], CHECKS = ['highlightWord', 'highlightSentence', 'autoScroll', 'doubleClickToJump', 'skipCode', 'skipTables', 'readTitle', 'closeWhenDone'];
-  var SELECTS = ['scope', 'playerPosition'], COLORS = ['wordColor', 'sentenceColor'];
+  var SELECTS = ['scope', 'playerPosition', 'textPanel'], COLORS = ['wordColor', 'sentenceColor'];
 
   function fillVoices() {
     voices = speechSynthesis.getVoices().slice().sort(function (a, b) { return (a.lang + a.name).localeCompare(b.lang + b.name); });

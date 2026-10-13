@@ -424,7 +424,9 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
       skipCode: true, skipTables: false, readTitle: false,
       playerPosition: 'bottom',  // 'bottom' | 'top'
       closeWhenDone: false,
-      doubleClickToJump: true
+      doubleClickToJump: true,
+      textPanel: 'auto',         // text box above the player: 'auto' = only where the page cannot highlight (text boxes), 'on', 'off'
+      panelScale: 1
     };
   }
 
@@ -446,6 +448,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     out.rate = num(c.rate, 0.5, 4, out.rate); out.pitch = num(c.pitch, 0.5, 2, out.pitch); out.volume = num(c.volume, 0, 1, out.volume); out.textScale = num(c.textScale, 0.7, 2.5, out.textScale);
     out.wordColor = color(c.wordColor, out.wordColor); out.sentenceColor = color(c.sentenceColor, out.sentenceColor);
     ['highlightWord', 'highlightSentence', 'autoScroll', 'skipCode', 'skipTables', 'readTitle', 'closeWhenDone', 'doubleClickToJump'].forEach(function (k) { if (typeof c[k] === 'boolean') out[k] = c[k]; });
+    out.panelScale = num(c.panelScale, 0.7, 2.5, out.panelScale);
+    if (c.textPanel === 'auto' || c.textPanel === 'on' || c.textPanel === 'off') out.textPanel = c.textPanel;
     if (c.scope === 'smart' || c.scope === 'page') out.scope = c.scope;
     if (c.playerPosition === 'top' || c.playerPosition === 'bottom') out.playerPosition = c.playerPosition;
     return out;
@@ -551,7 +555,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   var synth = window.speechSynthesis;
   var S = RA.merge(null), P = RA.resolveProfile(S, location.hostname).config, host = location.hostname;
   var st = { active: false, playing: false, words: null, text: '', starts: null, map: null, nodes: null, idx: 0, gen: 0, chunk: null, estimated: false, lang: '', mode: 'page' };
-  var ui = null, voices = [], keep = [], timers = {}, userScrollAt = 0, lastScrollAt = 0, hlWord = null, hlSent = null, sentIdx = -1, styleEl = null, saveTimer = 0;
+  var ui = null, voices = [], keep = [], timers = {}, userScrollAt = 0, lastScrollAt = 0, hlWord = null, hlSent = null, sentIdx = -1, styleEl = null, saveTimer = 0, keyN = 0, panelUserAt = 0;
 
   // ---- settings -------------------------------------------------------------------------------------------------------
   function loadSettings(cb) {
@@ -703,7 +707,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     if (tk.text !== map.text) {   // cleanText changed something (should not happen): keep the offsets honest by tokenizing the cleaned text only for speech
       return false;
     }
-    st.map = map; st.nodes = items.map(function (i) { return i.node; });
+    st.map = map; st.nodes = items.map(function (i) { return i.node; }); st.key = ++keyN; st.panelOver = null;
     st.words = tk.words; st.starts = tk.sentStarts; st.text = tk.text; st.mode = mode;
     st.lang = SR.detectLang(tk.text) || (document.documentElement.lang || '').toLowerCase();
     st.idx = 0;
@@ -737,11 +741,12 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 
   function clearHighlight() {
     try { if (window.CSS && CSS.highlights) { CSS.highlights.delete('mesra-word'); CSS.highlights.delete('mesra-sentence'); } } catch (e) { /* ignore */ }
-    sentIdx = -1;
+    sentIdx = -1; panelMark(-1);
   }
 
   function highlight(i) {
     if (!st.words || !st.words[i]) return;
+    panelMark(i);
     if (!(window.CSS && CSS.highlights && window.Highlight)) return;
     var w = st.words[i], k = SR.sentenceStartAt(st.starts, i);
     if (P.highlightSentence) {
@@ -926,6 +931,9 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     '.dk.on{background:#2b3a67}.p.flip:not(.pip){filter:invert(1) hue-rotate(180deg)}.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
     '.p.moved{left:var(--x);top:var(--y);bottom:auto;transform:none}' +
     '.p.pip,.p.pip.moved{position:static;left:auto;top:auto;bottom:auto;transform:none;width:100%;border:0;border-radius:0;box-shadow:none}.p.pip .grip,.p.pip .mini{display:none}.pip-b.on{background:#1a4d6b}' +
+    '.tp{display:none;margin:0 0 8px;border:1px solid #3a3c41;border-radius:10px;background:#17181a;overflow:hidden}.tp.on{display:block}.p.pip .tp,.p.min .tp{display:none}' +
+    '.th{display:flex;align-items:center;gap:4px;padding:3px 6px;background:#25272b;color:#aab0b8;font-size:12px}.th b{flex:1;font-weight:600}.th button{min-width:28px;height:24px;font-size:13px;border-radius:6px;padding:0 6px}.tpb.on{background:#1a4d6b}' +
+    '.tb{position:relative;height:150px;min-height:56px;max-height:60vh;overflow:auto;resize:vertical;padding:8px 12px;font-size:calc(16px * var(--tf,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:#e6e6e6;user-select:text}.tb .w{cursor:pointer;border-radius:3px}.tb .w:hover{text-decoration:underline}.tb .s.cur{background:var(--sc);color:var(--sct);border-radius:3px}.tb .w.cur{background:var(--wc);color:var(--wct)}' +
     '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}';
 
   function buildUi() {
@@ -934,16 +942,17 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     h.style.cssText = 'all:initial';
     var sh = h.attachShadow({ mode: 'closed' });
     sh.innerHTML = '<style>' + CSS_UI + '</style><div class="p ' + (P.playerPosition === 'top' ? 'top' : 'bottom') + '" role="region" aria-label="MES Read Aloud">' +
+      '<div class="tp" role="region" aria-label="Text being read"><div class="th"><b class="tl">Text being read</b><button class="tsm2" title="Smaller text in this box" aria-label="Smaller text in the box">A&minus;</button><button class="tsp2" title="Larger text in this box" aria-label="Larger text in the box">A+</button><button class="tpx" title="Hide this box" aria-label="Hide the text box">&times;</button></div><div class="tb" tabindex="0"></div></div>' +
       '<div class="bar" title="Click to jump"><div class="fill"></div></div>' +
       '<div class="row"><button class="grip" title="Drag to move the player (double-click to put it back)">&#8942;&#8942;</button><button class="prev" title="Previous sentence (Left arrow)">&#9198;</button><button class="pl" title="Pause / resume (Space)">&#9654;</button><button class="next" title="Next sentence (Right arrow)">&#9197;</button>' +
       '<button class="slow" title="Slower (Down arrow)">&minus;</button><button class="rate" title="Speed">1.0&times;</button><button class="fast" title="Faster (Up arrow)">+</button>' +
       '<button class="tsm" title="Smaller text on the page" aria-label="Smaller text">A&minus;</button><button class="tsp" title="Larger text on the page" aria-label="Larger text">A+</button>' +
-      '<button class="vol" title="Mute / unmute"></button><input class="volr" type="range" min="0" max="1" step="0.05" title="Volume" aria-label="Volume">' +
+      '<button class="tpb" title="Show / hide the text being read in a box above the player" aria-label="Show or hide the text box"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 6h16M4 11h16M4 16h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><button class="vol" title="Mute / unmute"></button><input class="volr" type="range" min="0" max="1" step="0.05" title="Volume" aria-label="Volume">' +
       '<select class="voice" title="Voice"></select><select class="setup" title="Setup"></select>' +
       '<span class="st" aria-live="polite"></span><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="dk" title="Dark / light page: inverts the page colours (pictures and video keep theirs). Remembered for this site." aria-label="Dark or light page">&#9680;</button><button class="pip-b" title="Pop out into a floating window you can move anywhere, even outside the browser" aria-label="Pop out"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="8" height="6" fill="currentColor"/></svg></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
     var q = function (c) { return sh.querySelector(c); };
     if (window.__mesraSite) { var gearBtn = sh.querySelector('.gear'); if (gearBtn) gearBtn.style.display = 'none'; }   // the site player has no options page
-    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), dk: q('.dk'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b') };
+    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), dk: q('.dk'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b'), tp: q('.tp'), tb: q('.tb'), tl: q('.tl'), tpb: q('.tpb'), wEls: null, curW: null, curS: null, tkey: 0 };
     q('.prev').onclick = function () { jumpSentence(-1); };
     q('.next').onclick = function () { jumpSentence(1); };
     ui.pl.onclick = toggle;
@@ -953,6 +962,17 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     q('.tsm').onclick = function () { setTextScale(P.textScale - 0.1); };
     q('.tsp').onclick = function () { setTextScale(P.textScale + 0.1); };
     q('.x').onclick = stopAll;
+    ui.tpb.onclick = function () { st.panelOver = !panelVisible(); panelApply(); };
+    q('.tpx').onclick = function () { st.panelOver = false; panelApply(); };
+    q('.tsm2').onclick = function () { setPanelScale(P.panelScale - 0.1); };
+    q('.tsp2').onclick = function () { setPanelScale(P.panelScale + 0.1); };
+    ['wheel', 'touchmove'].forEach(function (t) { ui.tb.addEventListener(t, function () { panelUserAt = Date.now(); }, { passive: true }); });
+    ui.tb.onclick = function (e) {
+      var w = e.target.closest && e.target.closest('.w');
+      if (!w || !st.words) return;
+      var i = Number(w.getAttribute('data-i'));
+      st.idx = i; sentIdx = -1; if (st.playing) speakFrom(i); else { highlight(i); fillUi(); }
+    };
     q('.gear').onclick = function () { try { chrome.runtime.sendMessage({ mesra: 'options' }); } catch (e) { /* ignore */ } };
     ui.bar.onclick = function (e) {
       if (!st.words) return;
@@ -994,6 +1014,60 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini();
     if (pipWin) mountPip();
   }
+
+  // ---- the text box: the words being read, shown inside the player ----
+  // A page can only highlight text that sits in its own DOM. Text typed in a <textarea> / <input> has no DOM nodes, so there the box is the
+  // only place to follow the reading ("auto" shows it exactly then); everywhere else it is off unless asked for.
+  function hasDomText() { return !!(st.nodes && st.nodes.some(Boolean) && window.CSS && CSS.highlights && window.Highlight); }
+  function panelVisible() {
+    if (st.panelOver != null) return !!st.panelOver;
+    return P.textPanel === 'on' || (P.textPanel === 'auto' && !hasDomText());
+  }
+  function panelBuild() {
+    if (!ui || !st.words || ui.tkey === st.key) return;
+    ui.tkey = st.key;
+    var w = st.words, text = st.text, n = w.length, frag = document.createDocumentFragment(), prev = 0, k, i;
+    ui.wEls = new Array(n); ui.curW = null; ui.curS = null; ui.sEls = [];
+    for (k = 0; k < st.starts.length; k++) {
+      var a = st.starts[k], b = k + 1 < st.starts.length ? st.starts[k + 1] : n, sp = document.createElement('span');
+      sp.className = 's';
+      for (i = a; i < b; i++) {
+        var gap = text.slice(prev, w[i].s);
+        if (gap) { if (i === a) frag.appendChild(document.createTextNode(gap)); else sp.appendChild(document.createTextNode(gap)); }
+        var we = document.createElement('span'); we.className = 'w'; we.setAttribute('data-i', i); we.textContent = text.slice(w[i].s, w[i].e);
+        sp.appendChild(we); ui.wEls[i] = we; prev = w[i].e;
+      }
+      ui.sEls.push(sp); frag.appendChild(sp);
+    }
+    ui.tb.textContent = ''; ui.tb.appendChild(frag); ui.tb.scrollTop = 0;
+  }
+  function panelMark(i) {
+    if (!ui || !ui.wEls) return;
+    if (ui.curW) { ui.curW.classList.remove('cur'); ui.curW = null; }
+    if (ui.curS) { ui.curS.classList.remove('cur'); ui.curS = null; }
+    var el = ui.wEls[i];
+    if (!el) return;
+    if (P.highlightWord) { el.classList.add('cur'); ui.curW = el; }
+    if (P.highlightSentence) { var sp = ui.sEls[SR.sentenceStartAt(st.starts, i)]; if (sp) { sp.classList.add('cur'); ui.curS = sp; } }
+    if (!ui.tp.classList.contains('on') || Date.now() - panelUserAt < 4000) return;
+    var tb = ui.tb, top = el.offsetTop, h = el.offsetHeight;
+    if (top < tb.scrollTop + 8 || top + h > tb.scrollTop + tb.clientHeight - 8) tb.scrollTop = Math.max(0, top - tb.clientHeight / 2);
+  }
+  function panelApply() {
+    if (!ui) return;
+    var on = panelVisible();
+    ui.tp.classList.toggle('on', on); ui.tpb.classList.toggle('on', on);
+    ui.tpb.title = on ? 'Hide the text box' : 'Show the text being read in a box above the player';
+    if (!on) return;
+    ui.tl.textContent = hasDomText() ? 'Text being read' : 'Text being read (the page cannot highlight text inside a text box, so it is shown here)';
+    var ps = ui.p.style;
+    ps.setProperty('--tf', String(P.panelScale || 1));
+    ps.setProperty('--wc', P.wordColor); ps.setProperty('--wct', RA.contrastText(P.wordColor));
+    ps.setProperty('--sc', P.sentenceColor); ps.setProperty('--sct', RA.contrastText(P.sentenceColor));
+    panelBuild();
+    if (st.words && ui.wEls && !ui.curW && !ui.curS) panelMark(st.idx);
+  }
+  function setPanelScale(k) { P.panelScale = Math.round(Math.min(2.5, Math.max(0.7, k)) * 10) / 10; saveSettings(); panelApply(); }
 
   // ---- pop out: Document Picture-in-Picture gives a real, always-on-top window that can be dragged anywhere on the screen ----
   var pipWin = null;
@@ -1111,6 +1185,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     S.profiles.forEach(function (p) { var o = document.createElement('option'); o.value = p.id; o.textContent = p.name; ui.setup.appendChild(o); });
     ui.setup.value = RA.resolveProfile(S, host).id;
     if (!ui.st.classList.contains('err') || st.playing) { ui.st.className = 'st'; fillProgress(); }
+    panelApply();
   }
 
   function showNothing() {
