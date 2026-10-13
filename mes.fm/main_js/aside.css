@@ -128,6 +128,7 @@ html.aside-debug .mes-aside__ad:empty::before { content: "Ad slot 300\00d7 250 (
   .mes-mode { display: inline-flex; position: absolute; top: .45em; right: 0; z-index: 2; border: 1px solid #b9c2cc; border-radius: 999px;
     background: #fff; overflow: hidden; font-size: .82em; line-height: 1.2; }
   .mes-col-main > .mes-mode { top: 22px; right: 10px; }
+  .page-content > .mes-mode ~ h1.page-title { padding-right: 20em; }   /* the pill is absolutely positioned: keep a long title from running under it */
   .mes-mode button { border: 0; background: transparent; color: #1479c7; font: inherit; padding: .28em .8em; cursor: pointer; }
   .mes-mode button + button { border-left: 1px solid #d5dbe2; }
   .mes-mode button:hover { background: #e8f2fb; }
