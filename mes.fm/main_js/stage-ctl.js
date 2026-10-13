@@ -5,11 +5,12 @@
 (function () {
 	'use strict';
 	if (window.MESStage) return;
-	var PREFIX = ['fl', 'lm', 'bh', 'mb', 'mt', 'or', 'pe', 'ss', 'ac', 'mm', 'ftl'];
+	var PREFIX = ['fl', 'lm', 'bh', 'mb', 'mt', 'or', 'dp', 'pe', 'ss', 'ac', 'mm', 'ftl'];
 	var KEY = 'mes-stage:' + location.pathname;
 	var SIZES = [['S', 'Small', 640, 380], ['M', 'Medium', 900, 600], ['L', 'Large', 0, 0]];   // [id, name, max width px (0 = the whole column), max stage height px (0 = none)]: a square scenario gets a narrower box so it is not a giant square
 	function read() { try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { return {}; } }
 	function write(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) { /* ignore */ } }
+	var NOCAP = /(^|\s)ftl-wrap(\s|$)/;   // boxes whose stage height is not a fixed fraction of its width (it follows the scene), so a width cap derived from the aspect would feed back and flicker
 	var state = read(), wraps = [], filling = null, backdrop = null, closeBtn = null;
 
 	var css = '.mes-sbar{display:flex;flex-wrap:wrap;gap:0.3em;align-items:center;justify-content:flex-end;margin:0 auto 0.35em;font-size:0.8em;color:#667}' +
@@ -31,12 +32,19 @@
 		var s = curSize(), col = colW(wrapEl);
 		if (s === 'C') return Math.max(380, Math.min(col || 1e5, state.w));
 		for (var i = 0; i < SIZES.length; i++) if (SIZES[i][0] === s) {
-			var width = SIZES[i][2] ? Math.min(SIZES[i][2], col || SIZES[i][2]) : 0, cap = SIZES[i][3], stage = (width || cap) ? wrapEl.querySelector('[class$="-stage"]') : null;
-			if (stage) {   // the aspect the simulation itself chose (its inline px width + height), else the settled box; a box caught mid-resize (clamped by max-width) would give a wrong one
+			var width = SIZES[i][2] ? Math.min(SIZES[i][2], col || SIZES[i][2]) : 0, cap = NOCAP.test(wrapEl.className) ? 0 : SIZES[i][3], stage = (width || cap) ? wrapEl.querySelector('[class$="-stage"]') : null;
+			if (stage && !wrapEl.__fixedH) {   // the aspect the simulation itself chose (its inline px width + height), else the settled box
 				var sw = parseFloat(stage.style.width), sh = parseFloat(stage.style.height);
 				if (sw > 0 && sh > 0 && stage.style.width.indexOf('%') < 0 && stage.style.height.indexOf('%') < 0) wrapEl.__asp = sw / sh;
-				else if (stage.offsetWidth >= 380 && stage.offsetHeight > 0) wrapEl.__asp = stage.offsetWidth / stage.offsetHeight;
+				else if (stage.offsetWidth > 0 && stage.offsetHeight > 0) {
+					var w0 = stage.offsetWidth, h0 = stage.offsetHeight, m = wrapEl.__m;
+					// a stage whose height does not change when its width does (a CSS height, or a clamp) has no aspect: a width cap derived from it feeds back and shrinks the box, so it gets width caps only
+					if (m && Math.abs(w0 - m.w) > 20 && Math.abs(h0 - m.h) < 4) { wrapEl.__fixedH = true; wrapEl.__asp = 0; }
+					else wrapEl.__asp = w0 / h0;
+					wrapEl.__m = { w: w0, h: h0 };
+				}
 			}
+			if (wrapEl.__fixedH || wrapEl.__frozen) cap = 0;
 			if (cap && wrapEl.__asp) { var byH = Math.round(cap * wrapEl.__asp); width = width ? Math.min(width, byH) : (byH < col ? byH : 0); }
 			return width ? Math.max(320, width) : 0;
 		}
@@ -46,7 +54,8 @@
 		wraps.forEach(function (o) {
 			var t = target(o.wrap);
 			var cur = parseInt(o.wrap.style.maxWidth, 10) || 0;
-			if (cur !== t) { o.wrap.style.maxWidth = t ? t + 'px' : ''; o.wrap.style.marginLeft = o.wrap.style.marginRight = t ? 'auto' : ''; o.bar.style.maxWidth = t ? t + 'px' : ''; ping(); }
+			if (cur !== t) { var now = Date.now(); o.ch = (o.ch || []).filter(function (x) { return now - x < 3000; }); o.ch.push(now); if (o.ch.length > 6 && !o.wrap.__frozen) { o.wrap.__frozen = true; t = target(o.wrap); }   // safety net: a box that keeps changing size is frozen on width-only caps
+				o.wrap.style.maxWidth = t ? t + 'px' : ''; o.wrap.style.marginLeft = o.wrap.style.marginRight = t ? 'auto' : ''; o.bar.style.maxWidth = t ? t + 'px' : ''; ping(); }
 			var s = curSize();
 			Array.prototype.forEach.call(o.bar.querySelectorAll('[data-s]'), function (b) { b.setAttribute('aria-pressed', b.dataset.s === s ? 'true' : 'false'); });
 		});
