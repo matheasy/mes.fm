@@ -192,7 +192,7 @@
 
 	/* ---------- drawing ---------- */
 	function sizeCanvas() {
-		var wrap = $("fl-wrap"), st = $("fl-stage"), full = document.fullscreenElement === wrap, W = wrap.clientWidth, asp = nx / ny;
+		var wrap = $("fl-wrap"), st = $("fl-stage"), full = (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")), W = wrap.clientWidth, asp = nx / ny;
 		var maxH = full ? wrap.clientHeight - 40 : window.innerHeight * 0.78, w = Math.max(240, Math.min(W, maxH * asp));
 		st.style.width = w + "px"; st.style.height = w / asp + "px";
 		var dpr = Math.min(2, window.devicePixelRatio || 1);

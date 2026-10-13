@@ -34,6 +34,10 @@ CAS_JS = ["/main_js/cas/cas-client.js?v=1", "/main_js/cas/cas-ui.js?v=1"]
 # the browser-extension pages (download pages of our extensions + the /browser hub) carry an "Extensions" tab right after Tools in the info bar (the burger menu has Browser Extensions on every page)
 EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/browser'>Extensions</a></li>"
 
+# simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
+STAGE_CTL = {"fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock"}
+
 APPS = {
     "earth-curvature-calculator": dict(title="MES Earth Curvature Calculator", page_title="Earth Curvature Calculator",
                                        tag="How much does the Earth curve over a distance?", accent="#0b6f6d", dark="#075250", tint="#e2f3f2",
@@ -508,6 +512,8 @@ def build_from_source(slug, cfg, tpl):
                      "url": "https://mes.fm/" + slug, "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any",
                      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": desc}, ensure_ascii=False)
     scripts = "".join('<script src="%s" defer></script>' % u for u in cfg.get("pre_js", []))
+    if slug in STAGE_CTL:             # the shared View bar (Small / Medium / Large, corner grip, Fill window) above the simulation boxes
+        scripts += '<script src="/main_js/stage-ctl.js?v=2" defer></script>'
     jsrel = cfg.get("js_path", "%s/js/%s.js" % (slug, slug))       # where the page script is served from (js_path: a page that lives inside another site's folder)
     scripts += '<script src="/%s?v=%s" defer></script>' % (jsrel, cfg["js_v"])
     page = tpl

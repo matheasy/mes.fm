@@ -62,7 +62,7 @@
 	/* ---------- rendering ---------- */
 	function sizeCanvas() {
 		var wrap = stage.parentNode, W = wrap.clientWidth, asp = 16 / 9, H = Math.round(W / asp);
-		if (document.fullscreenElement === wrap) { var mh = window.innerHeight - 90; if (H > mh) { H = mh; W = Math.round(H * asp); } }
+		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { var mh = window.innerHeight - 90; if (H > mh) { H = mh; W = Math.round(H * asp); } }
 		stage.style.width = W + "px"; stage.style.height = H + "px";
 		var dpr = Math.min(2, window.devicePixelRatio || 1), sc = S.quality === 2 ? dpr : S.quality, cw = Math.min(1920, Math.max(160, Math.round(W * sc))), ch = Math.round(cw / asp);
 		var ow = Math.round(W * dpr), oh = Math.round(H * dpr);

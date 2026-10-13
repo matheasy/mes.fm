@@ -78,7 +78,7 @@
 		draw();
 	}
 	function sizeCanvas() {
-		var wrap = $("lm-wrap"), st = $("lm-stage"), full = document.fullscreenElement === wrap, W = wrap.clientWidth, asp = gw / gh, H = Math.round(W / asp);
+		var wrap = $("lm-wrap"), st = $("lm-stage"), full = (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")), W = wrap.clientWidth, asp = gw / gh, H = Math.round(W / asp);
 		if (full) { var maxH = window.innerHeight - 110; if (H > maxH) { H = maxH; W = Math.round(H * asp); } }
 		st.style.width = W + "px"; st.style.height = H + "px";
 		var dpr = Math.min(2, window.devicePixelRatio || 1);
