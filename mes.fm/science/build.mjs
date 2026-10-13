@@ -45,6 +45,10 @@ const HUB_FILTERS = {
         "wtc|9/11|moon|shadow"
       ]
     ]
+  },
+  "physics": {
+    "placeholder": "Search the physics videos…",
+    "chips": []
   }
 };
 for (const [sid, cfg] of Object.entries(HUB_FILTERS)) {

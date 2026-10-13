@@ -954,6 +954,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1175,62 +1207,67 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="crypto-tutorials" class="section-body">
   <p class="section-standalone-link"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0Fgp_lR0a0rscxWYrHARtkN" target="_blank" rel="noopener">&#9654;&#65039; Blockchain Tutorials Playlist (YouTube)</a></p>
+    <div class="ls-filter" id="crypto-tutorialsFilter">
+      <input type="search" id="crypto-tutorialsSearch" placeholder="Search the tutorials…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="crypto-tutorialsChips"></div>
+    </div>
+    <p class="ls-empty" id="crypto-tutorialsEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="crypto-tutorialsGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="crypto-tutorialsListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="crypto-tutorialsGrid">
-    <a class="link-card" href="https://mes.fm/hive-crypto-tutorial">
+    <a class="link-card" data-cats="all" href="https://mes.fm/hive-crypto-tutorial">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ogxTNlTgyLU/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hive Cryptocurrency Overview and How to Sign Up</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/_LgCufeCjFI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Ⓑ Blockchain: The Big Picture - Part 2: Tokenization</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sEkip6F4Mv0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=8VZBrgRL9KA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://www.youtube.com/watch?v=8VZBrgRL9KA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/8VZBrgRL9KA/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=JaZRcA1Xut0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://www.youtube.com/watch?v=JaZRcA1Xut0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/JaZRcA1Xut0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Va47UH2k-ww" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://www.youtube.com/watch?v=Va47UH2k-ww" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Va47UH2k-ww/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=F5f1duDJG9Q" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://www.youtube.com/watch?v=F5f1duDJG9Q" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/F5f1duDJG9Q/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=1RBzUDRScyQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://www.youtube.com/watch?v=1RBzUDRScyQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/1RBzUDRScyQ/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem</span>
@@ -1239,42 +1276,42 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="crypto-tutorialsList">
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Hive Cryptocurrency Overview and How to Sign Up</h3>
       <p><a href="https://www.youtube.com/watch?v=ogxTNlTgyLU" target="_blank" rel="noopener">YouTube</a> - <a href="https://mes.fm/hive-crypto-tutorial" target="_blank" rel="noopener">mes.fm</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ogxTNlTgyLU/maxresdefault.jpg" alt="Hive Cryptocurrency Overview and How to Sign Up">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Ⓑ Blockchain: The Big Picture - Part 2: Tokenization</h3>
       <p><a href="https://www.youtube.com/watch?v=_LgCufeCjFI" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-2-tokenization" target="_blank" rel="noopener">Hive</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/_LgCufeCjFI/maxresdefault.jpg" alt="Ⓑ Blockchain: The Big Picture - Part 2: Tokenization">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?</h3>
       <p><a href="https://www.youtube.com/watch?v=sEkip6F4Mv0" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/general/@mes/blockchain-the-big-picture-part-1-what-do-you-own" target="_blank" rel="noopener">Hive</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/sEkip6F4Mv0/maxresdefault.jpg" alt="Ⓑ Blockchain: The Big Picture - Part 1: What Do You Own?">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds</h3>
       <p><a href="https://www.youtube.com/watch?v=8VZBrgRL9KA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/8VZBrgRL9KA/maxresdefault.jpg" alt="Create YouTube Summaries with an AI Agent on the Hive Blockchain in Seconds">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto</h3>
       <p><a href="https://www.youtube.com/watch?v=JaZRcA1Xut0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/JaZRcA1Xut0/maxresdefault.jpg" alt="Ⓑ Blockchain Overview: Bitcoin, Cryptocurrency, Cryptography, &amp; Satoshi Nakamoto">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is</h3>
       <p><a href="https://www.youtube.com/watch?v=Va47UH2k-ww" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Va47UH2k-ww/maxresdefault.jpg" alt="🔧Custom Browser User Scripts: Unblock Brave Browser from Archive.is">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem</h3>
       <p><a href="https://www.youtube.com/watch?v=F5f1duDJG9Q" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/F5f1duDJG9Q/maxresdefault.jpg" alt="Steemit Tutorial: Steem (STEEM), Steem Power (SP), and Steem Dollars (SMD) #GetOnSteem">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem</h3>
       <p><a href="https://www.youtube.com/watch?v=1RBzUDRScyQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/1RBzUDRScyQ/maxresdefault.jpg" alt="Steemit: Overview: Social Media Platform on Steem Blockchain #GetOnSteem">
@@ -1406,6 +1443,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('crypto-tutorials', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('crypto-tutorials');
 </script>
 
 <script>

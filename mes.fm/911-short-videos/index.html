@@ -954,6 +954,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1172,69 +1204,74 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="911-short-videos" class="section-body">
   
+    <div class="ls-filter" id="911-short-videosFilter">
+      <input type="search" id="911-short-videosSearch" placeholder="Search the short videos…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="911-short-videosChips"></div>
+    </div>
+    <p class="ls-empty" id="911-short-videosEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="911-short-videosGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="911-short-videosListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="911-short-videosGrid">
-    <a class="link-card" href="https://youtu.be/QH6Q230711E" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/QH6Q230711E" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xp2ZQqEQjFBSakzGRWnWSKRhECNBQdJJ21rWsrbMSFQ7EmKLAUn73vAponspCLsjra9.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Building 7: The TRUTH Cut by 9/11 Revisionist</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/o3mr0Y6QrN0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/o3mr0Y6QrN0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xySzXtA3i4197aqAEmkBECQ2ZK8fSdyiUdmJSwnsikMN4ZZm1hzYV7eWY9TyvqNYBCR.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Building 7: The TRUTH Cut 2.0 by 9/11 Revisionist</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/Bcrw0gVENoQ" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/Bcrw0gVENoQ" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23y8sUUfFXSJtH5jmwyz3desuqBd2xXLsjRTmuLQhcaDXseh7RYxqGytHFmEsCk15HJuC.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 20th+ Anniversary Verse by Check The Evidence</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/c6zN0-FH7ks" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/c6zN0-FH7ks" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wgPhonjQApyzWLsTMmaNfki6Jugco5o2jaqoJCe3YWFKDQd51fAneBGQSFgf4szBeke.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">&quot;But None of His Clothes Were Burned&quot; - Stephen Newman Saves 9/11 Burn Victim Kenneth Summers</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/EIUNza56F6E" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/EIUNza56F6E" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wX1dh3TcxPuob3S6QRM1xhXiDzPgaQeagGjFWv8MV3ZnqVUMAQZKzqayqLgv97xmhPA.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">EPIC Edit by 9/11 Revisionist: Where Did The Towers Go? (Corrected Version)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/3XDBPpOxcZ8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/3XDBPpOxcZ8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/245mte6BhasrBuMnx7CyxzRRYvUcHTqvSjCbj3iLh7DLJHxii3RD4EESjZ3wrdDWi9gDK.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Mystery Flashes on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/ivj_9TUvlCE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/ivj_9TUvlCE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23yd6EYLAQSvHp5EpTqRU3gq7GASRQu5WAdbgzL9XDXf7pEQeiTbkqrZiRvRAwydm7357.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 North Tower Spire Dustification by Trevor Evans. Featuring Dr. Judy Wood</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/xMSxNUqaWko" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/xMSxNUqaWko" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wCLK5eeGab4r3GPKRpsMkeERDbUtdYMH54pX5X4zGKMJPzp4YKdrAMMAyc3jyQzbFvh.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Dustification vs Alka-Seltzer Tablets (Slow Motion)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/0PmLqdDPK6Y" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/0PmLqdDPK6Y" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/242NzP9vDrBhm9VQTAY9s61RvduYDD2d8cV19t2znjSfDdLwvcUzwu8NT3FUattQ2BKW8.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">3D Printed Models of the WTC and LiDAR Data</span>
@@ -1243,47 +1280,47 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="911-short-videosList">
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Building 7: The TRUTH Cut by 9/11 Revisionist</h3>
       <p><a href="https://youtu.be/QH6Q230711E" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xp2ZQqEQjFBSakzGRWnWSKRhECNBQdJJ21rWsrbMSFQ7EmKLAUn73vAponspCLsjra9.jpeg" alt="Building 7: The TRUTH Cut by 9/11 Revisionist">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Building 7: The TRUTH Cut 2.0 by 9/11 Revisionist</h3>
       <p><a href="https://youtu.be/o3mr0Y6QrN0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xySzXtA3i4197aqAEmkBECQ2ZK8fSdyiUdmJSwnsikMN4ZZm1hzYV7eWY9TyvqNYBCR.jpeg" alt="Building 7: The TRUTH Cut 2.0 by 9/11 Revisionist">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 20th+ Anniversary Verse by Check The Evidence</h3>
       <p><a href="https://youtu.be/Bcrw0gVENoQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23y8sUUfFXSJtH5jmwyz3desuqBd2xXLsjRTmuLQhcaDXseh7RYxqGytHFmEsCk15HJuC.jpeg" alt="9/11 20th+ Anniversary Verse by Check The Evidence">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>&quot;But None of His Clothes Were Burned&quot; - Stephen Newman Saves 9/11 Burn Victim Kenneth Summers</h3>
       <p><a href="https://youtu.be/c6zN0-FH7ks" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wgPhonjQApyzWLsTMmaNfki6Jugco5o2jaqoJCe3YWFKDQd51fAneBGQSFgf4szBeke.jpeg" alt="&quot;But None of His Clothes Were Burned&quot; - Stephen Newman Saves 9/11 Burn Victim Kenneth Summers">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>EPIC Edit by 9/11 Revisionist: Where Did The Towers Go? (Corrected Version)</h3>
       <p><a href="https://youtu.be/EIUNza56F6E" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wX1dh3TcxPuob3S6QRM1xhXiDzPgaQeagGjFWv8MV3ZnqVUMAQZKzqayqLgv97xmhPA.jpeg" alt="EPIC Edit by 9/11 Revisionist: Where Did The Towers Go? (Corrected Version)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Mystery Flashes on 9/11</h3>
       <p><a href="https://youtu.be/3XDBPpOxcZ8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/245mte6BhasrBuMnx7CyxzRRYvUcHTqvSjCbj3iLh7DLJHxii3RD4EESjZ3wrdDWi9gDK.jpeg" alt="Mystery Flashes on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 North Tower Spire Dustification by Trevor Evans. Featuring Dr. Judy Wood</h3>
       <p><a href="https://youtu.be/ivj_9TUvlCE" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23yd6EYLAQSvHp5EpTqRU3gq7GASRQu5WAdbgzL9XDXf7pEQeiTbkqrZiRvRAwydm7357.jpeg" alt="9/11 North Tower Spire Dustification by Trevor Evans. Featuring Dr. Judy Wood">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Dustification vs Alka-Seltzer Tablets (Slow Motion)</h3>
       <p><a href="https://youtu.be/xMSxNUqaWko" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wCLK5eeGab4r3GPKRpsMkeERDbUtdYMH54pX5X4zGKMJPzp4YKdrAMMAyc3jyQzbFvh.jpeg" alt="9/11 Dustification vs Alka-Seltzer Tablets (Slow Motion)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>3D Printed Models of the WTC and LiDAR Data</h3>
       <p><a href="https://youtu.be/0PmLqdDPK6Y" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/242NzP9vDrBhm9VQTAY9s61RvduYDD2d8cV19t2znjSfDdLwvcUzwu8NT3FUattQ2BKW8.jpeg" alt="3D Printed Models of the WTC and LiDAR Data">
@@ -1414,6 +1451,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('911-short-videos', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('911-short-videos');
 </script>
 
 <script>

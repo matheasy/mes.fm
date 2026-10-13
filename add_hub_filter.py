@@ -51,6 +51,8 @@ HUB_FILTERS = {
             ("french", "French", r"french translation"),
         ]),
         "911-observable-evidence": ("Search Observable Evidence\u2026", []),
+        "911-short-videos": ("Search the short videos\u2026", []),
+        "1109-keo-meteor-music": ("Search the music\u2026", []),
     },
     "hutchison": {
         "highlights": ("Search the highlights\u2026", [
@@ -65,6 +67,18 @@ HUB_FILTERS = {
             ("tom", "Tom Sky", r"tom sky"),
             ("mes", "MES with Hutchison", r"\bmes\b"),
         ]),
+    },
+    "crypto": {
+        "crypto-tutorials": ("Search the tutorials\u2026", []),
+    },
+    "bg": {
+        "bg-videos": ("Search the videos\u2026", []),
+    },
+    "mh370": {
+        "mh370-videos": ("Search the videos\u2026", []),
+    },
+    "antigravity": {
+        "antigravity-series": ("Search the series\u2026", []),
     },
     "conspiracy": {
         "conspiracy-posts": ("Search the posts\u2026", [
@@ -83,6 +97,7 @@ HUB_FILTERS = {
             ("fe", "Free Energy & Cold Fusion", r"cold fusion|over-unity|mccabe|torque|fleischmann"),
             ("wtc", "9/11 & Moon", r"wtc|9/11|moon|shadow"),
         ]),
+        "physics": ("Search the physics videos\u2026", []),
     },
 }
 

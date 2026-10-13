@@ -152,6 +152,14 @@ const HUB_FILTERS = {
   "911-observable-evidence": {
     "placeholder": "Search Observable Evidence…",
     "chips": []
+  },
+  "911-short-videos": {
+    "placeholder": "Search the short videos…",
+    "chips": []
+  },
+  "1109-keo-meteor-music": {
+    "placeholder": "Search the music…",
+    "chips": []
   }
 };
 for (const [sid, cfg] of Object.entries(HUB_FILTERS)) {

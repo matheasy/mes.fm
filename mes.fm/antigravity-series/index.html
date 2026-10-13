@@ -954,6 +954,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1174,55 +1206,60 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="antigravity-series" class="section-body">
   <p class="section-standalone-link"><a href="/antigravity-playlist" target="_blank" rel="noopener">&#127916; YouTube playlist</a><span class="standalone-sep">&middot;</span><a href="/antigravity-bitchute" target="_blank" rel="noopener">&#127916; BitChute playlist</a><span class="standalone-sep">&middot;</span><a href="https://odysee.com/$/playlist/6e53d242296fd47f60c539a22612c4c237d76c23" target="_blank" rel="noopener">&#127916; Odysee playlist</a><span class="standalone-sep">&middot;</span><a href="https://peakd.com/antigravity/@mes/series" target="_blank" rel="noopener">&#128221; Hive links and notes</a></p>
+    <div class="ls-filter" id="antigravity-seriesFilter">
+      <input type="search" id="antigravity-seriesSearch" placeholder="Search the series…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="antigravity-seriesChips"></div>
+    </div>
+    <p class="ls-empty" id="antigravity-seriesEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="antigravity-seriesGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="antigravity-seriesListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="antigravity-seriesGrid">
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/how-gyrocompasses-work" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/hive-128780/@mes/how-gyrocompasses-work" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23xVgMwCVKwBMu9ddLcQCWD6tGbDqK6TzEAY3RYH1ssanQEvw8bKUsuH8i5Ug5zqM5Fi4.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">How Gyrocompasses Work + Corrections to Earlier Videos</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/antigravity/@mes/antigravity-part-6-video-1-objects-in-rotation-defy-mainstream-physics-mes-duality-concept" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/antigravity/@mes/antigravity-part-6-video-1-objects-in-rotation-defy-mainstream-physics-mes-duality-concept" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23uQvaS78hCNcSRSgDQrpoygJtyDq9j5QEnvVhEwdmdv5JCT67MzueTNMxgq6bks8siBS.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#AntiGravity Part 6: Objects in Rotation Defy 'Mainstream' Physics + MES Duality Concept</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/antigravity/@mes/antigravity-part-5-spinning-wheels-balance-upside-down-magic" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/antigravity/@mes/antigravity-part-5-spinning-wheels-balance-upside-down-magic" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/cj4CoFmYScc/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#AntiGravity Part 5: Spinning Wheels Balance UPSIDE DOWN! #Magic</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/antigravity/@mes/antigravity-part-4-spinning-wheels-precess-with-no-angular-momentum-or-centripetal-force" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/antigravity/@mes/antigravity-part-4-spinning-wheels-precess-with-no-angular-momentum-or-centripetal-force" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23w2eJgWuAfVXKZ6YrN6aVJyMF6k6q5ft8yqVaks5NGdqjLQGekcseuXUTpeFnMwAMFeR.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#AntiGravity Part 4: Spinning Wheels Precess with ZERO Angular Momentum or Centripetal Force!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/antigravity/@mes/antigravity-part-3-eric-laithwaite-s-reality-defying-1974-lecture-on-gyroscopes-hiddenscience" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/antigravity/@mes/antigravity-part-3-eric-laithwaite-s-reality-defying-1974-lecture-on-gyroscopes-hiddenscience" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23uQk8XpRRQfpF5JgGsBJvCVE9RnKqyTS3mR4g4qe4NwiHpbSJ1yPxwKJrWG9aMGsY6H5.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#AntiGravity Part 3: Eric Laithwaite's Reality-Defying 1974 Lecture on Gyroscopes #HiddenScience</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/antigravity/@mes/antigravity-part-2-eric-laithwaite-lifts-a-40-lb-gyro-wheel-like-a-feather" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/antigravity/@mes/antigravity-part-2-eric-laithwaite-lifts-a-40-lb-gyro-wheel-like-a-feather" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/VUh6QXe4mMY/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#AntiGravity Part 2: Eric Laithwaite Lifts a 40 lb Gyro Wheel Like a Feather!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/antigravity/@mes/antigravity-part-1-eric-laithwaite-gyroscopes-and-hiddenscience-saturn-symbolism-notes-1-of-2" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/antigravity/@mes/antigravity-part-1-eric-laithwaite-gyroscopes-and-hiddenscience-saturn-symbolism-notes-1-of-2" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/cMLXHe2wKy8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">#AntiGravity Part 1: Eric Laithwaite, Gyroscopes, &amp; #HiddenScience + Saturn Symbolism + MORE</span>
@@ -1231,37 +1268,37 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="antigravity-seriesList">
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>How Gyrocompasses Work + Corrections to Earlier Videos</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/how-gyrocompasses-work" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/cbtlhxds" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/How-Gyrocompasses-Work:a" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/p2VhJkjIbIEX/" target="_blank" rel="noopener">BitChute</a> - <a href="https://rumble.com/v441c10-how-gyrocompasses-work-corrections-to-earlier-videos.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://youtu.be/JItGEGMwg90" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23xVgMwCVKwBMu9ddLcQCWD6tGbDqK6TzEAY3RYH1ssanQEvw8bKUsuH8i5Ug5zqM5Fi4.jpeg" alt="How Gyrocompasses Work + Corrections to Earlier Videos">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>#AntiGravity Part 6: Objects in Rotation Defy 'Mainstream' Physics + MES Duality Concept</h3>
       <p><a href="https://peakd.com/antigravity/@mes/antigravity-part-6-video-1-objects-in-rotation-defy-mainstream-physics-mes-duality-concept" target="_blank" rel="noopener">Notes</a> - <a href="https://1drv.ms/b/s!As32ynv0LoaIh-xTV42m_NX2ZDQYIw" target="_blank" rel="noopener">PDF notes</a> - <a href="https://1drv.ms/w/s!As32ynv0LoaIh75UFj1Vekcq1656wA" target="_blank" rel="noopener">Word notes</a> - <a href="https://odysee.com/@mes:8/-AntiGravity-Part-6-objects-in-rotation-defy-mainstream-physics:b" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/IS6BL47ytHEI/" target="_blank" rel="noopener">BitChute 1</a> - <a href="https://www.bitchute.com/video/sUnLAlGpiL3a/" target="_blank" rel="noopener">BitChute 2</a> - <a href="https://rumble.com/v20u0i0-antigravity-part-6-objects-in-rotation-defy-mainstream-physics-mes-duality-.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://d.tube/#!/v/mes/QmRy5XhziZB9aQfgyN2YCYJDusR6LbhMu1mi8zKbwXdW6J" target="_blank" rel="noopener">DTube 1</a> - <a href="https://d.tube/#!/v/mes/QmXf4iTM6dSSGBFZtnC7XtxbmWD8oWU1JMwgR5bcSU5pB7" target="_blank" rel="noopener">DTube 2</a> - <a href="https://youtu.be/VLt1dSt_r18" target="_blank" rel="noopener">YouTube 1</a> - <a href="https://youtu.be/dKwwJe0znpA" target="_blank" rel="noopener">YouTube 2</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23uQvaS78hCNcSRSgDQrpoygJtyDq9j5QEnvVhEwdmdv5JCT67MzueTNMxgq6bks8siBS.jpeg" alt="#AntiGravity Part 6: Objects in Rotation Defy 'Mainstream' Physics + MES Duality Concept">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>#AntiGravity Part 5: Spinning Wheels Balance UPSIDE DOWN! #Magic</h3>
       <p><a href="https://peakd.com/antigravity/@mes/antigravity-part-5-spinning-wheels-balance-upside-down-magic" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/agoscupk" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/antigravity-part-5-spinning-wheels:f" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/cj4CoFmYScc/" target="_blank" rel="noopener">BitChute</a> - <a href="https://rumble.com/v2885oc-antigravity-part-5-spinning-wheels-balance-upside-down.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://d.tube/#!/v/mes/b4s920um" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/cj4CoFmYScc" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/cj4CoFmYScc/maxresdefault.jpg" alt="#AntiGravity Part 5: Spinning Wheels Balance UPSIDE DOWN! #Magic">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>#AntiGravity Part 4: Spinning Wheels Precess with ZERO Angular Momentum or Centripetal Force!</h3>
       <p><a href="https://peakd.com/antigravity/@mes/antigravity-part-4-spinning-wheels-precess-with-no-angular-momentum-or-centripetal-force" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/oquchcof" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/antigravity-part-4-spinning-wheels:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/oPLCMSK9Syw/" target="_blank" rel="noopener">BitChute</a> - <a href="https://rumble.com/v28879u-antigravity-part-4-spinning-wheels-precess-with-zero-angular-momentum-or-ce.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://d.tube/#!/v/mes/srqulau3" target="_blank" rel="noopener">DTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23w2eJgWuAfVXKZ6YrN6aVJyMF6k6q5ft8yqVaks5NGdqjLQGekcseuXUTpeFnMwAMFeR.jpeg" alt="#AntiGravity Part 4: Spinning Wheels Precess with ZERO Angular Momentum or Centripetal Force!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>#AntiGravity Part 3: Eric Laithwaite's Reality-Defying 1974 Lecture on Gyroscopes #HiddenScience</h3>
       <p><a href="https://peakd.com/antigravity/@mes/antigravity-part-3-eric-laithwaite-s-reality-defying-1974-lecture-on-gyroscopes-hiddenscience" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/diwbyxcu" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/antigravity-part-3-eric-laithwaite-s:7" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/oPLCMSK9Syw/" target="_blank" rel="noopener">BitChute</a> - <a href="https://rumble.com/v288fhp-antigravity-part-3-eric-laithwaites-reality-defying-1974-lecture-on-gyrosc" target="_blank" rel="noopener">Rumble</a> - <a href="https://youtu.be/oPLCMSK9Syw/" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/640x0/https://files.peakd.com/file/peakd-hive/mes/23uQk8XpRRQfpF5JgGsBJvCVE9RnKqyTS3mR4g4qe4NwiHpbSJ1yPxwKJrWG9aMGsY6H5.jpeg" alt="#AntiGravity Part 3: Eric Laithwaite's Reality-Defying 1974 Lecture on Gyroscopes #HiddenScience">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>#AntiGravity Part 2: Eric Laithwaite Lifts a 40 lb Gyro Wheel Like a Feather!</h3>
       <p><a href="https://peakd.com/antigravity/@mes/antigravity-part-2-eric-laithwaite-lifts-a-40-lb-gyro-wheel-like-a-feather" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.co/watch?v=mes/jmkxruom" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/antigravity-part-2-eric-laithwaite-lifts:3" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/GJ7FsEEFPqJP/" target="_blank" rel="noopener">BitChute</a> - <a href="https://rumble.com/v288cxe-antigravity-part-2-eric-laithwaite-lifts-a-40-lb-gyro-wheel-like-a-feather.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://d.tube/#!/v/mes/s615aof1" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/VUh6QXe4mMY" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/VUh6QXe4mMY/maxresdefault.jpg" alt="#AntiGravity Part 2: Eric Laithwaite Lifts a 40 lb Gyro Wheel Like a Feather!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>#AntiGravity Part 1: Eric Laithwaite, Gyroscopes, &amp; #HiddenScience + Saturn Symbolism + MORE</h3>
       <p><a href="https://peakd.com/antigravity/@mes/antigravity-part-1-eric-laithwaite-gyroscopes-and-hiddenscience-saturn-symbolism-notes-1-of-2" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/ygchzdxy" target="_blank" rel="noopener">3Speak</a> - <a href="https://odysee.com/@mes:8/AntiGravity-Part-1-Eric-Laithwaite-Gyroscopes:4" target="_blank" rel="noopener">Odysee</a> - <a href="https://www.bitchute.com/video/cMLXHe2wKy8/" target="_blank" rel="noopener">BitChute</a> - <a href="https://rumble.com/v288fuo-antigravity-part-1-eric-laithwaite-gyroscopes-and-hiddenscience-saturn-symb.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://d.tube/#!/v/mes/1nzi1p1u" target="_blank" rel="noopener">DTube</a> - <a href="https://youtu.be/cMLXHe2wKy8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/cMLXHe2wKy8/maxresdefault.jpg" alt="#AntiGravity Part 1: Eric Laithwaite, Gyroscopes, &amp; #HiddenScience + Saturn Symbolism + MORE">
@@ -1393,6 +1430,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('antigravity-series', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('antigravity-series');
 </script>
 
 <script>
