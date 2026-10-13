@@ -138,11 +138,11 @@
 	var SOL = { L: "AU", T: "years", M: "solar masses", tunit: "yr", lunit: "AU", munit: "M☉", G: PI4 };
 	var P = [
 		{ id: "earth-sun", name: "Earth around the Sun", note: "One year, one lap. Earth's orbit is almost a circle (e = 0.017). Pause, then drag from an empty spot to launch your own planet.",
-			units: SOL, speed: 0.4, width: 3.2, build: function (s) {
+			units: SOL, speed: 0.1, width: 3.2, build: function (s) {
 				var sun = s.add({ name: "Sun", m: 1, x: 0, y: 0, color: "#ffd24a", star: 1 });
 				place(s, sun, "Earth", 3.003e-6, 1, 0.0167, 0, "#4a90e2"); } },
 		{ id: "inner", name: "Inner planets", note: "Mercury, Venus, Earth and Mars from real orbits. Inner planets are faster: check Kepler's third law in the table (T²/a³ is the same for every planet).",
-			units: SOL, speed: 0.4, width: 3.6, build: function (s) {
+			units: SOL, speed: 0.15, width: 3.6, build: function (s) {
 				var sun = s.add({ name: "Sun", m: 1, x: 0, y: 0, color: "#ffd24a", star: 1 });
 				place(s, sun, "Mercury", 1.66e-7, 0.3871, 0.2056, 0.2, "#b5b5b5"); place(s, sun, "Venus", 2.447e-6, 0.7233, 0.0068, 1.9, "#e8cda0");
 				place(s, sun, "Earth", 3.003e-6, 1.0, 0.0167, 3.4, "#4a90e2"); place(s, sun, "Mars", 3.227e-7, 1.5237, 0.0934, 5.0, "#d9603b"); } },
@@ -180,7 +180,7 @@
 			units: { L: "units", T: "units", M: "units", tunit: "", lunit: "", munit: "", G: 1 }, speed: 2, width: 9, build: function (s) {
 				s.add({ name: "m = 3", m: 3, x: 1, y: 3, color: "#ffb454" }); s.add({ name: "m = 4", m: 4, x: -2, y: -1, color: "#7dd3fc" }); s.add({ name: "m = 5", m: 5, x: 1, y: -1, color: "#f9a8d4" }); s.eta = 0.012; } },
 		{ id: "binary", name: "Planet around two stars", note: "Two Sun-like stars of half a solar mass circle each other while a planet orbits both from far away: a circumbinary planet, like Kepler-16b.",
-			units: SOL, speed: 0.4, width: 3.6, build: function (s) {
+			units: SOL, speed: 0.15, width: 3.6, build: function (s) {
 				var d = 0.3, v = 0.5 * Math.sqrt(s.G * 1 / d);
 				s.add({ name: "Star A", m: 0.5, x: d / 2, y: 0, vx: 0, vy: v, color: "#ffd24a", star: 1 }); s.add({ name: "Star B", m: 0.5, x: -d / 2, y: 0, vx: 0, vy: -v, color: "#ff9d4a", star: 1 });
 				var r = 1.2, vp = Math.sqrt(s.G * 1 / r); s.add({ name: "Planet", m: 3e-6, x: r, y: 0, vx: 0, vy: vp, color: "#4a90e2" }); } },
@@ -191,7 +191,7 @@
 				var r = 5.19, ph = 0.04, v = 1.565; /* tuned (see the tests): a Hohmann-like probe that Jupiter overtakes 0.03 AU from it */
 				s.add({ name: "Probe", m: 1e-18, x: r * Math.cos(ph), y: r * Math.sin(ph), vx: -v * Math.sin(ph), vy: v * Math.cos(ph), color: "#ff6b9d" }); } },
 		{ id: "sandbox", name: "Sandbox: just a star", note: "An empty sky with one Sun. Drag from any empty spot to launch a planet: the longer the drag, the faster it goes (a drag as long as its distance from the Sun is a circular orbit).",
-			units: SOL, speed: 0.4, width: 5, build: function (s) { s.add({ name: "Sun", m: 1, x: 0, y: 0, color: "#ffd24a", star: 1 }); } }
+			units: SOL, speed: 0.1, width: 5, build: function (s) { s.add({ name: "Sun", m: 1, x: 0, y: 0, color: "#ffd24a", star: 1 }); } }
 	];
 	function build(id) {
 		var p = P.filter(function (q) { return q.id === id; })[0] || P[0], s = new Sim(p.units.G);
