@@ -1,0 +1,112 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu or" id="or">
+		<div class="or-tabs" role="tablist" aria-label="Orbit tools">
+			<button type="button" role="tab" data-tab="sim" aria-selected="true">Simulator</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false">Orbit calculator</button>
+		</div>
+
+		<section data-panel="sim" role="tabpanel">
+			<p class="tu-note or-lead">Real gravity, many bodies. Pick a system below, or <b>drag from any empty spot to launch a planet</b>: the arrow is its velocity (a drag as long as its distance from the star is a circular orbit). <b>Drag a body</b> to move it, click one to see its orbit, wheel or pinch to zoom, right-drag to pan.</p>
+			<div class="or-wrap"><div class="or-stage" id="or-stage">
+				<canvas id="or-c" tabindex="0" role="img" aria-label="Top view of bodies orbiting under gravity, with trails. Drag from an empty spot to launch a new body."></canvas>
+				<div class="or-badge" id="or-badge"></div>
+				<div class="or-run"><button type="button" id="or-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="or-reset" title="Start this system again">↺ Restart</button><button type="button" id="or-fit" title="Zoom to show everything">⤢ Fit</button><button type="button" id="or-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="or-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="or-readouts">
+				<div class="or-ro"><span>Time</span><b id="or-r-t">–</b><small id="or-r-ts"></small></div>
+				<div class="or-ro"><span id="or-r-nl">Selected</span><b id="or-r-n">–</b><small id="or-r-ns">Click a body</small></div>
+				<div class="or-ro"><span>Its orbit</span><b id="or-r-o">–</b><small id="or-r-os"></small></div>
+				<div class="or-ro"><span>Energy kept to</span><b id="or-r-e">–</b><small id="or-r-es">drift since the start</small></div>
+			</div></div>
+			<div class="tu-card or-controls">
+				<div class="or-chips" id="or-pre" role="group" aria-label="Systems"></div>
+				<p class="tu-note" id="or-note"></p>
+				<div class="or-grid">
+					<div class="tu-field"><span class="tu-label" id="or-sp-l">Speed of time: <b id="or-sp-v"></b></span>
+						<input type="range" id="or-sp" min="-1.6" max="1.6" step="0.02" aria-labelledby="or-sp-l"></div>
+					<div class="tu-field"><span class="tu-label" id="or-ms-l">Mass of a new body: <b id="or-ms-v"></b></span>
+						<input type="range" id="or-ms" min="-9" max="-0.3" step="0.1" aria-labelledby="or-ms-l">
+						<span class="tu-note" id="or-ms-n">The planet or star you launch next.</span></div>
+					<div class="tu-field"><span class="tu-label" id="or-tr-l">Trail length: <b id="or-tr-v"></b></span>
+						<input type="range" id="or-tr" min="0" max="3" step="1" aria-labelledby="or-tr-l"></div>
+				</div>
+				<div class="or-checks">
+					<label class="or-check"><input type="checkbox" id="or-o-trail" checked> Trails</label>
+					<label class="or-check"><input type="checkbox" id="or-o-vel"> Velocity arrows</label>
+					<label class="or-check"><input type="checkbox" id="or-o-ell" checked> Orbit of the selected body (dashed)</label>
+					<label class="or-check"><input type="checkbox" id="or-o-area"> Equal areas in equal times</label>
+					<label class="or-check"><input type="checkbox" id="or-o-lab" checked> Names</label>
+					<label class="or-check"><input type="checkbox" id="or-o-merge"> Merge when bodies touch</label>
+				</div>
+				<div class="or-grid or-grid--small">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Camera</span>
+						<select id="or-frame" class="tu-select" aria-label="Camera follows"><option value="com">Fixed on the centre of mass</option><option value="sel">Follow the selected body</option></select></div>
+				</div>
+				<div class="or-btnrow">
+					<button type="button" class="tu-btn tu-btn--ghost" id="or-del">Remove selected</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="or-clrtr">Clear trails</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="or-link">🔗 Copy link to this system</button>
+				</div>
+				<div class="or-tbl-wrap"><table class="tu-table or-bodies" id="or-tbl"><thead></thead><tbody></tbody></table></div>
+				<p class="tu-note" id="or-area-n"></p>
+			</div>
+		</section>
+
+		<section data-panel="calc" role="tabpanel" hidden>
+			<p class="tu-note or-lead">Real numbers for real orbits, in SI units from the same laws. Choose the body that is being orbited, then type distances like <code>400 km</code>, <code>1 AU</code> or <code>6778000 m</code> (a bare number means km).</p>
+			<div class="tu-card or-controls">
+				<div class="or-chips" id="or-c-try" role="group" aria-label="Examples"></div>
+				<div class="or-row">
+					<label><span class="tu-label">Central body</span><select id="or-c-body" class="tu-select"></select></label>
+					<label><span class="tu-label">Mass (kg)</span><input type="text" id="or-c-m" class="tu-input" inputmode="decimal" autocomplete="off"></label>
+					<label><span class="tu-label">Radius</span><input type="text" id="or-c-rad" class="tu-input" autocomplete="off"></label>
+				</div>
+				<div class="or-row">
+					<label><span class="tu-label">I give the orbit as</span><select id="or-c-mode" class="tu-select"><option value="alt">height above the surface</option><option value="r">distance from the centre</option></select></label>
+					<label><span class="tu-label">Orbit (circular)</span><input type="text" id="or-c-h" class="tu-input" autocomplete="off"></label>
+				</div>
+				<p class="or-err" id="or-c-err" aria-live="polite"></p>
+			</div>
+			<div class="or-calc">
+				<div class="tu-card"><h3 class="or-h">A circular orbit</h3><div class="or-res" id="or-c-circ"></div></div>
+				<div class="tu-card"><h3 class="or-h">Kepler's third law</h3>
+					<div class="or-row"><label><span class="tu-label">Orbital period (e.g. 90 min, 1 day)</span><input type="text" id="or-c-T" class="tu-input" autocomplete="off"></label></div>
+					<div class="or-res" id="or-c-kep"></div></div>
+				<div class="tu-card"><h3 class="or-h">Speed anywhere on an orbit (vis-viva)</h3>
+					<div class="or-row"><label><span class="tu-label">Distance from the centre</span><input type="text" id="or-c-vr" class="tu-input" autocomplete="off"></label><label><span class="tu-label">Semi-major axis</span><input type="text" id="or-c-va" class="tu-input" autocomplete="off"></label></div>
+					<div class="or-res" id="or-c-vis"></div></div>
+				<div class="tu-card"><h3 class="or-h">Hohmann transfer (two burns)</h3>
+					<div class="or-row"><label><span class="tu-label">From (same kind of number as above)</span><input type="text" id="or-c-h1" class="tu-input" autocomplete="off"></label><label><span class="tu-label">To</span><input type="text" id="or-c-h2" class="tu-input" autocomplete="off"></label></div>
+					<div class="or-res" id="or-c-hoh"></div></div>
+			</div>
+			<p class="tu-note">Idealised: point masses, circular and coplanar orbits, instant burns, no atmosphere. G = 6.6743×10⁻¹¹ m³ kg⁻¹ s⁻². Body data are standard published values.</p>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How orbits work</h2>
+			<p>An orbit is a fall that keeps missing. Newton imagined firing a cannonball from a mountain: faster and faster, it lands farther away, until the ground curves away as fast as the ball falls and it never lands. The Moon, the planets and the Space Station are all doing exactly that, pulled by gravity and moving sideways fast enough to keep missing. This page adds the pull of every body on every other body, step by step, which is all that gravity is: no ellipses are drawn in advance, they come out of the arithmetic.</p>
+			<div class="or-eq" role="math" aria-label="Key equations">
+				<div><span class="or-eq__n">gravity</span> <span class="or-eq__f"><i>F</i> = <i>G m</i><sub>1</sub><i>m</i><sub>2</sub> / <i>r</i>²</span></div>
+				<div><span class="or-eq__n">Kepler III</span> <span class="or-eq__f"><i>T</i>² = 4π² <i>a</i>³ / <i>G</i>(<i>M</i> + <i>m</i>)</span></div>
+				<div><span class="or-eq__n">vis-viva</span> <span class="or-eq__f"><i>v</i>² = <i>G</i>(<i>M</i> + <i>m</i>)(2/<i>r</i> − 1/<i>a</i>)</span></div>
+				<div><span class="or-eq__n">circular speed</span> <span class="or-eq__f"><i>v</i><sub>c</sub> = √(<i>GM</i>/<i>r</i>),  escape speed √2 · <i>v</i><sub>c</sub></span></div>
+			</div>
+			<h3>Kepler's three laws, and where to see them here</h3>
+			<ul>
+				<li><strong>1. Orbits are ellipses with the star at one focus.</strong> Select a planet and tick the dashed orbit: it is the ellipse worked out from that body's position and velocity right now. A drag as long as its distance gives a circle (<i>e</i> = 0); a faster launch stretches it into a long ellipse; faster than √2 times circular and it never returns.</li>
+				<li><strong>2. Equal areas in equal times.</strong> Select Halley's comet and tick “Equal areas”: the orbit is cut into twelve slices of equal time. The long thin ones near the Sun and the short fat ones far away have the <em>same area</em> (the table under the picture shows the numbers). That is conservation of angular momentum.</li>
+				<li><strong>3. <i>T</i>² ∝ <i>a</i>³.</strong> In the Inner planets system the last column shows <i>T</i>²/<i>a</i>³ for each planet. In years and AU it is 1 for every one of them.</li>
+			</ul>
+			<h3>Things to try</h3>
+			<ul>
+				<li><strong>Launch from the Sandbox:</strong> pull the drag out to the same length as the distance from the Sun for a circular orbit, shorter for a falling ellipse, longer for a far-flung one. Make it a bit longer than 1.41 times and watch it escape.</li>
+				<li><strong>Gravity assist:</strong> in “Gravity assist at Jupiter” the probe's orbit gets bigger without any rocket. It takes a little of Jupiter's orbital energy, which Jupiter never notices (its mass is a billion billion times larger).</li>
+				<li><strong>Figure-eight, Lagrange and the Pythagorean problem:</strong> three bodies are already a hard problem: there is no general formula. Some special cases are stable and beautiful, most are chaotic. Move one body in the figure-eight by a hair and see what happens.</li>
+				<li><strong>Jupiter's Trojans:</strong> an asteroid 60° ahead of Jupiter stays there for ever: the Lagrange point L4. The same trick keeps two camps of thousands of asteroids, the Greeks and the Trojans, travelling with Jupiter.</li>
+				<li><strong>Planet around two stars:</strong> a planet far from a close pair behaves as if it orbited one star with the combined mass. Move it closer and it gets thrown out.</li>
+			</ul>
+			<h3>How accurate is it?</h3>
+			<p>The sum of all the gravity is solved with a fourth-order symplectic integrator (Yoshida) whose step shrinks automatically during close encounters. In the table, “Energy kept to” shows how much the total energy has drifted since the start: for the Earth about 10⁻¹⁰ per decade, for the figure-eight the three bodies return to their starting points within a millionth after a lap. Limits: Newtonian gravity in two dimensions with point masses, so no relativity (Mercury's precession is not reproduced; try the <a href="/black-hole-simulator">Black Hole Simulator</a> for that), no tides, no collisions unless you tick “Merge when bodies touch”, and no other bodies than the ones you see (the planets' real neighbours, asteroids and spacecraft are not included).</p>
+			<p>Everything runs on your device and nothing is uploaded. <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/metric-tensor">Metric Tensor Explorer</a> · <a href="/solar-system-today">Solar System Today</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>

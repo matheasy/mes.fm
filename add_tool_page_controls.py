@@ -84,6 +84,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("image-converter", "Image Converter"),   # also built by build_tool_apps.py
     ("3d-fluid-simulator", "3D Fluid Simulator"),   # also built by build_tool_apps.py (wide page, WebGL2 smoke)
     ("mandelbrot", "Mandelbrot Explorer"),   # also built by build_tool_apps.py (tools sidebar collection, worker-pool canvas)
+    ("orbit-simulator", "Orbit Simulator"),
     ("metric-tensor", "Metric Tensor Explorer"),
     ("black-hole-simulator", "Black Hole Simulator"),   # also built by build_tool_apps.py (tools sidebar collection, dark stages, four tabs)
     ("light-in-a-medium", "Light in a Medium"),   # also built by build_tool_apps.py (tools sidebar collection, dark stage)
