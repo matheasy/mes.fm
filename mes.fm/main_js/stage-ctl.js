@@ -41,7 +41,7 @@
 		var s = curSize(), col = colW(wrapEl);
 		if (s === 'C') {
 			var cw = Math.max(380, Math.min(col || 1e5, state.w));
-			if (state.h && !isFree(wrapEl)) {   // a fixed-shape picture: the box is the largest one of its own shape that fits inside the chosen width x height
+			if (state.h && !isFree(wrapEl) && !NOCAP.test(wrapEl.className) && !wrapEl.__fixedH) {   // a fixed-shape picture: the box is the largest one of its own shape that fits inside the chosen width x height
 				var asp0 = wrapEl.__asp || 0; if (!asp0) { var st0 = wrapEl.querySelector('[class$="-stage"]'); if (st0 && st0.offsetWidth > 0 && st0.offsetHeight > 0) asp0 = st0.offsetWidth / st0.offsetHeight; }
 				if (asp0) cw = Math.max(320, Math.min(cw, Math.round(state.h * asp0)));
 			}
@@ -102,7 +102,7 @@
 		grip.addEventListener('pointermove', function (e) {
 			if (!drag) return;
 			var col = colW(wrap) || 1e5, w = Math.max(380, Math.min(col, Math.round(drag.w + 2 * (e.clientX - drag.x))));
-			var h = drag.h ? Math.max(200, Math.min(1800, Math.round(drag.h + (e.clientY - drag.y)))) : 0;
+			var h = (drag.h && !NOCAP.test(wrap.className) && !wrap.__fixedH) ? Math.max(200, Math.min(1800, Math.round(drag.h + (e.clientY - drag.y)))) : 0;
 			state = h ? { w: w, h: h } : { w: w }; apply();
 		});
 		function up() { if (drag) { drag = null; write(state); } }
