@@ -284,7 +284,7 @@ APPS = {
     "mortgagecalculator": dict(title="Mortgage Calculator", page_title="Mortgage Calculator",
                                tag="Payments, affordability and amortization for the US, Canada and UK.", accent="#0e7490", dark="#0a5568", tint="#e0f2f7",
                                desc="Free mortgage calculator for the US, Canada, UK and Australia: monthly payment with taxes, insurance, PMI or CMHC premium, how much house you can afford, full amortization schedule and charts, extra payments, bi-weekly and accelerated payments, and side-by-side comparison.",
-                               js_v="1"),
+                               js_v="2"),
     # Grade Calculator 2.0 (rewritten 2026-10-06 from the 2013 jQuery page; old js/calculatorffaf.js deleted): lib.js = maths + share encoding (node-testable:
     # tool_apps_src/gradecalculator-tests.js), app.js = UI (saved courses, assignments, what-if). Keeps ads. Old /gradecalculator/s/<id> links resolve via /api/share?calc=gc.
     "gradecalculator": dict(title="Grade Calculator", page_title="Final Grade Calculator",

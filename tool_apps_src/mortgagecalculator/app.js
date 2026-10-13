@@ -530,8 +530,11 @@
 		if (st.xd && !MC.parseDate(st.xd)) st.xd = "";
 		for (var k in DEF) if (typeof st[k] !== typeof DEF[k]) st[k] = DEF[k];
 	}
+	var touched = false;
+	["input", "change", "click", "keydown"].forEach(function (ev) { document.addEventListener(ev, function (e) { if (e.isTrusted && e.target.closest && e.target.closest("#mc")) touched = true; }, true); });
 	function sync() {
 		try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {}
+		if (!touched && !location.search && !/^\/mortgagecalculator\/s\//.test(location.pathname)) return; // a plain visit keeps the clean URL until something is changed
 		try { history.replaceState(null, "", (/^\/mortgagecalculator\/s\//.test(location.pathname) ? "/mortgagecalculator" : location.pathname) + shareQuery()); } catch (e) {}
 	}
 	function applyRegion(nr, old) {
