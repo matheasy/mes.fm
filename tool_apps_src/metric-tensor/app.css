@@ -8,7 +8,7 @@
 	.mt-lead {margin:0 0 0.7em;font-size:0.95em;}
 	.mt-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--mt-line);background:var(--mt-bg);}
 	.mt-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
-	.mt-stage {position:relative;margin:0 auto;width:100%;height:clamp(300px,50vw,540px);max-width:100%;background:var(--mt-bg);}
+	.mt-stage {position:relative;margin:0 auto;width:100%;height:var(--mes-sh, min(var(--mes-shmax, 9999px), clamp(300px,50vw,540px)));max-width:100%;background:var(--mt-bg);}
 	.mt-stage canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;cursor:crosshair;}
 	#mt-ic {cursor:default;}
 	.mt-badge {position:absolute;left:0.7em;top:0.6em;font-size:0.78em;color:var(--mt-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;}

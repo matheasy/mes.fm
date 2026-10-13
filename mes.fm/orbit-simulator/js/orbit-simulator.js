@@ -282,7 +282,7 @@
 	function assignRadii() { var w = preset.width / 120; sim.bodies.forEach(function (b) { if (!(b.rad > 0)) b.rad = w * (b.star ? 1.2 : 0.4); }); }
 	function fitView(width) {
 		if (!width) { var c = sim.com(), md = []; sim.bodies.forEach(function (b) { md.push(Math.hypot(b.x - c.x, b.y - c.y)); }); md.sort(function (a, b) { return a - b; }); var med = md[md.length >> 1] || 1, mx = 0; md.forEach(function (d) { if (d < 4 * med + 1e-9 && d > mx) mx = d; }); width = Math.max(mx * 2.6, 1e-9); }
-		view.S = Math.min(W, H * aspect) / width; if (!isFinite(view.S) || view.S <= 0) view.S = 100; view.px = 0; view.py = 0;
+		view.S = Math.min(W, H) * 1.45 / width; if (!isFinite(view.S) || view.S <= 0) view.S = 100; view.px = 0; view.py = 0;
 	}
 	function massUnitName() { return units.munit || ""; }
 	function newMass() { var M = 0; sim.bodies.forEach(function (b) { if (b.m > M) M = b.m; }); return M * Math.pow(10, ui.mass); }
@@ -316,7 +316,7 @@
 	/* ----- sizing ----- */
 	function onResize() {
 		if (tab !== "sim") return;
-		var wrap = stage.parentNode, w = wrap.clientWidth || 600, h = Math.round(w / aspect);
+		var wrap = stage.parentNode, w = wrap.clientWidth || 600, h = Math.round(w / aspect); wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, h);
 		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { var mh = window.innerHeight - 90; if (h > mh) h = mh; }
 		stage.style.width = w + "px"; stage.style.height = h + "px";
 		dpr = Math.min(2, window.devicePixelRatio || 1); var cw = Math.round(w * dpr), ch = Math.round(h * dpr);
@@ -507,7 +507,7 @@
 	$("or-clrtr").onclick = function () { trails = {}; };
 	$("or-link").onclick = function () {
 		var u = new URL(location.href); u.search = "";
-		var data = { p: preset.id, b: sim.bodies.map(function (b) { return [b.name, +b.m.toPrecision(10), +b.x.toPrecision(10), +b.y.toPrecision(10), +b.vx.toPrecision(10), +b.vy.toPrecision(10), b.color, b.rad ? +b.rad.toPrecision(4) : 0, b.star ? 1 : 0]; }), t: +sim.t.toPrecision(10), w: +(Math.min(W, H * aspect) / view.S).toPrecision(5) };
+		var data = { p: preset.id, b: sim.bodies.map(function (b) { return [b.name, +b.m.toPrecision(10), +b.x.toPrecision(10), +b.y.toPrecision(10), +b.vx.toPrecision(10), +b.vy.toPrecision(10), b.color, b.rad ? +b.rad.toPrecision(4) : 0, b.star ? 1 : 0]; }), t: +sim.t.toPrecision(10), w: +(Math.min(W, H) * 1.45 / view.S).toPrecision(5) };
 		var s = b64e(JSON.stringify(data)); if (s.length > 6000) { toast("Too many bodies for a link"); return; } u.searchParams.set("s", s); copyText(u.toString(), "Link to this system copied");
 	};
 	function buildPresetChips() {
@@ -569,9 +569,9 @@
 	$("or-tr").value = ui.trailN; $("or-tr-v").textContent = TRAIL_NAME[ui.trailN];
 	var initId = O.PRESETS.some(function (p) { return p.id === q.get("p"); }) ? q.get("p") : (O.PRESETS.some(function (p) { return p.id === saved.preset; }) ? saved.preset : "earth-sun"), custom = null, ctime = 0, cw = 0;
 	if (q.get("s")) { try { var d = JSON.parse(b64d(q.get("s"))); if (d && Array.isArray(d.b) && d.b.length && d.b.length < 60 && O.PRESETS.some(function (p) { return p.id === d.p; })) { initId = d.p; custom = d.b.map(function (b) { return [String(b[0]).slice(0, 30), +b[1], +b[2], +b[3], +b[4], +b[5], String(b[6]).replace(/[^#\w]/g, ""), +b[7] || 0, b[8]]; }); ctime = +d.t || 0; cw = +d.w || 0; } } catch (e) {} }
-	resizeInit(); loadSystem(initId, custom); if (custom) { sim.t = ctime; startState = null; if (cw) { view.S = Math.min(W, H * aspect) / cw; } }
+	resizeInit(); loadSystem(initId, custom); if (custom) { sim.t = ctime; startState = null; if (cw) { view.S = Math.min(W, H) * 1.45 / cw; } }
 	setTab(tab); requestAnimationFrame(function (t) { last = t; requestAnimationFrame(frame); });
-	function resizeInit() { var wrap = stage.parentNode; W = wrap.clientWidth || 600; H = Math.round(W / aspect); }
+	function resizeInit() { var wrap = stage.parentNode; wrap.setAttribute("data-mes-free", "1"); W = wrap.clientWidth || 600; H = Math.round(W / aspect); }
 	window.addEventListener("resize", onResize); if (window.ResizeObserver) new ResizeObserver(onResize).observe(stage.parentNode); setTimeout(onResize, 0);
 	var pinned = document.body.classList; new MutationObserver(function () {}).observe(document.body, { attributes: true });
 	window.__orbit = { get sim() { return sim; }, get ui() { return ui; }, get view() { return view; }, load: loadSystem, draw: draw };

@@ -164,6 +164,7 @@
 	var cam = { yaw: 0.6, pitch: 0.35, zoom: 1 };
 	var paths = null, geoRan = false, curS = null, startPt = [0, 0], gparam = { n: 14, ang: 0, len: 6, fan: true };
 	function resize() {
+		stage.parentNode.setAttribute('data-mes-free', '1');
 		var r = stage.getBoundingClientRect(); if (!r.width) return;
 		dpr = Math.min(2, window.devicePixelRatio || 1);
 		W = Math.round(r.width); H = Math.round(r.height);

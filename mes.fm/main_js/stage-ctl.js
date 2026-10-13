@@ -28,9 +28,23 @@
 
 	function colW(w) { var p = w.parentNode; return p ? p.clientWidth || 0 : 0; }
 	function curSize() { if (state.w) return 'C'; if (state.s) return state.s; return (window.innerWidth >= 1250) ? 'M' : 'L'; }
+	function isFree(w) { return w.getAttribute('data-mes-free') === '1'; }   // a simulation that lays itself out for any width x height (it calls MESStage.sh for its stage height)
+	function heightFor(wrapEl) {   // the stage height the user asked for (px), 0 = the simulation's own shape
+		if (!isFree(wrapEl) || wrapEl.classList.contains('mes-fill')) return [0, 0];
+		var s = curSize(); if (s === 'C') return state.h ? [state.h, 1] : [0, 0];   // [px, exact?]: an exact height is used as it is, a preset's is only a cap
+		for (var i = 0; i < SIZES.length; i++) if (SIZES[i][0] === s) return [SIZES[i][3] || 0, 0];
+		return [0, 0];
+	}
 	function target(wrapEl) {   // px width for the current choice (0 = no cap)
 		var s = curSize(), col = colW(wrapEl);
-		if (s === 'C') return Math.max(380, Math.min(col || 1e5, state.w));
+		if (s === 'C') {
+			var cw = Math.max(380, Math.min(col || 1e5, state.w));
+			if (state.h && !isFree(wrapEl)) {   // a fixed-shape picture: the box is the largest one of its own shape that fits inside the chosen width x height
+				var asp0 = wrapEl.__asp || 0; if (!asp0) { var st0 = wrapEl.querySelector('[class$="-stage"]'); if (st0 && st0.offsetWidth > 0 && st0.offsetHeight > 0) asp0 = st0.offsetWidth / st0.offsetHeight; }
+				if (asp0) cw = Math.max(320, Math.min(cw, Math.round(state.h * asp0)));
+			}
+			return cw;
+		}
 		for (var i = 0; i < SIZES.length; i++) if (SIZES[i][0] === s) {
 			var width = SIZES[i][2] ? Math.min(SIZES[i][2], col || SIZES[i][2]) : 0, cap = NOCAP.test(wrapEl.className) ? 0 : SIZES[i][3], stage = (width || cap) ? wrapEl.querySelector('[class$="-stage"]') : null;
 			if (stage && !wrapEl.__fixedH) {   // the aspect the simulation itself chose (its inline px width + height), else the settled box
@@ -52,7 +66,8 @@
 	}
 	function apply() {
 		wraps.forEach(function (o) {
-			var t = target(o.wrap);
+			var t = target(o.wrap), hh = heightFor(o.wrap);
+			if ((o.wrap.__sh || 0) !== hh[0] || (o.wrap.__she || 0) !== hh[1]) { o.wrap.__sh = hh[0]; o.wrap.__she = hh[1]; var vn = hh[1] ? '--mes-sh' : '--mes-shmax'; o.wrap.style.removeProperty('--mes-sh'); o.wrap.style.removeProperty('--mes-shmax'); if (hh[0]) o.wrap.style.setProperty(vn, hh[0] + 'px'); ping(); }
 			var cur = parseInt(o.wrap.style.maxWidth, 10) || 0;
 			if (cur !== t) { var now = Date.now(); o.ch = (o.ch || []).filter(function (x) { return now - x < 3000; }); o.ch.push(now); if (o.ch.length > 6 && !o.wrap.__frozen) { o.wrap.__frozen = true; t = target(o.wrap); }   // safety net: a box that keeps changing size is frozen on width-only caps
 				o.wrap.style.maxWidth = t ? t + 'px' : ''; o.wrap.style.marginLeft = o.wrap.style.marginRight = t ? 'auto' : ''; o.bar.style.maxWidth = t ? t + 'px' : ''; ping(); }
@@ -77,15 +92,16 @@
 			if (b.dataset.fill) { fill(wrap); return; }
 			state = { s: b.dataset.s }; write(state); apply();
 		});
-		var grip = document.createElement('div'); grip.className = 'mes-grip'; grip.title = 'Drag to resize the box (double-click: back to the standard size)'; grip.setAttribute('aria-hidden', 'true');
+		var grip = document.createElement('div'); grip.className = 'mes-grip'; grip.title = 'Drag to resize the box, wider or narrower and taller or shorter (double-click: back to the standard size)'; grip.setAttribute('aria-hidden', 'true');
 		if (getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
 		wrap.appendChild(grip);
 		var drag = null;
-		grip.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, w: wrap.offsetWidth }; try { grip.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } e.preventDefault(); });
+		grip.addEventListener('pointerdown', function (e) { var stg = wrap.querySelector('[class$="-stage"]'); drag = { x: e.clientX, y: e.clientY, w: wrap.offsetWidth, h: stg ? stg.offsetHeight : 0 }; try { grip.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } e.preventDefault(); });
 		grip.addEventListener('pointermove', function (e) {
 			if (!drag) return;
 			var col = colW(wrap) || 1e5, w = Math.max(380, Math.min(col, Math.round(drag.w + 2 * (e.clientX - drag.x))));
-			state = { w: w }; apply();
+			var h = drag.h ? Math.max(200, Math.min(1800, Math.round(drag.h + (e.clientY - drag.y)))) : 0;
+			state = h ? { w: w, h: h } : { w: w }; apply();
 		});
 		function up() { if (drag) { drag = null; write(state); } }
 		grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
@@ -123,6 +139,6 @@
 		var sel = PREFIX.map(function (p) { return '.' + p + '-wrap'; }).join(',');
 		Array.prototype.forEach.call(document.querySelectorAll(sel), attach);
 	}
-	window.MESStage = { attach: attach, apply: apply, leave: leave };
+	window.MESStage = { attach: attach, apply: apply, leave: leave, sh: function (stage, h) { var w = stage && stage.parentNode, o = w && w.__sh; if (!o) return h; return w.__she ? o : Math.min(h, o); } };
 	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

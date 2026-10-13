@@ -45,12 +45,12 @@
 	function onResize() {
 		var wrap = stage.parentNode, w = wrap.clientWidth || 600; dpr = Math.min(2, window.devicePixelRatio || 1);
 		if (tab === "sim") {
-			var h = Math.round(w / aspect); if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { var mh = window.innerHeight - 90 - (flags.chart ? 150 : 0); if (h > mh) h = mh; }
+			var h = Math.round(w / aspect); wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, h); if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { var mh = window.innerHeight - 90 - (flags.chart ? 150 : 0); if (h > mh) h = mh; }
 			stage.style.width = w + "px"; stage.style.height = h + "px"; W = w; H = h; var cw = Math.round(w * dpr), ch = Math.round(h * dpr); if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
 			var chh = flags.chart ? 150 : 0; chv.style.height = chh + "px"; chv.parentNode.style.display = flags.chart ? "" : "none"; chv.width = Math.round(w * dpr); chv.height = Math.round(chh * dpr);
 			draw(); drawChart();
 		} else {
-			var mw = Math.min(w, Math.max(300, Math.min(760, window.innerHeight - 220))), mh2 = mw; mstage.style.width = mw + "px"; mstage.style.height = mh2 + "px";
+			var mwrap = mstage.parentNode, mcol = mwrap.clientWidth || w, mw = Math.min(mcol, Math.max(300, Math.min(760, window.innerHeight - 220))), mh2 = mw; mstage.style.width = mw + "px"; mstage.style.height = mh2 + "px";
 			var cw2 = Math.round(mw * dpr), ch2 = Math.round(mh2 * dpr); if (mcv.width !== cw2 || mcv.height !== ch2) { mcv.width = cw2; mcv.height = ch2; mapDirty = true; if (map.ready) paintMap(); }
 		}
 	}

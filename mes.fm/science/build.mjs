@@ -155,6 +155,15 @@ const PAGES = [
     tileLabel: "Black Hole Simulator",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/double-pendulum-icon.jpg (the real flip-time chaos map, rendered from the tool's own maths).
+    slug: "double-pendulum",
+    section: "tools",
+    href: "/double-pendulum",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Double Pendulum",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/orbit-simulator-icon.jpg (the user's Grok tile art).
     slug: "orbit-simulator",
     section: "tools",

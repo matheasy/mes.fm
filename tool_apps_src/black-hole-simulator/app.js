@@ -27,8 +27,9 @@
 		var url = u.toString(), done = function () { toast("Link copied"); };
 		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { prompt("Copy this link:", url); }); else prompt("Copy this link:", url);
 	}
-	function size(stage, canvas, aspect, maxH) {
+	function size(stage, canvas, aspect, maxH, free) {
 		var wrap = stage.parentNode, W = wrap.clientWidth, H = Math.round(W / aspect);
+		if (free) { wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) H = window.MESStage.sh(stage, H); }
 		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { var mh = window.innerHeight - 90; if (H > mh) { H = mh; W = Math.round(H * aspect); } }
 		stage.style.width = W + "px"; stage.style.height = H + "px";
 		var dpr = Math.min(2, window.devicePixelRatio || 1), cw = Math.round(W * dpr), ch = Math.round(H * dpr);
@@ -79,7 +80,7 @@
 	}
 	function lPointAt(pts, cum, s) { var lo = 0, hi = cum.length - 1; while (lo < hi - 1) { var m = (lo + hi) >> 1; if (cum[m] <= s) lo = m; else hi = m; } var seg = cum[hi] - cum[lo] || 1, f = (s - cum[lo]) / seg; return [pts[2 * lo] + (pts[2 * hi] - pts[2 * lo]) * f, pts[2 * lo + 1] + (pts[2 * hi + 1] - pts[2 * lo + 1]) * f]; }
 	function lDraw(now) {
-		var d = size(lstage, lc, 16 / 9), W = d.W, H = d.H, s = W / LT.zoom, cx = W / 2, cy = H / 2, c = lctx, T = (now - lT0) / 1000;
+		var d = size(lstage, lc, 16 / 9, 0, true), W = d.W, H = d.H, s = W / LT.zoom, cx = W / 2, cy = H / 2, c = lctx, T = (now - lT0) / 1000;
 		if (lDirty) lraysCompute();
 		c.fillStyle = "#05070d"; c.fillRect(0, 0, W, H);
 		if (LT.ana) {   /* the medium: n(rho) shown as a glow around the hole */
@@ -154,7 +155,7 @@
 	}
 	function oDraw() {
 		if (!orb) oRestart();
-		var d = size(ostage, oc, 16 / 9), W = d.W, H = d.H, s = H / (2 * oView), cx = W / 2, cy = H / 2, c = octx;
+		var d = size(ostage, oc, 16 / 9, 0, true), W = d.W, H = d.H, s = H / (2 * oView), cx = W / 2, cy = H / 2, c = octx;
 		c.fillStyle = "#05070d"; c.fillRect(0, 0, W, H);
 		c.setLineDash([5 * d.dpr, 5 * d.dpr]); c.lineWidth = Math.max(1, d.dpr);
 		if (OB.isco) { c.strokeStyle = "rgba(120,200,160,0.6)"; c.beginPath(); c.arc(cx, cy, 3 * s, 0, 2 * PI); c.stroke(); }
