@@ -39,8 +39,9 @@
 
   // everything stored in chrome.storage.sync under "mesdm"
   function merge(stored) {
-    var out = { v: 1, enabled: true, active: 'default', profiles: [], siteModes: {} };
+    var out = { v: 1, enabled: true, toolbar: 'toggle', active: 'default', profiles: [], siteModes: {} };   // toolbar: what clicking the toolbar button does: 'toggle' = switch this site dark / light, 'menu' = open the panel
     if (stored && stored.enabled === false) out.enabled = false;
+    if (stored && stored.toolbar === 'menu') out.toolbar = 'menu';
     if (stored && Array.isArray(stored.profiles) && stored.profiles.length) {
       var seen = {};
       stored.profiles.slice(0, 30).forEach(function (p) {

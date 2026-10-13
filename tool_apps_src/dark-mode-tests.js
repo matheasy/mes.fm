@@ -7,7 +7,7 @@ function eq(a, b, m) { n++; if (JSON.stringify(a) !== JSON.stringify(b)) { bad++
 const B = V.builtins();
 eq(B.map(p => p.id), ['default', 'system', 'night', 'paper'], 'built-in setups'); eq(B[1].config.mode, 'system', 'system setup'); eq(B[3].config.mode, 'light', 'paper is light');
 eq(B[2].config.brightness, 85, 'night is dimmer');
-let m = V.merge(null); eq(m.profiles.length, 4, 'merge null'); eq(m.enabled, true, 'enabled by default'); eq(m.active, 'default', 'active');
+let m = V.merge(null); eq(m.profiles.length, 4, 'merge null'); eq(m.enabled, true, 'enabled by default'); eq(m.toolbar, 'toggle', 'toolbar button switches by default'); eq(V.merge({ toolbar: 'menu' }).toolbar, 'menu', 'toolbar menu option kept'); eq(V.merge({ toolbar: 'x' }).toolbar, 'toggle', 'bad toolbar value ignored'); eq(m.active, 'default', 'active');
 m = V.merge({ enabled: false, active: 'x', profiles: [{ id: 'a', name: 'A', config: { mode: 'bogus', brightness: 999, contrast: 'x', sepia: -5, scheduleFrom: '7pm', keepImages: 'no' } }, { id: 'a' }], siteModes: { 'Y.com': 'dark', 'z.com': 'blue', 'w.org': 'off' } });
 eq(m.enabled, false, 'disabled kept'); eq(m.profiles.length, 1, 'dup ids dropped'); eq(m.active, 'a', 'bad active falls back');
 eq(m.profiles[0].config.mode, 'dark', 'bad mode'); eq(m.profiles[0].config.brightness, 150, 'brightness clamped'); eq(m.profiles[0].config.contrast, 100, 'bad contrast'); eq(m.profiles[0].config.sepia, 0, 'sepia floor');

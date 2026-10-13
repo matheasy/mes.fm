@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var V = MESDM, $ = function (id) { return document.getElementById(id); };
-  var S = V.merge(null), tab = null, host = '', timer = 0;
+  var S = V.merge(null), tab = null, host = '', timer = 0, forTab = new URLSearchParams(location.search).get('tab');   // ?tab= when opened from the right-click menu in a window of its own
 
   function cfg() { return V.profileById(S, S.active).config; }
   function save() { clearTimeout(timer); timer = setTimeout(function () { chrome.storage.sync.set({ mesdm: S }, function () { setTimeout(status, 250); }); }, 150); }
@@ -29,6 +29,7 @@
     });
   }
 
+  $('toolbar').onchange = function () { S.toolbar = $('toolbar').value; save(); };
   $('enabled').onchange = function () { S.enabled = $('enabled').checked; save(); };
   $('site').onclick = function (e) {
     if (!e.target.dataset || e.target.dataset.m === undefined || !host) return;
@@ -41,10 +42,11 @@
 
   chrome.storage.sync.get('mesdm', function (a) {
     S = V.merge(a && a.mesdm);
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    var got = function (tabs) {
       tab = tabs && tabs[0];
       try { host = new URL(tab.url).hostname.toLowerCase(); } catch (e) { host = ''; }
-      draw(); status();
-    });
+      $('toolbar').value = S.toolbar; draw(); status();
+    };
+    if (forTab) chrome.tabs.get(Number(forTab), function (t) { got(t ? [t] : []); }); else chrome.tabs.query({ active: true, currentWindow: true }, got);
   });
 })();
