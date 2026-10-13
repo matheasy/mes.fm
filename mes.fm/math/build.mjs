@@ -104,6 +104,7 @@ const PAGES = [
   { slug: "photoelectric-effect-simulator", href: "/photoelectric-effect-simulator", logo: "photoelectric-effect-simulator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Photoelectric Effect Simulator" },
   { slug: "atomic-clock-simulator", href: "/atomic-clock-simulator", logo: "atomic-clock-simulator-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Atomic Clock Simulator" },
   { slug: "michelson-morley-experiment", href: "/michelson-morley-experiment", logo: "michelson-morley-experiment-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Michelson\u2013Morley Experiment Simulator" },
+  { slug: "mandelbrot", href: "/mandelbrot", logo: "mandelbrot-logo.png", iconVersion: 1, tileOnly: true, tileLabel: "Mandelbrot Explorer" },
 ];
 
 // ---------------------------------------------------------------------------
