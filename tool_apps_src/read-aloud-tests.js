@@ -48,4 +48,11 @@ const ch = SR.speechChunk(tk.words, tk.text, 0, 200); eq(ch.text.length, ch.end 
 eq(ch.text, big.text.slice(ch.start, ch.end), 'chunk text = slice of the page text (no blank lines inside a chunk)');
 for (let from = 0; from < tk.words.length;) { const c = SR.speechChunk(tk.words, tk.text, from, 200); if (!c) break; if (c.text.length !== c.end - c.start) { bad++; console.log('FAIL chunk length at', from); } from = c.b; }
 n++;
+
+function ok(c, m) { eq(!!c, true, m); }
+/* Google Docs: the id comes from the URL and the plain-text export becomes one node-less item per paragraph */
+ok(R.docsId('https://docs.google.com/document/d/1tDsVMwtTusn0KFnyLTQW5Xq0lpPgyjU2NpAIS5a-xfs/edit?tab=t.0') === '1tDsVMwtTusn0KFnyLTQW5Xq0lpPgyjU2NpAIS5a-xfs', 'docs id from an edit url');
+ok(R.docsId('https://docs.google.com/document/u/1/d/abcdefghij1234/edit') === 'abcdefghij1234', 'docs id with /u/1/');
+ok(R.docsId('https://docs.google.com/spreadsheets/d/abcdefghij1234/edit') === '' && R.docsId('https://example.com/document/d/abcdefghij1234') === '' && R.docsId('') === '', 'not a doc');
+{ const it = R.docsItems('\uFEFFTitle line\r\n\r\nFirst paragraph.\n \u200b \nSecond one.\n'); ok(it.length === 3 && it[0].t === 'Title line' && it[2].t === 'Second one.' && it.every(x => x.node === null) && it[0].b === 0 && it[2].b === 2, 'docsItems splits into paragraphs'); const m = R.buildText(it); ok(m.text.indexOf('Title line') === 0 && m.text.indexOf('First paragraph.') > 0, 'buildText accepts them'); }
 console.log(bad ? bad + ' FAILED of ' + n : 'all ' + n + ' checks passed'); process.exit(bad ? 1 : 0);

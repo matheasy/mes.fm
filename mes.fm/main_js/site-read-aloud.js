@@ -536,7 +536,16 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     return ans;
   }
 
-  var api = { defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
+  // Google Docs draws its pages on a canvas, so there is no text for a page script to find: the id lets reader.js read the document's own export instead.
+  function docsId(url) { var m = /^https:\/\/docs\.google\.com\/document\/(?:u\/\d+\/)?d\/([\w-]{10,})/.exec(String(url || '')); return m ? m[1] : ''; }
+  // plain-text export -> one item per non-empty paragraph (node-less: there is nothing in the page to highlight)
+  function docsItems(txt) {
+    var out = [], lines = String(txt || '').replace(/^\uFEFF/, '').split(/\r?\n/), b = 0;
+    for (var i = 0; i < lines.length; i++) { var t = lines[i].replace(/[\u200b\u00a0]+/g, ' ').trim(); if (t) out.push({ node: null, t: t, base: 0, b: b++ }); }
+    return out;
+  }
+
+  var api = { docsId: docsId, docsItems: docsItems, defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
               uid: uid, contrastText: contrastText, buildText: buildText, locate: locate, posOf: posOf };
   root.MESRA = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -682,13 +691,14 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
 
   // mode: 'selection' | 'page' | 'auto' (selection if there is one, else page). Returns false if there is nothing to read.
-  function collect(mode) {
+  function collect(mode, pre) {
     memo = [new Map(), new Map()]; vmemo = new Map();
     var sel = window.getSelection(), items, startPos = 0, caret = null;
     var hasSel = sel && sel.rangeCount && !sel.isCollapsed && /\S/.test(sel.toString());
     var ft = hasSel ? '' : fieldText();
     if (mode === 'auto') mode = (hasSel || /\S/.test(ft)) ? 'selection' : 'page';
-    if (mode === 'selection') {
+    if (pre) { items = pre; mode = 'page'; }   // a Google Doc: the text came from its export
+    else if (mode === 'selection') {
       if (hasSel) {
         var r = sel.getRangeAt(0), root = r.commonAncestorContainer;
         items = textNodes(root.nodeType === 1 ? root : root.parentNode, r, false);
@@ -708,7 +718,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
       return false;
     }
     st.map = map; st.nodes = items.map(function (i) { return i.node; }); st.key = ++keyN; st.panelOver = null;
-    st.words = tk.words; st.starts = tk.sentStarts; st.text = tk.text; st.mode = mode;
+    st.words = tk.words; st.starts = tk.sentStarts; st.text = tk.text; st.mode = mode; st.docs = !!pre;
     st.lang = SR.detectLang(tk.text) || (document.documentElement.lang || '').toLowerCase();
     st.idx = 0;
     if (caret) {
@@ -903,13 +913,34 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     if (st.active && st.idx != null) { sentIdx = -1; highlight(st.idx); }
   }
 
+  function go() {
+    st.active = true; st.playing = false; st.gotBoundary = false; sentIdx = -1;
+    applyStyle();
+    loadUi(function () { buildUi(); fillUi(); applyText(); speakFrom(st.idx); });
+  }
+  // Google Docs: the page is a canvas, so read the document through its own plain-text export (same origin, with the person's own login).
+  function fetchDoc(id, cb) {
+    var done = false, fin = function (items) { if (!done) { done = true; cb(items); } };
+    try {
+      fetch('/document/d/' + id + '/export?format=txt', { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(function (t) { var it = RA.docsItems(t); fin(it.length ? it : null); }, function () { fin(null); });
+    } catch (e) { fin(null); }
+    setTimeout(function () { fin(null); }, 15000);
+  }
   function begin(mode) {
     if (st.active) stopSpeech();
     loadSettings(function () {
+      var did = window.__mesraSite ? '' : RA.docsId(location.href);
+      if (did && !(window.getSelection && !window.getSelection().isCollapsed && /\S/.test(String(window.getSelection())))) {
+        showNote('MES Read Aloud: loading this Google Doc…', 1500);
+        fetchDoc(did, function (items) {
+          if (!items || !collect(mode === 'selection' ? 'page' : mode, items)) { showNothing('docs'); return; }
+          go();
+        });
+        return;
+      }
       if (!collect(mode)) { showNothing(); return; }
-      st.active = true; st.playing = false; st.gotBoundary = false; sentIdx = -1;
-      applyStyle();
-      loadUi(function () { buildUi(); fillUi(); applyText(); speakFrom(st.idx); });
+      go();
     });
   }
 
@@ -1059,7 +1090,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.tp.classList.toggle('on', on); ui.tpb.classList.toggle('on', on);
     ui.tpb.title = on ? 'Hide the text box' : 'Show the text being read in a box above the player';
     if (!on) return;
-    ui.tl.textContent = hasDomText() ? 'Text being read' : 'Text being read (the page cannot highlight text inside a text box, so it is shown here)';
+    ui.tl.textContent = hasDomText() ? 'Text being read' : st.docs ? 'Text of this Google Doc (Google Docs draws its pages itself, so the words are followed here)' : 'Text being read (the page cannot highlight text inside a text box, so it is shown here)';
     var ps = ui.p.style;
     ps.setProperty('--tf', String(P.panelScale || 1));
     ps.setProperty('--wc', P.wordColor); ps.setProperty('--wct', RA.contrastText(P.wordColor));
@@ -1188,7 +1219,13 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     panelApply();
   }
 
-  function showNothing() {
+  function showNote(msg, ms) {
+    var h = document.createElement('div');
+    h.style.cssText = 'all:initial;position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483647;background:#1f2023;color:#f2f2f2;font:14px system-ui,sans-serif;padding:10px 16px;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.4)';
+    h.textContent = msg; document.documentElement.appendChild(h); setTimeout(function () { h.remove(); }, ms || 3000);
+  }
+  function showNothing(why) {
+    if (why === 'docs') { showNote('MES Read Aloud could not read this Google Doc. Open it while signed in with access, and check that File > Download is not disabled for viewers.', 6000); return; }
     var h = document.createElement('div');
     h.style.cssText = 'all:initial;position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483647;background:#1f2023;color:#f2f2f2;font:14px system-ui,sans-serif;padding:10px 16px;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.4)';
     h.textContent = 'MES Read Aloud: no readable text found here. Select some text and try again.';

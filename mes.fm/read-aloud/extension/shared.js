@@ -126,7 +126,16 @@
     return ans;
   }
 
-  var api = { defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
+  // Google Docs draws its pages on a canvas, so there is no text for a page script to find: the id lets reader.js read the document's own export instead.
+  function docsId(url) { var m = /^https:\/\/docs\.google\.com\/document\/(?:u\/\d+\/)?d\/([\w-]{10,})/.exec(String(url || '')); return m ? m[1] : ''; }
+  // plain-text export -> one item per non-empty paragraph (node-less: there is nothing in the page to highlight)
+  function docsItems(txt) {
+    var out = [], lines = String(txt || '').replace(/^\uFEFF/, '').split(/\r?\n/), b = 0;
+    for (var i = 0; i < lines.length; i++) { var t = lines[i].replace(/[\u200b\u00a0]+/g, ' ').trim(); if (t) out.push({ node: null, t: t, base: 0, b: b++ }); }
+    return out;
+  }
+
+  var api = { docsId: docsId, docsItems: docsItems, defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
               uid: uid, contrastText: contrastText, buildText: buildText, locate: locate, posOf: posOf };
   root.MESRA = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
