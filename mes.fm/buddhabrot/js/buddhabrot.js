@@ -216,13 +216,20 @@
 	var pool = [], wurl = null, runId = 0, snaps = [], running = true, workerOk = true, t0 = 0, lastTried = 0, lastT = 0, rate = 0, picked = null, comb = null, scales = null, totals = { tried: 0, escaped: 0, plotted: 0 };
 
 	/* ---------- layout ---------- */
-	function dims() { var L = S.size; return S.rot ? { w: Math.round(L * 0.8), h: L } : { w: L, h: Math.round(L * 0.8) }; }
+	/* the box is free-shaped (stage-ctl.js: Small / Medium / Large, corner grip, Fill window): the picture is rendered at the box's own aspect, so a big window shows more of the plane */
+	function dims() { var sw = stage.offsetWidth || 600, sh = stage.offsetHeight || 750, L = S.size; return sw >= sh ? { w: L, h: Math.max(100, Math.round(L * sh / sw)) } : { w: Math.max(100, Math.round(L * sw / sh)), h: L }; }
+	var reshapeT = 0;
 	function sizeStage() {
-		var wrap = stage.parentNode, avail = wrap.clientWidth || 600, asp = W / H || 0.8, maxH = Math.max(320, window.innerHeight * 0.85), w = Math.min(avail, maxH * asp);
-		if (document.fullscreenElement === wrap) { w = Math.min(avail, (window.innerHeight - 90) * asp); }
-		stage.style.width = Math.round(w) + "px"; stage.style.height = Math.round(w / asp) + "px";
-		var dpr = Math.min(2, window.devicePixelRatio || 1), ow = Math.round(w * dpr), oh = Math.round(w / asp * dpr);
+		var wrap = stage.parentNode; wrap.setAttribute("data-mes-free", "1");
+		var avail = wrap.clientWidth || 600, nat = Math.min(Math.round(avail * (S.rot ? 1.25 : 0.8)), Math.round(Math.max(360, window.innerHeight * 0.85))), h = nat;
+		if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, nat);
+		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) h = Math.max(300, window.innerHeight - 90);
+		stage.style.width = avail + "px"; stage.style.height = Math.round(h) + "px";
+		var dpr = Math.min(2, window.devicePixelRatio || 1), ow = Math.round(avail * dpr), oh = Math.round(h * dpr);
 		if (over.width !== ow || over.height !== oh) { over.width = ow; over.height = oh; }
+		if (W) {   /* a different box shape needs a picture of that shape: restart once the box has settled */
+			var d = dims(); if (Math.abs(d.w / d.h - W / H) > 0.03) { clearTimeout(reshapeT); reshapeT = setTimeout(function () { mainBufs = null; start(); }, 450); }
+		}
 		drawOverlay();
 	}
 	function useCanvas() { var d = dims(); W = d.w; H = d.h; canvas.width = W; canvas.height = H; img = ctx.createImageData(W, H); out32 = new Uint32Array(img.data.buffer); ps = S.span / (S.rot ? H : W); }
@@ -232,7 +239,7 @@
 	function killPool() { pool.forEach(function (w) { try { w.terminate(); } catch (e) {} }); pool = []; }
 	function params() { return { n: 1000, W: W, H: H, ps: ps, cr: S.cr, ci: S.ci, rot: S.rot, pw: S.pw, lims: lims(), min: Math.min(S.min, Math.max.apply(null, lims())), anti: S.anti }; }
 	function start() {
-		runId++; killPool(); useCanvas(); sizeStage();
+		runId++; killPool(); clearTimeout(reshapeT); sizeStage(); useCanvas();
 		snaps = []; comb = null; scales = null; totals = { tried: 0, escaped: 0, plotted: 0 }; lastTried = 0; rate = 0; t0 = Date.now(); lastT = t0; running = true; $("bb-go").textContent = "Pause";
 		ctx.fillStyle = "#05070d"; ctx.fillRect(0, 0, W, H);
 		var n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1)); if (S.size === 1200) n = Math.min(n, 3);
@@ -324,6 +331,7 @@
 	$("bb-full").onclick = function () { var w = stage.parentNode; if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not available here"); }); };
 	document.addEventListener("fullscreenchange", function () { setTimeout(sizeStage, 50); });
 	window.addEventListener("resize", function () { sizeStage(); });
+	if (window.ResizeObserver) new ResizeObserver(function () { sizeStage(); }).observe(stage.parentNode);
 	$("bb-link").onclick = function () {
 		var p = new URLSearchParams(); if (S.pre !== "custom") p.set("p", S.pre); p.set("m", S.mode); p.set("l", S.mode === "rgb" ? S.lims.join(",") : String(S.lim)); if (S.min) p.set("n", S.min); p.set("w", S.pw); if (S.anti) p.set("a", "1"); if (!S.rot) p.set("r", "0");
 		p.set("pal", S.pal); p.set("bt", S.bright); p.set("gm", S.gamma); p.set("bk", S.black); p.set("sz", S.size); if (S.span < hh.span * 0.99) { p.set("x", +S.cr.toPrecision(8)); p.set("y", +S.ci.toPrecision(8)); p.set("s", +S.span.toPrecision(6)); }
@@ -394,6 +402,6 @@
 	}
 
 	/* ---------- go ---------- */
-	writeControls(); useCanvas(); sizeStage(); drawLabBase(); setPicked(-0.745, 0.2); start();
+	writeControls(); sizeStage(); useCanvas(); drawLabBase(); setPicked(-0.745, 0.2); start();
 	document.addEventListener("visibilitychange", function () { /* workers keep running in a hidden tab; nothing to do */ });
 })();
