@@ -39,7 +39,7 @@
 		return function () { var cur = getB(); Array.prototype.forEach.call(host.children, function (b, i) { b.setAttribute("aria-pressed", Math.abs(PRE[i][1] - cur) < 1e-9 * Math.max(1, cur) || (cur > 0 && Math.abs(PRE[i][1] / cur - 1) < 1e-6) ? "true" : "false"); }); };
 	}
 	/* ---- A person, drawn for any age ---- */
-	function ageFrac(age) { if (age < 1) return 0.2 + 0.05 * age; if (age < 18) { var u = (age - 1) / 17; return 0.25 + 0.75 * (u * u * (3 - 2 * u)); } if (age > 65) return 1 - 0.07 * clamp((age - 65) / 40, 0, 1); return 1; }
+	function ageFrac(age) { if (age < 1) return 0.4 + 0.06 * age; if (age < 18) { var u = (age - 1) / 17; return 0.46 + 0.54 * (u * u * (3 - 2 * u)); } if (age > 65) return 1 - 0.07 * clamp((age - 65) / 40, 0, 1); return 1; }
 	function mixc(a, b, t) { return "rgb(" + [0, 1, 2].map(function (i) { return Math.round(lerp(a[i], b[i], clamp(t, 0, 1))); }).join(",") + ")"; }
 	function person(c, cx, by, hh, age, o) {
 		age = clamp(age, 0, 125); var f = ageFrac(age), H = hh * f, t = Math.min(1, age / 18), headR = H * (0.1 + 0.07 * (1 - t));
@@ -157,7 +157,7 @@
 		}
 		/* person */
 		var o = { female: female(k), shirt: ship ? "#e0574b" : "#3b82f6", pants: "#2c3550", skin: "#f1c9a3", beat: Math.exp(-Math.pow((frac(bph) - 0.31) / 0.05, 2)), blink: frac(blinkT * (rate * 0.35 + 0.01) + k * 0.4) > 0.94, wave: Math.sin(blinkT * 3 * rate) * 0.8 };
-		person(c, px + pw * 0.69, floorY + ph * 0.02, ph * 0.42, age, o);
+		person(c, px + pw * 0.69, floorY + ph * 0.02, ph * (pw > ph * 1.2 ? 0.5 : 0.42), age, o);   /* stacked phone panels are wide and short: a bigger figure */
 		c.textAlign = "center"; c.fillStyle = "#fff"; c.font = "700 " + fs * 1.3 + "px sans-serif"; c.fillText("age " + ageStr(age), px + pw * 0.69, floorY + ph * 0.095);
 		/* life bar: drag it (or click) to jump this person to any age from 0 to 100 */
 		var bx = px + pw * 0.06, bw = pw * 0.88, bh = Math.max(9, ph * 0.034), by2 = py + ph * 0.775, frc = clamp(age / barMax, 0, 1), kx = bx + Math.max(bh * 0.5, bw * frc);
