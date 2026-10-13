@@ -954,6 +954,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1172,132 +1204,137 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="911-posts" class="section-body">
   
+    <div class="ls-filter" id="911-postsFilter">
+      <input type="search" id="911-postsSearch" placeholder="Search the posts…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="911-postsChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (18)</button><button type="button" data-c="judy" data-label="Dr. Judy Wood" aria-pressed="false">Dr. Judy Wood (6)</button><button type="button" data-c="planes" data-label="Planes" aria-pressed="false">Planes (3)</button><button type="button" data-c="people" data-label="Witnesses &amp; Researchers" aria-pressed="false">Witnesses &amp; Researchers (6)</button><button type="button" data-c="events" data-label="News &amp; Documents" aria-pressed="false">News &amp; Documents (4)</button><button type="button" data-c="other" data-label="Everything else" aria-pressed="false">Everything else (2)</button></div>
+    </div>
+    <p class="ls-empty" id="911-postsEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="911-postsGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="911-postsListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="911-postsGrid">
-    <a class="link-card" href="https://mes.fm/911planesresearch-telegram">
+    <a class="link-card" data-cats="planes people" href="https://mes.fm/911planesresearch-telegram">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/911planesresearch-telegram/img/planes-research.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Mark Conlon aka 9/11 Planes Research Is Back with a New Telegram Channel</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/amaterasu-solar-judy-wood-quote">
+    <a class="link-card" data-cats="judy" href="https://mes.fm/amaterasu-solar-judy-wood-quote">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/amaterasu-solar-judy-wood-quote/img/amaterasu-solar-judy-wood-quote-1.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Amaterasu Solar Bought a Dr. Judy Wood Quote Coffee Mug</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/youtube-removed-curt-weldon-911">
+    <a class="link-card" data-cats="events" href="https://mes.fm/youtube-removed-curt-weldon-911">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/youtube-removed-curt-weldon-911/img/youtube-removed-curt-weldon-911-1.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">YouTube Removed My Curt Weldon 9/11 Video for &quot;Hate Speech&quot; (Appeal Rejected)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/alleged-hijackers-id-911">
+    <a class="link-card" data-cats="planes" href="https://mes.fm/alleged-hijackers-id-911">
       <span class="link-card-thumb" style="background-image:url('https://snipboard.io/JjRc1x.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Alleged Hijackers' Alleged ID on all Four 9/11 sites</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/drjudywood-total-disclosure-podcast">
+    <a class="link-card" data-cats="judy" href="https://mes.fm/drjudywood-total-disclosure-podcast">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/drjudywood-total-disclosure-podcast/podcast.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Dr. Judy Wood on the Total Disclosure Podcast</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/osama-911-plans-parody">
+    <a class="link-card" data-cats="events" href="https://mes.fm/osama-911-plans-parody">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmWz6aEvGR9GePoHTwfsAX577kNWXHRVFzpFZ4bRKUG9aH/telegram-cloud-photo-size-1-4999448963589025076-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">BREAKING: CIA Unseals Osama Bin Laden's Writing Pad with His 9/11 Plans</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/peter-baron-ufo-ai-testimony">
+    <a class="link-card" data-cats="people" href="https://mes.fm/peter-baron-ufo-ai-testimony">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mestruth/23xAZuUjwun9rsLm4Yn2bUjhTDc7FQvCv8KJLhS6CDrz5N2yqXVZGQyu2hLiBjSDKmuU7.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">MES Talks to Peter Baron About His UFO 9/11 Sighting</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/melissa-doi-voices-bleeped">
+    <a class="link-card" data-cats="people" href="https://mes.fm/melissa-doi-voices-bleeped">
       <span class="link-card-thumb" style="background-image:url('https://img.leopedia.io/DQmUEgBiwouKVBeFRpH9NrSS1F4aNmBjzJEdaQDpHz22ZnZ/telegram-cloud-photo-size-1-4994836263202393220-y.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Melissa Doi and the 1,613 Emergency 9/11 Calls</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/911-3d-print-pin">
+    <a class="link-card" data-cats="other" href="https://mes.fm/911-3d-print-pin">
       <span class="link-card-thumb" style="background-image:url('https://snipboard.io/rRJXk6.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Niece Made MES a 9/11 Pin with Her 3D Printing Pen</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/911-hiroshima-fumes">
+    <a class="link-card" data-cats="other" href="https://mes.fm/911-hiroshima-fumes">
       <span class="link-card-thumb" style="background-image:url('https://snipboard.io/0XfKeg.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Photo of Hiroshima One Day After the Atomic Bomb Shows Similar Fuming as 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/judy-wood-john-wells-live">
+    <a class="link-card" data-cats="judy" href="https://mes.fm/judy-wood-john-wells-live">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/judy-wood-john-wells-live/img/judy-wood-caravan-to-midnight.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Dr. Judy Wood Live on the John B. Wells – Caravan to Midnight Show</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/chris-hampton-big-idea">
+    <a class="link-card" data-cats="people" href="https://mes.fm/chris-hampton-big-idea">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/chris-hampton-big-idea/img/chris-hampton-911-alchemy-comment.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">THE Chris Hampton Comments on the 9/11 Alchemy – A Big Idea Documentary</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/911-mystery-plane-photos">
+    <a class="link-card" data-cats="planes" href="https://mes.fm/911-mystery-plane-photos">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/911-mystery-plane-photos/img/mystery-plane-1-EhBWk8.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Rare Photos of a Mystery White Plane Before the South Tower Hit</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book">
+    <a class="link-card" data-cats="judy people events" href="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book/img/naus-griffin-yYg38f.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Matthew Naus Gave G. Edward Griffin the WDTTTG Book in 2012</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/kj-french-911-100k">
+    <a class="link-card" data-cats="people" href="https://mes.fm/kj-french-911-100k">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/kj-french-911-100k/img/kj-french-100k-views.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">French 9/11 Researcher KJ Hits 100k Views in 24 Hours</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/bought-911-hutchison-shirt">
+    <a class="link-card" data-cats="judy" href="https://mes.fm/bought-911-hutchison-shirt">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/bought-911-hutchison-shirt/img/djw-book-shirt-sold.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/csis-911-lights">
+    <a class="link-card" data-cats="events" href="https://mes.fm/csis-911-lights">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/csis-911-lights/img/csis-x-post.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">CSIS Posts a Photo of the 9/11 Tribute in Light &quot;Blue Beam&quot; Lights</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/cat-wdttg-book">
+    <a class="link-card" data-cats="judy" href="https://mes.fm/cat-wdttg-book">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/cat-wdttg-book/img/cat-wdttg-1.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Story Time with Cat and Dr. Judy Wood's WDTTG Book</span>
@@ -1306,92 +1343,92 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="911-postsList">
-    <div class="list-row">
+    <div class="list-row" data-cats="planes people">
       <h3>Mark Conlon aka 9/11 Planes Research Is Back with a New Telegram Channel</h3>
       <p><a href="https://mes.fm/911planesresearch-telegram" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/911planesresearch-telegram/img/planes-research.jpg" alt="Mark Conlon aka 9/11 Planes Research Is Back with a New Telegram Channel">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy">
       <h3>Amaterasu Solar Bought a Dr. Judy Wood Quote Coffee Mug</h3>
       <p><a href="https://mes.fm/amaterasu-solar-judy-wood-quote" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/amaterasu-solar-judy-wood-quote/img/amaterasu-solar-judy-wood-quote-1.png" alt="Amaterasu Solar Bought a Dr. Judy Wood Quote Coffee Mug">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="events">
       <h3>YouTube Removed My Curt Weldon 9/11 Video for &quot;Hate Speech&quot; (Appeal Rejected)</h3>
       <p><a href="https://mes.fm/youtube-removed-curt-weldon-911" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/youtube-removed-curt-weldon-911/img/youtube-removed-curt-weldon-911-1.png" alt="YouTube Removed My Curt Weldon 9/11 Video for &quot;Hate Speech&quot; (Appeal Rejected)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="planes">
       <h3>Alleged Hijackers' Alleged ID on all Four 9/11 sites</h3>
       <p><a href="https://mes.fm/alleged-hijackers-id-911" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://snipboard.io/JjRc1x.jpg" alt="Alleged Hijackers' Alleged ID on all Four 9/11 sites">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy">
       <h3>Dr. Judy Wood on the Total Disclosure Podcast</h3>
       <p><a href="https://mes.fm/drjudywood-total-disclosure-podcast" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/drjudywood-total-disclosure-podcast/podcast.jpg" alt="Dr. Judy Wood on the Total Disclosure Podcast">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="events">
       <h3>BREAKING: CIA Unseals Osama Bin Laden's Writing Pad with His 9/11 Plans</h3>
       <p><a href="https://mes.fm/osama-911-plans-parody" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmWz6aEvGR9GePoHTwfsAX577kNWXHRVFzpFZ4bRKUG9aH/telegram-cloud-photo-size-1-4999448963589025076-y.jpg" alt="BREAKING: CIA Unseals Osama Bin Laden's Writing Pad with His 9/11 Plans">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="people">
       <h3>MES Talks to Peter Baron About His UFO 9/11 Sighting</h3>
       <p><a href="https://mes.fm/peter-baron-ufo-ai-testimony" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mestruth/23xAZuUjwun9rsLm4Yn2bUjhTDc7FQvCv8KJLhS6CDrz5N2yqXVZGQyu2hLiBjSDKmuU7.jpg" alt="MES Talks to Peter Baron About His UFO 9/11 Sighting">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="people">
       <h3>Melissa Doi and the 1,613 Emergency 9/11 Calls</h3>
       <p><a href="https://mes.fm/melissa-doi-voices-bleeped" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://img.leopedia.io/DQmUEgBiwouKVBeFRpH9NrSS1F4aNmBjzJEdaQDpHz22ZnZ/telegram-cloud-photo-size-1-4994836263202393220-y.jpg" alt="Melissa Doi and the 1,613 Emergency 9/11 Calls">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Niece Made MES a 9/11 Pin with Her 3D Printing Pen</h3>
       <p><a href="https://mes.fm/911-3d-print-pin" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://snipboard.io/rRJXk6.jpg" alt="Niece Made MES a 9/11 Pin with Her 3D Printing Pen">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Photo of Hiroshima One Day After the Atomic Bomb Shows Similar Fuming as 9/11</h3>
       <p><a href="https://mes.fm/911-hiroshima-fumes" target="_blank" rel="noopener">Notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://snipboard.io/0XfKeg.jpg" alt="Photo of Hiroshima One Day After the Atomic Bomb Shows Similar Fuming as 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy">
       <h3>Dr. Judy Wood Live on the John B. Wells – Caravan to Midnight Show</h3>
       <p><a href="https://mes.fm/judy-wood-john-wells-live" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/judy-wood-john-wells-live/img/judy-wood-caravan-to-midnight.jpg" alt="Dr. Judy Wood Live on the John B. Wells – Caravan to Midnight Show">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="people">
       <h3>THE Chris Hampton Comments on the 9/11 Alchemy – A Big Idea Documentary</h3>
       <p><a href="https://mes.fm/chris-hampton-big-idea" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/chris-hampton-big-idea/img/chris-hampton-911-alchemy-comment.png" alt="THE Chris Hampton Comments on the 9/11 Alchemy – A Big Idea Documentary">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="planes">
       <h3>Rare Photos of a Mystery White Plane Before the South Tower Hit</h3>
       <p><a href="https://mes.fm/911-mystery-plane-photos" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/911-mystery-plane-photos/img/mystery-plane-1-EhBWk8.jpg" alt="Rare Photos of a Mystery White Plane Before the South Tower Hit">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy people events">
       <h3>Matthew Naus Gave G. Edward Griffin the WDTTTG Book in 2012</h3>
       <p><a href="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/matthew-naus-g-edward-griffin-wdtttg-book/img/naus-griffin-yYg38f.jpg" alt="Matthew Naus Gave G. Edward Griffin the WDTTTG Book in 2012">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="people">
       <h3>French 9/11 Researcher KJ Hits 100k Views in 24 Hours</h3>
       <p><a href="https://mes.fm/kj-french-911-100k" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/kj-french-911-100k/img/kj-french-100k-views.jpg" alt="French 9/11 Researcher KJ Hits 100k Views in 24 Hours">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy">
       <h3>Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt</h3>
       <p><a href="https://mes.fm/bought-911-hutchison-shirt" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/bought-911-hutchison-shirt/img/djw-book-shirt-sold.png" alt="Someone bought a 9/11 DJW Book shirt and Hutchison Effect shirt">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="events">
       <h3>CSIS Posts a Photo of the 9/11 Tribute in Light &quot;Blue Beam&quot; Lights</h3>
       <p><a href="https://mes.fm/csis-911-lights" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/csis-911-lights/img/csis-x-post.jpg" alt="CSIS Posts a Photo of the 9/11 Tribute in Light &quot;Blue Beam&quot; Lights">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy">
       <h3>Story Time with Cat and Dr. Judy Wood's WDTTG Book</h3>
       <p><a href="https://mes.fm/cat-wdttg-book" target="_blank" rel="noopener">Notes</a></p>
       <img class="list-thumb" src="https://mes.fm/cat-wdttg-book/img/cat-wdttg-1.jpg" alt="Story Time with Cat and Dr. Judy Wood's WDTTG Book">
@@ -1522,6 +1559,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('911-posts', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('911-posts');
 </script>
 
 <script>

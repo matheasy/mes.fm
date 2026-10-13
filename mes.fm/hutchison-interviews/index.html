@@ -937,6 +937,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1154,90 +1186,95 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="hutchison-interviews" class="section-body">
   
+    <div class="ls-filter" id="hutchison-interviewsFilter">
+      <input type="search" id="hutchison-interviewsSearch" placeholder="Search the interviews…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="hutchison-interviewsChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (12)</button><button type="button" data-c="elaine" data-label="Elaine Smitha Show" aria-pressed="false">Elaine Smitha Show (5)</button><button type="button" data-c="brenda" data-label="Brenda Roberts" aria-pressed="false">Brenda Roberts (2)</button><button type="button" data-c="tom" data-label="Tom Sky" aria-pressed="false">Tom Sky (1)</button><button type="button" data-c="mes" data-label="MES with Hutchison" aria-pressed="false">MES with Hutchison (2)</button><button type="button" data-c="other" data-label="Everything else" aria-pressed="false">Everything else (2)</button></div>
+    </div>
+    <p class="ls-empty" id="hutchison-interviewsEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="hutchison-interviewsGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="hutchison-interviewsListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="hutchison-interviewsGrid">
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/ikarokgh" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-128780/@mes/ikarokgh" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uFRQ9rBT8SgFqiZKinXqjUi8eACNQSQopk5DCk5XjwfUShqNuZrHgHqY322g51Y1dSx.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Overview of the Hutchison Effect by George Hathaway in 1993</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/hutchison-tom-sky">
+    <a class="link-card" data-cats="tom" href="https://mes.fm/hutchison-tom-sky">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1787348035470-17ce55ab8e527dfd.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">John Hutchison Interviewed by Tom Sky in his Vancouver Lab (2007)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://3speak.tv/watch?v=mes/8a64c253" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="brenda" href="https://3speak.tv/watch?v=mes/8a64c253" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uFMmtFRLjwaohg4RpM84UAuvuZuGEjGjvBj2NJvkDDJjo1eU6YiKvJvc3xH4Xj1G5rc.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">John Hutchison Interview on Journey with Brenda Roberts (1997): Crystal Energy</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://3speak.tv/watch?v=mes/dd842563" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="brenda" href="https://3speak.tv/watch?v=mes/dd842563" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uQjgw2MJwQvKPcy5sZGUGbF61eaGNP6V8NKRT7eYqqdxn2FxDeXUeNXFyc4DC8eQ5NA.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">John Hutchison Interview on Journey with Brenda Roberts (1997): The Hutchison Effect</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/dywbmnes" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mes" href="https://peakd.com/hive-128780/@mes/dywbmnes" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xp3xvJntnHm8hnDkvKRUHVPZLQ6MnJqe7bSY8uQk3Fc3gBM2ApR7VMhNH6AT7ewABe4.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">MES Hanging out with John Hutchison in the Lab!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://3speak.tv/watch?v=mes/zqgeijqo" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="mes" href="https://3speak.tv/watch?v=mes/zqgeijqo" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tm7U9QaoFXTqwfnqtzHwJ2D1gWufgMxocGXTQm81MCXrSrdiPKpLWHNsPS6fcCZqfqF.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">MES Livestream 120: John Hutchison and Kerry Cassidy on the Show!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/hdnytaio" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="elaine" href="https://peakd.com/hive-128780/@mes/hdnytaio" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tbrij4LhcjoC8vZTX69q7ZidGBR1i2Nbxx1mpf2q82LNCtcjJL6VYnU65tYZrrmWr63.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">John Hutchison Interview on the Elaine Smitha Show (1994): The Hutchison Effect</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/tmfowznk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="elaine" href="https://peakd.com/hive-128780/@mes/tmfowznk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xATjo4sfsJvzMiEwYyFembNHLLfi12WkLGoovdVy16MZuQZjVaMF4q1cfqMDdLAoL9R.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">John Hutchison Interview on the Elaine Smitha Show (2000): Levitation</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/mywbvjww" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="elaine" href="https://peakd.com/hive-128780/@mes/mywbvjww" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uQtscz75HzYZsBhWm9C4ssAJKnaNGKNvVebGX1bxPCgctmFneFYkK6zAftUP47fU25H.JPEG')"></span>
       <span class="link-card-body">
         <span class="link-card-title">John Hutchison Interview on the Elaine Smitha Show (2000): Discoveries in Zero Point Energy</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/wyinhvtd" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="elaine" href="https://peakd.com/hive-128780/@mes/wyinhvtd" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23zS5715FWbR8X6wLbSCMUzu92fZrBiKLfieMGeDfvyrdWuoZmdW1ZPB66f9H4YWEb9SU.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">John Hutchison Interview on the Elaine Smitha Show (2000): What's New in Free Energy?</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/dezouman" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="elaine" href="https://peakd.com/hive-128780/@mes/dezouman" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23x17DtHfjfNRm6hpXMAzg3Lohx1N9c6KRP9gdZubRav9uo8myRs1EgSif88M5bKr9fNG.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">John Hutchison Interview on the Elaine Smitha Show (2000): Skunk Works</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/jasrjvwl" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-128780/@mes/jasrjvwl" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23vi3sKhKSjErXdiDL2yukpxqnbxrUd3zbxExPpBZxfbyQwHCq7LDdca7SGBLN3xd4PJo.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Jeane Manning 1996 Presentation: The Coming Energy Revolution</span>
@@ -1246,62 +1283,62 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="hutchison-interviewsList">
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Overview of the Hutchison Effect by George Hathaway in 1993</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/ikarokgh" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/ikarokgh" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/tppQ1i8gkZo" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/7bJmwjkRI9Jg/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Hutchison-Effect-George-Hathaway-1993:ccfb717bd02f8275e222b8ac2e5c7ff13133cd30" target="_blank" rel="noopener">Odysee</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-fm5gwvqm" target="_blank" rel="noopener">Summary</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uFRQ9rBT8SgFqiZKinXqjUi8eACNQSQopk5DCk5XjwfUShqNuZrHgHqY322g51Y1dSx.jpeg" alt="Overview of the Hutchison Effect by George Hathaway in 1993">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tom">
       <h3>John Hutchison Interviewed by Tom Sky in his Vancouver Lab (2007)</h3>
       <p><a href="https://mes.fm/hutchison-tom-sky" target="_blank" rel="noopener">Screenshots</a> - <a href="https://3speak.tv/watch?v=mes/john-hutchison-interviewed-224" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/eEBDSRqCkYk" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35399" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/update_video/qv45ur4O6CGk" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Tom-Sky" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7ehiuw-john-hutchison-interviewed-by-tom-sky-in-his-vancouver-lab-2007.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1787348035470-17ce55ab8e527dfd.webp" alt="John Hutchison Interviewed by Tom Sky in his Vancouver Lab (2007)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="brenda">
       <h3>John Hutchison Interview on Journey with Brenda Roberts (1997): Crystal Energy</h3>
       <p><a href="https://3speak.tv/watch?v=mes/8a64c253" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/VPcmKJx-zBs" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/34025" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/HiCHEmoPD25a/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Journey-Brenda-Roberts-1997-Energy:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v775mve-john-hutchison-interview-on-journey-with-brenda-roberts-1997-crystal-energy.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2swnudmnr" target="_blank" rel="noopener">Summary</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uFMmtFRLjwaohg4RpM84UAuvuZuGEjGjvBj2NJvkDDJjo1eU6YiKvJvc3xH4Xj1G5rc.jpeg" alt="John Hutchison Interview on Journey with Brenda Roberts (1997): Crystal Energy">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="brenda">
       <h3>John Hutchison Interview on Journey with Brenda Roberts (1997): The Hutchison Effect</h3>
       <p><a href="https://3speak.tv/watch?v=mes/dd842563" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/rTTxmLyjpFQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/33992" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/iEWOOUlHunjp/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Journey-Brenda-Roberts-1997:6" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v770udg-john-hutchison-interview-on-journey-with-brenda-roberts-1997-the-hutchison-.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2wlaau9mq" target="_blank" rel="noopener">Summary</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uQjgw2MJwQvKPcy5sZGUGbF61eaGNP6V8NKRT7eYqqdxn2FxDeXUeNXFyc4DC8eQ5NA.jpeg" alt="John Hutchison Interview on Journey with Brenda Roberts (1997): The Hutchison Effect">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mes">
       <h3>MES Hanging out with John Hutchison in the Lab!</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/dywbmnes" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/dywbmnes" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/CH3zDeHiswM" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/32679" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/EhNItFSxG5Pk" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/MES-John-Hutchison-Lab:9" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v72nhrg-mes-hanging-out-with-john-hutchison-in-the-lab.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2cctrhdpd" target="_blank" rel="noopener">Summary</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xp3xvJntnHm8hnDkvKRUHVPZLQ6MnJqe7bSY8uQk3Fc3gBM2ApR7VMhNH6AT7ewABe4.jpeg" alt="MES Hanging out with John Hutchison in the Lab!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="mes">
       <h3>MES Livestream 120: John Hutchison and Kerry Cassidy on the Show!</h3>
       <p><a href="https://3speak.tv/watch?v=mes/zqgeijqo" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/zqgeijqo" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtube.com/live/Kt8XFEPC0tA" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/32755" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/tHlTtW40zEv2/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/MES-Livestream-120-John-Hutchison-Kerry-Cassidy:2" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v730vdy-mes-livestream-120-john-hutchison-and-kerry-cassidy-on-the-show.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://rumble.com/v72y83k-john-huthison-free-energy-portal-tech-and-time-travel.html" target="_blank" rel="noopener">Kerry Cassidy Show</a> - <a href="https://projectcamelotportal.com/2025/12/13/john-hutchison-free-energy-portal-tech-and-time-travel/" target="_blank" rel="noopener">Project Camelot article</a> - <a href="https://x.com/MathEasySolns/status/2000336497103220860" target="_blank" rel="noopener">X</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2yxxfoerj" target="_blank" rel="noopener">Summary</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tm7U9QaoFXTqwfnqtzHwJ2D1gWufgMxocGXTQm81MCXrSrdiPKpLWHNsPS6fcCZqfqF.jpeg" alt="MES Livestream 120: John Hutchison and Kerry Cassidy on the Show!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="elaine">
       <h3>John Hutchison Interview on the Elaine Smitha Show (1994): The Hutchison Effect</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/hdnytaio" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/hdnytaio" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/izpD1jonySI" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/XMN76wcuH0CS/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Elaine-Smitha-1994-Hutchison-Effect:2" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6rqvdd-john-hutchison-interview-on-the-elaine-smitha-show-1994-the-hutchison-effec.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2z9zrgwej" target="_blank" rel="noopener">Summary</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tbrij4LhcjoC8vZTX69q7ZidGBR1i2Nbxx1mpf2q82LNCtcjJL6VYnU65tYZrrmWr63.jpeg" alt="John Hutchison Interview on the Elaine Smitha Show (1994): The Hutchison Effect">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="elaine">
       <h3>John Hutchison Interview on the Elaine Smitha Show (2000): Levitation</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/tmfowznk" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/tmfowznk" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/3lriJ-i1UcU" target="_blank" rel="noopener">YouTube</a> - <a href="http://bitchute.com/video/2MRiKnexZgQS/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/John-Hutchison-Interview-Elaine-Smitha-2000-Levitation:10f3a825d23bd52300fe4fbb7a45374c0961347c" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6eu8zs-john-hutchison-interview-on-the-elaine-smitha-show-2000-levitation.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xATjo4sfsJvzMiEwYyFembNHLLfi12WkLGoovdVy16MZuQZjVaMF4q1cfqMDdLAoL9R.jpeg" alt="John Hutchison Interview on the Elaine Smitha Show (2000): Levitation">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="elaine">
       <h3>John Hutchison Interview on the Elaine Smitha Show (2000): Discoveries in Zero Point Energy</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/mywbvjww" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/mywbvjww" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/H8krEbwntmc" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/pEjfJM7gR2So" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Interview-Elaine-Smitha-2000-ZPE:5" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v67d34s-john-hutchison-interview-on-the-elaine-smitha-show-2000-discoveries-in-zero.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uQtscz75HzYZsBhWm9C4ssAJKnaNGKNvVebGX1bxPCgctmFneFYkK6zAftUP47fU25H.JPEG" alt="John Hutchison Interview on the Elaine Smitha Show (2000): Discoveries in Zero Point Energy">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="elaine">
       <h3>John Hutchison Interview on the Elaine Smitha Show (2000): What's New in Free Energy?</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/wyinhvtd" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/wyinhvtd" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/Xvm16xyYxrQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/4pvfdWk3NA4w/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Elaine-Smitha-2000-Free-Energy:5" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6l5sag-john-hutchison-interview-on-the-elaine-smitha-show-2000-whats-new-in-free-e.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23zS5715FWbR8X6wLbSCMUzu92fZrBiKLfieMGeDfvyrdWuoZmdW1ZPB66f9H4YWEb9SU.jpeg" alt="John Hutchison Interview on the Elaine Smitha Show (2000): What's New in Free Energy?">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="elaine">
       <h3>John Hutchison Interview on the Elaine Smitha Show (2000): Skunk Works</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/dezouman" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/dezouman" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/PQ9w5BxIWoA" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/OKQCJJprP91Y/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/John-Hutchison-Elaine-Smitha-2000-Skunk-Works:3" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6qdxum-john-hutchison-interview-on-the-elaine-smitha-show-2000-skunk-works.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23x17DtHfjfNRm6hpXMAzg3Lohx1N9c6KRP9gdZubRav9uo8myRs1EgSif88M5bKr9fNG.jpeg" alt="John Hutchison Interview on the Elaine Smitha Show (2000): Skunk Works">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Jeane Manning 1996 Presentation: The Coming Energy Revolution</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/jasrjvwl" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/jasrjvwl" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/i_8FKS3VC0E" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/cbl0ulz1iXGg/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Jeane-Manning-1996-Energy-Revolution:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6vvja7-jeane-manning-1996-presentation-the-coming-energy-revolution.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-crkq7ua6" target="_blank" rel="noopener">Summary</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23vi3sKhKSjErXdiDL2yukpxqnbxrUd3zbxExPpBZxfbyQwHCq7LDdca7SGBLN3xd4PJo.jpeg" alt="Jeane Manning 1996 Presentation: The Coming Energy Revolution">
@@ -1432,6 +1469,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('hutchison-interviews', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('hutchison-interviews');
 </script>
 
 <script>

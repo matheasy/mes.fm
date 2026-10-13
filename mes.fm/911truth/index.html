@@ -954,6 +954,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1172,279 +1204,284 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="911-truth" class="section-body">
   <p class="section-standalone-link"><a href="https://mes.fm/911truth-playlist">&#9654;&#65039; YouTube Playlist</a></p>
+    <div class="ls-filter" id="911-truthFilter">
+      <input type="search" id="911-truthSearch" placeholder="Search the 9/11 Truth series…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="911-truthChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (39)</button><button type="button" data-c="docs" data-label="Documentaries" aria-pressed="false">Documentaries (9)</button><button type="button" data-c="dust" data-label="Dust &amp; Dustification" aria-pressed="false">Dust &amp; Dustification (8)</button><button type="button" data-c="judy" data-label="Dr. Judy Wood" aria-pressed="false">Dr. Judy Wood (5)</button><button type="button" data-c="opp" data-label="Controlled Opposition" aria-pressed="false">Controlled Opposition (2)</button><button type="button" data-c="french" data-label="French" aria-pressed="false">French (2)</button><button type="button" data-c="other" data-label="Everything else" aria-pressed="false">Everything else (15)</button></div>
+    </div>
+    <p class="ls-empty" id="911-truthEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="911-truthGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="911-truthListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="911-truthGrid">
-    <a class="link-card" href="https://mes.fm/911-cold-dust-fumes">
+    <a class="link-card" data-cats="dust" href="https://mes.fm/911-cold-dust-fumes">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789102535632-e7393ad37d773059.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 37: Energetic Dust and Fumes on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/rnzwduvq" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="judy" href="https://peakd.com/hive-113182/@mes/rnzwduvq" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uQpChP87UBDVxUZE4MMciBZCvQEY78XbVyRRq8v8DFMui6FztsjbjhaY2xf3tSvgNMb.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 36: Dr. Judy 2007 Lecture - 9/11: The New Hiroshima</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/qftnfdqq" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-113182/@mes/qftnfdqq" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xp8m8KkiUNqPiQ6YZ15qdT717MibNf3x4cJmPztUCCXeTNdhnNyTMa4jsi4KrgPZzQm.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 35: Exterior Lobby Columns at Ground Level on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/tpcoktor" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-113182/@mes/tpcoktor" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wMhCCGezGZkzb1XxMD8gkHqvHPctxbaLZaVrLynYkRA2pD3STQHbLjGDoPVYfxJQgMk.JPEG')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 34: Electromagnetic Interference during 2nd Impact on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/grpqbovi" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-113182/@mes/grpqbovi" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/24244XqiweEFHBsrHxS9Y7pu4M9Fq3VTuypqMNFHE3uEUeLmPH7y9mbmMZNAzaG2TJFZ3.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 33: Electromagnetic Field Interference on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/kqogyjjx" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="docs" href="https://peakd.com/hive-113182/@mes/kqogyjjx" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xAeRgDZYXQeNfZp7h8icZcw8R9etrRWtrRBkiSdmhkCTez9tHe4Rba2f57XbW3p3ctm.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 32: 3D Volumetric Image Projection on 9/11 (Clip from Censored Documentary)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/vgouudww" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="docs" href="https://peakd.com/hive-113182/@mes/vgouudww" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23vsUxyXRa3cvPbnmTaJZitjmVqTW7kP3Psoy7gDgrzquKfkqTWBoXv357u24CuoMPN3F.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 31: Feature Documentary: 9/11 Alchemy - A Big Idea by Wolf Clan Media</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/zmprrlkh" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-113182/@mes/zmprrlkh" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wCJKEwSiyju8ihK2tEB43JZB7zFcSjPyky7CQQw8i8VAVFhmD3zi1vzzkys3Qxwa8of.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 30: Right Wing Disappears at Exact Same Time and Place in 9 Videos</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/911truth-29-compilation-planes-wing-anomalies">
+    <a class="link-card" data-cats="other" href="https://mes.fm/911truth-29-compilation-planes-wing-anomalies">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wMaKAmR2jhyAytsz1PfDvcnJiFZ3vzQnhNF9WLtF8t2UukAv5p5uawzYWk4aGhznauX.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 29: Compilation of Disappearing Wings and other 9/11 Plane Anomalies</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/ndloyfuv" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-113182/@mes/ndloyfuv" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tH3rn3j8yy2DbBgakApQ8VNmUd1812Q9DDK9P98334hgJDD9UMw62kAEHUCvw223bG9.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 28: Compilation of Twisted Steel on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/gaqombxg" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="dust" href="https://peakd.com/hive-113182/@mes/gaqombxg" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/243WPSXqZZEyfngaga9edr4fgMPXnf1s5c1Bb8JYyqWVTm6kSuUSDH8ERTiHQWXFhsKxg.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 27: Compilation of North Tower 900 ft Spire Turning to Dust</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/911-wtc-vehicle-massacre">
+    <a class="link-card" data-cats="other" href="https://mes.fm/911-wtc-vehicle-massacre">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23vi1fCPuSF3GsXirdhWFm5Q8nwTyXRfxYhnWMBFtdLnv8XUeCpwpNcN2xTZr8193CLnk.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 26: 9/11 WTC Vehicle Massacre by xdesmond</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/911truth-part-25-melissa-doi-911-call-from-the-83rd-floor-of-the-south-tower" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-113182/@mes/911truth-part-25-melissa-doi-911-call-from-the-83rd-floor-of-the-south-tower" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23ynPw98LKduRsdRuxQa3SvLc5Tq33qAAMbT5xRgMvp7zhm9jBPQfHXosVXpa9rqCfGUX.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 25: Melissa Doi 911 Call from the 83rd Floor of the South Tower</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/911truth-part-24-let-me-know-when-you-see-fire" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-113182/@mes/911truth-part-24-let-me-know-when-you-see-fire" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uFKXoLgu4FkNUM5kFVNRmZLUDgQ13r716LvisvkgK6LEcc1JMtmaX5rHeEXNkqhy47X.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 24: LET ME KNOW WHEN YOU SEE FIRE by RealityAXIS</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/911truth-part-23-spire-turning-to-dust" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="dust" href="https://peakd.com/hive-113182/@mes/911truth-part-23-spire-turning-to-dust" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23zknZAeQutzQbA7wUyau5QNdqbJkG33PZhGCBYTHTZMi3En994mpaLtPvQP9MrwHLcrv.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 23: North Tower Core Columns Spire Literally Turning to Dust</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/jbeotgzz" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="docs" href="https://peakd.com/hive-113182/@mes/jbeotgzz" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/243qMMtWHzPhpsPDE26eHj6gVGU3r51TyBwkGmR9XjmudjPckzbV77ibe9Ns9iYpSRJ9G.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 22: Feature Documentary: Observable Evidence</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/yaiugjff" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="docs" href="https://peakd.com/hive-113182/@mes/yaiugjff" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xL1186xMdy5kvGaGQggtZCfFPQNzqqbanpZQQpe8XWVM1nYcFeXdzLk4Mq2YDqtzKYJ.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 21: Feature Documentary: 9/11 Liars for Truth</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/kuopqqhz" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="docs" href="https://peakd.com/hive-113182/@mes/kuopqqhz" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23u5zbMzKjS1vABzH2JV2gtLNeY2cVEuVoR5iRWjJR5bposfobKEkr5HDCqJDz9q7eovQ.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 20: Feature Trailer: 9/11 The Essential Guide</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/911truth-part-19-irrefutable-classified-free-energy-technology-revealed-to-the-world" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="docs" href="https://peakd.com/hive-113182/@mes/911truth-part-19-irrefutable-classified-free-energy-technology-revealed-to-the-world" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tby6qp55FNg7JGPYLzmXrsQHoBSf5P9vMiE2aUjfCQZxp64UaFmhRUEcxYVw81nLUq1.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 19: Feature Series: IRREFUTABLE: Free-Energy Technology Revealed to the World</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/911truth-part-18-9-11-alchemy-free-energy-and-free-thinking-by-wcm" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="docs" href="https://peakd.com/hive-113182/@mes/911truth-part-18-9-11-alchemy-free-energy-and-free-thinking-by-wcm" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/cx6JdXYb-911Truth20Part20182091120Alchemy20Free20Energy.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 18: Feature Documentary: 9/11 Alchemy - Free Energy &amp; Free Thinking by WCM</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/911truth-part-17-dustification-of-the-wtc-fast-forward" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="dust" href="https://peakd.com/hive-113182/@mes/911truth-part-17-dustification-of-the-wtc-fast-forward" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/KDvo87vv-911Truth20Part201720Dustification20of20WTC20Fast20Forward.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 17: Dustification of the World Trade Center Complex (Fast Forward 45X Speed)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/911truth-part-16-bill-cooper-s-9-11-prediction-during-june-28-2001-radio-broadcast" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/hive-113182/@mes/911truth-part-16-bill-cooper-s-9-11-prediction-during-june-28-2001-radio-broadcast" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/yLx278Ca-911Truth20Part201620Bill20Cooper20Prediction.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 16: Bill Cooper’s 9/11 Prediction During June 28, 2001 Radio Broadcast</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/freeenergy/@mes/911truth-part-15-feature-presentation-the-dawn-of-a-new-age-by-dr-judy-wood" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="docs judy" href="https://peakd.com/freeenergy/@mes/911truth-part-15-feature-presentation-the-dawn-of-a-new-age-by-dr-judy-wood" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23u5ZEehFPDvLN2xaCqtYz9H3qjn2eQEWZs28ZPinw1zinMTE6egMGKy9RKVzT1Q96fdG.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 15: Feature Presentation: The Dawn of a New Age by Dr. Judy Wood</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/owOvrnO4j_4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="judy french" href="https://youtu.be/owOvrnO4j_4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/owOvrnO4j_4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">French Translation: Le 11 Septembre : La Boîte de Pandore de l'Énergie Libre ~ Judy Wood</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/history/@mes/911truth-part-14-building-7-turning-to-dust-for-over-7-hours-fast-forward-45x-speed" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="dust" href="https://peakd.com/history/@mes/911truth-part-14-building-7-turning-to-dust-for-over-7-hours-fast-forward-45x-speed" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://cdn.steemitimages.com/DQmcmFDY2ZSxhiYLhQFPSBCma1E1hqB1hiaTF5BWrbC6H1b/#911Truth%20Part%2014%20WTC%207%20Fast%20Forward.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 14: Building 7 Turning to Dust for Over 7 Hours (Fast Forward 45X Speed)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/history/@mes/911truth-part-13-helicopter-footage-of-the-twin-towers-turning-to-dust-fast-forward-45x-speed" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="dust" href="https://peakd.com/history/@mes/911truth-part-13-helicopter-footage-of-the-twin-towers-turning-to-dust-fast-forward-45x-speed" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://cdn.steemitimages.com/DQmeREUDRftakgE5BGUyzyNnb8DBqAWnCbFk3Jo8GHJhsrs/#911Truth%20Part%2013%20Chopper%20WTC%201%20and%202%20Fast%20Forward.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 13: Helicopter Footage of the Twin Towers Turning to Dust (Fast Forward 45X Speed)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/war/@mes/911truth-part-12-gen-wesley-clark-reveals-middle-east-invasion-was-pre-planned-and-iran-is-next" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/war/@mes/911truth-part-12-gen-wesley-clark-reveals-middle-east-invasion-was-pre-planned-and-iran-is-next" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://cdn.steemitimages.com/DQmXHy3h4rPzhZkyfbBs42PzagPAjoTNSfVK5DZJv3PsYFK/#911Truth%20Part%2012%20General%20Wesley%20Clark%207%20Countries%205%20Years.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 12: Gen. Wesley Clark Reveals Middle East Invasion Was Pre-Planned &amp; Iran is NEXT</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/terrorism/@mes/911truth-part-11-feature-documentary-9-11-alchemy-facing-reality-by-wolf-clan-media" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="docs" href="https://peakd.com/terrorism/@mes/911truth-part-11-feature-documentary-9-11-alchemy-facing-reality-by-wolf-clan-media" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://cdn.steemitimages.com/DQmQ9zi1NtAqMYWQ29pn4eVCPxfvthv8zoxySpcx2hHMLNv/#911Truth%20Part%2011%20911%20Alchemy%20Documentary.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 11: Feature Documentary: 9/11 Alchemy – Facing Reality by Wolf Clan Media</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/vMxSQkMWEEY" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="french" href="https://youtu.be/vMxSQkMWEEY" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wX5EUcsQh7ztqR2Qjarmcq7s421qgDDZNQDzGPJoaxZ6hv4SuABV4h8AEcCiNsGgAuY.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">French Translation: L'alchimie du 11 Septembre ~ Arme à énergie dirigée &amp; projection holographique</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/war/@mes/911truth-part-10-war-criminal-george-bush-jokes-about-wmds-while-pure-evil-journalists-laugh" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/war/@mes/911truth-part-10-war-criminal-george-bush-jokes-about-wmds-while-pure-evil-journalists-laugh" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://cdn.steemitimages.com/DQmXbGEFtgPnFn1F1MpEjc97Nz7DzPGmC6CLp7TYYGVAGc6/#911Truth%20Part%2010%20Bush%20and%20%27Journalists%27%20Joke%20of%20WMDs.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 10: War Criminal George Bush Jokes about WMDs while Pure Evil ‘Journalists’ Laugh</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/terrorism/@mes/911truth-part-9-north-and-south-towers-literally-turning-to-dust-fast-forward-45x-speed" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="dust" href="https://peakd.com/terrorism/@mes/911truth-part-9-north-and-south-towers-literally-turning-to-dust-fast-forward-45x-speed" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/242NuzfdM7niLudiLjTZbMavzDth8UmnMtNbR27358JsjN7hU8AK7Y6DhCato461frgui.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 9: North &amp; South Towers Literally Turning to Dust (Fast Forward 45X Speed)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/terrorism/@mes/911truth-part-8-north-tower-literally-turning-to-dust-fast-forward-45x-speed" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="dust" href="https://peakd.com/terrorism/@mes/911truth-part-8-north-tower-literally-turning-to-dust-fast-forward-45x-speed" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23z7JHh7kt2t66BEkKbCjb31HQBoCPbFZmj3C2ppw1vom5ryjQH2HstxdSt4DjXvC9DqS.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 8: North Tower Literally Turning to Dust (Fast Forward 45X Speed)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/terrorism/@mes/911truth-part-7-how-controlled-opposition-works-alex-jones-cali-dew-fires-flat-earth-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="opp" href="https://peakd.com/terrorism/@mes/911truth-part-7-how-controlled-opposition-works-alex-jones-cali-dew-fires-flat-earth-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23z7MyCnQ1b2HcapHeFNXZ8CPfqNDQah23KoKzyEAHr1HwD75avvmip4nYVGDRiB8S9QA.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 7: How Controlled Opposition Works: Alex Jones, Cali DEW Fires, Flat Earth + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/conspiracy/@mes/911truth-part-6-controlled-opposition-mini-nukes-building-7-ae911truth-hoax" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="opp" href="https://peakd.com/conspiracy/@mes/911truth-part-6-controlled-opposition-mini-nukes-building-7-ae911truth-hoax" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://cdn.steemitimages.com/DQmNR7ZdLMfoEeq6hfGxsPQ6nQQj3f7R2PBB3psv3fRb7tR/#911Truth%20Part%206%20Controlled%20Opposition.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 6: Controlled Opposition: 'Mini Nukes', 'Building 7', AE911Truth Hoax</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/nwo/@mes/911truth-part-5-9-11-ushered-in-the-global-world-government-nwo-charlottesville-northkorea" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/nwo/@mes/911truth-part-5-9-11-ushered-in-the-global-world-government-nwo-charlottesville-northkorea" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/242DLp3A2BR2bFU6hwgd5FyVdYuzLMyPLkTH4mhpoLjuy5cQ32orHzrzpow2aPhYCrsxq.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 5: 9/11 Ushered in the Global World Government #NWO Charlottesville NorthKorea</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/@mes/video-notes-911truth-part-4-dr-judy-wood-litmus-test-bill-cooper-s-death-more" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="judy" href="https://peakd.com/@mes/video-notes-911truth-part-4-dr-judy-wood-litmus-test-bill-cooper-s-death-more" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://cdn.steemitimages.com/DQmXR7mmGcwpS7FmxqEA1GkKSBhV1wBfTgFzYQ42P7i7Y2e/#911Truth%20Part%204%20Bill%20Cooper%27s%20Death.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 4: Dr. Judy Wood Litmus Test + Bill Cooper's Death + MORE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/censorship/@mes/video-notes-911truth-part-3-i-got-banned-from-reddit-s-r-911truth-so-i-created-r-911truthmes-censorship" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/censorship/@mes/video-notes-911truth-part-3-i-got-banned-from-reddit-s-r-911truth-so-i-created-r-911truthmes-censorship" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://cdn.steemitimages.com/DQmVWRe7sV5gJoLV9zwCPHkhSbUQ3QVdffLefeDuKHBmTXS/#911Truth%20Part%203%20Reddit%20911TruthMES.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 3: I Got Banned from Reddit’s r/911Truth So I Created r/911TruthMES #Censorship</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/terrorism/@mes/video-notes-911truth-part-2-official-government-narrative-demonetization-concern-trolling" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://peakd.com/terrorism/@mes/video-notes-911truth-part-2-official-government-narrative-demonetization-concern-trolling" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xybj69AhAz66MRimrmwRAgsan3bhkPaHRLPyAudN8pRAtTxQhLGXk19CApvJ2MMxfku.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 2: Official Government Narrative + Demonetization + Concern Trolling</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/@mes/video-notes-911truth-part-1-introduction-dr-judy-wood-and-freeenergy" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="judy" href="https://peakd.com/@mes/video-notes-911truth-part-1-introduction-dr-judy-wood-and-freeenergy" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/242NsZPMbWcNd8kNZtxvYAu8WhaRVb3ULWtxQ82DLB8b7PHq87jEZhbnr7vs6VPTFhv1J.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 1: Introduction, Dr. Judy Wood, &amp; #FreeEnergy</span>
@@ -1453,197 +1490,197 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="911-truthList">
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>Part 37: Energetic Dust and Fumes on 9/11</h3>
       <p><a href="https://mes.fm/911-cold-dust-fumes" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/911truth-part-37-energetic-202" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/4vnIN0tU9QA" target="_blank" rel="noopener">YouTube (Censored)</a> - <a href="https://t.me/meslinks/35489" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/ZdNJ4sV9HQAO/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-37-Energetic-Dust-Fumes-911:d" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7fd0nc-911truth-part-37-energetic-dust-and-fumes-on-911.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1789102535632-e7393ad37d773059.webp" alt="Part 37: Energetic Dust and Fumes on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy">
       <h3>Part 36: Dr. Judy 2007 Lecture - 9/11: The New Hiroshima</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/rnzwduvq" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/rnzwduvq" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/O0i5mES0MZA" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/qyYxDOfpHUHr" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-36-Judy-Wood-Madison-2007:7" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6zcawq-911truth-part-36-dr.-judy-wood-2007-lecture-911-the-new-hiroshima.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2qvgbsuki" target="_blank" rel="noopener">Summary</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uQpChP87UBDVxUZE4MMciBZCvQEY78XbVyRRq8v8DFMui6FztsjbjhaY2xf3tSvgNMb.jpeg" alt="Part 36: Dr. Judy 2007 Lecture - 9/11: The New Hiroshima">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 35: Exterior Lobby Columns at Ground Level on 9/11</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/qftnfdqq" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/qftnfdqq" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/baYFiYDoIQ8" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/kq0NsxgO8l8K/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/911Truth-35-Exterior-Lobby-Columns-911:25bca782043858e0cd3f438ed44fdfdadc4ba4a8" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6v4g6x-911truth-part-35-exterior-lobby-columns-at-ground-level-on-911.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xp8m8KkiUNqPiQ6YZ15qdT717MibNf3x4cJmPztUCCXeTNdhnNyTMa4jsi4KrgPZzQm.jpeg" alt="Part 35: Exterior Lobby Columns at Ground Level on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 34: Electromagnetic Interference during 2nd Impact on 9/11</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/tpcoktor" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/tpcoktor" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/5WnjoqIQOt4" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/Hb48wWKRBuwA/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/911Truth-34-EMF-2nd-Impact-911:b6a06a3175fca18562ad4fe1b861bc157346162b" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6e6y0g-911truth-part-34-electromagnetic-interference-during-2nd-impact-on-911.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wMhCCGezGZkzb1XxMD8gkHqvHPctxbaLZaVrLynYkRA2pD3STQHbLjGDoPVYfxJQgMk.JPEG" alt="Part 34: Electromagnetic Interference during 2nd Impact on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 33: Electromagnetic Field Interference on 9/11</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/grpqbovi" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/grpqbovi" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/FuN-MIyIpv4" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/MqhNUFHGD6F3/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-EMF-Interference:7" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6a8dvs-911truth-part-33-electromagnetic-field-interference-on-911.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/24244XqiweEFHBsrHxS9Y7pu4M9Fq3VTuypqMNFHE3uEUeLmPH7y9mbmMZNAzaG2TJFZ3.jpeg" alt="Part 33: Electromagnetic Field Interference on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="docs">
       <h3>Part 32: 3D Volumetric Image Projection on 9/11 (Clip from Censored Documentary)</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/kqogyjjx" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/kqogyjjx" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/aUoVE7ky3qY" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/EDt0wuB9B061/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-32-Volumetric-Projection:7" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v5emgh1-911truth-part-32-3d-volumetric-image-projection-on-911-clip-from-censored-d.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xAeRgDZYXQeNfZp7h8icZcw8R9etrRWtrRBkiSdmhkCTez9tHe4Rba2f57XbW3p3ctm.jpeg" alt="Part 32: 3D Volumetric Image Projection on 9/11 (Clip from Censored Documentary)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="docs">
       <h3>Part 31: Feature Documentary: 9/11 Alchemy - A Big Idea by Wolf Clan Media</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/vgouudww" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/vgouudww" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/yV-atFC14lw" target="_blank" rel="noopener">YouTube New</a> - <a href="https://bitchute.com/video/HviA2gzBCwHo/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-31-911-Alchemy-Big-Idea:c" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v5ehwdv-911truth-part-31-feature-documentary-911-alchemy-a-big-idea-by-wolf-clan-me.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23vsUxyXRa3cvPbnmTaJZitjmVqTW7kP3Psoy7gDgrzquKfkqTWBoXv357u24CuoMPN3F.jpeg" alt="Part 31: Feature Documentary: 9/11 Alchemy - A Big Idea by Wolf Clan Media">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 30: Right Wing Disappears at Exact Same Time and Place in 9 Videos</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/zmprrlkh" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/zmprrlkh" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/lCxWLzjr0FM" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/uCi4PRWjYH4S/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-30-Right-Wing-Disappears:b" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v5blj6j-911truth-part-30-right-wing-disappears-at-exact-same-time-and-place-in-9-vi.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wCJKEwSiyju8ihK2tEB43JZB7zFcSjPyky7CQQw8i8VAVFhmD3zi1vzzkys3Qxwa8of.jpeg" alt="Part 30: Right Wing Disappears at Exact Same Time and Place in 9 Videos">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 29: Compilation of Disappearing Wings and other 9/11 Plane Anomalies</h3>
       <p><a href="https://mes.fm/911truth-29-compilation-planes-wing-anomalies" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mes/zormfuii" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/ilwlQpXUvVA" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/pZfvZ2x7ZXPa/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-29-Disappearing-Wings-911-Plane-Anomalies:d" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v58awjf-911truth-part-29-compilation-of-disappearing-wings-and-other-911-plane-anom.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wMaKAmR2jhyAytsz1PfDvcnJiFZ3vzQnhNF9WLtF8t2UukAv5p5uawzYWk4aGhznauX.jpeg" alt="Part 29: Compilation of Disappearing Wings and other 9/11 Plane Anomalies">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 28: Compilation of Twisted Steel on 9/11</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/ndloyfuv" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/ndloyfuv" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/9U4IWTu9rHk" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/24d0E4dV5an7/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-28-Compilation-of-Twisted-Steel-on-911:1" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v46pnxx-911truth-part-28-compilation-of-twisted-steel-on-911.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tH3rn3j8yy2DbBgakApQ8VNmUd1812Q9DDK9P98334hgJDD9UMw62kAEHUCvw223bG9.jpeg" alt="Part 28: Compilation of Twisted Steel on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>Part 27: Compilation of North Tower 900 ft Spire Turning to Dust</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/gaqombxg" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/gaqombxg" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/sX-1wz1V5gE" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/khPqjCS6DLAU/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-27-Compilation-of-North-Tower-Spire-Turning-to-Dust:d" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v444jkk-911truth-part-27-compilation-of-north-tower-900-ft-spire-turning-to-dust.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/243WPSXqZZEyfngaga9edr4fgMPXnf1s5c1Bb8JYyqWVTm6kSuUSDH8ERTiHQWXFhsKxg.jpeg" alt="Part 27: Compilation of North Tower 900 ft Spire Turning to Dust">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 26: 9/11 WTC Vehicle Massacre by xdesmond</h3>
       <p><a href="https://mes.fm/911-wtc-vehicle-massacre" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/lazaqoat" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/3inx6WvIEsg" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/t4kJG5EtuqLz/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-26-911-WTC-Vehicle-Massacre:f" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v41p4vc-911truth-part-26-911-wtc-vehicle-massacre-by-xdesmond.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23vi1fCPuSF3GsXirdhWFm5Q8nwTyXRfxYhnWMBFtdLnv8XUeCpwpNcN2xTZr8193CLnk.jpeg" alt="Part 26: 9/11 WTC Vehicle Massacre by xdesmond">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 25: Melissa Doi 911 Call from the 83rd Floor of the South Tower</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/911truth-part-25-melissa-doi-911-call-from-the-83rd-floor-of-the-south-tower" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/jwkndsuw" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/3inx6WvIEsg" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/9GmGf9E4ghS9/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-25-Melissa-Doi-911-Call-from-the-83rd-Floor-of-the-South-Tower:7" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v3wrlj5-911truth-part-25-melissa-doi-911-call-from-the-83rd-floor-of-the-south-towe.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23ynPw98LKduRsdRuxQa3SvLc5Tq33qAAMbT5xRgMvp7zhm9jBPQfHXosVXpa9rqCfGUX.jpeg" alt="Part 25: Melissa Doi 911 Call from the 83rd Floor of the South Tower">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 24: LET ME KNOW WHEN YOU SEE FIRE by RealityAXIS</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/911truth-part-24-let-me-know-when-you-see-fire" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/tldgxkdq" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/E1a_-rqmQl4" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/z2o3dnWUDftN/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-24-LET-ME-KNOW-WHEN-YOU-SEE-FIRE:6" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v3mihpg-911truth-part-24-let-me-know-when-you-see-fire-by-realityaxis.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uFKXoLgu4FkNUM5kFVNRmZLUDgQ13r716LvisvkgK6LEcc1JMtmaX5rHeEXNkqhy47X.jpeg" alt="Part 24: LET ME KNOW WHEN YOU SEE FIRE by RealityAXIS">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>Part 23: North Tower Core Columns Spire Literally Turning to Dust</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/911truth-part-23-spire-turning-to-dust" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/tngeozdq" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/wJazsgxeuFc" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/S5SQbDtPgwCy/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-23-Spire-Literally-Turning-to-Dust:c" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v3h019s-911truth-part-23-north-tower-core-columns-spire-literally-turning-to-dust.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23zknZAeQutzQbA7wUyau5QNdqbJkG33PZhGCBYTHTZMi3En994mpaLtPvQP9MrwHLcrv.jpeg" alt="Part 23: North Tower Core Columns Spire Literally Turning to Dust">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="docs">
       <h3>Part 22: Feature Documentary: Observable Evidence</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/jbeotgzz" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/jbeotgzz" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/8Xw-00NbEE8" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/W1GZ6PWc5aCk/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-22-Observable-Evidence:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1q7pxa-911truth-part-22-feature-documentary-observable-evidence.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh" target="_blank" rel="noopener">Video sections playlist</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/243qMMtWHzPhpsPDE26eHj6gVGU3r51TyBwkGmR9XjmudjPckzbV77ibe9Ns9iYpSRJ9G.jpeg" alt="Part 22: Feature Documentary: Observable Evidence">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="docs">
       <h3>Part 21: Feature Documentary: 9/11 Liars for Truth</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/yaiugjff" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/yaiugjff" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/7xAyB0b3FL4" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/qIFWVuEWp71b/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-21-Liars-for-Truth:6" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1q79cc-911truth-part-21-feature-documentary-911-liars-for-truth.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xL1186xMdy5kvGaGQggtZCfFPQNzqqbanpZQQpe8XWVM1nYcFeXdzLk4Mq2YDqtzKYJ.jpeg" alt="Part 21: Feature Documentary: 9/11 Liars for Truth">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="docs">
       <h3>Part 20: Feature Trailer: 9/11 The Essential Guide</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/kuopqqhz" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/kuopqqhz" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/zn2rd_jEJkU" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/pVwiHI0xH03K/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-20-Essential-Guide:1" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1q6zyk-911truth-part-20-feature-trailer-911-the-essential-guide.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23u5zbMzKjS1vABzH2JV2gtLNeY2cVEuVoR5iRWjJR5bposfobKEkr5HDCqJDz9q7eovQ.jpeg" alt="Part 20: Feature Trailer: 9/11 The Essential Guide">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="docs">
       <h3>Part 19: Feature Series: IRREFUTABLE: Free-Energy Technology Revealed to the World</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/911truth-part-19-irrefutable-classified-free-energy-technology-revealed-to-the-world" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/ezpdeggm" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/s7HPhlX0TH8" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/BfgX89sL0kw7/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/%E2%9C%88%EF%B8%8F-911truth-part-19-feature-series:9" target="_blank" rel="noopener">Odysee</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tby6qp55FNg7JGPYLzmXrsQHoBSf5P9vMiE2aUjfCQZxp64UaFmhRUEcxYVw81nLUq1.jpeg" alt="Part 19: Feature Series: IRREFUTABLE: Free-Energy Technology Revealed to the World">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="docs">
       <h3>Part 18: Feature Documentary: 9/11 Alchemy - Free Energy &amp; Free Thinking by WCM</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/911truth-part-18-9-11-alchemy-free-energy-and-free-thinking-by-wcm" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/pptgowdb" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/Otq1ZdGrPPQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/GcAFLJqegRXD/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-18-feature-documentary-9:9" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1rc8po-911truth-part-18-feature-documentary-911-alchemy-free-energy-and-free-think.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/cx6JdXYb-911Truth20Part20182091120Alchemy20Free20Energy.jpeg" alt="Part 18: Feature Documentary: 9/11 Alchemy - Free Energy &amp; Free Thinking by WCM">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>Part 17: Dustification of the World Trade Center Complex (Fast Forward 45X Speed)</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/911truth-part-17-dustification-of-the-wtc-fast-forward" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/xyqxzafz" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/1R190c0Tpks" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/VK9fMVg2gEo2/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-17-dustification-of-the:2" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1rcbpq-911truth-part-17-dustification-of-the-world-trade-center-complex-fast-forwa.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/KDvo87vv-911Truth20Part201720Dustification20of20WTC20Fast20Forward.jpeg" alt="Part 17: Dustification of the World Trade Center Complex (Fast Forward 45X Speed)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 16: Bill Cooper’s 9/11 Prediction During June 28, 2001 Radio Broadcast</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/911truth-part-16-bill-cooper-s-9-11-prediction-during-june-28-2001-radio-broadcast" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/oobrwcad" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/qPW_W_z6ovw" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/ZivGCATvqchO/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-16-bill-cooper-s-9-11:5" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1rc80o-911truth-part-16-bill-coopers-911-prediction-during-june-28-2001-radio-broa.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/yLx278Ca-911Truth20Part201620Bill20Cooper20Prediction.jpeg" alt="Part 16: Bill Cooper’s 9/11 Prediction During June 28, 2001 Radio Broadcast">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="docs judy">
       <h3>Part 15: Feature Presentation: The Dawn of a New Age by Dr. Judy Wood</h3>
       <p><a href="https://peakd.com/freeenergy/@mes/911truth-part-15-feature-presentation-the-dawn-of-a-new-age-by-dr-judy-wood" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/ywpqnawp" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/8jC9W2vbyrs" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/tSOjcYBLMv0K/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/-911Truth-Part-15-Dr.-Judy-Wood-2012-BEM-Presentation:5" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1wxhdi-911truth-part-15-feature-presentation-the-dawn-of-a-new-age-by-dr.-judy-woo.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23u5ZEehFPDvLN2xaCqtYz9H3qjn2eQEWZs28ZPinw1zinMTE6egMGKy9RKVzT1Q96fdG.jpeg" alt="Part 15: Feature Presentation: The Dawn of a New Age by Dr. Judy Wood">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy french">
       <h3>French Translation: Le 11 Septembre : La Boîte de Pandore de l'Énergie Libre ~ Judy Wood</h3>
       <p><a href="https://youtu.be/owOvrnO4j_4" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/owOvrnO4j_4/maxresdefault.jpg" alt="French Translation: Le 11 Septembre : La Boîte de Pandore de l'Énergie Libre ~ Judy Wood">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>Part 14: Building 7 Turning to Dust for Over 7 Hours (Fast Forward 45X Speed)</h3>
       <p><a href="https://peakd.com/history/@mes/911truth-part-14-building-7-turning-to-dust-for-over-7-hours-fast-forward-45x-speed" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/umttzpox" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/YCtfQJAepfU" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/B1AEZlW7vCWq/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-14-building-7-turning-to:3" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1wx7wa-911truth-part-14-building-7-turning-to-dust-for-over-7-hours-fast-forward-4.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://cdn.steemitimages.com/DQmcmFDY2ZSxhiYLhQFPSBCma1E1hqB1hiaTF5BWrbC6H1b/#911Truth%20Part%2014%20WTC%207%20Fast%20Forward.jpeg" alt="Part 14: Building 7 Turning to Dust for Over 7 Hours (Fast Forward 45X Speed)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>Part 13: Helicopter Footage of the Twin Towers Turning to Dust (Fast Forward 45X Speed)</h3>
       <p><a href="https://peakd.com/history/@mes/911truth-part-13-helicopter-footage-of-the-twin-towers-turning-to-dust-fast-forward-45x-speed" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/xrxdhtzu" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/NBvevof2eI0" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/OluSL67cj2G7/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-13-helicopter-footage-of:2" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1ybb62-911truth-part-13-helicopter-footage-of-the-twin-towers-turning-to-dust-fast.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://cdn.steemitimages.com/DQmeREUDRftakgE5BGUyzyNnb8DBqAWnCbFk3Jo8GHJhsrs/#911Truth%20Part%2013%20Chopper%20WTC%201%20and%202%20Fast%20Forward.jpeg" alt="Part 13: Helicopter Footage of the Twin Towers Turning to Dust (Fast Forward 45X Speed)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 12: Gen. Wesley Clark Reveals Middle East Invasion Was Pre-Planned &amp; Iran is NEXT</h3>
       <p><a href="https://peakd.com/war/@mes/911truth-part-12-gen-wesley-clark-reveals-middle-east-invasion-was-pre-planned-and-iran-is-next" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/hhxxoawq" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/WGkSNAHqpJM" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/lPAnbESJmoUT/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-12-gen-wesley-clark:a" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v21x1tq-911truth-part-12-gen.-wesley-clark-reveals-middle-east-invasion-was-pre-pla.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://cdn.steemitimages.com/DQmXHy3h4rPzhZkyfbBs42PzagPAjoTNSfVK5DZJv3PsYFK/#911Truth%20Part%2012%20General%20Wesley%20Clark%207%20Countries%205%20Years.jpeg" alt="Part 12: Gen. Wesley Clark Reveals Middle East Invasion Was Pre-Planned &amp; Iran is NEXT">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="docs">
       <h3>Part 11: Feature Documentary: 9/11 Alchemy – Facing Reality by Wolf Clan Media</h3>
       <p><a href="https://peakd.com/terrorism/@mes/911truth-part-11-feature-documentary-9-11-alchemy-facing-reality-by-wolf-clan-media" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/tcqyprkc" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/CrzNeZUp0tU" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/hive-113182/@mes/youtube-removes-my-911truth-part-11-upload-for-hate-speech" target="_blank" rel="noopener">YouTube has removed it after being up for 4 years</a> - <a href="https://peakd.com/censorship/@mes/orwellian-youtube-censors-my-9-11-video-after-it-went-viral-911truth-censorship" target="_blank" rel="noopener">YouTube has censored this video by placing it in a &quot;Limited State&quot;</a> - <a href="https://www.bitchute.com/video/iu7zQw4sSYkv/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-11-Feature-Documentary-911-Alchemy:6" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v21x70e-911truth-part-11-feature-documentary-911-alchemy-facing-reality-by-wolf-cla.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://inleo.io/threads/view/mes/re-leothreads-2yrwzxhal" target="_blank" rel="noopener">French Translation</a></p>
       <img loading="lazy" class="list-thumb" src="https://cdn.steemitimages.com/DQmQ9zi1NtAqMYWQ29pn4eVCPxfvthv8zoxySpcx2hHMLNv/#911Truth%20Part%2011%20911%20Alchemy%20Documentary.jpeg" alt="Part 11: Feature Documentary: 9/11 Alchemy – Facing Reality by Wolf Clan Media">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="french">
       <h3>French Translation: L'alchimie du 11 Septembre ~ Arme à énergie dirigée &amp; projection holographique</h3>
       <p><a href="https://youtu.be/vMxSQkMWEEY" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/29223" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wX5EUcsQh7ztqR2Qjarmcq7s421qgDDZNQDzGPJoaxZ6hv4SuABV4h8AEcCiNsGgAuY.png" alt="French Translation: L'alchimie du 11 Septembre ~ Arme à énergie dirigée &amp; projection holographique">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 10: War Criminal George Bush Jokes about WMDs while Pure Evil ‘Journalists’ Laugh</h3>
       <p><a href="https://peakd.com/war/@mes/911truth-part-10-war-criminal-george-bush-jokes-about-wmds-while-pure-evil-journalists-laugh" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/lzwouafl" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/yWD6pGQCwM8" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/yWD6pGQCwM8/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/911truth-part-10-war-criminal-george" target="_blank" rel="noopener">Odysee</a></p>
       <img loading="lazy" class="list-thumb" src="https://cdn.steemitimages.com/DQmXbGEFtgPnFn1F1MpEjc97Nz7DzPGmC6CLp7TYYGVAGc6/#911Truth%20Part%2010%20Bush%20and%20'Journalists'%20Joke%20of%20WMDs.jpeg" alt="Part 10: War Criminal George Bush Jokes about WMDs while Pure Evil ‘Journalists’ Laugh">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>Part 9: North &amp; South Towers Literally Turning to Dust (Fast Forward 45X Speed)</h3>
       <p><a href="https://peakd.com/terrorism/@mes/911truth-part-9-north-and-south-towers-literally-turning-to-dust-fast-forward-45x-speed" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/mjodwjpp" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/W1xFXj-6pVs" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/qg6AN6fYyMZq/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-9-north-south-towers:0" target="_blank" rel="noopener">Odysee</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/242NuzfdM7niLudiLjTZbMavzDth8UmnMtNbR27358JsjN7hU8AK7Y6DhCato461frgui.jpeg" alt="Part 9: North &amp; South Towers Literally Turning to Dust (Fast Forward 45X Speed)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>Part 8: North Tower Literally Turning to Dust (Fast Forward 45X Speed)</h3>
       <p><a href="https://peakd.com/terrorism/@mes/911truth-part-8-north-tower-literally-turning-to-dust-fast-forward-45x-speed" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/igrvinih" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/cDoWaaXv27A" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/cDoWaaXv27A/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-8-north-tower-literally:5" target="_blank" rel="noopener">Odysee</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23z7JHh7kt2t66BEkKbCjb31HQBoCPbFZmj3C2ppw1vom5ryjQH2HstxdSt4DjXvC9DqS.jpeg" alt="Part 8: North Tower Literally Turning to Dust (Fast Forward 45X Speed)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="opp">
       <h3>Part 7: How Controlled Opposition Works: Alex Jones, Cali DEW Fires, Flat Earth + MORE</h3>
       <p><a href="https://peakd.com/terrorism/@mes/911truth-part-7-how-controlled-opposition-works-alex-jones-cali-dew-fires-flat-earth-more" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/tfrronmw" target="_blank" rel="noopener">3Speak</a> - <a href="https://peakd.com/hive-113182/@mes/youtube-removes-my-911truth-part-7-video-for-hate-speech" target="_blank" rel="noopener">YouTube has removed it after being up for 5 years</a> - <a href="https://www.bitchute.com/video/PiEOS2TJLLQ/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-7-how-controlled:8" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v278wbu-911truth-part-7-how-controlled-opposition-works-alex-jones-cali-dew-fires-f.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23z7MyCnQ1b2HcapHeFNXZ8CPfqNDQah23KoKzyEAHr1HwD75avvmip4nYVGDRiB8S9QA.jpg" alt="Part 7: How Controlled Opposition Works: Alex Jones, Cali DEW Fires, Flat Earth + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="opp">
       <h3>Part 6: Controlled Opposition: 'Mini Nukes', 'Building 7', AE911Truth Hoax</h3>
       <p><a href="https://peakd.com/conspiracy/@mes/911truth-part-6-controlled-opposition-mini-nukes-building-7-ae911truth-hoax" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/qlsuekos" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/aDWgsVSo4Oc" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/aDWgsVSo4Oc/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-6-Controlled-Opposition:b" target="_blank" rel="noopener">Odysee</a></p>
       <img loading="lazy" class="list-thumb" src="https://cdn.steemitimages.com/DQmNR7ZdLMfoEeq6hfGxsPQ6nQQj3f7R2PBB3psv3fRb7tR/#911Truth%20Part%206%20Controlled%20Opposition.jpeg" alt="Part 6: Controlled Opposition: 'Mini Nukes', 'Building 7', AE911Truth Hoax">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 5: 9/11 Ushered in the Global World Government #NWO Charlottesville NorthKorea</h3>
       <p><a href="https://peakd.com/nwo/@mes/911truth-part-5-9-11-ushered-in-the-global-world-government-nwo-charlottesville-northkorea" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/hquwicgs" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/2p7XwWdXYz8" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/HSJ6G9ArRW94/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-5-9-11-ushered-in-the:3" target="_blank" rel="noopener">Odysee</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/242DLp3A2BR2bFU6hwgd5FyVdYuzLMyPLkTH4mhpoLjuy5cQ32orHzrzpow2aPhYCrsxq.jpeg" alt="Part 5: 9/11 Ushered in the Global World Government #NWO Charlottesville NorthKorea">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy">
       <h3>Part 4: Dr. Judy Wood Litmus Test + Bill Cooper's Death + MORE</h3>
       <p><a href="https://peakd.com/@mes/video-notes-911truth-part-4-dr-judy-wood-litmus-test-bill-cooper-s-death-more" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/dkwemjfm" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/OkkN8oFzZt8" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/X7Ni5AYvniki/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-4-dr-judy-wood-litmus-test:7" target="_blank" rel="noopener">Odysee</a></p>
       <img loading="lazy" class="list-thumb" src="https://cdn.steemitimages.com/DQmXR7mmGcwpS7FmxqEA1GkKSBhV1wBfTgFzYQ42P7i7Y2e/#911Truth%20Part%204%20Bill%20Cooper's%20Death.jpeg" alt="Part 4: Dr. Judy Wood Litmus Test + Bill Cooper's Death + MORE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 3: I Got Banned from Reddit’s r/911Truth So I Created r/911TruthMES #Censorship</h3>
       <p><a href="https://peakd.com/censorship/@mes/video-notes-911truth-part-3-i-got-banned-from-reddit-s-r-911truth-so-i-created-r-911truthmes-censorship" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/hpbevmoo" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/5gbs3IPz63M" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/FNddHqXxcXSo/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-3-i-got-banned-from-reddit:8" target="_blank" rel="noopener">Odysee</a></p>
       <img loading="lazy" class="list-thumb" src="https://cdn.steemitimages.com/DQmVWRe7sV5gJoLV9zwCPHkhSbUQ3QVdffLefeDuKHBmTXS/#911Truth%20Part%203%20Reddit%20911TruthMES.jpeg" alt="Part 3: I Got Banned from Reddit’s r/911Truth So I Created r/911TruthMES #Censorship">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Part 2: Official Government Narrative + Demonetization + Concern Trolling</h3>
       <p><a href="https://peakd.com/terrorism/@mes/video-notes-911truth-part-2-official-government-narrative-demonetization-concern-trolling" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/vrchefzt" target="_blank" rel="noopener">3Speak</a> - <a href="https://peakd.com/hive-113182/@mes/deja-vu2-youtube-removes-my-911truth-part-2-video" target="_blank" rel="noopener">YouTube removed it after it was up for 4 years</a> - <a href="https://www.bitchute.com/video/cMTcGcds26CE/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-2-official-government:c" target="_blank" rel="noopener">Odysee</a> - <a href="https://1drv.ms/b/s!As32ynv0LoaIhvYi87uB4ds7NQWhgA" target="_blank" rel="noopener">PDF notes</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xybj69AhAz66MRimrmwRAgsan3bhkPaHRLPyAudN8pRAtTxQhLGXk19CApvJ2MMxfku.jpeg" alt="Part 2: Official Government Narrative + Demonetization + Concern Trolling">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy">
       <h3>Part 1: Introduction, Dr. Judy Wood, &amp; #FreeEnergy</h3>
       <p><a href="https://peakd.com/@mes/video-notes-911truth-part-1-introduction-dr-judy-wood-and-freeenergy" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/jiefczlj" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/lBB2yClPlLM" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/4wWRQ6DZZQPH/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911truth-part-1-introduction-dr-judy:6" target="_blank" rel="noopener">Odysee</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/242NsZPMbWcNd8kNZtxvYAu8WhaRVb3ULWtxQ82DLB8b7PHq87jEZhbnr7vs6VPTFhv1J.jpeg" alt="Part 1: Introduction, Dr. Judy Wood, &amp; #FreeEnergy">
@@ -1774,6 +1811,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('911-truth', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('911-truth');
 </script>
 
 <script>

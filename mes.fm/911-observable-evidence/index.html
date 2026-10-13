@@ -954,6 +954,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1172,97 +1204,102 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="911-observable-evidence" class="section-body">
   <p class="section-standalone-link"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh" target="_blank" rel="noopener">&#9654;&#65039; Playlist</a><span class="standalone-sep">&middot;</span><a href="https://peakd.com/hive-113182/@mes/jbeotgzz" target="_blank" rel="noopener">&#128221; Notes</a></p>
+    <div class="ls-filter" id="911-observable-evidenceFilter">
+      <input type="search" id="911-observable-evidenceSearch" placeholder="Search Observable Evidence…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="911-observable-evidenceChips"></div>
+    </div>
+    <p class="ls-empty" id="911-observable-evidenceEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="911-observable-evidenceGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="911-observable-evidenceListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="911-observable-evidenceGrid">
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/jbeotgzz" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/hive-113182/@mes/jbeotgzz" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/243qMMtWHzPhpsPDE26eHj6gVGU3r51TyBwkGmR9XjmudjPckzbV77ibe9Ns9iYpSRJ9G.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 22: Feature Documentary: Observable Evidence</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/sFgHaBNPNL4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/sFgHaBNPNL4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23zRzmRdrSsrKoTeabMJmhG5GcfE96GkMssqfsEN3dLM93Wy3kx5coNqwDgis7zdtHvs1.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Observable Evidence: Background Information</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/6FnuKGTfbfk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/6FnuKGTfbfk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23x12U3Ry8E8v3BzS1pYaZfxuoQgaKWYv5GbxF96URHnXj5hPWw9i8tRf7WWZNEAeMbRp.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Observable Evidence: The Scientific Method</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/oHbUBbfipNw" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/oHbUBbfipNw" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/242DUktCeUcRf1hVeDZK253JUcCgf5uxis38qmEJLC4cT3QW454FBxJj6k7djLHhUxnQK.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Observable Evidence: Why Do We Still Have a Coverup?</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/5rH_108evQ0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/5rH_108evQ0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23vrryjhWC4v9SN73c9FV7RdBYZdrdmNrWjH8LUfWhWhPEy1uMZgohqS1jB3vn85rArcf.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Was an Attack on Human Consciousness</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/6Pr23QI75js" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/6Pr23QI75js" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/241tdRp5N1mb6AV7LXvPE1kvDpdsh1uFB5hJwarjNswWYpUcj2nrjbRM9u8QExpVQCcjB.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Fox News Anchor Solved 9/11 in 43 seconds!</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/_V3f1mB70Ys" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/_V3f1mB70Ys" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/2423qFWLLJmmMC1hKqszAxwh7bQdt1rZqxhdABT4m8JDCqeDAjDaBkhHfKT63cRLWr1oa.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Observable Evidence: Stairwell B Survivors</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/1t0ZU3EVdQs" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/1t0ZU3EVdQs" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23y8mWQVYbLo7gPshLG7Tyz1tcceF36BNyr6x2XiKVhx7Vzj5psG3n475EgVekepXk4qn.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Survivors Mickey Kross &amp; Pasquale Buzzelli are in Disbelief the North Tower Vanished Above Them</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/bKH4PAlv9GE" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/bKH4PAlv9GE" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/244A4YAs8MvUHJNB5DBPkkGJhvdzEKDAx3B2BPKLJ8pdrp9jdpzAfYedmESqCXHzgfrZK.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Observable Evidence: Where did the South Tower Go?</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/fZCJIFwNV-0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/fZCJIFwNV-0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xVEn9Dx1wYowKXMkBjP1jbFoNu9925QX4Q7nrKgRFScnNnLeznYSB2x9DGm2g9thYs2.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Observable Evidence: We Are Leaving Our Thinking to Someone Else</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/sdADDsGtfis" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://youtu.be/sdADDsGtfis" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uR9R3gog1Rt48LB1HacjC6heyEmNgSpHTvX86Q8gtjL4UnMy8dJiQYdtU6fMPnYWAEQ.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Observable Evidence: Fraudulent NIST Report on the &quot;Collapse&quot; of the Twin Towers</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/kuopqqhz" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/hive-113182/@mes/kuopqqhz" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23u5zbMzKjS1vABzH2JV2gtLNeY2cVEuVoR5iRWjJR5bposfobKEkr5HDCqJDz9q7eovQ.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 20: Feature Trailer: 9/11 The Essential Guide</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/yaiugjff" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="all" href="https://peakd.com/hive-113182/@mes/yaiugjff" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xL1186xMdy5kvGaGQggtZCfFPQNzqqbanpZQQpe8XWVM1nYcFeXdzLk4Mq2YDqtzKYJ.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Part 21: Feature Documentary: 9/11 Liars for Truth</span>
@@ -1271,67 +1308,67 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="911-observable-evidenceList">
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Part 22: Feature Documentary: Observable Evidence</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/jbeotgzz" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/jbeotgzz" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/8Xw-00NbEE8" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/W1GZ6PWc5aCk/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-22-Observable-Evidence:0" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1q7pxa-911truth-part-22-feature-documentary-observable-evidence.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/243qMMtWHzPhpsPDE26eHj6gVGU3r51TyBwkGmR9XjmudjPckzbV77ibe9Ns9iYpSRJ9G.jpeg" alt="Part 22: Feature Documentary: Observable Evidence">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Observable Evidence: Background Information</h3>
       <p><a href="https://youtu.be/sFgHaBNPNL4" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23zRzmRdrSsrKoTeabMJmhG5GcfE96GkMssqfsEN3dLM93Wy3kx5coNqwDgis7zdtHvs1.jpeg" alt="9/11 Observable Evidence: Background Information">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Observable Evidence: The Scientific Method</h3>
       <p><a href="https://youtu.be/6FnuKGTfbfk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23x12U3Ry8E8v3BzS1pYaZfxuoQgaKWYv5GbxF96URHnXj5hPWw9i8tRf7WWZNEAeMbRp.jpeg" alt="9/11 Observable Evidence: The Scientific Method">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Observable Evidence: Why Do We Still Have a Coverup?</h3>
       <p><a href="https://youtu.be/oHbUBbfipNw" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/242DUktCeUcRf1hVeDZK253JUcCgf5uxis38qmEJLC4cT3QW454FBxJj6k7djLHhUxnQK.jpeg" alt="9/11 Observable Evidence: Why Do We Still Have a Coverup?">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Was an Attack on Human Consciousness</h3>
       <p><a href="https://youtu.be/5rH_108evQ0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23vrryjhWC4v9SN73c9FV7RdBYZdrdmNrWjH8LUfWhWhPEy1uMZgohqS1jB3vn85rArcf.jpeg" alt="9/11 Was an Attack on Human Consciousness">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Fox News Anchor Solved 9/11 in 43 seconds!</h3>
       <p><a href="https://youtu.be/6Pr23QI75js" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/241tdRp5N1mb6AV7LXvPE1kvDpdsh1uFB5hJwarjNswWYpUcj2nrjbRM9u8QExpVQCcjB.jpeg" alt="Fox News Anchor Solved 9/11 in 43 seconds!">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Observable Evidence: Stairwell B Survivors</h3>
       <p><a href="https://youtu.be/_V3f1mB70Ys" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/2423qFWLLJmmMC1hKqszAxwh7bQdt1rZqxhdABT4m8JDCqeDAjDaBkhHfKT63cRLWr1oa.jpeg" alt="9/11 Observable Evidence: Stairwell B Survivors">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Survivors Mickey Kross &amp; Pasquale Buzzelli are in Disbelief the North Tower Vanished Above Them</h3>
       <p><a href="https://youtu.be/1t0ZU3EVdQs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23y8mWQVYbLo7gPshLG7Tyz1tcceF36BNyr6x2XiKVhx7Vzj5psG3n475EgVekepXk4qn.jpeg" alt="9/11 Survivors Mickey Kross &amp; Pasquale Buzzelli are in Disbelief the North Tower Vanished Above Them">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Observable Evidence: Where did the South Tower Go?</h3>
       <p><a href="https://youtu.be/bKH4PAlv9GE" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/244A4YAs8MvUHJNB5DBPkkGJhvdzEKDAx3B2BPKLJ8pdrp9jdpzAfYedmESqCXHzgfrZK.jpeg" alt="9/11 Observable Evidence: Where did the South Tower Go?">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Observable Evidence: We Are Leaving Our Thinking to Someone Else</h3>
       <p><a href="https://youtu.be/fZCJIFwNV-0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xVEn9Dx1wYowKXMkBjP1jbFoNu9925QX4Q7nrKgRFScnNnLeznYSB2x9DGm2g9thYs2.jpeg" alt="9/11 Observable Evidence: We Are Leaving Our Thinking to Someone Else">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>9/11 Observable Evidence: Fraudulent NIST Report on the &quot;Collapse&quot; of the Twin Towers</h3>
       <p><a href="https://youtu.be/sdADDsGtfis" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uR9R3gog1Rt48LB1HacjC6heyEmNgSpHTvX86Q8gtjL4UnMy8dJiQYdtU6fMPnYWAEQ.jpeg" alt="9/11 Observable Evidence: Fraudulent NIST Report on the &quot;Collapse&quot; of the Twin Towers">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Part 20: Feature Trailer: 9/11 The Essential Guide</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/kuopqqhz" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/kuopqqhz" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/zn2rd_jEJkU" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/pVwiHI0xH03K/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-20-Essential-Guide:1" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1q6zyk-911truth-part-20-feature-trailer-911-the-essential-guide.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23u5zbMzKjS1vABzH2JV2gtLNeY2cVEuVoR5iRWjJR5bposfobKEkr5HDCqJDz9q7eovQ.jpeg" alt="Part 20: Feature Trailer: 9/11 The Essential Guide">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="all">
       <h3>Part 21: Feature Documentary: 9/11 Liars for Truth</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/yaiugjff" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/yaiugjff" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/7xAyB0b3FL4" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/qIFWVuEWp71b/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/911Truth-Part-21-Liars-for-Truth:6" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v1q79cc-911truth-part-21-feature-documentary-911-liars-for-truth.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xL1186xMdy5kvGaGQggtZCfFPQNzqqbanpZQQpe8XWVM1nYcFeXdzLk4Mq2YDqtzKYJ.jpeg" alt="Part 21: Feature Documentary: 9/11 Liars for Truth">
@@ -1462,6 +1499,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('911-observable-evidence', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('911-observable-evidence');
 </script>
 
 <script>

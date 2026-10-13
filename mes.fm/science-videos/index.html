@@ -956,6 +956,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1178,104 +1210,109 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="science-videos" class="section-body">
   <p class="section-standalone-link"><a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0EAUu0aAxoZmkS83RI65m1N" target="_blank" rel="noopener">&#9654;&#65039; MES Science and Physics Videos Playlist</a></p>
+    <div class="ls-filter" id="science-videosFilter">
+      <input type="search" id="science-videosSearch" placeholder="Search the science videos…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="science-videosChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (14)</button><button type="button" data-c="tornado" data-label="Tornadoes &amp; Weather" aria-pressed="false">Tornadoes &amp; Weather (6)</button><button type="button" data-c="tesla" data-label="Tesla Coils &amp; Plasma" aria-pressed="false">Tesla Coils &amp; Plasma (4)</button><button type="button" data-c="fe" data-label="Free Energy &amp; Cold Fusion" aria-pressed="false">Free Energy &amp; Cold Fusion (2)</button><button type="button" data-c="wtc" data-label="9/11 &amp; Moon" aria-pressed="false">9/11 &amp; Moon (2)</button><button type="button" data-c="other" data-label="Everything else" aria-pressed="false">Everything else (1)</button></div>
+    </div>
+    <p class="ls-empty" id="science-videosEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="science-videosGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="science-videosListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="science-videosGrid">
-    <a class="link-card" href="https://www.youtube.com/watch?v=_iwAATk0IOI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tornado" href="https://www.youtube.com/watch?v=_iwAATk0IOI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/_iwAATk0IOI/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Amazing 360-degree fog image projection + interactive display! 😮</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=r_CrobH0m7g" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tesla" href="https://www.youtube.com/watch?v=r_CrobH0m7g" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/r_CrobH0m7g/sddefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Laser-induced plasma to create 3D volumetric images with sound 🤯</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=6lX3uZOqvdI" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="fe" href="https://www.youtube.com/watch?v=6lX3uZOqvdI" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/6lX3uZOqvdI/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Tom Wind discusses the 1985 Fleischmann and Pons cold fusion hole in the floor experiment</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=41FBcKnpJWA" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tesla" href="https://www.youtube.com/watch?v=41FBcKnpJWA" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/41FBcKnpJWA/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Amazing street performance with Tesla coils and special suits! ⚡⚡⚡⚡</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=sLNuU5ELAGk" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tesla" href="https://www.youtube.com/watch?v=sLNuU5ELAGk" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/sLNuU5ELAGk/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Band plays music with Tesla Coil plasma speakers! 🎸🎸⚡⚡</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=VEwTmPTYrTM" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tornado" href="https://www.youtube.com/watch?v=VEwTmPTYrTM" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/VEwTmPTYrTM/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Rare footage of a tornado appears to form from the ground up! 🌪😮</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=Ge0FcItQDe0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tornado" href="https://www.youtube.com/watch?v=Ge0FcItQDe0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/Ge0FcItQDe0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Meteorologist Ted Fujita's explanation for how tornadoes are formed 🌪</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=50lGlnq3irc" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tornado" href="https://www.youtube.com/watch?v=50lGlnq3irc" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/50lGlnq3irc/hqdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Rare extended footage of a tornado being formed in Mexico 2012 🌪</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=L4CGd4A4W70" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tornado wtc" href="https://www.youtube.com/watch?v=L4CGd4A4W70" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/L4CGd4A4W70/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Mini-tornado at the WTC on 9/11 🌪👀</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=ZbBmd1KphP8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tornado" href="https://www.youtube.com/watch?v=ZbBmd1KphP8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ZbBmd1KphP8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Rare extended footage of the ball lightning spotted in Alberta, Canada on July 2, 2025 ⚡💥</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=rJ7ag17LxA8" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="fe" href="https://www.youtube.com/watch?v=rJ7ag17LxA8" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/rJ7ag17LxA8/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Francis McCabe’s 88X Torque Over-Unity Oscillating Gyro Piston Prototype</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=GgAtdqZ-s-A" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="other" href="https://www.youtube.com/watch?v=GgAtdqZ-s-A" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/GgAtdqZ-s-A/sddefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">500 mph steel plow splits car in half + Super-slow motion</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=0v9ErjS3op4" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="tesla" href="https://www.youtube.com/watch?v=0v9ErjS3op4" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0v9ErjS3op4/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">WARNING: Tesla coil sparks can burst your ear drums when wearing earbuds headphones! ⚠️⚡️</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://www.youtube.com/watch?v=ZAvQccbPRH0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="wtc" href="https://www.youtube.com/watch?v=ZAvQccbPRH0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/ZAvQccbPRH0/maxresdefault.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Shadow on the Moon can move faster than the speed of light because a shadow is not a physical object</span>
@@ -1284,72 +1321,72 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="science-videosList">
-    <div class="list-row">
+    <div class="list-row" data-cats="tornado">
       <h3>Amazing 360-degree fog image projection + interactive display! 😮</h3>
       <p><a href="https://www.youtube.com/watch?v=_iwAATk0IOI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/_iwAATk0IOI/maxresdefault.jpg" alt="Amazing 360-degree fog image projection + interactive display! 😮">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tesla">
       <h3>Laser-induced plasma to create 3D volumetric images with sound 🤯</h3>
       <p><a href="https://www.youtube.com/watch?v=r_CrobH0m7g" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/r_CrobH0m7g/sddefault.jpg" alt="Laser-induced plasma to create 3D volumetric images with sound 🤯">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="fe">
       <h3>Tom Wind discusses the 1985 Fleischmann and Pons cold fusion hole in the floor experiment</h3>
       <p><a href="https://www.youtube.com/watch?v=6lX3uZOqvdI" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/6lX3uZOqvdI/hqdefault.jpg" alt="Tom Wind discusses the 1985 Fleischmann and Pons cold fusion hole in the floor experiment">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tesla">
       <h3>Amazing street performance with Tesla coils and special suits! ⚡⚡⚡⚡</h3>
       <p><a href="https://www.youtube.com/watch?v=41FBcKnpJWA" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/41FBcKnpJWA/hqdefault.jpg" alt="Amazing street performance with Tesla coils and special suits! ⚡⚡⚡⚡">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tesla">
       <h3>Band plays music with Tesla Coil plasma speakers! 🎸🎸⚡⚡</h3>
       <p><a href="https://www.youtube.com/watch?v=sLNuU5ELAGk" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/sLNuU5ELAGk/hqdefault.jpg" alt="Band plays music with Tesla Coil plasma speakers! 🎸🎸⚡⚡">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tornado">
       <h3>Rare footage of a tornado appears to form from the ground up! 🌪😮</h3>
       <p><a href="https://www.youtube.com/watch?v=VEwTmPTYrTM" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/VEwTmPTYrTM/hqdefault.jpg" alt="Rare footage of a tornado appears to form from the ground up! 🌪😮">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tornado">
       <h3>Meteorologist Ted Fujita's explanation for how tornadoes are formed 🌪</h3>
       <p><a href="https://www.youtube.com/watch?v=Ge0FcItQDe0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/Ge0FcItQDe0/maxresdefault.jpg" alt="Meteorologist Ted Fujita's explanation for how tornadoes are formed 🌪">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tornado">
       <h3>Rare extended footage of a tornado being formed in Mexico 2012 🌪</h3>
       <p><a href="https://www.youtube.com/watch?v=50lGlnq3irc" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/50lGlnq3irc/hqdefault.jpg" alt="Rare extended footage of a tornado being formed in Mexico 2012 🌪">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tornado wtc">
       <h3>Mini-tornado at the WTC on 9/11 🌪👀</h3>
       <p><a href="https://www.youtube.com/watch?v=L4CGd4A4W70" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/L4CGd4A4W70/maxresdefault.jpg" alt="Mini-tornado at the WTC on 9/11 🌪👀">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tornado">
       <h3>Rare extended footage of the ball lightning spotted in Alberta, Canada on July 2, 2025 ⚡💥</h3>
       <p><a href="https://www.youtube.com/watch?v=ZbBmd1KphP8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ZbBmd1KphP8/maxresdefault.jpg" alt="Rare extended footage of the ball lightning spotted in Alberta, Canada on July 2, 2025 ⚡💥">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="fe">
       <h3>Francis McCabe’s 88X Torque Over-Unity Oscillating Gyro Piston Prototype</h3>
       <p><a href="https://www.youtube.com/watch?v=rJ7ag17LxA8" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/rJ7ag17LxA8/maxresdefault.jpg" alt="Francis McCabe’s 88X Torque Over-Unity Oscillating Gyro Piston Prototype">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>500 mph steel plow splits car in half + Super-slow motion</h3>
       <p><a href="https://www.youtube.com/watch?v=GgAtdqZ-s-A" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/GgAtdqZ-s-A/sddefault.jpg" alt="500 mph steel plow splits car in half + Super-slow motion">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="tesla">
       <h3>WARNING: Tesla coil sparks can burst your ear drums when wearing earbuds headphones! ⚠️⚡️</h3>
       <p><a href="https://www.youtube.com/watch?v=0v9ErjS3op4" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/0v9ErjS3op4/maxresdefault.jpg" alt="WARNING: Tesla coil sparks can burst your ear drums when wearing earbuds headphones! ⚠️⚡️">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="wtc">
       <h3>Shadow on the Moon can move faster than the speed of light because a shadow is not a physical object</h3>
       <p><a href="https://www.youtube.com/watch?v=ZAvQccbPRH0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/ZAvQccbPRH0/maxresdefault.jpg" alt="Shadow on the Moon can move faster than the speed of light because a shadow is not a physical object">
@@ -1480,6 +1517,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('science-videos', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('science-videos');
 </script>
 
 <script>

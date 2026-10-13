@@ -954,6 +954,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1172,153 +1204,158 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="911-videos" class="section-body">
   
+    <div class="ls-filter" id="911-videosFilter">
+      <input type="search" id="911-videosSearch" placeholder="Search the videos…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="911-videosChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (21)</button><button type="button" data-c="judy" data-label="Dr. Judy Wood" aria-pressed="false">Dr. Judy Wood (3)</button><button type="button" data-c="weldon" data-label="Curt Weldon" aria-pressed="false">Curt Weldon (4)</button><button type="button" data-c="dust" data-label="Dust &amp; Dustification" aria-pressed="false">Dust &amp; Dustification (5)</button><button type="button" data-c="jumpers" data-label="Jumpers" aria-pressed="false">Jumpers (4)</button><button type="button" data-c="trailers" data-label="Trailers" aria-pressed="false">Trailers (2)</button><button type="button" data-c="other" data-label="Everything else" aria-pressed="false">Everything else (8)</button></div>
+    </div>
+    <p class="ls-empty" id="911-videosEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="911-videosGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="911-videosListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="911-videosGrid">
-    <a class="link-card" href="https://mes.fm/911-dustification-vs-demolition">
+    <a class="link-card" data-cats="dust" href="https://mes.fm/911-dustification-vs-demolition">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/911-dustification-vs-demolition/img/poster.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">North Tower Quiet Dustification vs Bethlehem Steel HQ Loud Demolition</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/curt-weldon-911-dew-muted">
+    <a class="link-card" data-cats="weldon" href="https://mes.fm/curt-weldon-911-dew-muted">
       <span class="link-card-thumb" style="background-image:url('https://mes.fm/curt-weldon-911-dew-muted/img/youtube-reinstated-email.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">YouTube Reinstated My Curt Weldon Video After Muting the &quot;Hate Speech&quot; Part 🤐▶️</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/curt-weldon-firefighters-911-dustification">
+    <a class="link-card" data-cats="weldon dust" href="https://mes.fm/curt-weldon-firefighters-911-dustification">
       <span class="link-card-thumb" style="background-image:url('https://snipboard.io/PUDT5u.jpg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Former Congressman Curt Weldon &amp; Firefighters testimony: Towers turned to dust on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/911-naudet-first-plane">
+    <a class="link-card" data-cats="other" href="https://mes.fm/911-naudet-first-plane">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1790536014367-9502261d26a5ea70.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Jules Naudet Footage of the First &quot;Plane&quot; on 9/11 + Slow / Fast Motion Analysis</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/bernie-kerik-911-jumpers-evaporated">
+    <a class="link-card" data-cats="dust jumpers" href="https://mes.fm/bernie-kerik-911-jumpers-evaporated">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789881044745-717cfb4748e0ce9d.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">NYPD Commissioner Bernie Kerik says 9/11 Jumpers &quot;Evaporated&quot; and most of bodies disintegrated</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/saudi-911-calculations">
+    <a class="link-card" data-cats="other" href="https://mes.fm/saudi-911-calculations">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789683487316-923dbfc2a9cbb89c.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Saudi Arabia &quot;Intelligence Asset&quot; Showed 9/11 &quot;Hijackers&quot; Hand-Drawn Plane Calculations</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/peter-baron-ufo-911">
+    <a class="link-card" data-cats="other" href="https://mes.fm/peter-baron-ufo-911">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789629724406-3dce0731a77edfa8.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Peter Baron's UFO Sighting on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/whats-it-toasted-car">
+    <a class="link-card" data-cats="judy" href="https://mes.fm/whats-it-toasted-car">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789336916884-b171299940a0a3f8.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Dr. Judy Wood Explains Toasted Cars on 9/11 and the “What’s It” Car</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/livestream-140-trailer-911-real-avengers">
+    <a class="link-card" data-cats="trailers" href="https://mes.fm/livestream-140-trailer-911-real-avengers">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789191820268-4c739a0e69e89fb1.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Trailer for MES Livestream 140: 9/11 – The Real Avengers by Chris Shak</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/livestream-140-trailer-dust-plumes-911">
+    <a class="link-card" data-cats="dust trailers" href="https://mes.fm/livestream-140-trailer-dust-plumes-911">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1789150788329-0a3a782670335f45.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Trailer for MES Livestream 140: Massive Dust Plumes on 9/11</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/nasa-911-fumes-hurricane-erin">
+    <a class="link-card" data-cats="dust" href="https://mes.fm/nasa-911-fumes-hurricane-erin">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788974671952-38974ae4d49794a5.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">NASA Astronaut Frank Culbertson Jr. Saw WTC Fumes on 9/11 but Didn’t Mention Hurricane Erin</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/curt-weldon-pbd-podcast-dew">
+    <a class="link-card" data-cats="judy weldon" href="https://mes.fm/curt-weldon-pbd-podcast-dew">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788898632324-129dd27208920761.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Patrick Bet David Asks Former Congressman Curt Weldon About Dr. Judy Wood and Hurricane Erin</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/curt-weldon-jimmy-dore-dew">
+    <a class="link-card" data-cats="judy weldon" href="https://mes.fm/curt-weldon-jimmy-dore-dew">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788846695342-ac5284cf4c9d325e.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Former Congressman Curt Weldon Brings Up Dr. Judy Wood and Directed Energy on the Jimmy Dore Show</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/911-coat-jumper">
+    <a class="link-card" data-cats="jumpers" href="https://mes.fm/911-coat-jumper">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1788156812024-a7b526c506ac97c0.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Alleged Launched Person Is Actually a Coat and NOT a 9/11 Jumper</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/richard-gage-flat-earth">
+    <a class="link-card" data-cats="other" href="https://mes.fm/richard-gage-flat-earth">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/DQmU7JXmLDsiR95nv5ooN9RVxN8AWb1eBoDxN2new7GqaoG/image')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/eric-larson-lies">
+    <a class="link-card" data-cats="other" href="https://mes.fm/eric-larson-lies">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1787867258350-d9046174a8d40081.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Author Eric Larson Speaks About Our Current Culture and Nation of Lies</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/jerry-leaphart-dew">
+    <a class="link-card" data-cats="other" href="https://mes.fm/jerry-leaphart-dew">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1787855690113-c41d6bde1988fa91.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Attorney Jerry Leaphart on NIST Hiring Military Contractors that Specialize in DEW and PsyOps</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/one-armed-twin">
+    <a class="link-card" data-cats="other" href="https://mes.fm/one-armed-twin">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/DQmTF9X8cxE21iu3rgrFQc9ZYctSoXgEDxt2GyNnR5guvEr/image')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/ashton-forbes-letter">
+    <a class="link-card" data-cats="other" href="https://mes.fm/ashton-forbes-letter">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/DQmWgwRYxidEYcB19FehHeSFpTgoJFJFFpRxG5CdMsesseq/image')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/stanley-praimnath-jumpers">
+    <a class="link-card" data-cats="jumpers" href="https://mes.fm/stanley-praimnath-jumpers">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1787377923896-412b19ebfe59727c.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">9/11 Survivor Stanley Praimnath says the jumpers and paper were sucked out from the windows</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://mes.fm/911-jumper-launched">
+    <a class="link-card" data-cats="jumpers" href="https://mes.fm/911-jumper-launched">
       <span class="link-card-thumb" style="background-image:url('https://images.hive.blog/DQmdu8EH1d1eXAuXiJmxJFZSM2d7iRw6za9v5MoW4Gp7Lmr/image')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Rare Footage of 9/11 Jumper appears to be Launched Laterally with Great Force from the North Tower</span>
@@ -1327,107 +1364,107 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="911-videosList">
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>North Tower Quiet Dustification vs Bethlehem Steel HQ Loud Demolition</h3>
       <p><a href="https://mes.fm/911-dustification-vs-demolition" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/north-tower-quiet-dustifica-587" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/3kCSMkXQfuk" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/qRmJ5vDxJd0S" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mestruth:9/North-Tower-vs-Bethlehem-Steel-HQ" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7gfu4m-north-tower-quiet-dustification-vs-bethlehem-steel-hq-loud-demolition.html" target="_blank" rel="noopener">Rumble</a></p>
       <img class="list-thumb" src="https://mes.fm/911-dustification-vs-demolition/img/poster.jpg" alt="North Tower Quiet Dustification vs Bethlehem Steel HQ Loud Demolition">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="weldon">
       <h3>YouTube Reinstated My Curt Weldon Video After Muting the &quot;Hate Speech&quot; Part 🤐▶️</h3>
       <p><a href="https://mes.fm/curt-weldon-911-dew-muted" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/youtube-reinstated-my-curt-652" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/hr7SAWmU-oM" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/4bmuOxAAXylx" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mestruth:9/Curt-Weldon-Muted-YouTube" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7g96pq-youtube-reinstated-my-curt-weldon-video-after-muting-the-hate-speech-part-.html" target="_blank" rel="noopener">Rumble</a></p>
       <img class="list-thumb" src="https://mes.fm/curt-weldon-911-dew-muted/img/youtube-reinstated-email.jpg" alt="YouTube Reinstated My Curt Weldon Video After Muting the &quot;Hate Speech&quot; Part 🤐▶️">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="weldon dust">
       <h3>Former Congressman Curt Weldon &amp; Firefighters testimony: Towers turned to dust on 9/11</h3>
       <p><a href="https://mes.fm/curt-weldon-firefighters-911-dustification" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/former-congressman-curt-wel-491" target="_blank" rel="noopener">3Speak</a> - <a href="https://www.bitchute.com/video/HIYkLAZaW7Zn" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mestruth:9/Curt-Weldon-Dustification:b" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7g7jnq-former-congressman-curt-weldon-and-firefighters-testimony-towers-turned-to-.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://snipboard.io/PUDT5u.jpg" alt="Former Congressman Curt Weldon &amp; Firefighters testimony: Towers turned to dust on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Jules Naudet Footage of the First &quot;Plane&quot; on 9/11 + Slow / Fast Motion Analysis</h3>
       <p><a href="https://mes.fm/911-naudet-first-plane" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/fb4flx5z" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/oQvAkD0DTEE" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35596" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1790536014367-9502261d26a5ea70.webp" alt="Jules Naudet Footage of the First &quot;Plane&quot; on 9/11 + Slow / Fast Motion Analysis">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust jumpers">
       <h3>NYPD Commissioner Bernie Kerik says 9/11 Jumpers &quot;Evaporated&quot; and most of bodies disintegrated</h3>
       <p><a href="https://mes.fm/bernie-kerik-911-jumpers-evaporated" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/nypd-commissioner-bernie-ke-232" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/g9edp1aPOUM" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35557" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1789881044745-717cfb4748e0ce9d.webp" alt="NYPD Commissioner Bernie Kerik says 9/11 Jumpers &quot;Evaporated&quot; and most of bodies disintegrated">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Saudi Arabia &quot;Intelligence Asset&quot; Showed 9/11 &quot;Hijackers&quot; Hand-Drawn Plane Calculations</h3>
       <p><a href="https://mes.fm/saudi-911-calculations" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/saudi-arabia-intelligence-a-141" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/k4XH50pGDNk" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35540" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1789683487316-923dbfc2a9cbb89c.webp" alt="Saudi Arabia &quot;Intelligence Asset&quot; Showed 9/11 &quot;Hijackers&quot; Hand-Drawn Plane Calculations">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Peter Baron's UFO Sighting on 9/11</h3>
       <p><a href="https://mes.fm/peter-baron-ufo-911" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/peter-barons-ufo-sighting-o-701" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/POjD_dcMC9g" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/26121" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1789629724406-3dce0731a77edfa8.webp" alt="Peter Baron's UFO Sighting on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy">
       <h3>Dr. Judy Wood Explains Toasted Cars on 9/11 and the “What’s It” Car</h3>
       <p><a href="https://mes.fm/whats-it-toasted-car" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/dr-judy-wood-explains-toast-247" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/RxwuO-AX5Vo" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/22360" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1789336916884-b171299940a0a3f8.webp" alt="Dr. Judy Wood Explains Toasted Cars on 9/11 and the “What’s It” Car">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="trailers">
       <h3>Trailer for MES Livestream 140: 9/11 – The Real Avengers by Chris Shak</h3>
       <p><a href="https://mes.fm/livestream-140-trailer-911-real-avengers" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/trailer-for-mes-livestream-586" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/PF0kSCXvZwM" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1789191820268-4c739a0e69e89fb1.webp" alt="Trailer for MES Livestream 140: 9/11 – The Real Avengers by Chris Shak">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust trailers">
       <h3>Trailer for MES Livestream 140: Massive Dust Plumes on 9/11</h3>
       <p><a href="https://mes.fm/livestream-140-trailer-dust-plumes-911" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/trailer-for-mes-livestream-214" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/ddmBEjkVXb0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1789150788329-0a3a782670335f45.webp" alt="Trailer for MES Livestream 140: Massive Dust Plumes on 9/11">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="dust">
       <h3>NASA Astronaut Frank Culbertson Jr. Saw WTC Fumes on 9/11 but Didn’t Mention Hurricane Erin</h3>
       <p><a href="https://mes.fm/nasa-911-fumes-hurricane-erin" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/nasa-astronaut-frank-culber-815" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/eUqKYOBNt2Y" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/33969" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1788974671952-38974ae4d49794a5.webp" alt="NASA Astronaut Frank Culbertson Jr. Saw WTC Fumes on 9/11 but Didn’t Mention Hurricane Erin">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy weldon">
       <h3>Patrick Bet David Asks Former Congressman Curt Weldon About Dr. Judy Wood and Hurricane Erin</h3>
       <p><a href="https://mes.fm/curt-weldon-pbd-podcast-dew" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/patrick-bet-david-asks-form-813" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/9wFA0d7uHqg" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/29784" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1788898632324-129dd27208920761.webp" alt="Patrick Bet David Asks Former Congressman Curt Weldon About Dr. Judy Wood and Hurricane Erin">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="judy weldon">
       <h3>Former Congressman Curt Weldon Brings Up Dr. Judy Wood and Directed Energy on the Jimmy Dore Show</h3>
       <p><a href="https://mes.fm/curt-weldon-jimmy-dore-dew" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/former-congressman-curt-wel-751" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/wOgWBQk2Ylw" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35483" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1788846695342-ac5284cf4c9d325e.webp" alt="Former Congressman Curt Weldon Brings Up Dr. Judy Wood and Directed Energy on the Jimmy Dore Show">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="jumpers">
       <h3>Alleged Launched Person Is Actually a Coat and NOT a 9/11 Jumper</h3>
       <p><a href="https://mes.fm/911-coat-jumper" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/alleged-launched-person-is-345" target="_blank" rel="noopener">3Speak</a> - <a href="https://t.me/meslinks/35455" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1788156812024-a7b526c506ac97c0.webp" alt="Alleged Launched Person Is Actually a Coat and NOT a 9/11 Jumper">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat</h3>
       <p><a href="https://mes.fm/richard-gage-flat-earth" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/mr-richard-gage-doesnt-know-54" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/BFkQwoDXCFg" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/16967" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/DQmU7JXmLDsiR95nv5ooN9RVxN8AWb1eBoDxN2new7GqaoG/image" alt="Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Author Eric Larson Speaks About Our Current Culture and Nation of Lies</h3>
       <p><a href="https://mes.fm/eric-larson-lies" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/author-eric-larson-speaks-a-5" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/V7DVhj4A6Wo" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35430" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1787867258350-d9046174a8d40081.webp" alt="Author Eric Larson Speaks About Our Current Culture and Nation of Lies">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Attorney Jerry Leaphart on NIST Hiring Military Contractors that Specialize in DEW and PsyOps</h3>
       <p><a href="https://mes.fm/jerry-leaphart-dew" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/attorney-jerry-leaphart-on-213" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/DQZGMymsoGg" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35429" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1787855690113-c41d6bde1988fa91.webp" alt="Attorney Jerry Leaphart on NIST Hiring Military Contractors that Specialize in DEW and PsyOps">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix</h3>
       <p><a href="https://mes.fm/one-armed-twin" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=braingraft/one-armed-twin-25" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/vcc2C-mxLxg" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35425" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/DQmTF9X8cxE21iu3rgrFQc9ZYctSoXgEDxt2GyNnR5guvEr/image" alt="Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="other">
       <h3>Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself</h3>
       <p><a href="https://mes.fm/ashton-forbes-letter" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/highlights-from-the-letter-893" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/zMXxyKljWA4" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/29685" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/DQmWgwRYxidEYcB19FehHeSFpTgoJFJFFpRxG5CdMsesseq/image" alt="Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="jumpers">
       <h3>9/11 Survivor Stanley Praimnath says the jumpers and paper were sucked out from the windows</h3>
       <p><a href="https://mes.fm/stanley-praimnath-jumpers" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/911-survivor-stanley-praimn-584" target="_blank" rel="noopener">3Speak</a> - <a href="https://t.me/meslinks/35412" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1787377923896-412b19ebfe59727c.webp" alt="9/11 Survivor Stanley Praimnath says the jumpers and paper were sucked out from the windows">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="jumpers">
       <h3>Rare Footage of 9/11 Jumper appears to be Launched Laterally with Great Force from the North Tower</h3>
       <p><a href="https://mes.fm/911-jumper-launched" target="_blank" rel="noopener">Notes</a> - <a href="https://3speak.tv/watch?v=mestruth/rare-footage-of-911-jumper-541" target="_blank" rel="noopener">3Speak</a> - <a href="https://t.me/meslinks/35363" target="_blank" rel="noopener">Telegram</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.hive.blog/DQmdu8EH1d1eXAuXiJmxJFZSM2d7iRw6za9v5MoW4Gp7Lmr/image" alt="Rare Footage of 9/11 Jumper appears to be Launched Laterally with Great Force from the North Tower">
@@ -1558,6 +1595,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('911-videos', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('911-videos');
 </script>
 
 <script>

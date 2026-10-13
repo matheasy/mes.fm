@@ -937,6 +937,38 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   #header-controls { top: auto; bottom: 0; right: 8px; transform: none; }
   body.is-stuck #header-controls { top: 13px; bottom: auto; }
 }
+/* Search box + category chips (same look as the chips on mes.fm/calculators). */
+.ls-filter { margin: 0 0 1em; }
+.ls-filter input {
+  display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em;
+  padding: 0.65em 0.8em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222;
+}
+.ls-filter input:focus { outline: none; border-color: #277bb6; box-shadow: 0 0 0 2px rgba(39, 123, 182, 0.22); }
+.ls-chips { display: flex; flex-wrap: wrap; gap: 0.45em; margin-top: 0.7em; }
+.ls-chips button {
+  font: inherit; font-size: 0.85em; cursor: pointer; padding: 0.4em 0.9em; border-radius: 1.2em;
+  border: 1px solid #c3c9d2; background: #fff; color: #444;
+}
+.ls-chips button:hover { border-color: #277bb6; color: #277bb6; }
+.ls-chips button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.ls-empty { color: #6a7280; font-style: italic; padding: 0.5em 0 1em; }
+.ls-sort { display: inline-block; margin-top: 0.8em; font-size: 0.9em; color: #556; }
+.ls-sort select { font: inherit; margin-left: 0.4em; padding: 0.3em 0.5em; border: 1px solid #b9c1cc; border-radius: 0.4em; background: #fff; color: #222; }
+.link-card-meta { display: block; font-size: 0.8em; color: #6a7280; }
+.list-meta { color: #6a7280; font-size: 0.9em; }
+/* long lists (hundreds of videos): let the browser skip painting off-screen cards */
+.ls-big .link-card { content-visibility: auto; contain-intrinsic-size: auto 250px; }
+.ls-big .list-row { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+body.dark-mode .ls-sort { color: #aab; } body.dark-mode .ls-sort select { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .link-card-meta, body.dark-mode .list-meta { color: #9aa3b2; }
+/* a bare [hidden] loses to .link-card { display: flex } etc. */
+[data-cats][hidden], .ls-empty[hidden], .ls-filter[hidden] { display: none !important; }
+
+body.dark-mode .ls-filter input { background: #2a2a2a; color: #eee; border-color: #555; }
+body.dark-mode .ls-chips button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .ls-chips button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .ls-chips button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .ls-empty { color: #aaa; }
 </style>
 
 <meta property="fb:app_id" content="120877788060946" />
@@ -1154,132 +1186,137 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
 <div class="list-container">
   <div id="highlights" class="section-body">
   
+    <div class="ls-filter" id="highlightsFilter">
+      <input type="search" id="highlightsSearch" placeholder="Search the highlights…" aria-label="Search" autocomplete="off">
+      <div class="ls-chips" id="highlightsChips"><button type="button" data-c="all" data-label="All" aria-pressed="true">All (18)</button><button type="button" data-c="lev" data-label="Levitation" aria-pressed="false">Levitation (4)</button><button type="button" data-c="metal" data-label="Metal Bends, Splits &amp; Melts" aria-pressed="false">Metal Bends, Splits &amp; Melts (8)</button><button type="button" data-c="water" data-label="Water &amp; Boat" aria-pressed="false">Water &amp; Boat (3)</button><button type="button" data-c="comp" data-label="Compilations &amp; Trailers" aria-pressed="false">Compilations &amp; Trailers (6)</button><button type="button" data-c="other" data-label="Everything else" aria-pressed="false">Everything else (0)</button></div>
+    </div>
+    <p class="ls-empty" id="highlightsEmpty" hidden>Nothing matches. Try fewer words or a different filter.</p>
     <div class="view-toggle">
       <button type="button" class="view-toggle-btn active" id="highlightsGridBtn">Grid View</button>
       <button type="button" class="view-toggle-btn" id="highlightsListBtn">List View</button>
       
     </div>
     <div class="card-grid" id="highlightsGrid">
-    <a class="link-card" href="https://mes.fm/hutchison-levitating-can-live">
+    <a class="link-card" data-cats="lev" href="https://mes.fm/hutchison-levitating-can-live">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1790118173447-fc686c3b9719153c.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: Plastic Can Levitates and Video is Played Back LIVE</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/hutchison-effect-19-lb-bush-939" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="lev metal" href="https://peakd.com/hive-128780/@mes/hutchison-effect-19-lb-bush-939" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://images.3speak.tv/images/1785445828290-a0571387cad1a33c.webp')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: 19 lb bushing levitates with linearly increasing acceleration – &quot;Hyperforce”</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/lwjfblia" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="comp" href="https://peakd.com/hive-128780/@mes/lwjfblia" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tmFRQJwjwVwhFCsH1aBV5igGtMKokxPw4yNokw66Zz4KKuttWGYqCMiP7T9cZPbfMPP.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect Compilation from 1988 to 1989</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/tznpkpee" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="comp" href="https://peakd.com/hive-128780/@mes/tznpkpee" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wgKzP3nSVbCHkzPbgkpbHx3DY3gaVAjzNMEvY9vXL8JqVz2eTtH5XPkjfiDwDCZSSqy.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: Timelapse of 5 Hours of Footage into 5 Minutes Reveals RARE Effects</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/wpjnaiyq" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="metal" href="https://peakd.com/hive-128780/@mes/wpjnaiyq" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23uFPdq8y2bqcMTiDiwZ6FpHeRZZWtPz3DKtwHmJRBXruGq94WeCP2TYpGWKk58hHb5Rb.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: Clorox Bottle Compresses and Decompresses</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/zmxodcgi" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="lev metal" href="https://peakd.com/hive-128780/@mes/zmxodcgi" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wMaSH2ej21cjpqZJXK79eBg2zdBQQVsRugnAd3MmbLs8CwBJGSmw8NAcJm7sYbGWNkA.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: Steel Rod Bends, Levitates, and Flies Upwards</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/egladafi" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="metal" href="https://peakd.com/hive-128780/@mes/egladafi" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wgHvq5dWdTN6wx7AT2zRXoXAxStMUCPKY5FBira2X4jbPQRzeur5jeGKvX12Asx1JsG.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: Solid Stainless Steel Cylinder splits apart like Jelly</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/sbjduqfl" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="water" href="https://peakd.com/hive-128780/@mes/sbjduqfl" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23y94QLvgQBm5e6yC4V1zQ1gJLEPPtKy8iGVrUXYNx2TDje6aZXijKxadTwMNoKsyBbWB.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: High Frequency Electrical Discharge Fires on Plastic Boat</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/pirokkna" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="water" href="https://peakd.com/hive-128780/@mes/pirokkna" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23xAbqQxHtTXL1m1gUwHnAYuzjcqRh555LQSbjez2vJfQ55y3q5cjjVX9RFEY9N49hKu7.JPEG')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: High Frequency Radio Waves Cause Water to Foam Up</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/okvxltmy" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="water comp" href="https://peakd.com/hive-128780/@mes/okvxltmy" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tvgSmo4ftvmvKDHcKhcsCTkxE66kd1WJJ8HvtGpwXWDkZ4egPJs5vsq43g41Qgchmx1.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: 1 Hour of the Famous Plastic Boat on Water Experiment</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/qvqnthrh" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="metal" href="https://peakd.com/hive-128780/@mes/qvqnthrh" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tmDmV9k9nW3wyjjJ6xVUJyqmmJC7tZD4v5odbeqLDsa9nyj7JR4oBtvmePb8mPyW1YN.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: Solid Metal Rod Splits apart like Jelly</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/nnxpbnke" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="lev" href="https://peakd.com/hive-128780/@mes/nnxpbnke" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23u5tdp4wQogynKFRjke6sZayQuD2NNH3z7ihjXpcpy87zFdzCcZacRmVfQiCcmHpCXEM.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: 80-pound Mill Ball Levitating Up and Down for 10 Minutes</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hutchisoneffect/@mes/hutchison-effect-steel-rubber-melting-short" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="metal" href="https://peakd.com/hutchisoneffect/@mes/hutchison-effect-steel-rubber-melting-short" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23x12vcay9VBFqmJcL1ejVrXcUrCXZ5jMbhYsbstFTrYvURRdTb3hV68aGQCuRDtfuWfi.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: Steel Rubber Composite Cold Melting (180X Speed)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-128780/@mes/hutchison-effect-steel-rubber-cold-melting" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="metal" href="https://peakd.com/hive-128780/@mes/hutchison-effect-steel-rubber-cold-melting" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23wgFPodnECy1f1zMCY7if4Mbe1BD5FsnzcGk2B3KhNThcFdfJqSAhL46KJbqFGrcfWxf.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: Steel Rubber Composite Cold Melting</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/@mes/dnqjqhjn" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="metal" href="https://peakd.com/@mes/dnqjqhjn" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23u67TyDiLoRNjSSrjgpXuKbYf8ogHYr3kYirR3iLiDU67vECxwLH7bomGGck2ECwaxiy.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Effect: Solid Block of Iron Warping and Twisting (Two Experiments)</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://peakd.com/hive-113182/@mes/wmyovlcv" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="comp" href="https://peakd.com/hive-113182/@mes/wmyovlcv" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/244AAhPLEBCofvkWTk3e6W2Wui7yqxN4stRB3z1aoPMoGsLhu8d8nhqiM1EqSGzuf3BY9.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">1109 by Keor Meteor: Intro: The Hutchison Effect</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/O-KoQ3_Drag" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="comp" href="https://youtu.be/O-KoQ3_Drag" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/23tbkoYJYUK6N1HtzHbdEfEn8puHKDkm9qaRkMTWyi5dPruAEduDGEuBqDCvFMFMs5ixw.png')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Trailer for Livestream 97: Hutchison Effect 1988 to 1989 Compilation</span>
         <span class="link-card-readmore">View &rarr;</span>
       </span>
     </a>
-    <a class="link-card" href="https://youtu.be/WbvO8BbKIP0" target="_blank" rel="noopener">
+    <a class="link-card" data-cats="comp" href="https://youtu.be/WbvO8BbKIP0" target="_blank" rel="noopener">
       <span class="link-card-thumb" style="background-image:url('https://files.peakd.com/file/peakd-hive/mes/244oWj3p8Ybu9EoydUnAB6yi9d7ZLgN7yEbEEtprH6DWb7a6fA6TZUKnCK5dyXnnmoc9j.jpeg')"></span>
       <span class="link-card-body">
         <span class="link-card-title">Trailer for Livestream 66: Rare Hutchison Effect Footage</span>
@@ -1288,92 +1325,92 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
     </a>
     </div>
     <div class="list-view view-hidden" id="highlightsList">
-    <div class="list-row">
+    <div class="list-row" data-cats="lev">
       <h3>Hutchison Effect: Plastic Can Levitates and Video is Played Back LIVE</h3>
       <p><a href="https://mes.fm/hutchison-levitating-can-live" target="_blank" rel="noopener">Screenshots</a> - <a href="https://3speak.tv/watch?v=mes/hutchison-effect-plastic-ca-593" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/84_R56cjqMQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35568" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/8jwVZeAXX9pO/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Can-Levitates-Live-Playback:a" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7fv5tq-hutchison-effect-plastic-can-levitates-and-video-is-played-back-live.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1790118173447-fc686c3b9719153c.webp" alt="Hutchison Effect: Plastic Can Levitates and Video is Played Back LIVE">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="lev metal">
       <h3>Hutchison Effect: 19 lb bushing levitates with linearly increasing acceleration – &quot;Hyperforce”</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/hutchison-effect-19-lb-bush-939" target="_blank" rel="noopener">Screenshots</a> - <a href="https://3speak.tv/watch?v=mes/hutchison-effect-19-lb-bush-939" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/7v_AYRCw5nU" target="_blank" rel="noopener">YouTube</a> - <a href="https://t.me/meslinks/35272" target="_blank" rel="noopener">Telegram</a> - <a href="https://www.bitchute.com/video/H9mhJfY5p8Pj/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-3rd-derivative-Hyperforce:b" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v7dp0c0-hutchison-effect-19-lb-bushing-levitates-with-linearly-increasing-accelerat.html" target="_blank" rel="noopener">Rumble</a> - <a href="https://1drv.ms/x/c/88862ef47bcaf6cd/IQB9ztjdln5gQ5CzQ_P6ynxXAdUBzocWCAOwM83kiw03sAo" target="_blank" rel="noopener">Excel file</a></p>
       <img loading="lazy" class="list-thumb" src="https://images.3speak.tv/images/1785445828290-a0571387cad1a33c.webp" alt="Hutchison Effect: 19 lb bushing levitates with linearly increasing acceleration – &quot;Hyperforce”">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="comp">
       <h3>Hutchison Effect Compilation from 1988 to 1989</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/lwjfblia" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/lwjfblia" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/ZWHTIA1eL5k" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/DkkgeRlT671w/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Hutchison-Effect-Compilation-1988-1989:a06d346f96f2af32a903ad10eb5e345aae599ed4" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6vj2rz-hutchison-effect-compilation-from-1988-to-1989.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tmFRQJwjwVwhFCsH1aBV5igGtMKokxPw4yNokw66Zz4KKuttWGYqCMiP7T9cZPbfMPP.jpeg" alt="Hutchison Effect Compilation from 1988 to 1989">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="comp">
       <h3>Hutchison Effect: Timelapse of 5 Hours of Footage into 5 Minutes Reveals RARE Effects</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/tznpkpee" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/tznpkpee" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/zmdVFzpOFhs" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/0JWzR6mH2E76/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Hutchison-Effect-Timelapse-Jack-Houck:b75de0b42b89ab87c0f4acc79403ce518e96d8de" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6s7uuv-hutchison-effect-timelapse-of-5-hours-of-footage-into-5-minutes-reveals-rar.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wgKzP3nSVbCHkzPbgkpbHx3DY3gaVAjzNMEvY9vXL8JqVz2eTtH5XPkjfiDwDCZSSqy.jpeg" alt="Hutchison Effect: Timelapse of 5 Hours of Footage into 5 Minutes Reveals RARE Effects">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="metal">
       <h3>Hutchison Effect: Clorox Bottle Compresses and Decompresses</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/wpjnaiyq" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/wpjnaiyq" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/amENrIgtHvg" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/cq4iUEcp9cTk/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Bottle-Compresses:b" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6rjddd-hutchison-effect-clorox-bottle-compresses-and-decompresses.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23uFPdq8y2bqcMTiDiwZ6FpHeRZZWtPz3DKtwHmJRBXruGq94WeCP2TYpGWKk58hHb5Rb.jpeg" alt="Hutchison Effect: Clorox Bottle Compresses and Decompresses">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="lev metal">
       <h3>Hutchison Effect: Steel Rod Bends, Levitates, and Flies Upwards</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/zmxodcgi" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/zmxodcgi" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/Q5HLI2HjsB0" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/lWVyczVeeKcc" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Steel-Rod-Bends:a" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6qlgcw-hutchison-effect-steel-rod-bends-levitates-and-flies-upwards.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wMaSH2ej21cjpqZJXK79eBg2zdBQQVsRugnAd3MmbLs8CwBJGSmw8NAcJm7sYbGWNkA.jpeg" alt="Hutchison Effect: Steel Rod Bends, Levitates, and Flies Upwards">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="metal">
       <h3>Hutchison Effect: Solid Stainless Steel Cylinder splits apart like Jelly</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/egladafi" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/egladafi" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/TtqWmVWZ8Us" target="_blank" rel="noopener">YouTube</a> - <a href="http://bitchute.com/video/Pd0H23GYigww/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Hutchison-Effect-Steel-Cylinder-Jelly:5f91144f604af55ce042ff4e886bd508b25c5f61" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6jso6s-hutchison-effect-solid-stainless-steel-cylinder-splits-apart-like-jelly.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wgHvq5dWdTN6wx7AT2zRXoXAxStMUCPKY5FBira2X4jbPQRzeur5jeGKvX12Asx1JsG.jpeg" alt="Hutchison Effect: Solid Stainless Steel Cylinder splits apart like Jelly">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="water">
       <h3>Hutchison Effect: High Frequency Electrical Discharge Fires on Plastic Boat</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/sbjduqfl" target="_blank" rel="noopener">Hive</a> - <a href="https://peakd.com/hive-128780/@mes/okvxltmy" target="_blank" rel="noopener">Screenshots</a> - <a href="https://3speak.tv/watch?v=mes/sbjduqfl" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/E_AiyTHmonA" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/hTU6E3I4WsMz/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Hutchison-Effect-Electrical-Fires-Boat:0229255436dee7944186fb0a00b20661e23c093d" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6q31wc-hutchison-effect-high-frequency-electrical-discharge-fires-on-plastic-boat.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23y94QLvgQBm5e6yC4V1zQ1gJLEPPtKy8iGVrUXYNx2TDje6aZXijKxadTwMNoKsyBbWB.jpeg" alt="Hutchison Effect: High Frequency Electrical Discharge Fires on Plastic Boat">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="water">
       <h3>Hutchison Effect: High Frequency Radio Waves Cause Water to Foam Up</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/pirokkna" target="_blank" rel="noopener">Hive</a> - <a href="https://peakd.com/hive-128780/@mes/okvxltmy" target="_blank" rel="noopener">Screenshots</a> - <a href="https://3speak.tv/watch?v=mes/pirokkna" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/iWd_ubhsGoU" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/KM1D29sR0ken/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Water-Foam-Boat:3" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6q5i1o-hutchison-effect-high-frequency-radio-waves-cause-water-to-foam-up.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23xAbqQxHtTXL1m1gUwHnAYuzjcqRh555LQSbjez2vJfQ55y3q5cjjVX9RFEY9N49hKu7.JPEG" alt="Hutchison Effect: High Frequency Radio Waves Cause Water to Foam Up">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="water comp">
       <h3>Hutchison Effect: 1 Hour of the Famous Plastic Boat on Water Experiment</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/okvxltmy" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/okvxltmy" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/hBfqjBSItj0" target="_blank" rel="noopener">YouTube</a> - <a href="https://old.bitchute.com/video/ihVuR4bq2FiD/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Hutchison-Effect-Plastic-Boat:9d7d735e43e9583286ff8c7f1045fe2d497cf63e" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6pdyix-hutchison-effect-1-hour-of-the-famous-plastic-boat-on-water-experiment.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tvgSmo4ftvmvKDHcKhcsCTkxE66kd1WJJ8HvtGpwXWDkZ4egPJs5vsq43g41Qgchmx1.jpeg" alt="Hutchison Effect: 1 Hour of the Famous Plastic Boat on Water Experiment">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="metal">
       <h3>Hutchison Effect: Solid Metal Rod Splits apart like Jelly</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/qvqnthrh" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/qvqnthrh" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/BWCuM4GQlgc" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/fwO5FhtuXy7t/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Hutchison-Effect-Metal-Jelly:38ff0793c1ba57548ea206f857f215a68a915d06" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6i5q9m-hutchison-effect-solid-metal-rod-splits-apart-like-jelly.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tmDmV9k9nW3wyjjJ6xVUJyqmmJC7tZD4v5odbeqLDsa9nyj7JR4oBtvmePb8mPyW1YN.jpeg" alt="Hutchison Effect: Solid Metal Rod Splits apart like Jelly">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="lev">
       <h3>Hutchison Effect: 80-pound Mill Ball Levitating Up and Down for 10 Minutes</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/nnxpbnke" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/nnxpbnke" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/C2FbX_xWXaQ" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/Rd6p8wkhx4id/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Mill-Ball-Levitation:4" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v6bvved-hutchison-effect-80-pound-mill-ball-levitating-up-and-down-for-10-minutes.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23u5tdp4wQogynKFRjke6sZayQuD2NNH3z7ihjXpcpy87zFdzCcZacRmVfQiCcmHpCXEM.jpeg" alt="Hutchison Effect: 80-pound Mill Ball Levitating Up and Down for 10 Minutes">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="metal">
       <h3>Hutchison Effect: Steel Rubber Composite Cold Melting (180X Speed)</h3>
       <p><a href="https://peakd.com/hutchisoneffect/@mes/hutchison-effect-steel-rubber-melting-short" target="_blank" rel="noopener">Hive</a> - <a href="https://youtu.be/o90ylugSL_M" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/aYKuNdDrrlRl/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/Hutchison-Effect-Steel-Rubber-Cold-Melting-Short:135cd57ce78c8540e0fa21cabdb68d95bdd421b4" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v5yes8q-hutchison-effect-steel-rubber-composite-cold-melting-180x-speed.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23x12vcay9VBFqmJcL1ejVrXcUrCXZ5jMbhYsbstFTrYvURRdTb3hV68aGQCuRDtfuWfi.jpeg" alt="Hutchison Effect: Steel Rubber Composite Cold Melting (180X Speed)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="metal">
       <h3>Hutchison Effect: Steel Rubber Composite Cold Melting</h3>
       <p><a href="https://peakd.com/hive-128780/@mes/hutchison-effect-steel-rubber-cold-melting" target="_blank" rel="noopener">Hive</a> - <a href="https://youtu.be/tBTzf_WEuME" target="_blank" rel="noopener">YouTube</a> - <a href="https://bitchute.com/video/8TzJPaNzCEM1/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Steel-Rubber-Composite:c" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v5y2z1n-hutchison-effect-steel-rubber-composite-cold-melting.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23wgFPodnECy1f1zMCY7if4Mbe1BD5FsnzcGk2B3KhNThcFdfJqSAhL46KJbqFGrcfWxf.jpeg" alt="Hutchison Effect: Steel Rubber Composite Cold Melting">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="metal">
       <h3>Hutchison Effect: Solid Block of Iron Warping and Twisting (Two Experiments)</h3>
       <p><a href="https://peakd.com/@mes/dnqjqhjn" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/dnqjqhjn" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/HGMdOk5a9Vk" target="_blank" rel="noopener">YouTube</a> - <a href="https://www.bitchute.com/video/c6Hd3QRO1YD3/" target="_blank" rel="noopener">BitChute</a> - <a href="https://odysee.com/@mes:8/Hutchison-Effect-Iron-Block-Two-Experiments:c" target="_blank" rel="noopener">Odysee</a> - <a href="https://rumble.com/v4x67l5-hutchison-effect-solid-block-of-iron-warping-and-twisting-two-experiments.html" target="_blank" rel="noopener">Rumble</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23u67TyDiLoRNjSSrjgpXuKbYf8ogHYr3kYirR3iLiDU67vECxwLH7bomGGck2ECwaxiy.jpeg" alt="Hutchison Effect: Solid Block of Iron Warping and Twisting (Two Experiments)">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="comp">
       <h3>1109 by Keor Meteor: Intro: The Hutchison Effect</h3>
       <p><a href="https://peakd.com/hive-113182/@mes/wmyovlcv" target="_blank" rel="noopener">Hive</a> - <a href="https://3speak.tv/watch?v=mes/wmyovlcv" target="_blank" rel="noopener">3Speak</a> - <a href="https://youtu.be/hQlPItudSSQ" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/244AAhPLEBCofvkWTk3e6W2Wui7yqxN4stRB3z1aoPMoGsLhu8d8nhqiM1EqSGzuf3BY9.jpeg" alt="1109 by Keor Meteor: Intro: The Hutchison Effect">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="comp">
       <h3>Trailer for Livestream 97: Hutchison Effect 1988 to 1989 Compilation</h3>
       <p><a href="https://youtu.be/O-KoQ3_Drag" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/23tbkoYJYUK6N1HtzHbdEfEn8puHKDkm9qaRkMTWyi5dPruAEduDGEuBqDCvFMFMs5ixw.png" alt="Trailer for Livestream 97: Hutchison Effect 1988 to 1989 Compilation">
     </div>
-    <div class="list-row">
+    <div class="list-row" data-cats="comp">
       <h3>Trailer for Livestream 66: Rare Hutchison Effect Footage</h3>
       <p><a href="https://youtu.be/WbvO8BbKIP0" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://files.peakd.com/file/peakd-hive/mes/244oWj3p8Ybu9EoydUnAB6yi9d7ZLgN7yEbEEtprH6DWb7a6fA6TZUKnCK5dyXnnmoc9j.jpeg" alt="Trailer for Livestream 66: Rare Hutchison Effect Footage">
@@ -1504,6 +1541,94 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
   }
 
       wireViewToggle('highlights', []);
+  // Search + category filter (see buildFilter()). Applies to every pane that carries data-cats
+  // (Grid, List and Trailers) so the choice survives switching tabs; the chip counts show how many
+  // items each chip would give in the pane that is showing. Stats items carry their Q/A's cats
+  // too, so the chips filter that tab as well. #<category> in the URL preselects a chip; Esc clears.
+  function wireFilter(id) {
+    var box = document.getElementById(id + 'Filter');
+    var input = document.getElementById(id + 'Search');
+    var chips = document.getElementById(id + 'Chips');
+    var empty = document.getElementById(id + 'Empty');
+    if (!box || !input || !chips) return;
+    var panes = ['Grid', 'List', 'Trailers', 'Stats'].map(function (s) { return document.getElementById(id + s); }).filter(Boolean);
+    var cat = 'all';
+
+    function items(pane) { return Array.prototype.slice.call(pane.querySelectorAll('[data-cats]')); }
+    function titleOf(el) {
+      var t = el.querySelector('.link-card-title, h3');
+      return ((t ? t.textContent : el.textContent) + ' ' + (el.getAttribute('data-kw') || '')).toLowerCase();
+    }
+    function inCat(el, c) { return c === 'all' || (' ' + el.getAttribute('data-cats') + ' ').indexOf(' ' + c + ' ') !== -1; }
+    function activePane() {
+      return panes.filter(function (p) { return !p.classList.contains('view-hidden'); })[0] || null;
+    }
+
+    function apply() {
+      var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      panes.forEach(function (pane) {
+        items(pane).forEach(function (el) {
+          var title = titleOf(el);
+          el.hidden = !(inCat(el, cat) && words.every(function (w) { return title.indexOf(w) !== -1; }));
+        });
+      });
+      var pane = activePane();
+      box.hidden = !pane;
+      if (!pane) { if (empty) empty.hidden = true; return; }
+      var els = items(pane);
+      Array.prototype.forEach.call(chips.querySelectorAll('button'), function (b) {
+        var c = b.getAttribute('data-c');
+        var n = els.filter(function (el) { return inCat(el, c); }).length;
+        b.textContent = b.getAttribute('data-label') + ' (' + n + ')';
+        b.setAttribute('aria-pressed', c === cat ? 'true' : 'false');
+      });
+      if (empty) empty.hidden = els.some(function (el) { return !el.hidden; });
+    }
+
+    // Sort (only when the section has the Sort select): reorders the cards / rows of every pane by their data-i / data-v / data-d.
+    var sortSel = document.getElementById(id + 'Sort');
+    function num(el, k) { return +el.getAttribute(k) || 0; }
+    var SORTS = {
+      'new': function (a, b) { return num(a, 'data-i') - num(b, 'data-i'); },
+      old: function (a, b) { return num(b, 'data-i') - num(a, 'data-i'); },
+      views: function (a, b) { return num(b, 'data-v') - num(a, 'data-v') || num(a, 'data-i') - num(b, 'data-i'); },
+      'long': function (a, b) { return num(b, 'data-d') - num(a, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      'short': function (a, b) { return num(a, 'data-d') - num(b, 'data-d') || num(a, 'data-i') - num(b, 'data-i'); },
+      az: function (a, b) { var x = titleOf(a), y = titleOf(b); return x < y ? -1 : x > y ? 1 : 0; }
+    };
+    function reorder() {
+      if (!sortSel) return;
+      panes.forEach(function (pane) {
+        var els = items(pane); if (!els.length || !els[0].hasAttribute('data-i')) return;
+        var parent = els[0].parentNode;
+        els.sort(SORTS[sortSel.value] || SORTS['new']).forEach(function (el) { parent.appendChild(el); });
+      });
+    }
+    if (sortSel) sortSel.addEventListener('change', reorder);
+    function setCat(c) { cat = c; apply(); }
+    input.addEventListener('input', apply);
+    chips.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (b) setCat(b.getAttribute('data-c'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; setCat('all'); }
+    });
+    // Tab switches (wireViewToggle above runs first): re-count for the newly showing pane.
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' .view-toggle-btn'), function (b) {
+      b.addEventListener('click', function () { setTimeout(apply, 0); });
+    });
+    // #<category> preselects a chip, on load and when the hash changes (e.g. a link to
+    // /livestreams#hutchison clicked while already on this page).
+    function fromHash() {
+      var h = (location.hash || '').slice(1);
+      if (h && chips.querySelector('button[data-c="' + h + '"]')) cat = h;
+    }
+    window.addEventListener('hashchange', function () { fromHash(); apply(); });
+    fromHash();
+    apply();
+  }
+  wireFilter('highlights');
 </script>
 
 <script>
