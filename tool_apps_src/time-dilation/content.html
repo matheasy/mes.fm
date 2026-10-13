@@ -1,0 +1,158 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu td" id="td">
+		<div class="td-tabs" role="tablist" aria-label="Time dilation tools">
+			<button type="button" role="tab" data-tab="clocks" aria-selected="true">Clocks &amp; aging</button>
+			<button type="button" role="tab" data-tab="light" aria-selected="false">Light clock</button>
+			<button type="button" role="tab" data-tab="trip" aria-selected="false">Twin trip</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false">Calculator</button>
+		</div>
+
+		<!-- ============ 1. clocks and aging ============ -->
+		<section data-panel="clocks" role="tabpanel">
+			<p class="tu-note td-lead">Two people start the same age. One stays home. The other flies past at a speed you choose. <b>Slide the speed toward the speed of light</b> and watch the traveller's clock, heartbeat and ageing fall behind. The traveller never feels slowed: every clock, heartbeat and thought on the ship runs together, so nothing on board looks off to them.</p>
+			<div class="td-wrap"><div class="td-stage" id="td-stage">
+				<canvas id="td-c" role="img" aria-label="Two people and their year clocks. The one on the fast ship ages more slowly than the one at home."></canvas>
+				<div class="td-run"><button type="button" id="td-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="td-reset" title="Start the clocks again at the starting age">↺ Restart</button></div>
+			</div>
+			<div class="td-readouts">
+				<div class="td-ro"><span>Speed</span><b id="td-r-v">–</b><small id="td-r-vs"></small></div>
+				<div class="td-ro"><span>Time-stretch γ</span><b id="td-r-g">–</b><small id="td-r-gs"></small></div>
+				<div class="td-ro"><span>Home person is</span><b id="td-r-h">–</b><small id="td-r-hs"></small></div>
+				<div class="td-ro"><span>Traveller is</span><b id="td-r-t">–</b><small id="td-r-ts"></small></div>
+			</div></div>
+			<div class="tu-card td-controls">
+				<div class="td-chips" id="td-pre" role="group" aria-label="Example speeds"></div>
+				<div class="td-speed">
+					<span class="tu-label" id="td-sp-l">Speed of the ship: <b id="td-sp-v"></b></span>
+					<input type="range" id="td-sp" min="0" max="1000" step="1" aria-labelledby="td-sp-l">
+					<div class="td-speed__row"><label class="tu-field tu-field--sm td-speed__in"><span class="tu-label">Or type a speed</span><input type="text" id="td-sp-t" class="tu-input" placeholder="0.9c, 270000 km/s, gamma 7" autocomplete="off" spellcheck="false" aria-describedby="td-sp-err"></label><span class="tu-note td-err" id="td-sp-err" role="status"></span></div>
+				</div>
+				<div class="td-grid">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Time passes at home at</span><select id="td-ts" class="tu-select" aria-label="Speed of the simulation"><option value="0.002737851">1 day per second</option><option value="0.0833333">1 month per second</option><option value="1" selected>1 year per second</option><option value="10">10 years per second</option><option value="100">100 years per second</option></select></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Both start at age</span><input type="number" id="td-age" class="tu-input" min="0" max="110" step="1" aria-label="Starting age"></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Whose view is this?</span><div class="td-seg" id="td-view" role="group" aria-label="Whose point of view"><button type="button" data-view="home" aria-pressed="true">Home</button><button type="button" data-view="ship" aria-pressed="false">Ship</button></div></div>
+				</div>
+				<div class="td-checks">
+					<label class="td-check"><input type="checkbox" id="td-o-water"> 🌊 Underwater picture</label>
+					<label class="td-check"><input type="checkbox" id="td-o-mol" checked> Molecules</label>
+					<label class="td-check"><input type="checkbox" id="td-o-pulse" checked> Heartbeats</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="td-link">🔗 Copy link</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="td-png">📷 Save picture</button>
+				</div>
+				<p class="tu-note" id="td-note"></p>
+				<details class="td-more" open><summary>Think of it like moving underwater</summary>
+					<p>Picture someone breathing, thinking and ageing in a pool of honey. Every motion, from the heart to the molecules in their cells, is slowed together. They age less in the time you watch, but to them everything feels normal: their own seconds still last a second. Time dilation is like that, with one big difference. It is not a drag from the surroundings and there is no medium: moving fast through space simply uses up some of your motion through time, so <b>every process, of any kind, ticks at the same slower rate when seen from home</b>. Switch on the underwater picture to see the ship as slow-motion water. It is only an analogy: on the ship nobody feels thick air or honey.</p>
+				</details>
+			</div>
+		</section>
+
+		<!-- ============ 2. light clock ============ -->
+		<section data-panel="light" role="tabpanel" hidden>
+			<p class="tu-note td-lead">Why must a moving clock tick slowly? Take the simplest clock there is: a light pulse bouncing between two mirrors, one tick per bounce. <b>Light always travels at the same speed, whoever is watching.</b> When the clock moves sideways, its light has to run a longer zig-zag path between the mirrors, so each tick takes longer.</p>
+			<div class="td-wrap"><div class="td-stage" id="td-lstage">
+				<canvas id="td-lc" role="img" aria-label="Two light clocks side by side. In the moving one the pulse of light takes a longer diagonal path, so it ticks less often."></canvas>
+				<div class="td-run"><button type="button" id="td-l-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="td-l-reset">↺ Restart</button></div>
+			</div>
+			<div class="td-readouts">
+				<div class="td-ro"><span>Ticks of the resting clock</span><b id="td-l-n0">0</b><small>one tick = one bounce</small></div>
+				<div class="td-ro"><span>Ticks of the moving clock</span><b id="td-l-n1">0</b><small id="td-l-n1s"></small></div>
+				<div class="td-ro"><span>Light path per tick</span><b id="td-l-p">–</b><small>moving, compared with resting</small></div>
+				<div class="td-ro"><span>Pythagoras</span><b id="td-l-pyth">–</b><small>(c·Δt)² = (v·Δt)² + (c·Δτ)²</small></div>
+			</div></div>
+			<div class="tu-card td-controls">
+				<div class="td-speed"><span class="tu-label" id="td-l-sp-l">Speed of the moving clock: <b id="td-l-sp-v"></b></span><input type="range" id="td-l-sp" min="0" max="1000" step="1" aria-labelledby="td-l-sp-l"></div>
+				<div class="td-chips" id="td-l-pre" role="group" aria-label="Example speeds"></div>
+				<p class="tu-note" id="td-l-note"></p>
+			</div>
+		</section>
+
+		<!-- ============ 3. twin trip ============ -->
+		<section data-panel="trip" role="tabpanel" hidden>
+			<p class="tu-note td-lead">The twin paradox, made visible. One twin flies to a star and back while the other stays home. On the left see where they are and how old each is. On the right is a <b>spacetime diagram</b>: the dots mark each year of a twin's own time, so the traveller, who took a shorter path through spacetime, has fewer dots.</p>
+			<div class="td-wrap"><div class="td-stage" id="td-tstage">
+				<canvas id="td-tc" role="img" aria-label="Left: the trip to a star and back with both twins' ages. Right: a spacetime diagram with each twin's world line and a dot for each year they live."></canvas>
+				<div class="td-run"><button type="button" id="td-t-play" aria-pressed="false">▶ Play the trip</button><button type="button" id="td-t-reset">↺ Restart</button></div>
+			</div>
+			<div class="td-readouts">
+				<div class="td-ro"><span>Home twin</span><b id="td-t-h">–</b><small id="td-t-hs"></small></div>
+				<div class="td-ro"><span>Travelling twin</span><b id="td-t-v">–</b><small id="td-t-vs"></small></div>
+				<div class="td-ro"><span>Fastest speed</span><b id="td-t-pk">–</b><small id="td-t-pks"></small></div>
+				<div class="td-ro"><span>Age gap at the end</span><b id="td-t-gap">–</b><small id="td-t-gaps"></small></div>
+			</div></div>
+			<div class="tu-card td-controls">
+				<div class="tu-field td-prog"><span class="tu-label">Trip progress: <b id="td-t-prog-v">0%</b></span><input type="range" id="td-t-prog" min="0" max="1000" step="1" value="0" aria-label="Trip progress"></div>
+				<div class="td-chips" id="td-t-dest" role="group" aria-label="Destinations"></div>
+				<div class="td-grid">
+					<div class="tu-field tu-field--sm"><span class="tu-label">How the ship flies</span><div class="td-seg" id="td-t-mode" role="group" aria-label="Flight model"><button type="button" data-mode="g" aria-pressed="true">Constant 1 g</button><button type="button" data-mode="const" aria-pressed="false">Constant speed</button></div></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Distance (light-years)</span><input type="number" id="td-t-d" class="tu-input" min="0.01" max="100000000" step="any" aria-label="Distance in light-years"></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Both twins start at age</span><input type="number" id="td-t-age" class="tu-input" min="0" max="100" step="1" aria-label="Starting age"></div>
+					<div class="tu-field td-t-spd"><span class="tu-label" id="td-t-sp-l">Cruising speed: <b id="td-t-sp-v"></b></span><input type="range" id="td-t-sp" min="0" max="1000" step="1" aria-labelledby="td-t-sp-l"></div>
+				</div>
+				<div class="td-checks">
+					<label class="td-check"><input type="checkbox" id="td-t-round" checked> Fly back home again</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="td-t-link">🔗 Copy link</button>
+				</div>
+				<p class="tu-note" id="td-t-note"></p>
+			</div>
+		</section>
+
+		<!-- ============ 4. calculator ============ -->
+		<section data-panel="calc" role="tabpanel" hidden>
+			<div class="tu-card">
+				<div class="td-grid">
+					<div class="tu-field"><span class="tu-label">Speed</span><input type="text" id="td-c-v" class="tu-input" placeholder="0.9c, 90%, 270000 km/s, 900 mph, gamma 7" autocomplete="off" spellcheck="false" aria-describedby="td-c-err"><span class="tu-note td-err" id="td-c-err" role="status"></span></div>
+					<div class="tu-field"><span class="tu-label">Time that passes for the observer (years)</span><input type="number" id="td-c-y" class="tu-input" min="0" step="any" aria-label="Years that pass for the observer at rest"></div>
+					<div class="tu-field"><span class="tu-label">Mass of the traveller (kg)</span><input type="number" id="td-c-m" class="tu-input" min="0" step="any" aria-label="Mass in kilograms"></div>
+				</div>
+				<div class="td-chips" id="td-c-pre" role="group" aria-label="Example speeds"></div>
+			</div>
+			<div class="td-res" id="td-c-res" aria-live="polite"></div>
+			<div class="tu-card">
+				<h3 class="td-h">Everyday speeds: how much time do they change?</h3>
+				<p class="tu-note">Special relativity only (speed, not gravity). Real clocks on satellites also feel gravity, which is a separate effect added to these numbers.</p>
+				<div class="td-tablewrap"><table class="tu-table td-table" id="td-c-tab"><thead><tr><th>Moving at</th><th>Speed</th><th>Clock runs slow by</th><th>Lost in a year</th><th></th></tr></thead><tbody></tbody></table></div>
+			</div>
+			<div class="tu-card">
+				<h3 class="td-h">A real experiment: cosmic-ray muons</h3>
+				<p class="tu-note">A muon lives only 2.2 millionths of a second, yet muons made 15 km up reach the ground. Their clocks run slow, so they last long enough. Choose their speed:</p>
+				<div class="td-grid td-grid--small"><div class="tu-field tu-field--sm"><span class="tu-label" id="td-m-l">Muon speed: <b id="td-m-sv"></b></span><input type="range" id="td-m-s" min="150" max="500" step="1" aria-labelledby="td-m-l"></div><div class="tu-field tu-field--sm"><span class="tu-label">Made this high (km)</span><input type="number" id="td-m-h" class="tu-input" min="1" max="100" step="1" aria-label="Height in kilometres"></div></div>
+				<div class="td-res td-res--small" id="td-m-res" aria-live="polite"></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Time dilation in plain words</h2>
+			<p>Einstein's special relativity says that <strong>a clock that moves relative to you ticks more slowly than your own</strong>. The faster it moves, the bigger the effect. At everyday speeds it is far too small to notice, but it is real, it has been measured many times, and your satellite navigation has to allow for it. Close to the speed of light the effect becomes huge: at 99% of the speed of light a clock ticks about seven times slower, and at 99.999% about 224 times slower.</p>
+			<div class="td-eq" role="math" aria-label="Key equations">
+				<div><span class="td-eq__n">time stretch</span> <span class="td-eq__f mes-tex">\(\displaystyle \gamma=\frac{1}{\sqrt{1-v^2/c^2}}\)</span></div>
+				<div><span class="td-eq__n">moving clock</span> <span class="td-eq__f mes-tex">\(\displaystyle \Delta\tau=\frac{\Delta t}{\gamma}\)</span></div>
+				<div><span class="td-eq__n">constant 1 g</span> <span class="td-eq__f mes-tex">\(\displaystyle \tau=\frac{2c}{a}\cosh^{-1}\!\Big(1+\frac{a\,d}{2c^2}\Big)\)</span></div>
+				<div><span class="td-eq__n">energy needed</span> <span class="td-eq__f mes-tex">\(\displaystyle E_k=(\gamma-1)\,m c^2\)</span></div>
+			</div>
+			<h3>Does the traveller really age less?</h3>
+			<p>Yes. Everything that makes time pass in a body, from the beating of the heart to the speed of chemical reactions, happens along the traveller's own path through spacetime. When they come back and meet the person who stayed home, the two really are different ages. The traveller does not feel slowed down: their watch, heartbeat and thoughts all run at the same rate, so to them nothing seems unusual. Looking out of the window, they see home's clocks running slowly, and it is the other way round when the home twin looks at them. While both move steadily, each is right about the other.</p>
+			<h3>The twin paradox</h3>
+			<p>If each says the other's clock is slow, who is younger at the reunion? The traveller. The two are not equal: the travelling twin has to turn round, which means accelerating and changing from one frame of reference to another, and the home twin does not. A spacetime diagram shows it neatly. A clock records the <em>length of its own path through spacetime</em>, and in spacetime a straight line is the <em>longest</em> path between two events, so the zig-zag of the traveller records less time. Count the dots in the Twin trip tab.</p>
+			<h3>Is “time” just what clocks measure?</h3>
+			<p>This page shows clocks slowing, but the idea runs deeper. There is no single universal time flowing in the background. What we call time is what <em>every</em> clock, heart and atom records along its own path, and observers moving differently disagree about how much has passed between two events, and even about which events happened “at the same time”. Many physicists see time as something that emerges from how events are connected, and the clock simulation is one way of getting hold of it. Here the rate of any ticking process is scaled by the same factor 1/γ, which is why it makes no difference whether the “clock” is a laser, a pendulum or a person.</p>
+			<h3>What this simulator does not show</h3>
+			<ul>
+				<li><strong>What the eye sees.</strong> The clocks here are what a careful observer works out after correcting for the time light takes to travel. A clock rushing towards you is seen running fast (a Doppler effect), then slow once it has passed. The slowdown itself is the factor γ.</li>
+				<li><strong>Gravity.</strong> Clocks deeper in a gravitational field run slower too (general relativity). The calculator tables use speed only. GPS satellites have both effects; the gravity one wins, and the result is that their clocks gain about 38 microseconds a day.</li>
+				<li><strong>Getting there.</strong> No object with mass can reach the speed of light, because its energy would have to be infinite. The Calculator tab shows the energy needed to reach a speed, in joules and in comparison with all the energy humanity uses in a year.</li>
+			</ul>
+			<h3>Frequently asked questions</h3>
+			<dl>
+				<dt>How much would I age travelling at the speed of light?</dt>
+				<dd>Nothing with mass can travel at exactly the speed of light, but the closer you get the slower you age compared with home. At 99.999% of the speed of light you would age about 1 year while 224 pass at home.</dd>
+				<dt>Would I notice time slowing down on the ship?</dt>
+				<dd>No. Everything on the ship, including you, your watch and your thoughts, runs together. Only when you compare with a clock at home do you find a difference.</dd>
+				<dt>Does time dilation actually happen?</dt>
+				<dd>Yes. Muons from cosmic rays reach the ground because their clocks run slow, particle accelerators rely on it every day, and airborne atomic clocks have been compared with ones on the ground and agree with the prediction.</dd>
+				<dt>What is the Lorentz factor?</dt>
+				<dd>The number γ above, the factor by which time stretches. It is 1 at rest, 2 at 86.6% of the speed of light, 7.09 at 99% and goes to infinity as the speed gets closer to that of light.</dd>
+			</dl>
+			<p>Everything runs on your device and nothing is uploaded. <a href="/atomic-clock-simulator">Atomic Clock Simulator</a> · <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/michelson-morley-experiment">Michelson-Morley Experiment</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

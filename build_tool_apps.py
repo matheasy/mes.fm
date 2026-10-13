@@ -35,7 +35,7 @@ CAS_JS = ["/main_js/cas/cas-client.js?v=1", "/main_js/cas/cas-ui.js?v=1"]
 EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/browser'>Extensions</a></li>"
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
-STAGE_CTL = {"fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
+STAGE_CTL = {"fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
              "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock"}
 
 APPS = {
@@ -226,6 +226,12 @@ APPS = {
                        nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mandelbrot'>Mandelbrot</a></li>",
                        menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mandelbrot\">Mandelbrot Explorer</a></li>",
                        js_v="3"),
+    # Time Dilation Simulator: two people (one at home, one on a fast ship) with year clocks, heartbeats, molecules and a life-long ageing figure; the light clock; the twin trip
+    # (constant speed or constant 1 g, spacetime diagram with proper-time dots); a calculator (lib.js = MESRel, node-tested: tool_apps_src/time-dilation-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
+    "time-dilation": dict(title="MES Time Dilation Simulator", page_title="Time Dilation Calculator and Simulator: How Much Would You Age?",
+                          tag="Fast ships, slow clocks.", accent="#be185d", dark="#9d174d", tint="#fce7f3",
+                          desc="A free time dilation simulator and calculator: watch a traveller's clock, heartbeat and ageing slow down as a ship approaches the speed of light, see the light clock that explains why, fly the twin paradox at constant speed or a steady 1 g with a spacetime diagram, and calculate how much you would age.",
+                          js_v="1"),
     # Photo Editor: layers, selections, text labels, arrows / callouts / step badges, retouch, adjustments, PSD, all in the browser (canvas). lib.js = MESPixel (pure pixel maths, node-tested:
     # tool_apps_src/photo-editor-tests.js), js_parts = engine (core.js layers / history / selection) + tools + dialogs; lib_from = image-converter's lib (MESImg: formats, zip). Wide page, always-dark workspace.
     "photo-editor": dict(title="MES Photo Editor", page_title="Free Online Photo Editor with Layers",

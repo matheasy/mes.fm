@@ -217,6 +217,15 @@ const PAGES = [
     tileLabel: "Double Pendulum",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/time-dilation-icon.jpg (a placeholder until the user's Grok tile art lands; same file name).
+    slug: "time-dilation",
+    section: "tools",
+    href: "/time-dilation",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Time Dilation Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/orbit-simulator-icon.jpg (the user's Grok tile art).
     slug: "orbit-simulator",
     section: "tools",

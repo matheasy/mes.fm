@@ -29,7 +29,7 @@ PAGES = {
         ("money", "Money &amp; Finance", ["mortgagecalculator", "inflationcalculator", "vatcalculator", "youtubemoney/index.html", "impermanent-loss-calculator"]),
         ("algebra", "Algebra &amp; Calculus", ["sum-of-integers-calculator", "calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "2d-graphing-calculator", "3d-graphing-calculator"]),
         ("everyday", "Everyday Math &amp; Health", ["days-between-dates-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
-        ("physics", "Physics &amp; Science", ["reynolds-number-calculator", "photoelectric-effect-simulator", "atomic-clock-simulator", "michelson-morley-experiment", "faster-than-light-shadow-simulator", "earth-curvature-calculator"]),   # photoelectric-effect-simulator is listed on tools.html (Simulations) too
+        ("physics", "Physics &amp; Science", ["reynolds-number-calculator", "photoelectric-effect-simulator", "atomic-clock-simulator", "michelson-morley-experiment", "faster-than-light-shadow-simulator", "time-dilation", "earth-curvature-calculator"]),   # photoelectric-effect-simulator is listed on tools.html (Simulations) too
         ("fun", "Fun", ["gematria", "pokemongocalculator"]),
     ]),
     "tools.html": dict(noun="tools", popular=["timer", "typing-test", "speedreader", "moon", "emoji", "calendar", "clock", "timezone"], cats=[
