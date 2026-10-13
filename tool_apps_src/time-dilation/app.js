@@ -85,6 +85,9 @@
 		if (p < 0.70) return 0.2 * Math.sin((p - 0.55) / 0.15 * PI); return 0;
 	}
 	function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+	/* the age bars share one scale that grows with the ages: 100, 200, 500, 1000, 2000 ... */
+	var barMax = 100;
+	function niceMax(x) { var m = 100; while (m < x - 1e-9) m *= (m.toString().charAt(0) === "2" ? 2.5 : 2); return Math.round(m); }
 	function ageStr(a) { return a < 1 ? (a * 12).toFixed(1) + " months" : a.toFixed(a < 100 ? 1 : 0) + " years"; }
 	function ownStr(y) { if (y < 1) return R.sig(y * 365.25, 3) + " days"; return y.toFixed(y < 100 ? 2 : 1) + " yr"; }
 
@@ -124,7 +127,7 @@
 	function panelRects(W, H) { return W < 620 ? [[4, 4, W - 8, H / 2 - 8], [4, H / 2 + 4, W - 8, H / 2 - 8]] : [[4, 4, W / 2 - 8, H - 8], [W / 2 + 4, 4, W / 2 - 8, H - 8]]; }
 	function drawClocks() {
 		if (tab !== "clocks" || !SZ.c) return; var W = SZ.c.w, H = SZ.c.h, c = cx, g = gamma(); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.fillStyle = "#05070d"; c.fillRect(0, 0, W, H);
-		var rects = panelRects(W, H - (SZ.cx || 0)), eg = [eH, eS], bph = [bphH, bphS]; bars = [];
+		barMax = niceMax(Math.max(st.age + eH, st.age + eS)); var rects = panelRects(W, H - (SZ.cx || 0)), eg = [eH, eS], bph = [bphH, bphS]; bars = [];
 		for (var k = 0; k < 2; k++) panel(c, rects[k], k, eg[k], bph[k], g);
 	}
 	function panel(c, rc, k, own, bph, g) {
@@ -157,11 +160,11 @@
 		person(c, px + pw * 0.69, floorY + ph * 0.02, ph * 0.42, age, o);
 		c.textAlign = "center"; c.fillStyle = "#fff"; c.font = "700 " + fs * 1.3 + "px sans-serif"; c.fillText("age " + ageStr(age), px + pw * 0.69, floorY + ph * 0.095);
 		/* life bar: drag it (or click) to jump this person to any age from 0 to 100 */
-		var bx = px + pw * 0.06, bw = pw * 0.88, bh = Math.max(9, ph * 0.034), by2 = py + ph * 0.775, frc = clamp(age / 100, 0, 1), kx = bx + Math.max(bh * 0.5, bw * frc);
+		var bx = px + pw * 0.06, bw = pw * 0.88, bh = Math.max(9, ph * 0.034), by2 = py + ph * 0.775, frc = clamp(age / barMax, 0, 1), kx = bx + Math.max(bh * 0.5, bw * frc);
 		c.fillStyle = "#1b2238"; rr(c, bx, by2, bw, bh, bh / 2); c.fill(); c.fillStyle = slowed ? "#7fd0ff" : "#ffd27a"; rr(c, bx, by2, Math.max(bh, kx - bx), bh, bh / 2); c.fill();
 		c.fillStyle = "#fff"; c.strokeStyle = slowed ? "#2a7fb5" : "#c28a1c"; c.lineWidth = 2; c.beginPath(); c.arc(kx, by2 + bh / 2, bh * 0.85, 0, TAU); c.fill(); c.stroke();
 		bars[k] = { x: bx, y: by2 - 10, w: bw, h: bh + 20 };
-		c.fillStyle = "#9aa5bb"; c.font = fs * 0.75 + "px sans-serif"; c.textAlign = "left"; c.fillText("0", bx, by2 + bh + fs * 0.95); c.textAlign = "center"; c.fillText("◂ drag to change age ▸", bx + bw / 2, by2 + bh + fs * 0.95); c.textAlign = "right"; c.fillText("100 years", bx + bw, by2 + bh + fs * 0.95);
+		c.fillStyle = "#9aa5bb"; c.font = fs * 0.75 + "px sans-serif"; c.textAlign = "left"; c.fillText("0", bx, by2 + bh + fs * 0.95); c.textAlign = "center"; c.fillText("◂ drag to change age ▸", bx + bw / 2, by2 + bh + fs * 0.95); c.textAlign = "right"; c.fillText(R.commas(barMax, 5) + " years", bx + bw, by2 + bh + fs * 0.95);
 		/* heartbeat */
 		if (st.pulse) {
 			var ex = px + pw * 0.06, ew = pw * 0.88, ey = py + ph * 0.935, eh = ph * 0.04; c.strokeStyle = slowed ? "#7fd0ff" : "#7dff9a"; c.lineWidth = 2; c.beginPath();
@@ -194,7 +197,7 @@
 	var bars = [], dragBar = -1, wasPlaying = true;
 	function barAt(e) { var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; for (var k = 0; k < bars.length; k++) { var b = bars[k]; if (b && x >= b.x - 14 && x <= b.x + b.w + 14 && y >= b.y && y <= b.y + b.h) return k; } return -1; }
 	function setAgeFromBar(k, e) {
-		var r = cv.getBoundingClientRect(), b = bars[k]; if (!b) return; var f = clamp((e.clientX - r.left - b.x) / b.w, 0, 1), own = Math.max(0, f * 100 - st.age), g = gamma(), refIsHome = st.view === "home", isRef = (k === 0) === refIsHome;
+		var r = cv.getBoundingClientRect(), b = bars[k]; if (!b) return; var f = clamp((e.clientX - r.left - b.x) / b.w, 0, 1), own = Math.max(0, f * barMax - st.age), g = gamma(), refIsHome = st.view === "home", isRef = (k === 0) === refIsHome;
 		var ref = isRef ? own : own * g;                 /* the reference person's own time; the other has lived ref / gamma */
 		if (refIsHome) { eH = ref; eS = ref / g; } else { eS = ref; eH = ref / g; }
 		updateReadouts(); drawClocks();
@@ -210,7 +213,7 @@
 	/* controls */
 	var spEl = $("td-sp"), setPre1;
 	function setBeta(b, keepText) {
-		st.beta = clamp(b, 0, 0.99999999); spEl.value = Math.round(R.toSlider(st.beta) * 1000); $("td-ctl-sp").value = spEl.value; $("td-ctl-v").textContent = betaTxt(st.beta) + " · γ " + gTxt(gamma()); $("td-sp-v").textContent = betaTxt(st.beta) + " (γ = " + gTxt(gamma()) + ")";
+		st.beta = clamp(b, 0, 0.99999999); spEl.value = Math.round(R.toSlider(st.beta) * 1000); $("td-ctl-sp").value = spEl.value; $("td-sp-v").textContent = betaTxt(st.beta) + " (γ = " + gTxt(gamma()) + ")";
 		if (!keepText) { $("td-sp-t").value = ""; $("td-sp-err").textContent = ""; } setPre1(); note1(); updateReadouts(); sset({ beta: st.beta });
 	}
 	spEl.oninput = function () { setBeta(R.fromSlider(+spEl.value / 1000)); };   /* the clocks keep what they have already counted: the traveller adds up dt / gamma as the speed changes */
