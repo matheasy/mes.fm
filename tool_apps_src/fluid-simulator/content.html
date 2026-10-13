@@ -84,8 +84,8 @@
 			<h2>What this simulates</h2>
 			<p>This is a real fluid solver running in your browser (and there is a <a href="/3d-fluid-simulator">3D version</a> with smoke rings, plumes and wakes you can rotate). It steps the <strong>incompressible Navier–Stokes equations</strong> forward in time on a grid: the equations that describe how water, air, oil and most other fluids move. Every swirl you see (the vortices curling off the cylinder, the rolls where two layers slide past each other, the plume of hot air) comes from the equations, not from an animation.</p>
 			<div class="fl-eq" role="math" aria-label="Navier–Stokes equations">
-				<div><span class="fl-eq__n">momentum</span> <span class="fl-eq__f">∂<b>u</b>/∂t + (<b>u</b>·∇)<b>u</b> = −∇p/ρ + ν ∇²<b>u</b> + <b>f</b></span></div>
-				<div><span class="fl-eq__n">no compression</span> <span class="fl-eq__f">∇·<b>u</b> = 0</span></div>
+				<div><span class="fl-eq__n">momentum</span> <span class="fl-eq__f mes-tex">\(\displaystyle \dfrac{\partial\mathbf u}{\partial t} + (\mathbf u\cdot\nabla)\,\mathbf u = -\dfrac{\nabla p}{\rho} + \nu\,\nabla^2\mathbf u + \mathbf f\)</span></div>
+				<div><span class="fl-eq__n">no compression</span> <span class="fl-eq__f mes-tex">\(\displaystyle \nabla\cdot\mathbf u = 0\)</span></div>
 			</div>
 			<p><b>u</b> is the velocity of the fluid at each point, p the pressure, ρ the density, ν the viscosity ("thickness") and <b>f</b> any push on the fluid, such as your finger, gravity acting on hot fluid, or a moving lid. The first line is Newton's second law for a small blob of fluid: its acceleration (left) comes from pressure differences, internal friction and outside forces (right). The second line says the fluid cannot be squeezed.</p>
 			<h3>What happens in each step</h3>
@@ -108,4 +108,5 @@
 			</ul>
 			<p>Everything runs on your device; nothing is uploaded. <a href="/3d-fluid-simulator">3D Fluid Simulator</a> (smoke you can rotate) · <a href="/2d-graphing-calculator">2D graphing calculator</a> · <a href="/3d-graphing-calculator">3D graphing calculator</a> · <a href="/tools">More MES tools</a></p>
 		</div>
+		<script src="/main_js/mes-math.js" defer></script>
 	</div>

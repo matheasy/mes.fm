@@ -1,0 +1,95 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu dp" id="dp">
+		<div class="dp-tabs" role="tablist" aria-label="Double pendulum tools">
+			<button type="button" role="tab" data-tab="sim" aria-selected="true">Pendulum</button>
+			<button type="button" role="tab" data-tab="map" aria-selected="false">Chaos map</button>
+		</div>
+
+		<section data-panel="sim" role="tabpanel">
+			<p class="tu-note dp-lead">Two arms joined end to end, swinging under gravity. It sounds simple, and it is the textbook example of <b>chaos</b>: start it twice from almost the same place and the two motions soon have nothing to do with each other. Drag either ball to set the start, turn on the <b>copies</b> and watch tiny differences blow up.</p>
+			<div class="dp-wrap"><div class="dp-stage" id="dp-stage">
+				<canvas id="dp-c" tabindex="0" role="img" aria-label="A double pendulum swinging, with the path of its outer ball. Drag a ball to set the starting angles."></canvas>
+				<div class="dp-badge" id="dp-badge"></div>
+				<div class="dp-run"><button type="button" id="dp-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="dp-reset" title="Start again from the set angles">↺ Restart</button><button type="button" id="dp-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="dp-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="dp-spd" role="group" aria-label="Speed of time"><button type="button" id="dp-slow" title="Slower (key [)" aria-label="Slower">−</button><span id="dp-spd-v">1×</span><button type="button" id="dp-fast" title="Faster (key ])" aria-label="Faster">+</button></div>
+			</div>
+			<div class="dp-chartwrap"><canvas id="dp-ch" role="img" aria-label="Left: the two angles against time. Right: how far apart the copies are, on a log scale."></canvas></div>
+			<div class="dp-readouts">
+				<div class="dp-ro"><span>Time</span><b id="dp-r-t">–</b><small id="dp-r-ts">real time</small></div>
+				<div class="dp-ro"><span>Energy kept to</span><b id="dp-r-e">–</b><small id="dp-r-es">relative drift (zero damping)</small></div>
+				<div class="dp-ro"><span>Outer ball flips</span><b id="dp-r-f">–</b><small>times over the top</small></div>
+				<div class="dp-ro"><span>Copies differ by</span><b id="dp-r-d">–</b><small id="dp-r-ds"></small></div>
+			</div></div>
+			<div class="tu-card dp-controls">
+				<div class="dp-chips" id="dp-pre" role="group" aria-label="Examples"></div>
+				<p class="tu-note" id="dp-note"></p>
+				<div class="dp-grid">
+					<div class="tu-field"><span class="tu-label" id="dp-a1-l">Angle of the upper arm: <b id="dp-a1-v"></b>°</span><input type="range" id="dp-a1" min="-180" max="180" step="0.1" aria-labelledby="dp-a1-l"></div>
+					<div class="tu-field"><span class="tu-label" id="dp-a2-l">Angle of the lower arm: <b id="dp-a2-v"></b>°</span><input type="range" id="dp-a2" min="-180" max="180" step="0.1" aria-labelledby="dp-a2-l"></div>
+					<div class="tu-field"><span class="tu-label" id="dp-n-l">Copies: <b id="dp-n-v"></b></span><input type="range" id="dp-n" min="1" max="60" step="1" aria-labelledby="dp-n-l"><span class="tu-note">1 = one pendulum. 2 = a twin. 30 or more = a rainbow fan.</span></div>
+					<div class="tu-field"><span class="tu-label" id="dp-e-l">Copies start apart by: <b id="dp-e-v"></b></span><input type="range" id="dp-e" min="-9" max="-1" step="0.1" aria-labelledby="dp-e-l"><span class="tu-note">Change in the upper arm's angle, in radians.</span></div>
+				</div>
+				<details class="dp-more"><summary>Masses, lengths, gravity and friction</summary>
+					<div class="dp-grid dp-grid--small">
+						<div class="tu-field"><span class="tu-label" id="dp-m1-l">Upper ball mass: <b id="dp-m1-v"></b></span><input type="range" id="dp-m1" min="0.1" max="5" step="0.05" aria-labelledby="dp-m1-l"></div>
+						<div class="tu-field"><span class="tu-label" id="dp-m2-l">Lower ball mass: <b id="dp-m2-v"></b></span><input type="range" id="dp-m2" min="0.1" max="5" step="0.05" aria-labelledby="dp-m2-l"></div>
+						<div class="tu-field"><span class="tu-label" id="dp-l1-l">Upper arm: <b id="dp-l1-v"></b> m</span><input type="range" id="dp-l1" min="0.2" max="2" step="0.05" aria-labelledby="dp-l1-l"></div>
+						<div class="tu-field"><span class="tu-label" id="dp-l2-l">Lower arm: <b id="dp-l2-v"></b> m</span><input type="range" id="dp-l2" min="0.2" max="2" step="0.05" aria-labelledby="dp-l2-l"></div>
+						<div class="tu-field"><span class="tu-label" id="dp-g-l">Gravity: <b id="dp-g-v"></b> m/s²</span><input type="range" id="dp-g" min="0.5" max="30" step="0.1" aria-labelledby="dp-g-l"><span class="tu-note" id="dp-g-n"></span></div>
+						<div class="tu-field"><span class="tu-label" id="dp-c-l">Friction: <b id="dp-c-v"></b></span><input type="range" id="dp-c" min="0" max="1" step="0.01" aria-labelledby="dp-c-l"></div>
+						<div class="tu-field"><span class="tu-label" id="dp-tr-l">Trail: <b id="dp-tr-v"></b></span><input type="range" id="dp-tr" min="0" max="3" step="1" aria-labelledby="dp-tr-l"></div>
+					</div>
+					<div class="dp-chips" id="dp-gchips" role="group" aria-label="Gravity of..."></div>
+				</details>
+				<div class="dp-checks">
+					<label class="dp-check"><input type="checkbox" id="dp-o-trail" checked> Trail of the lower ball</label>
+					<label class="dp-check"><input type="checkbox" id="dp-o-arms" checked> Arms</label>
+					<label class="dp-check"><input type="checkbox" id="dp-o-chart" checked> Graphs</label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="dp-link">🔗 Copy link</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="dp-tomap">Where is this on the chaos map?</button>
+				</div>
+				<p class="tu-note" id="dp-modes"></p>
+			</div>
+		</section>
+
+		<section data-panel="map" role="tabpanel" hidden>
+			<p class="tu-note dp-lead">Every point on this map is one way to <b>start</b> the pendulum from rest: the horizontal position is the upper arm's angle, the vertical position the lower arm's. The colour says how long the lower ball takes to <b>flip over the top</b>: yellow = almost at once, blue = a long time, <b>dark = it never flips</b>. The smooth region in the middle is regular, predictable motion; the rest is a fractal tangle. Click anywhere to watch that start.</p>
+			<div class="dp-wrap"><div class="dp-stage dp-stage--map" id="dp-mstage">
+				<canvas id="dp-mc" role="img" aria-label="Map of the time until the lower ball flips, for every starting pair of angles."></canvas>
+				<div class="dp-badge" id="dp-mbadge">Calculating…</div>
+			</div>
+			<div class="dp-legend"><span>flips at once</span><i></i><span>flips late</span><span id="dp-mmax"></span><span>· black = never within the time</span></div>
+			<div class="dp-readouts">
+				<div class="dp-ro"><span>Pointer</span><b id="dp-m-p">–</b><small>upper and lower angle</small></div>
+				<div class="dp-ro"><span>Flips after</span><b id="dp-m-t">–</b><small id="dp-m-ts">move over the map</small></div>
+				<div class="dp-ro"><span>Cells that flip</span><b id="dp-m-f">–</b><small id="dp-m-fs"></small></div>
+			</div></div>
+			<div class="tu-card dp-controls">
+				<div class="dp-grid dp-grid--small">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Detail</span><select id="dp-m-res" class="tu-select" aria-label="Map detail"><option value="80">Fast (80 × 80)</option><option value="120" selected>Normal (120 × 120)</option><option value="200">Fine (200 × 200)</option><option value="300">Very fine (300 × 300)</option></select></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Watch for</span><select id="dp-m-tmax" class="tu-select" aria-label="Time limit"><option value="5">5 seconds</option><option value="10" selected>10 seconds</option><option value="20">20 seconds</option><option value="40">40 seconds</option></select></div>
+				</div>
+				<div class="dp-checks"><span class="tu-note">Uses the masses, lengths and gravity of the Pendulum tab.</span><button type="button" class="tu-btn tu-btn--ghost" id="dp-m-png">📷 Save the map</button><button type="button" class="tu-btn tu-btn--ghost" id="dp-m-link">🔗 Copy link</button></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Why a double pendulum is chaotic</h2>
+			<p>One pendulum is the most predictable machine there is: it swings with the same rhythm forever. Hang a second pendulum from the end of the first and the rhythm is gone. Two angles and two speeds are enough to make the motion <strong>chaotic</strong>: it follows exact laws, with no randomness, yet two starts that differ by a hair end up completely different. That is the <strong>butterfly effect</strong>. Set Copies to 2 with the difference at 10⁻⁹ radians (a billionth), and the two pendulums stay together for a few seconds, then split and are unrelated.</p>
+			<div class="dp-eq" role="math" aria-label="Key equations">
+				<div><span class="dp-eq__n">energy</span> <span class="dp-eq__f mes-tex">\(\displaystyle \begin{aligned}E ={}& \tfrac12 (m_1+m_2)\, l_1^2\,\omega_1^2 + \tfrac12 m_2\, l_2^2\,\omega_2^2 + m_2\, l_1 l_2\,\omega_1\omega_2\cos(\theta_1-\theta_2)\\ &- (m_1+m_2)\, g\, l_1\cos\theta_1 - m_2\, g\, l_2\cos\theta_2\end{aligned}\)</span></div>
+				<div><span class="dp-eq__n">small swings</span> <span class="dp-eq__f mes-tex">\(\displaystyle m_1 l_1 l_2\,\omega^4 - g\,(m_1+m_2)(l_1+l_2)\,\omega^2 + g^2\,(m_1+m_2) = 0\)</span></div>
+			</div>
+			<h3>What to look at</h3>
+			<ul>
+				<li><strong>Small swings are tame.</strong> With the arms near straight down, the motion is two simple swings added together (the two <em>normal modes</em>, listed under the controls). Start exactly on one of them (the “Slow mode” and “Fast mode” examples) and it repeats perfectly.</li>
+				<li><strong>Large swings are chaotic.</strong> Try “Chaotic” with two copies. The lower graph shows the gap between them growing about as fast as an exponential: a straight line on the log scale until it reaches the size of the pendulum itself. The page estimates the growth rate (the Lyapunov exponent) from that slope.</li>
+				<li><strong>The chaos map.</strong> It colours every starting position by how long the outer arm takes to flip over the top. Calm starts form a smooth dark island in the middle, bordered by thin streaks and fractal tendrils where a tiny change of start flips the pendulum at a very different time. Click a point to see it swing.</li>
+				<li><strong>Energy is the check.</strong> With friction at zero the total energy should stay constant: the page shows how well. A pendulum released at rest can only flip if its starting energy is above a threshold, which is exactly how the black region is found (those starts are not even simulated).</li>
+			</ul>
+			<h3>How it is computed</h3>
+			<p>The two equations of motion come from Lagrangian mechanics and are integrated with a fourth-order Runge–Kutta method with a step of 2 milliseconds (the energy of a chaotic minute is conserved to about one part in a million). The chaos map integrates every starting point separately until its outer ball passes the top. Friction here is a simple term proportional to each arm's rotation speed, not a model of any particular bearing. Chaotic motion cannot be predicted for long by any computer: after about ten seconds even tiny rounding errors in the arithmetic change the details (the broad pattern stays the same).</p>
+			<p>Everything runs on your device and nothing is uploaded. <a href="/orbit-simulator">Orbit Simulator</a> · <a href="/fluid-simulator">Fluid Simulator</a> · <a href="/mandelbrot">Mandelbrot Explorer</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

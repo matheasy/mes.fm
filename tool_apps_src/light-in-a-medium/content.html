@@ -79,8 +79,8 @@
 			<h2>Light in a medium: what you are looking at</h2>
 			<p>Light does not always move at <strong>c</strong>. In glass, water or air it is slower, by a factor called the <strong>refractive index</strong>: <strong>speed = c / n</strong>. This simulator lets you paint a medium of any index onto a flat sheet of space and watch a light wave move through it. It solves the wave equation on a grid, one tiny time step after another, so everything you see (the bending, the focusing, the reflections, the interference fringes) comes out of that single rule and was not drawn by hand.</p>
 			<div class="lm-eq" role="math" aria-label="Wave equation">
-				<div><span class="lm-eq__n">wave equation</span> <span class="lm-eq__f">∂²u/∂t² = (c/n)² ∇²u</span></div>
-				<div><span class="lm-eq__n">Snell's law</span> <span class="lm-eq__f">n₁ sin θ₁ = n₂ sin θ₂</span></div>
+				<div><span class="lm-eq__n">wave equation</span> <span class="lm-eq__f mes-tex">\(\displaystyle \dfrac{\partial^2 u}{\partial t^2} = \left(\dfrac{c}{n}\right)^2 \nabla^2 u\)</span></div>
+				<div><span class="lm-eq__n">Snell's law</span> <span class="lm-eq__f mes-tex">\(\displaystyle n_1\sin\theta_1 = n_2\sin\theta_2\)</span></div>
 			</div>
 			<p>Here <i>u</i> is the height of the wave at each point (orange crests, blue troughs). The only thing that changes from place to place is <i>n</i>. Where <i>n</i> is bigger the wave crawls, its crests bunch up (the wavelength shrinks by the same factor n) and a wave front that arrives at an angle gets turned, because one end of it slows down before the other. That turning is refraction, and Snell's law is its summary. Switch on <strong>Rays</strong> to draw the geometric-optics prediction (a ray bends by the same law, and curves smoothly through a changing index) on top of the wave to compare them.</p>
 			<h3>Things to try</h3>
@@ -103,4 +103,5 @@
 			</ul>
 			<p>Everything runs on your device; nothing is uploaded. <a href="/michelson-morley-experiment">Michelson-Morley Experiment Simulator</a> · <a href="/fluid-simulator">Fluid Simulator</a> · <a href="/photoelectric-effect-simulator">Photoelectric Effect Simulator</a> · <a href="/tools">More MES tools</a></p>
 		</div>
+		<script src="/main_js/mes-math.js" defer></script>
 	</div>

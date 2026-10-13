@@ -87,10 +87,10 @@
 			<h2>How orbits work</h2>
 			<p>An orbit is a fall that keeps missing. Newton imagined firing a cannonball from a mountain: faster and faster, it lands farther away, until the ground curves away as fast as the ball falls and it never lands. The Moon, the planets and the Space Station are all doing exactly that, pulled by gravity and moving sideways fast enough to keep missing. This page adds the pull of every body on every other body, step by step, which is all that gravity is: no ellipses are drawn in advance, they come out of the arithmetic.</p>
 			<div class="or-eq" role="math" aria-label="Key equations">
-				<div><span class="or-eq__n">gravity</span> <span class="or-eq__f"><i>F</i> = <i>G m</i><sub>1</sub><i>m</i><sub>2</sub> / <i>r</i>²</span></div>
-				<div><span class="or-eq__n">Kepler III</span> <span class="or-eq__f"><i>T</i>² = 4π² <i>a</i>³ / <i>G</i>(<i>M</i> + <i>m</i>)</span></div>
-				<div><span class="or-eq__n">vis-viva</span> <span class="or-eq__f"><i>v</i>² = <i>G</i>(<i>M</i> + <i>m</i>)(2/<i>r</i> − 1/<i>a</i>)</span></div>
-				<div><span class="or-eq__n">circular speed</span> <span class="or-eq__f"><i>v</i><sub>c</sub> = √(<i>GM</i>/<i>r</i>),  escape speed √2 · <i>v</i><sub>c</sub></span></div>
+				<div><span class="or-eq__n">gravity</span> <span class="or-eq__f mes-tex">\(\displaystyle F = \dfrac{G\, m_1 m_2}{r^2}\)</span></div>
+				<div><span class="or-eq__n">Kepler III</span> <span class="or-eq__f mes-tex">\(\displaystyle T^2 = \dfrac{4\pi^2\, a^3}{G\,(M+m)}\)</span></div>
+				<div><span class="or-eq__n">vis-viva</span> <span class="or-eq__f mes-tex">\(\displaystyle v^2 = G\,(M+m)\left(\dfrac2r - \dfrac1a\right)\)</span></div>
+				<div><span class="or-eq__n">circular speed</span> <span class="or-eq__f mes-tex">\(\displaystyle v_c = \sqrt{\dfrac{GM}{r}},\qquad v_\mathrm{esc} = \sqrt2\; v_c\)</span></div>
 			</div>
 			<h3>Kepler's three laws, and where to see them here</h3>
 			<ul>
@@ -110,4 +110,5 @@
 			<p>The sum of all the gravity is solved with a fourth-order symplectic integrator (Yoshida) whose step shrinks automatically during close encounters. In the table, “Energy kept to” shows how much the total energy has drifted since the start: for the Earth about 10⁻¹⁰ per decade, for the figure-eight the three bodies return to their starting points within a millionth after a lap. Limits: Newtonian gravity in two dimensions with point masses, so no relativity (Mercury's precession is not reproduced; try the <a href="/black-hole-simulator">Black Hole Simulator</a> for that), no tides, no collisions unless you tick “Merge when bodies touch”, and no other bodies than the ones you see (the planets' real neighbours, asteroids and spacecraft are not included).</p>
 			<p>Everything runs on your device and nothing is uploaded. <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/metric-tensor">Metric Tensor Explorer</a> · <a href="/solar-system-today">Solar System Today</a> · <a href="/tools">More MES tools</a></p>
 		</div>
+		<script src="/main_js/mes-math.js" defer></script>
 	</div>

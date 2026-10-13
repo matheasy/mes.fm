@@ -94,3 +94,8 @@
 .tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
 .tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
 body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}

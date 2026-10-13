@@ -35,7 +35,7 @@ CAS_JS = ["/main_js/cas/cas-client.js?v=1", "/main_js/cas/cas-ui.js?v=1"]
 EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/browser'>Extensions</a></li>"
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
-STAGE_CTL = {"fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "metric-tensor", "orbit-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
+STAGE_CTL = {"fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "metric-tensor", "orbit-simulator", "double-pendulum", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
              "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock"}
 
 APPS = {
@@ -186,6 +186,12 @@ APPS = {
                                  tag="Bend light. Orbit the dark.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
                                  desc="A free black hole simulator: watch light bend around a Schwarzschild black hole and find the shadow and photon sphere, follow orbits that precess, plunge or sit at the innermost stable orbit, see a ray-traced picture of a disk and lensed stars, and compute the size, tides and temperature of any black hole. Includes the optical analogue: a glass-like medium that bends light the same way.",
                                  js_v="1"),
+    # Double Pendulum: live chaotic pendulum (RK4, copies for the butterfly effect, angle and divergence graphs, Lyapunov estimate) + a flip-time chaos map of every starting pair of angles
+    # (lib.js node-tested: tool_apps_src/double-pendulum-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
+    "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
+                            tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
+                            desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
+                            js_v="1"),
     # Orbit Simulator: Newtonian N-body sandbox (Yoshida leapfrog, adaptive step) with 12 systems (planets, Halley, Trojans, Earth-Moon, figure-eight, gravity assist ...), launch-by-drag, Kepler's laws overlays, SI orbit calculator
     # (lib.js node-tested: tool_apps_src/orbit-simulator-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "orbit-simulator": dict(title="MES Orbit Simulator", page_title="Orbit Simulator: Planets, Gravity and Kepler's Laws",

@@ -71,10 +71,10 @@
 			<h2>What the metric tensor is</h2>
 			<p>In flat space the distance between two nearby points is <i>ds</i>² = <i>dx</i>² + <i>dy</i>² (Pythagoras). Use other coordinates, or curve the space, and you need correction factors: <i>ds</i>² = Σ <i>g</i><sub>μν</sub> <i>dx</i><sup>μ</sup> <i>dx</i><sup>ν</sup>. The nine or sixteen numbers <i>g</i><sub>μν</sub> are the <strong>metric tensor</strong>. In general relativity it is the gravitational field: a minus sign for time and plus signs for space gives the signature (−,+,+,+), and the metric of a black hole, an expanding universe or a wormhole is just a different choice of <i>g</i><sub>μν</sub>.</p>
 			<div class="mt-eq" role="math" aria-label="Definitions">
-				<div><span class="mt-eq__n">Christoffel</span> <span class="mt-eq__f">Γ<sup>k</sup><sub>ij</sub> = ½ g<sup>kl</sup> (∂<sub>i</sub> g<sub>lj</sub> + ∂<sub>j</sub> g<sub>li</sub> − ∂<sub>l</sub> g<sub>ij</sub>)</span></div>
-				<div><span class="mt-eq__n">geodesic</span> <span class="mt-eq__f">d²x<sup>k</sup>/dτ² + Γ<sup>k</sup><sub>ij</sub> (dx<sup>i</sup>/dτ)(dx<sup>j</sup>/dτ) = 0</span></div>
-				<div><span class="mt-eq__n">Riemann</span> <span class="mt-eq__f">R<sup>ρ</sup><sub>σμν</sub> = ∂<sub>μ</sub>Γ<sup>ρ</sup><sub>νσ</sub> − ∂<sub>ν</sub>Γ<sup>ρ</sup><sub>μσ</sub> + Γ<sup>ρ</sup><sub>μλ</sub>Γ<sup>λ</sup><sub>νσ</sub> − Γ<sup>ρ</sup><sub>νλ</sub>Γ<sup>λ</sup><sub>μσ</sub></span></div>
-				<div><span class="mt-eq__n">Einstein</span> <span class="mt-eq__f">G<sub>μν</sub> = R<sub>μν</sub> − ½ R g<sub>μν</sub> = 8πG T<sub>μν</sub>/c⁴ (+ Λ g<sub>μν</sub>)</span></div>
+				<div><span class="mt-eq__n">Christoffel</span> <span class="mt-eq__f mes-tex">\(\displaystyle \Gamma^{k}{}_{ij} = \tfrac12\, g^{kl}\left(\partial_i g_{lj} + \partial_j g_{li} - \partial_l g_{ij}\right)\)</span></div>
+				<div><span class="mt-eq__n">geodesic</span> <span class="mt-eq__f mes-tex">\(\displaystyle \dfrac{d^2x^k}{d\tau^2} + \Gamma^{k}{}_{ij}\,\dfrac{dx^i}{d\tau}\,\dfrac{dx^j}{d\tau} = 0\)</span></div>
+				<div><span class="mt-eq__n">Riemann</span> <span class="mt-eq__f mes-tex">\(\displaystyle R^{\rho}{}_{\sigma\mu\nu} = \partial_\mu \Gamma^{\rho}{}_{\nu\sigma} - \partial_\nu \Gamma^{\rho}{}_{\mu\sigma} + \Gamma^{\rho}{}_{\mu\lambda}\Gamma^{\lambda}{}_{\nu\sigma} - \Gamma^{\rho}{}_{\nu\lambda}\Gamma^{\lambda}{}_{\mu\sigma}\)</span></div>
+				<div><span class="mt-eq__n">Einstein</span> <span class="mt-eq__f mes-tex">\(\displaystyle G_{\mu\nu} = R_{\mu\nu} - \tfrac12 R\, g_{\mu\nu} = \dfrac{8\pi G}{c^4}\,T_{\mu\nu}\ \ (+\,\Lambda\, g_{\mu\nu})\)</span></div>
 			</div>
 			<h3>How to read the results</h3>
 			<ul>
@@ -96,4 +96,5 @@
 			</ul>
 			<p>Everything runs on your device. <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/light-in-a-medium">Light in a Medium</a> · <a href="/cas-calculator">CAS calculator</a> · <a href="/tools">More MES tools</a></p>
 		</div>
+		<script src="/main_js/mes-math.js" defer></script>
 	</div>
