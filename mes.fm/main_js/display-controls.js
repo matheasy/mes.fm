@@ -43,6 +43,7 @@
     var css = document.createElement("style");
     css.id = "mes-display-controls-css";
     css.textContent = [
+        "@media (max-width:700px){.tu-chip,.tu-btn{min-height:36px}.tu-chip{display:inline-flex;align-items:center}}",
         "#header-controls{position:absolute;top:16px;right:68px;z-index:20;display:flex;align-items:center;gap:6px}",
         ".header-control-btn{flex:0 0 auto;width:2em;height:2em;padding:0;margin:0;border:1.5px solid rgba(0,0,0,.15);border-radius:50%;",
         "cursor:pointer;font-family:inherit;font-size:.9em;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;",
