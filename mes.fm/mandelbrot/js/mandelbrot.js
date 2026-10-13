@@ -395,7 +395,7 @@
 	function setTab(t) {
 		tab = t; Array.prototype.forEach.call(document.querySelectorAll("#mb [data-tab]"), function (b) { b.setAttribute("aria-selected", b.dataset.tab === t ? "true" : "false"); });
 		Array.prototype.forEach.call(document.querySelectorAll("#mb [data-panel]"), function (p) { p.hidden = p.dataset.panel !== t; });
-		if (history.replaceState) { try { var u = new URL(location.href); u.searchParams.set("tab", t); history.replaceState(null, "", u); } catch (e) {} }
+		if (history.replaceState) { try { var u = new URL(location.href); if (t === "calc") u.searchParams.set("tab", t); else u.searchParams.delete("tab"); history.replaceState(null, "", u); } catch (e) {} }
 		if (t === "explore") setTimeout(function () { onResize(); }, 0); else calc();
 	}
 	Array.prototype.forEach.call(document.querySelectorAll("#mb [data-tab]"), function (b) { b.onclick = function () { setTab(b.dataset.tab); }; });
