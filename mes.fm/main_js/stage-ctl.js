@@ -19,6 +19,8 @@
 		'.mes-sbar button:hover{border-color:var(--accent,#277bb6)}.mes-sbar button[aria-pressed="true"]{background:var(--accent,#277bb6);border-color:var(--accent,#277bb6);color:#fff}' +
 		'.mes-grip{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize;z-index:30;touch-action:none;opacity:0.65;background:linear-gradient(135deg,transparent 0 52%,rgba(255,255,255,0.75) 52% 58%,transparent 58% 70%,rgba(255,255,255,0.75) 70% 76%,transparent 76%)}' +
 		'.mes-grip:hover{opacity:1}' +
+		'@media (max-width:700px){.mes-sbar button[data-s],.mes-sbar .mes-sl{display:none}.mes-sbar button{min-height:36px;padding:0.3em 0.9em}.tu .tu-chip,.tu .tu-tool,.tu .tu-run{min-height:36px}}' +
+		'@media (pointer:coarse){.mes-grip{width:32px;height:32px}}' +
 		'html.mes-fill-on{overflow:hidden !important}' +
 		'.mes-fill-bd{position:fixed;inset:0;background:#05070d;z-index:2147482000}' +
 		'.mes-fill{position:fixed !important;left:50%;top:0;transform:translateX(-50%);z-index:2147482500;max-width:none !important;width:var(--mes-fw,100vw) !important;height:100vh;margin:0 !important;border-radius:0 !important;border:0 !important;overflow:auto;display:flex !important;flex-direction:column;justify-content:center}' +
