@@ -1,0 +1,100 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu bb" id="bb">
+		<div class="bb-top">
+			<label class="bb-pick"><span class="tu-label" id="bb-pre-l">Picture</span>
+				<select id="bb-pre" class="tu-select" aria-labelledby="bb-pre-l"></select></label>
+			<div class="bb-run" role="group" aria-label="Rendering">
+				<button type="button" class="tu-btn tu-btn--primary" id="bb-go">Pause</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="bb-reset" title="Start the picture again">↺ Start over</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="bb-home" title="Back to the whole picture">⌂ Home</button>
+			</div>
+		</div>
+
+		<div class="bb-wrap" id="bb-wrap">
+			<div class="bb-stage" id="bb-stage">
+				<canvas id="bb-canvas" tabindex="0" role="img" aria-label="Buddhabrot picture, filling in as random orbits are added. Drag to move, scroll to zoom."></canvas>
+				<canvas id="bb-over" aria-hidden="true"></canvas>
+				<div class="bb-badge" id="bb-badge"></div>
+				<div class="bb-tools"><button type="button" id="bb-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="bb-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="bb-readouts">
+				<div class="bb-ro"><span>Random points tried</span><b id="bb-r-t">0</b><small id="bb-r-s"></small></div>
+				<div class="bb-ro"><span>Escaped (drawn)</span><b id="bb-r-e">–</b><small id="bb-r-p"></small></div>
+				<div class="bb-ro"><span>Dots in the picture</span><b id="bb-r-d">0</b><small id="bb-r-a"></small></div>
+			</div>
+		</div>
+
+		<div class="tu-card bb-controls">
+			<p class="tu-note bb-how">The picture keeps filling in while this page is open: the longer it runs, the smoother it gets. A few minutes gives a clear figure; hours give a print. Scroll to zoom, drag to move (zoomed views fill in more slowly, see below).</p>
+			<h3 class="bb-h">What to draw <span class="bb-hint">(changing these starts the picture again)</span></h3>
+			<div class="bb-grid">
+				<div class="tu-field"><span class="tu-label">Colours from</span>
+					<select id="bb-mode" class="tu-select" aria-label="One limit or three"><option value="single">One iteration limit (a grey / gold / ... picture)</option><option value="rgb">Three limits: red, green, blue (Nebulabrot)</option></select></div>
+				<div class="tu-field bb-lim1"><span class="tu-label" id="bb-lim-l">Iteration limit</span><input type="text" inputmode="numeric" id="bb-lim" class="tu-input" aria-labelledby="bb-lim-l"></div>
+				<div class="tu-field bb-lim3" hidden><span class="tu-label">Limits: red / green / blue</span>
+					<div class="bb-three"><input type="text" inputmode="numeric" id="bb-lr" class="tu-input" aria-label="Red limit"><input type="text" inputmode="numeric" id="bb-lg" class="tu-input" aria-label="Green limit"><input type="text" inputmode="numeric" id="bb-lb" class="tu-input" aria-label="Blue limit"></div></div>
+				<div class="tu-field"><span class="tu-label" id="bb-min-l">Shortest escape that counts</span><input type="text" inputmode="numeric" id="bb-min" class="tu-input" aria-labelledby="bb-min-l"></div>
+				<div class="tu-field"><span class="tu-label">Iteration</span>
+					<select id="bb-pw" class="tu-select" aria-label="Power"><option value="2">z² + c (Mandelbrot)</option><option value="3">z³ + c</option><option value="4">z⁴ + c</option></select></div>
+				<div class="tu-field"><span class="tu-label">Which orbits</span>
+					<select id="bb-anti" class="tu-select" aria-label="Escaping or staying"><option value="0">The ones that escape (Buddhabrot)</option><option value="1">The ones that stay (Anti-Buddhabrot)</option></select></div>
+				<div class="tu-field"><span class="tu-label">Turn</span>
+					<select id="bb-rot" class="tu-select" aria-label="Orientation"><option value="1">Upright (the Buddha sits)</option><option value="0">As on the plane (sideways)</option></select></div>
+				<div class="tu-field"><span class="tu-label">Picture size</span>
+					<select id="bb-sz" class="tu-select" aria-label="Picture size"><option value="500">Small (fast)</option><option value="800">Medium</option><option value="1200">Large (slow, sharp)</option></select></div>
+			</div>
+			<h3 class="bb-h">How it looks <span class="bb-hint">(instant, nothing is recomputed)</span></h3>
+			<div class="bb-grid">
+				<div class="tu-field"><span class="tu-label">Colours</span><select id="bb-pal" class="tu-select" aria-label="Colour scheme"></select></div>
+				<div class="tu-field"><span class="tu-label" id="bb-br-l">Brightness: <b id="bb-br-v"></b></span><input type="range" id="bb-br" min="0.3" max="4" step="0.05" aria-labelledby="bb-br-l"></div>
+				<div class="tu-field"><span class="tu-label" id="bb-gm-l">Contrast curve: <b id="bb-gm-v"></b></span><input type="range" id="bb-gm" min="0.6" max="3" step="0.05" aria-labelledby="bb-gm-l"></div>
+				<div class="tu-field"><span class="tu-label" id="bb-bk-l">Background level: <b id="bb-bk-v"></b></span><input type="range" id="bb-bk" min="0" max="0.8" step="0.01" aria-labelledby="bb-bk-l"></div>
+			</div>
+			<div class="bb-checks">
+				<label class="bb-check"><input type="checkbox" id="bb-show" checked> Show the orbit I picked below on the picture</label>
+				<button type="button" class="tu-btn tu-btn--ghost" id="bb-link">🔗 Copy link to these settings</button>
+			</div>
+		</div>
+
+		<div class="tu-card bb-lab">
+			<h3 class="bb-h">Orbit lab: where one point's dots go</h3>
+			<div class="bb-labrow">
+				<div class="bb-labmap"><canvas id="bb-lab" width="300" height="240" tabindex="0" role="img" aria-label="Mandelbrot set. Click a point to see its orbit."></canvas></div>
+				<div class="bb-labtxt" id="bb-labtxt"><p class="tu-note">Click the little Mandelbrot set. Black points (inside) never escape, so the Buddhabrot ignores them. Every other point escapes after some steps, and the places its orbit visited on the way become dots in the picture.</p></div>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What is the Buddhabrot?</h2>
+			<p>The <a href="/mandelbrot">Mandelbrot set</a> asks one question about each number <i>c</i>: does the orbit <i>z</i> → <i>z</i>² + <i>c</i>, starting at 0, stay small or run away? A normal picture colours each <i>c</i> by the answer. The <strong>Buddhabrot</strong> does something stranger. It throws millions of random <i>c</i> at the iteration, keeps only the ones that <em>escape</em>, and then draws <em>where their orbits went</em>: every pixel an escaping orbit lands on gets one more dot. Where many orbits pile up the picture is bright. The result looks like a seated, meditating figure.</p>
+			<div class="bb-eq" role="math" aria-label="Buddhabrot recipe">
+				<div><span class="bb-eq__n">iterate</span> <span class="bb-eq__f mes-tex">\(\displaystyle z_{n+1} = z_n^2 + c,\qquad z_0 = 0\)</span></div>
+				<div><span class="bb-eq__n">escapes when</span> <span class="bb-eq__f mes-tex">\(\displaystyle |z_n| > 2\ \text{ for some } n \le N\)</span></div>
+				<div><span class="bb-eq__n">draw</span> <span class="bb-eq__f mes-tex">\(\displaystyle z_1, z_2, \dots, z_{n-1}\ \text{ and their mirror images } \bar z_k\)</span></div>
+			</div>
+			<h3>How this page makes it</h3>
+			<ul>
+				<li><strong>Random sampling.</strong> Small programs (Web Workers, one per spare processor core) pick random <i>c</i>, run the iteration, and add each escaping orbit to a count for every pixel. The page adds the counts up and shows them about twice a second. Nothing is uploaded.</li>
+				<li><strong>The iteration limit.</strong> A point whose orbit has not escaped after the limit is treated as inside and thrown away. A low limit gives a smooth, bright picture; a high limit lets the long, slow orbits through and gives a sparser picture with much finer detail, but it takes far longer to fill in.</li>
+				<li><strong>Nebulabrot.</strong> Draw three pictures with three different limits (say 1000, 100 and 10) and use them as the red, green and blue of one image. This false-colour version is also Melinda Green's idea. An orbit that escapes in <i>n</i> steps is counted in every channel whose limit is at least <i>n</i>, so three channels cost no more than the largest one.</li>
+				<li><strong>Anti-Buddhabrot.</strong> Keep the orbits that <em>don't</em> escape instead. Those orbits settle into cycles or spiral to a point, and drawing them gives a quite different, softer picture.</li>
+				<li><strong>Other powers.</strong> Use <i>z</i>³ + <i>c</i> or <i>z</i>⁴ + <i>c</i> for the same trick on the Multibrot sets.</li>
+				<li><strong>Half the work.</strong> The picture is mirror-symmetric about the real axis, so only the upper half-plane is sampled and each orbit is drawn together with its mirror image. The main cardioid and the round bulb on its left are known never to escape and are skipped without iterating.</li>
+				<li><strong>Brightness, contrast, background level.</strong> Counts are very uneven, so they are stretched for display. These sliders only change how the counts are shown, not the counts themselves. Raise the background level to darken the faint haze that comes from the many orbits that escape in only a few steps.</li>
+			</ul>
+			<h3>Why a zoomed view fills in slowly</h3>
+			<p>An orbit wanders over the whole plane, so there is no way to aim your samples at one corner of the picture the way a normal zoom aims at one patch of the set. When you zoom, the page still has to sample the whole plane, and only a small share of the dots land in your window. Zoomed views are therefore much slower to fill in than the whole picture (a fact the Wikipedia article also notes), and a long run of the whole picture saved at Large is often the better way to get a detailed close-up.</p>
+			<h3>Who found it</h3>
+			<p>The technique was discovered by <strong>Melinda Green</strong>, who described it in a 1993 post to the <code>sci.fractals</code> newsgroup. Earlier pictures by Linas Vepstas (1988) and Noel Griffin (Fractint's “Mandelcloud”) plotted the orbits of every point without discarding the ones that don't escape, so they are not Buddhabrots. Green first called her find “Ganesh”; the name <strong>Buddhabrot</strong> was coined by <strong>Lori Gardi</strong>, a software developer and fractal artist who shares her work on YouTube as <a href="https://www.youtube.com/@FractalWoman" rel="noopener" target="_blank">FractalWoman</a>. Green also came up with the three-colour Nebulabrot idea.</p>
+			<p>Read more: <a href="https://en.wikipedia.org/wiki/Buddhabrot" rel="noopener" target="_blank">Buddhabrot (Wikipedia)</a> · <a href="http://superliminal.com/fractals/bbrot/bbrot.htm" rel="noopener" target="_blank">Melinda Green's “The Buddhabrot Technique”</a> · <a href="https://news.westernu.ca/2008/12/chaos-theory-rules-for-software-developer/" rel="noopener" target="_blank">Western News: Lori Gardi and her fractal art</a> · <a href="https://www.youtube.com/@FractalWoman" rel="noopener" target="_blank">FractalWoman on YouTube</a>.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Is this a picture of the Mandelbrot set?</strong> No. It is built from the same iteration, but it shows the paths of the points <em>outside</em> the set, not the set's own boundary. The set shows up only as the dark hollows the orbits avoid.</li>
+				<li><strong>Why does it take so long?</strong> Each pixel needs thousands of dots before the picture is smooth, and that takes billions of random points. Pictures you see online usually ran for hours.</li>
+				<li><strong>Why is the Buddha upright?</strong> The set sits with its real axis horizontal, which would put the figure on its side. Choosing “Upright” turns it a quarter turn so the pointed tip at −2 becomes the topknot.</li>
+				<li><strong>Can I save it?</strong> Yes: the camera button saves exactly what you see. Large gives the sharpest file; leave it running a while first.</li>
+			</ul>
+			<p>Everything runs on your device. <a href="/mandelbrot">Mandelbrot Explorer</a> · <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/2d-graphing-calculator">2D graphing calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

@@ -83,6 +83,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("photo-editor", "Photo Editor"),   # also built by build_tool_apps.py (wide page, always-dark editor workspace)
     ("image-converter", "Image Converter"),   # also built by build_tool_apps.py
     ("3d-fluid-simulator", "3D Fluid Simulator"),   # also built by build_tool_apps.py (wide page, WebGL2 smoke)
+    ("buddhabrot", "Buddhabrot Explorer"),
     ("mandelbrot", "Mandelbrot Explorer"),   # also built by build_tool_apps.py (tools sidebar collection, worker-pool canvas)
     ("electromagnetic-fields-simulator", "Electromagnetic Fields"),
     ("double-pendulum", "Double Pendulum"),

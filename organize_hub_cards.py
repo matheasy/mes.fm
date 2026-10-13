@@ -38,7 +38,7 @@ PAGES = {
         ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search", "search-engines", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
         ("photos", "Photos &amp; Images", ["photo-editor", "image-converter"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today"]),
-        ("sim", "Simulations", ["fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
+        ("sim", "Simulations", ["fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
     ]),
 }
 TD = re.compile(r'[ \t]*<td class="calc-container[^"]*"><a class="calc-link" href="([^"]*)">.*?</td>\n?', re.S)

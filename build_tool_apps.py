@@ -185,19 +185,19 @@ APPS = {
     "black-hole-simulator": dict(title="MES Black Hole Simulator", page_title="Black Hole Simulator: Light Bending, Orbits and Shadow",
                                  tag="Bend light. Orbit the dark.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
                                  desc="A free black hole simulator: watch light bend around a Schwarzschild black hole and find the shadow and photon sphere, follow orbits that precess, plunge or sit at the innermost stable orbit, see a ray-traced picture of a disk and lensed stars, and compute the size, tides and temperature of any black hole. Includes the optical analogue: a glass-like medium that bends light the same way.",
-                                 js_v="3"),
+                                 js_v="4"),
     # Electromagnetic Fields Simulator: electric charges (field lines, equipotentials, Gauss's law, test charges), currents (Ampere, forces), a charged particle in E and B (Boris pusher, relativistic option),
     # Maxwell waves (2D FDTD Yee solver with glass / metal / absorber, slits, cavity, probe) and a 3D plane wave. (lib.js node-tested: tool_apps_src/electromagnetic-fields-simulator-tests.js.) Normal-width page in the tools sidebar collection.
     "electromagnetic-fields-simulator": dict(title="MES Electromagnetic Fields Simulator", page_title="Electromagnetic Fields Simulator: Electric, Magnetic and Light Waves",
                                              tag="See the fields. Watch the waves.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
                                              desc="A free electromagnetism simulator: place charges and see field lines, equipotentials and Gauss's law, add current-carrying wires and check Ampere's law, steer a charged particle through electric and magnetic fields, watch Maxwell's equations make waves reflect, refract and diffract, and explore a 3D electromagnetic plane wave.",
-                                             js_v="2"),
+                                             js_v="3"),
     # Double Pendulum: live chaotic pendulum (RK4, copies for the butterfly effect, angle and divergence graphs, Lyapunov estimate) + a flip-time chaos map of every starting pair of angles
     # (lib.js node-tested: tool_apps_src/double-pendulum-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
-                            js_v="4"),
+                            js_v="5"),
     # Orbit Simulator: Newtonian N-body sandbox (Yoshida leapfrog, adaptive step) with 12 systems (planets, Halley, Trojans, Earth-Moon, figure-eight, gravity assist ...), launch-by-drag, Kepler's laws overlays, SI orbit calculator
     # (lib.js node-tested: tool_apps_src/orbit-simulator-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "orbit-simulator": dict(title="MES Orbit Simulator", page_title="Orbit Simulator: Planets, Gravity and Kepler's Laws",
@@ -215,7 +215,13 @@ APPS = {
     "mandelbrot": dict(title="MES Mandelbrot Explorer", page_title="Mandelbrot Set Explorer: Zoom, Julia Sets and Fractals",
                        tag="Zoom into infinity.", accent="#1e40af", dark="#1e3a8a", tint="#dbeafe",
                        desc="A free Mandelbrot set explorer: drag and zoom through the famous fractal in your browser, see the Julia set of any point live, trace the orbit under the pointer, try the Burning Ship, Tricorn and Multibrot sets, cycle the colours and test any number with the point calculator.",
-                       js_v="3"),
+                       js_v="4"),
+    # Buddhabrot Explorer: density plot of the orbits of the points that ESCAPE the Mandelbrot iteration (Melinda Green's technique; Lori Gardi named it); worker-pool random sampling into
+    # Uint32 count buffers (lib.js = MESBuddha, node-tested: tool_apps_src/buddhabrot-tests.js), Nebulabrot (3 limits = RGB), Anti-Buddhabrot, z^3 / z^4, instant re-toning, orbit lab.
+    "buddhabrot": dict(title="MES Buddhabrot Explorer", page_title="Buddhabrot and Nebulabrot Explorer: Watch the Fractal Fill In",
+                       tag="The orbits that escape.", accent="#312e81", dark="#1e1b4b", tint="#e0e7ff",
+                       desc="Render the Buddhabrot fractal live in your browser: millions of random Mandelbrot orbits are traced and piled into a glowing seated figure. Try the three-colour Nebulabrot, the Anti-Buddhabrot and cubic versions, pick any point to see its orbit, and read how Melinda Green found it and Lori Gardi named it.",
+                       js_v="1"),
     # Photo Editor: layers, selections, text labels, arrows / callouts / step badges, retouch, adjustments, PSD, all in the browser (canvas). lib.js = MESPixel (pure pixel maths, node-tested:
     # tool_apps_src/photo-editor-tests.js), js_parts = engine (core.js layers / history / selection) + tools + dialogs; lib_from = image-converter's lib (MESImg: formats, zip). Wide page, always-dark workspace.
     "photo-editor": dict(title="MES Photo Editor", page_title="Free Online Photo Editor with Layers",
