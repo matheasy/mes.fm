@@ -901,7 +901,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     '.rate{min-width:54px;font-size:13px}.st{margin-left:auto;color:#aab0b8;font-size:12px;text-align:right;min-width:90px}.st.err{color:#ff9b8f}.sp{flex:1}' +
     '.grip{cursor:grab;min-width:22px;padding:0 2px;color:#8a919a;letter-spacing:-2px}.p.dragging,.p.dragging .grip{cursor:grabbing}.p{touch-action:none}' +
     '.volr{width:74px;height:34px;margin:0 2px;accent-color:#4cc38a;cursor:pointer;background:transparent}.vol svg{display:block}.vol.muted{color:#ff9b8f}' +
-    '.dk.on{background:#2b3a67}.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
+    '.dk.on{background:#2b3a67}.p.flip:not(.pip){filter:invert(1) hue-rotate(180deg)}.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
     '.p.moved{left:var(--x);top:var(--y);bottom:auto;transform:none}' +
     '.p.pip,.p.pip.moved{position:static;left:auto;top:auto;bottom:auto;transform:none;width:100%;border:0;border-radius:0;box-shadow:none}.p.pip .grip,.p.pip .mini{display:none}.pip-b.on{background:#1a4d6b}' +
     '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}';
@@ -943,7 +943,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.hl.onclick = toggleHighlight;
     ui.dk.onclick = function () { setDark(!darkOn, true); };
     if (window.__mesraSite) ui.dk.style.display = 'none';   // mes.fm has its own moon button
-    ui.dk.classList.toggle('on', darkOn);
+    ui.dk.classList.toggle('on', darkOn); ui.p.classList.toggle('flip', darkOn);
     ui.pipb.onclick = popOut;
     if (!window.documentPictureInPicture) ui.pipb.style.display = 'none';
     ui.volr.oninput = function () { P.volume = Number(ui.volr.value); if (P.volume > 0) lastVol = P.volume; paintVol(); saveSettings(); };
@@ -1043,10 +1043,11 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     var el = document.getElementById('mesra-dark-style');
     if (darkOn && !el) {
       el = document.createElement('style'); el.id = 'mesra-dark-style';
-      el.textContent = 'html{filter:invert(1) hue-rotate(180deg)!important;background:#fff!important}img,picture,video,canvas,iframe,embed,object,svg image,[style*="background-image"],#mesra-host{filter:invert(1) hue-rotate(180deg)!important}';
+      el.textContent = 'html{filter:invert(1) hue-rotate(180deg)!important;background:#fff!important}img,picture,video,canvas,iframe,embed,object,svg image,[style*="background-image"]{filter:invert(1) hue-rotate(180deg)!important}';   // the player flips itself back (.p.flip): a filter on its host element would make the host the containing block of the fixed player and push it off screen
       (document.head || document.documentElement).appendChild(el);
     } else if (!darkOn && el) el.remove();
     if (ui && ui.dk) ui.dk.classList.toggle('on', darkOn);
+    if (ui && ui.p) ui.p.classList.toggle('flip', darkOn);
     if (save) { if (darkOn) uiDark[location.hostname] = true; else delete uiDark[location.hostname]; saveUi(); }
   }
   function toggleHighlight() {
