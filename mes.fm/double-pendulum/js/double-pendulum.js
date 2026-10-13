@@ -81,7 +81,7 @@
 	var q = new URLSearchParams(location.search), saved = sget(), toastT;
 	function toast(msg) { var t = $("dp-toast"); if (!t) { t = document.createElement("div"); t.id = "dp-toast"; t.className = "tu-toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 2200); }
 	function copyLink(url) { var done = function () { toast("Link copied"); }; if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { prompt("Copy this link:", url); }); else prompt("Copy this link:", url); }
-	function sig(x, d) { x = +x; if (!isFinite(x)) return "–"; if (x === 0) return "0"; var a = Math.abs(x); if (a < 1e-3 || a >= 1e5) return x.toExponential(Math.max(0, (d || 3) - 1)).replace("e", "×10^").replace("^+", "^").replace(/\^(-?\d+)/, function (m, e) { return String(e).replace(/-/g, "−").replace(/\d/g, function (c) { return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c]; }); }); return Number(x.toPrecision(d || 3)).toString(); }
+	function sig(x, d) { x = +x; if (!isFinite(x)) return "–"; if (x === 0) return "0"; var a = Math.abs(x); if (a < 1e-3 || a >= 1e5) return x.toExponential(Math.max(0, (d || 3) - 1)).replace("e", "×10^").replace("^+", "^").replace(/\^(-?\d+)/, function (m, e) { return String(e).replace(/-/g, "⁻").replace(/\d/g, function (c) { return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c]; }); }); return Number(x.toPrecision(d || 3)).toString(); }
 
 	var tab = /^(sim|map)$/.test(q.get("tab") || "") ? q.get("tab") : "sim";
 	function setTab(t) {
@@ -216,8 +216,8 @@
 		cv.setPointerCapture(e.pointerId); drag = { which: which }; stage.classList.add("is-drag"); moveDrag(p);
 	});
 	function moveDrag(p) {
-		var pv = pivot(); if (drag.which === 1) a1 = Math.atan2(p[0] - pv[0], -(p[1] - pv[1])) / RAD;
-		else { var ps = D.positions([a1 * RAD, 0, 0, 0], P), b1 = scr(ps.x1, ps.y1); a2 = Math.atan2(p[0] - b1[0], -(p[1] - b1[1])) / RAD; }
+		var pv = pivot(); if (drag.which === 1) a1 = Math.atan2(p[0] - pv[0], p[1] - pv[1]) / RAD;   // angle from straight down (screen y points down)
+		else { var ps = D.positions([a1 * RAD, 0, 0, 0], P), b1 = scr(ps.x1, ps.y1); a2 = Math.atan2(p[0] - b1[0], p[1] - b1[1]) / RAD; }
 		syncAngles(); copies.forEach(function (c, k) { c.s = [a1 * RAD + k * Math.pow(10, eps), a2 * RAD, 0, 0]; c.trail = []; }); simT = 0; hist = []; flips = 0; lastBelow = 0; lyap = null; ta = null; E0 = D.energy(copies[0].s, P).E;
 	}
 	cv.addEventListener("pointermove", function (e) { if (drag) moveDrag(evPos(e)); });

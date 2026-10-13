@@ -213,7 +213,7 @@
 	}
 	function fmt(x, d) {
 		if (!isFinite(x)) return "∞"; var a = Math.abs(x); if (a === 0) return "0"; d = d || 4;
-		if (a >= 1e6 || a < 1e-3) { var e = Math.floor(Math.log10(a)), mnt = x / Math.pow(10, e); return mnt.toFixed(d - 1) + "×10" + String(e).replace(/-/g, "−").replace(/\d/g, function (c) { return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c]; }).replace(/^([^⁰-⁹−])/, "$1"); }
+		if (a >= 1e6 || a < 1e-3) { var e = Math.floor(Math.log10(a)), mnt = x / Math.pow(10, e); return mnt.toFixed(d - 1) + "×10" + String(e).replace(/-/g, "⁻").replace(/\d/g, function (c) { return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c]; }).replace(/^([^⁰-⁹−])/, "$1"); }
 		return Number(x.toPrecision(d)).toLocaleString("en-US", { maximumFractionDigits: 6 });
 	}
 	function fmtTime(s) {
