@@ -1,0 +1,1112 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Metric Tensor Explorer -- mes.fm/metric-tensor -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/metric-tensor/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/metric-tensor" />                    <title>MES Metric Tensor Explorer | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#0f766e;color:white;}
+        .button {color:#0f766e;border:0.125em solid#0f766e;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#0f766e; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#0f766e; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#0f766e;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#0f766e;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#0f766e;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#115e59;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#0f766e;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:100;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#0f766e;border:0.125em solid#0f766e;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#115e59;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#0f766e;}
+        .dropdown-symbol--dark {color:#0f766e;}
+        .button--active {background-color:#0f766e;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#0f766e;--accent-dark:#115e59;--tint:#ccfbf1;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #ccfbf1;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#ccfbf1;border-color:#ccfbf1;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #ccfbf1;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#ccfbf1;border-color:#ccfbf1;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#ccfbf1;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#ccfbf1;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#16aca1 !important;--accent-dark:#16aca1 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+
+	/* shared by the three CAS pages (cas-calculator, derivative-calculator, integral-calculator); inlined by build_tool_apps.py (css_extra) so
+	   add_tool_page_controls.py can derive its dark theme from it like the rest of the tool CSS */
+	.cs-expr {font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:0.01em;}
+	textarea.cs-expr {resize:vertical;min-height:3.2em;line-height:1.4;}
+	.cs-inrow {display:flex;align-items:center;gap:0.5em;}
+	.cs-inrow .tu-input {flex:1 1 auto;min-width:0;}
+	.cs-op {font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:1.25em;color:#1e2733;white-space:nowrap;}
+	.cs-chips {display:flex;flex-wrap:wrap;gap:0.35em;margin:0.55em 0 0.2em;}
+	.cs-chips button {cursor:pointer;min-width:2.4em;padding:0.35em 0.6em;border:1px solid #cfd5dd;border-radius:0.4em;background:#f5f6f9;color:#222;font-size:0.95em;line-height:1.1;}
+	.cs-chips button:hover {border-color:var(--accent);color:var(--accent);background:#fff;}
+	.cs-preview {min-height:2.6em;margin:0.5em 0 0.2em;padding:0.4em 0.7em;border-radius:0.4em;background:#f7f8fa;border:1px dashed #d5dae1;color:#1e2733;overflow-x:auto;}
+	.cs-preview .cs-math {margin:0.1em 0;}
+	.cs-preview.is-dim, .cs-preview.is-echo {color:#6a7280;font-size:0.92em;display:flex;align-items:center;gap:0.5em;flex-wrap:wrap;}
+	.cs-preview.is-err {color:#b3261e;font-size:0.92em;border-color:#f0c4c0;background:#fdf3f2;}
+	.cs-preview__lbl {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#8a93a0;display:block;}
+	.cs-preview code {background:transparent;padding:0;font-size:1em;color:#333;word-break:break-all;}
+	.cs-opts {margin-top:0.8em;}
+	.cs-actions {margin-top:0.9em;align-items:center;gap:0.6em;}
+	.cs-actions .tu-btn--primary {font-size:1.02em;padding:0.6em 1.4em;font-weight:700;}
+	.cs-actions .tu-btn[disabled] {opacity:0.55;cursor:progress;}
+	.cs-status {margin-top:0.8em;padding:0.6em 0.8em;border-radius:0.45em;background:#ccfbf1;color:#1e2733;font-size:0.92em;}
+	.cs-status[hidden] {display:none;}
+	.cs-status__row {display:flex;align-items:center;gap:0.6em;flex-wrap:wrap;}
+	.cs-status__msg {flex:1 1 12em;}
+	.cs-status .cs-cancel {padding:0.3em 0.8em;font-size:0.85em;background:#fff;}
+	.cs-status .cs-cancel[hidden] {display:none;}
+	.cs-bar {display:none;height:5px;border-radius:3px;background:rgba(0,0,0,0.08);margin-top:0.5em;overflow:hidden;}
+	.cs-status.has-bar .cs-bar {display:block;}
+	.cs-bar span {display:block;height:100%;width:0;background:var(--accent);transition:width 0.4s;}
+	.cs-spin {width:1em;height:1em;border-radius:50%;border:2px solid rgba(0,0,0,0.15);border-top-color:var(--accent);animation:cs-spin 0.8s linear infinite;flex:0 0 auto;}
+	@keyframes cs-spin {to {transform:rotate(360deg);}}
+	.cs-out {margin-top:1em;}
+	.cs-out[hidden] {display:none;}
+	.cs-error {padding:0.8em 1em;border-radius:0.5em;background:#fdf3f2;border:1px solid #f0c4c0;color:#8c1d16;line-height:1.45;}
+	.cs-result {background:#ccfbf1;border:1px solid #ccfbf1;border-radius:0.55em;padding:0.9em 1.1em;}
+	.cs-result .cs-math {font-size:1.12em;}
+	.cs-result__label, .cs-sec__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;margin-bottom:0.2em;}
+	.cs-math {overflow-x:auto;overflow-y:hidden;padding:0.1em 0;max-width:100%;}
+	.cs-math--l {padding:0.25em 0;font-size:1.08em;}
+	.cs-sols li .cs-math--l {padding:0.1em 0;}
+	.cs-nomj .cs-math {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.9em;white-space:pre-wrap;word-break:break-all;}
+	.cs-btns {display:flex;flex-wrap:wrap;gap:0.45em;margin-top:0.6em;}
+	.cs-btns .tu-btn {padding:0.35em 0.8em;font-size:0.85em;background:#fff;}
+	.cs-badge {display:inline-block;font-size:0.78em;font-weight:700;padding:0.15em 0.6em;border-radius:1em;background:#e3f3e6;color:#1f6b33;margin:0.4em 0.4em 0 0;}
+	.cs-badge--warn {background:#fff4dd;color:#8a5300;}
+	.cs-badge--info {background:#e8ecf1;color:#334155;}
+	.cs-sec {margin-top:1em;}
+	.cs-kv {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.6em;margin-top:0.8em;}
+	.cs-kv > div {background:#fff;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.6em 0.8em;min-width:0;}
+	.cs-steps-card {margin-top:1em;}
+	.cs-steps-card > summary {cursor:pointer;font-weight:700;color:var(--accent);padding:0.2em 0;font-size:1.02em;}
+	.cs-steps {list-style:none;counter-reset:cs;margin:0.6em 0 0;padding:0;}
+	.cs-steps > .cs-step {counter-increment:cs;position:relative;padding:0.55em 0 0.55em 2.3em;border-top:1px solid #e8ebef;}
+	.cs-steps > .cs-step::before {content:counter(cs);position:absolute;left:0.1em;top:0.6em;width:1.6em;height:1.6em;border-radius:50%;background:#ccfbf1;color:var(--accent-dark);font-weight:700;font-size:0.82em;display:flex;align-items:center;justify-content:center;}
+	.cs-steps--sub {margin:0.4em 0 0 0.2em;border-left:3px solid #ccfbf1;padding-left:0.4em;}
+	.cs-steps--sub > .cs-step {padding-left:2em;border-top:0;}
+	.cs-steps--sub > .cs-step::before {content:counter(cs, lower-alpha);background:transparent;border:1px solid #cfd5dd;color:#667;}
+	.cs-step__h {font-weight:700;color:#1e2733;}
+	.cs-step__t {margin:0.2em 0 0.1em;color:#444;font-size:0.95em;}
+	.cs-step .cs-math {font-size:0.97em;}
+	.cs-sols {list-style:none;margin:0.4em 0 0;padding:0;display:grid;gap:0.45em;}
+	.cs-sols li {background:#fff;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.45em 0.8em;display:flex;flex-wrap:wrap;align-items:center;gap:0.2em 1.2em;}
+	.cs-sols li .cs-math {flex:0 1 auto;}
+	.cs-sols .cs-dec {color:#444;font-variant-numeric:tabular-nums;font-size:0.95em;}
+	.cs-sols .cs-deg {color:#6a7280;font-size:0.9em;}
+	.cs-pending {font-size:0.88em;color:#6a7280;margin-top:0.6em;display:flex;align-items:center;gap:0.5em;}
+	.cs-plotwrap {margin-top:1em;background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.5em;}
+	.cs-plot {display:block;width:100%;height:260px;}
+	.cs-legend {display:flex;flex-wrap:wrap;gap:0.4em 1.2em;font-size:0.85em;color:#555;padding:0.3em 0.3em 0;align-items:center;}
+	.cs-legend i {display:inline-block;width:1.4em;height:3px;border-radius:2px;vertical-align:middle;margin-right:0.35em;background:#1e2733;}
+	.cs-legend i.cs-l2 {background:var(--accent);}
+	.cs-legend i.cs-l3 {height:0.8em;width:0.8em;border-radius:50%;background:var(--accent);}
+	.cs-legend i.cs-l4 {height:0.8em;background:#ccfbf1;border:1px solid var(--accent);}
+	.cs-legend a {margin-left:auto;}
+	.cs-hist {list-style:none;margin:0.5em 0 0;padding:0;max-height:16em;overflow-y:auto;}
+	.cs-hist li {display:flex;gap:1em;justify-content:space-between;padding:0.45em 0.2em;border-bottom:1px solid #e8ebef;cursor:pointer;font-size:0.93em;}
+	.cs-hist li:hover {background:#ccfbf1;}
+	.cs-hist .cs-h-q {color:#334;font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;}
+	.cs-hist .cs-h-r {color:#6a7280;text-align:right;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	.cs-tabs {display:flex;flex-wrap:wrap;margin-bottom:0.8em;}
+	.cs-tabs button {flex:1 1 auto;}
+	.cs-mode[hidden], .cs-only[hidden] {display:none !important;}
+	.cs-links {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.6em;margin:0.6em 0 1em;}
+	.cs-link {display:block;padding:0.7em 0.9em;border:1px solid #dfe4ea;border-radius:0.5em;background:#fff;font-weight:700;text-decoration:none !important;}
+	.cs-link span {display:block;font-weight:400;font-size:0.85em;color:#6a7280;margin-top:0.15em;}
+	.cs-link:hover {border-color:var(--accent);background:#ccfbf1;}
+	.tu code {background:#eef1f5;padding:0.05em 0.35em;border-radius:0.25em;font-size:0.92em;}
+	.tu-seo dl {margin:0.5em 0;}
+	.tu-seo dt {font-weight:700;margin-top:0.7em;color:#1e2733;}
+	.tu-seo dd {margin:0.2em 0 0 0;line-height:1.5;color:#333;}
+	.tu-seo dt {color:#1e2733;}
+	body.dark-mode .tu .tu-seo dd {color:#d6d6d6;}
+	body.dark-mode .tu .tu-seo dt {color:#ececec;}
+	/* dark: selected / filled states and the canvas card */
+	body.dark-mode .tu .cs-result {background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12);}
+	body.dark-mode .tu .cs-status {background:rgba(255,255,255,0.07);color:#e6e6e6;}
+	body.dark-mode .tu .cs-steps > .cs-step::before {background:rgba(255,255,255,0.1);color:var(--accent);}
+	body.dark-mode .tu .cs-steps--sub {border-left-color:rgba(255,255,255,0.14);}
+	body.dark-mode .tu .cs-plotwrap {background:#1b1d21;border-color:#3a3f47;}
+	body.dark-mode .tu .cs-badge {background:rgba(80,190,110,0.18);color:#8fdca4;}
+	body.dark-mode .tu .cs-badge--warn {background:rgba(255,180,60,0.16);color:#ffc977;}
+	body.dark-mode .tu .cs-badge--info {background:rgba(255,255,255,0.1);color:#cbd5e1;}
+	body.dark-mode .tu .cs-error {background:rgba(220,60,50,0.14);border-color:rgba(220,60,50,0.4);color:#ffb4ab;}
+	body.dark-mode .tu .cs-preview.is-err {background:rgba(220,60,50,0.12);border-color:rgba(220,60,50,0.35);color:#ffb4ab;}
+	body.dark-mode .tu .cs-spin {border-color:rgba(255,255,255,0.18);border-top-color:var(--accent);}
+	body.dark-mode .tu .cs-legend i {background:#e8ecf1;}
+	body.dark-mode .tu .cs-legend i.cs-l2, body.dark-mode .tu .cs-legend i.cs-l3 {background:var(--accent);}
+	body.dark-mode .tu .cs-legend i.cs-l4 {background:rgba(255,255,255,0.12);}
+	@media (max-width:600px) {
+		.cs-op {font-size:1.05em;}
+		.cs-chips button {min-width:2.2em;padding:0.4em 0.5em;}
+		.cs-tabs button {padding:0.5em 0.6em;font-size:0.85em;}
+		.cs-steps > .cs-step {padding-left:2em;}
+		.cs-steps--sub {margin-left:0;}
+		.cs-steps--sub > .cs-step {padding-left:1.7em;}
+		.cs-result {padding:0.7em 0.75em;}
+		.cs-hist .cs-h-r {display:none;}
+	}
+
+	/* black hole simulator: dark stages; their colours are custom properties / literals so the derived dark theme leaves them alone. */
+	.tu [hidden] {display:none !important;}
+	.mt {--mt-bg:#05070d;--mt-line:#2a3040;--mt-text:#e8ecf5;--mt-dim:#9aa5bb;}
+	.mt-tabs {display:flex;flex-wrap:wrap;gap:0.3em;margin-bottom:0.8em;border-bottom:2px solid #d5dbe3;}
+	.mt-tabs button {cursor:pointer;font:inherit;font-weight:600;padding:0.5em 1em;border:0;border-radius:0.5em 0.5em 0 0;background:transparent;color:#445;border-bottom:3px solid transparent;margin-bottom:-2px;}
+	.mt-tabs button:hover {background:#eef1f5;}
+	.mt-tabs button[aria-selected="true"] {color:var(--accent);border-bottom-color:var(--accent);background:#f4f6f9;}
+	.mt-lead {margin:0 0 0.7em;font-size:0.95em;}
+	.mt-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--mt-line);background:var(--mt-bg);}
+	.mt-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
+	.mt-stage {position:relative;margin:0 auto;width:100%;height:clamp(300px,50vw,540px);max-width:100%;background:var(--mt-bg);}
+	.mt-stage canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;cursor:crosshair;}
+	#mt-ic {cursor:default;}
+	.mt-badge {position:absolute;left:0.7em;top:0.6em;font-size:0.78em;color:var(--mt-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;}
+	.mt-badge:empty {display:none;}
+	.mt-run, .mt-tools {position:absolute;display:flex;gap:0.25em;right:0.6em;top:0.6em;}
+	.mt-run button, .mt-tools button {cursor:pointer;border:1px solid var(--mt-line);background:rgba(10,13,20,0.78);color:var(--mt-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font:inherit;font-size:0.85em;}
+	.mt-run button:hover, .mt-tools button:hover {border-color:var(--accent);color:#fff;}
+	.mt-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:0.5em;padding:0.6em;background:#0e1118;border-top:1px solid var(--mt-line);}
+	.mt-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
+	.mt-ro span {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--mt-dim);}
+	.mt-ro b {font-size:1.25em;color:var(--mt-text);font-variant-numeric:tabular-nums;line-height:1.15;}
+	.mt-ro small {font-size:0.72em;color:var(--mt-dim);line-height:1.3;}
+	.mt-controls {margin-top:0.9em;}
+	.mt-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.9em 1.4em;}
+	.mt-grid--small {margin-top:0.9em;grid-template-columns:repeat(auto-fit,minmax(11em,1fr));}
+	.mt-controls input[type=range] {width:100%;accent-color:var(--accent);}
+	.mt-checks {display:flex;flex-wrap:wrap;gap:0.5em 1.2em;align-items:center;margin-top:0.9em;}
+	.mt-check {display:inline-flex;align-items:center;gap:0.4em;cursor:pointer;font-size:0.92em;}
+	.mt-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 0.9em;}
+	.mt-chips:empty {display:none;}
+	.mt-chips button {cursor:pointer;font:inherit;font-size:0.85em;padding:0.3em 0.8em;border-radius:1em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223;}
+	.mt-chips button:hover {border-color:var(--accent);}
+	.mt-mass {display:flex;gap:0.4em;align-items:center;flex-wrap:wrap;}
+	.mt-mass input {flex:1 1 7em;min-width:0;}
+	.mt-unit {font-size:0.9em;color:#556;}
+	.mt-tables {display:grid;grid-template-columns:repeat(auto-fit,minmax(20em,1fr));gap:0.9em;margin-top:0.9em;}
+	.mt-tables .tu-card {margin:0;}
+	.mt-h {margin:0 0 0.4em;font-size:1.05em;}
+	#mt .tu-table td {white-space:normal;vertical-align:top;}
+	#mt .tu-table td:first-child {width:60%;}
+	#mt .tu-table td:last-child {text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;}
+	#mt .tu-table small {display:block;font-weight:400;color:#667;}
+	.mt-eq {background:#f4f6f9;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.8em 1em;margin:0.8em 0;font-size:1.05em;line-height:1.9;overflow-x:auto;}
+	.mt-eq__n {display:inline-block;min-width:8.5em;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.mt-eq__f {font-family:"Cambria Math","STIX Two Math",Georgia,serif;white-space:nowrap;}
+	body.dark-mode #mt .mt-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #mt .mt-eq__n {color:#a0a8b3;}
+	body.dark-mode #mt .mt-tabs {border-bottom-color:#3a3f48;} body.dark-mode #mt .mt-tabs button {color:#c9ced6;} body.dark-mode #mt .mt-tabs button:hover {background:#2a2d33;} body.dark-mode #mt .mt-tabs button[aria-selected="true"] {background:#23262b;color:#f0a0c4;border-bottom-color:#f0a0c4;}
+	body.dark-mode #mt .mt-chips button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;}
+	body.dark-mode #mt .tu-table small, body.dark-mode #mt .mt-unit {color:#a0a8b3;}
+	@media (max-width: 640px) {
+		.mt-tabs button {padding:0.45em 0.7em;font-size:0.92em;} .mt-badge {font-size:0.7em;}
+	}
+	/* metric tensor additions */
+	.mt-lead {margin:0 0 0.8em;font-size:0.95em;}
+	.mt-card {margin-bottom:0.9em;}
+	.mt-top {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:flex-end;margin-bottom:0.6em;}
+	.mt-top--b {margin-top:0.8em;}
+	.mt-pick {display:flex;flex-direction:column;gap:0.25em;flex:1 1 16em;min-width:0;}
+	.mt-pick--s {flex:1 1 12em;}
+	.mt-pick select, .mt-pick input {width:100%;}
+	.mt-grid {display:grid;gap:0.35em;margin:0.4em 0 0.2em;max-width:44em;}
+	.mt-grid input {width:100%;min-width:0;padding:0.45em 0.5em;border:1px solid #c9d2dc;border-radius:0.35em;font:inherit;font-size:0.9em;font-family:ui-monospace,Menlo,Consolas,monospace;background:#fff;color:#223;}
+	.mt-grid input:focus {outline:2px solid var(--accent);outline-offset:0;}
+	.mt-grid input.is-zero {color:#8a93a0;}
+	.mt-status {font-size:0.88em;color:#556;}
+	.mt-status.err {color:#b3261e;font-weight:600;}
+	.mt-bar {height:0.4em;background:#e3e8ee;border-radius:0.3em;margin-top:0.7em;overflow:hidden;}
+	.mt-bar i {display:block;height:100%;width:0;background:var(--accent);transition:width 0.2s;}
+	.mt-out {display:grid;gap:0.7em;}
+	.mt-sec {border:1px solid #d5dbe3;border-radius:0.5em;background:#fff;overflow:hidden;}
+	.mt-sec > summary {cursor:pointer;padding:0.65em 1em;font-weight:700;background:#f4f6f9;list-style:none;display:flex;gap:0.6em;align-items:center;}
+	.mt-sec > summary::before {content:"▸";color:var(--accent);}
+	.mt-sec[open] > summary::before {content:"▾";}
+	.mt-sec > summary small {font-weight:400;color:#667;margin-left:auto;}
+	.mt-sec .mt-body {padding:0.6em 1em 0.9em;}
+	.mt-note {font-size:0.9em;color:#556;margin:0 0 0.5em;}
+	.mt-items {display:grid;gap:0.2em;}
+	.mt-item {display:flex;flex-wrap:wrap;gap:0.3em 0.8em;align-items:baseline;padding:0.25em 0;border-bottom:1px dashed #e3e8ee;overflow-x:auto;}
+	.mt-item:last-child {border-bottom:0;}
+	.mt-item .mt-l {min-width:7em;}
+	.mt-copy {margin-top:0.5em;font-size:0.85em;}
+	.mt-g3 {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.8em 1.4em;margin-top:0.4em;}
+	#mt .mt-stage canvas {cursor:grab;}
+	body.dark-mode #mt .mt-grid input {background:#262626;border-color:#454c58;color:#e6e8ec;}
+	body.dark-mode #mt .mt-sec {background:#1f1f1f;border-color:#3a3f48;} body.dark-mode #mt .mt-sec > summary {background:#2a2d33;color:#eee;} body.dark-mode #mt .mt-sec > summary small, body.dark-mode #mt .mt-note, body.dark-mode #mt .mt-status {color:#a0a8b3;}
+	body.dark-mode #mt .mt-item {border-bottom-color:#3a3f48;} body.dark-mode #mt .mt-bar {background:#3a3f48;}
+	body.dark-mode #mt .mt-status.err {color:#ff9b8f;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#26e3d5;--accent-dark:#30dace}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #08624f}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1a3b34;border-color:#08624f}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1a3b34;border-color:#08624f}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1a3b34}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .cs-op{color:#d1d6dc}
+	body.dark-mode .cs-chips button{border:1px solid #2f3742;background:#17181c;color:#dddddd}
+	body.dark-mode .cs-chips button:hover{background:#1a1a1a}
+	body.dark-mode .cs-preview{background:#17191c;border:1px dashed #2b323c;color:#d1d6dc}
+	body.dark-mode .cs-preview.is-dim,body.dark-mode .cs-preview.is-echo{color:#9a9da3}
+	body.dark-mode .cs-preview.is-err{color:#e87973;border-color:#681f19;background:#221311}
+	body.dark-mode .cs-preview__lbl{color:#999da3}
+	body.dark-mode .cs-preview code{color:#cccccc}
+	body.dark-mode .cs-status{background:#1a3b34;color:#d1d6dc}
+	body.dark-mode .cs-status .cs-cancel{background:#1a1a1a}
+	body.dark-mode .cs-bar{background:rgba(82,82,82,0.08)}
+	body.dark-mode .cs-spin{border:2px solid rgba(76,76,76,0.15)}
+	body.dark-mode .cs-error{background:#221311;border:1px solid #681f19;color:#e97972}
+	body.dark-mode .cs-result{background:#1a3b34;border:1px solid #08624f}
+	body.dark-mode .cs-result__label,body.dark-mode .cs-sec__label{color:#9a9aa2}
+	body.dark-mode .cs-btns .tu-btn{background:#1a1a1a}
+	body.dark-mode .cs-badge{background:#1d2a1f;color:#80da98}
+	body.dark-mode .cs-badge--warn{background:#2f2512;color:#ffbe5c}
+	body.dark-mode .cs-badge--info{background:#1e2125;color:#b3bac4}
+	body.dark-mode .cs-kv > div{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .cs-steps > .cs-step{border-top:1px solid #2a323c}
+	body.dark-mode .cs-steps > .cs-step::before{background:#1a3b34}
+	body.dark-mode .cs-steps--sub{border-left:3px solid #08624f}
+	body.dark-mode .cs-steps--sub > .cs-step::before{border:1px solid #2f3742;color:#9a9aa2}
+	body.dark-mode .cs-step__h{color:#d1d6dc}
+	body.dark-mode .cs-step__t{color:#bbbbbb}
+	body.dark-mode .cs-sols li{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .cs-sols .cs-dec{color:#bbbbbb}
+	body.dark-mode .cs-sols .cs-deg{color:#9a9da3}
+	body.dark-mode .cs-pending{color:#9a9da3}
+	body.dark-mode .cs-plotwrap{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .cs-legend{color:#aaaaaa}
+	body.dark-mode .cs-legend i{background:#3c4f67}
+	body.dark-mode .cs-legend i.cs-l4{background:#1a3b34}
+	body.dark-mode .cs-hist li{border-bottom:1px solid #2a323c}
+	body.dark-mode .cs-hist li:hover{background:#1a3b34}
+	body.dark-mode .cs-hist .cs-h-q{color:#bfbfc8}
+	body.dark-mode .cs-hist .cs-h-r{color:#9a9da3}
+	body.dark-mode .cs-link{border:1px solid #28323e;background:#1a1a1a}
+	body.dark-mode .cs-link span{color:#9a9da3}
+	body.dark-mode .cs-link:hover{background:#1a3b34}
+	body.dark-mode .tu code{background:#191c20}
+	body.dark-mode .tu-seo dt{color:#d1d6dc}
+	body.dark-mode .tu-seo dd{color:#cccccc}
+	body.dark-mode .mt{--mt-bg:#4e69bb}
+	body.dark-mode .mt-tabs{border-bottom:2px solid #29323d}
+	body.dark-mode .mt-tabs button{color:#aeaeb7}
+	body.dark-mode .mt-tabs button:hover{background:#191c20}
+	body.dark-mode .mt-tabs button[aria-selected="true"]{background:#16191d}
+	body.dark-mode .mt-readouts{background:#3c4967}
+	body.dark-mode .mt-chips button{border:1px solid #2f3b49;background:#15191e;color:#d0d0d9}
+	body.dark-mode .mt-unit{color:#9d9da6}
+	body.dark-mode #mt .tu-table small{color:#9a9aa2}
+	body.dark-mode .mt-eq{background:#16191d;border:1px solid #28323e}
+	body.dark-mode .mt-eq__n{color:#9a9aa2}
+	body.dark-mode .mt-grid input{border:1px solid #2f3b49;background:#1a1a1a;color:#d0d0d9}
+	body.dark-mode .mt-grid input.is-zero{color:#999da3}
+	body.dark-mode .mt-status{color:#9d9da6}
+	body.dark-mode .mt-status.err{color:#e87973}
+	body.dark-mode .mt-bar{background:#22252a}
+	body.dark-mode .mt-sec{border:1px solid #29323d;background:#1a1a1a}
+	body.dark-mode .mt-sec > summary{background:#16191d}
+	body.dark-mode .mt-sec > summary small{color:#9a9aa2}
+	body.dark-mode .mt-note{color:#9d9da6}
+	body.dark-mode .mt-item{border-bottom:1px dashed #27323f}
+	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #0f766e;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #0f766e; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(15,118,110,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/metric-tensor" />            <meta property="og:title" content="MES Metric Tensor Explorer | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/metric-tensor/img/logo-big.png" />
+        <meta property="og:description" content="Free metric tensor calculator for general relativity: pick Schwarzschild, de Sitter, FLRW, a wormhole or type your own metric and get the Christoffel symbols, geodesic equations, Riemann, Ricci and Einstein tensors and the Kretschmann scalar, plus geodesics drawn on spheres, tori and hyperbolic planes." />
+
+        <meta name="description" content="Free metric tensor calculator for general relativity: pick Schwarzschild, de Sitter, FLRW, a wormhole or type your own metric and get the Christoffel symbols, geodesic equations, Riemann, Ricci and Einstein tensors and the Kretschmann scalar, plus geodesics drawn on spheres, tori and hyperbolic planes.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Metric Tensor Explorer">
+        <meta name="twitter:description" content="Free metric tensor calculator for general relativity: pick Schwarzschild, de Sitter, FLRW, a wormhole or type your own metric and get the Christoffel symbols, geodesic equations, Riemann, Ricci and Einstein tensors and the Kretschmann scalar, plus geodesics drawn on spheres, tori and hyperbolic planes.">
+        <meta name="twitter:image" content="https://mes.fm/metric-tensor/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Metric Tensor Explorer">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Metric Tensor Explorer", "url": "https://mes.fm/metric-tensor", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free metric tensor calculator for general relativity: pick Schwarzschild, de Sitter, FLRW, a wormhole or type your own metric and get the Christoffel symbols, geodesic equations, Riemann, Ricci and Einstein tensors and the Kretschmann scalar, plus geodesics drawn on spheres, tori and hyperbolic planes."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/metric-tensor" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/metric-tensor/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/metric-tensor" tabindex="-1">Metric Tensor Explorer</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/metric-tensor'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Emoji Copier logo" data-src="/metric-tensor/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/metric-tensor'>
+                                    <p class="calculator-title">MES Metric Tensor Explorer</p>
+                                </a>
+                                <p class="tag-line">From metric to curvature.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/metric-tensor'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Metric Tensor Calculator: Christoffel, Riemann and Einstein Tensors</h1>                                        <p class="page-description">Free metric tensor calculator for general relativity: pick Schwarzschild, de Sitter, FLRW, a wormhole or type your own metric and get the Christoffel symbols, geodesic equations, Riemann, Ricci and Einstein tensors and the Kretschmann scalar, plus geodesics drawn on spheres, tori and hyperbolic planes.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu mt" id="mt">
+		<div class="mt-tabs" role="tablist" aria-label="Metric tensor tools">
+			<button type="button" role="tab" data-tab="compute" aria-selected="true">Curvature calculator</button>
+			<button type="button" role="tab" data-tab="geo" aria-selected="false">Geodesics</button>
+		</div>
+
+		<section data-panel="compute" role="tabpanel">
+			<p class="tu-note mt-lead">The <b>metric tensor</b> <i>g</i><sub>μν</sub> tells you how to measure distances and times in any coordinates. From it, a computer algebra system (SymPy, running in your browser) derives everything about the geometry: how the grid twists (<b>Christoffel symbols</b>), how free particles move (<b>geodesics</b>) and how space-time is curved (<b>Riemann, Ricci, Einstein</b>, and the <b>Kretschmann</b> scalar). Pick a famous metric or type your own.</p>
+			<div class="tu-card mt-card">
+				<div class="mt-top">
+					<label class="mt-pick"><span class="tu-label" id="mt-pre-l">Metric</span><select id="mt-pre" class="tu-select" aria-labelledby="mt-pre-l"></select></label>
+					<label class="mt-pick mt-pick--s"><span class="tu-label" id="mt-co-l">Coordinates (2 to 4, separated by commas)</span><input type="text" id="mt-co" class="tu-input" aria-labelledby="mt-co-l" autocomplete="off" spellcheck="false"></label>
+				</div>
+				<p class="tu-note" id="mt-pre-note"></p>
+				<span class="tu-label">The metric  g<sub>μν</sub>  (symmetric: typing in one corner fills the mirror image)</span>
+				<div class="mt-grid" id="mt-grid" role="group" aria-label="Metric matrix"></div>
+				<div class="mt-top mt-top--b">
+					<label class="mt-pick mt-pick--s"><span class="tu-label" id="mt-pa-l">Constants (not coordinates), e.g. M, Q</span><input type="text" id="mt-pa" class="tu-input" aria-labelledby="mt-pa-l" autocomplete="off" spellcheck="false"></label>
+					<label class="mt-pick mt-pick--s"><span class="tu-label" id="mt-po-l">Symbols that are positive (helps simplify)</span><input type="text" id="mt-po" class="tu-input" aria-labelledby="mt-po-l" autocomplete="off" spellcheck="false"></label>
+				</div>
+				<div class="mt-checks" id="mt-want">
+					<label class="mt-check"><input type="checkbox" value="christoffel" checked> Christoffel symbols</label>
+					<label class="mt-check"><input type="checkbox" value="geodesic" checked> Geodesic equations</label>
+					<label class="mt-check"><input type="checkbox" value="riemann" checked> Riemann</label>
+					<label class="mt-check"><input type="checkbox" value="ricci" checked> Ricci + scalar</label>
+					<label class="mt-check"><input type="checkbox" value="einstein" checked> Einstein</label>
+					<label class="mt-check"><input type="checkbox" value="kretschmann" checked> Kretschmann</label>
+				</div>
+				<div class="mt-checks">
+					<button type="button" class="tu-btn tu-btn--primary" id="mt-run">Compute</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mt-cancel" hidden>Cancel</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mt-link">🔗 Copy link</button>
+					<span class="mt-status" id="mt-status" aria-live="polite"></span>
+				</div>
+				<div class="mt-bar" id="mt-bar" hidden><i id="mt-bari"></i></div>
+			</div>
+			<div id="mt-out" class="mt-out"></div>
+		</section>
+
+		<section data-panel="geo" role="tabpanel" hidden>
+			<p class="tu-note mt-lead">Geodesics are the straightest possible paths on a curved surface: what a particle does when nothing pushes it. Choose a surface (a 2D metric), a starting point and a fan of directions, and the engine integrates the geodesic equations from the metric alone. On the sphere they are great circles, on the hyperbolic plane they are semicircles, on a torus some wind forever. The paths are drawn on the surface itself (the sphere and the torus can be rotated).</p>
+			<div class="mt-wrap" id="mt-wrap"><div class="mt-stage" id="mt-stage">
+				<canvas id="mt-gc" tabindex="0" role="img" aria-label="Geodesics drawn on the chosen surface. Drag to rotate a sphere or torus, or click to choose the starting point on flat charts."></canvas>
+				<div class="mt-badge" id="mt-gbadge"></div>
+			</div>
+			<div class="mt-readouts">
+				<div class="mt-ro"><span>Surface</span><b id="mt-g-n">–</b><small id="mt-g-s"></small></div>
+				<div class="mt-ro"><span>Metric</span><b id="mt-g-m">–</b><small>ds² =</small></div>
+				<div class="mt-ro"><span>Start</span><b id="mt-g-p">–</b><small>in the coordinates of the metric</small></div>
+			</div></div>
+			<div class="tu-card mt-card">
+				<div class="mt-top">
+					<label class="mt-pick"><span class="tu-label" id="mt-gpre-l">Surface</span><select id="mt-gpre" class="tu-select" aria-labelledby="mt-gpre-l"></select></label>
+					<button type="button" class="tu-btn tu-btn--primary" id="mt-grun">Draw the geodesics</button>
+					<span class="mt-status" id="mt-gstatus" aria-live="polite"></span>
+				</div>
+				<p class="tu-note" id="mt-gnote"></p>
+				<div class="mt-g3">
+					<div class="tu-field"><span class="tu-label" id="mt-s1-l">Start: first coordinate <b id="mt-s1-v"></b></span><input type="range" id="mt-s1" step="0.01" aria-labelledby="mt-s1-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mt-s2-l">Start: second coordinate <b id="mt-s2-v"></b></span><input type="range" id="mt-s2" step="0.01" aria-labelledby="mt-s2-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mt-gn-l">Number of geodesics: <b id="mt-gn-v"></b></span><input type="range" id="mt-gn" min="1" max="40" step="1" aria-labelledby="mt-gn-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mt-ga-l">Direction of the first: <b id="mt-ga-v"></b>°</span><input type="range" id="mt-ga" min="0" max="360" step="1" aria-labelledby="mt-ga-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mt-gl-l">Length: <b id="mt-gl-v"></b></span><input type="range" id="mt-gl" min="1" max="40" step="0.5" aria-labelledby="mt-gl-l"></div>
+				</div>
+				<div class="mt-checks"><label class="mt-check"><input type="checkbox" id="mt-gfan" checked> Spread them all round (otherwise a narrow fan)</label><button type="button" class="tu-btn tu-btn--ghost" id="mt-glink">🔗 Copy link</button></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>What the metric tensor is</h2>
+			<p>In flat space the distance between two nearby points is <i>ds</i>² = <i>dx</i>² + <i>dy</i>² (Pythagoras). Use other coordinates, or curve the space, and you need correction factors: <i>ds</i>² = Σ <i>g</i><sub>μν</sub> <i>dx</i><sup>μ</sup> <i>dx</i><sup>ν</sup>. The nine or sixteen numbers <i>g</i><sub>μν</sub> are the <strong>metric tensor</strong>. In general relativity it is the gravitational field: a minus sign for time and plus signs for space gives the signature (−,+,+,+), and the metric of a black hole, an expanding universe or a wormhole is just a different choice of <i>g</i><sub>μν</sub>.</p>
+			<div class="mt-eq" role="math" aria-label="Definitions">
+				<div><span class="mt-eq__n">Christoffel</span> <span class="mt-eq__f">Γ<sup>k</sup><sub>ij</sub> = ½ g<sup>kl</sup> (∂<sub>i</sub> g<sub>lj</sub> + ∂<sub>j</sub> g<sub>li</sub> − ∂<sub>l</sub> g<sub>ij</sub>)</span></div>
+				<div><span class="mt-eq__n">geodesic</span> <span class="mt-eq__f">d²x<sup>k</sup>/dτ² + Γ<sup>k</sup><sub>ij</sub> (dx<sup>i</sup>/dτ)(dx<sup>j</sup>/dτ) = 0</span></div>
+				<div><span class="mt-eq__n">Riemann</span> <span class="mt-eq__f">R<sup>ρ</sup><sub>σμν</sub> = ∂<sub>μ</sub>Γ<sup>ρ</sup><sub>νσ</sub> − ∂<sub>ν</sub>Γ<sup>ρ</sup><sub>μσ</sub> + Γ<sup>ρ</sup><sub>μλ</sub>Γ<sup>λ</sup><sub>νσ</sub> − Γ<sup>ρ</sup><sub>νλ</sub>Γ<sup>λ</sup><sub>μσ</sub></span></div>
+				<div><span class="mt-eq__n">Einstein</span> <span class="mt-eq__f">G<sub>μν</sub> = R<sub>μν</sub> − ½ R g<sub>μν</sub> = 8πG T<sub>μν</sub>/c⁴ (+ Λ g<sub>μν</sub>)</span></div>
+			</div>
+			<h3>How to read the results</h3>
+			<ul>
+				<li><strong>Christoffel symbols</strong> say how the coordinate grid itself bends. They are <em>not</em> a measure of curvature: flat space in polar coordinates has non-zero ones. Straight Cartesian coordinates give all zeros.</li>
+				<li><strong>The Riemann tensor</strong> is the real curvature. If it is zero everywhere the space is flat, however odd the coordinates look (try “Minkowski in spherical coordinates” and “Rindler”).</li>
+				<li><strong>Ricci tensor and scalar.</strong> A Ricci tensor of zero is a <em>vacuum solution</em> of Einstein's equations: empty space, curved by a mass somewhere else (Schwarzschild, Kasner). A non-zero one needs matter, energy or a cosmological constant (de Sitter, FLRW, Reissner–Nordström).</li>
+				<li><strong>The Kretschmann scalar</strong> is a coordinate-independent measure of curvature. For Schwarzschild it is 48<i>M</i>²/<i>r</i>⁶ (in units where <i>G</i> = <i>c</i> = 1): finite at the horizon, so that is only a coordinate singularity, but infinite at <i>r</i> = 0, a real singularity.</li>
+				<li><strong>The geodesic equations</strong> are the equations of motion of a free particle (or light ray) in that geometry. The Geodesics tab solves them numerically for surfaces.</li>
+			</ul>
+			<h3>Typing your own metric</h3>
+			<p>List the coordinates (for example <code>t, r, theta, phi</code>), type each entry of the symmetric matrix <i>g</i><sub>μν</sub> as an expression (<code>-(1-2*M/r)</code>, <code>r^2*sin(theta)^2</code>, <code>exp(2*H*t)</code>; use <code>^</code> for powers), list any constants like <code>M</code> and tick the symbols you know are positive (it makes simplification faster and cleaner). Functions of the coordinates like <code>sin</code>, <code>cos</code>, <code>exp</code>, <code>sqrt</code>, <code>log</code>, <code>cosh</code> work. Components that are not zero are listed; the rest are zero by symmetry or by calculation.</p>
+			<h3>Limits</h3>
+			<p>The algebra is done by SymPy inside your browser (nothing is uploaded), so a complicated 4-dimensional metric can take a while, and a result is only as simplified as SymPy manages (“Cancel” stops a long run, and partial answers appear as they finish). The Kerr (spinning) black hole is deliberately not included as a preset: its curvature is too heavy for a browser. The geodesic shooter handles two-dimensional metrics with a positive-definite signature only, integrates with a fixed-step Runge-Kutta method (good for drawing, not for research) and does not detect geodesics that run into a coordinate singularity beyond stopping them.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Why does the flat polar-coordinate metric have non-zero Γ?</strong> Because a grid of circles and radial lines is not straight. A geodesic there is still a straight line, but written in polar coordinates it is not a straight line on the coordinate chart.</li>
+				<li><strong>What is the signature?</strong> The signs of the metric's diagonal at a sample point: (−,+,+,+) for relativity.</li>
+				<li><strong>Why is the Schwarzschild Ricci tensor zero but not its Riemann tensor?</strong> Ricci is a contraction of Riemann. Empty space can still be curved (tidal forces); it just has no source there.</li>
+			</ul>
+			<p>Everything runs on your device. <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/light-in-a-medium">Light in a Medium</a> · <a href="/cas-calculator">CAS calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/3d-fluid-simulator"><img class="mes-aside__img mes-aside__img--logo" src="/3d-fluid-simulator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">3D Fluid Simulator: Smoke in a Box</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/impermanent-loss-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/impermanent-loss-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Impermanent Loss Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/metric-tensor">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps.html">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/main_js/cas/cas-client.js?v=1" defer></script><script src="/main_js/cas/cas-ui.js?v=1" defer></script><script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/metric-tensor/js/metric-tensor.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>

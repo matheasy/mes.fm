@@ -35,7 +35,7 @@ CAS_JS = ["/main_js/cas/cas-client.js?v=1", "/main_js/cas/cas-ui.js?v=1"]
 EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/browser'>Extensions</a></li>"
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
-STAGE_CTL = {"fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
+STAGE_CTL = {"fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "metric-tensor", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
              "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock"}
 
 APPS = {
@@ -186,6 +186,12 @@ APPS = {
                                  tag="Bend light. Orbit the dark.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
                                  desc="A free black hole simulator: watch light bend around a Schwarzschild black hole and find the shadow and photon sphere, follow orbits that precess, plunge or sit at the innermost stable orbit, see a ray-traced picture of a disk and lensed stars, and compute the size, tides and temperature of any black hole. Includes the optical analogue: a glass-like medium that bends light the same way.",
                                  js_v="1"),
+    # Metric Tensor Explorer: curvature calculator (Christoffel, Riemann, Ricci, Einstein, Kretschmann, geodesic equations via SymPy in the CAS worker) + a geodesic shooter drawn on surfaces
+    # (engine ops metric / geodesics in main_js/cas/engine.py, tests: tool_apps_src/metric-engine-tests.py). Normal-width page in the tools sidebar collection.
+    "metric-tensor": dict(title="MES Metric Tensor Explorer", page_title="Metric Tensor Calculator: Christoffel, Riemann and Einstein Tensors",
+                          tag="From metric to curvature.", accent="#0f766e", dark="#115e59", tint="#ccfbf1",
+                          desc="Free metric tensor calculator for general relativity: pick Schwarzschild, de Sitter, FLRW, a wormhole or type your own metric and get the Christoffel symbols, geodesic equations, Riemann, Ricci and Einstein tensors and the Kretschmann scalar, plus geodesics drawn on spheres, tori and hyperbolic planes.",
+                          js_v="1", pre_js=CAS_JS, css_extra=["_cas.css"]),
     # Mandelbrot Explorer: Mandelbrot / Burning Ship / Tricorn / Multibrot sets and their Julia sets; worker-pool rendering of smooth escape counts, instant recolouring, Julia preview, orbit overlay,
     # point calculator (lib.js node-tested: tool_apps_src/mandelbrot-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "mandelbrot": dict(title="MES Mandelbrot Explorer", page_title="Mandelbrot Set Explorer: Zoom, Julia Sets and Fractals",

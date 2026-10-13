@@ -1,0 +1,99 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu mt" id="mt">
+		<div class="mt-tabs" role="tablist" aria-label="Metric tensor tools">
+			<button type="button" role="tab" data-tab="compute" aria-selected="true">Curvature calculator</button>
+			<button type="button" role="tab" data-tab="geo" aria-selected="false">Geodesics</button>
+		</div>
+
+		<section data-panel="compute" role="tabpanel">
+			<p class="tu-note mt-lead">The <b>metric tensor</b> <i>g</i><sub>μν</sub> tells you how to measure distances and times in any coordinates. From it, a computer algebra system (SymPy, running in your browser) derives everything about the geometry: how the grid twists (<b>Christoffel symbols</b>), how free particles move (<b>geodesics</b>) and how space-time is curved (<b>Riemann, Ricci, Einstein</b>, and the <b>Kretschmann</b> scalar). Pick a famous metric or type your own.</p>
+			<div class="tu-card mt-card">
+				<div class="mt-top">
+					<label class="mt-pick"><span class="tu-label" id="mt-pre-l">Metric</span><select id="mt-pre" class="tu-select" aria-labelledby="mt-pre-l"></select></label>
+					<label class="mt-pick mt-pick--s"><span class="tu-label" id="mt-co-l">Coordinates (2 to 4, separated by commas)</span><input type="text" id="mt-co" class="tu-input" aria-labelledby="mt-co-l" autocomplete="off" spellcheck="false"></label>
+				</div>
+				<p class="tu-note" id="mt-pre-note"></p>
+				<span class="tu-label">The metric  g<sub>μν</sub>  (symmetric: typing in one corner fills the mirror image)</span>
+				<div class="mt-grid" id="mt-grid" role="group" aria-label="Metric matrix"></div>
+				<div class="mt-top mt-top--b">
+					<label class="mt-pick mt-pick--s"><span class="tu-label" id="mt-pa-l">Constants (not coordinates), e.g. M, Q</span><input type="text" id="mt-pa" class="tu-input" aria-labelledby="mt-pa-l" autocomplete="off" spellcheck="false"></label>
+					<label class="mt-pick mt-pick--s"><span class="tu-label" id="mt-po-l">Symbols that are positive (helps simplify)</span><input type="text" id="mt-po" class="tu-input" aria-labelledby="mt-po-l" autocomplete="off" spellcheck="false"></label>
+				</div>
+				<div class="mt-checks" id="mt-want">
+					<label class="mt-check"><input type="checkbox" value="christoffel" checked> Christoffel symbols</label>
+					<label class="mt-check"><input type="checkbox" value="geodesic" checked> Geodesic equations</label>
+					<label class="mt-check"><input type="checkbox" value="riemann" checked> Riemann</label>
+					<label class="mt-check"><input type="checkbox" value="ricci" checked> Ricci + scalar</label>
+					<label class="mt-check"><input type="checkbox" value="einstein" checked> Einstein</label>
+					<label class="mt-check"><input type="checkbox" value="kretschmann" checked> Kretschmann</label>
+				</div>
+				<div class="mt-checks">
+					<button type="button" class="tu-btn tu-btn--primary" id="mt-run">Compute</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mt-cancel" hidden>Cancel</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mt-link">🔗 Copy link</button>
+					<span class="mt-status" id="mt-status" aria-live="polite"></span>
+				</div>
+				<div class="mt-bar" id="mt-bar" hidden><i id="mt-bari"></i></div>
+			</div>
+			<div id="mt-out" class="mt-out"></div>
+		</section>
+
+		<section data-panel="geo" role="tabpanel" hidden>
+			<p class="tu-note mt-lead">Geodesics are the straightest possible paths on a curved surface: what a particle does when nothing pushes it. Choose a surface (a 2D metric), a starting point and a fan of directions, and the engine integrates the geodesic equations from the metric alone. On the sphere they are great circles, on the hyperbolic plane they are semicircles, on a torus some wind forever. The paths are drawn on the surface itself (the sphere and the torus can be rotated).</p>
+			<div class="mt-wrap" id="mt-wrap"><div class="mt-stage" id="mt-stage">
+				<canvas id="mt-gc" tabindex="0" role="img" aria-label="Geodesics drawn on the chosen surface. Drag to rotate a sphere or torus, or click to choose the starting point on flat charts."></canvas>
+				<div class="mt-badge" id="mt-gbadge"></div>
+			</div>
+			<div class="mt-readouts">
+				<div class="mt-ro"><span>Surface</span><b id="mt-g-n">–</b><small id="mt-g-s"></small></div>
+				<div class="mt-ro"><span>Metric</span><b id="mt-g-m">–</b><small>ds² =</small></div>
+				<div class="mt-ro"><span>Start</span><b id="mt-g-p">–</b><small>in the coordinates of the metric</small></div>
+			</div></div>
+			<div class="tu-card mt-card">
+				<div class="mt-top">
+					<label class="mt-pick"><span class="tu-label" id="mt-gpre-l">Surface</span><select id="mt-gpre" class="tu-select" aria-labelledby="mt-gpre-l"></select></label>
+					<button type="button" class="tu-btn tu-btn--primary" id="mt-grun">Draw the geodesics</button>
+					<span class="mt-status" id="mt-gstatus" aria-live="polite"></span>
+				</div>
+				<p class="tu-note" id="mt-gnote"></p>
+				<div class="mt-g3">
+					<div class="tu-field"><span class="tu-label" id="mt-s1-l">Start: first coordinate <b id="mt-s1-v"></b></span><input type="range" id="mt-s1" step="0.01" aria-labelledby="mt-s1-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mt-s2-l">Start: second coordinate <b id="mt-s2-v"></b></span><input type="range" id="mt-s2" step="0.01" aria-labelledby="mt-s2-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mt-gn-l">Number of geodesics: <b id="mt-gn-v"></b></span><input type="range" id="mt-gn" min="1" max="40" step="1" aria-labelledby="mt-gn-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mt-ga-l">Direction of the first: <b id="mt-ga-v"></b>°</span><input type="range" id="mt-ga" min="0" max="360" step="1" aria-labelledby="mt-ga-l"></div>
+					<div class="tu-field"><span class="tu-label" id="mt-gl-l">Length: <b id="mt-gl-v"></b></span><input type="range" id="mt-gl" min="1" max="40" step="0.5" aria-labelledby="mt-gl-l"></div>
+				</div>
+				<div class="mt-checks"><label class="mt-check"><input type="checkbox" id="mt-gfan" checked> Spread them all round (otherwise a narrow fan)</label><button type="button" class="tu-btn tu-btn--ghost" id="mt-glink">🔗 Copy link</button></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>What the metric tensor is</h2>
+			<p>In flat space the distance between two nearby points is <i>ds</i>² = <i>dx</i>² + <i>dy</i>² (Pythagoras). Use other coordinates, or curve the space, and you need correction factors: <i>ds</i>² = Σ <i>g</i><sub>μν</sub> <i>dx</i><sup>μ</sup> <i>dx</i><sup>ν</sup>. The nine or sixteen numbers <i>g</i><sub>μν</sub> are the <strong>metric tensor</strong>. In general relativity it is the gravitational field: a minus sign for time and plus signs for space gives the signature (−,+,+,+), and the metric of a black hole, an expanding universe or a wormhole is just a different choice of <i>g</i><sub>μν</sub>.</p>
+			<div class="mt-eq" role="math" aria-label="Definitions">
+				<div><span class="mt-eq__n">Christoffel</span> <span class="mt-eq__f">Γ<sup>k</sup><sub>ij</sub> = ½ g<sup>kl</sup> (∂<sub>i</sub> g<sub>lj</sub> + ∂<sub>j</sub> g<sub>li</sub> − ∂<sub>l</sub> g<sub>ij</sub>)</span></div>
+				<div><span class="mt-eq__n">geodesic</span> <span class="mt-eq__f">d²x<sup>k</sup>/dτ² + Γ<sup>k</sup><sub>ij</sub> (dx<sup>i</sup>/dτ)(dx<sup>j</sup>/dτ) = 0</span></div>
+				<div><span class="mt-eq__n">Riemann</span> <span class="mt-eq__f">R<sup>ρ</sup><sub>σμν</sub> = ∂<sub>μ</sub>Γ<sup>ρ</sup><sub>νσ</sub> − ∂<sub>ν</sub>Γ<sup>ρ</sup><sub>μσ</sub> + Γ<sup>ρ</sup><sub>μλ</sub>Γ<sup>λ</sup><sub>νσ</sub> − Γ<sup>ρ</sup><sub>νλ</sub>Γ<sup>λ</sup><sub>μσ</sub></span></div>
+				<div><span class="mt-eq__n">Einstein</span> <span class="mt-eq__f">G<sub>μν</sub> = R<sub>μν</sub> − ½ R g<sub>μν</sub> = 8πG T<sub>μν</sub>/c⁴ (+ Λ g<sub>μν</sub>)</span></div>
+			</div>
+			<h3>How to read the results</h3>
+			<ul>
+				<li><strong>Christoffel symbols</strong> say how the coordinate grid itself bends. They are <em>not</em> a measure of curvature: flat space in polar coordinates has non-zero ones. Straight Cartesian coordinates give all zeros.</li>
+				<li><strong>The Riemann tensor</strong> is the real curvature. If it is zero everywhere the space is flat, however odd the coordinates look (try “Minkowski in spherical coordinates” and “Rindler”).</li>
+				<li><strong>Ricci tensor and scalar.</strong> A Ricci tensor of zero is a <em>vacuum solution</em> of Einstein's equations: empty space, curved by a mass somewhere else (Schwarzschild, Kasner). A non-zero one needs matter, energy or a cosmological constant (de Sitter, FLRW, Reissner–Nordström).</li>
+				<li><strong>The Kretschmann scalar</strong> is a coordinate-independent measure of curvature. For Schwarzschild it is 48<i>M</i>²/<i>r</i>⁶ (in units where <i>G</i> = <i>c</i> = 1): finite at the horizon, so that is only a coordinate singularity, but infinite at <i>r</i> = 0, a real singularity.</li>
+				<li><strong>The geodesic equations</strong> are the equations of motion of a free particle (or light ray) in that geometry. The Geodesics tab solves them numerically for surfaces.</li>
+			</ul>
+			<h3>Typing your own metric</h3>
+			<p>List the coordinates (for example <code>t, r, theta, phi</code>), type each entry of the symmetric matrix <i>g</i><sub>μν</sub> as an expression (<code>-(1-2*M/r)</code>, <code>r^2*sin(theta)^2</code>, <code>exp(2*H*t)</code>; use <code>^</code> for powers), list any constants like <code>M</code> and tick the symbols you know are positive (it makes simplification faster and cleaner). Functions of the coordinates like <code>sin</code>, <code>cos</code>, <code>exp</code>, <code>sqrt</code>, <code>log</code>, <code>cosh</code> work. Components that are not zero are listed; the rest are zero by symmetry or by calculation.</p>
+			<h3>Limits</h3>
+			<p>The algebra is done by SymPy inside your browser (nothing is uploaded), so a complicated 4-dimensional metric can take a while, and a result is only as simplified as SymPy manages (“Cancel” stops a long run, and partial answers appear as they finish). The Kerr (spinning) black hole is deliberately not included as a preset: its curvature is too heavy for a browser. The geodesic shooter handles two-dimensional metrics with a positive-definite signature only, integrates with a fixed-step Runge-Kutta method (good for drawing, not for research) and does not detect geodesics that run into a coordinate singularity beyond stopping them.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Why does the flat polar-coordinate metric have non-zero Γ?</strong> Because a grid of circles and radial lines is not straight. A geodesic there is still a straight line, but written in polar coordinates it is not a straight line on the coordinate chart.</li>
+				<li><strong>What is the signature?</strong> The signs of the metric's diagonal at a sample point: (−,+,+,+) for relativity.</li>
+				<li><strong>Why is the Schwarzschild Ricci tensor zero but not its Riemann tensor?</strong> Ricci is a contraction of Riemann. Empty space can still be curved (tidal forces); it just has no source there.</li>
+			</ul>
+			<p>Everything runs on your device. <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/light-in-a-medium">Light in a Medium</a> · <a href="/cas-calculator">CAS calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+	</div>
