@@ -11,7 +11,7 @@
 (function () {
 	'use strict';
 	if (window.MESCAS) return;
-	var V = '1';
+	var V = '2';
 	var WORKER = '/main_js/cas/cas-worker.js?v=' + V, ENGINE = '/main_js/cas/engine.py?v=' + V;
 	var worker = null, readyP = null, readyRes = null, readyRej = null, st = 'idle', listeners = [], seq = 0, inflight = null;
 	var info = { stage: '', pct: 0, error: '', ms: 0, versions: null, loads: 0 };

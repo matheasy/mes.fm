@@ -16,6 +16,7 @@ import json
 import math
 import random
 import re
+import time
 
 import mpmath
 import sympy as sp
@@ -26,7 +27,7 @@ from sympy.integrals import manualintegrate as MI
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
 from sympy.functions.elementary.hyperbolic import HyperbolicFunction
 
-VERSION = "1"
+VERSION = "2"
 MAX_LEN = 600
 EMIT = None
 
@@ -2261,7 +2262,294 @@ def op_plot(req):
     return {"ok": True, "data": samples(e, x, a, b)}
 
 
-OPS = {"parse": op_parse, "diff": op_diff, "integrate": op_integrate, "solve": op_solve, "cas": op_cas, "plot": op_plot,
+
+# ---------------------------------------------------------------- metric tensor / geometry -----------------------------
+def _msimp(e):
+    """Simplify one component: cheap algebra first, trig only when it is there."""
+    e = sp.sympify(e)
+    if e == 0:
+        return sp.Integer(0)
+    try:
+        c = sp.cancel(sp.together(e))
+    except Exception:
+        c = e
+    if c.has(sp.sin, sp.cos, sp.tan, sp.cot, sp.sinh, sp.cosh, sp.tanh, sp.exp, sp.log, sp.sqrt) or c.has(sp.Pow) and any(not (p.exp.is_Integer) for p in c.atoms(sp.Pow)):
+        try:
+            if c.has(sp.sin, sp.cos, sp.tan, sp.cot):
+                c = sp.trigsimp(sp.expand_trig(c))
+            c = sp.simplify(c)
+        except Exception:
+            pass
+    else:
+        try:
+            c = sp.factor(c)
+        except Exception:
+            pass
+    try:   # 1/tan(x) reads better as cot(x)
+        c = c.replace(lambda x: x.is_Pow and x.exp == -1 and isinstance(x.base, sp.tan), lambda x: sp.cot(x.base.args[0]))
+    except Exception:
+        pass
+    return c
+
+
+def _metric_setup(req):
+    names = [str(c).strip() for c in (req.get("coords") or [])]
+    n = len(names)
+    if n < 2 or n > 4:
+        raise CasError("Use 2, 3 or 4 coordinates (separate them with commas).")
+    if len(set(names)) != n or any(not re.fullmatch(r"[A-Za-z][A-Za-z0-9]{0,11}", c) for c in names):
+        raise CasError("Coordinate names must be different words or letters, like t, r, theta, phi.")
+    params = [str(q).strip() for q in (req.get("params") or []) if str(q).strip()]
+    pos = set(str(q) for q in (req.get("positive") or []))
+    rows = req.get("g")
+    if not (isinstance(rows, list) and len(rows) == n and all(isinstance(r_, list) and len(r_) == n for r_ in rows)):
+        raise CasError("The metric needs %d rows of %d entries." % (n, n))
+    prot = names + params
+    X = [Symbol(c, positive=True) if c in pos else Symbol(c) for c in names]
+    sub = {Symbol(c): X[i] for i, c in enumerate(names) if c in pos}
+    for q in params:
+        if q in pos:
+            sub[Symbol(q)] = Symbol(q, positive=True)
+    g = sp.zeros(n, n)
+    for i in range(n):
+        for j in range(n):
+            t = str(rows[i][j]).strip() or "0"
+            e = parse_expr_text(t, protect=prot)
+            if isinstance(e, sp.MatrixBase) or not isinstance(e, sp.Basic):
+                raise CasError("Entry (%d, %d) is not an expression." % (i + 1, j + 1))
+            g[i, j] = e.subs(sub) if sub else e
+    for i in range(n):
+        for j in range(i + 1, n):
+            if _msimp(g[i, j] - g[j, i]) != 0:
+                raise CasError("A metric must be symmetric: entries (%d, %d) and (%d, %d) differ." % (i + 1, j + 1, j + 1, i + 1))
+    return names, n, X, g, params
+
+
+def _clat(name):
+    return sp.latex(Symbol(name))
+
+
+def _chris(g, ginv, X, n):
+    dg = [[[sp.diff(g[a, b], X[c]) for c in range(n)] for b in range(n)] for a in range(n)]   # dg[a][b][c] = d_c g_ab
+    G = [[[sp.Integer(0)] * n for _ in range(n)] for _ in range(n)]
+    for k in range(n):
+        for i in range(n):
+            for j in range(i, n):
+                t = 0
+                for l in range(n):
+                    if ginv[k, l] != 0:
+                        t += ginv[k, l] * (dg[l][j][i] + dg[l][i][j] - dg[i][j][l])
+                G[k][i][j] = G[k][j][i] = _msimp(t / 2)
+    return G
+
+
+def op_metric(req):
+    names, n, X, g, params = _metric_setup(req)
+    want = set(req.get("want") or ["christoffel", "riemann", "ricci", "einstein", "kretschmann", "geodesic"])
+    lat = [_clat(c) for c in names]
+    sections = []
+
+    def out(sec):
+        sections.append(sec)
+        emit({"ok": True, "partial": True, "sections": list(sections)})
+
+    t0 = time.time()
+    det = _msimp(g.det())
+    if det == 0:
+        raise CasError("This metric is singular (its determinant is 0), so it has no inverse.")
+    diag = all(g[i, j] == 0 for i in range(n) for j in range(n) if i != j)
+    ginv = sp.diag(*[_msimp(1 / g[i, i]) for i in range(n)]) if diag else sp.Matrix(n, n, lambda i, j: _msimp(g.inv(method="LU")[i, j]))
+    terms = []
+    for i in range(n):
+        for j in range(i, n):
+            if g[i, j] != 0:
+                co = g[i, j] * (1 if i == j else 2)
+                body = ("d%s^{2}" % lat[i]) if i == j else ("d%s\\,d%s" % (lat[i], lat[j]))
+                terms.append("%s%s" % ("" if co == 1 else ("-" if co == -1 else ptex(co) + "\\,"), body))
+    ds = " + ".join(terms).replace("+ -", "- ")
+    sign = None
+    try:
+        sample = {}
+        for k_, s_ in enumerate(sorted(g.free_symbols, key=str)):
+            sample[s_] = 1.7 + 0.31 * k_
+        gn = mpmath.matrix([[float(g[i, j].subs(sample)) for j in range(n)] for i in range(n)])
+        ev, _ = mpmath.eigsy(gn)
+        sign = "".join("+" if ev[i] > 0 else "-" for i in range(n))
+        sign = "".join(sorted(sign, key=lambda c: c != "-"))
+    except Exception:
+        pass
+    items = [{"label": r"ds^{2}", "value": ds}, {"label": r"g_{\mu\nu}", "value": tex(g)}, {"label": r"g^{\mu\nu}", "value": tex(ginv)}, {"label": r"\det g", "value": tex(det)}]
+    out({"id": "metric", "title": "The metric", "items": items, "note": "Signature at a sample point: %s (%s)." % (sign, {"++": "a plane or curved surface: distances are real", "+++": "ordinary 3D space", "-+++": "spacetime: one minus for time, three plus for space", "+---": "spacetime with the opposite sign convention", "-+": "1 + 1 dimensional spacetime"}.get(sign, "mixed signs")) if sign else ""})
+
+    G = _chris(g, ginv, X, n)
+    if "christoffel" in want:
+        items = []
+        for k in range(n):
+            for i in range(n):
+                for j in range(i, n):
+                    if G[k][i][j] != 0:
+                        items.append({"label": r"\Gamma^{%s}{}_{%s %s}" % (lat[k], lat[i], lat[j]), "value": tex(G[k][i][j])})
+        out({"id": "christoffel", "title": "Christoffel symbols  Γ^k_ij", "items": items, "note": "Only the non-zero ones (Γ^k_ij = Γ^k_ji, so each pair i ≤ j is listed once). They say how the coordinate grid itself twists and stretches: if every one is 0 the coordinates are straight lines." if items else "All of them are 0: these coordinates are a straight (Cartesian-like) grid."})
+
+    if "geodesic" in want:
+        items = []
+        for k in range(n):
+            val = ""
+            for i in range(n):
+                for j in range(i, n):
+                    if G[k][i][j] != 0:
+                        co = -G[k][i][j] * (1 if i == j else 2)
+                        neg = bool(co.could_extract_minus_sign()) and not co.is_Add
+                        mag = -co if neg else co
+                        body = "%s\\dot{%s}\\,\\dot{%s}" % ("" if mag == 1 else (ptex(mag) + "\\,"), lat[i], lat[j])
+                        val += (" - " if neg else (" + " if val else "")) + body if val else (("-" if neg else "") + body)
+            items.append({"label": r"\ddot{%s}" % lat[k], "value": val or "0"})
+        out({"id": "geodesic", "title": "Geodesic equations", "items": items, "note": "The paths of free particles: \\ddot x^k = −Γ^k_ij \\dot x^i \\dot x^j, where a dot is a derivative with respect to proper time (or an affine parameter for light)."})
+
+    need_curv = want & {"riemann", "ricci", "einstein", "kretschmann", "scalar"}
+    if not need_curv:
+        return {"ok": True, "sections": sections, "ms": int((time.time() - t0) * 1000)}
+    dG = lambda k, i, j, c: sp.diff(G[k][i][j], X[c])   # d_c Gamma^k_ij
+    R = {}
+    for r_ in range(n):
+        for sg in range(n):
+            for m in range(n):
+                for nu in range(m + 1, n):
+                    t = dG(r_, nu, sg, m) - dG(r_, m, sg, nu)
+                    for l in range(n):
+                        t += G[r_][m][l] * G[l][nu][sg] - G[r_][nu][l] * G[l][m][sg]
+                    t = _msimp(t)
+                    if t != 0:
+                        R[(r_, sg, m, nu)] = t
+                        R[(r_, sg, nu, m)] = -t
+    if "riemann" in want:
+        items = []
+        for (r_, sg, m, nu), v in sorted(R.items()):
+            if m < nu:
+                items.append({"label": r"R^{%s}{}_{%s %s %s}" % (lat[r_], lat[sg], lat[m], lat[nu]), "value": tex(v)})
+        out({"id": "riemann", "title": "Riemann curvature tensor  R^ρ_σμν", "items": items[:80], "note": ("Only the non-zero components with μ < ν (it is antisymmetric in μ ν); %d shown%s." % (min(80, len(items)), "" if len(items) <= 80 else " of %d" % len(items))) if items else "All components are 0: this space is flat (at least locally)."})
+    Ric = sp.zeros(n, n)
+    for sg in range(n):
+        for nu in range(n):
+            t = 0
+            for r_ in range(n):
+                t += R.get((r_, sg, r_, nu), 0)
+            Ric[sg, nu] = _msimp(t)
+    Rs = _msimp(sum(ginv[i, j] * Ric[i, j] for i in range(n) for j in range(n)))
+    if want & {"ricci", "einstein"}:
+        items = []
+        for i in range(n):
+            for j in range(i, n):
+                if Ric[i, j] != 0:
+                    items.append({"label": r"R_{%s %s}" % (lat[i], lat[j]), "value": tex(Ric[i, j])})
+        items.append({"label": r"R", "value": tex(Rs)})
+        note = "R_μν = 0 and R = 0: a vacuum solution of Einstein's field equations (empty space, curved only by a source elsewhere)." if all(v == 0 for v in Ric) else ("R_μν ≠ 0: matter, energy or a cosmological constant is present." + (" The scalar curvature R is a constant here." if Rs.is_number else ""))
+        out({"id": "ricci", "title": "Ricci tensor and scalar curvature", "items": items, "note": note})
+    if "einstein" in want:
+        Gm = sp.Matrix(n, n, lambda i, j: _msimp(Ric[i, j] - Rs * g[i, j] / 2))
+        items = []
+        for i in range(n):
+            for j in range(i, n):
+                if Gm[i, j] != 0:
+                    items.append({"label": r"G_{%s %s}" % (lat[i], lat[j]), "value": tex(Gm[i, j])})
+        out({"id": "einstein", "title": "Einstein tensor  G_μν = R_μν − ½ R g_μν", "items": items, "note": "Einstein's equations say G_μν = 8πG T_μν / c⁴ (+ Λ g_μν), so this is the energy and pressure the geometry needs." if items else "G_μν = 0 everywhere: nothing but empty space."})
+    if "kretschmann" in want:
+        # K = R^a_bcd R_a^bcd, using sparse lowered / raised copies
+        Rl = {}
+        for (a, b, c, d), v in R.items():
+            for a2 in range(n):
+                if g[a2, a] != 0:
+                    Rl[(a2, b, c, d)] = Rl.get((a2, b, c, d), 0) + g[a2, a] * v
+        K = 0
+        # raise b, c, d on R_{a b c d}
+        for (a, b, c, d), v in list(Rl.items()):
+            for b2 in range(n):
+                if ginv[b2, b] == 0:
+                    continue
+                for c2 in range(n):
+                    if ginv[c2, c] == 0:
+                        continue
+                    for d2 in range(n):
+                        if ginv[d2, d] == 0:
+                            continue
+                        mixed = R.get((a, b2, c2, d2))
+                        if mixed:
+                            K += mixed * v * ginv[b2, b] * ginv[c2, c] * ginv[d2, d]
+        K = _msimp(K)
+        out({"id": "kretschmann", "title": "Kretschmann scalar  K = R_abcd R^abcd", "items": [{"label": r"K", "value": tex(K)}], "note": "A coordinate-independent measure of curvature. If it blows up somewhere the curvature itself is singular (a true singularity), unlike a coordinate singularity, which only means the chart fails there." + (" It stays finite where the metric components blow up, so that is only a coordinate effect." if False else "")})
+    return {"ok": True, "sections": sections, "ms": int((time.time() - t0) * 1000)}
+
+
+def op_geodesics(req):
+    """Shoot a fan of geodesics across a 2D Riemannian metric from one point and return their paths (in the chart coordinates)."""
+    names, n, X, g, params = _metric_setup(req)
+    if n != 2:
+        raise CasError("Geodesic shooting needs a 2D metric (two coordinates).")
+    vals = {Symbol(k): float(v) for k, v in (req.get("values") or {}).items()}
+    g = g.subs(vals)
+    left = [s_ for s_ in g.free_symbols if s_ not in X and s_ not in [Symbol(c) for c in names]]
+    if left:
+        raise CasError("Give a number for %s (Constants box)." % ", ".join(sorted(str(s_) for s_ in left)))
+    ginv = g.inv()
+    G = _chris(g, ginv.applyfunc(sp.simplify), X, 2)
+    fG = sp.lambdify(X, [[[G[k][i][j] for j in range(2)] for i in range(2)] for k in range(2)], "math")
+    fg = sp.lambdify(X, [[g[0, 0], g[0, 1]], [g[1, 0], g[1, 1]]], "math")
+    start = [float(v) for v in req.get("start", [0, 0])]
+    na = max(1, min(60, int(req.get("n", 12))))
+    steps = max(10, min(4000, int(req.get("steps", 800))))
+    h = float(req.get("h", 0.02))
+    bnd = req.get("bounds") or {}
+    lo = [float((bnd.get("lo") or [-1e9, -1e9])[i]) for i in range(2)]
+    hi = [float((bnd.get("hi") or [1e9, 1e9])[i]) for i in range(2)]
+    a0 = float(req.get("a0", 0.0))
+    spread = float(req.get("spread", 2 * math.pi))
+    try:
+        g0 = fg(*start)
+    except Exception:
+        raise CasError("The metric is not defined at that start point.")
+    if g0[0][0] <= 0 or g0[0][0] * g0[1][1] - g0[0][1] * g0[1][0] <= 0:
+        raise CasError("At that start point the metric is not positive (a geodesic fan needs a Riemannian surface there).")
+
+    def rhs(y):
+        try:
+            Gm = fG(y[0], y[1])
+        except Exception:
+            return None
+        ax = -(Gm[0][0][0] * y[2] * y[2] + 2 * Gm[0][0][1] * y[2] * y[3] + Gm[0][1][1] * y[3] * y[3])
+        ay = -(Gm[1][0][0] * y[2] * y[2] + 2 * Gm[1][0][1] * y[2] * y[3] + Gm[1][1][1] * y[3] * y[3])
+        return [y[2], y[3], ax, ay]
+
+    res = []
+    e1 = [1 / math.sqrt(g0[0][0]), 0.0]
+    t2 = [-g0[0][1] / g0[0][0], 1.0]
+    nn = g0[0][0] * t2[0] * t2[0] + 2 * g0[0][1] * t2[0] * t2[1] + g0[1][1] * t2[1] * t2[1]
+    e2 = [t2[0] / math.sqrt(nn), t2[1] / math.sqrt(nn)]
+    for k in range(na):
+        ang = a0 + (spread * k / na if abs(spread - 2 * math.pi) < 1e-9 else (spread * k / max(1, na - 1) - spread / 2))
+        y = [start[0], start[1], math.cos(ang) * e1[0] + math.sin(ang) * e2[0], math.cos(ang) * e1[1] + math.sin(ang) * e2[1]]
+        pts = [[y[0], y[1]]]
+        ok = True
+        for st in range(steps):
+            k1 = rhs(y)
+            if k1 is None:
+                break
+            k2 = rhs([y[i] + h / 2 * k1[i] for i in range(4)])
+            k3 = k2 and rhs([y[i] + h / 2 * k2[i] for i in range(4)])
+            k4 = k3 and rhs([y[i] + h * k3[i] for i in range(4)])
+            if not (k2 and k3 and k4):
+                break
+            y = [y[i] + h / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) for i in range(4)]
+            if any(math.isnan(v) or math.isinf(v) for v in y):
+                break
+            if not (lo[0] <= y[0] <= hi[0] and lo[1] <= y[1] <= hi[1]):
+                break
+            pts.append([y[0], y[1]])
+        stride = max(1, len(pts) // 500)
+        res.append({"angle": ang, "pts": pts[::stride] + ([pts[-1]] if (len(pts) - 1) % stride else [])})
+    return {"ok": True, "paths": res}
+
+
+OPS = {"parse": op_parse, "diff": op_diff, "integrate": op_integrate, "solve": op_solve, "cas": op_cas, "plot": op_plot, "metric": op_metric, "geodesics": op_geodesics,
        "ping": lambda r: {"ok": True, "version": VERSION, "sympy": sp.__version__}}
 
 
