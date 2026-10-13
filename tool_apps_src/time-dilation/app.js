@@ -86,10 +86,10 @@
 	}
 	function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 	/* the age bars share one scale that grows with the ages: 100, 200, 500, 1000, 2000 ... */
-	var barMax = 100;
+	var barMax = 100, dragMax = 0, MAXY = 1e10;   /* clocks stop at 10 billion years (about the age of the universe) */
 	function niceMax(x) { var m = 100; while (m < x - 1e-9) m *= (m.toString().charAt(0) === "2" ? 2.5 : 2); return Math.round(m); }
-	function ageStr(a) { return a < 1 ? (a * 12).toFixed(1) + " months" : a.toFixed(a < 100 ? 1 : 0) + " years"; }
-	function ownStr(y) { if (y < 1) return R.sig(y * 365.25, 3) + " days"; return y.toFixed(y < 100 ? 2 : 1) + " yr"; }
+	function ageStr(a) { if (a >= 1e6) return R.fmtYears(a); return a < 1 ? (a * 12).toFixed(1) + " months" : a.toFixed(a < 100 ? 1 : 0) + " years"; }
+	function ownStr(y) { if (y >= 1e5) return R.fmtYears(y); if (y < 1) return R.sig(y * 365.25, 3) + " days"; return y.toFixed(y < 100 ? 2 : 1) + " yr"; }
 
 	/* ================= sizing ================= */
 	var cv = $("td-c"), cx = cv.getContext("2d"), stage = $("td-stage");
@@ -118,6 +118,7 @@
 	function stepClocks(dt) {
 		rates = curRates(); var adv = dt * st.ts;
 		if (st.view === "home") { eH += adv; eS += adv * rates[1]; } else { eS += adv; eH += adv * rates[0]; }
+		capYears();
 		bphH += dt * 1.2 * rates[0]; bphS += dt * 1.2 * rates[1]; blinkT += dt;
 		for (var k = 0; k < 2; k++) mols[k].forEach(function (m) { var s = dt * 0.45 * rates[k]; m.x += m.vx * s; m.y += m.vy * s; if (m.x < 0) { m.x = -m.x; m.vx = Math.abs(m.vx); } if (m.x > 1) { m.x = 2 - m.x; m.vx = -Math.abs(m.vx); } if (m.y < 0) { m.y = -m.y; m.vy = Math.abs(m.vy); } if (m.y > 1) { m.y = 2 - m.y; m.vy = -Math.abs(m.vy); } });
 		for (k = 0; k < 2; k++) bubbles[k].forEach(function (b) { b.y -= dt * 0.12 * rates[k]; b.ph += dt * 1.5 * rates[k]; if (b.y < -0.05) { b.y = 1.05; b.x = Math.random(); } });
@@ -127,8 +128,9 @@
 	function panelRects(W, H) { return W < 620 ? [[4, 4, W - 8, H / 2 - 8], [4, H / 2 + 4, W - 8, H / 2 - 8]] : [[4, 4, W / 2 - 8, H - 8], [W / 2 + 4, 4, W / 2 - 8, H - 8]]; }
 	function drawClocks() {
 		if (tab !== "clocks" || !SZ.c) return; var W = SZ.c.w, H = SZ.c.h, c = cx, g = gamma(); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.fillStyle = "#05070d"; c.fillRect(0, 0, W, H);
-		barMax = niceMax(Math.max(st.age + eH, st.age + eS)); var rects = panelRects(W, H - (SZ.cx || 0)), eg = [eH, eS], bph = [bphH, bphS]; bars = [];
+		barMax = dragMax ? dragMax : niceMax(Math.max(st.age + eH, st.age + eS)); var rects = panelRects(W, H - (SZ.cx || 0)), eg = [eH, eS], bph = [bphH, bphS]; bars = [];
 		for (var k = 0; k < 2; k++) panel(c, rects[k], k, eg[k], bph[k], g);
+		if (eH >= MAXY || eS >= MAXY) { var fz = clamp(W * 0.02, 11, 15); c.font = "700 " + fz + "px sans-serif"; c.textAlign = "center"; var msg = "Clocks stopped at 10 billion years (about the age of the universe). Press Restart.", mw = c.measureText(msg).width + 24, my = (H - (SZ.cx || 0)) / 2; c.fillStyle = "rgba(10,13,20,0.88)"; rr(c, W / 2 - mw / 2, my - fz, mw, fz * 2.2, 8); c.fill(); c.fillStyle = "#ffd27a"; c.fillText(msg, W / 2, my + fz * 0.4); }
 	}
 	function panel(c, rc, k, own, bph, g) {
 		var px = rc[0], py = rc[1], pw = rc[2], ph = rc[3], ship = k === 1, rate = rates[k], age = st.age + own, fs = clamp(pw * 0.034, 10, 15), slowed = rate < 0.9995;
@@ -195,19 +197,20 @@
 	}
 	/* ---- drag the life bars: set a person's age directly; the other one follows at the right rate ---- */
 	var bars = [], dragBar = -1, wasPlaying = true;
+	function capYears() { if (!(eH <= MAXY)) eH = MAXY; if (!(eS <= MAXY)) eS = MAXY; if (!(eH >= 0)) eH = 0; if (!(eS >= 0)) eS = 0; if (eH >= MAXY || eS >= MAXY) { /* stop at the cap rather than run off to infinity */ st.play = false; syncPlay(); } }
 	function barAt(e) { var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; for (var k = 0; k < bars.length; k++) { var b = bars[k]; if (b && x >= b.x - 14 && x <= b.x + b.w + 14 && y >= b.y && y <= b.y + b.h) return k; } return -1; }
 	function setAgeFromBar(k, e) {
 		var r = cv.getBoundingClientRect(), b = bars[k]; if (!b) return; var f = clamp((e.clientX - r.left - b.x) / b.w, 0, 1), own = Math.max(0, f * barMax - st.age), g = gamma(), refIsHome = st.view === "home", isRef = (k === 0) === refIsHome;
 		var ref = isRef ? own : own * g;                 /* the reference person's own time; the other has lived ref / gamma */
 		if (refIsHome) { eH = ref; eS = ref / g; } else { eS = ref; eH = ref / g; }
-		updateReadouts(); drawClocks();
+		capYears(); updateReadouts(); drawClocks();
 	}
-	cv.addEventListener("pointerdown", function (e) { var k = barAt(e); if (k < 0) return; dragBar = k; wasPlaying = st.play; st.play = false; try { cv.setPointerCapture(e.pointerId); } catch (x) {} setAgeFromBar(k, e); e.preventDefault(); });
+	cv.addEventListener("pointerdown", function (e) { var k = barAt(e); if (k < 0) return; dragBar = k; dragMax = barMax; wasPlaying = st.play; st.play = false; try { cv.setPointerCapture(e.pointerId); } catch (x) {} setAgeFromBar(k, e); e.preventDefault(); });
 	cv.addEventListener("pointermove", function (e) { if (dragBar >= 0) { setAgeFromBar(dragBar, e); return; } cv.className = barAt(e) >= 0 ? "td-bar" : ""; });
-	function endDrag() { if (dragBar < 0) return; dragBar = -1; st.play = wasPlaying; syncPlay(); }
+	function endDrag() { if (dragBar < 0) return; dragBar = -1; dragMax = 0; st.play = wasPlaying; syncPlay(); }
 	cv.addEventListener("pointerup", endDrag); cv.addEventListener("pointercancel", endDrag);
 	cv.tabIndex = 0;
-	cv.addEventListener("keydown", function (e) { var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return; var g = gamma(); if (st.view === "home") { eH = Math.max(0, eH + d); eS = eH / g; } else { eS = Math.max(0, eS + d); eH = eS / g; } updateReadouts(); drawClocks(); e.preventDefault(); });
+	cv.addEventListener("keydown", function (e) { var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return; var g = gamma(); if (st.view === "home") { eH = Math.max(0, eH + d); eS = eH / g; } else { eS = Math.max(0, eS + d); eH = eS / g; } capYears(); updateReadouts(); drawClocks(); e.preventDefault(); });
 	function syncPlay() { var b = $("td-play"); b.setAttribute("aria-pressed", st.play ? "true" : "false"); b.textContent = st.play ? "❚❚ Pause" : "▶ Play"; }
 
 	/* controls */
