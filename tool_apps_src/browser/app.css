@@ -8,9 +8,11 @@
 #br .br-d { display: block; font-size: 0.9em; color: #666; line-height: 1.35; }
 @media (max-width: 600px) {
 	#br .br-grid { grid-template-columns: 1fr; }
-	#br .br-tile { flex-direction: row; text-align: left; padding: 0.9em; border-radius: 0.4em; }
-	#br .br-img { flex: 0 0 auto; width: 4.2em; height: 4.2em; margin: 0 0.9em 0 0; }
-	#br .br-t { margin-bottom: 0.2em; }
+	/* icon on the left, title above description on the right (a grid: with a flex row the title and the description became two columns side by side) */
+	#br .br-tile { display: grid; grid-template-columns: 4.2em minmax(0, 1fr); column-gap: 0.9em; align-items: center; text-align: left; padding: 0.9em; border-radius: 0.4em; }
+	#br .br-img { grid-row: 1 / span 2; grid-column: 1; width: 4.2em; height: 4.2em; margin: 0; }
+	#br .br-t { grid-column: 2; grid-row: 1; align-self: end; margin-bottom: 0.25em; }
+	#br .br-d { grid-column: 2; grid-row: 2; align-self: start; }
 }
 #br .br-links { margin: 0.4em 0 1em 1.3em; line-height: 1.7; padding: 0; }
 #br .br-sub { margin-left: 1.4em; list-style: circle; }
