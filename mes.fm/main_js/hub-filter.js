@@ -21,6 +21,7 @@
         ".hub-chips{display:flex;flex-wrap:wrap;gap:.45em;margin-top:.7em}" +
         ".hub-chips button{font:inherit;font-size:.85em;cursor:pointer;padding:.4em .9em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#444}" +
         ".hub-chips button:hover{border-color:#277bb6;color:#277bb6}" +
+        "@media (max-width:700px),(pointer:coarse){.hub-chips button{min-height:36px;padding:.45em 1em}}" +
         ".hub-chips button[aria-pressed=true]{background:#277bb6;border-color:#277bb6;color:#fff}" +
         ".hub-cat{margin:0 0 1.6em}" +
         ".hub-cat__title{font-size:1.15em;font-weight:700;margin:0 0 .6em;padding-bottom:.3em;border-bottom:2px solid #dbe9f8;color:#1e2733}" +

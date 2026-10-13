@@ -21,6 +21,7 @@
 		'.mes-grip:hover{opacity:1}' +
 		'@media (max-width:700px){.mes-sbar button[data-s],.mes-sbar .mes-sl{display:none}.mes-sbar button{min-height:36px;padding:0.3em 0.9em}.tu .tu-chip,.tu .tu-tool,.tu .tu-run{min-height:36px}}' +
 		'@media (pointer:coarse){.mes-grip{width:32px;height:32px}}' +
+		'@media (max-width:700px),(pointer:coarse){.tu button:not(.mes-grip),.tu summary{min-height:36px}.tu summary{display:list-item}.tu .xx-chips button,.tu [role=group] button{padding-top:0.35em;padding-bottom:0.35em}}' +   /* phone-sized tap targets for every simulator's own buttons / chips */
 		'html.mes-fill-on{overflow:hidden !important}' +
 		'.mes-fill-bd{position:fixed;inset:0;background:#05070d;z-index:2147482000}' +
 		'.mes-fill{position:fixed !important;left:50%;top:0;transform:translateX(-50%);z-index:2147482500;max-width:none !important;width:var(--mes-fw,100vw) !important;height:100vh;margin:0 !important;border-radius:0 !important;border:0 !important;overflow:auto;display:flex !important;flex-direction:column;justify-content:center}' +

@@ -69,3 +69,9 @@
 	}
 	.td-fig {margin:0.6em 0 0.4em;} .td-fig img {display:block;width:100%;max-width:34em;height:auto;border-radius:0.5em;margin:0 auto;} .td-fig figcaption {font-size:0.82em;color:#667;text-align:center;margin-top:0.4em;}
 	body.dark-mode #td .td-fig figcaption {color:#a0a8b3;}
+	@media (max-width: 700px), (pointer: coarse) {
+		.td-chips button, .td-seg button, .td-run button, #td .tu-table button {min-height:36px;}
+		.td-chips button {padding:0.4em 0.95em;} .td-chips {gap:0.5em;}
+		.td-seg button {padding:0.45em 1em;} .td-run button {padding:0 0.8em;}
+		.td-tabs button {min-height:40px;} .td-check {min-height:32px;} .td-check input {width:1.2em;height:1.2em;}
+	}
