@@ -569,6 +569,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                         <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->                        <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Math Easy Solutions</h1>                                        <p class="page-description">The one stop for video tutorials, funny math memes, useful calculators and all things math.</p>	<div id="main-content">
+		<div class="mini-strip"><span class="mini-strip__label">&#10024; Newest</span><div class="mini-row" data-newest="latest" data-count="3"></div></div>
+		<p class="mini-suggest">Have a suggestion for another calculator or tool? <a href="/contact?subject=New+Calculator+or+Tool+Suggestion&amp;message=Hi%2C%0A%0AIt+would+be+great+if+you+can+make+a...%0A%0AThanks!">Let us know!</a></p>
+
 		<h2 class="header2">What does MES offer?</h2>
 		<p class="sentence">Over the years MES has grown into a big collection of free math resources: step-by-step video tutorials, interactive calculators and tools, brain-teasing puzzles, math memes, mobile apps, and more. Explore it all through the icons below.</p>
 
@@ -635,20 +638,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<h2 class="header2" id="newest-calculators">Newest Calculators</h2>
 		<p class="sentence">The latest free calculators we have built.</p>
-		<div class="icon-grid popular-grid popular-grid--static">
-			<a class="icon-grid__link icon-grid__link--labeled" href="/integral-calculator"><span class="icon-grid__thumb" style="background-image:url('/integral-calculator/img/logo.png')"></span><span class="icon-grid__label">MES Integral Calculator</span></a>
-			<a class="icon-grid__link icon-grid__link--labeled" href="/derivative-calculator"><span class="icon-grid__thumb" style="background-image:url('/derivative-calculator/img/logo.png')"></span><span class="icon-grid__label">MES Derivative Calculator</span></a>
-			<a class="icon-grid__link icon-grid__link--labeled" href="/cas-calculator"><span class="icon-grid__thumb" style="background-image:url('/cas-calculator/img/logo.png')"></span><span class="icon-grid__label">MES CAS Calculator</span></a>
-		</div>
+		<div class="icon-grid popular-grid popular-grid--static" data-newest-tiles="calculators" data-count="3"></div>
 		<p class="popular-note"><a href="/calculators">See all calculators &rarr;</a></p>
 
 		<h2 class="header2" id="newest-tools">Newest Tools</h2>
 		<p class="sentence">The latest free tools, fresh off the bench.</p>
-		<div class="icon-grid popular-grid popular-grid--static">
-			<a class="icon-grid__link icon-grid__link--labeled" href="/typing-test-transcribe"><span class="icon-grid__thumb" style="background-image:url('/typing-test/img/logo.png')"></span><span class="icon-grid__label">MES Transcription Typing Test</span></a>
-			<a class="icon-grid__link icon-grid__link--labeled" href="/typing-test"><span class="icon-grid__thumb" style="background-image:url('/typing-test/img/logo.png')"></span><span class="icon-grid__label">MES Typing Test</span></a>
-			<a class="icon-grid__link icon-grid__link--labeled" href="/search-engines"><span class="icon-grid__thumb" style="background-image:url('/search-engines/img/logo.png')"></span><span class="icon-grid__label">MES Search Engines</span></a>
-		</div>
+		<div class="icon-grid popular-grid popular-grid--static" data-newest-tiles="tools" data-count="3"></div>
 		<p class="popular-note"><a href="/tools">See all tools &rarr;</a></p>
 
 		<h2 class="header2" id="milestones">Milestones</h2>
@@ -804,7 +799,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   });
 })();
 </script>
-<script src="/main_js/display-controls.js?v=1.7" defer></script>
+<script src="/main_js/display-controls.js?v=1.7" defer></script><script src="/main_js/newest.js" defer></script>
 <!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS --></body>
 
 <!-- Mirrored from mes.fm/ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 19 Jun 2026 16:41:28 GMT -->

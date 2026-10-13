@@ -16,7 +16,7 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parent / "mes.fm"
 APPLY = "--apply" in sys.argv
-TAG = '<script src="/main_js/hub-filter.js?v=3" defer></script>'
+TAG = '<script src="/main_js/hub-filter.js?v=4" defer></script><script src="/main_js/newest.js" defer></script>'
 
 # "popular": slugs shown first, in this order, as a duplicate "Popular" section (only while no search / category is active).
 # Four cards on purpose: two columns (601-899px) fill two full rows, and the 4th carries `hub-pop-extra`, which
@@ -89,10 +89,16 @@ def build(text, cfg):
     missing = [s for s in known if s not in cards]
     out, chips, total = [], ['<button type="button" data-c="all" aria-pressed="true">All (%d)</button>' % len(cards)], 0
     pop = [cards[s] for s in cfg.get("popular", []) if s in cards]
+    # thin rows (icon + title pills) instead of full cards: "Newest" is filled from /newest.json by main_js/newest.js,
+    # "Popular" is static (the `popular` list above)
+    out.append('\t\t<section class="hub-cat hub-cat--mini hub-cat--newest" data-cat="newest" id="newest">\n\t\t\t<h2 class="hub-cat__title">New %s</h2>\n'
+               '\t\t\t<div class="mini-row" data-newest="%s" data-count="5"></div>\n\t\t</section>\n' % (cfg["noun"], cfg["noun"]))
     if pop:
         chips.append('<button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (%d)</button>' % len(pop))
-        pop = [(td if i < 3 else td.replace('class="calc-container', 'class="hub-pop-extra calc-container', 1)) for i, td in enumerate(pop)]
-        out.append('\t\t<section class="hub-cat hub-cat--popular" data-cat="popular" id="popular">\n\t\t\t<h2 class="hub-cat__title">&#9733; Popular</h2>\n\t\t<table class="tbl tbl--stack">\n%s\t\t</table>\n\t\t</section>\n' % pairs(pop))
+        pills = "".join('\t\t\t\t<a class="mini" href="%s"><img class="mini__img" src="%s" alt="" width="28" height="28" loading="lazy"><span>%s</span></a>\n'
+                        % (re.search(r'href="([^"]*)"', td).group(1), re.search(r'<img[^>]*src="([^"?]*)', td).group(1), html.escape(html.unescape(re.search(r'calc__text--title">(.*?)</span>', td, re.S).group(1).strip())))
+                        for td in pop)
+        out.append('\t\t<section class="hub-cat hub-cat--mini hub-cat--popular" data-cat="popular" id="popular">\n\t\t\t<h2 class="hub-cat__title">&#9733; Popular</h2>\n\t\t\t<div class="mini-row">\n%s\t\t\t</div>\n\t\t</section>\n' % pills)
     for cid, name, slugs in cats:
         tds = sorted([cards[s] for s in slugs if s in cards], key=title_of)
         if not tds:
@@ -105,6 +111,7 @@ def build(text, cfg):
           '\t\t\t<div class="hub-chips" id="hub-chips">%s</div>\n\t\t</div>\n') % (cfg["noun"], cfg["noun"], "".join(chips))
     tail = '\t\t<p id="hub-empty" hidden>Nothing matches that search &mdash; try a shorter word.</p>\n'
     new = text[:region_start] + ui + "".join(out) + tail + text[region_end:]
+    new = re.sub(r'<script src="/main_js/hub-filter\.js[^"]*" defer></script>(<script src="/main_js/newest\.js" defer></script>)?', TAG, new)
     if "hub-filter.js" not in new:
         new = new.replace('<script src="/main_js/display-controls.js', TAG + '<script src="/main_js/display-controls.js', 1) if False else new
         anchor = re.search(r'<script src="/main_js/display-controls\.js[^"]*" defer></script>', new)
@@ -121,7 +128,10 @@ def main():
                                             "changed" if new != old else "no change"))
         if APPLY and new != old:
             p.write_text(new, encoding="utf-8")
-    if not APPLY:
+    if APPLY:
+        import subprocess
+        subprocess.run([sys.executable, str(Path(__file__).resolve().parent / "build_newest.py"), "--apply"])
+    else:
         print("(dry run -- pass --apply)")
 
 

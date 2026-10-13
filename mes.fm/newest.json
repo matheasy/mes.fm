@@ -1,0 +1,129 @@
+{
+ "generated": "2026-10-13",
+ "calculators": [
+  {
+   "href": "/faster-than-light-shadow-simulator",
+   "title": "Faster-Than-Light Shadow Simulator",
+   "icon": "/img/faster-than-light-shadow-simulator-logo.png",
+   "desc": "Swing a torch beam or move a finger and watch the spot or shadow on the Moon outrun light, with true light-travel delay. See why no message rides on it.",
+   "added": "2026-10-10",
+   "kind": "calculator"
+  },
+  {
+   "href": "/michelson-morley-experiment",
+   "title": "Michelson-Morley Experiment Simulator",
+   "icon": "/img/michelson-morley-experiment-logo.png",
+   "desc": "Turn an interferometer through an aether wind, watch the fringes shift, compare the 1881 and 1887 experiments and calculate the expected shift.",
+   "added": "2026-10-09",
+   "kind": "calculator"
+  },
+  {
+   "href": "/atomic-clock-simulator",
+   "title": "Atomic Clock Simulator",
+   "icon": "/img/atomic-clock-simulator-logo.png",
+   "desc": "How far off is your clock? Work out drift per day or year from a frequency error, and see how atomic clocks compare.",
+   "added": "2026-10-09",
+   "kind": "calculator"
+  },
+  {
+   "href": "/sum-of-integers-calculator",
+   "title": "Sum of Integers Calculator",
+   "icon": "/img/sum-of-integers-calculator-logo.png",
+   "desc": "Add 1 to n, any range, squares, cubes, odd or even numbers, multiples, arithmetic and geometric series, or your own formula.",
+   "added": "2026-10-09",
+   "kind": "calculator"
+  },
+  {
+   "href": "/photoelectric-effect-simulator",
+   "title": "Photoelectric Effect Simulator",
+   "icon": "/img/photoelectric-effect-simulator-logo.png",
+   "desc": "Shine light on a metal and watch electrons escape. Find the stopping voltage and photon energy, and measure Planck's constant.",
+   "added": "2026-10-09",
+   "kind": "calculator"
+  },
+  {
+   "href": "/reynolds-number-calculator",
+   "title": "Reynolds Number Calculator",
+   "icon": "/img/reynolds-number-calculator-logo.png",
+   "desc": "Laminar or turbulent? Work out Re for any fluid, speed and size, plus pipe friction, drag and vortex shedding.",
+   "added": "2026-10-09",
+   "kind": "calculator"
+  }
+ ],
+ "tools": [
+  {
+   "href": "/buddhabrot",
+   "title": "Buddhabrot Explorer",
+   "icon": "/img/buddhabrot-logo.png",
+   "desc": "Watch the Buddhabrot fill in live: millions of random Mandelbrot orbits piled into a glowing figure. Try the three-colour Nebulabrot and the Anti-Buddhabrot.",
+   "added": "2026-10-13",
+   "kind": "tool"
+  },
+  {
+   "href": "/electromagnetic-fields-simulator",
+   "title": "Electromagnetic Fields Simulator",
+   "icon": "/img/electromagnetic-fields-simulator-logo.png",
+   "desc": "Place charges and wires and see field lines, Gauss's law and Ampère's law, steer a particle through E and B fields, and watch Maxwell's equations make waves reflect, refract and diffract.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/double-pendulum",
+   "title": "Double Pendulum",
+   "icon": "/img/double-pendulum-logo.png",
+   "desc": "Drag two swinging arms into place and watch chaos: a fan of copies that drift apart, how fast errors grow, and a fractal map of how long each start takes to flip.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/orbit-simulator",
+   "title": "Orbit Simulator",
+   "icon": "/img/orbit-simulator-logo.png",
+   "desc": "Launch planets by dragging, watch real gravity with many bodies, see Kepler's laws and equal areas, try Halley's comet, the Moon and a gravity assist, and compute orbit speeds and transfers.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/metric-tensor",
+   "title": "Metric Tensor Explorer",
+   "icon": "/img/metric-tensor-logo.png",
+   "desc": "Type or pick a metric (Schwarzschild, de Sitter, a wormhole...) and get the Christoffel symbols, Riemann, Ricci and Einstein tensors, plus geodesics drawn on curved surfaces.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/mandelbrot",
+   "title": "Mandelbrot Explorer",
+   "icon": "/img/mandelbrot-logo.png",
+   "desc": "Zoom into the Mandelbrot set, see the Julia set of any point, trace orbits and try the Burning Ship, Tricorn and Multibrot fractals.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  }
+ ],
+ "latest": [
+  {
+   "href": "/buddhabrot",
+   "title": "Buddhabrot Explorer",
+   "icon": "/img/buddhabrot-logo.png",
+   "desc": "Watch the Buddhabrot fill in live: millions of random Mandelbrot orbits piled into a glowing figure. Try the three-colour Nebulabrot and the Anti-Buddhabrot.",
+   "added": "2026-10-13",
+   "kind": "tool"
+  },
+  {
+   "href": "/electromagnetic-fields-simulator",
+   "title": "Electromagnetic Fields Simulator",
+   "icon": "/img/electromagnetic-fields-simulator-logo.png",
+   "desc": "Place charges and wires and see field lines, Gauss's law and Ampère's law, steer a particle through E and B fields, and watch Maxwell's equations make waves reflect, refract and diffract.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/double-pendulum",
+   "title": "Double Pendulum",
+   "icon": "/img/double-pendulum-logo.png",
+   "desc": "Drag two swinging arms into place and watch chaos: a fan of copies that drift apart, how fast errors grow, and a fractal map of how long each start takes to flip.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  }
+ ]
+}

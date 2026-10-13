@@ -49,6 +49,12 @@
             if (ok) any = true;
         });
         sections.forEach(function (s) {
+            if (s.classList.contains("hub-cat--mini")) {   /* thin Popular / Newest rows: no cards inside */
+                var c = s.getAttribute("data-cat");
+                s.hidden = !(c === "popular" ? (cat === "popular" || (cat === "all" && !words.length)) : (cat === "all" && !words.length));
+                if (!s.hidden) any = true;
+                return;
+            }
             var visible = Array.prototype.some.call(s.querySelectorAll("td.calc-container"), function (td) { return !td.hidden; });
             s.hidden = !visible;
         });
