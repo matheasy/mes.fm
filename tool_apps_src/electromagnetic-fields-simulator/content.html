@@ -1,0 +1,220 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu em" id="em">
+		<div class="em-tabs" role="tablist" aria-label="Electromagnetism tools">
+			<button type="button" role="tab" data-tab="es" aria-selected="true">Electric charges</button>
+			<button type="button" role="tab" data-tab="ms" aria-selected="false">Currents</button>
+			<button type="button" role="tab" data-tab="pt" aria-selected="false">Charged particle</button>
+			<button type="button" role="tab" data-tab="wv" aria-selected="false">Waves</button>
+			<button type="button" role="tab" data-tab="pw" aria-selected="false">Plane wave</button>
+		</div>
+
+		<!-- ===== electric charges ===== -->
+		<section data-panel="es" role="tabpanel">
+			<p class="tu-note em-lead">Place charges and see the electric field they make: <b>field lines</b> leave positive charges and end on negative ones, <b>equipotentials</b> are the lines of equal voltage. Drag a charge to move it. Hover anywhere to read the field and the voltage. Draw a <b>Gauss sphere</b> to check Gauss's law by adding up the field on its surface.</p>
+			<div class="em-toolrow" id="em-es-tools" role="group" aria-label="Tool">
+				<button type="button" data-t="pos" aria-pressed="true">＋ Add positive</button><button type="button" data-t="neg" aria-pressed="false">− Add negative</button><button type="button" data-t="move" aria-pressed="false">✋ Move / select</button><button type="button" data-t="test" aria-pressed="false">● Drop a test charge</button>
+			</div>
+			<div class="em-wrap"><div class="em-stage" id="em-es-stage">
+				<canvas id="em-es-c" tabindex="0" role="img" aria-label="Electric field of the placed charges. Click to add a charge, drag a charge to move it."></canvas>
+				<div class="em-badge" id="em-es-badge"></div>
+				<div class="em-run"><button type="button" id="em-es-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="em-es-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-es-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="em-readouts">
+				<div class="em-ro"><span>Pointer</span><b id="em-es-p">–</b><small>position in metres</small></div>
+				<div class="em-ro"><span>Electric field there</span><b id="em-es-e">–</b><small id="em-es-es"></small></div>
+				<div class="em-ro"><span>Voltage there</span><b id="em-es-v">–</b><small id="em-es-vs"></small></div>
+				<div class="em-ro"><span id="em-es-gl">Gauss's law</span><b id="em-es-g" class="em-gauss">–</b><small id="em-es-gs"></small></div>
+			</div></div>
+			<div class="tu-card em-controls">
+				<div class="em-chips" id="em-es-pre" role="group" aria-label="Examples"></div>
+				<div class="em-grid">
+					<div class="tu-field"><span class="tu-label" id="em-es-q-l">New charge: <b id="em-es-q-v"></b></span><input type="range" id="em-es-q" min="-1" max="1.3" step="0.02" aria-labelledby="em-es-q-l"><span class="tu-note">Size of the next charge you add (microcoulombs).</span></div>
+					<div class="tu-field"><span class="tu-label" id="em-es-w-l">Picture width: <b id="em-es-w-v"></b></span><input type="range" id="em-es-w" min="-1" max="1" step="0.02" aria-labelledby="em-es-w-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-es-n-l">Field lines per charge: <b id="em-es-n-v"></b></span><input type="range" id="em-es-n" min="4" max="40" step="1" aria-labelledby="em-es-n-l"></div>
+				</div>
+				<div class="em-checks">
+					<label class="em-check"><input type="checkbox" id="em-es-lines" checked> Field lines</label>
+					<label class="em-check"><input type="checkbox" id="em-es-arrows"> Field arrows</label>
+					<label class="em-check"><input type="checkbox" id="em-es-eq"> Equipotentials</label>
+					<label class="em-check"><input type="checkbox" id="em-es-gauss"> Gauss surface</label>
+				</div>
+				<div class="em-grid em-grid--small">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Colour the plane by</span><select id="em-es-col" class="tu-select" aria-label="Colour map"><option value="none">Nothing</option><option value="v">Voltage</option><option value="e">Field strength</option></select></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Kind of charge</span><select id="em-es-mode" class="tu-select" aria-label="Charge kind"><option value="3d">Point charges (1/r², real 3D)</option><option value="2d">Long line charges (1/r, 2D)</option></select></div>
+				</div>
+				<div class="em-sel" id="em-es-sel" hidden>
+					<span>Selected charge: <b id="em-es-sel-q"></b></span>
+					<label class="em-check">its size <input type="range" id="em-es-selq" min="-10" max="10" step="0.1" style="width:10em"> <span class="tu-note">μC</span></label>
+					<span id="em-es-sel-f"></span>
+					<button type="button" class="tu-btn tu-btn--ghost" id="em-es-del">Remove it</button>
+				</div>
+				<div class="em-sel">
+					<span class="em-note2" id="em-es-tc-n">Test charge: 1 nC, 1 g. Click with the test-charge tool to drop one at rest and watch it move.</span>
+					<button type="button" class="tu-btn tu-btn--ghost" id="em-es-tclear">Clear test charges</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="em-es-clear">Remove all charges</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="em-es-link">🔗 Copy link</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- ===== currents ===== -->
+		<section data-panel="ms" role="tabpanel" hidden>
+			<p class="tu-note em-lead">Long straight wires that run straight through the picture: <b>⊙</b> carries current out of the screen, <b>⊗</b> into it. Each makes a magnetic field that circles round it. Add wires, drag them, and use the <b>Ampère loop</b> to check Ampère's law. Parallel currents attract, opposite ones repel (the arrow on the selected wire).</p>
+			<div class="em-toolrow" id="em-ms-tools" role="group" aria-label="Tool">
+				<button type="button" data-t="out" aria-pressed="true">⊙ Add wire (out)</button><button type="button" data-t="in" aria-pressed="false">⊗ Add wire (in)</button><button type="button" data-t="move" aria-pressed="false">✋ Move / select</button>
+			</div>
+			<div class="em-wrap"><div class="em-stage" id="em-ms-stage">
+				<canvas id="em-ms-c" tabindex="0" role="img" aria-label="Magnetic field of current-carrying wires."></canvas>
+				<div class="em-badge" id="em-ms-badge"></div>
+				<div class="em-run"><button type="button" id="em-ms-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-ms-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="em-readouts">
+				<div class="em-ro"><span>Pointer</span><b id="em-ms-p">–</b><small>position in centimetres</small></div>
+				<div class="em-ro"><span>Magnetic field there</span><b id="em-ms-b">–</b><small id="em-ms-bs"></small></div>
+				<div class="em-ro"><span>Ampère's law</span><b id="em-ms-a" class="em-gauss">–</b><small id="em-ms-as"></small></div>
+				<div class="em-ro"><span>Force on selected wire</span><b id="em-ms-f">–</b><small id="em-ms-fs">per metre of wire</small></div>
+			</div></div>
+			<div class="tu-card em-controls">
+				<div class="em-chips" id="em-ms-pre" role="group" aria-label="Examples"></div>
+				<div class="em-grid">
+					<div class="tu-field"><span class="tu-label" id="em-ms-i-l">Current of a new wire: <b id="em-ms-i-v"></b></span><input type="range" id="em-ms-i" min="-1" max="2" step="0.02" aria-labelledby="em-ms-i-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-ms-w-l">Picture width: <b id="em-ms-w-v"></b></span><input type="range" id="em-ms-w" min="-1" max="1" step="0.02" aria-labelledby="em-ms-w-l"></div>
+				</div>
+				<div class="em-checks">
+					<label class="em-check"><input type="checkbox" id="em-ms-lines" checked> Field lines</label>
+					<label class="em-check"><input type="checkbox" id="em-ms-arrows"> Field arrows</label>
+					<label class="em-check"><input type="checkbox" id="em-ms-heat"> Colour by field strength</label>
+					<label class="em-check"><input type="checkbox" id="em-ms-loop"> Ampère loop</label>
+				</div>
+				<div class="em-sel" id="em-ms-sel" hidden>
+					<span>Selected wire: <b id="em-ms-sel-i"></b></span>
+					<label class="em-check">its current <input type="range" id="em-ms-seli" min="-100" max="100" step="1" style="width:10em"> <span class="tu-note">A</span></label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="em-ms-del">Remove it</button>
+				</div>
+				<div class="em-sel"><button type="button" class="tu-btn tu-btn--ghost" id="em-ms-clear">Remove all wires</button><button type="button" class="tu-btn tu-btn--ghost" id="em-ms-link">🔗 Copy link</button></div>
+			</div>
+		</section>
+
+		<!-- ===== charged particle ===== -->
+		<section data-panel="pt" role="tabpanel" hidden>
+			<p class="tu-note em-lead">A charged particle in a uniform magnetic field <b>B</b> (pointing out of the screen, dots) and electric field <b>E</b>. The magnetic force bends it into circles, an electric field across it makes the circles drift sideways. Try the examples: the cyclotron, the E×B drift, the velocity selector and the mass spectrometer.</p>
+			<div class="em-wrap"><div class="em-stage" id="em-pt-stage">
+				<canvas id="em-pt-c" tabindex="0" role="img" aria-label="Path of a charged particle in electric and magnetic fields."></canvas>
+				<div class="em-badge" id="em-pt-badge"></div>
+				<div class="em-run"><button type="button" id="em-pt-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="em-pt-reset">↺ Restart</button><button type="button" id="em-pt-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-pt-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="em-readouts">
+				<div class="em-ro"><span>Circle radius</span><b id="em-pt-r">–</b><small id="em-pt-rs"></small></div>
+				<div class="em-ro"><span>Time for one circle</span><b id="em-pt-T">–</b><small id="em-pt-Ts"></small></div>
+				<div class="em-ro"><span>Speed / energy</span><b id="em-pt-v">–</b><small id="em-pt-vs"></small></div>
+				<div class="em-ro"><span>Sideways drift</span><b id="em-pt-d">–</b><small id="em-pt-ds"></small></div>
+			</div></div>
+			<div class="tu-card em-controls">
+				<div class="em-chips" id="em-pt-pre" role="group" aria-label="Examples"></div>
+				<p class="tu-note" id="em-pt-note"></p>
+				<div class="em-grid">
+					<div class="tu-field"><span class="tu-label" id="em-pt-B-l">Magnetic field B: <b id="em-pt-B-v"></b></span><input type="range" id="em-pt-B" min="-4" max="1" step="0.02" aria-labelledby="em-pt-B-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-pt-E-l">Electric field E (sideways): <b id="em-pt-E-v"></b></span><input type="range" id="em-pt-E" min="-1" max="1" step="0.01" aria-labelledby="em-pt-E-l"><span class="tu-note">Positive pushes up the screen; the maximum is 1 MV/m.</span></div>
+					<div class="tu-field"><span class="tu-label" id="em-pt-v-l">Starting speed: <b id="em-pt-vv"></b></span><input type="range" id="em-pt-vs-in" min="3" max="8.46" step="0.02" aria-labelledby="em-pt-v-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-pt-a-l">Direction: <b id="em-pt-a-v"></b>°</span><input type="range" id="em-pt-a" min="-180" max="180" step="1" aria-labelledby="em-pt-a-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-pt-sp-l">Speed of the animation: <b id="em-pt-sp-v"></b></span><input type="range" id="em-pt-sp" min="-1.5" max="1" step="0.05" aria-labelledby="em-pt-sp-l"></div>
+				</div>
+				<div class="em-grid em-grid--small">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Particle</span><select id="em-pt-sp-sel" class="tu-select" aria-label="Particle"><option value="proton">Proton</option><option value="electron">Electron</option><option value="alpha">Alpha particle (He²⁺)</option><option value="muon">Muon (μ⁻)</option><option value="c12">Carbon-12 ion (+1)</option><option value="c13">Carbon-13 ion (+1)</option><option value="c14">Carbon-14 ion (+1)</option></select></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Mechanics</span><select id="em-pt-rel" class="tu-select" aria-label="Relativity"><option value="auto">Relativistic when fast (auto)</option><option value="no">Newtonian always</option><option value="yes">Relativistic always</option></select></div>
+				</div>
+				<div class="em-checks"><label class="em-check"><input type="checkbox" id="em-pt-follow"> Camera follows the particle</label><label class="em-check"><input type="checkbox" id="em-pt-fields" checked> Show the fields</label><button type="button" class="tu-btn tu-btn--ghost" id="em-pt-link">🔗 Copy link</button></div>
+			</div>
+		</section>
+
+		<!-- ===== waves ===== -->
+		<section data-panel="wv" role="tabpanel" hidden>
+			<p class="tu-note em-lead">Maxwell's equations solved live on a grid (the electric field points out of the screen: red = up, blue = down). Waves reflect from <b>metal</b>, slow down and bend in <b>glass</b>, spread through <b>slits</b> and ring in a <b>cavity</b>. Pick a scene, or paint your own materials and place sources.</p>
+			<div class="em-toolrow" id="em-wv-tools" role="group" aria-label="Tool">
+				<button type="button" data-t="glass" aria-pressed="true">▨ Glass</button><button type="button" data-t="metal" aria-pressed="false">▮ Metal</button><button type="button" data-t="absorb" aria-pressed="false">▒ Absorber</button><button type="button" data-t="erase" aria-pressed="false">⌫ Erase</button><button type="button" data-t="src" aria-pressed="false">✦ Place a source</button><button type="button" data-t="probe" aria-pressed="false">⌖ Probe</button>
+			</div>
+			<div class="em-wrap"><div class="em-stage" id="em-wv-stage">
+				<canvas id="em-wv-c" tabindex="0" role="img" aria-label="Simulated electromagnetic wave. Paint materials with the tools above."></canvas>
+				<div class="em-badge" id="em-wv-badge"></div>
+				<div class="em-run"><button type="button" id="em-wv-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="em-wv-reset" title="Clear the waves">↺ Restart</button><button type="button" id="em-wv-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-wv-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="em-scope"><canvas id="em-wv-sc" role="img" aria-label="Electric field at the probe against time."></canvas></div>
+			<div class="em-readouts">
+				<div class="em-ro"><span>Time</span><b id="em-wv-t">–</b><small id="em-wv-ts"></small></div>
+				<div class="em-ro"><span>Wave</span><b id="em-wv-f">–</b><small id="em-wv-fs"></small></div>
+				<div class="em-ro"><span>Strongest field</span><b id="em-wv-m">–</b><small>relative to the source</small></div>
+				<div class="em-ro"><span>Probe</span><b id="em-wv-pr">–</b><small id="em-wv-prs">⌖ tool, then click</small></div>
+			</div></div>
+			<div class="tu-card em-controls">
+				<div class="em-chips" id="em-wv-pre" role="group" aria-label="Scenes"></div>
+				<p class="tu-note" id="em-wv-note"></p>
+				<div class="em-grid">
+					<div class="tu-field"><span class="tu-label" id="em-wv-l-l">Wavelength: <b id="em-wv-l-v"></b> cells</span><input type="range" id="em-wv-l" min="8" max="40" step="1" aria-labelledby="em-wv-l-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-wv-e-l">Glass: refractive index <b id="em-wv-e-v"></b></span><input type="range" id="em-wv-e" min="1.1" max="4" step="0.05" aria-labelledby="em-wv-e-l"><span class="tu-note">The wave is slowed to c/n; its dielectric constant is n².</span></div>
+					<div class="tu-field"><span class="tu-label" id="em-wv-b-l">Brush size: <b id="em-wv-b-v"></b></span><input type="range" id="em-wv-b" min="1" max="14" step="1" aria-labelledby="em-wv-b-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-wv-s-l">Speed: <b id="em-wv-s-v"></b></span><input type="range" id="em-wv-s" min="1" max="8" step="1" aria-labelledby="em-wv-s-l"></div>
+				</div>
+				<div class="em-grid em-grid--small">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Show</span><select id="em-wv-view" class="tu-select" aria-label="What to show"><option value="ez">The electric field</option><option value="avg">Average brightness (intensity)</option></select></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">New source</span><select id="em-wv-stype" class="tu-select" aria-label="Source type"><option value="point">Point (antenna)</option><option value="line">Plane wave (a line)</option></select></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Source emits</span><select id="em-wv-pulse" class="tu-select" aria-label="Pulse"><option value="0">Continuously</option><option value="3">A short pulse</option></select></div>
+					<div class="tu-field tu-field--sm"><span class="tu-label">Scale (1 wavelength =)</span><select id="em-wv-scale" class="tu-select" aria-label="Scale"><option value="3">3 m (radio, 100 MHz)</option><option value="0.122" selected>12.2 cm (Wi-Fi, 2.45 GHz)</option><option value="0.00001">10 μm (infrared)</option><option value="5.5e-7">550 nm (green light)</option></select></div>
+				</div>
+				<div class="em-checks"><label class="em-check"><input type="checkbox" id="em-wv-arrows"> Energy flow (Poynting) arrows</label><label class="em-check"><input type="checkbox" id="em-wv-mat" checked> Outline the materials</label><button type="button" class="tu-btn tu-btn--ghost" id="em-wv-clearm">Clear the materials</button><button type="button" class="tu-btn tu-btn--ghost" id="em-wv-clears">Remove the sources</button></div>
+			</div>
+		</section>
+
+		<!-- ===== plane wave ===== -->
+		<section data-panel="pw" role="tabpanel" hidden>
+			<p class="tu-note em-lead">What an electromagnetic wave is: electric (<b style="color:#ef4444">red</b>) and magnetic (<b style="color:#3b82f6">blue</b>) fields that oscillate at right angles to each other and to the direction the wave travels, in step, with <i>B</i> = <i>E</i>/<i>c</i>. Pick a kind of wave, a polarisation, and drag to rotate the view.</p>
+			<div class="em-wrap"><div class="em-stage" id="em-pw-stage">
+				<canvas id="em-pw-c" tabindex="0" role="img" aria-label="Three-dimensional picture of an electromagnetic plane wave with its electric and magnetic fields."></canvas>
+				<div class="em-badge" id="em-pw-badge">drag to rotate</div>
+				<div class="em-run"><button type="button" id="em-pw-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="em-pw-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-pw-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+			</div>
+			<div class="em-readouts">
+				<div class="em-ro"><span>Kind of wave</span><b id="em-pw-k">–</b><small id="em-pw-ks"></small></div>
+				<div class="em-ro"><span>Frequency</span><b id="em-pw-f">–</b><small id="em-pw-fs"></small></div>
+				<div class="em-ro"><span>Magnetic field strength</span><b id="em-pw-b">–</b><small>B = E / c</small></div>
+				<div class="em-ro"><span>Intensity / photon energy</span><b id="em-pw-i">–</b><small id="em-pw-is"></small></div>
+			</div></div>
+			<div class="tu-card em-controls">
+				<div class="em-chips" id="em-pw-pre" role="group" aria-label="Kinds of wave"></div>
+				<div class="em-grid">
+					<div class="tu-field"><span class="tu-label" id="em-pw-l-l">Wavelength: <b id="em-pw-l-v"></b></span><input type="range" id="em-pw-l" min="-10" max="3" step="0.01" aria-labelledby="em-pw-l-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-pw-e-l">Electric field amplitude: <b id="em-pw-e-v"></b></span><input type="range" id="em-pw-e" min="-2" max="6" step="0.05" aria-labelledby="em-pw-e-l"></div>
+					<div class="tu-field"><span class="tu-label" id="em-pw-a-l">Polarisation angle: <b id="em-pw-a-v"></b>°</span><input type="range" id="em-pw-a" min="0" max="180" step="1" aria-labelledby="em-pw-a-l"></div>
+				</div>
+				<div class="em-grid em-grid--small">
+					<div class="tu-field tu-field--sm"><span class="tu-label">Polarisation</span><select id="em-pw-pol" class="tu-select" aria-label="Polarisation"><option value="lin">Linear</option><option value="circR">Circular (right-handed)</option><option value="circL">Circular (left-handed)</option><option value="ell">Elliptical</option></select></div>
+				</div>
+				<div class="em-checks"><label class="em-check"><input type="checkbox" id="em-pw-b-on" checked> Magnetic field</label><label class="em-check"><input type="checkbox" id="em-pw-e-on" checked> Electric field</label><label class="em-check"><input type="checkbox" id="em-pw-tip"> Draw the path of the tip</label></div>
+				<p class="tu-note">The wave is shown frozen-slow: a real visible light wave oscillates 500 trillion times a second.</p>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Electricity, magnetism and light in one place</h2>
+			<p>Four equations describe all of classical electromagnetism. <strong>Gauss's law</strong> says electric field lines start on positive charge and end on negative charge. <strong>Gauss's law for magnetism</strong> says magnetic field lines never start or end: they close in loops. <strong>Faraday's law</strong> says a changing magnetic field makes an electric field, and <strong>Ampère–Maxwell</strong> says currents and changing electric fields make a magnetic field. Together they predict waves that travel at 299,792,458 m/s: light.</p>
+			<div class="em-eq" role="math" aria-label="Maxwell's equations">
+				<div><span class="em-eq__n">Gauss</span> <span class="em-eq__f mes-tex">\(\displaystyle \oint \mathbf E\cdot d\mathbf A = \dfrac{Q_\text{enc}}{\varepsilon_0}\)</span></div>
+				<div><span class="em-eq__n">no monopoles</span> <span class="em-eq__f mes-tex">\(\displaystyle \oint \mathbf B\cdot d\mathbf A = 0\)</span></div>
+				<div><span class="em-eq__n">Faraday</span> <span class="em-eq__f mes-tex">\(\displaystyle \nabla\times\mathbf E = -\dfrac{\partial \mathbf B}{\partial t}\)</span></div>
+				<div><span class="em-eq__n">Ampère–Maxwell</span> <span class="em-eq__f mes-tex">\(\displaystyle \nabla\times\mathbf B = \mu_0\mathbf J + \mu_0\varepsilon_0\dfrac{\partial \mathbf E}{\partial t}\)</span></div>
+				<div><span class="em-eq__n">Lorentz force</span> <span class="em-eq__f mes-tex">\(\displaystyle \mathbf F = q\,(\mathbf E + \mathbf v\times\mathbf B)\)</span></div>
+				<div><span class="em-eq__n">speed of light</span> <span class="em-eq__f mes-tex">\(\displaystyle c = \dfrac{1}{\sqrt{\mu_0\varepsilon_0}}\)</span></div>
+			</div>
+			<h3>What each tab shows</h3>
+			<ul>
+				<li><strong>Electric charges.</strong> Coulomb's law adds up the field of every charge. The field lines are drawn by following the field direction from the positive charges; the closer together they are, the stronger the field. Equipotentials cross field lines at right angles. The Gauss surface adds up <i>E</i>·<i>A</i> over a sphere around the charges with numerical integration and compares it with <i>Q</i>/ε₀: they agree whatever the shape of the charge cloud inside, and charges outside add nothing. Switch to “long line charges” to see the 2D version, where the field falls as 1/<i>r</i> and the surface is a circle.</li>
+				<li><strong>Currents.</strong> Each straight wire makes a field μ₀<i>I</i>/(2π<i>r</i>) circling round it. The field lines are drawn as contours of the vector potential, which is exactly what field lines are. Ampère's law says the loop integral of <b>B</b> equals μ₀ times the current inside; the loop shows it. Try the solenoid (the field inside is uniform, outside it nearly cancels) and the coaxial cable (no field outside at all). The force between two wires is how the ampere is defined: 1 A in each, 1 m apart, makes 2×10⁻⁷ N per metre.</li>
+				<li><strong>Charged particle.</strong> The Lorentz force makes a charge in a magnetic field go in a circle of radius <i>r</i> = <i>mv</i>/(<i>qB</i>) with a period 2π<i>m</i>/(<i>qB</i>) that does not depend on its speed: that is how a cyclotron works. Add an electric field across it and the circles drift sideways at <i>E</i>/<i>B</i> whatever the charge or mass. Where <i>v</i> = <i>E</i>/<i>B</i> the forces cancel: a velocity selector. Different masses make different circles: a mass spectrometer. At high speed the relativistic mass makes the circles bigger (switch Mechanics between Newtonian and relativistic to compare).</li>
+				<li><strong>Waves.</strong> A two-dimensional finite-difference time-domain (FDTD, Yee) solution of Maxwell's equations with the electric field out of the screen. Glass slows the wave to <i>c</i>/<i>n</i> and bends it (Snell's law); a metal surface forces the field to zero so the wave reflects with a sign flip; a lossy absorber turns the wave into heat; the box with metal walls is a resonant cavity that only rings at certain frequencies; two slits make an interference pattern.</li>
+				<li><strong>Plane wave.</strong> The textbook picture of an electromagnetic wave in three dimensions, for any wavelength from radio waves to gamma rays, with linear, circular and elliptical polarisation. The numbers (frequency, field strength, intensity, photon energy) are exact for the settings.</li>
+			</ul>
+			<h3>Accuracy and limits</h3>
+			<p>The electrostatic and magnetostatic fields are exact formulas (checked against Gauss's law, Ampère's law and E = −∇V in the tests). Particle paths use the Boris integrator, which conserves the energy of a particle in a magnetic field to rounding error, with a relativistic option. The wave solver is second-order accurate: waves with fewer than about 10 cells per wavelength travel a few per cent too slowly, and the absorbing edges reflect about 1% (see the tests). It is a 2D, single-polarisation model, so it does not show magnetic-field direction or 3D effects such as Brewster's angle. Everything runs on your device and nothing is uploaded.</p>
+			<p><a href="/light-in-a-medium">Light in a Medium</a> · <a href="/michelson-morley-experiment">Michelson–Morley</a> · <a href="/photoelectric-effect-simulator">Photoelectric Effect</a> · <a href="/tools">More MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

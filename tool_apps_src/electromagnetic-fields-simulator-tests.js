@@ -1,5 +1,5 @@
-/* node tool_apps_src/electromagnetic-fields-tests.js */
-const M = require("./electromagnetic-fields/lib.js");
+/* node tool_apps_src/electromagnetic-fields-simulator-tests.js */
+const M = require("./electromagnetic-fields-simulator/lib.js");
 let pass = 0, fail = 0;
 function ok(c, m) { if (c) pass++; else { fail++; console.log("FAIL:", m); } }
 function near(a, b, tol, m) { ok(Math.abs(a - b) <= tol, m + " (got " + a + ", want " + b + " +-" + tol + ")"); }

@@ -5,7 +5,7 @@
 (function () {
 	'use strict';
 	if (window.MESStage) return;
-	var PREFIX = ['fl', 'lm', 'bh', 'mb', 'mt', 'or', 'dp', 'pe', 'ss', 'ac', 'mm', 'ftl'];
+	var PREFIX = ['fl', 'lm', 'bh', 'mb', 'mt', 'or', 'dp', 'em', 'pe', 'ss', 'ac', 'mm', 'ftl'];
 	var KEY = 'mes-stage:' + location.pathname;
 	var SIZES = [['S', 'Small', 640, 380], ['M', 'Medium', 900, 600], ['L', 'Large', 0, 0]];   // [id, name, max width px (0 = the whole column), max stage height px (0 = none)]: a square scenario gets a narrower box so it is not a giant square
 	function read() { try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { return {}; } }

@@ -48,26 +48,30 @@
 		});
 		return lines;
 	}
-	/* marching squares: segments [x1, y1, x2, y2, ...] of fn(x, y) = level on a regular grid over box */
-	function contour(fn, box, nx, ny, level) {
+	/* marching squares: for each level, segments [x1, y1, x2, y2, ...] of fn(x, y) = level on a regular grid over box (the grid is sampled once) */
+	function contours(fn, box, nx, ny, levels) {
 		var xs = box[0], ys = box[1], dx = (box[2] - box[0]) / nx, dy = (box[3] - box[1]) / ny, F = new Float64Array((nx + 1) * (ny + 1)), i, j, out = [];
 		for (j = 0; j <= ny; j++) for (i = 0; i <= nx; i++) F[j * (nx + 1) + i] = fn(xs + i * dx, ys + j * dy);
-		function lerp(a, b, fa, fb) { var t = (level - fa) / (fb - fa); return a + t * (b - a); }
-		for (j = 0; j < ny; j++) for (i = 0; i < nx; i++) {
-			var f00 = F[j * (nx + 1) + i], f10 = F[j * (nx + 1) + i + 1], f01 = F[(j + 1) * (nx + 1) + i], f11 = F[(j + 1) * (nx + 1) + i + 1];
-			var idx = (f00 > level ? 1 : 0) | (f10 > level ? 2 : 0) | (f11 > level ? 4 : 0) | (f01 > level ? 8 : 0); if (idx === 0 || idx === 15) continue;
-			var x0 = xs + i * dx, x1 = x0 + dx, y0 = ys + j * dy, y1 = y0 + dy, e = [];
-			/* edge crossings: 0 = bottom (00-10), 1 = right (10-11), 2 = top (01-11), 3 = left (00-01) */
-			var pb = [lerp(x0, x1, f00, f10), y0], pr = [x1, lerp(y0, y1, f10, f11)], pt = [lerp(x0, x1, f01, f11), y1], pl = [x0, lerp(y0, y1, f00, f01)];
-			switch (idx) {
-				case 1: case 14: e = [pl, pb]; break; case 2: case 13: e = [pb, pr]; break; case 3: case 12: e = [pl, pr]; break; case 4: case 11: e = [pr, pt]; break;
-				case 6: case 9: e = [pb, pt]; break; case 7: case 8: e = [pl, pt]; break;
-				case 5: e = [pl, pt, pb, pr]; break; case 10: e = [pl, pb, pt, pr]; break;
+		levels.forEach(function (level) {
+			var seg = [];
+			function lerp(a, b, fa, fb) { var t = (level - fa) / (fb - fa); return a + t * (b - a); }
+			for (j = 0; j < ny; j++) for (i = 0; i < nx; i++) {
+				var f00 = F[j * (nx + 1) + i], f10 = F[j * (nx + 1) + i + 1], f01 = F[(j + 1) * (nx + 1) + i], f11 = F[(j + 1) * (nx + 1) + i + 1];
+				var idx = (f00 > level ? 1 : 0) | (f10 > level ? 2 : 0) | (f11 > level ? 4 : 0) | (f01 > level ? 8 : 0); if (idx === 0 || idx === 15) continue;
+				var x0 = xs + i * dx, x1 = x0 + dx, y0 = ys + j * dy, y1 = y0 + dy, e = [];
+				var pb = [lerp(x0, x1, f00, f10), y0], pr = [x1, lerp(y0, y1, f10, f11)], pt = [lerp(x0, x1, f01, f11), y1], pl = [x0, lerp(y0, y1, f00, f01)];
+				switch (idx) {
+					case 1: case 14: e = [pl, pb]; break; case 2: case 13: e = [pb, pr]; break; case 3: case 12: e = [pl, pr]; break; case 4: case 11: e = [pr, pt]; break;
+					case 6: case 9: e = [pb, pt]; break; case 7: case 8: e = [pl, pt]; break;
+					case 5: e = [pl, pt, pb, pr]; break; case 10: e = [pl, pb, pt, pr]; break;
+				}
+				for (var k = 0; k < e.length; k += 2) seg.push(e[k][0], e[k][1], e[k + 1][0], e[k + 1][1]);
 			}
-			for (var k = 0; k < e.length; k += 2) out.push(e[k][0], e[k][1], e[k + 1][0], e[k + 1][1]);
-		}
+			out.push(seg);
+		});
 		return out;
 	}
+	function contour(fn, box, nx, ny, level) { return contours(fn, box, nx, ny, [level])[0]; }
 	/* flux through a sphere (3d) or a circle per unit length (2d), by quadrature; also the enclosed charge / eps0 */
 	function gauss(ch, cx, cy, R, mode) {
 		var flux = 0, i, j, nq = 0, c;
@@ -154,7 +158,7 @@
 	/* wavelength (cells) -> angular frequency per time unit for the grid (c = 1) */
 	function omegaFor(lambdaCells) { return TAU / lambdaCells; }
 
-	var api = { K: K, EPS0: EPS0, MU0: MU0, C: C, QE: QE, ME: ME, MP: MP, AMU: AMU, fieldAt: fieldAt, potentialAt: potentialAt, forceOn: forceOn, traceLine: traceLine, fieldLines: fieldLines, contour: contour, gauss: gauss, stepFree: stepFree,
+	var api = { K: K, EPS0: EPS0, MU0: MU0, C: C, QE: QE, ME: ME, MP: MP, AMU: AMU, fieldAt: fieldAt, potentialAt: potentialAt, forceOn: forceOn, traceLine: traceLine, fieldLines: fieldLines, contour: contour, contours: contours, gauss: gauss, stepFree: stepFree,
 		wireB: wireB, wireA: wireA, ampere: ampere, wireForce: wireForce, borisStep: borisStep, speedOf: speedOf, makeParticle: makeParticle, cyclotron: cyclotron, Yee: Yee, omegaFor: omegaFor };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESEM = api;
 })(typeof window !== "undefined" ? window : this);

@@ -1,0 +1,67 @@
+	/* electromagnetic fields: dark stages; their colours are custom properties / literals so the derived dark theme leaves them alone. */
+	.tu [hidden] {display:none !important;}
+	.em {--em-bg:#05070d;--em-line:#2a3040;--em-text:#e8ecf5;--em-dim:#9aa5bb;}
+	.em-tabs {display:flex;flex-wrap:wrap;gap:0.3em;margin-bottom:0.8em;border-bottom:2px solid #d5dbe3;}
+	.em-tabs button {cursor:pointer;font:inherit;font-weight:600;padding:0.5em 1em;border:0;border-radius:0.5em 0.5em 0 0;background:transparent;color:#445;border-bottom:3px solid transparent;margin-bottom:-2px;}
+	.em-tabs button:hover {background:#eef1f5;}
+	.em-tabs button[aria-selected="true"] {color:var(--accent);border-bottom-color:var(--accent);background:#f4f6f9;}
+	.em-lead {margin:0 0 0.7em;font-size:0.95em;}
+	.em-wrap {border-radius:0.6em;overflow:hidden;border:1px solid var(--em-line);background:var(--em-bg);}
+	.em-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
+	.em-stage {position:relative;margin:0 auto;max-width:100%;background:var(--em-bg);}
+	.em-stage canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;cursor:crosshair;}
+	#em-ic {cursor:default;}
+	.em-badge {position:absolute;left:0.7em;top:0.6em;font-size:0.78em;color:var(--em-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;}
+	.em-badge:empty {display:none;}
+	.em-run, .em-tools {position:absolute;display:flex;gap:0.25em;right:0.6em;top:0.6em;}
+	.em-run button, .em-tools button {cursor:pointer;border:1px solid var(--em-line);background:rgba(10,13,20,0.78);color:var(--em-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font:inherit;font-size:0.85em;}
+	.em-run button:hover, .em-toolrow button:hover {border-color:var(--accent);color:#fff;}
+	.em-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:0.5em;padding:0.6em;background:#0e1118;border-top:1px solid var(--em-line);}
+	.em-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
+	.em-ro span {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--em-dim);}
+	.em-ro b {font-size:1.25em;color:var(--em-text);font-variant-numeric:tabular-nums;line-height:1.15;}
+	.em-ro small {font-size:0.72em;color:var(--em-dim);line-height:1.3;}
+	.em-controls {margin-top:0.9em;}
+	.em-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.9em 1.4em;}
+	.em-grid--small {margin-top:0.9em;grid-template-columns:repeat(auto-fit,minmax(11em,1fr));}
+	.em-controls input[type=range] {width:100%;accent-color:var(--accent);}
+	.em-checks {display:flex;flex-wrap:wrap;gap:0.5em 1.2em;align-items:center;margin-top:0.9em;}
+	.em-check {display:inline-flex;align-items:center;gap:0.4em;cursor:pointer;font-size:0.92em;}
+	.em-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 0.9em;}
+	.em-chips:empty {display:none;}
+	.em-chips button {cursor:pointer;font:inherit;font-size:0.85em;padding:0.3em 0.8em;border-radius:1em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223;}
+	.em-chips button:hover {border-color:var(--accent);}
+	.em-mass {display:flex;gap:0.4em;align-items:center;flex-wrap:wrap;}
+	.em-mass input {flex:1 1 7em;min-width:0;}
+	.em-unit {font-size:0.9em;color:#556;}
+	.em-tables {display:grid;grid-template-columns:repeat(auto-fit,minmax(20em,1fr));gap:0.9em;margin-top:0.9em;}
+	.em-tables .tu-card {margin:0;}
+	.em-h {margin:0 0 0.4em;font-size:1.05em;}
+	#em .tu-table td {white-space:normal;vertical-align:top;}
+	#em .tu-table td:first-child {width:60%;}
+	#em .tu-table td:last-child {text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;}
+	#em .tu-table small {display:block;font-weight:400;color:#667;}
+	.em-eq {background:#f4f6f9;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.8em 1em;margin:0.8em 0;font-size:1.05em;line-height:1.9;overflow-x:auto;}
+	.em-eq__n {display:inline-block;min-width:8.5em;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.em-eq__f {font-family:"Cambria Math","STIX Two Math",Georgia,serif;white-space:nowrap;}
+	body.dark-mode #em .em-eq {background:#262626;border-color:#3a3a3a;} body.dark-mode #em .em-eq__n {color:#a0a8b3;}
+	body.dark-mode #em .em-tabs {border-bottom-color:#3a3f48;} body.dark-mode #em .em-tabs button {color:#c9ced6;} body.dark-mode #em .em-tabs button:hover {background:#2a2d33;} body.dark-mode #em .em-tabs button[aria-selected="true"] {background:#23262b;color:#f0a0c4;border-bottom-color:#f0a0c4;}
+	body.dark-mode #em .em-chips button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;}
+	body.dark-mode #em .tu-table small, body.dark-mode #em .em-unit {color:#a0a8b3;}
+	@media (max-width: 640px) {
+		.em-tabs button {padding:0.45em 0.7em;font-size:0.92em;} .em-badge {font-size:0.7em;}
+	}
+	/* electromagnetic fields additions */
+	.em-stage canvas {cursor:crosshair;}
+	.em-stage.is-grab canvas {cursor:grabbing;}
+	.em-toolrow {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 0.8em;}
+	.em-toolrow button {cursor:pointer;font:inherit;font-size:0.88em;padding:0.35em 0.9em;border-radius:0.4em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223;}
+	.em-toolrow button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.em-toolrow button:hover {border-color:var(--accent);}
+	.em-scope {border-top:1px solid var(--em-line);background:#080b12;} .em-scope canvas {display:block;width:100%;height:90px;}
+	.em-pw {display:block;width:100%;height:auto;}
+	.em-sel {display:flex;flex-wrap:wrap;gap:0.5em 1.2em;align-items:center;margin-top:0.7em;}
+	.em-note2 {font-size:0.88em;color:#556;margin:0.3em 0 0;}
+	.em-gauss {font-variant-numeric:tabular-nums;}
+	body.dark-mode #em .em-toolrow button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} body.dark-mode #em .em-toolrow button[aria-pressed="true"] {background:var(--accent);color:#fff;border-color:var(--accent);} body.dark-mode #em .em-note2 {color:#a0a8b3;}
+	@media (max-width:640px) {.em-tabs button {padding:0.4em 0.55em;font-size:0.88em;}}
