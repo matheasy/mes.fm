@@ -294,7 +294,7 @@
 	}
 	function setSpeedLabel() {
 		var sp = preset.speed * Math.pow(10, ui.mult), tu = units.T === "years" ? "year" : units.T === "days" ? "day" : "time unit";
-		$("or-sp").value = ui.mult; $("or-sp-v").textContent = sig(sp, 2) + " " + (sp === 1 ? tu : tu + "s") + " per second";
+		$("or-sp").value = ui.mult; $("or-sp-v").textContent = sig(sp, 2) + " " + (sp === 1 ? tu : tu + "s") + " per second"; $("or-spd-v").textContent = sig(sp, 2) + " " + (units.tunit || "units") + "/s";
 	}
 	function timeText(t) {
 		if (units.T === "years") return t < 1 ? sig(t * 365.25, 3) + " days" : sig(t, 4) + " years";
@@ -457,7 +457,7 @@
 		view.px = w[0] - (p[0] - W / 2) / view.S - origin.x; view.py = w[1] + (p[1] - H / 2) / view.S - origin.y;
 	}, { passive: false });
 	cv.addEventListener("dblclick", function () { fitView(); });
-	cv.addEventListener("keydown", function (e) { if (e.key === " ") { e.preventDefault(); togglePlay(); } else if (e.key === "Delete" || e.key === "Backspace") removeSel(); else if (e.key === "f" || e.key === "F") fitView(); });
+	cv.addEventListener("keydown", function (e) { if (e.key === " ") { e.preventDefault(); togglePlay(); } else if (e.key === "Delete" || e.key === "Backspace") removeSel(); else if (e.key === "f" || e.key === "F") fitView(); else if (e.key === "[") nudgeSpeed(-0.1); else if (e.key === "]") nudgeSpeed(0.1); });
 
 	/* ----- readouts and table ----- */
 	function updateReadouts(force) {
@@ -494,6 +494,8 @@
 	$("or-full").onclick = function () { var w = stage.parentNode; if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not available here"); }); };
 	document.addEventListener("fullscreenchange", function () { setTimeout(onResize, 60); });
 	$("or-sp").oninput = function () { ui.mult = +this.value; setSpeedLabel(); sset({ mult: ui.mult }); };
+	function nudgeSpeed(d) { ui.mult = Math.max(-1.6, Math.min(1.6, Math.round((ui.mult + d) * 50) / 50)); setSpeedLabel(); sset({ mult: ui.mult }); }
+	$("or-slow").onclick = function () { nudgeSpeed(-0.1); }; $("or-fast").onclick = function () { nudgeSpeed(0.1); };
 	$("or-ms").oninput = function () { ui.mass = +this.value; massLabel(); sset({ mass: ui.mass }); };
 	$("or-tr").oninput = function () { ui.trailN = +this.value; $("or-tr-v").textContent = TRAIL_NAME[ui.trailN]; if (!ui.trailN) trails = {}; sset({ trailN: ui.trailN }); };
 	[["or-o-trail", "trail"], ["or-o-vel", "vel"], ["or-o-ell", "ell"], ["or-o-area", "area"], ["or-o-lab", "lab"], ["or-o-merge", "merge"]].forEach(function (p) {

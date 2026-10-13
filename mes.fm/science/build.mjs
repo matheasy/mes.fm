@@ -155,6 +155,15 @@ const PAGES = [
     tileLabel: "Black Hole Simulator",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/orbit-simulator-icon.jpg (the user's Grok tile art).
+    slug: "orbit-simulator",
+    section: "tools",
+    href: "/orbit-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Orbit Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/metric-tensor-icon.jpg (the user's Grok tile art).
     slug: "metric-tensor",
     section: "tools",

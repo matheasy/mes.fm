@@ -370,6 +370,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #or .or-bodies tr.is-sel td {background:#2a3140;}
 	body.dark-mode #or .or-res > div {background:#262626;border-color:#3a3a3a;} body.dark-mode #or .or-res span, body.dark-mode #or .or-res small {color:#a0a8b3;}
 	body.dark-mode #or .or-err {color:#ff9b8f;}
+	.or-spd {position:absolute;left:0.6em;bottom:0.6em;display:flex;align-items:center;gap:0.25em;background:rgba(10,13,20,0.78);border:1px solid var(--or-line);border-radius:0.4em;padding:0 0.2em;color:var(--or-text);font-size:0.85em;}
+	.or-spd button {cursor:pointer;border:0;background:transparent;color:var(--or-text);font:inherit;font-size:1.15em;min-width:1.9em;min-height:2em;border-radius:0.3em;}
+	.or-spd button:hover {color:#fff;background:rgba(255,255,255,0.12);}
+	.or-spd span {min-width:6.2em;text-align:center;font-variant-numeric:tabular-nums;}
 
 
 	@media print {
@@ -464,6 +468,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .or-res span{color:#9a9aa2}
 	body.dark-mode .or-res small{color:#9a9aa2}
 	body.dark-mode .or-err{color:#e87973}
+	body.dark-mode .or-spd button:hover{background:rgba(26,26,26,0.12)}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -729,6 +734,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<canvas id="or-c" tabindex="0" role="img" aria-label="Top view of bodies orbiting under gravity, with trails. Drag from an empty spot to launch a new body."></canvas>
 				<div class="or-badge" id="or-badge"></div>
 				<div class="or-run"><button type="button" id="or-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="or-reset" title="Start this system again">↺ Restart</button><button type="button" id="or-fit" title="Zoom to show everything">⤢ Fit</button><button type="button" id="or-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="or-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="or-spd" role="group" aria-label="Speed of time"><button type="button" id="or-slow" title="Slower (key [)" aria-label="Slower">−</button><span id="or-spd-v">–</span><button type="button" id="or-fast" title="Faster (key ])" aria-label="Faster">+</button></div>
 			</div>
 			<div class="or-readouts">
 				<div class="or-ro"><span>Time</span><b id="or-r-t">–</b><small id="or-r-ts"></small></div>
@@ -887,7 +893,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/orbit-simulator/js/orbit-simulator.js?v=1" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/orbit-simulator/js/orbit-simulator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

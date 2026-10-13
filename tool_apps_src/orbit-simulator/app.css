@@ -76,3 +76,7 @@
 	body.dark-mode #or .or-bodies tr.is-sel td {background:#2a3140;}
 	body.dark-mode #or .or-res > div {background:#262626;border-color:#3a3a3a;} body.dark-mode #or .or-res span, body.dark-mode #or .or-res small {color:#a0a8b3;}
 	body.dark-mode #or .or-err {color:#ff9b8f;}
+	.or-spd {position:absolute;left:0.6em;bottom:0.6em;display:flex;align-items:center;gap:0.25em;background:rgba(10,13,20,0.78);border:1px solid var(--or-line);border-radius:0.4em;padding:0 0.2em;color:var(--or-text);font-size:0.85em;}
+	.or-spd button {cursor:pointer;border:0;background:transparent;color:var(--or-text);font:inherit;font-size:1.15em;min-width:1.9em;min-height:2em;border-radius:0.3em;}
+	.or-spd button:hover {color:#fff;background:rgba(255,255,255,0.12);}
+	.or-spd span {min-width:6.2em;text-align:center;font-variant-numeric:tabular-nums;}

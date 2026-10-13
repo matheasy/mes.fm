@@ -191,7 +191,7 @@ APPS = {
     "orbit-simulator": dict(title="MES Orbit Simulator", page_title="Orbit Simulator: Planets, Gravity and Kepler's Laws",
                             tag="Launch a planet. Watch gravity work.", accent="#9a3412", dark="#7c2d12", tint="#ffedd5",
                             desc="A free orbit and gravity simulator: launch planets and comets by dragging, watch the inner planets, Halley's comet, Jupiter's Trojans, the Moon, a gravity assist and the figure-eight three-body orbit, see Kepler's laws and equal areas live, and compute orbit speeds, periods and Hohmann transfers.",
-                            js_v="1"),
+                            js_v="2"),
     # Metric Tensor Explorer: curvature calculator (Christoffel, Riemann, Ricci, Einstein, Kretschmann, geodesic equations via SymPy in the CAS worker) + a geodesic shooter drawn on surfaces
     # (engine ops metric / geodesics in main_js/cas/engine.py, tests: tool_apps_src/metric-engine-tests.py). Normal-width page in the tools sidebar collection.
     "metric-tensor": dict(title="MES Metric Tensor Explorer", page_title="Metric Tensor Calculator: Christoffel, Riemann and Einstein Tensors",
