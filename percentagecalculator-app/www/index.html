@@ -271,8 +271,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.pc-collapsed .input-row {display:none;}
 	.pc-collapsed .pc-move {top:calc(50% - 0.5em);}
 	.pc-collapsed .pc-move {flex-direction:row;}
-	.pc-toolbar {display:flex;justify-content:flex-end;gap:1.2em;margin:0.6em 0 0.4em 0;}
-	.pc-link {border:0;background:none;padding:0.2em 0;color:#1479c7;font:inherit;font-size:0.9em;cursor:pointer;text-decoration:underline;}
+	.pc-toolbar {display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0.15em 1.2em;margin:0.6em 0 0.4em 0;}   /* wraps onto a second line on a phone instead of running off the left edge */
+	.pc-link {border:0;background:none;padding:0.2em 0;color:#1479c7;font:inherit;font-size:0.9em;cursor:pointer;text-decoration:underline;white-space:nowrap;}
 	body.dark-mode .pc-summary {background-color:#1f1f1f;border-color:#3a3a3a;color:#eeeeee;}
 
 	.table-cell {display: table-cell;}
