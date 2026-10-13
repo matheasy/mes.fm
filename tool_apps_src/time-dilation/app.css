@@ -75,3 +75,15 @@
 		.td-seg button {padding:0.45em 1em;} .td-run button {padding:0 0.8em;}
 		.td-tabs button {min-height:40px;} .td-check {min-height:32px;} .td-check input {width:1.2em;height:1.2em;}
 	}
+	/* controls drawn right on the picture: ship speed + how fast time passes */
+	.td-ctl {position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 1.2em;padding:0.5em 0.8em;background:#0a0e18;border-top:1px solid var(--td-line);color:var(--td-text);font-size:0.85em;}
+	.td-ctl__speed {display:flex;align-items:center;gap:0.7em;flex:1 1 17em;min-width:0;margin:0;}
+	.td-ctl__speed span {white-space:nowrap;color:var(--td-dim);} .td-ctl__speed b {color:var(--td-text);font-variant-numeric:tabular-nums;}
+	.td-ctl__speed input {flex:1 1 6em;min-width:0;width:100%;accent-color:var(--accent);}
+	.td-ctl__rate {display:flex;align-items:center;flex-wrap:wrap;gap:0.3em;}
+	.td-ctl__rate span {color:var(--td-dim);margin-right:0.2em;}
+	.td-ctl__rate button {cursor:pointer;font:inherit;font-size:0.95em;padding:0.25em 0.7em;border-radius:1em;border:1px solid #39425a;background:#151a28;color:var(--td-text);}
+	.td-ctl__rate button:hover {border-color:var(--accent);}
+	.td-ctl__rate button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	#td-c.td-bar {cursor:ew-resize;}
+	@media (max-width: 700px), (pointer: coarse) {.td-ctl__rate button {min-height:34px;padding:0.3em 0.8em;}.td-ctl input[type=range] {min-height:28px;}}

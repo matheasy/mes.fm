@@ -93,13 +93,14 @@
 	var lcv = $("td-lc"), lcx = lcv.getContext("2d"), lstage = $("td-lstage");
 	var tcv = $("td-tc"), tcx = tcv.getContext("2d"), tstage = $("td-tstage");
 	var dpr = 1, SZ = {};
-	function sizeStage(stg, c2d, canvas, aspect, key) {
-		var wrap = stg.parentNode, w = wrap.clientWidth || 640, h = Math.round(w / aspect(w)); dpr = Math.min(2, window.devicePixelRatio || 1);
-		stg.style.width = w + "px"; stg.style.height = h + "px"; var cw = Math.round(w * dpr), ch = Math.round(h * dpr); if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
+	function sizeStage(stg, c2d, canvas, aspect, key, extraFn) {
+		var wrap = stg.parentNode, w = wrap.clientWidth || 640; dpr = Math.min(2, window.devicePixelRatio || 1);
+		stg.style.width = w + "px"; var extra = extraFn ? extraFn(w) : 0, h = Math.round(w / aspect(w)) + extra; SZ[key + "x"] = extra;
+		stg.style.height = h + "px"; var cw = Math.round(w * dpr), ch = Math.round(h * dpr); if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
 		SZ[key] = { w: w, h: h };
 	}
 	function onResize() {
-		if (tab === "clocks") { sizeStage(stage, cx, cv, function (w) { return w < 620 ? 0.78 : 1.72; }, "c"); drawClocks(); }
+		if (tab === "clocks") { sizeStage(stage, cx, cv, function (w) { return w < 620 ? 0.78 : 1.72; }, "c", function () { return $("td-ctl").offsetHeight || 48; }); drawClocks(); }
 		else if (tab === "light") { sizeStage(lstage, lcx, lcv, function (w) { return w < 620 ? 1 : 2.1; }, "l"); drawLight(); }
 		else if (tab === "trip") { sizeStage(tstage, tcx, tcv, function (w) { return w < 700 ? 0.8 : 1.9; }, "t"); drawTrip(); }
 	}
@@ -123,7 +124,7 @@
 	function panelRects(W, H) { return W < 620 ? [[4, 4, W - 8, H / 2 - 8], [4, H / 2 + 4, W - 8, H / 2 - 8]] : [[4, 4, W / 2 - 8, H - 8], [W / 2 + 4, 4, W / 2 - 8, H - 8]]; }
 	function drawClocks() {
 		if (tab !== "clocks" || !SZ.c) return; var W = SZ.c.w, H = SZ.c.h, c = cx, g = gamma(); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.fillStyle = "#05070d"; c.fillRect(0, 0, W, H);
-		var rects = panelRects(W, H), eg = [eH, eS], bph = [bphH, bphS];
+		var rects = panelRects(W, H - (SZ.cx || 0)), eg = [eH, eS], bph = [bphH, bphS]; bars = [];
 		for (var k = 0; k < 2; k++) panel(c, rects[k], k, eg[k], bph[k], g);
 	}
 	function panel(c, rc, k, own, bph, g) {
@@ -155,12 +156,15 @@
 		var o = { female: female(k), shirt: ship ? "#e0574b" : "#3b82f6", pants: "#2c3550", skin: "#f1c9a3", beat: Math.exp(-Math.pow((frac(bph) - 0.31) / 0.05, 2)), blink: frac(blinkT * (rate * 0.35 + 0.01) + k * 0.4) > 0.94, wave: Math.sin(blinkT * 3 * rate) * 0.8 };
 		person(c, px + pw * 0.69, floorY + ph * 0.02, ph * 0.42, age, o);
 		c.textAlign = "center"; c.fillStyle = "#fff"; c.font = "700 " + fs * 1.3 + "px sans-serif"; c.fillText("age " + ageStr(age), px + pw * 0.69, floorY + ph * 0.095);
-		/* life bar */
-		var bx = px + pw * 0.06, bw = pw * 0.88, by2 = py + ph * 0.8; c.fillStyle = "#1b2238"; rr(c, bx, by2, bw, ph * 0.025, 4); c.fill(); c.fillStyle = slowed ? "#7fd0ff" : "#ffd27a"; rr(c, bx, by2, Math.max(4, bw * clamp(age / 100, 0, 1)), ph * 0.025, 4); c.fill();
-		c.fillStyle = "#9aa5bb"; c.font = fs * 0.75 + "px sans-serif"; c.textAlign = "left"; c.fillText("0", bx, by2 + ph * 0.025 + fs); c.textAlign = "right"; c.fillText("100 years", bx + bw, by2 + ph * 0.025 + fs);
+		/* life bar: drag it (or click) to jump this person to any age from 0 to 100 */
+		var bx = px + pw * 0.06, bw = pw * 0.88, bh = Math.max(9, ph * 0.034), by2 = py + ph * 0.775, frc = clamp(age / 100, 0, 1), kx = bx + Math.max(bh * 0.5, bw * frc);
+		c.fillStyle = "#1b2238"; rr(c, bx, by2, bw, bh, bh / 2); c.fill(); c.fillStyle = slowed ? "#7fd0ff" : "#ffd27a"; rr(c, bx, by2, Math.max(bh, kx - bx), bh, bh / 2); c.fill();
+		c.fillStyle = "#fff"; c.strokeStyle = slowed ? "#2a7fb5" : "#c28a1c"; c.lineWidth = 2; c.beginPath(); c.arc(kx, by2 + bh / 2, bh * 0.85, 0, TAU); c.fill(); c.stroke();
+		bars[k] = { x: bx, y: by2 - 10, w: bw, h: bh + 20 };
+		c.fillStyle = "#9aa5bb"; c.font = fs * 0.75 + "px sans-serif"; c.textAlign = "left"; c.fillText("0", bx, by2 + bh + fs * 0.95); c.textAlign = "center"; c.fillText("◂ drag to change age ▸", bx + bw / 2, by2 + bh + fs * 0.95); c.textAlign = "right"; c.fillText("100 years", bx + bw, by2 + bh + fs * 0.95);
 		/* heartbeat */
 		if (st.pulse) {
-			var ex = px + pw * 0.06, ew = pw * 0.88, ey = py + ph * 0.915, eh = ph * 0.05; c.strokeStyle = slowed ? "#7fd0ff" : "#7dff9a"; c.lineWidth = 2; c.beginPath();
+			var ex = px + pw * 0.06, ew = pw * 0.88, ey = py + ph * 0.935, eh = ph * 0.04; c.strokeStyle = slowed ? "#7fd0ff" : "#7dff9a"; c.lineWidth = 2; c.beginPath();
 			for (var j = 0; j <= 90; j++) { var xx = ex + ew * j / 90, p = frac(bph - (1 - j / 90) * 2.6), yy = ey - ecg(p) * eh; if (j) c.lineTo(xx, yy); else c.moveTo(xx, yy); } c.stroke();
 			c.fillStyle = "#9aa5bb"; c.font = fs * 0.78 + "px sans-serif"; c.textAlign = "right"; c.fillText(R.sig(72 * rate, 3) + " beats a minute as seen by " + (st.view === "home" ? "home" : "the ship"), px + pw - 10, py + ph - 6);
 		}
@@ -186,20 +190,40 @@
 			? "At this speed the effect is far too small to see: in a whole year " + other + " clock would fall behind by only <b>" + R.sig(per * 1e6, 3) + " millionths of a second</b>. It is real, and your satellite navigation corrects for it. Try 90% of the speed of light."
 			: "<b>" + ref + ":</b> " + other + " clock runs <b>" + R.sig(g, 4) + " times slower</b> (it keeps " + R.sig(100 / g, 3) + "% of the pace). While " + (st.view === "home" ? "1 year passes on the ship, " + R.fmtYears(g) + " pass at home" : "1 year passes for the traveller, only " + R.fmtYears(1 / g) + " pass at home") + ". " + (st.view === "ship" ? "On a steady journey each side sees the other's clock slow; the twin trip tab shows who is really younger at a reunion." : "The traveller themselves feels nothing unusual.");
 	}
+	/* ---- drag the life bars: set a person's age directly; the other one follows at the right rate ---- */
+	var bars = [], dragBar = -1, wasPlaying = true;
+	function barAt(e) { var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; for (var k = 0; k < bars.length; k++) { var b = bars[k]; if (b && x >= b.x - 14 && x <= b.x + b.w + 14 && y >= b.y && y <= b.y + b.h) return k; } return -1; }
+	function setAgeFromBar(k, e) {
+		var r = cv.getBoundingClientRect(), b = bars[k]; if (!b) return; var f = clamp((e.clientX - r.left - b.x) / b.w, 0, 1), own = Math.max(0, f * 100 - st.age), g = gamma(), refIsHome = st.view === "home", isRef = (k === 0) === refIsHome;
+		var ref = isRef ? own : own * g;                 /* the reference person's own time; the other has lived ref / gamma */
+		if (refIsHome) { eH = ref; eS = ref / g; } else { eS = ref; eH = ref / g; }
+		updateReadouts(); drawClocks();
+	}
+	cv.addEventListener("pointerdown", function (e) { var k = barAt(e); if (k < 0) return; dragBar = k; wasPlaying = st.play; st.play = false; try { cv.setPointerCapture(e.pointerId); } catch (x) {} setAgeFromBar(k, e); e.preventDefault(); });
+	cv.addEventListener("pointermove", function (e) { if (dragBar >= 0) { setAgeFromBar(dragBar, e); return; } cv.className = barAt(e) >= 0 ? "td-bar" : ""; });
+	function endDrag() { if (dragBar < 0) return; dragBar = -1; st.play = wasPlaying; syncPlay(); }
+	cv.addEventListener("pointerup", endDrag); cv.addEventListener("pointercancel", endDrag);
+	cv.tabIndex = 0;
+	cv.addEventListener("keydown", function (e) { var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return; var g = gamma(); if (st.view === "home") { eH = Math.max(0, eH + d); eS = eH / g; } else { eS = Math.max(0, eS + d); eH = eS / g; } updateReadouts(); drawClocks(); e.preventDefault(); });
+	function syncPlay() { var b = $("td-play"); b.setAttribute("aria-pressed", st.play ? "true" : "false"); b.textContent = st.play ? "❚❚ Pause" : "▶ Play"; }
+
 	/* controls */
 	var spEl = $("td-sp"), setPre1;
 	function setBeta(b, keepText) {
-		st.beta = clamp(b, 0, 0.99999999); spEl.value = Math.round(R.toSlider(st.beta) * 1000); $("td-sp-v").textContent = betaTxt(st.beta) + " (γ = " + gTxt(gamma()) + ")";
+		st.beta = clamp(b, 0, 0.99999999); spEl.value = Math.round(R.toSlider(st.beta) * 1000); $("td-ctl-sp").value = spEl.value; $("td-ctl-v").textContent = betaTxt(st.beta) + " · γ " + gTxt(gamma()); $("td-sp-v").textContent = betaTxt(st.beta) + " (γ = " + gTxt(gamma()) + ")";
 		if (!keepText) { $("td-sp-t").value = ""; $("td-sp-err").textContent = ""; } setPre1(); note1(); updateReadouts(); sset({ beta: st.beta });
 	}
-	spEl.oninput = function () { setBeta(R.fromSlider(+spEl.value / 1000)); eH = 0; eS = 0; };
+	spEl.oninput = function () { setBeta(R.fromSlider(+spEl.value / 1000)); };   /* the clocks keep what they have already counted: the traveller adds up dt / gamma as the speed changes */
 	$("td-sp-t").oninput = function () { var v = this.value, r = R.parseSpeed(v); if (!v.trim()) { $("td-sp-err").textContent = ""; return; } if (r.error) { $("td-sp-err").textContent = r.error; return; } $("td-sp-err").textContent = ""; setBeta(r.beta, true); };
-	$("td-ts").onchange = function () { st.ts = +this.value; sset({ ts: st.ts }); };
+	function syncTs() { Array.prototype.forEach.call($("td-ctl-ts").querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", Math.abs(+b.dataset.ts - st.ts) < 1e-9 ? "true" : "false"); }); }
+	$("td-ts").onchange = function () { st.ts = +this.value; sset({ ts: st.ts }); syncTs(); };
+	$("td-ctl-sp").oninput = function () { spEl.value = this.value; spEl.oninput(); };
+	$("td-ctl-ts").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; st.ts = +b.dataset.ts; $("td-ts").value = String(b.dataset.ts); if ($("td-ts").value !== String(b.dataset.ts)) $("td-ts").selectedIndex = Array.prototype.findIndex.call($("td-ts").options, function (o) { return Math.abs(+o.value - st.ts) < 1e-9; }); sset({ ts: st.ts }); syncTs(); };
 	$("td-age").onchange = function () { st.age = clamp(Math.round(+this.value || 0), 0, 110); this.value = st.age; sset({ age: st.age }); updateReadouts(); };
 	Array.prototype.forEach.call(root.querySelectorAll("#td-view button"), function (b) { b.onclick = function () { st.view = b.dataset.view; Array.prototype.forEach.call(b.parentNode.children, function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); sset({ view: st.view }); resetClocks(); note1(); }; });
 	$("td-fig").onchange = function () { st.fig = this.value; sset({ fig: st.fig }); drawClocks(); drawTrip(); };
 	$("td-o-water").onchange = function () { st.water = this.checked; sset({ water: st.water }); }; $("td-o-mol").onchange = function () { st.mol = this.checked; sset({ mol: st.mol }); }; $("td-o-pulse").onchange = function () { st.pulse = this.checked; sset({ pulse: st.pulse }); };
-	$("td-play").onclick = function () { st.play = !st.play; this.setAttribute("aria-pressed", st.play ? "true" : "false"); this.textContent = st.play ? "❚❚ Pause" : "▶ Play"; };
+	$("td-play").onclick = function () { st.play = !st.play; syncPlay(); };
 	$("td-reset").onclick = resetClocks;
 	$("td-png").onclick = function () { drawClocks(); pngOf(cv, "time-dilation-" + R.sig(st.beta * 100, 4) + "pc.png"); };
 	$("td-link").onclick = function () { var u = new URL(location.href); u.search = ""; u.searchParams.set("v", String(st.beta)); u.searchParams.set("age", st.age); if (st.ts !== 1) u.searchParams.set("ts", st.ts); if (st.view !== "home") u.searchParams.set("view", st.view); if (st.water) u.searchParams.set("water", "1"); if (st.fig !== "mm") u.searchParams.set("fig", st.fig); copyLink(u.toString()); };
@@ -381,13 +405,13 @@
 		/* links */
 		if (q.get("v") !== null) { var vv = R.parseSpeed(q.get("v")); if (!vv.error) st.beta = vv.beta; lightBeta = st.beta; } if (q.get("age") !== null) { st.age = Math.round(num(q.get("age"), 0, 110, st.age)); tr.age = st.age; } if (q.get("ts") !== null) st.ts = num(q.get("ts"), 0.001, 1000, st.ts); if (q.get("view") === "ship") st.view = "ship"; if (/^(mm|ff|mf|fm)$/.test(q.get("fig") || "")) st.fig = q.get("fig"); if (q.get("water") === "1") st.water = true;
 		if (q.get("d") !== null) { tr.d = num(q.get("d"), 0.01, 1e8, tr.d); if (q.get("mode") === "const" || q.get("mode") === "g") tr.mode = q.get("mode"); if (q.get("tv") !== null) tr.beta = num(q.get("tv"), 0, 0.99999999, tr.beta); tr.round = q.get("round") !== "0"; }
-		setPre1 = presetChips($("td-pre"), function (b) { setBeta(b); eH = 0; eS = 0; }, function () { return st.beta; }); setPreL = presetChips($("td-l-pre"), function (b) { setLightBeta(b); lightReset(); }, function () { return lightBeta; });
+		setPre1 = presetChips($("td-pre"), function (b) { setBeta(b); }, function () { return st.beta; }); setPreL = presetChips($("td-l-pre"), function (b) { setLightBeta(b); lightReset(); }, function () { return lightBeta; });
 		$("td-age").value = st.age; $("td-ts").value = String(st.ts); if ($("td-ts").value !== String(st.ts)) $("td-ts").selectedIndex = 2; st.ts = +$("td-ts").value;
 		$("td-fig").value = st.fig; $("td-o-water").checked = st.water; $("td-o-mol").checked = st.mol; $("td-o-pulse").checked = st.pulse;
 		Array.prototype.forEach.call(root.querySelectorAll("#td-view button"), function (b) { b.setAttribute("aria-pressed", b.dataset.view === st.view ? "true" : "false"); });
 		Array.prototype.forEach.call(root.querySelectorAll("#td-t-mode button"), function (b) { b.setAttribute("aria-pressed", b.dataset.mode === tr.mode ? "true" : "false"); });
 		$("td-t-d").value = tr.d; $("td-t-age").value = tr.age; $("td-t-sp").value = Math.round(R.toSlider(tr.beta) * 1000); $("td-t-round").checked = tr.round;
-		setBeta(st.beta); setLightBeta(lightBeta); lightReset(); tripUpdate(); tripProg(); muRender(); calcRender(); setTab(tab, true);
+		setBeta(st.beta); syncTs(); setLightBeta(lightBeta); lightReset(); tripUpdate(); tripProg(); muRender(); calcRender(); setTab(tab, true);
 		window.addEventListener("resize", onResize); if (window.ResizeObserver) { new ResizeObserver(onResize).observe(stage.parentNode); } setTimeout(onResize, 0);
 		requestAnimationFrame(function (t) { last = t; requestAnimationFrame(frame); });
 	}
