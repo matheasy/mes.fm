@@ -21,8 +21,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "mes.fm"
 OUT = SITE / "newest.json"
-KEEP = 6                       # per list
-LATEST = 3                     # homepage strip
+KEEP = 12                      # per list
+LATEST = 8                     # homepage strip
 TD = re.compile(r'<td class="[^"]*calc-container[^"]*"[^>]*>\s*<a class="calc-link" href="([^"]*)">(.*?)</td>', re.S)
 
 

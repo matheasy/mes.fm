@@ -24,7 +24,7 @@ TAG = '<script src="/main_js/hub-filter.js?v=4" defer></script><script src="/mai
 # Picked from mes.fm/stats (curl "https://mes.fm/api/stats?range=30d"): 30-day views Grade 4.8k, Percentage 3.7k,
 # Weighted Average 2.4k (then GPA 1.7k, BMI 1.6k); tools: Timer (45 views/7d) clearly ahead, then Speed Reader and Moon.
 PAGES = {
-    "calculators.html": dict(noun="calculators", popular=["gradecalculator", "percentagecalculator", "weighted-average-calculator", "gpacalculator"], cats=[
+    "calculators.html": dict(noun="calculators", popular=["percentagecalculator", "gradecalculator", "bmicalculator", "gpacalculator", "weighted-average-calculator", "inflationcalculator", "vatcalculator", "mortgagecalculator"], cats=[
         ("school", "School &amp; Grades", ["gradecalculator", "gpacalculator", "weighted-average-calculator", "gradecalculator/br"]),
         ("money", "Money &amp; Finance", ["mortgagecalculator", "inflationcalculator", "vatcalculator", "youtubemoney/index.html", "impermanent-loss-calculator"]),
         ("algebra", "Algebra &amp; Calculus", ["sum-of-integers-calculator", "calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "2d-graphing-calculator", "3d-graphing-calculator"]),
@@ -32,13 +32,13 @@ PAGES = {
         ("physics", "Physics &amp; Science", ["reynolds-number-calculator", "photoelectric-effect-simulator", "atomic-clock-simulator", "michelson-morley-experiment", "faster-than-light-shadow-simulator", "earth-curvature-calculator"]),   # photoelectric-effect-simulator is listed on tools.html (Simulations) too
         ("fun", "Fun", ["gematria", "pokemongocalculator"]),
     ]),
-    "tools.html": dict(noun="tools", popular=["timer", "speedreader", "moon", "emoji"], cats=[
+    "tools.html": dict(noun="tools", popular=["timer", "typing-test", "speedreader", "moon", "emoji", "calendar", "clock", "timezone"], cats=[
         ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols", "copy-text", "enigma"]),
         ("time", "Time &amp; Focus", ["speedreader", "typing-test", "typing-test-transcribe", "typing-test-voice", "timer", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "clock", "timezone", "calendar"]),
         ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search", "search-engines", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
         ("photos", "Photos &amp; Images", ["photo-editor", "image-converter"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today"]),
-        ("sim", "Simulations", ["fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
+        ("sim", "Simulations", ["fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
     ]),
 }
 TD = re.compile(r'[ \t]*<td class="calc-container[^"]*"><a class="calc-link" href="([^"]*)">.*?</td>\n?', re.S)
@@ -92,13 +92,13 @@ def build(text, cfg):
     # thin rows (icon + title pills) instead of full cards: "Newest" is filled from /newest.json by main_js/newest.js,
     # "Popular" is static (the `popular` list above)
     out.append('\t\t<section class="hub-cat hub-cat--mini hub-cat--newest" data-cat="newest" id="newest">\n\t\t\t<h2 class="hub-cat__title">New %s</h2>\n'
-               '\t\t\t<div class="mini-row" data-newest="%s" data-count="5"></div>\n\t\t</section>\n' % (cfg["noun"], cfg["noun"]))
+               '\t\t\t<div class="mini-row mini-fit" data-newest="%s" data-count="12"></div>\n\t\t</section>\n' % (cfg["noun"], cfg["noun"]))
     if pop:
         chips.append('<button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (%d)</button>' % len(pop))
         pills = "".join('\t\t\t\t<a class="mini" href="%s"><img class="mini__img" src="%s" alt="" width="28" height="28" loading="lazy"><span>%s</span></a>\n'
                         % (re.search(r'href="([^"]*)"', td).group(1), re.search(r'<img[^>]*src="([^"?]*)', td).group(1), html.escape(html.unescape(re.search(r'calc__text--title">(.*?)</span>', td, re.S).group(1).strip())))
                         for td in pop)
-        out.append('\t\t<section class="hub-cat hub-cat--mini hub-cat--popular" data-cat="popular" id="popular">\n\t\t\t<h2 class="hub-cat__title">&#9733; Popular</h2>\n\t\t\t<div class="mini-row">\n%s\t\t\t</div>\n\t\t</section>\n' % pills)
+        out.append('\t\t<section class="hub-cat hub-cat--mini hub-cat--popular" data-cat="popular" id="popular">\n\t\t\t<h2 class="hub-cat__title">&#9733; Popular</h2>\n\t\t\t<div class="mini-row mini-fit" data-min="4">\n%s\t\t\t</div>\n\t\t</section>\n' % pills)
     for cid, name, slugs in cats:
         tds = sorted([cards[s] for s in slugs if s in cards], key=title_of)
         if not tds:

@@ -48,6 +48,54 @@
    "desc": "Laminar or turbulent? Work out Re for any fluid, speed and size, plus pipe friction, drag and vortex shedding.",
    "added": "2026-10-09",
    "kind": "calculator"
+  },
+  {
+   "href": "/weighted-average-calculator",
+   "title": "Weighted Average Calculator",
+   "icon": "/img/wac-logo.png",
+   "desc": "Calculate your weighted average course grade.",
+   "added": "2026-10-07",
+   "kind": "calculator"
+  },
+  {
+   "href": "/derivative-calculator",
+   "title": "Derivative Calculator",
+   "icon": "/img/derivative-calculator-logo.png",
+   "desc": "Derivatives with every step explained: product, quotient and chain rules, higher, partial and implicit derivatives.",
+   "added": "2026-10-02",
+   "kind": "calculator"
+  },
+  {
+   "href": "/integral-calculator",
+   "title": "Integral Calculator",
+   "icon": "/img/integral-calculator-logo.png",
+   "desc": "Antiderivatives and definite integrals with steps: substitution, by parts, partial fractions, numeric values.",
+   "added": "2026-10-02",
+   "kind": "calculator"
+  },
+  {
+   "href": "/cas-calculator",
+   "title": "CAS Calculator",
+   "icon": "/img/cas-calculator-logo.png",
+   "desc": "Solve equations, systems and inequalities with steps, every real root of hard equations, simplify, factor, limits and series.",
+   "added": "2026-10-02",
+   "kind": "calculator"
+  },
+  {
+   "href": "/2d-graphing-calculator",
+   "title": "2D Graphing Calculator",
+   "icon": "/img/graphing-calculator-2d-logo.png",
+   "desc": "Plot functions, equations, inequalities and polar curves with sliders, zeros and intersections.",
+   "added": "2026-10-02",
+   "kind": "calculator"
+  },
+  {
+   "href": "/3d-graphing-calculator",
+   "title": "3D Graphing Calculator",
+   "icon": "/img/graphing-calculator-3d-logo.png",
+   "desc": "Plot surfaces, spheres, curves and parametric surfaces in 3D, then rotate, zoom and colour them by height.",
+   "added": "2026-10-02",
+   "kind": "calculator"
   }
  ],
  "tools": [
@@ -98,6 +146,54 @@
    "desc": "Zoom into the Mandelbrot set, see the Julia set of any point, trace orbits and try the Burning Ship, Tricorn and Multibrot fractals.",
    "added": "2026-10-12",
    "kind": "tool"
+  },
+  {
+   "href": "/black-hole-simulator",
+   "title": "Black Hole Simulator",
+   "icon": "/img/black-hole-simulator-logo.png",
+   "desc": "Bend light around a black hole, find its shadow and photon sphere, follow orbits that precess or plunge, and see a ray-traced picture with a glowing disk.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/light-in-a-medium",
+   "title": "Light in a Medium Simulator",
+   "icon": "/img/light-in-a-medium-logo.png",
+   "desc": "Paint glass, water or any refractive index and watch a live light wave slow down, bend, focus in a lens or curve like a mirage. Compare it with rays.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/text-size",
+   "title": "Text Size",
+   "icon": "/img/text-size-logo.png",
+   "desc": "Our own browser extension: A- and A+ for any website, text only, remembered per site. Free and private.",
+   "added": "2026-10-11",
+   "kind": "tool"
+  },
+  {
+   "href": "/volume-booster",
+   "title": "Volume Booster",
+   "icon": "/img/volume-booster-logo.png",
+   "desc": "Our own browser extension: make quiet videos louder, up to 600%, with a soft limiter. Free and private.",
+   "added": "2026-10-11",
+   "kind": "tool"
+  },
+  {
+   "href": "/dark-mode",
+   "title": "Dark Mode",
+   "icon": "/img/dark-mode-logo.png",
+   "desc": "Our own browser extension: dark mode (or light mode) for any website, with per-site control and a schedule. Free and private.",
+   "added": "2026-10-11",
+   "kind": "tool"
+  },
+  {
+   "href": "/read-aloud",
+   "title": "Read Aloud",
+   "icon": "/img/read-aloud-logo.png",
+   "desc": "Our own browser extension: listen to any page with the word and sentence highlighted as they are read. Free and private.",
+   "added": "2026-10-11",
+   "kind": "tool"
   }
  ],
  "latest": [
@@ -122,6 +218,46 @@
    "title": "Double Pendulum",
    "icon": "/img/double-pendulum-logo.png",
    "desc": "Drag two swinging arms into place and watch chaos: a fan of copies that drift apart, how fast errors grow, and a fractal map of how long each start takes to flip.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/orbit-simulator",
+   "title": "Orbit Simulator",
+   "icon": "/img/orbit-simulator-logo.png",
+   "desc": "Launch planets by dragging, watch real gravity with many bodies, see Kepler's laws and equal areas, try Halley's comet, the Moon and a gravity assist, and compute orbit speeds and transfers.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/metric-tensor",
+   "title": "Metric Tensor Explorer",
+   "icon": "/img/metric-tensor-logo.png",
+   "desc": "Type or pick a metric (Schwarzschild, de Sitter, a wormhole...) and get the Christoffel symbols, Riemann, Ricci and Einstein tensors, plus geodesics drawn on curved surfaces.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/mandelbrot",
+   "title": "Mandelbrot Explorer",
+   "icon": "/img/mandelbrot-logo.png",
+   "desc": "Zoom into the Mandelbrot set, see the Julia set of any point, trace orbits and try the Burning Ship, Tricorn and Multibrot fractals.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/black-hole-simulator",
+   "title": "Black Hole Simulator",
+   "icon": "/img/black-hole-simulator-logo.png",
+   "desc": "Bend light around a black hole, find its shadow and photon sphere, follow orbits that precess or plunge, and see a ray-traced picture with a glowing disk.",
+   "added": "2026-10-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/light-in-a-medium",
+   "title": "Light in a Medium Simulator",
+   "icon": "/img/light-in-a-medium-logo.png",
+   "desc": "Paint glass, water or any refractive index and watch a live light wave slow down, bend, focus in a lens or curve like a mirage. Compare it with rays.",
    "added": "2026-10-12",
    "kind": "tool"
   }
