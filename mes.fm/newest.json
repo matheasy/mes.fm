@@ -2,6 +2,14 @@
  "generated": "2026-10-13",
  "calculators": [
   {
+   "href": "/time-dilation",
+   "title": "Time Dilation Simulator",
+   "icon": "/img/time-dilation-logo.png",
+   "desc": "How much would you age at close to the speed of light? Watch a traveller's clock, heartbeat and ageing slow down, see the light clock that explains why, fly the twin paradox at a steady 1 g, and calculate it.",
+   "added": "2026-10-13",
+   "kind": "calculator"
+  },
+  {
    "href": "/faster-than-light-shadow-simulator",
    "title": "Faster-Than-Light Shadow Simulator",
    "icon": "/img/faster-than-light-shadow-simulator-logo.png",
@@ -86,14 +94,6 @@
    "title": "2D Graphing Calculator",
    "icon": "/img/graphing-calculator-2d-logo.png",
    "desc": "Plot functions, equations, inequalities and polar curves with sliders, zeros and intersections.",
-   "added": "2026-10-02",
-   "kind": "calculator"
-  },
-  {
-   "href": "/3d-graphing-calculator",
-   "title": "3D Graphing Calculator",
-   "icon": "/img/graphing-calculator-3d-logo.png",
-   "desc": "Plot surfaces, spheres, curves and parametric surfaces in 3D, then rotate, zoom and colour them by height.",
    "added": "2026-10-02",
    "kind": "calculator"
   }
@@ -198,6 +198,14 @@
  ],
  "latest": [
   {
+   "href": "/time-dilation",
+   "title": "Time Dilation Simulator",
+   "icon": "/img/time-dilation-logo.png",
+   "desc": "How much would you age at close to the speed of light? Watch a traveller's clock, heartbeat and ageing slow down, see the light clock that explains why, fly the twin paradox at a steady 1 g, and calculate it.",
+   "added": "2026-10-13",
+   "kind": "calculator"
+  },
+  {
    "href": "/buddhabrot",
    "title": "Buddhabrot Explorer",
    "icon": "/img/buddhabrot-logo.png",
@@ -250,14 +258,6 @@
    "title": "Black Hole Simulator",
    "icon": "/img/black-hole-simulator-logo.png",
    "desc": "Bend light around a black hole, find its shadow and photon sphere, follow orbits that precess or plunge, and see a ray-traced picture with a glowing disk.",
-   "added": "2026-10-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/light-in-a-medium",
-   "title": "Light in a Medium Simulator",
-   "icon": "/img/light-in-a-medium-logo.png",
-   "desc": "Paint glass, water or any refractive index and watch a live light wave slow down, bend, focus in a lens or curve like a mirage. Compare it with rays.",
    "added": "2026-10-12",
    "kind": "tool"
   }

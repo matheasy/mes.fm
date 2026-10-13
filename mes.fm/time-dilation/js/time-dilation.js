@@ -147,7 +147,8 @@
 	Array.prototype.forEach.call(root.querySelectorAll("[data-tab]"), function (b) { b.onclick = function () { setTab(b.dataset.tab); }; });
 
 	/* ================= shared state ================= */
-	var st = { beta: 0.9, age: 20, ts: 1, view: "home", water: false, mol: true, pulse: true, play: true };
+	var st = { beta: 0.9, age: 20, ts: 1, view: "home", water: false, mol: true, pulse: true, play: true, fig: "mm" };
+	function female(k) { return st.fig === "ff" || (k === 0 ? st.fig === "fm" : st.fig === "mf"); }   /* k: 0 = the one at home, 1 = the traveller */
 	var PRE = [["Walking", 1.4 / R.C], ["Jet", 250 / R.C], ["ISS", 7660 / R.C], ["10% of c", 0.1], ["50% of c", 0.5], ["87% (γ = 2)", R.betaOf(2)], ["90%", 0.9], ["99%", 0.99], ["99.9%", 0.999], ["99.999%", 0.99999], ["γ = 1000", R.betaOf(1000)]];
 	function presetChips(host, onPick, getB) {
 		host.innerHTML = PRE.map(function (p, i) { return '<button type="button" data-i="' + i + '" aria-pressed="false">' + esc(p[0]) + "</button>"; }).join("");
@@ -163,9 +164,14 @@
 		var stoop = age > 72 ? Math.min(0.3, (age - 72) * 0.007) : 0, hipX = cx, hipY = by - leg;
 		var shX = hipX + Math.sin(stoop) * torso, shY = hipY - Math.cos(stoop) * torso, hx = shX + Math.sin(stoop) * headR * 1.1, hy = shY - headR * 1.15;
 		c.lineCap = "round"; c.lineJoin = "round";
-		c.strokeStyle = o.pants; c.lineWidth = lw; c.beginPath(); c.moveTo(hipX - lw * 0.6, hipY); c.lineTo(cx - H * 0.07, by); c.moveTo(hipX + lw * 0.6, hipY); c.lineTo(cx + H * 0.07, by); c.stroke();
+		var fem = !!o.female, dress = fem && age >= 2;
+		if (dress) {   /* legs in skin colour, a dress from the shoulders to the knees */
+			c.strokeStyle = o.skin; c.lineWidth = lw * 0.7; c.beginPath(); c.moveTo(hipX - lw * 0.5, hipY + leg * 0.4); c.lineTo(cx - H * 0.06, by); c.moveTo(hipX + lw * 0.5, hipY + leg * 0.4); c.lineTo(cx + H * 0.06, by); c.stroke();
+		} else { c.strokeStyle = o.pants; c.lineWidth = lw; c.beginPath(); c.moveTo(hipX - lw * 0.6, hipY); c.lineTo(cx - H * 0.07, by); c.moveTo(hipX + lw * 0.6, hipY); c.lineTo(cx + H * 0.07, by); c.stroke(); }
 		c.strokeStyle = "#222"; c.lineWidth = lw * 0.8; c.beginPath(); c.moveTo(cx - H * 0.07, by); c.lineTo(cx - H * 0.07 - lw * 0.8, by); c.moveTo(cx + H * 0.07, by); c.lineTo(cx + H * 0.07 + lw * 0.8, by); c.stroke();
-		c.strokeStyle = o.shirt; c.lineWidth = lw * 1.7; c.beginPath(); c.moveTo(hipX, hipY); c.lineTo(shX, shY); c.stroke();
+		c.strokeStyle = "#222"; c.lineWidth = lw * 0.8; c.beginPath(); c.moveTo(cx - H * 0.07, by); c.lineTo(cx - H * 0.07 - lw * 0.8, by); c.moveTo(cx + H * 0.07, by); c.lineTo(cx + H * 0.07 + lw * 0.8, by); c.stroke();
+		if (dress) { c.fillStyle = o.shirt; c.beginPath(); c.moveTo(shX - lw * 1.0, shY); c.lineTo(shX + lw * 1.0, shY); c.lineTo(hipX + H * 0.15, hipY + leg * 0.45); c.lineTo(hipX - H * 0.15, hipY + leg * 0.45); c.closePath(); c.fill(); }
+		else { c.strokeStyle = o.shirt; c.lineWidth = lw * 1.7; c.beginPath(); c.moveTo(hipX, hipY); c.lineTo(shX, shY); c.stroke(); }
 		var wave = o.wave || 0, ax = shX - Math.sin(stoop) * 0, ay = shY + lw * 0.2;
 		c.strokeStyle = o.shirt; c.lineWidth = lw * 0.8; c.beginPath(); c.moveTo(ax - lw * 0.7, ay); c.lineTo(ax - lw * 1.3 - arm * 0.3, ay + arm * 0.9); c.stroke();
 		var hx2 = ax + lw * 1.4 + arm * 0.25 + Math.sin(wave) * arm * 0.18, hy2 = ay + arm * 0.9 - Math.max(0, Math.sin(wave)) * arm * 0.35;
@@ -176,14 +182,17 @@
 		var beat = o.beat || 0, hs = Math.max(3, H * 0.045) * (1 + 0.45 * beat), hxh = lerp(hipX, shX, 0.72) - lw * 0.35, hyh = lerp(hipY, shY, 0.72);
 		c.fillStyle = "rgba(255,70,100," + (0.75 + 0.25 * beat) + ")"; c.beginPath(); c.moveTo(hxh, hyh + hs * 0.9); c.bezierCurveTo(hxh - hs * 1.6, hyh - hs * 0.2, hxh - hs * 0.6, hyh - hs * 1.3, hxh, hyh - hs * 0.4); c.bezierCurveTo(hxh + hs * 0.6, hyh - hs * 1.3, hxh + hs * 1.6, hyh - hs * 0.2, hxh, hyh + hs * 0.9); c.fill();
 		/* head */
+		var grey = clamp((age - 38) / 30, 0, 1), hair = o.female ? mixc([122, 66, 28], [214, 214, 218], grey) : mixc([74, 47, 27], [214, 214, 218], grey);
+		if (fem && age >= 3 && age < 90) { c.fillStyle = hair; [-1, 1].forEach(function (sg) { c.beginPath(); c.moveTo(hx + sg * headR * 1.06, hy - headR * 0.2); c.quadraticCurveTo(hx + sg * headR * 1.3, hy + headR * 1.2, hx + sg * headR * 1.05, hy + headR * 1.75); c.lineTo(hx + sg * headR * 0.72, hy + headR * 1.7); c.quadraticCurveTo(hx + sg * headR * 0.95, hy + headR * 0.9, hx + sg * headR * 0.8, hy + headR * 0.1); c.closePath(); c.fill(); }); }   /* two side curtains: the chin and neck stay clear */
+		if (fem && age >= 78) { c.fillStyle = hair; c.beginPath(); c.arc(hx - headR * 0.1, hy - headR * 1.25, headR * 0.38, 0, TAU); c.fill(); }   /* a bun */
 		c.fillStyle = o.skin; c.beginPath(); c.arc(hx, hy, headR, 0, TAU); c.fill();
-		var grey = clamp((age - 38) / 30, 0, 1), hair = mixc([74, 47, 27], [214, 214, 218], grey);
 		if (age < 1.5) { c.strokeStyle = hair; c.lineWidth = Math.max(1.5, headR * 0.12); c.beginPath(); c.arc(hx, hy - headR, headR * 0.18, PI * 0.2, PI * 1.3); c.stroke(); }
 		else if (age > 78) { c.strokeStyle = hair; c.lineWidth = Math.max(1.5, headR * 0.16); c.beginPath(); c.arc(hx, hy, headR * 1.02, PI * 0.95, PI * 1.22); c.stroke(); c.beginPath(); c.arc(hx, hy, headR * 1.02, PI * 1.78, PI * 2.05); c.stroke(); }
 		else { c.fillStyle = hair; c.beginPath(); c.arc(hx, hy, headR * 1.04, PI * 1.02, PI * 1.98); c.lineTo(hx + headR * 0.7, hy - headR * 0.38); c.quadraticCurveTo(hx, hy - headR * 0.7, hx - headR * 0.7, hy - headR * 0.38); c.closePath(); c.fill(); }
 		var ey = hy - headR * 0.05, ex = headR * 0.38, er = Math.max(1.2, headR * 0.1), blink = o.blink;
 		c.fillStyle = "#222"; if (blink) { c.fillRect(hx - ex - er, ey, er * 2, Math.max(1, er * 0.4)); c.fillRect(hx + ex - er, ey, er * 2, Math.max(1, er * 0.4)); } else { c.beginPath(); c.arc(hx - ex, ey, er, 0, TAU); c.arc(hx + ex, ey, er, 0, TAU); c.fill(); }
-		c.strokeStyle = "#7a3b2e"; c.lineWidth = Math.max(1, headR * 0.07); c.beginPath(); c.arc(hx, hy + headR * 0.15, headR * 0.4, 0.15 * PI, 0.85 * PI); c.stroke();
+		c.strokeStyle = fem ? "#c2415a" : "#7a3b2e"; c.lineWidth = Math.max(1, headR * (fem ? 0.1 : 0.07)); c.beginPath(); c.arc(hx, hy + headR * 0.15, headR * 0.4, 0.15 * PI, 0.85 * PI); c.stroke();
+		if (fem && !blink && age > 3) { c.strokeStyle = "#222"; c.lineWidth = Math.max(1, er * 0.5); [-1, 1].forEach(function (sg) { c.beginPath(); c.moveTo(hx + sg * ex + sg * er, ey - er * 0.4); c.lineTo(hx + sg * ex + sg * er * 2.1, ey - er * 1.5); c.stroke(); }); }
 		if (age > 52) { c.strokeStyle = "rgba(90,60,40," + clamp((age - 52) / 40, 0, 0.6) + ")"; c.lineWidth = Math.max(1, headR * 0.05); for (var k = 0; k < 3; k++) { c.beginPath(); c.moveTo(hx - headR * 0.5, hy - headR * (0.42 - k * 0.1)); c.lineTo(hx + headR * 0.5, hy - headR * (0.42 - k * 0.1)); c.stroke(); } }
 		if (age > 62) { c.strokeStyle = "#333"; c.lineWidth = Math.max(1, headR * 0.06); c.beginPath(); c.arc(hx - ex, ey, headR * 0.24, 0, TAU); c.arc(hx + ex, ey, headR * 0.24, 0, TAU); c.moveTo(hx - ex + headR * 0.24, ey); c.lineTo(hx + ex - headR * 0.24, ey); c.stroke(); }
 	}
@@ -260,7 +269,7 @@
 			c.fillStyle = "#9aa5bb"; c.font = fs * 0.78 + "px sans-serif"; c.textAlign = "left"; c.fillText("molecules in their body: " + (slowed ? R.sig(rate * 100, 3) + "% speed" : "full speed"), mx, my + mh + fs * 1.05);
 		}
 		/* person */
-		var o = { shirt: ship ? "#e0574b" : "#3b82f6", pants: "#2c3550", skin: "#f1c9a3", beat: Math.exp(-Math.pow((frac(bph) - 0.31) / 0.05, 2)), blink: frac(blinkT * (rate * 0.35 + 0.01) + k * 0.4) > 0.94, wave: Math.sin(blinkT * 3 * rate) * 0.8 };
+		var o = { female: female(k), shirt: ship ? "#e0574b" : "#3b82f6", pants: "#2c3550", skin: "#f1c9a3", beat: Math.exp(-Math.pow((frac(bph) - 0.31) / 0.05, 2)), blink: frac(blinkT * (rate * 0.35 + 0.01) + k * 0.4) > 0.94, wave: Math.sin(blinkT * 3 * rate) * 0.8 };
 		person(c, px + pw * 0.69, floorY + ph * 0.02, ph * 0.42, age, o);
 		c.textAlign = "center"; c.fillStyle = "#fff"; c.font = "700 " + fs * 1.3 + "px sans-serif"; c.fillText("age " + ageStr(age), px + pw * 0.69, floorY + ph * 0.095);
 		/* life bar */
@@ -305,11 +314,12 @@
 	$("td-ts").onchange = function () { st.ts = +this.value; sset({ ts: st.ts }); };
 	$("td-age").onchange = function () { st.age = clamp(Math.round(+this.value || 0), 0, 110); this.value = st.age; sset({ age: st.age }); updateReadouts(); };
 	Array.prototype.forEach.call(root.querySelectorAll("#td-view button"), function (b) { b.onclick = function () { st.view = b.dataset.view; Array.prototype.forEach.call(b.parentNode.children, function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); sset({ view: st.view }); resetClocks(); note1(); }; });
+	$("td-fig").onchange = function () { st.fig = this.value; sset({ fig: st.fig }); drawClocks(); drawTrip(); };
 	$("td-o-water").onchange = function () { st.water = this.checked; sset({ water: st.water }); }; $("td-o-mol").onchange = function () { st.mol = this.checked; sset({ mol: st.mol }); }; $("td-o-pulse").onchange = function () { st.pulse = this.checked; sset({ pulse: st.pulse }); };
 	$("td-play").onclick = function () { st.play = !st.play; this.setAttribute("aria-pressed", st.play ? "true" : "false"); this.textContent = st.play ? "❚❚ Pause" : "▶ Play"; };
 	$("td-reset").onclick = resetClocks;
 	$("td-png").onclick = function () { drawClocks(); pngOf(cv, "time-dilation-" + R.sig(st.beta * 100, 4) + "pc.png"); };
-	$("td-link").onclick = function () { var u = new URL(location.href); u.search = ""; u.searchParams.set("v", String(st.beta)); u.searchParams.set("age", st.age); if (st.ts !== 1) u.searchParams.set("ts", st.ts); if (st.view !== "home") u.searchParams.set("view", st.view); if (st.water) u.searchParams.set("water", "1"); copyLink(u.toString()); };
+	$("td-link").onclick = function () { var u = new URL(location.href); u.search = ""; u.searchParams.set("v", String(st.beta)); u.searchParams.set("age", st.age); if (st.ts !== 1) u.searchParams.set("ts", st.ts); if (st.view !== "home") u.searchParams.set("view", st.view); if (st.water) u.searchParams.set("water", "1"); if (st.fig !== "mm") u.searchParams.set("fig", st.fig); copyLink(u.toString()); };
 
 	/* ================= tab 2: light clock ================= */
 	var lightBeta, lt = { x: 0, t: 0, n0: 0, n1: 0, y0: 0, dir0: 1, y1: 0, dir1: 1, trail: [], play: true }, setPreL;
@@ -397,8 +407,8 @@
 		if (tr.s <= 0) ph = "ready at Earth"; else if (tr.s >= 1) ph = tr.round ? "home again" : "arrived";
 		c.fillStyle = "#9aa5bb"; c.font = fs * 0.95 + "px sans-serif"; c.fillText(ph + " · " + (Math.abs(s.beta) < 0.0005 ? "at rest" : R.fmtPct(Math.abs(s.beta)) + " of c"), L[0] + L[2] / 2, ly - 22);
 		var by = L[1] + L[3] * 0.92 - (stacked ? 0 : 0), pw2 = L[2] / 2, hh = L[3] * 0.38, py = L[1] + L[3] * 0.9;
-		person(c, L[0] + pw2 * 0.5, py - 18, hh, tr.age + s.t, { shirt: "#3b82f6", pants: "#2c3550", skin: "#f1c9a3", beat: 0, blink: false });
-		person(c, L[0] + pw2 * 1.5, py - 18, hh, tr.age + s.tau, { shirt: "#e0574b", pants: "#2c3550", skin: "#f1c9a3", beat: 0, blink: false });
+		person(c, L[0] + pw2 * 0.5, py - 18, hh, tr.age + s.t, { female: female(0), shirt: "#3b82f6", pants: "#2c3550", skin: "#f1c9a3", beat: 0, blink: false });
+		person(c, L[0] + pw2 * 1.5, py - 18, hh, tr.age + s.tau, { female: female(1), shirt: "#e0574b", pants: "#2c3550", skin: "#f1c9a3", beat: 0, blink: false });
 		c.fillStyle = "#e8ecf5"; c.font = "700 " + fs + "px sans-serif"; c.textAlign = "center"; c.fillText("Home twin: " + ageStr(tr.age + s.t), L[0] + pw2 * 0.5, py + 2); c.fillText("Traveller: " + ageStr(tr.age + s.tau), L[0] + pw2 * 1.5, py + 2);
 		c.restore(); c.strokeStyle = "#2a3040"; c.lineWidth = 2; rr(c, L[0], L[1], L[2], L[3], 10); c.stroke();
 		/* ---- right: spacetime diagram ---- */
@@ -481,16 +491,16 @@
 
 	/* ================= start-up ================= */
 	function init() {
-		if (saved.beta !== undefined) st.beta = num(saved.beta, 0, 0.99999999, st.beta); st.age = Math.round(num(saved.age, 0, 110, st.age)); st.ts = num(saved.ts, 0.001, 1000, st.ts); if (saved.view === "ship") st.view = "ship";
+		if (saved.beta !== undefined) st.beta = num(saved.beta, 0, 0.99999999, st.beta); st.age = Math.round(num(saved.age, 0, 110, st.age)); st.ts = num(saved.ts, 0.001, 1000, st.ts); if (saved.view === "ship") st.view = "ship"; if (/^(mm|ff|mf|fm)$/.test(saved.fig || "")) st.fig = saved.fig;
 		["water", "mol", "pulse"].forEach(function (k) { if (typeof saved[k] === "boolean") st[k] = saved[k]; });
 		lightBeta = num(saved.lbeta, 0, 0.99999999, 0.8); if (saved.trip) { tr.mode = saved.trip.mode === "const" ? "const" : "g"; tr.d = num(saved.trip.d, 0.01, 1e8, tr.d); tr.beta = num(saved.trip.beta, 0, 0.99999999, tr.beta); tr.age = Math.round(num(saved.trip.age, 0, 100, 20)); tr.round = saved.trip.round !== false; }
 		if (saved.calc) { calc.text = String(saved.calc.text || calc.text); calc.years = num(saved.calc.years, 0, 1e12, 10); calc.mass = num(saved.calc.mass, 0, 1e30, 70); }
 		/* links */
-		if (q.get("v") !== null) { var vv = R.parseSpeed(q.get("v")); if (!vv.error) st.beta = vv.beta; lightBeta = st.beta; } if (q.get("age") !== null) { st.age = Math.round(num(q.get("age"), 0, 110, st.age)); tr.age = st.age; } if (q.get("ts") !== null) st.ts = num(q.get("ts"), 0.001, 1000, st.ts); if (q.get("view") === "ship") st.view = "ship"; if (q.get("water") === "1") st.water = true;
+		if (q.get("v") !== null) { var vv = R.parseSpeed(q.get("v")); if (!vv.error) st.beta = vv.beta; lightBeta = st.beta; } if (q.get("age") !== null) { st.age = Math.round(num(q.get("age"), 0, 110, st.age)); tr.age = st.age; } if (q.get("ts") !== null) st.ts = num(q.get("ts"), 0.001, 1000, st.ts); if (q.get("view") === "ship") st.view = "ship"; if (/^(mm|ff|mf|fm)$/.test(q.get("fig") || "")) st.fig = q.get("fig"); if (q.get("water") === "1") st.water = true;
 		if (q.get("d") !== null) { tr.d = num(q.get("d"), 0.01, 1e8, tr.d); if (q.get("mode") === "const" || q.get("mode") === "g") tr.mode = q.get("mode"); if (q.get("tv") !== null) tr.beta = num(q.get("tv"), 0, 0.99999999, tr.beta); tr.round = q.get("round") !== "0"; }
 		setPre1 = presetChips($("td-pre"), function (b) { setBeta(b); eH = 0; eS = 0; }, function () { return st.beta; }); setPreL = presetChips($("td-l-pre"), function (b) { setLightBeta(b); lightReset(); }, function () { return lightBeta; });
 		$("td-age").value = st.age; $("td-ts").value = String(st.ts); if ($("td-ts").value !== String(st.ts)) $("td-ts").selectedIndex = 2; st.ts = +$("td-ts").value;
-		$("td-o-water").checked = st.water; $("td-o-mol").checked = st.mol; $("td-o-pulse").checked = st.pulse;
+		$("td-fig").value = st.fig; $("td-o-water").checked = st.water; $("td-o-mol").checked = st.mol; $("td-o-pulse").checked = st.pulse;
 		Array.prototype.forEach.call(root.querySelectorAll("#td-view button"), function (b) { b.setAttribute("aria-pressed", b.dataset.view === st.view ? "true" : "false"); });
 		Array.prototype.forEach.call(root.querySelectorAll("#td-t-mode button"), function (b) { b.setAttribute("aria-pressed", b.dataset.mode === tr.mode ? "true" : "false"); });
 		$("td-t-d").value = tr.d; $("td-t-age").value = tr.age; $("td-t-sp").value = Math.round(R.toSlider(tr.beta) * 1000); $("td-t-round").checked = tr.round;
