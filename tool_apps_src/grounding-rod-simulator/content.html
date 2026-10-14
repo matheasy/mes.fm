@@ -15,7 +15,8 @@
 				<div class="em-chips gr-sc" id="gr-sc" role="group" aria-label="What to show">
 					<button type="button" data-sc="normal">Normal wiring</button><button type="button" data-sc="egc">Fault, proper ground wire</button><button type="button" data-sc="rod">Fault, rod only</button><button type="button" data-sc="none">Fault, no ground at all</button><button type="button" data-sc="light">Lightning nearby</button>
 				</div></div>
-			<div class="gr-svgwrap"><svg id="gr-svg" viewBox="0 0 900 440" role="img" aria-labelledby="gr-svg-t" xmlns="http://www.w3.org/2000/svg">
+			<div class="gr-zbar" role="group" aria-label="Zoom the picture"><button type="button" id="gr-zin" title="Zoom in" aria-label="Zoom in">＋</button><button type="button" id="gr-zout" title="Zoom out" aria-label="Zoom out">−</button><button type="button" id="gr-zreset" title="Back to the whole picture">⌂ Reset</button><button type="button" id="gr-zfull" title="Fill the window" aria-pressed="false">⛶ Expand</button><span class="gr-zhint" id="gr-zhint">Drag to move · Ctrl/⌘ + scroll or pinch to zoom · double-click to zoom in</span></div>
+			<div class="gr-svgwrap" id="gr-svgwrap"><svg id="gr-svg" viewBox="0 0 900 440" role="img" aria-labelledby="gr-svg-t" xmlns="http://www.w3.org/2000/svg">
 				<title id="gr-svg-t">A house wired to the utility transformer, with its ground rods in the soil</title>
 				<defs><marker id="gr-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="gr-arrow"/></marker></defs>
 				<rect x="0" y="250" width="900" height="190" class="gr-soil"/>

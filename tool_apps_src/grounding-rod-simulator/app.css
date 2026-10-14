@@ -41,3 +41,8 @@
 	#gr-svg .gr-s {paint-order:stroke;stroke:#e8d3a8;stroke-width:5px;stroke-linejoin:round;} #gr-svg .gr-lead {stroke:#16a34a;stroke-width:2;}
 	body.dark-mode #gr-svg .gr-s {stroke:#3b2f17;} body.dark-mode #gr-svg .gr-lead {stroke:#86efac;}
 	#gr .gr-truth ul, #gr .gr-check {margin:0.4em 0 0.4em 0;padding-left:1.3em;list-style:disc;} #gr .gr-truth li, #gr .gr-check li {margin:0.75em 0;line-height:1.7;} #gr .gr-truth p {line-height:1.7;} #gr .gr-truth li strong {color:inherit;}
+
+	.gr-zbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0 0 0.5em;} .gr-zbar button {cursor:pointer;font:inherit;font-size:0.9em;min-width:2.4em;padding:0.3em 0.7em;border-radius:0.5em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223;} .gr-zbar button:hover {border-color:var(--accent);} .gr-zbar button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;} .gr-zhint {font-size:0.8em;opacity:0.7;}
+	body.dark-mode #gr .gr-zbar button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} body.dark-mode #gr .gr-zbar button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	#gr-svg {cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;} #gr-svg.gr-zoomed {touch-action:none;} #gr-svg.gr-drag {cursor:grabbing;}
+	#gr-house.gr-full {position:fixed;inset:0;z-index:100000;margin:0;border-radius:0;overflow:auto;background:#fff;padding:0.8em 1em;} body.dark-mode #gr-house.gr-full {background:#161616;} #gr-house.gr-full #gr-svg {min-width:0;max-height:72vh;}

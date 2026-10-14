@@ -258,6 +258,29 @@
 		$("gr-cap").innerHTML = cap; $("gr-flab").textContent = fl;
 	}
 	$("gr-sc").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; S.sc = b.dataset.sc; diagram(); };
+
+	/* ---- zoom / pan / reset / expand for the house picture ---- */
+	(function () {
+		var svg = $("gr-svg"), W0 = 900, H0 = 440, V = { x: 0, y: 0, w: W0 }, pts = {}, drag = null, pinch = null;
+		function clamp() { V.w = Math.max(W0 / 8, Math.min(W0, V.w)); var h = V.w * H0 / W0; V.x = Math.max(0, Math.min(W0 - V.w, V.x)); V.y = Math.max(0, Math.min(H0 - h, V.y)); }
+		function apply() { clamp(); svg.setAttribute("viewBox", V.x.toFixed(1) + " " + V.y.toFixed(1) + " " + V.w.toFixed(1) + " " + (V.w * H0 / W0).toFixed(1)); svg.classList.toggle("gr-zoomed", V.w < W0 - 0.5); $("gr-zhint").style.visibility = "visible"; }
+		function zoomAt(f, px, py) { var r = svg.getBoundingClientRect(), fx = (px - r.left) / r.width, fy = (py - r.top) / r.height, ow = V.w, nh; V.w = Math.max(W0 / 8, Math.min(W0, V.w / f)); V.x += (ow - V.w) * fx; V.y += (ow - V.w) * H0 / W0 * fy; apply(); }
+		function center(f) { var r = svg.getBoundingClientRect(); zoomAt(f, r.left + r.width / 2, r.top + r.height / 2); }
+		$("gr-zin").onclick = function () { center(1.5); }; $("gr-zout").onclick = function () { center(1 / 1.5); };
+		$("gr-zreset").onclick = function () { V = { x: 0, y: 0, w: W0 }; apply(); };
+		$("gr-zfull").onclick = function () { var on = !$("gr-house").classList.contains("gr-full"); $("gr-house").classList.toggle("gr-full", on); document.documentElement.style.overflow = on ? "hidden" : ""; this.setAttribute("aria-pressed", on ? "true" : "false"); this.textContent = on ? "✕ Close" : "⛶ Expand"; };
+		document.addEventListener("keydown", function (e) { if (e.key === "Escape" && $("gr-house").classList.contains("gr-full")) $("gr-zfull").click(); });
+		svg.addEventListener("wheel", function (e) { if (!(e.ctrlKey || e.metaKey || $("gr-house").classList.contains("gr-full"))) return; e.preventDefault(); zoomAt(Math.exp(-e.deltaY * (e.deltaMode === 1 ? 16 : 1) * 0.0025), e.clientX, e.clientY); }, { passive: false });
+		svg.addEventListener("dblclick", function (e) { zoomAt(e.shiftKey ? 1 / 1.8 : 1.8, e.clientX, e.clientY); });
+		svg.addEventListener("pointerdown", function (e) { if (e.button) return; pts[e.pointerId] = [e.clientX, e.clientY]; try { svg.setPointerCapture(e.pointerId); } catch (x) {} var k = Object.keys(pts); if (k.length === 2) { pinch = { d: Math.hypot(pts[k[0]][0] - pts[k[1]][0], pts[k[0]][1] - pts[k[1]][1]) }; drag = null; } else { drag = { x: e.clientX, y: e.clientY, vx: V.x, vy: V.y }; svg.classList.add("gr-drag"); } });
+		svg.addEventListener("pointermove", function (e) {
+			if (!pts[e.pointerId]) return; pts[e.pointerId] = [e.clientX, e.clientY]; var k = Object.keys(pts);
+			if (k.length === 2 && pinch) { var d = Math.hypot(pts[k[0]][0] - pts[k[1]][0], pts[k[0]][1] - pts[k[1]][1]); if (pinch.d > 0 && d > 0) zoomAt(d / pinch.d, (pts[k[0]][0] + pts[k[1]][0]) / 2, (pts[k[0]][1] + pts[k[1]][1]) / 2); pinch.d = d; return; }
+			if (drag && V.w < W0 - 0.5) { var r = svg.getBoundingClientRect(), s = V.w / r.width; V.x = drag.vx - (e.clientX - drag.x) * s; V.y = drag.vy - (e.clientY - drag.y) * s; apply(); }
+		});
+		function up(e) { delete pts[e.pointerId]; pinch = null; drag = null; svg.classList.remove("gr-drag"); }
+		svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up); svg.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") up(e); });
+	})();
 	var P = { rod: $("gr-p-rod"), fault: $("gr-p-fault"), light: $("gr-p-light"), static: $("gr-p-static"), rules: $("gr-p-rules") };
 	function show() { S.sc = TABSC[S.tab] || "normal"; Object.keys(P).forEach(function (k) { P[k].hidden = k !== S.tab; }); Array.prototype.forEach.call($("gr-tabs").children, function (b) { b.setAttribute("aria-pressed", b.dataset.tab === S.tab ? "true" : "false"); }); }
 	function all() { rodTab(); faultTab(); lightTab(); staticTab(); rulesTab(); diagram(); }
