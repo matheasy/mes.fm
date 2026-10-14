@@ -1,0 +1,17 @@
+	.ex-drop {border:2px dashed #b7bfcb;border-radius:0.7em;padding:1.8em 1em;text-align:center;cursor:pointer;background:#fafbfc;}
+	.ex-drop:hover, .ex-drop:focus, .ex-drop.is-over {border-color:var(--accent);background:var(--tint);outline:none;}
+	.ex-drop__big {font-size:1.3em;font-weight:700;color:#1e2733;} .ex-drop__sub {margin-top:0.4em;color:#6a7280;font-size:0.92em;line-height:1.5;}
+	.ex kbd {font:inherit;font-size:0.85em;border:1px solid #b9c1cc;border-bottom-width:2px;border-radius:0.3em;padding:0 0.35em;background:#fff;color:#333;}
+	.ex-flags {display:flex;flex-direction:column;gap:0.5em;margin:1em 0;} .ex-flags:empty {display:none;}
+	.ex-flag {padding:0.7em 1em;border-radius:0.55em;background:#fff4e5;border:1px solid #f0c27a;color:#5a3b00;line-height:1.45;font-weight:600;} .ex-flag.bad {background:#fff1f2;border-color:#e11d48;color:#7f1020;}
+	.ex-top {display:flex;gap:1em;flex-wrap:wrap;align-items:flex-start;}
+	.ex-thumb {flex:0 1 16em;min-width:12em;} .ex-thumb img {display:block;max-width:100%;max-height:16em;border-radius:0.5em;border:1px solid #dfe4ea;margin:0 auto;}
+	.ex-file {margin-top:0.5em;font-size:0.85em;color:#6a7280;word-break:break-all;text-align:center;}
+	.ex-cards {flex:1 1 20em;margin:0;}
+	.ex-loc {margin-top:1em;} .ex-loc b {font-size:1.1em;}
+	.ex-acts {margin-top:1em;gap:0.5em;}
+	.ex-tbl td:nth-child(3) {white-space:normal;word-break:break-word;text-align:left;} .ex-tbl th:nth-child(3) {text-align:left;} .ex-tbl td:nth-child(2), .ex-tbl th:nth-child(2) {text-align:left;}
+	.ex-tbl tr.sens td:nth-child(3) {color:#b3261e;font-weight:600;}
+	#ex-find {margin-bottom:0.7em;}
+	body.dark-mode #ex .ex-drop {background:#262626;border-color:#555;} body.dark-mode #ex .ex-drop__big {color:#eee;} body.dark-mode #ex kbd {background:#333;color:#eee;border-color:#666;}
+	body.dark-mode #ex .ex-flag {background:#3a2c10;border-color:#7a5a1a;color:#f3dca8;} body.dark-mode #ex .ex-flag.bad {background:#3a1118;border-color:#e11d48;color:#ffc9d1;} body.dark-mode #ex .ex-tbl tr.sens td:nth-child(3) {color:#ff9a92;}

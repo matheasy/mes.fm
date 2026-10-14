@@ -1,9 +1,9 @@
 	<div class="tu cy" id="cy" data-views="{{VIEWS}}">
 		<p class="tu-note cy-private">&#128274; Private by design: your dates are saved only in this browser (never uploaded, no account) and are shared by the three calculators below.</p>
-		<nav class="cy-tabs" aria-label="Calculators"><a href="/ovulation-calculator" data-tab="ov">Ovulation</a><a href="/period-calculator" data-tab="per">Period &amp; cycle</a><a href="/due-date-calculator" data-tab="due">Due date</a></nav>
+		<nav class="cy-tabs" aria-label="Calculators"><a href="/ovulation-calculator" data-tab="ov">Ovulation</a><a href="/period-calculator" data-tab="per">Period &amp; cycle</a><a href="/pregnancy-test-calculator" data-tab="dpo">When to test</a><a href="/due-date-calculator" data-tab="due">Due date</a><a href="/weeks-pregnant-calculator" data-tab="weeks">Weeks pregnant</a><a href="/conception-date-calculator" data-tab="conc">Conception date</a></nav>
 
 		<!-- ===== inputs: ovulation + period ===== -->
-		<section data-view="ov per" aria-label="Your cycle">
+		<section data-view="ov per dpo" aria-label="Your cycle">
 			<div class="tu-card">
 				<div class="tu-row cy-inputs">
 					<div class="tu-field cy-f-date"><label class="tu-label" for="cy-lmp">First day of your last period</label>
@@ -22,6 +22,7 @@
 					<div class="tu-row cy-opts">
 						<div class="tu-field"><label class="tu-label" for="cy-plen">Period lasts (days)</label><input id="cy-plen" class="tu-input" type="number" inputmode="numeric" min="1" max="12" value="5"></div>
 						<div class="tu-field"><label class="tu-label" for="cy-luteal">Luteal phase (days)</label><input id="cy-luteal" class="tu-input" type="number" inputmode="numeric" min="8" max="18" value="14"><div class="tu-note">Ovulation to next period. 14 is typical (11&ndash;16 is normal).</div></div>
+						<div class="tu-field"><label class="tu-label" for="cy-ovd">Confirmed ovulation date</label><input id="cy-ovd" class="tu-input" type="date"><div class="tu-note">Optional: from a temperature chart or an ultrasound. Replaces the estimate.</div></div>
 						<div class="tu-field"><label class="tu-label" for="cy-lh">Positive ovulation (LH) test on</label><input id="cy-lh" class="tu-input" type="date"><div class="tu-note">Optional. Ovulation usually follows 24&ndash;36 hours later, so this sharpens the estimate.</div><button type="button" class="tu-chip" id="cy-lh-clear" hidden>Clear LH test</button></div>
 					</div>
 					<label class="cy-check"><input type="checkbox" id="cy-mon"> Calendar weeks start on Monday</label>
@@ -89,7 +90,7 @@
 		</section>
 
 		<!-- ===== due date ===== -->
-		<section data-view="due" aria-label="Due date">
+		<section data-view="due conc weeks" aria-label="Dates">
 			<div class="tu-card">
 				<div class="tu-row cy-inputs">
 					<div class="tu-field"><label class="tu-label" for="cy-method">Calculate my due date from</label>
@@ -120,6 +121,44 @@
 				<div class="tu-card tu-table-wrap"><table class="tu-table cy-ms" id="cy-ms"></table></div>
 				<details class="cy-weeks"><summary>Week-by-week calendar (weeks 1&ndash;42)</summary><div class="tu-card tu-table-wrap"><table class="tu-table" id="cy-weeks"></table></div></details>
 			</div>
+		</section>
+
+		<!-- ===== pregnancy test timing ===== -->
+		<section data-view="dpo" id="cy-dpo-out" hidden>
+			<div class="tu-card tu-card--tint cy-hero" aria-live="polite">
+				<div class="cy-hero__k">Best day to take a pregnancy test</div>
+				<div class="cy-hero__big" id="cy-dpo-big">&mdash;</div>
+				<div class="cy-hero__sub" id="cy-dpo-sub"></div>
+				<div class="cy-hero__status" id="cy-dpo-status"></div>
+				<div class="tu-row cy-hero__btns"><button type="button" class="tu-btn tu-btn--primary" id="cy-dpo-ics">&#128197; Add test days to my calendar</button><button type="button" class="tu-btn tu-btn--ghost" id="cy-dpo-copy">Copy result</button></div>
+			</div>
+			<div class="tu-stats" id="cy-dpo-stats"></div>
+			<h2>Day by day after ovulation</h2>
+			<div class="tu-card tu-table-wrap"><table class="tu-table cy-ms" id="cy-dpo-tbl"></table></div>
+		</section>
+
+		<!-- ===== conception date ===== -->
+		<section data-view="conc" id="cy-conc-out" hidden>
+			<div class="tu-card tu-card--tint cy-hero" aria-live="polite">
+				<div class="cy-hero__k">Most likely conception date</div>
+				<div class="cy-hero__big" id="cy-conc-big">&mdash;</div>
+				<div class="cy-hero__sub" id="cy-conc-sub"></div>
+				<div class="tu-row cy-hero__btns"><button type="button" class="tu-btn tu-btn--ghost" id="cy-conc-copy">Copy result</button><button type="button" class="tu-btn tu-btn--ghost" id="cy-conc-link">Copy link</button></div>
+			</div>
+			<div class="tu-stats" id="cy-conc-stats"></div>
+		</section>
+
+		<!-- ===== weeks pregnant ===== -->
+		<section data-view="weeks" id="cy-weeks-out" hidden>
+			<div class="tu-card tu-card--tint cy-hero" aria-live="polite">
+				<div class="cy-hero__k" id="cy-wk-k">You are</div>
+				<div class="cy-hero__big" id="cy-wk-big">&mdash;</div>
+				<div class="cy-hero__sub" id="cy-wk-sub"></div>
+				<div class="cy-prog" role="img" aria-label="Progress through pregnancy"><div class="cy-prog__fill" id="cy-wk-fill"></div><i style="left:35%"></i><i style="left:70%"></i></div>
+				<div class="cy-prog__lbl"><span>1st trimester</span><span>2nd trimester</span><span>3rd trimester</span></div>
+			</div>
+			<h2>Week by week</h2>
+			<div class="tu-card tu-table-wrap"><table class="tu-table cy-ms" id="cy-wk-tbl"></table></div>
 		</section>
 
 		<div class="tu-toast" id="cy-toast" role="status" aria-live="polite"></div>

@@ -1,0 +1,17 @@
+	.ct-main {text-align:center;padding:1.4em 1em;}
+	.ct-status {font-size:1.1em;min-height:1.6em;color:#333;margin-bottom:0.8em;font-weight:600;}
+	.ct-btn {width:min(17em,80vw);height:min(17em,80vw);border-radius:50%;border:0;background:var(--accent);color:#fff;font:inherit;cursor:pointer;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:0.2em;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+	.ct-btn:active {transform:scale(0.98);}
+	.ct-btn.on {background:#1e2733;box-shadow:0 0 0 0.5em rgba(190,24,93,0.25),0 0.4em 1.2em rgba(0,0,0,0.3);animation:ctpulse 1.6s ease-in-out infinite;}
+	@keyframes ctpulse {50% {box-shadow:0 0 0 1em rgba(190,24,93,0.12),0 0.4em 1.2em rgba(0,0,0,0.3);}}
+	.ct-btn__t {font-size:3.4em;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;} .ct-btn__s {font-size:1.1em;opacity:0.9;}
+	.ct-since {margin-top:0.8em;color:#6a7280;min-height:1.4em;}
+	.ct-alert {margin:1em 0;padding:1em 1.1em;border-radius:0.6em;background:#fff1f2;border:2px solid #e11d48;color:#7f1020;font-weight:600;line-height:1.5;} .ct-alert[hidden] {display:none;}
+	.ct-opts {display:flex;flex-wrap:wrap;gap:0.4em 1.5em;margin-top:0.9em;} .ct-check {display:flex;gap:0.5em;align-items:center;cursor:pointer;} .ct-check input {width:1.1em;height:1.1em;accent-color:var(--accent);}
+	.ct-chart {display:flex;align-items:flex-end;gap:3px;height:7em;margin-bottom:0.8em;} .ct-chart:empty {display:none;}
+	.ct-bar {flex:1;min-width:3px;background:var(--accent);border-radius:2px 2px 0 0;opacity:0.85;position:relative;} .ct-bar.ok {background:#2f9e57;}
+	.ct-tbl-act {white-space:nowrap;} #ct .tu-table button {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#555;border-radius:0.3em;padding:0.2em 0.6em;font:inherit;font-size:0.85em;}
+	#ct .tu-table td {white-space:normal;}
+	.ct-disc {margin-top:1.2em;}
+	body.dark-mode #ct .ct-status {color:#eee;} body.dark-mode #ct .ct-alert {background:#3a1118;color:#ffc9d1;border-color:#e11d48;} body.dark-mode #ct .tu-table button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;}
+	body.dark-mode #ct .ct-btn.on {background:#3a3f48;}

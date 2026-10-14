@@ -1,0 +1,46 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ct" id="ct">
+		<div class="tu-card ct-main">
+			<div class="ct-status" id="ct-status" aria-live="polite">Tap <b>Start</b> when a contraction begins.</div>
+			<button type="button" class="ct-btn" id="ct-btn" aria-label="Start a contraction"><span class="ct-btn__t" id="ct-t">Start</span><span class="ct-btn__s" id="ct-s">contraction</span></button>
+			<div class="ct-since" id="ct-since"></div>
+		</div>
+		<div class="ct-alert" id="ct-alert" role="status" hidden></div>
+		<div class="tu-stats" id="ct-stats"></div>
+		<div class="tu-card">
+			<div class="tu-row" style="align-items:flex-end;justify-content:space-between">
+				<div class="tu-field" style="flex:1 1 14em"><label class="tu-label" for="ct-rule">Tell me when contractions follow the</label>
+					<select id="ct-rule" class="tu-select"><option value="511">5-1-1 rule (every 5 min, 1 min long, for 1 hour)</option><option value="411">4-1-1 rule</option><option value="311">3-1-1 rule</option><option value="5121">5-1-2 rule (for 2 hours)</option></select></div>
+				<div class="tu-chips"><button type="button" class="tu-chip" id="ct-add">+ Add one by hand</button><button type="button" class="tu-chip" id="ct-undo" hidden>Undo</button></div>
+			</div>
+			<div class="ct-opts"><label class="ct-check"><input type="checkbox" id="ct-wake"> Keep the screen on</label><label class="ct-check"><input type="checkbox" id="ct-buzz"> Vibrate / beep when I tap</label></div>
+		</div>
+		<h2>Your contractions</h2>
+		<div class="tu-card">
+			<div class="ct-chart" id="ct-chart" role="img" aria-label="Time between contractions"></div>
+			<div class="tu-table-wrap"><table class="tu-table" id="ct-tbl"><thead><tr><th>#</th><th>Started</th><th>Lasted</th><th>Since previous</th><th></th></tr></thead><tbody id="ct-body"></tbody></table></div>
+			<p class="tu-note" id="ct-empty">Nothing yet.</p>
+			<div class="tu-row" style="margin-top:0.8em"><button type="button" class="tu-btn tu-btn--ghost" id="ct-copy">Copy log</button><button type="button" class="tu-btn tu-btn--ghost" id="ct-csv">Download CSV</button><button type="button" class="tu-btn tu-btn--ghost" id="ct-clear">Start a new session</button></div>
+		</div>
+		<div class="tu-toast" id="ct-toast" role="status" aria-live="polite"></div>
+		<p class="tu-note ct-disc"><b>Not medical advice.</b> The 5-1-1 rule is a common guide for first babies; your provider may give you different numbers. Call your doctor, midwife or hospital straight away if your water breaks, you bleed, the baby moves less, the pain is severe or constant, or you have regular contractions before 37 weeks. If in doubt, call. Your log stays in this browser.</p>
+		<div class="tu-seo">
+			<h2>Contraction timer for labour</h2>
+			<p>A simple contraction timer made for a tired hand: one big button. Tap it when a contraction starts and again when it ends. The timer records how long each one lasted and how far apart they are, shows your average over the last hour, and tells you when your contractions have followed the <strong>5-1-1 rule</strong> (every 5 minutes, lasting 1 minute, for 1 hour) so you know when it is time to call.</p>
+			<h3>How to use it</h3>
+			<ul>
+				<li><strong>Start</strong> at the first sign of a contraction, <strong>Stop</strong> when it eases. The gap is measured from the <em>start</em> of one contraction to the start of the next.</li>
+				<li>Your log is saved on this phone even if you close the page. Tap <em>Keep the screen on</em> so it does not go to sleep.</li>
+				<li>Forgot to tap? <em>Add one by hand</em>. Tapped by mistake? <em>Undo</em> or remove a row.</li>
+				<li>Use <em>Copy log</em> or <em>Download CSV</em> to show your midwife or doctor.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>What is the 5-1-1 rule?</h4>
+			<p>Contractions about 5 minutes apart, each lasting about 1 minute, for at least 1 hour. It is a typical signal to head to the hospital or birth centre for a first baby. Some providers use 4-1-1 or 3-1-1, especially if you live far away or have had a quick labour before. Choose the one your provider gave you.</p>
+			<h4>How do I tell Braxton Hicks from real contractions?</h4>
+			<p>Braxton Hicks contractions are irregular, usually ease with rest, water or changing position, and do not get closer together. Real labour contractions become longer, stronger and closer together and do not go away when you move or rest.</p>
+			<h4>When should I call right away?</h4>
+			<p>If your water breaks, you have bleeding, the baby is moving much less, the pain is severe or constant, or you are less than 37 weeks and having regular contractions.</p>
+			<p class="tu-note">Waiting for the big day? See your <a href="/due-date-calculator">due date</a> and <a href="/weeks-pregnant-calculator">weeks pregnant</a>.</p>
+		</div>
+	</div>

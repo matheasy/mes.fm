@@ -1,0 +1,46 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu dl" id="dl">
+		<div class="tu-card">
+			<label class="tu-label" for="dl-q">Website or domain name</label>
+			<div class="dl-row"><input id="dl-q" class="tu-input tu-input--big" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="example.com or https://www.example.com/page"><button type="button" class="tu-btn tu-btn--primary dl-go" id="dl-go">Look up</button></div>
+			<div class="tu-chips" id="dl-recent" aria-label="Recent lookups"></div>
+			<p class="tu-note">Shows who registered a domain and when, how old the site is, where it is hosted, and how its DNS and email are set up. It only asks public registries and DNS servers; it never visits the website itself.</p>
+		</div>
+		<div class="dl-status" id="dl-status" role="status" aria-live="polite" hidden></div>
+		<div id="dl-out" hidden>
+			<div class="tu-card tu-card--tint dl-hero">
+				<div class="dl-hero__k" id="dl-host"></div>
+				<div class="dl-hero__big" id="dl-age">&mdash;</div>
+				<div class="dl-hero__sub" id="dl-since"></div>
+				<div class="tu-row dl-hero__btns"><button type="button" class="tu-btn tu-btn--ghost" id="dl-copy">Copy summary</button><button type="button" class="tu-btn tu-btn--ghost" id="dl-link">Copy link</button><button type="button" class="tu-btn tu-btn--ghost" id="dl-json">Copy raw data</button></div>
+			</div>
+			<h2>Things to know</h2>
+			<ul class="dl-sig" id="dl-sig"></ul>
+			<div class="tu-stats" id="dl-cards"></div>
+			<h2>Registration</h2>
+			<div class="tu-card"><dl class="dl-kv" id="dl-reg"></dl></div>
+			<h2>Hosting and network</h2>
+			<div class="tu-card tu-table-wrap"><table class="tu-table dl-tbl" id="dl-ips"></table><p class="tu-note" id="dl-iptip"></p></div>
+			<h2>DNS records</h2>
+			<div class="tu-card tu-table-wrap"><table class="tu-table dl-tbl" id="dl-dns"></table></div>
+			<h2>Look deeper</h2>
+			<div class="tu-card"><div class="dl-links" id="dl-links"></div></div>
+		</div>
+		<div class="tu-toast" id="dl-toast" role="status" aria-live="polite"></div>
+		<div class="tu-seo">
+			<h2>Domain lookup: who owns a website, how old it is and where it is hosted</h2>
+			<p>Type any website or domain name to see its public registration record (the modern replacement for WHOIS, called RDAP), the <strong>age of the domain</strong>, the registrar, when it expires, its name servers, the company that <strong>hosts</strong> the site, the DNS records, how email is set up, and when the Internet Archive first saved it. Findings are explained in plain language, with warnings such as a very new domain or a registration about to expire.</p>
+			<h3>Can I see who owns the domain?</h3>
+			<p>Usually not by name. Since 2018 (privacy laws such as the GDPR) most registrars hide the owner's name, address, phone and email, and many sell a privacy service. When the record does show the owner, this page shows it. Otherwise you can still learn the registrar and its abuse contact, how old the domain is, who hosts it and what else is on the same server. For harassment, fraud or copyright problems, report to the registrar's abuse contact and the host.</p>
+			<h3>Questions</h3>
+			<h4>How can I tell if a website is a scam?</h4>
+			<p>No single sign proves it, but a domain registered a few days or weeks ago, a hidden owner, no business email and a different company name from the one it claims are all reasons for caution. Check reviews, look for a real address and pay with protection.</p>
+			<h4>What is the difference between the registrar and the host?</h4>
+			<p>The registrar sold the domain name (like GoDaddy or Namecheap). The host runs the server where the website's files live (like AWS, Vercel or a web hosting company). They are often different companies.</p>
+			<h4>Why does the hosting show Cloudflare?</h4>
+			<p>Cloudflare is a proxy / CDN that sits in front of millions of sites. Its address shows instead of the real server, which is hidden on purpose.</p>
+			<h4>Is this the same as WHOIS?</h4>
+			<p>WHOIS is the older text protocol. RDAP is its replacement, now used by registries and required by ICANN, and returns the same kind of information in a structured form. Some country domains still publish only through WHOIS, so a few lookups come back empty.</p>
+			<p class="tu-note">Checking a picture instead? Try <a href="/reverse-image-search">Reverse Image Search</a> or the <a href="/exif-viewer">EXIF Viewer</a>.</p>
+		</div>
+	</div>

@@ -4,7 +4,7 @@
 	var C = MESCycle, root = document.getElementById('cy'); if (!root) return;
 	var VIEW = root.getAttribute('data-views') || 'ov', $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-cycle:v1';
-	var S = { lmp: null, cycle: 28, vary: false, short: 26, long: 32, plen: 5, luteal: 14, lh: null, mon: false, starts: [], dm: 'lmp', dd: null, dcycle: 28, demb: 5, dgw: 8, dgd: 0 };
+	var S = { lmp: null, cycle: 28, vary: false, short: 26, long: 32, plen: 5, luteal: 14, lh: null, ovd: null, mon: false, starts: [], dm: 'lmp', dd: null, dcycle: 28, demb: 5, dgw: 8, dgd: 0 };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 	var TODAY = C.today();
@@ -28,13 +28,14 @@
 	Array.prototype.forEach.call(root.querySelectorAll('[data-tab]'), function (a) { if (a.getAttribute('data-tab') === VIEW) { a.classList.add('is-on'); a.setAttribute('aria-current', 'page'); } });
 
 	/* ---------- model ---------- */
+	function lhEff() { return S.ovd != null ? S.ovd - 1 : S.lh; }
 	function eff() {   // cycle length to use
 		var c = S.cycle; return Math.max(18, Math.min(60, c || 28));
 	}
 	/* the cycle row (from lmp, repeated) that is current or next: first one whose next period is today or later */
 	function build() {
 		if (S.lmp == null) return null;
-		var cycle = eff(), rows = C.project({ lmp: S.lmp, cycle: cycle, luteal: S.luteal, periodLen: S.plen, lh: S.lh }, 40), i, cur = 0;
+		var cycle = eff(), rows = C.project({ lmp: S.lmp, cycle: cycle, luteal: S.luteal, periodLen: S.plen, lh: lhEff() }, 40), i, cur = 0;
 		for (i = 0; i < rows.length; i++) if (rows[i].next >= TODAY) { cur = i; break; }
 		if (i === rows.length) cur = rows.length - 1;
 		return { rows: rows, cur: cur, cycle: cycle };
@@ -46,7 +47,7 @@
 		S.lmp = d; S.cycle = num('cy-cycle', 18, 60, 28); S.vary = $('cy-vary').checked; S.short = num('cy-short', 18, 60, 26); S.long = num('cy-long', 18, 60, 32);
 		if (S.short > S.long) { var t = S.short; S.short = S.long; S.long = t; }
 		S.plen = num('cy-plen', 1, 12, 5); S.luteal = num('cy-luteal', 8, 18, 14); S.mon = $('cy-mon').checked;
-		S.lh = $('cy-lh').value ? C.parseISO($('cy-lh').value) : null;
+		S.lh = $('cy-lh').value ? C.parseISO($('cy-lh').value) : null; S.ovd = $('cy-ovd').value ? C.parseISO($('cy-ovd').value) : null;
 		if (d != null) {
 			if (d > TODAY + 1) msg = 'That date is in the future: the first day of your <b>last</b> period is the most recent one that has already started.';
 			else if (TODAY - d > 400) msg = 'That was over a year ago. Enter the first day of your most recent period for the best estimate.';
@@ -58,8 +59,8 @@
 	function writeInputs() {
 		if (S.lmp != null) $('cy-lmp').value = C.iso(S.lmp);
 		$('cy-cycle').value = S.cycle; $('cy-vary').checked = S.vary; $('cy-short').value = S.short; $('cy-long').value = S.long; $('cy-plen').value = S.plen; $('cy-luteal').value = S.luteal; $('cy-mon').checked = S.mon;
-		if (S.lh != null) $('cy-lh').value = C.iso(S.lh); $('cy-vary-row').hidden = !S.vary; $('cy-lh-clear').hidden = S.lh == null;
-		if (S.lh != null || S.plen !== 5 || S.luteal !== 14 || S.mon) { var d = root.querySelector('.cy-adv'); if (d) d.open = true; }
+		if (S.lh != null) $('cy-lh').value = C.iso(S.lh); if (S.ovd != null) $('cy-ovd').value = C.iso(S.ovd); $('cy-vary-row').hidden = !S.vary; $('cy-lh-clear').hidden = S.lh == null;
+		if (S.lh != null || S.ovd != null || S.plen !== 5 || S.luteal !== 14 || S.mon) { var d = root.querySelector('.cy-adv'); if (d) d.open = true; }
 	}
 
 	/* ---------- calendar ---------- */
@@ -115,8 +116,8 @@
 	function renderOv() {
 		var m = build(), out = $('cy-ov-out'); if (!m) { out.hidden = true; $('cy-cal-sec').hidden = true; return; }
 		out.hidden = false; $('cy-cal-sec').hidden = false;
-		var r = m.rows[m.cur], p = C.predict({ lmp: r.start, cycle: m.cycle, luteal: S.luteal, periodLen: S.plen, lh: m.cur === 0 ? S.lh : null }), status = '';
-		var range = S.vary && !(m.cur === 0 && S.lh != null) ? C.predictRange({ lmp: r.start, shortest: S.short, longest: S.long, luteal: S.luteal }) : null;
+		var r = m.rows[m.cur], p = C.predict({ lmp: r.start, cycle: m.cycle, luteal: S.luteal, periodLen: S.plen, lh: m.cur === 0 ? lhEff() : null }), status = '';
+		var range = S.vary && !(m.cur === 0 && lhEff() != null) ? C.predictRange({ lmp: r.start, shortest: S.short, longest: S.long, luteal: S.luteal }) : null;
 		$('cy-ov-k').textContent = p.ovulation < TODAY ? 'Ovulation this cycle was around' : 'Estimated ovulation';
 		$('cy-ov-big').textContent = range ? C.fmtShort(range.ovEarliest) + ' – ' + C.fmtShort(range.ovLatest) : C.fmt(p.ovulation);
 		var fs = range ? range.fertileStart : p.fertileStart, fe = range ? range.fertileEnd : p.fertileEnd;
@@ -147,7 +148,7 @@
 		var m = build(); if (!m) return [];
 		var ev = [], rows = m.rows.slice(m.cur, m.cur + 6);
 		rows.forEach(function (x, i) {
-			var o = (i === 0 && m.cur === 0 && S.lh != null) ? S.lh + 1 : x.ovulation;
+			var o = (i === 0 && m.cur === 0 && lhEff() != null) ? lhEff() + 1 : x.ovulation;
 			ev.push({ start: x.fertileStart, end: x.fertileEnd, title: 'Fertile window', note: 'Estimated fertile window (6 days ending on ovulation). An estimate from mes.fm/ovulation-calculator, not medical advice.' });
 			ev.push({ start: o, title: 'Estimated ovulation', note: 'Estimated ovulation day from mes.fm/ovulation-calculator.' });
 			ev.push({ start: x.next, end: x.next + S.plen - 1, title: 'Expected period', note: 'Expected period from mes.fm/ovulation-calculator.' });
@@ -155,7 +156,7 @@
 		return ev;
 	}
 	function ovText() {
-		var m = build(); if (!m) return ''; var r = m.rows[m.cur], p = C.predict({ lmp: r.start, cycle: m.cycle, luteal: S.luteal, periodLen: S.plen, lh: m.cur === 0 ? S.lh : null });
+		var m = build(); if (!m) return ''; var r = m.rows[m.cur], p = C.predict({ lmp: r.start, cycle: m.cycle, luteal: S.luteal, periodLen: S.plen, lh: m.cur === 0 ? lhEff() : null });
 		return 'Ovulation: ' + C.fmt(p.ovulation) + '\nFertile window: ' + C.fmtShort(p.fertileStart) + ' – ' + C.fmtShort(p.fertileEnd) + '\nNext period: ' + C.fmt(p.nextPeriod) + '\n(Estimate from mes.fm/ovulation-calculator)';
 	}
 
@@ -182,7 +183,7 @@
 		out.hidden = false; $('cy-cal-sec').hidden = false;
 		var st = logStats(), ci = m.cur;
 		if (m.rows[0].next < TODAY && TODAY - m.rows[0].next <= 14) ci = 0;   /* a period only a little overdue: keep showing it as expected, not skip to the next one */
-		var r = m.rows[ci], p = C.predict({ lmp: r.start, cycle: m.cycle, luteal: S.luteal, periodLen: S.plen, lh: ci === 0 ? S.lh : null });
+		var r = m.rows[ci], p = C.predict({ lmp: r.start, cycle: m.cycle, luteal: S.luteal, periodLen: S.plen, lh: ci === 0 ? lhEff() : null });
 		var lo = S.vary ? S.short : (st && st.count > 1 ? st.min : null), hi = S.vary ? S.long : (st && st.count > 1 ? st.max : null);
 		var late = TODAY - p.nextPeriod;
 		$('cy-per-k').textContent = p.nextPeriod < TODAY ? 'Your period was expected' : 'Your next period';
@@ -222,8 +223,10 @@
 	}
 	function renderDue() {
 		var mdl = dueModel(), out = $('cy-due-out'), msg = '';
+		if (VIEW === 'conc' && $('cy-method').querySelector('option[value=conc]')) { $('cy-method').removeChild($('cy-method').querySelector('option[value=conc]')); if (S.dm === 'conc') { S.dm = 'lmp'; $('cy-method').value = 'lmp'; } }
 		var lab = { lmp: 'First day of your last period', conc: 'Date of conception', ivf: 'Embryo transfer date', scan: 'Date of the scan', due: 'Your due date' }[S.dm];
 		$('cy-d-date-l').textContent = lab; $('cy-d-lmp-row').hidden = S.dm !== 'lmp'; $('cy-d-ivf-row').hidden = S.dm !== 'ivf'; $('cy-d-scan-row').hidden = S.dm !== 'scan';
+		if (VIEW !== 'due') return renderOther(mdl);
 		if (!mdl) { out.hidden = true; return; }
 		var edd = mdl.edd, g = C.gestation(edd, TODAY), lmpEq = C.lmpFromDue(edd);
 		if (S.dm === 'lmp' && S.dd > TODAY + 1) msg = 'That date is in the future. Enter the first day of your last period.';
@@ -245,15 +248,52 @@
 		var w = '<tr><th>Week</th><th>Starts</th><th>Ends</th></tr>', i; for (i = 1; i <= 42; i++) w += '<tr' + (pregnant && g.weeks + 1 === i ? ' class="is-active"' : '') + '><td>' + i + '</td><td>' + C.fmt(lmpEq + (i - 1) * 7, true) + '</td><td>' + C.fmt(lmpEq + i * 7 - 1, true) + '</td></tr>';
 		$('cy-weeks').innerHTML = w;
 	}
+	/* conception-date and weeks-pregnant pages reuse the due-date inputs */
+	function renderOther(mdl) {
+		var co = $('cy-conc-out'), wo = $('cy-weeks-out'); $('cy-d-msg').innerHTML = '';
+		if (!mdl) { if (co) co.hidden = true; if (wo) wo.hidden = true; return; }
+		var edd = mdl.edd, g = C.gestation(edd, TODAY), lmpEq = C.lmpFromDue(edd), cw = C.conceptionWindow(edd);
+		if (co) {
+			co.hidden = false; $('cy-conc-big').textContent = C.fmt(cw.likely);
+			$('cy-conc-sub').innerHTML = 'Sex between <b>' + C.fmtShort(cw.from) + '</b> and <b>' + C.fmtShort(cw.likely + 1) + '</b> could have led to this pregnancy<br>(sperm survive up to 5 days; the egg lives about a day)';
+			$('cy-conc-stats').innerHTML = stat('Estimated ovulation', C.fmt(cw.likely, true), 'conception usually happens within a day of ovulation', true) + stat('Equivalent last period', C.fmt(lmpEq, true), 'the start date doctors count from (day 1 of week 1)') + stat('Due date', C.fmt(edd, true), 'based on ' + esc(mdl.how)) + stat('Pregnancy today', g.days >= 0 && g.days <= 300 ? g.weeks + 'w ' + g.rem + 'd' : '—', 'Counted from the equivalent last period');
+		}
+		if (wo) {
+			wo.hidden = false; var preg = g.days >= 0 && g.days <= 300;
+			$('cy-wk-k').textContent = preg ? 'You are' : 'Pregnancy timeline';
+			$('cy-wk-big').textContent = preg ? g.weeks + ' weeks ' + plural(g.rem, 'day') : 'Due ' + C.fmtShort(edd);
+			var bs = C.babySize(Math.max(4, g.weeks)); $('cy-wk-sub').innerHTML = preg ? 'Trimester ' + g.trimester + ' · due ' + C.fmt(edd) + ' (' + (g.toGo > 0 ? plural(g.toGo, 'day') + ' to go' : 'today') + ')<br>Baby is about the size of <b>' + bs[0] + '</b>' + (bs[1] ? ' · ' + bs[1] : '') : 'Based on ' + esc(mdl.how);
+			$('cy-wk-fill').style.width = Math.round(g.pct * 100) + '%';
+			var t = '<tr><th>Week</th><th>Starts</th><th>Baby is about the size of</th><th>Notes</th></tr>', i, z;
+			for (i = 1; i <= 42; i++) { z = i >= 4 ? C.babySize(i) : ['', '']; t += '<tr' + (preg && g.weeks + 1 === i ? ' class="is-active"' : '') + '><td>' + i + '</td><td>' + C.fmt(lmpEq + (i - 1) * 7, true) + '</td><td class="cy-wrap">' + esc(z[0]) + '</td><td class="cy-wrap">' + esc(z[1] || (i <= 3 ? (i < 3 ? 'Your period; the pregnancy is counted from day 1' : 'Ovulation and conception happen around now') : '')) + '</td></tr>'; }
+			$('cy-wk-tbl').innerHTML = t;
+		}
+	}
+	function renderDpo() {
+		var out = $('cy-dpo-out'), ov = null, how = ''; renderDpo.ov = null;
+		if (S.ovd != null) { ov = S.ovd; how = 'your confirmed ovulation on ' + C.fmtShort(ov); }
+		else if (S.lh != null) { ov = S.lh + 1; how = 'your positive LH test on ' + C.fmtShort(S.lh); }
+		else if (S.lmp != null) { ov = S.lmp + eff() - S.luteal; how = 'a ' + eff() + '-day cycle starting ' + C.fmtShort(S.lmp); }
+		if (ov == null) { out.hidden = true; return; }
+		renderDpo.ov = ov; out.hidden = false;
+		var T = C.testTiming(ov), dpo = TODAY - ov, reliable = S.ovd != null || S.lh != null || S.lmp != null ? Math.max(T.reliableFrom, S.ovd == null && S.lh == null ? S.lmp + eff() : 0) : T.reliableFrom;
+		$('cy-dpo-big').textContent = C.fmt(reliable);
+		$('cy-dpo-sub').innerHTML = 'The first day of a missed period: a home test is dependable from here<br>Earliest worth trying: <b>' + C.fmtShort(T.sensitiveFrom) + '</b> with a sensitive early test (a negative then does not rule pregnancy out)';
+		$('cy-dpo-status').innerHTML = dpo < 0 ? 'Ovulation is expected ' + rel(ov) + '.' : 'Today is about <b>' + dpo + ' days past ovulation (DPO)</b>. ' + C.dpoStatus(dpo) + '.';
+		$('cy-dpo-stats').innerHTML = stat('Implantation', C.fmtShort(T.implantFrom) + ' – ' + C.fmtShort(T.implantTo), 'most often ' + C.fmtShort(T.implantPeakFrom) + ' – ' + C.fmtShort(T.implantPeakTo), true) + stat('Blood test (hCG)', C.fmt(T.bloodFrom, true), 'a clinic test can detect it a day or so before a urine test') + stat('Early urine test', C.fmt(T.sensitiveFrom, true), 'about 10 DPO') + stat('Dependable', C.fmt(reliable, true), 'first day of a missed period') + stat('Based on', esc(how), 'estimate; ovulation can vary by a few days');
+		var t = '<tr><th>DPO</th><th>Date</th><th>What to expect</th></tr>', d;
+		for (d = 6; d <= 16; d++) t += '<tr' + (d === dpo ? ' class="is-active"' : '') + '><td>' + d + '</td><td>' + C.fmt(ov + d, true) + (d === dpo ? ' (today)' : '') + '</td><td class="cy-wrap">' + esc(C.dpoStatus(d)) + '</td></tr>';
+		$('cy-dpo-tbl').innerHTML = t;
+	}
 	function dueEvents() { var mdl = dueModel(); if (!mdl) return []; return C.milestones(mdl.edd).map(function (x) { return { start: x.day, title: (x.w === 40 ? 'Due date' : 'Week ' + x.w) + ': ' + x.label.split(':')[0].replace(/ \(.*/, ''), note: x.label + '. An estimate from mes.fm/due-date-calculator, not medical advice.' }; }); }
 
 	/* ---------- wiring ---------- */
 	function setLmp(day) { $('cy-lmp').value = C.iso(day); readInputs(); calStart = null; renderAll(); }
-	function renderAll() { if (VIEW === 'ov') renderOv(); else if (VIEW === 'per') renderPer(); else renderDue(); }
-	function curLink(extra) { var q = []; if (VIEW === 'due') { q.push('m=' + S.dm); if (S.dd != null) q.push('d=' + C.iso(S.dd)); if (S.dm === 'lmp') q.push('c=' + S.dcycle); if (S.dm === 'ivf') q.push('e=' + S.demb); if (S.dm === 'scan') q.push('gw=' + S.dgw, 'gd=' + S.dgd); } else { if (S.lmp != null) q.push('lmp=' + C.iso(S.lmp)); q.push('cycle=' + S.cycle); if (S.luteal !== 14) q.push('luteal=' + S.luteal); if (S.plen !== 5) q.push('plen=' + S.plen); if (S.lh != null) q.push('lh=' + C.iso(S.lh)); if (S.vary) q.push('min=' + S.short, 'max=' + S.long); } return location.origin + location.pathname + '?' + q.join('&'); }
+	function renderAll() { if (VIEW === 'ov') renderOv(); else if (VIEW === 'per') renderPer(); else if (VIEW === 'dpo') renderDpo(); else renderDue(); }
+	function curLink(extra) { var q = []; if (VIEW === 'due' || VIEW === 'conc' || VIEW === 'weeks') { q.push('m=' + S.dm); if (S.dd != null) q.push('d=' + C.iso(S.dd)); if (S.dm === 'lmp') q.push('c=' + S.dcycle); if (S.dm === 'ivf') q.push('e=' + S.demb); if (S.dm === 'scan') q.push('gw=' + S.dgw, 'gd=' + S.dgd); } else { if (S.lmp != null) q.push('lmp=' + C.iso(S.lmp)); q.push('cycle=' + S.cycle); if (S.luteal !== 14) q.push('luteal=' + S.luteal); if (S.plen !== 5) q.push('plen=' + S.plen); if (S.lh != null) q.push('lh=' + C.iso(S.lh)); if (S.vary) q.push('min=' + S.short, 'max=' + S.long); } return location.origin + location.pathname + '?' + q.join('&'); }
 
-	if (VIEW !== 'due') {
-		['cy-lmp', 'cy-cycle', 'cy-vary', 'cy-short', 'cy-long', 'cy-plen', 'cy-luteal', 'cy-lh', 'cy-mon'].forEach(function (id) { $(id).addEventListener('input', function () { readInputs(); if (id === 'cy-lmp') calStart = null; renderAll(); }); $(id).addEventListener('change', function () { readInputs(); renderAll(); }); });
+	if (VIEW === 'ov' || VIEW === 'per' || VIEW === 'dpo') {
+		['cy-lmp', 'cy-ovd', 'cy-cycle', 'cy-vary', 'cy-short', 'cy-long', 'cy-plen', 'cy-luteal', 'cy-lh', 'cy-mon'].forEach(function (id) { $(id).addEventListener('input', function () { readInputs(); if (id === 'cy-lmp') calStart = null; renderAll(); }); $(id).addEventListener('change', function () { readInputs(); renderAll(); }); });
 		$('cy-lmp-today').onclick = function () { setLmp(TODAY); }; $('cy-lmp-7').onclick = function () { setLmp(TODAY - 7); }; $('cy-lmp-14').onclick = function () { setLmp(TODAY - 14); }; $('cy-lmp-28').onclick = function () { setLmp(TODAY - 28); };
 		$('cy-cm').onclick = function () { $('cy-cycle').value = Math.max(18, num('cy-cycle', 18, 60, 28) - 1); readInputs(); renderAll(); };
 		$('cy-cp').onclick = function () { $('cy-cycle').value = Math.min(60, num('cy-cycle', 18, 60, 28) + 1); readInputs(); renderAll(); };
@@ -264,6 +304,10 @@
 		$('cy-ov-ics').onclick = function () { var e = ovEvents(); if (!e.length) return toast('Enter your last period first'); download('fertile-window-and-ovulation.ics', C.ics(e, 'Fertile window and ovulation'), 'text/calendar'); toast('Calendar file downloaded'); };
 		$('cy-ov-copy').onclick = function () { copy(ovText(), 'Result copied'); };
 		$('cy-ov-link').onclick = function () { copy(curLink(), 'Link copied (it contains your dates)'); };
+	}
+	if (VIEW === 'dpo') {
+		$('cy-dpo-ics').onclick = function () { var ov = renderDpo.ov; if (ov == null) return toast('Enter your last period first'); var T = C.testTiming(ov); download('pregnancy-test-days.ics', C.ics([{ start: T.sensitiveFrom, title: 'Earliest early pregnancy test', note: 'About 10 days past ovulation. A negative is not conclusive. mes.fm/pregnancy-test-calculator' }, { start: T.reliableFrom, title: 'Pregnancy test: first day of a missed period', note: 'Dependable from here. mes.fm/pregnancy-test-calculator' }], 'Pregnancy test days'), 'text/calendar'); toast('Calendar file downloaded'); };
+		$('cy-dpo-copy').onclick = function () { var ov = renderDpo.ov; if (ov == null) return; var T = C.testTiming(ov); copy('Earliest early test: ' + C.fmt(T.sensitiveFrom) + '\nDependable test: ' + C.fmt(T.reliableFrom) + '\n(Estimate from mes.fm/pregnancy-test-calculator)', 'Result copied'); };
 	}
 	if (VIEW === 'per') {
 		$('cy-per-ics').onclick = function () { var e = perEvents(); if (!e.length) return toast('Enter your last period first'); download('expected-periods.ics', C.ics(e, 'Expected periods'), 'text/calendar'); toast('Calendar file downloaded'); };
@@ -282,19 +326,22 @@
 		$('cy-log-csv').onclick = function () { copy(C.sortStarts(S.starts).map(C.iso).join('\n'), 'Log copied'); };
 		$('cy-log-clear').onclick = function () { if (!confirm('Remove all ' + S.starts.length + ' logged periods from this browser?')) return; S.starts = []; save(); renderAll(); };
 	}
-	if (VIEW === 'due') {
+	if (VIEW === 'due' || VIEW === 'conc' || VIEW === 'weeks') {
 		var inputs = ['cy-method', 'cy-d-date', 'cy-d-cycle', 'cy-d-emb', 'cy-d-gw', 'cy-d-gd'];
 		function readDue() { S.dm = $('cy-method').value; S.dd = $('cy-d-date').value ? C.parseISO($('cy-d-date').value) : null; S.dcycle = num('cy-d-cycle', 18, 60, 28); S.demb = num('cy-d-emb', 3, 6, 5); S.dgw = num('cy-d-gw', 4, 42, 8); S.dgd = num('cy-d-gd', 0, 6, 0); save(); }
 		inputs.forEach(function (id) { $(id).addEventListener('input', function () { readDue(); renderDue(); }); $(id).addEventListener('change', function () { readDue(); renderDue(); }); });
 		$('cy-d-today').onclick = function () { $('cy-d-date').value = C.iso(TODAY); readDue(); renderDue(); };
+		if (VIEW === 'due') {
 		$('cy-due-ics').onclick = function () { var e = dueEvents(); if (!e.length) return toast('Enter a date first'); download('pregnancy-milestones.ics', C.ics(e, 'Pregnancy milestones'), 'text/calendar'); toast('Calendar file downloaded'); };
 		$('cy-due-copy').onclick = function () { var mdl = dueModel(); if (!mdl) return; var g = C.gestation(mdl.edd, TODAY); copy('Due date: ' + C.fmt(mdl.edd) + (g.days >= 0 && g.days <= 294 ? '\nToday: ' + g.weeks + ' weeks ' + g.rem + ' days' : '') + '\n(Estimate from mes.fm/due-date-calculator)', 'Result copied'); };
 		$('cy-due-link').onclick = function () { copy(curLink(), 'Link copied (it contains your dates)'); };
+		}
+		if (VIEW === 'conc') { $('cy-conc-copy').onclick = function () { var m = dueModel(); if (!m) return; var cw = C.conceptionWindow(m.edd); copy('Estimated conception: ' + C.fmt(cw.likely) + '\nDue date: ' + C.fmt(m.edd) + '\n(Estimate from mes.fm/conception-date-calculator)', 'Result copied'); }; $('cy-conc-link').onclick = function () { copy(curLink(), 'Link copied (it contains your dates)'); }; }
 	}
 
 	/* ---------- start: saved state, then ?query overrides ---------- */
 	var q = new URLSearchParams(location.search), pd = function (k) { return q.get(k) ? C.parseISO(q.get(k)) : null; };
-	if (VIEW === 'due') {
+	if (VIEW === 'due' || VIEW === 'conc' || VIEW === 'weeks') {
 		var qd = pd('d'); if (q.get('m') || qd != null) { S.dm = ['lmp', 'conc', 'ivf', 'scan', 'due'].indexOf(q.get('m')) >= 0 ? q.get('m') : S.dm; if (qd != null) S.dd = qd; if (q.get('c')) S.dcycle = +q.get('c') || 28; if (q.get('e')) S.demb = +q.get('e') || 5; if (q.get('gw')) S.dgw = +q.get('gw') || 8; if (q.get('gd')) S.dgd = +q.get('gd') || 0; }
 		$('cy-method').value = S.dm; if (S.dd != null) $('cy-d-date').value = C.iso(S.dd); $('cy-d-cycle').value = S.dcycle; $('cy-d-emb').value = String(S.demb); $('cy-d-gw').value = S.dgw; $('cy-d-gd').value = S.dgd;
 		if (S.dd == null && S.lmp != null && S.dm === 'lmp') { S.dd = S.lmp; $('cy-d-date').value = C.iso(S.dd); S.dcycle = S.cycle; $('cy-d-cycle').value = S.dcycle; }

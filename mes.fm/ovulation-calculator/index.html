@@ -705,10 +705,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">Ovulation Calculator: Fertile Window and Ovulation Date</h1>                                        <p class="page-description">Free ovulation calculator: enter your last period and cycle length to find your fertile window, ovulation day, next period and the best days to conceive. Works for any cycle length, irregular cycles and LH tests. Private, adds to your phone calendar.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="tu cy" id="cy" data-views="ov">
 		<p class="tu-note cy-private">&#128274; Private by design: your dates are saved only in this browser (never uploaded, no account) and are shared by the three calculators below.</p>
-		<nav class="cy-tabs" aria-label="Calculators"><a href="/ovulation-calculator" data-tab="ov">Ovulation</a><a href="/period-calculator" data-tab="per">Period &amp; cycle</a><a href="/due-date-calculator" data-tab="due">Due date</a></nav>
+		<nav class="cy-tabs" aria-label="Calculators"><a href="/ovulation-calculator" data-tab="ov">Ovulation</a><a href="/period-calculator" data-tab="per">Period &amp; cycle</a><a href="/pregnancy-test-calculator" data-tab="dpo">When to test</a><a href="/due-date-calculator" data-tab="due">Due date</a><a href="/weeks-pregnant-calculator" data-tab="weeks">Weeks pregnant</a><a href="/conception-date-calculator" data-tab="conc">Conception date</a></nav>
 
 		<!-- ===== inputs: ovulation + period ===== -->
-		<section data-view="ov per" aria-label="Your cycle">
+		<section data-view="ov per dpo" aria-label="Your cycle">
 			<div class="tu-card">
 				<div class="tu-row cy-inputs">
 					<div class="tu-field cy-f-date"><label class="tu-label" for="cy-lmp">First day of your last period</label>
@@ -727,6 +727,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="tu-row cy-opts">
 						<div class="tu-field"><label class="tu-label" for="cy-plen">Period lasts (days)</label><input id="cy-plen" class="tu-input" type="number" inputmode="numeric" min="1" max="12" value="5"></div>
 						<div class="tu-field"><label class="tu-label" for="cy-luteal">Luteal phase (days)</label><input id="cy-luteal" class="tu-input" type="number" inputmode="numeric" min="8" max="18" value="14"><div class="tu-note">Ovulation to next period. 14 is typical (11&ndash;16 is normal).</div></div>
+						<div class="tu-field"><label class="tu-label" for="cy-ovd">Confirmed ovulation date</label><input id="cy-ovd" class="tu-input" type="date"><div class="tu-note">Optional: from a temperature chart or an ultrasound. Replaces the estimate.</div></div>
 						<div class="tu-field"><label class="tu-label" for="cy-lh">Positive ovulation (LH) test on</label><input id="cy-lh" class="tu-input" type="date"><div class="tu-note">Optional. Ovulation usually follows 24&ndash;36 hours later, so this sharpens the estimate.</div><button type="button" class="tu-chip" id="cy-lh-clear" hidden>Clear LH test</button></div>
 					</div>
 					<label class="cy-check"><input type="checkbox" id="cy-mon"> Calendar weeks start on Monday</label>
@@ -794,7 +795,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</section>
 
 		<!-- ===== due date ===== -->
-		<section data-view="due" aria-label="Due date">
+		<section data-view="due conc weeks" aria-label="Dates">
 			<div class="tu-card">
 				<div class="tu-row cy-inputs">
 					<div class="tu-field"><label class="tu-label" for="cy-method">Calculate my due date from</label>
@@ -825,6 +826,44 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-card tu-table-wrap"><table class="tu-table cy-ms" id="cy-ms"></table></div>
 				<details class="cy-weeks"><summary>Week-by-week calendar (weeks 1&ndash;42)</summary><div class="tu-card tu-table-wrap"><table class="tu-table" id="cy-weeks"></table></div></details>
 			</div>
+		</section>
+
+		<!-- ===== pregnancy test timing ===== -->
+		<section data-view="dpo" id="cy-dpo-out" hidden>
+			<div class="tu-card tu-card--tint cy-hero" aria-live="polite">
+				<div class="cy-hero__k">Best day to take a pregnancy test</div>
+				<div class="cy-hero__big" id="cy-dpo-big">&mdash;</div>
+				<div class="cy-hero__sub" id="cy-dpo-sub"></div>
+				<div class="cy-hero__status" id="cy-dpo-status"></div>
+				<div class="tu-row cy-hero__btns"><button type="button" class="tu-btn tu-btn--primary" id="cy-dpo-ics">&#128197; Add test days to my calendar</button><button type="button" class="tu-btn tu-btn--ghost" id="cy-dpo-copy">Copy result</button></div>
+			</div>
+			<div class="tu-stats" id="cy-dpo-stats"></div>
+			<h2>Day by day after ovulation</h2>
+			<div class="tu-card tu-table-wrap"><table class="tu-table cy-ms" id="cy-dpo-tbl"></table></div>
+		</section>
+
+		<!-- ===== conception date ===== -->
+		<section data-view="conc" id="cy-conc-out" hidden>
+			<div class="tu-card tu-card--tint cy-hero" aria-live="polite">
+				<div class="cy-hero__k">Most likely conception date</div>
+				<div class="cy-hero__big" id="cy-conc-big">&mdash;</div>
+				<div class="cy-hero__sub" id="cy-conc-sub"></div>
+				<div class="tu-row cy-hero__btns"><button type="button" class="tu-btn tu-btn--ghost" id="cy-conc-copy">Copy result</button><button type="button" class="tu-btn tu-btn--ghost" id="cy-conc-link">Copy link</button></div>
+			</div>
+			<div class="tu-stats" id="cy-conc-stats"></div>
+		</section>
+
+		<!-- ===== weeks pregnant ===== -->
+		<section data-view="weeks" id="cy-weeks-out" hidden>
+			<div class="tu-card tu-card--tint cy-hero" aria-live="polite">
+				<div class="cy-hero__k" id="cy-wk-k">You are</div>
+				<div class="cy-hero__big" id="cy-wk-big">&mdash;</div>
+				<div class="cy-hero__sub" id="cy-wk-sub"></div>
+				<div class="cy-prog" role="img" aria-label="Progress through pregnancy"><div class="cy-prog__fill" id="cy-wk-fill"></div><i style="left:35%"></i><i style="left:70%"></i></div>
+				<div class="cy-prog__lbl"><span>1st trimester</span><span>2nd trimester</span><span>3rd trimester</span></div>
+			</div>
+			<h2>Week by week</h2>
+			<div class="tu-card tu-table-wrap"><table class="tu-table cy-ms" id="cy-wk-tbl"></table></div>
 		</section>
 
 		<div class="tu-toast" id="cy-toast" role="status" aria-live="polite"></div>
@@ -865,7 +904,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/period-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/period-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Period Calculator and Cycle Tracker</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/read-aloud"><img class="mes-aside__img mes-aside__img--logo" src="/read-aloud/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Read Aloud</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/period-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/period-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Period Calculator and Cycle Tracker</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/image-converter"><img class="mes-aside__img mes-aside__img--logo" src="/image-converter/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Bulk Image Converter: PNG to JPG, JPG to PNG, WebP</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -915,7 +954,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/ovulation-calculator/js/ovulation-calculator.js?v=1" defer></script>
+	<script src="/ovulation-calculator/js/ovulation-calculator.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

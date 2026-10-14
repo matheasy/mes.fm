@@ -1,6 +1,30 @@
 {
- "generated": "2026-10-13",
+ "generated": "2026-10-14",
  "calculators": [
+  {
+   "href": "/ovulation-calculator",
+   "title": "Ovulation Calculator",
+   "icon": "/img/ovulation-calculator-logo.png",
+   "desc": "Find your fertile window, ovulation day and next period. Any cycle length, LH tests, private, adds to your calendar.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/period-calculator",
+   "title": "Period Calculator",
+   "icon": "/img/period-calculator-logo.png",
+   "desc": "Predict your next period, log your cycles to get your own average, and see the year ahead.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/due-date-calculator",
+   "title": "Pregnancy Due Date Calculator",
+   "icon": "/img/due-date-calculator-logo.png",
+   "desc": "Due date from your last period, conception, IVF transfer or a scan, with weeks pregnant and key dates.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
   {
    "href": "/time-dilation",
    "title": "Time Dilation Simulator",
@@ -72,33 +96,17 @@
    "desc": "Derivatives with every step explained: product, quotient and chain rules, higher, partial and implicit derivatives.",
    "added": "2026-10-02",
    "kind": "calculator"
-  },
-  {
-   "href": "/integral-calculator",
-   "title": "Integral Calculator",
-   "icon": "/img/integral-calculator-logo.png",
-   "desc": "Antiderivatives and definite integrals with steps: substitution, by parts, partial fractions, numeric values.",
-   "added": "2026-10-02",
-   "kind": "calculator"
-  },
-  {
-   "href": "/cas-calculator",
-   "title": "CAS Calculator",
-   "icon": "/img/cas-calculator-logo.png",
-   "desc": "Solve equations, systems and inequalities with steps, every real root of hard equations, simplify, factor, limits and series.",
-   "added": "2026-10-02",
-   "kind": "calculator"
-  },
-  {
-   "href": "/2d-graphing-calculator",
-   "title": "2D Graphing Calculator",
-   "icon": "/img/graphing-calculator-2d-logo.png",
-   "desc": "Plot functions, equations, inequalities and polar curves with sliders, zeros and intersections.",
-   "added": "2026-10-02",
-   "kind": "calculator"
   }
  ],
  "tools": [
+  {
+   "href": "/reverse-image-search",
+   "title": "Reverse Image Search",
+   "icon": "/img/reverse-image-search-logo.png",
+   "desc": "Paste an image link or upload a picture and search Google Lens, Bing, TinEye, Yandex and more at once. Search part of the picture.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
   {
    "href": "/buddhabrot",
    "title": "Buddhabrot Explorer",
@@ -186,17 +194,41 @@
    "desc": "Our own browser extension: dark mode (or light mode) for any website, with per-site control and a schedule. Free and private.",
    "added": "2026-10-11",
    "kind": "tool"
-  },
-  {
-   "href": "/read-aloud",
-   "title": "Read Aloud",
-   "icon": "/img/read-aloud-logo.png",
-   "desc": "Our own browser extension: listen to any page with the word and sentence highlighted as they are read. Free and private.",
-   "added": "2026-10-11",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/reverse-image-search",
+   "title": "Reverse Image Search",
+   "icon": "/img/reverse-image-search-logo.png",
+   "desc": "Paste an image link or upload a picture and search Google Lens, Bing, TinEye, Yandex and more at once. Search part of the picture.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
+  {
+   "href": "/ovulation-calculator",
+   "title": "Ovulation Calculator",
+   "icon": "/img/ovulation-calculator-logo.png",
+   "desc": "Find your fertile window, ovulation day and next period. Any cycle length, LH tests, private, adds to your calendar.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/period-calculator",
+   "title": "Period Calculator",
+   "icon": "/img/period-calculator-logo.png",
+   "desc": "Predict your next period, log your cycles to get your own average, and see the year ahead.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/due-date-calculator",
+   "title": "Pregnancy Due Date Calculator",
+   "icon": "/img/due-date-calculator-logo.png",
+   "desc": "Due date from your last period, conception, IVF transfer or a scan, with weeks pregnant and key dates.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
   {
    "href": "/time-dilation",
    "title": "Time Dilation Simulator",
@@ -226,38 +258,6 @@
    "title": "Double Pendulum",
    "icon": "/img/double-pendulum-logo.png",
    "desc": "Drag two swinging arms into place and watch chaos: a fan of copies that drift apart, how fast errors grow, and a fractal map of how long each start takes to flip.",
-   "added": "2026-10-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/orbit-simulator",
-   "title": "Orbit Simulator",
-   "icon": "/img/orbit-simulator-logo.png",
-   "desc": "Launch planets by dragging, watch real gravity with many bodies, see Kepler's laws and equal areas, try Halley's comet, the Moon and a gravity assist, and compute orbit speeds and transfers.",
-   "added": "2026-10-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/metric-tensor",
-   "title": "Metric Tensor Explorer",
-   "icon": "/img/metric-tensor-logo.png",
-   "desc": "Type or pick a metric (Schwarzschild, de Sitter, a wormhole...) and get the Christoffel symbols, Riemann, Ricci and Einstein tensors, plus geodesics drawn on curved surfaces.",
-   "added": "2026-10-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/mandelbrot",
-   "title": "Mandelbrot Explorer",
-   "icon": "/img/mandelbrot-logo.png",
-   "desc": "Zoom into the Mandelbrot set, see the Julia set of any point, trace orbits and try the Burning Ship, Tricorn and Multibrot fractals.",
-   "added": "2026-10-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/black-hole-simulator",
-   "title": "Black Hole Simulator",
-   "icon": "/img/black-hole-simulator-logo.png",
-   "desc": "Bend light around a black hole, find its shadow and photon sphere, follow orbits that precess or plunge, and see a ray-traced picture with a glowing disk.",
    "added": "2026-10-12",
    "kind": "tool"
   }

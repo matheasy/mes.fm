@@ -54,7 +54,13 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("days-between-dates-calculator", "Days Between Dates Calculator"),
     ("ovulation-calculator", "Ovulation Calculator"),   # also built by build_tool_apps.py (one source, three pages)
     ("period-calculator", "Period Calculator"),
-    ("due-date-calculator", "Pregnancy Due Date Calculator"),   # also built by build_tool_apps.py
+    ("due-date-calculator", "Pregnancy Due Date Calculator"),
+    ("domain-lookup", "Domain Lookup"),
+    ("exif-viewer", "EXIF Viewer"),
+    ("contraction-timer", "Contraction Timer"),
+    ("pregnancy-test-calculator", "When to Take a Pregnancy Test"),
+    ("conception-date-calculator", "Conception Date Calculator"),
+    ("weeks-pregnant-calculator", "How Many Weeks Pregnant Am I? Week-by-Week Calculator"),   # also built by build_tool_apps.py
     ("2d-graphing-calculator", "2D Graphing Calculator"),   # also built by build_tool_apps.py   # also built by build_tool_apps.py
     ("3d-graphing-calculator", "3D Graphing Calculator"),   # also built by build_tool_apps.py
     ("cas-calculator", "CAS Calculator"),   # the three CAS pages, built by build_tool_apps.py

@@ -1,0 +1,47 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ex" id="ex">
+		<div class="tu-card">
+			<div class="ex-drop" id="ex-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a photo">
+				<div class="ex-drop__big">Drop a photo here</div>
+				<div class="ex-drop__sub">or <b>click to choose</b> a file, or press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> to paste. JPEG, PNG, WebP and TIFF.</div>
+				<input type="file" id="ex-file" accept="image/*,.jpg,.jpeg,.png,.webp,.tif,.tiff,.heic" hidden>
+			</div>
+			<p class="tu-note">Private: the photo is read inside your browser and is never uploaded.</p>
+		</div>
+		<div id="ex-out" hidden>
+			<div class="ex-flags" id="ex-flags"></div>
+			<div class="ex-top">
+				<div class="ex-thumb"><img id="ex-img" alt="Your photo"><div class="ex-file" id="ex-fileinfo"></div></div>
+				<div class="tu-stats ex-cards" id="ex-cards"></div>
+			</div>
+			<div class="tu-card ex-loc" id="ex-loc" hidden></div>
+			<div class="tu-row ex-acts"><button type="button" class="tu-btn tu-btn--primary" id="ex-strip">Download a copy without metadata</button><button type="button" class="tu-btn tu-btn--ghost" id="ex-copy">Copy all fields</button></div>
+			<p class="tu-note" id="ex-stripnote">The clean copy is re-saved from the picture itself, so location, camera and edit details are gone. Use it before posting a photo online.</p>
+			<h2>All the metadata</h2>
+			<div class="tu-card">
+				<input id="ex-find" class="tu-input" type="search" placeholder="Filter the fields…" aria-label="Filter the fields">
+				<div class="tu-table-wrap"><table class="tu-table ex-tbl" id="ex-tbl"><thead><tr><th>Group</th><th>Field</th><th>Value</th></tr></thead><tbody id="ex-body"></tbody></table></div>
+				<p class="tu-note" id="ex-none" hidden></p>
+			</div>
+		</div>
+		<div class="tu-toast" id="ex-toast" role="status" aria-live="polite"></div>
+		<div class="tu-seo">
+			<h2>EXIF viewer: see the hidden data in a photo</h2>
+			<p>Almost every photo from a phone or camera carries hidden information called <strong>EXIF metadata</strong>: the camera and lens, the exact date and time, the settings, whether it was edited, and often <strong>the GPS location where it was taken</strong>. Drop a picture here to read it all, check what you are about to share, and save a clean copy with everything removed.</p>
+			<h3>What you will see</h3>
+			<ul>
+				<li><strong>Camera and lens</strong>, date taken, exposure, ISO, aperture and focal length.</li>
+				<li><strong>Location</strong> on a map link, if the photo has GPS data, with a warning so you notice before sharing.</li>
+				<li><strong>Edits and AI flags:</strong> editing software, and whether the metadata says the picture was made with AI or carries Content Credentials (C2PA).</li>
+				<li>Serial numbers and owner names that can identify a device or a person.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Does posting a photo online reveal my location?</h4>
+			<p>Big social networks usually strip metadata when you upload, but many sites, forums, emails and messaging apps do not. If you send the original file, the recipient can read the location. Make a clean copy first.</p>
+			<h4>Why does my photo show no metadata?</h4>
+			<p>It may have been downloaded from a social site, screenshotted, edited or compressed by an app, all of which remove it. A missing date or location does not prove a photo is fake, and its presence does not prove it is real: metadata is easy to edit.</p>
+			<h4>Can it read HEIC photos from an iPhone?</h4>
+			<p>Not yet in the browser. On the iPhone, share the photo as &ldquo;Most Compatible&rdquo; (JPEG), or convert it with the <a href="/image-converter">image converter</a> first. Converting removes some metadata, so for a full read send the original JPEG.</p>
+			<p class="tu-note">Finding where a photo came from? Try <a href="/reverse-image-search">Reverse Image Search</a>.</p>
+		</div>
+	</div>

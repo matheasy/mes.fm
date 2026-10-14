@@ -97,6 +97,21 @@ var MESCycle = (function () {
 	}
 	function conceptionWindow(edd) { var c = edd - 266; return { likely: c, from: c - 5, to: c + 2 }; }
 
+
+	/* ---------- test timing ---------- */
+	/* ov = ovulation (or embryo-equivalent) day. Implantation ~6-12 days past ovulation (DPO), most often 8-10; sensitive urine tests can pick up hCG from ~10 DPO (blood tests ~9);
+	   a test is dependable from the first day of a missed period (~14 DPO). */
+	function testTiming(ov) { return { implantFrom: ov + 6, implantPeakFrom: ov + 8, implantPeakTo: ov + 10, implantTo: ov + 12, bloodFrom: ov + 9, sensitiveFrom: ov + 10, likelyFrom: ov + 12, reliableFrom: ov + 14 }; }
+	function dpoStatus(dpo) { return dpo < 6 ? 'Too early: the embryo has not implanted yet' : dpo < 9 ? 'Implantation window: a test would almost certainly read negative' : dpo < 12 ? 'Possible with a sensitive early test; a negative is not conclusive' : dpo < 14 ? 'Likely to show if you are pregnant; retest if negative' : 'Reliable: the day of a missed period or later'; }
+
+	/* ---------- baby size by week (commonly used comparisons; approximate) ---------- */
+	var SIZE = { 4: ['a poppy seed', ''], 5: ['a sesame seed', ''], 6: ['a lentil', 'the heart starts to beat'], 7: ['a blueberry', ''], 8: ['a raspberry', 'fingers and toes are forming'], 9: ['a cherry', ''], 10: ['a strawberry', 'all the main organs have formed'], 11: ['a fig', ''],
+		12: ['a lime', 'about 5 cm and 14 g; reflexes begin'], 13: ['a lemon', ''], 14: ['a peach', 'the second trimester begins'], 15: ['an apple', ''], 16: ['an avocado', 'about 11.5 cm and 100 g'], 17: ['a pomegranate', ''], 18: ['a bell pepper', 'may start to hear sounds'], 19: ['a mango', ''],
+		20: ['a banana', 'halfway: about 25 cm and 300 g; the anatomy scan is usually now'], 21: ['a carrot', ''], 22: ['a papaya', ''], 23: ['a grapefruit', ''], 24: ['an ear of corn', 'about 30 cm and 600 g; viability begins'], 25: ['a rutabaga', ''], 26: ['a scallion bunch', 'eyes begin to open'], 27: ['a cauliflower', ''],
+		28: ['an eggplant', 'the third trimester begins; about 37 cm and 1 kg'], 29: ['a butternut squash', ''], 30: ['a cabbage', ''], 31: ['a coconut', ''], 32: ['a jicama', 'about 42 cm and 1.7 kg'], 33: ['a pineapple', ''], 34: ['a cantaloupe', ''], 35: ['a honeydew melon', ''],
+		36: ['a head of romaine', 'about 47 cm and 2.6 kg'], 37: ['a bunch of Swiss chard', 'early term'], 38: ['a leek', ''], 39: ['a small watermelon', 'full term'], 40: ['a pumpkin', 'about 51 cm and 3.4 kg: due date'], 41: ['a pumpkin', 'one week past the due date'], 42: ['a pumpkin', 'two weeks past the due date'] };
+	function babySize(week) { var w = Math.max(4, Math.min(42, week)); return SIZE[w]; }
+
 	/* ---------- calendar export (all-day events) ---------- */
 	function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
 	function icsDate(day) { return iso(day).replace(/-/g, ''); }
@@ -115,6 +130,6 @@ var MESCycle = (function () {
 	return { MONTHS: MONTHS, WDAYS: WDAYS, toDay: toDay, parts: parts, iso: iso, parseISO: parseISO, today: today, fmt: fmt, fmtShort: fmtShort,
 		predict: predict, predictRange: predictRange, project: project, chanceOn: chanceOn, WILCOX: WILCOX, sortStarts: sortStarts, stats: stats, futurePeriods: futurePeriods,
 		dueFromLMP: dueFromLMP, dueFromConception: dueFromConception, dueFromTransfer: dueFromTransfer, dueFromUltrasound: dueFromUltrasound, lmpFromDue: lmpFromDue,
-		gestation: gestation, milestones: milestones, conceptionWindow: conceptionWindow, ics: ics };
+		gestation: gestation, testTiming: testTiming, dpoStatus: dpoStatus, babySize: babySize, milestones: milestones, conceptionWindow: conceptionWindow, ics: ics };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MESCycle;

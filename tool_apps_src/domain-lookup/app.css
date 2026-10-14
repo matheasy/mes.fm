@@ -1,0 +1,12 @@
+	.dl-row {display:flex;gap:0.5em;flex-wrap:wrap;} .dl-row .tu-input {flex:1 1 14em;min-width:0;} .dl-go {font-size:1.05em;padding:0.6em 1.5em;}
+	.dl-status {margin:1em 0;padding:0.8em 1em;border-radius:0.55em;background:#eef4ff;border:1px solid #bcd0f5;color:#1d3a73;line-height:1.5;} .dl-status.err {background:#fff1f2;border-color:#e11d48;color:#7f1020;} .dl-status[hidden] {display:none;}
+	.dl-hero {margin-top:1em;text-align:center;padding:1.3em 1em;} .dl-hero__k {font-weight:700;color:#445;word-break:break-all;} .dl-hero__big {font-size:2.4em;font-weight:800;color:#1e2733;line-height:1.15;margin:0.15em 0;} .dl-hero__sub {color:#333;line-height:1.5;} .dl-hero__btns {justify-content:center;gap:0.5em;margin-top:0.8em;}
+	.dl-sig {list-style:none;margin:0.4em 0 1em;padding:0;} .dl-sig li {padding:0.6em 0.9em;margin-bottom:0.4em;border-radius:0.5em;border:1px solid #dfe4ea;background:#fff;line-height:1.45;border-left-width:5px;}
+	.dl-sig li.good {border-left-color:#2f9e57;} .dl-sig li.info {border-left-color:#3b82f6;} .dl-sig li.warn {border-left-color:#e11d48;background:#fff7f8;}
+	.dl-kv {margin:0;display:grid;grid-template-columns:minmax(8em,12em) 1fr;gap:0.4em 1em;} .dl-kv dt {color:#6a7280;font-size:0.9em;} .dl-kv dd {margin:0;font-weight:600;word-break:break-word;}
+	.dl-tbl td, .dl-tbl th {white-space:normal !important;text-align:left !important;word-break:break-word;} .dl-tbl .k {font-weight:700;color:var(--accent);white-space:nowrap !important;}
+	.dl-links {display:flex;flex-wrap:wrap;gap:0.5em;} .dl-links a {padding:0.45em 0.9em;border:1px solid #c3c9d2;border-radius:2em;text-decoration:none;font-size:0.9em;} .dl-links a:hover {border-color:var(--accent);}
+	@media (max-width:560px) {.dl-hero__big {font-size:1.8em;} .dl-kv {grid-template-columns:1fr;gap:0 0;} .dl-kv dd {margin-bottom:0.6em;} .dl-go {width:100%;}}
+	body.dark-mode #dl .dl-status {background:#14233f;border-color:#2b4a8a;color:#bcd0f5;} body.dark-mode #dl .dl-status.err {background:#3a1118;border-color:#e11d48;color:#ffc9d1;}
+	body.dark-mode #dl .dl-hero__big, body.dark-mode #dl .dl-hero__sub {color:#eee;} body.dark-mode #dl .dl-hero__k {color:#bbb;}
+	body.dark-mode #dl .dl-sig li {background:#262626;border-color:#444;} body.dark-mode #dl .dl-sig li.warn {background:#2e1a1e;} body.dark-mode #dl .dl-links a {border-color:#555;color:#cfe3ff;}

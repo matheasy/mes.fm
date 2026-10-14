@@ -7,6 +7,8 @@
     if (/^(gclid|gbraid|wbraid|gad_source|gad_campaignid|msclkid|fbclid)$/i.test(k) || /^utm_/i.test(k)) q.delete(k);
   });
   // /search-engines is meant to be a browser's default search: the words people type arrive as ?q=, which must never reach the stats
+  // the same for pages whose links carry private input: the health calculators' dates, domains looked up, image links
+  if (/^\/(ovulation-calculator|period-calculator|due-date-calculator|pregnancy-test-calculator|conception-date-calculator|weeks-pregnant-calculator|domain-lookup|reverse-image-search)\/?$/.test(location.pathname)) Array.from(q.keys()).forEach(function (k) { q.delete(k); });
   if (/^\/search-engines\/?$/.test(location.pathname)) Array.from(q.keys()).forEach(function (k) { q.delete(k); });
   var qs = q.toString();
   var data = new URLSearchParams({

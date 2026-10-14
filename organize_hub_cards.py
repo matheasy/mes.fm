@@ -28,15 +28,15 @@ PAGES = {
         ("school", "School &amp; Grades", ["gradecalculator", "gpacalculator", "weighted-average-calculator", "gradecalculator/br"]),
         ("money", "Money &amp; Finance", ["mortgagecalculator", "inflationcalculator", "vatcalculator", "youtubemoney/index.html", "impermanent-loss-calculator"]),
         ("algebra", "Algebra &amp; Calculus", ["sum-of-integers-calculator", "calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "2d-graphing-calculator", "3d-graphing-calculator"]),
-        ("everyday", "Everyday Math &amp; Health", ["days-between-dates-calculator", "ovulation-calculator", "period-calculator", "due-date-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
+        ("everyday", "Everyday Math &amp; Health", ["days-between-dates-calculator", "ovulation-calculator", "period-calculator", "due-date-calculator", "contraction-timer", "pregnancy-test-calculator", "conception-date-calculator", "weeks-pregnant-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
         ("physics", "Physics &amp; Science", ["reynolds-number-calculator", "photoelectric-effect-simulator", "atomic-clock-simulator", "michelson-morley-experiment", "faster-than-light-shadow-simulator", "time-dilation", "earth-curvature-calculator"]),   # photoelectric-effect-simulator is listed on tools.html (Simulations) too
         ("fun", "Fun", ["gematria", "pokemongocalculator"]),
     ]),
     "tools.html": dict(noun="tools", popular=["timer", "typing-test", "speedreader", "moon", "emoji", "calendar", "clock", "timezone"], cats=[
         ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols", "copy-text", "enigma"]),
         ("time", "Time &amp; Focus", ["speedreader", "typing-test", "typing-test-transcribe", "typing-test-voice", "timer", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "clock", "timezone", "calendar"]),
-        ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search", "search-engines", "reverse-image-search", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
-        ("photos", "Photos &amp; Images", ["photo-editor", "image-converter"]),
+        ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search", "search-engines", "reverse-image-search", "domain-lookup", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
+        ("photos", "Photos &amp; Images", ["photo-editor", "image-converter", "exif-viewer"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today"]),
         ("sim", "Simulations", ["fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
     ]),
