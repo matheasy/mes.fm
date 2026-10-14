@@ -40,4 +40,4 @@
 	body.dark-mode #gr .gr-sc button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} body.dark-mode #gr .gr-sc button.is-on {background:var(--accent);border-color:var(--accent);color:#fff;}
 	#gr-svg .gr-s {paint-order:stroke;stroke:#e8d3a8;stroke-width:5px;stroke-linejoin:round;} #gr-svg .gr-lead {stroke:#16a34a;stroke-width:2;}
 	body.dark-mode #gr-svg .gr-s {stroke:#3b2f17;} body.dark-mode #gr-svg .gr-lead {stroke:#86efac;}
-	#gr .gr-truth ul, #gr .gr-check {margin:0.4em 0 0.4em 0;padding-left:1.3em;list-style:disc;} #gr .gr-truth li, #gr .gr-check li {margin:0.45em 0;line-height:1.5;} #gr .gr-truth li strong {color:inherit;}
+	#gr .gr-truth ul, #gr .gr-check {margin:0.4em 0 0.4em 0;padding-left:1.3em;list-style:disc;} #gr .gr-truth li, #gr .gr-check li {margin:0.75em 0;line-height:1.7;} #gr .gr-truth p {line-height:1.7;} #gr .gr-truth li strong {color:inherit;}
