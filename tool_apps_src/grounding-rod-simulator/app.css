@@ -46,3 +46,9 @@
 	body.dark-mode #gr .gr-zbar button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} body.dark-mode #gr .gr-zbar button[aria-pressed="true"] {background:var(--accent);color:#fff;}
 	#gr-svg {cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;} #gr-svg.gr-zoomed {touch-action:none;} #gr-svg.gr-drag {cursor:grabbing;}
 	#gr-house.gr-full {position:fixed;inset:0;z-index:100000;margin:0;border-radius:0;overflow:auto;background:#fff;padding:0.8em 1em;} body.dark-mode #gr-house.gr-full {background:#161616;} #gr-house.gr-full #gr-svg {min-width:0;max-height:72vh;}
+	/* dark mode: brighter labels with a dark outline so they read over wires, boxes and soil (!important: the generated TOOL-DARK block would otherwise win) */
+	body.dark-mode #gr #gr-svg .gr-t {fill:#ffffff !important;paint-order:stroke;stroke:#141414 !important;stroke-width:4px !important;stroke-linejoin:round;}
+	body.dark-mode #gr #gr-svg .gr-t.gr-s {stroke:#2a200d !important;stroke-width:5px !important;}
+	body.dark-mode #gr #gr-svg .gr-t.gr-hot {fill:#ffb4b4 !important;} body.dark-mode #gr #gr-svg .gr-t.gr-g {fill:#9af0b4 !important;} body.dark-mode #gr #gr-svg .gr-t.gr-lab {fill:#ffc58a !important;}
+	body.dark-mode #gr #gr-svg .gr-xfmr, body.dark-mode #gr #gr-svg .gr-box, body.dark-mode #gr #gr-svg .gr-case {fill:#2f3744 !important;stroke:#e5e7eb !important;}
+	body.dark-mode #gr .gr-cap, body.dark-mode #gr .gr-cap strong {color:#f3f4f6;} body.dark-mode #gr .gr-zhint {opacity:0.85;}
