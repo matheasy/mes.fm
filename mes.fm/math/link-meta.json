@@ -1937,11 +1937,31 @@
     ]
   },
   "https://mes.fm/math-qa-72-ground-rod": {
-    "image": "https://i.ytimg.com/vi/WvFqg-bX4jo/maxresdefault.jpg",
+    "image": "https://images.3speak.tv/images/1792019634394-b3728e1bf835c14a.webp",
     "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mes/mes-math-qa-72-what-is-a-gr-346"
+      },
       {
         "label": "YouTube",
         "href": "https://youtube.com/live/WvFqg-bX4jo"
+      },
+      {
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/video/Vydwd7SrttLx"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mes:8/MES-Math-QA-72-Ground-Rod"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/v7gi9iw-mes-math-qa-72-what-is-a-ground-rod-and-how-to-find-it-in-your-house.html"
+      },
+      {
+        "label": "X",
+        "href": "https://x.com/i/broadcasts/1jxXgBQPgEoJZ"
       }
     ],
     "namedLinks": [
