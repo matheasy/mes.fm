@@ -312,6 +312,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#em-ic {cursor:default;}
 	.em-badge {position:absolute;left:0.7em;top:0.6em;font-size:0.78em;color:var(--em-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;}
 	.em-badge:empty {display:none;}
+	@media (max-width:560px) {.em-badge {top:auto;bottom:0.5em;left:auto;right:0.5em;max-width:62%;text-align:right;font-size:0.68em;line-height:1.25;border-radius:0.7em;}}
 	.em-run, .em-tools {position:absolute;display:flex;gap:0.25em;right:0.6em;top:0.6em;}
 	.em-run button, .em-tools button {cursor:pointer;border:1px solid var(--em-line);background:rgba(10,13,20,0.78);color:var(--em-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font:inherit;font-size:0.85em;}
 	.em-run button:hover, .em-toolrow button:hover {border-color:var(--accent);color:#fff;}
@@ -988,7 +989,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js?v=6" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
