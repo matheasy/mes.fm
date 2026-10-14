@@ -138,7 +138,7 @@ APPS = {
     "archive": dict(title="MES Archive", page_title="Archive Any Web Page: Wayback Machine, archive.today and More",
                     tag="Save or find any page on every web archive.", accent="#1e3a8a", dark="#152a66", tint="#e3e9fb",
                     desc="Free web archive tool: paste an address and open the Wayback Machine, archive.today, Ghostarchive, Megalodon and more at once to save a copy or find old ones, add your own archive sites, send it to the Hive blockchain, and get the one-click MES Archive browser extension.",
-                    js_v="4"),
+                    js_v="5"),
     "days-between-dates-calculator": dict(title="MES Days Between Dates Calculator", page_title="Days Between Dates Calculator",
                                           tag="Days, weeks, months, hours and business days between two dates.", accent="#2f7d32", dark="#1f5a23", tint="#e4f2e4",
                                           desc="Free days between dates calculator: count the days, weeks, months, years, hours, minutes and seconds between any two dates, with optional end-date inclusion, business days (custom weekends and holidays), time of day and shareable links.",

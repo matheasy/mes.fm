@@ -1,19 +1,45 @@
 {
   "manifest_version": 3,
   "name": "MES Archive",
-  "version": "1.0.0",
-  "description": "One click archives the page you are on: opens the Wayback Machine, archive.today, Ghostarchive and any archive sites you choose, with the page address filled in. Free, private. By MES (mes.fm).",
+  "version": "1.1.0",
+  "description": "One click archives the page you are on: opens the Wayback Machine, archive.today, Ghostarchive and any archive sites you choose, and can hand the page to ArcHive for the Hive blockchain. Free, private. By MES (mes.fm).",
   "homepage_url": "https://mes.fm/archive",
-  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
     "default_title": "Archive this page",
     "default_popup": "popup.html",
-    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png" }
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
   },
-  "options_ui": { "page": "options.html", "open_in_tab": true },
-  "background": { "service_worker": "background.js" },
-  "permissions": ["storage", "activeTab", "contextMenus"],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "contextMenus",
+    "scripting"
+  ],
   "commands": {
-    "archive-page": { "suggested_key": { "default": "Alt+Shift+A" }, "description": "Archive this page on the sites you chose" }
-  }
+    "archive-page": {
+      "suggested_key": {
+        "default": "Alt+Shift+A"
+      },
+      "description": "Archive this page on the sites you chose"
+    }
+  },
+  "host_permissions": [
+    "https://dhenz14.github.io/*"
+  ]
 }

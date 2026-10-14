@@ -24,4 +24,10 @@ if (fs.existsSync(path.join(ext, 'engines.js'))) {
 	eq(s2.custom.length, 1, 'invalid custom engine dropped'); var t2 = X.targets(s2, 'https://example.com/'); eq(t2.length, 2, 'ticked engine + custom'); eq(t2[0].url, 'https://archive.is/?run=1&url=https%3A%2F%2Fexample.com%2F', 'variant used'); eq(t2[1].url, 'https://my.example/save?u=https%3A%2F%2Fexample.com%2F', 'custom template used');
 	eq(X.normalise({ sel: 'x', strip: 'y' }).sel.length, 3, 'garbage falls back to defaults');
 }
+// Hive hand-off module: loads without the chrome API and the manifest asks for exactly what it needs
+if (fs.existsSync(path.join(ext, 'hive.js'))) {
+	var H = require(path.join(ext, 'hive.js')); eq(typeof H.collectPage, 'function', 'collectPage exists'); eq(typeof H.sendToArchive, 'function', 'sendToArchive exists'); eq(H.ARCHIVE_ORIGIN, 'https://dhenz14.github.io/archive', 'archive origin');
+	var man = JSON.parse(fs.readFileSync(path.join(ext, 'manifest.json'), 'utf8')); eq(man.permissions.indexOf('scripting') >= 0, true, 'scripting permission'); eq(JSON.stringify(man.host_permissions), JSON.stringify(['https://dhenz14.github.io/*']), 'host access only for ArcHive');
+	eq(fs.readFileSync(path.join(ext, 'background.js'), 'utf8').indexOf("importScripts('engines.js', 'shared.js', 'hive.js')") >= 0, true, 'background loads hive.js');
+}
 console.log(n + ' checks, ' + fails + ' failed'); process.exit(fails ? 1 : 0);

@@ -24,7 +24,7 @@
 
 		<h2 id="extension">Archive any page in one click: browser extension</h2>
 		<div class="tu-card tu-card--tint">
-			<p style="margin-top:0">The <b>MES Archive</b> extension for Chrome, Brave and Edge does the same thing from the page you are reading: click its button (or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>) and your chosen archive sites open in new tabs with the current page already filled in. Right-click any link to archive it without opening it first. You pick the sites once, add your own, and it remembers.</p>
+			<p style="margin-top:0">The <b>MES Archive</b> extension for Chrome, Brave and Edge does the same thing from the page you are reading: click its button (or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>) and your chosen archive sites open in new tabs with the current page already filled in. Right-click any link to archive it without opening it first. You pick the sites once, add your own, and it remembers. Tick <b>ArcHive</b> and it hands the page you are on to ArcHive for the Hive blockchain, with no bookmarklet needed.</p>
 			<div class="tu-row" style="gap:0.5em"><a class="tu-btn tu-btn--primary" id="ar-dl" href="/archive/mes-archive.zip" download>Download <span id="ar-ver">v1.0.0</span> (zip)</a><a class="tu-btn tu-btn--ghost" href="#ar-install">How to install</a><a class="tu-btn tu-btn--ghost" href="/archive/extension/popup.js">View the source</a></div>
 			<p class="tu-note" style="margin-bottom:0">Private: no accounts, no tracking. The extension only talks to the archive sites you open.</p>
 		</div>
@@ -55,6 +55,7 @@
 			<p>It opens <a href="https://dhenz14.github.io/archive/" rel="noopener">ArcHive</a>, a free third-party tool by dhenz14 that stores the page's text on the Hive blockchain together with its cryptographic hashes, so the copy can be proved later. You sign with Hive Keychain or HiveAuth. mes.fm only passes your address to it.</p>
 			<h4>Why does ArcHive tell me to use its bookmarklet?</h4>
 			<p>ArcHive deliberately has no server: it can only read a page from inside your own browser. So on a computer, pasting a link only lets it check whether that page is <em>already</em> on Hive. To publish a new copy, open ArcHive once, drag its bookmarklet to your bookmarks bar, go to the page you want and click the bookmarklet there. On Android the link alone works. This is how ArcHive is built, not something mes.fm can change.</p>
+			<p><b>The MES Archive extension does that step for you:</b> with the Hive option ticked, it reads the page you are on, opens ArcHive and hands the page over, so you only press <em>Archive Now</em> and sign. (The extension asks for permission to read the page you click it on, and for ArcHive's site.)</p>
 			<h4>Why does archive.today ask me to prove I am human?</h4>
 			<p>It runs on donations and limits automated use. Solve the check once and your copy is saved. If it will not load where you are, tick a different address (archive.is, archive.md, archive.vn&hellip;).</p>
 			<p class="tu-note">Related: <a href="/search-engines">Search Engines</a>, <a href="/reverse-image-search">Reverse Image Search</a>, <a href="/domain-lookup">Domain Lookup</a>.</p>
