@@ -89,7 +89,8 @@
 		if (wrap.__mesStage) return; wrap.__mesStage = true;
 		var bar = document.createElement('div'); bar.className = 'mes-sbar'; bar.setAttribute('role', 'group'); bar.setAttribute('aria-label', 'Size of the simulation');
 		bar.innerHTML = '<span class="mes-sl">View</span>' + SIZES.map(function (z) { return '<button type="button" data-s="' + z[0] + '" title="' + z[1] + ' simulation box">' + z[1] + '</button>'; }).join('') +
-			'<button type="button" data-fill="1" title="Fill the browser window (Esc leaves)">⤢ Fill window</button>';
+			'<button type="button" data-fill="1" title="Fill the browser window (Esc leaves)">⤢ Fill window</button>' +
+			'<button type="button" data-hide="1" title="Hide the graphs, readouts and menus under the picture so only the simulation shows">▾ Hide stats</button>';
 		wrap.parentNode.insertBefore(bar, wrap);
 		var o = { wrap: wrap, bar: bar }; wraps.push(o);
 		var stage0 = wrap.querySelector('[class$="-stage"]'), rt = 0;
@@ -97,6 +98,7 @@
 		bar.addEventListener('click', function (e) {
 			var b = e.target.closest('button'); if (!b) return;
 			if (b.dataset.fill) { fill(wrap); return; }
+			if (b.dataset.hide) { var hid = !wrap.classList.contains('mes-nopanel'); wrap.classList.toggle('mes-nopanel', hid); try { localStorage.setItem('mes-inlhide', hid ? '1' : '0'); } catch (x) { /* ignore */ } paintHide(wrap, bar); ping(); return; }
 			state = { s: b.dataset.s }; write(state); apply();
 		});
 		var grip = document.createElement('div'); grip.className = 'mes-grip'; grip.title = 'Drag to resize the box, wider or narrower and taller or shorter (double-click: back to the standard size)'; grip.setAttribute('aria-hidden', 'true');
@@ -114,6 +116,15 @@
 		grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
 		grip.addEventListener('dblclick', function () { state = {}; write(state); apply(); });
 		apply();
+		var ih = null; try { ih = localStorage.getItem('mes-inlhide'); } catch (x) { /* ignore */ }
+		if (ih === '1') { wrap.classList.add('mes-nopanel'); }
+		paintHide(wrap, bar);
+	}
+	/* "Hide stats": the same .mes-nopanel rule Fill window uses, but in the page itself (remembered in mes-inlhide) */
+	function paintHide(wrap, bar) {
+		var hid = wrap.classList.contains('mes-nopanel'), b = bar.querySelector('[data-hide]'); if (!b) return;
+		b.textContent = hid ? '▴ Show stats' : '▾ Hide stats'; b.setAttribute('aria-pressed', hid ? 'true' : 'false');
+		b.title = hid ? 'Show the graphs, readouts and menus under the picture' : 'Hide the graphs, readouts and menus under the picture so only the simulation shows';
 	}
 
 	/* ----- fill the browser window ----- */
@@ -160,7 +171,9 @@
 	}
 	function leave() {
 		if (!filling) return;
-		filling.classList.remove('mes-fill', 'mes-nopanel'); filling.style.removeProperty('--mes-fw'); document.documentElement.classList.remove('mes-fill-on');
+		filling.classList.remove('mes-fill', 'mes-nopanel'); filling.style.removeProperty('--mes-fw');
+		var ih = null; try { ih = localStorage.getItem('mes-inlhide'); } catch (x) { /* ignore */ } if (ih === '1') filling.classList.add('mes-nopanel');
+		wraps.forEach(function (o) { if (o.wrap === filling) paintHide(o.wrap, o.bar); }); document.documentElement.classList.remove('mes-fill-on');
 		if (backdrop) backdrop.remove(); if (closeBtn) closeBtn.remove(); backdrop = closeBtn = null; filling = null;
 		apply(); ping(); setTimeout(ping, 150);
 	}
