@@ -752,7 +752,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="tu-field tu-field--sm"><span class="tu-label">Colour the plane by</span><select id="em-es-col" class="tu-select" aria-label="Colour map"><option value="none">Nothing</option><option value="v">Voltage</option><option value="e">Field strength</option></select></div>
 					<div class="tu-field tu-field--sm"><span class="tu-label">Kind of charge</span><select id="em-es-mode" class="tu-select" aria-label="Charge kind"><option value="3d">Point charges (1/r², real 3D)</option><option value="2d">Long line charges (1/r, 2D)</option></select></div>
 				</div>
-				<p class="tu-note em-tip">Tip: click a charge (or sensor) to select it, then press <kbd>Backspace</kbd> or <kbd>Delete</kbd> to remove it. Drag to move it. Tape measure: drag from point to point. Voltmeter: click twice to put down the two probes (it shows V<sub>red</sub> − V<sub>black</sub>); drag a probe to move it.</p>
+				<p class="tu-note em-tip">Tip: click a charge (or sensor) to select it, then press <b>Backspace</b> or <b>Delete</b> to remove it. Drag to move it. Tape measure: drag from point to point. Voltmeter: click twice to put down the two probes (it shows red minus black voltage); drag a probe to move it.</p>
 				<div class="em-sel" id="em-es-sel" hidden>
 					<span>Selected charge: <b id="em-es-sel-q"></b></span>
 					<label class="em-check">its size <input type="range" id="em-es-selq" min="-10" max="10" step="0.1" style="width:10em"> <span class="tu-note">μC</span></label>
@@ -989,7 +989,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js?v=7" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
