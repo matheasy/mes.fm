@@ -354,6 +354,31 @@
 	$("mb-jplus").onclick = function () { if (S.jsize < JS.length - 1) { S.jsize++; sset({ jsize: S.jsize }); jApply(); } };
 	$("mb-jx").onclick = function () { S.jprev = false; $("mb-jprev").checked = false; sset({ jprev: false }); $("mb-jbox").hidden = true; };
 	$("mb-jp").addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+	/* drag the inset by its title bar; on release it glides to the nearest corner (remembered) */
+	S.jc = ["bl", "br", "tl", "tr"].indexOf(saved.jc) >= 0 ? saved.jc : "bl"; $("mb-jbox").setAttribute("data-c", S.jc);
+	(function () {
+		var box = $("mb-jbox"), bar = box.querySelector(".mb-jbar"), mv = null;
+		bar.addEventListener("pointerdown", function (e) {
+			if (e.target.closest("button") || (e.button != null && e.button > 0)) return;
+			var b = box.getBoundingClientRect(), st = stage.getBoundingClientRect(); mv = { dx: e.clientX - b.left, dy: e.clientY - b.top, st: st, from: b };
+			box.classList.add("is-moving"); box.style.left = (b.left - st.left) + "px"; box.style.top = (b.top - st.top) + "px"; box.style.right = "auto"; box.style.bottom = "auto"; bar.setPointerCapture(e.pointerId); e.preventDefault(); e.stopPropagation();
+		});
+		bar.addEventListener("pointermove", function (e) {
+			if (!mv) return; var st = stage.getBoundingClientRect(), w = box.offsetWidth, h = box.offsetHeight;
+			box.style.left = Math.max(0, Math.min(st.width - w, e.clientX - st.left - mv.dx)) + "px"; box.style.top = Math.max(0, Math.min(st.height - h, e.clientY - st.top - mv.dy)) + "px";
+		});
+		function drop() {
+			if (!mv) return; var st = stage.getBoundingClientRect(), b = box.getBoundingClientRect(), cx = b.left + b.width / 2 - st.left, cy = b.top + b.height / 2 - st.top;
+			S.jc = (cy < st.height / 2 ? "t" : "b") + (cx < st.width / 2 ? "l" : "r"); sset({ jc: S.jc });
+			box.classList.remove("is-moving"); box.style.left = box.style.top = box.style.right = box.style.bottom = ""; box.setAttribute("data-c", S.jc);
+			var n = box.getBoundingClientRect(), dx = b.left - n.left, dy = b.top - n.top;   /* glide from where it was dropped to the corner */
+			box.style.transition = "none"; box.style.transform = "translate(" + dx + "px," + dy + "px)";
+			requestAnimationFrame(function () { box.style.transition = "transform 180ms ease"; box.style.transform = ""; setTimeout(function () { box.style.transition = ""; }, 220); });
+			mv = null;
+		}
+		bar.addEventListener("pointerup", drop); bar.addEventListener("pointercancel", drop);
+		bar.addEventListener("dblclick", function (e) { if (e.target.closest("button")) return; S.jc = "bl"; sset({ jc: "bl" }); box.setAttribute("data-c", "bl"); });
+	})();
 
 	/* Julia page: the c map = a small picture of the Mandelbrot-type set; click or drag on it to choose c */
 	var cmap = null;

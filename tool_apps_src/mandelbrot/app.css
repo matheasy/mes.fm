@@ -82,3 +82,7 @@
 	.mb-jc {margin-bottom:0.9em;padding-bottom:0.7em;border-bottom:1px solid var(--mb-line,#dfe4ea);} .mb-jc .mb-h {margin-top:0;}
 	#mb [hidden] {display:none !important;}
 	@media (max-width:640px) {.mb-jbox {max-width:70%;}}
+	/* the inset can be dragged by its title bar and snaps to the nearest corner (top corners leave room for the status badge and the camera / full-screen buttons) */
+	.mb-jbox[data-c="bl"] {left:0.6em;bottom:0.6em;top:auto;right:auto;} .mb-jbox[data-c="br"] {right:0.6em;bottom:0.6em;left:auto;top:auto;}
+	.mb-jbox[data-c="tl"] {left:0.6em;top:2.3em;bottom:auto;right:auto;} .mb-jbox[data-c="tr"] {right:0.6em;top:2.9em;bottom:auto;left:auto;}
+	.mb-jbar {cursor:grab;touch-action:none;} .mb-jbox.is-moving {z-index:6;box-shadow:0 6px 18px rgba(0,0,0,0.5);transition:none;} .mb-jbox.is-moving .mb-jbar {cursor:grabbing;}
