@@ -199,6 +199,15 @@ const PAGES = [
     tileLabel: "Black Hole Simulator",
   },
   {
+    // Tile only: no page is written; links to the tool. Icon = img/grounding-rod-simulator-icon.jpg (the user's Grok tile art).
+    slug: "grounding-rod-simulator",
+    section: "tools",
+    href: "/grounding-rod-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Ground Rod & Earthing Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/electromagnetic-fields-simulator-icon.jpg (the user's Grok tile art).
     slug: "electromagnetic-fields-simulator",
     section: "tools",

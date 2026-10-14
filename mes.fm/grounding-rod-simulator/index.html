@@ -322,6 +322,30 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#gr [hidden] {display:none !important;}
 	#gr .tu-seg {flex-wrap:wrap;max-width:100%;} #gr .tu-seg button {flex:1 1 auto;}
 
+	.gr-hdr {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 1em;margin-bottom:0.6em;} .gr-hdr .gr-h {margin:0;} .gr-sc {margin:0 !important;}
+	.gr-svgwrap {overflow-x:auto;} #gr-svg {width:100%;min-width:640px;height:auto;display:block;}
+	#gr-svg .gr-t {font:14px system-ui,sans-serif;fill:#223;} #gr-svg .gr-tc {text-anchor:middle;} #gr-svg .gr-tr {text-anchor:end;} #gr-svg .gr-sm {font-size:12px;} #gr-svg .gr-b {font-weight:700;}
+	#gr-svg .gr-hot {fill:#b91c1c;} #gr-svg .gr-g {fill:#15803d;}
+	#gr-svg .gr-soil {fill:#e8d3a8;} #gr-svg .gr-gline {stroke:#7c5b1b;stroke-width:3;}
+	#gr-svg .gr-pole {fill:#8b6b3e;} #gr-svg .gr-xfmr {fill:#cbd5e1;stroke:#475569;stroke-width:2;} #gr-svg .gr-rod {fill:#b87333;stroke:#7c4a1b;}
+	#gr-svg .gr-roof {fill:#c9a27a;stroke:#6b4b2a;stroke-width:2;} #gr-svg .gr-wall {fill:#f6efe0;stroke:#6b4b2a;stroke-width:2;}
+	#gr-svg .gr-box {fill:#e2e8f0;stroke:#475569;stroke-width:2;} #gr-svg .gr-case {fill:#cbd5e1;stroke:#334155;stroke-width:3;}
+	#gr-svg .gr-wh {stroke:#dc2626;stroke-width:4;fill:none;stroke-linejoin:round;} #gr-svg .gr-wn {stroke:#64748b;stroke-width:4;fill:none;stroke-linejoin:round;} #gr-svg .gr-wg {stroke:#16a34a;stroke-width:4;fill:none;} #gr-svg .gr-bond {stroke:#16a34a;stroke-width:5;}
+	#gr-svg .gr-earth {fill:none;stroke:#7c5b1b;stroke-width:2;stroke-dasharray:3 6;} #gr-svg .gr-arrow {fill:#334155;}
+	#gr-svg .gr-person circle {fill:#fde68a;stroke:#334155;stroke-width:2;} #gr-svg .gr-person line {stroke:#334155;stroke-width:4;stroke-linecap:round;}
+	#gr-svg .gr-spark {fill:#facc15;stroke:#b45309;stroke-width:1.5;} #gr-svg .gr-bolt {fill:#facc15;stroke:#b45309;stroke-width:2;} #gr-svg .gr-bolt-l {stroke:#facc15;stroke-width:6;stroke-linecap:round;} #gr-svg .gr-cloud {fill:#94a3b8;}
+	#gr-svg .gr-ring path {fill:none;stroke:#c2410c;stroke-width:3;opacity:0.55;} #gr-svg .gr-ring path:first-child {fill:rgba(194,65,12,0.18);} #gr-svg .gr-lab {fill:#7c2d12;}
+	#gr-svg .gr-flow {fill:none;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:3 12;animation:gr-flow 0.9s linear infinite;} #gr-svg .gr-f-norm {stroke:#2563eb;stroke-width:7;} #gr-svg .gr-f-fault {stroke:#f97316;stroke-width:9;} #gr-svg .gr-f-thin {stroke:#f97316;stroke-width:4;} #gr-svg .gr-f-light {stroke:#facc15;stroke-width:8;animation-duration:0.5s;}
+	@keyframes gr-flow {to {stroke-dashoffset:-30;}} @media (prefers-reduced-motion: reduce) {#gr-svg .gr-flow {animation:none;stroke-dasharray:none;opacity:0.7;}}
+	#gr-svg [data-show] {display:none;} #gr-svg [data-show].on {display:inline;}
+	#gr .gr-cap {margin:0.5em 0 0;line-height:1.5;}
+	body.dark-mode #gr-svg .gr-t {fill:#e6e8ec;} body.dark-mode #gr-svg .gr-hot {fill:#fca5a5;} body.dark-mode #gr-svg .gr-g {fill:#86efac;} body.dark-mode #gr-svg .gr-soil {fill:#3b2f17;} body.dark-mode #gr-svg .gr-gline {stroke:#b08a3c;}
+	body.dark-mode #gr-svg .gr-wall {fill:#2a2a2a;stroke:#9ca3af;} body.dark-mode #gr-svg .gr-roof {fill:#4b3a2a;stroke:#9ca3af;} body.dark-mode #gr-svg .gr-box {fill:#374151;stroke:#9ca3af;} body.dark-mode #gr-svg .gr-case {fill:#4b5563;stroke:#e5e7eb;} body.dark-mode #gr-svg .gr-xfmr {fill:#4b5563;stroke:#cbd5e1;}
+	body.dark-mode #gr-svg .gr-wn {stroke:#cbd5e1;} body.dark-mode #gr-svg .gr-earth {stroke:#d6b36a;} body.dark-mode #gr-svg .gr-lab {fill:#fdba74;} body.dark-mode #gr-svg .gr-person circle {stroke:#e5e7eb;} body.dark-mode #gr-svg .gr-person line {stroke:#e5e7eb;}
+	body.dark-mode #gr-svg .gr-f-norm {stroke:#60a5fa;} body.dark-mode #gr-svg .gr-pole {fill:#a07f4f;}
+	#gr .gr-sc {display:flex;flex-wrap:wrap;gap:0.4em;} #gr .gr-sc button {cursor:pointer;font:inherit;font-size:0.85em;padding:0.3em 0.8em;border-radius:1em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223;} #gr .gr-sc button:hover {border-color:var(--accent);} #gr .gr-sc button.is-on {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	body.dark-mode #gr .gr-sc button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} body.dark-mode #gr .gr-sc button.is-on {background:var(--accent);border-color:var(--accent);color:#fff;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -409,6 +433,35 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #gr .gr-r4{background:#441f1f;color:#e17a7a}
 	body.dark-mode #gr .gr-ok{color:#7bdfa3}
 	body.dark-mode #gr .gr-no{color:#ea7171}
+	body.dark-mode #gr-svg .gr-t{fill:#d0d0d9}
+	body.dark-mode #gr-svg .gr-hot{fill:#ea7171}
+	body.dark-mode #gr-svg .gr-g{fill:#73e89f}
+	body.dark-mode #gr-svg .gr-gline{stroke:#d19a2e}
+	body.dark-mode #gr-svg .gr-pole{fill:#cdb38e}
+	body.dark-mode #gr-svg .gr-xfmr{fill:#919dab}
+	body.dark-mode #gr-svg .gr-rod{fill:#dcac7f;stroke:#d17d2e}
+	body.dark-mode #gr-svg .gr-roof{fill:#d0ae8b;stroke:#b78048}
+	body.dark-mode #gr-svg .gr-wall{stroke:#b78048}
+	body.dark-mode #gr-svg .gr-case{fill:#919dab;stroke:#394960}
+	body.dark-mode #gr-svg .gr-wh{stroke:#b01c1c}
+	body.dark-mode #gr-svg .gr-wg{stroke:#1ee166}
+	body.dark-mode #gr-svg .gr-bond{stroke:#1ee166}
+	body.dark-mode #gr-svg .gr-earth{stroke:#d19a2e}
+	body.dark-mode #gr-svg .gr-arrow{fill:#b3bac4}
+	body.dark-mode #gr-svg .gr-person circle{stroke:#394960}
+	body.dark-mode #gr-svg .gr-person line{stroke:#394960}
+	body.dark-mode #gr-svg .gr-spark{fill:#fcdc5f;stroke:#f3700c}
+	body.dark-mode #gr-svg .gr-bolt{fill:#fcdc5f;stroke:#f3700c}
+	body.dark-mode #gr-svg .gr-bolt-l{stroke:#c8a004}
+	body.dark-mode #gr-svg .gr-cloud{fill:#949ca8}
+	body.dark-mode #gr-svg .gr-ring path{stroke:#f0500f}
+	body.dark-mode #gr-svg .gr-ring path:first-child{fill:rgba(245,143,101,0.18)}
+	body.dark-mode #gr-svg .gr-lab{fill:#ea9070}
+	body.dark-mode #gr-svg .gr-f-norm{stroke:#1146bb}
+	body.dark-mode #gr-svg .gr-f-fault{stroke:#c75505}
+	body.dark-mode #gr-svg .gr-f-thin{stroke:#c75505}
+	body.dark-mode #gr-svg .gr-f-light{stroke:#c8a004}
+	body.dark-mode #gr .gr-sc button{border:1px solid #2f3b49;background:#15191e;color:#d0d0d9}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -672,6 +725,62 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</div>
 
+
+		<div class="tu-card" id="gr-house">
+			<div class="gr-hdr"><h2 class="gr-h">How it all fits together</h2>
+				<div class="em-chips gr-sc" id="gr-sc" role="group" aria-label="What to show">
+					<button type="button" data-sc="normal">Normal wiring</button><button type="button" data-sc="egc">Fault, proper ground wire</button><button type="button" data-sc="rod">Fault, rod only</button><button type="button" data-sc="none">Fault, no ground at all</button><button type="button" data-sc="light">Lightning nearby</button>
+				</div></div>
+			<div class="gr-svgwrap"><svg id="gr-svg" viewBox="0 0 900 440" role="img" aria-labelledby="gr-svg-t" xmlns="http://www.w3.org/2000/svg">
+				<title id="gr-svg-t">A house wired to the utility transformer, with its ground rods in the soil</title>
+				<defs><marker id="gr-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="gr-arrow"/></marker></defs>
+				<rect x="0" y="250" width="900" height="190" class="gr-soil"/>
+				<line x1="0" y1="250" x2="900" y2="250" class="gr-gline"/>
+				<!-- soil voltage rings for lightning -->
+				<g class="gr-ring" data-show="light"><path d="M780 250 A60 60 0 0 0 900 250 Z"/><path d="M730 250 A110 110 0 0 0 950 250" /><path d="M670 250 A170 170 0 0 0 1010 250"/></g>
+				<!-- utility pole, transformer, utility rod -->
+				<rect x="64" y="40" width="12" height="210" class="gr-pole"/><rect x="30" y="52" width="80" height="8" class="gr-pole"/>
+				<rect x="38" y="76" width="64" height="60" rx="6" class="gr-xfmr"/><text x="70" y="104" class="gr-t gr-tc">Utility</text><text x="70" y="122" class="gr-t gr-tc">transformer</text>
+				<line x1="70" y1="136" x2="70" y2="250" class="gr-wn"/><rect x="66" y="250" width="8" height="112" rx="3" class="gr-rod"/>
+				<text x="86" y="318" class="gr-t">Utility earth</text><text x="86" y="336" class="gr-t gr-b" id="gr-ru">≈ 20 Ω</text>
+				<!-- service drop -->
+				<polyline points="102,92 360,92 360,178" class="gr-wh"/><polyline points="102,114 378,114 378,178" class="gr-wn"/>
+				<text x="200" y="84" class="gr-t gr-hot">hot (live)</text><text x="196" y="132" class="gr-t">neutral</text>
+				<!-- house -->
+				<polygon points="310,152 540,84 770,152" class="gr-roof"/><rect x="320" y="152" width="440" height="98" class="gr-wall"/>
+				<rect x="342" y="178" width="52" height="46" rx="4" class="gr-box"/><text x="368" y="205" class="gr-t gr-tc">Meter</text>
+				<rect x="440" y="162" width="76" height="88" rx="4" class="gr-box"/><text x="478" y="180" class="gr-t gr-tc">Panel</text>
+				<line x1="394" y1="192" x2="440" y2="192" class="gr-wh"/><line x1="394" y1="210" x2="440" y2="210" class="gr-wn"/>
+				<line x1="462" y1="188" x2="462" y2="244" class="gr-wh"/><line x1="494" y1="188" x2="494" y2="244" class="gr-wg"/>
+				<line x1="462" y1="236" x2="494" y2="236" class="gr-bond"/><text x="478" y="228" class="gr-t gr-tc gr-sm">N–G bond</text>
+				<!-- ground electrode conductor and house rods -->
+				<line x1="494" y1="244" x2="494" y2="266" class="gr-wg"/><line x1="494" y1="266" x2="494" y2="272" class="gr-wg"/>
+				<g id="gr-houserods"></g>
+				<text x="440" y="378" class="gr-t gr-tr" id="gr-rh">House rod</text>
+				<!-- branch circuit to appliance -->
+				<line x1="516" y1="196" x2="640" y2="196" class="gr-wh"/><line x1="516" y1="208" x2="640" y2="208" class="gr-wn"/><line x1="516" y1="222" x2="650" y2="222" class="gr-wg"/>
+				<text x="560" y="190" class="gr-t gr-sm">circuit wires</text><text x="560" y="240" class="gr-t gr-sm gr-g">ground wire (EGC)</text>
+				<rect x="640" y="176" width="70" height="74" rx="5" class="gr-case"/><text x="675" y="214" class="gr-t gr-tc">Metal</text><text x="675" y="231" class="gr-t gr-tc">case</text>
+				<g data-show="egc rod none"><path d="M660 176 l-8 -14 l10 4 l-6 -16 l16 18 l-9 -3 z" class="gr-spark"/></g>
+				<g data-show="rod"><line x1="675" y1="250" x2="675" y2="268" class="gr-wg"/><rect x="671" y="266" width="8" height="82" rx="3" class="gr-rod"/><text x="690" y="318" class="gr-t gr-sm">rod at the</text><text x="690" y="334" class="gr-t gr-sm">appliance only</text></g>
+				<!-- person -->
+				<g class="gr-person"><circle cx="735" cy="196" r="9"/><line x1="735" y1="205" x2="735" y2="232"/><line x1="735" y1="232" x2="727" y2="250"/><line x1="735" y1="232" x2="744" y2="250"/><line x1="735" y1="212" x2="712" y2="206"/><line x1="735" y1="212" x2="750" y2="224"/></g>
+				<!-- earth path -->
+				<path id="gr-earthpath" d="M70 362 Q70 398 270 398 T675 372" class="gr-earth"/>
+				<text x="200" y="420" class="gr-t gr-tc gr-sm" id="gr-earthlab">the soil between the two earths</text>
+				<!-- animated current -->
+				<path class="gr-flow gr-f-norm" data-show="normal" d="M102 92 H360 V192 H440 H516 V196 H640 V208 H516 V210 H440 V210 H378 V114 H102"/>
+				<path class="gr-flow gr-f-fault" data-show="egc" d="M102 92 H360 V192 H440 H516 V196 H650 L660 176 L650 222 H516 L494 232 V210 H440 H378 V114 H102"/>
+				<path class="gr-flow gr-f-thin" data-show="rod" d="M102 92 H360 V192 H440 H516 V196 H660 L675 250 V360 Q675 372 560 392 Q300 398 70 380 V136"/>
+				<path class="gr-flow gr-f-thin" data-show="none" d="M102 92 H360 V192 H440 H516 V196 H660 L690 205 L735 212 L735 250 Q735 330 500 398 Q200 400 70 380 V136"/>
+				<!-- lightning -->
+				<g data-show="light"><path d="M845 52 l-26 52 h18 l-16 50 l40 -60 h-20 l22 -42 z" class="gr-bolt"/><path d="M835 154 L850 250" class="gr-bolt-l"/><ellipse cx="852" cy="46" rx="48" ry="22" class="gr-cloud"/><ellipse cx="815" cy="52" rx="34" ry="18" class="gr-cloud"/>
+					<path class="gr-flow gr-f-light" d="M850 250 Q700 330 560 366 H494 V272"/><path class="gr-flow gr-f-light" d="M850 250 Q500 420 70 372"/>
+					<text x="660" y="300" class="gr-t gr-tc gr-lab">voltage rings in the soil</text></g>
+				<text x="440" y="420" class="gr-t gr-tc gr-b" id="gr-flab"></text>
+			</svg></div>
+			<p class="gr-cap" id="gr-cap" aria-live="polite"></p>
+		</div>
 		<section id="gr-p-rod">
 			<div class="tu-card">
 				<div class="tu-row">
@@ -890,7 +999,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/grounding-rod-simulator/js/grounding-rod-simulator.js?v=1" defer></script>
+	<script src="/grounding-rod-simulator/js/grounding-rod-simulator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

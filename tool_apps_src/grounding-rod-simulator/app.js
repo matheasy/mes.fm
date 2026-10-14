@@ -83,6 +83,7 @@
 	function ok(g) { return g.rho > 0 && g.L > 0.2 && g.s > 0 && g.n >= 1; }
 	function rodTxt(g, R) { return g.n + " rod" + (g.n > 1 ? "s" : "") + ", " + sig(g.L, 3) + " m long, soil " + sig(g.rho, 3) + " Ω·m = " + sig(R, 3) + " Ω"; }
 
+	var LASTF = null, LASTP = null, LASTL = null, LASTR = null, LASTG = null;
 	/* ---- tab 1 ---- */
 	function rodTab() {
 		var g = geom(); if (!ok(g)) { $("gr-R").textContent = "–"; return; }
@@ -94,14 +95,14 @@
 		var Ls = [1.2, 2.4, 3, 4.8, 6], ns = [1, 2, 3, 4, 6], h = "<thead><tr><th>Rod length</th>" + ns.map(function (n) { return "<th>" + n + " rod" + (n > 1 ? "s" : "") + "</th>"; }).join("") + "</tr></thead><tbody>";
 		Ls.forEach(function (L) { h += "<tr><td>" + sig(L, 2) + " m (" + sig(L / FT, 2) + " ft)</td>" + ns.map(function (n) { var r = G.groupR(n, g.rho, L, g.d, Math.max(g.s, L)); return '<td class="' + (g.t && r <= g.t ? "gr-ok" : "") + '">' + sig(r, 3) + " Ω</td>"; }).join("") + "</tr>"; });
 		$("gr-grid").innerHTML = h + "</tbody>"; $("gr-gridn").textContent = "Rods are spaced at least one rod-length apart here, so they don't crowd each other. Green meets your " + (g.t || "–") + " Ω target. Doubling the length roughly halves the resistance; doubling the number of rods helps less than that because their patches of soil overlap.";
-		$("gr-rodused").textContent = rodTxt(g, R); $("gr-rodused2").textContent = rodTxt(g, R);
+		$("gr-rodused").textContent = rodTxt(g, R); $("gr-rodused2").textContent = rodTxt(g, R); LASTR = R; LASTG = g;
 	}
 	/* ---- tab 2 ---- */
 	function faultTab() {
 		var g = geom(); if (!ok(g)) return; var R = G.groupR(g.n, g.rho, g.L, g.d, g.s);
 		var p = { V: +$("gr-v").value, In: num($("gr-in").value), curve: $("gr-curve").value, Rline: num($("gr-rline").value), Regc: num($("gr-regc").value), Rsrc: num($("gr-rsrc").value), Rsrcg: num($("gr-rsg").value), Rfloor: +$("gr-rfl").value, Rrod: R };
 		if (!(p.In > 0) || !(p.Rline >= 0) || !(p.Regc >= 0) || !(p.Rsrc >= 0) || !(p.Rsrcg >= 0)) return;
-		var f = G.faultCases(p), h = "<thead><tr><th>If a hot wire touches a metal case…</th><th>Fault current</th><th>Does the breaker trip?</th><th>Case voltage</th><th>Current through you</th></tr></thead><tbody>";
+		var f = G.faultCases(p); LASTF = f; LASTP = p; var h = "<thead><tr><th>If a hot wire touches a metal case…</th><th>Fault current</th><th>Does the breaker trip?</th><th>Case voltage</th><th>Current through you</th></tr></thead><tbody>";
 		f.forEach(function (c) { var e = G.bodyEffect(c.Ibody); h += "<tr><td>" + esc(c.name) + "</td><td>" + si(c.I, "A", 3) + " (" + (c.I / p.In < 0.01 ? "under 0.01" : sig(c.I / p.In, 3)) + " × rating)</td><td>" + (c.trip.trips ? '<span class="gr-ok">Yes</span> ' + esc(c.trip.note) : '<span class="gr-no">No</span>: the case stays live') + "</td><td>" + si(c.Vcase, "V", 3) + '</td><td>' + si(c.Ibody / 1000, "A", 2) + (c.trip.trips && c.trip.t < 5 ? " for about " + dur(c.trip.t) : "") + ' <span class="gr-risk gr-r' + e.k + '">' + esc(e.t) + "</span></td></tr>"; });
 		$("gr-faults").innerHTML = h + "</tbody>"; $("gr-nogcurrent").textContent = si(f[2].Ibody / 1000, "A", 2);
 		var t = "<thead><tr><th>RCD rating I<sub>Δn</sub></th><th>Max electrode resistance (50 V)</th><th>Your rod</th></tr></thead><tbody>";
@@ -117,6 +118,7 @@
 		$("gr-gpr").textContent = si(gp, "V", 3); $("gr-gprs").textContent = "I × R = " + si(I, "A", 2) + " × " + sig(R, 3) + " Ω (the whole rod system floats this high above far-away ground)";
 		$("gr-step").textContent = si(sv, "V", 3); $("gr-steps").textContent = "across a " + sig(st, 2) + " m stride at " + sig(r, 3) + " m: " + (sv > 1000 ? "lethal if current crosses your chest" : sv > 50 ? "dangerous" : "low");
 		$("gr-btw").textContent = si(bt.between, "V", 3); $("gr-btws").textContent = "between this rod and one " + sig(d2, 3) + " m away that is not bonded to it: an arc waiting to happen. Bond them.";
+		LASTL = { gp: gp, sv: sv, bt: bt, I: I, R: R, r: r, d2: d2, st: st };
 		drawLight(g, I, R, r, r0, st);
 	}
 	function drawLight(g, I, R, r, r0, st) {
@@ -149,9 +151,31 @@
 		$("gr-rules").innerHTML = '<h2 class="gr-h">' + esc(r.name) + '</h2><p><strong>System:</strong> ' + r.sys + '</p><dl class="gr-reg">' + r.items.map(function (i) { return "<dt>" + i[0] + "</dt><dd>" + i[1] + "</dd>"; }).join("") + "</dl>";
 	}
 
+
+	/* ---- the house picture ---- */
+	var SC = { normal: 1, egc: 1, rod: 1, none: 1, light: 1 }, TABSC = { rod: "normal", fault: "egc", light: "light", static: "normal", rules: "normal" };
+	function diagram() {
+		var sc = S.sc || "normal", svg = $("gr-svg"), g = LASTG, R = LASTR; if (!g || R == null) return;
+		Array.prototype.forEach.call(svg.querySelectorAll("[data-show]"), function (el) { el.classList.toggle("on", el.getAttribute("data-show").split(" ").indexOf(sc) >= 0); });
+		Array.prototype.forEach.call($("gr-sc").children, function (b) { b.classList.toggle("is-on", b.dataset.sc === sc); b.setAttribute("aria-pressed", b.dataset.sc === sc ? "true" : "false"); });
+		var n = Math.min(g.n, 3), h = "";
+		for (var i = 0; i < n; i++) { var x = 494 + i * 46; h += (i ? '<line x1="' + (x - 46) + '" y1="272" x2="' + x + '" y2="272" class="gr-wg"/>' : "") + '<line x1="' + x + '" y1="266" x2="' + x + '" y2="272" class="gr-wg"/><rect x="' + (x - 4) + '" y="270" width="8" height="100" rx="3" class="gr-rod"/>'; }
+		if (g.n > 3) h += '<text x="' + (494 + 2 * 46 + 16) + '" y="330" class="gr-t gr-sm">+' + (g.n - 3) + " more</text>";
+		$("gr-houserods").innerHTML = h;
+		$("gr-rh").textContent = "House rod" + (g.n > 1 ? "s" : "") + " ≈ " + sig(R, 3) + " Ω"; $("gr-rh").setAttribute("x", "480"); $("gr-rh").setAttribute("y", "392");
+		var rsg = LASTP ? LASTP.Rsrcg : 20; $("gr-ru").textContent = "≈ " + sig(rsg, 3) + " Ω";
+		var f = LASTF, L = LASTL, cap = "", fl = "";
+		if (sc === "normal") cap = "<strong>Everyday:</strong> current goes out on the hot wire (red) and comes back on the neutral (grey) to the transformer. The ground wire (green) carries nothing. The neutral is tied to ground at the panel only (the N–G bond), and the ground rod just holds the whole system at the earth's voltage. Nothing here flows through the soil.";
+		else if (sc === "egc" && f) { var c = f[0]; cap = "<strong>Hot touches the case, with a proper ground wire:</strong> the fault current takes the metal road back (case → green wire → panel bond → neutral) and is about <strong>" + si(c.I, "A", 3) + "</strong>, " + sig(c.I / LASTP.In, 3) + " × the breaker rating, so it " + (c.trip.trips ? "<strong>trips " + c.trip.note + "</strong>" : "does not trip") + ". The case only rises to ~" + si(c.Vcase, "V", 2) + " for that instant. The rod isn't what trips the breaker."; fl = "fault current ≈ " + si(c.I, "A", 3); }
+		else if (sc === "rod" && f) { var d = f[1]; cap = "<strong>Hot touches a case that is connected only to a ground rod:</strong> the current must go down the rod, across the soil to the utility's earth and back up to the transformer. That path is " + sig(LASTP.Rrod + LASTP.Rsrcg, 3) + " Ω, so the fault current is just <strong>" + si(d.I, "A", 3) + "</strong>: the breaker <strong>" + (d.trip.trips ? "eventually trips" : "does not trip") + "</strong> and the case stays at about <strong>" + si(d.Vcase, "V", 3) + "</strong> above the earth until someone touches it."; fl = "fault current ≈ " + si(d.I, "A", 3); }
+		else if (sc === "none" && f) { var e = f[2], k = G.bodyEffect(e.Ibody); cap = "<strong>Hot touches an ungrounded case and you touch it:</strong> you are the path (case → you → floor → soil → utility earth). About <strong>" + sig(e.Ibody, 3) + " mA</strong> flows through you: " + k.t.toLowerCase() + ". The breaker " + (e.trip.trips ? "trips" : "does not notice") + ". A GFCI / RCD would cut this in ~30 ms."; fl = "through you ≈ " + sig(e.Ibody, 3) + " mA"; }
+		else if (sc === "light" && L) cap = "<strong>Lightning strikes nearby:</strong> the current spreads out through the soil as rings of voltage. Your house rods rise to ~<strong>" + si(L.gp, "V", 2) + "</strong>, and the step voltage across a stride " + sig(L.r, 3) + " m from the strike is ~<strong>" + si(L.sv, "V", 2) + "</strong>. If everything (rods, pipes, panel) is bonded they all rise together and nothing sparks; an unbonded rod " + sig(L.d2, 3) + " m away could differ by ~" + si(L.bt.between, "V", 2) + ".";
+		$("gr-cap").innerHTML = cap; $("gr-flab").textContent = fl;
+	}
+	$("gr-sc").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; S.sc = b.dataset.sc; diagram(); };
 	var P = { rod: $("gr-p-rod"), fault: $("gr-p-fault"), light: $("gr-p-light"), static: $("gr-p-static"), rules: $("gr-p-rules") };
-	function show() { Object.keys(P).forEach(function (k) { P[k].hidden = k !== S.tab; }); Array.prototype.forEach.call($("gr-tabs").children, function (b) { b.setAttribute("aria-pressed", b.dataset.tab === S.tab ? "true" : "false"); }); }
-	function all() { rodTab(); faultTab(); lightTab(); staticTab(); rulesTab(); }
+	function show() { S.sc = TABSC[S.tab] || "normal"; Object.keys(P).forEach(function (k) { P[k].hidden = k !== S.tab; }); Array.prototype.forEach.call($("gr-tabs").children, function (b) { b.setAttribute("aria-pressed", b.dataset.tab === S.tab ? "true" : "false"); }); }
+	function all() { rodTab(); faultTab(); lightTab(); staticTab(); rulesTab(); diagram(); }
 	function save() { sset({ tab: S.tab, soil: S.soil, rho: S.rho, L: S.L, lu: S.lu, d: S.d, n: S.n, s: S.sp, t: S.t, reg: S.reg }); }
 	function link() { var u = new URL(location.href); u.search = ""; u.searchParams.set("tab", S.tab); u.searchParams.set("rho", S.rho); u.searchParams.set("L", S.lu === "ft" ? String(+(num(S.L) * FT).toFixed(3)) : S.L); u.searchParams.set("d", S.d); u.searchParams.set("n", S.n); u.searchParams.set("s", String(+spM().toFixed(3))); u.searchParams.set("t", S.t); return u.toString(); }
 
@@ -159,8 +183,8 @@
 	$("gr-soil").onchange = function () { var s = G.SOILS.filter(function (x) { return x.id === this.value; }.bind(this))[0]; $("gr-rho").value = s.rho; read(); all(); save(); };
 	$("gr-rho").addEventListener("input", function () { read(); all(); save(); });
 	["gr-len", "gr-lu", "gr-dia", "gr-n", "gr-spv", "gr-su", "gr-target", "gr-reg"].forEach(function (id) { $(id).addEventListener("input", function () { read(); all(); save(); }); $(id).addEventListener("change", function () { read(); all(); save(); }); });
-	["gr-v", "gr-in", "gr-curve", "gr-rline", "gr-regc", "gr-rsrc", "gr-rsg", "gr-rfl"].forEach(function (id) { $(id).addEventListener("input", faultTab); $(id).addEventListener("change", faultTab); });
-	["gr-ipk", "gr-dist", "gr-stride", "gr-d2"].forEach(function (id) { $(id).addEventListener("input", lightTab); $(id).addEventListener("change", lightTab); });
+	["gr-v", "gr-in", "gr-curve", "gr-rline", "gr-regc", "gr-rsrc", "gr-rsg", "gr-rfl"].forEach(function (id) { $(id).addEventListener("input", function () { faultTab(); diagram(); }); $(id).addEventListener("change", function () { faultTab(); diagram(); }); });
+	["gr-ipk", "gr-dist", "gr-stride", "gr-d2"].forEach(function (id) { $(id).addEventListener("input", function () { lightTab(); diagram(); }); $(id).addEventListener("change", function () { lightTab(); diagram(); }); });
 	$("gr-sobj").onchange = function () { var o = SOBJ[+this.value]; $("gr-sC").value = o[1]; $("gr-sV").value = o[2]; staticTab(); };
 	["gr-sC", "gr-sV", "gr-sR"].forEach(function (id) { $(id).addEventListener("input", staticTab); $(id).addEventListener("change", staticTab); });
 	$("gr-link").onclick = function () { var u = link(), b = this; (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { b.textContent = "✓ Copied"; }, function () { window.prompt("Copy this link", u); }); setTimeout(function () { b.textContent = "🔗 Copy link"; }, 1600); };

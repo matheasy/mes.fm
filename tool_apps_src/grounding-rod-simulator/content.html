@@ -9,6 +9,62 @@
 			</div>
 		</div>
 
+
+		<div class="tu-card" id="gr-house">
+			<div class="gr-hdr"><h2 class="gr-h">How it all fits together</h2>
+				<div class="em-chips gr-sc" id="gr-sc" role="group" aria-label="What to show">
+					<button type="button" data-sc="normal">Normal wiring</button><button type="button" data-sc="egc">Fault, proper ground wire</button><button type="button" data-sc="rod">Fault, rod only</button><button type="button" data-sc="none">Fault, no ground at all</button><button type="button" data-sc="light">Lightning nearby</button>
+				</div></div>
+			<div class="gr-svgwrap"><svg id="gr-svg" viewBox="0 0 900 440" role="img" aria-labelledby="gr-svg-t" xmlns="http://www.w3.org/2000/svg">
+				<title id="gr-svg-t">A house wired to the utility transformer, with its ground rods in the soil</title>
+				<defs><marker id="gr-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="gr-arrow"/></marker></defs>
+				<rect x="0" y="250" width="900" height="190" class="gr-soil"/>
+				<line x1="0" y1="250" x2="900" y2="250" class="gr-gline"/>
+				<!-- soil voltage rings for lightning -->
+				<g class="gr-ring" data-show="light"><path d="M780 250 A60 60 0 0 0 900 250 Z"/><path d="M730 250 A110 110 0 0 0 950 250" /><path d="M670 250 A170 170 0 0 0 1010 250"/></g>
+				<!-- utility pole, transformer, utility rod -->
+				<rect x="64" y="40" width="12" height="210" class="gr-pole"/><rect x="30" y="52" width="80" height="8" class="gr-pole"/>
+				<rect x="38" y="76" width="64" height="60" rx="6" class="gr-xfmr"/><text x="70" y="104" class="gr-t gr-tc">Utility</text><text x="70" y="122" class="gr-t gr-tc">transformer</text>
+				<line x1="70" y1="136" x2="70" y2="250" class="gr-wn"/><rect x="66" y="250" width="8" height="112" rx="3" class="gr-rod"/>
+				<text x="86" y="318" class="gr-t">Utility earth</text><text x="86" y="336" class="gr-t gr-b" id="gr-ru">≈ 20 Ω</text>
+				<!-- service drop -->
+				<polyline points="102,92 360,92 360,178" class="gr-wh"/><polyline points="102,114 378,114 378,178" class="gr-wn"/>
+				<text x="200" y="84" class="gr-t gr-hot">hot (live)</text><text x="196" y="132" class="gr-t">neutral</text>
+				<!-- house -->
+				<polygon points="310,152 540,84 770,152" class="gr-roof"/><rect x="320" y="152" width="440" height="98" class="gr-wall"/>
+				<rect x="342" y="178" width="52" height="46" rx="4" class="gr-box"/><text x="368" y="205" class="gr-t gr-tc">Meter</text>
+				<rect x="440" y="162" width="76" height="88" rx="4" class="gr-box"/><text x="478" y="180" class="gr-t gr-tc">Panel</text>
+				<line x1="394" y1="192" x2="440" y2="192" class="gr-wh"/><line x1="394" y1="210" x2="440" y2="210" class="gr-wn"/>
+				<line x1="462" y1="188" x2="462" y2="244" class="gr-wh"/><line x1="494" y1="188" x2="494" y2="244" class="gr-wg"/>
+				<line x1="462" y1="236" x2="494" y2="236" class="gr-bond"/><text x="478" y="228" class="gr-t gr-tc gr-sm">N–G bond</text>
+				<!-- ground electrode conductor and house rods -->
+				<line x1="494" y1="244" x2="494" y2="266" class="gr-wg"/><line x1="494" y1="266" x2="494" y2="272" class="gr-wg"/>
+				<g id="gr-houserods"></g>
+				<text x="440" y="378" class="gr-t gr-tr" id="gr-rh">House rod</text>
+				<!-- branch circuit to appliance -->
+				<line x1="516" y1="196" x2="640" y2="196" class="gr-wh"/><line x1="516" y1="208" x2="640" y2="208" class="gr-wn"/><line x1="516" y1="222" x2="650" y2="222" class="gr-wg"/>
+				<text x="560" y="190" class="gr-t gr-sm">circuit wires</text><text x="560" y="240" class="gr-t gr-sm gr-g">ground wire (EGC)</text>
+				<rect x="640" y="176" width="70" height="74" rx="5" class="gr-case"/><text x="675" y="214" class="gr-t gr-tc">Metal</text><text x="675" y="231" class="gr-t gr-tc">case</text>
+				<g data-show="egc rod none"><path d="M660 176 l-8 -14 l10 4 l-6 -16 l16 18 l-9 -3 z" class="gr-spark"/></g>
+				<g data-show="rod"><line x1="675" y1="250" x2="675" y2="268" class="gr-wg"/><rect x="671" y="266" width="8" height="82" rx="3" class="gr-rod"/><text x="690" y="318" class="gr-t gr-sm">rod at the</text><text x="690" y="334" class="gr-t gr-sm">appliance only</text></g>
+				<!-- person -->
+				<g class="gr-person"><circle cx="735" cy="196" r="9"/><line x1="735" y1="205" x2="735" y2="232"/><line x1="735" y1="232" x2="727" y2="250"/><line x1="735" y1="232" x2="744" y2="250"/><line x1="735" y1="212" x2="712" y2="206"/><line x1="735" y1="212" x2="750" y2="224"/></g>
+				<!-- earth path -->
+				<path id="gr-earthpath" d="M70 362 Q70 398 270 398 T675 372" class="gr-earth"/>
+				<text x="200" y="420" class="gr-t gr-tc gr-sm" id="gr-earthlab">the soil between the two earths</text>
+				<!-- animated current -->
+				<path class="gr-flow gr-f-norm" data-show="normal" d="M102 92 H360 V192 H440 H516 V196 H640 V208 H516 V210 H440 V210 H378 V114 H102"/>
+				<path class="gr-flow gr-f-fault" data-show="egc" d="M102 92 H360 V192 H440 H516 V196 H650 L660 176 L650 222 H516 L494 232 V210 H440 H378 V114 H102"/>
+				<path class="gr-flow gr-f-thin" data-show="rod" d="M102 92 H360 V192 H440 H516 V196 H660 L675 250 V360 Q675 372 560 392 Q300 398 70 380 V136"/>
+				<path class="gr-flow gr-f-thin" data-show="none" d="M102 92 H360 V192 H440 H516 V196 H660 L690 205 L735 212 L735 250 Q735 330 500 398 Q200 400 70 380 V136"/>
+				<!-- lightning -->
+				<g data-show="light"><path d="M845 52 l-26 52 h18 l-16 50 l40 -60 h-20 l22 -42 z" class="gr-bolt"/><path d="M835 154 L850 250" class="gr-bolt-l"/><ellipse cx="852" cy="46" rx="48" ry="22" class="gr-cloud"/><ellipse cx="815" cy="52" rx="34" ry="18" class="gr-cloud"/>
+					<path class="gr-flow gr-f-light" d="M850 250 Q700 330 560 366 H494 V272"/><path class="gr-flow gr-f-light" d="M850 250 Q500 420 70 372"/>
+					<text x="660" y="300" class="gr-t gr-tc gr-lab">voltage rings in the soil</text></g>
+				<text x="440" y="420" class="gr-t gr-tc gr-b" id="gr-flab"></text>
+			</svg></div>
+			<p class="gr-cap" id="gr-cap" aria-live="polite"></p>
+		</div>
 		<section id="gr-p-rod">
 			<div class="tu-card">
 				<div class="tu-row">
