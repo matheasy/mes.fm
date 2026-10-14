@@ -15,24 +15,6 @@
 
 export const SECTIONS = [
   {
-    id: "911-spooks",
-    title: "Spooks",
-    items: [
-      { href: "https://mes.fm/abby-martin-911-spook", title: "Abby Martin Outed Herself as a 9/11 Spook as Far Back as 2012" },
-      { href: "https://mes.fm/911-revisionist-slander-mes", title: "9/11 Revisionist Slanders MES", who: "revisionist bob ryan" },
-      { href: "https://mes.fm/energy-vampire", title: "Disinfo Agents Literally Are Energy Vampires 😂😅😳" },
-      { href: "https://mes.fm/offguardian-911-spooks", title: "Another 9/11 Spook Outs Themselves: The OffGuardian X Account" },
-      { href: "https://mes.fm/911-spammer-dust-baggie", title: "9/11 Revisionist Spammin' Dust Baggie Nonsense", who: "revisionist bob" },
-      { href: "https://mes.fm/911-spook-ryan-banister", title: "9/11 Spooky Drama: Ryan Banister Wildin'" },
-      { href: "https://mes.fm/hughes-911-spammer-ryan-spooks", title: "9/11 Brings Out the Spooks: David Hughes, 9/11 Revisionist, Ryan Bannister" },
-      { href: "https://mes.fm/bg-notes", title: "Bob Greenyer's Claims About Dr. Judy Wood & 9/11" },
-      { href: "https://mes.fm/norman-patricia-ai-email", title: "9/11 Jersey Girl Patricia Casazza's Bizarre AI Generated Email to MES" },
-      { href: "https://mes.fm/911-revisionist-spammer", title: "9/11 Revisionist = 9/11 Spammer" },
-      { href: "https://mes.fm/911revisited-blocks-mes", title: "Norman aka 9/11 Revisited Blocked MES on X" },
-      { href: "https://mes.fm/andrew-mason-clown", title: "New 9/11 Disinfo Spook Dropped: Andrew Mason" },
-    ],
-  },
-  {
     id: "911-posts",
     title: "Posts",
     items: [
@@ -74,11 +56,9 @@ export const SECTIONS = [
       { href: "https://mes.fm/curt-weldon-pbd-podcast-dew", title: "Patrick Bet David Asks Former Congressman Curt Weldon About Dr. Judy Wood and Hurricane Erin" },
       { href: "https://mes.fm/curt-weldon-jimmy-dore-dew", title: "Former Congressman Curt Weldon Brings Up Dr. Judy Wood and Directed Energy on the Jimmy Dore Show" },
       { href: "https://mes.fm/911-coat-jumper", title: "Alleged Launched Person Is Actually a Coat and NOT a 9/11 Jumper" },
-      { href: "https://mes.fm/richard-gage-flat-earth", title: "Mr. Richard Gage Doesn't Know if the Earth Is Round or Flat" },
       { href: "https://mes.fm/eric-larson-lies", title: "Author Eric Larson Speaks About Our Current Culture and Nation of Lies" },
       { href: "https://mes.fm/jerry-leaphart-dew", title: "Attorney Jerry Leaphart on NIST Hiring Military Contractors that Specialize in DEW and PsyOps" },
       { href: "https://mes.fm/one-armed-twin", title: "Occult Connections: The One-Armed Twin in Star Wars, 9/11, and The Matrix" },
-      { href: "https://mes.fm/ashton-forbes-letter", title: "Highlights from the Letter that Ashton Forbes Totally Didn't Write to Himself" },
       { href: "https://mes.fm/stanley-praimnath-jumpers", title: "9/11 Survivor Stanley Praimnath says the jumpers and paper were sucked out from the windows" },
       { href: "https://mes.fm/911-jumper-launched", title: "Rare Footage of 9/11 Jumper appears to be Launched Laterally with Great Force from the North Tower" },
     ],

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """add_hub_filter.py -- search box + topic chips on the longer list pages of the hub generators (2026-10-13).
 
-Patches the build.mjs of 911, hutchison, conspiracy and science so their long sections (mes.fm/911-spooks, 911-posts,
+Patches the build.mjs of 911, hutchison, conspiracy and science so their long sections (mes.fm/911spooks-posts, 911-posts,
 911-videos, 911truth, 911-observable-evidence, highlights, hutchison-interviews, conspiracy-posts, science-videos) get the
 same search + chips widget as /livestreams, /math-qa and /experiments-series. The widget itself lives in
 mes.fm/shared/hub-filter.mjs (FILTER_CSS, FILTER_JS, buildFilter, withCats); per-section chips are the HUB_FILTERS table
@@ -21,15 +21,6 @@ APPLY = "--apply" in sys.argv
 # hub -> section id -> (placeholder, [(chip id, label, JS regex)])
 HUB_FILTERS = {
     "911": {
-        "911-spooks": ("Search the spooks\u2026", [
-            ("bob", "Bob Greenyer", r"greenyer"),
-            ("revisionist", "9/11 Revisionist", r"revisionist|norman"),
-            ("abby", "Abby Martin", r"abby martin"),
-            ("hughes", "David Hughes", r"hughes"),
-            ("ryan", "Ryan Bannister", r"ryan ban+ister"),
-            ("mason", "Andrew Mason", r"andrew mason"),
-            ("offguardian", "Off Guardian", r"off ?guardian"),
-        ]),
         "911-posts": ("Search the posts\u2026", [
             ("judy", "Dr. Judy Wood", r"judy wood|djw|wdttg|wdttt"),
             ("planes", "Planes", r"plane|hijacker|flight"),
@@ -66,6 +57,17 @@ HUB_FILTERS = {
             ("brenda", "Brenda Roberts", r"brenda roberts"),
             ("tom", "Tom Sky", r"tom sky"),
             ("mes", "MES with Hutchison", r"\bmes\b"),
+        ]),
+    },
+    "911spooks": {
+        "911spooks-posts": ("Search the spooks\u2026", [
+            ("bob", "Bob Greenyer", r"greenyer"),
+            ("revisionist", "9/11 Revisionist", r"revisionist|norman"),
+            ("abby", "Abby Martin", r"abby martin"),
+            ("hughes", "David Hughes", r"hughes"),
+            ("ryan", "Ryan Bannister", r"ryan ban+ister"),
+            ("mason", "Andrew Mason", r"andrew mason"),
+            ("offguardian", "Off Guardian", r"off ?guardian"),
         ]),
     },
     "crypto": {
