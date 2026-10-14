@@ -291,6 +291,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
 .tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
 body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
 
 	/* solar system today: a wide page with a dark "planetarium" stage. Stage colours are custom properties so the derived dark theme leaves them alone. */
 	html body .outer-container {max-width:min(96vw,80em) !important;}
@@ -304,6 +309,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.ss-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;}
 	.ss-stage {position:relative;height:min(70vh,640px);min-height:340px;background:var(--ss-bg);}
 	.ss-wrap:fullscreen .ss-stage {flex:1 1 auto;height:auto;min-height:0;}
+	.ss-wrap.mes-fill .ss-stage, .ss-wrap.mes-fs .ss-stage {flex:1 1 auto;height:auto;min-height:0;}
 	#ss-canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;}
 	#ss-canvas:focus-visible {box-shadow:inset 0 0 0 2px var(--accent);}
 	.ss-datebox {position:absolute;left:0.9em;top:0.7em;pointer-events:none;color:var(--ss-text);text-shadow:0 1px 6px rgba(0,0,0,0.9);}

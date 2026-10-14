@@ -119,9 +119,12 @@
 		var ih = null; try { ih = localStorage.getItem('mes-inlhide'); } catch (x) { /* ignore */ }
 		if (ih === '1') { wrap.classList.add('mes-nopanel'); }
 		paintHide(wrap, bar);
+		function chk() { var hb = bar.querySelector('[data-hide]'); if (hb) hb.hidden = !hideables(wrap); }
+		chk(); setTimeout(chk, 1200); window.addEventListener('load', function () { setTimeout(chk, 300); });
 	}
 	/* "Hide stats": the same .mes-nopanel rule Fill window uses, but in the page itself (remembered in mes-inlhide) */
 	function paintHide(wrap, bar) {
+		if (!hideables(wrap) && !wrap.classList.contains('mes-nopanel')) { var hb0 = bar.querySelector('[data-hide]'); if (hb0) hb0.hidden = true; return; }
 		var hid = wrap.classList.contains('mes-nopanel'), b = bar.querySelector('[data-hide]'); if (!b) return;
 		b.textContent = hid ? '▴ Show stats' : '▾ Hide stats'; b.setAttribute('aria-pressed', hid ? 'true' : 'false');
 		b.title = hid ? 'Show the graphs, readouts and menus under the picture' : 'Hide the graphs, readouts and menus under the picture so only the simulation shows';
@@ -135,6 +138,13 @@
 		else if (stage && stage.offsetWidth > 0 && stage.offsetHeight > 0) aspect = wrap.__aspect = stage.offsetWidth / stage.offsetHeight;
 		var extra = wrap.__extra != null ? wrap.__extra : (wrap.__extra = Math.max(0, wrap.offsetHeight - (stage ? stage.offsetHeight : 0)));
 		return Math.max(320, Math.min(window.innerWidth, Math.round((window.innerHeight - 34 - extra - 4) * aspect)));
+	}
+	/* does the box have anything the Hide stats / Hide panel buttons would actually hide (graphs, readouts)? Not the stage, grip, top bar, or the controls that stay (Play / Restart, Solar System transport) */
+	function hideables(wrap) {
+		return Array.prototype.filter.call(wrap.children, function (k) {
+			if ((k.matches && k.matches('[class$="-stage"]')) || k.classList.contains('mes-grip') || k.classList.contains('mes-top') || k.classList.contains('td-run') || k.classList.contains('ss-transport')) return false;
+			var cs = getComputedStyle(k); return cs.position !== 'absolute' && cs.position !== 'fixed' && (k.offsetHeight > 0 || wrap.classList.contains('mes-nopanel'));
+		}).length > 0;
 	}
 	/* the height a stage may take inside a filled / full-screen box: the window minus the 34px top bar minus whatever panels (readouts, graphs) are showing */
 	function fillH(wrap) {
@@ -157,6 +167,7 @@
 		bar.appendChild(tt); bar.appendChild(pb); bar.appendChild(cb);
 		var pref = null; try { pref = localStorage.getItem('mes-fillpanel'); } catch (e) { /* ignore */ }
 		wrap.classList.toggle('mes-nopanel', pref === '0' || (pref === null && window.innerHeight < 520));   // a phone held sideways starts with the panel hidden
+		if (!hideables(wrap)) { pb.hidden = true; wrap.classList.remove('mes-nopanel'); }   // nothing to hide on this page (Solar System Today): no dead button
 		paint(); return bar;
 	}
 	function fill(wrap) {
