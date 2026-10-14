@@ -33,6 +33,18 @@
 		'body.dark-mode .mes-sbar{color:#a0a8b3}body.dark-mode .mes-sbar button{background:#2b2f36;border-color:#454c58;color:#e6e8ec}body.dark-mode .mes-sbar button[aria-pressed="true"]{background:var(--accent,#277bb6);color:#fff}';
 	var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
 
+	/* Medium and Large cannot grow past the page column, so on a page with the "More like this" sidebar beside the content they did nothing. Now a bigger box widens the page: Medium
+	   asks for the Wide page, Large for Theatre (classes only: the visitor's saved page-width choice is not touched), and Small gives the width back. Only on screens wide enough for
+	   the sidebar to sit beside the content (below that the box already has the full width). */
+	function fitPage(s) {
+		var h = document.documentElement, beside = !!document.querySelector('.has-aside, #mes-aside') && window.innerWidth >= 1360;
+		var wantWide = beside && (s === 'M' || s === 'L'), wantTheatre = beside && s === 'L';
+		if (wantWide && !h.classList.contains('page-wide')) { h.classList.add('page-wide'); h.__mesWide = 1; }
+		else if (!wantWide && h.__mesWide) { h.classList.remove('page-wide'); h.__mesWide = 0; }
+		if (wantTheatre && !h.classList.contains('page-theatre')) { h.classList.add('page-theatre'); h.__mesTheatre = 1; }
+		else if (!wantTheatre && h.__mesTheatre) { h.classList.remove('page-theatre'); h.__mesTheatre = 0; }
+		ping(); setTimeout(ping, 200);
+	}
 	function colW(w) { var p = w.parentNode; return p ? p.clientWidth || 0 : 0; }
 	function curSize() { if (state.w) return 'C'; if (state.s) return state.s; return (window.innerWidth >= 1250) ? 'M' : 'L'; }
 	function isFree(w) { return w.getAttribute('data-mes-free') === '1'; }   // a simulation that lays itself out for any width x height (it calls MESStage.sh for its stage height)
@@ -99,7 +111,7 @@
 			var b = e.target.closest('button'); if (!b) return;
 			if (b.dataset.fill) { fill(wrap); return; }
 			if (b.dataset.hide) { var hid = !wrap.classList.contains('mes-nopanel'); wrap.classList.toggle('mes-nopanel', hid); try { localStorage.setItem('mes-inlhide', hid ? '1' : '0'); } catch (x) { /* ignore */ } paintHide(wrap, bar); ping(); return; }
-			state = { s: b.dataset.s }; write(state); apply();
+			state = { s: b.dataset.s }; write(state); fitPage(state.s); apply();
 		});
 		var grip = document.createElement('div'); grip.className = 'mes-grip'; grip.title = 'Drag to resize the box, wider or narrower and taller or shorter (double-click: back to the standard size)'; grip.setAttribute('aria-hidden', 'true');
 		if (getComputedStyle(wrap).position === 'static') wrap.style.position = 'relative';
@@ -115,6 +127,7 @@
 		function up() { if (drag) { drag = null; write(state); } }
 		grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
 		grip.addEventListener('dblclick', function () { state = {}; write(state); apply(); });
+		if (state.s) fitPage(state.s);
 		apply();
 		var ih = null; try { ih = localStorage.getItem('mes-inlhide'); } catch (x) { /* ignore */ }
 		if (ih === '1') { wrap.classList.add('mes-nopanel'); }

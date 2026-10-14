@@ -393,6 +393,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.mb-jbox {pointer-events:auto;touch-action:none;} #mb[data-mode="mandelbrot"] .mb-jbox canvas {cursor:grab;} .mb-jbar {cursor:grab;touch-action:none;}
 	.mb-jbox.is-moving {z-index:6;box-shadow:0 6px 18px rgba(0,0,0,0.5);} .mb-jbox.is-moving, .mb-jbox.is-moving * {cursor:grabbing !important;}
 	.mb-tools {z-index:8;}
+	.mb-jgrip {position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;touch-action:none;opacity:0.85;background:linear-gradient(135deg,transparent 0 50%,rgba(255,255,255,0.85) 50% 58%,transparent 58% 72%,rgba(255,255,255,0.85) 72% 80%,transparent 80%);z-index:2;}
+	.mb-jgrip:hover {opacity:1;} .mb-jbox canvas {display:block;}
 
 
 	@media print {
@@ -485,6 +487,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .mb-jbar button{color:var(--mb-dim,#979ca6)}
 	body.dark-mode .mb-jbar button:hover:not(:disabled){background:rgba(26,26,26,0.14)}
 	body.dark-mode .mb-jc{border-bottom:1px solid var(--mb-line,#28323e)}
+	body.dark-mode .mb-jgrip{background:linear-gradient(135deg,transparent 0 50%,rgba(26,26,26,0.85) 50% 58%,transparent 58% 72%,rgba(26,26,26,0.85) 72% 80%,transparent 80%)}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -754,6 +757,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-btn tu-btn--ghost" id="mb-in" title="Zoom in (+)">＋</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="mb-out" title="Zoom out (−)">－</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="mb-home" title="Back to the whole picture (0)">⌂ Home</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-reset" title="Start again: whole picture, the default c and colours, the inset back in its corner">↺ Reset</button>
 				</div>
 			</div>
 
@@ -761,7 +765,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="mb-stage" id="mb-stage">
 					<canvas id="mb-canvas" aria-hidden="true"></canvas>
 					<canvas id="mb-over" tabindex="0" role="img" aria-label="Interactive fractal. Drag to move, scroll or pinch to zoom, double-click to zoom in, click a point to inspect it."></canvas>
-					<div class="mb-jbox" id="mb-jbox"><div class="mb-jbar"><span id="mb-jcap">Julia set of this point</span><button type="button" id="mb-jminus" title="Smaller" aria-label="Make the inset smaller">&minus;</button><button type="button" id="mb-jplus" title="Bigger" aria-label="Make the inset bigger">+</button><button type="button" id="mb-jx" title="Close (tick the box below to bring it back)" aria-label="Close the inset">&times;</button></div><canvas id="mb-jp" width="220" height="124"></canvas></div>
+					<div class="mb-jbox" id="mb-jbox"><div class="mb-jbar"><span id="mb-jcap">Julia set of this point</span><button type="button" id="mb-jx" title="Close (tick the box below to bring it back)" aria-label="Close the inset">&times;</button></div><canvas id="mb-jp" width="220" height="124"></canvas><div class="mb-jgrip" id="mb-jgrip" title="Drag to resize" aria-hidden="true"></div></div>
 					<div class="mb-badge" id="mb-badge"></div>
 					<div class="mb-tools"><button type="button" id="mb-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="mb-full" title="Full screen" aria-label="Full screen">⛶</button></div>
 				</div>
@@ -918,7 +922,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/mandelbrot/js/mandelbrot.js?v=9" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/mandelbrot/js/mandelbrot.js?v=10" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

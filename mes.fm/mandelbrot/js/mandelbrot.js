@@ -143,7 +143,7 @@
 	/* ---------- state ---------- */
 	var S = { type: num(q.get("t") || saved.type, 0, 4, 0) | 0, julia: JM || q.get("j") === "1", jx: num(q.get("jx"), -3, 3, -0.123), jy: num(q.get("jy"), -3, 3, 0.745), cx: NaN, cy: NaN, span: NaN,
 		auto: q.get("i") ? q.get("i") === "a" : saved.auto !== false, iter: num(q.get("i") || saved.iter, 50, 6000, 500), pal: M.PALETTES.some(function (p) { return p.id === (q.get("p") || saved.pal); }) ? (q.get("p") || saved.pal) : "classic",
-		speed: num(saved.speed, 0.1, 4, 1), off: num(saved.off, 0, 1, 0), anim: false, quality: [0.5, 1, 2].indexOf(+saved.quality) >= 0 ? +saved.quality : (coarse ? 0.5 : 1), jprev: saved.jprev !== false, jsize: num(saved.jsize, 0, 3, 1) | 0, orbit: saved.orbit !== false };
+		speed: num(saved.speed, 0.1, 4, 1), off: num(saved.off, 0, 1, 0), anim: false, quality: [0.5, 1, 2].indexOf(+saved.quality) >= 0 ? +saved.quality : (coarse ? 0.5 : 1), jprev: saved.jprev !== false, jf: num(saved.jf, 0.12, 0.75, 0.34), orbit: saved.orbit !== false };
 	var home = S.julia ? TYPES[S.type].julia : TYPES[S.type].home;
 	S.cx = num(q.get("x"), -10, 10, home.x); S.cy = num(q.get("y"), -10, 10, home.y); S.span = num(q.get("s"), M.MINSPAN, 40, home.span);
 	var mview = { x: TYPES[S.type].home.x, y: TYPES[S.type].home.y, span: TYPES[S.type].home.span };   /* where the Mandelbrot view was, for "back" */
@@ -216,7 +216,8 @@
 		requestPaint();
 	}
 	function finishRender() {
-		nxt.ctx.putImageData(nxt.img, 0, 0); cur = nxt; nxt = null; $("mb-badge").textContent = ""; present();
+		nxt.ctx.putImageData(nxt.img, 0, 0); var vv = nxt.vals, same = true, v0 = vv[0], k; for (k = 0; k < vv.length; k += 37) if (Math.abs(vv[k] - v0) > 0.02) { same = false; break; }
+		cur = nxt; nxt = null; $("mb-badge").textContent = same ? "Nothing here: press Home or Reset" : ""; present();
 	}
 	function render() {
 		clearTimeout(rtimer);
@@ -312,6 +313,13 @@
 	$("mb-in").onclick = function () { var r = over.getBoundingClientRect(); zoomAt(2, r.left + r.width / 2, r.top + r.height / 2); nxt = null; renderId++; present(); info(); scheduleRender(0); };
 	$("mb-out").onclick = function () { var r = over.getBoundingClientRect(); zoomAt(0.5, r.left + r.width / 2, r.top + r.height / 2); nxt = null; renderId++; present(); info(); scheduleRender(0); };
 	function goHome() { var h = S.julia ? TYPES[S.type].julia : TYPES[S.type].home; S.cx = h.x; S.cy = h.y; S.span = h.span; }
+	function resetAll() {
+		S.type = 0; S.julia = JM; S.jx = -0.123; S.jy = 0.745; picked = null; hover = null; S.pal = "classic"; lut = M.lut(S.pal); S.speed = 1; S.off = 0; S.auto = true; S.jf = 0.34; jpos = { x: 0, y: 1 }; stopWalk();
+		sset({ type: 0, pal: "classic", speed: 1, off: 0, auto: true, jf: 0.34, jpos: jpos });
+		$("mb-pal").value = S.pal; $("mb-sp-in").value = 1; $("mb-sp-v").textContent = "1.00"; $("mb-of-in").value = 0; $("mb-of-v").textContent = "0.00"; $("mb-auto").checked = true; $("mb-it-in").disabled = true; $("mb-anim").checked = false; S.anim = false; cancelAnimationFrame(animT);
+		goHome(); fillPlaces(); syncMode(); jApply(); if (JM) setC(S.jx, S.jy); nxt = null; cur = null; renderId++; info(); scheduleRender(0); toast("Back to the start");
+	}
+	$("mb-reset").onclick = resetAll;
 	$("mb-home").onclick = function () { goHome(); nxt = null; renderId++; present(); info(); scheduleRender(0); };
 
 	/* ---------- readouts ---------- */
@@ -343,15 +351,24 @@
 	}
 
 	/* ---------- the corner inset: smaller / bigger / close (Julia preview, or the c map on the Julia page) ---------- */
-	var JS = coarse || window.innerWidth < 640 ? [110, 150, 210, 290] : [160, 220, 340, 480];
+	/* the inset's size is a fraction of the picture's width (S.jf), set by dragging its corner grip; its canvas gets that many pixels (up to 520) so the picture stays sharp */
+	function jWidth() { var sw = stage.clientWidth || 600; return Math.round(Math.max(110, Math.min(S.jf * sw, sw * 0.75, 760))); }
 	function jApply() {
-		var W = JS[S.jsize], H = Math.round(W * 9 / 16);
-		if (jp.width !== W) { jp.width = W; jp.height = H; }
-		$("mb-jbox").style.width = W + "px"; $("mb-jminus").disabled = S.jsize <= 0; $("mb-jplus").disabled = S.jsize >= JS.length - 1;
+		var W = jWidth(), res = Math.min(W, 520), H = Math.round(res * 9 / 16);
+		if (jp.width !== res) { jp.width = res; jp.height = H; }
+		$("mb-jbox").style.width = W + "px";
 		placeBox(); if (JM) drawCMap(true); else if (picked || hover) jpreview(hover || picked);
 	}
-	$("mb-jminus").onclick = function () { if (S.jsize > 0) { S.jsize--; sset({ jsize: S.jsize }); jApply(); } };
-	$("mb-jplus").onclick = function () { if (S.jsize < JS.length - 1) { S.jsize++; sset({ jsize: S.jsize }); jApply(); } };
+	(function () {
+		var grip = $("mb-jgrip"), rs = null;
+		grip.addEventListener("pointerdown", function (e) { var b = $("mb-jbox").getBoundingClientRect(); rs = { x: e.clientX, w: b.width, left: b.left }; grip.setPointerCapture(e.pointerId); e.preventDefault(); e.stopPropagation(); });
+		grip.addEventListener("pointermove", function (e) {
+			if (!rs) return; var st = stage.getBoundingClientRect(), maxW = Math.min(st.right - rs.left - 8, st.width * 0.75, 760), W = Math.max(110, Math.min(maxW, rs.w + (e.clientX - rs.x)));
+			S.jf = W / (stage.clientWidth || 1); $("mb-jbox").style.width = Math.round(W) + "px"; placeBox();
+		});
+		function end() { if (!rs) return; rs = null; sset({ jf: S.jf }); jApply(); }
+		grip.addEventListener("pointerup", end); grip.addEventListener("pointercancel", end);
+	})();
 	$("mb-jx").onclick = function () { S.jprev = false; $("mb-jprev").checked = false; sset({ jprev: false }); $("mb-jbox").hidden = true; };
 	/* move the inset: drag it anywhere (the whole box on the Mandelbrot page; on the Julia page only the title bar, because the picture is the c map) and it stays where you drop it.
 	   The place is kept as fractions of the free space, so it follows the picture when the window is resized; double-click the title bar to send it back to the bottom left. */

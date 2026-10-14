@@ -15,6 +15,7 @@
 					<button type="button" class="tu-btn tu-btn--ghost" id="mb-in" title="Zoom in (+)">＋</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="mb-out" title="Zoom out (−)">－</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="mb-home" title="Back to the whole picture (0)">⌂ Home</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-reset" title="Start again: whole picture, the default c and colours, the inset back in its corner">↺ Reset</button>
 				</div>
 			</div>
 
@@ -22,7 +23,7 @@
 				<div class="mb-stage" id="mb-stage">
 					<canvas id="mb-canvas" aria-hidden="true"></canvas>
 					<canvas id="mb-over" tabindex="0" role="img" aria-label="Interactive fractal. Drag to move, scroll or pinch to zoom, double-click to zoom in, click a point to inspect it."></canvas>
-					<div class="mb-jbox" id="mb-jbox"><div class="mb-jbar"><span id="mb-jcap">Julia set of this point</span><button type="button" id="mb-jminus" title="Smaller" aria-label="Make the inset smaller">&minus;</button><button type="button" id="mb-jplus" title="Bigger" aria-label="Make the inset bigger">+</button><button type="button" id="mb-jx" title="Close (tick the box below to bring it back)" aria-label="Close the inset">&times;</button></div><canvas id="mb-jp" width="220" height="124"></canvas></div>
+					<div class="mb-jbox" id="mb-jbox"><div class="mb-jbar"><span id="mb-jcap">Julia set of this point</span><button type="button" id="mb-jx" title="Close (tick the box below to bring it back)" aria-label="Close the inset">&times;</button></div><canvas id="mb-jp" width="220" height="124"></canvas><div class="mb-jgrip" id="mb-jgrip" title="Drag to resize" aria-hidden="true"></div></div>
 					<div class="mb-badge" id="mb-badge"></div>
 					<div class="mb-tools"><button type="button" id="mb-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="mb-full" title="Full screen" aria-label="Full screen">⛶</button></div>
 				</div>
