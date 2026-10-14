@@ -56,3 +56,4 @@
 	body.dark-mode #cy .cy-tabs a {color:#ccc;border-color:#555;} body.dark-mode #cy .cy-tabs a.is-on {color:#fff;}
 	body.dark-mode #cy .cy-late {background:#3a2c10;border-color:#7a5a1a;color:#f3dca8;}
 	body.dark-mode #cy .cy-loglist li {border-color:#444;} body.dark-mode #cy .cy-hero__status {color:var(--accent);}
+	#cy [hidden] {display:none !important;}   /* .tu-row is display:flex, which beat the hidden attribute (the IVF and scan rows showed on the due date page) */
