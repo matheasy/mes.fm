@@ -389,10 +389,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.mb-jc {margin-bottom:0.9em;padding-bottom:0.7em;border-bottom:1px solid var(--mb-line,#dfe4ea);} .mb-jc .mb-h {margin-top:0;}
 	#mb [hidden] {display:none !important;}
 	@media (max-width:640px) {.mb-jbox {max-width:70%;}}
-	/* the inset can be dragged by its title bar and snaps to the nearest corner (top corners leave room for the status badge and the camera / full-screen buttons) */
-	.mb-jbox[data-c="bl"] {left:0.6em;bottom:0.6em;top:auto;right:auto;} .mb-jbox[data-c="br"] {right:0.6em;bottom:0.6em;left:auto;top:auto;}
-	.mb-jbox[data-c="tl"] {left:0.6em;top:2.3em;bottom:auto;right:auto;} .mb-jbox[data-c="tr"] {right:0.6em;top:2.9em;bottom:auto;left:auto;}
-	.mb-jbar {cursor:grab;touch-action:none;} .mb-jbox.is-moving {z-index:6;box-shadow:0 6px 18px rgba(0,0,0,0.5);transition:none;} .mb-jbox.is-moving .mb-jbar {cursor:grabbing;}
+	/* the inset is placed by script (left / top in px from a remembered fraction); the whole box can be dragged on the Mandelbrot page */
+	.mb-jbox {pointer-events:auto;touch-action:none;} #mb[data-mode="mandelbrot"] .mb-jbox canvas {cursor:grab;} .mb-jbar {cursor:grab;touch-action:none;}
+	.mb-jbox.is-moving {z-index:6;box-shadow:0 6px 18px rgba(0,0,0,0.5);} .mb-jbox.is-moving, .mb-jbox.is-moving * {cursor:grabbing !important;}
+	.mb-tools {z-index:8;}
 
 
 	@media print {
@@ -918,7 +918,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/mandelbrot/js/mandelbrot.js?v=7" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/mandelbrot/js/mandelbrot.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

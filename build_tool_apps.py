@@ -278,21 +278,21 @@ APPS = {
                     desc="A free Julia set explorer: drag a point on a map of the Mandelbrot set and watch its Julia set change live, type any constant c, walk c around the cardioid, zoom and cycle the colours, save pictures and share links. Runs in your browser.",
                     nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mandelbrot'>Mandelbrot</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/buddhabrot'>Buddhabrot</a></li>",
                     menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mandelbrot\">Mandelbrot Explorer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/buddhabrot\">Buddhabrot Explorer</a></li>",
-                    content="content.html", js_v="7", vars={"MODE": "julia", "SEO": "@seo/julia.html"}),
+                    content="content.html", js_v="9", vars={"MODE": "julia", "SEO": "@seo/julia.html"}),
     "mandelbrot": dict(title="MES Mandelbrot Explorer", page_title="Mandelbrot Set Explorer: Zoom, Julia Sets and Fractals",
                        tag="Zoom into infinity.", accent="#1e40af", dark="#1e3a8a", tint="#dbeafe",
                        desc="A free Mandelbrot set explorer: drag and zoom through the famous fractal in your browser, see the Julia set of any point live, trace the orbit under the pointer, try the Burning Ship, Tricorn and Multibrot sets, cycle the colours and test any number with the point calculator.",
-                       nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/buddhabrot'>Buddhabrot</a></li>",
-                       menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/buddhabrot\">Buddhabrot Explorer</a></li>",
-                       js_v="7", vars={"MODE": "mandelbrot", "SEO": "@seo/mandelbrot.html"}),
+                       nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/julia-set-explorer'>Julia Set</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/buddhabrot'>Buddhabrot</a></li>",
+                       menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/julia-set-explorer\">Julia Set Explorer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/buddhabrot\">Buddhabrot Explorer</a></li>",
+                       js_v="9", vars={"MODE": "mandelbrot", "SEO": "@seo/mandelbrot.html"}),
     # Buddhabrot Explorer: density plot of the orbits of the points that ESCAPE the Mandelbrot iteration (Melinda Green's technique; Lori Gardi named it); worker-pool random sampling into
     # Uint32 count buffers (lib.js = MESBuddha, node-tested: tool_apps_src/buddhabrot-tests.js), Nebulabrot (3 limits = RGB), Anti-Buddhabrot, z^3 / z^4, instant re-toning, orbit lab.
     "buddhabrot": dict(title="MES Buddhabrot Explorer", page_title="Buddhabrot and Nebulabrot Explorer: Watch the Fractal Fill In",
                        tag="The orbits that escape.", accent="#312e81", dark="#1e1b4b", tint="#e0e7ff",
                        desc="Render the Buddhabrot fractal live in your browser: millions of random Mandelbrot orbits are traced and piled into a glowing seated figure. Try the three-colour Nebulabrot, the Anti-Buddhabrot and cubic versions, pick any point to see its orbit, and read how Melinda Green found it and Lori Gardi named it.",
-                       nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mandelbrot'>Mandelbrot</a></li>",
-                       menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mandelbrot\">Mandelbrot Explorer</a></li>",
-                       js_v="4"),
+                       nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/mandelbrot'>Mandelbrot</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/julia-set-explorer'>Julia Set</a></li>",
+                       menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/mandelbrot\">Mandelbrot Explorer</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/julia-set-explorer\">Julia Set Explorer</a></li>",
+                       js_v="5"),
     # Time Dilation Simulator: two people (one at home, one on a fast ship) with year clocks, heartbeats, molecules and a life-long ageing figure; the light clock; the twin trip
     # (constant speed or constant 1 g, spacetime diagram with proper-time dots); a calculator (lib.js = MESRel, node-tested: tool_apps_src/time-dilation-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "time-dilation": dict(title="MES Time Dilation Simulator", page_title="Time Dilation Calculator and Simulator: How Much Would You Age?",

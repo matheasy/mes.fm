@@ -348,36 +348,37 @@
 		var W = JS[S.jsize], H = Math.round(W * 9 / 16);
 		if (jp.width !== W) { jp.width = W; jp.height = H; }
 		$("mb-jbox").style.width = W + "px"; $("mb-jminus").disabled = S.jsize <= 0; $("mb-jplus").disabled = S.jsize >= JS.length - 1;
-		if (JM) drawCMap(true); else if (picked || hover) jpreview(hover || picked);
+		placeBox(); if (JM) drawCMap(true); else if (picked || hover) jpreview(hover || picked);
 	}
 	$("mb-jminus").onclick = function () { if (S.jsize > 0) { S.jsize--; sset({ jsize: S.jsize }); jApply(); } };
 	$("mb-jplus").onclick = function () { if (S.jsize < JS.length - 1) { S.jsize++; sset({ jsize: S.jsize }); jApply(); } };
 	$("mb-jx").onclick = function () { S.jprev = false; $("mb-jprev").checked = false; sset({ jprev: false }); $("mb-jbox").hidden = true; };
-	$("mb-jp").addEventListener("pointerdown", function (e) { e.stopPropagation(); });
-	/* drag the inset by its title bar; on release it glides to the nearest corner (remembered) */
-	S.jc = ["bl", "br", "tl", "tr"].indexOf(saved.jc) >= 0 ? saved.jc : "bl"; $("mb-jbox").setAttribute("data-c", S.jc);
+	/* move the inset: drag it anywhere (the whole box on the Mandelbrot page; on the Julia page only the title bar, because the picture is the c map) and it stays where you drop it.
+	   The place is kept as fractions of the free space, so it follows the picture when the window is resized; double-click the title bar to send it back to the bottom left. */
+	var jpos = saved.jpos && isFinite(saved.jpos.x) && isFinite(saved.jpos.y) ? { x: Math.max(0, Math.min(1, saved.jpos.x)), y: Math.max(0, Math.min(1, saved.jpos.y)) } : { x: 0, y: 1 }, jMargin = 8;
+	function placeBox() {
+		var box = $("mb-jbox"), sw = stage.clientWidth, sh = stage.clientHeight, bw = box.offsetWidth, bh = box.offsetHeight; if (!sw || !bw) return;
+		box.style.left = Math.round(jMargin + jpos.x * Math.max(0, sw - bw - 2 * jMargin)) + "px"; box.style.top = Math.round(jMargin + jpos.y * Math.max(0, sh - bh - 2 * jMargin)) + "px"; box.style.right = "auto"; box.style.bottom = "auto";
+	}
+	window.placeJBox = placeBox;
 	(function () {
 		var box = $("mb-jbox"), bar = box.querySelector(".mb-jbar"), mv = null;
-		bar.addEventListener("pointerdown", function (e) {
+		if (window.MutationObserver) new MutationObserver(function () { if (!box.hidden) placeBox(); }).observe(box, { attributes: true, attributeFilter: ["hidden"] });
+		function start(e) {
 			if (e.target.closest("button") || (e.button != null && e.button > 0)) return;
-			var b = box.getBoundingClientRect(), st = stage.getBoundingClientRect(); mv = { dx: e.clientX - b.left, dy: e.clientY - b.top, st: st, from: b };
-			box.classList.add("is-moving"); box.style.left = (b.left - st.left) + "px"; box.style.top = (b.top - st.top) + "px"; box.style.right = "auto"; box.style.bottom = "auto"; bar.setPointerCapture(e.pointerId); e.preventDefault(); e.stopPropagation();
-		});
-		bar.addEventListener("pointermove", function (e) {
-			if (!mv) return; var st = stage.getBoundingClientRect(), w = box.offsetWidth, h = box.offsetHeight;
-			box.style.left = Math.max(0, Math.min(st.width - w, e.clientX - st.left - mv.dx)) + "px"; box.style.top = Math.max(0, Math.min(st.height - h, e.clientY - st.top - mv.dy)) + "px";
-		});
-		function drop() {
-			if (!mv) return; var st = stage.getBoundingClientRect(), b = box.getBoundingClientRect(), cx = b.left + b.width / 2 - st.left, cy = b.top + b.height / 2 - st.top;
-			S.jc = (cy < st.height / 2 ? "t" : "b") + (cx < st.width / 2 ? "l" : "r"); sset({ jc: S.jc });
-			box.classList.remove("is-moving"); box.style.left = box.style.top = box.style.right = box.style.bottom = ""; box.setAttribute("data-c", S.jc);
-			var n = box.getBoundingClientRect(), dx = b.left - n.left, dy = b.top - n.top;   /* glide from where it was dropped to the corner */
-			box.style.transition = "none"; box.style.transform = "translate(" + dx + "px," + dy + "px)";
-			requestAnimationFrame(function () { box.style.transition = "transform 180ms ease"; box.style.transform = ""; setTimeout(function () { box.style.transition = ""; }, 220); });
-			mv = null;
+			var b = box.getBoundingClientRect(); mv = { dx: e.clientX - b.left, dy: e.clientY - b.top, moved: false }; e.currentTarget.setPointerCapture(e.pointerId); e.preventDefault(); e.stopPropagation();
 		}
-		bar.addEventListener("pointerup", drop); bar.addEventListener("pointercancel", drop);
-		bar.addEventListener("dblclick", function (e) { if (e.target.closest("button")) return; S.jc = "bl"; sset({ jc: "bl" }); box.setAttribute("data-c", "bl"); });
+		function move(e) {
+			if (!mv) return; var st = stage.getBoundingClientRect(), w = box.offsetWidth, h = box.offsetHeight; mv.moved = true; box.classList.add("is-moving");
+			var l = Math.max(jMargin, Math.min(st.width - w - jMargin, e.clientX - st.left - mv.dx)), t = Math.max(jMargin, Math.min(st.height - h - jMargin, e.clientY - st.top - mv.dy));
+			box.style.left = l + "px"; box.style.top = t + "px"; box.style.right = box.style.bottom = "auto";
+			var fw = Math.max(1, st.width - w - 2 * jMargin), fh = Math.max(1, st.height - h - 2 * jMargin); jpos = { x: (l - jMargin) / fw, y: (t - jMargin) / fh };
+		}
+		function drop() { if (!mv) return; if (mv.moved) sset({ jpos: jpos }); box.classList.remove("is-moving"); mv = null; }
+		var grab = JM ? bar : box;
+		grab.addEventListener("pointerdown", start); grab.addEventListener("pointermove", move); grab.addEventListener("pointerup", drop); grab.addEventListener("pointercancel", drop);
+		bar.addEventListener("dblclick", function (e) { if (e.target.closest("button")) return; jpos = { x: 0, y: 1 }; sset({ jpos: jpos }); placeBox(); });
+		if (!JM) box.style.cursor = "grab";
 	})();
 
 	/* Julia page: the c map = a small picture of the Mandelbrot-type set; click or drag on it to choose c */
@@ -473,7 +474,7 @@
 		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { prompt("Copy this link:", url); }); else prompt("Copy this link:", url);
 	};
 	var rz;
-	function onResize() { clearTimeout(rz); rz = setTimeout(function () { if (tab === "explore") { var changed = sizeCanvas(); if (changed) { cur = null; scheduleRender(0); } else present(); } }, 120); }
+	function onResize() { if (window.placeJBox) window.placeJBox(); clearTimeout(rz); rz = setTimeout(function () { if (tab === "explore") { var changed = sizeCanvas(); if (changed) { cur = null; scheduleRender(0); } else present(); } }, 120); }
 	window.addEventListener("resize", onResize);
 	if (window.ResizeObserver) new ResizeObserver(onResize).observe(stage.parentNode);
 
