@@ -8,3 +8,4 @@
 	#te [hidden] {display:none !important;}
 	body.dark-mode #te .te-eq, body.dark-mode #te .te-q {background:#23262b;border-color:#3a3f48;} body.dark-mode #te .te-fig {color:#e6e8ec;} body.dark-mode #te .te-note, body.dark-mode #te .te-fig figcaption {color:#a0a8b3;} body.dark-mode #te .te-body h2 {border-bottom-color:#3a3f48;}
 	#te ol.te-list {list-style:decimal;} #te ul.te-list {list-style:disc;}
+	.te-eq {overflow-y:hidden;padding-top:1em;padding-bottom:1em;}   /* overflow-x:auto turned overflow-y into auto too: a tall formula showed a vertical scrollbar */

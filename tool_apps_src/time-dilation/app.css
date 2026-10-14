@@ -101,3 +101,4 @@
 	}
 	.td-says dt {margin-top:1em;} .td-says dd {margin-left:0;} .td-more {margin:1em 0;padding:0.7em 1em;background:var(--tint);border-radius:0.5em;}
 	body.dark-mode #td .td-more {background:#23262b;}
+	.td-eq {overflow-y:hidden;}

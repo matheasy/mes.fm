@@ -3,7 +3,7 @@
 questions and headlines blend into one block of text): bigger, bold headlines with an accent bar, bold questions, slightly larger body text. The rules are also in
 tool_apps_src/_shared.css (so rebuilt pages have them); this script adds the same `<style id="seo-headings">` block to every already-built page that has a tu-seo block and
 lacks it. Idempotent; dry-runs by default (-v lists pages), --apply writes."""
-import sys
+import re, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent / "mes.fm"
@@ -14,6 +14,7 @@ body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 
 body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
 body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
 body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+.tu div[class$="-eq"] {overflow-y:hidden;}   /* equation boxes: overflow-x:auto made overflow-y auto too, so a tall formula showed a vertical scrollbar */
 """
 BLOCK = '<style id="seo-headings">\n' + CSS + '</style>\n'
 
@@ -25,7 +26,13 @@ def main():
         try: s = p.read_text(encoding="utf-8")
         except Exception: continue
         if 'class="tu-seo"' not in s or "</head>" not in s: continue
-        if 'id="seo-headings"' in s or "SEO-HEADINGS" in s: skipped += 1; continue
+        if 'id="seo-headings"' in s:
+            if 'overflow-y:hidden' in s.split('id="seo-headings"', 1)[1].split("</style>", 1)[0]: skipped += 1; continue
+            n += 1                       # an older version of the block: replace it
+            if verbose: print("  update", rel)
+            if apply: p.write_text(re.sub(r'<style id="seo-headings">.*?</style>\n', lambda m: BLOCK, s, count=1, flags=re.S), encoding="utf-8")
+            continue
+        if "SEO-HEADINGS" in s: skipped += 1; continue      # built from _shared.css (already has the rules)
         n += 1
         if verbose: print("  ", rel)
         if apply: p.write_text(s.replace("</head>", BLOCK + "</head>", 1), encoding="utf-8")
