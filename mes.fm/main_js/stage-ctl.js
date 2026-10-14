@@ -28,7 +28,7 @@
 		'.mes-fs{padding-top:34px !important;box-sizing:border-box;overflow:auto}' +
 		'.mes-top{position:fixed;left:0;right:0;top:0;height:34px;z-index:2147483000;display:flex;align-items:center;justify-content:flex-end;gap:0.5em;padding:0 0.6em;background:#0a0d14;border-bottom:1px solid #2a3040;box-sizing:border-box}.mes-top--in{position:absolute}' +
 		'.mes-top button{cursor:pointer;font:inherit;font-size:0.85em;padding:0.25em 0.9em;border-radius:0.4em;border:1px solid #3a4258;background:#151a28;color:#e8ecf5;min-height:26px}.mes-top button:hover{border-color:var(--accent,#7fd0ff)}.mes-top button{white-space:nowrap}@media (max-width:520px){.mes-top .mes-tt{display:none}}.mes-top .mes-tt{margin-right:auto;color:#9aa5bb;font-size:0.8em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-		'.mes-nopanel > :not([class$="-stage"]):not(.mes-grip):not(.mes-top):not(.td-run){display:none !important}.mes-nopanel .td-ctl{display:none !important}' +
+		'.mes-nopanel > :not([class$="-stage"]):not(.mes-grip):not(.mes-top):not(.td-run):not(.ss-transport){display:none !important}.mes-nopanel .td-ctl{display:none !important}' +
 		'.mes-fill-x{position:fixed;right:0.8em;top:0.7em;z-index:2147483000;cursor:pointer;font:inherit;font-size:0.85em;padding:0.35em 0.9em;border-radius:0.4em;border:1px solid #3a4258;background:rgba(10,13,20,0.9);color:#e8ecf5}' +
 		'body.dark-mode .mes-sbar{color:#a0a8b3}body.dark-mode .mes-sbar button{background:#2b2f36;border-color:#454c58;color:#e6e8ec}body.dark-mode .mes-sbar button[aria-pressed="true"]{background:var(--accent,#277bb6);color:#fff}';
 	var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
