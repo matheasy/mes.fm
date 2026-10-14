@@ -157,7 +157,8 @@
 		var Wc = w / k, Hc = h / k, half = Wc / 2 - 12, pad = 26, win = 12, t1 = simT, t0 = Math.max(0, t1 - win);
 		chx.font = "11px sans-serif"; chx.fillStyle = "rgba(160,170,190,0.9)"; chx.textBaseline = "top";
 		/* left: angles */
-		chx.fillText("angles of the first pendulum (upper white, lower coloured), last " + win + " s", 8, 4);
+		function fitT(full, short, maxW) { return chx.measureText(full).width <= maxW ? full : short; }
+		chx.fillText(fitT("angles of the first pendulum (upper white, lower coloured), last " + win + " s", "angles (white, coloured), last " + win + " s", half - 8), 8, 4);
 		var y0 = pad, y1 = Hc - 6, yz = (y0 + y1) / 2, yS = (y1 - y0) / 2 / 3.3;
 		chx.strokeStyle = "rgba(255,255,255,0.12)"; chx.beginPath(); chx.moveTo(8, yz); chx.lineTo(half, yz); chx.stroke(); chx.moveTo(8, yz - PI * yS); chx.lineTo(half, yz - PI * yS); chx.moveTo(8, yz + PI * yS); chx.lineTo(half, yz + PI * yS); chx.stroke();
 		var span = Math.max(1e-6, t1 - t0 || 1);
@@ -166,7 +167,7 @@
 			for (var i = 0; i < hist.length; i++) { var h2 = hist[i]; if (h2[0] < t0) continue; var x = 8 + (h2[0] - t0) / span * (half - 8), v = ((h2[1 + pr[0]] + PI) % (2 * PI) + 2 * PI) % (2 * PI) - PI, y = yz - v * yS; if (prev !== null && Math.abs(v - prev) > PI) { started = false; } if (!started) { chx.moveTo(x, y); started = true; } else chx.lineTo(x, y); prev = v; } chx.stroke();
 		});
 		/* right: separation */
-		var x0 = Wc / 2 + 14, x1 = Wc - 10; chx.fillStyle = "rgba(160,170,190,0.9)"; chx.fillText(copies.length > 1 ? "how far the copies are from the first (log scale)" : "turn on copies to see divergence", x0, 4);
+		var x0 = Wc / 2 + 14, x1 = Wc - 10; chx.fillStyle = "rgba(160,170,190,0.9)"; chx.fillText(copies.length > 1 ? fitT("how far the copies are from the first (log scale)", "copy gap (log scale)", x1 - x0) : fitT("turn on copies to see divergence", "turn on copies", x1 - x0), x0, 4);
 		var lo = -10, hi = 0.6; chx.strokeStyle = "rgba(255,255,255,0.12)"; for (var e = -9; e <= 0; e += 3) { var yy = y0 + (hi - e) / (hi - lo) * (y1 - y0); chx.beginPath(); chx.moveTo(x0, yy); chx.lineTo(x1, yy); chx.stroke(); chx.fillStyle = "rgba(160,170,190,0.7)"; chx.fillText("10" + String(e).replace("-", "−").replace(/\d/g, function (c2) { return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c2]; }), x0 + 2, yy - 12); }
 		if (copies.length > 1) { chx.strokeStyle = "#ff8b6b"; chx.lineWidth = 1.5; chx.beginPath(); var st = false, tmaxs = Math.max(8, t1); for (var i2 = 0; i2 < hist.length; i2++) { var d = hist[i2][3]; if (!(d > 0)) continue; var x = x0 + hist[i2][0] / tmaxs * (x1 - x0), y = y0 + (hi - Math.log10(d)) / (hi - lo) * (y1 - y0); if (!st) { chx.moveTo(x, y); st = true; } else chx.lineTo(x, y); } chx.stroke(); }
 		chx.fillStyle = "rgba(160,170,190,0.7)"; chx.fillText("time 0 → " + sig(Math.max(8, t1), 3) + " s", x1 - 80, y1 - 14);
