@@ -7,16 +7,15 @@
 					<div class="gr-f"><span class="tu-label">Baby is a</span><div class="tu-seg" id="gr-sex" role="group" aria-label="Sex"><button type="button" data-s="f" aria-pressed="true">Girl</button><button type="button" data-s="m" aria-pressed="false">Boy</button></div></div>
 					<div class="gr-f"><span class="tu-label">How old?</span><div class="tu-seg" id="gr-agemode" role="group" aria-label="How to give the age"><button type="button" data-m="birth" aria-pressed="true">Birth date</button><button type="button" data-m="age" aria-pressed="false">Age</button></div></div>
 				</div>
-				<div class="gr-line" id="gr-birthrow">
-					<div class="gr-f"><label class="tu-label" for="gr-birth">Date of birth</label><input id="gr-birth" class="tu-input gr-date" type="date"></div>
-					<div class="gr-f"><label class="tu-label" for="gr-on">Measured on</label><input id="gr-on" class="tu-input gr-date" type="date"></div>
-				</div>
-				<div class="gr-line" id="gr-agerow" hidden>
-					<div class="gr-f"><label class="tu-label" for="gr-agev">Age</label><div class="gr-pair"><input id="gr-agev" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" value="3"><select id="gr-ageu" class="tu-select gr-unit"><option value="d">days</option><option value="w">weeks</option><option value="m" selected>months</option></select></div></div>
-				</div>
-				<div class="gr-line">
-					<div class="gr-f"><label class="tu-label" for="gr-early">Born early by (optional)</label><div class="gr-pair"><input id="gr-early" class="tu-input gr-num" type="number" inputmode="numeric" min="0" max="20" value="0"><span>weeks</span></div></div>
-					<p class="tu-note gr-earlynote">If born before 37 weeks, growth is judged by the age from the due date until age 2.</p>
+				<div class="gr-line" id="gr-when">
+					<div class="gr-grp" id="gr-birthrow">
+						<div class="gr-f"><label class="tu-label" for="gr-birth">Date of birth</label><input id="gr-birth" class="tu-input gr-date" type="date"></div>
+						<div class="gr-f"><label class="tu-label" for="gr-on">Measured on</label><input id="gr-on" class="tu-input gr-date" type="date"></div>
+					</div>
+					<div class="gr-grp" id="gr-agerow" hidden>
+						<div class="gr-f"><label class="tu-label" for="gr-agev">Age</label><div class="gr-pair"><input id="gr-agev" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" value="3"><select id="gr-ageu" class="tu-select gr-unit"><option value="d">days</option><option value="w">weeks</option><option value="m" selected>months</option></select></div></div>
+					</div>
+					<div class="gr-f" title="If born before 37 weeks, growth is judged by the age from the due date until age 2."><label class="tu-label" for="gr-early">Born early by</label><div class="gr-pair"><input id="gr-early" class="tu-input gr-num" type="number" inputmode="numeric" min="0" max="20" value="0"><span>weeks</span></div></div>
 				</div>
 				<h3 class="gr-h">Measurements <span class="tu-note">(any one is enough; type in either unit)</span></h3>
 				<div class="gr-line gr-meas">

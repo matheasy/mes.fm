@@ -326,6 +326,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gr-trend {margin-bottom:0.7em;line-height:1.5;} .gr-trend b.warn {color:#b3261e;} .gr-pct {font-size:1.8em !important;} .gr-disc {margin-top:1.2em;}
 	@media (max-width:560px) {#gr .gr-num {width:4em;} #gr .gr-date {width:9.5em;} #gr .gr-pair {flex-wrap:wrap;}}
 	body.dark-mode #gr .gr-chart .l {stroke:#64748b;} body.dark-mode #gr .gr-chart .l50 {stroke:#cbd5e1;} body.dark-mode #gr .gr-chart .t {fill:#a0a8b3;} body.dark-mode #gr .gr-chart .ax {stroke:#475569;} body.dark-mode #gr .gr-chart .pt {stroke:#1a1a1a;} body.dark-mode #gr .gr-chart .lp {fill:#1a1a1a;} body.dark-mode #gr .gr-trend b.warn {color:#ff9a92;} body.dark-mode #gr .gr-empty {border-color:#555;}
+	#gr .gr-grp {display:contents;} #gr .gr-meas {display:flex;} #gr .gr-pair {flex-wrap:nowrap;}
+	#gr .gr-num {width:4.1em;} @media (min-width:1100px) {#gr .gr-layout {grid-template-columns:minmax(0,33em) minmax(0,1fr);}}
 
 
 	@media print {
@@ -675,16 +677,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="gr-f"><span class="tu-label">Baby is a</span><div class="tu-seg" id="gr-sex" role="group" aria-label="Sex"><button type="button" data-s="f" aria-pressed="true">Girl</button><button type="button" data-s="m" aria-pressed="false">Boy</button></div></div>
 					<div class="gr-f"><span class="tu-label">How old?</span><div class="tu-seg" id="gr-agemode" role="group" aria-label="How to give the age"><button type="button" data-m="birth" aria-pressed="true">Birth date</button><button type="button" data-m="age" aria-pressed="false">Age</button></div></div>
 				</div>
-				<div class="gr-line" id="gr-birthrow">
-					<div class="gr-f"><label class="tu-label" for="gr-birth">Date of birth</label><input id="gr-birth" class="tu-input gr-date" type="date"></div>
-					<div class="gr-f"><label class="tu-label" for="gr-on">Measured on</label><input id="gr-on" class="tu-input gr-date" type="date"></div>
-				</div>
-				<div class="gr-line" id="gr-agerow" hidden>
-					<div class="gr-f"><label class="tu-label" for="gr-agev">Age</label><div class="gr-pair"><input id="gr-agev" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" value="3"><select id="gr-ageu" class="tu-select gr-unit"><option value="d">days</option><option value="w">weeks</option><option value="m" selected>months</option></select></div></div>
-				</div>
-				<div class="gr-line">
-					<div class="gr-f"><label class="tu-label" for="gr-early">Born early by (optional)</label><div class="gr-pair"><input id="gr-early" class="tu-input gr-num" type="number" inputmode="numeric" min="0" max="20" value="0"><span>weeks</span></div></div>
-					<p class="tu-note gr-earlynote">If born before 37 weeks, growth is judged by the age from the due date until age 2.</p>
+				<div class="gr-line" id="gr-when">
+					<div class="gr-grp" id="gr-birthrow">
+						<div class="gr-f"><label class="tu-label" for="gr-birth">Date of birth</label><input id="gr-birth" class="tu-input gr-date" type="date"></div>
+						<div class="gr-f"><label class="tu-label" for="gr-on">Measured on</label><input id="gr-on" class="tu-input gr-date" type="date"></div>
+					</div>
+					<div class="gr-grp" id="gr-agerow" hidden>
+						<div class="gr-f"><label class="tu-label" for="gr-agev">Age</label><div class="gr-pair"><input id="gr-agev" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" value="3"><select id="gr-ageu" class="tu-select gr-unit"><option value="d">days</option><option value="w">weeks</option><option value="m" selected>months</option></select></div></div>
+					</div>
+					<div class="gr-f" title="If born before 37 weeks, growth is judged by the age from the due date until age 2."><label class="tu-label" for="gr-early">Born early by</label><div class="gr-pair"><input id="gr-early" class="tu-input gr-num" type="number" inputmode="numeric" min="0" max="20" value="0"><span>weeks</span></div></div>
 				</div>
 				<h3 class="gr-h">Measurements <span class="tu-note">(any one is enough; type in either unit)</span></h3>
 				<div class="gr-line gr-meas">
@@ -794,7 +795,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/baby-growth/js/baby-growth.js?v=3" defer></script>
+	<script src="/baby-growth/js/baby-growth.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
