@@ -13,6 +13,7 @@
 	#or-ic {cursor:default;}
 	.or-badge {position:absolute;left:0.7em;top:0.6em;font-size:0.78em;color:var(--or-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;}
 	.or-badge:empty {display:none;}
+	@media (max-width:560px) {.or-badge {top:4.6em;bottom:auto;left:0.5em;right:auto;max-width:80%;text-align:left;font-size:0.68em;line-height:1.25;border-radius:0.7em;}}
 	.or-run, .or-tools {position:absolute;display:flex;gap:0.25em;right:0.6em;top:0.6em;}
 	.or-run button, .or-tools button {cursor:pointer;border:1px solid var(--or-line);background:rgba(10,13,20,0.78);color:var(--or-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font:inherit;font-size:0.85em;}
 	.or-run button:hover, .or-tools button:hover {border-color:var(--accent);color:#fff;}
