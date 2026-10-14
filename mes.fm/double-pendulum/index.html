@@ -312,6 +312,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#dp-ic {cursor:default;}
 	.dp-badge {position:absolute;left:0.7em;top:0.6em;font-size:0.78em;color:var(--dp-dim);background:rgba(10,13,20,0.7);padding:0.25em 0.6em;border-radius:1em;pointer-events:none;}
 	.dp-badge:empty {display:none;}
+	@media (max-width:560px) {.dp-badge {top:auto;bottom:0.5em;left:auto;right:0.5em;max-width:62%;text-align:right;font-size:0.68em;line-height:1.25;border-radius:0.7em;}}
 	.dp-run, .dp-tools {position:absolute;display:flex;gap:0.25em;right:0.6em;top:0.6em;}
 	.dp-run button, .dp-tools button {cursor:pointer;border:1px solid var(--dp-line);background:rgba(10,13,20,0.78);color:var(--dp-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font:inherit;font-size:0.85em;}
 	.dp-run button:hover, .dp-tools button:hover {border-color:var(--accent);color:#fff;}
