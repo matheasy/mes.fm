@@ -277,10 +277,10 @@
 	function ptRel(v) { return PT.rel === "yes" ? true : PT.rel === "no" ? false : v > 0.1 * M.C; }
 	function ptB() { return Math.pow(10, PT.Bk); }
 	function ptE() { return PT.E * 1e6; }
-	function ptLaunch() {
+	function ptLaunch(keepView) {
 		var specs = [{ sp: PT.sp, v: Math.pow(10, PT.vk), a: PT.a }].concat(PT.extra);
 		PT.parts = specs.map(function (s) { var sp = SPEC[s.sp], rel = ptRel(s.v), p = M.makeParticle(sp.q, sp.m, 0, 0, Math.min(s.v, 0.9999999 * M.C), s.a * PI / 180, rel); return { p: p, spec: sp, rel: rel, trail: [0, 0], color: s.color || sp.c, v0: s.v, p0x: p.ux / (rel ? Math.sqrt(1 + (p.ux * p.ux + p.uy * p.uy) / (M.C * M.C)) : 1), p0y: p.uy / (rel ? Math.sqrt(1 + (p.ux * p.ux + p.uy * p.uy) / (M.C * M.C)) : 1), vyPrev: p.uy, periods: [], lastCross: null, x0: 0 }; });
-		PT.t = 0; ptFit(); ptReadouts(true);
+		PT.t = 0; if (keepView !== true) ptFit(); ptReadouts(true);
 	}
 	function ptRadius(part) { var v = part.v0, c = M.cyclotron(part.spec.q, part.spec.m, ptB(), v, part.rel); var r = c.radius; var E = Math.abs(ptE()), B = ptB(); if (E > 0) r = Math.max(r, 2 * part.spec.m * E / (Math.abs(part.spec.q) * B * B)); return { r: r, c: c }; }
 	function ptFit() { var R = 0; PT.parts.forEach(function (pt) { R = Math.max(R, ptRadius(pt).r); }); PT.view.VW = Math.max(R * 5.2, 1e-9); PT.view.cx = PT.parts.length > 1 ? 0 : 0; PT.view.cy = 0; }
@@ -314,7 +314,7 @@
 		}
 		PT.parts.forEach(function (pt) { var t = pt.trail; if (t.length > 3) { var n = t.length / 2, ch = 8, step = Math.ceil(n / ch); cx.lineWidth = 1.8; cx.strokeStyle = pt.color; for (var k = 0; k < ch; k++) { var f = k * step, to = Math.min(n - 1, (k + 1) * step); if (f >= to) continue; cx.globalAlpha = 0.25 + 0.75 * (k + 1) / ch; cx.beginPath(); for (var j = f; j <= to; j++) { var p = ptT(t[2 * j], t[2 * j + 1]); if (j === f) cx.moveTo(p[0], p[1]); else cx.lineTo(p[0], p[1]); } cx.stroke(); } cx.globalAlpha = 1; } var q = ptT(pt.p.x, pt.p.y); cx.fillStyle = pt.color; cx.beginPath(); cx.arc(q[0], q[1], 6, 0, 7); cx.fill(); cx.strokeStyle = "#fff"; cx.lineWidth = 1.3; cx.stroke(); var v = ptVel(pt), Lv = 38; var vm = Math.hypot(v[0], v[1]); if (vm > 0) arrow(cx, q[0], q[1], q[0] + v[0] / vm * Lv, q[1] - v[1] / vm * Lv, "#fff", 1.8, 7); });
 		var sb = Math.pow(10, Math.floor(Math.log10(c.VW / 3))), sp = sb * S; cx.strokeStyle = "rgba(255,255,255,0.8)"; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(12, H - 14); cx.lineTo(12 + sp, H - 14); cx.stroke(); cx.fillStyle = "rgba(255,255,255,0.85)"; cx.font = "12px sans-serif"; cx.fillText(si(sb, "m", 2), 12, H - 20);
-		$("em-pt-badge").textContent = "B out of the screen (dots)" + (ptE() ? " · E " + (ptE() > 0 ? "up" : "down") : "");
+		$("em-pt-badge").textContent = "B out of the screen (dots)" + (ptE() ? " · E " + (ptE() > 0 ? "up" : "down") : "") + (PT.tool === "aim" ? " · drag from the start point to aim" : " · drag to move, scroll to zoom");
 	}
 	function ptVel(pt) { var g = pt.rel ? Math.sqrt(1 + (pt.p.ux * pt.p.ux + pt.p.uy * pt.p.uy) / (M.C * M.C)) : 1; return [pt.p.ux / g, pt.p.uy / g]; }
 	function ptReadouts(force) {
@@ -325,6 +325,36 @@
 		$("em-pt-v").textContent = si(Ev, "m/s", 3); $("em-pt-vs").textContent = sig(Ev / M.C, 3) + " c · energy " + si(Ekn / M.QE, "eV", 3);
 		if (E !== 0) { var vd = E / B; $("em-pt-d").textContent = si(vd, "m/s", 3); $("em-pt-ds").textContent = "E/B = " + sig(vd / M.C, 3) + " c" + (Math.abs(vd) >= M.C ? " (more than c: the particle cannot drift that fast)" : ""); } else { $("em-pt-d").textContent = "none"; $("em-pt-ds").textContent = "no electric field"; }
 	}
+	/* mouse: move the view (drag), zoom (wheel / pinch), or aim the launch (drag from the start point: the direction is the angle and the length is the speed) */
+	PT.tool = "pan";
+	function ptWorld(px, py) { var c = ptCam(), S = pv.fit() / c.VW; return [c.cx + (px - pv.W / 2) / S, c.cy - (py - pv.H / 2) / S]; }
+	var ptPts = {}, ptPan = null, ptPinch = null;
+	function ptAim(p) {
+		var o = ptT(0, 0), dx = p[0] - o[0], dy = o[1] - p[1], L = Math.hypot(dx, dy); if (L < 6) return;
+		var lo = +$("em-pt-vs-in").min, hi = +$("em-pt-vs-in").max, f = Math.max(0, Math.min(1, L / (0.45 * Math.min(pv.W, pv.H))));
+		PT.a = Math.round(Math.atan2(dy, dx) * 180 / PI); PT.vk = Math.round((lo + f * (hi - lo)) * 50) / 50; ptSync(); ptLaunch(true); PT.aimTo = p;
+	}
+	pv.cv.addEventListener("pointerdown", function (e) {
+		pv.cv.setPointerCapture(e.pointerId); var p = pv.pos(e); ptPts[e.pointerId] = p; var ids = Object.keys(ptPts);
+		if (ids.length === 2) { var a = ptPts[ids[0]], b = ptPts[ids[1]]; ptPinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), vw: PT.view.VW }; ptPan = null; return; }
+		if (PT.tool === "aim") { PT.follow = false; $("em-pt-follow").checked = false; ptAim(p); ptPan = { aim: true }; }
+		else { PT.follow = false; $("em-pt-follow").checked = false; ptPan = { x: p[0], y: p[1], cx: PT.view.cx, cy: PT.view.cy }; }
+		e.preventDefault();
+	});
+	pv.cv.addEventListener("pointermove", function (e) {
+		var p = pv.pos(e); if (ptPts[e.pointerId]) ptPts[e.pointerId] = p;
+		if (ptPinch && Object.keys(ptPts).length === 2) { var ids = Object.keys(ptPts), a = ptPts[ids[0]], b = ptPts[ids[1]], d = Math.hypot(a[0] - b[0], a[1] - b[1]); PT.view.VW = Math.max(1e-12, ptPinch.vw * ptPinch.d / Math.max(1, d)); return; }
+		if (!ptPan) return;
+		if (ptPan.aim) { ptAim(p); return; }
+		var S = pv.fit() / PT.view.VW; PT.view.cx = ptPan.cx - (p[0] - ptPan.x) / S; PT.view.cy = ptPan.cy + (p[1] - ptPan.y) / S;
+	});
+	function ptEnd(e) { delete ptPts[e.pointerId]; if (Object.keys(ptPts).length < 2) ptPinch = null; if (!Object.keys(ptPts).length) ptPan = null; }
+	pv.cv.addEventListener("pointerup", ptEnd); pv.cv.addEventListener("pointercancel", ptEnd);
+	pv.cv.addEventListener("wheel", function (e) {
+		e.preventDefault(); var p = pv.pos(e), f = Math.exp(e.deltaY * (e.deltaMode === 1 ? 16 : 1) * 0.0015), before = PT.follow ? null : ptWorld(p[0], p[1]);
+		PT.view.VW = Math.max(1e-12, Math.min(1e6, PT.view.VW * f)); if (before) { var after = ptWorld(p[0], p[1]); PT.view.cx += before[0] - after[0]; PT.view.cy += before[1] - after[1]; }
+	}, { passive: false });
+	wireTools("em-pt-tools", function (t) { PT.tool = t; pv.cv.style.cursor = t === "aim" ? "crosshair" : "grab"; }); pv.cv.style.cursor = "grab";
 	var ptSel = { proton: 1 };
 	$("em-pt-sp-sel").onchange = function () { PT.sp = this.value; PT.extra = []; ptLaunch(); };
 	$("em-pt-B").oninput = function () { PT.Bk = +this.value; $("em-pt-B-v").textContent = si(ptB(), "T", 3); ptLaunch(); sset({ pt_B: PT.Bk }); };
@@ -334,9 +364,10 @@
 	$("em-pt-sp").oninput = function () { PT.spd = +this.value; $("em-pt-sp-v").textContent = sig(Math.pow(10, PT.spd), 2) + " turns per second"; sset({ pt_spd: PT.spd }); };
 	$("em-pt-rel").onchange = function () { PT.rel = this.value; ptLaunch(); };
 	$("em-pt-follow").onchange = function () { PT.follow = this.checked; if (!PT.follow) ptFit(); };
+	$("em-pt-fit").onclick = function () { PT.follow = false; $("em-pt-follow").checked = false; ptFit(); };
 	$("em-pt-fields").onchange = function () { PT.fields = this.checked; };
 	$("em-pt-play").onclick = function () { PT.play = !PT.play; this.setAttribute("aria-pressed", String(PT.play)); this.textContent = PT.play ? "❚❚ Pause" : "▶ Play"; };
-	$("em-pt-reset").onclick = ptLaunch; wirePng("em-pt-png", pv, ptDraw); wireFull("em-pt-full", pv);
+	$("em-pt-reset").onclick = function () { ptLaunch(); }; wirePng("em-pt-png", pv, ptDraw); wireFull("em-pt-full", pv);
 	$("em-pt-link").onclick = function () { copyLink({ sp: PT.sp, B: PT.Bk, E: PT.E, v: PT.vk, a: PT.a, rel: PT.rel }); };
 	chips($("em-pt-pre"), PT_PRE, ptApply);
 

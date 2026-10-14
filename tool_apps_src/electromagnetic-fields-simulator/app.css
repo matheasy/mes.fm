@@ -66,3 +66,6 @@
 	.em-gauss {font-variant-numeric:tabular-nums;}
 	body.dark-mode #em .em-toolrow button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} body.dark-mode #em .em-toolrow button[aria-pressed="true"] {background:var(--accent);color:#fff;border-color:var(--accent);} body.dark-mode #em .em-note2 {color:#a0a8b3;}
 	@media (max-width:640px) {.em-tabs button {padding:0.4em 0.55em;font-size:0.88em;}}
+	.em-fitbtn {cursor:pointer;font:inherit;font-size:0.85em;padding:0.35em 0.8em;border-radius:0.4em;border:1px solid #c3c9d2;background:#fff;color:#444;margin:0 0 0.5em 0.5em;} .em-fitbtn:hover {border-color:var(--accent);color:var(--accent);}
+	body.dark-mode #em .em-fitbtn {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} #em [hidden] {display:none !important;}
+	.em-ptbar {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:0 0 0.8em;} .em-ptbar .em-toolrow {margin:0;} .em-ptbar .em-fitbtn {margin:0;}
