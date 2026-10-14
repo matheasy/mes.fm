@@ -717,6 +717,9 @@ def main():
         if APPLY:
             p.write_text(new, encoding="utf-8")
     print("" if APPLY else "(dry run -- pass --apply)")
+    if APPLY:       # keep the "Newest calculators / tools" strip (mes.fm/newest.json) current whenever a tool page is (re)built
+        import subprocess
+        subprocess.run([sys.executable, str(ROOT / "build_newest.py"), "--apply"], check=False)
 
 
 if __name__ == "__main__":

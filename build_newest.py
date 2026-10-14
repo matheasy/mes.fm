@@ -8,7 +8,7 @@ fetch this file (main_js/newest.js), so they update without touching the HTML.
 
 JSON: {"generated": date, "calculators": [...], "tools": [...], "latest": [...]} where each item is
 {"href", "title", "icon", "desc", "added"(ISO date), "kind"}; "latest" = the newest items of both lists mixed.
-Pages that live inside another site's folder or have no git history are skipped. Idempotent (the `generated`
+Pages that live inside another site's folder are skipped; a page with no git history yet counts as added now. Idempotent (the `generated`
 date only moves when the data changes). Dry-runs by default; --apply writes. organize_hub_cards.py --apply runs it too.
 """
 import html
@@ -32,6 +32,12 @@ def first_added(rel):
                              cwd=ROOT, capture_output=True, text=True).stdout.split()
         if out:
             return out[-1]
+    # Not in git history yet (page just built, uncommitted or only staged): it is brand new, so "now" puts it on top.
+    # (This used to skip such pages, which is why a new tool only showed up after a second run post-commit.)
+    for cand in (rel + "/index.html", rel + ".html"):
+        if (SITE / cand).exists():
+            from datetime import datetime
+            return datetime.now().astimezone().isoformat(timespec="seconds")
     return None
 
 

@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/grounding-rod-simulator",
+   "title": "Ground Rod & Earthing Simulator",
+   "icon": "/img/grounding-rod-simulator-logo.png",
+   "desc": "Find a ground rod's resistance for your soil, see why a rod doesn't trip a breaker, model lightning step voltage and static discharge, and read the grounding rules for your region.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
+  {
+   "href": "/julia-set-explorer",
+   "title": "Julia Set Explorer",
+   "icon": "/img/julia-set-explorer-logo.png",
+   "desc": "Drag a point on a map of the Mandelbrot set and watch its Julia set change live. Walk c around the cardioid, zoom and save pictures.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
+  {
    "href": "/archive",
    "title": "Archive",
    "icon": "/img/archive-logo.png",
@@ -178,25 +194,25 @@
    "desc": "Zoom into the Mandelbrot set, see the Julia set of any point, trace orbits and try the Burning Ship, Tricorn and Multibrot fractals.",
    "added": "2026-10-12",
    "kind": "tool"
-  },
-  {
-   "href": "/black-hole-simulator",
-   "title": "Black Hole Simulator",
-   "icon": "/img/black-hole-simulator-logo.png",
-   "desc": "Bend light around a black hole, find its shadow and photon sphere, follow orbits that precess or plunge, and see a ray-traced picture with a glowing disk.",
-   "added": "2026-10-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/light-in-a-medium",
-   "title": "Light in a Medium Simulator",
-   "icon": "/img/light-in-a-medium-logo.png",
-   "desc": "Paint glass, water or any refractive index and watch a live light wave slow down, bend, focus in a lens or curve like a mirage. Compare it with rays.",
-   "added": "2026-10-12",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/grounding-rod-simulator",
+   "title": "Ground Rod & Earthing Simulator",
+   "icon": "/img/grounding-rod-simulator-logo.png",
+   "desc": "Find a ground rod's resistance for your soil, see why a rod doesn't trip a breaker, model lightning step voltage and static discharge, and read the grounding rules for your region.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
+  {
+   "href": "/julia-set-explorer",
+   "title": "Julia Set Explorer",
+   "icon": "/img/julia-set-explorer-logo.png",
+   "desc": "Drag a point on a map of the Mandelbrot set and watch its Julia set change live. Walk c around the cardioid, zoom and save pictures.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
   {
    "href": "/archive",
    "title": "Archive",
@@ -244,22 +260,6 @@
    "desc": "The best day to take a pregnancy test: implantation days, earliest sensitive test and when a test is dependable.",
    "added": "2026-10-14",
    "kind": "calculator"
-  },
-  {
-   "href": "/weeks-pregnant-calculator",
-   "title": "Weeks Pregnant Calculator",
-   "icon": "/img/weeks-pregnant-calculator-logo.png",
-   "desc": "How many weeks pregnant you are today, your trimester and a week-by-week table with baby size.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/domain-lookup",
-   "title": "Domain Lookup",
-   "icon": "/img/domain-lookup-logo.png",
-   "desc": "Whois for the web: domain age, registrar, expiry, who hosts a site, DNS and email setup, and warning signs.",
-   "added": "2026-10-14",
-   "kind": "tool"
   }
  ]
 }
