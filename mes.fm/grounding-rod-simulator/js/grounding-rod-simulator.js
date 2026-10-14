@@ -207,12 +207,12 @@
 		drawLight(g, I, R, r, r0, st);
 	}
 	function drawLight(g, I, R, r, r0, st) {
-		var W = cv.width, H = cv.height, dk = document.body.classList.contains("dark-mode"), fg = dk ? "#e6e8ec" : "#223", gr = dk ? "#3a3f48" : "#dde2e8", L = 64, B = 40, T = 14, Rr = 12, x0 = Math.log10(0.3), x1 = Math.log10(200);
+		var W = cv.width, H = cv.height, dk = document.body.classList.contains("dark-mode"), fg = dk ? "#e6e8ec" : "#223", gr = dk ? "#3a3f48" : "#dde2e8", L = 84, B = 48, T = 14, Rr = 12, x0 = Math.log10(0.3), x1 = Math.log10(200);
 		var vmax = Math.max(1e5, Math.pow(10, Math.ceil(Math.log10(G.lightningV(g.rho, I, Math.max(0.3, r0)) * 1.2)))), y0 = 1, y1 = Math.log10(vmax);
 		cx.clearRect(0, 0, W, H); cx.fillStyle = dk ? "#161616" : "#fff"; cx.fillRect(0, 0, W, H);
 		function X(m) { return L + (Math.log10(m) - x0) / (x1 - x0) * (W - L - Rr); } function Y(v) { return H - B - (Math.log10(Math.max(v, 1)) - y0) / (y1 - y0) * (H - B - T); }
-		cx.font = "13px system-ui,sans-serif"; cx.strokeStyle = gr; cx.fillStyle = fg; cx.lineWidth = 1;
-		[0.3, 1, 3, 10, 30, 100].forEach(function (m) { cx.beginPath(); cx.moveTo(X(m), T); cx.lineTo(X(m), H - B); cx.stroke(); cx.textAlign = "center"; cx.fillText(m + " m", X(m), H - B + 16); });
+		cx.font = "17px system-ui,sans-serif"; cx.strokeStyle = gr; cx.fillStyle = fg; cx.lineWidth = 1;
+		[0.3, 1, 3, 10, 30, 100].forEach(function (m) { cx.beginPath(); cx.moveTo(X(m), T); cx.lineTo(X(m), H - B); cx.stroke(); cx.textAlign = "center"; cx.fillText(m + " m", X(m), H - B + 20); });
 		for (var e = 1; e <= y1; e++) { var v = Math.pow(10, e); cx.beginPath(); cx.moveTo(L, Y(v)); cx.lineTo(W - Rr, Y(v)); cx.stroke(); cx.textAlign = "right"; cx.fillText(si(v, "V", 1), L - 6, Y(v) + 4); }
 		cx.setLineDash([6, 4]); cx.strokeStyle = "#c46a00"; [[50, "50 V"], [1000, "1 kV"]].forEach(function (h) { if (Math.log10(h[0]) <= y1) { cx.beginPath(); cx.moveTo(L, Y(h[0])); cx.lineTo(W - Rr, Y(h[0])); cx.stroke(); cx.fillStyle = "#c46a00"; cx.textAlign = "left"; cx.fillText(h[1], L + 6, Y(h[0]) - 4); } }); cx.setLineDash([]);
 		cx.strokeStyle = "#c2410c"; cx.lineWidth = 3; cx.beginPath(); var first = true, rs = Math.max(0.3, r0); for (var i = 0; i <= 200; i++) { var m = rs * Math.pow(200 / rs, i / 200), vv = Math.min(G.lightningV(g.rho, I, m), I * R); if (first) { cx.moveTo(X(m), Y(vv)); first = false; } else cx.lineTo(X(m), Y(vv)); } cx.stroke();
@@ -247,7 +247,7 @@
 		for (var i = 0; i < n; i++) { var x = 494 + i * 46; h += (i ? '<line x1="' + (x - 46) + '" y1="272" x2="' + x + '" y2="272" class="gr-wg"/>' : "") + '<line x1="' + x + '" y1="266" x2="' + x + '" y2="272" class="gr-wg"/><rect x="' + (x - 4) + '" y="270" width="8" height="100" rx="3" class="gr-rod"/>'; }
 		if (g.n > 3) h += '<text x="' + (494 + 2 * 46 + 16) + '" y="330" class="gr-t gr-sm">+' + (g.n - 3) + " more</text>";
 		$("gr-houserods").innerHTML = h;
-		$("gr-rh").textContent = "House rod" + (g.n > 1 ? "s" : "") + " ≈ " + sig(R, 3) + " Ω"; $("gr-rh").setAttribute("x", "480"); $("gr-rh").setAttribute("y", "392");
+		$("gr-rh").textContent = "House rod" + (g.n > 1 ? "s" : "") + " ≈ " + sig(R, 3) + " Ω";
 		var rsg = LASTP ? LASTP.Rsrcg : 20; $("gr-ru").textContent = "≈ " + sig(rsg, 3) + " Ω";
 		var f = LASTF, L = LASTL, cap = "", fl = "";
 		if (sc === "normal") cap = "<strong>Everyday:</strong> current goes out on the hot wire (red) and comes back on the neutral (grey) to the transformer. The ground wire (green) carries nothing. The neutral is tied to ground at the panel only (the N–G bond), and the ground rod just holds the whole system at the earth's voltage. Nothing here flows through the soil.";
