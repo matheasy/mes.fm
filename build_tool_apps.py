@@ -318,7 +318,7 @@ APPS = {
     "reynolds-number-calculator": dict(title="MES Reynolds Number Calculator", page_title="Reynolds Number Calculator",
                             tag="Laminar or turbulent? Find out.", accent="#0e7490", dark="#155e75", tint="#e0f4f8",
                             desc="Free Reynolds number calculator: enter the fluid, speed and size in any units to get Re, whether the flow is laminar or turbulent, pipe friction and pressure drop, drag and vortex-shedding frequency. Or solve for the speed or size that gives a target Re.",
-                            js_v="1"),
+                            js_v="2"),
     # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",

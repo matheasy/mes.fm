@@ -15,3 +15,4 @@
 	#ex-find {margin-bottom:0.7em;}
 	body.dark-mode #ex .ex-drop {background:#262626;border-color:#555;} body.dark-mode #ex .ex-drop__big {color:#eee;} body.dark-mode #ex kbd {background:#333;color:#eee;border-color:#666;}
 	body.dark-mode #ex .ex-flag {background:#3a2c10;border-color:#7a5a1a;color:#f3dca8;} body.dark-mode #ex .ex-flag.bad {background:#3a1118;border-color:#e11d48;color:#ffc9d1;} body.dark-mode #ex .ex-tbl tr.sens td:nth-child(3) {color:#ff9a92;}
+	#ex [hidden] {display:none !important;}
