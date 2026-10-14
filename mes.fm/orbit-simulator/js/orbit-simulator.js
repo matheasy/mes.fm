@@ -317,7 +317,7 @@
 	function onResize() {
 		if (tab !== "sim") return;
 		var wrap = stage.parentNode, w = wrap.clientWidth || 600, h = Math.round(w / aspect); wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, h);
-		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { var mh = window.innerHeight - 90; if (h > mh) h = mh; }
+		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { h = (window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 90); }
 		stage.style.width = w + "px"; stage.style.height = h + "px";
 		dpr = Math.min(2, window.devicePixelRatio || 1); var cw = Math.round(w * dpr), ch = Math.round(h * dpr);
 		if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }

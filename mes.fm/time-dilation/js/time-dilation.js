@@ -214,13 +214,15 @@
 	var tcv = $("td-tc"), tcx = tcv.getContext("2d"), tstage = $("td-tstage");
 	var dpr = 1, SZ = {};
 	function sizeStage(stg, c2d, canvas, aspect, key, extraFn) {
-		var wrap = stg.parentNode, w = wrap.clientWidth || 640; dpr = Math.min(2, window.devicePixelRatio || 1);
+		var wrap = stg.parentNode, w = wrap.clientWidth || 640; dpr = Math.min(2, window.devicePixelRatio || 1); wrap.setAttribute("data-mes-free", "1");
 		stg.style.width = w + "px"; var extra = extraFn ? extraFn(w) : 0, h = Math.round(w / aspect(w)) + extra; SZ[key + "x"] = extra;
+		if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stg, h);   /* Small / Medium / Large and the corner grip */
+		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) h = window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 90;   /* Fill window: the whole window, laid out for its own shape */
 		stg.style.height = h + "px"; var cw = Math.round(w * dpr), ch = Math.round(h * dpr); if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
 		SZ[key] = { w: w, h: h };
 	}
 	function onResize() {
-		if (tab === "clocks") { sizeStage(stage, cx, cv, function (w) { return w < 620 ? 0.78 : 1.72; }, "c", function () { return $("td-ctl").offsetHeight || 48; }); drawClocks(); }
+		if (tab === "clocks") { sizeStage(stage, cx, cv, function (w) { return w < 620 ? 0.78 : 1.72; }, "c", function () { var c = $("td-ctl"); return c.offsetParent === null ? 0 : (c.offsetHeight || 48); }); drawClocks(); }
 		else if (tab === "light") { sizeStage(lstage, lcx, lcv, function (w) { return w < 620 ? 1 : 2.1; }, "l"); drawLight(); }
 		else if (tab === "trip") { sizeStage(tstage, tcx, tcv, function (w) { return w < 700 ? 0.8 : 1.9; }, "t"); drawTrip(); }
 	}

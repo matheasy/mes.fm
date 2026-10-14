@@ -24,7 +24,11 @@
 		'@media (max-width:700px),(pointer:coarse){.tu button:not(.mes-grip),.tu summary{min-height:36px}.tu summary{display:list-item}.tu .xx-chips button,.tu [role=group] button{padding-top:0.35em;padding-bottom:0.35em}}' +   /* phone-sized tap targets for every simulator's own buttons / chips */
 		'html.mes-fill-on{overflow:hidden !important}' +
 		'.mes-fill-bd{position:fixed;inset:0;background:#05070d;z-index:2147482000}' +
-		'.mes-fill{position:fixed !important;left:50%;top:0;transform:translateX(-50%);z-index:2147482500;max-width:none !important;width:var(--mes-fw,100vw) !important;height:100vh;margin:0 !important;border-radius:0 !important;border:0 !important;overflow:auto;display:flex !important;flex-direction:column;justify-content:center}' +
+		'.mes-fill{position:fixed !important;left:50%;top:34px;transform:translateX(-50%);z-index:2147482500;max-width:none !important;width:var(--mes-fw,100vw) !important;height:calc(100vh - 34px);height:calc(100dvh - 34px);margin:0 !important;border-radius:0 !important;border:0 !important;overflow:auto;display:flex !important;flex-direction:column;justify-content:center}' +
+		'.mes-fs{padding-top:34px !important;box-sizing:border-box;overflow:auto}' +
+		'.mes-top{position:fixed;left:0;right:0;top:0;height:34px;z-index:2147483000;display:flex;align-items:center;justify-content:flex-end;gap:0.5em;padding:0 0.6em;background:#0a0d14;border-bottom:1px solid #2a3040;box-sizing:border-box}.mes-top--in{position:absolute}' +
+		'.mes-top button{cursor:pointer;font:inherit;font-size:0.85em;padding:0.25em 0.9em;border-radius:0.4em;border:1px solid #3a4258;background:#151a28;color:#e8ecf5;min-height:26px}.mes-top button:hover{border-color:var(--accent,#7fd0ff)}.mes-top button{white-space:nowrap}@media (max-width:520px){.mes-top .mes-tt{display:none}}.mes-top .mes-tt{margin-right:auto;color:#9aa5bb;font-size:0.8em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+		'.mes-nopanel > :not([class$="-stage"]):not(.mes-grip):not(.mes-top):not(.td-run){display:none !important}.mes-nopanel .td-ctl{display:none !important}' +
 		'.mes-fill-x{position:fixed;right:0.8em;top:0.7em;z-index:2147483000;cursor:pointer;font:inherit;font-size:0.85em;padding:0.35em 0.9em;border-radius:0.4em;border:1px solid #3a4258;background:rgba(10,13,20,0.9);color:#e8ecf5}' +
 		'body.dark-mode .mes-sbar{color:#a0a8b3}body.dark-mode .mes-sbar button{background:#2b2f36;border-color:#454c58;color:#e6e8ec}body.dark-mode .mes-sbar button[aria-pressed="true"]{background:var(--accent,#277bb6);color:#fff}';
 	var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
@@ -114,34 +118,69 @@
 
 	/* ----- fill the browser window ----- */
 	function fillWidth(wrap) {
+		if (isFree(wrap)) return window.innerWidth;   // a free-shape simulation uses the whole window and lays itself out for it
 		var stage = wrap.querySelector('[class$="-stage"]') || wrap.firstElementChild, aspect = 16 / 9;
 		if (wrap.__aspect) aspect = wrap.__aspect;
 		else if (stage && stage.offsetWidth > 0 && stage.offsetHeight > 0) aspect = wrap.__aspect = stage.offsetWidth / stage.offsetHeight;
 		var extra = wrap.__extra != null ? wrap.__extra : (wrap.__extra = Math.max(0, wrap.offsetHeight - (stage ? stage.offsetHeight : 0)));
-		return Math.max(320, Math.min(window.innerWidth, Math.round((window.innerHeight - extra - 4) * aspect)));
+		return Math.max(320, Math.min(window.innerWidth, Math.round((window.innerHeight - 34 - extra - 4) * aspect)));
+	}
+	/* the height a stage may take inside a filled / full-screen box: the window minus the 34px top bar minus whatever panels (readouts, graphs) are showing */
+	function fillH(wrap) {
+		var top = (wrap.classList.contains('mes-fill') || wrap.classList.contains('mes-fs')) ? 34 : 0, extra = 0;
+		Array.prototype.forEach.call(wrap.children, function (k) {
+			if ((k.matches && k.matches('[class$="-stage"]')) || k.classList.contains('mes-grip') || k.classList.contains('mes-top')) return;
+			var cs = getComputedStyle(k); if (cs.display === 'none' || cs.position === 'absolute' || cs.position === 'fixed') return;
+			extra += k.offsetHeight + (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
+		});
+		return Math.max(120, window.innerHeight - top - extra - 2);
+	}
+	/* the top bar: [Hide panel / Show panel] [Close]; it never covers the picture's own buttons */
+	function topBar(wrap, inside, onClose) {
+		var bar = document.createElement('div'); bar.className = 'mes-top' + (inside ? ' mes-top--in' : ''); bar.setAttribute('role', 'toolbar');
+		var tt = document.createElement('span'); tt.className = 'mes-tt'; tt.textContent = document.title.split(' | ')[0];
+		var pb = document.createElement('button'); pb.type = 'button';
+		var cb = document.createElement('button'); cb.type = 'button'; cb.textContent = '✕ Close (Esc)'; cb.onclick = onClose;
+		function paint() { var hid = wrap.classList.contains('mes-nopanel'); pb.textContent = hid ? '▴ Show panel' : '▾ Hide panel'; pb.title = hid ? 'Show the readouts and controls under the picture' : 'Hide the readouts and controls: the picture gets the whole window'; pb.setAttribute('aria-pressed', hid ? 'true' : 'false'); }
+		pb.onclick = function () { var hid = !wrap.classList.contains('mes-nopanel'); wrap.classList.toggle('mes-nopanel', hid); try { localStorage.setItem('mes-fillpanel', hid ? '0' : '1'); } catch (e) { /* ignore */ } paint(); ping(); setTimeout(ping, 150); };
+		bar.appendChild(tt); bar.appendChild(pb); bar.appendChild(cb);
+		var pref = null; try { pref = localStorage.getItem('mes-fillpanel'); } catch (e) { /* ignore */ }
+		wrap.classList.toggle('mes-nopanel', pref === '0' || (pref === null && window.innerHeight < 520));   // a phone held sideways starts with the panel hidden
+		paint(); return bar;
 	}
 	function fill(wrap) {
 		if (filling) return;
 		wrap.__aspect = null; wrap.__extra = null; fillWidth(wrap);   // measure before the class changes the layout
+		wrap.__sh = 0; wrap.__she = 0; wrap.style.removeProperty('--mes-sh'); wrap.style.removeProperty('--mes-shmax');   // the preset's height cap does not apply to a filled box
 		filling = wrap;
 		backdrop = document.createElement('div'); backdrop.className = 'mes-fill-bd'; document.body.appendChild(backdrop);
-		closeBtn = document.createElement('button'); closeBtn.type = 'button'; closeBtn.className = 'mes-fill-x'; closeBtn.textContent = '✕ Close (Esc)'; closeBtn.onclick = leave; document.body.appendChild(closeBtn);
+		closeBtn = topBar(wrap, false, leave); document.body.appendChild(closeBtn);
 		wrap.style.setProperty('--mes-fw', fillWidth(wrap) + 'px'); wrap.classList.add('mes-fill'); document.documentElement.classList.add('mes-fill-on');
 		ping(); setTimeout(ping, 150);
 	}
 	function leave() {
 		if (!filling) return;
-		filling.classList.remove('mes-fill'); filling.style.removeProperty('--mes-fw'); document.documentElement.classList.remove('mes-fill-on');
+		filling.classList.remove('mes-fill', 'mes-nopanel'); filling.style.removeProperty('--mes-fw'); document.documentElement.classList.remove('mes-fill-on');
 		if (backdrop) backdrop.remove(); if (closeBtn) closeBtn.remove(); backdrop = closeBtn = null; filling = null;
-		ping(); setTimeout(ping, 150);
+		apply(); ping(); setTimeout(ping, 150);
 	}
 	document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && filling && !document.fullscreenElement) leave(); });
 	window.addEventListener('resize', function () { if (filling) { filling.style.setProperty('--mes-fw', fillWidth(filling) + 'px'); } else apply(); });
+	/* the browser's own full screen on a simulation box: same top bar (inside the box, the only thing visible in full screen) and the same hide / show panel */
+	var fsBar = null, fsWrap = null;
+	document.addEventListener('fullscreenchange', function () {
+		var el = document.fullscreenElement;
+		if (fsWrap) { fsWrap.classList.remove('mes-fs', 'mes-nopanel'); if (fsBar) fsBar.remove(); fsBar = fsWrap = null; }
+		if (el && wraps.some(function (o) { return o.wrap === el; })) {
+			fsWrap = el; el.classList.add('mes-fs'); fsBar = topBar(el, true, function () { try { document.exitFullscreen(); } catch (e) { /* ignore */ } }); el.insertBefore(fsBar, el.firstChild);
+		}
+		ping(); setTimeout(ping, 150);
+	});
 
 	function init() {
 		var sel = PREFIX.map(function (p) { return '.' + p + '-wrap'; }).join(',');
 		Array.prototype.forEach.call(document.querySelectorAll(sel), attach);
 	}
-	window.MESStage = { attach: attach, apply: apply, leave: leave, sh: function (stage, h) { var w = stage && stage.parentNode, o = w && w.__sh; if (!o) return h; return w.__she ? o : Math.min(h, o); } };
+	window.MESStage = { attach: attach, apply: apply, leave: leave, fillH: fillH, sh: function (stage, h) { var w = stage && stage.parentNode, o = w && w.__sh; if (!o) return h; return w.__she ? o : Math.min(h, o); } };
 	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

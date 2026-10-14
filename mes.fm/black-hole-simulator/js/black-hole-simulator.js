@@ -257,7 +257,7 @@
 	function size(stage, canvas, aspect, maxH, free) {
 		var wrap = stage.parentNode, W = wrap.clientWidth, H = Math.round(W / aspect);
 		if (free) { wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) H = window.MESStage.sh(stage, H); }
-		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { var mh = window.innerHeight - 90; if (H > mh) { H = mh; W = Math.round(H * aspect); } }
+		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { H = (window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 90); }
 		stage.style.width = W + "px"; stage.style.height = H + "px";
 		var dpr = Math.min(2, window.devicePixelRatio || 1), cw = Math.round(W * dpr), ch = Math.round(H * dpr);
 		if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }

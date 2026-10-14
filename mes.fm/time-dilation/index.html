@@ -309,8 +309,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.td-wrap:fullscreen {display:flex;flex-direction:column;border-radius:0;border:0;justify-content:center;}
 	.td-stage {position:relative;margin:0 auto;max-width:100%;background:var(--td-bg);}
 	.td-stage canvas {position:absolute;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;}
-	.td-run {position:absolute;display:flex;gap:0.25em;right:0.6em;top:0.6em;}
-	.td-run button {cursor:pointer;border:1px solid var(--td-line);background:rgba(10,13,20,0.78);color:var(--td-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font:inherit;font-size:0.85em;}
+	.td-run {display:flex;justify-content:flex-end;gap:0.3em;padding:0.35em 0.6em;background:#0a0e18;border-bottom:1px solid var(--td-line);}
+	.td-run button {cursor:pointer;border:1px solid var(--td-line);background:#151a28;color:var(--td-text);border-radius:0.4em;min-height:2em;padding:0 0.6em;font:inherit;font-size:0.85em;}
 	.td-run button:hover {border-color:var(--accent);color:#fff;}
 	.td-readouts {display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:0.5em;padding:0.6em;background:#0e1118;border-top:1px solid var(--td-line);}
 	.td-ro {display:flex;flex-direction:column;gap:0.1em;min-width:0;}
@@ -749,9 +749,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<!-- ============ 1. clocks and aging ============ -->
 		<section data-panel="clocks" role="tabpanel">
 			<p class="tu-note td-lead">Two people start the same age. One stays home. The other flies past at a speed you choose. <b>Slide the speed toward the speed of light</b> and watch the traveller's clock, heartbeat and ageing fall behind. The traveller never feels slowed: every clock, heartbeat and thought on the ship runs together, so nothing on board looks off to them.</p>
-			<div class="td-wrap"><div class="td-stage" id="td-stage">
+			<div class="td-wrap">
+			<div class="td-run"><button type="button" id="td-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="td-reset" title="Start the clocks again at the starting age">↺ Restart</button></div>
+			<div class="td-stage" id="td-stage">
 				<canvas id="td-c" role="img" aria-label="Two people and their year clocks. The one on the fast ship ages more slowly than the one at home. Drag the bar under each person to jump to an age."></canvas>
-				<div class="td-run"><button type="button" id="td-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="td-reset" title="Start the clocks again at the starting age">↺ Restart</button></div>
 				<div class="td-ctl" id="td-ctl">
 					<label class="td-ctl__speed"><span>Ship speed</span><input type="range" id="td-ctl-sp" min="0" max="1000" step="1" aria-label="Speed of the ship"></label>
 					<div class="td-ctl__rate" id="td-ctl-ts" role="group" aria-label="How fast time passes at home"><span>Time rate</span><button type="button" data-ts="0.002737851" aria-pressed="false">1 day/s</button><button type="button" data-ts="0.0833333" aria-pressed="false">1 month/s</button><button type="button" data-ts="1" aria-pressed="true">1 year/s</button><button type="button" data-ts="10" aria-pressed="false">10 yr/s</button><button type="button" data-ts="100" aria-pressed="false">100 yr/s</button></div>
@@ -794,9 +795,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<!-- ============ 2. light clock ============ -->
 		<section data-panel="light" role="tabpanel" hidden>
 			<p class="tu-note td-lead">Why must a moving clock tick slowly? Take the simplest clock there is: a light pulse bouncing between two mirrors, one tick per bounce. <b>Light always travels at the same speed, whoever is watching.</b> When the clock moves sideways, its light has to run a longer zig-zag path between the mirrors, so each tick takes longer.</p>
-			<div class="td-wrap"><div class="td-stage" id="td-lstage">
+			<div class="td-wrap">
+			<div class="td-run"><button type="button" id="td-l-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="td-l-reset">↺ Restart</button></div>
+			<div class="td-stage" id="td-lstage">
 				<canvas id="td-lc" role="img" aria-label="Two light clocks side by side. In the moving one the pulse of light takes a longer diagonal path, so it ticks less often."></canvas>
-				<div class="td-run"><button type="button" id="td-l-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="td-l-reset">↺ Restart</button></div>
 			</div>
 			<div class="td-readouts">
 				<div class="td-ro"><span>Ticks of the resting clock</span><b id="td-l-n0">0</b><small>one tick = one bounce</small></div>
@@ -814,9 +816,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<!-- ============ 3. twin trip ============ -->
 		<section data-panel="trip" role="tabpanel" hidden>
 			<p class="tu-note td-lead">The twin paradox, made visible. One twin flies to a star and back while the other stays home. On the left see where they are and how old each is. On the right is a <b>spacetime diagram</b>: the dots mark each year of a twin's own time, so the traveller, who took a shorter path through spacetime, has fewer dots.</p>
-			<div class="td-wrap"><div class="td-stage" id="td-tstage">
+			<div class="td-wrap">
+			<div class="td-run"><button type="button" id="td-t-play" aria-pressed="false">▶ Play the trip</button><button type="button" id="td-t-reset">↺ Restart</button></div>
+			<div class="td-stage" id="td-tstage">
 				<canvas id="td-tc" role="img" aria-label="Left: the trip to a star and back with both twins' ages. Right: a spacetime diagram with each twin's world line and a dot for each year they live."></canvas>
-				<div class="td-run"><button type="button" id="td-t-play" aria-pressed="false">▶ Play the trip</button><button type="button" id="td-t-reset">↺ Restart</button></div>
 			</div>
 			<div class="td-readouts">
 				<div class="td-ro"><span>Home twin</span><b id="td-t-h">–</b><small id="td-t-hs"></small></div>
@@ -960,7 +963,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/time-dilation/js/time-dilation.js?v=1" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/time-dilation/js/time-dilation.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

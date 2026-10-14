@@ -41,11 +41,12 @@
 		V.resize = function () {
 			var wrap = st.parentNode, w = wrap.clientWidth; if (!w) return false; var h = Math.round(w / V.aspect); wrap.setAttribute("data-mes-free", "1");
 			if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(st, h);
-			if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { var mh = window.innerHeight - 90 - (extraH || 0); if (h > mh) h = mh; }
+			if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { h = (window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 90) - (window.MESStage && window.MESStage.fillH ? 0 : (extraH || 0)); }
 			st.style.width = w + "px"; st.style.height = h + "px"; V.dpr = Math.min(2, window.devicePixelRatio || 1); V.W = w; V.H = h;
 			var cw = Math.round(w * V.dpr), ch = Math.round(h * V.dpr); if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; return true; } return false;
 		};
 		V.pos = function (e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * (V.W / r.width), (e.clientY - r.top) * (V.H / r.height)]; };
+		V.fit = function () { return Math.min(V.W, V.H * V.aspect); };   /* the scene is scaled to fit its design shape: a short, wide box (phone landscape, Fill window) shows more of the world instead of cropping top and bottom */
 		V.begin = function () { V.cx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0); };
 		return V;
 	}
@@ -60,9 +61,9 @@
 	/* =================== ELECTRIC CHARGES =================== */
 	var ES = { ch: [], tool: "pos", sel: -1, VW: 4, nLines: 14, lines: true, arrows: false, eq: false, gauss: false, col: "none", mode: "3d", qk: 0, wk: 0.26, gc: { x: 0, y: 0, R: 0.8 }, tests: [], play: true, mouse: null, dirty: true, cache: {}, drag: null, gdirty: true, tcQ: 1e-9, tcM: 1e-3 };
 	var ev = mkView("es", 1.6), esHeat = document.createElement("canvas");
-	function esT(x, y) { var S = ev.W / ES.VW; return [ev.W / 2 + x * S, ev.H / 2 - y * S]; }
-	function esW(px, py) { var S = ev.W / ES.VW; return [(px - ev.W / 2) / S, -(py - ev.H / 2) / S]; }
-	function esBox() { var hw = ES.VW / 2, hh = ES.VW / 2 * ev.H / ev.W; return [-hw, -hh, hw, hh]; }
+	function esT(x, y) { var S = ev.fit() / ES.VW; return [ev.W / 2 + x * S, ev.H / 2 - y * S]; }
+	function esW(px, py) { var S = ev.fit() / ES.VW; return [(px - ev.W / 2) / S, -(py - ev.H / 2) / S]; }
+	function esBox() { var S = ev.fit() / ES.VW, hw = ev.W / 2 / S, hh = ev.H / 2 / S; return [-hw, -hh, hw, hh]; }
 	function qNew() { return Math.pow(10, ES.qk) * 1e-6; }
 	var ES_PRE = [
 		{ name: "Dipole", ch: [[-0.7, 0, 1], [0.7, 0, -1]], VW: 4 }, { name: "Two positives", ch: [[-0.7, 0, 1], [0.7, 0, 1]], VW: 4 }, { name: "Unequal pair", ch: [[-0.9, 0, 2], [0.9, 0, -1]], VW: 5 },
@@ -101,7 +102,7 @@
 		ES.dirty = false;
 	}
 	function esDraw() {
-		if (tab !== "es") return; if (ES.dirty) esRecompute(); ev.begin(); var cx = ev.cx, W = ev.W, H = ev.H, C = ES.cache, S = W / ES.VW;
+		if (tab !== "es") return; if (ES.dirty) esRecompute(); ev.begin(); var cx = ev.cx, W = ev.W, H = ev.H, C = ES.cache, S = Math.min(W, H * ev.aspect) / ES.VW;
 		cx.fillStyle = "#05070d"; cx.fillRect(0, 0, W, H);
 		if (C.heat) { cx.imageSmoothingEnabled = true; cx.drawImage(esHeat, 0, 0, W, H); }
 		/* faint grid */
@@ -140,7 +141,7 @@
 	function esHit(p) { var best = -1, bd = 1e9; ES.ch.forEach(function (c, i) { var s = esT(c.x, c.y), d = Math.hypot(s[0] - p[0], s[1] - p[1]); if (d < (coarse ? 26 : 16) && d < bd) { bd = d; best = i; } }); return best; }
 	ev.cv.addEventListener("pointerdown", function (e) {
 		ev.cv.setPointerCapture(e.pointerId); var p = ev.pos(e), i = esHit(p); ES.mouse = p;
-		if (ES.gauss) { var c0 = esT(ES.gc.x, ES.gc.y), S = ev.W / ES.VW, d = Math.hypot(p[0] - c0[0], p[1] - c0[1]); if (i < 0 && Math.abs(d - ES.gc.R * S) < 12) { ES.drag = { k: "gR" }; ev.st.classList.add("is-grab"); return; } if (i < 0 && d < 12) { ES.drag = { k: "gC", dx: ES.gc.x - esW(p[0], p[1])[0], dy: ES.gc.y - esW(p[0], p[1])[1] }; ev.st.classList.add("is-grab"); return; } }
+		if (ES.gauss) { var c0 = esT(ES.gc.x, ES.gc.y), S = ev.fit() / ES.VW, d = Math.hypot(p[0] - c0[0], p[1] - c0[1]); if (i < 0 && Math.abs(d - ES.gc.R * S) < 12) { ES.drag = { k: "gR" }; ev.st.classList.add("is-grab"); return; } if (i < 0 && d < 12) { ES.drag = { k: "gC", dx: ES.gc.x - esW(p[0], p[1])[0], dy: ES.gc.y - esW(p[0], p[1])[1] }; ev.st.classList.add("is-grab"); return; } }
 		if (i >= 0) { ES.sel = i; ES.drag = { k: "c", i: i }; ev.st.classList.add("is-grab"); selUi(); return; }
 		var w = esW(p[0], p[1]);
 		if (ES.tool === "pos" || ES.tool === "neg") { if (ES.ch.length >= 40) { toast("That is plenty of charges (40)"); return; } ES.ch.push({ x: w[0], y: w[1], q: (ES.tool === "pos" ? 1 : -1) * qNew() }); ES.sel = ES.ch.length - 1; ES.dirty = true; ES.gdirty = true; }
@@ -174,9 +175,9 @@
 	/* =================== CURRENTS =================== */
 	var MS = { w: [], tool: "out", sel: -1, VW: 0.4, lines: true, arrows: false, heat: false, loop: false, lc: { x: 0, y: 0, R: 0.06 }, mouse: null, drag: null, dirty: true, cache: {}, ik: 1, ldirty: true };
 	var mv = mkView("ms", 1.6), msHeat = document.createElement("canvas");
-	function mT(x, y) { var S = mv.W / MS.VW; return [mv.W / 2 + x * S, mv.H / 2 - y * S]; }
-	function mW(px, py) { var S = mv.W / MS.VW; return [(px - mv.W / 2) / S, -(py - mv.H / 2) / S]; }
-	function mBox() { var hw = MS.VW / 2, hh = MS.VW / 2 * mv.H / mv.W; return [-hw, -hh, hw, hh]; }
+	function mT(x, y) { var S = mv.fit() / MS.VW; return [mv.W / 2 + x * S, mv.H / 2 - y * S]; }
+	function mW(px, py) { var S = mv.fit() / MS.VW; return [(px - mv.W / 2) / S, -(py - mv.H / 2) / S]; }
+	function mBox() { var S = mv.fit() / MS.VW, hw = mv.W / 2 / S, hh = mv.H / 2 / S; return [-hw, -hh, hw, hh]; }
 	function iNew() { return Math.pow(10, MS.ik); }
 	var MS_PRE = [
 		{ name: "One wire", w: [[0, 0, 10]], VW: 0.3 }, { name: "Parallel currents", w: [[-0.06, 0, 10], [0.06, 0, 10]], VW: 0.4 }, { name: "Opposite currents", w: [[-0.06, 0, 10], [0.06, 0, -10]], VW: 0.4 },
@@ -204,7 +205,7 @@
 		MS.dirty = false;
 	}
 	function msDraw() {
-		if (tab !== "ms") return; if (MS.dirty) msRecompute(); mv.begin(); var cx = mv.cx, W = mv.W, H = mv.H, C = MS.cache, S = W / MS.VW; cx.fillStyle = "#05070d"; cx.fillRect(0, 0, W, H);
+		if (tab !== "ms") return; if (MS.dirty) msRecompute(); mv.begin(); var cx = mv.cx, W = mv.W, H = mv.H, C = MS.cache, S = Math.min(W, H * mv.aspect) / MS.VW; cx.fillStyle = "#05070d"; cx.fillRect(0, 0, W, H);
 		if (C.heat) { cx.imageSmoothingEnabled = true; cx.drawImage(msHeat, 0, 0, W, H); }
 		if (MS.lines) C.lines.forEach(function (s) { if (s.length) segs(cx, s, mT, "rgba(160,200,255,0.8)", 1.2); });
 		if (MS.lines && MS.w.length) { /* direction arrows on the closest ring around each wire, counter-clockwise for current out of the page */ MS.w.forEach(function (w) { if (!w.I) return; for (var k = 0; k < 3; k++) { var r = (0.08 + 0.07 * k) * Math.min(MS.VW, 0.4 * MS.VW + 0.3) * 0.6 + MS.VW * 0.03, a = k * 1.1 + 0.5, p = mT(w.x + r * Math.cos(a), w.y + r * Math.sin(a)), t = [-Math.sin(a) * Math.sign(w.I), Math.cos(a) * Math.sign(w.I)]; arrow(cx, p[0] - t[0] * 7, p[1] + t[1] * 7, p[0] + t[0] * 7, p[1] - t[1] * 7, "rgba(200,225,255,0.95)", 0.1, 7); } }); }
@@ -225,7 +226,7 @@
 	function msHit(p) { var best = -1, bd = 1e9; MS.w.forEach(function (c, i) { var s = mT(c.x, c.y), d = Math.hypot(s[0] - p[0], s[1] - p[1]); if (d < (coarse ? 26 : 18) && d < bd) { bd = d; best = i; } }); return best; }
 	mv.cv.addEventListener("pointerdown", function (e) {
 		mv.cv.setPointerCapture(e.pointerId); var p = mv.pos(e), i = msHit(p); MS.mouse = p;
-		if (MS.loop) { var c0 = mT(MS.lc.x, MS.lc.y), S = mv.W / MS.VW, d = Math.hypot(p[0] - c0[0], p[1] - c0[1]); if (i < 0 && Math.abs(d - MS.lc.R * S) < 12) { MS.drag = { k: "lR" }; mv.st.classList.add("is-grab"); return; } if (i < 0 && d < 12) { var w0 = mW(p[0], p[1]); MS.drag = { k: "lC", dx: MS.lc.x - w0[0], dy: MS.lc.y - w0[1] }; mv.st.classList.add("is-grab"); return; } }
+		if (MS.loop) { var c0 = mT(MS.lc.x, MS.lc.y), S = mv.fit() / MS.VW, d = Math.hypot(p[0] - c0[0], p[1] - c0[1]); if (i < 0 && Math.abs(d - MS.lc.R * S) < 12) { MS.drag = { k: "lR" }; mv.st.classList.add("is-grab"); return; } if (i < 0 && d < 12) { var w0 = mW(p[0], p[1]); MS.drag = { k: "lC", dx: MS.lc.x - w0[0], dy: MS.lc.y - w0[1] }; mv.st.classList.add("is-grab"); return; } }
 		if (i >= 0) { MS.sel = i; MS.drag = { k: "w", i: i }; mv.st.classList.add("is-grab"); msSel(); return; }
 		var w = mW(p[0], p[1]); if (MS.tool === "out" || MS.tool === "in") { if (MS.w.length >= 40) { toast("That is plenty of wires (40)"); return; } MS.w.push({ x: w[0], y: w[1], I: (MS.tool === "out" ? 1 : -1) * iNew() }); MS.sel = MS.w.length - 1; MS.dirty = true; MS.ldirty = true; } else MS.sel = -1; msSel();
 	});
@@ -278,9 +279,9 @@
 		PT.parts.forEach(function (pt) { pt.trail.push(pt.p.x, pt.p.y); if (pt.trail.length > 12000) pt.trail.splice(0, 2); var vy = pt.p.uy; if (pt.vyPrev > 0 && vy <= 0) { if (pt.lastCross !== null) { pt.periods.push(PT.t - pt.lastCross); if (pt.periods.length > 6) pt.periods.shift(); } pt.lastCross = PT.t; } pt.vyPrev = vy; });
 	}
 	function ptCam() { var c = PT.view; if (PT.follow && PT.parts[0]) { c.cx = PT.parts[0].p.x; c.cy = PT.parts[0].p.y; } return c; }
-	function ptT(x, y) { var c = ptCam(), S = pv.W / c.VW; return [pv.W / 2 + (x - c.cx) * S, pv.H / 2 - (y - c.cy) * S]; }
+	function ptT(x, y) { var c = ptCam(), S = pv.fit() / c.VW; return [pv.W / 2 + (x - c.cx) * S, pv.H / 2 - (y - c.cy) * S]; }
 	function ptDraw() {
-		if (tab !== "pt") return; pv.begin(); var cx = pv.cx, W = pv.W, H = pv.H, c = ptCam(), S = W / c.VW; cx.fillStyle = "#05070d"; cx.fillRect(0, 0, W, H);
+		if (tab !== "pt") return; pv.begin(); var cx = pv.cx, W = pv.W, H = pv.H, c = ptCam(), S = Math.min(W, H * pv.aspect) / c.VW; cx.fillStyle = "#05070d"; cx.fillRect(0, 0, W, H);
 		if (PT.fields) {
 			var gp = Math.max(28, Math.round(Math.min(W, H) / 10)), i, j; cx.fillStyle = "rgba(125,175,255,0.35)"; cx.strokeStyle = "rgba(125,175,255,0.35)"; cx.lineWidth = 1.2;
 			var ox = (W / 2 - c.cx * S) % gp, oy = (H / 2 + c.cy * S) % gp; for (j = oy - gp; j < H + gp; j += gp) for (i = ox - gp; i < W + gp; i += gp) { cx.beginPath(); cx.arc(i, j, 2.2, 0, 7); cx.fill(); cx.beginPath(); cx.arc(i, j, 6, 0, 7); cx.stroke(); }

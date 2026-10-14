@@ -223,7 +223,7 @@
 		var wrap = stage.parentNode; wrap.setAttribute("data-mes-free", "1");
 		var avail = wrap.clientWidth || 600, nat = Math.min(Math.round(avail * (S.rot ? 1.25 : 0.8)), Math.round(Math.max(360, window.innerHeight * 0.85))), h = nat;
 		if (window.MESStage && window.MESStage.sh) h = window.MESStage.sh(stage, nat);
-		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) h = Math.max(300, window.innerHeight - 90);
+		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) h = Math.max(200, (window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 90));
 		stage.style.width = avail + "px"; stage.style.height = Math.round(h) + "px";
 		var dpr = Math.min(2, window.devicePixelRatio || 1), ow = Math.round(avail * dpr), oh = Math.round(h * dpr);
 		if (over.width !== ow || over.height !== oh) { over.width = ow; over.height = oh; }

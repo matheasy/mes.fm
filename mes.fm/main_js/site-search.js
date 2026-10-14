@@ -28,6 +28,12 @@
         "#compact-nav{height:60px !important}",
         "body.is-stuck .hc-group{top:7px !important;right:54px !important;bottom:auto !important;transform:none !important}",
         "body.is-stuck #navbar-button{top:7px !important}body.is-stuck #navbar.hide{top:64px !important}",
+        /* a small tab under the floating bar hides / shows the whole bar (logo, buttons, hamburger) on phones, like the tab on Google's own anchor ads */
+        "#hdrBarTab{display:none;position:fixed;top:60px;right:62px;z-index:16;width:50px;height:22px;padding:0;align-items:center;justify-content:center;background:#fff;color:#444;border:1px solid #cfd4da;border-top:0;border-radius:0 0 11px 11px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.15)}",
+        "#hdrBarTab svg{transition:transform .2s}body.is-stuck #hdrBarTab{display:flex}",
+        "body.hc-barhide #compact-nav{transform:translateY(-120%) !important}body.hc-barhide.is-stuck .hc-group,body.hc-barhide.is-stuck #navbar-button{display:none !important}",
+        "body.hc-barhide #hdrBarTab{top:0}body.hc-barhide #hdrBarTab svg{transform:rotate(180deg)}",
+        "body.dark-mode #hdrBarTab,body.dark #hdrBarTab{background:#2a2a2a;color:#eee;border-color:#454545}",
         "}",
         "@media (max-width:380px){.hc-group{gap:6px !important}.hc-group .hc-btn{width:40px !important;height:40px !important}body.is-stuck .hc-group{top:9px !important}}",
         "@media (max-width:480px){",
@@ -209,6 +215,18 @@
         set(was, false);
         more.addEventListener("click", function () { set(more.getAttribute("aria-expanded") !== "true", true); });
         if (mobMQ && mobMQ.addEventListener) mobMQ.addEventListener("change", reserve);
+        /* the hide / show tab */
+        var tab = document.createElement("button"); tab.type = "button"; tab.id = "hdrBarTab";
+        tab.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        document.body.appendChild(tab);
+        function bar(hide, save) {
+            document.body.classList.toggle("hc-barhide", hide);
+            var t = hide ? "Show the top bar" : "Hide the top bar"; tab.setAttribute("aria-label", t); tab.title = t; tab.setAttribute("aria-expanded", hide ? "false" : "true");
+            if (save) try { localStorage.setItem("hdrBar", hide ? "0" : "1"); } catch (e) { /* ignore */ }
+        }
+        var hid = false; try { hid = localStorage.getItem("hdrBar") === "0"; } catch (e) { /* ignore */ }
+        bar(hid, false);
+        tab.addEventListener("click", function () { bar(!document.body.classList.contains("hc-barhide"), true); });
     }
 
     /* the headers reserve room on the right for the controls (padding-right 150-180px); add the button's share */
