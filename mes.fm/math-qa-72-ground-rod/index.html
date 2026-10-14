@@ -1018,6 +1018,8 @@
       apply();
     })();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script src="/main_js/video-speed-hold.js?v=1" defer></script>
   <script>
     // m72-video: plays the 3Speak-hosted HLS stream directly (via hls.js), like the other MES Math Q/A mirrors.
     // The manifest URL is resolved at runtime from 3Speak's public embed API (re-uploads keep the slug); a freshly
@@ -1063,6 +1065,39 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) { if (d && d.videoUrl) play(d.videoUrl); else toYouTube(); })
         .catch(toYouTube);
+    })();
+  </script>
+
+  <script>
+    // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
+    // the video is playing and the pointer is idle, like YouTube's own control bar,
+    // so they don't sit on top of the video permanently. Reappear on any mouse
+    // movement over the player, and stay visible whenever the video is paused.
+    (function () {
+      var video = document.getElementById('m72Video');
+      var embed = document.getElementById('videoEmbed');
+      var hideTimer = null;
+
+      function showControls() {
+        embed.classList.remove('controls-hidden');
+      }
+
+      function scheduleHide() {
+        clearTimeout(hideTimer);
+        if (video.paused || video.ended) return;
+        hideTimer = setTimeout(function () {
+          embed.classList.add('controls-hidden');
+        }, 2000);
+      }
+
+      video.addEventListener('play', scheduleHide);
+      video.addEventListener('pause', showControls);
+      video.addEventListener('ended', showControls);
+      embed.addEventListener('mousemove', function () {
+        showControls();
+        scheduleHide();
+      });
+      embed.addEventListener('mouseleave', scheduleHide);
     })();
   </script>
 
