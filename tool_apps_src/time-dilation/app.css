@@ -99,3 +99,5 @@
 		.td-jump {display:block;position:fixed;right:12px;bottom:14px;z-index:40;font:inherit;font-size:0.95em;font-weight:700;padding:0.7em 1.1em;border-radius:2em;border:0;background:var(--accent);color:#fff;box-shadow:0 3px 12px rgba(0,0,0,0.35);cursor:pointer;}
 		.td-jump[hidden] {display:none;}
 	}
+	.td-says dt {margin-top:1em;} .td-says dd {margin-left:0;} .td-more {margin:1em 0;padding:0.7em 1em;background:var(--tint);border-radius:0.5em;}
+	body.dark-mode #td .td-more {background:#23262b;}

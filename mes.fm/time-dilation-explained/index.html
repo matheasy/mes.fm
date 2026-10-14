@@ -1,0 +1,868 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Time Dilation Explained -- mes.fm/time-dilation-explained -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/time-dilation-explained/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/time-dilation-explained" />                    <title>MES Time Dilation Explained | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#be185d;color:white;}
+        .button {color:#be185d;border:0.125em solid#be185d;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#be185d; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#be185d; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#be185d;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#be185d;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#be185d;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#8f1245;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#be185d;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:100;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#be185d;border:0.125em solid#be185d;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#8f1245;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#be185d;}
+        .dropdown-symbol--dark {color:#be185d;}
+        .button--active {background-color:#be185d;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#be185d;--accent-dark:#8f1245;--tint:#fce4ef;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #fce4ef;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#fce4ef;border-color:#fce4ef;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #fce4ef;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#fce4ef;border-color:#fce4ef;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#fce4ef;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#fce4ef;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#ed6ea3 !important;--accent-dark:#ed6ea3 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	.te-body h2 {margin:1.8em 0 0.5em;font-size:1.45em;font-weight:800;line-height:1.25;border-bottom:2px solid #fce4ef;padding-bottom:0.2em;}
+	.te-body p, .te-body li {line-height:1.7;font-size:1.03em;} .te-list {margin:0.5em 0 0.8em 1.4em;} .te-list li {margin-bottom:0.35em;}
+	.te-eq {margin:0.9em 0;padding:0.8em 1em;background:#f4f6f9;border:1px solid #dfe4ea;border-left:5px solid var(--accent);border-radius:0.4em;overflow-x:auto;font-size:1.1em;}
+	.te-eq .mes-tex {font-family:"Cambria Math","STIX Two Math",Georgia,serif;}
+	.te-fig {margin:1em auto;max-width:34em;color:#1e2733;} .te-fig > svg {width:100%;height:auto;display:block;} .te-fig figcaption {font-size:0.85em;color:#667;text-align:center;margin-top:0.3em;}
+	.te-tbl td, .te-tbl th {white-space:normal !important;text-align:left !important;} .te-note {font-size:0.9em;color:#667;}
+	.te-q {margin:0.5em 0;border:1px solid #dfe4ea;border-radius:0.5em;padding:0.6em 0.9em;background:#fff;} .te-q summary {cursor:pointer;font-weight:700;} .te-q[open] summary {margin-bottom:0.4em;}
+	#te [hidden] {display:none !important;}
+	body.dark-mode #te .te-eq, body.dark-mode #te .te-q {background:#23262b;border-color:#3a3f48;} body.dark-mode #te .te-fig {color:#e6e8ec;} body.dark-mode #te .te-note, body.dark-mode #te .te-fig figcaption {color:#a0a8b3;} body.dark-mode #te .te-body h2 {border-bottom-color:#3a3f48;}
+	#te ol.te-list {list-style:decimal;} #te ul.te-list {list-style:disc;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#e42675;--accent-dark:#e42673}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #490826}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#29131d;border-color:#490826}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#29131d;border-color:#490826}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#29131d}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .te-body h2{border-bottom:2px solid #490826}
+	body.dark-mode .te-eq{background:#16191d;border:1px solid #28323e}
+	body.dark-mode .te-fig{color:#d1d6dc}
+	body.dark-mode .te-fig figcaption{color:#9a9aa2}
+	body.dark-mode .te-note{color:#9a9aa2}
+	body.dark-mode .te-q{border:1px solid #28323e;background:#1a1a1a}
+	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #be185d;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #be185d; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(190,24,93,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/time-dilation-explained" />            <meta property="og:title" content="MES Time Dilation Explained | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/time-dilation-explained/img/logo-big.png" />
+        <meta property="og:description" content="Time dilation explained step by step: derive the Lorentz factor from a light clock and Pythagoras, then length contraction, the twin paradox, constant-acceleration travel and the energy needed, with worked examples, a gamma table and practice questions." />
+
+        <meta name="description" content="Time dilation explained step by step: derive the Lorentz factor from a light clock and Pythagoras, then length contraction, the twin paradox, constant-acceleration travel and the energy needed, with worked examples, a gamma table and practice questions.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Time Dilation Explained">
+        <meta name="twitter:description" content="Time dilation explained step by step: derive the Lorentz factor from a light clock and Pythagoras, then length contraction, the twin paradox, constant-acceleration travel and the energy needed, with worked examples, a gamma table and practice questions.">
+        <meta name="twitter:image" content="https://mes.fm/time-dilation-explained/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Time Dilation Explained">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Time Dilation Explained", "url": "https://mes.fm/time-dilation-explained", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Time dilation explained step by step: derive the Lorentz factor from a light clock and Pythagoras, then length contraction, the twin paradox, constant-acceleration travel and the energy needed, with worked examples, a gamma table and practice questions."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/time-dilation-explained" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/time-dilation-explained/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/time-dilation-explained" tabindex="-1">Time Dilation Explained</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/time-dilation-explained'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Time Dilation Explained logo" data-src="/time-dilation-explained/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/time-dilation-explained'>
+                                    <p class="calculator-title">MES Time Dilation Explained</p>
+                                </a>
+                                <p class="tag-line">Where the Lorentz factor comes from, step by step.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/time-dilation-explained'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Time Dilation Explained: The Equations and Their Derivation</h1>                                        <p class="page-description">Time dilation explained step by step: derive the Lorentz factor from a light clock and Pythagoras, then length contraction, the twin paradox, constant-acceleration travel and the energy needed, with worked examples, a gamma table and practice questions.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu te" id="te">
+		<div class="tu-card tu-card--tint te-intro">
+			<p style="margin:0">Time dilation says a moving clock runs slow by the factor <span class="mes-tex">\(\gamma = 1/\sqrt{1 - v^2/c^2}\)</span>. This page explains where that comes from using only Pythagoras, then follows the idea through length contraction, the twin paradox, constant-acceleration trips and energy, with worked examples and practice questions. To see it move, use the <a href="/time-dilation">Time Dilation Simulator</a>.</p>
+		</div>
+		<div class="te-body">
+<h2>The two ideas everything rests on</h2>
+<p>Special relativity needs just two assumptions, both well tested:</p>
+<ol class="te-list">
+<li><b>The laws of physics are the same for everyone moving at a steady speed.</b> There is no experiment that can tell you that you are "really" at rest.</li>
+<li><b>Light moves at the same speed <span class="mes-tex">\(c\)</span> for every observer</b> (<span class="mes-tex">\(c = 299{,}792{,}458\)</span> m/s), however fast the source or the observer is moving.</li>
+</ol>
+<p>The second idea is the strange one. If you run at a beam of light it still passes you at <span class="mes-tex">\(c\)</span>. Something has to give so that this stays true, and what gives is <em>time</em> (and distance). Time dilation is the consequence you can work out with nothing more than Pythagoras.</p>
+
+<h2>Derivation 1: the light clock</h2>
+<p>Build the simplest clock imaginable: a pulse of light bouncing between two mirrors a distance <span class="mes-tex">\(L\)</span> apart. One tick is one round trip. In the clock's own frame the light travels <span class="mes-tex">\(2L\)</span> at speed <span class="mes-tex">\(c\)</span>, so</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \Delta\tau = \frac{2L}{c}\)</span></div>
+<p>This is the clock's <b>proper time</b>: the time measured by a clock that is at rest next to the events. Now set the clock moving sideways at speed <span class="mes-tex">\(v\)</span> (the mirrors are perpendicular to the motion). A friend who is not moving watches it go past. During one tick, which lasts <span class="mes-tex">\(\Delta t\)</span> for her, the clock slides along by <span class="mes-tex">\(v\,\Delta t\)</span>, so the light follows a slanted path: up to the far mirror, then back down.</p>
+<figure class="te-fig"><svg viewBox="0 0 520 190" role="img" aria-label="Light clock moving sideways: the light path is the hypotenuse of a right triangle with legs L and v t over 2"><defs><marker id="ar" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,1 L11,6 L0,11 z" fill="currentColor"/></marker></defs>
+<line x1="40" y1="160" x2="480" y2="160" stroke="currentColor" stroke-opacity=".4"/><line x1="40" y1="30" x2="480" y2="30" stroke="currentColor" stroke-opacity=".4"/>
+<line x1="80" y1="160" x2="260" y2="30" stroke="#c2255c" stroke-width="3" marker-end="url(#ar)"/><line x1="260" y1="30" x2="440" y2="160" stroke="#c2255c" stroke-width="3" marker-end="url(#ar)"/>
+<line x1="260" y1="30" x2="260" y2="160" stroke="currentColor" stroke-dasharray="5 4"/><line x1="80" y1="175" x2="260" y2="175" stroke="currentColor" marker-end="url(#ar)"/>
+<text x="268" y="100" font-size="15" fill="currentColor">L</text><text x="150" y="190" font-size="14" fill="currentColor">v&#916;t / 2</text><text x="140" y="85" font-size="14" fill="#c2255c">c&#916;t / 2</text><text x="60" y="150" font-size="12" fill="currentColor">start</text><text x="440" y="150" font-size="12" fill="currentColor">end</text></svg>
+<figcaption>Seen from outside, the light covers the slanted sides. The right triangle has legs <span class="mes-tex">\(L\)</span> and <span class="mes-tex">\(v\Delta t/2\)</span>, and hypotenuse <span class="mes-tex">\(c\Delta t/2\)</span>.</figcaption></figure>
+<p>Light still travels at <span class="mes-tex">\(c\)</span> in her frame, so each slanted half is <span class="mes-tex">\(c\,\Delta t/2\)</span> long. Pythagoras on the right triangle gives</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \Big(\frac{c\,\Delta t}{2}\Big)^2 = L^2 + \Big(\frac{v\,\Delta t}{2}\Big)^2\)</span></div>
+<p>Collect the <span class="mes-tex">\(\Delta t\)</span> terms:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \frac{\Delta t^2}{4}\,(c^2 - v^2) = L^2 \quad\Longrightarrow\quad \Delta t = \frac{2L/c}{\sqrt{1 - v^2/c^2}}\)</span></div>
+<p>The numerator is exactly the proper time <span class="mes-tex">\(\Delta\tau = 2L/c\)</span>. So</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \boxed{\;\Delta t = \gamma\,\Delta\tau\;},\qquad \gamma = \frac{1}{\sqrt{1 - v^2/c^2}}\)</span></div>
+<p>The moving clock ticks slower by the factor <span class="mes-tex">\(\gamma\)</span>. Because every process in nature can be compared with a light clock (otherwise you could tell who is really moving, breaking the first idea), <em>all</em> clocks, hearts and chemical reactions slow down together.</p>
+
+<h2>What the Lorentz factor looks like</h2>
+<p><span class="mes-tex">\(\gamma\)</span> is 1 at rest and grows slowly at first, then explodes as <span class="mes-tex">\(v\)</span> approaches <span class="mes-tex">\(c\)</span>:</p>
+<div class="tu-table-wrap"><table class="tu-table te-tbl"><thead><tr><th>Speed</th><th><span class="mes-tex">\(\gamma\)</span></th><th>A year on the ship equals</th><th>Example</th></tr></thead><tbody>
+<tr><td>0.1 c</td><td>1.005</td><td>1.005 years at home</td><td>30,000 km/s</td></tr>
+<tr><td>0.5 c</td><td>1.155</td><td>1.15 years</td><td></td></tr>
+<tr><td>0.8 c</td><td>1.667</td><td>1.67 years</td><td>the 3-4-5 triangle: <span class="mes-tex">\(\gamma = 5/3\)</span></td></tr>
+<tr><td>0.9 c</td><td>2.294</td><td>2.29 years</td><td></td></tr>
+<tr><td>0.99 c</td><td>7.089</td><td>7.09 years</td><td></td></tr>
+<tr><td>0.999 c</td><td>22.37</td><td>22 years</td><td>cosmic-ray muons</td></tr>
+<tr><td>0.9999 c</td><td>70.71</td><td>71 years</td><td></td></tr>
+</tbody></table></div>
+<p class="te-note">Everyday speeds are tiny compared with <span class="mes-tex">\(c\)</span>: a jet at 900 km/h has <span class="mes-tex">\(\gamma - 1 \approx 3\times10^{-13}\)</span>, which is why we never notice. Airborne atomic clocks can, though (Hafele and Keating, 1971).</p>
+
+<h2>Proper time: the clock you carry</h2>
+<p>The quantity <span class="mes-tex">\(\Delta\tau\)</span> has a name: the <b>proper time</b> between two events is the time shown on a clock that travels from one to the other. For a speed that changes, add up tiny pieces:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \tau = \int \sqrt{1 - \frac{v(t)^2}{c^2}}\;dt\)</span></div>
+<p>It is the relativistic version of "distance travelled along a path": different paths between the same two events have different proper times, and the straight, steady path takes the <em>longest</em>. That one fact explains the twin paradox.</p>
+
+<h2>Derivation 2: length contraction</h2>
+<p>Take a trip of distance <span class="mes-tex">\(d\)</span> (measured by the people at home, e.g. the Earth and a star at rest relative to each other). At speed <span class="mes-tex">\(v\)</span> it takes <span class="mes-tex">\(t = d/v\)</span> for them. The traveller's clock runs slow, so she experiences</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \tau = \frac{t}{\gamma} = \frac{d}{\gamma v}\)</span></div>
+<p>From her point of view the star approaches at speed <span class="mes-tex">\(v\)</span> and arrives after <span class="mes-tex">\(\tau\)</span>. So <em>she</em> measures the distance as <span class="mes-tex">\(v\tau = d/\gamma\)</span>:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \boxed{\;L = \frac{L_0}{\gamma}\;}\)</span></div>
+<p>Time dilation and length contraction are the same effect seen from the two sides. This also resolves the muon puzzle: muons made 15 km up live only 2.2 microseconds, enough to travel 0.66 km at <span class="mes-tex">\(0.995c\)</span>, yet they reach the ground. In our frame their clocks run slow (<span class="mes-tex">\(\gamma \approx 10\)</span>: 22 microseconds, 6.6 km). In the muon's frame the atmosphere is squashed to a tenth of its height.</p>
+
+<h2>Worked example: Proxima Centauri at 0.9 c</h2>
+<p>Proxima is <span class="mes-tex">\(d = 4.25\)</span> light-years away. At <span class="mes-tex">\(v = 0.9c\)</span> (so <span class="mes-tex">\(\gamma = 2.294\)</span>):</p>
+<ul class="te-list">
+<li>Time on Earth: <span class="mes-tex">\(t = d/v = 4.25/0.9 = 4.72\)</span> years.</li>
+<li>Time on the ship: <span class="mes-tex">\(\tau = t/\gamma = 4.72/2.294 = 2.06\)</span> years.</li>
+<li>Distance the traveller measures: <span class="mes-tex">\(d/\gamma = 1.85\)</span> light-years (and <span class="mes-tex">\(1.85/0.9 = 2.06\)</span> years: consistent).</li>
+</ul>
+<p>You can check any of these in the <a href="/time-dilation?tab=calc">Calculator tab</a> of the simulator.</p>
+
+<h2>The twin paradox</h2>
+<p>Each twin sees the other's clock run slow, so who is younger when they meet again? The answer is the traveller, because the situation is not symmetric: to come back she must <b>turn round</b>, which means accelerating, and her path through space-time is not the steady straight one. Using the proper-time integral above, a path with turns always has less proper time than the straight path between the same two events (the stay-at-home twin's). Equivalently, she switches from one inertial frame to another, and "now" at home jumps ahead in her bookkeeping at the turn-round.</p>
+
+<h2>Derivation 3: travelling at a constant 1 g</h2>
+<p>A ship can accelerate at <span class="mes-tex">\(a = 1\,g \approx 9.8\)</span> m/s&sup2; for years, which gives Earth-like gravity and is the usual dream of fast interstellar travel. At large speeds you cannot just add <span class="mes-tex">\(a\,t\)</span> to the speed (it would pass <span class="mes-tex">\(c\)</span>). Describe the motion with <b>rapidity</b> <span class="mes-tex">\(\varphi\)</span>, defined by <span class="mes-tex">\(v = c\tanh\varphi\)</span> (so <span class="mes-tex">\(\gamma = \cosh\varphi\)</span>). Constant proper acceleration means the rapidity grows steadily with the ship's own clock:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \varphi = \frac{a\,\tau}{c}\)</span></div>
+<p>Integrating <span class="mes-tex">\(dx = v\,dt\)</span> and <span class="mes-tex">\(dt = \gamma\,d\tau\)</span> with <span class="mes-tex">\(\gamma = \cosh\varphi\)</span> and <span class="mes-tex">\(v\gamma = c\sinh\varphi\)</span> gives the time and distance covered from rest:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle t = \frac{c}{a}\sinh\frac{a\tau}{c},\qquad x = \frac{c^2}{a}\Big(\cosh\frac{a\tau}{c} - 1\Big)\)</span></div>
+<p>For a trip of distance <span class="mes-tex">\(d\)</span> that accelerates for the first half and brakes for the second half, the ship covers <span class="mes-tex">\(d/2\)</span> while speeding up. Solve <span class="mes-tex">\(\tfrac{d}{2} = \tfrac{c^2}{a}(\cosh\varphi - 1)\)</span> for the rapidity <span class="mes-tex">\(\varphi\)</span> reached at the half-way point:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \cosh\varphi = 1 + \frac{a\,d}{2c^2} \quad\Longrightarrow\quad \tau_\text{total} = 2\,\frac{c}{a}\,\varphi = \boxed{\;\frac{2c}{a}\cosh^{-1}\!\Big(1 + \frac{a\,d}{2c^2}\Big)\;}\)</span></div>
+<p>This is the "constant 1 g" equation in the simulator's Twin trip tab. Numbers: Proxima (4.25 light-years) takes <b>3.5 years</b> on the ship; the Andromeda galaxy (2.5 million light-years) takes about <b>28.6 years</b> on the ship (while about 2.5 million years pass on Earth).</p>
+
+<h2>Why nothing with mass can reach c</h2>
+<p>The energy of a moving object of mass <span class="mes-tex">\(m\)</span> is <span class="mes-tex">\(E = \gamma m c^2\)</span>; at rest it is <span class="mes-tex">\(mc^2\)</span>. The extra is its kinetic energy:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle E_k = (\gamma - 1)\,m c^2 \;\approx\; \tfrac12 m v^2 \quad (v \ll c)\)</span></div>
+<p>For small speeds the series expansion <span class="mes-tex">\(\gamma \approx 1 + v^2/2c^2\)</span> gives back the familiar <span class="mes-tex">\(\tfrac12 m v^2\)</span>. But as <span class="mes-tex">\(v \to c\)</span>, <span class="mes-tex">\(\gamma \to \infty\)</span> and so does the energy needed. For one kilogram at <span class="mes-tex">\(0.9c\)</span> you need <span class="mes-tex">\((\gamma - 1)c^2 = 1.16\times10^{17}\)</span> J, about the energy a large power station makes in a year; at <span class="mes-tex">\(0.999c\)</span> it is 17 times more.</p>
+
+<h2>Common misunderstandings</h2>
+<ul class="te-list">
+<li><b>"The clock only looks slow because of the time light takes to arrive."</b> No: that Doppler effect is a separate, easily corrected effect. Time dilation is what remains after correcting for it.</li>
+<li><b>"It is only a measurement trick."</b> No: muon lifetimes, particle accelerators, atomic clocks on aircraft and GPS satellites all show the effect. GPS corrects for it (and for gravity, which acts the opposite way) every day.</li>
+<li><b>"Then I can go back in time by going fast."</b> No: speed lets you reach the future faster (fewer of your own ticks), never the past.</li>
+<li><b>"Nobody feels time slow down."</b> Right: on the ship everything runs together, so nothing feels different. You only notice by comparing with a clock that stayed home.</li>
+</ul>
+
+<h2>Try it yourself</h2>
+<p>Answers are hidden: work them out first, then check, or use the <a href="/time-dilation?tab=calc">simulator's calculator</a>.</p>
+<details class="te-q"><summary>1. At what speed is <span class="mes-tex">\(\gamma = 2\)</span>?</summary><p><span class="mes-tex">\(1/\sqrt{1 - \beta^2} = 2 \Rightarrow 1 - \beta^2 = 1/4 \Rightarrow \beta = \sqrt{3}/2 \approx 0.866\)</span>, so <span class="mes-tex">\(v = 0.866c\)</span>.</p></details>
+<details class="te-q"><summary>2. A ship travels at 0.6c for 10 years (Earth time). How old do the passengers get?</summary><p><span class="mes-tex">\(\gamma = 1.25\)</span>, so <span class="mes-tex">\(\tau = 10/1.25 = 8\)</span> years.</p></details>
+<details class="te-q"><summary>3. How long does a 12 light-year trip at 0.6c take on the ship?</summary><p>Earth time <span class="mes-tex">\(t = 12/0.6 = 20\)</span> years, so <span class="mes-tex">\(\tau = 20/\gamma = 20/1.25 = 16\)</span> years. (Check with contraction: <span class="mes-tex">\(12/1.25 = 9.6\)</span> light-years at 0.6c is 16 years.)</p></details>
+<details class="te-q"><summary>4. A muon has a rest lifetime of 2.2 microseconds and moves at 0.9994c (<span class="mes-tex">\(\gamma \approx 29\)</span>). How far does it travel in the lab?</summary><p>Lab lifetime <span class="mes-tex">\(\approx 29\times2.2 = 64\)</span> microseconds, distance <span class="mes-tex">\(\approx 0.9994\times 3\times10^8\times 64\times10^{-6}\approx 19\)</span> km (without dilation: 0.66 km).</p></details>
+<details class="te-q"><summary>5. Show that <span class="mes-tex">\(\gamma \approx 1 + \tfrac12 v^2/c^2\)</span> for small <span class="mes-tex">\(v\)</span>.</summary><p>Binomial expansion: <span class="mes-tex">\((1 - x)^{-1/2} \approx 1 + \tfrac12 x\)</span> with <span class="mes-tex">\(x = v^2/c^2\)</span>.</p></details>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/browser"><img class="mes-aside__img mes-aside__img--logo" src="/browser/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Browser Extensions</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/mandelbrot"><img class="mes-aside__img mes-aside__img--logo" src="/mandelbrot/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mandelbrot Set Explorer: Zoom, Julia Sets and Fractals</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/time-dilation-explained">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps.html">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/time-dilation-explained/js/time-dilation-explained.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>

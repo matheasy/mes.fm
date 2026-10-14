@@ -139,6 +139,11 @@ APPS = {
                     tag="Save or find any page on every web archive.", accent="#1e3a8a", dark="#152a66", tint="#e3e9fb",
                     desc="Free web archive tool: paste an address and open the Wayback Machine, archive.today, Ghostarchive, Megalodon and more at once to save a copy or find old ones, add your own archive sites, send it to the Hive blockchain, and get the one-click MES Archive browser extension.",
                     js_v="5"),
+    # Time Dilation Explained: a static article (content.html is generated from source.md: $..$ inline TeX, $$..$$ display TeX, MathJax via /main_js/mes-math.js). No sidebar scripts of its own.
+    "time-dilation-explained": dict(title="MES Time Dilation Explained", page_title="Time Dilation Explained: The Equations and Their Derivation",
+                    tag="Where the Lorentz factor comes from, step by step.", accent="#be185d", dark="#8f1245", tint="#fce4ef",
+                    desc="Time dilation explained step by step: derive the Lorentz factor from a light clock and Pythagoras, then length contraction, the twin paradox, constant-acceleration travel and the energy needed, with worked examples, a gamma table and practice questions.",
+                    js_v="1"),
     "days-between-dates-calculator": dict(title="MES Days Between Dates Calculator", page_title="Days Between Dates Calculator",
                                           tag="Days, weeks, months, hours and business days between two dates.", accent="#2f7d32", dark="#1f5a23", tint="#e4f2e4",
                                           desc="Free days between dates calculator: count the days, weeks, months, years, hours, minutes and seconds between any two dates, with optional end-date inclusion, business days (custom weekends and holidays), time of day and shareable links.",
@@ -284,7 +289,7 @@ APPS = {
     "time-dilation": dict(title="MES Time Dilation Simulator", page_title="Time Dilation Calculator and Simulator: How Much Would You Age?",
                           tag="Fast ships, slow clocks.", accent="#be185d", dark="#9d174d", tint="#fce7f3",
                           desc="A free time dilation simulator and calculator: watch a traveller's clock, heartbeat and ageing slow down as a ship approaches the speed of light, see the light clock that explains why, fly the twin paradox at constant speed or a steady 1 g with a spacetime diagram, and calculate how much you would age.",
-                          js_v="3"),
+                          js_v="4"),
     # Photo Editor: layers, selections, text labels, arrows / callouts / step badges, retouch, adjustments, PSD, all in the browser (canvas). lib.js = MESPixel (pure pixel maths, node-tested:
     # tool_apps_src/photo-editor-tests.js), js_parts = engine (core.js layers / history / selection) + tools + dialogs; lib_from = image-converter's lib (MESImg: formats, zip). Wide page, always-dark workspace.
     "photo-editor": dict(title="MES Photo Editor", page_title="Free Online Photo Editor with Layers",

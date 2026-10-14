@@ -1,0 +1,100 @@
+	<div class="tu te" id="te">
+		<div class="tu-card tu-card--tint te-intro">
+			<p style="margin:0">Time dilation says a moving clock runs slow by the factor <span class="mes-tex">\(\gamma = 1/\sqrt{1 - v^2/c^2}\)</span>. This page explains where that comes from using only Pythagoras, then follows the idea through length contraction, the twin paradox, constant-acceleration trips and energy, with worked examples and practice questions. To see it move, use the <a href="/time-dilation">Time Dilation Simulator</a>.</p>
+		</div>
+		<div class="te-body">
+<h2>The two ideas everything rests on</h2>
+<p>Special relativity needs just two assumptions, both well tested:</p>
+<ol class="te-list">
+<li><b>The laws of physics are the same for everyone moving at a steady speed.</b> There is no experiment that can tell you that you are "really" at rest.</li>
+<li><b>Light moves at the same speed <span class="mes-tex">\(c\)</span> for every observer</b> (<span class="mes-tex">\(c = 299{,}792{,}458\)</span> m/s), however fast the source or the observer is moving.</li>
+</ol>
+<p>The second idea is the strange one. If you run at a beam of light it still passes you at <span class="mes-tex">\(c\)</span>. Something has to give so that this stays true, and what gives is <em>time</em> (and distance). Time dilation is the consequence you can work out with nothing more than Pythagoras.</p>
+
+<h2>Derivation 1: the light clock</h2>
+<p>Build the simplest clock imaginable: a pulse of light bouncing between two mirrors a distance <span class="mes-tex">\(L\)</span> apart. One tick is one round trip. In the clock's own frame the light travels <span class="mes-tex">\(2L\)</span> at speed <span class="mes-tex">\(c\)</span>, so</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \Delta\tau = \frac{2L}{c}\)</span></div>
+<p>This is the clock's <b>proper time</b>: the time measured by a clock that is at rest next to the events. Now set the clock moving sideways at speed <span class="mes-tex">\(v\)</span> (the mirrors are perpendicular to the motion). A friend who is not moving watches it go past. During one tick, which lasts <span class="mes-tex">\(\Delta t\)</span> for her, the clock slides along by <span class="mes-tex">\(v\,\Delta t\)</span>, so the light follows a slanted path: up to the far mirror, then back down.</p>
+<figure class="te-fig"><svg viewBox="0 0 520 190" role="img" aria-label="Light clock moving sideways: the light path is the hypotenuse of a right triangle with legs L and v t over 2"><defs><marker id="ar" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,1 L11,6 L0,11 z" fill="currentColor"/></marker></defs>
+<line x1="40" y1="160" x2="480" y2="160" stroke="currentColor" stroke-opacity=".4"/><line x1="40" y1="30" x2="480" y2="30" stroke="currentColor" stroke-opacity=".4"/>
+<line x1="80" y1="160" x2="260" y2="30" stroke="#c2255c" stroke-width="3" marker-end="url(#ar)"/><line x1="260" y1="30" x2="440" y2="160" stroke="#c2255c" stroke-width="3" marker-end="url(#ar)"/>
+<line x1="260" y1="30" x2="260" y2="160" stroke="currentColor" stroke-dasharray="5 4"/><line x1="80" y1="175" x2="260" y2="175" stroke="currentColor" marker-end="url(#ar)"/>
+<text x="268" y="100" font-size="15" fill="currentColor">L</text><text x="150" y="190" font-size="14" fill="currentColor">v&#916;t / 2</text><text x="140" y="85" font-size="14" fill="#c2255c">c&#916;t / 2</text><text x="60" y="150" font-size="12" fill="currentColor">start</text><text x="440" y="150" font-size="12" fill="currentColor">end</text></svg>
+<figcaption>Seen from outside, the light covers the slanted sides. The right triangle has legs <span class="mes-tex">\(L\)</span> and <span class="mes-tex">\(v\Delta t/2\)</span>, and hypotenuse <span class="mes-tex">\(c\Delta t/2\)</span>.</figcaption></figure>
+<p>Light still travels at <span class="mes-tex">\(c\)</span> in her frame, so each slanted half is <span class="mes-tex">\(c\,\Delta t/2\)</span> long. Pythagoras on the right triangle gives</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \Big(\frac{c\,\Delta t}{2}\Big)^2 = L^2 + \Big(\frac{v\,\Delta t}{2}\Big)^2\)</span></div>
+<p>Collect the <span class="mes-tex">\(\Delta t\)</span> terms:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \frac{\Delta t^2}{4}\,(c^2 - v^2) = L^2 \quad\Longrightarrow\quad \Delta t = \frac{2L/c}{\sqrt{1 - v^2/c^2}}\)</span></div>
+<p>The numerator is exactly the proper time <span class="mes-tex">\(\Delta\tau = 2L/c\)</span>. So</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \boxed{\;\Delta t = \gamma\,\Delta\tau\;},\qquad \gamma = \frac{1}{\sqrt{1 - v^2/c^2}}\)</span></div>
+<p>The moving clock ticks slower by the factor <span class="mes-tex">\(\gamma\)</span>. Because every process in nature can be compared with a light clock (otherwise you could tell who is really moving, breaking the first idea), <em>all</em> clocks, hearts and chemical reactions slow down together.</p>
+
+<h2>What the Lorentz factor looks like</h2>
+<p><span class="mes-tex">\(\gamma\)</span> is 1 at rest and grows slowly at first, then explodes as <span class="mes-tex">\(v\)</span> approaches <span class="mes-tex">\(c\)</span>:</p>
+<div class="tu-table-wrap"><table class="tu-table te-tbl"><thead><tr><th>Speed</th><th><span class="mes-tex">\(\gamma\)</span></th><th>A year on the ship equals</th><th>Example</th></tr></thead><tbody>
+<tr><td>0.1 c</td><td>1.005</td><td>1.005 years at home</td><td>30,000 km/s</td></tr>
+<tr><td>0.5 c</td><td>1.155</td><td>1.15 years</td><td></td></tr>
+<tr><td>0.8 c</td><td>1.667</td><td>1.67 years</td><td>the 3-4-5 triangle: <span class="mes-tex">\(\gamma = 5/3\)</span></td></tr>
+<tr><td>0.9 c</td><td>2.294</td><td>2.29 years</td><td></td></tr>
+<tr><td>0.99 c</td><td>7.089</td><td>7.09 years</td><td></td></tr>
+<tr><td>0.999 c</td><td>22.37</td><td>22 years</td><td>cosmic-ray muons</td></tr>
+<tr><td>0.9999 c</td><td>70.71</td><td>71 years</td><td></td></tr>
+</tbody></table></div>
+<p class="te-note">Everyday speeds are tiny compared with <span class="mes-tex">\(c\)</span>: a jet at 900 km/h has <span class="mes-tex">\(\gamma - 1 \approx 3\times10^{-13}\)</span>, which is why we never notice. Airborne atomic clocks can, though (Hafele and Keating, 1971).</p>
+
+<h2>Proper time: the clock you carry</h2>
+<p>The quantity <span class="mes-tex">\(\Delta\tau\)</span> has a name: the <b>proper time</b> between two events is the time shown on a clock that travels from one to the other. For a speed that changes, add up tiny pieces:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \tau = \int \sqrt{1 - \frac{v(t)^2}{c^2}}\;dt\)</span></div>
+<p>It is the relativistic version of "distance travelled along a path": different paths between the same two events have different proper times, and the straight, steady path takes the <em>longest</em>. That one fact explains the twin paradox.</p>
+
+<h2>Derivation 2: length contraction</h2>
+<p>Take a trip of distance <span class="mes-tex">\(d\)</span> (measured by the people at home, e.g. the Earth and a star at rest relative to each other). At speed <span class="mes-tex">\(v\)</span> it takes <span class="mes-tex">\(t = d/v\)</span> for them. The traveller's clock runs slow, so she experiences</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \tau = \frac{t}{\gamma} = \frac{d}{\gamma v}\)</span></div>
+<p>From her point of view the star approaches at speed <span class="mes-tex">\(v\)</span> and arrives after <span class="mes-tex">\(\tau\)</span>. So <em>she</em> measures the distance as <span class="mes-tex">\(v\tau = d/\gamma\)</span>:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \boxed{\;L = \frac{L_0}{\gamma}\;}\)</span></div>
+<p>Time dilation and length contraction are the same effect seen from the two sides. This also resolves the muon puzzle: muons made 15 km up live only 2.2 microseconds, enough to travel 0.66 km at <span class="mes-tex">\(0.995c\)</span>, yet they reach the ground. In our frame their clocks run slow (<span class="mes-tex">\(\gamma \approx 10\)</span>: 22 microseconds, 6.6 km). In the muon's frame the atmosphere is squashed to a tenth of its height.</p>
+
+<h2>Worked example: Proxima Centauri at 0.9 c</h2>
+<p>Proxima is <span class="mes-tex">\(d = 4.25\)</span> light-years away. At <span class="mes-tex">\(v = 0.9c\)</span> (so <span class="mes-tex">\(\gamma = 2.294\)</span>):</p>
+<ul class="te-list">
+<li>Time on Earth: <span class="mes-tex">\(t = d/v = 4.25/0.9 = 4.72\)</span> years.</li>
+<li>Time on the ship: <span class="mes-tex">\(\tau = t/\gamma = 4.72/2.294 = 2.06\)</span> years.</li>
+<li>Distance the traveller measures: <span class="mes-tex">\(d/\gamma = 1.85\)</span> light-years (and <span class="mes-tex">\(1.85/0.9 = 2.06\)</span> years: consistent).</li>
+</ul>
+<p>You can check any of these in the <a href="/time-dilation?tab=calc">Calculator tab</a> of the simulator.</p>
+
+<h2>The twin paradox</h2>
+<p>Each twin sees the other's clock run slow, so who is younger when they meet again? The answer is the traveller, because the situation is not symmetric: to come back she must <b>turn round</b>, which means accelerating, and her path through space-time is not the steady straight one. Using the proper-time integral above, a path with turns always has less proper time than the straight path between the same two events (the stay-at-home twin's). Equivalently, she switches from one inertial frame to another, and "now" at home jumps ahead in her bookkeeping at the turn-round.</p>
+
+<h2>Derivation 3: travelling at a constant 1 g</h2>
+<p>A ship can accelerate at <span class="mes-tex">\(a = 1\,g \approx 9.8\)</span> m/s&sup2; for years, which gives Earth-like gravity and is the usual dream of fast interstellar travel. At large speeds you cannot just add <span class="mes-tex">\(a\,t\)</span> to the speed (it would pass <span class="mes-tex">\(c\)</span>). Describe the motion with <b>rapidity</b> <span class="mes-tex">\(\varphi\)</span>, defined by <span class="mes-tex">\(v = c\tanh\varphi\)</span> (so <span class="mes-tex">\(\gamma = \cosh\varphi\)</span>). Constant proper acceleration means the rapidity grows steadily with the ship's own clock:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \varphi = \frac{a\,\tau}{c}\)</span></div>
+<p>Integrating <span class="mes-tex">\(dx = v\,dt\)</span> and <span class="mes-tex">\(dt = \gamma\,d\tau\)</span> with <span class="mes-tex">\(\gamma = \cosh\varphi\)</span> and <span class="mes-tex">\(v\gamma = c\sinh\varphi\)</span> gives the time and distance covered from rest:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle t = \frac{c}{a}\sinh\frac{a\tau}{c},\qquad x = \frac{c^2}{a}\Big(\cosh\frac{a\tau}{c} - 1\Big)\)</span></div>
+<p>For a trip of distance <span class="mes-tex">\(d\)</span> that accelerates for the first half and brakes for the second half, the ship covers <span class="mes-tex">\(d/2\)</span> while speeding up. Solve <span class="mes-tex">\(\tfrac{d}{2} = \tfrac{c^2}{a}(\cosh\varphi - 1)\)</span> for the rapidity <span class="mes-tex">\(\varphi\)</span> reached at the half-way point:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle \cosh\varphi = 1 + \frac{a\,d}{2c^2} \quad\Longrightarrow\quad \tau_\text{total} = 2\,\frac{c}{a}\,\varphi = \boxed{\;\frac{2c}{a}\cosh^{-1}\!\Big(1 + \frac{a\,d}{2c^2}\Big)\;}\)</span></div>
+<p>This is the "constant 1 g" equation in the simulator's Twin trip tab. Numbers: Proxima (4.25 light-years) takes <b>3.5 years</b> on the ship; the Andromeda galaxy (2.5 million light-years) takes about <b>28.6 years</b> on the ship (while about 2.5 million years pass on Earth).</p>
+
+<h2>Why nothing with mass can reach c</h2>
+<p>The energy of a moving object of mass <span class="mes-tex">\(m\)</span> is <span class="mes-tex">\(E = \gamma m c^2\)</span>; at rest it is <span class="mes-tex">\(mc^2\)</span>. The extra is its kinetic energy:</p>
+<div class="te-eq"><span class="mes-tex">\(\displaystyle E_k = (\gamma - 1)\,m c^2 \;\approx\; \tfrac12 m v^2 \quad (v \ll c)\)</span></div>
+<p>For small speeds the series expansion <span class="mes-tex">\(\gamma \approx 1 + v^2/2c^2\)</span> gives back the familiar <span class="mes-tex">\(\tfrac12 m v^2\)</span>. But as <span class="mes-tex">\(v \to c\)</span>, <span class="mes-tex">\(\gamma \to \infty\)</span> and so does the energy needed. For one kilogram at <span class="mes-tex">\(0.9c\)</span> you need <span class="mes-tex">\((\gamma - 1)c^2 = 1.16\times10^{17}\)</span> J, about the energy a large power station makes in a year; at <span class="mes-tex">\(0.999c\)</span> it is 17 times more.</p>
+
+<h2>Common misunderstandings</h2>
+<ul class="te-list">
+<li><b>"The clock only looks slow because of the time light takes to arrive."</b> No: that Doppler effect is a separate, easily corrected effect. Time dilation is what remains after correcting for it.</li>
+<li><b>"It is only a measurement trick."</b> No: muon lifetimes, particle accelerators, atomic clocks on aircraft and GPS satellites all show the effect. GPS corrects for it (and for gravity, which acts the opposite way) every day.</li>
+<li><b>"Then I can go back in time by going fast."</b> No: speed lets you reach the future faster (fewer of your own ticks), never the past.</li>
+<li><b>"Nobody feels time slow down."</b> Right: on the ship everything runs together, so nothing feels different. You only notice by comparing with a clock that stayed home.</li>
+</ul>
+
+<h2>Try it yourself</h2>
+<p>Answers are hidden: work them out first, then check, or use the <a href="/time-dilation?tab=calc">simulator's calculator</a>.</p>
+<details class="te-q"><summary>1. At what speed is <span class="mes-tex">\(\gamma = 2\)</span>?</summary><p><span class="mes-tex">\(1/\sqrt{1 - \beta^2} = 2 \Rightarrow 1 - \beta^2 = 1/4 \Rightarrow \beta = \sqrt{3}/2 \approx 0.866\)</span>, so <span class="mes-tex">\(v = 0.866c\)</span>.</p></details>
+<details class="te-q"><summary>2. A ship travels at 0.6c for 10 years (Earth time). How old do the passengers get?</summary><p><span class="mes-tex">\(\gamma = 1.25\)</span>, so <span class="mes-tex">\(\tau = 10/1.25 = 8\)</span> years.</p></details>
+<details class="te-q"><summary>3. How long does a 12 light-year trip at 0.6c take on the ship?</summary><p>Earth time <span class="mes-tex">\(t = 12/0.6 = 20\)</span> years, so <span class="mes-tex">\(\tau = 20/\gamma = 20/1.25 = 16\)</span> years. (Check with contraction: <span class="mes-tex">\(12/1.25 = 9.6\)</span> light-years at 0.6c is 16 years.)</p></details>
+<details class="te-q"><summary>4. A muon has a rest lifetime of 2.2 microseconds and moves at 0.9994c (<span class="mes-tex">\(\gamma \approx 29\)</span>). How far does it travel in the lab?</summary><p>Lab lifetime <span class="mes-tex">\(\approx 29\times2.2 = 64\)</span> microseconds, distance <span class="mes-tex">\(\approx 0.9994\times 3\times10^8\times 64\times10^{-6}\approx 19\)</span> km (without dilation: 0.66 km).</p></details>
+<details class="te-q"><summary>5. Show that <span class="mes-tex">\(\gamma \approx 1 + \tfrac12 v^2/c^2\)</span> for small <span class="mes-tex">\(v\)</span>.</summary><p>Binomial expansion: <span class="mes-tex">\((1 - x)^{-1/2} \approx 1 + \tfrac12 x\)</span> with <span class="mes-tex">\(x = v^2/c^2\)</span>.</p></details>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>
