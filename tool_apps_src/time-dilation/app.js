@@ -434,5 +434,14 @@
 	}
 	var setPre1;
 	init();
+	/* phone reading aid: a floating pill jumps between the tool and the explanation under it (and back to where you were) */
+	(function () {
+		var seo = document.querySelector('#td .tu-seo, .tu-seo'), root = document.getElementById('td'); if (!seo || !root) return;
+		var b = document.createElement('button'), back = 0; b.type = 'button'; b.className = 'td-jump'; document.body.appendChild(b);
+		function inText() { return seo.getBoundingClientRect().top < window.innerHeight * 0.35; }
+		function paint() { var t = inText(); b.textContent = t ? '↑ Back to the tool' : '↓ Read the explanation'; b.hidden = !t && root.getBoundingClientRect().bottom < 0; }
+		b.onclick = function () { if (inText()) { window.scrollTo({ top: back || root.getBoundingClientRect().top + window.scrollY - 60, behavior: 'smooth' }); } else { back = window.scrollY; seo.scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
+		window.addEventListener('scroll', paint, { passive: true }); window.addEventListener('resize', paint); paint();
+	})();
 	window.__td = { st: st, tr: tr, lt: lt, R: R, get eH() { return eH; }, get eS() { return eS; }, step: function (n) { for (var i = 0; i < (n || 1); i++) stepClocks(0.1); } };
 })();

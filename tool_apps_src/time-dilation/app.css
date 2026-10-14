@@ -87,3 +87,15 @@
 	.td-ctl__rate button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
 	#td-c.td-bar {cursor:ew-resize;}
 	@media (max-width: 700px), (pointer: coarse) {.td-ctl__rate button {min-height:34px;padding:0.3em 0.8em;}.td-ctl input[type=range] {min-height:28px;}}
+	/* phones: the tab bar stays under the floating bar while you read, and a pill jumps between the tool and the explanation */
+	@media (max-width: 700px) {
+		.inner-container {overflow:clip !important;}
+		.td-tabs {position:sticky;top:60px;z-index:12;background:#fff;padding-top:0.3em;}
+		body.dark-mode #td .td-tabs {background:#1a1a1a;}
+		.tu-seo {scroll-margin-top:120px;} #td {scroll-margin-top:60px;}
+	}
+	.td-jump {display:none;}
+	@media (max-width: 700px) {
+		.td-jump {display:block;position:fixed;right:12px;bottom:14px;z-index:40;font:inherit;font-size:0.95em;font-weight:700;padding:0.7em 1.1em;border-radius:2em;border:0;background:var(--accent);color:#fff;box-shadow:0 3px 12px rgba(0,0,0,0.35);cursor:pointer;}
+		.td-jump[hidden] {display:none;}
+	}

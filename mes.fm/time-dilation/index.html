@@ -386,6 +386,18 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.td-ctl__rate button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
 	#td-c.td-bar {cursor:ew-resize;}
 	@media (max-width: 700px), (pointer: coarse) {.td-ctl__rate button {min-height:34px;padding:0.3em 0.8em;}.td-ctl input[type=range] {min-height:28px;}}
+	/* phones: the tab bar stays under the floating bar while you read, and a pill jumps between the tool and the explanation */
+	@media (max-width: 700px) {
+		.inner-container {overflow:clip !important;}
+		.td-tabs {position:sticky;top:60px;z-index:12;background:#fff;padding-top:0.3em;}
+		body.dark-mode #td .td-tabs {background:#1a1a1a;}
+		.tu-seo {scroll-margin-top:120px;} #td {scroll-margin-top:60px;}
+	}
+	.td-jump {display:none;}
+	@media (max-width: 700px) {
+		.td-jump {display:block;position:fixed;right:12px;bottom:14px;z-index:40;font:inherit;font-size:0.95em;font-weight:700;padding:0.7em 1.1em;border-radius:2em;border:0;background:var(--accent);color:#fff;box-shadow:0 3px 12px rgba(0,0,0,0.35);cursor:pointer;}
+		.td-jump[hidden] {display:none;}
+	}
 
 
 	@media print {
@@ -485,6 +497,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .td-eq__n{color:#9a9aa2}
 	body.dark-mode .td-fig figcaption{color:#9a9aa2}
 	body.dark-mode .td-ctl__rate button{border:1px solid #3b455e}
+	body.dark-mode .td-tabs{background:#1a1a1a}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -913,7 +926,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/metric-tensor"><img class="mes-aside__img mes-aside__img--logo" src="/metric-tensor/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Metric Tensor Calculator: Christoffel, Riemann and Einstein Tensors</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/reynolds-number-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/reynolds-number-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Reynolds Number Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/metric-tensor"><img class="mes-aside__img mes-aside__img--logo" src="/metric-tensor/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Metric Tensor Calculator: Christoffel, Riemann and Einstein Tensors</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/reynolds-number-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/reynolds-number-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Reynolds Number Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -963,7 +976,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/time-dilation/js/time-dilation.js?v=2" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/time-dilation/js/time-dilation.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

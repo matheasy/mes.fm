@@ -245,7 +245,7 @@ APPS = {
     "time-dilation": dict(title="MES Time Dilation Simulator", page_title="Time Dilation Calculator and Simulator: How Much Would You Age?",
                           tag="Fast ships, slow clocks.", accent="#be185d", dark="#9d174d", tint="#fce7f3",
                           desc="A free time dilation simulator and calculator: watch a traveller's clock, heartbeat and ageing slow down as a ship approaches the speed of light, see the light clock that explains why, fly the twin paradox at constant speed or a steady 1 g with a spacetime diagram, and calculate how much you would age.",
-                          js_v="2"),
+                          js_v="3"),
     # Photo Editor: layers, selections, text labels, arrows / callouts / step badges, retouch, adjustments, PSD, all in the browser (canvas). lib.js = MESPixel (pure pixel maths, node-tested:
     # tool_apps_src/photo-editor-tests.js), js_parts = engine (core.js layers / history / selection) + tools + dialogs; lib_from = image-converter's lib (MESImg: formats, zip). Wide page, always-dark workspace.
     "photo-editor": dict(title="MES Photo Editor", page_title="Free Online Photo Editor with Layers",
