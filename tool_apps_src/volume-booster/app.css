@@ -8,3 +8,4 @@ body.dark-mode #vb .vb-btns a.tu-btn--ghost { color: #ddd; }
 #vb .vb-steps li, #vb .vb-list li { margin: 0.5em 0; }
 #vb kbd { display: inline-block; min-width: 1.6em; padding: 0.1em 0.5em; border: 1px solid #b9c0cc; border-bottom-width: 2px; border-radius: 5px; background: #f3f5f8; font: 600 0.9em/1.3 system-ui, sans-serif; text-align: center; }
 body.dark-mode #vb kbd { background: #2c2f34; border-color: #555b66; color: #f0f0f0; }
+	#vb a.tu-btn span {color:inherit;}   /* the version number inside the download button was dark grey on the coloured button */

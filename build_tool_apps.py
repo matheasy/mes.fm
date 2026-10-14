@@ -115,7 +115,7 @@ APPS = {
     "contraction-timer": dict(title="MES Contraction Timer", page_title="Contraction Timer for Labour (5-1-1 Rule)",
                               tag="One big button to time contractions.", accent="#c026d3", dark="#8f1b9f", tint="#f7e1fa",
                               desc="Free contraction timer: tap once when a contraction starts and again when it ends. See how long each lasted, how far apart they are, your average over the last hour and an alert when they follow the 5-1-1 rule. Saved on your phone, keeps the screen on, no sign-up.",
-                              js_v="1"),
+                              js_v="2"),
     "exif-viewer": dict(title="MES EXIF Viewer", page_title="EXIF Viewer: Photo Metadata, GPS Location and AI Flags",
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",
                         desc="Free EXIF viewer: drop a photo to see the camera, date, settings, GPS location, editing software and AI / Content Credentials flags hidden in it, and save a clean copy with all metadata removed. Private: the photo never leaves your browser.",
@@ -132,13 +132,13 @@ APPS = {
     "baby-feeding-log": dict(title="MES Baby Feeding Log", page_title="Baby Feeding Log and Breastfeeding Timer",
                           tag="One-tap feeds, bottles and diapers.", accent="#d97706", dark="#a85b04", tint="#fdebd0",
                           desc="Free baby feeding log and breastfeeding timer: tap left or right to time each feed, get a reminder of which side is next, log bottles, pumping and wet or dirty diapers, and see today's totals and the gap between feeds. Private, saved on your phone, no sign-up.",
-                          js_v="1"),
+                          js_v="2"),
     # Archive (2026-10-14): one address -> Wayback Machine, archive.today, Ghostarchive, Megalodon, Arquivo.pt, RemovePaywall, ArcHive (Hive blockchain) + the user's own sites. lib.js = engine table (shared with the
     # MES Archive extension in mes.fm/archive/extension via build_archive_extension.py), tests: node tool_apps_src/archive-tests.js.
     "archive": dict(title="MES Archive", page_title="Archive Any Web Page: Wayback Machine, archive.today and More",
                     tag="Save or find any page on every web archive.", accent="#1e3a8a", dark="#152a66", tint="#e3e9fb",
                     desc="Free web archive tool: paste an address and open the Wayback Machine, archive.today, Ghostarchive, Megalodon and more at once to save a copy or find old ones, add your own archive sites, send it to the Hive blockchain, and get the one-click MES Archive browser extension.",
-                    js_v="1"),
+                    js_v="4"),
     "days-between-dates-calculator": dict(title="MES Days Between Dates Calculator", page_title="Days Between Dates Calculator",
                                           tag="Days, weeks, months, hours and business days between two dates.", accent="#2f7d32", dark="#1f5a23", tint="#e4f2e4",
                                           desc="Free days between dates calculator: count the days, weeks, months, years, hours, minutes and seconds between any two dates, with optional end-date inclusion, business days (custom weekends and holidays), time of day and shareable links.",
@@ -324,7 +324,7 @@ APPS = {
     "reynolds-number-calculator": dict(title="MES Reynolds Number Calculator", page_title="Reynolds Number Calculator",
                             tag="Laminar or turbulent? Find out.", accent="#0e7490", dark="#155e75", tint="#e0f4f8",
                             desc="Free Reynolds number calculator: enter the fluid, speed and size in any units to get Re, whether the flow is laminar or turbulent, pipe friction and pressure drop, drag and vortex-shedding frequency. Or solve for the speed or size that gives a target Re.",
-                            js_v="2"),
+                            js_v="3"),
     # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
@@ -451,30 +451,30 @@ APPS = {
     "videospeed": dict(tools_extra=EXT_TAB, title="MES Video Speed Controller", page_title="Video Speed Controller",
                        tag="Play any video faster or slower.", accent="#d9480f", dark="#a8360a", tint="#fdece3",
                        desc="Free MES Video Speed Controller browser extension for Chrome, Brave and Edge: speed up or slow down any HTML5 video from 0.1x to 16x with keyboard shortcuts or an on-video control. Private, no tracking, with install steps.",
-                       js_v="1"),
+                       js_v="2"),
     # Read Aloud: download + install page of MES's own text-to-speech browser extension with on-page word highlighting (source in
     # mes.fm/read-aloud/extension/, zipped by build_read_aloud_extension.py, which also copies the Speed Reader's lib.js into it as srlib.js;
     # tests node tool_apps_src/read-aloud-tests.js). app.js only fills in the version from the extension's manifest.
     "read-aloud": dict(tools_extra=EXT_TAB, title="MES Read Aloud", page_title="Read Aloud",
                        tag="Listen to any page with the words highlighted.", accent="#15803d", dark="#105f2c", tint="#e3f4ea",
                        desc="Free MES Read Aloud browser extension for Chrome, Brave and Edge: reads any web page or selected text aloud and highlights the word and sentence being read, right on the page. Private, no tracking, setups for different voices and speeds.",
-                       js_v="1"),
+                       js_v="2"),
     # Dark Mode: download + install page of MES's own dark / light mode browser extension (source in mes.fm/dark-mode/extension/, zipped by
     # build_dark_mode_extension.py; tests node tool_apps_src/dark-mode-tests.js). app.js only fills in the version from the extension's manifest.
     "dark-mode": dict(tools_extra=EXT_TAB, title="MES Dark Mode", page_title="Dark Mode",
                       tag="Dark mode (or light mode) for any website.", accent="#4338ca", dark="#312e81", tint="#e9e8fb",
                       desc="Free MES Dark Mode browser extension for Chrome, Brave and Edge: dark mode for any website, or light mode for dark ones, with per-site control, a schedule, setups and brightness, sepia and contrast tweaks. Private, no tracking.",
-                      js_v="1"),
+                      js_v="2"),
     # Volume Booster / Text Size: download + install pages of MES's own browser extensions (sources in mes.fm/<slug>/extension/, zipped by
     # build_<name>_extension.py; tests node tool_apps_src/<name>-tests.js). app.js only fills in the version from the extension's manifest.
     "volume-booster": dict(tools_extra=EXT_TAB, title="MES Volume Booster", page_title="Volume Booster",
                            tag="Make quiet videos louder, up to 600%.", accent="#b45309", dark="#7c3a06", tint="#fdf0e1",
                            desc="Free MES Volume Booster browser extension for Chrome, Brave and Edge: make quiet videos (YouTube and more) louder than the site allows, up to 600%, with a soft limiter, presets, keyboard shortcuts and per-site memory. Private, no tracking.",
-                           js_v="1"),
+                           js_v="2"),
     "text-size": dict(tools_extra=EXT_TAB, title="MES Text Size", page_title="Text Size",
                       tag="Bigger or smaller text on any website.", accent="#0e7490", dark="#0b5568", tint="#e3f4f8",
                       desc="Free MES Text Size browser extension for Chrome, Brave and Edge: A- and A+ for any website, changing only the text (not pictures or layout), remembered per site, from 50% to 300%. Private, no tracking.",
-                      js_v="1"),
+                      js_v="2"),
     "go": dict(title="MES Short Links", page_title="Short Links",
                tag="Every mes.fm short link, searchable.", accent="#0e8a6a", dark="#0a6650", tint="#e0f4ee",
                desc="Every MES short link in one searchable list: mes.fm/pomodoro, mes.fm/physics-playlist and more. Filter by category or topic, copy any short link, and get the line for a new one.",

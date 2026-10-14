@@ -19,3 +19,5 @@
 	@media (max-width:560px) {.ar-go {width:100%;}}
 	body.dark-mode #ar .ar-eng {background:#262626;border-color:#444;} body.dark-mode #ar .ar-eng.on {background:#2a2f36;border-color:var(--accent);} body.dark-mode #ar .ar-eng__n {color:#eee;}
 	body.dark-mode #ar .ar-queue {background:#3a2c10;border-color:#7a5a1a;color:#f3dca8;} body.dark-mode #ar kbd {background:#333;color:#eee;border-color:#666;}
+	#ar a.tu-btn {text-decoration:none !important;} #ar a.tu-btn--primary, #ar a.tu-btn--primary:hover {color:#fff;}   /* the shared ".tu a" link colour made the download button text the same blue as its background */
+	#ar a.tu-btn span {color:inherit;}

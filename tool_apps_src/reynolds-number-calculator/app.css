@@ -11,3 +11,4 @@
 	body.dark-mode #re .re-zone-0 {fill:#1d4a66;} body.dark-mode #re .re-zone-1 {fill:#6b5a1c;} body.dark-mode #re .re-zone-2 {fill:#7a4a1c;} body.dark-mode #re .re-zone-3 {fill:#7a2a2a;}
 	body.dark-mode #re .re-zl {fill:#e8ecf2;} body.dark-mode #re .re-ax-t {fill:#a0a8b3;} body.dark-mode #re .re-mark {stroke:#fff;} body.dark-mode #re .re-mark-t {fill:#fff;}
 	#re [hidden] {display:none !important;}   /* .tu-row / .tu-field set display:flex, which beat the hidden attribute */
+	#re a.tu-btn {text-decoration:none !important;} #re a.tu-btn--primary, #re a.tu-btn--primary:hover {color:#fff;}

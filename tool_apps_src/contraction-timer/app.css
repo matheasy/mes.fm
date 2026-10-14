@@ -15,3 +15,4 @@
 	.ct-disc {margin-top:1.2em;}
 	body.dark-mode #ct .ct-status {color:#eee;} body.dark-mode #ct .ct-alert {background:#3a1118;color:#ffc9d1;border-color:#e11d48;} body.dark-mode #ct .tu-table button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;}
 	body.dark-mode #ct .ct-btn.on {background:#3a3f48;}
+	body.dark-mode #ct .ct-btn, body.dark-mode #ct .ct-btn * {color:#fff !important;} body.dark-mode #ct .ct-btn {background:#a21caf !important;} body.dark-mode #ct .ct-btn.on {background:#3a3f48 !important;}
