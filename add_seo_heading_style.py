@@ -14,6 +14,7 @@ body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 
 body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
 body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
 body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}   /* the page reset made superscripts as big as the text, e.g. 10^-13 */
 .tu div[class$="-eq"] {overflow-y:hidden;}   /* equation boxes: overflow-x:auto made overflow-y auto too, so a tall formula showed a vertical scrollbar */
 """
 BLOCK = '<style id="seo-headings">\n' + CSS + '</style>\n'
@@ -27,7 +28,7 @@ def main():
         except Exception: continue
         if 'class="tu-seo"' not in s or "</head>" not in s: continue
         if 'id="seo-headings"' in s:
-            if 'overflow-y:hidden' in s.split('id="seo-headings"', 1)[1].split("</style>", 1)[0]: skipped += 1; continue
+            if '.tu sup' in s.split('id="seo-headings"', 1)[1].split("</style>", 1)[0]: skipped += 1; continue
             n += 1                       # an older version of the block: replace it
             if verbose: print("  update", rel)
             if apply: p.write_text(re.sub(r'<style id="seo-headings">.*?</style>\n', lambda m: BLOCK, s, count=1, flags=re.S), encoding="utf-8")
