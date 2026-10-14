@@ -37,15 +37,37 @@
 		}
 		return pts;
 	}
-	/* field lines for a set of charges: from every positive charge outward (or, with only negative charges, backwards from them), a number of lines proportional to |q| */
+	/* field lines for a set of charges. Lines start on a small ring round the charges: from every positive charge along the field, and, when there
+	   are negative charges too, ALSO backwards from every negative charge (reversed, so every returned line runs the way the field points). Starting
+	   from both ends is what fills the region where lines arrive from far away (the underside of a dipole), which a one-ended trace leaves empty. With both
+	   signs each charge gets half the usual number of lines so the density is unchanged. A starting point that falls inside another charge (stacked charges)
+	   is skipped, so no line is wasted. */
 	function fieldLines(ch, mode, box, nMax, stopR, h) {
-		var lines = [], pos = ch.filter(function (c) { return c.q > 0; }), src = pos.length ? pos : ch.filter(function (c) { return c.q < 0; }), dir = pos.length ? 1 : -1, qmax = 0, i, k;
-		src.forEach(function (c) { if (Math.abs(c.q) > qmax) qmax = Math.abs(c.q); });
-		var maxSteps = Math.round(4 * Math.hypot(box[2] - box[0], box[3] - box[1]) / h);
-		src.forEach(function (c, ci) {
-			var n = Math.max(4, Math.round(nMax * Math.abs(c.q) / qmax)), phase = 0.37 + ci * 0.21;
-			for (k = 0; k < n; k++) { var a = phase + k * TAU / n; lines.push(traceLine(ch, c.x + 1.6 * stopR * Math.cos(a), c.y + 1.6 * stopR * Math.sin(a), dir, mode, box, h, maxSteps, stopR)); }
-		});
+		var lines = [], pos = ch.filter(function (c) { return c.q > 0; }), neg = ch.filter(function (c) { return c.q < 0; }), both = pos.length && neg.length, qmax = 0;
+		ch.forEach(function (c) { if (Math.abs(c.q) > qmax) qmax = Math.abs(c.q); });
+		var maxSteps = Math.round(4 * Math.hypot(box[2] - box[0], box[3] - box[1]) / h), r0 = 1.6 * stopR;
+		function seeds(c, ci, n) {
+			var cand = [], m = Math.max(16, 5 * n), phase = 0.37 + ci * 0.21, k, a, x, y;
+			for (k = 0; k < m; k++) {
+				a = phase + k * TAU / m; x = c.x + r0 * Math.cos(a); y = c.y + r0 * Math.sin(a);
+				if (!ch.some(function (o) { return o !== c && Math.hypot(x - o.x, y - o.y) < 1.1 * stopR; })) cand.push([x, y]);
+			}
+			if (cand.length <= n) return cand;
+			var out = []; for (k = 0; k < n; k++) out.push(cand[Math.floor((k + 0.5) * cand.length / n)]);
+			return out;
+		}
+		function family(src, dir, base) {
+			src.forEach(function (c, ci) {
+				var n = Math.max(3, Math.round(nMax * Math.abs(c.q) / qmax * (both ? 0.5 : 1)));
+				seeds(c, ci + base, n).forEach(function (sd) {
+					var l = traceLine(ch, sd[0], sd[1], dir, mode, box, h, maxSteps, stopR);
+					if (dir < 0) { var r = []; for (var i = l.length - 2; i >= 0; i -= 2) r.push(l[i], l[i + 1]); l = r; }   /* a backwards trace is reversed so the line runs along the field */
+					lines.push(l);
+				});
+			});
+		}
+		family(pos, 1, 0);
+		if (neg.length) family(neg, -1, pos.length);
 		return lines;
 	}
 	/* marching squares: for each level, segments [x1, y1, x2, y2, ...] of fn(x, y) = level on a regular grid over box (the grid is sampled once) */

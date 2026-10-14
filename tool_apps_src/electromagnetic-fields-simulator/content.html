@@ -12,12 +12,12 @@
 		<section data-panel="es" role="tabpanel">
 			<p class="tu-note em-lead">Place charges and see the electric field they make: <b>field lines</b> leave positive charges and end on negative ones, <b>equipotentials</b> are the lines of equal voltage. Drag a charge to move it. Hover anywhere to read the field and the voltage. Draw a <b>Gauss sphere</b> to check Gauss's law by adding up the field on its surface.</p>
 			<div class="em-toolrow" id="em-es-tools" role="group" aria-label="Tool">
-				<button type="button" data-t="pos" aria-pressed="true">＋ Add positive</button><button type="button" data-t="neg" aria-pressed="false">− Add negative</button><button type="button" data-t="move" aria-pressed="false">✋ Move / select</button><button type="button" data-t="test" aria-pressed="false">● Drop a test charge</button>
+				<button type="button" data-t="pos" aria-pressed="true">＋ Add positive</button><button type="button" data-t="neg" aria-pressed="false">− Add negative</button><button type="button" data-t="move" aria-pressed="false">✋ Move / select</button><button type="button" data-t="test" aria-pressed="false">● Drop a test charge</button><button type="button" data-t="sens" aria-pressed="false">📍 Place a sensor</button>
 			</div>
 			<div class="em-wrap"><div class="em-stage" id="em-es-stage">
 				<canvas id="em-es-c" tabindex="0" role="img" aria-label="Electric field of the placed charges. Click to add a charge, drag a charge to move it."></canvas>
 				<div class="em-badge" id="em-es-badge"></div>
-				<div class="em-run"><button type="button" id="em-es-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="em-es-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-es-full" title="Full screen" aria-label="Full screen">⛶</button></div>
+				<div class="em-run"><button type="button" id="em-es-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="em-es-reset" title="Back to the example you started from">↺ Reset</button><button type="button" id="em-es-clr2" title="Remove every charge, sensor and test charge">🗑 Clear</button><button type="button" id="em-es-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="em-es-full" title="Full screen" aria-label="Full screen">⛶</button></div>
 			</div>
 			<div class="em-readouts">
 				<div class="em-ro"><span>Pointer</span><b id="em-es-p">–</b><small>position in metres</small></div>
@@ -34,7 +34,7 @@
 				</div>
 				<div class="em-checks">
 					<label class="em-check"><input type="checkbox" id="em-es-lines" checked> Field lines</label>
-					<label class="em-check"><input type="checkbox" id="em-es-arrows"> Field arrows</label>
+					<label class="em-check"><input type="checkbox" id="em-es-arrows" checked> Field arrows</label>
 					<label class="em-check"><input type="checkbox" id="em-es-eq"> Equipotentials</label>
 					<label class="em-check"><input type="checkbox" id="em-es-gauss"> Gauss surface</label>
 				</div>
@@ -42,6 +42,7 @@
 					<div class="tu-field tu-field--sm"><span class="tu-label">Colour the plane by</span><select id="em-es-col" class="tu-select" aria-label="Colour map"><option value="none">Nothing</option><option value="v">Voltage</option><option value="e">Field strength</option></select></div>
 					<div class="tu-field tu-field--sm"><span class="tu-label">Kind of charge</span><select id="em-es-mode" class="tu-select" aria-label="Charge kind"><option value="3d">Point charges (1/r², real 3D)</option><option value="2d">Long line charges (1/r, 2D)</option></select></div>
 				</div>
+				<p class="tu-note em-tip">Tip: click a charge (or sensor) to select it, then press <kbd>Backspace</kbd> or <kbd>Delete</kbd> to remove it. Drag to move it.</p>
 				<div class="em-sel" id="em-es-sel" hidden>
 					<span>Selected charge: <b id="em-es-sel-q"></b></span>
 					<label class="em-check">its size <input type="range" id="em-es-selq" min="-10" max="10" step="0.1" style="width:10em"> <span class="tu-note">μC</span></label>
@@ -50,6 +51,7 @@
 				</div>
 				<div class="em-sel">
 					<span class="em-note2" id="em-es-tc-n">Test charge: 1 nC, 1 g. Click with the test-charge tool to drop one at rest and watch it move.</span>
+					<button type="button" class="tu-btn tu-btn--ghost" id="em-es-sclear">Remove sensors</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="em-es-tclear">Clear test charges</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="em-es-clear">Remove all charges</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="em-es-link">🔗 Copy link</button>
