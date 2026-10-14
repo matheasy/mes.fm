@@ -128,7 +128,7 @@ APPS = {
     "baby-growth-percentile-calculator": dict(title="MES Baby Growth Percentile Calculator", page_title="Baby Growth Percentile Calculator (WHO Weight, Length, Head)",
                           tag="Weight, length and head percentiles on the WHO chart.", accent="#15803d", dark="#0f5f2c", tint="#dcf3e3", src="baby-growth", js_path="baby-growth/js/baby-growth.js", js_parts=["data.js"],
                           desc="Free baby growth percentile calculator using the WHO Child Growth Standards: enter age, weight, length and head circumference to see the percentile and z-score on the growth chart, corrected age for premature babies, and a private growth log that shows your baby's trend.",
-                          js_v="2"),
+                          js_v="3"),
     "baby-feeding-log": dict(title="MES Baby Feeding Log", page_title="Baby Feeding Log and Breastfeeding Timer",
                           tag="One-tap feeds, bottles and diapers.", accent="#d97706", dark="#a85b04", tint="#fdebd0",
                           desc="Free baby feeding log and breastfeeding timer: tap left or right to time each feed, get a reminder of which side is next, log bottles, pumping and wet or dirty diapers, and see today's totals and the gap between feeds. Private, saved on your phone, no sign-up.",

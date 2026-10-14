@@ -8,13 +8,22 @@
 	.gr-pct {font-size:2em !important;} .gr-disc {margin-top:1.2em;}
 	@media (max-width:560px) {.gr-pair .tu-input {width:5.5em;}}
 	body.dark-mode #gr .gr-chart .l {stroke:#64748b;} body.dark-mode #gr .gr-chart .l50 {stroke:#cbd5e1;} body.dark-mode #gr .gr-chart .t {fill:#a0a8b3;} body.dark-mode #gr .gr-chart .ax {stroke:#475569;} body.dark-mode #gr .gr-chart .pt {stroke:#1a1a1a;} body.dark-mode #gr .gr-chart .lp {fill:#1a1a1a;} body.dark-mode #gr .gr-trend b.warn {color:#ff9a92;}
-	/* spacing: the shared .tu-row has no row gap and its display:flex overrode the hidden attribute (the age row and the lb / oz boxes showed in the wrong mode) */
+	/* compact layout: inputs on the left, the answer beside them on wide screens (stacked on phones) */
 	#gr [hidden] {display:none !important;}
-	#gr .tu-row {gap:0.9em 1.5em;margin-bottom:1em;}
-	#gr .tu-label {display:block;margin-bottom:0.4em;}
-	#gr .tu-field {min-width:0;} #gr .tu-seg {display:inline-flex;}
-	#gr .gr-top .tu-field {flex:0 1 auto;}
-	#gr .gr-h {margin:1.3em 0 0.6em;}
-	#gr #gr-units {margin-top:0.4em;}
-	#gr .gr-pair {flex-wrap:nowrap;} #gr .gr-pair .tu-input {width:100%;max-width:11em;}
-	#gr #gr-agev {max-width:7em;} #gr .gr-pair .tu-select {flex:1 1 8em;}
+	#gr .gr-layout {display:grid;grid-template-columns:minmax(0,1fr);gap:1em;align-items:start;}
+	@media (min-width:1100px) {#gr .gr-layout {grid-template-columns:minmax(0,30em) minmax(0,1fr);} #gr .gr-res {position:sticky;top:4.5em;}}
+	#gr .gr-in {padding:0.9em 1em;}
+	#gr .gr-line {display:flex;flex-wrap:wrap;gap:0.7em 1.4em;align-items:flex-end;margin-bottom:0.8em;} #gr .gr-line:last-child {margin-bottom:0;}
+	#gr .gr-f {min-width:0;} #gr .tu-label {display:block;margin-bottom:0.3em;}
+	#gr .tu-seg {display:inline-flex;} #gr .tu-seg button {padding:0.4em 0.9em;}
+	#gr .gr-pair {display:flex;gap:0.35em;align-items:center;flex-wrap:nowrap;} #gr .gr-pair span {color:#6a7280;font-size:0.9em;} #gr .gr-pair i {color:#9aa3b0;font-size:0.8em;font-style:normal;margin:0 0.2em;}
+	#gr .gr-num {width:4.6em;flex:none;padding:0.4em 0.5em;} #gr .gr-date {width:10.5em;flex:none;} #gr .gr-unit {width:auto;flex:none;padding:0.4em 0.5em;}
+	#gr .gr-earlynote {flex:1 1 12em;margin:0;max-width:20em;line-height:1.35;}
+	#gr .gr-h {margin:1em 0 0.5em;font-size:1em;} #gr .gr-meas {gap:0.8em 1.2em;}
+	#gr .gr-msg:empty {display:none;} #gr .gr-empty {padding:1.2em;border:1px dashed #c3c9d2;border-radius:0.55em;text-align:center;}
+	#gr .gr-res .tu-stats {margin:0 0 0.7em;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));} #gr .gr-acts {margin:0 0 0.4em;gap:0.5em;}
+	.gr-chart svg {width:100%;height:auto;display:block;margin-top:0.6em;} .gr-chart .l {fill:none;stroke:#94a3b8;stroke-width:1.2;} .gr-chart .l50 {stroke:#334155;stroke-width:2;} .gr-chart .t {font-size:11px;fill:#6a7280;} .gr-chart .ax {stroke:#cbd5e1;stroke-width:1;}
+	.gr-chart .pt {fill:var(--accent);stroke:#fff;stroke-width:2;} .gr-chart .lp {fill:#fff;stroke:var(--accent);stroke-width:2;} .gr-chart .tr {fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;}
+	.gr-trend {margin-bottom:0.7em;line-height:1.5;} .gr-trend b.warn {color:#b3261e;} .gr-pct {font-size:1.8em !important;} .gr-disc {margin-top:1.2em;}
+	@media (max-width:560px) {#gr .gr-num {width:4em;} #gr .gr-date {width:9.5em;} #gr .gr-pair {flex-wrap:wrap;}}
+	body.dark-mode #gr .gr-chart .l {stroke:#64748b;} body.dark-mode #gr .gr-chart .l50 {stroke:#cbd5e1;} body.dark-mode #gr .gr-chart .t {fill:#a0a8b3;} body.dark-mode #gr .gr-chart .ax {stroke:#475569;} body.dark-mode #gr .gr-chart .pt {stroke:#1a1a1a;} body.dark-mode #gr .gr-chart .lp {fill:#1a1a1a;} body.dark-mode #gr .gr-trend b.warn {color:#ff9a92;} body.dark-mode #gr .gr-empty {border-color:#555;}

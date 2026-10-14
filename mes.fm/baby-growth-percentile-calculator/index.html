@@ -307,16 +307,25 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gr-pct {font-size:2em !important;} .gr-disc {margin-top:1.2em;}
 	@media (max-width:560px) {.gr-pair .tu-input {width:5.5em;}}
 	body.dark-mode #gr .gr-chart .l {stroke:#64748b;} body.dark-mode #gr .gr-chart .l50 {stroke:#cbd5e1;} body.dark-mode #gr .gr-chart .t {fill:#a0a8b3;} body.dark-mode #gr .gr-chart .ax {stroke:#475569;} body.dark-mode #gr .gr-chart .pt {stroke:#1a1a1a;} body.dark-mode #gr .gr-chart .lp {fill:#1a1a1a;} body.dark-mode #gr .gr-trend b.warn {color:#ff9a92;}
-	/* spacing: the shared .tu-row has no row gap and its display:flex overrode the hidden attribute (the age row and the lb / oz boxes showed in the wrong mode) */
+	/* compact layout: inputs on the left, the answer beside them on wide screens (stacked on phones) */
 	#gr [hidden] {display:none !important;}
-	#gr .tu-row {gap:0.9em 1.5em;margin-bottom:1em;}
-	#gr .tu-label {display:block;margin-bottom:0.4em;}
-	#gr .tu-field {min-width:0;} #gr .tu-seg {display:inline-flex;}
-	#gr .gr-top .tu-field {flex:0 1 auto;}
-	#gr .gr-h {margin:1.3em 0 0.6em;}
-	#gr #gr-units {margin-top:0.4em;}
-	#gr .gr-pair {flex-wrap:nowrap;} #gr .gr-pair .tu-input {width:100%;max-width:11em;}
-	#gr #gr-agev {max-width:7em;} #gr .gr-pair .tu-select {flex:1 1 8em;}
+	#gr .gr-layout {display:grid;grid-template-columns:minmax(0,1fr);gap:1em;align-items:start;}
+	@media (min-width:1100px) {#gr .gr-layout {grid-template-columns:minmax(0,30em) minmax(0,1fr);} #gr .gr-res {position:sticky;top:4.5em;}}
+	#gr .gr-in {padding:0.9em 1em;}
+	#gr .gr-line {display:flex;flex-wrap:wrap;gap:0.7em 1.4em;align-items:flex-end;margin-bottom:0.8em;} #gr .gr-line:last-child {margin-bottom:0;}
+	#gr .gr-f {min-width:0;} #gr .tu-label {display:block;margin-bottom:0.3em;}
+	#gr .tu-seg {display:inline-flex;} #gr .tu-seg button {padding:0.4em 0.9em;}
+	#gr .gr-pair {display:flex;gap:0.35em;align-items:center;flex-wrap:nowrap;} #gr .gr-pair span {color:#6a7280;font-size:0.9em;} #gr .gr-pair i {color:#9aa3b0;font-size:0.8em;font-style:normal;margin:0 0.2em;}
+	#gr .gr-num {width:4.6em;flex:none;padding:0.4em 0.5em;} #gr .gr-date {width:10.5em;flex:none;} #gr .gr-unit {width:auto;flex:none;padding:0.4em 0.5em;}
+	#gr .gr-earlynote {flex:1 1 12em;margin:0;max-width:20em;line-height:1.35;}
+	#gr .gr-h {margin:1em 0 0.5em;font-size:1em;} #gr .gr-meas {gap:0.8em 1.2em;}
+	#gr .gr-msg:empty {display:none;} #gr .gr-empty {padding:1.2em;border:1px dashed #c3c9d2;border-radius:0.55em;text-align:center;}
+	#gr .gr-res .tu-stats {margin:0 0 0.7em;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));} #gr .gr-acts {margin:0 0 0.4em;gap:0.5em;}
+	.gr-chart svg {width:100%;height:auto;display:block;margin-top:0.6em;} .gr-chart .l {fill:none;stroke:#94a3b8;stroke-width:1.2;} .gr-chart .l50 {stroke:#334155;stroke-width:2;} .gr-chart .t {font-size:11px;fill:#6a7280;} .gr-chart .ax {stroke:#cbd5e1;stroke-width:1;}
+	.gr-chart .pt {fill:var(--accent);stroke:#fff;stroke-width:2;} .gr-chart .lp {fill:#fff;stroke:var(--accent);stroke-width:2;} .gr-chart .tr {fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;}
+	.gr-trend {margin-bottom:0.7em;line-height:1.5;} .gr-trend b.warn {color:#b3261e;} .gr-pct {font-size:1.8em !important;} .gr-disc {margin-top:1.2em;}
+	@media (max-width:560px) {#gr .gr-num {width:4em;} #gr .gr-date {width:9.5em;} #gr .gr-pair {flex-wrap:wrap;}}
+	body.dark-mode #gr .gr-chart .l {stroke:#64748b;} body.dark-mode #gr .gr-chart .l50 {stroke:#cbd5e1;} body.dark-mode #gr .gr-chart .t {fill:#a0a8b3;} body.dark-mode #gr .gr-chart .ax {stroke:#475569;} body.dark-mode #gr .gr-chart .pt {stroke:#1a1a1a;} body.dark-mode #gr .gr-chart .lp {fill:#1a1a1a;} body.dark-mode #gr .gr-trend b.warn {color:#ff9a92;} body.dark-mode #gr .gr-empty {border-color:#555;}
 
 
 	@media print {
@@ -356,48 +365,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #15803d;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #15803d; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(21,128,61,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
 
 	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
 	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
@@ -444,7 +411,52 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .gr-chart .ax{stroke:#293747}
 	body.dark-mode .gr-chart .pt{stroke:#333333}
 	body.dark-mode .gr-trend b.warn{color:#e87973}
+	body.dark-mode #gr .gr-pair span{color:#9a9da3}
+	body.dark-mode #gr .gr-pair i{color:#989da4}
+	body.dark-mode #gr .gr-empty{border:1px dashed #3a424d}
 	/* TOOL-DARK:END */
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #15803d;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #15803d; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(21,128,61,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -657,33 +669,40 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu gr" id="gr">
 		<p class="tu-note gr-private">&#128274; Private: nothing is uploaded. Your baby's details and growth log stay in this browser.</p>
-		<div class="tu-card">
-			<div class="tu-row gr-top">
-				<div class="tu-field"><span class="tu-label">Baby is a</span><div class="tu-seg" id="gr-sex" role="group" aria-label="Sex"><button type="button" data-s="f" aria-pressed="true">Girl</button><button type="button" data-s="m" aria-pressed="false">Boy</button></div></div>
-				<div class="tu-field"><span class="tu-label">How old?</span><div class="tu-seg" id="gr-agemode" role="group" aria-label="How to give the age"><button type="button" data-m="birth" aria-pressed="true">Birth date</button><button type="button" data-m="age" aria-pressed="false">Age</button></div></div>
+		<div class="gr-layout">
+			<div class="tu-card gr-in">
+				<div class="gr-line">
+					<div class="gr-f"><span class="tu-label">Baby is a</span><div class="tu-seg" id="gr-sex" role="group" aria-label="Sex"><button type="button" data-s="f" aria-pressed="true">Girl</button><button type="button" data-s="m" aria-pressed="false">Boy</button></div></div>
+					<div class="gr-f"><span class="tu-label">How old?</span><div class="tu-seg" id="gr-agemode" role="group" aria-label="How to give the age"><button type="button" data-m="birth" aria-pressed="true">Birth date</button><button type="button" data-m="age" aria-pressed="false">Age</button></div></div>
+				</div>
+				<div class="gr-line" id="gr-birthrow">
+					<div class="gr-f"><label class="tu-label" for="gr-birth">Date of birth</label><input id="gr-birth" class="tu-input gr-date" type="date"></div>
+					<div class="gr-f"><label class="tu-label" for="gr-on">Measured on</label><input id="gr-on" class="tu-input gr-date" type="date"></div>
+				</div>
+				<div class="gr-line" id="gr-agerow" hidden>
+					<div class="gr-f"><label class="tu-label" for="gr-agev">Age</label><div class="gr-pair"><input id="gr-agev" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" value="3"><select id="gr-ageu" class="tu-select gr-unit"><option value="d">days</option><option value="w">weeks</option><option value="m" selected>months</option></select></div></div>
+				</div>
+				<div class="gr-line">
+					<div class="gr-f"><label class="tu-label" for="gr-early">Born early by (optional)</label><div class="gr-pair"><input id="gr-early" class="tu-input gr-num" type="number" inputmode="numeric" min="0" max="20" value="0"><span>weeks</span></div></div>
+					<p class="tu-note gr-earlynote">If born before 37 weeks, growth is judged by the age from the due date until age 2.</p>
+				</div>
+				<h3 class="gr-h">Measurements <span class="tu-note">(any one is enough; type in either unit)</span></h3>
+				<div class="gr-line gr-meas">
+					<div class="gr-f"><span class="tu-label">Weight</span><div class="gr-pair"><input id="gr-w" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="6.4" aria-label="Weight in kilograms"><span>kg</span><i>or</i><input id="gr-lb" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="14" aria-label="Pounds"><span>lb</span><input id="gr-oz" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="2" aria-label="Ounces"><span>oz</span></div></div>
+					<div class="gr-f"><span class="tu-label">Length / height</span><div class="gr-pair"><input id="gr-l" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="62" aria-label="Length in centimetres"><span>cm</span><i>or</i><input id="gr-lin" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="24.4" aria-label="Length in inches"><span>in</span></div></div>
+					<div class="gr-f"><span class="tu-label">Head circumference</span><div class="gr-pair"><input id="gr-h" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="41" aria-label="Head circumference in centimetres"><span>cm</span><i>or</i><input id="gr-hin" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="16.1" aria-label="Head circumference in inches"><span>in</span></div></div>
+				</div>
 			</div>
-			<div class="tu-row" id="gr-birthrow">
-				<div class="tu-field"><label class="tu-label" for="gr-birth">Date of birth</label><input id="gr-birth" class="tu-input" type="date"></div>
-				<div class="tu-field"><label class="tu-label" for="gr-on">Measured on</label><input id="gr-on" class="tu-input" type="date"></div>
+			<div class="gr-res">
+				<p class="tu-note gr-msg" id="gr-msg" role="status" aria-live="polite"></p>
+				<div class="tu-note gr-empty" id="gr-empty">Enter a measurement and the percentile appears here.</div>
+				<div id="gr-out" hidden>
+					<div class="tu-stats" id="gr-cards"></div>
+					<div class="tu-row gr-acts"><button type="button" class="tu-btn tu-btn--primary" id="gr-save">Save this visit to the growth log</button><button type="button" class="tu-btn tu-btn--ghost" id="gr-copy">Copy result</button></div>
+				</div>
 			</div>
-			<div class="tu-row" id="gr-agerow" hidden>
-				<div class="tu-field"><label class="tu-label" for="gr-agev">Age</label><div class="gr-pair"><input id="gr-agev" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="3"><select id="gr-ageu" class="tu-select"><option value="d">days</option><option value="w">weeks</option><option value="m" selected>months</option></select></div></div>
-			</div>
-			<div class="tu-row">
-				<div class="tu-field"><label class="tu-label" for="gr-early">Born early by (weeks, optional)</label><input id="gr-early" class="tu-input" type="number" inputmode="numeric" min="0" max="20" value="0"><div class="tu-note">If born before 37 weeks, growth is judged by the age from the due date until age 2.</div></div>
-			</div>
-			<h3 class="gr-h">Measurements <span class="tu-note">(any one is enough)</span></h3>
-			<div class="tu-row gr-meas">
-				<div class="tu-field"><span class="tu-label">Weight</span><div class="gr-pair" id="gr-w-kg"><input id="gr-w" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 6.4" aria-label="Weight in kilograms"><span>kg</span></div><div class="gr-pair" id="gr-w-lb" hidden><input id="gr-lb" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="lb" aria-label="Pounds"><span>lb</span><input id="gr-oz" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="oz" aria-label="Ounces"><span>oz</span></div></div>
-				<div class="tu-field"><span class="tu-label">Length / height</span><div class="gr-pair"><input id="gr-l" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 62" aria-label="Length"><span id="gr-lu">cm</span></div></div>
-				<div class="tu-field"><span class="tu-label">Head circumference</span><div class="gr-pair"><input id="gr-h" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 41" aria-label="Head circumference"><span id="gr-hu">cm</span></div></div>
-			</div>
-			<div class="tu-seg" id="gr-units" role="group" aria-label="Units"><button type="button" data-u="metric" aria-pressed="true">kg · cm</button><button type="button" data-u="us" aria-pressed="false">lb · oz · in</button></div>
 		</div>
-		<p class="tu-note gr-msg" id="gr-msg" role="status" aria-live="polite"></p>
-		<div id="gr-out" hidden>
-			<div class="tu-stats" id="gr-cards"></div>
-			<div class="tu-row gr-acts"><button type="button" class="tu-btn tu-btn--primary" id="gr-save">Save this visit to the growth log</button><button type="button" class="tu-btn tu-btn--ghost" id="gr-copy">Copy result</button></div>
+		<div id="gr-chartbox" hidden>
 			<h2>Growth chart</h2>
 			<div class="tu-card">
 				<div class="tu-seg" id="gr-kind" role="group" aria-label="Chart"><button type="button" data-k="wfa" aria-pressed="true">Weight</button><button type="button" data-k="lhfa" aria-pressed="false">Length</button><button type="button" data-k="hcfa" aria-pressed="false">Head</button></div>
@@ -775,7 +794,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/baby-growth/js/baby-growth.js?v=2" defer></script>
+	<script src="/baby-growth/js/baby-growth.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

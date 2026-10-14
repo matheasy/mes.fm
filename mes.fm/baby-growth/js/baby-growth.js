@@ -45,7 +45,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = WHO_LMS;
 (function () {
 	'use strict';
 	var G = MESGrowth, $ = function (id) { return document.getElementById(id); }, KEY = 'mes-growth:v1';
-	var S = { sex: 'f', agemode: 'birth', birth: '', units: 'metric', early: 0, log: [] };
+	var S = { sex: 'f', agemode: 'birth', birth: '', early: 0, log: [] };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 	function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
@@ -58,9 +58,15 @@ if (typeof module !== 'undefined' && module.exports) module.exports = WHO_LMS;
 	function btnGroup(id, attr, fn) { $(id).addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; Array.prototype.forEach.call($(id).querySelectorAll('button'), function (x) { x.setAttribute('aria-pressed', String(x === b)); }); fn(b.getAttribute(attr)); }); }
 	btnGroup('gr-sex', 'data-s', function (v) { S.sex = v; update(); });
 	btnGroup('gr-agemode', 'data-m', function (v) { S.agemode = v; $('gr-birthrow').hidden = v !== 'birth'; $('gr-agerow').hidden = v !== 'age'; update(); });
-	btnGroup('gr-units', 'data-u', function (v) { S.units = v; $('gr-w-kg').hidden = v !== 'metric'; $('gr-w-lb').hidden = v !== 'us'; $('gr-lu').textContent = $('gr-hu').textContent = v === 'us' ? 'in' : 'cm'; update(); });
 	btnGroup('gr-kind', 'data-k', function (v) { kind = v; drawChart(); });
-	['gr-birth', 'gr-on', 'gr-agev', 'gr-ageu', 'gr-early', 'gr-w', 'gr-lb', 'gr-oz', 'gr-l', 'gr-h'].forEach(function (id) { $(id).addEventListener('input', update); $(id).addEventListener('change', update); });
+	['gr-birth', 'gr-on', 'gr-agev', 'gr-ageu', 'gr-early'].forEach(function (id) { $(id).addEventListener('input', update); $(id).addEventListener('change', update); });
+	/* every measurement can be typed in either unit; the other one follows (kg and cm are the truth, like the BMI calculator) */
+	function r(x, d) { var f = Math.pow(10, d); return String(Math.round(x * f) / f); }
+	function mirror(src, fn) { src.forEach(function (id) { $(id).addEventListener('input', function () { fn(id); update(); }); }); }
+	mirror(['gr-w'], function () { var kg = num('gr-w'); if (kg == null) { $('gr-lb').value = ''; $('gr-oz').value = ''; return; } var lo = G.kgToLbOz(kg); $('gr-lb').value = lo[0]; $('gr-oz').value = r(lo[1], 1); });
+	mirror(['gr-lb', 'gr-oz'], function () { var lb = parseFloat($('gr-lb').value) || 0, oz = parseFloat($('gr-oz').value) || 0; if (!(lb + oz > 0)) { $('gr-w').value = ''; return; } $('gr-w').value = r(G.lbOzToKg(lb, oz), 3); });
+	mirror(['gr-l'], function () { var v = num('gr-l'); $('gr-lin').value = v == null ? '' : r(v / 2.54, 1); }); mirror(['gr-lin'], function () { var v = num('gr-lin'); $('gr-l').value = v == null ? '' : r(v * 2.54, 1); });
+	mirror(['gr-h'], function () { var v = num('gr-h'); $('gr-hin').value = v == null ? '' : r(v / 2.54, 1); }); mirror(['gr-hin'], function () { var v = num('gr-hin'); $('gr-h').value = v == null ? '' : r(v * 2.54, 1); });
 
 	function ageNow() {
 		var early = Math.max(0, parseFloat($('gr-early').value) || 0), d;
@@ -70,31 +76,31 @@ if (typeof module !== 'undefined' && module.exports) module.exports = WHO_LMS;
 		if (corr > G.MAXDAY) return { err: 'The WHO standards used here cover ages 0 to 5 years.' };
 		return { days: d, corr: corr, early: early };
 	}
-	function measures() {
-		var us = S.units === 'us', w = us ? ((num('gr-lb') || 0) + (num('gr-oz') || 0) / 16 > 0 ? G.lbOzToKg(num('gr-lb') || 0, num('gr-oz') || 0) : null) : num('gr-w'), l = num('gr-l'), h = num('gr-h');
-		return { wfa: w, lhfa: l != null ? (us ? l * 2.54 : l) : null, hcfa: h != null ? (us ? h * 2.54 : h) : null };
-	}
+	function measures() { return { wfa: num('gr-w'), lhfa: num('gr-l'), hcfa: num('gr-h') }; }
+	function show(on) { $('gr-out').hidden = !on; $('gr-chartbox').hidden = !on; $('gr-empty').hidden = on; }
 	function update() {
 		S.sex = S.sex; S.early = parseFloat($('gr-early').value) || 0; save();
 		var a = ageNow(), m = measures(), msg = $('gr-msg'), any = m.wfa || m.lhfa || m.hcfa;
-		if (a.err) { msg.textContent = any ? a.err : ''; $('gr-out').hidden = true; cur = null; renderLog(); return; }
-		if (!any) { msg.textContent = ''; $('gr-out').hidden = true; cur = null; renderLog(); return; }
+		if (a.err) { msg.textContent = any ? a.err : ''; show(false); cur = null; renderLog(); return; }
+		if (!any) { msg.textContent = ''; show(false); cur = null; renderLog(); return; }
 		var sane = { wfa: [0.4, 40], lhfa: [20, 140], hcfa: [20, 65] }, bad = [];
 		['wfa', 'lhfa', 'hcfa'].forEach(function (k) { if (m[k] != null && (m[k] < sane[k][0] || m[k] > sane[k][1])) bad.push(G.KINDS[k].label.toLowerCase()); });
 		msg.textContent = bad.length ? 'Check the ' + bad.join(' and ') + ': that looks unlikely for a baby. Is the unit right?' : (a.early > 0 && a.days < 730 ? 'Using corrected age: ' + G.ageText(a.corr) + ' (actual age ' + G.ageText(a.days) + ').' : '');
-		if (bad.length) { $('gr-out').hidden = true; cur = null; return; }
+		if (bad.length) { show(false); cur = null; return; }
 		cur = { a: a, m: m, z: {}, p: {} };
 		var cards = '';
 		['wfa', 'lhfa', 'hcfa'].forEach(function (k) {
 			if (m[k] == null) return; var z = G.zscore(k, S.sex, a.corr, m[k]), p = G.cdf(z) * 100; cur.z[k] = z; cur.p[k] = p;
-			var lo = G.valueAt(k, S.sex, a.corr, -1.8808), hi = G.valueAt(k, S.sex, a.corr, 1.8808), val = k === 'wfa' ? (S.units === 'us' ? G.kgToLbOz(m[k]).join(' lb ') + ' oz' : m[k] + ' kg') : (S.units === 'us' ? Math.round(m[k] / 2.54 * 10) / 10 + ' in' : m[k] + ' cm');
-			function fmt(x) { return k === 'wfa' ? (S.units === 'us' ? G.kgToLbOz(x)[0] + ' lb ' + Math.round(G.kgToLbOz(x)[1]) + ' oz' : x.toFixed(2) + ' kg') : (S.units === 'us' ? (x / 2.54).toFixed(1) + ' in' : x.toFixed(1) + ' cm'); }
+			var lo = G.valueAt(k, S.sex, a.corr, -1.8808), hi = G.valueAt(k, S.sex, a.corr, 1.8808), val = both(k, m[k]);
+			function fmt(x) { return both(k, x, 1); }
 			cards += '<div class="tu-stat' + (k === 'wfa' ? ' tu-stat--hero' : '') + '"><div class="tu-stat__label">' + G.KINDS[k].label + ' · ' + esc(val) + '</div><div class="tu-stat__value gr-pct">' + G.ordinal(Math.round(p * 10) / 10 < 1 || p > 99 ? Math.round(p * 10) / 10 : Math.round(p)) + ' percentile</div><div class="tu-stat__sub">' + esc(G.describe(z)) + '<br>Usual range at this age (3rd to 97th): ' + fmt(lo) + ' to ' + fmt(hi) + '<br>z-score ' + (z >= 0 ? '+' : '') + z.toFixed(2) + '</div></div>';
 		});
-		$('gr-cards').innerHTML = cards; $('gr-out').hidden = false;
+		$('gr-cards').innerHTML = cards; show(true);
 		if (!m[kind]) { var f = ['wfa', 'lhfa', 'hcfa'].filter(function (k) { return m[k] != null; })[0]; kind = f; Array.prototype.forEach.call($('gr-kind').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-k') === kind)); }); }
 		drawChart(); renderLog();
 	}
+	/* a value in both unit systems: 6.4 kg (14 lb 2 oz), 59 cm (23.2 in) */
+	function both(k, x, dp) { if (k === 'wfa') { var lo = G.kgToLbOz(x); return (dp ? x.toFixed(2) : String(Math.round(x * 1000) / 1000)) + ' kg (' + lo[0] + ' lb ' + Math.round(lo[1]) + ' oz)'; } return (dp ? x.toFixed(1) : String(Math.round(x * 10) / 10)) + ' cm (' + (x / 2.54).toFixed(1) + ' in)'; }
 	function drawChart() {
 		if (!cur) return; var a = cur.a, maxX = a.corr > 700 || S.log.some(function (e) { return e.d > 730; }) ? G.MAXDAY : 730, W = 640, H = 340, L = 46, R = 44, T = 14, B = 34, zs = [-1.8808, -1.0364, 0, 1.0364, 1.8808], lab = ['3rd', '15th', '50th', '85th', '97th'];
 		var lo = G.valueAt(kind, S.sex, maxX, -1.8808), lo0 = G.valueAt(kind, S.sex, 0, -1.8808), hi = G.valueAt(kind, S.sex, maxX, 1.8808), ymin = Math.min(lo0, lo) * 0.96, ymax = hi * 1.04, pts = [];
@@ -134,7 +140,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = WHO_LMS;
 	/* start */
 	Array.prototype.forEach.call($('gr-sex').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-s') === S.sex)); });
 	Array.prototype.forEach.call($('gr-agemode').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-m') === S.agemode)); }); $('gr-birthrow').hidden = S.agemode !== 'birth'; $('gr-agerow').hidden = S.agemode !== 'age';
-	Array.prototype.forEach.call($('gr-units').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-u') === S.units)); }); $('gr-w-kg').hidden = S.units !== 'metric'; $('gr-w-lb').hidden = S.units !== 'us'; $('gr-lu').textContent = $('gr-hu').textContent = S.units === 'us' ? 'in' : 'cm';
+	Array.prototype.forEach.call($('gr-sex').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-s') === S.sex)); }); Array.prototype.forEach.call($('gr-agemode').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-m') === S.agemode)); }); $('gr-birthrow').hidden = S.agemode !== 'birth'; $('gr-agerow').hidden = S.agemode !== 'age';
 	$('gr-on').value = iso(today); if (S.birth) $('gr-birth').value = S.birth; $('gr-early').value = S.early || 0;
 	var q = new URLSearchParams(location.search); if (q.get('sex')) { S.sex = q.get('sex') === 'm' ? 'm' : 'f'; } if (q.get('age')) { S.agemode = 'age'; $('gr-agev').value = q.get('age'); }
 	update();

@@ -1,33 +1,40 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu gr" id="gr">
 		<p class="tu-note gr-private">&#128274; Private: nothing is uploaded. Your baby's details and growth log stay in this browser.</p>
-		<div class="tu-card">
-			<div class="tu-row gr-top">
-				<div class="tu-field"><span class="tu-label">Baby is a</span><div class="tu-seg" id="gr-sex" role="group" aria-label="Sex"><button type="button" data-s="f" aria-pressed="true">Girl</button><button type="button" data-s="m" aria-pressed="false">Boy</button></div></div>
-				<div class="tu-field"><span class="tu-label">How old?</span><div class="tu-seg" id="gr-agemode" role="group" aria-label="How to give the age"><button type="button" data-m="birth" aria-pressed="true">Birth date</button><button type="button" data-m="age" aria-pressed="false">Age</button></div></div>
+		<div class="gr-layout">
+			<div class="tu-card gr-in">
+				<div class="gr-line">
+					<div class="gr-f"><span class="tu-label">Baby is a</span><div class="tu-seg" id="gr-sex" role="group" aria-label="Sex"><button type="button" data-s="f" aria-pressed="true">Girl</button><button type="button" data-s="m" aria-pressed="false">Boy</button></div></div>
+					<div class="gr-f"><span class="tu-label">How old?</span><div class="tu-seg" id="gr-agemode" role="group" aria-label="How to give the age"><button type="button" data-m="birth" aria-pressed="true">Birth date</button><button type="button" data-m="age" aria-pressed="false">Age</button></div></div>
+				</div>
+				<div class="gr-line" id="gr-birthrow">
+					<div class="gr-f"><label class="tu-label" for="gr-birth">Date of birth</label><input id="gr-birth" class="tu-input gr-date" type="date"></div>
+					<div class="gr-f"><label class="tu-label" for="gr-on">Measured on</label><input id="gr-on" class="tu-input gr-date" type="date"></div>
+				</div>
+				<div class="gr-line" id="gr-agerow" hidden>
+					<div class="gr-f"><label class="tu-label" for="gr-agev">Age</label><div class="gr-pair"><input id="gr-agev" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" value="3"><select id="gr-ageu" class="tu-select gr-unit"><option value="d">days</option><option value="w">weeks</option><option value="m" selected>months</option></select></div></div>
+				</div>
+				<div class="gr-line">
+					<div class="gr-f"><label class="tu-label" for="gr-early">Born early by (optional)</label><div class="gr-pair"><input id="gr-early" class="tu-input gr-num" type="number" inputmode="numeric" min="0" max="20" value="0"><span>weeks</span></div></div>
+					<p class="tu-note gr-earlynote">If born before 37 weeks, growth is judged by the age from the due date until age 2.</p>
+				</div>
+				<h3 class="gr-h">Measurements <span class="tu-note">(any one is enough; type in either unit)</span></h3>
+				<div class="gr-line gr-meas">
+					<div class="gr-f"><span class="tu-label">Weight</span><div class="gr-pair"><input id="gr-w" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="6.4" aria-label="Weight in kilograms"><span>kg</span><i>or</i><input id="gr-lb" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="14" aria-label="Pounds"><span>lb</span><input id="gr-oz" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="2" aria-label="Ounces"><span>oz</span></div></div>
+					<div class="gr-f"><span class="tu-label">Length / height</span><div class="gr-pair"><input id="gr-l" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="62" aria-label="Length in centimetres"><span>cm</span><i>or</i><input id="gr-lin" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="24.4" aria-label="Length in inches"><span>in</span></div></div>
+					<div class="gr-f"><span class="tu-label">Head circumference</span><div class="gr-pair"><input id="gr-h" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="41" aria-label="Head circumference in centimetres"><span>cm</span><i>or</i><input id="gr-hin" class="tu-input gr-num" type="number" inputmode="decimal" min="0" step="any" placeholder="16.1" aria-label="Head circumference in inches"><span>in</span></div></div>
+				</div>
 			</div>
-			<div class="tu-row" id="gr-birthrow">
-				<div class="tu-field"><label class="tu-label" for="gr-birth">Date of birth</label><input id="gr-birth" class="tu-input" type="date"></div>
-				<div class="tu-field"><label class="tu-label" for="gr-on">Measured on</label><input id="gr-on" class="tu-input" type="date"></div>
+			<div class="gr-res">
+				<p class="tu-note gr-msg" id="gr-msg" role="status" aria-live="polite"></p>
+				<div class="tu-note gr-empty" id="gr-empty">Enter a measurement and the percentile appears here.</div>
+				<div id="gr-out" hidden>
+					<div class="tu-stats" id="gr-cards"></div>
+					<div class="tu-row gr-acts"><button type="button" class="tu-btn tu-btn--primary" id="gr-save">Save this visit to the growth log</button><button type="button" class="tu-btn tu-btn--ghost" id="gr-copy">Copy result</button></div>
+				</div>
 			</div>
-			<div class="tu-row" id="gr-agerow" hidden>
-				<div class="tu-field"><label class="tu-label" for="gr-agev">Age</label><div class="gr-pair"><input id="gr-agev" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="3"><select id="gr-ageu" class="tu-select"><option value="d">days</option><option value="w">weeks</option><option value="m" selected>months</option></select></div></div>
-			</div>
-			<div class="tu-row">
-				<div class="tu-field"><label class="tu-label" for="gr-early">Born early by (weeks, optional)</label><input id="gr-early" class="tu-input" type="number" inputmode="numeric" min="0" max="20" value="0"><div class="tu-note">If born before 37 weeks, growth is judged by the age from the due date until age 2.</div></div>
-			</div>
-			<h3 class="gr-h">Measurements <span class="tu-note">(any one is enough)</span></h3>
-			<div class="tu-row gr-meas">
-				<div class="tu-field"><span class="tu-label">Weight</span><div class="gr-pair" id="gr-w-kg"><input id="gr-w" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 6.4" aria-label="Weight in kilograms"><span>kg</span></div><div class="gr-pair" id="gr-w-lb" hidden><input id="gr-lb" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="lb" aria-label="Pounds"><span>lb</span><input id="gr-oz" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="oz" aria-label="Ounces"><span>oz</span></div></div>
-				<div class="tu-field"><span class="tu-label">Length / height</span><div class="gr-pair"><input id="gr-l" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 62" aria-label="Length"><span id="gr-lu">cm</span></div></div>
-				<div class="tu-field"><span class="tu-label">Head circumference</span><div class="gr-pair"><input id="gr-h" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 41" aria-label="Head circumference"><span id="gr-hu">cm</span></div></div>
-			</div>
-			<div class="tu-seg" id="gr-units" role="group" aria-label="Units"><button type="button" data-u="metric" aria-pressed="true">kg · cm</button><button type="button" data-u="us" aria-pressed="false">lb · oz · in</button></div>
 		</div>
-		<p class="tu-note gr-msg" id="gr-msg" role="status" aria-live="polite"></p>
-		<div id="gr-out" hidden>
-			<div class="tu-stats" id="gr-cards"></div>
-			<div class="tu-row gr-acts"><button type="button" class="tu-btn tu-btn--primary" id="gr-save">Save this visit to the growth log</button><button type="button" class="tu-btn tu-btn--ghost" id="gr-copy">Copy result</button></div>
+		<div id="gr-chartbox" hidden>
 			<h2>Growth chart</h2>
 			<div class="tu-card">
 				<div class="tu-seg" id="gr-kind" role="group" aria-label="Chart"><button type="button" data-k="wfa" aria-pressed="true">Weight</button><button type="button" data-k="lhfa" aria-pressed="false">Length</button><button type="button" data-k="hcfa" aria-pressed="false">Head</button></div>
