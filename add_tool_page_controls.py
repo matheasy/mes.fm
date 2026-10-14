@@ -55,7 +55,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("ovulation-calculator", "Ovulation Calculator"),   # also built by build_tool_apps.py (one source, three pages)
     ("period-calculator", "Period Calculator"),
     ("due-date-calculator", "Pregnancy Due Date Calculator"),
-    ("time-dilation-explained", "Time Dilation Explained"),
+    ("time-dilation-explained", "Time Dilation Simulator", "/time-dilation"),   # tutorial: a sub-page of the Time Dilation brand (brand option in build_tool_apps.py)
     ("archive", "Archive"),
     ("baby-growth-percentile-calculator", "Baby Growth Percentile Calculator"),
     ("baby-feeding-log", "Baby Feeding Log"),
