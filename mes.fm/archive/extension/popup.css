@@ -1,0 +1,9 @@
+* { box-sizing: border-box; } body { margin: 0; width: 340px; font: 13px/1.4 system-ui, -apple-system, Segoe UI, sans-serif; color: #1e2733; background: #fff; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #1e3a8a; color: #fff; } header a { color: #cfe0ff; font-size: 12px; }
+.page { padding: 8px 12px; background: #eef2ff; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #334; } .page.bad { background: #fdecea; color: #7f1020; white-space: normal; }
+.sets { display: flex; flex-wrap: wrap; gap: 5px; padding: 8px 12px 2px; } .sets button { font: inherit; font-size: 11px; padding: 2px 9px; border: 1px solid #b9c1cc; border-radius: 12px; background: #fff; cursor: pointer; } .sets button.on { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
+.list { max-height: 270px; overflow-y: auto; padding: 4px 12px; } .g { margin: 8px 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #667; }
+label.e { display: flex; gap: 8px; align-items: center; padding: 4px 0; cursor: pointer; } label.e small { color: #778; } label.e select { margin-left: auto; font-size: 11px; max-width: 90px; }
+.go { display: block; width: calc(100% - 24px); margin: 8px 12px; padding: 10px; font: inherit; font-weight: 700; border: 0; border-radius: 6px; background: #1d4ed8; color: #fff; cursor: pointer; } .go:disabled { background: #9aa7c7; cursor: default; }
+.note { padding: 0 12px 10px; font-size: 11px; color: #667; }
+@media (prefers-color-scheme: dark) { body { background: #1b1b1b; color: #e6e8ec; } .page { background: #232a3d; color: #cdd; } .sets button { background: #2b2f36; border-color: #454c58; color: #e6e8ec; } .sets button.on { background: #3b63d6; border-color: #3b63d6; } .g { color: #9aa; } .page.bad { background: #3a1118; color: #ffc9d1; } }

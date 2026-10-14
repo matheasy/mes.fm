@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>MES Archive settings</title><link rel="stylesheet" href="options.css"></head>
+<body><main>
+<h1>MES Archive settings</h1>
+<section><h2>Sites to archive on</h2><p class="n">Tick the sites that open when you click the toolbar button, press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd> (change it at chrome://extensions/shortcuts) or use the right-click menu.</p><div id="list"></div></section>
+<section><h2>Add your own archive site</h2><p class="n">Use <code>%s</code> (or <code>{u}</code>) where the page address goes, e.g. <code>https://archive.example/save?url=%s</code>. <code>{raw}</code> inserts it un-encoded.</p>
+<div class="row"><input id="cn" placeholder="Name"><input id="ct" placeholder="https://archive.example/save?url=%s"><button id="ca">Add</button></div><div id="clist"></div></section>
+<section><h2>Options</h2><label><input type="checkbox" id="strip"> Remove tracking parts (utm_source, fbclid…) from the address first</label><label><input type="checkbox" id="bg"> Open the archive tabs in the background</label></section>
+<p class="n" id="msg"></p><p class="n">MES Archive by <a href="https://mes.fm/archive">mes.fm/archive</a>. Free, no accounts, no tracking. Saved pages on public archives can be seen by anyone: do not archive private pages.</p>
+</main><script src="engines.js"></script><script src="shared.js"></script><script src="options.js"></script></body></html>

@@ -2,6 +2,22 @@
  "generated": "2026-10-14",
  "calculators": [
   {
+   "href": "/baby-feeding-log",
+   "title": "Baby Feeding Log",
+   "icon": "/img/baby-feeding-log-logo.png",
+   "desc": "One-tap breastfeeding timer, bottles, pumping and diapers, with today's totals.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/baby-growth-percentile-calculator",
+   "title": "Baby Growth Percentile Calculator",
+   "icon": "/img/baby-growth-percentile-calculator-logo.png",
+   "desc": "Weight, length and head circumference percentiles on the WHO growth chart, with a private growth log.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/conception-date-calculator",
    "title": "Conception Date Calculator",
    "icon": "/img/conception-date-calculator-logo.png",
@@ -78,22 +94,6 @@
    "title": "Michelson-Morley Experiment Simulator",
    "icon": "/img/michelson-morley-experiment-logo.png",
    "desc": "Turn an interferometer through an aether wind, watch the fringes shift, compare the 1881 and 1887 experiments and calculate the expected shift.",
-   "added": "2026-10-09",
-   "kind": "calculator"
-  },
-  {
-   "href": "/atomic-clock-simulator",
-   "title": "Atomic Clock Simulator",
-   "icon": "/img/atomic-clock-simulator-logo.png",
-   "desc": "How far off is your clock? Work out drift per day or year from a frequency error, and see how atomic clocks compare.",
-   "added": "2026-10-09",
-   "kind": "calculator"
-  },
-  {
-   "href": "/sum-of-integers-calculator",
-   "title": "Sum of Integers Calculator",
-   "icon": "/img/sum-of-integers-calculator-logo.png",
-   "desc": "Add 1 to n, any range, squares, cubes, odd or even numbers, multiples, arithmetic and geometric series, or your own formula.",
    "added": "2026-10-09",
    "kind": "calculator"
   }
@@ -198,6 +198,22 @@
  ],
  "latest": [
   {
+   "href": "/baby-feeding-log",
+   "title": "Baby Feeding Log",
+   "icon": "/img/baby-feeding-log-logo.png",
+   "desc": "One-tap breastfeeding timer, bottles, pumping and diapers, with today's totals.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/baby-growth-percentile-calculator",
+   "title": "Baby Growth Percentile Calculator",
+   "icon": "/img/baby-growth-percentile-calculator-logo.png",
+   "desc": "Weight, length and head circumference percentiles on the WHO growth chart, with a private growth log.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/conception-date-calculator",
    "title": "Conception Date Calculator",
    "icon": "/img/conception-date-calculator-logo.png",
@@ -244,22 +260,6 @@
    "desc": "See the camera, date, GPS location and AI / edit flags hidden in a photo, and save a copy with the metadata removed.",
    "added": "2026-10-14",
    "kind": "tool"
-  },
-  {
-   "href": "/reverse-image-search",
-   "title": "Reverse Image Search",
-   "icon": "/img/reverse-image-search-logo.png",
-   "desc": "Paste an image link or upload a picture and search Google Lens, Bing, TinEye, Yandex and more at once. Search part of the picture.",
-   "added": "2026-10-14",
-   "kind": "tool"
-  },
-  {
-   "href": "/ovulation-calculator",
-   "title": "Ovulation Calculator",
-   "icon": "/img/ovulation-calculator-logo.png",
-   "desc": "Find your fertile window, ovulation day and next period. Any cycle length, LH tests, private, adds to your calendar.",
-   "added": "2026-10-14",
-   "kind": "calculator"
   }
  ]
 }

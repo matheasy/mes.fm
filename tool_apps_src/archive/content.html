@@ -1,0 +1,60 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ar" id="ar">
+		<div class="tu-card">
+			<label class="tu-label" for="ar-url">Web address to archive</label>
+			<div class="ar-row"><input id="ar-url" class="tu-input tu-input--big" type="url" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://example.com/article"><button type="button" class="tu-btn tu-btn--ghost" id="ar-paste">Paste</button></div>
+			<label class="ar-check"><input type="checkbox" id="ar-strip" checked> Remove tracking parts (utm_source, fbclid&hellip;) from the address first</label>
+			<div class="ar-avail" id="ar-avail" aria-live="polite"></div>
+		</div>
+		<div class="ar-engines" id="ar-engines" hidden>
+			<div class="ar-bar">
+				<div class="tu-chips" id="ar-sets" aria-label="Quick sets"></div>
+				<button type="button" class="tu-btn tu-btn--primary ar-go" id="ar-go">Open 0 selected</button>
+			</div>
+			<p class="tu-note ar-modenote">Each service opens in its own tab with your address filled in. Some pages (archive.today, Ghostarchive) may ask you to press a button or solve a captcha: that is their anti-abuse check.</p>
+			<div class="ar-queue" id="ar-queue" hidden></div>
+			<div id="ar-list"></div>
+			<details class="ar-custom"><summary>Add your own archive site</summary>
+				<p class="tu-note">Paste the site's address with <code>%s</code> (or <code>{u}</code>) where the page address goes, for example <code>https://archive.ph/?run=1&amp;url=%s</code>. Use <code>{raw}</code> if the site wants the address un-encoded after a slash.</p>
+				<div class="ar-row"><input id="ar-cname" class="tu-input" placeholder="Name"><input id="ar-ctpl" class="tu-input" placeholder="https://archive.example/save?url=%s" style="flex:3"><button type="button" class="tu-btn tu-btn--primary" id="ar-cadd">Add</button></div>
+				<div id="ar-clist"></div>
+			</details>
+		</div>
+		<div class="tu-toast" id="ar-toast" role="status" aria-live="polite"></div>
+
+		<h2 id="extension">Archive any page in one click: browser extension</h2>
+		<div class="tu-card tu-card--tint">
+			<p style="margin-top:0">The <b>MES Archive</b> extension for Chrome, Brave and Edge does the same thing from the page you are reading: click its button (or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>) and your chosen archive sites open in new tabs with the current page already filled in. Right-click any link to archive it without opening it first. You pick the sites once, add your own, and it remembers.</p>
+			<div class="tu-row" style="gap:0.5em"><a class="tu-btn tu-btn--primary" id="ar-dl" href="/archive/mes-archive.zip" download>Download <span id="ar-ver">v1.0.0</span> (zip)</a><a class="tu-btn tu-btn--ghost" href="#ar-install">How to install</a><a class="tu-btn tu-btn--ghost" href="/archive/extension/popup.js">View the source</a></div>
+			<p class="tu-note" style="margin-bottom:0">Private: no accounts, no tracking. The extension only talks to the archive sites you open.</p>
+		</div>
+		<h3 id="ar-install">Install it (about a minute)</h3>
+		<div class="tu-card">
+			<ol class="ar-steps">
+				<li><b>Download</b> the zip and unzip it. Keep the folder <code>mes-archive</code> somewhere permanent.</li>
+				<li>Open the extensions page (copy the address, then paste it in the address bar): <code>chrome://extensions</code> in Chrome, <code>brave://extensions</code> in Brave, <code>edge://extensions</code> in Edge.</li>
+				<li>Turn on <b>Developer mode</b>, click <b>Load unpacked</b> and choose the <code>mes-archive</code> folder.</li>
+				<li>Pin <b>MES Archive</b> from the puzzle-piece menu. Click it on any page.</li>
+			</ol>
+			<p class="tu-note" style="margin-bottom:0">No extension? Drag this to your bookmarks bar: <a class="ar-bm" id="ar-bm" href="#">Archive this page</a>. Clicking it on any page opens this tool with that page's address filled in.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Archive any web page</h2>
+			<p>Pages change, get paywalled, move or vanish. Paste an address and open it on the <strong>Wayback Machine</strong>, <strong>archive.today</strong>, <strong>Ghostarchive</strong>, <strong>Megalodon</strong> and more at once, either to <em>save a fresh copy</em> or to <em>find copies that already exist</em>. Add your own archive site, tick the ones you trust, and we remember your choice. There is even a Hive blockchain option for a permanent, tamper-evident copy.</p>
+			<h3>Why use several archives?</h3>
+			<ul>
+				<li>No archive can save everything: some sites block one service but not another, and some pages only render properly in one.</li>
+				<li>A copy in more than one place survives if a single archive goes offline or removes it.</li>
+				<li>Different archives keep different layouts: the Wayback Machine is built for history and dates, archive.today for an exact visual copy.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Is saving a page to an archive public?</h4>
+			<p>Yes. Anything saved on the Wayback Machine, archive.today or Ghostarchive can be seen by anyone with the link, and the page's address is stored. Do not archive pages with private information, logged-in pages or anything you would not want public.</p>
+			<h4>What does the Hive blockchain option do?</h4>
+			<p>It opens <a href="https://dhenz14.github.io/archive/" rel="noopener">ArcHive</a>, a free third-party tool by dhenz14 that stores the page's text on the Hive blockchain together with its cryptographic hashes, so the copy can be proved later. You sign with Hive Keychain or HiveAuth. mes.fm only passes your address to it.</p>
+			<h4>Why does archive.today ask me to prove I am human?</h4>
+			<p>It runs on donations and limits automated use. Solve the check once and your copy is saved. If it will not load where you are, tick a different address (archive.is, archive.md, archive.vn&hellip;).</p>
+			<p class="tu-note">Related: <a href="/search-engines">Search Engines</a>, <a href="/reverse-image-search">Reverse Image Search</a>, <a href="/domain-lookup">Domain Lookup</a>.</p>
+		</div>
+	</div>
