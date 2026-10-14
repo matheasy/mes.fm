@@ -288,12 +288,30 @@
 		var exclude = opts.exclude || {};
 		var nq = normTerm(query);
 		var best = Object.create(null);
+		// "utc+8", "GMT-5", "utc +5:30", "+8": the fixed offset itself, then the cities that are on that offset right now
+		var om = /^(?:utc|gmt)?\s*([+\-\u2212\u2013])\s*(\d{1,2})(?::?(\d{2}))?$/i.exec(String(query || "").trim());
+		if (om) {
+			var tmin = (om[1] === "+" ? 1 : -1) * (+om[2] * 60 + (om[3] ? +om[3] : 0)), nowD = new Date();
+			if (tmin >= -12 * 60 && tmin <= 14 * 60) {
+				limit = Math.max(limit, 12);
+				if (tmin % 60 === 0) { var ez = etcZone(tmin / 60); if (!exclude[ez]) consider(ez, 2000, null); else best[ez] = { score: 2000, via: null }; }
+				POPULAR.concat(allZones()).forEach(function (z) {
+					if (z === "UTC" || /^(Etc|SystemV|US|Canada|Brazil|Chile|Mexico)\//.test(z) || z.indexOf("/") < 0 || /\/(Calcutta|Katmandu|Saigon|Rangoon|Thimbu|Dacca|Ujung_Pandang|Macao|Kashgar|Chongqing|Chungking|Harbin|Ulan_Bator|Coral_Harbour|Godthab|Yangon_)/.test(z)) return;
+					if (offsetMin(z, nowD) !== tmin) return;
+					var pi = POPULAR.indexOf(z);
+					consider(z, pi >= 0 ? 1500 - pi : 900, null);
+				});
+				if (tmin === 0) consider("UTC", 2000, null);
+			}
+		}
 		function consider(zone, score, via) {
 			if (!zone) return;
 			var cur = best[zone];
 			if (!cur || score > cur.score) best[zone] = { score: score, via: via };
 		}
-		if (!nq) {
+		if (om && Object.keys(best).length) {
+			/* offset query handled above */
+		} else if (!nq) {
 			POPULAR.forEach(function (z, i) { if (!exclude[z]) consider(z, 1000 - i, null); });
 		} else {
 			var m = searchIndex();
@@ -434,13 +452,22 @@
 		return "UTC" + sign + hh + (mm ? ":" + String(mm).padStart(2, "0") : "");
 	}
 
+	// "Etc/GMT-8" is the fixed offset UTC+8 (the POSIX sign is inverted); used for searches like "utc+8"
+	function etcOffset(z) {
+		var m = /^Etc\/GMT([+-])(\d{1,2})$/.exec(z || "");
+		return m ? (m[1] === "-" ? 1 : -1) * (+m[2]) : null;
+	}
+	function etcZone(hours) { return hours === 0 ? "UTC" : "Etc/GMT" + (hours > 0 ? "-" : "+") + Math.abs(hours); }
 	function cityOf(z) {
 		if (z === "UTC") return "UTC";
+		var eo = etcOffset(z);
+		if (eo !== null) return "UTC" + (eo >= 0 ? "+" : "\u2212") + Math.abs(eo);
 		var seg = z.split("/");
 		return seg[seg.length - 1].replace(/_/g, " ");
 	}
 	function regionOf(z) {
 		if (z === "UTC") return "Coordinated Universal Time";
+		if (etcOffset(z) !== null) return "Fixed offset, no daylight saving";
 		var seg = z.split("/");
 		return seg.slice(0, -1).join(" · ").replace(/_/g, " ");
 	}
@@ -685,7 +712,7 @@
 			var txt = (delta > 0 ? "+" : "−") + Math.abs(delta) + " day" + (Math.abs(delta) > 1 ? "s" : "");
 			badge = '<span class="tz__card__daydiff ' + cls + '">' + txt + "</span>";
 		}
-		var flag = FLAG[z] ? '<span class="tz__flag">' + FLAG[z] + "</span>" : "";
+		var flag = FLAG[z] ? '<span class="tz__flag">' + FLAG[z] + "</span>" : (etcOffset(z) !== null ? '<span class="tz__flag">\u{1F550}</span>' : "");
 		var abbr = zoneName(z, instant, "short");
 		var longNm = zoneName(z, instant, "long");
 		var place = z === HOME ? "Richmond / Vancouver, BC" : cityOf(z);
@@ -701,6 +728,7 @@
 		}
 
 		li.innerHTML =
+			(isHome ? "" : '<button type="button" class="tz__grip" title="Drag to reorder (or use the up / down arrow keys)" aria-label="Reorder ' + place + '">\u22EE\u22EE</button>') +
 			'<div class="tz__card__main">' +
 				'<div class="tz__card__place">' + flag + place + (isHome ? ' <span class="tz__card__daydiff">start</span>' : badge) + "</div>" +
 				'<div class="tz__card__meta">' + metaBits.join(" · ") + "</div>" +
@@ -712,6 +740,8 @@
 			(isHome ? "" : '<button type="button" class="tz__remove" title="Remove" aria-label="Remove ' + place + '">×</button>');
 
 		if (!isHome) {
+			li.setAttribute("data-zone", z);
+			wireGrip(li, z);
 			li.querySelector(".tz__remove").addEventListener("click", function () {
 				state.targets = state.targets.filter(function (t) { return t !== z; });
 				commit();
@@ -720,7 +750,61 @@
 		return li;
 	}
 
+	/* ---- drag to reorder (the start city stays first) ------------------ */
+	var dragging = false;
+	function moveTarget(z, to) {
+		var i = state.targets.indexOf(z); if (i < 0) return;
+		to = Math.max(0, Math.min(state.targets.length - 1, to)); if (to === i) return;
+		state.targets.splice(i, 1); state.targets.splice(to, 0, z);
+	}
+	function wireGrip(li, z) {
+		var grip = li.querySelector(".tz__grip");
+		grip.addEventListener("keydown", function (e) {
+			if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+			e.preventDefault();
+			var i = state.targets.indexOf(z), to = i + (e.key === "ArrowUp" ? -1 : 1);
+			if (to < 0 || to >= state.targets.length) return;
+			moveTarget(z, to); commit();
+			var g = list.querySelector('[data-zone="' + z + '"] .tz__grip'); if (g) g.focus();
+		});
+		grip.addEventListener("pointerdown", function (e) {
+			if (e.button != null && e.button > 0) return;
+			e.preventDefault();
+			var cards = Array.prototype.slice.call(list.querySelectorAll(".tz__card[data-zone]"));
+			var from = cards.indexOf(li); if (from < 0) return;
+			var rects = cards.map(function (c) { return c.getBoundingClientRect(); });
+			var h = rects[from].height + (cards.length > 1 ? (rects[1] ? Math.max(0, rects[1].top - rects[0].bottom) : 0) : 0);
+			var startY = e.clientY, startScroll = window.pageYOffset, cur = from, lastY = e.clientY, raf = 0;
+			dragging = true; grip.setPointerCapture(e.pointerId);
+			li.classList.add("tz__card--drag"); list.classList.add("tz__list--dragging");
+			cards.forEach(function (c) { if (c !== li) c.style.transition = "transform 180ms ease"; });
+			function layout() {
+				var dy = lastY - startY + (window.pageYOffset - startScroll);
+				li.style.transform = "translateY(" + dy + "px)";
+				var mid = rects[from].top + rects[from].height / 2 + dy, to = from, i;
+				for (i = 0; i < cards.length; i++) { if (i === from) continue; var m = rects[i].top + rects[i].height / 2; if (i < from && mid < m) { to = Math.min(to, i); } if (i > from && mid > m) { to = Math.max(to, i); } }
+				cur = to;
+				cards.forEach(function (c, i2) { if (c === li) return; var sh = 0; if (from < cur && i2 > from && i2 <= cur) sh = -h; else if (from > cur && i2 >= cur && i2 < from) sh = h; c.style.transform = sh ? "translateY(" + sh + "px)" : ""; });
+			}
+			function auto() {
+				var vh = window.innerHeight, y = lastY, step = y < 70 ? -14 : (y > vh - 70 ? 14 : 0);
+				if (step) { window.scrollBy(0, step); layout(); raf = requestAnimationFrame(auto); } else raf = 0;
+			}
+			function mv(ev) { lastY = ev.clientY; layout(); if (!raf && (lastY < 70 || lastY > window.innerHeight - 70)) raf = requestAnimationFrame(auto); }
+			function up() {
+				grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up); if (raf) cancelAnimationFrame(raf);
+				// settle the dragged card into its slot, then rebuild the list in the new order
+				var settle = (cur === from) ? 0 : (cur > from ? rects[cur].bottom - rects[from].bottom : rects[cur].top - rects[from].top);
+				li.style.transition = "transform 160ms ease"; li.style.transform = "translateY(" + settle + "px)";
+				setTimeout(function () { dragging = false; moveTarget(li.getAttribute("data-zone"), cur); commit(); }, 170);
+			}
+			grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+			layout();
+		});
+	}
+
 	function render() {
+		if (dragging) return;
 		if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date)) state.date = todayInZone(state.from);
 		if (!/^\d{1,2}:\d{2}$/.test(state.time)) state.time = nowTimeInZone(state.from);
 

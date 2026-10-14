@@ -269,6 +269,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tz__card__daydiff {display:inline-block;font-size:0.72em;font-weight:700;padding:0.1em 0.45em;border-radius:0.8em;margin-left:0.35em;background:#eef1f5;color:#5a6572;vertical-align:middle;}
 	.tz__card__daydiff--plus {background:#e6f0e6;color:#2f6d33;}
 	.tz__card__daydiff--minus {background:#f6e6e6;color:#9a3b3b;}
+	.tz__grip {flex:0 0 auto;border:none;background:none;color:#aab2bd;font-size:1.05em;letter-spacing:-0.15em;cursor:grab;padding:0.3em 0.15em;margin-left:-0.35em;line-height:1;border-radius:0.25em;touch-action:none;user-select:none;-webkit-user-select:none;}
+	.tz__grip:hover, .tz__grip:focus-visible {color:var(--accent);background:rgba(0,0,0,0.05);outline:none;}
+	.tz__card--drag {position:relative;z-index:5;cursor:grabbing;box-shadow:0 8px 22px rgba(0,0,0,0.22);transition:box-shadow 120ms;}
+	.tz__list--dragging, .tz__list--dragging * {cursor:grabbing !important;user-select:none;-webkit-user-select:none;}
+	body.dark-mode .tz__grip{color:#989da4} body.dark-mode .tz__grip:hover, body.dark-mode .tz__grip:focus-visible{color:#8ab4ff;background:rgba(255,255,255,0.06)}
+	body.dark-mode .tz__card--drag{box-shadow:0 8px 22px rgba(0,0,0,0.6)}
 	.tz__remove {flex:0 0 auto;border:none;background:none;color:#aab2bd;font-size:1.2em;cursor:pointer;padding:0.2em 0.35em;line-height:1;border-radius:0.25em;}
 	.tz__remove:hover {color:#c0392b;background:#f7ecec;}
 	.tz__share {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-top:1.1em;font-size:0.9em;}
@@ -287,7 +293,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	}
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box,
-		.tz__btns, .tz__addrow, .tz__share, .tz__remove, .color-box, .tz-seo { display:none !important; }
+		.tz__btns, .tz__addrow, .tz__share, .tz__remove, .tz__grip, .color-box, .tz-seo { display:none !important; }
 		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
 	}
 	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
@@ -762,7 +768,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/timezone/js/timezone.js?v=4" defer></script>
+	<script src="/timezone/js/timezone.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
