@@ -162,6 +162,7 @@
     { "source": "/lyapunov", "destination": "/double-pendulum", "permanent": true },
     { "source": "/pendulum-simulator", "destination": "/double-pendulum", "permanent": true },
     { "source": "/double-pendulum-calculator", "destination": "/double-pendulum", "permanent": true },
+    { "source": "/emf", "destination": "/electromagnetic-fields-simulator", "permanent": true },
     { "source": "/electromagnetic-fields", "destination": "/electromagnetic-fields-simulator", "permanent": true },
     { "source": "/electromagnetism", "destination": "/electromagnetic-fields-simulator", "permanent": true },
     { "source": "/electromagnetic-simulator", "destination": "/electromagnetic-fields-simulator", "permanent": true },

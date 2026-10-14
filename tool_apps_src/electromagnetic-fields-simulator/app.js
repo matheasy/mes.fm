@@ -47,6 +47,8 @@
 		};
 		V.pos = function (e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * (V.W / r.width), (e.clientY - r.top) * (V.H / r.height)]; };
 		V.fit = function () { return Math.min(V.W, V.H * V.aspect); };   /* the scene is scaled to fit its design shape: a short, wide box (phone landscape, Fill window) shows more of the world instead of cropping top and bottom */
+		/* a long press / drag on a phone must not select the canvas (Android paints the whole picture blue) or open the context menu */
+		["contextmenu", "selectstart", "dragstart"].forEach(function (n) { st.addEventListener(n, function (e) { e.preventDefault(); }); });
 		V.begin = function () { V.cx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0); };
 		return V;
 	}

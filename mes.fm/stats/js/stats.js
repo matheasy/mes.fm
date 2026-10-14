@@ -865,6 +865,22 @@ function renderLegend() {
   tsLegendEl.innerHTML = html;
 }
 
+// Days and hours are counted in UTC (api/_bucket-keys.js), so the dashed
+// "today" point is complete at the next UTC midnight; show that as a
+// countdown plus the viewer's own local clock time, refreshed each minute.
+function periodEndsText(unit) {
+  const now = new Date();
+  const end = unit === 'hourly'
+    ? new Date(Math.floor(now.getTime() / 3600000) * 3600000 + 3600000)
+    : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  const mins = Math.max(1, Math.ceil((end - now) / 60000));
+  const left = mins >= 60 ? Math.floor(mins / 60) + ' h ' + (mins % 60) + ' min' : mins + ' min';
+  let at = '';
+  try { at = end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (e) { /* ignore */ }
+  return ': ' + (unit === 'hourly' ? 'this hour' : 'today') + ' is complete in ' + left + (at ? ' (' + at + ' your time' + (unit === 'hourly' ? '' : ', midnight UTC') + ')' : '');
+}
+setInterval(function () { if (typeof renderTsChart === 'function' && tsRawPoints && tsRawPoints.length) renderTsChart(); }, 60000);
+
 // Weekly reuses the exact same line chart as daily/hourly, just fed
 // buildWeeklyPoints(...) instead -- no refetch, just a
 // re-aggregate-and-redraw of what's already in hand.
@@ -885,7 +901,7 @@ function renderTsChart() {
   } else {
     const unitWord = tsUnit === 'hourly' ? 'Hourly' : 'Daily';
     const partialWord = tsUnit === 'hourly' ? 'the current hour' : 'today';
-    note = unitWord + ' totals for ' + rangeDesc + '. The dashed segment is ' + partialWord + ', still filling in.';
+    note = unitWord + ' totals for ' + rangeDesc + '. The dashed segment is ' + partialWord + ', still filling in' + periodEndsText(tsUnit) + '.';
   }
   if (breakdown === 'devices') note += ' One line per device type.';
   else if (breakdown === 'sources') note += ' One line per traffic source.';
