@@ -1,0 +1,71 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ri" id="ri">
+		<div class="tu-card ri-src">
+			<div class="tu-seg" id="ri-mode" role="group" aria-label="Where is the image?"><button type="button" data-m="link" aria-pressed="true">&#128279; Paste an image link</button><button type="button" data-m="file" aria-pressed="false">&#128444; Upload, drop or paste a picture</button></div>
+
+			<div id="ri-linkbox" class="ri-box">
+				<label class="tu-label" for="ri-link">Link to the image</label>
+				<div class="ri-row"><input id="ri-link" class="tu-input tu-input--big" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://example.com/photo.jpg"><button type="button" class="tu-btn tu-btn--ghost" id="ri-pastelink">Paste</button></div>
+				<p class="tu-note">Right-click a picture on any site and choose <i>Copy image address</i> (or <i>Copy image link</i>), then paste it here. Links that end in .jpg, .png or .webp work best.</p>
+			</div>
+
+			<div id="ri-filebox" class="ri-box" hidden>
+				<div class="ri-drop" id="ri-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture">
+					<div class="ri-drop__big">Drop a picture here</div>
+					<div class="ri-drop__sub">or <b>click to choose</b> a file, or press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> to paste a screenshot or copied image</div>
+					<input type="file" id="ri-file" accept="image/*" hidden>
+				</div>
+				<p class="tu-note">Your picture stays in this browser. It is only sent to a search site when you press its Open button.</p>
+			</div>
+
+			<div class="ri-prev" id="ri-prev" hidden>
+				<div class="ri-stage" id="ri-stage"><img id="ri-img" alt="The image you are searching for" draggable="true" referrerpolicy="no-referrer"><canvas id="ri-cv"></canvas><div class="ri-sel" id="ri-sel" hidden></div></div>
+				<div class="ri-prev__side">
+					<div class="ri-info" id="ri-info"></div>
+					<div class="tu-chips ri-edit" id="ri-edit" hidden>
+						<button type="button" class="tu-chip" data-op="rl" title="Rotate left">&#10226; Rotate</button><button type="button" class="tu-chip" data-op="rr" title="Rotate right">&#10227; Rotate</button><button type="button" class="tu-chip" data-op="fh" title="Mirror the picture: finds copies that were flipped">&#8596; Flip</button><button type="button" class="tu-chip" data-op="nosel" id="ri-nosel" hidden>Whole picture</button>
+					</div>
+					<p class="tu-note" id="ri-hint"></p>
+				</div>
+			</div>
+		</div>
+
+		<div class="ri-engines" id="ri-engines" hidden>
+			<div class="ri-bar">
+				<div class="tu-chips" id="ri-sets" aria-label="Quick sets"></div>
+				<button type="button" class="tu-btn tu-btn--primary ri-go" id="ri-go">Open 0 selected</button>
+			</div>
+			<p class="tu-note ri-modenote" id="ri-modenote"></p>
+			<div class="ri-queue" id="ri-queue" hidden></div>
+			<div id="ri-list"></div>
+			<details class="ri-custom"><summary>Add your own image search site</summary>
+				<p class="tu-note">Paste the site's address with <code>%s</code> (or <code>{u}</code>) where the image link goes, for example <code>https://tineye.com/search?url=%s</code>.</p>
+				<div class="ri-row"><input id="ri-cname" class="tu-input" placeholder="Name"><input id="ri-ctpl" class="tu-input" placeholder="https://site.example/search?image=%s" style="flex:3"><button type="button" class="tu-btn tu-btn--primary" id="ri-cadd">Add</button></div>
+				<div id="ri-clist"></div>
+			</details>
+		</div>
+		<div class="tu-toast" id="ri-toast" role="status" aria-live="polite"></div>
+		<div class="tu-seo">
+			<h2>Reverse image search on every engine at once</h2>
+			<p>Reverse image search finds where a picture came from. Instead of visiting Google Lens, Bing, TinEye and Yandex one by one, give the picture once and open all of them together. Paste a link, or upload, drop or paste the picture itself, tick the sites you want and press <em>Open</em>.</p>
+			<h3>What makes this one useful</h3>
+			<ul>
+				<li><strong>Link or file.</strong> Paste an image address, drag a picture in, choose a file, or paste a screenshot straight from your clipboard.</li>
+				<li><strong>Search just part of the picture.</strong> Drag a box around the person, object or logo you care about (file mode).</li>
+				<li><strong>Rotate and flip</strong> first: many reposts are mirrored, and a flipped copy finds them.</li>
+				<li><strong>Sets for the job:</strong> popular engines, finding the original, art and anime sources.</li>
+				<li><strong>Add your own</strong> reverse image search site; your choices are remembered on this device.</li>
+				<li><strong>Private:</strong> nothing is uploaded to mes.fm. Your picture only goes to the sites you open.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Why do some sites need me to press Ctrl+V?</h4>
+			<p>Google Lens, TinEye and some others do not accept a picture sent from another website (they refuse it for security). So with a file, this page copies the picture to your clipboard and opens the site: press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> there. SauceNAO and IQDB accept the file directly. With a link, every site opens already searching.</p>
+			<h4>How do I find the original source of a photo?</h4>
+			<p>Use the <em>Find the original</em> set. In TinEye, sort the results by <em>Oldest</em>; in Google Lens look for the largest version and the earliest date. Then check who posted it first.</p>
+			<h4>What can I do with a local screenshot if a site only takes links?</h4>
+			<p>Use the paste route (Lens, Bing, Yandex and TinEye all accept a pasted picture), or upload the file to a place you control and paste its link.</p>
+			<h4>Is there face search?</h4>
+			<p>No, on purpose. Face-recognition search sites can be used to track and harass people, so they are not included. You can still add any site yourself with the button above.</p>
+			<p class="tu-note">Want to search words instead? Use <a href="/search-engines">Search Engines</a>, which opens one text search in 70+ engines.</p>
+		</div>
+	</div>

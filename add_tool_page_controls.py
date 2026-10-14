@@ -63,7 +63,8 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("share", "Share Launcher"),   # also built by build_tool_apps.py
     ("search", "Site Search"),     # also built by build_tool_apps.py
     ("calendar", "Calendar"),      # also built by build_tool_apps.py
-    ("search-engines", "Search Engines"),   # also built by build_tool_apps.py (wide page)
+    ("search-engines", "Search Engines"),
+    ("reverse-image-search", "Reverse Image Search"),   # also built by build_tool_apps.py   # also built by build_tool_apps.py (wide page)
     ("site-index", "Site Index"),
     ("browser", "Browser Extensions"),   # also built by build_tool_apps.py
     ("videospeed", "Video Speed Controller"),

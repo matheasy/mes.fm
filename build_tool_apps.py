@@ -304,6 +304,11 @@ APPS = {
                             js_v="4"),
     # Search Engines: type one search and open it in many engines (tabs, tiled windows or same tab); sets for censorship / SEO / privacy comparisons; own engines.
     # lib.js = engine table + URL builder (node-testable: tool_apps_src/search-engines-tests.js), app.js = UI. Wide page, no sidebar.
+    # Reverse Image Search (2026-10-14): companion of search-engines. lib.js = engine table + URL builder (node tests: tool_apps_src/reverse-image-search-tests.js), app.js = UI.
+    "reverse-image-search": dict(title="MES Reverse Image Search", page_title="Reverse Image Search",
+                                 tag="One picture, every reverse image search.", accent="#4f46e5", dark="#3730a3", tint="#e8e7fb",
+                                 desc="Free reverse image search on Google Lens, Bing, TinEye, Yandex, Baidu, SauceNAO and more at once: paste an image link or upload, drop or paste a picture, search just part of it, flip it, and open every site together. Private: your picture is never uploaded to mes.fm.",
+                                 js_v="1"),
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",
                            tag="One search, every search engine.", accent="#c2410c", dark="#9a3412", tint="#fdeadf",
                            desc="Type your search once and open it in Google (.com, .ca, .co.uk and more), Bing, DuckDuckGo, Brave, Yandex and 60+ other search engines, AI assistants and video sites, in tabs or tiled windows. Compare results, check censorship and bias, and add your own engines.",
