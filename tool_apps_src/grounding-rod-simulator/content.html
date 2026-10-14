@@ -7,10 +7,12 @@
 				<button type="button" data-tab="static" aria-pressed="false">4. Static</button>
 				<button type="button" data-tab="rules" aria-pressed="false">5. Rules by region</button>
 			</div>
+			<div class="gr-show" id="gr-show" role="group" aria-label="Choose what to show"><span class="gr-show__l">Show:</span>
+				<button type="button" data-p="pic" aria-pressed="true">Picture</button><button type="button" data-p="in" aria-pressed="true">Inputs</button><button type="button" data-p="res" aria-pressed="true">Results</button><button type="button" data-p="more" aria-pressed="true">Notes</button></div>
 		</div>
 
 
-		<div class="tu-card" id="gr-house">
+		<div class="tu-card" id="gr-house" data-part="pic">
 			<div class="gr-hdr"><h2 class="gr-h">How it all fits together</h2>
 				<div class="em-chips gr-sc" id="gr-sc" role="group" aria-label="What to show">
 					<button type="button" data-sc="normal">Normal wiring</button><button type="button" data-sc="egc">Fault, proper ground wire</button><button type="button" data-sc="rod">Fault, rod only</button><button type="button" data-sc="none">Fault, no ground at all</button><button type="button" data-sc="light">Lightning nearby</button>
@@ -67,7 +69,7 @@
 			<p class="gr-cap" id="gr-cap" aria-live="polite"></p>
 		</div>
 		<section id="gr-p-rod">
-			<div class="tu-card">
+			<div class="tu-card" data-part="in">
 				<div class="tu-row">
 					<div class="tu-field" style="flex-basis:16em;"><label for="gr-soil">Soil</label><select id="gr-soil" class="tu-select"></select></div>
 					<div class="tu-field tu-field--sm"><label for="gr-rho">Soil resistivity (Ω·m)</label><input id="gr-rho" class="tu-input" type="text" inputmode="decimal"></div>
@@ -82,17 +84,17 @@
 				</div>
 				<p class="tu-note">Not sure of your soil? Pick the nearest type; the soil is the biggest unknown. A rod's resistance to earth varies a lot with moisture, frost and season, so measure it (fall-of-potential test) rather than trusting any calculation.</p>
 			</div>
-			<div class="tu-stats">
+			<div class="tu-stats" data-part="res">
 				<div class="tu-stat tu-stat--hero"><div class="tu-stat__label">Resistance to earth</div><div class="tu-stat__value" id="gr-R">–</div><div class="tu-stat__sub" id="gr-Rs"></div></div>
 				<div class="tu-stat"><div class="tu-stat__label">A single rod would be</div><div class="tu-stat__value" id="gr-R1">–</div><div class="tu-stat__sub" id="gr-R1s"></div></div>
 				<div class="tu-stat"><div class="tu-stat__label">Rods needed for the target</div><div class="tu-stat__value" id="gr-need">–</div><div class="tu-stat__sub" id="gr-needs"></div></div>
 			</div>
-			<div class="tu-card">
+			<div class="tu-card" data-part="more">
 				<h2 class="gr-h">Longer rod or more rods?</h2>
 				<div class="tu-table-wrap"><table class="tu-table" id="gr-grid"></table></div>
 				<p class="tu-note" id="gr-gridn"></p>
 			</div>
-			<div class="tu-card gr-truth">
+			<div class="tu-card gr-truth" data-part="more">
 				<h2 class="gr-h">What a ground rod does, and what it doesn't</h2>
 				<ul>
 					<li><strong>It ties your wiring to the earth's potential</strong>, so the whole system can't float to a dangerous voltage compared with the ground you stand on (a nearby lightning strike, a utility line touching a primary line, static build-up).</li>
@@ -104,7 +106,7 @@
 		</section>
 
 		<section id="gr-p-fault" hidden>
-			<div class="tu-card">
+			<div class="tu-card" data-part="in">
 				<div class="tu-row">
 					<div class="tu-field tu-field--sm"><label for="gr-v">Line voltage to ground</label><select id="gr-v" class="tu-select"><option value="120">120 V (US / Canada)</option><option value="230">230 V (UK / EU / AU / VN)</option><option value="240">240 V (AU / NZ)</option></select></div>
 					<div class="tu-field tu-field--sm"><label for="gr-in">Breaker rating (A)</label><input id="gr-in" class="tu-input" type="text" value="15" inputmode="decimal"></div>
@@ -119,9 +121,9 @@
 				</div>
 				<p class="tu-note">The rod in these cases is the one from tab 1: <strong id="gr-rodused">–</strong>. A hot wire touches a metal appliance case.</p>
 			</div>
-			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="gr-faults"></table></div>
+			<div class="tu-card" data-part="res"><div class="tu-table-wrap"><table class="tu-table" id="gr-faults"></table></div>
 				<p class="tu-note">Trip times are rough: real breakers follow their own curve. Body model: 1,000 Ω hand to feet plus the floor. Touch voltage is the voltage between the case and the ground at your feet.</p></div>
-			<div class="tu-card">
+			<div class="tu-card" data-part="more">
 				<h2 class="gr-h">GFCI / RCD: the part that protects <em>you</em></h2>
 				<p>A GFCI (US/Canada, trips at about 5 mA) or RCD (elsewhere, usually 30 mA) compares the current going out with the current coming back and cuts power within ~25 to 40 ms when a few mA go astray, <em>whatever the grounding</em>. In the no-ground case above the body current would be <strong id="gr-nogcurrent">–</strong>: far over the 5 and 30 mA trip points.</p>
 				<h3 class="gr-h3">TT systems (no earth from the supplier, a rod is the only earth)</h3>
@@ -132,7 +134,7 @@
 		</section>
 
 		<section id="gr-p-light" hidden>
-			<div class="tu-card">
+			<div class="tu-card" data-part="in">
 				<div class="tu-row">
 					<div class="tu-field" style="flex-basis:16em;"><label for="gr-ipk">Strike current</label><select id="gr-ipk" class="tu-select"><option value="3">3 kA: weak / nearby discharge</option><option value="30" selected>30 kA: a typical strike</option><option value="100">100 kA: a severe strike</option><option value="200">200 kA: about the strongest</option></select></div>
 					<div class="tu-field tu-field--sm"><label for="gr-dist">Distance from the strike point</label><div class="gr-pair"><input id="gr-dist" class="tu-input" type="text" value="10" inputmode="decimal"><span class="gr-u">m</span></div></div>
@@ -141,16 +143,16 @@
 				</div>
 				<p class="tu-note">Uses the soil and the rod from tab 1: <strong id="gr-rodused2">–</strong>. Textbook point-source model for uniform soil at low frequency: real strikes are far faster, splash across the surface and ionise the soil, so treat the numbers as the right order of magnitude, never as safe limits.</p>
 			</div>
-			<div class="tu-stats">
+			<div class="tu-stats" data-part="res">
 				<div class="tu-stat tu-stat--hero"><div class="tu-stat__label">Ground rise at the struck rod</div><div class="tu-stat__value" id="gr-gpr">–</div><div class="tu-stat__sub" id="gr-gprs"></div></div>
 				<div class="tu-stat"><div class="tu-stat__label">Step voltage at your distance</div><div class="tu-stat__value" id="gr-step">–</div><div class="tu-stat__sub" id="gr-steps"></div></div>
 				<div class="tu-stat"><div class="tu-stat__label">Voltage between two unbonded rods</div><div class="tu-stat__value" id="gr-btw">–</div><div class="tu-stat__sub" id="gr-btws"></div></div>
 			</div>
-			<div class="tu-card">
+			<div class="tu-card" data-part="res">
 				<div class="gr-plot-t">Voltage in the ground around a strike (log scales)</div>
 				<canvas id="gr-cv" width="900" height="360" role="img" aria-label="Ground voltage falling with distance from the strike point"></canvas>
 			</div>
-			<div class="tu-card gr-truth">
+			<div class="tu-card gr-truth" data-part="more">
 				<h2 class="gr-h">What actually protects a home</h2>
 				<ul>
 					<li><strong>Bonding, not draining.</strong> Every rod, water pipe, gas pipe, antenna mast, dish and the electrical ground must be tied together. Then everything rises and falls as one and nothing sparks between them. Two rods that aren't bonded can differ by hundreds of kilovolts in a strike (the third number above).</li>
@@ -162,7 +164,7 @@
 		</section>
 
 		<section id="gr-p-static" hidden>
-			<div class="tu-card">
+			<div class="tu-card" data-part="in">
 				<div class="tu-row">
 					<div class="tu-field" style="flex-basis:17em;"><label for="gr-sobj">What is charged</label><select id="gr-sobj" class="tu-select"></select></div>
 					<div class="tu-field tu-field--sm"><label for="gr-sC">Capacitance (pF)</label><input id="gr-sC" class="tu-input" type="text" inputmode="decimal"></div>
@@ -170,17 +172,17 @@
 					<div class="tu-field" style="flex-basis:17em;"><label for="gr-sR">Path to ground</label><select id="gr-sR" class="tu-select"></select></div>
 				</div>
 			</div>
-			<div class="tu-stats">
+			<div class="tu-stats" data-part="res">
 				<div class="tu-stat tu-stat--hero"><div class="tu-stat__label">Energy that can go into a spark</div><div class="tu-stat__value" id="gr-sE">–</div><div class="tu-stat__sub" id="gr-sEs"></div></div>
 				<div class="tu-stat"><div class="tu-stat__label">Time to drain (RC)</div><div class="tu-stat__value" id="gr-sT">–</div><div class="tu-stat__sub" id="gr-sTs"></div></div>
 				<div class="tu-stat"><div class="tu-stat__label">Time to fall below 100 V</div><div class="tu-stat__value" id="gr-s100">–</div><div class="tu-stat__sub" id="gr-s100s"></div></div>
 			</div>
-			<div class="tu-card">
+			<div class="tu-card" data-part="res">
 				<h2 class="gr-h">Can that spark ignite something?</h2>
 				<div class="tu-table-wrap"><table class="tu-table" id="gr-mie"></table></div>
 				<p class="tu-note">Minimum ignition energies are typical published values for the best mixture; real ones vary with the mixture and the spark.</p>
 			</div>
-			<div class="tu-card gr-truth">
+			<div class="tu-card gr-truth" data-part="more">
 				<h2 class="gr-h">How grounding handles static</h2>
 				<ul>
 					<li><strong>The time constant is R × C.</strong> A person is only ~100 to 200 pF, so even a 1 GΩ path drains them in a fraction of a second; a good insulator (R of 10<sup>13</sup> Ω or more) holds charge for hours.</li>
@@ -192,12 +194,12 @@
 		</section>
 
 		<section id="gr-p-rules" hidden>
-			<div class="tu-card">
+			<div class="tu-card" data-part="in">
 				<div class="tu-row"><div class="tu-field" style="flex-basis:20em;"><label for="gr-reg">Region</label><select id="gr-reg" class="tu-select"></select></div></div>
 				<p class="tu-note gr-warn"><strong>Read this first.</strong> This is a plain-language summary to help you understand and ask the right questions. Codes are revised every few years and amended by states, provinces and utilities, and installing or changing a service ground is regulated work in most places. Use a licensed electrician and the inspection authority for the real requirement.</p>
 			</div>
-			<div class="tu-card" id="gr-rules"></div>
-			<div class="tu-card">
+			<div class="tu-card" data-part="res" id="gr-rules"></div>
+			<div class="tu-card" data-part="more">
 				<h2 class="gr-h">Home electrical safety checklist</h2>
 				<ul class="gr-check">
 					<li>Press TEST / RESET on every GFCI or RCD each month; replace any that won't trip.</li>

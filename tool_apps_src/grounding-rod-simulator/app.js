@@ -21,7 +21,7 @@
 		rho: pick("rho", function (v) { return num(v) > 0; }, "100"), L: pick("L", function (v) { return num(v) > 0; }, "2.4"), lu: pick("lu", function (v) { return v === "m" || v === "ft"; }, "m"),
 		d: pick("d", function (v) { return G.DIAS.some(function (s) { return s.id === v; }); }, "d58"), n: pick("n", function (v) { return num(v) >= 1; }, "1"),
 		sp: pick("s", function (v) { return num(v) > 0; }, "2.4"), su: "m", t: pick("t", function (v) { return num(v) > 0; }, "25"),
-		reg: saved.reg || "us"
+		reg: saved.reg || "us", show: Object.assign({ pic: true, "in": true, res: true, more: true }, saved.show || {})
 	};
 	/* ---- regions (summaries; hedged on the page) ---- */
 	var REG = [
@@ -197,9 +197,15 @@
 		svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up); svg.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") up(e); });
 	})();
 	var P = { rod: $("gr-p-rod"), fault: $("gr-p-fault"), light: $("gr-p-light"), static: $("gr-p-static"), rules: $("gr-p-rules") };
-	function show() { S.sc = TABSC[S.tab] || "normal"; Object.keys(P).forEach(function (k) { P[k].hidden = k !== S.tab; }); Array.prototype.forEach.call($("gr-tabs").children, function (b) { b.setAttribute("aria-pressed", b.dataset.tab === S.tab ? "true" : "false"); }); }
+	function applyShow() {
+		var picOk = S.tab === "rod" || S.tab === "fault" || S.tab === "light";
+		Array.prototype.forEach.call(root.querySelectorAll("[data-part]"), function (el) { var p = el.getAttribute("data-part"); el.classList.toggle("gr-off", !S.show[p] || (p === "pic" && !picOk)); });
+		Array.prototype.forEach.call($("gr-show").children, function (b) { if (!b.dataset.p) return; var on = !!S.show[b.dataset.p]; b.setAttribute("aria-pressed", on ? "true" : "false"); b.hidden = b.dataset.p === "pic" && !picOk; });
+	}
+	$("gr-show").onclick = function (e) { var b = e.target.closest("button"); if (!b || !b.dataset.p) return; S.show[b.dataset.p] = !S.show[b.dataset.p]; applyShow(); save(); };
+	function show() { S.sc = TABSC[S.tab] || "normal"; Object.keys(P).forEach(function (k) { P[k].hidden = k !== S.tab; }); Array.prototype.forEach.call($("gr-tabs").children, function (b) { b.setAttribute("aria-pressed", b.dataset.tab === S.tab ? "true" : "false"); }); applyShow(); }
 	function all() { rodTab(); faultTab(); lightTab(); staticTab(); rulesTab(); diagram(); }
-	function save() { sset({ tab: S.tab, soil: S.soil, rho: S.rho, L: S.L, lu: S.lu, d: S.d, n: S.n, s: S.sp, t: S.t, reg: S.reg }); }
+	function save() { sset({ tab: S.tab, soil: S.soil, rho: S.rho, L: S.L, lu: S.lu, d: S.d, n: S.n, s: S.sp, t: S.t, reg: S.reg, show: S.show }); }
 	function link() { var u = new URL(location.href); u.search = ""; u.searchParams.set("tab", S.tab); u.searchParams.set("rho", S.rho); u.searchParams.set("L", S.lu === "ft" ? String(+(num(S.L) * FT).toFixed(3)) : S.L); u.searchParams.set("d", S.d); u.searchParams.set("n", S.n); u.searchParams.set("s", String(+spM().toFixed(3))); u.searchParams.set("t", S.t); return u.toString(); }
 
 	$("gr-tabs").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; S.tab = b.dataset.tab; show(); all(); save(); };

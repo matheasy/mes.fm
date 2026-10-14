@@ -52,3 +52,9 @@
 	body.dark-mode #gr #gr-svg .gr-t.gr-hot {fill:#ffb4b4 !important;} body.dark-mode #gr #gr-svg .gr-t.gr-g {fill:#9af0b4 !important;} body.dark-mode #gr #gr-svg .gr-t.gr-lab {fill:#ffc58a !important;}
 	body.dark-mode #gr #gr-svg .gr-xfmr, body.dark-mode #gr #gr-svg .gr-box, body.dark-mode #gr #gr-svg .gr-case {fill:#2f3744 !important;stroke:#e5e7eb !important;}
 	body.dark-mode #gr .gr-cap, body.dark-mode #gr .gr-cap strong {color:#f3f4f6;} body.dark-mode #gr .gr-zhint {opacity:0.85;}
+
+	#gr .gr-off {display:none !important;}
+	.gr-show {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.7em;} .gr-show__l {font-size:0.85em;font-weight:700;opacity:0.75;margin-right:0.2em;}
+	.gr-show button {cursor:pointer;font:inherit;font-size:0.85em;padding:0.25em 0.8em;border-radius:1em;border:1px solid #c9d2dc;background:#fff;color:#667;text-decoration:line-through;} .gr-show button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;text-decoration:none;font-weight:700;} .gr-show button[hidden] {display:none;}
+	body.dark-mode #gr .gr-show button {background:#2b2f36;border-color:#454c58;color:#a0a8b3;} body.dark-mode #gr .gr-show button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	#gr-svg {max-height:min(62vh,430px);}
