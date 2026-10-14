@@ -249,7 +249,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
 	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
-	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
 	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
@@ -372,6 +380,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mb .tu-table-wrap {max-height:22em;overflow:auto;}
 	@media (max-width: 640px) { .mb-jbox {width:38%;} }
 	.mb-top .mb-run {position:static;display:flex;gap:0.4em;flex-wrap:wrap;right:auto;top:auto;}
+	/* the corner inset (Julia preview on the Mandelbrot page, c map on the Julia page): title bar with smaller / bigger / close; the picture stays click-through unless it is the c map */
+	.mb-jbox {width:auto;max-width:62%;} .mb-jbox canvas {width:100%;}
+	.mb-jbar {display:flex;align-items:center;gap:0.15em;pointer-events:auto;background:rgba(5,7,13,0.9);} .mb-jbar span {flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0.15em 0.4em;}
+	.mb-jbar button {flex:none;cursor:pointer;border:0;background:transparent;color:var(--mb-dim,#9aa4b5);font:inherit;font-size:0.95em;line-height:1;padding:0.25em 0.45em;border-radius:0.25em;} .mb-jbar button:hover:not(:disabled) {background:rgba(255,255,255,0.14);color:#fff;} .mb-jbar button:disabled {opacity:0.3;cursor:default;}
+	#mb[data-mode="julia"] #mb-jp {pointer-events:auto;cursor:crosshair;touch-action:none;}
+	#mb[data-mode="julia"] .mb-jbox {pointer-events:auto;}
+	.mb-jc {margin-bottom:0.9em;padding-bottom:0.7em;border-bottom:1px solid var(--mb-line,#dfe4ea);} .mb-jc .mb-h {margin-top:0;}
+	#mb [hidden] {display:none !important;}
+	@media (max-width:640px) {.mb-jbox {max-width:70%;}}
 
 
 	@media print {
@@ -461,6 +478,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #mb .tu-table small{color:#9a9aa2}
 	body.dark-mode .mb-eq{background:#16191d;border:1px solid #28323e}
 	body.dark-mode .mb-eq__n{color:#9a9aa2}
+	body.dark-mode .mb-jbar button{color:var(--mb-dim,#979ca6)}
+	body.dark-mode .mb-jbar button:hover:not(:disabled){background:rgba(26,26,26,0.14)}
+	body.dark-mode .mb-jc{border-bottom:1px solid var(--mb-line,#28323e)}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -677,18 +697,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --><style id="seo-headings">
-/* SEO-HEADINGS */
-body .tu-seo {font-size:1.04em;line-height:1.65;}
-body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
-body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
-body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
-body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
-body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
-.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}   /* the page reset made superscripts as big as the text, e.g. 10^-13 */
-.tu div[class$="-eq"] {overflow-y:hidden;}   /* equation boxes: overflow-x:auto made overflow-y auto too, so a tall formula showed a vertical scrollbar */
-</style>
-</head>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -725,10 +734,10 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Mandelbrot Set Explorer: Zoom, Julia Sets and Fractals</h1>                                        <p class="page-description">A free Mandelbrot set explorer: drag and zoom through the famous fractal in your browser, see the Julia set of any point live, trace the orbit under the pointer, try the Burning Ship, Tricorn and Multibrot sets, cycle the colours and test any number with the point calculator.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
-	<div class="tu mb" id="mb">
+	<div class="tu mb" id="mb" data-mode="mandelbrot">
 		<div class="mb-tabs" role="tablist" aria-label="Mandelbrot tools">
 			<button type="button" role="tab" data-tab="explore" aria-selected="true">Explorer</button>
-			<button type="button" role="tab" data-tab="calc" aria-selected="false">Point calculator</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false" data-only="mandelbrot">Point calculator</button>
 		</div>
 
 		<section data-panel="explore" role="tabpanel">
@@ -748,7 +757,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 				<div class="mb-stage" id="mb-stage">
 					<canvas id="mb-canvas" aria-hidden="true"></canvas>
 					<canvas id="mb-over" tabindex="0" role="img" aria-label="Interactive fractal. Drag to move, scroll or pinch to zoom, double-click to zoom in, click a point to inspect it."></canvas>
-					<div class="mb-jbox" id="mb-jbox"><canvas id="mb-jp" width="220" height="124"></canvas><span id="mb-jcap">Julia set of this point</span></div>
+					<div class="mb-jbox" id="mb-jbox"><div class="mb-jbar"><span id="mb-jcap">Julia set of this point</span><button type="button" id="mb-jminus" title="Smaller" aria-label="Make the inset smaller">&minus;</button><button type="button" id="mb-jplus" title="Bigger" aria-label="Make the inset bigger">+</button><button type="button" id="mb-jx" title="Close (tick the box below to bring it back)" aria-label="Close the inset">&times;</button></div><canvas id="mb-jp" width="220" height="124"></canvas></div>
 					<div class="mb-badge" id="mb-badge"></div>
 					<div class="mb-tools"><button type="button" id="mb-png" title="Save as a picture" aria-label="Save as PNG">📷</button><button type="button" id="mb-full" title="Full screen" aria-label="Full screen">⛶</button></div>
 				</div>
@@ -760,7 +769,8 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 			</div>
 
 			<div class="tu-card mb-controls">
-				<p class="tu-note mb-how">Drag to move · scroll, pinch or double-click to zoom · click a point to inspect it. In the Mandelbrot picture each point is a number <i>c</i>; the colour tells how fast the orbit of <i>z</i> → <i>z</i>² + <i>c</i> runs away. Black points never do.</p>
+				<p class="tu-note mb-how" data-only="mandelbrot">Drag to move · scroll, pinch or double-click to zoom · click a point to inspect it. In the Mandelbrot picture each point is a number <i>c</i>; the colour tells how fast the orbit of <i>z</i> → <i>z</i>² + <i>c</i> runs away. Black points never do.</p>
+				<p class="tu-note mb-how" data-only="julia">Drag to move · scroll, pinch or double-click to zoom. In a Julia set the constant <i>c</i> is fixed and each point is a starting value <i>z</i> for <i>z</i> → <i>z</i>² + <i>c</i>; the colour tells how fast it runs away and black points never do. Choose <i>c</i> on the map in the corner or below.</p>
 				<div class="mb-grid">
 					<div class="tu-field"><span class="tu-label">Colours</span>
 						<select id="mb-pal" class="tu-select" aria-label="Colour scheme"></select></div>
@@ -773,18 +783,33 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 					<div class="tu-field tu-field--sm"><span class="tu-label">Quality</span>
 						<select id="mb-q" class="tu-select" aria-label="Render quality"><option value="0.5">Draft (fast)</option><option value="1">Normal</option><option value="2">Sharp (slower)</option></select></div>
 				</div>
+				<div class="mb-jc" data-only="julia">
+					<h3 class="mb-h">The Julia constant <i>c</i></h3>
+					<p class="tu-note" style="margin-top:0">Every <i>c</i> makes a different Julia set. Click or drag on the small map in the corner of the picture to choose it, type it here, or let it walk around the edge of the Mandelbrot set.</p>
+					<div class="mb-grid">
+						<div class="tu-field"><span class="tu-label" id="mb-jca-l">Real part a</span><input type="text" inputmode="decimal" id="mb-jc-a" class="tu-input" aria-labelledby="mb-jca-l"></div>
+						<div class="tu-field"><span class="tu-label" id="mb-jcb-l">Imaginary part b</span><input type="text" inputmode="decimal" id="mb-jc-b" class="tu-input" aria-labelledby="mb-jcb-l"></div>
+						<div class="tu-field"><span class="tu-label" id="mb-ws-l">Walk speed: <b id="mb-ws-v"></b></span><input type="range" id="mb-ws" min="0.2" max="3" step="0.1" aria-labelledby="mb-ws-l"></div>
+					</div>
+					<div class="mb-checks">
+						<button type="button" class="tu-btn tu-btn--primary" id="mb-walk">&#9654; Walk <i>c</i> around the Mandelbrot set</button>
+						<a class="tu-btn tu-btn--ghost" id="mb-tom" href="/mandelbrot">Show <i>c</i> on the Mandelbrot set</a>
+						<span class="tu-note" id="mb-walknote"></span>
+					</div>
+				</div>
 				<div class="mb-checks">
 					<label class="mb-check"><input type="checkbox" id="mb-anim"> Cycle the colours</label>
-					<label class="mb-check"><input type="checkbox" id="mb-jprev" checked> Julia preview</label>
+					<label class="mb-check"><input type="checkbox" id="mb-jprev" checked> <span id="mb-jprev-t">Julia preview</span></label>
 					<label class="mb-check"><input type="checkbox" id="mb-orbit" checked> Show the orbit under the pointer</label>
-					<button type="button" class="tu-btn tu-btn--ghost" id="mb-julia" hidden>Open this point's Julia set</button>
-					<button type="button" class="tu-btn tu-btn--ghost" id="mb-back" hidden>← Back to the Mandelbrot picture</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-julia" hidden data-only="mandelbrot">Open this point's Julia set</button>
+					<a class="tu-btn tu-btn--ghost" id="mb-tojulia" href="/julia-set-explorer" hidden data-only="mandelbrot">Open in the Julia Set Explorer</a>
+					<button type="button" class="tu-btn tu-btn--ghost" id="mb-back" hidden data-only="mandelbrot">← Back to the Mandelbrot picture</button>
 					<button type="button" class="tu-btn tu-btn--ghost" id="mb-link">🔗 Copy link to this view</button>
 				</div>
 			</div>
 		</section>
 
-		<section data-panel="calc" role="tabpanel" hidden>
+		<section data-panel="calc" role="tabpanel" hidden data-only="mandelbrot">
 			<p class="tu-note mb-lead">Type a number <i>c</i> = a + b<i>i</i> and see what its orbit does: it either escapes to infinity after some number of steps (outside the set) or stays bounded (inside). For the fractal chosen in the Explorer.</p>
 			<div class="tu-card mb-controls">
 				<div class="mb-grid">
@@ -814,7 +839,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 			<ul>
 				<li><strong>The cardioid and the bulbs.</strong> The big heart-shaped region is the set of <i>c</i> whose orbit settles to one fixed point. The round bulb to its left is where the orbit settles into a <em>2-cycle</em>, the bulbs above and below into 3-cycles, and so on: every bulb has its own period, and between them sit infinitely many smaller copies of the whole set (look for the little “Mandelbrots”).</li>
 				<li><strong>Smooth colours.</strong> A plain escape count gives bands. This explorer uses a fractional count (the “normalised iteration count”), which gives smooth gradients you can cycle through with Colour speed and Colour shift.</li>
-				<li><strong>Julia sets.</strong> Every point <i>c</i> of the plane has its own Julia set, a different fractal. If <i>c</i> is inside the Mandelbrot set that Julia set is one connected piece; if <i>c</i> is outside it falls apart into dust. The little window shows the Julia set of the point under your pointer, and “Open this point's Julia set” explores it full size.</li>
+				<li><strong>Julia sets</strong> (see them all in the <a href="/julia-set-explorer">Julia Set Explorer</a>). Every point <i>c</i> of the plane has its own Julia set, a different fractal. If <i>c</i> is inside the Mandelbrot set that Julia set is one connected piece; if <i>c</i> is outside it falls apart into dust. The little window shows the Julia set of the point under your pointer, and “Open this point's Julia set” explores it full size.</li>
 				<li><strong>Other fractals.</strong> The same recipe with a twist gives the Burning Ship (take absolute values first), the Tricorn (use the complex conjugate) and the Multibrot sets (cube or fourth power instead of the square).</li>
 				<li><strong>The orbit.</strong> Tick “Show the orbit under the pointer” to see the path 0, <i>c</i>, <i>c</i>² + <i>c</i>, … of the point you are on: it spirals in for points inside the set and flings out for the rest.</li>
 			</ul>
@@ -841,7 +866,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/buddhabrot"><img class="mes-aside__img mes-aside__img--logo" src="/buddhabrot/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Buddhabrot and Nebulabrot Explorer: Watch the Fractal Fill In</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/photoelectric-effect-simulator"><img class="mes-aside__img mes-aside__img--logo" src="/photoelectric-effect-simulator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Photoelectric Effect Simulator</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/buddhabrot"><img class="mes-aside__img mes-aside__img--logo" src="/buddhabrot/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Buddhabrot and Nebulabrot Explorer: Watch the Fractal Fill In</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/reynolds-number-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/reynolds-number-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Reynolds Number Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -891,7 +916,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/mandelbrot/js/mandelbrot.js?v=5" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/mandelbrot/js/mandelbrot.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -1,0 +1,28 @@
+		<div class="tu-seo">
+			<h2>The Mandelbrot set</h2>
+			<p>Take a complex number <i>c</i> and start with <i>z</i> = 0. Square it, add <i>c</i>, and repeat: <i>z</i> → <i>z</i>² + <i>c</i>. For some <i>c</i> the numbers stay small forever; for the others they shoot off to infinity. The <strong>Mandelbrot set</strong> is the set of all <i>c</i> that stay small. It is drawn black here. Everything else is coloured by <em>how quickly</em> the orbit escapes, and the colours trace out the unimaginably intricate edge of the set.</p>
+			<div class="mb-eq" role="math" aria-label="Mandelbrot iteration">
+				<div><span class="mb-eq__n">iteration</span> <span class="mb-eq__f mes-tex">\(\displaystyle z_{n+1} = z_n^2 + c,\qquad z_0 = 0\)</span></div>
+				<div><span class="mb-eq__n">in the set when</span> <span class="mb-eq__f mes-tex">\(\displaystyle |z_n| \le 2\ \text{ for every } n\)</span></div>
+				<div><span class="mb-eq__n">Julia set</span> <span class="mb-eq__f mes-tex">\(\displaystyle z_{n+1} = z_n^2 + c,\qquad z_0 = \text{the point},\ \ c\ \text{fixed}\)</span></div>
+			</div>
+			<h3>What you are looking at</h3>
+			<ul>
+				<li><strong>The cardioid and the bulbs.</strong> The big heart-shaped region is the set of <i>c</i> whose orbit settles to one fixed point. The round bulb to its left is where the orbit settles into a <em>2-cycle</em>, the bulbs above and below into 3-cycles, and so on: every bulb has its own period, and between them sit infinitely many smaller copies of the whole set (look for the little “Mandelbrots”).</li>
+				<li><strong>Smooth colours.</strong> A plain escape count gives bands. This explorer uses a fractional count (the “normalised iteration count”), which gives smooth gradients you can cycle through with Colour speed and Colour shift.</li>
+				<li><strong>Julia sets</strong> (see them all in the <a href="/julia-set-explorer">Julia Set Explorer</a>). Every point <i>c</i> of the plane has its own Julia set, a different fractal. If <i>c</i> is inside the Mandelbrot set that Julia set is one connected piece; if <i>c</i> is outside it falls apart into dust. The little window shows the Julia set of the point under your pointer, and “Open this point's Julia set” explores it full size.</li>
+				<li><strong>Other fractals.</strong> The same recipe with a twist gives the Burning Ship (take absolute values first), the Tricorn (use the complex conjugate) and the Multibrot sets (cube or fourth power instead of the square).</li>
+				<li><strong>The orbit.</strong> Tick “Show the orbit under the pointer” to see the path 0, <i>c</i>, <i>c</i>² + <i>c</i>, … of the point you are on: it spirals in for points inside the set and flings out for the rest.</li>
+			</ul>
+			<h3>Facts and limits</h3>
+			<p>The set sits inside a disc of radius 2 (if |<i>z</i>| ever exceeds 2, the orbit escapes). Its area is about 1.5066, but its boundary is so crinkly that it has dimension 2, like a filled region, even though it is a curve (Shishikura, 1998). It is connected, but all attempts to prove that it is also locally connected (the MLC conjecture) have so far failed.</p>
+			<p>This page computes with ordinary 64-bit numbers, so you can zoom in to a view about 10<sup>-13</sup> wide (a magnification of over 10<sup>13</sup>: if the whole set were the size of the Earth you would be looking at a patch smaller than a grain of sand) before the numbers run out of digits and the picture turns into blocks. Zooming further needs special arbitrary-precision methods that this page does not use. Interior points that never escape are drawn black after the chosen number of iterations; near the edge a few points may be coloured as outside that are really inside, and “Detail (iterations)” is the dial for that.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>Why is it a fractal?</strong> Zoom in anywhere on the edge and you find new structure, never a smooth curve, and the structure keeps repeating in new variations at every scale.</li>
+				<li><strong>Is it infinite?</strong> The edge is infinitely detailed. The set itself fits in a box 2.5 wide and 2.5 tall.</li>
+				<li><strong>Why do some zooms go black or blocky?</strong> Either the iteration count is too low for the depth (raise Detail) or you reached the limit of 64-bit numbers.</li>
+				<li><strong>Can I save a picture?</strong> Yes: the camera button saves exactly what you see, and “Copy link” saves the place so you can come back to it.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. <a href="/buddhabrot">Buddhabrot Explorer</a> · <a href="/black-hole-simulator">Black Hole Simulator</a> · <a href="/2d-graphing-calculator">2D graphing calculator</a> · <a href="/cas-calculator">CAS calculator</a> · <a href="/tools">More MES tools</a></p>
+		</div>

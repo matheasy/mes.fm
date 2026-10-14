@@ -73,3 +73,12 @@
 	#mb .tu-table-wrap {max-height:22em;overflow:auto;}
 	@media (max-width: 640px) { .mb-jbox {width:38%;} }
 	.mb-top .mb-run {position:static;display:flex;gap:0.4em;flex-wrap:wrap;right:auto;top:auto;}
+	/* the corner inset (Julia preview on the Mandelbrot page, c map on the Julia page): title bar with smaller / bigger / close; the picture stays click-through unless it is the c map */
+	.mb-jbox {width:auto;max-width:62%;} .mb-jbox canvas {width:100%;}
+	.mb-jbar {display:flex;align-items:center;gap:0.15em;pointer-events:auto;background:rgba(5,7,13,0.9);} .mb-jbar span {flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0.15em 0.4em;}
+	.mb-jbar button {flex:none;cursor:pointer;border:0;background:transparent;color:var(--mb-dim,#9aa4b5);font:inherit;font-size:0.95em;line-height:1;padding:0.25em 0.45em;border-radius:0.25em;} .mb-jbar button:hover:not(:disabled) {background:rgba(255,255,255,0.14);color:#fff;} .mb-jbar button:disabled {opacity:0.3;cursor:default;}
+	#mb[data-mode="julia"] #mb-jp {pointer-events:auto;cursor:crosshair;touch-action:none;}
+	#mb[data-mode="julia"] .mb-jbox {pointer-events:auto;}
+	.mb-jc {margin-bottom:0.9em;padding-bottom:0.7em;border-bottom:1px solid var(--mb-line,#dfe4ea);} .mb-jc .mb-h {margin-top:0;}
+	#mb [hidden] {display:none !important;}
+	@media (max-width:640px) {.mb-jbox {max-width:70%;}}

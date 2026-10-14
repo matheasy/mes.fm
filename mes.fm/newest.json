@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/archive",
+   "title": "Archive",
+   "icon": "/img/archive-logo.png",
+   "desc": "Save or find any web page on the Wayback Machine, archive.today, Ghostarchive and more at once. Includes a one-click browser extension.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
+  {
    "href": "/domain-lookup",
    "title": "Domain Lookup",
    "icon": "/img/domain-lookup-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Paint glass, water or any refractive index and watch a live light wave slow down, bend, focus in a lens or curve like a mirage. Compare it with rays.",
    "added": "2026-10-12",
    "kind": "tool"
-  },
-  {
-   "href": "/text-size",
-   "title": "Text Size",
-   "icon": "/img/text-size-logo.png",
-   "desc": "Our own browser extension: A- and A+ for any website, text only, remembered per site. Free and private.",
-   "added": "2026-10-11",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/archive",
+   "title": "Archive",
+   "icon": "/img/archive-logo.png",
+   "desc": "Save or find any web page on the Wayback Machine, archive.today, Ghostarchive and more at once. Includes a one-click browser extension.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
   {
    "href": "/baby-feeding-log",
    "title": "Baby Feeding Log",
@@ -250,14 +258,6 @@
    "title": "Domain Lookup",
    "icon": "/img/domain-lookup-logo.png",
    "desc": "Whois for the web: domain age, registrar, expiry, who hosts a site, DNS and email setup, and warning signs.",
-   "added": "2026-10-14",
-   "kind": "tool"
-  },
-  {
-   "href": "/exif-viewer",
-   "title": "EXIF Viewer",
-   "icon": "/img/exif-viewer-logo.png",
-   "desc": "See the camera, date, GPS location and AI / edit flags hidden in a photo, and save a copy with the metadata removed.",
    "added": "2026-10-14",
    "kind": "tool"
   }

@@ -1,0 +1,26 @@
+		<div class="tu-seo">
+			<h2>Julia set explorer</h2>
+			<p>A <strong>Julia set</strong> is a fractal made by one simple rule: pick a complex number <i>c</i>, then for every point <i>z</i> of the plane repeat <i>z</i> → <i>z</i>² + <i>c</i>. Points whose orbit stays bounded are in the set (drawn black here); the rest are coloured by how fast they escape. Change <i>c</i> a little and the whole shape changes: this explorer lets you drag <i>c</i> across a map of the Mandelbrot set and watch the Julia set transform live.</p>
+			<div class="mb-eq" role="math" aria-label="Julia set iteration">
+				<div><span class="mb-eq__n">iteration</span> <span class="mb-eq__f mes-tex">\(\displaystyle z_{n+1} = z_n^2 + c,\qquad z_0 = \text{the point being tested}\)</span></div>
+				<div><span class="mb-eq__n">filled Julia set</span> <span class="mb-eq__f mes-tex">\(\displaystyle K_c = \{\, z_0 : |z_n| \text{ stays bounded} \,\}\)</span></div>
+				<div><span class="mb-eq__n">connected when</span> <span class="mb-eq__f mes-tex">\(\displaystyle c \in \text{Mandelbrot set}\)</span></div>
+			</div>
+			<h3>How to use it</h3>
+			<ul>
+				<li><strong>Choose <i>c</i> on the map.</strong> The small Mandelbrot picture in the corner is a map of all the constants. Click or drag on it and the Julia set of that point appears. Make the map bigger or smaller with + and &minus;, or close it with &times; (tick &ldquo;c map&rdquo; to bring it back).</li>
+				<li><strong>Type <i>c</i></strong> exactly, or pick a famous one from the list: Douady's rabbit, the dendrite, San Marco, a Siegel disk, Fatou dust, the spiral galaxy.</li>
+				<li><strong>Walk <i>c</i> around the Mandelbrot set.</strong> Press the walk button and <i>c</i> travels along the edge of the main cardioid; you see the Julia set grow bulbs, pinch off and shatter into dust as it goes.</li>
+				<li><strong>Zoom and explore.</strong> Drag, scroll or pinch to zoom; the orbit of the point under the pointer is drawn so you can see why it escapes or not. Save a picture or copy a link to the exact view.</li>
+			</ul>
+			<h3>The link with the Mandelbrot set</h3>
+			<p>The Mandelbrot set is the set of constants <i>c</i> whose Julia set is <em>connected</em> (one piece). Choose a <i>c</i> inside the Mandelbrot set and you get a connected shape (a rabbit, a dendrite, a Siegel disk); choose one outside and the Julia set falls apart into infinitely many separate specks called Cantor dust. The Mandelbrot set is a kind of index of all Julia sets: its bulbs tell you how many &ldquo;arms&rdquo; the Julia set has and its shape near <i>c</i> predicts the Julia set's shape. See it in the <a href="/mandelbrot">Mandelbrot Explorer</a>, where hovering over any point previews its Julia set.</p>
+			<h3>Things people ask</h3>
+			<ul>
+				<li><strong>What is the difference between the Mandelbrot set and a Julia set?</strong> In the Mandelbrot set <i>c</i> changes with the pixel and the start value is always 0. In a Julia set <i>c</i> is fixed and the start value changes with the pixel.</li>
+				<li><strong>How many Julia sets are there?</strong> One for every complex number <i>c</i>: infinitely many, each different.</li>
+				<li><strong>Why is the picture sometimes mostly black or mostly dust?</strong> Inside the Mandelbrot set the Julia set encloses a black filled region; outside, it is dust that is nearly invisible, so the picture is just colours.</li>
+				<li><strong>Who was Julia?</strong> Gaston Julia, a French mathematician who studied these sets around 1918, decades before computers could draw them.</li>
+			</ul>
+			<p>Everything runs on your device; nothing is uploaded. Related: <a href="/mandelbrot">Mandelbrot Explorer</a> &middot; <a href="/buddhabrot">Buddhabrot Explorer</a> &middot; <a href="/2d-graphing-calculator">2D graphing calculator</a>.</p>
+		</div>

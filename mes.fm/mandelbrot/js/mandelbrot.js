@@ -124,10 +124,14 @@
  */
 (function () {
 	"use strict";
-	var $ = function (id) { return document.getElementById(id); };
-	var root = $("mb");
+	var root = document.getElementById("mb");
 	if (!root) return;
-	var M = window.MESMandel, KEY = "mes-mandelbrot:v1";
+	/* one script, two pages: data-mode="mandelbrot" (the explorer) or "julia" (the Julia Set Explorer); elements marked data-only belong to one of them */
+	var JM = root.getAttribute("data-mode") === "julia";
+	Array.prototype.slice.call(root.querySelectorAll("[data-only]")).forEach(function (el) { if (el.getAttribute("data-only") !== (JM ? "julia" : "mandelbrot")) el.parentNode.removeChild(el); });
+	var stubs = {};
+	var $ = function (id) { return document.getElementById(id) || (stubs[id] = stubs[id] || document.createElement("div")); };   /* a missing id gives a detached stand-in so the other mode's code can run harmlessly */
+	var M = window.MESMandel, KEY = JM ? "mes-julia-set-explorer:v1" : "mes-mandelbrot:v1";
 	function sget() { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } }
 	function sset(o) { try { var c = sget(); for (var k in o) c[k] = o[k]; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {} }
 	function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -137,17 +141,17 @@
 	var TYPES = M.TYPES;
 
 	/* ---------- state ---------- */
-	var S = { type: num(q.get("t") || saved.type, 0, 4, 0) | 0, julia: q.get("j") === "1", jx: num(q.get("jx"), -3, 3, -0.123), jy: num(q.get("jy"), -3, 3, 0.745), cx: NaN, cy: NaN, span: NaN,
+	var S = { type: num(q.get("t") || saved.type, 0, 4, 0) | 0, julia: JM || q.get("j") === "1", jx: num(q.get("jx"), -3, 3, -0.123), jy: num(q.get("jy"), -3, 3, 0.745), cx: NaN, cy: NaN, span: NaN,
 		auto: q.get("i") ? q.get("i") === "a" : saved.auto !== false, iter: num(q.get("i") || saved.iter, 50, 6000, 500), pal: M.PALETTES.some(function (p) { return p.id === (q.get("p") || saved.pal); }) ? (q.get("p") || saved.pal) : "classic",
-		speed: num(saved.speed, 0.1, 4, 1), off: num(saved.off, 0, 1, 0), anim: false, quality: [0.5, 1, 2].indexOf(+saved.quality) >= 0 ? +saved.quality : (coarse ? 0.5 : 1), jprev: saved.jprev !== false, orbit: saved.orbit !== false };
+		speed: num(saved.speed, 0.1, 4, 1), off: num(saved.off, 0, 1, 0), anim: false, quality: [0.5, 1, 2].indexOf(+saved.quality) >= 0 ? +saved.quality : (coarse ? 0.5 : 1), jprev: saved.jprev !== false, jsize: num(saved.jsize, 0, 3, 1) | 0, orbit: saved.orbit !== false };
 	var home = S.julia ? TYPES[S.type].julia : TYPES[S.type].home;
 	S.cx = num(q.get("x"), -10, 10, home.x); S.cy = num(q.get("y"), -10, 10, home.y); S.span = num(q.get("s"), M.MINSPAN, 40, home.span);
 	var mview = { x: TYPES[S.type].home.x, y: TYPES[S.type].home.y, span: TYPES[S.type].home.span };   /* where the Mandelbrot view was, for "back" */
 	var picked = null, hover = null;
-	var tab = q.get("tab") === "calc" ? "calc" : "explore";
+	var tab = !JM && q.get("tab") === "calc" ? "calc" : "explore";
 
 	var canvas = $("mb-canvas"), ctx = canvas.getContext("2d"), over = $("mb-over"), octx = over.getContext("2d"), stage = $("mb-stage"), jp = $("mb-jp"), jctx = jp.getContext("2d");
-	var Wp = 0, Hp = 0, cur = null, nxt = null, renderId = 0, lut = M.lut(S.pal), rtimer = 0, paintReq = false;
+	var walking = false, Wp = 0, Hp = 0, cur = null, nxt = null, renderId = 0, lut = M.lut(S.pal), rtimer = 0, paintReq = false;
 
 	/* ---------- worker pool ---------- */
 	var pool = [], poolSize = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1)), workerOk = true, queue = [], busy = 0, wurl = null;
@@ -183,7 +187,7 @@
 		var wrap = stage.parentNode, W = wrap.clientWidth, asp = 16 / 9, H = Math.round(W / asp); wrap.setAttribute("data-mes-free", "1"); if (window.MESStage && window.MESStage.sh) { H = window.MESStage.sh(stage, H); asp = W / Math.max(1, H); }
 		if (document.fullscreenElement === wrap || wrap.classList.contains("mes-fill")) { H = (window.MESStage && window.MESStage.fillH ? window.MESStage.fillH(wrap) : window.innerHeight - 90); asp = W / Math.max(1, H); }
 		stage.style.width = W + "px"; stage.style.height = H + "px";
-		var dpr = Math.min(2, window.devicePixelRatio || 1), sc = S.quality === 2 ? dpr : S.quality, cw = Math.min(1920, Math.max(160, Math.round(W * sc))), ch = Math.round(cw / asp);
+		var dpr = Math.min(2, window.devicePixelRatio || 1), qe = walking ? Math.min(S.quality, 0.5) : S.quality, sc = qe === 2 ? dpr : qe, cw = Math.min(1920, Math.max(160, Math.round(W * sc))), ch = Math.round(cw / asp);
 		var ow = Math.round(W * dpr), oh = Math.round(H * dpr);
 		var changed = canvas.width !== cw || canvas.height !== ch;
 		if (changed) { canvas.width = cw; canvas.height = ch; }
@@ -328,14 +332,70 @@
 		$("mb-r-s").textContent = c.inside ? "never escapes (inside)" + (c.period ? ", falls into a cycle of " + c.period : "") : "escapes after " + c.n + " steps";
 		return c;
 	}
-	function updatePicked() { if (!picked) return; pointInfo(picked); jpreview(picked); $("mb-julia").hidden = S.julia; $("mb-julia").dataset.x = picked[0]; $("mb-julia").dataset.y = picked[1]; }
+	function updatePicked() { if (!picked) return; $("mb-tojulia").href = "/julia-set-explorer?t=" + S.type + "&jx=" + picked[0] + "&jy=" + picked[1]; pointInfo(picked); jpreview(picked); $("mb-julia").hidden = S.julia; $("mb-julia").dataset.x = picked[0]; $("mb-julia").dataset.y = picked[1]; }
 	function jpreview(p) {
+		if (JM) return;
 		var box = $("mb-jbox"); box.hidden = !(S.jprev && !S.julia); if (box.hidden) return;
 		var W = jp.width, H = jp.height, jt = TYPES[S.type].julia, dx = jt.span / W, buf = M.compute({ w: W, r0: 0, r1: H, x0: jt.x - jt.span / 2, y0: jt.y + (jt.span * H / W) / 2, dx: dx, type: S.type, julia: true, jx: p[0], jy: p[1], maxIter: 160 });
 		var img = jctx.createImageData(W, H), d = img.data, sp = S.speed * 0.02;
 		for (var i = 0; i < buf.length; i++) { var v = buf[i], o = i * 4; if (v < 0) { d[o] = d[o + 1] = d[o + 2] = 0; } else { var t = v * sp + S.off; t -= Math.floor(t); var k = ((t * 1023) | 0) * 3; d[o] = lut[k]; d[o + 1] = lut[k + 1]; d[o + 2] = lut[k + 2]; } d[o + 3] = 255; }
 		jctx.putImageData(img, 0, 0); $("mb-jcap").textContent = "Julia set of " + fmtC(p[0], p[1]);
 	}
+
+	/* ---------- the corner inset: smaller / bigger / close (Julia preview, or the c map on the Julia page) ---------- */
+	var JS = coarse || window.innerWidth < 640 ? [110, 150, 210, 290] : [160, 220, 340, 480];
+	function jApply() {
+		var W = JS[S.jsize], H = Math.round(W * 9 / 16);
+		if (jp.width !== W) { jp.width = W; jp.height = H; }
+		$("mb-jbox").style.width = W + "px"; $("mb-jminus").disabled = S.jsize <= 0; $("mb-jplus").disabled = S.jsize >= JS.length - 1;
+		if (JM) drawCMap(true); else if (picked || hover) jpreview(hover || picked);
+	}
+	$("mb-jminus").onclick = function () { if (S.jsize > 0) { S.jsize--; sset({ jsize: S.jsize }); jApply(); } };
+	$("mb-jplus").onclick = function () { if (S.jsize < JS.length - 1) { S.jsize++; sset({ jsize: S.jsize }); jApply(); } };
+	$("mb-jx").onclick = function () { S.jprev = false; $("mb-jprev").checked = false; sset({ jprev: false }); $("mb-jbox").hidden = true; };
+	$("mb-jp").addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+
+	/* Julia page: the c map = a small picture of the Mandelbrot-type set; click or drag on it to choose c */
+	var cmap = null;
+	function cmapView() { var h = TYPES[S.type].home, W = jp.width, H = jp.height; return { x0: h.x - h.span / 2, y0: h.y + (h.span * H / W) / 2, dx: h.span / W }; }
+	function drawCMap(recompute) {
+		if (!JM) return; var W = jp.width, H = jp.height, v = cmapView();
+		if (recompute || !cmap || cmap.w !== W || cmap.t !== S.type) {
+			var buf = M.compute({ w: W, r0: 0, r1: H, x0: v.x0, y0: v.y0, dx: v.dx, type: S.type, julia: false, jx: 0, jy: 0, maxIter: 140 }), img = jctx.createImageData(W, H), d = img.data, sp = S.speed * 0.02;
+			for (var i = 0; i < buf.length; i++) { var val = buf[i], o = i * 4; if (val < 0) { d[o] = d[o + 1] = d[o + 2] = 0; } else { var t = val * sp + S.off; t -= Math.floor(t); var k = ((t * 1023) | 0) * 3; d[o] = lut[k]; d[o + 1] = lut[k + 1]; d[o + 2] = lut[k + 2]; } d[o + 3] = 255; }
+			cmap = { img: img, w: W, t: S.type };
+		}
+		jctx.putImageData(cmap.img, 0, 0);
+		var px = (S.jx - v.x0) / v.dx, py = (v.y0 - S.jy) / v.dx; jctx.strokeStyle = "#fff"; jctx.lineWidth = 1.5; jctx.beginPath(); jctx.arc(px, py, 5, 0, 6.2832); jctx.moveTo(px - 9, py); jctx.lineTo(px + 9, py); jctx.moveTo(px, py - 9); jctx.lineTo(px, py + 9); jctx.stroke();
+		jctx.strokeStyle = "#000"; jctx.lineWidth = 0.6; jctx.beginPath(); jctx.arc(px, py, 6, 0, 6.2832); jctx.stroke();
+		$("mb-jcap").textContent = "c = " + fmtC(S.jx, S.jy);
+	}
+	function setC(x, y, fromMap) {
+		S.jx = Math.max(-3, Math.min(3, x)); S.jy = Math.max(-3, Math.min(3, y)); picked = null; $("mb-jc-a").value = +S.jx.toPrecision(8); $("mb-jc-b").value = +S.jy.toPrecision(8);
+		$("mb-tom").href = "/mandelbrot?t=" + S.type + "&x=" + S.jx + "&y=" + S.jy + "&s=0.6"; drawCMap(false); $("mb-r-s").textContent = "Julia set of " + fmtC(S.jx, S.jy);
+	}
+	function mapC(e) { var r = jp.getBoundingClientRect(), v = cmapView(), px = (e.clientX - r.left) / r.width * jp.width, py = (e.clientY - r.top) / r.height * jp.height; return [v.x0 + px * v.dx, v.y0 - py * v.dx]; }
+	var mapDrag = false;
+	$("mb-jp").addEventListener("pointerdown", function (e) { if (!JM) return; mapDrag = true; jp.setPointerCapture(e.pointerId); stopWalk(); var c = mapC(e); setC(c[0], c[1]); nxt = null; renderId++; scheduleRender(30); e.preventDefault(); });
+	$("mb-jp").addEventListener("pointermove", function (e) { if (!JM || !mapDrag) return; var c = mapC(e); setC(c[0], c[1]); scheduleRender(70); });
+	function mapEnd() { mapDrag = false; }
+	$("mb-jp").addEventListener("pointerup", mapEnd); $("mb-jp").addEventListener("pointercancel", mapEnd);
+	function applyCInputs() { var a = parseNum($("mb-jc-a").value), b = parseNum($("mb-jc-b").value); if (!isFinite(a) || !isFinite(b)) return; stopWalk(); setC(a, b); nxt = null; renderId++; scheduleRender(60); }
+	$("mb-jc-a").addEventListener("input", applyCInputs); $("mb-jc-b").addEventListener("input", applyCInputs);
+	/* walking c around the boundary of the main cardioid: c(t) = e^{it}/2 - e^{2it}/4 */
+	var walkT = 0, walkRaf = 0, walkLast = 0;
+	function stopWalk() { if (!walking) return; walking = false; cancelAnimationFrame(walkRaf); $("mb-walk").innerHTML = "&#9654; Walk <i>c</i> around the Mandelbrot set"; cur = null; scheduleRender(0); }
+	function walkStep(ts) {
+		walkRaf = requestAnimationFrame(walkStep); if (document.hidden || nxt || ts - walkLast < 50) return; walkLast = ts;
+		walkT += 0.035 * (+$("mb-ws").value || 1); var c = [Math.cos(walkT) / 2 - Math.cos(2 * walkT) / 4, Math.sin(walkT) / 2 - Math.sin(2 * walkT) / 4];
+		setC(c[0], c[1]); render();
+	}
+	$("mb-walk").onclick = function () {
+		if (walking) { stopWalk(); return; }
+		if (S.type !== 0) { $("mb-walknote").textContent = "The walk follows the edge of the classic Mandelbrot set: choose “Mandelbrot set” as the fractal."; return; }
+		$("mb-walknote").textContent = ""; walking = true; var a = Math.atan2(S.jy, S.jx - 0.25); walkT = isFinite(a) ? Math.max(0, a) : 0; this.innerHTML = "&#10074;&#10074; Stop"; cur = null; walkRaf = requestAnimationFrame(walkStep);
+	};
+	$("mb-ws").oninput = function () { $("mb-ws-v").textContent = (+this.value).toFixed(1) + "×"; sset({ ws: +this.value }); };
 
 	/* ---------- controls ---------- */
 	$("mb-type").innerHTML = TYPES.map(function (t) { return '<option value="' + t.id + '">' + esc(t.name) + "</option>"; }).join("");
@@ -351,16 +411,17 @@
 		if (S.julia) { S.jx = p.x; S.jy = p.y; var h = TYPES[S.type].julia; S.cx = h.x; S.cy = h.y; S.span = h.span; picked = null; }
 		else { S.cx = p.x; S.cy = p.y; S.span = p.span; picked = null; }
 		this.value = ""; nxt = null; renderId++; present(); info(); scheduleRender(0); syncMode();
+		if (JM && S.julia && p.x !== undefined) { stopWalk(); setC(S.jx, S.jy); }
 	};
-	$("mb-type").onchange = function () { S.type = +this.value; sset({ type: S.type }); S.julia = false; goHome(); picked = null; fillPlaces(); nxt = null; cur = null; info(); syncMode(); scheduleRender(0); };
+	$("mb-type").onchange = function () { S.type = +this.value; sset({ type: S.type }); S.julia = JM; stopWalk(); goHome(); if (JM) drawCMap(true); picked = null; fillPlaces(); nxt = null; cur = null; info(); syncMode(); scheduleRender(0); };
 	$("mb-pal").onchange = function () { S.pal = this.value; lut = M.lut(S.pal); sset({ pal: S.pal }); recolor(); };
 	$("mb-sp-in").oninput = function () { S.speed = +this.value; $("mb-sp-v").textContent = S.speed.toFixed(2); sset({ speed: S.speed }); recolor(); };
 	$("mb-of-in").oninput = function () { S.off = +this.value; $("mb-of-v").textContent = S.off.toFixed(2); sset({ off: S.off }); recolor(); };
-	function recolor() { if (cur) { colorRows(cur, 0, cur.canvas.height); cur.ctx.putImageData(cur.img, 0, 0); present(); } if (nxt) { colorRows(nxt, 0, Hp); nxt.dirty = true; requestPaint(); } if (picked || hover) jpreview(hover || picked); }
+	function recolor() { if (JM) drawCMap(true); if (cur) { colorRows(cur, 0, cur.canvas.height); cur.ctx.putImageData(cur.img, 0, 0); present(); } if (nxt) { colorRows(nxt, 0, Hp); nxt.dirty = true; requestPaint(); } if (picked || hover) jpreview(hover || picked); }
 	$("mb-auto").onchange = function () { S.auto = this.checked; $("mb-it-in").disabled = S.auto; sset({ auto: S.auto }); info(); scheduleRender(0); };
 	$("mb-it-in").oninput = function () { S.iter = +this.value; S.auto = false; $("mb-auto").checked = false; $("mb-it-in").disabled = false; sset({ iter: S.iter, auto: false }); info(); scheduleRender(250); };
 	$("mb-q").onchange = function () { S.quality = +this.value; sset({ quality: S.quality }); cur = null; scheduleRender(0); };
-	$("mb-jprev").onchange = function () { S.jprev = this.checked; sset({ jprev: S.jprev }); $("mb-jbox").hidden = !S.jprev || S.julia || !(picked || hover); if (S.jprev && (picked || hover)) jpreview(hover || picked); };
+	$("mb-jprev").onchange = function () { S.jprev = this.checked; sset({ jprev: S.jprev }); if (JM) { $("mb-jbox").hidden = !S.jprev; if (S.jprev) drawCMap(true); return; } $("mb-jbox").hidden = !S.jprev || S.julia || !(picked || hover); if (S.jprev && (picked || hover)) jpreview(hover || picked); };
 	$("mb-orbit").onchange = function () { S.orbit = this.checked; sset({ orbit: S.orbit }); drawOverlay(); };
 	var animT = 0;
 	$("mb-anim").onchange = function () {
@@ -368,7 +429,7 @@
 		if (S.anim) { var step = function () { animT = requestAnimationFrame(step); if (document.hidden || nxt) return; S.off = (S.off + 0.004) % 1; $("mb-of-in").value = S.off; $("mb-of-v").textContent = S.off.toFixed(2); recolor(); }; step(); }
 	};
 	function syncMode() {
-		$("mb-julia").hidden = S.julia || !picked; $("mb-back").hidden = !S.julia; $("mb-jbox").hidden = !S.jprev || S.julia || !picked; $("mb-type").value = S.type;
+		$("mb-julia").hidden = S.julia || !picked; $("mb-tojulia").hidden = S.julia || !picked; $("mb-back").hidden = !S.julia; $("mb-jbox").hidden = JM ? !S.jprev : (!S.jprev || S.julia || !picked); $("mb-type").value = S.type;
 		$("mb-badge").textContent = ""; fillPlaces();
 	}
 	$("mb-julia").onclick = function () {
@@ -419,5 +480,6 @@
 	$("mb-type").value = S.type; $("mb-pal").value = S.pal; $("mb-sp-in").value = S.speed; $("mb-sp-v").textContent = S.speed.toFixed(2); $("mb-of-in").value = S.off; $("mb-of-v").textContent = S.off.toFixed(2);
 	$("mb-auto").checked = S.auto; $("mb-it-in").value = S.iter; $("mb-it-in").disabled = S.auto; $("mb-q").value = String(S.quality); $("mb-jprev").checked = S.jprev; $("mb-orbit").checked = S.orbit;
 	var ca = q.get("a"), cb = q.get("b"); if (ca != null) $("mb-ca").value = ca; if (cb != null) $("mb-cb").value = cb;
-	fillPlaces(); syncMode(); sizeCanvas(); info(); setTab(tab); if (tab === "explore") scheduleRender(0);
+	$("mb-jprev-t").textContent = JM ? "c map" : "Julia preview"; $("mb-ws").value = num(saved.ws, 0.2, 3, 1); $("mb-ws-v").textContent = (+$("mb-ws").value).toFixed(1) + "×";
+	fillPlaces(); syncMode(); sizeCanvas(); info(); setTab(tab); jApply(); if (JM) { setC(S.jx, S.jy); $("mb-jbox").hidden = !S.jprev; } if (tab === "explore") scheduleRender(0);
 })();
