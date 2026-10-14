@@ -1,0 +1,170 @@
+	<div class="tu" id="gr">
+		<div class="tu-card">
+			<div class="tu-seg" id="gr-tabs" role="tablist" aria-label="Sections">
+				<button type="button" data-tab="rod" aria-pressed="true">1. Ground rod</button>
+				<button type="button" data-tab="fault" aria-pressed="false">2. Shock &amp; faults</button>
+				<button type="button" data-tab="light" aria-pressed="false">3. Lightning</button>
+				<button type="button" data-tab="static" aria-pressed="false">4. Static</button>
+				<button type="button" data-tab="rules" aria-pressed="false">5. Rules by region</button>
+			</div>
+		</div>
+
+		<section id="gr-p-rod">
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:16em;"><label for="gr-soil">Soil</label><select id="gr-soil" class="tu-select"></select></div>
+					<div class="tu-field tu-field--sm"><label for="gr-rho">Soil resistivity (Ω·m)</label><input id="gr-rho" class="tu-input" type="text" inputmode="decimal"></div>
+					<div class="tu-field tu-field--sm"><label for="gr-len">Rod length in the soil</label><div class="gr-pair"><input id="gr-len" class="tu-input" type="text" inputmode="decimal"><select id="gr-lu" class="tu-select"><option>m</option><option>ft</option></select></div></div>
+					<div class="tu-field" style="flex-basis:11em;"><label for="gr-dia">Rod diameter</label><select id="gr-dia" class="tu-select"></select></div>
+				</div>
+				<div class="tu-row" style="margin-top:0.8em;">
+					<div class="tu-field tu-field--sm"><label for="gr-n">Number of rods</label><input id="gr-n" class="tu-input" type="number" min="1" max="12" step="1"></div>
+					<div class="tu-field tu-field--sm"><label for="gr-sp">Spacing between rods</label><div class="gr-pair"><input id="gr-spv" class="tu-input" type="text" inputmode="decimal"><select id="gr-su" class="tu-select"><option>m</option><option>ft</option></select></div></div>
+					<div class="tu-field tu-field--sm"><label for="gr-target">Target (Ω)</label><input id="gr-target" class="tu-input" type="text" inputmode="decimal"></div>
+					<div class="tu-field" style="flex:0 0 auto;align-self:flex-end;"><button type="button" class="tu-btn tu-btn--ghost" id="gr-link">🔗 Copy link</button></div>
+				</div>
+				<p class="tu-note">Not sure of your soil? Pick the nearest type; the soil is the biggest unknown. A rod's resistance to earth varies a lot with moisture, frost and season, so measure it (fall-of-potential test) rather than trusting any calculation.</p>
+			</div>
+			<div class="tu-stats">
+				<div class="tu-stat tu-stat--hero"><div class="tu-stat__label">Resistance to earth</div><div class="tu-stat__value" id="gr-R">–</div><div class="tu-stat__sub" id="gr-Rs"></div></div>
+				<div class="tu-stat"><div class="tu-stat__label">A single rod would be</div><div class="tu-stat__value" id="gr-R1">–</div><div class="tu-stat__sub" id="gr-R1s"></div></div>
+				<div class="tu-stat"><div class="tu-stat__label">Rods needed for the target</div><div class="tu-stat__value" id="gr-need">–</div><div class="tu-stat__sub" id="gr-needs"></div></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="gr-h">Longer rod or more rods?</h2>
+				<div class="tu-table-wrap"><table class="tu-table" id="gr-grid"></table></div>
+				<p class="tu-note" id="gr-gridn"></p>
+			</div>
+			<div class="tu-card gr-truth">
+				<h2 class="gr-h">What a ground rod does, and what it doesn't</h2>
+				<ul>
+					<li><strong>It ties your wiring to the earth's potential</strong>, so the whole system can't float to a dangerous voltage compared with the ground you stand on (a nearby lightning strike, a utility line touching a primary line, static build-up).</li>
+					<li><strong>It does not make breakers trip.</strong> Even a perfect rod is in series with the utility's own earth, so a hot-to-case fault through earth is only a few amps. Tab 2 shows this. The thing that trips the breaker is the <em>grounding wire (EGC) and the neutral bond at the panel</em>, which give the fault a metal road back to the transformer.</li>
+					<li><strong>It cannot "absorb" a lightning strike.</strong> A strike carries tens of thousands of amps; the rod's job is to be one part of a bonded system so everything rises together. Tab 3.</li>
+					<li><strong>It does little for carpet shocks.</strong> Static is drained by humidity and surfaces long before the house earth matters. Tab 4.</li>
+				</ul>
+			</div>
+		</section>
+
+		<section id="gr-p-fault" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field tu-field--sm"><label for="gr-v">Line voltage to ground</label><select id="gr-v" class="tu-select"><option value="120">120 V (US / Canada)</option><option value="230">230 V (UK / EU / AU / VN)</option><option value="240">240 V (AU / NZ)</option></select></div>
+					<div class="tu-field tu-field--sm"><label for="gr-in">Breaker rating (A)</label><input id="gr-in" class="tu-input" type="text" value="15" inputmode="decimal"></div>
+					<div class="tu-field" style="flex-basis:15em;"><label for="gr-curve">Breaker type</label><select id="gr-curve" class="tu-select"></select></div>
+				</div>
+				<div class="tu-row" style="margin-top:0.8em;">
+					<div class="tu-field tu-field--sm"><label for="gr-rline">Hot wire to the fault (Ω)</label><input id="gr-rline" class="tu-input" type="text" value="0.2" inputmode="decimal"></div>
+					<div class="tu-field tu-field--sm"><label for="gr-regc">Grounding wire back to panel (Ω)</label><input id="gr-regc" class="tu-input" type="text" value="0.2" inputmode="decimal"></div>
+					<div class="tu-field tu-field--sm"><label for="gr-rsrc">Supply side to transformer (Ω)</label><input id="gr-rsrc" class="tu-input" type="text" value="0.1" inputmode="decimal"></div>
+					<div class="tu-field tu-field--sm"><label for="gr-rsg">Utility's own earth (Ω)</label><input id="gr-rsg" class="tu-input" type="text" value="20" inputmode="decimal"></div>
+					<div class="tu-field tu-field--sm"><label for="gr-rfl">Person's shoes / floor (Ω)</label><select id="gr-rfl" class="tu-select"><option value="500">Wet bare feet on concrete (500)</option><option value="2000" selected>Damp floor, bare feet (2,000)</option><option value="20000">Dry shoes (20,000)</option><option value="100000">Rubber soles / dry carpet (100,000)</option></select></div>
+				</div>
+				<p class="tu-note">The rod in these cases is the one from tab 1: <strong id="gr-rodused">–</strong>. A hot wire touches a metal appliance case.</p>
+			</div>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="gr-faults"></table></div>
+				<p class="tu-note">Trip times are rough: real breakers follow their own curve. Body model: 1,000 Ω hand to feet plus the floor. Touch voltage is the voltage between the case and the ground at your feet.</p></div>
+			<div class="tu-card">
+				<h2 class="gr-h">GFCI / RCD: the part that protects <em>you</em></h2>
+				<p>A GFCI (US/Canada, trips at about 5 mA) or RCD (elsewhere, usually 30 mA) compares the current going out with the current coming back and cuts power within ~25 to 40 ms when a few mA go astray, <em>whatever the grounding</em>. In the no-ground case above the body current would be <strong id="gr-nogcurrent">–</strong>: far over the 5 and 30 mA trip points.</p>
+				<h3 class="gr-h3">TT systems (no earth from the supplier, a rod is the only earth)</h3>
+				<p>The rule is <strong>R<sub>A</sub> × I<sub>Δn</sub> ≤ 50 V</strong>: the rod's resistance times the RCD's rating must not exceed 50 V (25 V in some special locations). That gives the largest rod resistance you may have:</p>
+				<div class="tu-table-wrap"><table class="tu-table" id="gr-tt"></table></div>
+				<p class="tu-note" id="gr-ttn"></p>
+			</div>
+		</section>
+
+		<section id="gr-p-light" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:16em;"><label for="gr-ipk">Strike current</label><select id="gr-ipk" class="tu-select"><option value="3">3 kA: weak / nearby discharge</option><option value="30" selected>30 kA: a typical strike</option><option value="100">100 kA: a severe strike</option><option value="200">200 kA: about the strongest</option></select></div>
+					<div class="tu-field tu-field--sm"><label for="gr-dist">Distance from the strike point</label><div class="gr-pair"><input id="gr-dist" class="tu-input" type="text" value="10" inputmode="decimal"><span class="gr-u">m</span></div></div>
+					<div class="tu-field tu-field--sm"><label for="gr-stride">Your stride</label><div class="gr-pair"><input id="gr-stride" class="tu-input" type="text" value="0.75" inputmode="decimal"><span class="gr-u">m</span></div></div>
+					<div class="tu-field tu-field--sm"><label for="gr-d2">Second rod, not bonded, this far away</label><div class="gr-pair"><input id="gr-d2" class="tu-input" type="text" value="10" inputmode="decimal"><span class="gr-u">m</span></div></div>
+				</div>
+				<p class="tu-note">Uses the soil and the rod from tab 1: <strong id="gr-rodused2">–</strong>. Textbook point-source model for uniform soil at low frequency: real strikes are far faster, splash across the surface and ionise the soil, so treat the numbers as the right order of magnitude, never as safe limits.</p>
+			</div>
+			<div class="tu-stats">
+				<div class="tu-stat tu-stat--hero"><div class="tu-stat__label">Ground rise at the struck rod</div><div class="tu-stat__value" id="gr-gpr">–</div><div class="tu-stat__sub" id="gr-gprs"></div></div>
+				<div class="tu-stat"><div class="tu-stat__label">Step voltage at your distance</div><div class="tu-stat__value" id="gr-step">–</div><div class="tu-stat__sub" id="gr-steps"></div></div>
+				<div class="tu-stat"><div class="tu-stat__label">Voltage between two unbonded rods</div><div class="tu-stat__value" id="gr-btw">–</div><div class="tu-stat__sub" id="gr-btws"></div></div>
+			</div>
+			<div class="tu-card">
+				<div class="gr-plot-t">Voltage in the ground around a strike (log scales)</div>
+				<canvas id="gr-cv" width="900" height="360" role="img" aria-label="Ground voltage falling with distance from the strike point"></canvas>
+			</div>
+			<div class="tu-card gr-truth">
+				<h2 class="gr-h">What actually protects a home</h2>
+				<ul>
+					<li><strong>Bonding, not draining.</strong> Every rod, water pipe, gas pipe, antenna mast, dish and the electrical ground must be tied together. Then everything rises and falls as one and nothing sparks between them. Two rods that aren't bonded can differ by hundreds of kilovolts in a strike (the third number above).</li>
+					<li><strong>Surge protectors</strong> at the panel (many places now require one) and at sensitive gear clamp the surge on the power lines; the rod gives them a place to send it.</li>
+					<li><strong>A lightning protection system</strong> (air terminals and down conductors) is a separate trade; its ground must be bonded to the electrical ground.</li>
+					<li><strong>Standing outside is the danger</strong>, not the house: when thunder is within 30 s, go indoors and stay off corded phones, plumbing and wired electronics.</li>
+				</ul>
+			</div>
+		</section>
+
+		<section id="gr-p-static" hidden>
+			<div class="tu-card">
+				<div class="tu-row">
+					<div class="tu-field" style="flex-basis:17em;"><label for="gr-sobj">What is charged</label><select id="gr-sobj" class="tu-select"></select></div>
+					<div class="tu-field tu-field--sm"><label for="gr-sC">Capacitance (pF)</label><input id="gr-sC" class="tu-input" type="text" inputmode="decimal"></div>
+					<div class="tu-field tu-field--sm"><label for="gr-sV">Voltage (V)</label><input id="gr-sV" class="tu-input" type="text" inputmode="decimal"></div>
+					<div class="tu-field" style="flex-basis:17em;"><label for="gr-sR">Path to ground</label><select id="gr-sR" class="tu-select"></select></div>
+				</div>
+			</div>
+			<div class="tu-stats">
+				<div class="tu-stat tu-stat--hero"><div class="tu-stat__label">Energy that can go into a spark</div><div class="tu-stat__value" id="gr-sE">–</div><div class="tu-stat__sub" id="gr-sEs"></div></div>
+				<div class="tu-stat"><div class="tu-stat__label">Time to drain (RC)</div><div class="tu-stat__value" id="gr-sT">–</div><div class="tu-stat__sub" id="gr-sTs"></div></div>
+				<div class="tu-stat"><div class="tu-stat__label">Time to fall below 100 V</div><div class="tu-stat__value" id="gr-s100">–</div><div class="tu-stat__sub" id="gr-s100s"></div></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="gr-h">Can that spark ignite something?</h2>
+				<div class="tu-table-wrap"><table class="tu-table" id="gr-mie"></table></div>
+				<p class="tu-note">Minimum ignition energies are typical published values for the best mixture; real ones vary with the mixture and the spark.</p>
+			</div>
+			<div class="tu-card gr-truth">
+				<h2 class="gr-h">How grounding handles static</h2>
+				<ul>
+					<li><strong>The time constant is R × C.</strong> A person is only ~100 to 200 pF, so even a 1 GΩ path drains them in a fraction of a second; a good insulator (R of 10<sup>13</sup> Ω or more) holds charge for hours.</li>
+					<li><strong>The earth's own resistance is irrelevant.</strong> A rod at 5 Ω or at 500 Ω makes no difference next to the resistance of the carpet, shoe or hose in the path. That is why anti-static work uses wrist straps and floors of about 10<sup>6</sup> to 10<sup>9</sup> Ω to ground (fast, but not a shock hazard) and bonding wires between a fuel container and the filler, not extra rods.</li>
+					<li><strong>Humidity</strong> keeps a thin film of water on surfaces that drains charge: dry winter air is why you get zapped.</li>
+					<li>Where gas or dust can ignite (fuel, grain, solvents, oxygen) bond and ground everything and keep sparks below the table's energy.</li>
+				</ul>
+			</div>
+		</section>
+
+		<section id="gr-p-rules" hidden>
+			<div class="tu-card">
+				<div class="tu-row"><div class="tu-field" style="flex-basis:20em;"><label for="gr-reg">Region</label><select id="gr-reg" class="tu-select"></select></div></div>
+				<p class="tu-note gr-warn"><strong>Read this first.</strong> This is a plain-language summary to help you understand and ask the right questions. Codes are revised every few years and amended by states, provinces and utilities, and installing or changing a service ground is regulated work in most places. Use a licensed electrician and the inspection authority for the real requirement.</p>
+			</div>
+			<div class="tu-card" id="gr-rules"></div>
+			<div class="tu-card">
+				<h2 class="gr-h">Home electrical safety checklist</h2>
+				<ul class="gr-check">
+					<li>Press TEST / RESET on every GFCI or RCD each month; replace any that won't trip.</li>
+					<li>Look for 3-prong outlets that aren't actually grounded (an inexpensive outlet tester shows open ground and reversed wires).</li>
+					<li>Check that the water and gas pipes are bonded to the panel's ground (an electrician can see the clamp and wire).</li>
+					<li>Have a whole-house surge protector fitted at the panel and plug sensitive gear into a rated surge strip.</li>
+					<li>Keep any antenna, dish, cable and phone entrance grounded to the <em>same</em> system, not to a separate rod.</li>
+					<li>Don't remove the ground pin or use cheater adapters; don't use a "ground rod" as a substitute for a ground wire.</li>
+					<li>Have the grounding electrode connection, rod clamps and corrosion checked when the panel is upgraded; measure rod resistance if your code or a TT supply requires it.</li>
+				</ul>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Ground rods, earthing and electrical safety explained</h2>
+			<p>A <strong>ground rod</strong> (earth electrode) is a metal rod driven into the soil and wired to your electrical panel. Its resistance to earth is set mostly by the soil, then by the rod's length and the number of rods. This tool calculates it, shows what a rod does and does not do in a shock fault, models the voltages in the ground around a lightning strike, checks static discharge time, and summarises the main rules by region.</p>
+			<h3>Common questions</h3>
+			<ul>
+				<li><strong>How deep should a ground rod be?</strong> In the US an 8 ft (2.4 m) rod fully in contact with the soil; in Canada rods are typically 3 m (10 ft); in Australia at least 1.2 m. Longer rods help more than fatter ones because the current reaches deeper, often wetter soil.</li>
+				<li><strong>Why two ground rods?</strong> In the US, one rod must be supplemented by another electrode unless it measures 25 Ω or less, and rods must be at least 6 ft apart so they don't share the same patch of soil. Compare 1 and 2 rods in tab 1.</li>
+				<li><strong>Does the ground rod trip the breaker?</strong> No. Tab 2 shows the fault current through a rod is only a few amps; the grounding wire to the panel and the neutral-ground bond clear faults.</li>
+				<li><strong>Does a ground rod protect from lightning?</strong> It is one part of a bonded system. It does not conduct a strike harmlessly; tab 3 shows the voltages.</li>
+				<li><strong>What resistance should a ground rod have?</strong> It depends on the system and country: 25 Ω is the US benchmark for a single rod; TT systems use R<sub>A</sub> × I<sub>Δn</sub> ≤ 50 V; many practical designs aim for much less. Tab 5 lists the main rules.</li>
+			</ul>
+			<p>Related: <a href="/electromagnetic-fields-simulator">Electromagnetic Fields Simulator</a> · <a href="/unit-conversion">Unit Conversion</a> · <a href="/calculators">More calculators</a></p>
+		</div>
+	</div>

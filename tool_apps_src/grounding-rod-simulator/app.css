@@ -1,0 +1,16 @@
+	.gr-pair {display:flex;gap:0.4em;align-items:center;} .gr-pair .tu-input {flex:1 1 5em;min-width:0;} .gr-pair .tu-select {flex:0 0 auto;width:auto;} .gr-u {opacity:0.7;}
+	.gr-h {font-size:1.1em;margin:0 0 0.6em;border-bottom:0;padding-bottom:0;} .gr-h3 {font-size:1em;margin:1em 0 0.4em;}
+	.gr-plot-t {font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;margin-bottom:0.4em;}
+	#gr canvas {width:100%;height:auto;display:block;background:#fff;border-radius:0.4em;}
+	#gr .gr-truth {border-left:4px solid var(--accent);} #gr .gr-warn {background:#fff7e0;border:1px solid #f0d58a;border-radius:0.5em;padding:0.6em 0.8em;color:#4a3a00;}
+	#gr .gr-risk {display:inline-block;padding:0.1em 0.6em;border-radius:1em;font-size:0.85em;font-weight:700;white-space:nowrap;}
+	#gr .gr-r0 {background:#dff3e3;color:#14532d;} #gr .gr-r1 {background:#e8f3d6;color:#365314;} #gr .gr-r2 {background:#fdf0c4;color:#713f12;} #gr .gr-r3 {background:#fcd9b0;color:#7c2d12;} #gr .gr-r4 {background:#f9c0c0;color:#7f1d1d;} #gr .gr-r5 {background:#7f1d1d;color:#fff;}
+	#gr .gr-ok {color:#14532d;font-weight:700;} #gr .gr-no {color:#b91c1c;font-weight:700;}
+	#gr .gr-hl td {background:rgba(196,106,0,0.14);font-weight:700;}
+	#gr .gr-check li {margin:0.3em 0;} #gr .gr-reg dt {font-weight:700;margin-top:0.7em;} #gr .gr-reg dd {margin:0.15em 0 0 0;}
+	body.dark-mode #gr canvas {background:#161616;} body.dark-mode #gr .gr-plot-t {color:#a0a8b3;}
+	body.dark-mode #gr .gr-warn {background:#3a3210;border-color:#6b5a1c;color:#f3e6b0;}
+	body.dark-mode #gr .gr-r0 {background:#14391f;color:#bbf7d0;} body.dark-mode #gr .gr-r1 {background:#27381a;color:#d9f99d;} body.dark-mode #gr .gr-r2 {background:#4a3c10;color:#fde68a;} body.dark-mode #gr .gr-r3 {background:#5a3410;color:#fed7aa;} body.dark-mode #gr .gr-r4 {background:#5f1d1d;color:#fecaca;}
+	body.dark-mode #gr .gr-ok {color:#86efac;} body.dark-mode #gr .gr-no {color:#fca5a5;}
+	#gr [hidden] {display:none !important;}
+	#gr .tu-seg {flex-wrap:wrap;max-width:100%;} #gr .tu-seg button {flex:1 1 auto;}

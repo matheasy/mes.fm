@@ -102,6 +102,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("time-dilation", "Time Dilation Simulator"),
     ("mandelbrot", "Mandelbrot Explorer"),   # also built by build_tool_apps.py (tools sidebar collection, worker-pool canvas)
     ("electromagnetic-fields-simulator", "Electromagnetic Fields"),
+    ("grounding-rod-simulator", "Ground Rod Simulator"),
     ("double-pendulum", "Double Pendulum"),
     ("orbit-simulator", "Orbit Simulator"),
     ("metric-tensor", "Metric Tensor Explorer"),

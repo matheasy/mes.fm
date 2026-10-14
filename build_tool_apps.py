@@ -336,6 +336,11 @@ APPS = {
                             desc="Watch a caesium fountain atomic clock in 3D: six lasers cool a ball of atoms, it is launched up through the microwave cavity and falls back. Change the flight time and the atom temperature and see why throwing higher stops helping.",
                             src="atomic-clock-simulator", content="content-fountain.html", js_path="atomic-clock-simulator/js/atomic-clock-simulator.js", js_v="3"),
     # Reynolds Number Calculator: Re from fluid, speed and size (any units), regime for the geometry, solve for speed / size, pipe friction, drag, shedding, boundary layer. lib.js node-tested.
+    # Grounding & Ground Rod Simulator (2026-10-14): rod resistance (Dwight + mutual), shock/fault cases, lightning step voltage, static decay, regional rules. lib.js node-tested: tool_apps_src/grounding-rod-simulator-tests.js
+    "grounding-rod-simulator": dict(title="MES Grounding Rod Simulator", page_title="Ground Rod Calculator: Earthing, Lightning and Shock Safety",
+                            tag="See what a ground rod really does.", accent="#a16207", dark="#854d0e", tint="#fbf1d6",
+                            desc="Free ground rod calculator and earthing simulator: find a rod's resistance for your soil, how many rods you need, why a rod does not trip a breaker, lightning step and touch voltages, static discharge time, and the grounding rules for the US, Canada, UK, Australia, Europe and Vietnam.",
+                            js_v="1"),
     "reynolds-number-calculator": dict(title="MES Reynolds Number Calculator", page_title="Reynolds Number Calculator",
                             tag="Laminar or turbulent? Find out.", accent="#0e7490", dark="#155e75", tint="#e0f4f8",
                             desc="Free Reynolds number calculator: enter the fluid, speed and size in any units to get Re, whether the flow is laminar or turbulent, pipe friction and pressure drop, drag and vortex-shedding frequency. Or solve for the speed or size that gives a target Re.",
