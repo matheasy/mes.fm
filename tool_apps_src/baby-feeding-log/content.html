@@ -1,0 +1,46 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu fl" id="fl">
+		<div class="tu-card fl-main">
+			<div class="fl-next" id="fl-next" aria-live="polite"></div>
+			<div class="fl-sides">
+				<button type="button" class="fl-side" id="fl-l" data-side="bl"><span class="fl-side__t" id="fl-lt">Left</span><span class="fl-side__s" id="fl-ls">tap to start</span></button>
+				<button type="button" class="fl-side" id="fl-r" data-side="br"><span class="fl-side__t" id="fl-rt">Right</span><span class="fl-side__s" id="fl-rs">tap to start</span></button>
+			</div>
+			<div class="fl-since" id="fl-since"></div>
+		</div>
+		<div class="tu-card">
+			<div class="tu-row" style="align-items:flex-end;gap:0.6em 1.2em">
+				<div class="tu-field" style="flex:1 1 15em"><span class="tu-label">Bottle (formula or pumped milk)</span><div class="tu-chips" id="fl-amts" aria-label="Amounts"></div><div class="fl-pair"><input id="fl-ml" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="amount" aria-label="Bottle amount"><span id="fl-mlu">ml</span><button type="button" class="tu-btn tu-btn--primary" id="fl-bt">Save bottle</button></div></div>
+				<div class="tu-field"><span class="tu-label">Diaper</span><div class="fl-dia"><button type="button" class="tu-btn tu-btn--ghost" data-d="wet">&#128167; Wet</button><button type="button" class="tu-btn tu-btn--ghost" data-d="dirty">&#128169; Dirty</button><button type="button" class="tu-btn tu-btn--ghost" data-d="both">Both</button></div></div>
+				<div class="tu-field"><span class="tu-label">Pumping</span><div class="fl-pair"><input id="fl-pml" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="amount" aria-label="Pumped amount"><button type="button" class="tu-btn tu-btn--ghost" id="fl-pm">Save pump</button></div></div>
+			</div>
+			<div class="fl-opts"><div class="tu-seg" id="fl-units" role="group" aria-label="Units"><button type="button" data-u="ml" aria-pressed="true">ml</button><button type="button" data-u="oz" aria-pressed="false">oz</button></div><label class="fl-check"><input type="checkbox" id="fl-wake"> Keep the screen on</label><button type="button" class="tu-chip" id="fl-add">+ Add a past entry</button><button type="button" class="tu-chip" id="fl-undo" hidden>Undo</button></div>
+		</div>
+		<h2>Today</h2>
+		<div class="tu-stats" id="fl-stats"></div>
+		<h2>Log</h2>
+		<div class="tu-card">
+			<div class="tu-table-wrap"><table class="tu-table fl-tbl" id="fl-tbl"><thead><tr><th>Time</th><th>What</th><th>Details</th><th></th></tr></thead><tbody id="fl-body"></tbody></table></div>
+			<p class="tu-note" id="fl-empty">Nothing logged yet.</p>
+			<div class="tu-row" style="margin-top:0.8em"><button type="button" class="tu-btn tu-btn--ghost" id="fl-copy">Copy last 24 hours</button><button type="button" class="tu-btn tu-btn--ghost" id="fl-csv">Download CSV</button><button type="button" class="tu-btn tu-btn--ghost" id="fl-clear">Clear everything</button></div>
+		</div>
+		<div class="tu-toast" id="fl-toast" role="status" aria-live="polite"></div>
+		<p class="tu-note fl-disc">Your log is saved only in this browser (use Copy or CSV to share it with a doctor or partner). Typical guide for the first weeks: 8 to 12 feeds in 24 hours, and from day 5 at least 6 wet diapers a day. Babies differ, so call your doctor or midwife if your baby feeds poorly, has fewer wet diapers, seems very sleepy or you are worried.</p>
+		<div class="tu-seo">
+			<h2>Baby feeding log and breastfeeding timer</h2>
+			<p>A simple one-hand tracker for the first months. Tap <strong>Left</strong> or <strong>Right</strong> when the baby starts feeding and tap again when they finish: the timer records the length and reminds you which side to offer next. Log <strong>bottles</strong> (ml or oz), <strong>pumping</strong> and <strong>wet and dirty diapers</strong> in one tap, and see today's totals, the time since the last feed and the average gap between feeds.</p>
+			<h3>Why parents like it</h3>
+			<ul>
+				<li><strong>Which side next?</strong> It remembers which breast you used last.</li>
+				<li><strong>Left then right counts as one feed</strong>, so your feed count matches what the midwife asks.</li>
+				<li><strong>Works with a sleepy brain:</strong> big buttons, the screen can stay on, and entries can be added after the fact.</li>
+				<li><strong>Private:</strong> no account, no app, nothing uploaded. Copy or download the log when you need it.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>How often should a newborn feed?</h4>
+			<p>Usually 8 to 12 times in 24 hours in the first weeks, about every 2 to 3 hours, counted from the start of one feed to the start of the next. Feeding on demand is normal.</p>
+			<h4>How many wet diapers should my baby have?</h4>
+			<p>About 1 on day 1, 2 on day 2, 3 on day 3, 4 on day 4 and 6 or more a day from day 5. Fewer can mean the baby is not getting enough milk: ask your midwife or doctor.</p>
+			<p class="tu-note">Related: <a href="/baby-growth-percentile-calculator">Baby Growth Percentile Calculator</a>, <a href="/contraction-timer">Contraction Timer</a>.</p>
+		</div>
+	</div>

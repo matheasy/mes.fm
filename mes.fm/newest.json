@@ -2,6 +2,38 @@
  "generated": "2026-10-14",
  "calculators": [
   {
+   "href": "/conception-date-calculator",
+   "title": "Conception Date Calculator",
+   "icon": "/img/conception-date-calculator-logo.png",
+   "desc": "Work out when you conceived from your due date, last period or IVF transfer.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/contraction-timer",
+   "title": "Contraction Timer",
+   "icon": "/img/contraction-timer-logo.png",
+   "desc": "One big button to time labour contractions: length, gaps, hourly average and a 5-1-1 rule alert.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/pregnancy-test-calculator",
+   "title": "Pregnancy Test Calculator",
+   "icon": "/img/pregnancy-test-calculator-logo.png",
+   "desc": "The best day to take a pregnancy test: implantation days, earliest sensitive test and when a test is dependable.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/weeks-pregnant-calculator",
+   "title": "Weeks Pregnant Calculator",
+   "icon": "/img/weeks-pregnant-calculator-logo.png",
+   "desc": "How many weeks pregnant you are today, your trimester and a week-by-week table with baby size.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/ovulation-calculator",
    "title": "Ovulation Calculator",
    "icon": "/img/ovulation-calculator-logo.png",
@@ -64,41 +96,25 @@
    "desc": "Add 1 to n, any range, squares, cubes, odd or even numbers, multiples, arithmetic and geometric series, or your own formula.",
    "added": "2026-10-09",
    "kind": "calculator"
-  },
-  {
-   "href": "/photoelectric-effect-simulator",
-   "title": "Photoelectric Effect Simulator",
-   "icon": "/img/photoelectric-effect-simulator-logo.png",
-   "desc": "Shine light on a metal and watch electrons escape. Find the stopping voltage and photon energy, and measure Planck's constant.",
-   "added": "2026-10-09",
-   "kind": "calculator"
-  },
-  {
-   "href": "/reynolds-number-calculator",
-   "title": "Reynolds Number Calculator",
-   "icon": "/img/reynolds-number-calculator-logo.png",
-   "desc": "Laminar or turbulent? Work out Re for any fluid, speed and size, plus pipe friction, drag and vortex shedding.",
-   "added": "2026-10-09",
-   "kind": "calculator"
-  },
-  {
-   "href": "/weighted-average-calculator",
-   "title": "Weighted Average Calculator",
-   "icon": "/img/wac-logo.png",
-   "desc": "Calculate your weighted average course grade.",
-   "added": "2026-10-07",
-   "kind": "calculator"
-  },
-  {
-   "href": "/derivative-calculator",
-   "title": "Derivative Calculator",
-   "icon": "/img/derivative-calculator-logo.png",
-   "desc": "Derivatives with every step explained: product, quotient and chain rules, higher, partial and implicit derivatives.",
-   "added": "2026-10-02",
-   "kind": "calculator"
   }
  ],
  "tools": [
+  {
+   "href": "/domain-lookup",
+   "title": "Domain Lookup",
+   "icon": "/img/domain-lookup-logo.png",
+   "desc": "Whois for the web: domain age, registrar, expiry, who hosts a site, DNS and email setup, and warning signs.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
+  {
+   "href": "/exif-viewer",
+   "title": "EXIF Viewer",
+   "icon": "/img/exif-viewer-logo.png",
+   "desc": "See the camera, date, GPS location and AI / edit flags hidden in a photo, and save a copy with the metadata removed.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
   {
    "href": "/reverse-image-search",
    "title": "Reverse Image Search",
@@ -178,25 +194,57 @@
    "desc": "Our own browser extension: A- and A+ for any website, text only, remembered per site. Free and private.",
    "added": "2026-10-11",
    "kind": "tool"
-  },
-  {
-   "href": "/volume-booster",
-   "title": "Volume Booster",
-   "icon": "/img/volume-booster-logo.png",
-   "desc": "Our own browser extension: make quiet videos louder, up to 600%, with a soft limiter. Free and private.",
-   "added": "2026-10-11",
-   "kind": "tool"
-  },
-  {
-   "href": "/dark-mode",
-   "title": "Dark Mode",
-   "icon": "/img/dark-mode-logo.png",
-   "desc": "Our own browser extension: dark mode (or light mode) for any website, with per-site control and a schedule. Free and private.",
-   "added": "2026-10-11",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/conception-date-calculator",
+   "title": "Conception Date Calculator",
+   "icon": "/img/conception-date-calculator-logo.png",
+   "desc": "Work out when you conceived from your due date, last period or IVF transfer.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/contraction-timer",
+   "title": "Contraction Timer",
+   "icon": "/img/contraction-timer-logo.png",
+   "desc": "One big button to time labour contractions: length, gaps, hourly average and a 5-1-1 rule alert.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/pregnancy-test-calculator",
+   "title": "Pregnancy Test Calculator",
+   "icon": "/img/pregnancy-test-calculator-logo.png",
+   "desc": "The best day to take a pregnancy test: implantation days, earliest sensitive test and when a test is dependable.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/weeks-pregnant-calculator",
+   "title": "Weeks Pregnant Calculator",
+   "icon": "/img/weeks-pregnant-calculator-logo.png",
+   "desc": "How many weeks pregnant you are today, your trimester and a week-by-week table with baby size.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/domain-lookup",
+   "title": "Domain Lookup",
+   "icon": "/img/domain-lookup-logo.png",
+   "desc": "Whois for the web: domain age, registrar, expiry, who hosts a site, DNS and email setup, and warning signs.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
+  {
+   "href": "/exif-viewer",
+   "title": "EXIF Viewer",
+   "icon": "/img/exif-viewer-logo.png",
+   "desc": "See the camera, date, GPS location and AI / edit flags hidden in a photo, and save a copy with the metadata removed.",
+   "added": "2026-10-14",
+   "kind": "tool"
+  },
   {
    "href": "/reverse-image-search",
    "title": "Reverse Image Search",
@@ -212,54 +260,6 @@
    "desc": "Find your fertile window, ovulation day and next period. Any cycle length, LH tests, private, adds to your calendar.",
    "added": "2026-10-14",
    "kind": "calculator"
-  },
-  {
-   "href": "/period-calculator",
-   "title": "Period Calculator",
-   "icon": "/img/period-calculator-logo.png",
-   "desc": "Predict your next period, log your cycles to get your own average, and see the year ahead.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/due-date-calculator",
-   "title": "Pregnancy Due Date Calculator",
-   "icon": "/img/due-date-calculator-logo.png",
-   "desc": "Due date from your last period, conception, IVF transfer or a scan, with weeks pregnant and key dates.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/time-dilation",
-   "title": "Time Dilation Simulator",
-   "icon": "/img/time-dilation-logo.png",
-   "desc": "How much would you age at close to the speed of light? Watch a traveller's clock, heartbeat and ageing slow down, see the light clock that explains why, fly the twin paradox at a steady 1 g, and calculate it.",
-   "added": "2026-10-13",
-   "kind": "calculator"
-  },
-  {
-   "href": "/buddhabrot",
-   "title": "Buddhabrot Explorer",
-   "icon": "/img/buddhabrot-logo.png",
-   "desc": "Watch the Buddhabrot fill in live: millions of random Mandelbrot orbits piled into a glowing figure. Try the three-colour Nebulabrot and the Anti-Buddhabrot.",
-   "added": "2026-10-13",
-   "kind": "tool"
-  },
-  {
-   "href": "/electromagnetic-fields-simulator",
-   "title": "Electromagnetic Fields Simulator",
-   "icon": "/img/electromagnetic-fields-simulator-logo.png",
-   "desc": "Place charges and wires and see field lines, Gauss's law and Ampère's law, steer a particle through E and B fields, and watch Maxwell's equations make waves reflect, refract and diffract.",
-   "added": "2026-10-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/double-pendulum",
-   "title": "Double Pendulum",
-   "icon": "/img/double-pendulum-logo.png",
-   "desc": "Drag two swinging arms into place and watch chaos: a fan of copies that drift apart, how fast errors grow, and a fractal map of how long each start takes to flip.",
-   "added": "2026-10-12",
-   "kind": "tool"
   }
  ]
 }

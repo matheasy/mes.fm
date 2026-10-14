@@ -1,0 +1,62 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu gr" id="gr">
+		<p class="tu-note gr-private">&#128274; Private: nothing is uploaded. Your baby's details and growth log stay in this browser.</p>
+		<div class="tu-card">
+			<div class="tu-row gr-top">
+				<div class="tu-field"><span class="tu-label">Baby is a</span><div class="tu-seg" id="gr-sex" role="group" aria-label="Sex"><button type="button" data-s="f" aria-pressed="true">Girl</button><button type="button" data-s="m" aria-pressed="false">Boy</button></div></div>
+				<div class="tu-field"><span class="tu-label">How old?</span><div class="tu-seg" id="gr-agemode" role="group" aria-label="How to give the age"><button type="button" data-m="birth" aria-pressed="true">Birth date</button><button type="button" data-m="age" aria-pressed="false">Age</button></div></div>
+			</div>
+			<div class="tu-row" id="gr-birthrow">
+				<div class="tu-field"><label class="tu-label" for="gr-birth">Date of birth</label><input id="gr-birth" class="tu-input" type="date"></div>
+				<div class="tu-field"><label class="tu-label" for="gr-on">Measured on</label><input id="gr-on" class="tu-input" type="date"></div>
+			</div>
+			<div class="tu-row" id="gr-agerow" hidden>
+				<div class="tu-field"><label class="tu-label" for="gr-agev">Age</label><div class="gr-pair"><input id="gr-agev" class="tu-input" type="number" inputmode="decimal" min="0" step="any" value="3"><select id="gr-ageu" class="tu-select"><option value="d">days</option><option value="w">weeks</option><option value="m" selected>months</option></select></div></div>
+			</div>
+			<div class="tu-row">
+				<div class="tu-field"><label class="tu-label" for="gr-early">Born early by (weeks, optional)</label><input id="gr-early" class="tu-input" type="number" inputmode="numeric" min="0" max="20" value="0"><div class="tu-note">If born before 37 weeks, growth is judged by the age from the due date until age 2.</div></div>
+			</div>
+			<h3 class="gr-h">Measurements <span class="tu-note">(any one is enough)</span></h3>
+			<div class="tu-row gr-meas">
+				<div class="tu-field"><span class="tu-label">Weight</span><div class="gr-pair" id="gr-w-kg"><input id="gr-w" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 6.4" aria-label="Weight in kilograms"><span>kg</span></div><div class="gr-pair" id="gr-w-lb" hidden><input id="gr-lb" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="lb" aria-label="Pounds"><span>lb</span><input id="gr-oz" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="oz" aria-label="Ounces"><span>oz</span></div></div>
+				<div class="tu-field"><span class="tu-label">Length / height</span><div class="gr-pair"><input id="gr-l" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 62" aria-label="Length"><span id="gr-lu">cm</span></div></div>
+				<div class="tu-field"><span class="tu-label">Head circumference</span><div class="gr-pair"><input id="gr-h" class="tu-input" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 41" aria-label="Head circumference"><span id="gr-hu">cm</span></div></div>
+			</div>
+			<div class="tu-seg" id="gr-units" role="group" aria-label="Units"><button type="button" data-u="metric" aria-pressed="true">kg · cm</button><button type="button" data-u="us" aria-pressed="false">lb · oz · in</button></div>
+		</div>
+		<p class="tu-note gr-msg" id="gr-msg" role="status" aria-live="polite"></p>
+		<div id="gr-out" hidden>
+			<div class="tu-stats" id="gr-cards"></div>
+			<div class="tu-row gr-acts"><button type="button" class="tu-btn tu-btn--primary" id="gr-save">Save this visit to the growth log</button><button type="button" class="tu-btn tu-btn--ghost" id="gr-copy">Copy result</button></div>
+			<h2>Growth chart</h2>
+			<div class="tu-card">
+				<div class="tu-seg" id="gr-kind" role="group" aria-label="Chart"><button type="button" data-k="wfa" aria-pressed="true">Weight</button><button type="button" data-k="lhfa" aria-pressed="false">Length</button><button type="button" data-k="hcfa" aria-pressed="false">Head</button></div>
+				<div class="gr-chart" id="gr-chart"></div>
+				<p class="tu-note">Lines are the WHO 3rd, 15th, 50th, 85th and 97th percentiles. Filled dot = this measurement, open dots = your saved visits.</p>
+			</div>
+		</div>
+		<div id="gr-logbox" hidden>
+			<h2>Growth log</h2>
+			<div class="tu-card"><div class="gr-trend" id="gr-trend"></div><div class="tu-table-wrap"><table class="tu-table" id="gr-log"></table></div><div class="tu-row" style="margin-top:0.7em"><button type="button" class="tu-btn tu-btn--ghost" id="gr-logcopy">Copy log</button><button type="button" class="tu-btn tu-btn--ghost" id="gr-logclear">Clear log</button></div></div>
+		</div>
+		<div class="tu-toast" id="gr-toast" role="status" aria-live="polite"></div>
+		<p class="tu-note gr-disc">Percentiles use the WHO Child Growth Standards (2006), built from healthy, breastfed babies in six countries, for ages 0 to 5. A percentile is not a grade: a healthy baby can be on any line between the 3rd and 97th. What matters is that growth follows its own curve. This is not medical advice; talk to your doctor or health visitor about any worry.</p>
+		<div class="tu-seo">
+			<h2>Baby growth percentile calculator</h2>
+			<p>Enter your baby's sex, age and weight, length and head circumference to see which <strong>percentile</strong> each falls on, how that compares with the usual range for that age, and where it sits on the WHO growth chart. Save each doctor's visit to a private growth log to see the trend and whether your baby is following a steady curve.</p>
+			<h3>Reading the result</h3>
+			<ul>
+				<li><strong>50th percentile</strong> means half of babies of that age and sex are smaller and half are larger. <strong>15th&ndash;85th</strong> is the middle of the range and <strong>3rd&ndash;97th</strong> is the usual range.</li>
+				<li>A baby on the 10th percentile is not &ldquo;behind&rdquo;. Many healthy babies are small or large and stay there.</li>
+				<li>The <strong>trend</strong> matters more than one number. Falling across two or more of the main lines between visits is worth discussing with your doctor.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Do I use the WHO or CDC chart?</h4>
+			<p>The WHO standards are used for children under 2 almost everywhere, including by the CDC and in Canada, the UK and Australia. They describe how healthy, mostly breastfed babies grow.</p>
+			<h4>My baby was born early. Which age do I use?</h4>
+			<p>Enter how many weeks early. Until age 2 the calculator uses the corrected age (from the due date), which is how premature babies are usually assessed. Very premature babies are often followed on special charts, so ask your neonatal team.</p>
+			<h4>What is the birth weight percentile?</h4>
+			<p>Enter age 0 days (or the birth date as the measured date) and the birth weight. This uses WHO standards for term babies; for birth weight by gestational age, doctors use charts such as Fenton or INTERGROWTH.</p>
+			<p class="tu-note">Related: <a href="/baby-feeding-log">Baby Feeding Log</a>, <a href="/weeks-pregnant-calculator">Weeks Pregnant</a>.</p>
+		</div>
+	</div>

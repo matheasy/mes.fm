@@ -36,6 +36,8 @@ CALC = {   # path -> (kind, tags)
     "/ovulation-calculator": ("Calculator", ["health", "everyday", "time"]),
     "/period-calculator": ("Calculator", ["health", "everyday", "time"]),
     "/due-date-calculator": ("Calculator", ["health", "everyday", "time"]),
+    "/baby-growth-percentile-calculator": ("Calculator", ["health", "everyday"]),
+    "/baby-feeding-log": ("Tool", ["health", "everyday", "time"]),
     "/contraction-timer": ("Tool", ["health", "everyday", "time"]),
     "/pregnancy-test-calculator": ("Calculator", ["health", "everyday", "time"]),
     "/conception-date-calculator": ("Calculator", ["health", "everyday", "time"]),

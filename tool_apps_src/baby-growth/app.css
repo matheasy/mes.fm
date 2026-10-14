@@ -1,0 +1,10 @@
+	.gr-private {margin:0 0 0.6em;} .gr-top {gap:1em 2em;} .gr-h {margin:1em 0 0.3em;font-size:1.05em;}
+	.gr-pair {display:flex;gap:0.4em;align-items:center;} .gr-pair .tu-input {min-width:0;width:7em;flex:1;} .gr-pair span {color:#6a7280;font-size:0.9em;}
+	.gr-meas {align-items:flex-start;gap:1em 1.5em;} .gr-meas .tu-field {flex:1 1 11em;}
+	#gr-units {margin-top:0.8em;} .gr-msg:empty {display:none;} .gr-acts {margin:1em 0;gap:0.5em;}
+	.gr-chart svg {width:100%;height:auto;display:block;margin-top:0.6em;} .gr-chart .l {fill:none;stroke:#94a3b8;stroke-width:1.2;} .gr-chart .l50 {stroke:#334155;stroke-width:2;} .gr-chart .t {font-size:11px;fill:#6a7280;} .gr-chart .ax {stroke:#cbd5e1;stroke-width:1;}
+	.gr-chart .pt {fill:var(--accent);stroke:#fff;stroke-width:2;} .gr-chart .lp {fill:#fff;stroke:var(--accent);stroke-width:2;} .gr-chart .tr {fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;}
+	.gr-trend {margin-bottom:0.7em;line-height:1.5;} .gr-trend b.warn {color:#b3261e;}
+	.gr-pct {font-size:2em !important;} .gr-disc {margin-top:1.2em;}
+	@media (max-width:560px) {.gr-pair .tu-input {width:5.5em;}}
+	body.dark-mode #gr .gr-chart .l {stroke:#64748b;} body.dark-mode #gr .gr-chart .l50 {stroke:#cbd5e1;} body.dark-mode #gr .gr-chart .t {fill:#a0a8b3;} body.dark-mode #gr .gr-chart .ax {stroke:#475569;} body.dark-mode #gr .gr-chart .pt {stroke:#1a1a1a;} body.dark-mode #gr .gr-chart .lp {fill:#1a1a1a;} body.dark-mode #gr .gr-trend b.warn {color:#ff9a92;}

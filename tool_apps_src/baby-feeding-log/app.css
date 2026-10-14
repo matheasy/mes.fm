@@ -1,0 +1,13 @@
+	.fl-main {text-align:center;padding:1.2em 1em;} .fl-next {font-weight:700;min-height:1.5em;margin-bottom:0.7em;color:#333;}
+	.fl-sides {display:flex;gap:1em;justify-content:center;flex-wrap:wrap;}
+	.fl-side {flex:1 1 9em;max-width:14em;aspect-ratio:1;border-radius:50%;border:0;background:var(--accent);color:#fff;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.2em;box-shadow:0 0.3em 1em rgba(0,0,0,0.22);touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+	.fl-side__t {font-size:1.9em;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;} .fl-side__s {font-size:0.95em;opacity:0.92;}
+	.fl-side.on {background:#1e2733;animation:flpulse 1.6s ease-in-out infinite;} .fl-side.sug {outline:4px solid rgba(245,158,11,0.55);outline-offset:3px;}
+	@keyframes flpulse {50% {box-shadow:0 0 0 0.7em rgba(245,158,11,0.2),0 0.3em 1em rgba(0,0,0,0.25);}}
+	.fl-since {margin-top:0.8em;color:#6a7280;min-height:1.3em;}
+	.fl-pair {display:flex;gap:0.4em;align-items:center;flex-wrap:wrap;margin-top:0.4em;} .fl-pair .tu-input {width:6.5em;} .fl-pair span {color:#6a7280;}
+	.fl-dia {display:flex;gap:0.4em;flex-wrap:wrap;margin-top:0.4em;} .fl-dia .tu-btn {padding:0.7em 1em;font-size:1em;}
+	.fl-opts {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:center;margin-top:1em;} .fl-check {display:flex;gap:0.5em;align-items:center;cursor:pointer;} .fl-check input {width:1.1em;height:1.1em;accent-color:var(--accent);}
+	.fl-tbl td {white-space:normal !important;} #fl .fl-tbl button {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#555;border-radius:0.3em;padding:0.2em 0.6em;font:inherit;font-size:0.85em;}
+	.fl-day td {background:var(--tint);font-weight:700;} .fl-disc {margin-top:1.2em;}
+	body.dark-mode #fl .fl-next {color:#eee;} body.dark-mode #fl .fl-side.on {background:#3a3f48;} body.dark-mode #fl .fl-tbl button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} body.dark-mode #fl .fl-day td {color:#eee;}
