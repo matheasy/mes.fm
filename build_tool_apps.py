@@ -115,7 +115,7 @@ APPS = {
     "contraction-timer": dict(title="MES Contraction Timer", page_title="Contraction Timer for Labour (5-1-1 Rule)",
                               tag="One big button to time contractions.", accent="#c026d3", dark="#8f1b9f", tint="#f7e1fa",
                               desc="Free contraction timer: tap once when a contraction starts and again when it ends. See how long each lasted, how far apart they are, your average over the last hour and an alert when they follow the 5-1-1 rule. Saved on your phone, keeps the screen on, no sign-up.",
-                              js_v="2"),
+                              js_v="3"),
     "exif-viewer": dict(title="MES EXIF Viewer", page_title="EXIF Viewer: Photo Metadata, GPS Location and AI Flags",
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",
                         desc="Free EXIF viewer: drop a photo to see the camera, date, settings, GPS location, editing software and AI / Content Credentials flags hidden in it, and save a clean copy with all metadata removed. Private: the photo never leaves your browser.",
@@ -132,7 +132,7 @@ APPS = {
     "baby-feeding-log": dict(title="MES Baby Feeding Log", page_title="Baby Feeding Log and Breastfeeding Timer",
                           tag="One-tap feeds, bottles and diapers.", accent="#d97706", dark="#a85b04", tint="#fdebd0",
                           desc="Free baby feeding log and breastfeeding timer: tap left or right to time each feed, get a reminder of which side is next, log bottles, pumping and wet or dirty diapers, and see today's totals and the gap between feeds. Private, saved on your phone, no sign-up.",
-                          js_v="2"),
+                          js_v="3"),
     # Archive (2026-10-14): one address -> Wayback Machine, archive.today, Ghostarchive, Megalodon, Arquivo.pt, RemovePaywall, ArcHive (Hive blockchain) + the user's own sites. lib.js = engine table (shared with the
     # MES Archive extension in mes.fm/archive/extension via build_archive_extension.py), tests: node tool_apps_src/archive-tests.js.
     "archive": dict(title="MES Archive", page_title="Archive Any Web Page: Wayback Machine, archive.today and More",
@@ -145,7 +145,7 @@ APPS = {
                     desc="Time dilation explained step by step: derive the Lorentz factor from a light clock and Pythagoras, then length contraction, the twin paradox, constant-acceleration travel and the energy needed, with worked examples, a gamma table and practice questions.",
                     brand=dict(slug="time-dilation", title="MES Time Dilation Simulator", tag="Fast ships, slow clocks."), tab=1,
                     nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/time-dilation-explained'>Explained</a></li>", menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/time-dilation-explained\">Time Dilation Explained</a></li>",
-                    js_v="2"),
+                    js_v="3"),
     "days-between-dates-calculator": dict(title="MES Days Between Dates Calculator", page_title="Days Between Dates Calculator",
                                           tag="Days, weeks, months, hours and business days between two dates.", accent="#2f7d32", dark="#1f5a23", tint="#e4f2e4",
                                           desc="Free days between dates calculator: count the days, weeks, months, years, hours, minutes and seconds between any two dates, with optional end-date inclusion, business days (custom weekends and holidays), time of day and shareable links.",

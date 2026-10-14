@@ -12,3 +12,4 @@
 	.fl-day td {background:var(--tint);font-weight:700;} .fl-disc {margin-top:1.2em;}
 	body.dark-mode #fl .fl-next {color:#eee;} body.dark-mode #fl .fl-side.on {background:#3a3f48;} body.dark-mode #fl .fl-tbl button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} body.dark-mode #fl .fl-day td {color:#eee;}
 	body.dark-mode #fl .fl-side, body.dark-mode #fl .fl-side * {color:#fff !important;} body.dark-mode #fl .fl-side {background:#b45309 !important;} body.dark-mode #fl .fl-side.on {background:#3a3f48 !important;}   /* the derived dark theme greyed the label on the orange circle */
+	#fl [hidden] {display:none !important;}
