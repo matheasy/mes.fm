@@ -289,12 +289,28 @@
 		var nq = normTerm(query);
 		var best = Object.create(null);
 		// "utc+8", "GMT-5", "utc +5:30", "+8": the fixed offset itself, then the cities that are on that offset right now
-		var om = /^(?:utc|gmt)?\s*([+\-\u2212\u2013])\s*(\d{1,2})(?::?(\d{2}))?$/i.exec(String(query || "").trim());
+		var sm = /^(?:utc|gmt)\s*([+\-\u2212\u2013])?$/i.exec(String(query || "").trim()), smDone = false;
+		if (sm) {
+			// "utc" -> UTC plus a few offsets either side; "utc+" / "utc-" -> only that side, in order
+			var plus = sm[1] === "+", i;
+			if (!sm[1]) {
+				consider("UTC", 3000, null); smDone = true; limit = Math.max(limit, 9);
+				[1, -1, 2, -2, 3, -3, 8, -8].forEach(function (h, k) { consider(etcZone(h), 2900 - k, null); });
+			} else {
+				smDone = true; limit = Math.max(limit, 14);
+				for (i = 1; i <= (plus ? 14 : 12); i++) consider(etcZone(plus ? i : -i), 2900 - i, null);
+			}
+		}
+		var om = smDone ? null : /^(?:utc|gmt)?\s*([+\-\u2212\u2013])\s*(\d{1,2})(?::?(\d{2}))?$/i.exec(String(query || "").trim());
 		if (om) {
 			var tmin = (om[1] === "+" ? 1 : -1) * (+om[2] * 60 + (om[3] ? +om[3] : 0)), nowD = new Date();
 			if (tmin >= -12 * 60 && tmin <= 14 * 60) {
 				limit = Math.max(limit, 12);
-				if (tmin % 60 === 0) { var ez = etcZone(tmin / 60); if (!exclude[ez]) consider(ez, 2000, null); else best[ez] = { score: 2000, via: null }; }
+				if (tmin % 60 === 0) {
+					var ez = etcZone(tmin / 60); consider(ez, 2000, null);
+					// "utc+1" also offers +10..+14, "utc-1" also -10..-12 (every offset that starts with the typed hours)
+					if (om[3] === undefined) for (var h2 = 10; h2 <= (tmin > 0 ? 14 : 12); h2++) if (String(h2).indexOf(String(+om[2])) === 0 && h2 !== +om[2] && +om[2] < 10) consider(etcZone(tmin > 0 ? h2 : -h2), 1950 - h2, null);
+				}
 				POPULAR.concat(allZones()).forEach(function (z) {
 					if (z === "UTC" || /^(Etc|SystemV|US|Canada|Brazil|Chile|Mexico)\//.test(z) || z.indexOf("/") < 0 || /\/(Calcutta|Katmandu|Saigon|Rangoon|Thimbu|Dacca|Ujung_Pandang|Macao|Kashgar|Chongqing|Chungking|Harbin|Ulan_Bator|Coral_Harbour|Godthab|Yangon_)/.test(z)) return;
 					if (offsetMin(z, nowD) !== tmin) return;
@@ -309,8 +325,8 @@
 			var cur = best[zone];
 			if (!cur || score > cur.score) best[zone] = { score: score, via: via };
 		}
-		if (om && Object.keys(best).length) {
-			/* offset query handled above */
+		if (smDone || (om && Object.keys(best).length)) {
+			/* offset queries handled above */
 		} else if (!nq) {
 			POPULAR.forEach(function (z, i) { if (!exclude[z]) consider(z, 1000 - i, null); });
 		} else {
@@ -494,6 +510,10 @@
 	// secondary line for a result row: region + current offset + abbr/long name
 	function comboMeta(z) {
 		if (z === "UTC") return "Coordinated Universal Time · UTC±0";
+		if (etcOffset(z) !== null) {
+			var ex = POPULAR.filter(function (p) { return offsetMin(p, new Date()) === etcOffset(z) * 60; }).slice(0, 3).map(cityOf);
+			return "Fixed offset, no daylight saving" + (ex.length ? " · " + ex.join(", ") : "");
+		}
 		var now = new Date();
 		var bits = [regionOf(z), offsetStr(z, now)];
 		var abbr = zoneName(z, now, "short");
