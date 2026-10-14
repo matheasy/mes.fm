@@ -339,6 +339,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.em-chips:empty {display:none;}
 	.em-chips button {cursor:pointer;font:inherit;font-size:0.85em;padding:0.3em 0.8em;border-radius:1em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223;}
 	.em-chips button:hover {border-color:var(--accent);}
+	.em-chips button.is-on {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
 	.em-mass {display:flex;gap:0.4em;align-items:center;flex-wrap:wrap;}
 	.em-mass input {flex:1 1 7em;min-width:0;}
 	.em-unit {font-size:0.9em;color:#556;}
@@ -376,6 +377,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.em-fitbtn {cursor:pointer;font:inherit;font-size:0.85em;padding:0.35em 0.8em;border-radius:0.4em;border:1px solid #c3c9d2;background:#fff;color:#444;margin:0 0 0.5em 0.5em;} .em-fitbtn:hover {border-color:var(--accent);color:var(--accent);}
 	body.dark-mode #em .em-fitbtn {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} #em [hidden] {display:none !important;}
 	.em-ptbar {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:0 0 0.8em;} .em-ptbar .em-toolrow {margin:0;} .em-ptbar .em-fitbtn {margin:0;}
+
+	body.dark-mode #em .em-chips button.is-on {background:var(--accent);border-color:var(--accent);color:#fff;}
 
 
 	@media print {
@@ -1003,7 +1006,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js?v=11" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/electromagnetic-fields-simulator/js/electromagnetic-fields-simulator.js?v=12" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

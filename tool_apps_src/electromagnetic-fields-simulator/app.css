@@ -32,6 +32,7 @@
 	.em-chips:empty {display:none;}
 	.em-chips button {cursor:pointer;font:inherit;font-size:0.85em;padding:0.3em 0.8em;border-radius:1em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223;}
 	.em-chips button:hover {border-color:var(--accent);}
+	.em-chips button.is-on {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
 	.em-mass {display:flex;gap:0.4em;align-items:center;flex-wrap:wrap;}
 	.em-mass input {flex:1 1 7em;min-width:0;}
 	.em-unit {font-size:0.9em;color:#556;}
@@ -69,3 +70,5 @@
 	.em-fitbtn {cursor:pointer;font:inherit;font-size:0.85em;padding:0.35em 0.8em;border-radius:0.4em;border:1px solid #c3c9d2;background:#fff;color:#444;margin:0 0 0.5em 0.5em;} .em-fitbtn:hover {border-color:var(--accent);color:var(--accent);}
 	body.dark-mode #em .em-fitbtn {background:#2b2f36;border-color:#454c58;color:#e6e8ec;} #em [hidden] {display:none !important;}
 	.em-ptbar {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin:0 0 0.8em;} .em-ptbar .em-toolrow {margin:0;} .em-ptbar .em-fitbtn {margin:0;}
+
+	body.dark-mode #em .em-chips button.is-on {background:var(--accent);border-color:var(--accent);color:#fff;}
