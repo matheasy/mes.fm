@@ -191,7 +191,7 @@ APPS = {
     "electromagnetic-fields-simulator": dict(title="MES Electromagnetic Fields Simulator", page_title="Electromagnetic Fields Simulator: Electric, Magnetic and Light Waves",
                                              tag="See the fields. Watch the waves.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
                                              desc="A free electromagnetism simulator: place charges and see field lines, equipotentials and Gauss's law, add current-carrying wires and check Ampere's law, steer a charged particle through electric and magnetic fields, watch Maxwell's equations make waves reflect, refract and diffract, and explore a 3D electromagnetic plane wave.",
-                                             js_v="8"),
+                                             js_v="9"),
     # Double Pendulum: live chaotic pendulum (RK4, copies for the butterfly effect, angle and divergence graphs, Lyapunov estimate) + a flip-time chaos map of every starting pair of angles
     # (lib.js node-tested: tool_apps_src/double-pendulum-tests.js). Normal-width page in the tools sidebar collection, Wide by default.
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
