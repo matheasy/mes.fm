@@ -1,0 +1,128 @@
+	<div class="tu cy" id="cy" data-views="{{VIEWS}}">
+		<p class="tu-note cy-private">&#128274; Private by design: your dates are saved only in this browser (never uploaded, no account) and are shared by the three calculators below.</p>
+		<nav class="cy-tabs" aria-label="Calculators"><a href="/ovulation-calculator" data-tab="ov">Ovulation</a><a href="/period-calculator" data-tab="per">Period &amp; cycle</a><a href="/due-date-calculator" data-tab="due">Due date</a></nav>
+
+		<!-- ===== inputs: ovulation + period ===== -->
+		<section data-view="ov per" aria-label="Your cycle">
+			<div class="tu-card">
+				<div class="tu-row cy-inputs">
+					<div class="tu-field cy-f-date"><label class="tu-label" for="cy-lmp">First day of your last period</label>
+						<input id="cy-lmp" class="tu-input tu-input--big" type="date" autocomplete="off">
+						<div class="tu-chips"><button type="button" class="tu-chip" id="cy-lmp-today">Today</button><button type="button" class="tu-chip" id="cy-lmp-7">1 week ago</button><button type="button" class="tu-chip" id="cy-lmp-14">2 weeks ago</button><button type="button" class="tu-chip" id="cy-lmp-28">4 weeks ago</button></div></div>
+					<div class="tu-field cy-f-cycle"><label class="tu-label" for="cy-cycle">Usual cycle length (days)</label>
+						<div class="cy-step"><button type="button" class="tu-btn tu-btn--ghost" id="cy-cm" aria-label="One day shorter">&minus;</button><input id="cy-cycle" class="tu-input tu-input--big" type="number" inputmode="numeric" min="18" max="60" step="1" value="28"><button type="button" class="tu-btn tu-btn--ghost" id="cy-cp" aria-label="One day longer">+</button></div>
+						<div class="tu-note" id="cy-cycle-hint">Day 1 of one period to day 1 of the next. 28 is the textbook average; most people are 24&ndash;35.</div></div>
+				</div>
+				<label class="cy-check"><input type="checkbox" id="cy-vary"> My cycle length varies <span class="tu-note">(shows the widest range of fertile days)</span></label>
+				<div class="tu-row cy-vary" id="cy-vary-row" hidden>
+					<div class="tu-field"><label class="tu-label" for="cy-short">Shortest cycle</label><input id="cy-short" class="tu-input" type="number" inputmode="numeric" min="18" max="60" value="26"></div>
+					<div class="tu-field"><label class="tu-label" for="cy-long">Longest cycle</label><input id="cy-long" class="tu-input" type="number" inputmode="numeric" min="18" max="60" value="32"></div>
+				</div>
+				<details class="cy-adv"><summary>More options: period length, luteal phase, ovulation (LH) test</summary>
+					<div class="tu-row cy-opts">
+						<div class="tu-field"><label class="tu-label" for="cy-plen">Period lasts (days)</label><input id="cy-plen" class="tu-input" type="number" inputmode="numeric" min="1" max="12" value="5"></div>
+						<div class="tu-field"><label class="tu-label" for="cy-luteal">Luteal phase (days)</label><input id="cy-luteal" class="tu-input" type="number" inputmode="numeric" min="8" max="18" value="14"><div class="tu-note">Ovulation to next period. 14 is typical (11&ndash;16 is normal).</div></div>
+						<div class="tu-field"><label class="tu-label" for="cy-lh">Positive ovulation (LH) test on</label><input id="cy-lh" class="tu-input" type="date"><div class="tu-note">Optional. Ovulation usually follows 24&ndash;36 hours later, so this sharpens the estimate.</div><button type="button" class="tu-chip" id="cy-lh-clear" hidden>Clear LH test</button></div>
+					</div>
+					<label class="cy-check"><input type="checkbox" id="cy-mon"> Calendar weeks start on Monday</label>
+				</details>
+			</div>
+			<p class="tu-note cy-msg" id="cy-msg" role="status" aria-live="polite"></p>
+		</section>
+
+		<!-- ===== ovulation results ===== -->
+		<section data-view="ov" id="cy-ov-out" hidden>
+			<div class="tu-card tu-card--tint cy-hero" aria-live="polite">
+				<div class="cy-hero__k" id="cy-ov-k">Estimated ovulation</div>
+				<div class="cy-hero__big" id="cy-ov-big">&mdash;</div>
+				<div class="cy-hero__sub" id="cy-ov-sub"></div>
+				<div class="cy-hero__status" id="cy-ov-status"></div>
+				<div class="tu-row cy-hero__btns">
+					<button type="button" class="tu-btn tu-btn--primary" id="cy-ov-ics">&#128197; Add to my calendar</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cy-ov-copy">Copy result</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cy-ov-link">Copy link</button>
+				</div>
+			</div>
+			<div class="tu-stats" id="cy-ov-stats"></div>
+			<h2>Your chances, day by day</h2>
+			<div class="tu-card"><div class="cy-chance" id="cy-chance" role="img" aria-label="Chance of pregnancy by day relative to ovulation"></div>
+				<p class="tu-note">Chance of pregnancy from sex on each day, for a typical couple. The two days before ovulation and ovulation day are the peak. Source: Wilcox, Weinberg &amp; Baird, <i>New England Journal of Medicine</i> 1995 (129 couples, 625 cycles). Ovulation can move by a few days, which is why the whole window counts.</p></div>
+		</section>
+
+		<!-- ===== period results ===== -->
+		<section data-view="per" id="cy-per-out" hidden>
+			<div class="tu-card tu-card--tint cy-hero" aria-live="polite">
+				<div class="cy-hero__k" id="cy-per-k">Your next period</div>
+				<div class="cy-hero__big" id="cy-per-big">&mdash;</div>
+				<div class="cy-hero__sub" id="cy-per-sub"></div>
+				<div class="cy-hero__status" id="cy-per-status"></div>
+				<div class="tu-row cy-hero__btns">
+					<button type="button" class="tu-btn tu-btn--primary" id="cy-per-ics">&#128197; Add periods to my calendar</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cy-per-copy">Copy result</button>
+				</div>
+			</div>
+			<div class="cy-late" id="cy-late" hidden></div>
+			<h2>Your cycle log</h2>
+			<div class="tu-card">
+				<p class="tu-note" style="margin-top:0">Add the first day of each period you remember. With two or more, the calculator uses your own average instead of the textbook 28 days, and tells you how regular you are.</p>
+				<div class="tu-row" style="align-items:flex-end"><div class="tu-field" style="flex:1 1 12em"><label class="tu-label" for="cy-log-d">First day of a period</label><input id="cy-log-d" class="tu-input" type="date"></div>
+					<button type="button" class="tu-btn tu-btn--primary" id="cy-log-add">Add to log</button><button type="button" class="tu-btn tu-btn--ghost" id="cy-log-cur">Add the date above</button></div>
+				<div class="cy-log" id="cy-log"></div>
+				<div class="tu-stats" id="cy-log-stats" style="margin-bottom:0"></div>
+				<div class="tu-row"><button type="button" class="tu-btn tu-btn--ghost" id="cy-log-use" hidden>Use my average cycle</button><button type="button" class="tu-btn tu-btn--ghost" id="cy-log-csv" hidden>Copy log</button><button type="button" class="tu-btn tu-btn--ghost" id="cy-log-clear" hidden>Clear log</button></div>
+			</div>
+			<h2>Upcoming periods</h2>
+			<div class="tu-card tu-table-wrap"><table class="tu-table" id="cy-per-table"></table></div>
+		</section>
+
+		<!-- ===== calendar (ovulation + period) ===== -->
+		<section data-view="ov per" id="cy-cal-sec" hidden>
+			<h2>Calendar</h2>
+			<div class="tu-card">
+				<div class="cy-cal-bar"><button type="button" class="tu-btn tu-btn--ghost" id="cy-cal-prev" aria-label="Earlier months">&#8249; Earlier</button><button type="button" class="tu-chip" id="cy-cal-now">This month</button><button type="button" class="tu-btn tu-btn--ghost" id="cy-cal-next" aria-label="Later months">Later &#8250;</button></div>
+				<div class="cy-legend" id="cy-legend"></div>
+				<div class="cy-cal" id="cy-cal"></div>
+				<p class="cy-daydetail" id="cy-daydetail" aria-live="polite">Tap a day for details.</p>
+			</div>
+			<h2 id="cy-tbl-h">Next six cycles</h2>
+			<div class="tu-card tu-table-wrap"><table class="tu-table" id="cy-tbl"></table></div>
+		</section>
+
+		<!-- ===== due date ===== -->
+		<section data-view="due" aria-label="Due date">
+			<div class="tu-card">
+				<div class="tu-row cy-inputs">
+					<div class="tu-field"><label class="tu-label" for="cy-method">Calculate my due date from</label>
+						<select id="cy-method" class="tu-select"><option value="lmp">First day of my last period</option><option value="conc">Date of conception</option><option value="ivf">IVF embryo transfer</option><option value="scan">An ultrasound scan</option><option value="due">I already know my due date</option></select></div>
+					<div class="tu-field" id="cy-d-date-f"><label class="tu-label" for="cy-d-date" id="cy-d-date-l">First day of your last period</label><input id="cy-d-date" class="tu-input tu-input--big" type="date"></div>
+				</div>
+				<div class="tu-row" id="cy-d-lmp-row"><div class="tu-field"><label class="tu-label" for="cy-d-cycle">Usual cycle length (days)</label><input id="cy-d-cycle" class="tu-input" type="number" inputmode="numeric" min="18" max="60" value="28"><div class="tu-note">A longer or shorter cycle moves ovulation, so the due date shifts with it.</div></div></div>
+				<div class="tu-row" id="cy-d-ivf-row" hidden><div class="tu-field"><label class="tu-label" for="cy-d-emb">Embryo age at transfer</label><select id="cy-d-emb" class="tu-select"><option value="3">3-day embryo</option><option value="5" selected>5-day embryo (blastocyst)</option><option value="6">6-day embryo</option></select></div></div>
+				<div class="tu-row" id="cy-d-scan-row" hidden><div class="tu-field"><label class="tu-label" for="cy-d-gw">Age of the pregnancy at the scan</label><div class="cy-ga"><input id="cy-d-gw" class="tu-input" type="number" inputmode="numeric" min="4" max="42" value="8" aria-label="Weeks"> <span>weeks</span> <input id="cy-d-gd" class="tu-input" type="number" inputmode="numeric" min="0" max="6" value="0" aria-label="Days"> <span>days</span></div><div class="tu-note">Use the gestational age on the scan report. An early scan is the most accurate way to date a pregnancy.</div></div></div>
+				<div class="tu-chips" id="cy-d-chips"><button type="button" class="tu-chip" id="cy-d-today">Today</button></div>
+			</div>
+			<p class="tu-note cy-msg" id="cy-d-msg" role="status" aria-live="polite"></p>
+			<div id="cy-due-out" hidden>
+				<div class="tu-card tu-card--tint cy-hero" aria-live="polite">
+					<div class="cy-hero__k">Your estimated due date</div>
+					<div class="cy-hero__big" id="cy-due-big">&mdash;</div>
+					<div class="cy-hero__sub" id="cy-due-sub"></div>
+					<div class="cy-prog" id="cy-prog" role="img" aria-label="Progress through pregnancy"><div class="cy-prog__fill" id="cy-prog-fill"></div><i style="left:35%"></i><i style="left:70%"></i></div>
+					<div class="cy-prog__lbl"><span>1st trimester</span><span>2nd trimester</span><span>3rd trimester</span></div>
+					<div class="tu-row cy-hero__btns">
+						<button type="button" class="tu-btn tu-btn--primary" id="cy-due-ics">&#128197; Add milestones to my calendar</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="cy-due-copy">Copy result</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="cy-due-link">Copy link</button>
+					</div>
+				</div>
+				<div class="tu-stats" id="cy-due-stats"></div>
+				<h2>Key dates</h2>
+				<div class="tu-card tu-table-wrap"><table class="tu-table cy-ms" id="cy-ms"></table></div>
+				<details class="cy-weeks"><summary>Week-by-week calendar (weeks 1&ndash;42)</summary><div class="tu-card tu-table-wrap"><table class="tu-table" id="cy-weeks"></table></div></details>
+			</div>
+		</section>
+
+		<div class="tu-toast" id="cy-toast" role="status" aria-live="polite"></div>
+		<p class="tu-note cy-disc">These are estimates from averages, not medical advice or contraception. Bodies vary and cycles change with stress, illness, breastfeeding and age. Talk to a doctor or midwife about your own situation, especially if your cycles are very irregular or you have been trying for 12 months (6 if you are over 35).</p>
+{{SEO}}
+	</div>

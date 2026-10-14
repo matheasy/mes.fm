@@ -28,7 +28,7 @@ PAGES = {
         ("school", "School &amp; Grades", ["gradecalculator", "gpacalculator", "weighted-average-calculator", "gradecalculator/br"]),
         ("money", "Money &amp; Finance", ["mortgagecalculator", "inflationcalculator", "vatcalculator", "youtubemoney/index.html", "impermanent-loss-calculator"]),
         ("algebra", "Algebra &amp; Calculus", ["sum-of-integers-calculator", "calculator", "cas-calculator", "derivative-calculator", "integral-calculator", "2d-graphing-calculator", "3d-graphing-calculator"]),
-        ("everyday", "Everyday Math &amp; Health", ["days-between-dates-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
+        ("everyday", "Everyday Math &amp; Health", ["days-between-dates-calculator", "ovulation-calculator", "period-calculator", "due-date-calculator", "percentagecalculator", "unit-conversion", "bmicalculator"]),
         ("physics", "Physics &amp; Science", ["reynolds-number-calculator", "photoelectric-effect-simulator", "atomic-clock-simulator", "michelson-morley-experiment", "faster-than-light-shadow-simulator", "time-dilation", "earth-curvature-calculator"]),   # photoelectric-effect-simulator is listed on tools.html (Simulations) too
         ("fun", "Fun", ["gematria", "pokemongocalculator"]),
     ]),
