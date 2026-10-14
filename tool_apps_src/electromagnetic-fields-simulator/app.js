@@ -59,7 +59,7 @@
 	function segs(cx, flat, tr, col, wd) { cx.strokeStyle = col; cx.lineWidth = wd; cx.beginPath(); for (var i = 0; i < flat.length; i += 4) { var a = tr(flat[i], flat[i + 1]), b = tr(flat[i + 2], flat[i + 3]); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); } cx.stroke(); }
 
 	/* =================== ELECTRIC CHARGES =================== */
-	var ES = { ch: [], tool: "pos", sel: -1, VW: 4, nLines: 14, lines: true, arrows: true, eq: false, gauss: false, col: "none", mode: "3d", sens: [], ssel: -1, pre: -1, qk: 0, wk: 0.26, gc: { x: 0, y: 0, R: 0.8 }, tests: [], play: true, mouse: null, dirty: true, cache: {}, drag: null, gdirty: true, tcQ: 1e-9, tcM: 1e-3 };
+	var ES = { ch: [], tool: "pos", sel: -1, VW: 4, nLines: 14, lines: true, arrows: true, eq: false, gauss: false, col: "none", mode: "3d", sens: [], tape: null, volt: [], ssel: -1, pre: -1, qk: 0, wk: 0.26, gc: { x: 0, y: 0, R: 0.8 }, tests: [], play: true, mouse: null, dirty: true, cache: {}, drag: null, gdirty: true, tcQ: 1e-9, tcM: 1e-3 };
 	var ev = mkView("es", 1.6), esHeat = document.createElement("canvas");
 	function esT(x, y) { var S = ev.fit() / ES.VW; return [ev.W / 2 + x * S, ev.H / 2 - y * S]; }
 	function esW(px, py) { var S = ev.fit() / ES.VW; return [(px - ev.W / 2) / S, -(py - ev.H / 2) / S]; }
@@ -72,7 +72,7 @@
 		{ name: "Ring and centre", ch: (function () { var a = [[0, 0, -4]]; for (var i = 0; i < 8; i++) a.push([Math.cos(i * TAU / 8), Math.sin(i * TAU / 8), 1]); return a; })(), VW: 4 },
 		{ name: "Three charges", ch: [[-1, -0.5, 1], [1, -0.5, 1], [0, 0.9, -2]], VW: 4.5 }
 	];
-	function esLoad(p) { ES.pre = ES_PRE.indexOf(p); ES.sens = []; ES.ssel = -1; ES.ch = p.ch.map(function (c) { return { x: c[0], y: c[1], q: c[2] * 1e-6 }; }); ES.VW = p.VW; ES.sel = -1; ES.tests = []; ES.dirty = true; ES.gdirty = true; syncEs(); }
+	function esLoad(p) { ES.pre = ES_PRE.indexOf(p); ES.sens = []; ES.tape = null; ES.volt = []; ES.ssel = -1; ES.ch = p.ch.map(function (c) { return { x: c[0], y: c[1], q: c[2] * 1e-6 }; }); ES.VW = p.VW; ES.sel = -1; ES.tests = []; ES.dirty = true; ES.gdirty = true; syncEs(); }
 	function syncEs() { $("em-es-q").value = ES.qk; $("em-es-q-v").textContent = sig(Math.pow(10, ES.qk), 2) + " μC"; ES.wk = Math.log10(ES.VW / 4); $("em-es-w").value = ES.wk; $("em-es-w-v").textContent = sig(ES.VW, 3) + " m"; $("em-es-n").value = ES.nLines; $("em-es-n-v").textContent = ES.nLines; selUi(); }
 	function selUi() {
 		var c = ES.ch[ES.sel]; $("em-es-sel").hidden = !c; if (!c) return; $("em-es-sel-q").textContent = si(c.q, "C", 3); $("em-es-selq").value = Math.max(-10, Math.min(10, c.q * 1e6));
@@ -125,6 +125,11 @@
 		ES.sens.forEach(function (s, i) { var p = esT(s.x, s.y), e = M.fieldAt(ES.ch, s.x, s.y, ES.mode), m = Math.hypot(e[0], e[1]); if (m > 0) { arrow(cx, p[0], p[1], p[0] + e[0] / m * 38, p[1] - e[1] / m * 38, "#ffe45a", 2.2, 8); }
 			cx.fillStyle = "#ffe45a"; cx.strokeStyle = i === ES.ssel ? "#fff" : "#7a6a00"; cx.lineWidth = 2; cx.beginPath(); cx.arc(p[0], p[1], 5, 0, 7); cx.fill(); cx.stroke();
 			var tx = si(m, "V/m", 3) + "  " + ang(e[0], e[1]).toFixed(0) + "°"; cx.font = "12px sans-serif"; var tw = cx.measureText(tx).width + 8; var bx = Math.min(p[0] + 8, W - tw - 2), by = Math.max(p[1] - 26, 2); cx.fillStyle = "rgba(0,0,0,0.65)"; cx.fillRect(bx, by, tw, 17); cx.fillStyle = "#ffe45a"; cx.fillText(tx, bx + 4, by + 13); });
+		/* tape measure + voltmeter */
+		function pin(p, col, txt) { cx.fillStyle = col; cx.strokeStyle = "#fff"; cx.lineWidth = 1.5; cx.beginPath(); cx.arc(p[0], p[1], 6, 0, 7); cx.fill(); cx.stroke(); if (txt) { cx.font = "bold 10px sans-serif"; cx.fillStyle = "#fff"; cx.textAlign = "center"; cx.fillText(txt, p[0], p[1] + 3.5); cx.textAlign = "start"; } }
+		function tag(x, y, t, col) { cx.font = "12px sans-serif"; var w = cx.measureText(t).width + 8, bx = Math.max(2, Math.min(x - w / 2, W - w - 2)), by = Math.max(2, Math.min(y - 9, H - 20)); cx.fillStyle = "rgba(0,0,0,0.7)"; cx.fillRect(bx, by, w, 17); cx.fillStyle = col; cx.fillText(t, bx + 4, by + 13); }
+		if (ES.tape) { var ta = esT(ES.tape.a[0], ES.tape.a[1]), tb = esT(ES.tape.b[0], ES.tape.b[1]); cx.strokeStyle = "#a3e635"; cx.lineWidth = 2; cx.setLineDash([6, 4]); cx.beginPath(); cx.moveTo(ta[0], ta[1]); cx.lineTo(tb[0], tb[1]); cx.stroke(); cx.setLineDash([]); pin(ta, "#65a30d"); pin(tb, "#65a30d"); tag((ta[0] + tb[0]) / 2, (ta[1] + tb[1]) / 2 - 14, si(Math.hypot(ES.tape.a[0] - ES.tape.b[0], ES.tape.a[1] - ES.tape.b[1]), "m", 3), "#bef264"); }
+		if (ES.volt.length) { var vv = ES.volt.map(function (q) { return M.potentialAt(ES.ch, q[0], q[1], ES.mode); }); pin(esT(ES.volt[0][0], ES.volt[0][1]), "#dc2626", "+"); if (ES.volt[1]) { var p1 = esT(ES.volt[0][0], ES.volt[0][1]), p2 = esT(ES.volt[1][0], ES.volt[1][1]); cx.strokeStyle = "rgba(255,255,255,0.45)"; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(p1[0], p1[1]); cx.lineTo(p2[0], p2[1]); cx.stroke(); pin(p1, "#dc2626", "+"); pin(p2, "#111827", "−"); tag((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2 - 16, "ΔV = " + si(vv[0] - vv[1], "V", 3), "#fde68a"); } else tag(esT(ES.volt[0][0], ES.volt[0][1])[0], esT(ES.volt[0][0], ES.volt[0][1])[1] - 16, "V = " + si(vv[0], "V", 3) + " · click to place the second probe", "#fde68a"); }
 		/* charges */
 		var qm = Math.max(C.qmax || 1e-6, 1e-12); ES.ch.forEach(function (c, i) { var p = esT(c.x, c.y), r = 8 + 6 * Math.sqrt(Math.abs(c.q) / qm); cx.fillStyle = c.q > 0 ? "#ef4444" : "#3b82f6"; cx.beginPath(); cx.arc(p[0], p[1], r, 0, 7); cx.fill(); cx.strokeStyle = i === ES.sel ? "#fff" : "rgba(255,255,255,0.55)"; cx.lineWidth = i === ES.sel ? 2.5 : 1.2; cx.stroke(); cx.fillStyle = "#fff"; cx.font = "bold " + Math.round(r * 1.3) + "px sans-serif"; cx.textAlign = "center"; cx.textBaseline = "middle"; cx.fillText(c.q > 0 ? "+" : "−", p[0], p[1] + 1); });
 		cx.textAlign = "start"; cx.textBaseline = "alphabetic";
@@ -132,7 +137,7 @@
 		if (ES.mouse && !ES.drag) { var mw = esW(ES.mouse[0], ES.mouse[1]), e2 = M.fieldAt(ES.ch, mw[0], mw[1], ES.mode), m2 = Math.hypot(e2[0], e2[1]); cx.strokeStyle = "rgba(255,255,255,0.7)"; cx.lineWidth = 1; cx.beginPath(); cx.arc(ES.mouse[0], ES.mouse[1], 4, 0, 7); cx.stroke(); if (m2 > 0) arrow(cx, ES.mouse[0], ES.mouse[1], ES.mouse[0] + e2[0] / m2 * 34, ES.mouse[1] - e2[1] / m2 * 34, "#fff", 2, 7); }
 		/* scale bar */
 		var sb = Math.pow(10, Math.floor(Math.log10(ES.VW / 3))), sp = sb * S; cx.strokeStyle = "rgba(255,255,255,0.8)"; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(12, H - 14); cx.lineTo(12 + sp, H - 14); cx.stroke(); cx.fillStyle = "rgba(255,255,255,0.85)"; cx.font = "12px sans-serif"; cx.fillText(si(sb, "m", 2), 12, H - 20);
-		$("em-es-badge").textContent = ES.drag ? "" : (ES.ch.length ? { pos: "Click to add a + charge · drag to move · select + Backspace removes", neg: "Click to add a − charge · drag to move · select + Backspace removes", move: "Drag a charge to move it", test: "Click to drop a test charge", sens: "Click to place a sensor · it shows the field there" }[ES.tool] : "Click to add a charge, or pick an example below");
+		$("em-es-badge").textContent = ES.drag ? "" : (ES.ch.length ? { pos: "Click to add a + charge · drag to move · select + Backspace removes", neg: "Click to add a − charge · drag to move · select + Backspace removes", move: "Drag a charge to move it", test: "Click to drop a test charge", sens: "Click to place a sensor · it shows the field there", tape: "Drag to measure a distance", volt: "Click to put down the red probe, then the black one" }[ES.tool] : "Click to add a charge, or pick an example below");
 	}
 	function esReadouts() {
 		var m = ES.mouse; if (m) { var w = esW(m[0], m[1]), e = M.fieldAt(ES.ch, w[0], w[1], ES.mode), v = M.potentialAt(ES.ch, w[0], w[1], ES.mode), E = Math.hypot(e[0], e[1]); $("em-es-p").textContent = sig(w[0], 3) + ", " + sig(w[1], 3); $("em-es-e").textContent = si(E, ES.mode === "2d" ? "V/m" : "N/C", 3); $("em-es-es").textContent = "pointing " + ang(e[0], e[1]).toFixed(0) + "° (arrow on the picture)"; $("em-es-v").textContent = ES.mode === "2d" ? sig(v, 3) + " V" : si(v, "V", 3); $("em-es-vs").textContent = ES.mode === "2d" ? "zero at 1 m from the origin" : "zero very far away"; }
@@ -145,19 +150,24 @@
 	ev.cv.addEventListener("pointerdown", function (e) {
 		ev.cv.setPointerCapture(e.pointerId); var p = ev.pos(e), i = esHit(p); ES.mouse = p;
 		if (ES.gauss) { var c0 = esT(ES.gc.x, ES.gc.y), S = ev.fit() / ES.VW, d = Math.hypot(p[0] - c0[0], p[1] - c0[1]); if (i < 0 && Math.abs(d - ES.gc.R * S) < 12) { ES.drag = { k: "gR" }; ev.st.classList.add("is-grab"); return; } if (i < 0 && d < 12) { ES.drag = { k: "gC", dx: ES.gc.x - esW(p[0], p[1])[0], dy: ES.gc.y - esW(p[0], p[1])[1] }; ev.st.classList.add("is-grab"); return; } }
+		var mh = null, near = function (q) { var s = esT(q[0], q[1]); return Math.hypot(s[0] - p[0], s[1] - p[1]) < (coarse ? 24 : 13); };
+		if (i < 0) { if (ES.tape) { if (near(ES.tape.a)) mh = { k: "ta" }; else if (near(ES.tape.b)) mh = { k: "tb" }; } ES.volt.forEach(function (q, k) { if (!mh && near(q)) mh = { k: "v", i: k }; }); }
+		if (mh) { ES.drag = mh; ES.sel = -1; ES.ssel = -1; ev.st.classList.add("is-grab"); selUi(); return; }
 		var si2 = -1; ES.sens.forEach(function (s, k) { var q = esT(s.x, s.y); if (si2 < 0 && Math.hypot(q[0] - p[0], q[1] - p[1]) < (coarse ? 24 : 14)) si2 = k; });
 		if (i < 0 && si2 >= 0) { ES.ssel = si2; ES.sel = -1; ES.drag = { k: "s", i: si2 }; ev.st.classList.add("is-grab"); selUi(); return; }
 		ES.ssel = -1;
 		if (i >= 0) { ES.sel = i; ES.drag = { k: "c", i: i }; ev.st.classList.add("is-grab"); selUi(); return; }
 		var w = esW(p[0], p[1]);
 		if (ES.tool === "pos" || ES.tool === "neg") { if (ES.ch.length >= 40) { toast("That is plenty of charges (40)"); return; } ES.ch.push({ x: w[0], y: w[1], q: (ES.tool === "pos" ? 1 : -1) * qNew() }); ES.sel = ES.ch.length - 1; ES.dirty = true; ES.gdirty = true; }
+		else if (ES.tool === "tape") { ES.tape = { a: [w[0], w[1]], b: [w[0], w[1]] }; ES.drag = { k: "tb" }; ES.sel = -1; ES.ssel = -1; return; }
+		else if (ES.tool === "volt") { if (ES.volt.length >= 2) ES.volt = []; ES.volt.push([w[0], w[1]]); ES.sel = -1; ES.ssel = -1; }
 		else if (ES.tool === "sens") { if (ES.sens.length >= 12) ES.sens.shift(); ES.sens.push({ x: w[0], y: w[1] }); ES.ssel = ES.sens.length - 1; ES.sel = -1; }
 		else if (ES.tool === "test") { if (ES.tests.length >= 8) ES.tests.shift(); var qq = ES.tcQ; var a0 = Math.hypot.apply(null, M.fieldAt(ES.ch, w[0], w[1], ES.mode)) * Math.abs(qq) / ES.tcM; ES.tests.push({ x: w[0], y: w[1], vx: 0, vy: 0, q: qq, m: ES.tcM, trail: [w[0], w[1]], alive: true, tau: Math.sqrt(0.08 * ES.VW / Math.max(a0, 1e-12)) }); }
 		else ES.sel = -1; selUi();
 	});
 	ev.cv.addEventListener("pointermove", function (e) {
 		var p = ev.pos(e); ES.mouse = p; if (!ES.drag) return; var w = esW(p[0], p[1]);
-		if (ES.drag.k === "s") { var sn = ES.sens[ES.drag.i]; if (sn) { sn.x = w[0]; sn.y = w[1]; } } else if (ES.drag.k === "c") { var c = ES.ch[ES.drag.i]; if (c) { c.x = w[0]; c.y = w[1]; ES.dirty = true; ES.gdirty = true; } } else if (ES.drag.k === "gR") { ES.gc.R = Math.max(ES.VW * 0.03, Math.hypot(w[0] - ES.gc.x, w[1] - ES.gc.y)); ES.gdirty = true; } else if (ES.drag.k === "gC") { ES.gc.x = w[0] + ES.drag.dx; ES.gc.y = w[1] + ES.drag.dy; ES.gdirty = true; }
+		if (ES.drag.k === "ta" && ES.tape) { ES.tape.a = [w[0], w[1]]; } else if (ES.drag.k === "tb" && ES.tape) { ES.tape.b = [w[0], w[1]]; } else if (ES.drag.k === "v") { var vq = ES.volt[ES.drag.i]; if (vq) { vq[0] = w[0]; vq[1] = w[1]; } } else if (ES.drag.k === "s") { var sn = ES.sens[ES.drag.i]; if (sn) { sn.x = w[0]; sn.y = w[1]; } } else if (ES.drag.k === "c") { var c = ES.ch[ES.drag.i]; if (c) { c.x = w[0]; c.y = w[1]; ES.dirty = true; ES.gdirty = true; } } else if (ES.drag.k === "gR") { ES.gc.R = Math.max(ES.VW * 0.03, Math.hypot(w[0] - ES.gc.x, w[1] - ES.gc.y)); ES.gdirty = true; } else if (ES.drag.k === "gC") { ES.gc.x = w[0] + ES.drag.dx; ES.gc.y = w[1] + ES.drag.dy; ES.gdirty = true; }
 	});
 	function esUp() { ES.drag = null; ev.st.classList.remove("is-grab"); }
 	ev.cv.addEventListener("pointerup", esUp); ev.cv.addEventListener("pointercancel", esUp); ev.cv.addEventListener("pointerleave", function () { if (!ES.drag) ES.mouse = null; });
@@ -175,9 +185,9 @@
 	$("em-es-col").onchange = function () { ES.col = this.value; ES.dirty = true; sset({ es_col: ES.col }); };
 	$("em-es-mode").onchange = function () { ES.mode = this.value; ES.dirty = true; ES.gdirty = true; ES.tests = []; sset({ es_mode: ES.mode }); };
 	$("em-es-selq").oninput = function () { var c = ES.ch[ES.sel]; if (!c) return; var v = +this.value; c.q = (Math.abs(v) < 0.05 ? 0.05 : Math.abs(v)) * (v < 0 ? -1 : 1) * 1e-6; ES.dirty = true; ES.gdirty = true; };
-	$("em-es-del").onclick = esDel; $("em-es-sclear").onclick = function () { ES.sens = []; ES.ssel = -1; };
-	$("em-es-reset").onclick = function () { if (ES.pre >= 0) esLoad(ES_PRE[ES.pre]); else { ES.ch = []; ES.sens = []; ES.tests = []; ES.sel = -1; ES.dirty = ES.gdirty = true; selUi(); } };
-	$("em-es-clr2").onclick = function () { ES.ch = []; ES.sens = []; ES.tests = []; ES.sel = ES.ssel = -1; ES.pre = -1; ES.dirty = ES.gdirty = true; selUi(); }; $("em-es-clear").onclick = function () { ES.ch = []; ES.sel = -1; ES.dirty = true; ES.gdirty = true; ES.tests = []; selUi(); }; $("em-es-tclear").onclick = function () { ES.tests = []; };
+	$("em-es-del").onclick = esDel; $("em-es-sclear").onclick = function () { ES.sens = []; ES.ssel = -1; ES.tape = null; ES.volt = []; };
+	$("em-es-reset").onclick = function () { if (ES.pre >= 0) esLoad(ES_PRE[ES.pre]); else { ES.ch = []; ES.sens = []; ES.tape = null; ES.volt = []; ES.tests = []; ES.sel = -1; ES.dirty = ES.gdirty = true; selUi(); } };
+	$("em-es-clr2").onclick = function () { ES.ch = []; ES.sens = []; ES.tape = null; ES.volt = []; ES.tests = []; ES.sel = ES.ssel = -1; ES.pre = -1; ES.dirty = ES.gdirty = true; selUi(); }; $("em-es-clear").onclick = function () { ES.ch = []; ES.sel = -1; ES.dirty = true; ES.gdirty = true; ES.tests = []; selUi(); }; $("em-es-tclear").onclick = function () { ES.tests = []; };
 	$("em-es-play").onclick = function () { ES.play = !ES.play; this.setAttribute("aria-pressed", String(ES.play)); this.textContent = ES.play ? "❚❚ Pause" : "▶ Play"; };
 	wirePng("em-es-png", ev, esDraw); wireFull("em-es-full", ev);
 	$("em-es-link").onclick = function () { copyLink({ c: ES.ch.map(function (c) { return [+c.x.toFixed(3), +c.y.toFixed(3), +(c.q * 1e6).toFixed(3)].join(","); }).join(";"), w: ES.VW.toFixed(3), m: ES.mode }); };
