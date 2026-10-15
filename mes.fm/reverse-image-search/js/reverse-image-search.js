@@ -53,8 +53,8 @@
 (function () {
 	'use strict';
 	var M = MESImgSearch, $ = function (id) { return document.getElementById(id); }, KEY = 'mes-image-search:v1';
-	var S = { sel: M.SETS[0][2].slice(), custom: [] };
-	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) { if (Array.isArray(sv.sel)) S.sel = sv.sel; if (Array.isArray(sv.custom)) S.custom = sv.custom; } } catch (e) {}
+	var S = { sel: M.SETS[0][2].slice(), custom: [], host: true };
+	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) { if (Array.isArray(sv.sel)) S.sel = sv.sel; if (Array.isArray(sv.custom)) S.custom = sv.custom; if (sv.host === false) S.host = false; } } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 	var mode = 'link', link = '', ok = false;
 	var base = null, rot = 0, flip = false, crop = null, blobPng = null, blobJpg = null, fileName = 'image', rebuildT;
@@ -132,7 +132,7 @@
 		$('ri-hint').textContent = crop ? 'Only the selected area is searched.' : 'Tip: drag a box on the picture to search just one object, person or logo.';
 	}
 	function scheduleBlobs() {
-		blobPng = blobJpg = null; clearTimeout(rebuildT); rebuildT = setTimeout(function () {
+		ver++; blobPng = blobJpg = null; clearTimeout(rebuildT); rebuildT = setTimeout(function () {
 			var c = outCanvas(); if (!c) return;
 			c.toBlob(function (b) { blobPng = b; }, 'image/png');
 			var j = document.createElement('canvas'); j.width = c.width; j.height = c.height; var x = j.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, j.width, j.height); x.drawImage(c, 0, 0); j.toBlob(function (b) { blobJpg = b; }, 'image/jpeg', 0.92);
@@ -176,7 +176,7 @@
 			var list = eng.filter(function (e) { return e.g === g[0]; }); if (!list.length) return;
 			h += '<h3 class="ri-grp">' + esc(g[1]) + '</h3>' + (g[2] ? '<p class="tu-note ri-gdesc">' + esc(g[2]) + '</p>' : '');
 			list.forEach(function (e) {
-				var on = S.sel.indexOf(e.id) >= 0, b = e.badge, direct = mode === 'file' && e.up;
+				var on = S.sel.indexOf(e.id) >= 0, b = e.badge, direct = mode === 'file' && e.up && !S.host;
 				h += '<div class="ri-eng' + (on ? ' on' : '') + '"><input type="checkbox" data-id="' + e.id + '"' + (on ? ' checked' : '') + ' aria-label="Use ' + esc(e.name) + '"><span class="ri-badge" style="background:' + b[1] + (b[2] ? ';color:' + b[2] : '') + '" aria-hidden="true">' + esc(b[0]) + '</span><div class="ri-eng__t"><div class="ri-eng__n">' + esc(e.name) + (direct ? '<span class="ri-tag">file sent directly</span>' : '') + '</div><div class="ri-eng__d">' + esc(e.note || '') + '</div></div><button type="button" class="tu-btn tu-btn--ghost ri-open" data-open="' + e.id + '">Open</button></div>';
 			});
 		});
@@ -184,13 +184,15 @@
 		var n = S.sel.filter(function (id) { return eng.some(function (e) { return e.id === id; }); }).length;
 		$('ri-go').textContent = 'Open ' + n + ' selected'; $('ri-go').disabled = !n;
 		$('ri-sets').innerHTML = M.SETS.map(function (s) { return '<button type="button" class="tu-chip" data-set="' + s[0] + '" aria-pressed="' + (sameSet(s[2]) ? 'true' : 'false') + '">' + esc(s[1]) + '</button>'; }).join('') + '<button type="button" class="tu-chip" data-set="none">Clear</button>';
-		$('ri-modenote').innerHTML = mode === 'link' ? 'Each site opens in a new tab and starts searching for your link.' : 'Your picture is copied to the clipboard when you open a site: <b>press Ctrl/⌘+V on the page that opens</b>. Sites marked <i>file sent directly</i> need no pasting.';
+		$('ri-hostbox').hidden = mode !== 'file'; $('ri-host').checked = S.host;
+		$('ri-modenote').innerHTML = mode === 'link' ? 'Each site opens in a new tab and starts searching for your link.' : S.host ? 'Each site opens in a new tab already searching for your picture: nothing to paste. If a pop-up is blocked, click the link it offers.' : 'Your picture is copied to the clipboard when you open a site: <b>press Ctrl/⌘+V on the page that opens</b>. Sites marked <i>file sent directly</i> need no pasting.';
 	}
 	function sameSet(a) { return a.length === S.sel.length && a.every(function (x) { return S.sel.indexOf(x) >= 0; }); }
 	$('ri-sets').addEventListener('click', function (e) { var b = e.target.closest('[data-set]'); if (!b) return; var id = b.getAttribute('data-set'); if (id === 'none') S.sel = []; else M.SETS.forEach(function (s) { if (s[0] === id) S.sel = s[2].slice(); }); save(); renderList(); });
 	$('ri-list').addEventListener('change', function (e) { var c = e.target.closest('input[data-id]'); if (!c) return; var id = c.getAttribute('data-id'), i = S.sel.indexOf(id); if (c.checked && i < 0) S.sel.push(id); else if (!c.checked && i >= 0) S.sel.splice(i, 1); save(); renderList(); });
 	$('ri-list').addEventListener('click', function (e) { var b = e.target.closest('[data-open]'); if (!b) return; var en = all().filter(function (x) { return x.id === b.getAttribute('data-open'); })[0]; if (en) { clearQueue(); openOne(en, true); } });
 	$('ri-go').onclick = function () { openSelected(); };
+	$('ri-host').addEventListener('change', function () { S.host = this.checked; save(); renderList(); });
 
 	/* ---------- opening ---------- */
 	function copyImage() {
@@ -204,11 +206,48 @@
 		form.method = 'POST'; form.enctype = 'multipart/form-data'; form.action = en.up.action; form.target = '_blank'; form.style.display = 'none'; inp.type = 'file'; inp.name = en.up.field; dt.items.add(f); inp.files = dt.files; form.appendChild(inp);
 		document.body.appendChild(form); form.submit(); setTimeout(function () { form.remove(); }, 1000); return true;
 	}
+	/* ---------- hosting: a resized copy at a private mes.fm link, so every site opens already showing the picture ---------- */
+	var ver = 0, hosted = null;
+	function smallJpeg(cb) {
+		var c = outCanvas(); if (!c) return cb(null);
+		var scale = Math.min(1, 1600 / Math.max(c.width, c.height)), q = 0.85, tries = 0;
+		(function step() {
+			var j = document.createElement('canvas'); j.width = Math.max(1, Math.round(c.width * scale)); j.height = Math.max(1, Math.round(c.height * scale));
+			var x = j.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, j.width, j.height); x.drawImage(c, 0, 0, j.width, j.height);
+			j.toBlob(function (b) { if (!b) return cb(null); if (b.size <= 650000) return cb(b); if (++tries > 9) return cb(null); if (q > 0.55) q -= 0.1; else scale *= 0.8; step(); }, 'image/jpeg', q);
+		})();
+	}
+	function hostPicture(cb) {
+		if (hosted && hosted.ver === ver && Date.now() - hosted.at < 50 * 60000) return cb(hosted.url);
+		var mine = ver; smallJpeg(function (b) {
+			if (!b) return cb(null);
+			fetch('/api/image-temp', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: b }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.url) { hosted = { ver: mine, url: j.url, at: Date.now() }; cb(j.url); } else cb(null); }).catch(function () { cb(null); });
+		});
+	}
+	function engineUrl(en, url) { return en.custom ? M.customUrl(en.custom, url) : M.build(en, url); }
+	// open every site's window straight away (inside the click, so pop-up blockers allow it), then send each to its results once the link exists
+	function openHosted(list) {
+		var items = list.map(function (e) {
+			var w = window.open('about:blank', '_blank');
+			if (w) { try { w.opener = null; w.document.write('<title>Searching...</title><body style="font:16px system-ui,sans-serif;padding:2em;color:#333">Preparing your picture for ' + String(e.name).replace(/[<&]/g, '') + '...</body>'); } catch (x) {} }
+			return { en: e, w: w };
+		});
+		hostPicture(function (url) {
+			if (!url) {
+				copyImage(); items.forEach(function (x) { if (x.w) { try { x.w.location.href = x.en.custom ? x.en.custom.replace(/\{u\}|%s|\{raw\}/g, '') : x.en.home; } catch (e) {} } });
+				toast('Could not share a link to your picture. It is copied: press Ctrl/⌘+V on each page that opened'); return;
+			}
+			var blocked = []; items.forEach(function (x) { var u = engineUrl(x.en, url); if (x.w) { try { x.w.location.href = u; } catch (e) { blocked.push({ en: x.en, url: u }); } } else blocked.push({ en: x.en, url: u }); });
+			if (blocked.length) queueLinks(blocked); else toast('Searching on ' + items.length + (items.length === 1 ? ' site' : ' sites'));
+		});
+		return true;
+	}
 	/* returns the opened window / true, or a link to offer when the popup was blocked, or null on a problem */
 	function openOne(en, single) {
 		if (mode === 'link') {
 			var url = en.custom ? M.customUrl(en.custom, link) : M.build(en, link), w = window.open(url, '_blank'); if (w) { try { w.opener = null; } catch (e) {} return true; } return single ? (queueLinks([{ en: en, url: url }]), false) : { en: en, url: url };
 		}
+		if (S.host && location.hostname.indexOf('localhost') < 0) return openHosted([en]);
 		if (en.up) return postFile(en) ? true : null;
 		if (single) copyImage();
 		var home = en.custom ? en.custom.replace(/\{u\}|%s|\{raw\}/g, '') : en.home, w2 = window.open(home, '_blank'); if (w2) { try { w2.opener = null; } catch (e) {} if (single) toast('Picture copied: press Ctrl/⌘+V on the ' + en.name + ' page'); return true; }
@@ -217,7 +256,8 @@
 	function openSelected() {
 		if (!ready()) return toast(mode === 'link' ? 'Paste an image link first' : 'Choose a picture first');
 		var list = all().filter(function (e) { return S.sel.indexOf(e.id) >= 0; }); if (!list.length) return toast('Tick at least one site');
-		clearQueue(); var blocked = [], needCopy = mode === 'file' && list.some(function (e) { return !e.up; });
+		clearQueue(); if (mode === 'file' && S.host && location.hostname.indexOf('localhost') < 0) { openHosted(list); return; }
+		var blocked = [], needCopy = mode === 'file' && list.some(function (e) { return !e.up; });
 		if (needCopy) copyImage();
 		list.forEach(function (e) { var r = openOne(e, false); if (r && r !== true) blocked.push(r); });
 		if (blocked.length) queueLinks(blocked); else if (needCopy) toast('Picture copied: press Ctrl/⌘+V on each page that opened');

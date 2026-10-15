@@ -367,7 +367,7 @@ APPS = {
     "reverse-image-search": dict(title="MES Reverse Image Search", page_title="Reverse Image Search",
                                  tag="One picture, every reverse image search.", accent="#4f46e5", dark="#3730a3", tint="#e8e7fb",
                                  desc="Free reverse image search on Google Lens, Bing, TinEye, Yandex, Baidu, SauceNAO and more at once: paste an image link or upload, drop or paste a picture, search just part of it, flip it, and open every site together. Private: your picture is never uploaded to mes.fm.",
-                                 js_v="2"),
+                                 js_v="3"),
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",
                            tag="One search, every search engine.", accent="#c2410c", dark="#9a3412", tint="#fdeadf",
                            desc="Type your search once and open it in Google (.com, .ca, .co.uk and more), Bing, DuckDuckGo, Brave, Yandex and 60+ other search engines, AI assistants and video sites, in tabs or tiled windows. Compare results, check censorship and bias, and add your own engines.",

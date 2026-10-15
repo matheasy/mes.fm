@@ -15,7 +15,7 @@
 					<div class="ri-drop__sub">or <b>click to choose</b> a file, or press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> to paste a screenshot or copied image</div>
 					<input type="file" id="ri-file" accept="image/*" hidden>
 				</div>
-				<p class="tu-note">Your picture stays in this browser. It is only sent to a search site when you press its Open button.</p>
+				<p class="tu-note">Your picture stays in this browser until you press Open. Then, unless you turn it off below, a resized copy is kept for one hour at a private link on mes.fm so each site can load it by itself, and is deleted automatically.</p>
 			</div>
 
 			<div class="ri-prev" id="ri-prev" hidden>
@@ -35,6 +35,7 @@
 				<div class="tu-chips" id="ri-sets" aria-label="Quick sets"></div>
 				<button type="button" class="tu-btn tu-btn--primary ri-go" id="ri-go">Open 0 selected</button>
 			</div>
+			<label class="ri-host" id="ri-hostbox" hidden><input type="checkbox" id="ri-host"> <span><b>Let the sites load my picture automatically</b> (recommended). A resized copy is stored at a private, unguessable mes.fm link for 1 hour, then deleted. Turn this off to keep the picture on your device and paste it into each site yourself.</span></label>
 			<p class="tu-note ri-modenote" id="ri-modenote"></p>
 			<div class="ri-queue" id="ri-queue" hidden></div>
 			<div id="ri-list"></div>
@@ -55,7 +56,7 @@
 				<li><strong>Rotate and flip</strong> first: many reposts are mirrored, and a flipped copy finds them.</li>
 				<li><strong>Sets for the job:</strong> popular engines, finding the original, art and anime sources.</li>
 				<li><strong>Add your own</strong> reverse image search site; your choices are remembered on this device.</li>
-				<li><strong>Private:</strong> nothing is uploaded to mes.fm. Your picture only goes to the sites you open.</li>
+				<li><strong>Private:</strong> in link mode nothing is uploaded. For a picture file, a resized copy is stored for one hour at a private, unguessable mes.fm link when you press Open, so the sites you tick can load it; it is then deleted. Switch <em>Let the sites load my picture</em> off to keep it entirely on your device.</li>
 			</ul>
 			<h3>Questions</h3>
 			<h4>Why do some sites need me to press Ctrl+V?</h4>

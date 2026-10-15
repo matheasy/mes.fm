@@ -320,6 +320,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.ri-prev__side {flex:1 1 12em;min-width:0;} .ri-info {font-weight:600;color:#1e2733;word-break:break-all;}
 	.ri-edit {margin:0.6em 0;}
 	.ri-bar {display:flex;gap:0.8em;flex-wrap:wrap;align-items:center;justify-content:space-between;} .ri-go {font-size:1.05em;padding:0.7em 1.3em;}
+	.ri-host {display:flex;gap:0.6em;align-items:flex-start;margin:0.8em 0 0.2em;padding:0.6em 0.8em;border:1px solid #dfe4ea;border-radius:0.5em;font-size:0.92em;line-height:1.4;cursor:pointer;} .ri-host input {margin-top:0.2em;flex:0 0 auto;} body.dark-mode #ri .ri-host {border-color:#3a3f45;}
 	.ri-modenote {margin:0.5em 0 0.2em;}
 	.ri-queue {margin:0.7em 0;padding:0.8em 1em;border-radius:0.55em;background:#fff4e5;border:1px solid #f0c27a;color:#5a3b00;line-height:1.5;} .ri-queue[hidden] {display:none;}
 	.ri-queue a {font-weight:700;margin-right:0.8em;}
@@ -423,6 +424,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .ri-stage{background:#191c20;border:1px solid #28323e}
 	body.dark-mode .ri-sel{background:rgba(26,26,26,0.18)}
 	body.dark-mode .ri-info{color:#d1d6dc}
+	body.dark-mode .ri-host{border:1px solid #28323e}
 	body.dark-mode .ri-queue{background:#291e10;border:1px solid #b37514;color:#ffc75c}
 	body.dark-mode .ri-eng{border:1px solid #28323e;background:#1a1a1a}
 	body.dark-mode .ri-eng.on{background:#151427}
@@ -698,7 +700,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ri-drop__sub">or <b>click to choose</b> a file, or press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> to paste a screenshot or copied image</div>
 					<input type="file" id="ri-file" accept="image/*" hidden>
 				</div>
-				<p class="tu-note">Your picture stays in this browser. It is only sent to a search site when you press its Open button.</p>
+				<p class="tu-note">Your picture stays in this browser until you press Open. Then, unless you turn it off below, a resized copy is kept for one hour at a private link on mes.fm so each site can load it by itself, and is deleted automatically.</p>
 			</div>
 
 			<div class="ri-prev" id="ri-prev" hidden>
@@ -718,6 +720,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-chips" id="ri-sets" aria-label="Quick sets"></div>
 				<button type="button" class="tu-btn tu-btn--primary ri-go" id="ri-go">Open 0 selected</button>
 			</div>
+			<label class="ri-host" id="ri-hostbox" hidden><input type="checkbox" id="ri-host"> <span><b>Let the sites load my picture automatically</b> (recommended). A resized copy is stored at a private, unguessable mes.fm link for 1 hour, then deleted. Turn this off to keep the picture on your device and paste it into each site yourself.</span></label>
 			<p class="tu-note ri-modenote" id="ri-modenote"></p>
 			<div class="ri-queue" id="ri-queue" hidden></div>
 			<div id="ri-list"></div>
@@ -738,7 +741,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li><strong>Rotate and flip</strong> first: many reposts are mirrored, and a flipped copy finds them.</li>
 				<li><strong>Sets for the job:</strong> popular engines, finding the original, art and anime sources.</li>
 				<li><strong>Add your own</strong> reverse image search site; your choices are remembered on this device.</li>
-				<li><strong>Private:</strong> nothing is uploaded to mes.fm. Your picture only goes to the sites you open.</li>
+				<li><strong>Private:</strong> in link mode nothing is uploaded. For a picture file, a resized copy is stored for one hour at a private, unguessable mes.fm link when you press Open, so the sites you tick can load it; it is then deleted. Switch <em>Let the sites load my picture</em> off to keep it entirely on your device.</li>
 			</ul>
 			<h3>Questions</h3>
 			<h4>Why do some sites need me to press Ctrl+V?</h4>
@@ -811,7 +814,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/reverse-image-search/js/reverse-image-search.js?v=2" defer></script>
+	<script src="/reverse-image-search/js/reverse-image-search.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
