@@ -1,6 +1,30 @@
 {
- "generated": "2026-10-14",
+ "generated": "2026-10-15",
  "calculators": [
+  {
+   "href": "/pregnancy-calorie-calculator",
+   "title": "Pregnancy Calorie Calculator",
+   "icon": "/img/pregnancy-calorie-calculator-logo.png",
+   "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
+   "added": "2026-10-15",
+   "kind": "calculator"
+  },
+  {
+   "href": "/body-surface-area-calculator",
+   "title": "Body Surface Area Calculator",
+   "icon": "/img/body-surface-area-calculator-logo.png",
+   "desc": "BSA by ten formulas for adults and children, plus clinical helpers.",
+   "added": "2026-10-15",
+   "kind": "calculator"
+  },
+  {
+   "href": "/one-rep-max-calculator",
+   "title": "One-Rep Max Calculator",
+   "icon": "/img/one-rep-max-calculator-logo.png",
+   "desc": "Estimate your 1RM from a set, with a rep chart, plate loader and strength level.",
+   "added": "2026-10-15",
+   "kind": "calculator"
+  },
   {
    "href": "/calories-burned-calculator",
    "title": "Calories Burned Calculator",
@@ -70,30 +94,6 @@
    "title": "Water Intake Calculator",
    "icon": "/img/water-intake-calculator-logo.png",
    "desc": "How much water to drink a day, with a daily tracker.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/macro-calculator",
-   "title": "Macro Calculator",
-   "icon": "/img/macro-calculator-logo.png",
-   "desc": "Daily calories and grams of protein, carbs and fat for your goal, with preset or custom splits.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/body-fat-calculator",
-   "title": "Body Fat Calculator",
-   "icon": "/img/body-fat-calculator-logo.png",
-   "desc": "Estimate your body fat percentage with a tape measure (U.S. Navy method), then set a body-fat goal.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/bmr-calculator",
-   "title": "BMR Calculator",
-   "icon": "/img/bmr-calculator-logo.png",
-   "desc": "Basal metabolic rate and daily calories for your age, weight and height, plus calories to lose or gain.",
    "added": "2026-10-14",
    "kind": "calculator"
   }
@@ -198,6 +198,30 @@
  ],
  "latest": [
   {
+   "href": "/pregnancy-calorie-calculator",
+   "title": "Pregnancy Calorie Calculator",
+   "icon": "/img/pregnancy-calorie-calculator-logo.png",
+   "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
+   "added": "2026-10-15",
+   "kind": "calculator"
+  },
+  {
+   "href": "/body-surface-area-calculator",
+   "title": "Body Surface Area Calculator",
+   "icon": "/img/body-surface-area-calculator-logo.png",
+   "desc": "BSA by ten formulas for adults and children, plus clinical helpers.",
+   "added": "2026-10-15",
+   "kind": "calculator"
+  },
+  {
+   "href": "/one-rep-max-calculator",
+   "title": "One-Rep Max Calculator",
+   "icon": "/img/one-rep-max-calculator-logo.png",
+   "desc": "Estimate your 1RM from a set, with a rep chart, plate loader and strength level.",
+   "added": "2026-10-15",
+   "kind": "calculator"
+  },
+  {
    "href": "/calories-burned-calculator",
    "title": "Calories Burned Calculator",
    "icon": "/img/calories-burned-calculator-logo.png",
@@ -234,30 +258,6 @@
    "title": "Running Pace Calculator",
    "icon": "/img/pace-calculator-logo.png",
    "desc": "Pace, time and distance, splits, and race time predictions.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/waist-to-hip-ratio-calculator",
-   "title": "Waist-to-Hip Ratio Calculator",
-   "icon": "/img/waist-to-hip-ratio-calculator-logo.png",
-   "desc": "Waist-to-hip, waist-to-height and body shape with risk levels.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/ideal-weight-calculator",
-   "title": "Ideal Weight Calculator",
-   "icon": "/img/ideal-weight-calculator-logo.png",
-   "desc": "Ideal body weight by four formulas, next to your healthy BMI range.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/tdee-calculator",
-   "title": "TDEE Calculator",
-   "icon": "/img/tdee-calculator-logo.png",
-   "desc": "Your maintenance calories, plus calories to lose or gain weight.",
    "added": "2026-10-14",
    "kind": "calculator"
   }

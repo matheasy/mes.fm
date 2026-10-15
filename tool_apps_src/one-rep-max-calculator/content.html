@@ -1,0 +1,61 @@
+	<div class="tu" id="rm">
+		<div class="tu-card" id="rm-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="rm-w">Weight lifted</label><div class="tu-suffix"><input id="rm-w" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 100"><span id="rm-wu">kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="rm-r">Reps you did</label>
+					<div class="rm-rep"><button type="button" id="rm-rm" aria-label="One rep less">&minus;</button><input id="rm-r" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="5"><button type="button" id="rm-rp" aria-label="One rep more">+</button></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="rm-u-label">Units</span><div class="tu-seg" id="rm-u" role="group" aria-labelledby="rm-u-label"><button type="button" data-u="kg" aria-pressed="true">kg</button><button type="button" data-u="lb" aria-pressed="false">lb</button></div></div>
+			</div>
+			<details class="rm-more" id="rm-more" style="margin-top:0.9em;"><summary>Optional: lift, body weight and rounding (for strength level and plates)</summary>
+				<div class="tu-row" style="margin-top:0.7em;">
+					<div class="tu-field" style="flex:1 1 11em;"><label for="rm-lift">Lift</label><select id="rm-lift" class="tu-select"><option value="">Not stated</option><option value="squat">Squat</option><option value="bench">Bench press</option><option value="deadlift">Deadlift</option><option value="ohp">Overhead press</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="rm-bw">Body weight</label><div class="tu-suffix"><input id="rm-bw" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 80"><span class="rm-u2">kg</span></div></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><span class="tu-label" id="rm-sex-label">Sex</span><div class="tu-seg" id="rm-sex" role="group" aria-labelledby="rm-sex-label"><button type="button" data-s="m" aria-pressed="true">Male</button><button type="button" data-s="f" aria-pressed="false">Female</button></div></div>
+				</div>
+				<div class="tu-row" style="margin-top:0.7em;">
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="rm-step">Round loads to</label><select id="rm-step" class="tu-select"></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="rm-bar">Barbell weighs</label><select id="rm-bar" class="tu-select"></select></div>
+				</div>
+			</details>
+		</div>
+		<div id="rm-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter the weight and reps of a hard set (up to 10 reps is best) &mdash; or try an example: </span><span class="tu-chips" id="rm-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="rm-out" hidden>
+			<div class="tu-stats" id="rm-hero" aria-live="polite"></div>
+			<div class="tu-card rm-verdict" id="rm-verdict" aria-live="polite"></div>
+			<h2>The formulas compared</h2>
+			<div class="tu-card"><div class="rm-chart" id="rm-formulas" role="img"></div><p class="tu-note" style="margin-bottom:0;">Each formula estimates your one-rep max from the same set. The dashed line is the average, which is the number to use. Estimates get less reliable above about 10 reps.</p></div>
+			<h2>What you can lift for any number of reps</h2>
+			<div class="tu-card">
+				<div class="rm-chart" id="rm-curve" role="img"></div><div class="rm-readout" id="rm-readout" aria-live="polite">Move over the chart to read a rep count.</div>
+				<div class="tu-table-wrap"><table class="tu-table" id="rm-table"></table></div>
+			</div>
+			<h2>Training zones</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="rm-zones"></table></div></div>
+			<h2>Load the bar</h2>
+			<div class="tu-card">
+				<div class="tu-row" style="align-items:flex-end;"><div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="rm-tgt">Weight on the bar</label><div class="tu-suffix"><input id="rm-tgt" class="tu-input" type="text" inputmode="decimal" autocomplete="off"><span class="rm-u2">kg</span></div></div></div>
+				<div class="tu-chips" id="rm-pcts" style="margin:0.6em 0;"></div>
+				<div class="rm-bar-svg" id="rm-plates" role="img"></div><p class="rm-platetxt" id="rm-platetxt" aria-live="polite"></p>
+			</div>
+			<div id="rm-lvlbox" hidden><h2>Your strength level</h2><div class="tu-card" id="rm-lvl"></div></div>
+			<div class="rm-btns"><button type="button" class="tu-btn tu-btn--primary" id="rm-link">Copy link to this result</button><button type="button" class="tu-btn tu-btn--ghost" id="rm-copy">Copy rep table</button><button type="button" class="tu-btn tu-btn--ghost" id="rm-print">Print</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How to calculate your one-rep max</h2>
+			<p>Your <b>one-rep max (1RM)</b> is the heaviest weight you can lift once with good form. Testing it directly is tiring and risky, so this calculator estimates it from a harder set of several reps. Enter the weight and how many clean reps you did to <b>near failure</b>. For example, 100 kg for 5 reps gives an Epley estimate of 100 &times; (1 + 5 &divide; 30) = <b>116.7 kg</b>, and the average of seven formulas is about 114 kg.</p>
+			<h2>The formulas</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="rm-ref"></table></div>
+			<h2>How accurate is a 1RM calculator?</h2>
+			<p>Within about 5% for sets of 1&ndash;10 reps, if the set was taken close to failure and with good technique. Accuracy falls beyond 10 reps because fatigue and endurance take over from pure strength, and it varies by lift (it is usually best for the bench press). Treat the result as a training guide and start your first heavy attempt a little under it.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What percentage of 1RM should I train at?</dt><dd>85&ndash;100% for strength (1&ndash;5 reps), about 67&ndash;85% for muscle growth (6&ndash;12 reps), and below 67% for endurance. See the zones table above.</dd>
+				<dt>How many reps is 80% of my max?</dt><dd>About 8 reps on average, though it varies by person and lift.</dd>
+				<dt>Is it safe to test a real 1RM?</dt><dd>Use a spotter or safety bars, warm up well, and be conservative. The estimate avoids most of that risk.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
+			</dl>
+			<p>General information, not medical advice. Related: <a href="/calories-burned-calculator">Calories Burned Calculator</a> &middot; <a href="/protein-intake-calculator">Protein Intake Calculator</a> &middot; <a href="/body-fat-calculator">Body Fat Calculator</a></p>
+		</div>
+	</div>

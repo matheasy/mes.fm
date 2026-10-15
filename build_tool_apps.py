@@ -367,7 +367,7 @@ APPS = {
     "reverse-image-search": dict(title="MES Reverse Image Search", page_title="Reverse Image Search",
                                  tag="One picture, every reverse image search.", accent="#4f46e5", dark="#3730a3", tint="#e8e7fb",
                                  desc="Free reverse image search on Google Lens, Bing, TinEye, Yandex, Baidu, SauceNAO and more at once: paste an image link or upload, drop or paste a picture, search just part of it, flip it, and open every site together. Private: your picture is never uploaded to mes.fm.",
-                                 js_v="1"),
+                                 js_v="2"),
     "search-engines": dict(title="MES Search Engines", page_title="Search Engines",
                            tag="One search, every search engine.", accent="#c2410c", dark="#9a3412", tint="#fdeadf",
                            desc="Type your search once and open it in Google (.com, .ca, .co.uk and more), Bing, DuckDuckGo, Brave, Yandex and 60+ other search engines, AI assistants and video sites, in tabs or tiled windows. Compare results, check censorship and bias, and add your own engines.",
@@ -473,6 +473,19 @@ APPS = {
                              tag="Wake up at the end of a sleep cycle.", accent="#3730a3", dark="#28237a", tint="#e6e5f8",
                              desc="Free sleep calculator: find the best bedtime for the time you need to wake up, or the best wake-up time if you go to bed now, using 90-minute sleep cycles. See your night's sleep stages, an evening plan, nap times and your weekly sleep debt.",
                              js_v="1"),
+    # One-Rep Max, Body Surface Area and Pregnancy / Breastfeeding Calorie calculators (2026-10-15; tests: tool_apps_src/<slug>-tests.js). The pregnancy page builds on the BMR calculator's lib (lib_from).
+    "one-rep-max-calculator": dict(title="One-Rep Max Calculator", page_title="One-Rep Max (1RM) Calculator: 7 Formulas, Rep Chart, Plates and Strength Level",
+                                   tag="Estimate your 1RM and load the bar.", accent="#b91c1c", dark="#8f1414", tint="#fbe1e1",
+                                   desc="Free one-rep max calculator: enter the weight and reps of a hard set to estimate your 1RM with seven formulas (Epley, Brzycki, Lander and more). Get a rep and percentage chart, training zones, a plate loader for the barbell, and your strength level for squat, bench, deadlift and overhead press.",
+                                   js_v="1"),
+    "body-surface-area-calculator": dict(title="Body Surface Area Calculator", page_title="Body Surface Area (BSA) Calculator: Mosteller, Du Bois, Haycock and More",
+                                         tag="BSA by ten formulas, plus clinical helpers.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",
+                                         desc="Free body surface area (BSA) calculator for adults and children with ten formulas: Mosteller, Du Bois, Haycock, Gehan and George, Boyd and more. See them side by side, how BSA changes with weight, and quick helpers for dose by BSA, cardiac index and GFR.",
+                                         js_v="1"),
+    "pregnancy-calorie-calculator": dict(title="Pregnancy Calorie Calculator", page_title="Pregnancy and Breastfeeding Calorie Calculator: Extra Calories and Weight Gain",
+                                         tag="How many calories you need, week by week.", accent="#be185d", dark="#8f1146", tint="#fbe1ee",
+                                         desc="Free pregnancy and breastfeeding calorie calculator: how many extra calories you need by trimester or baby's age, healthy weight gain by week for your BMI (with twins), a chart to plot your own weight, foods for the extra calories, and key nutrients.",
+                                         js_v="1", lib_from=["bmr-calculator"]),
     # Timer family (rewritten 2026-10-06): ONE script (tool_apps_src/timer/app.js) + one content template; each page sets which panels it shows (`vars.VIEWS`) and its own text (`vars.SEO` = seo/<slug>.html).
     # /timer shows countdown + stopwatch + alarm together by default (customizable: add Pomodoro / Interval / Date countdown, stacked or side by side, drag to reorder); the others are one big panel.
     # All use the Timer brand (logo, header, Home link) via `brand`; timer/img + timer/audio + the quote galleries stay in mes.fm/timer/. Tests: tool_apps_src/timer-tests.js.

@@ -1,0 +1,59 @@
+	<div class="tu" id="pg">
+		<div class="tu-card" id="pg-setup">
+			<div class="tu-seg pg-modes" id="pg-mode" role="group" aria-label="Pregnant or breastfeeding"><button type="button" data-m="preg" aria-pressed="true">I'm pregnant</button><button type="button" data-m="bf" aria-pressed="false">I'm breastfeeding</button></div>
+			<div class="tu-row" style="margin-top:1em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:8em;"><label for="pg-age">Age</label><div class="tu-suffix"><input id="pg-age" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 30"><span>years</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="pg-cm">Height</label><div class="tu-suffix"><input id="pg-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 165"><span>cm</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="pg-ft">Height</label><div class="tu-suffix"><input id="pg-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="5"><span>ft</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="pg-in">&nbsp;</label><div class="tu-suffix"><input id="pg-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="5"><span>in</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><label for="pg-kg" id="pg-kgl">Weight before pregnancy</label><div class="tu-suffix"><input id="pg-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 65"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><label for="pg-lb">&nbsp;</label><div class="tu-suffix"><input id="pg-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 143"><span>lb</span></div></div>
+				<div class="tu-field" style="flex:2 1 15em;"><label for="pg-act">Activity level (before pregnancy)</label><select id="pg-act" class="tu-select"></select></div>
+			</div>
+			<div id="pg-pregopts"><div class="tu-row" style="margin-top:0.9em;">
+				<div class="tu-field" style="flex:2 1 18em;"><label for="pg-wk">Weeks pregnant: <b id="pg-wko"></b></label><input type="range" id="pg-wk" min="1" max="42" step="1" style="width:100%;accent-color:var(--accent);height:2em;"></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><label for="pg-now">Weight now (optional)</label><div class="tu-suffix"><input id="pg-now" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="70 or 154 lb"><span class="pg-u">kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex:0 0 auto;align-self:flex-end;"><label class="pg-check"><input type="checkbox" id="pg-twins"> Expecting twins</label></div>
+			</div></div>
+			<div id="pg-bfopts" hidden><div class="tu-row" style="margin-top:0.9em;">
+				<div class="tu-field" style="flex:2 1 18em;"><label for="pg-mo">Baby's age: <b id="pg-moo"></b></label><input type="range" id="pg-mo" min="0" max="24" step="1" style="width:100%;accent-color:var(--accent);height:2em;"></div>
+				<div class="tu-field" style="flex:1 1 14em;"><label for="pg-feed">How much of the baby's feeding is breast milk?</label><select id="pg-feed" class="tu-select"><option value="ex">All or almost all (exclusive)</option><option value="part">About half (partial)</option></select></div>
+			</div></div>
+		</div>
+		<div id="pg-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your age, height and weight &mdash; or try an example: </span><span class="tu-chips" id="pg-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="pg-out" hidden>
+			<div class="tu-stats" id="pg-hero" aria-live="polite"></div>
+			<div class="tu-card pg-verdict" id="pg-verdict" aria-live="polite"></div>
+			<div id="pg-calbox"><h2>Calories by trimester</h2>
+			<div class="tu-card"><div class="pg-chart" id="pg-cal" role="img"></div><div class="tu-table-wrap"><table class="tu-table" id="pg-caltable"></table></div></div></div>
+			<div id="pg-gainbox"><h2>Healthy weight gain</h2>
+			<div class="tu-card"><div class="pg-chart" id="pg-gain" role="img"></div><p class="pg-gaintxt" id="pg-gaintxt" aria-live="polite"></p><p class="tu-note" style="margin-bottom:0;">The shaded band is the Institute of Medicine / ACOG recommended range for your pre-pregnancy BMI. Your own provider's advice comes first: some pregnancies need a different target.</p></div></div>
+			<h2>What an extra <span id="pg-xt"></span> calories looks like</h2>
+			<div class="tu-card"><ul class="pg-foods" id="pg-foods"></ul></div>
+			<h2>Key nutrients</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="pg-nut"></table></div></div>
+			<div class="pg-btns"><button type="button" class="tu-btn tu-btn--primary" id="pg-link">Copy link to this result</button><button type="button" class="tu-btn tu-btn--ghost" id="pg-print">Print</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How many extra calories do you need when pregnant?</h2>
+			<p>Less than most people think. Official guidance (the U.S. Institute of Medicine and the Dietary Guidelines) is <b>no extra calories in the first trimester</b>, about <b>+340 calories a day in the second</b> and about <b>+452 a day in the third</b>, on top of what you needed before pregnancy. &ldquo;Eating for two&rdquo; is a myth: the extra is about a snack, not a second meal. Twins need more (roughly +600 a day, an estimate; your provider can set it).</p>
+			<p>This calculator starts from your <b>maintenance calories before pregnancy</b> (BMR by the Mifflin-St Jeor equation times your activity level), then adds the trimester amount.</p>
+			<h2>How much weight should you gain?</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="pg-ref"></table></div>
+			<p class="tu-note">Institute of Medicine (2009), adopted by ACOG. Gain is slow in the first trimester (0.5&ndash;2 kg in total), then steady: 0.35&ndash;0.5 kg (about 1 lb) a week for a normal-weight singleton pregnancy.</p>
+			<h2>Calories while breastfeeding</h2>
+			<p>Making milk burns roughly <b>330 extra calories a day</b> in the first six months and about <b>400</b> from 7 to 12 months for exclusive breastfeeding; about half that for partial feeding. Do not diet hard while establishing supply: slow loss of up to about 0.5 kg (1 lb) a week is considered safe once feeding is established, and calories should stay above about 1,800 a day.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Should I count calories in pregnancy?</dt><dd>You do not need to. Eating to appetite with a balanced diet usually works. Use the numbers as a guide, and track your weight gain with your provider.</dd>
+				<dt>What if I am gaining too fast or too slowly?</dt><dd>Talk to your midwife or doctor. Both can be managed, and they will consider your own health and your baby's growth.</dd>
+				<dt>Is it safe to lose weight while pregnant?</dt><dd>Do not diet while pregnant unless your doctor advises it. This page is not for weight loss.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
+			</dl>
+			<p>General information, not medical advice. Always follow your doctor or midwife's guidance. Related: <a href="/due-date-calculator">Due Date Calculator</a> &middot; <a href="/weeks-pregnant-calculator">Weeks Pregnant Calculator</a> &middot; <a href="/water-intake-calculator">Water Intake Calculator</a> &middot; <a href="/tdee-calculator">TDEE Calculator</a></p>
+		</div>
+	</div>
