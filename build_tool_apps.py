@@ -420,6 +420,12 @@ APPS = {
                            tag="How many calories your body burns each day.", accent="#2b8a3e", dark="#1f6a2f", tint="#e3f4e6",
                            desc="Free BMR calculator: find your basal metabolic rate and daily calories (TDEE) from your age, sex, weight and height. Mifflin-St Jeor, Harris-Benedict, Katch-McArdle and Cunningham equations, calories to lose or gain weight, kcal and kJ, no sign-up.",
                            js_v="1"),
+    # Body Fat Calculator (2026-10-14): U.S. Navy tape method + Deurenberg BMI estimate, ACE categories, fat / lean split, goal slider (lean mass held), hands the % to the BMR calculator.
+    # lib.js = maths (tests: tool_apps_src/body-fat-calculator-tests.js). Keeps ads; share links are plain query strings.
+    "body-fat-calculator": dict(title="Body Fat Calculator", page_title="Body Fat Calculator: U.S. Navy Method and BMI Estimate",
+                                tag="Estimate your body fat percentage with a tape measure.", accent="#5b21b6", dark="#43188a", tint="#ede7fb",
+                                desc="Free body fat calculator: estimate your body fat percentage with the U.S. Navy tape-measure method (neck, waist, hips) or the BMI method. See your category, fat and lean mass, set a body-fat goal, and send the result to the BMR calculator.",
+                                js_v="1"),
     # Timer family (rewritten 2026-10-06): ONE script (tool_apps_src/timer/app.js) + one content template; each page sets which panels it shows (`vars.VIEWS`) and its own text (`vars.SEO` = seo/<slug>.html).
     # /timer shows countdown + stopwatch + alarm together by default (customizable: add Pomodoro / Interval / Date countdown, stacked or side by side, drag to reorder); the others are one big panel.
     # All use the Timer brand (logo, header, Home link) via `brand`; timer/img + timer/audio + the quote galleries stay in mes.fm/timer/. Tests: tool_apps_src/timer-tests.js.

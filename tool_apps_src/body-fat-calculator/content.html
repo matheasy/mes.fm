@@ -1,0 +1,78 @@
+	<div class="tu" id="bf">
+		<div class="tu-card" id="bf-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="bf-sex-label">Sex</span>
+					<div class="tu-seg" id="bf-sex" role="group" aria-labelledby="bf-sex-label"><button type="button" data-s="m" aria-pressed="false">Male</button><button type="button" data-s="f" aria-pressed="false">Female</button></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:8em;"><label for="bf-age">Age</label><div class="tu-suffix"><input id="bf-age" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 30"><span>years</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="bf-units-label">Units</span>
+					<div class="tu-seg" id="bf-units" role="group" aria-labelledby="bf-units-label"><button type="button" data-u="m" aria-pressed="true">Metric</button><button type="button" data-u="i" aria-pressed="false">US</button></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:1em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bf-w">Weight</label><div class="tu-suffix"><input id="bf-w" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 80"><span id="bf-wu">kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bf-h">Height</label><div class="tu-suffix"><input id="bf-h" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 180"><span id="bf-hu">cm</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;" id="bf-h2box" hidden><label for="bf-h2">&nbsp;</label><div class="tu-suffix"><input id="bf-h2" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 10"><span>in</span></div></div>
+			</div>
+			<p class="tu-note" style="margin:1em 0 0.4em;"><b>Tape measurements</b> (for the U.S. Navy method, the most accurate of the quick ones): measure bare skin, relaxed, to the nearest half cm / quarter inch. Skip them to get the BMI-based estimate only.</p>
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="bf-neck">Neck</label><div class="tu-suffix"><input id="bf-neck" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="below the Adam's apple"><span class="bf-lu">cm</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="bf-waist" id="bf-waistl">Waist</label><div class="tu-suffix"><input id="bf-waist" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="at the navel"><span class="bf-lu">cm</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;" id="bf-hipbox" hidden><label for="bf-hip">Hips</label><div class="tu-suffix"><input id="bf-hip" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="widest point"><span class="bf-lu">cm</span></div></div>
+			</div>
+		</div>
+
+		<div id="bf-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your sex, age, weight, height (and tape measurements) &mdash; or try an example: </span><span class="tu-chips" id="bf-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="bf-out" hidden>
+			<div class="tu-stats" id="bf-hero" aria-live="polite"></div>
+			<div class="tu-card bf-verdict" id="bf-verdict" aria-live="polite"></div>
+			<h2>Where you are</h2>
+			<div class="tu-card">
+				<div class="bf-gauge" id="bf-gauge" aria-hidden="true"></div>
+				<ul class="bf-cats" id="bf-cats"></ul>
+				<div class="tu-label" style="margin-top:1.1em;">Fat and lean mass</div>
+				<div class="bf-split" id="bf-split" role="img"></div>
+				<ul class="bf-legend" id="bf-splitleg"></ul>
+			</div>
+			<h2>Set a body-fat goal</h2>
+			<div class="tu-card">
+				<label for="bf-goal" class="tu-label">Goal body fat</label>
+				<div class="bf-slidebox"><input type="range" id="bf-goal" min="5" max="40" step="0.5" value="15"><output id="bf-goalout" for="bf-goal"></output></div>
+				<p class="bf-goaltext" id="bf-goaltext" aria-live="polite"></p>
+				<p class="tu-note" style="margin-bottom:0;">Assumes you keep all your muscle and lose only fat, which is the best case; most people lose a little of both.</p>
+			</div>
+			<div class="bf-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="bf-link">Copy link to this result</button>
+				<a class="tu-btn tu-btn--ghost" id="bf-bmr" href="/bmr-calculator">Use it in the BMR calculator &rarr;</a>
+				<button type="button" class="tu-btn tu-btn--ghost" id="bf-print">Print</button>
+			</div>
+			<h2>Compare the methods</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="bf-cmp"></table></div><p class="tu-note" style="margin-bottom:0;">Tape and formula methods are typically within 3&ndash;4 percentage points of a DEXA scan for an average person, and less accurate at the extremes (very lean, very muscular or very heavy).</p></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How this body fat calculator works</h2>
+			<p>Body fat percentage is the share of your weight that is fat. It tells you more than BMI, because it separates fat from muscle, bone and water. This calculator gives two estimates:</p>
+			<ul>
+				<li><b>U.S. Navy method</b> (tape measure): uses height, neck and waist (plus hips for women). Men: <i>495 &divide; (1.0324 &minus; 0.19077 &times; log<sub>10</sub>(waist &minus; neck) + 0.15456 &times; log<sub>10</sub>(height)) &minus; 450</i>. Women: <i>495 &divide; (1.29579 &minus; 0.35004 &times; log<sub>10</sub>(waist + hips &minus; neck) + 0.22100 &times; log<sub>10</sub>(height)) &minus; 450</i>, with measurements in cm.</li>
+				<li><b>BMI method</b> (Deurenberg, 1991): <i>1.20 &times; BMI + 0.23 &times; age &minus; 10.8 &times; (1 for men, 0 for women) &minus; 5.4</i>. It needs no tape, but it assumes an average build, so it overestimates in muscular people.</li>
+			</ul>
+			<h2>Body fat percentage categories</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="bf-ref"></table></div>
+			<p class="tu-note">Ranges from the American Council on Exercise. Essential fat is the minimum your body needs to function; staying near or below it is unhealthy. Healthy ranges also rise somewhat with age.</p>
+			<h2>How to measure properly</h2>
+			<ul>
+				<li><b>Neck:</b> just below the larynx (Adam's apple), sloping slightly down at the front, tape snug but not squeezing.</li>
+				<li><b>Waist:</b> men at the navel; women at the narrowest point (or the navel if there is no obvious narrowing). Relax and breathe out; do not suck in.</li>
+				<li><b>Hips (women):</b> the widest point of the buttocks, feet together.</li>
+				<li>Measure three times and use the average. Measure at the same time of day (mornings are most consistent).</li>
+			</ul>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What is a good body fat percentage?</dt><dd>For general health, roughly 10&ndash;20% for men and 18&ndash;28% for women is a common target, with athletes lower. See the table above.</dd>
+				<dt>Is this as accurate as a DEXA scan or calipers?</dt><dd>No. A DEXA scan, hydrostatic weighing or a good caliper reading from a trained person is more accurate. The tape method is good for tracking change over time with the same technique.</dd>
+				<dt>Why do my two estimates differ?</dt><dd>The BMI method cannot tell muscle from fat, so it reads high for muscular people and low for people who carry little muscle. Trust the tape method more, and look at the trend.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in your browser. Nothing is uploaded unless you copy a link and share it yourself.</dd>
+			</dl>
+			<p>Related: <a href="/bmr-calculator">BMR Calculator</a> (use your body-fat % for the Katch-McArdle equation) &middot; <a href="/bmicalculator">BMI Calculator</a></p>
+		</div>
+	</div>

@@ -2,6 +2,14 @@
  "generated": "2026-10-14",
  "calculators": [
   {
+   "href": "/body-fat-calculator",
+   "title": "Body Fat Calculator",
+   "icon": "/img/body-fat-calculator-logo.png",
+   "desc": "Estimate your body fat percentage with a tape measure (U.S. Navy method), then set a body-fat goal.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/bmr-calculator",
    "title": "BMR Calculator",
    "icon": "/img/bmr-calculator-logo.png",
@@ -87,14 +95,6 @@
    "icon": "/img/time-dilation-logo.png",
    "desc": "How much would you age at close to the speed of light? Watch a traveller's clock, heartbeat and ageing slow down, see the light clock that explains why, fly the twin paradox at a steady 1 g, and calculate it.",
    "added": "2026-10-13",
-   "kind": "calculator"
-  },
-  {
-   "href": "/faster-than-light-shadow-simulator",
-   "title": "Faster-Than-Light Shadow Simulator",
-   "icon": "/img/faster-than-light-shadow-simulator-logo.png",
-   "desc": "Swing a torch beam or move a finger and watch the spot or shadow on the Moon outrun light, with true light-travel delay. See why no message rides on it.",
-   "added": "2026-10-10",
    "kind": "calculator"
   }
  ],
@@ -198,6 +198,14 @@
  ],
  "latest": [
   {
+   "href": "/body-fat-calculator",
+   "title": "Body Fat Calculator",
+   "icon": "/img/body-fat-calculator-logo.png",
+   "desc": "Estimate your body fat percentage with a tape measure (U.S. Navy method), then set a body-fat goal.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/bmr-calculator",
    "title": "BMR Calculator",
    "icon": "/img/bmr-calculator-logo.png",
@@ -250,14 +258,6 @@
    "title": "Conception Date Calculator",
    "icon": "/img/conception-date-calculator-logo.png",
    "desc": "Work out when you conceived from your due date, last period or IVF transfer.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/contraction-timer",
-   "title": "Contraction Timer",
-   "icon": "/img/contraction-timer-logo.png",
-   "desc": "One big button to time labour contractions: length, gaps, hourly average and a 5-1-1 rule alert.",
    "added": "2026-10-14",
    "kind": "calculator"
   }
