@@ -2115,7 +2115,7 @@ var MESPixel = (function () {
 	var autoWin = false;
 	function toggleWin(auto) { var on = !root.classList.contains("pe-win"); root.classList.toggle("pe-win", on); document.documentElement.classList.toggle("pe-win-on", on); $("pe-winbtn").setAttribute("aria-pressed", on ? "true" : "false"); $("pe-winbtn").textContent = on ? "⤡ Exit full window" : "⤢ Full window"; if (auto !== true) sset({ win: on }); setTimeout(function () { resize(); if (PE.doc) PE.fit(); }, 30); }
 	$("pe-winbtn").addEventListener("click", function () { toggleWin(); });
-	PE.on("docsize", function () { if (PE.doc && !autoWin && S.win !== false && !root.classList.contains("pe-win")) { autoWin = true; toggleWin(true); } });
+	// no automatic Full window when a picture is opened (it hid the sidebar and the Standard | Wide | Theatre switch): Full window stays one click away (key F) and a manual choice is remembered
 
 	/* ---------- keyboard ---------- */
 	document.addEventListener("keydown", function (e) {
