@@ -51,3 +51,5 @@
 	#fv input[hidden] {display:none !important;}
 	#fv kbd {display:inline-block;padding:0 0.4em;border:1px solid var(--fv-line);border-bottom-width:2px;border-radius:0.3em;background:var(--fv-surf2);font-size:0.9em;}
 	@media (pointer:coarse) {#fv .fv-tile {padding-top:2.4em;} #fv .fv-tile .fv-grip {width:40px;min-height:40px;top:0;left:0;} #fv .fv-tile .fv-tools {top:0;} #fv .fv-tile .fv-ib {min-width:40px;min-height:40px;}}
+	#fv .fv-short {margin:0 0 1em;} #fv .fv-long {margin:0.6em 0 1em;} #fv .fv-long summary {cursor:pointer;font-weight:700;color:var(--fv-acc);}
+	body.dark-mode #fv .tu-btn--ghost {color:#e4e4e4;border-color:#6b6b6b;background:transparent;} body.dark-mode #fv .tu-btn--ghost:hover {background:#3a3a3a;}

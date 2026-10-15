@@ -485,6 +485,7 @@
     { "source": "/sjw/:path*", "destination": "/sjwkeyboard/:path*", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/f/:id", "destination": "/fav?f=:id" },
     { "source": "/vatcalculator/s/:id", "destination": "/vatcalculator" },
     { "source": "/gpacalculator/s/:id", "destination": "/gpacalculator" },
     { "source": "/youtubemoney/s/:id", "destination": "/youtubemoney" },

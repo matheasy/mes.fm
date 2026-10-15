@@ -21,13 +21,13 @@
         s.groups = s.groups.filter(function (g) { return g && typeof g === "object"; }).map(function (g) {
             var seen = {};
             return { id: String(g.id || uid()), name: String(g.name || "Group").slice(0, 60), open: g.open !== false,
-                items: (Array.isArray(g.items) ? g.items : []).filter(function (p) { p = String(p); if (!/^\/[^\s]*$/.test(p) || seen[p]) return false; seen[p] = 1; return true; }).map(String) };
+                items: (Array.isArray(g.items) ? g.items : []).filter(function (p) { p = String(p); if (!/^\/(?!\/)[^\s\\]*$/.test(p) || seen[p]) return false; seen[p] = 1; return true; }).map(String) };
         });
         if (!s.groups.length) return fresh();
         return s;
     }
     function load() { try { return clean(JSON.parse(localStorage.getItem(KEY))); } catch (e) { return fresh(); } }
-    function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ } updateLink(); }
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ } updateLink(); scheduleSync(); }
     function groupBy(id) { for (var i = 0; i < state.groups.length; i++) if (state.groups[i].id === id) return state.groups[i]; return null; }
     function total() { return state.groups.reduce(function (n, g) { return n + g.items.length; }, 0); }
     function inGroups(path) { return state.groups.filter(function (g) { return g.items.indexOf(path) !== -1; }); }
@@ -229,6 +229,45 @@
         rd.readAsText(f);
     };
 
+
+    /* ---------- short link (mes.fm/f/<id>, api/fav.js): the list is stored server-side under a random id; the edit key stays in this browser ---------- */
+    var SKEY = "mes-fav:short", sEl = { row: $("fv-shortrow"), link: $("fv-slink"), note: $("fv-snote"), make: $("fv-smake"), stop: $("fv-sstop") }, syncT;
+    function shortGet() { try { var s = JSON.parse(localStorage.getItem(SKEY)); return s && s.id && s.key ? s : null; } catch (e) { return null; } }
+    function groupsPayload() { return state.groups.map(function (g) { return [g.name, g.items]; }); }
+    function api(body) {
+        return fetch("/api/fav", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) {
+            return r.json().then(function (j) { if (!r.ok) throw new Error(j && j.error || "error"); return j; });
+        });
+    }
+    function paintShort(msg) {
+        var s = shortGet(), has = total() > 0;
+        sEl.row.hidden = !s; sEl.stop.hidden = !s; sEl.make.hidden = !!s; sEl.make.disabled = !has;
+        if (s) sEl.link.value = location.origin + "/f/" + s.id;
+        sEl.note.textContent = msg || (s ? "Kept up to date automatically while you use this browser." : has ? "" : "Add a few pages first.");
+    }
+    function scheduleSync() {
+        if (!shortGet()) return; clearTimeout(syncT);
+        syncT = setTimeout(function () {
+            var s = shortGet(); if (!s) return;
+            if (!total()) { paintShort("Add a page to update your short link."); return; }
+            api({ id: s.id, key: s.key, g: groupsPayload() }).then(function () { paintShort("Short link updated just now."); }, function (e) { paintShort("Could not update the short link (" + e.message + "). It will retry on your next change."); });
+        }, 1500);
+    }
+    sEl.make.onclick = function () {
+        if (!total()) { toast("Add a few pages first"); return; }
+        sEl.make.disabled = true; sEl.note.textContent = "Making your link…";
+        api({ g: groupsPayload() }).then(function (j) {
+            try { localStorage.setItem(SKEY, JSON.stringify({ id: j.id, key: j.key })); } catch (e) { /* ignore */ }
+            paintShort("Short link ready. Copy it and open it on another device."); copyText(location.origin + "/f/" + j.id, "Short link copied");
+        }, function (e) { sEl.make.disabled = false; sEl.note.textContent = e.message === "not set up" ? "Short links are not switched on yet. Use the long link below." : "Could not make a short link (" + e.message + "). Try again, or use the long link below."; });
+    };
+    sEl.link.addEventListener("focus", function () { sEl.link.select(); });
+    $("fv-scopy").onclick = function () { copyText(sEl.link.value, "Short link copied"); };
+    sEl.stop.onclick = function () {
+        var s = shortGet(); if (!s || !confirm("Delete your short link? Anyone who has it will no longer be able to open your list. Your favourites in this browser stay.")) return;
+        api({ id: s.id, key: s.key, del: true }).then(function () { try { localStorage.removeItem(SKEY); } catch (e) { /* ignore */ } paintShort("Your short link was deleted."); }, function (e) { paintShort("Could not delete it (" + e.message + ")."); });
+    };
+
     /* ---------- importing (link or file) ---------- */
     function offerImport(c, from) {
         var n = c.groups.reduce(function (s, g) { return s + g.items.length; }, 0);
@@ -363,7 +402,7 @@
     window.addEventListener("storage", function (e) { if (e.key === KEY && !drag) { state = load(); render(); updateLink(); } });
 
     /* ---------- start ---------- */
-    render(); updateLink();
+    render(); updateLink(); paintShort();
     var sp = new URLSearchParams(location.search).get("s");
     var imported = sp ? unpack(sp) : null;
     S.load().then(function () {
@@ -373,5 +412,11 @@
     }, function () { statusEl.textContent = "The page index could not be loaded, so search is unavailable. Your favourites still work."; });
     if (sp && !imported) { noticeEl.hidden = false; noticeEl.textContent = "That favourites link could not be read. It may have been cut when it was copied."; }
     else if (imported) offerImport(imported, "this link");
+    var fp = new URLSearchParams(location.search).get("f");
+    if (fp) {
+        fetch("/api/fav?id=" + encodeURIComponent(fp)).then(function (r) { if (!r.ok) throw new Error("gone"); return r.json(); }).then(function (j) {
+            offerImport(clean({ groups: j.g.map(function (r) { return { name: r[0], items: r[1], open: true }; }) }), "this short link");
+        }, function () { noticeEl.hidden = false; noticeEl.textContent = "That short link was not found. It may have been deleted, or mistyped."; });
+    }
     var qp = new URLSearchParams(location.search).get("q"); if (qp) { qEl.value = qp; }
 })();

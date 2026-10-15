@@ -13,7 +13,7 @@
   var qs = q.toString();
   var data = new URLSearchParams({
     site: location.hostname,
-    path: location.pathname + (qs ? '?' + qs : ''),
+    path: (/^\/f\/[a-z0-9]+$/.test(location.pathname) ? '/fav' : location.pathname) + (qs ? '?' + qs : ''),
     referrer: document.referrer || ''
   });
   navigator.sendBeacon('https://mes.fm/api/track', data);

@@ -22,9 +22,16 @@
 
 		<div class="tu-card fv-sync" id="fv-sync">
 			<h2>Take your favourites with you</h2>
-			<p>Your favourites are stored in this browser only. To use them on another browser or computer, copy this link, open it there, and choose <b>Replace mine</b> or <b>Merge</b>. Bookmark the link and it is also a backup. Nothing is uploaded to a server: the list is inside the link itself.</p>
-			<div class="fv-linkrow"><input id="fv-link" class="tu-input" type="text" readonly aria-label="Link to my favourites"><button type="button" class="tu-btn tu-btn--primary" id="fv-copy2">Copy link</button></div>
-			<p class="fv-linknote" id="fv-linknote"></p>
+			<p>Your favourites are stored in this browser only. To use them on another browser or computer, make a <b>short link</b> (it stays up to date as you change things), open it there, and choose <b>Replace mine</b> or <b>Merge</b>. Only your group names and page addresses are saved on our server; no account is needed.</p>
+			<div class="fv-short" id="fv-short">
+				<div class="fv-linkrow" id="fv-shortrow" hidden><input id="fv-slink" class="tu-input" type="text" readonly aria-label="Short link to my favourites"><button type="button" class="tu-btn tu-btn--primary" id="fv-scopy">Copy short link</button></div>
+				<p class="fv-linknote" id="fv-snote"></p>
+				<button type="button" class="tu-btn tu-btn--primary" id="fv-smake">Make my short link</button> <button type="button" class="tu-btn tu-btn--ghost" id="fv-sstop" hidden>Stop sharing and delete it</button>
+			</div>
+			<details class="fv-long"><summary>Long link without our server</summary>
+			<p class="fv-linknote">The same list inside the address itself, for when you prefer to keep everything in your own bookmarks. Nothing is stored anywhere.</p>
+			<div class="fv-linkrow"><input id="fv-link" class="tu-input" type="text" readonly aria-label="Long link to my favourites"><button type="button" class="tu-btn tu-btn--ghost" id="fv-copy2">Copy long link</button></div>
+			<p class="fv-linknote" id="fv-linknote"></p></details>
 			<div class="fv-files"><button type="button" class="tu-btn tu-btn--ghost" id="fv-export">Download backup file</button> <button type="button" class="tu-btn tu-btn--ghost" id="fv-import">Restore from a backup file</button> <input type="file" id="fv-file" accept=".json,application/json" hidden></div>
 		</div>
 
@@ -34,9 +41,9 @@
 				<li><b>Add:</b> search for any calculator, tool, tutorial or other mes.fm page and press Add. Choose the group first with &ldquo;Add to&rdquo;.</li>
 				<li><b>Arrange:</b> drag a tile by the dots (or anywhere on it with a mouse) to reorder it or move it to another group. Hold <kbd>Alt</kbd> while dropping to copy it instead. With the keyboard, focus the dots and press the arrow keys.</li>
 				<li><b>Groups:</b> create as many as you like, rename them, drag them by their dots, and fold them with the arrow. A page can sit in several groups: use the copy button on its tile.</li>
-				<li><b>Sync:</b> copy your link to open the same favourites on another device.</li>
+				<li><b>Sync:</b> make your short link (mes.fm/f/&hellip;) and open it on another device to get the same favourites.</li>
 			</ul>
 			<h2>Is my list private?</h2>
-			<p>Yes. It stays in your browser unless you share your link yourself. The link contains page addresses and group names only.</p>
+			<p>Yes. It stays in your browser unless you share your link yourself. A short link stores your group names and page addresses on our server (nothing else, no account); you can delete it any time. Without a short link nothing leaves your browser.</p>
 		</div>
 	</div>
