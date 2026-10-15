@@ -718,7 +718,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
       return false;
     }
     st.map = map; st.nodes = items.map(function (i) { return i.node; }); st.key = ++keyN; st.panelOver = null;
-    st.words = tk.words; st.starts = tk.sentStarts; st.text = tk.text; st.mode = mode; st.docs = !!pre;
+    st.selText = mode === 'selection' && hasSel ? sel.toString().trim() : ''; st.words = tk.words; st.starts = tk.sentStarts; st.text = tk.text; st.mode = mode; st.docs = !!pre;
     st.lang = SR.detectLang(tk.text) || (document.documentElement.lang || '').toLowerCase();
     st.idx = 0;
     if (caret) {
@@ -944,6 +944,14 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     });
   }
 
+  // a new selection made while the player is open: offer to read it (no need for the right-click menu or the toolbar button)
+  function selCheck() {
+    if (!ui || !ui.rs) return;
+    var sel = window.getSelection(), t = sel && !sel.isCollapsed ? String(sel).trim() : '';
+    ui.rs.hidden = !(st.active && t && (st.mode !== 'selection' || t !== st.selText));
+  }
+  document.addEventListener('selectionchange', function () { clearTimeout(selCheck.t); selCheck.t = setTimeout(selCheck, 150); });
+
   function stopAll() {
     stopSpeech(); clearHighlight(); st.active = false; st.playing = false; st.words = null; st.map = null; restoreText(); st.nodes = null;
     closePip();
@@ -959,7 +967,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     '.rate{min-width:54px;font-size:13px}.st{margin-left:auto;color:#aab0b8;font-size:12px;text-align:right;min-width:90px}.st.err{color:#ff9b8f}.sp{flex:1}' +
     '.grip{cursor:grab;min-width:22px;padding:0 2px;color:#8a919a;letter-spacing:-2px}.p.dragging,.p.dragging .grip{cursor:grabbing}.p{touch-action:none}' +
     '.volr{width:74px;height:34px;margin:0 2px;accent-color:#4cc38a;cursor:pointer;background:transparent}.vol svg{display:block}.vol.muted{color:#ff9b8f}' +
-    '.dk.on{background:#2b3a67}.p.flip:not(.pip){filter:invert(1) hue-rotate(180deg)}.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
+    '.rs{background:#1f6f43;font-size:13px;padding:0 12px}.rs[hidden]{display:none}.dk.on{background:#2b3a67}.p.flip:not(.pip){filter:invert(1) hue-rotate(180deg)}.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
     '.p.moved{left:var(--x);top:var(--y);bottom:auto;transform:none}' +
     '.p.pip,.p.pip.moved{position:static;left:auto;top:auto;bottom:auto;transform:none;width:100%;border:0;border-radius:0;box-shadow:none}.p.pip .grip,.p.pip .mini{display:none}.pip-b.on{background:#1a4d6b}' +
     '.tp{display:none;margin:0 0 8px;border:1px solid #3a3c41;border-radius:10px;background:#17181a;overflow:hidden}.tp.on{display:block}.p.pip .tp,.p.min .tp{display:none}' +
@@ -980,10 +988,10 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
       '<button class="tsm" title="Smaller text on the page" aria-label="Smaller text">A&minus;</button><button class="tsp" title="Larger text on the page" aria-label="Larger text">A+</button>' +
       '<button class="tpb" title="Show / hide the text being read in a box above the player" aria-label="Show or hide the text box"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 6h16M4 11h16M4 16h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><button class="vol" title="Mute / unmute"></button><input class="volr" type="range" min="0" max="1" step="0.05" title="Volume" aria-label="Volume">' +
       '<select class="voice" title="Voice"></select><select class="setup" title="Setup"></select>' +
-      '<span class="st" aria-live="polite"></span><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="dk" title="Dark / light page: inverts the page colours (pictures and video keep theirs). Remembered for this site." aria-label="Dark or light page">&#9680;</button><button class="pip-b" title="Pop out into a floating window you can move anywhere, even outside the browser" aria-label="Pop out"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="8" height="6" fill="currentColor"/></svg></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
+      '<span class="st" aria-live="polite"></span><button class="rs" hidden title="Stop and read the text you just highlighted on the page">Read selection</button><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="dk" title="Dark / light page: inverts the page colours (pictures and video keep theirs). Remembered for this site." aria-label="Dark or light page">&#9680;</button><button class="pip-b" title="Pop out into a floating window you can move anywhere, even outside the browser" aria-label="Pop out"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="8" height="6" fill="currentColor"/></svg></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button></div></div>';
     var q = function (c) { return sh.querySelector(c); };
     if (window.__mesraSite) { var gearBtn = sh.querySelector('.gear'); if (gearBtn) gearBtn.style.display = 'none'; }   // the site player has no options page
-    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), dk: q('.dk'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b'), tp: q('.tp'), tb: q('.tb'), tl: q('.tl'), tpb: q('.tpb'), wEls: null, curW: null, curS: null, tkey: 0 };
+    ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), rs: q('.rs'), dk: q('.dk'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b'), tp: q('.tp'), tb: q('.tb'), tl: q('.tl'), tpb: q('.tpb'), wEls: null, curW: null, curS: null, tkey: 0 };
     q('.prev').onclick = function () { jumpSentence(-1); };
     q('.next').onclick = function () { jumpSentence(1); };
     ui.pl.onclick = toggle;
@@ -1014,6 +1022,9 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.voice.onchange = function () { P.voice = ui.voice.value; saveSettings(); if (st.playing) restartSoon(); };
     ui.setup.onchange = function () { S.active = ui.setup.value; saveSettings(); P = RA.resolveProfile(S, host).config; applyStyle(); fillUi(); if (st.playing) restartSoon(); };
     ui.hl.onclick = toggleHighlight;
+    ui.rs.addEventListener('mousedown', function (e) { e.preventDefault(); });   // keep the page selection alive until the click reads it
+    ui.rs.onclick = function () { ui.rs.hidden = true; begin('selection'); };
+    selCheck();
     ui.dk.onclick = function () { setDark(!darkOn, true); };
     if (window.__mesraSite) ui.dk.style.display = 'none';   // mes.fm has its own moon button
     ui.dk.classList.toggle('on', darkOn); ui.p.classList.toggle('flip', darkOn);
