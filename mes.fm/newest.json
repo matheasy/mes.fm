@@ -2,6 +2,14 @@
  "generated": "2026-10-14",
  "calculators": [
   {
+   "href": "/bmr-calculator",
+   "title": "BMR Calculator",
+   "icon": "/img/bmr-calculator-logo.png",
+   "desc": "Basal metabolic rate and daily calories for your age, weight and height, plus calories to lose or gain.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/baby-feeding-log",
    "title": "Baby Feeding Log",
    "icon": "/img/baby-feeding-log-logo.png",
@@ -87,14 +95,6 @@
    "icon": "/img/faster-than-light-shadow-simulator-logo.png",
    "desc": "Swing a torch beam or move a finger and watch the spot or shadow on the Moon outrun light, with true light-travel delay. See why no message rides on it.",
    "added": "2026-10-10",
-   "kind": "calculator"
-  },
-  {
-   "href": "/michelson-morley-experiment",
-   "title": "Michelson-Morley Experiment Simulator",
-   "icon": "/img/michelson-morley-experiment-logo.png",
-   "desc": "Turn an interferometer through an aether wind, watch the fringes shift, compare the 1881 and 1887 experiments and calculate the expected shift.",
-   "added": "2026-10-09",
    "kind": "calculator"
   }
  ],
@@ -198,6 +198,14 @@
  ],
  "latest": [
   {
+   "href": "/bmr-calculator",
+   "title": "BMR Calculator",
+   "icon": "/img/bmr-calculator-logo.png",
+   "desc": "Basal metabolic rate and daily calories for your age, weight and height, plus calories to lose or gain.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/grounding-rod-simulator",
    "title": "Ground Rod & Earthing Simulator",
    "icon": "/img/grounding-rod-simulator-logo.png",
@@ -250,14 +258,6 @@
    "title": "Contraction Timer",
    "icon": "/img/contraction-timer-logo.png",
    "desc": "One big button to time labour contractions: length, gaps, hourly average and a 5-1-1 rule alert.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/pregnancy-test-calculator",
-   "title": "Pregnancy Test Calculator",
-   "icon": "/img/pregnancy-test-calculator-logo.png",
-   "desc": "The best day to take a pregnancy test: implantation days, earliest sensitive test and when a test is dependable.",
    "added": "2026-10-14",
    "kind": "calculator"
   }

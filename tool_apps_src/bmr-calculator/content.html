@@ -1,0 +1,82 @@
+	<div class="tu" id="br">
+		<div class="tu-card" id="br-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="br-sex-label">Sex</span>
+					<div class="tu-seg" id="br-sex" role="group" aria-labelledby="br-sex-label"><button type="button" data-s="m" aria-pressed="false">Male</button><button type="button" data-s="f" aria-pressed="false">Female</button></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:8em;"><label for="br-age">Age</label><div class="tu-suffix"><input id="br-age" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 30"><span>years</span></div></div>
+			</div>
+			<p class="tu-note" style="margin:0.8em 0 0;"><b>Mix units freely:</b> type weight in kg or lb and height in cm or ft + in; the other fields fill in as you type.</p>
+			<div class="tu-row" style="margin-top:0.6em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="br-kg">Weight</label><div class="tu-suffix"><input id="br-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 70"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="br-cm">Height</label><div class="tu-suffix"><input id="br-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 175"><span>cm</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="br-lb">Weight</label><div class="tu-suffix"><input id="br-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 154"><span>lb</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="br-ft">Height</label><div class="tu-suffix"><input id="br-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 5"><span>ft</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="br-in">&nbsp;</label><div class="tu-suffix"><input id="br-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 9"><span>in</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field" style="flex:2 1 16em;"><label for="br-act">Activity level (for total daily calories)</label><select id="br-act" class="tu-select"></select></div>
+				<div class="tu-field" style="flex:2 1 16em;"><label for="br-f">Equation</label><select id="br-f" class="tu-select"></select></div>
+			</div>
+			<details class="br-bf" id="br-bfbox" style="margin-top:0.8em;"><summary>Know your body-fat %? (optional, unlocks Katch-McArdle and Cunningham)</summary>
+				<div class="tu-row" style="margin-top:0.6em;"><div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="br-bf">Body fat</label><div class="tu-suffix"><input id="br-bf" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 20"><span>%</span></div></div></div>
+			</details>
+		</div>
+
+		<div id="br-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Pick your sex and enter age, weight and height &mdash; or try an example: </span><span class="tu-chips" id="br-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="br-out" hidden>
+			<div class="tu-stats" id="br-hero" aria-live="polite"></div>
+			<div class="tu-card br-verdict" id="br-verdict" aria-live="polite"></div>
+			<div class="br-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="br-link">Copy link to this result</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="br-copy">Copy summary</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="br-print">Print</button>
+			</div>
+
+			<h2>Calories for your goal</h2>
+			<div class="tu-card">
+				<p class="tu-note" style="margin-top:0;" id="br-goalnote"></p>
+				<div class="tu-table-wrap"><table class="tu-table" id="br-goals"></table></div>
+				<div class="tu-row" style="margin-top:0.8em;align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="br-tgt">Goal weight (optional)</label><div class="tu-suffix"><input id="br-tgt" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 65"><span id="br-tgtu">kg</span></div></div>
+				</div>
+				<p class="tu-note" id="br-tgtout" style="margin-bottom:0;"></p>
+			</div>
+
+			<h2>Compare the equations</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="br-cmp"></table></div><p class="tu-note" style="margin-bottom:0;">They usually agree within about 5-10%. Pick one and stick with it, then adjust from how your weight actually changes over 2-3 weeks.</p></div>
+
+			<h2>Calories at every activity level</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="br-acts"></table></div></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What is BMR (basal metabolic rate)?</h2>
+			<p>Your <b>basal metabolic rate</b> is the energy your body burns in a day just to stay alive: breathing, circulating blood, keeping body temperature, repairing cells and running the brain and organs. It is measured at complete rest, so it is the minimum, not what you actually burn. Multiply it by an activity factor and you get your <b>TDEE</b> (total daily energy expenditure), the calories that keep your weight steady.</p>
+			<h2>How this BMR calculator works</h2>
+			<p>It uses published equations, selectable above (the default is Mifflin-St Jeor):</p>
+			<ul>
+				<li><b>Mifflin-St Jeor:</b> men <i>10 &times; kg + 6.25 &times; cm &minus; 5 &times; age + 5</i>; women <i>10 &times; kg + 6.25 &times; cm &minus; 5 &times; age &minus; 161</i>.</li>
+				<li><b>Revised Harris-Benedict:</b> men <i>88.362 + 13.397 &times; kg + 4.799 &times; cm &minus; 5.677 &times; age</i>; women <i>447.593 + 9.247 &times; kg + 3.098 &times; cm &minus; 4.330 &times; age</i>.</li>
+				<li><b>Katch-McArdle:</b> <i>370 + 21.6 &times; lean body mass (kg)</i>, where lean mass = weight &times; (1 &minus; body fat).</li>
+				<li><b>Cunningham:</b> <i>500 + 22 &times; lean body mass (kg)</i>.</li>
+			</ul>
+			<p>Example: a 30-year-old man at 80 kg and 180 cm has a Mifflin-St Jeor BMR of 10&times;80 + 6.25&times;180 &minus; 5&times;30 + 5 = <b>1,780 kcal/day</b>. Moderately active (&times;1.55) that is about 2,759 kcal/day to maintain his weight.</p>
+			<h2>Activity multipliers</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="br-ref"></table></div>
+			<h2>Losing or gaining weight</h2>
+			<p>A pound of body weight is roughly 3,500 kcal (about 7,700 kcal per kg), so a 500 kcal daily deficit loses around 0.5 kg (1 lb) a week. The calculator shows each target next to the lowest intake it considers reasonable without supervision: never below your BMR, and not under about 1,200 kcal (women) or 1,500 kcal (men). Real results vary, because the body adapts as you lose weight.</p>
+			<h2>How accurate is it?</h2>
+			<p>Equations estimate an average person. Two people with the same age, sex, weight and height can differ by 10% or more because of muscle mass, genetics, hormones, medication and thyroid function. Muscle burns more than fat, which is why the lean-mass equations are better when you know your body-fat %. Treat the result as a starting point, then adjust it from your own weight trend. This is general information, not medical advice: talk to a doctor or dietitian before a major change in how you eat, especially if you are pregnant, a teenager, or have a medical condition.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is BMR the same as RMR?</dt><dd>Nearly. RMR (resting metabolic rate) is measured under looser conditions and is usually a little higher. The equations above are used for both in practice.</dd>
+				<dt>How many calories should I eat a day?</dt><dd>That depends on your goal. Eating your TDEE keeps your weight; eating less loses weight, eating more gains it. See the goal table above.</dd>
+				<dt>Does BMR change with age?</dt><dd>Yes. It falls roughly 1-2% per decade in adulthood, mostly as muscle is lost; strength training helps keep it up.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Your numbers stay in this browser. Nothing is uploaded unless you copy a link and share it yourself.</dd>
+			</dl>
+			<p>Related: <a href="/bmicalculator">BMI Calculator</a> &middot; <a href="/percentagecalculator">Percentage Calculator</a></p>
+		</div>
+	</div>

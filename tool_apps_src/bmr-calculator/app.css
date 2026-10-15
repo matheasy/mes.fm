@@ -1,0 +1,17 @@
+	/* BMR Calculator */
+	.tu [hidden] {display:none !important;}
+	.tu #br-sex {display:inline-flex;max-width:100%;}
+	.tu #br-sex button {flex:1 1 auto;padding:0.5em 1.1em;}
+	.tu .br-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:0.9em 0;}
+	.tu .br-verdict {font-size:1.05em;line-height:1.5;border-left:5px solid var(--accent);}
+	.tu .br-small {color:#6a7280;font-size:0.82em;}
+	.tu .br-bf summary {cursor:pointer;color:var(--accent);font-weight:600;}
+	.tu #br-goals td, .tu #br-cmp td, .tu #br-acts td, .tu #br-ref td {font-variant-numeric:tabular-nums;}
+	.tu #br-goals tr.is-main td, .tu #br-acts tr.is-on td {background:var(--tint);font-weight:700;}
+	.tu #br-goals td.is-low {color:#c0392b;font-weight:700;}
+	.tu .br-warn {color:#c0392b;font-weight:600;}
+	body.dark-mode #br .br-small {color:#a0a8b3;}
+	body.dark-mode #br #br-goals tr.is-main td, body.dark-mode #br #br-acts tr.is-on td {background:rgba(255,255,255,0.1);color:#fff;}
+	body.dark-mode #br #br-goals td.is-low, body.dark-mode #br .br-warn {color:#ff8a80;}
+	body.dark-mode #br .br-bf summary {color:var(--accent);}
+	@media print {.tu .br-btns, .tu #br-setup {display:none;}}
