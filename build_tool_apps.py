@@ -486,6 +486,12 @@ APPS = {
                                          tag="How many calories you need, week by week.", accent="#be185d", dark="#8f1146", tint="#fbe1ee",
                                          desc="Free pregnancy and breastfeeding calorie calculator: how many extra calories you need by trimester or baby's age, healthy weight gain by week for your BMI (with twins), a chart to plot your own weight, foods for the extra calories, and key nutrients.",
                                          js_v="1", lib_from=["bmr-calculator"]),
+    # PDF Editor (2026-10-15, mes.fm/pdf; /pdf-editor, /edit-pdf, /sign-pdf ... redirect): open / sign / fill / annotate / redact / edit text / rearrange pages, all in the browser (pdf.js 3.11.174 + pdf-lib 1.17.1 from cdnjs, loaded on first open).
+    # lib.js = PDM (pure: viewport maths, text wrapping and grouping, hit tests, stroke simplifying, history; tests: tool_apps_src/pdf-editor-tests.js), js_parts = core (model, rendering, history) + tools + sign + export. Wide page, always-dark workspace like the Photo Editor.
+    "pdf": dict(title="MES PDF Editor", page_title="Free PDF Editor: Sign, Fill, Annotate, Redact and Edit PDFs Online",
+                tag="Sign, fill in, annotate and redact PDFs in your browser.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
+                desc="Free online PDF editor and signer: add a typed, drawn or uploaded signature, fill in forms, draw and highlight, add comments, edit text, black out private details, and rotate, delete or reorder pages. Private: your PDF never leaves your browser.",
+                js_v="1", src="pdf-editor", js_parts=["core.js", "tools.js", "sign.js", "export.js"]),
     # Timer family (rewritten 2026-10-06): ONE script (tool_apps_src/timer/app.js) + one content template; each page sets which panels it shows (`vars.VIEWS`) and its own text (`vars.SEO` = seo/<slug>.html).
     # /timer shows countdown + stopwatch + alarm together by default (customizable: add Pomodoro / Interval / Date countdown, stacked or side by side, drag to reorder); the others are one big panel.
     # All use the Timer brand (logo, header, Home link) via `brand`; timer/img + timer/audio + the quote galleries stay in mes.fm/timer/. Tests: tool_apps_src/timer-tests.js.

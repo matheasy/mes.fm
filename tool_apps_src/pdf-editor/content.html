@@ -1,0 +1,73 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu pd" id="pd">
+		<div class="pd-top">
+			<div class="pd-top-l">
+				<button type="button" class="pd-btn" id="pd-open">Open PDF</button>
+				<span class="pd-fname" id="pd-name">No file open</span>
+			</div>
+			<div class="pd-top-r">
+				<button type="button" class="pd-ib" id="pd-undo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>&#8630;</button>
+				<button type="button" class="pd-ib" id="pd-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>&#8631;</button>
+				<span class="pd-vsep"></span>
+				<button type="button" class="pd-ib" id="pd-zout" title="Zoom out" aria-label="Zoom out">&minus;</button>
+				<button type="button" class="pd-zoom" id="pd-zoom" title="Click to fit the page width">100%</button>
+				<button type="button" class="pd-ib" id="pd-zin" title="Zoom in" aria-label="Zoom in">+</button>
+				<span class="pd-vsep"></span>
+				<button type="button" class="pd-ib pd-ib--txt" id="pd-thumbbtn" aria-pressed="true" title="Show or hide the page list">Pages</button>
+				<button type="button" class="pd-ib pd-ib--txt" id="pd-winbtn" aria-pressed="false" title="Fill the browser window (F)">&#10530; Full window</button>
+				<button type="button" class="pd-btn" id="pd-print" title="Print the edited PDF">Print</button>
+				<button type="button" class="pd-btn pd-btn--primary" id="pd-export">Download PDF</button>
+			</div>
+		</div>
+		<div class="pd-opts" id="pd-opts" aria-label="Tool options"></div>
+		<div class="pd-main">
+			<div class="pd-tools" id="pd-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical"></div>
+			<div class="pd-thumbs" id="pd-thumbs" aria-label="Pages"></div>
+			<div class="pd-view" id="pd-view">
+				<div class="pd-pages" id="pd-pages"></div>
+				<div class="pd-empty" id="pd-empty">
+					<div class="pd-empty-in">
+						<div class="pd-empty-t">Free PDF editor and signer</div>
+						<div class="pd-empty-s">Sign, fill in, annotate, highlight, redact and edit text. Everything happens in your browser: your PDF is never uploaded.</div>
+						<div class="pd-empty-b"><button type="button" class="pd-btn pd-btn--primary pd-big" id="pd-e-open">Open a PDF</button> <button type="button" class="pd-btn pd-big" id="pd-e-blank">Start a blank page</button></div>
+						<div class="pd-empty-s">&hellip;or drop a PDF anywhere here. Password-protected files work too.</div>
+					</div>
+				</div>
+				<div class="pd-drop">Drop the PDF to open it</div>
+			</div>
+		</div>
+		<div class="pd-status"><span id="pd-st-doc">No file</span><span id="pd-st-sel"></span><span class="pd-hint" id="pd-hint"></span></div>
+		<input type="file" id="pd-file" accept="application/pdf,.pdf" hidden>
+		<input type="file" id="pd-addfile" accept="application/pdf,.pdf" hidden>
+		<input type="file" id="pd-imgfile" accept="image/*" hidden>
+		<textarea id="pd-textedit" class="pd-textedit" spellcheck="false" aria-label="Edit text" hidden></textarea>
+		<div class="pd-modal" id="pd-modal" hidden><div class="pd-dlg" id="pd-dlg" role="dialog" aria-modal="true"></div></div>
+		<div class="pd-toast" id="pd-toast" role="status" aria-live="polite"></div>
+	</div>
+
+	<div class="tu-seo">
+		<h2>Free online PDF editor: sign, fill, annotate and redact</h2>
+		<p>Open a PDF and add what you need: a <b>typed, drawn or uploaded signature</b>, text boxes to <b>fill in forms</b>, <b>pen scribbles</b> and a <b>highlighter</b>, shapes and arrows, <b>comments</b>, pictures, check marks and dates. You can also <b>edit the text already in a PDF</b>, <b>black out (redact)</b> private details, and <b>rotate, delete, reorder and add pages</b>. When you are done, press <i>Download PDF</i>.</p>
+		<p><b>Private by design:</b> the file is opened and edited entirely inside your browser, using pdf.js and pdf-lib. Nothing is uploaded to any server, so it is safe for contracts, tax forms and IDs. Your saved signatures stay in this browser only.</p>
+		<h2>How to sign a PDF</h2>
+		<ol>
+			<li>Open the PDF (or drop it on the page).</li>
+			<li>Pick the <b>Sign</b> tool, then <b>Create signature</b>: type your name in a handwriting font, draw it with the mouse, trackpad, finger or pen, or upload a photo of your signature (the white background is removed).</li>
+			<li>Click where it should go on the page, then drag to move it or drag a corner to resize it.</li>
+			<li>Press <b>Download PDF</b>. The signature is saved in the file as part of the page.</li>
+		</ol>
+		<h2>How to edit text in a PDF</h2>
+		<p>Use the <b>Edit text</b> tool and click a line of text. The editor covers the old text with a patch that matches the paper colour and puts an editable text box in its place, with a similar font and size. Because PDFs are not word-processor files, this works best for short changes (a date, a name, a number). For a form, use the <b>Text</b> tool to type into the blanks.</p>
+		<h2>Redacting: a black box is not enough, unless you flatten</h2>
+		<p>Covering text with a black rectangle hides it on screen, but the words can still be inside the file underneath. To remove them for real, turn on <b>Flatten pages</b> when you download: every page is turned into a picture, so the hidden text is gone (the file becomes larger and the text is no longer selectable).</p>
+		<h3>Questions</h3>
+		<dl>
+			<dt>Is it really free and private?</dt><dd>Yes. No sign-up, no watermark and no upload: the work happens on your device.</dd>
+			<dt>Is my signature legally valid?</dt><dd>An image of your signature placed on a PDF is accepted for many everyday documents, but it is not a certified digital signature. For contracts that require one, check what the other party asks for.</dd>
+			<dt>Can I fill in the form fields of a PDF form?</dt><dd>You can type on top of any form with the Text tool and add check marks and dates. Interactive form fields are not filled in directly in this version.</dd>
+			<dt>Does it work with a password-protected PDF?</dt><dd>Yes: you are asked for the password. The edited copy is saved as flattened pages when the file cannot be re-written directly.</dd>
+			<dt>Does it work on a phone or tablet?</dt><dd>Yes, with touch and pen support; the page list and tools adapt to small screens. A larger screen is more comfortable for detailed work.</dd>
+			<dt>What happens to my work if I close the tab?</dt><dd>It is not saved on any server. The page warns you before you leave with unsaved edits, so download the PDF when you are done.</dd>
+		</dl>
+		<p>Related: <a href="/photo-editor">Photo Editor</a> &middot; <a href="/image-converter">Bulk Image Converter</a> &middot; <a href="/exif-viewer">EXIF Viewer</a></p>
+	</div>

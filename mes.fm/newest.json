@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/pdf",
+   "title": "PDF Editor",
+   "icon": "/img/pdf-logo.png",
+   "desc": "Sign, fill in, annotate, highlight, redact and edit text in a PDF. Private: it never leaves your browser.",
+   "added": "2026-10-15",
+   "kind": "tool"
+  },
+  {
    "href": "/grounding-rod-simulator",
    "title": "Ground Rod & Earthing Simulator",
    "icon": "/img/grounding-rod-simulator-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Type or pick a metric (Schwarzschild, de Sitter, a wormhole...) and get the Christoffel symbols, Riemann, Ricci and Einstein tensors, plus geodesics drawn on curved surfaces.",
    "added": "2026-10-12",
    "kind": "tool"
-  },
-  {
-   "href": "/mandelbrot",
-   "title": "Mandelbrot Explorer",
-   "icon": "/img/mandelbrot-logo.png",
-   "desc": "Zoom into the Mandelbrot set, see the Julia set of any point, trace orbits and try the Burning Ship, Tricorn and Multibrot fractals.",
-   "added": "2026-10-12",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/pdf",
+   "title": "PDF Editor",
+   "icon": "/img/pdf-logo.png",
+   "desc": "Sign, fill in, annotate, highlight, redact and edit text in a PDF. Private: it never leaves your browser.",
+   "added": "2026-10-15",
+   "kind": "tool"
+  },
   {
    "href": "/body-surface-area-calculator",
    "title": "Body Surface Area Calculator",
@@ -250,14 +258,6 @@
    "title": "Protein Intake Calculator",
    "icon": "/img/protein-intake-calculator-logo.png",
    "desc": "How much protein per day for your weight and goal, with a food builder.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/pace-calculator",
-   "title": "Running Pace Calculator",
-   "icon": "/img/pace-calculator-logo.png",
-   "desc": "Pace, time and distance, splits, and race time predictions.",
    "added": "2026-10-14",
    "kind": "calculator"
   }

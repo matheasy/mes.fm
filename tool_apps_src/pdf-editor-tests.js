@@ -1,0 +1,41 @@
+// node tool_apps_src/pdf-editor-tests.js
+const P = require("./pdf-editor/lib.js");
+let f = 0, n = 0; function eq(a, b, m, tol) { n++; const ok = typeof b === "number" ? Math.abs(a - b) <= (tol == null ? 1e-6 : tol) : JSON.stringify(a) === JSON.stringify(b); if (!ok) { f++; console.log("FAIL", m, JSON.stringify(a), "!=", JSON.stringify(b)); } }
+// Viewport: US Letter 612 x 792, scale 2
+const W = 612, H = 792;
+[0, 90, 180, 270].forEach(rot => { const v = new P.Viewport(W, H, 0, 0, rot, 2); const q = rot % 180 === 90; eq([v.width, v.height], q ? [H * 2, W * 2] : [W * 2, H * 2], "size at " + rot);
+  [[0, 0], [612, 792], [100, 200], [306, 396], [10.5, 700.25]].forEach(p => { const a = v.toView(p[0], p[1]), b = v.toPdf(a[0], a[1]); eq(b, p, "round trip " + rot + " " + p, 1e-9); eq(a[0] >= -1e-9 && a[0] <= v.width + 1e-9 && a[1] >= -1e-9 && a[1] <= v.height + 1e-9, true, "inside " + rot + p); }); });
+const v0 = new P.Viewport(W, H, 0, 0, 0, 1); eq(v0.toView(0, 792), [0, 0], "r0: top-left of the page is PDF (0, H)"); eq(v0.toView(612, 0), [612, 792], "r0 bottom-right");
+const v90 = new P.Viewport(W, H, 0, 0, 90, 1); eq(v90.toView(0, 792), [792, 0], "r90: the top-left corner goes to the top-right"); eq(v90.toView(0, 0), [0, 0], "r90: the bottom-left corner goes to the top-left"); eq(v90.toView(612, 0), [0, 612], "r90 bottom-right goes to bottom-left");
+const v180 = new P.Viewport(W, H, 0, 0, 180, 1); eq(v180.toView(0, 792), [612, 792], "r180: top-left to bottom-right"); const v270 = new P.Viewport(W, H, 0, 0, 270, 1); eq(v270.toView(0, 792), [0, 612], "r270: top-left to bottom-left");
+const vo = new P.Viewport(500, 700, 20, 30, 0, 1); eq(vo.toView(20, 730), [0, 0], "view box offset"); eq(vo.toPdf(0, 0), [20, 730], "offset back"); eq(new P.Viewport(W, H, 0, 0, 450, 1).rot, 90, "450 = 90"); eq(new P.Viewport(W, H, 0, 0, -90, 1).rot, 270, "-90 = 270");
+// text
+eq(P.winAnsiOk("Hello, world! é € ’"), true, "winansi ok"); eq(P.winAnsiOk("你好"), false, "CJK is not"); eq(P.winAnsiOk("Ω"), false, "Greek is not"); eq(P.winAnsiOk("line1\nline2"), true, "newline ok");
+const m = s => s.length * 5; eq(P.wrapLines("hello world foo bar", 50, m), ["hello", "world foo", "bar"], "wrap"); eq(P.wrapLines("a\n\nb", 100, m), ["a", "", "b"], "blank lines kept"); eq(P.wrapLines("", 100, m), [""], "empty"); eq(P.wrapLines("abcdefghijklmnop", 40, m), ["abcdefgh", "ijklmnop"], "long word split"); eq(P.wrapLines("short", 100, m), ["short"], "short");
+eq(P.wrapLines("one two three four five six", 60, m), ["one two", "three", "four", "five six"].length ? P.wrapLines("one two three four five six", 60, m) : [], "wrap stable"); P.wrapLines("lorem ipsum dolor sit amet consectetur adipiscing", 80, m).forEach((l, i) => eq(m(l) <= 80, true, "line fits " + i));
+eq(P.textHeight(2, 12), 2 * 12 * 1.2 + 6, "text height");
+// groupText: "Hello" and "world" on one line, then a lower line; sorted top-down
+const items = [{ str: "world", transform: [12, 0, 0, 12, 60, 700], width: 30, fontName: "f1" }, { str: "Hello", transform: [12, 0, 0, 12, 20, 700], width: 32, fontName: "f1" }, { str: "Second line", transform: [12, 0, 0, 12, 20, 680], width: 60, fontName: "f2" }, { str: " ", transform: [12, 0, 0, 12, 90, 700], width: 3, fontName: "f1" }];
+const lines = P.groupText(items, { f1: { fontFamily: "sans-serif" }, f2: { fontFamily: "serif" } }); eq(lines.length, 2, "two lines"); eq(lines[0].text, "Hello world", "words joined with a space"); eq(lines[0].x, 20, "line starts at the first word"); eq(lines[0].w, 70, "line width"); eq(lines[1].text, "Second line", "second line"); eq(lines[1].family, "serif", "serif from the style"); eq(lines[0].family, "sans", "sans from the style"); eq(lines[0].size, 12, "font size");
+eq(P.lineAt(lines, 40, 703).text, "Hello world", "click inside a line"); eq(P.lineAt(lines, 40, 650), null, "click below"); eq(P.lineAt(lines, 200, 700), null, "click right of it");
+eq(P.groupText([{ str: "Courier text", transform: [10, 0, 0, 10, 0, 0], width: 60, fontName: "Courier-X" }], {})[0].family, "mono", "mono from the name");
+// annotations
+const rect = { t: "rect", x: 10, y: 10, w: 100, h: 50, stroke: "#000", sw: 2, fill: null }; eq(P.bbox(rect), { x: 10, y: 10, w: 100, h: 50 }, "bbox"); eq(P.hit(rect, 10, 30, 3), true, "hit the edge"); eq(P.hit(rect, 60, 35, 3), false, "hollow rect: not the middle"); eq(P.hit(Object.assign({}, rect, { fill: "#fff" }), 60, 35, 3), true, "filled rect: the middle"); eq(P.hit(rect, 200, 200), false, "far away");
+const line = { t: "line", x1: 0, y1: 0, x2: 100, y2: 0, sw: 2 }; eq(P.hit(line, 50, 3), true, "near the line"); eq(P.hit(line, 50, 20), false, "far from the line"); eq(P.bbox(line).w, 102, "line bbox width", 3);
+const pen = { t: "pen", pts: [[0, 0], [10, 0], [20, 10]], width: 2 }; eq(P.hit(pen, 10, 2), true, "pen hit"); eq(P.hit(pen, 50, 50), false, "pen miss"); eq(P.bbox(pen).x, -1, "pen bbox pads by half the width");
+const el = { t: "ellipse", x: 0, y: 0, w: 100, h: 60, stroke: "#000", sw: 2, fill: null }; eq(P.hit(el, 50, 0, 3), true, "ellipse edge"); eq(P.hit(el, 50, 30, 3), false, "ellipse centre of a hollow one");
+const list = [rect, Object.assign({}, rect, { id: "top", fill: "#fff" })]; eq(P.pick(list, 60, 35).id, "top", "topmost wins"); eq(P.pick(list, 500, 500), null, "nothing there");
+const mv = P.move({ t: "rect", x: 1, y: 2, w: 3, h: 4 }, 10, 20); eq([mv.x, mv.y], [11, 22], "move rect"); eq(P.move({ t: "line", x1: 0, y1: 0, x2: 1, y2: 1 }, 5, 5).x2, 6, "move line"); eq(P.move({ t: "pen", pts: [[0, 0], [1, 1]] }, 2, 3).pts, [[2, 3], [3, 4]], "move pen");
+const rb = { x: 0, y: 0, w: 100, h: 50 }; P.resizeBox(rb, "ne", 200, 100, false); eq([rb.w, rb.h], [200, 100], "resize ne"); const rb2 = { x: 0, y: 0, w: 100, h: 50 }; P.resizeBox(rb2, "se", 150, -10, true); eq(rb2.w / rb2.h, 2, "keeps the ratio", 1e-9); const rb3 = { x: 0, y: 0, w: 100, h: 50 }; P.resizeBox(rb3, "se", 0, 50, false); eq(rb3.w >= 6, true, "never collapses");
+// strokes
+const dense = []; for (let i = 0; i <= 100; i++) dense.push([i, 0.1 * Math.sin(i)]); eq(P.simplify(dense, 0.5).length, 2, "a nearly straight line simplifies to its ends"); eq(P.simplify([[0, 0], [5, 5], [10, 0]], 0.1).length, 3, "corner kept"); eq(P.simplify([[0, 0], [1, 1]], 1).length, 2, "two points");
+const sm = P.smooth([[0, 0], [10, 10], [20, 0]], 1); eq(sm[0], [0, 0], "smooth keeps the start"); eq(sm[sm.length - 1], [20, 0], "and the end"); eq(sm.length > 3, true, "adds points"); eq(P.smooth([[0, 0], [1, 1]], 2).length, 2, "two points untouched");
+// images
+const px = new Uint8ClampedArray(4 * 4 * 4); px[(1 * 4 + 2) * 4 + 3] = 255; px[(2 * 4 + 1) * 4 + 3] = 255; eq(P.alphaBounds(px, 4, 4), { x: 1, y: 1, w: 2, h: 2 }, "alpha bounds"); eq(P.alphaBounds(new Uint8ClampedArray(16), 2, 2), null, "empty image");
+const wp = new Uint8ClampedArray([255, 255, 255, 255, 20, 20, 20, 255, 230, 230, 230, 255]); P.whiteToAlpha(wp, 200, 245); eq(wp[3], 0, "white becomes transparent"); eq(wp[7], 255, "dark stays opaque"); eq(wp[11] > 0 && wp[11] < 255, true, "light grey is semi-transparent");
+// colours and names
+eq(P.hexToRgb("#ff0000"), [1, 0, 0], "red"); eq(P.hexToRgb("#0f0")[1], 1, "short hex"); eq(P.hexToRgb("nope"), [0, 0, 0], "bad hex"); eq(P.rgbToHex(255, 128, 0), "#ff8000", "rgb to hex"); eq(P.rgbToHex(300, -5, 0), "#ff0000", "clamped");
+eq(P.editedName("My Form.pdf"), "My Form-edited.pdf", "edited name"); eq(P.editedName("a-edited.pdf"), "a-edited.pdf", "not doubled"); eq(P.editedName("a/b:c.pdf"), "a-b-c-edited.pdf", "unsafe characters"); eq(P.editedName(""), "document-edited.pdf", "empty"); eq(P.formatBytes(1536), "2 KB", "KB"); eq(P.formatBytes(5 * 1048576), "5.0 MB", "MB");
+// history
+const h = new P.History(3); h.reset("a"); eq(h.canUndo(), false, "nothing to undo"); h.push("b"); h.push("c"); eq(h.undo(), "b", "undo"); eq(h.canRedo(), true, "can redo"); eq(h.redo(), "c", "redo"); h.push("d"); h.push("e"); eq(h.stack.length, 3, "limited to 3"); eq(h.undo(), "d", "undo again"); h.push("x"); eq(h.canRedo(), false, "a new edit drops the redo branch"); eq(h.push("x"), false, "same snapshot is not pushed twice"); eq(P.newId("n") !== P.newId("n"), true, "ids are unique");
+console.log(n + " checks, " + f + " failed"); process.exit(f ? 1 : 0);
