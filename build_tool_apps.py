@@ -417,7 +417,7 @@ APPS = {
     # BMR Calculator (2026-10-14): basal metabolic rate + TDEE + calories for a goal. Mifflin-St Jeor / revised Harris-Benedict / Katch-McArdle / Cunningham, kg/cm mirrored with lb/ft/in,
     # activity levels, goal table with a safety floor, equation comparison. lib.js = maths (tests: tool_apps_src/bmr-calculator-tests.js). Share links are plain query strings; keeps ads.
     "bmr-calculator": dict(title="BMR Calculator", page_title="BMR Calculator: Basal Metabolic Rate and Daily Calories",
-                           tag="How many calories your body burns each day.", accent="#2b8a3e", dark="#1f6a2f", tint="#e3f4e6",
+                           tag="How many calories your body burns each day.", accent="#237a35", dark="#1f6a2f", tint="#e3f4e6",
                            desc="Free BMR calculator: find your basal metabolic rate and daily calories (TDEE) from your age, sex, weight and height. Mifflin-St Jeor, Harris-Benedict, Katch-McArdle and Cunningham equations, calories to lose or gain weight, kcal and kJ, no sign-up.",
                            js_v="2"),
     # TDEE Calculator (2026-10-14): the BMR calculator's script and page in a TDEE-first mode (data-mode="tdee" on #br: hero leads with maintenance calories, own text in content-tdee.html).

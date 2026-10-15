@@ -15,3 +15,4 @@
 	.tu .wi-cum {fill:none;stroke:#e8a317;stroke-width:2;}
 	body.dark-mode #wi .wi-split {background:#3a3f45;} body.dark-mode #wi .wi-ring .wi-trk {stroke:#3a3f45;} body.dark-mode #wi .wi-ring text {fill:#e8e8e8;} body.dark-mode #wi .wi-ring .wi-sm, body.dark-mode #wi .wi-ct, body.dark-mode #wi .wi-small {fill:#a0a8b3;color:#a0a8b3;} body.dark-mode #wi .wi-gl {stroke:#3f464f;} body.dark-mode #wi .wi-bar.is-today {stroke:#e8e8e8;}
 	@media print {.tu .wi-btns, .tu #wi-setup, .tu .wi-trackbtns, .tu .wi-addrow, .tu .wi-custom {display:none;}}
+	.tu .wi-c1, .tu .wi-c2 {color:#1b1b1b;}

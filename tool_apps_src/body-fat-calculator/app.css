@@ -31,3 +31,4 @@
 	body.dark-mode #bf #bf-units button, body.dark-mode #bf #bf-sex button {border-bottom-color:#444;}
 	@media (max-width:600px) {.tu .bf-slidebox output {min-width:3.6em;}}
 	@media print {.tu .bf-btns, .tu #bf-setup {display:none;}}
+	.tu .bf-c0 {color:#1b1b1b;}

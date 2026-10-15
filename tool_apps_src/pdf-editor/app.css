@@ -1,7 +1,7 @@
 	/* MES PDF Editor: a wide, always-dark workspace around white pages. Every colour is a custom property (the derived dark theme leaves var() alone). */
 	/* width comes from the page's Standard | Wide | Theatre switch (Wide by default, the inline snippet at the top of content.html), like the other tools with a sidebar */
 	.tu [hidden] {display:none !important;}
-	.pd {--pd-bg:#15161b;--pd-panel:#1e1f26;--pd-panel2:#272832;--pd-line:#353745;--pd-text:#ececf1;--pd-dim:#9b9cad;--pd-hover:#30323f;--pd-on:var(--accent);--pd-onfg:#fff;--pd-field:#111217;--pd-stage:#3a3c47;--pd-paper:#ffffff;--pd-ink:#111111;
+	.pd {--pd-bg:#15161b;--pd-panel:#1e1f26;--pd-panel2:#272832;--pd-line:#353745;--pd-text:#ececf1;--pd-dim:#aeb0c2;--pd-hover:#30323f;--pd-on:var(--accent);--pd-onfg:#fff;--pd-field:#111217;--pd-stage:#3a3c47;--pd-paper:#ffffff;--pd-ink:#111111;
 		display:flex;flex-direction:column;height:clamp(560px,calc(100vh - 140px),1300px);background:var(--pd-bg);border:1px solid var(--pd-line);border-radius:0.5em;overflow:hidden;color:var(--pd-text);font-size:14px;line-height:1.35;position:relative;}
 	.pd *, .pd *::before, .pd *::after {box-sizing:border-box;color:inherit;}
 	.pd button, .pd input, .pd select, .pd textarea {font:inherit;margin:0;} .pd button {cursor:pointer;}
@@ -40,3 +40,4 @@
 	.pd-note {color:var(--pd-dim);font-size:0.92em;} .pd-warn {color:#ffb74d;} .pd-chk {display:flex;align-items:flex-start;gap:0.5em;margin:0.4em 0;} .pd-chk input {margin-top:0.25em;}
 	@media (max-width:760px) {.pd {height:clamp(520px,calc(100vh - 110px),1100px);} .pd-main {flex-direction:column;} .pd-tools {flex-direction:row;width:100%;border-right:0;border-bottom:1px solid var(--pd-line);overflow-x:auto;overflow-y:hidden;} .pd-tool {min-width:4.2em;} .pd-thumbs {width:100%;flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--pd-line);max-height:9.5em;} .pd-th {width:6.3em;flex:none;} .pd-view {flex:1 1 auto;min-height:0;} .pd-fname {max-width:9em;}}
 	@media print {.pd {display:none;}}
+	.pd .pd-empty-s a {color:#8ec5ff;text-decoration:underline;}

@@ -215,7 +215,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -236,7 +236,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-stat--hero {background:#fbe3e4;border-color:#fbe3e4;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -308,7 +308,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* MES PDF Editor: a wide, always-dark workspace around white pages. Every colour is a custom property (the derived dark theme leaves var() alone). */
 	/* width comes from the page's Standard | Wide | Theatre switch (Wide by default, the inline snippet at the top of content.html), like the other tools with a sidebar */
 	.tu [hidden] {display:none !important;}
-	.pd {--pd-bg:#15161b;--pd-panel:#1e1f26;--pd-panel2:#272832;--pd-line:#353745;--pd-text:#ececf1;--pd-dim:#9b9cad;--pd-hover:#30323f;--pd-on:var(--accent);--pd-onfg:#fff;--pd-field:#111217;--pd-stage:#3a3c47;--pd-paper:#ffffff;--pd-ink:#111111;
+	.pd {--pd-bg:#15161b;--pd-panel:#1e1f26;--pd-panel2:#272832;--pd-line:#353745;--pd-text:#ececf1;--pd-dim:#aeb0c2;--pd-hover:#30323f;--pd-on:var(--accent);--pd-onfg:#fff;--pd-field:#111217;--pd-stage:#3a3c47;--pd-paper:#ffffff;--pd-ink:#111111;
 		display:flex;flex-direction:column;height:clamp(560px,calc(100vh - 140px),1300px);background:var(--pd-bg);border:1px solid var(--pd-line);border-radius:0.5em;overflow:hidden;color:var(--pd-text);font-size:14px;line-height:1.35;position:relative;}
 	.pd *, .pd *::before, .pd *::after {box-sizing:border-box;color:inherit;}
 	.pd button, .pd input, .pd select, .pd textarea {font:inherit;margin:0;} .pd button {cursor:pointer;}
@@ -347,6 +347,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.pd-note {color:var(--pd-dim);font-size:0.92em;} .pd-warn {color:#ffb74d;} .pd-chk {display:flex;align-items:flex-start;gap:0.5em;margin:0.4em 0;} .pd-chk input {margin-top:0.25em;}
 	@media (max-width:760px) {.pd {height:clamp(520px,calc(100vh - 110px),1100px);} .pd-main {flex-direction:column;} .pd-tools {flex-direction:row;width:100%;border-right:0;border-bottom:1px solid var(--pd-line);overflow-x:auto;overflow-y:hidden;} .pd-tool {min-width:4.2em;} .pd-thumbs {width:100%;flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--pd-line);max-height:9.5em;} .pd-th {width:6.3em;flex:none;} .pd-view {flex:1 1 auto;min-height:0;} .pd-fname {max-width:9em;}}
 	@media print {.pd {display:none;}}
+	.pd .pd-empty-s a {color:#8ec5ff;text-decoration:underline;}
 
 
 	@media print {
@@ -398,7 +399,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu-card--tint{background:#2a1516;border-color:#490a0d}
 	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
 	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-suffix span{color:#989ca4}
 	body.dark-mode .tu-btn{background:#1a1a1a}
 	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
 	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
@@ -410,7 +411,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu-stat--hero{background:#2a1516;border-color:#490a0d}
 	body.dark-mode .tu-stat__label{color:#9a9aa2}
 	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
 	body.dark-mode .tu-pos{color:#7dde9d !important}
 	body.dark-mode .tu-neg{color:#e87973 !important}
 	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
@@ -766,7 +767,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/merge-pdf"><img class="mes-aside__img mes-aside__img--logo" src="/merge-pdf/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Merge PDF: Combine PDF Files Online for Free</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/protein-intake-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/protein-intake-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Protein Intake Calculator: How Much Protein Per Day?</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/merge-pdf"><img class="mes-aside__img mes-aside__img--logo" src="/merge-pdf/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Merge PDF: Combine PDF Files Online for Free</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/protein-intake-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/protein-intake-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Protein Intake Calculator: How Much Protein Per Day?</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 

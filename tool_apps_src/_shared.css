@@ -18,7 +18,7 @@
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -39,7 +39,7 @@
 	.tu-stat--hero {background:var(--tint);border-color:var(--tint);}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
