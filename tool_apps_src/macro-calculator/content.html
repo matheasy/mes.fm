@@ -1,0 +1,72 @@
+	<div class="tu" id="mx">
+		<div class="tu-card" id="mx-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="mx-sex-label">Sex</span>
+					<div class="tu-seg" id="mx-sex" role="group" aria-labelledby="mx-sex-label"><button type="button" data-s="m" aria-pressed="false">Male</button><button type="button" data-s="f" aria-pressed="false">Female</button></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:8em;"><label for="mx-age">Age</label><div class="tu-suffix"><input id="mx-age" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 30"><span>years</span></div></div>
+			</div>
+			<p class="tu-note" style="margin:0.8em 0 0;"><b>Mix units freely:</b> kg or lb, cm or ft + in; the twin fields fill in as you type.</p>
+			<div class="tu-row" style="margin-top:0.6em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="mx-kg">Weight</label><div class="tu-suffix"><input id="mx-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 80"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="mx-cm">Height</label><div class="tu-suffix"><input id="mx-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 180"><span>cm</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="mx-lb">Weight</label><div class="tu-suffix"><input id="mx-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 176"><span>lb</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="mx-ft">Height</label><div class="tu-suffix"><input id="mx-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 5"><span>ft</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="mx-in">&nbsp;</label><div class="tu-suffix"><input id="mx-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 11"><span>in</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field" style="flex:2 1 16em;"><label for="mx-act">Activity level</label><select id="mx-act" class="tu-select"></select></div>
+				<div class="tu-field" style="flex:2 1 16em;"><label for="mx-goal">Goal</label><select id="mx-goal" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="mx-meals">Meals a day</label><select id="mx-meals" class="tu-select"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+			</div>
+		</div>
+
+		<div id="mx-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your sex, age, weight and height &mdash; or try an example: </span><span class="tu-chips" id="mx-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="mx-out" hidden>
+			<h2>Pick a split</h2>
+			<div class="tu-chips mx-presets" id="mx-presets"></div>
+			<p class="tu-note" id="mx-presetnote" style="margin:0.5em 0 0;"></p>
+			<div class="tu-card" id="mx-customcard" style="margin-top:0.8em;" hidden>
+				<div class="mx-sl"><label for="mx-sp">Protein</label><input type="range" id="mx-sp" min="5" max="60" step="1"><output id="mx-spo"></output></div>
+				<div class="mx-sl"><label for="mx-sf">Fat</label><input type="range" id="mx-sf" min="5" max="75" step="1"><output id="mx-sfo"></output></div>
+				<p class="tu-note" style="margin:0.3em 0 0;" id="mx-scn"></p>
+			</div>
+
+			<div class="tu-stats" id="mx-hero" aria-live="polite" style="margin-top:1em;"></div>
+			<div class="tu-card mx-donutcard">
+				<div class="mx-donut" id="mx-donut" role="img"></div>
+				<div class="mx-donutside"><ul class="mx-legend" id="mx-leg"></ul><p class="mx-check" id="mx-check" aria-live="polite"></p></div>
+			</div>
+			<div class="mx-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="mx-link">Copy link to this plan</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mx-copy">Copy summary</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="mx-print">Print</button>
+			</div>
+
+			<h2>Per meal</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="mx-meals-t"></table></div></div>
+
+			<h2>Compare the splits at your calories</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="mx-cmp"></table></div><p class="tu-note" style="margin-bottom:0;">Calories decide whether you gain or lose weight; the split mostly affects hunger, energy and muscle. Choose the one you can stick to.</p></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How this macro calculator works</h2>
+			<p>It works in three steps. (1) It estimates your <b>maintenance calories</b> (TDEE) from your BMR, using the Mifflin-St Jeor equation, times your activity level. (2) It adds or subtracts calories for your goal (about 7,700 kcal per kg of body weight: 0.5 kg a week is roughly 550 kcal a day). (3) It divides those calories between <b>protein, carbohydrate and fat</b> using the split you pick, converting percentages to grams.</p>
+			<p>Protein and carbohydrate give <b>4 kcal per gram</b>, fat gives <b>9 kcal per gram</b>. So 2,000 kcal at 25% protein, 50% carbs and 25% fat is 125 g protein, 250 g carbs and 56 g fat.</p>
+			<h2>How much protein do I need?</h2>
+			<p>A common evidence-based range is about <b>1.2&ndash;2.0 g per kg of body weight</b> for active adults, and <b>1.6&ndash;2.4 g per kg</b> when you are dieting and want to keep muscle. The calculator checks your plan against that and tells you if it falls outside. Very high intakes are not necessary for most people, and anyone with kidney disease should ask a doctor first.</p>
+			<h2>The splits</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="mx-ref"></table></div>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What are macros?</dt><dd>Macronutrients: protein, carbohydrates and fat, the three nutrients that supply calories. (Alcohol also supplies 7 kcal per gram.)</dd>
+				<dt>Do macros matter more than calories?</dt><dd>For weight, calories matter most. Macros affect how full you feel, your muscle and your energy, so protein is the one worth targeting.</dd>
+				<dt>How much fibre should I eat?</dt><dd>About 14 g per 1,000 kcal, which is shown in your plan.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Your numbers stay in this browser. Nothing is uploaded unless you copy a link and share it yourself.</dd>
+			</dl>
+			<p>General information, not medical advice: talk to a doctor or dietitian before major diet changes, especially if you are pregnant, a teenager, or have a medical condition. Related: <a href="/bmr-calculator">BMR Calculator</a> &middot; <a href="/body-fat-calculator">Body Fat Calculator</a> &middot; <a href="/bmicalculator">BMI Calculator</a></p>
+		</div>
+	</div>

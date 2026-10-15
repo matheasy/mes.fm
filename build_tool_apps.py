@@ -426,6 +426,12 @@ APPS = {
                                 tag="Estimate your body fat percentage with a tape measure.", accent="#5b21b6", dark="#43188a", tint="#ede7fb",
                                 desc="Free body fat calculator: estimate your body fat percentage with the U.S. Navy tape-measure method (neck, waist, hips) or the BMI method. See your category, fat and lean mass, set a body-fat goal, and send the result to the BMR calculator.",
                                 js_v="1"),
+    # Macro Calculator (2026-10-14): BMR (lib_from the BMR calculator) -> TDEE -> goal calories -> protein / carbs / fat grams by preset split or custom sliders, donut, per-meal table, protein g/kg check.
+    # lib.js = MC (tests: tool_apps_src/macro-calculator-tests.js). Keeps ads; share links are plain query strings.
+    "macro-calculator": dict(title="Macro Calculator", page_title="Macro Calculator: Daily Protein, Carbs and Fat for Your Goal",
+                             tag="Protein, carbs and fat for your goal.", accent="#1f6a2f", dark="#154d21", tint="#e0f1e3",
+                             desc="Free macro calculator: get your daily calories and grams of protein, carbs and fat for losing, maintaining or gaining weight. Pick a balanced, high-protein, low-carb or keto split or set your own, see it per meal, and check your protein per kg.",
+                             js_v="1", lib_from=["bmr-calculator"]),
     # Timer family (rewritten 2026-10-06): ONE script (tool_apps_src/timer/app.js) + one content template; each page sets which panels it shows (`vars.VIEWS`) and its own text (`vars.SEO` = seo/<slug>.html).
     # /timer shows countdown + stopwatch + alarm together by default (customizable: add Pomodoro / Interval / Date countdown, stacked or side by side, drag to reorder); the others are one big panel.
     # All use the Timer brand (logo, header, Home link) via `brand`; timer/img + timer/audio + the quote galleries stay in mes.fm/timer/. Tests: tool_apps_src/timer-tests.js.

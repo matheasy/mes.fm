@@ -64,6 +64,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("exif-viewer", "EXIF Viewer"),
     ("contraction-timer", "Contraction Timer"),
     ("bmr-calculator", "BMR Calculator"),
+    ("macro-calculator", "Macro Calculator"),   # also built by build_tool_apps.py
     ("body-fat-calculator", "Body Fat Calculator"),   # also built by build_tool_apps.py   # also built by build_tool_apps.py
     ("pregnancy-test-calculator", "When to Take a Pregnancy Test"),
     ("conception-date-calculator", "Conception Date Calculator"),

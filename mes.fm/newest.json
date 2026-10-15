@@ -2,6 +2,14 @@
  "generated": "2026-10-14",
  "calculators": [
   {
+   "href": "/macro-calculator",
+   "title": "Macro Calculator",
+   "icon": "/img/macro-calculator-logo.png",
+   "desc": "Daily calories and grams of protein, carbs and fat for your goal, with preset or custom splits.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/body-fat-calculator",
    "title": "Body Fat Calculator",
    "icon": "/img/body-fat-calculator-logo.png",
@@ -87,14 +95,6 @@
    "icon": "/img/due-date-calculator-logo.png",
    "desc": "Due date from your last period, conception, IVF transfer or a scan, with weeks pregnant and key dates.",
    "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/time-dilation",
-   "title": "Time Dilation Simulator",
-   "icon": "/img/time-dilation-logo.png",
-   "desc": "How much would you age at close to the speed of light? Watch a traveller's clock, heartbeat and ageing slow down, see the light clock that explains why, fly the twin paradox at a steady 1 g, and calculate it.",
-   "added": "2026-10-13",
    "kind": "calculator"
   }
  ],
@@ -198,6 +198,14 @@
  ],
  "latest": [
   {
+   "href": "/macro-calculator",
+   "title": "Macro Calculator",
+   "icon": "/img/macro-calculator-logo.png",
+   "desc": "Daily calories and grams of protein, carbs and fat for your goal, with preset or custom splits.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/body-fat-calculator",
    "title": "Body Fat Calculator",
    "icon": "/img/body-fat-calculator-logo.png",
@@ -250,14 +258,6 @@
    "title": "Baby Growth Percentile Calculator",
    "icon": "/img/baby-growth-percentile-calculator-logo.png",
    "desc": "Weight, length and head circumference percentiles on the WHO growth chart, with a private growth log.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/conception-date-calculator",
-   "title": "Conception Date Calculator",
-   "icon": "/img/conception-date-calculator-logo.png",
-   "desc": "Work out when you conceived from your due date, last period or IVF transfer.",
    "added": "2026-10-14",
    "kind": "calculator"
   }

@@ -25,7 +25,14 @@ patch("build_search_index.py", '"bmr-calculator", "gradecalculator"', '"%s", "bm
 patch("organize_hub_cards.py", '"contraction-timer", "bmr-calculator",', '"contraction-timer", "%s", "bmr-calculator",' % slug, "hub")
 patch("build_aside_recs.py", '    "/bmr-calculator": ("Calculator", ["health", "everyday"]),', '    "/bmr-calculator": ("Calculator", ["health", "everyday"]),\n    "/%s": ("%s", ["health", "everyday"]),' % (slug, a.kind), "recs")
 if a.private:
-    patch("mes.fm/main_js/track.js", "|bmr-calculator)", "|bmr-calculator|%s)" % slug, "track")
+    tp = R / "mes.fm/main_js/track.js"; ts = tp.read_text()
+    if slug in ts: print("  already: track.js")
+    else:
+        m = re.search(r"\|bmr-calculator[^)]*\)", ts)
+        if not m: print("  ANCHOR MISSING: track.js")
+        else:
+            print("  patch: track.js")
+            if a.apply: tp.write_text(ts[:m.end() - 1] + "|" + slug + ")" + ts[m.end():])
 p = R / "mes.fm/calculators.html"; s = p.read_text()
 if 'https://mes.fm/%s"' % slug in s: print("  already: calculators.html card")
 else:
