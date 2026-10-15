@@ -110,6 +110,12 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("fountain-clock", "Caesium Fountain Clock"),   # the 3D fountain as its own page (shares the simulator's script)   # also built by build_tool_apps.py (wide page, dark stages)
     ("michelson-morley-experiment", "Michelson-Morley Simulator"),
     ("faster-than-light-shadow-simulator", "FTL Shadow Simulator"),   # also built by build_tool_apps.py (wide page, dark stages)   # also built by build_tool_apps.py (wide page, dark stages)
+    ("merge-pdf", "Merge PDF", "/pdf"),   # PDF Tools family page (brand option in build_tool_apps.py)
+    ("split-pdf", "Split PDF", "/pdf"),   # PDF Tools family page (brand option in build_tool_apps.py)
+    ("organize-pdf", "Organize PDF", "/pdf"),   # PDF Tools family page (brand option in build_tool_apps.py)
+    ("jpg-to-pdf", "JPG to PDF", "/pdf"),   # PDF Tools family page (brand option in build_tool_apps.py)
+    ("pdf-to-jpg", "PDF to JPG", "/pdf"),   # PDF Tools family page (brand option in build_tool_apps.py)
+    ("compress-pdf", "Compress PDF", "/pdf"),   # PDF Tools family page (brand option in build_tool_apps.py)
     ("pdf", "PDF Editor"),   # also built by build_tool_apps.py (wide page, always-dark workspace, pdf.js + pdf-lib)
     ("photo-editor", "Photo Editor"),   # also built by build_tool_apps.py (wide page, always-dark editor workspace)
     ("image-converter", "Image Converter"),   # also built by build_tool_apps.py
