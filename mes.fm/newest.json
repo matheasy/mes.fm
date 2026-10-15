@@ -2,18 +2,18 @@
  "generated": "2026-10-14",
  "calculators": [
   {
-   "href": "/sleep-calculator",
-   "title": "Sleep Calculator",
-   "icon": "/img/sleep-calculator-logo.png",
-   "desc": "Best bedtime and wake-up time using 90-minute sleep cycles.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
    "href": "/calories-burned-calculator",
    "title": "Calories Burned Calculator",
    "icon": "/img/calories-burned-calculator-logo.png",
    "desc": "Calories burned by 80+ activities for your weight, with a weekly plan.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/sleep-calculator",
+   "title": "Sleep Calculator",
+   "icon": "/img/sleep-calculator-logo.png",
+   "desc": "Best bedtime and wake-up time using 90-minute sleep cycles.",
    "added": "2026-10-14",
    "kind": "calculator"
   },
@@ -198,18 +198,18 @@
  ],
  "latest": [
   {
-   "href": "/sleep-calculator",
-   "title": "Sleep Calculator",
-   "icon": "/img/sleep-calculator-logo.png",
-   "desc": "Best bedtime and wake-up time using 90-minute sleep cycles.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
    "href": "/calories-burned-calculator",
    "title": "Calories Burned Calculator",
    "icon": "/img/calories-burned-calculator-logo.png",
    "desc": "Calories burned by 80+ activities for your weight, with a weekly plan.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/sleep-calculator",
+   "title": "Sleep Calculator",
+   "icon": "/img/sleep-calculator-logo.png",
+   "desc": "Best bedtime and wake-up time using 90-minute sleep cycles.",
    "added": "2026-10-14",
    "kind": "calculator"
   },
