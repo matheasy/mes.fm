@@ -15,7 +15,8 @@ PAGES = {
         alt_url="https://1drv.ms/b/c/88862ef47bcaf6cd/IQAQX2EbxWr_RbAMFBCkcW8uAUIElk-X46QL_S4JXPuLDj0?e=R0Arkl", alt_label="Alternative download (OneDrive)",
         partof='Part of <a href="/science">MES Science</a>',
         intro="""<p>This is the test problem on the <b>Space Shuttle Columbia disaster</b> that <b>Dr. Judy Wood</b> gave her students in <b>EM 304 at Clemson University</b> on <b>February 6, 2003</b>, just five days after Columbia was lost on <b>February 1, 2003</b>.</p>
-<p>The PDF is shown below. You can also download it, or use the alternative OneDrive link if you prefer.</p>""",
+<p>The PDF (6 pages, starting with the EM 304 Test #1 cover page) is shown below. You can also download it, or use the alternative OneDrive link if you prefer.</p>""",
+        og="preview.jpg",
         outro="""<h2>About this page</h2>
 <p>Space Shuttle Columbia (mission STS-107) broke apart during re-entry on February 1, 2003, and all seven crew members were lost. For the background, see the <a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster" target="_blank" rel="noopener">Wikipedia article on the Space Shuttle Columbia disaster</a>.</p>
 <p>The test was set for the course EM 304 at Clemson University, which Dr. Wood taught.</p>"""),
@@ -39,7 +40,7 @@ def build(slug, cfg):
     art += '<div class="pdf-wrap"><object class="pdf-frame" data="%s#view=FitH" type="application/pdf" aria-label="%s"><div class="pdf-fallback"><p>Your browser cannot show a PDF inside the page.</p><p><a class="pdf-btn" href="%s">Open the PDF</a></p></div></object></div>\n' % (pdf, html.escape(cfg["pdf_label"]), pdf)
     art += cfg["outro"]
     for k, v in {"@@SLUG@@": slug, "@@TITLE@@": html.escape(cfg["title"], quote=False), "@@SUBTITLE@@": cfg["subtitle"], "@@DESC@@": html.escape(cfg["desc"]),
-                 "@@OGIMAGE@@": "https://mes.fm/img/logo-big.png" if False else "https://mes.fm/img/logo-mark.png", "@@PARTOF@@": cfg["partof"],
+                 "@@OGIMAGE@@": ("https://mes.fm/%s/%s" % (slug, cfg["og"])) if cfg.get("og") else "https://mes.fm/img/logo-mark.png", "@@PARTOF@@": cfg["partof"],
                  "@@BRAND_HREF@@": "/", "@@BRAND_LOGO@@": "/img/logo-mark.png", "@@BRAND_LOGO_ABS@@": "https://mes.fm/img/logo-mark.png", "@@BRAND_TITLE@@": "MES.fm",
                  "@@BRAND_TAG@@": "Videos, tutorials, calculators and research by Math Easy Solutions.", "@@COMPACT_MATH_LINK@@": '<li><a href="/math" tabindex="-1">Math Tutorials</a></li>', "@@ARTICLE@@": art}.items():
         t = t.replace(k, v)
