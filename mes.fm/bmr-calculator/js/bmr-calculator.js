@@ -75,16 +75,48 @@
 	}
 	function bmiOf(kg, cm) { var m = cm / 100; return kg / (m * m); }
 
+
+	/* ---------- projections and charts ---------- */
+	// Weight week by week while eating `intake` kcal a day. The maintenance figure is recomputed as the weight changes (smaller body = lower BMR),
+	// so a fixed deficit slows down over time. Lean-mass equations keep the lean mass fixed and let fat change. Returns kg at week 0..weeks.
+	function project(p, intake, actId, id, weeks) {
+		var mult = activity(actId).mult, kg = p.kg, lean = validBf(p.bf) ? p.kg * (1 - p.bf / 100) : null, out = [kg], w, d;
+		for (w = 1; w <= weeks; w++) {
+			for (d = 0; d < 7; d++) {
+				var q = { sex: p.sex, kg: kg, cm: p.cm, age: p.age, bf: lean != null ? Math.max(3, Math.min(60, (1 - lean / kg) * 100)) : null };
+				var b = bmr(id, q); if (b == null) return out;
+				kg += (intake - b * mult) / KCAL_PER_KG; if (kg < 25) kg = 25;
+			}
+			out.push(kg);
+		}
+		return out;
+	}
+	// first week at which the projected weight reaches the target (null if it never does within the list)
+	function weekReached(weights, target) {
+		var down = target < weights[0];
+		for (var i = 0; i < weights.length; i++) if (down ? weights[i] <= target : weights[i] >= target) return i;
+		return null;
+	}
+	// BMR at every age from..to for the same sex / weight / height (lean-mass equations keep the body-fat % fixed)
+	function bmrByAge(id, p, from, to) {
+		var o = []; for (var a = from; a <= to; a++) { var v = bmr(id, { sex: p.sex, kg: p.kg, cm: p.cm, age: a, bf: p.bf }); if (v != null) o.push([a, v]); } return o;
+	}
+	// typical share of resting energy by tissue for an adult (Elia, 1992)
+	var ORGANS = [["Skeletal muscle", 22], ["Liver", 21], ["Brain", 20], ["Heart", 9], ["Kidneys", 8], ["Everything else", 20]];
+	// rough split of a day's burn: resting, digesting food (about 10% of the total) and movement (the rest)
+	function energySplit(b, t) { var tef = t * 0.1, rest = b; return { rest: rest, food: tef, move: Math.max(0, t - rest - tef) }; }
+
 	/* ---------- sharing ---------- */
 	function qs(st) {
 		var a = ["kg=" + trim(st.kg, 2), "cm=" + trim(st.cm, 1), "age=" + trim(st.age, 0), "sex=" + st.sex, "act=" + st.act];
 		if (validBf(st.bf)) a.push("bf=" + trim(st.bf, 1));
 		if (st.f && st.f !== "mifflin") a.push("f=" + st.f);
+		if (st.intake > 0) a.push("kcal=" + trim(st.intake, 0));
 		return a.join("&");
 	}
 
 	var BR = { num: num, fix: fix, trim: trim, group: group, lbToKg: lbToKg, kgToLb: kgToLb, ftInToCm: ftInToCm, cmToFtIn: cmToFtIn, kcalToKj: kcalToKj, FORMULAS: FORMULAS, ORDER: ORDER, leanMass: leanMass,
-		valid: valid, validBf: validBf, bmr: bmr, all: all, ACTIVITY: ACTIVITY, activity: activity, tdee: tdee, kcalForRate: kcalForRate, floor: floor, goalRows: goalRows, weeksTo: weeksTo, bmiOf: bmiOf, qs: qs };
+		valid: valid, validBf: validBf, bmr: bmr, all: all, ACTIVITY: ACTIVITY, activity: activity, tdee: tdee, kcalForRate: kcalForRate, floor: floor, goalRows: goalRows, weeksTo: weeksTo, bmiOf: bmiOf, qs: qs, project: project, weekReached: weekReached, bmrByAge: bmrByAge, ORGANS: ORGANS, energySplit: energySplit };
 	if (typeof module !== "undefined" && module.exports) module.exports = BR; else root.BR = BR;
 })(typeof window !== "undefined" ? window : this);
 
@@ -100,6 +132,7 @@
 	var KEY = "mes-bmr-calculator:v1";
 	var EXAMPLES = [["Man, 30, 80 kg, 180 cm", { sex: "m", age: "30", kg: "80", cm: "180", act: "mod" }], ["Woman, 30, 60 kg, 165 cm", { sex: "f", age: "30", kg: "60", cm: "165", act: "light" }], ["Woman, 45, 150 lb, 5 ft 6 in", { sex: "f", age: "45", kg: "68.04", cm: "167.64", act: "sed" }]];
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+	var urlKcal = null, slideVal = null, touched = false, sig = "";
 	var st = { sex: "", age: "", kg: "", cm: "", act: "light", f: "mifflin", bf: "", tgt: "" };
 	function clean(s) {
 		var o = {};
@@ -117,6 +150,7 @@
 		if (q.get("sex")) s.sex = q.get("sex"); if (q.get("age")) s.age = q.get("age");
 		if (q.get("kg")) s.kg = q.get("kg"); else if (q.get("lb")) { var lb = BR.num(q.get("lb")); if (lb > 0) s.kg = String(Math.round(BR.lbToKg(lb) * 100) / 100); }
 		if (q.get("cm")) s.cm = q.get("cm"); else if (q.get("ft") || q.get("in")) s.cm = String(Math.round(BR.ftInToCm(BR.num(q.get("ft")), BR.num(q.get("in"))) * 10) / 10);
+		if (q.get("kcal")) urlKcal = BR.num(q.get("kcal"));
 		if (q.get("act")) s.act = q.get("act"); if (q.get("bf")) s.bf = q.get("bf"); if (q.get("f")) s.f = q.get("f");
 		st = clean(s); return true;
 	}
@@ -156,7 +190,7 @@
 	["br-lb", "br-ft", "br-in"].forEach(function (id) { $(id).addEventListener("input", function () { imperial(); save(); update(); }); });
 	$("br-age").addEventListener("input", function () { st.age = this.value.replace(/\D/g, "").slice(0, 3); save(); update(); });
 	$("br-bf").addEventListener("input", function () { st.bf = this.value; save(); update(); });
-	$("br-tgt").addEventListener("input", function () { st.tgt = this.value; save(); updateTarget(); });
+	$("br-tgt").addEventListener("input", function () { st.tgt = this.value; save(); updateTarget(); if (cur) { if (!touched) slideVal = null; renderWhatIf(cur.p, cur.bmr, cur.tdee, cur.id); } });
 	$("br-act").addEventListener("change", function () { st.act = this.value; save(); update(); });
 	$("br-f").addEventListener("change", function () { st.f = this.value; save(); update(); });
 	$("br-sex").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.sex = b.dataset.s; save(); syncAll(); update(); });
@@ -191,13 +225,14 @@
 		}).join("") + "</tbody>";
 		// compare equations
 		var all = BR.all(p);
-		$("br-cmp").innerHTML = "<thead><tr><th>Equation</th><th>BMR kcal/day</th><th>TDEE kcal/day</th></tr></thead><tbody>" + BR.ORDER.map(function (k) {
-			var x = all[k]; return "<tr" + (k === id ? ' class="is-on"' : "") + "><td>" + esc(BR.FORMULAS[k].name) + "</td><td>" + (x == null ? '<span class="br-small">needs body fat %</span>' : BR.group(x)) + "</td><td>" + (x == null ? "&ndash;" : BR.group(BR.tdee(x, st.act))) + "</td></tr>";
+		$("br-cmp").innerHTML = "<thead><tr><th>Equation</th><th>BMR kcal/day</th><th>TDEE kcal/day</th><th></th></tr></thead><tbody>" + BR.ORDER.map(function (k) {
+			var x = all[k], mx = Math.max.apply(null, BR.ORDER.map(function (q) { return all[q] || 0; }));
+			return "<tr" + (k === id ? ' class="is-on"' : "") + "><td>" + esc(BR.FORMULAS[k].name) + "</td><td>" + (x == null ? '<span class="br-small">needs body fat %</span>' : BR.group(x)) + "</td><td>" + (x == null ? "&ndash;" : BR.group(BR.tdee(x, st.act))) + "</td><td class=\"br-barcell\">" + (x == null ? "" : '<span class="br-bar" style="width:' + (x / mx * 100) + '%"></span>') + "</td></tr>";
 		}).join("") + "</tbody>";
-		$("br-acts").innerHTML = "<thead><tr><th>Activity level</th><th>Calories / day</th><th>kJ / day</th></tr></thead><tbody>" + BR.ACTIVITY.map(function (a) {
-			return "<tr" + (a.id === st.act ? ' class="is-on"' : "") + "><td>" + esc(a.name) + " (&times;" + a.mult + ")</td><td>" + BR.group(b * a.mult) + "</td><td>" + BR.group(BR.kcalToKj(b * a.mult)) + "</td></tr>";
+		$("br-acts").innerHTML = "<thead><tr><th>Activity level</th><th>Calories / day</th><th>kJ / day</th><th></th></tr></thead><tbody>" + BR.ACTIVITY.map(function (a) {
+			return "<tr" + (a.id === st.act ? ' class="is-on"' : "") + "><td>" + esc(a.name) + " (&times;" + a.mult + ")</td><td>" + BR.group(b * a.mult) + "</td><td>" + BR.group(BR.kcalToKj(b * a.mult)) + '</td><td class="br-barcell"><span class="br-bar" style="width:' + (a.mult / 1.9 * 100) + '%"></span></td></tr>';
 		}).join("") + "</tbody>";
-		updateTarget();
+		updateTarget(); renderVisuals(p, b, t, id);
 	}
 	function parseTarget() {
 		var t = String($("br-tgt").value || "").trim(), lb = /lbs?$/i.test(t); var n = BR.num(t.replace(/\s*(kg|lbs?)$/i, "")); if (!(n > 0)) return null; return lb ? BR.lbToKg(n) : n;
@@ -214,8 +249,95 @@
 		o.innerHTML = "To " + (diff < 0 ? "lose " : "gain ") + "<b>" + BR.trim(Math.abs(diff), 1) + " kg (" + BR.trim(BR.kgToLb(Math.abs(diff)), 1) + " lb)</b> at " + (diff < 0 ? "0.5 kg" : "0.25 kg") + " a week takes about <b>" + Math.ceil(w) + " weeks</b> (around " + esc(when) + ") eating <b>" + BR.group(cal) + " kcal a day</b>." + (low ? ' <span class="br-warn">That is below the usual minimum: choose a slower rate.</span>' : "") + extra;
 	}
 
+
+	/* ---------- charts ---------- */
+	function pct(x, tot) { return Math.round(x / tot * 100); }
+	function bar(el, leg, items, tot) {
+		$(el).innerHTML = items.map(function (it, i) { var w = it[1] / tot * 100; return '<span class="br-seg br-c' + i + '" style="width:' + w + '%" title="' + esc(it[0]) + ": " + esc(it[2]) + '">' + (w >= 9 ? pct(it[1], tot) + "%" : "") + "</span>"; }).join("");
+		$(el).setAttribute("aria-label", items.map(function (it) { return it[0] + " " + it[2]; }).join(", "));
+		$(leg).innerHTML = items.map(function (it, i) { return '<li><i class="br-c' + i + '"></i><span>' + esc(it[0]) + "</span><b>" + esc(it[2]) + "</b></li>"; }).join("");
+	}
+	function niceStep(range, n) { var r = range / n, m = Math.pow(10, Math.floor(Math.log10(r))), f = r / m; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * m; }
+	function axisY(lo, hi, X0, X1, Y, n) {
+		var step = niceStep(hi - lo, n || 4), o = "";
+		for (var g = Math.ceil(lo / step) * step; g <= hi + 1e-9; g += step) o += '<line class="br-gl" x1="' + X0 + '" x2="' + X1 + '" y1="' + Y(g) + '" y2="' + Y(g) + '"/><text class="br-ct" x="' + (X0 - 6) + '" y="' + (Y(g) + 4) + '" text-anchor="end">' + BR.trim(g, step < 1 ? 1 : 0) + "</text>";
+		return o;
+	}
+	function renderVisuals(p, b, t, id) {
+		var S = BR.energySplit(b, t);
+		bar("br-split", "br-splitleg", [["Resting (BMR)", S.rest, BR.group(S.rest) + " kcal"], ["Digesting food", S.food, BR.group(S.food) + " kcal"], ["Movement & exercise", S.move, BR.group(S.move) + " kcal"]], t);
+		var O = BR.ORGANS.map(function (o) { return [o[0], o[1], "about " + BR.group(b * o[1] / 100) + " kcal"]; });
+		bar("br-organs", "br-organsleg", O, 100);
+		renderWhatIf(p, b, t, id); renderAge(p, id);
+	}
+	var proj = null;
+	function defaultIntake(t) { var tk = parseTarget(), r = 0; if (tk != null && cur) r = tk < cur.p.kg ? -0.5 : tk > cur.p.kg ? 0.25 : 0; return Math.round((t + BR.kcalForRate(r)) / 50) * 50; }
+	function renderWhatIf(p, b, t, id) {
+		var key = [st.sex, st.age, st.kg, st.cm, st.act, id, st.bf].join("|");
+		var sl = $("br-slide"), lo = 1000, hi = Math.max(2000, Math.ceil((t + 1000) / 50) * 50);
+		if (key !== sig) { sig = key; touched = false; slideVal = null; }
+		if (urlKcal) { slideVal = urlKcal; touched = true; urlKcal = null; }
+		if (slideVal == null) slideVal = defaultIntake(t);
+		slideVal = Math.max(lo, Math.min(hi, Math.round(slideVal / 50) * 50));
+		sl.min = lo; sl.max = hi; sl.value = slideVal;
+		var T = Math.round(t / 50) * 50;
+		$("br-slidebtns").innerHTML = [["Lose 0.5 kg/wk", Math.round((t + BR.kcalForRate(-0.5)) / 50) * 50], ["Maintain", T], ["Gain 0.25 kg/wk", Math.round((t + BR.kcalForRate(0.25)) / 50) * 50]].map(function (x) { return '<button type="button" class="tu-chip" data-v="' + x[1] + '">' + x[0] + "</button>"; }).join("");
+		drawWhatIf(p, b, t, id);
+	}
+	function drawWhatIf(p, b, t, id) {
+		var I = slideVal, diff = I - t, rate = diff * 7 / 7700, tk = parseTarget(), fl = BR.floor(p.sex, b);
+		$("br-slideout").textContent = BR.group(I) + " kcal";
+		var all = BR.project(p, I, st.act, id, 104), reached = tk != null ? BR.weekReached(all, tk) : null;
+		var N = reached != null ? Math.min(104, Math.max(8, reached + 4)) : (tk != null ? 52 : 26), w = all.slice(0, N + 1), end = w[N];
+		var txt = "Eating <b>" + BR.group(I) + " kcal</b> is " + (Math.abs(diff) < 25 ? "about your maintenance" : "<b>" + BR.group(Math.abs(diff)) + " kcal " + (diff < 0 ? "below" : "above") + "</b> it") + ".";
+		if (Math.abs(diff) >= 25) txt += " That is about <b>" + (rate < 0 ? "−" : "+") + BR.trim(Math.abs(rate), 2) + " kg (" + BR.trim(BR.kgToLb(Math.abs(rate)), 1) + " lb) a week</b> at first, slowing as your weight changes.";
+		txt += " In " + N + " weeks you would be about <b>" + BR.trim(end, 1) + " kg (" + BR.trim(BR.kgToLb(end), 1) + " lb)</b>.";
+		if (reached != null && tk != null) { var d = new Date(Date.now() + reached * 7 * 864e5); txt += " You would reach your goal of " + BR.trim(tk, 1) + " kg in about <b>" + reached + " weeks</b> (" + d.toLocaleDateString(undefined, { month: "short", year: "numeric" }) + ")."; }
+		else if (tk != null) txt += " At this intake you would not reach " + BR.trim(tk, 1) + " kg within two years.";
+		if (I < fl) txt += ' <span class="br-warn">Below ' + BR.group(fl) + " kcal is not advised without medical supervision.</span>";
+		$("br-whatif").innerHTML = txt;
+		// chart
+		var W = 640, H = 250, L = 46, R = 16, Tp = 14, B = 32, vals = w.slice(); if (tk != null) vals.push(tk);
+		var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals), pad = Math.max(1, (hi - lo) * 0.15); lo -= pad; hi += pad;
+		var X = function (i) { return L + i / N * (W - L - R); }, Y = function (v) { return Tp + (hi - v) / (hi - lo) * (H - Tp - B); };
+		var s = axisY(lo, hi, L, W - R, Y, 4), step = N <= 12 ? 2 : N <= 30 ? 4 : N <= 60 ? 8 : 13;
+		for (var i = 0; i <= N; i += step) s += '<text class="br-ct" x="' + X(i) + '" y="' + (H - 10) + '" text-anchor="middle">' + i + "</text>";
+		s += '<text class="br-ct" x="' + (W - R) + '" y="' + (H - 1) + '" text-anchor="end">weeks</text><text class="br-ct" x="6" y="10">kg</text>';
+		if (tk != null) s += '<line class="br-target" x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(tk) + '" y2="' + Y(tk) + '"/><text class="br-ct br-tt" x="' + (W - R) + '" y="' + (Y(tk) - 5) + '" text-anchor="end">goal ' + BR.trim(tk, 1) + " kg</text>";
+		var pts = w.map(function (v, i) { return X(i) + "," + Y(v); });
+		s += '<polygon class="br-area" points="' + L + "," + Y(lo) + " " + pts.join(" ") + " " + X(N) + "," + Y(lo) + '"/><polyline class="br-line" points="' + pts.join(" ") + '"/>';
+		s += '<circle class="br-dot" cx="' + X(0) + '" cy="' + Y(w[0]) + '" r="4.5"/><circle class="br-dot" cx="' + X(N) + '" cy="' + Y(end) + '" r="4.5"/><g id="br-hov" hidden><line class="br-cross" y1="' + Tp + '" y2="' + (H - B) + '"/><circle class="br-dot" r="5"/></g>';
+		$("br-proj").innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="xMidYMid meet" role="presentation">' + s + "</svg>";
+		proj = { w: w, N: N, X: X, Y: Y, L: L, R: R, W: W, p: p, id: id };
+		$("br-projread").textContent = "Move over the chart to read a week.";
+	}
+	function hover(ev) {
+		if (!proj) return; var svg = $("br-proj").querySelector("svg"); if (!svg) return;
+		var r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * proj.W, i = Math.round((x - proj.L) / (proj.W - proj.L - proj.R) * proj.N);
+		i = Math.max(0, Math.min(proj.N, i)); var v = proj.w[i], g = $("br-hov"); if (!g) return;
+		g.hidden = false; g.querySelector("line").setAttribute("x1", proj.X(i)); g.querySelector("line").setAttribute("x2", proj.X(i)); var c = g.querySelector("circle"); c.setAttribute("cx", proj.X(i)); c.setAttribute("cy", proj.Y(v));
+		var d = new Date(Date.now() + i * 7 * 864e5), q = { sex: proj.p.sex, kg: v, cm: proj.p.cm, age: proj.p.age, bf: proj.p.bf }, m = BR.bmr(proj.id, q);
+		$("br-projread").innerHTML = "<b>Week " + i + "</b> (" + d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) + "): <b>" + BR.trim(v, 1) + " kg (" + BR.trim(BR.kgToLb(v), 1) + " lb)</b>, BMI " + BR.fix(BR.bmiOf(v, proj.p.cm), 1) + (m ? ", maintenance then about " + BR.group(BR.tdee(m, st.act)) + " kcal" : "");
+	}
+	$("br-proj").addEventListener("mousemove", hover); $("br-proj").addEventListener("touchmove", function (e) { if (e.touches[0]) hover(e.touches[0]); }, { passive: true });
+	$("br-proj").addEventListener("mouseleave", function () { var g = $("br-hov"); if (g) g.hidden = true; });
+	$("br-slide").addEventListener("input", function () { slideVal = +this.value; touched = true; if (cur) drawWhatIf(cur.p, cur.bmr, cur.tdee, cur.id); });
+	$("br-slidebtns").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b || !cur) return; slideVal = +b.dataset.v; touched = true; $("br-slide").value = slideVal; drawWhatIf(cur.p, cur.bmr, cur.tdee, cur.id); });
+	function renderAge(p, id) {
+		var data = BR.bmrByAge(id, p, 18, 85), el = $("br-agechart"); if (data.length < 2) { el.innerHTML = ""; return; }
+		var W = 640, H = 230, L = 46, R = 16, Tp = 22, B = 30, vs = data.map(function (d) { return d[1]; }), lo = Math.min.apply(null, vs), hi = Math.max.apply(null, vs), pd = (hi - lo) * 0.15 + 20; lo -= pd; hi += pd;
+		var X = function (a) { return L + (a - 18) / 67 * (W - L - R); }, Y = function (v) { return Tp + (hi - v) / (hi - lo) * (H - Tp - B); };
+		var s = axisY(lo, hi, L, W - R, Y, 4); for (var a = 20; a <= 80; a += 10) s += '<text class="br-ct" x="' + X(a) + '" y="' + (H - 10) + '" text-anchor="middle">' + a + "</text>";
+		s += '<text class="br-ct" x="' + (W - R) + '" y="' + (H - 1) + '" text-anchor="end">age</text><text class="br-ct" x="6" y="12">kcal/day</text>';
+		s += '<polyline class="br-line" points="' + data.map(function (d) { return X(d[0]) + "," + Y(d[1]); }).join(" ") + '"/>';
+		var me = Math.max(18, Math.min(85, p.age)), mv = BR.bmr(id, { sex: p.sex, kg: p.kg, cm: p.cm, age: me, bf: p.bf });
+		s += '<line class="br-cross" x1="' + X(me) + '" x2="' + X(me) + '" y1="' + Tp + '" y2="' + (H - B) + '"/><circle class="br-dot" cx="' + X(me) + '" cy="' + Y(mv) + '" r="5"/><text class="br-ct br-tt" x="' + Math.min(X(me) + 8, W - 90) + '" y="' + (Tp + 2) + '">you: ' + BR.group(mv) + "</text>";
+		data.forEach(function (d) { if (d[0] % 5 === 0) s += '<circle class="br-pt" cx="' + X(d[0]) + '" cy="' + Y(d[1]) + '" r="7"><title>Age ' + d[0] + ": " + BR.group(d[1]) + " kcal/day</title></circle>"; });
+		el.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="xMidYMid meet" role="presentation">' + s + "</svg>";
+	}
+
 	/* ---------- links ---------- */
-	function shareUrl() { return location.origin + "/bmr-calculator?" + BR.qs({ kg: BR.num(st.kg), cm: BR.num(st.cm), age: BR.num(st.age), sex: st.sex, act: st.act, bf: BR.num(st.bf), f: st.f }); }
+	function shareUrl() { return location.origin + "/bmr-calculator?" + BR.qs({ kg: BR.num(st.kg), cm: BR.num(st.cm), age: BR.num(st.age), sex: st.sex, act: st.act, bf: BR.num(st.bf), f: st.f, intake: touched && slideVal ? slideVal : null }); }
 	$("br-link").onclick = function () { copy(shareUrl(), "Link copied"); };
 	$("br-copy").onclick = function () { if (!cur) return; copy("BMR " + BR.group(cur.bmr) + " kcal/day, maintenance (TDEE) " + BR.group(cur.tdee) + " kcal/day (" + BR.activity(st.act).name + ", " + BR.FORMULAS[cur.id].name + "). " + shareUrl(), "Summary copied"); };
 	$("br-print").onclick = function () { window.print(); };

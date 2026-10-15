@@ -22,4 +22,15 @@ eq(BR.goalRows(1700, w, 1320)[0].low, true, "women under 1,200 or BMR flagged");
 eq(BR.floor("f", 1320), 1320, "floor never under BMR"); eq(BR.floor("f", 1000), 1200, "women floor"); eq(BR.floor("m", 1000), 1500, "men floor");
 eq(BR.weeksTo(80, 75, -0.5), 10, "10 weeks"); eq(BR.weeksTo(80, 75, 0.5), null, "wrong direction"); eq(BR.weeksTo(80, 80, 0), 0, "already there");
 eq(BR.qs({ kg: 80, cm: 180, age: 30, sex: "m", act: "mod", bf: 20, f: "katch" }), "kg=80&cm=180&age=30&sex=m&act=mod&bf=20&f=katch", "query string");
+// projection: eating exactly maintenance holds the weight; a deficit loses with a slowing rate; a surplus gains
+const pj0 = BR.project(m, 2759, "mod", "mifflin", 20); eq(pj0.length, 21, "weeks+1 points"); eq(pj0[20], 80, "maintenance holds", 0.01);
+const pj1 = BR.project(m, 2259, "mod", "mifflin", 52); eq(pj1[0], 80, "starts at weight"); eq(pj1[1] < 80 && pj1[1] > 79.3, true, "first week about -0.65 kg");
+eq((pj1[1] - pj1[0]) < (pj1[40] - pj1[39]), true, "loss slows as the body shrinks"); eq(pj1[52] > 62, true, "does not fall without limit");
+eq(BR.project(m, 3259, "mod", "mifflin", 10)[10] > 80, true, "surplus gains");
+eq(BR.project(Object.assign({ bf: 20 }, m), 2000, "mod", "katch", 4).length, 5, "lean-mass projection");
+eq(BR.weekReached([80, 79, 78, 77], 78), 2, "reached"); eq(BR.weekReached([80, 79], 70), null, "not reached"); eq(BR.weekReached([70, 71, 72], 72), 2, "gain reached");
+const ba = BR.bmrByAge("mifflin", m, 20, 60); eq(ba.length, 41, "ages"); eq(ba[0][1] - ba[40][1], 200, "-5 kcal per year of age", 1e-9);
+eq(BR.ORGANS.reduce((a, x) => a + x[1], 0), 100, "organ shares sum to 100");
+const es = BR.energySplit(1780, 2759); eq(es.rest + es.food + es.move, 2759, "split adds up", 1e-9); eq(BR.energySplit(1000, 1000).move, 0, "no negative movement");
+eq(BR.qs({ kg: 80, cm: 180, age: 30, sex: "m", act: "mod", intake: 2200 }), "kg=80&cm=180&age=30&sex=m&act=mod&kcal=2200", "intake in link");
 console.log(n + " checks, " + f + " failed"); process.exit(f ? 1 : 0);

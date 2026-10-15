@@ -75,15 +75,47 @@
 	}
 	function bmiOf(kg, cm) { var m = cm / 100; return kg / (m * m); }
 
+
+	/* ---------- projections and charts ---------- */
+	// Weight week by week while eating `intake` kcal a day. The maintenance figure is recomputed as the weight changes (smaller body = lower BMR),
+	// so a fixed deficit slows down over time. Lean-mass equations keep the lean mass fixed and let fat change. Returns kg at week 0..weeks.
+	function project(p, intake, actId, id, weeks) {
+		var mult = activity(actId).mult, kg = p.kg, lean = validBf(p.bf) ? p.kg * (1 - p.bf / 100) : null, out = [kg], w, d;
+		for (w = 1; w <= weeks; w++) {
+			for (d = 0; d < 7; d++) {
+				var q = { sex: p.sex, kg: kg, cm: p.cm, age: p.age, bf: lean != null ? Math.max(3, Math.min(60, (1 - lean / kg) * 100)) : null };
+				var b = bmr(id, q); if (b == null) return out;
+				kg += (intake - b * mult) / KCAL_PER_KG; if (kg < 25) kg = 25;
+			}
+			out.push(kg);
+		}
+		return out;
+	}
+	// first week at which the projected weight reaches the target (null if it never does within the list)
+	function weekReached(weights, target) {
+		var down = target < weights[0];
+		for (var i = 0; i < weights.length; i++) if (down ? weights[i] <= target : weights[i] >= target) return i;
+		return null;
+	}
+	// BMR at every age from..to for the same sex / weight / height (lean-mass equations keep the body-fat % fixed)
+	function bmrByAge(id, p, from, to) {
+		var o = []; for (var a = from; a <= to; a++) { var v = bmr(id, { sex: p.sex, kg: p.kg, cm: p.cm, age: a, bf: p.bf }); if (v != null) o.push([a, v]); } return o;
+	}
+	// typical share of resting energy by tissue for an adult (Elia, 1992)
+	var ORGANS = [["Skeletal muscle", 22], ["Liver", 21], ["Brain", 20], ["Heart", 9], ["Kidneys", 8], ["Everything else", 20]];
+	// rough split of a day's burn: resting, digesting food (about 10% of the total) and movement (the rest)
+	function energySplit(b, t) { var tef = t * 0.1, rest = b; return { rest: rest, food: tef, move: Math.max(0, t - rest - tef) }; }
+
 	/* ---------- sharing ---------- */
 	function qs(st) {
 		var a = ["kg=" + trim(st.kg, 2), "cm=" + trim(st.cm, 1), "age=" + trim(st.age, 0), "sex=" + st.sex, "act=" + st.act];
 		if (validBf(st.bf)) a.push("bf=" + trim(st.bf, 1));
 		if (st.f && st.f !== "mifflin") a.push("f=" + st.f);
+		if (st.intake > 0) a.push("kcal=" + trim(st.intake, 0));
 		return a.join("&");
 	}
 
 	var BR = { num: num, fix: fix, trim: trim, group: group, lbToKg: lbToKg, kgToLb: kgToLb, ftInToCm: ftInToCm, cmToFtIn: cmToFtIn, kcalToKj: kcalToKj, FORMULAS: FORMULAS, ORDER: ORDER, leanMass: leanMass,
-		valid: valid, validBf: validBf, bmr: bmr, all: all, ACTIVITY: ACTIVITY, activity: activity, tdee: tdee, kcalForRate: kcalForRate, floor: floor, goalRows: goalRows, weeksTo: weeksTo, bmiOf: bmiOf, qs: qs };
+		valid: valid, validBf: validBf, bmr: bmr, all: all, ACTIVITY: ACTIVITY, activity: activity, tdee: tdee, kcalForRate: kcalForRate, floor: floor, goalRows: goalRows, weeksTo: weeksTo, bmiOf: bmiOf, qs: qs, project: project, weekReached: weekReached, bmrByAge: bmrByAge, ORGANS: ORGANS, energySplit: energySplit };
 	if (typeof module !== "undefined" && module.exports) module.exports = BR; else root.BR = BR;
 })(typeof window !== "undefined" ? window : this);

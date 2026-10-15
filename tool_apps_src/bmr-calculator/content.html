@@ -35,6 +35,16 @@
 				<button type="button" class="tu-btn tu-btn--ghost" id="br-print">Print</button>
 			</div>
 
+			<h2>Where your energy goes</h2>
+			<div class="tu-card">
+				<div class="br-split" id="br-split" role="img"></div>
+				<ul class="br-legend" id="br-splitleg"></ul>
+				<div class="tu-label" style="margin-top:1.1em;">What your resting calories pay for (typical adult)</div>
+				<div class="br-split" id="br-organs" role="img"></div>
+				<ul class="br-legend" id="br-organsleg"></ul>
+				<p class="tu-note" style="margin-bottom:0;">Estimates: digesting food is taken as about 10% of your total, and the organ shares are typical resting figures (Elia, 1992), not measurements of you.</p>
+			</div>
+
 			<h2>Calories for your goal</h2>
 			<div class="tu-card">
 				<p class="tu-note" style="margin-top:0;" id="br-goalnote"></p>
@@ -45,11 +55,25 @@
 				<p class="tu-note" id="br-tgtout" style="margin-bottom:0;"></p>
 			</div>
 
+			<h2>What if I eat&hellip;? Try your own calories</h2>
+			<div class="tu-card">
+				<label for="br-slide" class="tu-label">Daily calories you plan to eat</label>
+				<div class="br-slidebox"><input type="range" id="br-slide" min="1000" max="4000" step="50" value="2000"><output id="br-slideout" for="br-slide"></output></div>
+				<div class="br-slidebtns" id="br-slidebtns"></div>
+				<p class="br-whatif" id="br-whatif" aria-live="polite"></p>
+				<div class="br-chart" id="br-proj" role="img"></div>
+				<div class="br-readout" id="br-projread" aria-live="polite">Move over the chart to read a week.</div>
+				<p class="tu-note" style="margin-bottom:0;">Weekly steps use 7,700 kcal per kg and recalculate your maintenance as your weight changes, so a fixed deficit slows down over time, as it does in real life. It ignores water weight, muscle changes and individual metabolism.</p>
+			</div>
+
 			<h2>Compare the equations</h2>
 			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="br-cmp"></table></div><p class="tu-note" style="margin-bottom:0;">They usually agree within about 5-10%. Pick one and stick with it, then adjust from how your weight actually changes over 2-3 weeks.</p></div>
 
 			<h2>Calories at every activity level</h2>
 			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="br-acts"></table></div></div>
+
+			<h2>Your BMR through life</h2>
+			<div class="tu-card"><div class="br-chart" id="br-agechart" role="img"></div><p class="tu-note" style="margin-bottom:0;">The same weight and height at every age. Resting burn drifts down with age (about 5 kcal a day per year with Mifflin-St Jeor), mostly because of lost muscle, so keeping muscle matters.</p></div>
 		</div>
 
 		<div class="tu-seo">
