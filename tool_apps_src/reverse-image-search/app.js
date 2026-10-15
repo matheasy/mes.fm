@@ -57,7 +57,7 @@
 		im.onload = function () {
 			var max = 4096, s = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas');
 			c.width = Math.round(im.naturalWidth * s); c.height = Math.round(im.naturalHeight * s); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
-			base = c; rot = 0; flip = false; crop = null; fileName = (f.name || 'image').replace(/\.[^.]+$/, '') || 'image'; setMode('file'); drawBase(); scheduleBlobs();
+			base = c; rot = 0; flip = false; crop = null; fileName = (f.name || 'image').replace(/\.[^.]+$/, '') || 'image'; setMode('file'); drawBase(); refresh(); scheduleBlobs();
 		};
 		im.onerror = function () { URL.revokeObjectURL(url); toast('Could not read that picture. Try a JPG or PNG.'); };
 		im.src = url;
