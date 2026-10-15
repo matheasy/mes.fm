@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/compressor",
+   "title": "Compressor: Pictures, PDFs, Audio",
+   "icon": "/img/compressor-logo.png",
+   "desc": "Make JPG, PNG, WebP, PDF and audio files smaller with a before and after preview. Private: nothing is uploaded.",
+   "added": "2026-10-15",
+   "kind": "tool"
+  },
+  {
    "href": "/fav",
    "title": "MES Favourites",
    "icon": "/img/fav-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Place charges and wires and see field lines, Gauss's law and Ampère's law, steer a particle through E and B fields, and watch Maxwell's equations make waves reflect, refract and diffract.",
    "added": "2026-10-12",
    "kind": "tool"
-  },
-  {
-   "href": "/double-pendulum",
-   "title": "Double Pendulum",
-   "icon": "/img/double-pendulum-logo.png",
-   "desc": "Drag two swinging arms into place and watch chaos: a fan of copies that drift apart, how fast errors grow, and a fractal map of how long each start takes to flip.",
-   "added": "2026-10-12",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/compressor",
+   "title": "Compressor: Pictures, PDFs, Audio",
+   "icon": "/img/compressor-logo.png",
+   "desc": "Make JPG, PNG, WebP, PDF and audio files smaller with a before and after preview. Private: nothing is uploaded.",
+   "added": "2026-10-15",
+   "kind": "tool"
+  },
   {
    "href": "/fav",
    "title": "MES Favourites",
@@ -250,14 +258,6 @@
    "title": "Calories Burned Calculator",
    "icon": "/img/calories-burned-calculator-logo.png",
    "desc": "Calories burned by 80+ activities for your weight, with a weekly plan.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/sleep-calculator",
-   "title": "Sleep Calculator",
-   "icon": "/img/sleep-calculator-logo.png",
-   "desc": "Best bedtime and wake-up time using 90-minute sleep cycles.",
    "added": "2026-10-14",
    "kind": "calculator"
   }

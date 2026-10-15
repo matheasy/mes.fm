@@ -1,0 +1,29 @@
+	<div class="tu" id="cm">
+		<div class="cm-drop" id="cm-drop" tabindex="0" role="button" aria-label="Choose files or drop them here">
+			<div class="cm-drop-t">Drop pictures, PDFs or audio here</div>
+			<div class="cm-drop-s">JPG, PNG, WebP, GIF &middot; PDF &middot; MP3, WAV, M4A, OGG, FLAC. Paste a picture, or choose files.</div>
+			<button type="button" class="tu-btn tu-btn--primary" id="cm-pick">Choose files</button>
+			<input type="file" id="cm-input" multiple hidden>
+			<p class="cm-priv">Private: everything is compressed inside your browser. Nothing is uploaded.</p>
+		</div>
+		<div id="cm-notice" class="tu-card tu-card--tint cm-notice" role="status" hidden></div>
+		<div id="cm-work" hidden>
+			<div class="tu-card cm-opts" id="cm-opts"></div>
+			<div class="cm-list" id="cm-list"></div>
+			<div class="cm-actions"><button type="button" class="tu-btn tu-btn--primary cm-go" id="cm-go">Compress</button> <button type="button" class="tu-btn tu-btn--ghost" id="cm-more">Add more files</button> <button type="button" class="tu-btn tu-btn--ghost" id="cm-clear">Start over</button> <span class="cm-prog" id="cm-prog" role="status" aria-live="polite"></span></div>
+			<div class="tu-card cm-sum" id="cm-sum" hidden aria-live="polite"></div>
+		</div>
+		<div class="cm-modal" id="cm-modal" hidden role="dialog" aria-modal="true" aria-label="Compare before and after"><div class="cm-mbox"><button type="button" class="cm-mx" id="cm-mx" aria-label="Close">&times;</button><div class="cm-cmp" id="cm-cmp"></div><p class="cm-mcap" id="cm-mcap"></p></div></div>
+
+		<div class="tu-seo">
+			<h2>How the compressor works</h2>
+			<dl>
+				<dt>Pictures</dt><dd>Each picture is redrawn at the size you choose and saved again as JPEG or WebP at the quality you pick, or at the highest quality that fits a size you set (say 200 KB). WebP is usually 25&ndash;35% smaller than JPEG at the same look. A PNG kept as PNG can only get smaller by being made smaller in pixels, so for photos choose WebP or JPEG. Pictures with see-through parts keep their transparency when saved as WebP; JPEG gets a white background.</dd>
+				<dt>PDFs</dt><dd>Balanced and Strong find the photos and scans inside the PDF and save them again as smaller JPEGs, keeping the text, links and layout untouched, so selectable text stays selectable. Light only rewrites the file's structure. Extreme turns each page into a picture for the smallest file when nothing else is small enough.</dd>
+				<dt>Audio</dt><dd>Sound is decoded and saved as MP3 at 64&ndash;256 kbps. 128 kbps is a good default for music, 64 kbps mono is plenty for speech. Big WAV and FLAC files shrink by 80&ndash;90%.</dd>
+				<dt>Video</dt><dd>Video is not supported yet: compressing it in a browser needs a large download and a lot of time, so it will come as its own tool.</dd>
+			</dl>
+			<h2>Is it private?</h2>
+			<p>Yes. Your files are read and compressed by your own browser. They are never sent to mes.fm or anywhere else, and closing the tab discards everything. Very large files depend on your device's memory.</p>
+		</div>
+	</div>
