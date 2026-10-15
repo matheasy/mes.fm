@@ -1,0 +1,18 @@
+	/* Ideal Weight Calculator */
+	.tu [hidden] {display:none !important;}
+	.tu #iw-sex {display:inline-flex;max-width:100%;} .tu #iw-sex button {flex:1 1 auto;padding:0.5em 1.1em;}
+	.tu .iw-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:1em 0;}
+	.tu .iw-verdict {font-size:1.05em;line-height:1.5;border-left:5px solid var(--accent);}
+	.tu .iw-small {color:#6a7280;font-size:0.82em;}
+	.tu .iw-chart svg {width:100%;height:auto;display:block;touch-action:pan-y;}
+	.tu .iw-gl {stroke:#d5dae0;stroke-width:0.6;} .tu .iw-ct {fill:#6a7280;font-size:11px;} .tu .iw-lbl {fill:#1e2733;font-size:11px;font-weight:600;}
+	.tu .iw-band {fill:#5cb87a;opacity:0.22;} .tu .iw-bandl {stroke:#5cb87a;stroke-width:1;stroke-dasharray:4 3;}
+	.tu .iw-mk {stroke:#fff;stroke-width:2;} .tu .iw-me {stroke:#1e2733;stroke-width:2.5;} .tu .iw-meT {fill:#1e2733;font-size:11px;font-weight:700;}
+	.tu .iw-line {fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;} .tu .iw-cross {stroke:#8a93a0;stroke-width:1;stroke-dasharray:3 3;}
+	.tu .iw-c0 {fill:#3b82f6;stroke:#3b82f6;background:#3b82f6;} .tu .iw-c1 {fill:#e8a317;stroke:#e8a317;background:#e8a317;} .tu .iw-c2 {fill:#8b5cf6;stroke:#8b5cf6;background:#8b5cf6;} .tu .iw-c3 {fill:#ef6b5b;stroke:#ef6b5b;background:#ef6b5b;}
+	.tu .iw-key {display:flex;flex-wrap:wrap;gap:0.4em 1.2em;margin-top:0.6em;font-size:0.9em;} .tu .iw-key span {display:inline-flex;align-items:center;gap:0.4em;} .tu .iw-key i {width:0.9em;height:0.9em;border-radius:50%;display:inline-block;}
+	.tu .iw-readout {min-height:1.6em;font-size:0.92em;color:#4a5260;margin:0.3em 0 0.8em;}
+	.tu .iw-barcell {width:28%;min-width:5em;} .tu .iw-bar {display:block;height:0.8em;border-radius:0.4em;opacity:0.85;}
+	.tu #iw-table td, .tu #iw-ref td {font-variant-numeric:tabular-nums;}
+	body.dark-mode #iw .iw-gl {stroke:#3f464f;} body.dark-mode #iw .iw-ct, body.dark-mode #iw .iw-small {fill:#a0a8b3;color:#a0a8b3;} body.dark-mode #iw .iw-lbl, body.dark-mode #iw .iw-meT {fill:#e8e8e8;} body.dark-mode #iw .iw-me {stroke:#e8e8e8;} body.dark-mode #iw .iw-mk {stroke:#232323;} body.dark-mode #iw .iw-readout {color:#b8c0cb;}
+	@media print {.tu .iw-btns, .tu #iw-setup {display:none;}}

@@ -129,7 +129,7 @@
 	var $ = function (id) { return document.getElementById(id); };
 	var root = $("br");
 	if (!root || !window.BR) return;
-	var KEY = "mes-bmr-calculator:v1";
+	var KEY = "mes-bmr-calculator:v1", TDEE = root.getAttribute("data-mode") === "tdee";
 	var EXAMPLES = [["Man, 30, 80 kg, 180 cm", { sex: "m", age: "30", kg: "80", cm: "180", act: "mod" }], ["Woman, 30, 60 kg, 165 cm", { sex: "f", age: "30", kg: "60", cm: "165", act: "light" }], ["Woman, 45, 150 lb, 5 ft 6 in", { sex: "f", age: "45", kg: "68.04", cm: "167.64", act: "sed" }]];
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	var urlKcal = null, slideVal = null, touched = false, sig = "";
@@ -151,7 +151,7 @@
 		if (q.get("kg")) s.kg = q.get("kg"); else if (q.get("lb")) { var lb = BR.num(q.get("lb")); if (lb > 0) s.kg = String(Math.round(BR.lbToKg(lb) * 100) / 100); }
 		if (q.get("cm")) s.cm = q.get("cm"); else if (q.get("ft") || q.get("in")) s.cm = String(Math.round(BR.ftInToCm(BR.num(q.get("ft")), BR.num(q.get("in"))) * 10) / 10);
 		if (q.get("kcal")) urlKcal = BR.num(q.get("kcal"));
-		if (q.get("act")) s.act = q.get("act"); if (q.get("bf")) s.bf = q.get("bf"); if (q.get("f")) s.f = q.get("f");
+		if (q.get("act")) s.act = q.get("act"); s.bf = q.get("bf") || ""; s.f = q.get("f") || "mifflin";
 		st = clean(s); return true;
 	}
 	function toast(msg) {
@@ -210,9 +210,9 @@
 		if (BR.bmr(id, p) == null) { id = "mifflin"; fell = true; }
 		var b = BR.bmr(id, p), t = BR.tdee(b, st.act), A = BR.activity(st.act), F = BR.FORMULAS[id];
 		cur = { p: p, id: id, bmr: b, tdee: t };
-		$("br-hero").innerHTML = stat("Your BMR", BR.group(b) + " <small>kcal/day</small>", BR.group(BR.kcalToKj(b)) + " kJ/day &middot; " + BR.trim(b / 24, 0) + " kcal per hour", "tu-stat--hero") +
-			stat("Maintenance calories (TDEE)", BR.group(t) + " <small>kcal/day</small>", esc(A.name) + " &times; " + A.mult + " &middot; " + BR.group(BR.kcalToKj(t)) + " kJ") +
-			stat("Equation", esc(F.name.split(" (")[0]), esc(F.note));
+		var sB = stat(TDEE ? "Your BMR (at rest)" : "Your BMR", BR.group(b) + " <small>kcal/day</small>", BR.group(BR.kcalToKj(b)) + " kJ/day &middot; " + BR.trim(b / 24, 0) + " kcal per hour", TDEE ? "" : "tu-stat--hero");
+		var sT = stat(TDEE ? "Your TDEE (maintenance)" : "Maintenance calories (TDEE)", BR.group(t) + " <small>kcal/day</small>", esc(A.name) + " &times; " + A.mult + " &middot; " + BR.group(BR.kcalToKj(t)) + " kJ", TDEE ? "tu-stat--hero" : "");
+		$("br-hero").innerHTML = (TDEE ? sT + sB : sB + sT) + stat("Equation", esc(F.name.split(" (")[0]), esc(F.note));
 		var v = "At rest your body burns about <b>" + BR.group(b) + " kcal a day</b>. With a <b>" + esc(A.name.toLowerCase()) + "</b> lifestyle you burn about <b>" + BR.group(t) + " kcal a day</b>, so that is roughly what you can eat to keep your weight steady.";
 		if (fell) v += '<br><span class="br-warn">Enter a body-fat % (valid range 3&ndash;60) to use ' + esc(BR.FORMULAS[st.f].name.split(" (")[0]) + "; Mifflin-St Jeor is shown instead.</span>";
 		$("br-verdict").innerHTML = v + '<br><small class="br-small">An estimate for healthy adults, not medical advice. Real needs vary by 10% or more.</small>';
@@ -337,7 +337,7 @@
 	}
 
 	/* ---------- links ---------- */
-	function shareUrl() { return location.origin + "/bmr-calculator?" + BR.qs({ kg: BR.num(st.kg), cm: BR.num(st.cm), age: BR.num(st.age), sex: st.sex, act: st.act, bf: BR.num(st.bf), f: st.f, intake: touched && slideVal ? slideVal : null }); }
+	function shareUrl() { return location.origin + location.pathname.replace(/\/index\.html$/, "") + "?" + BR.qs({ kg: BR.num(st.kg), cm: BR.num(st.cm), age: BR.num(st.age), sex: st.sex, act: st.act, bf: BR.num(st.bf), f: st.f, intake: touched && slideVal ? slideVal : null }); }
 	$("br-link").onclick = function () { copy(shareUrl(), "Link copied"); };
 	$("br-copy").onclick = function () { if (!cur) return; copy("BMR " + BR.group(cur.bmr) + " kcal/day, maintenance (TDEE) " + BR.group(cur.tdee) + " kcal/day (" + BR.activity(st.act).name + ", " + BR.FORMULAS[cur.id].name + "). " + shareUrl(), "Summary copied"); };
 	$("br-print").onclick = function () { window.print(); };

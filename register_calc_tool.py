@@ -22,7 +22,7 @@ patch("add_sidebar.py", '("bmr-calculator", "Calculator"),', '("bmr-calculator",
 patch("add_bottom_ad.py", '"bmr-calculator", "weighted-average-calculator.html"]', '"%s", "bmr-calculator", "weighted-average-calculator.html"]' % slug, "ad")
 patch("add_cross_links.py", '"bmr-calculator", "gradecalculator"', '"%s", "bmr-calculator", "gradecalculator"' % slug, "cross")
 patch("build_search_index.py", '"bmr-calculator", "gradecalculator"', '"%s", "bmr-calculator", "gradecalculator"' % slug, "search")
-patch("organize_hub_cards.py", '"contraction-timer", "bmr-calculator",', '"contraction-timer", "%s", "bmr-calculator",' % slug, "hub")
+patch("organize_hub_cards.py", '"unit-conversion", ', '"unit-conversion", "%s", ' % slug, "hub")
 patch("build_aside_recs.py", '    "/bmr-calculator": ("Calculator", ["health", "everyday"]),', '    "/bmr-calculator": ("Calculator", ["health", "everyday"]),\n    "/%s": ("%s", ["health", "everyday"]),' % (slug, a.kind), "recs")
 if a.private:
     tp = R / "mes.fm/main_js/track.js"; ts = tp.read_text()

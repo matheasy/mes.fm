@@ -1,0 +1,62 @@
+	<div class="tu" id="wi">
+		<div class="tu-card" id="wi-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="wi-sex-label">Sex</span>
+					<div class="tu-seg" id="wi-sex" role="group" aria-labelledby="wi-sex-label"><button type="button" data-s="m" aria-pressed="false">Male</button><button type="button" data-s="f" aria-pressed="false">Female</button></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="wi-kg">Weight</label><div class="tu-suffix"><input id="wi-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 70"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="wi-lb">Weight</label><div class="tu-suffix"><input id="wi-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 154"><span>lb</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.9em;">
+				<div class="tu-field" style="flex:2 1 18em;"><label for="wi-ex">Exercise a day: <b id="wi-exo"></b></label><input type="range" id="wi-ex" min="0" max="240" step="5" style="width:100%;accent-color:var(--accent);height:2em;"></div>
+				<div class="tu-field" style="flex:2 1 16em;"><label for="wi-cl">Climate</label><select id="wi-cl" class="tu-select"></select></div>
+				<div class="tu-field" style="flex:1 1 11em;" id="wi-stbox" hidden><label for="wi-stt">Pregnant or breastfeeding?</label><select id="wi-stt" class="tu-select"></select></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.9em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><span class="tu-label" id="wi-du-label">Show amounts in</span>
+					<div class="tu-seg" id="wi-du" role="group" aria-labelledby="wi-du-label"><button type="button" data-u="ml" aria-pressed="true">ml / L</button><button type="button" data-u="oz" aria-pressed="false">fl oz</button></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:8em;"><label for="wi-wake">Wake up</label><select id="wi-wake" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:8em;"><label for="wi-sleep">Bedtime</label><select id="wi-sleep" class="tu-select"></select></div>
+			</div>
+		</div>
+		<div id="wi-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your weight &mdash; or try an example: </span><span class="tu-chips" id="wi-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="wi-out" hidden>
+			<div class="tu-stats" id="wi-hero" aria-live="polite"></div>
+			<div class="tu-card wi-verdict" id="wi-verdict" aria-live="polite"></div>
+			<h2>Where your number comes from</h2>
+			<div class="tu-card"><div class="wi-split" id="wi-split" role="img"></div><ul class="wi-legend" id="wi-splitleg"></ul></div>
+			<h2>Today's tracker</h2>
+			<div class="tu-card wi-track">
+				<div class="wi-ring" id="wi-ring" role="img"></div>
+				<div class="wi-trackside">
+					<div class="wi-addrow" id="wi-add"></div>
+					<div class="wi-custom"><input id="wi-cust" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="custom amount"><button type="button" class="tu-btn tu-btn--ghost" id="wi-custadd">Add</button></div>
+					<div class="wi-trackbtns"><button type="button" class="tu-btn tu-btn--ghost" id="wi-undo">Undo last</button><button type="button" class="tu-btn tu-btn--ghost" id="wi-reset">Reset today</button></div>
+					<p class="wi-streak" id="wi-streak" aria-live="polite"></p>
+				</div>
+			</div>
+			<p class="tu-note">The tracker is saved in this browser only (nothing is uploaded) and counts toward the daily target above.</p>
+			<h2>Last 14 days</h2>
+			<div class="tu-card"><div class="wi-chart" id="wi-hist" role="img"></div></div>
+			<h2>A sip plan for the day</h2>
+			<div class="tu-card"><div class="wi-chart" id="wi-sched" role="img"></div><p class="tu-note" style="margin-bottom:0;" id="wi-schednote"></p></div>
+			<div class="wi-btns"><button type="button" class="tu-btn tu-btn--primary" id="wi-link">Copy link to this result</button><button type="button" class="tu-btn tu-btn--ghost" id="wi-print">Print</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How much water should I drink a day?</h2>
+			<p>This calculator starts from <b>32 ml of fluid per kg of body weight</b> (about 0.5 oz per lb), then adds <b>12 ml for every minute of exercise</b> (roughly 0.7 L an hour), extra for <b>hot or humid weather</b> (350&ndash;1,100 ml) and, if you are female, for <b>pregnancy (+300 ml)</b> or <b>breastfeeding (+700 ml)</b>. The range shown is the target &plusmn;15%, because needs genuinely vary between people and days.</p>
+			<p>For comparison, the U.S. National Academies set adequate total water intake at about <b>3.7 L a day for men and 2.7 L for women</b>, roughly 80% of it from drinks and 20% from food. Tea, coffee, milk, juice and the water in fruit, vegetables and soup all count.</p>
+			<h2>Signs you are drinking enough</h2>
+			<ul><li>Pale yellow urine (dark yellow means drink more; completely clear all day can mean you are overdoing it).</li><li>You rarely feel thirsty, and your mouth and lips are not dry.</li><li>Steady energy and no dehydration headaches.</li></ul>
+			<h2>Can you drink too much water?</h2>
+			<p>Yes, but it is rare. Drinking several litres in a short time can dilute blood sodium (hyponatremia), which is dangerous. Spread your intake through the day, and do not force fluids well beyond thirst. People with kidney, heart or liver disease, or on diuretics, should follow their doctor's advice on fluid limits.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Does coffee or tea count?</dt><dd>Yes. Caffeinated drinks hydrate you overall for regular drinkers, though water is the best default.</dd>
+				<dt>Do I need 8 glasses a day?</dt><dd>&ldquo;8 glasses&rdquo; (about 1.9 L) is a handy rule of thumb, not a requirement. Your result depends on your size, activity and climate.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Your numbers and tracker stay in this browser.</dd>
+			</dl>
+			<p>General information, not medical advice. Related: <a href="/macro-calculator">Macro Calculator</a> &middot; <a href="/bmr-calculator">BMR Calculator</a> &middot; <a href="/bmicalculator">BMI Calculator</a></p>
+		</div>
+	</div>

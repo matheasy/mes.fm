@@ -1,0 +1,17 @@
+	/* Water Intake Calculator */
+	.tu [hidden] {display:none !important;}
+	.tu #wi-sex, .tu #wi-du {display:inline-flex;max-width:100%;} .tu #wi-sex button, .tu #wi-du button {flex:1 1 auto;padding:0.5em 1.1em;}
+	.tu .wi-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:1em 0;}
+	.tu .wi-verdict {font-size:1.05em;line-height:1.5;border-left:5px solid var(--accent);} .tu .wi-small {color:#6a7280;font-size:0.82em;}
+	.tu .wi-split {display:flex;height:2.4em;border-radius:0.5em;overflow:hidden;background:#e8ecef;} .tu .wi-seg {display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.85em;min-width:0;overflow:hidden;}
+	.tu .wi-c0 {background:#0e7490;fill:#0e7490;stroke:#0e7490;} .tu .wi-c1 {background:#22a6c9;fill:#22a6c9;} .tu .wi-c2 {background:#e8a317;fill:#e8a317;} .tu .wi-c3 {background:#ec6a8a;fill:#ec6a8a;}
+	.tu .wi-legend {list-style:none;margin:0.7em 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.3em 1em;} .tu .wi-legend li {display:flex;align-items:center;gap:0.5em;font-size:0.92em;} .tu .wi-legend i {flex:0 0 auto;width:0.9em;height:0.9em;border-radius:0.2em;} .tu .wi-legend b {margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap;}
+	.tu .wi-track {display:flex;gap:1.5em;align-items:center;flex-wrap:wrap;justify-content:center;} .tu .wi-ring {flex:0 0 auto;width:14em;max-width:70vw;} .tu .wi-ring svg {width:100%;height:auto;display:block;} .tu .wi-trackside {flex:1 1 17em;}
+	.tu .wi-ring circle {fill:none;stroke-width:5;} .tu .wi-ring .wi-trk {stroke:#e1e8ec;} .tu .wi-ring .wi-prog {stroke:var(--accent);stroke-linecap:round;transition:stroke-dasharray .3s;} .tu .wi-ring text {fill:#1e2733;} .tu .wi-ring .wi-big {font-size:8.5px;font-weight:700;} .tu .wi-ring .wi-sm {font-size:3.4px;fill:#6a7280;}
+	.tu .wi-addrow {display:flex;flex-wrap:wrap;gap:0.4em;} .tu .wi-addrow button {min-width:5.5em;}
+	.tu .wi-custom {display:flex;gap:0.4em;margin-top:0.6em;} .tu .wi-custom input {flex:1 1 auto;min-width:0;} .tu .wi-trackbtns {display:flex;gap:0.4em;margin-top:0.6em;flex-wrap:wrap;} .tu .wi-streak {margin:0.7em 0 0;font-weight:600;}
+	.tu .wi-chart svg {width:100%;height:auto;display:block;}
+	.tu .wi-gl {stroke:#d5dae0;stroke-width:0.6;} .tu .wi-ct {fill:#6a7280;font-size:11px;} .tu .wi-goal {stroke:#e8a317;stroke-width:1.5;stroke-dasharray:6 4;} .tu .wi-bar {fill:var(--accent);opacity:0.85;} .tu .wi-bar.is-hit {fill:#2e9b57;opacity:1;} .tu .wi-bar.is-today {opacity:1;stroke:#1e2733;stroke-width:1.2;}
+	.tu .wi-cum {fill:none;stroke:#e8a317;stroke-width:2;}
+	body.dark-mode #wi .wi-split {background:#3a3f45;} body.dark-mode #wi .wi-ring .wi-trk {stroke:#3a3f45;} body.dark-mode #wi .wi-ring text {fill:#e8e8e8;} body.dark-mode #wi .wi-ring .wi-sm, body.dark-mode #wi .wi-ct, body.dark-mode #wi .wi-small {fill:#a0a8b3;color:#a0a8b3;} body.dark-mode #wi .wi-gl {stroke:#3f464f;} body.dark-mode #wi .wi-bar.is-today {stroke:#e8e8e8;}
+	@media print {.tu .wi-btns, .tu #wi-setup, .tu .wi-trackbtns, .tu .wi-addrow, .tu .wi-custom {display:none;}}

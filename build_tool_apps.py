@@ -419,7 +419,12 @@ APPS = {
     "bmr-calculator": dict(title="BMR Calculator", page_title="BMR Calculator: Basal Metabolic Rate and Daily Calories",
                            tag="How many calories your body burns each day.", accent="#2b8a3e", dark="#1f6a2f", tint="#e3f4e6",
                            desc="Free BMR calculator: find your basal metabolic rate and daily calories (TDEE) from your age, sex, weight and height. Mifflin-St Jeor, Harris-Benedict, Katch-McArdle and Cunningham equations, calories to lose or gain weight, kcal and kJ, no sign-up.",
-                           js_v="1"),
+                           js_v="2"),
+    # TDEE Calculator (2026-10-14): the BMR calculator's script and page in a TDEE-first mode (data-mode="tdee" on #br: hero leads with maintenance calories, own text in content-tdee.html).
+    "tdee-calculator": dict(title="TDEE Calculator", page_title="TDEE Calculator: Maintenance Calories and Calories to Lose Weight",
+                            tag="Your maintenance calories for any goal.", accent="#b45309", dark="#8a3f07", tint="#fbebd6",
+                            desc="Free TDEE calculator: find your total daily energy expenditure (maintenance calories) from your age, sex, weight, height and activity, then see the calories to lose, maintain or gain weight, with a what-if slider and week-by-week projection.",
+                            src="bmr-calculator", content="content-tdee.html", js_path="bmr-calculator/js/bmr-calculator.js", js_v="2"),
     # Body Fat Calculator (2026-10-14): U.S. Navy tape method + Deurenberg BMI estimate, ACE categories, fat / lean split, goal slider (lean mass held), hands the % to the BMR calculator.
     # lib.js = maths (tests: tool_apps_src/body-fat-calculator-tests.js). Keeps ads; share links are plain query strings.
     "body-fat-calculator": dict(title="Body Fat Calculator", page_title="Body Fat Calculator: U.S. Navy Method and BMI Estimate",
@@ -432,6 +437,16 @@ APPS = {
                              tag="Protein, carbs and fat for your goal.", accent="#1f6a2f", dark="#154d21", tint="#e0f1e3",
                              desc="Free macro calculator: get your daily calories and grams of protein, carbs and fat for losing, maintaining or gaining weight. Pick a balanced, high-protein, low-carb or keto split or set your own, see it per meal, and check your protein per kg.",
                              js_v="1", lib_from=["bmr-calculator"]),
+    # Ideal Weight Calculator (2026-10-14): Devine / Robinson / Miller / Hamwi + the healthy BMI band, range chart, ideal weight at every height. lib.js = IW (tests: tool_apps_src/ideal-weight-calculator-tests.js).
+    "ideal-weight-calculator": dict(title="Ideal Weight Calculator", page_title="Ideal Weight Calculator: Devine, Robinson, Miller and Hamwi Formulas",
+                                    tag="Four formulas and your healthy weight range.", accent="#0e7490", dark="#0a5668", tint="#dff1f6",
+                                    desc="Free ideal weight calculator: enter your height and sex to see your ideal body weight by the Devine, Robinson, Miller and Hamwi formulas next to the healthy BMI range, with charts of where the formulas land and ideal weight at every height.",
+                                    js_v="1"),
+    # Water Intake Calculator (2026-10-14): 32 ml/kg + 12 ml/min of exercise + climate + pregnancy / breastfeeding, split bar, sip plan, a daily tracker (localStorage only) with a 14-day chart and streak. lib.js = WI (tests: tool_apps_src/water-intake-calculator-tests.js).
+    "water-intake-calculator": dict(title="Water Intake Calculator", page_title="Water Intake Calculator: How Much Water Should I Drink a Day?",
+                                    tag="Your daily water target, with a tracker.", accent="#0369a1", dark="#075985", tint="#e0f0fb",
+                                    desc="Free water intake calculator: how much water to drink a day for your weight, exercise, climate, pregnancy or breastfeeding. See where the number comes from, get an hourly sip plan, and track today's drinks with a 14-day chart.",
+                                    js_v="1"),
     # Timer family (rewritten 2026-10-06): ONE script (tool_apps_src/timer/app.js) + one content template; each page sets which panels it shows (`vars.VIEWS`) and its own text (`vars.SEO` = seo/<slug>.html).
     # /timer shows countdown + stopwatch + alarm together by default (customizable: add Pomodoro / Interval / Date countdown, stacked or side by side, drag to reorder); the others are one big panel.
     # All use the Timer brand (logo, header, Home link) via `brand`; timer/img + timer/audio + the quote galleries stay in mes.fm/timer/. Tests: tool_apps_src/timer-tests.js.

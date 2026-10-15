@@ -1,0 +1,47 @@
+	<div class="tu" id="iw">
+		<div class="tu-card" id="iw-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="iw-sex-label">Sex</span>
+					<div class="tu-seg" id="iw-sex" role="group" aria-labelledby="iw-sex-label"><button type="button" data-s="m" aria-pressed="false">Male</button><button type="button" data-s="f" aria-pressed="false">Female</button></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="iw-cm">Height</label><div class="tu-suffix"><input id="iw-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 175"><span>cm</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="iw-ft">Height</label><div class="tu-suffix"><input id="iw-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 5"><span>ft</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="iw-in">&nbsp;</label><div class="tu-suffix"><input id="iw-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 9"><span>in</span></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="iw-kg">Your weight (optional)</label><div class="tu-suffix"><input id="iw-kg" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 78"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="iw-lb">Your weight (optional)</label><div class="tu-suffix"><input id="iw-lb" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 172"><span>lb</span></div></div>
+			</div>
+		</div>
+		<div id="iw-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Pick your sex and enter your height &mdash; or try an example: </span><span class="tu-chips" id="iw-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="iw-out" hidden>
+			<div class="tu-stats" id="iw-hero" aria-live="polite"></div>
+			<div class="tu-card iw-verdict" id="iw-verdict" aria-live="polite"></div>
+			<h2>Where the formulas land</h2>
+			<div class="tu-card"><div class="iw-chart" id="iw-range" role="img"></div><div class="iw-key" id="iw-key"></div></div>
+			<h2>Each formula</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="iw-table"></table></div></div>
+			<h2>Ideal weight at every height</h2>
+			<div class="tu-card"><div class="iw-chart" id="iw-height" role="img"></div><div class="iw-readout" id="iw-hread" aria-live="polite">Move over the chart to read a height.</div><p class="tu-note" style="margin-bottom:0;">The shaded band is the healthy BMI range (18.5&ndash;24.9). The dashed line marks your height.</p></div>
+			<div class="iw-btns"><button type="button" class="tu-btn tu-btn--primary" id="iw-link">Copy link to this result</button><button type="button" class="tu-btn tu-btn--ghost" id="iw-print">Print</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How ideal body weight is calculated</h2>
+			<p>There is no single &ldquo;ideal&rdquo; weight, so this calculator shows four classic formulas side by side with the healthy BMI range. Each formula starts from a base weight at 5 feet (152.4 cm) and adds a fixed number of kilograms for every inch above it:</p>
+			<div class="tu-table-wrap"><table class="tu-table" id="iw-ref"></table></div>
+			<p>For example, a man of 180 cm (70.9 in, 10.9 inches over 5 ft) has a Devine ideal weight of 50 + 2.3 &times; 10.9 = <b>75 kg (165 lb)</b>.</p>
+			<h2>Ideal weight versus healthy weight range</h2>
+			<p>The formulas give a single number and ignore build, age and muscle. The <b>healthy BMI range</b> (BMI 18.5 to 24.9) gives a band of weights that is more realistic: anywhere inside it is generally considered healthy for adults. Most people do well somewhere in the middle of the band, and athletes with a lot of muscle can sit above it without any excess fat.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Which formula is the most accurate?</dt><dd>None is &ldquo;right&rdquo;. They were written for different purposes (the Devine formula to dose medicine) and disagree by a few kilos. Look at the range, not one number.</dd>
+				<dt>Do the formulas work below 5 feet or for very tall people?</dt><dd>They are extended in a straight line, so they get less reliable at the extremes. The healthy BMI band is better there.</dd>
+				<dt>Does age matter?</dt><dd>These formulas ignore age; adults over 60 often do well slightly above the middle of the BMI range. Children and teens need growth charts.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
+			</dl>
+			<p>This is general information, not medical advice. Related: <a href="/bmicalculator">BMI Calculator</a> &middot; <a href="/body-fat-calculator">Body Fat Calculator</a> &middot; <a href="/bmr-calculator">BMR Calculator</a></p>
+		</div>
+	</div>

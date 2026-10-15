@@ -2,6 +2,30 @@
  "generated": "2026-10-14",
  "calculators": [
   {
+   "href": "/ideal-weight-calculator",
+   "title": "Ideal Weight Calculator",
+   "icon": "/img/ideal-weight-calculator-logo.png",
+   "desc": "Ideal body weight by four formulas, next to your healthy BMI range.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/tdee-calculator",
+   "title": "TDEE Calculator",
+   "icon": "/img/tdee-calculator-logo.png",
+   "desc": "Your maintenance calories, plus calories to lose or gain weight.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/water-intake-calculator",
+   "title": "Water Intake Calculator",
+   "icon": "/img/water-intake-calculator-logo.png",
+   "desc": "How much water to drink a day, with a daily tracker.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/macro-calculator",
    "title": "Macro Calculator",
    "icon": "/img/macro-calculator-logo.png",
@@ -70,30 +94,6 @@
    "title": "Weeks Pregnant Calculator",
    "icon": "/img/weeks-pregnant-calculator-logo.png",
    "desc": "How many weeks pregnant you are today, your trimester and a week-by-week table with baby size.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/ovulation-calculator",
-   "title": "Ovulation Calculator",
-   "icon": "/img/ovulation-calculator-logo.png",
-   "desc": "Find your fertile window, ovulation day and next period. Any cycle length, LH tests, private, adds to your calendar.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/period-calculator",
-   "title": "Period Calculator",
-   "icon": "/img/period-calculator-logo.png",
-   "desc": "Predict your next period, log your cycles to get your own average, and see the year ahead.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/due-date-calculator",
-   "title": "Pregnancy Due Date Calculator",
-   "icon": "/img/due-date-calculator-logo.png",
-   "desc": "Due date from your last period, conception, IVF transfer or a scan, with weeks pregnant and key dates.",
    "added": "2026-10-14",
    "kind": "calculator"
   }
@@ -198,6 +198,30 @@
  ],
  "latest": [
   {
+   "href": "/ideal-weight-calculator",
+   "title": "Ideal Weight Calculator",
+   "icon": "/img/ideal-weight-calculator-logo.png",
+   "desc": "Ideal body weight by four formulas, next to your healthy BMI range.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/tdee-calculator",
+   "title": "TDEE Calculator",
+   "icon": "/img/tdee-calculator-logo.png",
+   "desc": "Your maintenance calories, plus calories to lose or gain weight.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/water-intake-calculator",
+   "title": "Water Intake Calculator",
+   "icon": "/img/water-intake-calculator-logo.png",
+   "desc": "How much water to drink a day, with a daily tracker.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/macro-calculator",
    "title": "Macro Calculator",
    "icon": "/img/macro-calculator-logo.png",
@@ -236,30 +260,6 @@
    "desc": "Drag a point on a map of the Mandelbrot set and watch its Julia set change live. Walk c around the cardioid, zoom and save pictures.",
    "added": "2026-10-14",
    "kind": "tool"
-  },
-  {
-   "href": "/archive",
-   "title": "Archive",
-   "icon": "/img/archive-logo.png",
-   "desc": "Save or find any web page on the Wayback Machine, archive.today, Ghostarchive and more at once. Includes a one-click browser extension.",
-   "added": "2026-10-14",
-   "kind": "tool"
-  },
-  {
-   "href": "/baby-feeding-log",
-   "title": "Baby Feeding Log",
-   "icon": "/img/baby-feeding-log-logo.png",
-   "desc": "One-tap breastfeeding timer, bottles, pumping and diapers, with today's totals.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/baby-growth-percentile-calculator",
-   "title": "Baby Growth Percentile Calculator",
-   "icon": "/img/baby-growth-percentile-calculator-logo.png",
-   "desc": "Weight, length and head circumference percentiles on the WHO growth chart, with a private growth log.",
-   "added": "2026-10-14",
-   "kind": "calculator"
   }
  ]
 }
