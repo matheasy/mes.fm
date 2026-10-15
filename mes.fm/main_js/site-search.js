@@ -17,7 +17,7 @@
     var data = null, loading = null, prepared = null;
     var HC_CSS = [
         ".hc-more{display:none}",
-        ".hc-group #siteReadBtn{order:1}.hc-group #textSizeDownBtn,.hc-group #textSizeDown{order:2}.hc-group #textSizeUpBtn,.hc-group #textSizeUp{order:3}.hc-group #siteSearchBtn{order:4}.hc-group #themeToggleBtn,.hc-group #themeToggle{order:5}.hc-group .hc-more{order:0}",
+        ".hc-group #siteReadBtn{order:1}.hc-group #textSizeDownBtn,.hc-group #textSizeDown{order:2}.hc-group #textSizeUpBtn,.hc-group #textSizeUp{order:3}.hc-group #siteFavBtn{order:4}.hc-group #siteSearchBtn{order:4}.hc-group #themeToggleBtn,.hc-group #themeToggle{order:5}.hc-group .hc-more{order:0}",
         "@media (max-width:768px),(pointer:coarse){",
         ".hc-group{gap:8px !important;flex-wrap:wrap !important;justify-content:flex-end !important;max-width:calc(100vw - 76px) !important}",
         ".hc-group .hc-btn{width:44px !important;height:44px !important;font-size:1.05em !important}",
@@ -156,6 +156,72 @@
         document.head.appendChild(sc);
     }
 
+
+    /* ---- Favourites: a star that adds / removes this page in mes.fm/fav (list in localStorage "mes-fav:v1", same format the /fav page
+       uses), plus a "Favourites" link in the side menu. Extra button on phones (hidden behind the chevron with read aloud / text size). */
+    var fbtn = null, FKEY = "mes-fav:v1";
+    var STAR = '<svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true" focusable="false"><path d="M12 3.2l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.5l6-.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+    var STARON = STAR.replace('fill="none"', 'fill="#f5a623"').replace('stroke="currentColor"', 'stroke="#f5a623"');
+    function favPath() {
+        var p = location.pathname.replace(/\/index\.html$/, "/").replace(/\.html$/, "");
+        if (p.length > 1) p = p.replace(/\/+$/, "");
+        return p || "/";
+    }
+    function favLoad() {
+        try { var s = JSON.parse(localStorage.getItem(FKEY)); if (s && Array.isArray(s.groups) && s.groups.length) return s; } catch (e) { /* ignore */ }
+        return { v: 1, groups: [{ id: "g" + Date.now().toString(36), name: "Favourites", open: true, items: [] }], to: "" };
+    }
+    function favSave(s) { try { localStorage.setItem(FKEY, JSON.stringify(s)); return true; } catch (e) { return false; } }
+    function favIn(s, p) { return s.groups.filter(function (g) { return g.items && g.items.indexOf(p) !== -1; }); }
+    function favPaint() { if (!fbtn) return; var on = favIn(favLoad(), favPath()).length > 0; fbtn.innerHTML = on ? STARON : STAR; fbtn.setAttribute("aria-pressed", on ? "true" : "false"); var t = on ? "In your favourites (click to remove)" : "Add this page to your favourites"; fbtn.title = t; fbtn.setAttribute("aria-label", t); }
+    var favToastEl, favToastT;
+    function favToast(msg, actions) {
+        if (favToastEl) favToastEl.remove(); clearTimeout(favToastT);
+        favToastEl = document.createElement("div"); favToastEl.setAttribute("role", "status");
+        favToastEl.style.cssText = "position:fixed;left:50%;bottom:1.1em;transform:translateX(-50%);z-index:2147483000;background:#222;color:#fff;border-radius:.6em;padding:.65em 1em;box-shadow:0 8px 22px rgba(0,0,0,.35);display:flex;gap:1em;align-items:center;max-width:92vw;font:14px/1.3 system-ui,sans-serif";
+        var sp = document.createElement("span"); sp.textContent = msg; sp.style.color = "inherit"; favToastEl.appendChild(sp);
+        (actions || []).forEach(function (a) {
+            var e = document.createElement(a.href ? "a" : "button"); e.textContent = a.label; if (a.href) e.href = a.href; else e.type = "button";
+            e.style.cssText = "color:#ffcc66;font-weight:700;text-decoration:underline;background:none;border:0;padding:0;cursor:pointer;font:inherit;font-weight:700";
+            if (a.run) e.addEventListener("click", function () { a.run(); favToastEl.remove(); });
+            favToastEl.appendChild(e);
+        });
+        document.body.appendChild(favToastEl);
+        favToastT = setTimeout(function () { if (favToastEl) favToastEl.remove(); }, 5000);
+    }
+    function favToggle() {
+        var s = favLoad(), p = favPath(), had = favIn(s, p);
+        if (had.length) {
+            var snap = JSON.stringify(s);
+            had.forEach(function (g) { g.items.splice(g.items.indexOf(p), 1); });
+            if (favSave(s)) favToast("Removed from your favourites", [{ label: "Undo", run: function () { try { localStorage.setItem(FKEY, snap); } catch (e) { /* ignore */ } favPaint(); } }]);
+        } else {
+            var g = s.groups.filter(function (x) { return x.id === s.to; })[0] || s.groups[0];
+            g.items = g.items || []; g.items.push(p); g.open = true; s.to = g.id;
+            if (favSave(s)) favToast("Added to " + g.name, [{ label: "Open favourites", href: "/fav" }]); else favToast("Your browser would not save the favourite (private mode?)");
+        }
+        favPaint();
+    }
+    function favButton() {
+        if (fbtn || !group || favPath() === "/fav" || document.getElementById("siteFavBtn")) return;
+        fbtn = document.createElement("button"); fbtn.type = "button"; fbtn.id = "siteFavBtn";
+        fbtn.className = (btn ? btn.className : "header-control-btn") + " hc-x";
+        favPaint();
+        group.insertBefore(fbtn, btn || group.firstChild);
+        fbtn.addEventListener("click", favToggle);
+        window.addEventListener("storage", function (e) { if (e.key === FKEY) favPaint(); });
+    }
+    function favMenu() {
+        Array.prototype.forEach.call(document.querySelectorAll("a.navbar__link"), function (a) {
+            if (!/^(https:\/\/mes\.fm)?\/browser\/?$/.test(a.getAttribute("href") || "")) return;
+            var li = a.closest("li"); if (!li || li.previousElementSibling && li.previousElementSibling.getAttribute("data-fav")) return;
+            var n = li.cloneNode(true); n.setAttribute("data-fav", "1");
+            var l = n.querySelector("a.navbar__link"); l.setAttribute("href", "/fav"); l.textContent = "★ My Favourites"; l.removeAttribute("id");
+            li.parentNode.insertBefore(n, li);
+        });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", favMenu); else favMenu();
+
     /* on pages where this script runs before display-controls.js has built the controls (e.g. /search, which loads
        it up front), try again once every deferred script has run */
     function attach() {
@@ -182,6 +248,7 @@
             group.insertBefore(rbtn, btn);
             rbtn.addEventListener("click", readAloud);
         }
+        favButton();
         headerMore();
         reserve();
         var rt;
@@ -241,7 +308,7 @@
         }
         var gs = getComputedStyle(group);
         var gap = parseFloat(gs.columnGap) || parseFloat(gs.gap) || 6;
-        var extra = btn.offsetWidth + gap + (rbtn && rbtn.offsetWidth ? rbtn.offsetWidth + gap : 0);
+        var extra = btn.offsetWidth + gap + (rbtn && rbtn.offsetWidth ? rbtn.offsetWidth + gap : 0) + (fbtn && fbtn.offsetWidth ? fbtn.offsetWidth + gap : 0);
         var els = [document.getElementById("compact-nav"), group.parentElement,
             document.querySelector("#header .logo-text-container")];
         els.forEach(function (el, i) {

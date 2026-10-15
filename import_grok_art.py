@@ -34,6 +34,7 @@ for a in [x for x in sys.argv[1:] if not x.startswith("--")]:
     rounded(c, 512).save(f"{R}/mes.fm/{slug}/img/logo.png"); rounded(c, 352).save(f"{R}/mes.fm/img/{slug}-logo.png")
     s = Image.open(D + name + "-share.jpg").convert("RGB"); w, h = s.size; ch = round(w * 630 / 1200); t = (h - ch) // 2
     s.crop((0, t, w, t + ch)).resize((1200, 630), Image.LANCZOS).save(f"{R}/mes.fm/{slug}/img/logo-big.png")
+    if not os.path.exists(D + name + "-tile.jpg"): print("  (no -tile.jpg: tile left as is)"); continue
     tl = Image.open(D + name + "-tile.jpg").convert("RGB"); w, h = tl.size; ch = round(w * 2 / 3); t = (h - ch) // 2
     tl.crop((0, t, w, t + ch)).resize((900, 600), Image.LANCZOS).save(f"{R}/mes.fm/img/{slug}-icon.jpg", quality=88)
 print("applied" if apply else "dry run (use --apply)")
