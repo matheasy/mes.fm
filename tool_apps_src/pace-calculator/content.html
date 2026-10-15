@@ -1,0 +1,51 @@
+	<div class="tu" id="pc">
+		<div class="tu-card" id="pc-setup">
+			<p class="tu-note" style="margin:0 0 0.8em;"><b>Fill in any two</b> of distance, time and pace: the third is worked out for you. Type times as <code>25:30</code>, <code>1:45:30</code> or <code>45m</code>.</p>
+			<div class="tu-row">
+				<div class="tu-field" style="flex:2 1 15em;"><label for="pc-dist">Distance</label>
+					<div class="pc-dist"><input id="pc-dist" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 5"><select id="pc-du" class="tu-select" aria-label="Distance unit"><option value="km">km</option><option value="mi">miles</option></select></div></div>
+				<div class="tu-field" style="flex:2 1 12em;"><label for="pc-time">Time</label><input id="pc-time" class="tu-input tu-input--big" type="text" inputmode="text" autocomplete="off" placeholder="e.g. 25:00"></div>
+				<div class="tu-field" style="flex:2 1 15em;"><label for="pc-pace">Pace</label>
+					<div class="pc-dist"><input id="pc-pace" class="tu-input tu-input--big" type="text" inputmode="text" autocomplete="off" placeholder="e.g. 5:00"><select id="pc-pu" class="tu-select" aria-label="Pace unit"><option value="km">per km</option><option value="mi">per mile</option></select></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;"><div class="tu-field" style="flex:1 1 100%;"><span class="tu-label">Quick distances</span><div class="tu-chips" id="pc-races"></div></div></div>
+		</div>
+		<div id="pc-empty" class="tu-card tu-card--tint" style="margin-top:1em;" hidden></div>
+		<div id="pc-out" hidden>
+			<div class="tu-stats" id="pc-hero" aria-live="polite"></div>
+			<div class="tu-card pc-verdict" id="pc-verdict" aria-live="polite"></div>
+			<h2>Splits and race strategy</h2>
+			<div class="tu-card">
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field" style="flex:2 1 16em;"><label for="pc-fade">Pacing: <b id="pc-fadeo"></b></label><input type="range" id="pc-fade" min="-10" max="10" step="1" value="0" style="width:100%;accent-color:var(--accent);height:2em;"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="pc-su">Split every</label><select id="pc-su" class="tu-select"><option value="km">1 km</option><option value="mi">1 mile</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="pc-start">Start time (optional)</label><input id="pc-start" class="tu-input" type="time"></div>
+				</div>
+				<p class="tu-note" id="pc-fadenote" style="margin:0.4em 0 0.8em;"></p>
+				<div class="pc-chart" id="pc-chart" role="img"></div>
+				<div class="tu-table-wrap"><table class="tu-table" id="pc-splits"></table></div>
+				<div class="pc-btns"><button type="button" class="tu-btn tu-btn--ghost" id="pc-copysplits">Copy splits</button></div>
+			</div>
+			<h2>Times for other distances</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="pc-races-t"></table></div><p class="tu-note" style="margin-bottom:0;"><b>At this pace</b> holds your current pace the whole way. <b>Predicted</b> uses the Riegel formula (time &times; (distance ratio)<sup>1.06</sup>): what you could run if you were equally fit and trained for that distance. It is more reliable between close distances than from a 5K to a marathon.</p></div>
+			<h2>Treadmill and speed</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="pc-tm"></table></div></div>
+			<div class="pc-btns"><button type="button" class="tu-btn tu-btn--primary" id="pc-link">Copy link to this result</button><button type="button" class="tu-btn tu-btn--ghost" id="pc-print">Print</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How to calculate running pace</h2>
+			<p><b>Pace</b> is how long it takes to cover one kilometre or one mile: <i>pace = time &divide; distance</i>. Run 5 km in 25:00 and your pace is 25:00 &divide; 5 = <b>5:00 per km</b> (8:03 per mile, or 12 km/h). Knowing any two of distance, time and pace gives you the third: <i>time = pace &times; distance</i> and <i>distance = time &divide; pace</i>.</p>
+			<h2>Pace conversions</h2>
+			<ul><li>Pace per mile = pace per km &times; 1.609</li><li>Pace per km = pace per mile &divide; 1.609</li><li>Speed in km/h = 3,600 &divide; pace in seconds per km</li><li>Speed in mph = 3,600 &divide; pace in seconds per mile</li></ul>
+			<h2>Even, negative and positive splits</h2>
+			<p>An <b>even split</b> runs the same pace throughout. A <b>negative split</b> runs the second half faster, which is what most coaches recommend for races because it avoids going out too hard. A <b>positive split</b> means slowing down. Move the pacing slider to see what each plan looks like per kilometre or mile; the splits are scaled so they always add up to your finish time.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>What is a good running pace?</dt><dd>It depends on age and training. A typical recreational runner covers 5 km in about 30 minutes (6:00 per km, 9:40 per mile). Beginners often start at 7:30&ndash;9:00 per km.</dd>
+				<dt>How accurate are the race predictions?</dt><dd>Within a few percent between similar distances if your training suits the longer distance. Marathon predictions from a 5K tend to be too optimistic unless you have the mileage.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
+			</dl>
+			<p>Related: <a href="/heart-rate-zone-calculator">Heart Rate Zone Calculator</a> &middot; <a href="/calculator">Calculator</a> &middot; <a href="/unit-conversion">Unit Conversion</a></p>
+		</div>
+	</div>

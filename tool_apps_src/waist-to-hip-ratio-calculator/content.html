@@ -1,0 +1,50 @@
+	<div class="tu" id="wh">
+		<div class="tu-card" id="wh-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="wh-sex-label">Sex</span>
+					<div class="tu-seg" id="wh-sex" role="group" aria-labelledby="wh-sex-label"><button type="button" data-s="m" aria-pressed="false">Male</button><button type="button" data-s="f" aria-pressed="false">Female</button></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="wh-u-label">Units</span>
+					<div class="tu-seg" id="wh-u" role="group" aria-labelledby="wh-u-label"><button type="button" data-u="m" aria-pressed="true">cm</button><button type="button" data-u="i" aria-pressed="false">inches</button></div></div>
+			</div>
+			<div class="tu-row" style="margin-top:1em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="wh-waist">Waist</label><div class="tu-suffix"><input id="wh-waist" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="at the navel"><span class="wh-lu">cm</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="wh-hip">Hips</label><div class="tu-suffix"><input id="wh-hip" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="widest point"><span class="wh-lu">cm</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="wh-h">Height (optional)</label><div class="tu-suffix"><input id="wh-h" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="for waist-to-height"><span class="wh-lu">cm</span></div></div>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">Measure bare skin, standing relaxed, breathing out. Waist: halfway between the lowest rib and the top of the hip bone (about the navel). Hips: the widest part of the buttocks.</p>
+		</div>
+		<div id="wh-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Pick your sex and enter waist and hips &mdash; or try an example: </span><span class="tu-chips" id="wh-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="wh-out" hidden>
+			<div class="tu-stats" id="wh-hero" aria-live="polite"></div>
+			<div class="tu-card wh-verdict" id="wh-verdict" aria-live="polite"></div>
+			<h2>Your measurements on the scale</h2>
+			<div class="tu-card" id="wh-gauges"></div>
+			<h2>What if my waist changed?</h2>
+			<div class="tu-card">
+				<label for="wh-slide" class="tu-label">Waist: <b id="wh-slideo"></b></label>
+				<input type="range" id="wh-slide" style="width:100%;accent-color:var(--accent);height:2em;">
+				<p class="wh-what" id="wh-what" aria-live="polite"></p>
+				<div class="wh-chart" id="wh-chart" role="img"></div>
+			</div>
+			<div class="wh-btns"><button type="button" class="tu-btn tu-btn--primary" id="wh-link">Copy link to this result</button><button type="button" class="tu-btn tu-btn--ghost" id="wh-print">Print</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What is the waist-to-hip ratio?</h2>
+			<p>The <b>waist-to-hip ratio (WHR)</b> is your waist measurement divided by your hip measurement. It shows where you carry body fat: fat around the middle (an &ldquo;apple&rdquo; shape) raises the risk of heart disease and type 2 diabetes more than fat on the hips and thighs (a &ldquo;pear&rdquo; shape). It can pick up risk that BMI misses.</p>
+			<p>Example: a woman with a 78 cm waist and 100 cm hips has WHR = 78 &divide; 100 = <b>0.78</b>, in the low-risk range.</p>
+			<h2>WHR risk levels (World Health Organization)</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="wh-ref"></table></div>
+			<h2>Waist-to-height ratio: &ldquo;keep your waist under half your height&rdquo;</h2>
+			<p>The <b>waist-to-height ratio (WHtR)</b> is your waist divided by your height. A simple rule works for adults of any size, sex and (largely) ethnicity: keep it <b>below 0.5</b>. Studies suggest it predicts heart and metabolic risk at least as well as BMI. At 0.5&ndash;0.59 risk is increased, and from 0.6 it is high.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Which is better: WHR, WHtR or waist size alone?</dt><dd>All three measure belly fat. Waist size and WHtR are the easiest and are often the best predictors; WHR adds the hip, which helps for shape. Use whichever you can track consistently.</dd>
+				<dt>How can I lower my waist measurement?</dt><dd>You cannot spot-reduce fat, but eating a little less, moving more, building muscle, sleeping well and limiting alcohol all reduce belly fat over time.</dd>
+				<dt>Do the ranges apply to everyone?</dt><dd>They are for adults. Some groups (for example people of South Asian descent) have higher risk at lower measurements. Children, pregnant women and very muscular people need other guidance.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
+			</dl>
+			<p>General information, not medical advice. Related: <a href="/body-fat-calculator">Body Fat Calculator</a> &middot; <a href="/bmicalculator">BMI Calculator</a> &middot; <a href="/ideal-weight-calculator">Ideal Weight Calculator</a></p>
+		</div>
+	</div>

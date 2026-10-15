@@ -1,0 +1,15 @@
+	/* Heart Rate Zone Calculator */
+	.tu [hidden] {display:none !important;}
+	.tu .hr-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:1em 0;} .tu .hr-small {color:#6a7280;font-size:0.82em;}
+	.tu .hr-own summary, .tu .hr-now summary {cursor:pointer;color:var(--accent);font-weight:600;}
+	.tu .hr-chart svg {width:100%;height:auto;display:block;}
+	.tu .hr-gl {stroke:#d5dae0;stroke-width:0.6;} .tu .hr-ct {fill:#6a7280;font-size:11px;} .tu .hr-zl {fill:#fff;font-size:12px;font-weight:700;} .tu .hr-bpm {fill:#1e2733;font-size:11px;font-weight:600;}
+	.tu .hr-z1 {fill:#9bb7c9;background:#9bb7c9;} .tu .hr-z2 {fill:#4caf7d;background:#4caf7d;} .tu .hr-z3 {fill:#e0b72c;background:#e0b72c;} .tu .hr-z4 {fill:#ee8a3c;background:#ee8a3c;} .tu .hr-z5 {fill:#d9453b;background:#d9453b;}
+	.tu .hr-pin {stroke:#1e2733;stroke-width:2.5;} .tu .hr-pint {fill:#1e2733;font-size:12px;font-weight:700;} .tu .hr-ageline {stroke:#1e2733;stroke-width:1.5;stroke-dasharray:4 3;}
+	.tu .hr-nowrow {display:flex;gap:1em;align-items:center;flex-wrap:wrap;} .tu .hr-nowrow .tu-suffix {max-width:11em;} .tu .hr-nowtxt {font-weight:600;} .tu .hr-count {margin-top:0.5em;display:flex;gap:0.6em;align-items:center;flex-wrap:wrap;}
+	.tu .hr-zb {display:inline-block;min-width:2.2em;text-align:center;border-radius:0.4em;color:#fff;font-weight:700;padding:0.1em 0.4em;}
+	.tu #hr-table td, .tu #hr-cmp td {font-variant-numeric:tabular-nums;vertical-align:top;} .tu #hr-table tr.is-on td, .tu #hr-cmp tr.is-on td {background:var(--tint);}
+	.tu .hr-barcell {width:26%;min-width:5em;} .tu .hr-bar {display:block;height:0.8em;border-radius:0.4em;background:var(--accent);opacity:0.8;}
+	body.dark-mode #hr .hr-gl {stroke:#3f464f;} body.dark-mode #hr .hr-ct, body.dark-mode #hr .hr-small {fill:#a0a8b3;color:#a0a8b3;} body.dark-mode #hr .hr-bpm, body.dark-mode #hr .hr-pint {fill:#e8e8e8;} body.dark-mode #hr .hr-pin, body.dark-mode #hr .hr-ageline {stroke:#e8e8e8;}
+	body.dark-mode #hr #hr-table tr.is-on td, body.dark-mode #hr #hr-cmp tr.is-on td {background:rgba(255,255,255,0.1);color:#fff;}
+	@media print {.tu .hr-btns, .tu #hr-setup {display:none;}}

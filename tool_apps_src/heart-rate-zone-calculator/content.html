@@ -1,0 +1,44 @@
+	<div class="tu" id="hr">
+		<div class="tu-card" id="hr-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:8em;"><label for="hr-age">Age</label><div class="tu-suffix"><input id="hr-age" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 40"><span>years</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="hr-rest">Resting heart rate (optional)</label><div class="tu-suffix"><input id="hr-rest" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 60"><span>bpm</span></div></div>
+				<div class="tu-field" style="flex:2 1 16em;"><label for="hr-method">Maximum heart rate formula</label><select id="hr-method" class="tu-select"></select></div>
+			</div>
+			<details class="hr-own" id="hr-ownbox" style="margin-top:0.8em;"><summary>Know your real maximum from a test? Enter it (more accurate than any formula)</summary>
+				<div class="tu-row" style="margin-top:0.6em;"><div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="hr-max">Measured max</label><div class="tu-suffix"><input id="hr-max" class="tu-input" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 188"><span>bpm</span></div></div></div></details>
+			<p class="tu-note" style="margin:0.8em 0 0;">With a resting heart rate the zones use the <b>Karvonen (heart-rate reserve)</b> method, which fits fitness level better than a plain percent of max.</p>
+		</div>
+		<div id="hr-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your age &mdash; or try an example: </span><span class="tu-chips" id="hr-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="hr-out" hidden>
+			<div class="tu-stats" id="hr-hero" aria-live="polite"></div>
+			<h2>Your zones</h2>
+			<div class="tu-card"><div class="hr-chart" id="hr-bands" role="img"></div><div class="hr-now" id="hr-nowbox"><label for="hr-now" class="tu-label">Check a heart rate now</label>
+				<div class="hr-nowrow"><div class="tu-suffix"><input id="hr-now" class="tu-input" type="text" inputmode="numeric" autocomplete="off" placeholder="bpm"><span>bpm</span></div><span class="hr-nowtxt" id="hr-nowtxt" aria-live="polite"></span></div>
+				<details style="margin-top:0.6em;"><summary>Count your pulse instead</summary><div class="hr-count"><label>Beats counted in <select id="hr-sec" class="tu-select" style="width:auto;display:inline-block;"><option value="10">10 sec</option><option value="15">15 sec</option><option value="30">30 sec</option><option value="60">60 sec</option></select></label> <input id="hr-beats" class="tu-input" style="width:6em;" type="text" inputmode="numeric" placeholder="beats"> <span id="hr-counted"></span></div></details></div></div>
+			<h2>What each zone is for</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="hr-table"></table></div><p class="tu-note" style="margin-bottom:0;">Most people get the best results with about 80% of training in zones 1&ndash;2 and 20% in zones 4&ndash;5 (the &ldquo;polarised&rdquo; approach), and little in zone 3.</p></div>
+			<h2>Your zones through the years</h2>
+			<div class="tu-card"><div class="hr-chart" id="hr-age-chart" role="img"></div><p class="tu-note" style="margin-bottom:0;">Bands shift down as you age because maximum heart rate falls (about 0.7 beats a minute per year). The dashed line is your age.</p></div>
+			<h2>Compare the formulas</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="hr-cmp"></table></div></div>
+			<div class="hr-btns"><button type="button" class="tu-btn tu-btn--primary" id="hr-link">Copy link to this result</button><button type="button" class="tu-btn tu-btn--ghost" id="hr-print">Print</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How to find your heart rate zones</h2>
+			<p>Your zones are slices of your <b>maximum heart rate</b> (the most beats per minute your heart can reach). The calculator estimates it from your age with a formula, then splits it into five zones. If you also enter your <b>resting heart rate</b> (measured sitting quietly, ideally first thing in the morning), it uses the <b>Karvonen method</b>: <i>target = resting + % &times; (max &minus; resting)</i>, which adjusts the zones to your fitness.</p>
+			<p>Example: age 40, Tanaka max = 208 &minus; 0.7 &times; 40 = <b>180 bpm</b>. With a resting rate of 60, zone 2 is 60 + 0.6 &times; 120 = 132 up to 60 + 0.7 &times; 120 = 144 bpm.</p>
+			<h2>Which maximum heart rate formula is best?</h2>
+			<p>The old &ldquo;220 &minus; age&rdquo; rule has a large error (typically &plusmn;10&ndash;12 bpm) and is least accurate for older adults. <b>Tanaka</b> (208 &minus; 0.7 &times; age) is a better default. Nothing beats a real test: a hard hill sprint or a supervised stress test shows your true maximum, which you can enter above.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Which zone burns the most fat?</dt><dd>Zone 2 burns the highest <i>share</i> of fat, but total calories burned matter more for weight loss, so harder zones burn more fat overall per minute. A mix works best.</dd>
+				<dt>How do I take my pulse?</dt><dd>Two fingers on the inside of your wrist or on the side of the neck. Count beats for 10, 15 or 30 seconds and use the counter above.</dd>
+				<dt>Do beta blockers and other medicines change my zones?</dt><dd>Yes. Beta blockers and some other drugs lower your heart rate. Use the talk test and perceived effort instead, and ask your doctor.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
+			</dl>
+			<p>General information, not medical advice. Talk to a doctor before starting vigorous exercise if you have a heart condition, symptoms, or have been inactive. Related: <a href="/pace-calculator">Running Pace Calculator</a> &middot; <a href="/bmr-calculator">BMR Calculator</a></p>
+		</div>
+	</div>

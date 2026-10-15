@@ -447,6 +447,23 @@ APPS = {
                                     tag="Your daily water target, with a tracker.", accent="#0369a1", dark="#075985", tint="#e0f0fb",
                                     desc="Free water intake calculator: how much water to drink a day for your weight, exercise, climate, pregnancy or breastfeeding. See where the number comes from, get an hourly sip plan, and track today's drinks with a 14-day chart.",
                                     js_v="1"),
+    # Heart Rate Zone / Waist-to-Hip Ratio / Running Pace / Protein Intake calculators (2026-10-14; lib.js tests: tool_apps_src/<slug>-tests.js). Keep ads; plain-query share links.
+    "heart-rate-zone-calculator": dict(title="Heart Rate Zone Calculator", page_title="Heart Rate Zone Calculator: Max Heart Rate and Training Zones",
+                                    tag="Your max heart rate and five training zones.", accent="#d9453b", dark="#a8332b", tint="#fbe4e1",
+                                    desc="Free heart rate zone calculator: find your maximum heart rate (Tanaka, Fox, Gellish, HUNT or your own tested max) and your five training zones, with the Karvonen method if you know your resting heart rate. Zone chart, pulse counter and zones by age.",
+                                    js_v="1"),
+    "waist-to-hip-ratio-calculator": dict(title="Waist-to-Hip Ratio Calculator", page_title="Waist-to-Hip Ratio Calculator: WHR, Waist-to-Height and Body Shape",
+                                       tag="Waist-to-hip, waist-to-height and body shape.", accent="#7c3a8a", dark="#5d2a69", tint="#f0e4f3",
+                                       desc="Free waist-to-hip ratio calculator with WHO risk levels, plus waist-to-height ratio and waist size, apple or pear shape, gauges, and a what-if slider showing how a smaller waist changes your numbers.",
+                                       js_v="1"),
+    "pace-calculator": dict(title="Running Pace Calculator", page_title="Running Pace Calculator: Pace, Time, Distance, Splits and Race Predictor",
+                         tag="Pace, time, distance and race splits.", accent="#0f7a5a", dark="#0a5b43", tint="#dcf2ea",
+                         desc="Free running pace calculator: enter any two of distance, time and pace to get the third. Get km and mile paces, even, negative or positive splits with a chart, Riegel race time predictions for 5K to marathon, and treadmill speeds.",
+                         js_v="1"),
+    "protein-intake-calculator": dict(title="Protein Intake Calculator", page_title="Protein Intake Calculator: How Much Protein Per Day?",
+                                   tag="How much protein you need a day.", accent="#a8452b", dark="#82331f", tint="#f7e3dc",
+                                   desc="Free protein intake calculator: how many grams of protein per day for your weight and goal (muscle, fat loss, endurance, over 65, pregnancy). See your range against every goal, a per-meal spread, and build your day from common foods.",
+                                   js_v="1"),
     # Timer family (rewritten 2026-10-06): ONE script (tool_apps_src/timer/app.js) + one content template; each page sets which panels it shows (`vars.VIEWS`) and its own text (`vars.SEO` = seo/<slug>.html).
     # /timer shows countdown + stopwatch + alarm together by default (customizable: add Pomodoro / Interval / Date countdown, stacked or side by side, drag to reorder); the others are one big panel.
     # All use the Timer brand (logo, header, Home link) via `brand`; timer/img + timer/audio + the quote galleries stay in mes.fm/timer/. Tests: tool_apps_src/timer-tests.js.

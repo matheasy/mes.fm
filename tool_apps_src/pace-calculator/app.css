@@ -1,0 +1,11 @@
+	/* Running Pace Calculator */
+	.tu [hidden] {display:none !important;}
+	.tu .pc-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:1em 0;} .tu .pc-dist {display:flex;gap:0.4em;} .tu .pc-dist .tu-input {flex:1 1 auto;min-width:0;} .tu .pc-dist .tu-select {flex:0 0 auto;width:auto;}
+	.tu .pc-verdict {font-size:1.05em;line-height:1.5;border-left:5px solid var(--accent);} .tu .pc-small {color:#6a7280;font-size:0.85em;}
+	.tu .pc-calc {background:var(--tint) !important;border-color:var(--accent) !important;} .tu .pc-chart svg {width:100%;height:auto;display:block;margin-bottom:0.8em;}
+	.tu .pc-gl {stroke:#d5dae0;stroke-width:0.6;} .tu .pc-ct {fill:#6a7280;font-size:11px;} .tu .pc-avg {stroke:#e8a317;stroke-width:1.5;stroke-dasharray:6 4;}
+	.tu .pc-b {fill:var(--accent);opacity:0.85;} .tu .pc-b.is-fast {fill:#2e9b57;} .tu .pc-b.is-slow {fill:#d9453b;}
+	.tu #pc-splits td, .tu #pc-races-t td, .tu #pc-tm td {font-variant-numeric:tabular-nums;} .tu #pc-races-t tr.is-on td {background:var(--tint);font-weight:700;}
+	.tu .pc-chips .tu-chip {white-space:nowrap;}
+	body.dark-mode #pc .pc-small, body.dark-mode #pc .pc-ct {fill:#a0a8b3;color:#a0a8b3;} body.dark-mode #pc .pc-gl {stroke:#3f464f;} body.dark-mode #pc #pc-races-t tr.is-on td {background:rgba(255,255,255,0.1);color:#fff;} body.dark-mode #pc .pc-calc {background:rgba(255,255,255,0.08) !important;}
+	@media print {.tu .pc-btns, .tu #pc-setup {display:none;}}

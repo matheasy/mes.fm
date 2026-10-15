@@ -64,6 +64,10 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("exif-viewer", "EXIF Viewer"),
     ("contraction-timer", "Contraction Timer"),
     ("bmr-calculator", "BMR Calculator"),
+    ("protein-intake-calculator", "Protein Intake Calculator"),   # also built by build_tool_apps.py
+    ("pace-calculator", "Running Pace Calculator"),   # also built by build_tool_apps.py
+    ("waist-to-hip-ratio-calculator", "Waist-to-Hip Ratio Calculator"),   # also built by build_tool_apps.py
+    ("heart-rate-zone-calculator", "Heart Rate Zone Calculator"),   # also built by build_tool_apps.py
     ("tdee-calculator", "TDEE Calculator"),   # also built by build_tool_apps.py
     ("water-intake-calculator", "Water Intake Calculator"),   # also built by build_tool_apps.py
     ("ideal-weight-calculator", "Ideal Weight Calculator"),   # also built by build_tool_apps.py

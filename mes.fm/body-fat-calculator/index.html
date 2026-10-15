@@ -322,6 +322,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .bf-cat {display:flex;justify-content:space-between;gap:0.6em;padding:0.3em 0.6em;border-radius:0.4em;border-left:4px solid #ccc;font-size:0.92em;color:#444;}
 	.tu .bf-cat--low {border-left-color:#9aa5b1;} .tu .bf-cat--ess {border-left-color:#e0a21c;} .tu .bf-cat--ath {border-left-color:#3f8f5b;} .tu .bf-cat--fit {border-left-color:#74c283;} .tu .bf-cat--avg {border-left-color:#ee9a4d;} .tu .bf-cat--obese {border-left-color:#e0605a;}
 	.tu .bf-cat.is-on {background:#ede7fb;font-weight:700;color:#1e2733;}
+	.tu .bf-lbl {display:block;margin:1.8em 0 0.7em;padding-top:1.1em;border-top:1px solid #e3e7ec;}
+	body.dark-mode #bf .bf-lbl {border-top-color:#3a3f45;}
 	.tu .bf-split {display:flex;height:2.4em;border-radius:0.5em;overflow:hidden;background:#e8ecef;margin-top:0.4em;}
 	.tu .bf-seg {display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9em;min-width:0;overflow:hidden;}
 	.tu .bf-c0 {background:#e0a21c;} .tu .bf-c1 {background:#5b21b6;}
@@ -428,6 +430,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu .bf-cat--avg{border-left-color:#ba6212}
 	body.dark-mode .tu .bf-cat--obese{border-left-color:#ac2720}
 	body.dark-mode .tu .bf-cat.is-on{background:#1a1427;color:#d1d6dc}
+	body.dark-mode .tu .bf-lbl{border-top:1px solid #29323d}
 	body.dark-mode .tu .bf-split{background:#202326}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
@@ -712,7 +715,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="tu-card">
 				<div class="bf-gauge" id="bf-gauge" aria-hidden="true"></div>
 				<ul class="bf-cats" id="bf-cats"></ul>
-				<div class="tu-label" style="margin-top:1.1em;">Fat and lean mass</div>
+				<div class="tu-label bf-lbl">Fat and lean mass</div>
 				<div class="bf-split" id="bf-split" role="img"></div>
 				<ul class="bf-legend" id="bf-splitleg"></ul>
 			</div>
@@ -768,7 +771,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/weighted-average-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo-512.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Weighted Average Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/alarm-clock"><img class="mes-aside__img mes-aside__img--logo" src="/img/alarm-clock-logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Online Alarm Clock</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/weighted-average-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo-512.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Weighted Average Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/pomodoro-timer"><img class="mes-aside__img mes-aside__img--logo" src="/img/pomodoro-timer-logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Pomodoro Timer</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 

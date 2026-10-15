@@ -2,6 +2,38 @@
  "generated": "2026-10-14",
  "calculators": [
   {
+   "href": "/waist-to-hip-ratio-calculator",
+   "title": "Waist-to-Hip Ratio Calculator",
+   "icon": "/img/waist-to-hip-ratio-calculator-logo.png",
+   "desc": "Waist-to-hip, waist-to-height and body shape with risk levels.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/heart-rate-zone-calculator",
+   "title": "Heart Rate Zone Calculator",
+   "icon": "/img/heart-rate-zone-calculator-logo.png",
+   "desc": "Your max heart rate and five training zones, with the Karvonen method.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/protein-intake-calculator",
+   "title": "Protein Intake Calculator",
+   "icon": "/img/protein-intake-calculator-logo.png",
+   "desc": "How much protein per day for your weight and goal, with a food builder.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/pace-calculator",
+   "title": "Running Pace Calculator",
+   "icon": "/img/pace-calculator-logo.png",
+   "desc": "Pace, time and distance, splits, and race time predictions.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/ideal-weight-calculator",
    "title": "Ideal Weight Calculator",
    "icon": "/img/ideal-weight-calculator-logo.png",
@@ -62,38 +94,6 @@
    "title": "Baby Growth Percentile Calculator",
    "icon": "/img/baby-growth-percentile-calculator-logo.png",
    "desc": "Weight, length and head circumference percentiles on the WHO growth chart, with a private growth log.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/conception-date-calculator",
-   "title": "Conception Date Calculator",
-   "icon": "/img/conception-date-calculator-logo.png",
-   "desc": "Work out when you conceived from your due date, last period or IVF transfer.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/contraction-timer",
-   "title": "Contraction Timer",
-   "icon": "/img/contraction-timer-logo.png",
-   "desc": "One big button to time labour contractions: length, gaps, hourly average and a 5-1-1 rule alert.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/pregnancy-test-calculator",
-   "title": "Pregnancy Test Calculator",
-   "icon": "/img/pregnancy-test-calculator-logo.png",
-   "desc": "The best day to take a pregnancy test: implantation days, earliest sensitive test and when a test is dependable.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/weeks-pregnant-calculator",
-   "title": "Weeks Pregnant Calculator",
-   "icon": "/img/weeks-pregnant-calculator-logo.png",
-   "desc": "How many weeks pregnant you are today, your trimester and a week-by-week table with baby size.",
    "added": "2026-10-14",
    "kind": "calculator"
   }
@@ -198,6 +198,38 @@
  ],
  "latest": [
   {
+   "href": "/waist-to-hip-ratio-calculator",
+   "title": "Waist-to-Hip Ratio Calculator",
+   "icon": "/img/waist-to-hip-ratio-calculator-logo.png",
+   "desc": "Waist-to-hip, waist-to-height and body shape with risk levels.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/heart-rate-zone-calculator",
+   "title": "Heart Rate Zone Calculator",
+   "icon": "/img/heart-rate-zone-calculator-logo.png",
+   "desc": "Your max heart rate and five training zones, with the Karvonen method.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/protein-intake-calculator",
+   "title": "Protein Intake Calculator",
+   "icon": "/img/protein-intake-calculator-logo.png",
+   "desc": "How much protein per day for your weight and goal, with a food builder.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/pace-calculator",
+   "title": "Running Pace Calculator",
+   "icon": "/img/pace-calculator-logo.png",
+   "desc": "Pace, time and distance, splits, and race time predictions.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/ideal-weight-calculator",
    "title": "Ideal Weight Calculator",
    "icon": "/img/ideal-weight-calculator-logo.png",
@@ -228,38 +260,6 @@
    "desc": "Daily calories and grams of protein, carbs and fat for your goal, with preset or custom splits.",
    "added": "2026-10-14",
    "kind": "calculator"
-  },
-  {
-   "href": "/body-fat-calculator",
-   "title": "Body Fat Calculator",
-   "icon": "/img/body-fat-calculator-logo.png",
-   "desc": "Estimate your body fat percentage with a tape measure (U.S. Navy method), then set a body-fat goal.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/bmr-calculator",
-   "title": "BMR Calculator",
-   "icon": "/img/bmr-calculator-logo.png",
-   "desc": "Basal metabolic rate and daily calories for your age, weight and height, plus calories to lose or gain.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/grounding-rod-simulator",
-   "title": "Ground Rod & Earthing Simulator",
-   "icon": "/img/grounding-rod-simulator-logo.png",
-   "desc": "Find a ground rod's resistance for your soil, see why a rod doesn't trip a breaker, model lightning step voltage and static discharge, and read the grounding rules for your region.",
-   "added": "2026-10-14",
-   "kind": "tool"
-  },
-  {
-   "href": "/julia-set-explorer",
-   "title": "Julia Set Explorer",
-   "icon": "/img/julia-set-explorer-logo.png",
-   "desc": "Drag a point on a map of the Mandelbrot set and watch its Julia set change live. Walk c around the cardioid, zoom and save pictures.",
-   "added": "2026-10-14",
-   "kind": "tool"
   }
  ]
 }

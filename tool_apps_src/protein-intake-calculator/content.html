@@ -1,0 +1,55 @@
+	<div class="tu" id="pi">
+		<div class="tu-card" id="pi-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="pi-kg">Weight</label><div class="tu-suffix"><input id="pi-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 75"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="pi-lb">Weight</label><div class="tu-suffix"><input id="pi-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 165"><span>lb</span></div></div>
+				<div class="tu-field" style="flex:2 1 16em;"><label for="pi-goal">Your goal</label><select id="pi-goal" class="tu-select"></select></div>
+			</div>
+			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="pi-meals">Meals a day</label><select id="pi-meals" class="tu-select"><option value="0">Suggest for me</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:13em;"><label for="pi-kcal">Daily calories (optional)</label><div class="tu-suffix"><input id="pi-kcal" class="tu-input" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 2200"><span>kcal</span></div></div>
+			</div>
+			<p class="tu-note" style="margin-bottom:0;">If you are significantly overweight, use your <a href="/ideal-weight-calculator">goal or ideal weight</a> instead of your current weight.</p>
+		</div>
+		<div id="pi-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your weight &mdash; or try an example: </span><span class="tu-chips" id="pi-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="pi-out" hidden>
+			<div class="tu-stats" id="pi-hero" aria-live="polite"></div>
+			<div class="tu-card pi-verdict" id="pi-verdict" aria-live="polite"></div>
+			<h2>Your range against every goal</h2>
+			<div class="tu-card"><div class="pi-chart" id="pi-goals" role="img"></div><p class="tu-note" style="margin-bottom:0;">Bars show the usual range in grams a day at your weight; the dot is the suggested target. Your goal is highlighted.</p></div>
+			<h2>Spread it across the day</h2>
+			<div class="tu-card"><div class="pi-chart" id="pi-meals-c" role="img"></div><p class="tu-note" style="margin-bottom:0;" id="pi-mealnote"></p></div>
+			<h2>Build your day</h2>
+			<div class="tu-card">
+				<div class="pi-prog" id="pi-prog" aria-live="polite"></div>
+				<div class="pi-foods" id="pi-foods"></div>
+				<div class="pi-btns"><button type="button" class="tu-btn tu-btn--ghost" id="pi-clear">Clear the day</button></div>
+			</div>
+			<h2>What gets you there</h2>
+			<div class="tu-card"><div class="tu-table-wrap"><table class="tu-table" id="pi-eq"></table></div></div>
+			<div class="pi-btns"><button type="button" class="tu-btn tu-btn--primary" id="pi-link">Copy link to this result</button><button type="button" class="tu-btn tu-btn--ghost" id="pi-print">Print</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How much protein do I need a day?</h2>
+			<p>The official minimum (the RDA) is <b>0.8 grams per kilogram</b> of body weight (0.36 g per lb) for healthy adults: 64 g for an 80 kg person. That is enough to avoid deficiency, not necessarily enough for the best health, muscle or recovery. Research supports more for specific goals:</p>
+			<div class="tu-table-wrap"><table class="tu-table" id="pi-ref"></table></div>
+			<h2>When protein matters most</h2>
+			<ul>
+				<li><b>Building muscle:</b> about 1.6&ndash;2.2 g/kg, with strength training. Intakes above about 1.6 g/kg add little extra muscle in most studies.</li>
+				<li><b>Losing fat:</b> a higher intake (up to 2.4 g/kg) helps you keep muscle and feel full while eating less.</li>
+				<li><b>Older adults:</b> muscle responds less to protein with age, so 1.0&ndash;1.5 g/kg is recommended.</li>
+				<li><b>Per meal:</b> about 0.4 g/kg (25&ndash;40 g) per meal, spread over three to five meals, works well for muscle.</li>
+			</ul>
+			<h2>Is too much protein bad?</h2>
+			<p>For healthy people, intakes up to about 2 g/kg (and often higher) have no known harm. People with kidney disease or a doctor's protein limit must follow their medical advice. Protein also needs enough fibre, fluids and total calories to work well.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Do plant proteins count?</dt><dd>Yes. Mix beans, lentils, tofu, grains and nuts through the day. Plant-only eaters may aim a little toward the upper half of the range.</dd>
+				<dt>Do I need protein powder?</dt><dd>No. It is a convenient way to reach a target, not a requirement.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
+			</dl>
+			<p>General information, not medical advice; food values are typical averages. Related: <a href="/macro-calculator">Macro Calculator</a> &middot; <a href="/tdee-calculator">TDEE Calculator</a> &middot; <a href="/bmr-calculator">BMR Calculator</a></p>
+		</div>
+	</div>
