@@ -2,14 +2,6 @@
  "generated": "2026-10-15",
  "calculators": [
   {
-   "href": "/pregnancy-calorie-calculator",
-   "title": "Pregnancy Calorie Calculator",
-   "icon": "/img/pregnancy-calorie-calculator-logo.png",
-   "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
-   "added": "2026-10-15",
-   "kind": "calculator"
-  },
-  {
    "href": "/body-surface-area-calculator",
    "title": "Body Surface Area Calculator",
    "icon": "/img/body-surface-area-calculator-logo.png",
@@ -22,6 +14,14 @@
    "title": "One-Rep Max Calculator",
    "icon": "/img/one-rep-max-calculator-logo.png",
    "desc": "Estimate your 1RM from a set, with a rep chart, plate loader and strength level.",
+   "added": "2026-10-15",
+   "kind": "calculator"
+  },
+  {
+   "href": "/pregnancy-calorie-calculator",
+   "title": "Pregnancy Calorie Calculator",
+   "icon": "/img/pregnancy-calorie-calculator-logo.png",
+   "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
    "added": "2026-10-15",
    "kind": "calculator"
   },
@@ -198,14 +198,6 @@
  ],
  "latest": [
   {
-   "href": "/pregnancy-calorie-calculator",
-   "title": "Pregnancy Calorie Calculator",
-   "icon": "/img/pregnancy-calorie-calculator-logo.png",
-   "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
-   "added": "2026-10-15",
-   "kind": "calculator"
-  },
-  {
    "href": "/body-surface-area-calculator",
    "title": "Body Surface Area Calculator",
    "icon": "/img/body-surface-area-calculator-logo.png",
@@ -218,6 +210,14 @@
    "title": "One-Rep Max Calculator",
    "icon": "/img/one-rep-max-calculator-logo.png",
    "desc": "Estimate your 1RM from a set, with a rep chart, plate loader and strength level.",
+   "added": "2026-10-15",
+   "kind": "calculator"
+  },
+  {
+   "href": "/pregnancy-calorie-calculator",
+   "title": "Pregnancy Calorie Calculator",
+   "icon": "/img/pregnancy-calorie-calculator-logo.png",
+   "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
    "added": "2026-10-15",
    "kind": "calculator"
   },
