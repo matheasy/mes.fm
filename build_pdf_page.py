@@ -16,7 +16,7 @@ PAGES = {
         partof='Part of <a href="/science">MES Science</a>',
         intro="""<p>This is the test problem on the <b>Space Shuttle Columbia disaster</b> that <b>Dr. Judy Wood</b> gave her students in <b>EM 304 at Clemson University</b> on <b>February 6, 2003</b>, just five days after Columbia was lost on <b>February 1, 2003</b>.</p>
 <p>The PDF (6 pages, starting with the EM 304 Test #1 cover page) is shown below. You can also download it, or use the alternative OneDrive link if you prefer.</p>""",
-        og="preview.jpg",
+        og="preview.jpg", noindex=True,   # not linked from anywhere yet (it will go into a math tutorial): keep it out of the sitemap and the site search; remove this when it is linked
         outro="""<h2>About this page</h2>
 <p>Space Shuttle Columbia (mission STS-107) broke apart during re-entry on February 1, 2003, and all seven crew members were lost. For the background, see the <a href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster" target="_blank" rel="noopener">Wikipedia article on the Space Shuttle Columbia disaster</a>.</p>
 <p>The test was set for the course EM 304 at Clemson University, which Dr. Wood taught.</p>"""),
@@ -39,6 +39,7 @@ def build(slug, cfg):
         pdf, ('<a class="pdf-btn alt" href="%s" target="_blank" rel="noopener">%s</a>' % (cfg["alt_url"], html.escape(cfg["alt_label"]))) if cfg.get("alt_url") else "", pdf)
     art += '<div class="pdf-wrap"><object class="pdf-frame" data="%s#view=FitH" type="application/pdf" aria-label="%s"><div class="pdf-fallback"><p>Your browser cannot show a PDF inside the page.</p><p><a class="pdf-btn" href="%s">Open the PDF</a></p></div></object></div>\n' % (pdf, html.escape(cfg["pdf_label"]), pdf)
     art += cfg["outro"]
+    if cfg.get("noindex"): t = t.replace('<link rel="canonical"', '<meta name="robots" content="noindex">\n  <link rel="canonical"', 1)
     for k, v in {"@@SLUG@@": slug, "@@TITLE@@": html.escape(cfg["title"], quote=False), "@@SUBTITLE@@": cfg["subtitle"], "@@DESC@@": html.escape(cfg["desc"]),
                  "@@OGIMAGE@@": ("https://mes.fm/%s/%s" % (slug, cfg["og"])) if cfg.get("og") else "https://mes.fm/img/logo-mark.png", "@@PARTOF@@": cfg["partof"],
                  "@@BRAND_HREF@@": "/", "@@BRAND_LOGO@@": "/img/logo-mark.png", "@@BRAND_LOGO_ABS@@": "https://mes.fm/img/logo-mark.png", "@@BRAND_TITLE@@": "MES.fm",
