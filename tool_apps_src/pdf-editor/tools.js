@@ -15,6 +15,7 @@
 		{ id: "cover", name: "Cover", icon: "▮", key: "w", hint: "Drag a box over what you want to hide. Use Black to redact." },
 		{ id: "sign", name: "Sign", icon: "✍", key: "g", hint: "Pick a signature, then click where it goes." },
 		{ id: "stamp", name: "Stamps", icon: "✔", key: "k", hint: "Click to place a check mark, cross, dot or today's date." },
+		{ id: "form", name: "Fill form", icon: "\u2611", key: "r", hint: "Type into the fields of a fillable PDF form. Use the Text tool for forms with no fields." },
 		{ id: "note", name: "Comment", icon: "≡", key: "n", hint: "Click to add a comment note." },
 		{ id: "image", name: "Image", icon: "▣", key: "i", hint: "Choose a picture, then click where it goes." }
 	];
@@ -29,7 +30,7 @@
 	PD.setTool = function (id) {
 		if (!byId[id]) return; endEdit(); PD.tool = id; PD.armed = null; [].forEach.call($("pd-tools").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.t === id)); });
 		if (id !== "select" && PD.sel) { var p = PD.page(PD.sel.page); PD.sel = null; if (p) PD.repaint(p); }
-		PD.hint(byId[id].hint); $("pd-view").style.cursor = id === "select" ? "default" : id === "text" || id === "edittext" ? "text" : "crosshair"; buildOpts();
+		if (PD.formRefresh) PD.formRefresh(); PD.hint(byId[id].hint); $("pd-view").style.cursor = id === "select" ? "default" : id === "text" || id === "edittext" ? "text" : "crosshair"; buildOpts();
 	};
 
 	/* ---------- option bar: bound either to the tool's preferences or to the selected annotation ---------- */
@@ -82,6 +83,7 @@
 		}
 		if (t === "select") { add(el('<span class="pd-note">Click an item to select it. Its options appear here.</span>')); return; }
 		if (t === "text") add(textControls(P.text, null));
+		else if (t === "form") add(el('<span class="pd-note">Click a highlighted field and type. Check boxes and drop-downs work too. What you fill in is saved into the PDF when you download it.</span>'));
 		else if (t === "edittext") add(el('<span class="pd-note">Click a line of text. The old text is covered with a patch in the paper colour and an editable box takes its place.</span>'));
 		else if (t === "draw") { add(swatches("Colour", COLORS, function () { return P.draw.color; }, binder(P.draw, "color"), true)); add(range("Width", 1, 14, 1, function () { return P.draw.width; }, binder(P.draw, "width"), " pt")); }
 		else if (t === "highlight") { add(seg("", [["box", "Box"], ["free", "Freehand"]], function () { return P.hl.mode; }, binder(P.hl, "mode"))); add(swatches("Colour", HL, function () { return P.hl.color; }, binder(P.hl, "color"), true)); }

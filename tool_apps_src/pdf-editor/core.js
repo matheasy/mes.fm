@@ -124,7 +124,7 @@
 		var cv = document.createElement("canvas"); cv.width = Math.ceil(a.w * k); cv.height = Math.ceil(a.h * k); var c = cv.getContext("2d"); c.fillStyle = a.color; c.font = PD.cssFont(a, a.size * k).replace(CSSF[a.font || "sans"], CSSF[a.font || "sans"] + ', "Noto Sans", "Segoe UI", sans-serif'); c.textBaseline = "alphabetic";
 		a.lines.forEach(function (line, i) { var w = c.measureText(line).width / k, dx = a.align === "center" ? (a.w - w) / 2 : a.align === "right" ? a.w - M.PAD - w : M.PAD; c.fillText(line, dx * k, (M.PAD + M.ASCENT * a.size + i * a.size * M.LINE_H) * k); }); return cv;
 	};
-	PD.paintAll = function (ctx, vp, annots, state) { annots.forEach(function (a) { PD.paintAnnot(ctx, vp, a, state); }); };
+	PD.paintAll = function (ctx, vp, annots, state) { annots.forEach(function (a) { if (a.formKey && state && state.skipForm) return; PD.paintAnnot(ctx, vp, a, state); }); };
 
 	/* ---------- the pages on screen ---------- */
 	var pagesEl, io, renderTasks = {};
@@ -176,7 +176,7 @@
 	function paintOverlay(p) {
 		var el = PD.pageEl(p); if (!el) return; var cv = el.querySelector(".pd-o"), k = cv.width / (parseFloat(cv.style.width) || 1) || dpr(), ctx = cv.getContext("2d"), vp = PD.vp(p);
 		ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.setTransform(k, 0, 0, k, 0, 0);
-		PD.paintAll(ctx, vp, p.annots); if (p._live) PD.paintAnnot(ctx, vp, p._live);
+		PD.paintAll(ctx, vp, p.annots, { skipForm: PD.tool === "form" }); if (p._live) PD.paintAnnot(ctx, vp, p._live);
 		var a = PD.sel && PD.sel.page === p.id ? PD.selAnnot() : null;
 		if (a && !p._hideSel) {
 			ctx.save(); ctx.strokeStyle = "#2f80ff"; ctx.fillStyle = "#fff"; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
