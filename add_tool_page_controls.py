@@ -92,6 +92,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("search-engines", "Search Engines"),
     ("reverse-image-search", "Reverse Image Search"),   # also built by build_tool_apps.py   # also built by build_tool_apps.py (wide page)
     ("site-index", "Site Index"),
+    ("fav", "MES Favourites"),
     ("browser", "Browser Extensions"),   # also built by build_tool_apps.py
     ("videospeed", "Video Speed Controller"),
     ("read-aloud", "Read Aloud"),

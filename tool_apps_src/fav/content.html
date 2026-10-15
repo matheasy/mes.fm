@@ -1,0 +1,42 @@
+	<div class="tu fv" id="fv">
+		<div class="tu-card fv-find">
+			<label class="tu-label" for="fv-q">Search mes.fm to add pages, or to filter the favourites below</label>
+			<div class="fv-qrow">
+				<input id="fv-q" type="search" class="tu-input tu-input--big" placeholder="e.g. percentage, timer, cubic formula, moon" autocomplete="off" spellcheck="false">
+				<label class="fv-to">Add to <select id="fv-to" class="tu-select" aria-label="Group to add pages to"></select></label>
+			</div>
+			<p class="fv-status" id="fv-status" role="status" aria-live="polite"></p>
+			<ol class="fv-res" id="fv-res"></ol>
+			<p class="fv-morewrap"><button type="button" class="tu-btn tu-btn--ghost" id="fv-more" hidden>Show more results</button></p>
+		</div>
+
+		<div class="fv-bar" role="toolbar" aria-label="Favourites actions">
+			<button type="button" class="tu-btn tu-btn--primary" id="fv-newg">+ New group</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="fv-fold">Collapse all</button>
+			<button type="button" class="tu-btn tu-btn--ghost" id="fv-starter" hidden>Add popular starters</button>
+			<span class="fv-bar-sp"></span>
+			<button type="button" class="tu-btn tu-btn--ghost" id="fv-copylink">&#128279; Copy my link</button>
+		</div>
+		<div class="tu-card tu-card--tint fv-notice" id="fv-notice" role="status" hidden></div>
+		<div class="fv-groups" id="fv-groups"></div>
+
+		<div class="tu-card fv-sync" id="fv-sync">
+			<h2>Take your favourites with you</h2>
+			<p>Your favourites are stored in this browser only. To use them on another browser or computer, copy this link, open it there, and choose <b>Replace mine</b> or <b>Merge</b>. Bookmark the link and it is also a backup. Nothing is uploaded to a server: the list is inside the link itself.</p>
+			<div class="fv-linkrow"><input id="fv-link" class="tu-input" type="text" readonly aria-label="Link to my favourites"><button type="button" class="tu-btn tu-btn--primary" id="fv-copy2">Copy link</button></div>
+			<p class="fv-linknote" id="fv-linknote"></p>
+			<div class="fv-files"><button type="button" class="tu-btn tu-btn--ghost" id="fv-export">Download backup file</button> <button type="button" class="tu-btn tu-btn--ghost" id="fv-import">Restore from a backup file</button> <input type="file" id="fv-file" accept=".json,application/json" hidden></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How MES Favourites works</h2>
+			<ul>
+				<li><b>Add:</b> search for any calculator, tool, tutorial or other mes.fm page and press Add. Choose the group first with &ldquo;Add to&rdquo;.</li>
+				<li><b>Arrange:</b> drag a tile by the dots (or anywhere on it with a mouse) to reorder it or move it to another group. Hold <kbd>Alt</kbd> while dropping to copy it instead. With the keyboard, focus the dots and press the arrow keys.</li>
+				<li><b>Groups:</b> create as many as you like, rename them, drag them by their dots, and fold them with the arrow. A page can sit in several groups: use the copy button on its tile.</li>
+				<li><b>Sync:</b> copy your link to open the same favourites on another device.</li>
+			</ul>
+			<h2>Is my list private?</h2>
+			<p>Yes. It stays in your browser unless you share your link yourself. The link contains page addresses and group names only.</p>
+		</div>
+	</div>

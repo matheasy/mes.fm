@@ -636,6 +636,12 @@ APPS = {
                     brand=dict(slug="pdf", title="MES PDF Tools", tag="Edit, sign, merge, split and convert PDFs in your browser."),
                     nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/merge-pdf'>Merge</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/split-pdf'>Split</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/organize-pdf'>Organize</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/jpg-to-pdf'>Images to PDF</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/pdf-to-jpg'>PDF to images</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/compress-pdf'>Compress</a></li>",
                     menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/merge-pdf\">Merge</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/split-pdf\">Split</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/organize-pdf\">Organize</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/jpg-to-pdf\">Images to PDF</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/pdf-to-jpg\">PDF to images</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/compress-pdf\">Compress</a></li>"),
+    # MES Favourites: personal groups of page tiles (drag / copy / rename / fold), stored in localStorage, moved between devices by a link that contains the list.
+    # Wide + ad-free like the Site Index; the page index and search engine come from /main_js/site-search.js (pre_js).
+    "fav": dict(title="MES Favourites", page_title="MES Favourites: Your Own Calculators and Tools Page",
+                tag="Your favourite MES pages, your way.", accent="#a15c07", dark="#7a4505", tint="#fdf0d8",
+                desc="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.",
+                js_v="1", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
 }
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 

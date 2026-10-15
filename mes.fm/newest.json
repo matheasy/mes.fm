@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/fav",
+   "title": "MES Favourites",
+   "icon": "/img/fav-logo.png",
+   "desc": "Build your own page of favourite mes.fm calculators and tools: search, drag into groups, and take it to any device with one link.",
+   "added": "2026-10-15",
+   "kind": "tool"
+  },
+  {
    "href": "/pdf-tools",
    "title": "PDF Tools: Merge, Split, Convert",
    "icon": "/img/pdf-tools-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Drag two swinging arms into place and watch chaos: a fan of copies that drift apart, how fast errors grow, and a fractal map of how long each start takes to flip.",
    "added": "2026-10-12",
    "kind": "tool"
-  },
-  {
-   "href": "/orbit-simulator",
-   "title": "Orbit Simulator",
-   "icon": "/img/orbit-simulator-logo.png",
-   "desc": "Launch planets by dragging, watch real gravity with many bodies, see Kepler's laws and equal areas, try Halley's comet, the Moon and a gravity assist, and compute orbit speeds and transfers.",
-   "added": "2026-10-12",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/fav",
+   "title": "MES Favourites",
+   "icon": "/img/fav-logo.png",
+   "desc": "Build your own page of favourite mes.fm calculators and tools: search, drag into groups, and take it to any device with one link.",
+   "added": "2026-10-15",
+   "kind": "tool"
+  },
   {
    "href": "/pdf-tools",
    "title": "PDF Tools: Merge, Split, Convert",
@@ -250,14 +258,6 @@
    "title": "Sleep Calculator",
    "icon": "/img/sleep-calculator-logo.png",
    "desc": "Best bedtime and wake-up time using 90-minute sleep cycles.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/heart-rate-zone-calculator",
-   "title": "Heart Rate Zone Calculator",
-   "icon": "/img/heart-rate-zone-calculator-logo.png",
-   "desc": "Your max heart rate and five training zones, with the Karvonen method.",
    "added": "2026-10-14",
    "kind": "calculator"
   }

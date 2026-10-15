@@ -35,8 +35,8 @@ PAGES = {
     "tools.html": dict(noun="tools", popular=["timer", "typing-test", "speedreader", "moon", "emoji", "calendar", "clock", "timezone"], cats=[
         ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols", "copy-text", "enigma"]),
         ("time", "Time &amp; Focus", ["speedreader", "typing-test", "typing-test-transcribe", "typing-test-voice", "timer", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "clock", "timezone", "calendar"]),
-        ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "share", "search", "search-engines", "reverse-image-search", "domain-lookup", "archive", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
-        ("photos", "Photos &amp; Images", ["photo-editor", "pdf", "merge-pdf", "image-converter", "exif-viewer"]),
+        ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "fav", "share", "search", "search-engines", "reverse-image-search", "domain-lookup", "archive", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
+        ("photos", "Photos &amp; Images", ["photo-editor", "pdf", "pdf-tools", "merge-pdf", "image-converter", "exif-viewer"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today"]),
         ("sim", "Simulations", ["grounding-rod-simulator", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "julia-set-explorer", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
     ]),
