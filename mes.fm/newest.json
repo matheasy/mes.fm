@@ -100,7 +100,7 @@
  ],
  "tools": [
   {
-   "href": "/merge-pdf",
+   "href": "/pdf-tools",
    "title": "PDF Tools: Merge, Split, Convert",
    "icon": "/img/pdf-tools-logo.png",
    "desc": "Merge, split, rearrange, compress and convert PDFs and pictures. Private: nothing is uploaded.",
@@ -198,7 +198,7 @@
  ],
  "latest": [
   {
-   "href": "/merge-pdf",
+   "href": "/pdf-tools",
    "title": "PDF Tools: Merge, Split, Convert",
    "icon": "/img/pdf-tools-logo.png",
    "desc": "Merge, split, rearrange, compress and convert PDFs and pictures. Private: nothing is uploaded.",
