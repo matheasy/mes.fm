@@ -491,7 +491,7 @@ APPS = {
     "pdf": dict(title="MES PDF Editor", page_title="Free PDF Editor: Sign, Fill, Annotate, Redact and Edit PDFs Online",
                 tag="Sign, fill in, annotate and redact PDFs in your browser.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                 desc="Free online PDF editor and signer: add a typed, drawn or uploaded signature, fill in forms, draw and highlight, add comments, edit text, black out private details, and rotate, delete or reorder pages. Private: your PDF never leaves your browser.",
-                js_v="2", src="pdf-editor", js_parts=["core.js", "tools.js", "form.js", "sign.js", "export.js"]),
+                js_v="5", src="pdf-editor", js_parts=["core.js", "tools.js", "form.js", "sign.js", "export.js"]),
     # PDF Tools family (2026-10-15): one script (tool_apps_src/pdf-tools/app.js, helpers lib.js = PT, tests tool_apps_src/pdf-tools-tests.js) and one content template; data-mode on #pt picks merge / split / organize / images / toimg / compress, vars.SEO = seo/<mode>.html. Same brand as the PDF editor (slug pdf). pdf.js + pdf-lib from cdnjs on first use; ZIPs use MESImg (lib_from image-converter).
     "merge-pdf": dict(title="Merge PDF", page_title="Merge PDF: Combine PDF Files Online for Free", tag="Combine PDFs into one file.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                     desc="Free online PDF merger: combine two or more PDF files into a single document, put them in any order, and pick which pages to use from each. Private: your files never leave your browser. No sign-up, no watermark.",

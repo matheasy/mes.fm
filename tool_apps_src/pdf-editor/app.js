@@ -28,21 +28,22 @@
 	/* undo / redo / history */
 	$("pd-undo").onclick = function () { PD.endEdit(); PD.undo(); }; $("pd-redo").onclick = function () { PD.endEdit(); PD.redo(); };
 	function histBtns() { $("pd-undo").disabled = !PD.hist.canUndo(); $("pd-redo").disabled = !PD.hist.canRedo(); } PD.on("history", histBtns); PD.on("open", histBtns);
-	PD.on("open", function () { PD.setTool("select"); autoWin(); PD.status(); });
+	PD.on("open", function () { PD.setTool("select"); PD.status(); });   // no automatic Full window: the Standard / Wide / Theatre switch and the sidebar stay available (Full window is one click away, key F)
 	PD.on("sel", function () { var a = PD.selAnnot(); $("pd-st-sel").textContent = a ? "Selected: " + a.t : ""; });
 	/* zoom */
-	$("pd-zin").onclick = function () { PD.setZoom(PD.zoom * 1.2); }; $("pd-zout").onclick = function () { PD.setZoom(PD.zoom / 1.2); }; $("pd-zoom").onclick = function () { var z = PD.fitWidth(); if (z) PD.setZoom(Math.abs(PD.zoom - z) < 0.01 ? 1 : z); };
+	$("pd-zin").onclick = function () { PD.setZoom(PD.zoom * 1.2); }; $("pd-zout").onclick = function () { PD.setZoom(PD.zoom / 1.2); }; $("pd-zoom").onclick = function () { var z = PD.fitWidth(); if (!z) return; if (Math.abs(PD.zoom - z) < 0.01) PD.setZoom(1); else { PD.setZoom(z); PD.fitMode = true; } };
 	view.addEventListener("wheel", function (e) { if (!(e.ctrlKey || e.metaKey) || !PD.doc) return; e.preventDefault(); PD.setZoom(PD.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1)); }, { passive: false });
 	var scrollT; view.addEventListener("scroll", function () { clearTimeout(scrollT); scrollT = setTimeout(PD.trackCurrent, 80); });
-	var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(function () { if (PD.doc && PD.fitMode) { var z = PD.fitWidth(); if (z) PD.setZoom(z); } }, 200); });
+	var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(refit, 200); });
 	/* page list and window mode */
 	function showThumbs() { $("pd-thumbbtn").setAttribute("aria-pressed", String(PD.S.thumbs)); $("pd-thumbs").classList.toggle("is-off", !PD.S.thumbs || !PD.doc); }
 	$("pd-thumbbtn").onclick = function () { PD.S.thumbs = !PD.S.thumbs; PD.saveS(); showThumbs(); if (PD.S.thumbs) PD.layout(); }; showThumbs(); PD.on("open", showThumbs);
-	var autoDone = false; function toggleWin(auto) { var on = !root.classList.contains("pd-win"); root.classList.toggle("pd-win", on); document.documentElement.classList.toggle("pd-win-on", on); $("pd-winbtn").setAttribute("aria-pressed", String(on)); if (!auto) { PD.S.win = on; PD.saveS(); } if (PD.doc) setTimeout(function () { var z = PD.fitWidth(); if (z && PD.fitMode) PD.setZoom(z); }, 60); }
-	function autoWin() { if (!autoDone && PD.S.win !== false && !root.classList.contains("pd-win")) { autoDone = true; toggleWin(true); } }
+	function toggleWin(auto) { var on = !root.classList.contains("pd-win"); root.classList.toggle("pd-win", on); document.documentElement.classList.toggle("pd-win-on", on); $("pd-winbtn").setAttribute("aria-pressed", String(on)); if (!auto) { PD.S.win = on; PD.saveS(); } if (PD.doc) setTimeout(refit, 80); }
 	$("pd-winbtn").onclick = function () { toggleWin(); };
 	$("pd-print").onclick = function () { PD.printPdf(); }; $("pd-export").onclick = function () { PD.exportDialog(); };
 	PD.fitMode = true; var oz = PD.setZoom; PD.setZoom = function (z) { PD.fitMode = false; oz.apply(PD, arguments); };
+	// a refit (window mode, width mode, sidebar, resize) keeps the zoom in 'fit width' mode; only the person's own zoom choice turns it off
+	function refit() { if (!PD.doc || !PD.fitMode) return; var z = PD.fitWidth(); if (z && Math.abs(z - PD.zoom) > 0.01) { oz.call(PD, z); PD.fitMode = true; } }
 	/* keyboard */
 	document.addEventListener("keydown", function (e) {
 		if (!PD.doc && !(e.ctrlKey || e.metaKey)) return; var t = e.target, typing = t && /INPUT|TEXTAREA|SELECT/.test(t.tagName); if (typing || PD.isEditing() || !$("pd-modal").hidden) { if (e.key === "Escape" && !$("pd-modal").hidden) PD.closeDialog(); return; }
@@ -55,5 +56,7 @@
 		if (k === "+" || k === "=") { PD.setZoom(PD.zoom * 1.2); return; } if (k === "-") { PD.setZoom(PD.zoom / 1.2); return; } if (k === "0") { var z = PD.fitWidth(); if (z) PD.setZoom(z); return; } if (k === "f") { toggleWin(); return; }
 		PD.TOOLS.forEach(function (tl) { if (tl.key === k && PD.doc) PD.setTool(tl.id); });
 	});
+	/* the width mode (Standard / Wide / Theatre), the sidebar and Full window all change the room: keep a fit-to-width zoom fitted */
+	if (window.ResizeObserver) { var ro, last = 0; new ResizeObserver(function () { var w = view.clientWidth; if (Math.abs(w - last) < 4) return; last = w; clearTimeout(ro); ro = setTimeout(refit, 150); }).observe(view); }
 	PD.status();
 })();

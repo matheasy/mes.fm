@@ -33,6 +33,9 @@ import add_sidebar as base  # noqa: E402  (shared markup, head/js blocks, title/
 SITE = base.SITE
 LOADER = "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
 
+# pages that are indexable (sitemap, Google, site search) but that the user has not linked from anywhere yet: remove a slug once it is linked
+UNLINKED = {"em-304-problem-1-judy-wood"}
+
 PART_RE = re.compile(r'<div class="part-of">(.*?)</div>', re.S)
 COMMENTS_RE = re.compile(r'<div id="comments-box"[^>]*>\s*<div id="fastcomments-widget"></div>\s*</div>')
 H1_RE = re.compile(r"<h1[^>]*>(.*?)</h1>", re.S)
@@ -84,9 +87,9 @@ def catalog():
         title = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", h1.group(1))).strip() if h1 else slug
         it = {"path": path, "url": "/" + slug, "title": title, "group": href, "hub_title": hub_title,
               "kind": LABELS.get(href, "Article"),
-              # a noindex page is not linked from anywhere yet (em-304-problem-1-judy-wood): it gets the sidebar, but no other page's
-              # cards or the random card may point at it
-              "noindex": bool(re.search(r'<meta\s+name="robots"\s+content="[^"]*noindex', text))}
+              # a noindex page, or one in UNLINKED, is not linked from other pages yet: it gets the sidebar, but no other page's cards or the
+              # random card may point at it
+              "noindex": bool(re.search(r'<meta\s+name="robots"\s+content="[^"]*noindex', text)) or slug in UNLINKED}
         items.append(it)
     groups = {}
     for it in items:

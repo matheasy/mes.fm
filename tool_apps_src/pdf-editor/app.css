@@ -1,5 +1,5 @@
 	/* MES PDF Editor: a wide, always-dark workspace around white pages. Every colour is a custom property (the derived dark theme leaves var() alone). */
-	html body .outer-container {max-width:min(98vw,110em) !important;}
+	/* width comes from the page's Standard | Wide | Theatre switch (Wide by default, the inline snippet at the top of content.html), like the other tools with a sidebar */
 	.tu [hidden] {display:none !important;}
 	.pd {--pd-bg:#15161b;--pd-panel:#1e1f26;--pd-panel2:#272832;--pd-line:#353745;--pd-text:#ececf1;--pd-dim:#9b9cad;--pd-hover:#30323f;--pd-on:var(--accent);--pd-onfg:#fff;--pd-field:#111217;--pd-stage:#3a3c47;--pd-paper:#ffffff;--pd-ink:#111111;
 		display:flex;flex-direction:column;height:clamp(560px,calc(100vh - 140px),1300px);background:var(--pd-bg);border:1px solid var(--pd-line);border-radius:0.5em;overflow:hidden;color:var(--pd-text);font-size:14px;line-height:1.35;position:relative;}
