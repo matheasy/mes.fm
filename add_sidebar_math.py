@@ -83,17 +83,24 @@ def catalog():
         h1 = H1_RE.search(text)
         title = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", h1.group(1))).strip() if h1 else slug
         it = {"path": path, "url": "/" + slug, "title": title, "group": href, "hub_title": hub_title,
-              "kind": LABELS.get(href, "Article")}
+              "kind": LABELS.get(href, "Article"),
+              # a noindex page is not linked from anywhere yet (em-304-problem-1-judy-wood): it gets the sidebar, but no other page's
+              # cards or the random card may point at it
+              "noindex": bool(re.search(r'<meta\s+name="robots"\s+content="[^"]*noindex', text))}
         items.append(it)
     groups = {}
     for it in items:
-        groups.setdefault(it["group"], []).append(it)
+        if not it["noindex"]:
+            groups.setdefault(it["group"], []).append(it)
+    for it in items:
+        if it["noindex"]:
+            groups.setdefault(it["group"], [])
     return items, groups
 
 
 def recs_for(page, groups):
     peers = groups[page["group"]]
-    i = peers.index(page)
+    i = peers.index(page) if page in peers else 0
     n = len(peers)
     cards = base.rot(peers, i, (1, max(2, n // 5), max(3, 2 * n // 5)), (page["url"],))[:3]
     hub = {"url": page["group"], "title": page["hub_title"] or "More like this", "kind": "Collection"}
