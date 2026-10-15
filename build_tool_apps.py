@@ -464,6 +464,15 @@ APPS = {
                                    tag="How much protein you need a day.", accent="#a8452b", dark="#82331f", tint="#f7e3dc",
                                    desc="Free protein intake calculator: how many grams of protein per day for your weight and goal (muscle, fat loss, endurance, over 65, pregnancy). See your range against every goal, a per-meal spread, and build your day from common foods.",
                                    js_v="1"),
+    # Calories Burned (MET compendium, 85 activities, activity builder with weekly total + 150-minute guideline bar) and Sleep Calculator (90-minute cycles, hypnogram, evening plan, naps, weekly sleep debt). 2026-10-14; tests: tool_apps_src/<slug>-tests.js.
+    "calories-burned-calculator": dict(title="Calories Burned Calculator", page_title="Calories Burned Calculator: Walking, Running, Gym and 80+ Activities",
+                                       tag="Calories burned by activity, per session and per week.", accent="#c2410c", dark="#8f2f08", tint="#fbe6d8",
+                                       desc="Free calories burned calculator: pick from 80+ activities (walking, running, cycling, swimming, gym, sports, housework) and see calories burned for your weight using MET values. Build a weekly plan, see the 150-minute guideline, and how long to burn any number of calories.",
+                                       js_v="1"),
+    "sleep-calculator": dict(title="Sleep Calculator", page_title="Sleep Calculator: Best Bedtime and Wake-Up Time by Sleep Cycle",
+                             tag="Wake up at the end of a sleep cycle.", accent="#3730a3", dark="#28237a", tint="#e6e5f8",
+                             desc="Free sleep calculator: find the best bedtime for the time you need to wake up, or the best wake-up time if you go to bed now, using 90-minute sleep cycles. See your night's sleep stages, an evening plan, nap times and your weekly sleep debt.",
+                             js_v="1"),
     # Timer family (rewritten 2026-10-06): ONE script (tool_apps_src/timer/app.js) + one content template; each page sets which panels it shows (`vars.VIEWS`) and its own text (`vars.SEO` = seo/<slug>.html).
     # /timer shows countdown + stopwatch + alarm together by default (customizable: add Pomodoro / Interval / Date countdown, stacked or side by side, drag to reorder); the others are one big panel.
     # All use the Timer brand (logo, header, Home link) via `brand`; timer/img + timer/audio + the quote galleries stay in mes.fm/timer/. Tests: tool_apps_src/timer-tests.js.

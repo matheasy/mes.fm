@@ -35,12 +35,20 @@
 		["Chicken breast, cooked", "100 g", 31, 165, "meat"], ["Lean beef, cooked", "100 g", 26, 250, "meat"], ["Salmon, cooked", "100 g", 22, 208, "fish"], ["Tuna, canned in water", "1 can (140 g)", 32, 140, "fish"],
 		["Egg, large", "1 egg", 6, 72, "egg"], ["Egg whites", "3 whites", 11, 52, "egg"], ["Greek yogurt, plain", "170 g (3/4 cup)", 17, 100, "dairy"], ["Cottage cheese", "1 cup (225 g)", 25, 180, "dairy"], ["Milk", "1 cup (240 ml)", 8, 103, "dairy"], ["Cheddar cheese", "30 g", 7, 120, "dairy"],
 		["Whey protein", "1 scoop (30 g)", 24, 120, "supp"], ["Tofu, firm", "100 g", 8, 76, "plant"], ["Tempeh", "100 g", 19, 193, "plant"], ["Lentils, cooked", "1 cup (200 g)", 18, 230, "plant"], ["Chickpeas, cooked", "1 cup (165 g)", 15, 269, "plant"], ["Black beans, cooked", "1 cup (170 g)", 15, 227, "plant"],
-		["Peanut butter", "2 tbsp (32 g)", 7, 190, "plant"], ["Almonds", "30 g (a handful)", 6, 170, "plant"], ["Oats, dry", "1/2 cup (40 g)", 5, 150, "grain"], ["Quinoa, cooked", "1 cup (185 g)", 8, 222, "grain"], ["Bread, whole wheat", "1 slice", 4, 80, "grain"]
+		["Peanut butter", "2 tbsp (32 g)", 7, 190, "plant"], ["Almonds", "30 g (a handful)", 6, 170, "plant"], ["Oats, dry", "1/2 cup (40 g)", 5, 150, "grain"], ["Quinoa, cooked", "1 cup (185 g)", 8, 222, "grain"], ["Bread, whole wheat", "1 slice", 4, 80, "grain"],
+		["Soy milk, unsweetened", "1 cup (240 ml)", 7, 80, "plant"], ["Edamame, shelled", "1 cup (155 g)", 17, 188, "plant"], ["Seitan", "100 g", 25, 141, "plant"], ["Hemp seeds", "3 tbsp (30 g)", 10, 166, "plant"], ["Pumpkin seeds", "30 g", 9, 170, "plant"],
+		["Pea protein powder", "1 scoop (30 g)", 21, 120, "supp", "vg"], ["Peanuts", "30 g", 8, 170, "plant"], ["Green peas, cooked", "1 cup (160 g)", 9, 134, "plant"], ["Veggie burger (soy or bean)", "1 patty", 13, 150, "plant"], ["Nutritional yeast", "2 tbsp (10 g)", 5, 40, "plant"], ["Chia seeds", "2 tbsp (24 g)", 4, 117, "plant"]
 	];
+	// diets: "all" = everything, "veg" = vegetarian (no meat or fish; eggs and dairy ok), "vegan" = plants only
+	var DIETS = [{ id: "all", name: "I eat everything" }, { id: "veg", name: "Vegetarian (eggs and dairy ok)" }, { id: "vegan", name: "Vegan (plants only)" }];
+	function foodDiet(f) { if (f[5]) return f[5]; var g = f[4]; return g === "meat" || g === "fish" ? "o" : g === "egg" || g === "dairy" || g === "supp" ? "v" : "vg"; }
+	function allowed(f, diet) { var d = foodDiet(f); return diet === "vegan" ? d === "vg" : diet === "veg" ? d !== "o" : true; }
+	function foodIdx(diet) { var o = []; FOODS.forEach(function (f, i) { if (allowed(f, diet)) o.push(i); }); return o; }
+	function dietLabel(f) { var d = foodDiet(f); return d === "vg" ? "Vegan" : d === "v" ? "Vegetarian" : ""; }
 	// how many servings of one food give a target amount
 	function servingsFor(g, food) { return g / food[2]; }
 	function dayTotal(counts) { var p = 0, k = 0; Object.keys(counts).forEach(function (i) { var f = FOODS[+i], c = counts[i]; if (f && c > 0) { p += f[2] * c; k += f[3] * c; } }); return { protein: p, kcal: k }; }
-	var PI = { num: num, fix: fix, trim: trim, group: group, lbToKg: lbToKg, kgToLb: kgToLb, GOALS: GOALS, goal: goal, valid: valid, need: need, mealsNeeded: mealsNeeded, perMeal: perMeal, percentCal: percentCal, FOODS: FOODS, servingsFor: servingsFor, dayTotal: dayTotal };
+	var PI = { num: num, fix: fix, trim: trim, group: group, lbToKg: lbToKg, kgToLb: kgToLb, GOALS: GOALS, goal: goal, valid: valid, need: need, mealsNeeded: mealsNeeded, perMeal: perMeal, percentCal: percentCal, FOODS: FOODS, DIETS: DIETS, foodDiet: foodDiet, allowed: allowed, foodIdx: foodIdx, dietLabel: dietLabel, servingsFor: servingsFor, dayTotal: dayTotal };
 	if (typeof module !== "undefined" && module.exports) module.exports = PI; else root.PI = PI;
 })(typeof window !== "undefined" ? window : this);
 
@@ -53,20 +61,21 @@
 	var KEY = "mes-protein-intake-calculator:v1";
 	var EXAMPLES = [["80 kg, build muscle", { kg: "80", goal: "muscle", kcal: "" }], ["65 kg, lose fat", { kg: "65", goal: "cut", kcal: "1800" }], ["70 kg, over 65", { kg: "70", goal: "older", kcal: "" }]];
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-	var st = { kg: "", goal: "active", meals: "0", kcal: "", day: {} };
-	function clean(s) { var o = { kg: String(s.kg || "").slice(0, 8), goal: PI.GOALS.some(function (g) { return g.id === s.goal; }) ? s.goal : "active", meals: /^[0-6]$/.test(String(s.meals)) ? String(s.meals) : "0", kcal: String(s.kcal || "").replace(/\D/g, "").slice(0, 5), day: {} }; if (s.day && typeof s.day === "object") Object.keys(s.day).forEach(function (k) { var v = Math.round(+s.day[k]); if (PI.FOODS[+k] && v > 0 && v < 50) o.day[k] = v; }); return o; }
+	var st = { kg: "", goal: "active", meals: "0", kcal: "", diet: "all", day: {} };
+	function clean(s) { var o = { kg: String(s.kg || "").slice(0, 8), goal: PI.GOALS.some(function (g) { return g.id === s.goal; }) ? s.goal : "active", meals: /^[0-6]$/.test(String(s.meals)) ? String(s.meals) : "0", kcal: String(s.kcal || "").replace(/\D/g, "").slice(0, 5), diet: PI.DIETS.some(function (d) { return d.id === s.diet; }) ? s.diet : "all", day: {} }; if (s.day && typeof s.day === "object") Object.keys(s.day).forEach(function (k) { var v = Math.round(+s.day[k]); if (PI.FOODS[+k] && v > 0 && v < 50) o.day[k] = v; }); return o; }
 	function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) st = clean(s); } catch (e) {} }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
-	function fromUrl() { var q = new URLSearchParams(location.search); if (!q.has("kg")) return false; var day = st.day; st = clean({ kg: q.get("kg"), goal: q.get("goal") || st.goal, meals: q.get("meals") || "0", kcal: q.get("kcal") || "" }); st.day = day; return true; }
+	function fromUrl() { var q = new URLSearchParams(location.search); if (!q.has("kg")) return false; var day = st.day; st = clean({ kg: q.get("kg"), goal: q.get("goal") || st.goal, meals: q.get("meals") || "0", kcal: q.get("kcal") || "", diet: q.get("diet") || st.diet }); st.day = day; return true; }
 	function toast(msg) { var t = $("pi-toast"); if (!t) { t = document.createElement("div"); t.id = "pi-toast"; t.className = "tu-toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 1700); }
 	function copy(text, msg) { function fb() { var ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;left:-9999px;top:0"; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); toast(msg); } catch (e) { toast("Copy failed"); } document.body.removeChild(ta); } if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { toast(msg); }, fb); else fb(); }
 
+	$("pi-diet").innerHTML = PI.DIETS.map(function (d) { return '<option value="' + d.id + '">' + esc(d.name) + "</option>"; }).join("");
 	$("pi-goal").innerHTML = PI.GOALS.map(function (g) { return '<option value="' + g.id + '">' + esc(g.name) + "</option>"; }).join("");
 	function fill(except) { var kg = PI.num(st.kg); if (except !== "kg") $("pi-kg").value = kg > 0 ? PI.trim(kg, 2) : ""; if (except !== "lb") $("pi-lb").value = kg > 0 ? PI.trim(PI.kgToLb(kg), 1) : ""; }
-	function syncAll() { fill(); $("pi-goal").value = st.goal; $("pi-meals").value = st.meals; $("pi-kcal").value = st.kcal; }
+	function syncAll() { fill(); $("pi-goal").value = st.goal; $("pi-meals").value = st.meals; $("pi-diet").value = st.diet; $("pi-kcal").value = st.kcal; }
 	$("pi-kg").addEventListener("input", function () { var v = PI.num(this.value); st.kg = v > 0 ? String(v) : ""; fill("kg"); save(); update(); });
 	$("pi-lb").addEventListener("input", function () { var v = PI.num(this.value); st.kg = v > 0 ? String(Math.round(PI.lbToKg(v) * 1000) / 1000) : ""; fill("lb"); save(); update(); });
-	$("pi-goal").addEventListener("change", function () { st.goal = this.value; save(); update(); }); $("pi-meals").addEventListener("change", function () { st.meals = this.value; save(); update(); }); $("pi-kcal").addEventListener("input", function () { st.kcal = this.value.replace(/\D/g, "").slice(0, 5); save(); update(); });
+	$("pi-goal").addEventListener("change", function () { st.goal = this.value; save(); update(); }); $("pi-diet").addEventListener("change", function () { st.diet = this.value; save(); update(); }); $("pi-meals").addEventListener("change", function () { st.meals = this.value; save(); update(); }); $("pi-kcal").addEventListener("input", function () { st.kcal = this.value.replace(/\D/g, "").slice(0, 5); save(); update(); });
 	$("pi-examples").innerHTML = EXAMPLES.map(function (x, i) { return '<button type="button" class="tu-chip" data-i="' + i + '">' + esc(x[0]) + "</button>"; }).join("");
 	$("pi-examples").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var day = st.day; st = clean(Object.assign({}, st, EXAMPLES[+b.dataset.i][1])); st.day = day; save(); syncAll(); update(); });
 	$("pi-ref").innerHTML = "<thead><tr><th>Goal</th><th>g per kg</th><th>g per lb</th></tr></thead><tbody>" + PI.GOALS.map(function (g) { return "<tr id=\"pi-ref-" + g.id + "\"><td>" + esc(g.name) + "</td><td>" + g.lo + "&ndash;" + g.hi + "</td><td>" + PI.trim(g.lo * 0.4536, 2) + "&ndash;" + PI.trim(g.hi * 0.4536, 2) + "</td></tr>"; }).join("") + "</tbody>";
@@ -98,7 +107,8 @@
 		$("pi-mealnote").textContent = cur.pm > thr * 1.25 ? "Each meal is above the ~" + Math.round(thr) + " g that muscle can use well at once; more meals or snacks would spread it better." : cur.pm < thr * 0.5 ? "Meals are small: you could use fewer, larger protein servings." : "A good spread: each meal is close to the amount muscle uses best.";
 	}
 	function foods() {
-		$("pi-foods").innerHTML = PI.FOODS.map(function (f, i) { var c = st.day[i] || 0; return '<div class="pi-food' + (c ? " has" : "") + '"><div class="pi-fn">' + esc(f[0]) + "<small>" + esc(f[1]) + " &middot; " + f[2] + " g protein &middot; " + f[3] + ' kcal</small></div><div class="pi-step"><button type="button" data-i="' + i + '" data-d="-1" aria-label="Fewer ' + esc(f[0]) + '">−</button><b>' + c + '</b><button type="button" data-i="' + i + '" data-d="1" aria-label="More ' + esc(f[0]) + '">+</button></div></div>'; }).join(""); prog();
+		var idx = PI.foodIdx(st.diet); $("pi-dietnote").innerHTML = st.diet === "vegan" ? "Showing <b>vegan</b> foods only. Mix soy foods, legumes, grains and seeds through the day, and aim for the upper half of your range." : st.diet === "veg" ? "Showing <b>vegetarian</b> foods (no meat or fish; eggs, dairy and whey are included)." : "Showing all foods. Use the <b>Eating style</b> setting above for vegetarian or vegan lists.";
+		$("pi-foods").innerHTML = idx.map(function (i) { var f = PI.FOODS[i], c = st.day[i] || 0, lab = st.diet === "all" ? PI.dietLabel(f) : ""; return '<div class="pi-food' + (c ? " has" : "") + '"><div class="pi-fn">' + esc(f[0]) + (lab ? ' <span class="pi-tag pi-tag--' + (lab === "Vegan" ? "vegan" : "veg") + '">' + lab + "</span>" : "") + "<small>" + esc(f[1]) + " &middot; " + f[2] + " g protein &middot; " + f[3] + ' kcal</small></div><div class="pi-step"><button type="button" data-i="' + i + '" data-d="-1" aria-label="Fewer ' + esc(f[0]) + '">\u2212</button><b>' + c + '</b><button type="button" data-i="' + i + '" data-d="1" aria-label="More ' + esc(f[0]) + '">+</button></div></div>'; }).join(""); prog();
 	}
 	function prog() {
 		var T = PI.dayTotal(st.day), pct = Math.min(100, T.protein / cur.N.t * 100), left = cur.N.t - T.protein;
@@ -107,9 +117,10 @@
 	$("pi-foods").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b || !cur) return; var i = b.dataset.i, c = Math.max(0, Math.min(49, (st.day[i] || 0) + +b.dataset.d)); if (c) st.day[i] = c; else delete st.day[i]; save(); foods(); });
 	$("pi-clear").onclick = function () { st.day = {}; save(); if (cur) foods(); };
 	function eq() {
-		var t = cur.N.t, picks = [0, 4, 6, 7, 10, 11, 13, 16]; $("pi-eq").innerHTML = "<thead><tr><th>To get " + Math.round(t) + " g from one food</th><th>Serving</th><th>Servings needed</th><th>Calories</th></tr></thead><tbody>" + picks.map(function (i) { var f = PI.FOODS[i], s = PI.servingsFor(t, f); return "<tr><td>" + esc(f[0]) + "</td><td>" + esc(f[1]) + "</td><td>" + PI.trim(s, 1) + "</td><td>" + PI.group(s * f[3]) + " kcal</td></tr>"; }).join("") + "</tbody>";
+		var t = cur.N.t, idx = PI.foodIdx(st.diet).filter(function (i) { return PI.FOODS[i][4] !== "supp" && PI.FOODS[i][2] >= 7; }).sort(function (x, y) { return PI.FOODS[y][2] / Math.max(1, PI.FOODS[y][3]) - PI.FOODS[x][2] / Math.max(1, PI.FOODS[x][3]); }).slice(0, 8);
+		$("pi-eq").innerHTML = "<thead><tr><th>To get " + Math.round(t) + " g from one food</th><th>Serving</th><th>Servings needed</th><th>Calories</th></tr></thead><tbody>" + idx.map(function (i) { var f = PI.FOODS[i], s = PI.servingsFor(t, f); return "<tr><td>" + esc(f[0]) + "</td><td>" + esc(f[1]) + "</td><td>" + PI.trim(s, 1) + "</td><td>" + PI.group(s * f[3]) + " kcal</td></tr>"; }).join("") + "</tbody>";
 	}
-	$("pi-link").onclick = function () { if (cur) copy(location.origin + "/protein-intake-calculator?kg=" + PI.trim(cur.kg, 2) + "&goal=" + st.goal + (+st.meals ? "&meals=" + st.meals : "") + (st.kcal ? "&kcal=" + st.kcal : ""), "Link copied"); };
+	$("pi-link").onclick = function () { if (cur) copy(location.origin + "/protein-intake-calculator?kg=" + PI.trim(cur.kg, 2) + "&goal=" + st.goal + (+st.meals ? "&meals=" + st.meals : "") + (st.kcal ? "&kcal=" + st.kcal : "") + (st.diet !== "all" ? "&diet=" + st.diet : ""), "Link copied"); };
 	$("pi-print").onclick = function () { window.print(); };
 	load(); if (fromUrl()) { save(); try { history.replaceState(null, "", location.pathname); } catch (e) {} }
 	syncAll(); update();

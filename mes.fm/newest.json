@@ -2,10 +2,18 @@
  "generated": "2026-10-14",
  "calculators": [
   {
-   "href": "/waist-to-hip-ratio-calculator",
-   "title": "Waist-to-Hip Ratio Calculator",
-   "icon": "/img/waist-to-hip-ratio-calculator-logo.png",
-   "desc": "Waist-to-hip, waist-to-height and body shape with risk levels.",
+   "href": "/sleep-calculator",
+   "title": "Sleep Calculator",
+   "icon": "/img/sleep-calculator-logo.png",
+   "desc": "Best bedtime and wake-up time using 90-minute sleep cycles.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/calories-burned-calculator",
+   "title": "Calories Burned Calculator",
+   "icon": "/img/calories-burned-calculator-logo.png",
+   "desc": "Calories burned by 80+ activities for your weight, with a weekly plan.",
    "added": "2026-10-14",
    "kind": "calculator"
   },
@@ -30,6 +38,14 @@
    "title": "Running Pace Calculator",
    "icon": "/img/pace-calculator-logo.png",
    "desc": "Pace, time and distance, splits, and race time predictions.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/waist-to-hip-ratio-calculator",
+   "title": "Waist-to-Hip Ratio Calculator",
+   "icon": "/img/waist-to-hip-ratio-calculator-logo.png",
+   "desc": "Waist-to-hip, waist-to-height and body shape with risk levels.",
    "added": "2026-10-14",
    "kind": "calculator"
   },
@@ -78,22 +94,6 @@
    "title": "BMR Calculator",
    "icon": "/img/bmr-calculator-logo.png",
    "desc": "Basal metabolic rate and daily calories for your age, weight and height, plus calories to lose or gain.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/baby-feeding-log",
-   "title": "Baby Feeding Log",
-   "icon": "/img/baby-feeding-log-logo.png",
-   "desc": "One-tap breastfeeding timer, bottles, pumping and diapers, with today's totals.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/baby-growth-percentile-calculator",
-   "title": "Baby Growth Percentile Calculator",
-   "icon": "/img/baby-growth-percentile-calculator-logo.png",
-   "desc": "Weight, length and head circumference percentiles on the WHO growth chart, with a private growth log.",
    "added": "2026-10-14",
    "kind": "calculator"
   }
@@ -198,10 +198,18 @@
  ],
  "latest": [
   {
-   "href": "/waist-to-hip-ratio-calculator",
-   "title": "Waist-to-Hip Ratio Calculator",
-   "icon": "/img/waist-to-hip-ratio-calculator-logo.png",
-   "desc": "Waist-to-hip, waist-to-height and body shape with risk levels.",
+   "href": "/sleep-calculator",
+   "title": "Sleep Calculator",
+   "icon": "/img/sleep-calculator-logo.png",
+   "desc": "Best bedtime and wake-up time using 90-minute sleep cycles.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
+   "href": "/calories-burned-calculator",
+   "title": "Calories Burned Calculator",
+   "icon": "/img/calories-burned-calculator-logo.png",
+   "desc": "Calories burned by 80+ activities for your weight, with a weekly plan.",
    "added": "2026-10-14",
    "kind": "calculator"
   },
@@ -230,6 +238,14 @@
    "kind": "calculator"
   },
   {
+   "href": "/waist-to-hip-ratio-calculator",
+   "title": "Waist-to-Hip Ratio Calculator",
+   "icon": "/img/waist-to-hip-ratio-calculator-logo.png",
+   "desc": "Waist-to-hip, waist-to-height and body shape with risk levels.",
+   "added": "2026-10-14",
+   "kind": "calculator"
+  },
+  {
    "href": "/ideal-weight-calculator",
    "title": "Ideal Weight Calculator",
    "icon": "/img/ideal-weight-calculator-logo.png",
@@ -242,22 +258,6 @@
    "title": "TDEE Calculator",
    "icon": "/img/tdee-calculator-logo.png",
    "desc": "Your maintenance calories, plus calories to lose or gain weight.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/water-intake-calculator",
-   "title": "Water Intake Calculator",
-   "icon": "/img/water-intake-calculator-logo.png",
-   "desc": "How much water to drink a day, with a daily tracker.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/macro-calculator",
-   "title": "Macro Calculator",
-   "icon": "/img/macro-calculator-logo.png",
-   "desc": "Daily calories and grams of protein, carbs and fat for your goal, with preset or custom splits.",
    "added": "2026-10-14",
    "kind": "calculator"
   }

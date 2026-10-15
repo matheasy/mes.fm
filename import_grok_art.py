@@ -24,8 +24,11 @@ for a in [x for x in sys.argv[1:] if not x.startswith("--")]:
     os.makedirs(f"{R}/mes.fm/{slug}/img", exist_ok=True); c = ic.crop(box); w0, h0 = c.size
     if h0 > w0 * 1.04:   # portrait rounded rectangle: drop its rounded corners, keep the whole height, and widen the sides with the edge colour (no squashing, no clipped art)
         c = c.crop((int(w0 * 0.05), int(h0 * 0.10), w0 - int(w0 * 0.05), h0 - int(h0 * 0.10))); w1, h1 = c.size
+        if w1 >= h1:   # barely taller than wide after the inset: just centre-crop a square
+            l = (w1 - h1) // 2; c = c.crop((l, 0, l + h1, h1)); w1 = h1
         sq = Image.new("RGB", (h1, h1)); ox = (h1 - w1) // 2; sq.paste(c, (ox, 0))
-        sq.paste(c.crop((0, 0, 1, h1)).resize((ox, h1)), (0, 0)); sq.paste(c.crop((w1 - 1, 0, w1, h1)).resize((h1 - ox - w1, h1)), (ox + w1, 0)); c = sq
+        if ox > 0: sq.paste(c.crop((0, 0, 1, h1)).resize((ox, h1)), (0, 0)); sq.paste(c.crop((w1 - 1, 0, w1, h1)).resize((h1 - ox - w1, h1)), (ox + w1, 0))
+        c = sq
     elif abs(w0 - h0) > 0.04 * max(w0, h0):
         side = min(w0, h0); l = (w0 - side) // 2; t = (h0 - side) // 2; c = c.crop((l, t, l + side, t + side))
     rounded(c, 512).save(f"{R}/mes.fm/{slug}/img/logo.png"); rounded(c, 352).save(f"{R}/mes.fm/img/{slug}-logo.png")

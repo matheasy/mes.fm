@@ -6,6 +6,7 @@
 				<div class="tu-field" style="flex:2 1 16em;"><label for="pi-goal">Your goal</label><select id="pi-goal" class="tu-select"></select></div>
 			</div>
 			<div class="tu-row" style="margin-top:0.8em;">
+				<div class="tu-field" style="flex:2 1 15em;"><label for="pi-diet">Eating style (filters the foods)</label><select id="pi-diet" class="tu-select"></select></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="pi-meals">Meals a day</label><select id="pi-meals" class="tu-select"><option value="0">Suggest for me</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:13em;"><label for="pi-kcal">Daily calories (optional)</label><div class="tu-suffix"><input id="pi-kcal" class="tu-input" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 2200"><span>kcal</span></div></div>
 			</div>
@@ -21,6 +22,7 @@
 			<h2>Spread it across the day</h2>
 			<div class="tu-card"><div class="pi-chart" id="pi-meals-c" role="img"></div><p class="tu-note" style="margin-bottom:0;" id="pi-mealnote"></p></div>
 			<h2>Build your day</h2>
+			<p class="tu-note" id="pi-dietnote" style="margin-top:0;"></p>
 			<div class="tu-card">
 				<div class="pi-prog" id="pi-prog" aria-live="polite"></div>
 				<div class="pi-foods" id="pi-foods"></div>
@@ -46,7 +48,8 @@
 			<p>For healthy people, intakes up to about 2 g/kg (and often higher) have no known harm. People with kidney disease or a doctor's protein limit must follow their medical advice. Protein also needs enough fibre, fluids and total calories to work well.</p>
 			<h3>Questions</h3>
 			<dl>
-				<dt>Do plant proteins count?</dt><dd>Yes. Mix beans, lentils, tofu, grains and nuts through the day. Plant-only eaters may aim a little toward the upper half of the range.</dd>
+				<dt>Can I get enough protein as a vegetarian or vegan?</dt><dd>Yes. Choose &ldquo;Vegetarian&rdquo; or &ldquo;Vegan&rdquo; above and the food list and examples switch to suitable foods: tofu, tempeh, seitan, soy milk and edamame, lentils, beans, peas, quinoa, seeds, nuts and pea protein powder (plus eggs, dairy and whey for vegetarians). Plant proteins are slightly less digestible and lower in some amino acids (like lysine), so vary your sources and aim for the upper half of your range. Soy, seitan, quinoa and pea protein are the most complete.</dd>
+				<dt>Do plant proteins count?</dt><dd>Yes, fully. Mixing beans, lentils, tofu, grains and nuts through the day covers all the essential amino acids.</dd>
 				<dt>Do I need protein powder?</dt><dd>No. It is a convenient way to reach a target, not a requirement.</dd>
 				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
 			</dl>

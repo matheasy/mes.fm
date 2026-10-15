@@ -1,0 +1,59 @@
+	<div class="tu" id="cb">
+		<div class="tu-card" id="cb-setup">
+			<div class="tu-row">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="cb-kg">Weight</label><div class="tu-suffix"><input id="cb-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 70"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="cb-lb">Weight</label><div class="tu-suffix"><input id="cb-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 154"><span>lb</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:15em;"><span class="tu-label" id="cb-net-label">Count calories as</span>
+					<div class="tu-seg" id="cb-net" role="group" aria-labelledby="cb-net-label"><button type="button" data-n="0" aria-pressed="true" title="All the calories you burn during the activity">Total burn</button><button type="button" data-n="1" aria-pressed="false" title="Only the extra above sitting still">Extra (net)</button></div></div>
+			</div>
+		</div>
+		<div id="cb-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your weight &mdash; or try an example: </span><span class="tu-chips" id="cb-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="cb-out" hidden>
+			<h2>Pick your activities</h2>
+			<div class="tu-card">
+				<div class="tu-row"><div class="tu-field" style="flex:2 1 14em;"><label for="cb-search" class="tu-label">Search</label><input id="cb-search" class="tu-input" type="search" autocomplete="off" placeholder="e.g. running, yoga, cleaning"></div></div>
+				<div class="tu-chips cb-cats" id="cb-cats"></div>
+				<div class="cb-list" id="cb-list" role="list"></div>
+				<p class="tu-note" style="margin-bottom:0;" id="cb-listnote"></p>
+			</div>
+
+			<h2>Your activities</h2>
+			<div class="tu-card">
+				<div id="cb-none" class="tu-note" style="margin:0;">Add an activity above to see how many calories you burn.</div>
+				<div class="cb-rows" id="cb-rows"></div>
+				<div class="tu-stats" id="cb-hero" aria-live="polite" hidden></div>
+				<div class="cb-prog" id="cb-prog" hidden></div>
+				<div class="cb-btns"><button type="button" class="tu-btn tu-btn--ghost" id="cb-clear">Clear all</button><button type="button" class="tu-btn tu-btn--ghost" id="cb-copy">Copy summary</button><button type="button" class="tu-btn tu-btn--ghost" id="cb-link">Copy link</button><button type="button" class="tu-btn tu-btn--ghost" id="cb-print">Print</button></div>
+			</div>
+
+			<h2>Calories in 30 minutes, at your weight</h2>
+			<div class="tu-card"><div class="cb-chart" id="cb-chart" role="img"></div><p class="tu-note" style="margin-bottom:0;">The most demanding activities in the list; your picks are highlighted. Tap an activity bar's name in the list above to add it.</p></div>
+
+			<h2>How long to burn&hellip;</h2>
+			<div class="tu-card">
+				<div class="tu-row" style="align-items:flex-end;"><div class="tu-field tu-field--sm" style="flex-basis:12em;"><label for="cb-goal">Calories to burn</label><div class="tu-suffix"><input id="cb-goal" class="tu-input" type="text" inputmode="numeric" autocomplete="off" value="300"><span>kcal</span></div></div><div class="tu-chips" id="cb-goalchips" style="display:inline-flex;margin:0;"></div></div>
+				<div class="tu-table-wrap"><table class="tu-table" id="cb-howlong"></table></div>
+				<p class="tu-note" id="cb-food" style="margin-bottom:0;"></p>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How calories burned are calculated</h2>
+			<p>Every activity has a <b>MET</b> value (metabolic equivalent): how many times harder than sitting at rest it is. One MET is about 1 kcal per kg of body weight per hour. The formula is:</p>
+			<p style="text-align:center;"><b>calories = MET &times; weight (kg) &times; hours</b></p>
+			<p>Example: running at 6 mph (MET 9.8) for 30 minutes at 70 kg burns 9.8 &times; 70 &times; 0.5 = <b>343 kcal</b>. The MET values come from the <i>Compendium of Physical Activities</i>, the research standard, rounded.</p>
+			<h2>Total burn or extra (net) burn?</h2>
+			<p><b>Total burn</b> (the default) counts all calories your body uses during the activity, including what you would have burned anyway. <b>Extra (net)</b> counts only the part above sitting still (MET &minus; 1), which is the number to use if you want to know how much an activity adds to your normal day. Most apps and gym machines show the total.</p>
+			<h2>The 150-minute guideline</h2>
+			<p>The World Health Organization recommends at least <b>150&ndash;300 minutes a week</b> of moderate activity (MET 3&ndash;5.9) or <b>75&ndash;150 minutes</b> of vigorous activity (MET 6+). The progress bar counts vigorous minutes double, as the guidelines do, and ignores light activity.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How accurate is this?</dt><dd>It is an estimate: your fitness, body composition, technique, terrain and temperature change the real number by 10&ndash;20%. It is best for comparing activities and planning, not exact tracking.</dd>
+				<dt>Does a heavier person burn more?</dt><dd>Yes. Calories scale with body weight for the same activity and time.</dd>
+				<dt>How many calories is a pound of fat?</dt><dd>About 3,500 kcal (7,700 per kg), so burning 500 extra calories a day is roughly half a kilo (1 lb) a week, if eating stays the same.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
+			</dl>
+			<p>General information, not medical advice. Related: <a href="/tdee-calculator">TDEE Calculator</a> &middot; <a href="/heart-rate-zone-calculator">Heart Rate Zone Calculator</a> &middot; <a href="/pace-calculator">Running Pace Calculator</a></p>
+		</div>
+	</div>

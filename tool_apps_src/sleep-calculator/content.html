@@ -1,0 +1,66 @@
+	<div class="tu" id="sl">
+		<div class="tu-card" id="sl-setup">
+			<div class="tu-seg sl-modes" id="sl-mode" role="group" aria-label="What do you want to work out?"><button type="button" data-m="wake" aria-pressed="true">I want to wake up at&hellip;</button><button type="button" data-m="bed" aria-pressed="false">I go to bed at&hellip;</button><button type="button" data-m="now" aria-pressed="false">I'm going to sleep now</button></div>
+			<div class="tu-row" style="margin-top:1em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;" id="sl-timebox"><label for="sl-time" id="sl-timel">Wake-up time</label><input id="sl-time" class="tu-input tu-input--big" type="time" value="07:00"></div>
+				<div class="tu-field" style="flex:2 1 15em;"><label for="sl-age">Age group</label><select id="sl-age" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><span class="tu-label" id="sl-f-label">Clock</span><div class="tu-seg" id="sl-fmt" role="group" aria-labelledby="sl-f-label"><button type="button" data-f="12" aria-pressed="true">12 h</button><button type="button" data-f="24" aria-pressed="false">24 h</button></div></div>
+			</div>
+			<details class="sl-adv" style="margin-top:0.8em;"><summary>Fine-tune: time to fall asleep and cycle length</summary>
+				<div class="tu-row" style="margin-top:0.6em;">
+					<div class="tu-field" style="flex:1 1 14em;"><label for="sl-lat">Time to fall asleep: <b id="sl-lato"></b></label><input type="range" id="sl-lat" min="0" max="60" step="5" style="width:100%;accent-color:var(--accent);height:2em;"></div>
+					<div class="tu-field" style="flex:1 1 14em;"><label for="sl-cyc">Sleep cycle length: <b id="sl-cyco"></b></label><input type="range" id="sl-cyc" min="80" max="110" step="5" style="width:100%;accent-color:var(--accent);height:2em;"></div>
+				</div>
+				<p class="tu-note" style="margin-bottom:0;">Most adults fall asleep in about 10&ndash;20 minutes and cycle every 90 minutes (anywhere from 80 to 110). Watch how rested you feel and adjust.</p></details>
+		</div>
+
+		<div id="sl-out">
+			<h2 id="sl-h1">Go to bed at one of these times</h2>
+			<p class="tu-note" id="sl-lead" style="margin-top:0;"></p>
+			<div class="sl-cards" id="sl-cards" role="list"></div>
+			<div class="tu-card sl-verdict" id="sl-verdict" aria-live="polite"></div>
+			<h2>What your night looks like</h2>
+			<div class="tu-card"><div class="sl-chart" id="sl-hyp" role="img"></div><ul class="sl-legend" id="sl-hleg"></ul><p class="tu-note" style="margin-bottom:0;">A typical night, not a measurement of you: deep sleep (N3) comes mostly in the first half, REM (dreaming) lengthens toward morning, which is why cutting the end of the night costs REM.</p></div>
+			<h2>An evening plan for tonight</h2>
+			<div class="tu-card"><div class="sl-plan" id="sl-plan"></div></div>
+			<h2>Quick naps</h2>
+			<div class="tu-card">
+				<div class="tu-row" style="align-items:flex-end;"><div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="sl-nap">Nap starts at</label><input id="sl-nap" class="tu-input" type="time"></div><div class="tu-field tu-field--sm" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--ghost" id="sl-napnow">Use the current time</button></div></div>
+				<div class="tu-table-wrap"><table class="tu-table" id="sl-naps"></table></div>
+			</div>
+			<h2>Your sleep debt this week</h2>
+			<div class="tu-card">
+				<p class="tu-note" style="margin-top:0;">Type how long you slept each night (like <code>7:30</code> or <code>6.5</code>). Leave a night blank to skip it.</p>
+				<div class="sl-week" id="sl-week"></div>
+				<div class="sl-chart" id="sl-debt" role="img"></div>
+				<p class="sl-debtt" id="sl-debtt" aria-live="polite"></p>
+				<div class="sl-btns"><button type="button" class="tu-btn tu-btn--ghost" id="sl-clearweek">Clear the week</button></div>
+			</div>
+			<div class="sl-btns"><button type="button" class="tu-btn tu-btn--primary" id="sl-link">Copy link to this plan</button><button type="button" class="tu-btn tu-btn--ghost" id="sl-print">Print</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the sleep calculator works</h2>
+			<p>Sleep runs in <b>cycles of about 90 minutes</b>, each moving through light sleep, deep sleep and REM (dream) sleep. Waking at the end of a cycle, in light sleep, usually feels easier than being pulled out of deep sleep, even if the total time is a little shorter. The calculator counts back (or forward) in whole cycles and adds the time you need to fall asleep (about 15 minutes by default):</p>
+			<p style="text-align:center;"><b>wake-up time = bedtime + time to fall asleep + (number of cycles &times; 90 minutes)</b></p>
+			<p>Example: bed at 11:00 PM, 15 minutes to fall asleep, 5 cycles: 11:00 + 0:15 + 7:30 = <b>6:45 AM</b>.</p>
+			<h2>How much sleep do you need?</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="sl-ref"></table></div>
+			<p class="tu-note">Hours per 24 hours, from the American Academy of Sleep Medicine and National Sleep Foundation. Needs vary by person: if you feel rested and alert without an alarm after the lower end, that may be yours.</p>
+			<h2>Tips for falling asleep faster</h2>
+			<ul>
+				<li>Keep a regular schedule, including weekends: a steady wake time is the strongest anchor for your body clock.</li>
+				<li>Get bright light soon after waking and dim the lights in the evening.</li>
+				<li>Stop caffeine about 6 hours before bed (its half-life is around 5 hours) and keep alcohol away from the last few hours.</li>
+				<li>Keep the room cool, dark and quiet; put screens away about an hour before bed.</li>
+			</ul>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Why 90 minutes?</dt><dd>It is the average adult cycle; individual cycles range from about 80 to 110 minutes and change through the night. Use the slider to match yours.</dd>
+				<dt>Is a nap bad for night sleep?</dt><dd>Short naps (10&ndash;20 minutes) before mid-afternoon usually are not. Long or late naps can make it harder to fall asleep at night.</dd>
+				<dt>Can I catch up on lost sleep?</dt><dd>Partly. Sleeping an extra 30&ndash;60 minutes for several nights helps; chronic shortage takes longer to recover and is better avoided.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything stays in this browser.</dd>
+			</dl>
+			<p>General information, not medical advice. See a doctor if you regularly cannot sleep, snore heavily, or stop breathing at night. Related: <a href="/clock">Clock</a> &middot; <a href="/timezone">Time Zone Converter</a> &middot; <a href="/heart-rate-zone-calculator">Heart Rate Zone Calculator</a></p>
+		</div>
+	</div>
