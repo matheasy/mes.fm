@@ -1,5 +1,5 @@
-// node tool_apps_src/compressor-tests.js
-const C = require("./compressor/lib.js");
+// node tool_apps_src/compress-tests.js
+const C = require("./compress/lib.js");
 let f = 0, n = 0; function eq(a, b, m) { n++; if (JSON.stringify(a) !== JSON.stringify(b)) { f++; console.log("FAIL", m, JSON.stringify(a), "!=", JSON.stringify(b)); } }
 eq(C.kindOf("a.PDF", ""), "pdf", "pdf"); eq(C.kindOf("x", "application/pdf"), "pdf", "pdf mime"); eq(C.kindOf("p.jpeg", ""), "image", "jpeg"); eq(C.kindOf("p.heic", ""), "other", "heic");
 eq(C.kindOf("s.m4a", ""), "audio", "m4a"); eq(C.kindOf("s", "audio/mpeg"), "audio", "audio mime"); eq(C.kindOf("m.MOV", ""), "video", "mov"); eq(C.kindOf("m", "video/mp4"), "video", "video mime"); eq(C.kindOf("a.zip", ""), "other", "zip");

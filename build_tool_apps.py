@@ -643,8 +643,8 @@ APPS = {
                 desc="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.",
                 js_v="1", pre_js=["/main_js/site-search.js?v=1"], no_ads=True),
     # MES Compressor: pictures (canvas re-encode, target size), PDFs (embedded JPEGs re-saved smaller with pdf-lib; Extreme = rasterise) and audio (decode -> MP3 with lamejs), all in the browser.
-    # Decisions in lib.js (MESCmp, node tests tool_apps_src/compressor-tests.js); /compress-pdf stays as the PDF-specific landing page. Video is not supported yet.
-    "compressor": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
+    # Decisions in lib.js (MESCmp, node tests tool_apps_src/compress-tests.js); /compress-pdf stays as the PDF-specific landing page. Video is not supported yet.
+    "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
                        js_v="1", lib_from=["image-converter"]),

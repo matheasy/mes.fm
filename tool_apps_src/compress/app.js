@@ -1,4 +1,4 @@
-/* MES Compressor (mes.fm/compressor): pictures (canvas re-encode to WebP / JPEG, optional target size), PDFs (embedded JPEGs re-saved smaller with pdf-lib,
+/* MES Compressor (mes.fm/compress): pictures (canvas re-encode to WebP / JPEG, optional target size), PDFs (embedded JPEGs re-saved smaller with pdf-lib,
  * or every page rasterised for "Extreme"), audio (decoded, resampled and saved as MP3 with lamejs). Everything runs in the browser; nothing is uploaded.
  * Decisions live in lib.js (MESCmp); pdf.js 3.11.174, pdf-lib 1.17.1 and lamejs 1.2.1 load from cdnjs the first time they are needed. */
 (function () {
@@ -153,7 +153,7 @@
 			if (lv.raster) return libPdfjs().then(function () { return rasterPdf(f, bytes, lv); }).then(function (u8) { return { blob: blobOf(u8, "application/pdf"), name: C.outName(f.name, "pdf", used), note: "every page rebuilt as a 100 dpi picture; text is not selectable" }; });
 			setP(f, 8, "Reading the PDF...");
 			return L.PDFDocument.load(bytes, { updateMetadata: false }).then(function (doc) { return recompress(f, L, doc, lv).then(function (stats) {
-				doc.setProducer("MES Compressor (mes.fm/compressor)"); setP(f, 94, "Saving...");
+				doc.setProducer("MES Compressor (mes.fm/compress)"); setP(f, 94, "Saving...");
 				return doc.save({ useObjectStreams: true }).then(function (u8) { return { blob: blobOf(u8, "application/pdf"), name: C.outName(f.name, "pdf", used), note: lv.q ? (stats.changed + " picture" + (stats.changed === 1 ? "" : "s") + " re-saved smaller" + (stats.seen > stats.changed ? ", " + (stats.seen - stats.changed) + " left as they are" : "")) : "structure tidied" }; });
 			}); });
 		}, function (e) { if (/encrypt/i.test(e && e.message)) throw new Error("This PDF is password-protected. Remove the password first."); throw e; });
@@ -162,7 +162,7 @@
 		var L = window.PDFLib; return window.pdfjsLib.getDocument({ data: bytes.slice(0) }).promise.then(function (pdf) {
 			return L.PDFDocument.create().then(function (out) {
 				var n = pdf.numPages; function page(t) {
-					if (t > n) { out.setProducer("MES Compressor (mes.fm/compressor)"); return out.save(); }
+					if (t > n) { out.setProducer("MES Compressor (mes.fm/compress)"); return out.save(); }
 					setP(f, 5 + Math.round(t / n * 85), "Page " + t + " of " + n + "...");
 					return pdf.getPage(t).then(function (p) { var v = p.getViewport({ scale: lv.raster / 72 }), v1 = p.getViewport({ scale: 1 }), c = document.createElement("canvas"); c.width = Math.round(v.width); c.height = Math.round(v.height); var x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
 						return p.render({ canvasContext: x, viewport: v }).promise.then(function () { return enc(c, "image/jpeg", lv.q); }).then(function (jb) { return jb.arrayBuffer(); }).then(function (ab) { return out.embedJpg(new Uint8Array(ab)); }).then(function (em) { var pg = out.addPage([v1.width, v1.height]); pg.drawImage(em, { x: 0, y: 0, width: v1.width, height: v1.height }); c.width = c.height = 1; return tick(); }); }).then(function () { return page(t + 1); });

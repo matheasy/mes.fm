@@ -1,5 +1,5 @@
-/* MES Compressor -- pure helpers (no DOM). Browser global `MESCmp`; node: require('./tool_apps_src/compressor/lib.js'); tests: node tool_apps_src/compressor-tests.js
- * mes.fm/compressor shrinks pictures, PDFs and audio in the browser. This file holds the decisions (what kind of file, which output, the
+/* MES Compressor -- pure helpers (no DOM). Browser global `MESCmp`; node: require('./tool_apps_src/compress/lib.js'); tests: node tool_apps_src/compress-tests.js
+ * mes.fm/compress shrinks pictures, PDFs and audio in the browser. This file holds the decisions (what kind of file, which output, the
  * quality search for a target size, PDF picture plans, MP3 plans / PCM helpers, names); app.js does the encoding. */
 (function (root) {
 	"use strict";

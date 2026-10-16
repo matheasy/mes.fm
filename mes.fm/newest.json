@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-15",
+ "generated": "2026-10-16",
  "calculators": [
   {
    "href": "/body-surface-area-calculator",
@@ -100,11 +100,11 @@
  ],
  "tools": [
   {
-   "href": "/compressor",
+   "href": "/compress",
    "title": "Compressor: Pictures, PDFs, Audio",
-   "icon": "/img/compressor-logo.png",
+   "icon": "/img/compress-logo.png",
    "desc": "Make JPG, PNG, WebP, PDF and audio files smaller with a before and after preview. Private: nothing is uploaded.",
-   "added": "2026-10-15",
+   "added": "2026-10-16",
    "kind": "tool"
   },
   {
@@ -198,11 +198,11 @@
  ],
  "latest": [
   {
-   "href": "/compressor",
+   "href": "/compress",
    "title": "Compressor: Pictures, PDFs, Audio",
-   "icon": "/img/compressor-logo.png",
+   "icon": "/img/compress-logo.png",
    "desc": "Make JPG, PNG, WebP, PDF and audio files smaller with a before and after preview. Private: nothing is uploaded.",
-   "added": "2026-10-15",
+   "added": "2026-10-16",
    "kind": "tool"
   },
   {
