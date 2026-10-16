@@ -877,7 +877,14 @@ function periodEndsText(unit) {
   const left = mins >= 60 ? Math.floor(mins / 60) + ' h ' + (mins % 60) + ' min' : mins + ' min';
   let at = '';
   try { at = end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (e) { /* ignore */ }
-  return ': ' + (unit === 'hourly' ? 'this hour' : 'today') + ' is complete in ' + left + (at ? ' (' + at + ' your time' + (unit === 'hourly' ? '' : ', midnight UTC') + ')' : '');
+  let text = ': ' + (unit === 'hourly' ? 'this hour' : 'today') + ' is complete in ' + left + (at ? ' (' + at + ' your time' + (unit === 'hourly' ? '' : ', midnight UTC') + ')' : '');
+  if (unit === 'hourly') {   // the 24-hour view also says when the stats day (UTC) is done, since the Daily views count that whole day
+    const dayEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)), dm = Math.max(1, Math.ceil((dayEnd - now) / 60000));
+    let dat = '';
+    try { dat = dayEnd.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (e) { /* ignore */ }
+    text += '; the stats day (midnight to midnight UTC) is done in ' + (dm >= 60 ? Math.floor(dm / 60) + ' h ' + (dm % 60) + ' min' : dm + ' min') + (dat ? ' (' + dat + ' your time)' : '');
+  }
+  return text;
 }
 setInterval(function () { if (typeof renderTsChart === 'function' && tsRawPoints && tsRawPoints.length) renderTsChart(); }, 60000);
 
