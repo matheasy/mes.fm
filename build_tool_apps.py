@@ -139,7 +139,7 @@ APPS = {
                           js_v="3"),
     # Archive (2026-10-14): one address -> Wayback Machine, archive.today, Ghostarchive, Megalodon, Arquivo.pt, RemovePaywall, ArcHive (Hive blockchain) + the user's own sites. lib.js = engine table (shared with the
     # MES Archive extension in mes.fm/archive/extension via build_archive_extension.py), tests: node tool_apps_src/archive-tests.js.
-    "archive": dict(title="MES Archive", page_title="Archive Any Web Page: Wayback Machine, archive.today and More",
+    "archive": dict(tools_extra=EXT_TAB, title="MES Archive", page_title="Archive Any Web Page: Wayback Machine, archive.today and More",
                     tag="Save or find any page on every web archive.", accent="#1e3a8a", dark="#152a66", tint="#e3e9fb",
                     desc="Free web archive tool: paste an address and open the Wayback Machine, archive.today, Ghostarchive, Megalodon and more at once to save a copy or find old ones, add your own archive sites, send it to the Hive blockchain, and get the one-click MES Archive browser extension.",
                     js_v="5"),
