@@ -20,9 +20,9 @@
         ".hc-group .hc-more{order:0}.hc-group #siteReadBtn{order:1}.hc-group #textSizeDownBtn,.hc-group #textSizeDown{order:2}.hc-group #textSizeUpBtn,.hc-group #textSizeUp{order:3}.hc-group #siteFavBtn{order:4}.hc-group #siteSearchBtn{order:5}.hc-group #themeToggleBtn,.hc-group #themeToggle{order:6}",
         "#hdrMorePanel{display:none}",
         "@media (max-width:768px),(pointer:coarse){",
-        ".hc-group{gap:8px !important;flex-wrap:nowrap !important;justify-content:flex-end !important;max-width:calc(100vw - 76px) !important}",
-        ".hc-group .hc-btn,#hdrMorePanel .hc-btn{width:44px !important;height:44px !important;font-size:1.05em !important;flex:0 0 auto}",
-        ".hc-group .hc-btn svg,#hdrMorePanel .hc-btn svg{width:22px !important;height:22px !important}",
+        ".hc-group{gap:var(--hc-g,8px) !important;flex-wrap:nowrap !important;justify-content:flex-end !important;max-width:calc(100vw - 76px) !important}",
+        ".hc-group .hc-btn{width:var(--hc-s,44px) !important;height:var(--hc-s,44px) !important;font-size:1.05em !important;flex:0 0 auto}#hdrMorePanel .hc-btn{width:44px !important;height:44px !important;font-size:1.05em !important;flex:0 0 auto}",
+        ".hc-group .hc-btn svg{width:calc(var(--hc-s,44px) * .5) !important;height:calc(var(--hc-s,44px) * .5) !important}#hdrMorePanel .hc-btn svg{width:22px !important;height:22px !important}",
         ".hc-group .hc-more{display:flex !important}.hc-group .hc-more.hc-none{display:none !important}",
         /* the More panel: buttons that do not fit the one-row bar live here (press and hold any button to move it between the bar and the panel) */
         "#hdrMorePanel.open{display:block;position:fixed;z-index:2147483000;background:#fff;color:#222;border:1px solid #c9ced6;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);padding:10px}",
@@ -39,7 +39,7 @@
         "body.hc-barhide #hdrBarTab{top:0}body.hc-barhide #hdrBarTab svg{transform:rotate(180deg)}",
         "body.dark-mode #hdrBarTab,body.dark #hdrBarTab{background:#2a2a2a;color:#eee;border-color:#454545}",
         "}",
-        "@media (max-width:380px){.hc-group{gap:6px !important}.hc-group .hc-btn{width:40px !important;height:40px !important}body.is-stuck .hc-group{top:9px !important}}",
+        "@media (max-width:380px){body.is-stuck .hc-group{top:9px !important}}",
         "@media (max-width:480px){",
         "body.hc-hub .header{padding-bottom:58px !important}body.hc-hub:not(.is-stuck) #header-controls{bottom:6px !important}",
         "body.hc-math .top-bar{padding-bottom:58px !important}body.hc-math:not(.is-stuck) .header-controls{bottom:6px !important}",
@@ -279,7 +279,7 @@
         var KEYS = [["read", ["siteReadBtn"], "Read aloud"], ["tsd", ["textSizeDownBtn", "textSizeDown"], "Smaller text"], ["tsu", ["textSizeUpBtn", "textSizeUp"], "Larger text"], ["fav", ["siteFavBtn"], "Favourites"], ["search", ["siteSearchBtn"], "Search"], ["theme", ["themeToggleBtn", "themeToggle"], "Dark / light"]];
         var items = [];
         KEYS.forEach(function (k) { for (var n = 0; n < k[1].length; n++) { var e = document.getElementById(k[1][n]); if (e) { items.push({ key: k[0], el: e, name: k[2] }); break; } } });
-        var DEFAULT_PINS = ["fav", "search", "theme"], MAXPIN = 4, pins = DEFAULT_PINS.slice();
+        var DEFAULT_PINS = ["fav", "search", "theme"], MAXPIN = 6, pins = DEFAULT_PINS.slice();
         try { var sv = JSON.parse(localStorage.getItem("hdrPins")); if (Array.isArray(sv)) pins = sv.filter(function (x) { return typeof x === "string"; }).slice(0, MAXPIN); } catch (e) { /* ignore */ }
         var panel = document.createElement("div"); panel.id = "hdrMorePanel"; panel.setAttribute("role", "group"); panel.setAttribute("aria-label", "More header buttons");
         var row = document.createElement("div"); row.className = "hc-row"; var hint = document.createElement("div"); hint.className = "hc-hint";
@@ -295,9 +295,17 @@
             });
             var extras = ph && items.some(function (it) { return pins.indexOf(it.key) < 0; });
             more.classList.toggle("hc-none", !extras); if (!extras || !ph) closePanel();
-            hint.textContent = "Press and hold a button to move it to the bar" + (pins.length >= MAXPIN ? " (the bar holds " + MAXPIN + ": move one here first)." : ".");
-            reserve();
+            hint.textContent = "Press and hold a button to move it to the bar. The more you pin, the smaller they get.";
+            fitSize(); reserve();
         }
+        /* every button on the bar stays on ONE row: they start at the 44px touch size and shrink (down to 30px) only when you pin enough of them that 44px would not fit */
+        function fitSize() {
+            if (!phone()) { group.style.removeProperty("--hc-s"); group.style.removeProperty("--hc-g"); return; }
+            var n = group.querySelectorAll("button:not(.hc-none)").length, avail = Math.max(120, innerWidth - 76 - 4), size = 44, gap = 8;
+            if (n * 44 + (n - 1) * 8 > avail) { gap = 6; size = Math.max(30, Math.floor((avail - (n - 1) * gap) / n)); }
+            group.style.setProperty("--hc-s", size + "px"); group.style.setProperty("--hc-g", gap + "px");
+        }
+        window.addEventListener("resize", function () { fitSize(); reserve(); });
         function openPanel() {
             if (!phone()) return; var r = more.getBoundingClientRect(), gr = group.getBoundingClientRect();
             panel.classList.add("open"); panel.style.top = Math.round(r.bottom + 8) + "px"; panel.style.right = Math.max(8, Math.round(innerWidth - gr.right)) + "px";
@@ -318,7 +326,7 @@
             holdT = setTimeout(function () {
                 holdT = null; var at = pins.indexOf(it.key);
                 if (at >= 0) { pins.splice(at, 1); favToast(it.name + " moved to the More menu"); }
-                else if (pins.length >= MAXPIN) { favToast("The bar is full: hold another button first to move it to More"); suppress = Date.now(); if (navigator.vibrate) navigator.vibrate(8); return; }
+                else if (pins.length >= MAXPIN) { return; }
                 else { pins.push(it.key); favToast(it.name + " is now on the bar"); }
                 pins.sort(function (a, b2) { return KEYS.map(function (k) { return k[0]; }).indexOf(a) - KEYS.map(function (k) { return k[0]; }).indexOf(b2); });
                 try { localStorage.setItem("hdrPins", JSON.stringify(pins)); } catch (er) { /* ignore */ }
