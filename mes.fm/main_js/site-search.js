@@ -17,17 +17,17 @@
     var data = null, loading = null, prepared = null;
     var HC_CSS = [
         ".hc-more{display:none}",
-        ".hc-group #siteReadBtn{order:1}.hc-group #textSizeDownBtn,.hc-group #textSizeDown{order:2}.hc-group #textSizeUpBtn,.hc-group #textSizeUp{order:3}.hc-group #siteFavBtn{order:4}.hc-group .hc-more{order:6}.hc-group #siteSearchBtn{order:7}.hc-group #themeToggleBtn,.hc-group #themeToggle{order:8}",
+        ".hc-group .hc-more{order:0}.hc-group #siteReadBtn{order:1}.hc-group #textSizeDownBtn,.hc-group #textSizeDown{order:2}.hc-group #textSizeUpBtn,.hc-group #textSizeUp{order:3}.hc-group #siteFavBtn{order:4}.hc-group #siteSearchBtn{order:5}.hc-group #themeToggleBtn,.hc-group #themeToggle{order:6}",
+        "#hdrMorePanel{display:none}",
         "@media (max-width:768px),(pointer:coarse){",
-        ".hc-group{gap:8px !important;flex-wrap:wrap !important;justify-content:flex-end !important;max-width:calc(100vw - 76px) !important}",
-        ".hc-group .hc-btn{width:44px !important;height:44px !important;font-size:1.05em !important}",
-        ".hc-group .hc-btn svg{width:22px !important;height:22px !important}",
-        ".hc-group .hc-more{display:flex !important}.hc-group .hc-more svg{transition:transform .2s}.hc-group .hc-more[aria-expanded=true] svg{transform:rotate(180deg)}",
-        ".hc-group.hc-collapsed .hc-x{display:none !important}",
-        /* expanded on a phone = two clean rows: the extras (read aloud, A-, A+, star) above, then chevron / search / theme; the floating bar, its hide tab and the headers make room for the second row */
-        ".hc-group:not(.hc-collapsed)::before{content:'';order:5;flex:0 0 100%;height:0}",
-        "body.hc-expanded #compact-nav{height:112px !important}body.hc-expanded #hdrBarTab{top:112px}body.hc-expanded.is-stuck #navbar.hide{top:116px !important}body.hc-expanded.hc-barhide #hdrBarTab{top:0}body.hc-expanded.hc-barhide #compact-nav{transform:translateY(-130%) !important}",
-        "body.hc-dc.hc-expanded #header{padding-top:7.4em !important}",
+        ".hc-group{gap:8px !important;flex-wrap:nowrap !important;justify-content:flex-end !important;max-width:calc(100vw - 76px) !important}",
+        ".hc-group .hc-btn,#hdrMorePanel .hc-btn{width:44px !important;height:44px !important;font-size:1.05em !important;flex:0 0 auto}",
+        ".hc-group .hc-btn svg,#hdrMorePanel .hc-btn svg{width:22px !important;height:22px !important}",
+        ".hc-group .hc-more{display:flex !important}.hc-group .hc-more.hc-none{display:none !important}",
+        /* the More panel: buttons that do not fit the one-row bar live here (press and hold any button to move it between the bar and the panel) */
+        "#hdrMorePanel.open{display:block;position:fixed;z-index:2147483000;background:#fff;color:#222;border:1px solid #c9ced6;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);padding:10px}",
+        "#hdrMorePanel .hc-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}#hdrMorePanel .hc-hint{font:12px/1.35 system-ui,sans-serif;color:#555;margin:8px 2px 0;text-align:right;max-width:236px;margin-left:auto}",
+        "body.dark-mode #hdrMorePanel.open,body.dark #hdrMorePanel.open{background:#2a2a2a;color:#eee;border-color:#4a4a4a}body.dark-mode #hdrMorePanel .hc-hint,body.dark #hdrMorePanel .hc-hint{color:#b8b8b8}",
         "body.hc-dc #header{padding-top:3.7em !important}body.hc-dc #header-controls{top:.4em;right:56px}",
         "#compact-nav{height:60px !important}",
         "body.is-stuck .hc-group{top:7px !important;right:54px !important;bottom:auto !important;transform:none !important}",
@@ -41,8 +41,8 @@
         "}",
         "@media (max-width:380px){.hc-group{gap:6px !important}.hc-group .hc-btn{width:40px !important;height:40px !important}body.is-stuck .hc-group{top:9px !important}}",
         "@media (max-width:480px){",
-        "body.hc-hub .header{padding-bottom:58px !important}body.hc-hub:not(.is-stuck) #header-controls{bottom:6px !important}body.hc-hub.hc-expanded .header{padding-bottom:110px !important}",
-        "body.hc-math .top-bar{padding-bottom:58px !important}body.hc-math:not(.is-stuck) .header-controls{bottom:6px !important}body.hc-math.hc-expanded .top-bar{padding-bottom:110px !important}",
+        "body.hc-hub .header{padding-bottom:58px !important}body.hc-hub:not(.is-stuck) #header-controls{bottom:6px !important}",
+        "body.hc-math .top-bar{padding-bottom:58px !important}body.hc-math:not(.is-stuck) .header-controls{bottom:6px !important}",
         "}"
     ].join("");
     var mobMQ = window.matchMedia ? window.matchMedia("(max-width:768px),(pointer:coarse)") : null;
@@ -270,28 +270,76 @@
         var st = document.createElement("style"); st.id = "mes-hdr-more-css"; st.textContent = HC_CSS; document.head.appendChild(st);
         group.classList.add("hc-group");
         document.body.classList.add(document.getElementById("mes-display-controls-css") ? "hc-dc" : group.id === "header-controls" ? "hc-hub" : "hc-math");
-        ["siteReadBtn", "textSizeDownBtn", "textSizeUpBtn", "textSizeDown", "textSizeUp"].forEach(function (id) { var e = document.getElementById(id); if (e) e.classList.add("hc-x"); });
         Array.prototype.forEach.call(group.querySelectorAll("button"), function (b) { b.classList.add("hc-btn"); });
         var sib = group.querySelector("button"), more = document.createElement("button");
         more.type = "button"; more.id = "hdrMoreBtn"; more.className = (sib ? sib.className.replace(/\bhc-x\b/, "") : "header-control-btn") + " hc-more";
-        more.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        more.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="2.3" fill="currentColor"/><circle cx="12" cy="12" r="2.3" fill="currentColor"/><circle cx="19" cy="12" r="2.3" fill="currentColor"/></svg>';
         group.insertBefore(more, group.firstChild);
-        function set(on, save) {
-            group.classList.toggle("hc-collapsed", !on); document.body.classList.toggle("hc-expanded", on); more.setAttribute("aria-expanded", on ? "true" : "false");
-            var t = on ? "Hide extra buttons" : "Show more buttons: read aloud, text size"; more.setAttribute("aria-label", t); more.title = t;
-            if (save) try { localStorage.setItem("hdrMore", on ? "1" : "0"); } catch (e) { /* ignore */ }
+        /* phones: the bar is ONE row. Buttons not pinned to it sit in the More panel; press and hold a button (about half a second) to move it either way. */
+        var KEYS = [["read", ["siteReadBtn"], "Read aloud"], ["tsd", ["textSizeDownBtn", "textSizeDown"], "Smaller text"], ["tsu", ["textSizeUpBtn", "textSizeUp"], "Larger text"], ["fav", ["siteFavBtn"], "Favourites"], ["search", ["siteSearchBtn"], "Search"], ["theme", ["themeToggleBtn", "themeToggle"], "Dark / light"]];
+        var items = [];
+        KEYS.forEach(function (k) { for (var n = 0; n < k[1].length; n++) { var e = document.getElementById(k[1][n]); if (e) { items.push({ key: k[0], el: e, name: k[2] }); break; } } });
+        var DEFAULT_PINS = ["fav", "search", "theme"], MAXPIN = 4, pins = DEFAULT_PINS.slice();
+        try { var sv = JSON.parse(localStorage.getItem("hdrPins")); if (Array.isArray(sv)) pins = sv.filter(function (x) { return typeof x === "string"; }).slice(0, MAXPIN); } catch (e) { /* ignore */ }
+        var panel = document.createElement("div"); panel.id = "hdrMorePanel"; panel.setAttribute("role", "group"); panel.setAttribute("aria-label", "More header buttons");
+        var row = document.createElement("div"); row.className = "hc-row"; var hint = document.createElement("div"); hint.className = "hc-hint";
+        panel.appendChild(row); panel.appendChild(hint); document.body.appendChild(panel);
+        function phone() { return !!(mobMQ && mobMQ.matches); }
+        function layout() {
+            var ph = phone();
+            items.forEach(function (it) {
+                var inBar = !ph || pins.indexOf(it.key) >= 0;
+                (inBar ? group : row).appendChild(it.el); it.el.classList.add("hc-btn");
+                var t = ph ? it.name + (inBar ? ". Press and hold to move it to the More menu." : ". Press and hold to pin it to the bar.") : null;
+                if (t) it.el.setAttribute("data-hc-tip", t); else it.el.removeAttribute("data-hc-tip");
+            });
+            var extras = ph && items.some(function (it) { return pins.indexOf(it.key) < 0; });
+            more.classList.toggle("hc-none", !extras); if (!extras || !ph) closePanel();
+            hint.textContent = "Press and hold a button to move it to the bar" + (pins.length >= MAXPIN ? " (the bar holds " + MAXPIN + ": move one here first)." : ".");
             reserve();
         }
-        var was = false; try { was = localStorage.getItem("hdrMore") === "1"; } catch (e) { /* ignore */ }
-        set(was, false);
-        more.addEventListener("click", function () { set(more.getAttribute("aria-expanded") !== "true", true); });
-        if (mobMQ && mobMQ.addEventListener) mobMQ.addEventListener("change", reserve);
+        function openPanel() {
+            if (!phone()) return; var r = more.getBoundingClientRect(), gr = group.getBoundingClientRect();
+            panel.classList.add("open"); panel.style.top = Math.round(r.bottom + 8) + "px"; panel.style.right = Math.max(8, Math.round(innerWidth - gr.right)) + "px";
+            more.setAttribute("aria-expanded", "true"); more.setAttribute("aria-label", "Hide the More menu"); more.title = "Hide the More menu";
+        }
+        function closePanel() { panel.classList.remove("open"); more.setAttribute("aria-expanded", "false"); more.setAttribute("aria-label", "More buttons"); more.title = "More: read aloud, text size ..."; }
+        closePanel();
+        more.addEventListener("click", function () { panel.classList.contains("open") ? closePanel() : openPanel(); });
+        document.addEventListener("click", function (e) { if (panel.classList.contains("open") && !panel.contains(e.target) && !more.contains(e.target)) closePanel(); }, true);
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape") closePanel(); });
+        var sy = window.scrollY; window.addEventListener("scroll", function () { if (Math.abs(window.scrollY - sy) > 30) { closePanel(); } sy = window.scrollY; }, { passive: true });
+        panel.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var it = items.filter(function (x) { return x.el === b; })[0]; if (it && (it.key === "read" || it.key === "search")) closePanel(); });
+        /* press and hold */
+        var holdT = null, sx = 0, sy2 = 0, suppress = 0;
+        function startHold(e) {
+            if (!phone()) return; var b = e.target.closest ? e.target.closest("button") : null; if (!b) return; var it = items.filter(function (x) { return x.el === b; })[0]; if (!it) return;
+            sx = e.clientX; sy2 = e.clientY; clearTimeout(holdT);
+            holdT = setTimeout(function () {
+                holdT = null; var at = pins.indexOf(it.key);
+                if (at >= 0) { pins.splice(at, 1); favToast(it.name + " moved to the More menu"); }
+                else if (pins.length >= MAXPIN) { favToast("The bar is full: hold another button first to move it to More"); suppress = Date.now(); if (navigator.vibrate) navigator.vibrate(8); return; }
+                else { pins.push(it.key); favToast(it.name + " is now on the bar"); }
+                pins.sort(function (a, b2) { return KEYS.map(function (k) { return k[0]; }).indexOf(a) - KEYS.map(function (k) { return k[0]; }).indexOf(b2); });
+                try { localStorage.setItem("hdrPins", JSON.stringify(pins)); } catch (er) { /* ignore */ }
+                suppress = Date.now(); if (navigator.vibrate) navigator.vibrate(15); layout(); if (!pins.length || panel.classList.contains("open")) { if (more.classList.contains("hc-none")) closePanel(); else openPanel(); }
+            }, 550);
+        }
+        function endHold() { clearTimeout(holdT); holdT = null; }
+        [group, panel].forEach(function (c) {
+            c.addEventListener("pointerdown", startHold); c.addEventListener("pointerup", endHold); c.addEventListener("pointercancel", endHold); c.addEventListener("pointerleave", endHold);
+            c.addEventListener("pointermove", function (e) { if (holdT && (Math.abs(e.clientX - sx) > 12 || Math.abs(e.clientY - sy2) > 12)) endHold(); });
+            c.addEventListener("contextmenu", function (e) { if (phone() && e.target.closest && e.target.closest("button")) e.preventDefault(); });
+        });
+        document.addEventListener("click", function (e) { if (suppress && Date.now() - suppress < 700) { e.stopPropagation(); e.preventDefault(); suppress = 0; } }, true);
+        layout();
+        if (mobMQ && mobMQ.addEventListener) mobMQ.addEventListener("change", layout); else if (mobMQ && mobMQ.addListener) mobMQ.addListener(layout);
         /* the hide / show tab */
         var tab = document.createElement("button"); tab.type = "button"; tab.id = "hdrBarTab";
         tab.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         document.body.appendChild(tab);
         function bar(hide, save) {
-            document.body.classList.toggle("hc-barhide", hide);
+            document.body.classList.toggle("hc-barhide", hide); if (hide) closePanel();
             var t = hide ? "Show the top bar" : "Hide the top bar"; tab.setAttribute("aria-label", t); tab.title = t; tab.setAttribute("aria-expanded", hide ? "false" : "true");
             if (save) try { localStorage.setItem("hdrBar", hide ? "0" : "1"); } catch (e) { /* ignore */ }
         }
