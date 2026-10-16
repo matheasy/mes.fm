@@ -17,6 +17,13 @@ var MESARX = (function () {
 		var url = A.cleanUrl(pageUrl, s.strip); if (!url) return [];
 		return allEngines(s).filter(function (e) { return s.sel.indexOf(e.id) >= 0; }).map(function (e) { return { engine: e, url: e.custom ? A.customUrl(e.custom, url) : A.build(e, url, s.vars[e.id]) }; });
 	}
-	return { DEFAULTS: DEFAULTS, normalise: normalise, allEngines: allEngines, targets: targets };
+	/* archive.today save address that failed (HTTP 429 etc.) -> the same request on the next archive.<v> address not in `tried` (hosts, e.g. ['ph']); null when none is left or the address is not an archive.today save request */
+	var AT_HOSTS = ['ph', 'is', 'today', 'md', 'vn', 'li', 'fo'];
+	function retryUrl(failedUrl, tried) {
+		var m = /^https:\/\/archive\.(ph|is|today|md|vn|li|fo)\/(\?run=1&url=.*)$/.exec(String(failedUrl || '')); if (!m) return null;
+		var done = (tried || []).concat([m[1]]), next = AT_HOSTS.filter(function (h) { return done.indexOf(h) < 0; })[0];
+		return next ? 'https://archive.' + next + '/' + m[2] : null;
+	}
+	return { DEFAULTS: DEFAULTS, normalise: normalise, allEngines: allEngines, targets: targets, retryUrl: retryUrl };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MESARX;

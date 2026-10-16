@@ -34,3 +34,14 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
   if (info.menuItemId === 'mes-archive-link' && info.linkUrl) openFor(info.linkUrl, null);
   else if (info.menuItemId === 'mes-archive-page') openFor(info.pageUrl, tab);
 });
+
+/* archive.today answers "429 Too Many Requests" when it is busy or has flagged the connection. Watch the save tabs we opened and, on a 429 (or 5xx), retry the same save on the next archive.<ph|is|today|md|vn|li|fo> address, once each. Observe-only: nothing is blocked or changed. */
+var tried = {};   // tabId -> hosts already tried
+chrome.webRequest.onCompleted.addListener(function (d) {
+  if (d.tabId < 0 || (d.statusCode !== 429 && d.statusCode < 500)) return;
+  var done = tried[d.tabId] || [], next = MESARX.retryUrl(d.url, done);
+  var host = (/^https:\/\/archive\.(\w+)\//.exec(d.url) || [])[1]; if (host) done.push(host); tried[d.tabId] = done;
+  if (next) { badge('↻', '#d97706'); chrome.tabs.update(d.tabId, { url: next }); }
+  else { badge('429', '#c0392b'); delete tried[d.tabId]; }   // every address refused: leave the last page, the badge says why
+}, { urls: ['https://archive.ph/*', 'https://archive.is/*', 'https://archive.today/*', 'https://archive.md/*', 'https://archive.vn/*', 'https://archive.li/*', 'https://archive.fo/*'], types: ['main_frame'] });
+chrome.tabs.onRemoved.addListener(function (id) { delete tried[id]; });

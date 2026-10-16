@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MES Archive",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "One click archives the page you are on: opens the Wayback Machine, archive.today, Ghostarchive and any archive sites you choose, and can hand the page to ArcHive for the Hive blockchain. Free, private. By MES (mes.fm).",
   "homepage_url": "https://mes.fm/archive",
   "icons": {
@@ -29,7 +29,8 @@
     "storage",
     "activeTab",
     "contextMenus",
-    "scripting"
+    "scripting",
+    "webRequest"
   ],
   "commands": {
     "archive-page": {
@@ -40,6 +41,13 @@
     }
   },
   "host_permissions": [
-    "https://dhenz14.github.io/*"
+    "https://dhenz14.github.io/*",
+    "https://archive.ph/*",
+    "https://archive.is/*",
+    "https://archive.today/*",
+    "https://archive.md/*",
+    "https://archive.vn/*",
+    "https://archive.li/*",
+    "https://archive.fo/*"
   ]
 }
