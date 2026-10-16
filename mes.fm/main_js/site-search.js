@@ -17,13 +17,17 @@
     var data = null, loading = null, prepared = null;
     var HC_CSS = [
         ".hc-more{display:none}",
-        ".hc-group #siteReadBtn{order:1}.hc-group #textSizeDownBtn,.hc-group #textSizeDown{order:2}.hc-group #textSizeUpBtn,.hc-group #textSizeUp{order:3}.hc-group #siteFavBtn{order:4}.hc-group #siteSearchBtn{order:4}.hc-group #themeToggleBtn,.hc-group #themeToggle{order:5}.hc-group .hc-more{order:0}",
+        ".hc-group #siteReadBtn{order:1}.hc-group #textSizeDownBtn,.hc-group #textSizeDown{order:2}.hc-group #textSizeUpBtn,.hc-group #textSizeUp{order:3}.hc-group #siteFavBtn{order:4}.hc-group .hc-more{order:6}.hc-group #siteSearchBtn{order:7}.hc-group #themeToggleBtn,.hc-group #themeToggle{order:8}",
         "@media (max-width:768px),(pointer:coarse){",
         ".hc-group{gap:8px !important;flex-wrap:wrap !important;justify-content:flex-end !important;max-width:calc(100vw - 76px) !important}",
         ".hc-group .hc-btn{width:44px !important;height:44px !important;font-size:1.05em !important}",
         ".hc-group .hc-btn svg{width:22px !important;height:22px !important}",
         ".hc-group .hc-more{display:flex !important}.hc-group .hc-more svg{transition:transform .2s}.hc-group .hc-more[aria-expanded=true] svg{transform:rotate(180deg)}",
         ".hc-group.hc-collapsed .hc-x{display:none !important}",
+        /* expanded on a phone = two clean rows: the extras (read aloud, A-, A+, star) above, then chevron / search / theme; the floating bar, its hide tab and the headers make room for the second row */
+        ".hc-group:not(.hc-collapsed)::before{content:'';order:5;flex:0 0 100%;height:0}",
+        "body.hc-expanded #compact-nav{height:112px !important}body.hc-expanded #hdrBarTab{top:112px}body.hc-expanded.is-stuck #navbar.hide{top:116px !important}body.hc-expanded.hc-barhide #hdrBarTab{top:0}body.hc-expanded.hc-barhide #compact-nav{transform:translateY(-130%) !important}",
+        "body.hc-dc.hc-expanded #header{padding-top:7.4em !important}",
         "body.hc-dc #header{padding-top:3.7em !important}body.hc-dc #header-controls{top:.4em;right:56px}",
         "#compact-nav{height:60px !important}",
         "body.is-stuck .hc-group{top:7px !important;right:54px !important;bottom:auto !important;transform:none !important}",
@@ -37,8 +41,8 @@
         "}",
         "@media (max-width:380px){.hc-group{gap:6px !important}.hc-group .hc-btn{width:40px !important;height:40px !important}body.is-stuck .hc-group{top:9px !important}}",
         "@media (max-width:480px){",
-        "body.hc-hub .header{padding-bottom:58px !important}body.hc-hub:not(.is-stuck) #header-controls{bottom:6px !important}",
-        "body.hc-math .top-bar{padding-bottom:58px !important}body.hc-math:not(.is-stuck) .header-controls{bottom:6px !important}",
+        "body.hc-hub .header{padding-bottom:58px !important}body.hc-hub:not(.is-stuck) #header-controls{bottom:6px !important}body.hc-hub.hc-expanded .header{padding-bottom:110px !important}",
+        "body.hc-math .top-bar{padding-bottom:58px !important}body.hc-math:not(.is-stuck) .header-controls{bottom:6px !important}body.hc-math.hc-expanded .top-bar{padding-bottom:110px !important}",
         "}"
     ].join("");
     var mobMQ = window.matchMedia ? window.matchMedia("(max-width:768px),(pointer:coarse)") : null;
@@ -273,7 +277,7 @@
         more.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         group.insertBefore(more, group.firstChild);
         function set(on, save) {
-            group.classList.toggle("hc-collapsed", !on); more.setAttribute("aria-expanded", on ? "true" : "false");
+            group.classList.toggle("hc-collapsed", !on); document.body.classList.toggle("hc-expanded", on); more.setAttribute("aria-expanded", on ? "true" : "false");
             var t = on ? "Hide extra buttons" : "Show more buttons: read aloud, text size"; more.setAttribute("aria-label", t); more.title = t;
             if (save) try { localStorage.setItem("hdrMore", on ? "1" : "0"); } catch (e) { /* ignore */ }
             reserve();
