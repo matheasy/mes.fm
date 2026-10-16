@@ -38,7 +38,7 @@ PAGES = {
         ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "fav", "share", "search", "search-engines", "reverse-image-search", "domain-lookup", "archive", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
         ("photos", "Photos &amp; Images", ["photo-editor", "compress", "pdf", "pdf-tools", "merge-pdf", "image-converter", "exif-viewer"]),
         ("sky", "Sky &amp; Space", ["moon", "solar-system-today"]),
-        ("sim", "Simulations", ["grounding-rod-simulator", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "julia-set-explorer", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
+        ("sim", "Simulations", ["redshift-simulator", "grounding-rod-simulator", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "julia-set-explorer", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "3d-fluid-simulator", "photoelectric-effect-simulator", "atomic-clock-simulator", "fountain-clock", "michelson-morley-experiment", "faster-than-light-shadow-simulator"]),
     ]),
 }
 TD = re.compile(r'[ \t]*<td class="calc-container[^"]*"><a class="calc-link" href="([^"]*)">.*?</td>\n?', re.S)

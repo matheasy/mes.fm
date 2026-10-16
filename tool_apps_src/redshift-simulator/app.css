@@ -1,0 +1,25 @@
+	/* MES Redshift & Blueshift Simulator */
+	.tu [hidden] {display:none !important;}
+	#rs {--rs-bg:#0b0f1a;--rs-card:#fff;--rs-line:#dfe4ea;--rs-mut:#566170;--rs-red:#c0392b;--rs-blue:#1d4ed8;}
+	body.dark-mode #rs.rs {--rs-card:#262626;--rs-line:#3d3d3d;--rs-mut:#a9b0ba;--rs-red:#ff8f7e;--rs-blue:#8db2ff;}
+	#rs span, #rs small, #rs b {color:inherit;}
+	#rs .rs-tabs {display:flex;gap:0.35em;flex-wrap:wrap;margin-bottom:0.9em;} #rs .rs-tabs button {border:1px solid #c9d0d8;background:#fff;color:#1e2733;padding:0.55em 1em;border-radius:2em;cursor:pointer;font:inherit;min-height:40px;} #rs .rs-tabs button[aria-selected=true] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	#rs .rs-lead {margin:0 0 0.9em;}
+	#rs .rs-stage {position:relative;background:var(--rs-bg);border-radius:0.7em;overflow:hidden;line-height:0;} #rs .rs-stage canvas {width:100%;display:block;} #rs .rs-stage--spec canvas {background:var(--rs-bg);}
+	#rs .rs-run {position:absolute;left:0.6em;top:0.6em;display:flex;gap:0.4em;flex-wrap:wrap;line-height:1.2;z-index:2;max-width:calc(100% - 1.2em);}
+	#rs .rs-pill {border:1px solid rgba(255,255,255,0.35);background:rgba(10,15,30,0.75);color:#f2f4f8;border-radius:2em;padding:0.35em 0.9em;font:inherit;font-size:0.9em;cursor:pointer;min-height:36px;display:inline-flex;align-items:center;gap:0.4em;} #rs .rs-pill--on {background:var(--accent);border-color:var(--accent);} #rs .rs-pill[aria-pressed=true]:not(.rs-pill--on) {background:#334;}
+	#rs .rs-chk input {width:1.1em;height:1.1em;}
+	#rs .rs-cards {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.7em;margin:0.8em 0;}
+	#rs .rs-card {border:1px solid var(--rs-line);background:var(--rs-card);border-radius:0.6em;padding:0.7em 0.9em;} #rs .rs-card h4 {margin:0 0 0.2em;font-size:0.9em;color:var(--rs-mut);font-weight:600;} #rs .rs-card .rs-big {font-size:1.45em;font-weight:700;display:block;} #rs .rs-card small {color:var(--rs-mut);display:block;margin-top:0.15em;}
+	#rs .rs-sw {display:inline-block;width:1.1em;height:1.1em;border-radius:50%;vertical-align:-0.15em;margin-right:0.35em;border:1px solid rgba(128,128,128,0.6);}
+	#rs .tu-card {background:var(--rs-card);border-color:var(--rs-line);color:inherit;} #rs .rs-controls {margin:0.8em 0;}
+	#rs .rs-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.9em 1.4em;} #rs .rs-two {display:flex;gap:0.5em;} #rs .rs-two .tu-input {flex:1 1 6em;min-width:0;} #rs .rs-two input[type=range] {flex:1 1 7em;min-width:0;} #rs .rs-two select {width:auto;max-width:9em;} #rs .rs-small {width:11em;display:inline-block;margin-left:0.3em;}
+	#rs input[type=range] {width:100%;min-height:40px;} #rs select, #rs .tu-input {min-height:40px;}
+	#rs .rs-seg {display:flex;flex-wrap:wrap;gap:0.3em;} #rs .rs-seg button {border:1px solid #c9d0d8;background:#fff;color:#1e2733;padding:0.4em 0.8em;border-radius:0.5em;cursor:pointer;font:inherit;min-height:40px;} #rs .rs-seg button[aria-pressed=true] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	#rs .rs-chips {display:flex;gap:0.4em;flex-wrap:wrap;margin-top:0.7em;} #rs .rs-chips button {border:1px solid #c9d0d8;background:#fff;color:#1e2733;border-radius:2em;padding:0.35em 0.85em;cursor:pointer;font:inherit;font-size:0.92em;min-height:36px;}
+	#rs .rs-table {width:100%;border-collapse:collapse;font-size:0.95em;} #rs .rs-table th, #rs .rs-table td {text-align:left;padding:0.35em 0.5em;border-bottom:1px solid var(--rs-line);} #rs .rs-table th {color:var(--rs-mut);font-weight:600;} #rs .rs-tw {overflow-x:auto;}
+	#rs .rs-red {color:var(--rs-red) !important;font-weight:700;} #rs .rs-blue {color:var(--rs-blue) !important;font-weight:700;}
+	#rs .rs-q {margin-top:0.6em;} #rs .rs-facts h3, #rs h3 {margin-top:0;}
+	body.dark-mode #rs .rs-tabs button, body.dark-mode #rs .rs-seg button, body.dark-mode #rs .rs-chips button {background:#2b2b2b;color:#e8e8e8;border-color:#555;} body.dark-mode #rs .rs-tabs button[aria-selected=true], body.dark-mode #rs .rs-seg button[aria-pressed=true] {background:var(--accent);color:#111;border-color:var(--accent);}
+	@media (max-width:560px) {#rs .rs-run {position:static;padding:0.5em;background:var(--rs-bg);} #rs .rs-stage {line-height:normal;} #rs .rs-stage canvas {line-height:0;}}
+	@media print {#rs .rs-run, #rs .rs-controls {display:none;}}

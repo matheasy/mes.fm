@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/redshift-simulator",
+   "title": "Redshift & Blueshift Simulator",
+   "icon": "/img/redshift-simulator-logo.png",
+   "desc": "Why light changes colour: near and far from a heavy mass, moving sources, a spectrum shifter and the expanding universe, with real numbers.",
+   "added": "2026-10-16",
+   "kind": "tool"
+  },
+  {
    "href": "/compress",
    "title": "Compressor: Pictures, PDFs, Audio",
    "icon": "/img/compress-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Watch the Buddhabrot fill in live: millions of random Mandelbrot orbits piled into a glowing figure. Try the three-colour Nebulabrot and the Anti-Buddhabrot.",
    "added": "2026-10-13",
    "kind": "tool"
-  },
-  {
-   "href": "/electromagnetic-fields-simulator",
-   "title": "Electromagnetic Fields Simulator",
-   "icon": "/img/electromagnetic-fields-simulator-logo.png",
-   "desc": "Place charges and wires and see field lines, Gauss's law and Ampère's law, steer a particle through E and B fields, and watch Maxwell's equations make waves reflect, refract and diffract.",
-   "added": "2026-10-12",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/redshift-simulator",
+   "title": "Redshift & Blueshift Simulator",
+   "icon": "/img/redshift-simulator-logo.png",
+   "desc": "Why light changes colour: near and far from a heavy mass, moving sources, a spectrum shifter and the expanding universe, with real numbers.",
+   "added": "2026-10-16",
+   "kind": "tool"
+  },
   {
    "href": "/compress",
    "title": "Compressor: Pictures, PDFs, Audio",
@@ -251,14 +259,6 @@
    "icon": "/img/pregnancy-calorie-calculator-logo.png",
    "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
    "added": "2026-10-15",
-   "kind": "calculator"
-  },
-  {
-   "href": "/calories-burned-calculator",
-   "title": "Calories Burned Calculator",
-   "icon": "/img/calories-burned-calculator-logo.png",
-   "desc": "Calories burned by 80+ activities for your weight, with a weekly plan.",
-   "added": "2026-10-14",
    "kind": "calculator"
   }
  ]

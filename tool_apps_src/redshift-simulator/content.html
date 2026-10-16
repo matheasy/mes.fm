@@ -1,0 +1,90 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu rs" id="rs">
+		<div class="rs-tabs" role="tablist" aria-label="Redshift tools">
+			<button type="button" role="tab" data-tab="grav" aria-selected="true">Near / far from a mass</button>
+			<button type="button" role="tab" data-tab="dop" aria-selected="false">Moving source</button>
+			<button type="button" role="tab" data-tab="spec" aria-selected="false">Spectrum &amp; calculator</button>
+			<button type="button" role="tab" data-tab="cos" aria-selected="false">Expanding universe</button>
+		</div>
+
+		<section data-panel="grav" role="tabpanel">
+			<p class="tu-note rs-lead">Light that falls <b>toward</b> a heavy mass arrives <b class="rs-blue">blueshifted</b>; light that climbs <b>away</b> from it arrives <b class="rs-red">redshifted</b>. In the picture below the mass is on the left: clocks run slower there, so a wave of fixed frequency has a <i>shorter</i> wavelength, as if the space were a medium with a higher refractive index <i>n = 1 / (clock rate)</i>. Press <b>Emit pulse</b>.</p>
+			<div class="rs-stage"><canvas id="rs-g" tabindex="0" role="img" aria-label="A light pulse crossing the gap between a place near a heavy mass, on the left, and a place far from it, on the right. Its colour and wavelength change along the way."></canvas>
+				<div class="rs-run"><button type="button" id="rs-g-emit" class="rs-pill rs-pill--on">&#9889; Emit pulse</button><button type="button" id="rs-g-dir" class="rs-pill" aria-pressed="false">Light travels: far &rarr; near</button><label class="rs-pill rs-chk"><input type="checkbox" id="rs-g-rep" checked> repeat</label></div></div>
+			<div class="rs-cards" id="rs-g-cards"></div>
+			<div class="tu-card rs-controls">
+				<div class="rs-grid">
+					<div class="tu-field"><label class="tu-label" for="rs-g-body">Heavy object</label><select id="rs-g-body" class="tu-select"></select><span class="tu-note" id="rs-g-bnote"></span></div>
+					<div class="tu-field"><label class="tu-label" for="rs-g-near">Near point: distance from the centre</label><div class="rs-two"><input id="rs-g-near" class="tu-input" type="text" inputmode="decimal"><select id="rs-g-nearu" class="tu-select" aria-label="Unit of the near distance"></select></div></div>
+					<div class="tu-field"><label class="tu-label" for="rs-g-far">Far point: distance from the centre</label><div class="rs-two"><input id="rs-g-far" class="tu-input" type="text" inputmode="decimal" placeholder="far away"><select id="rs-g-faru" class="tu-select" aria-label="Unit of the far distance"></select></div><span class="tu-note">Leave empty or type &ldquo;far&rdquo; for very far away.</span></div>
+					<div class="tu-field"><span class="tu-label" id="rs-g-wl-l">Emitted colour: <b id="rs-g-wl-v"></b></span><input type="range" id="rs-g-wl" min="400" max="700" step="1" aria-labelledby="rs-g-wl-l"></div>
+					<div class="tu-field"><span class="tu-label">How the picture is drawn</span><div class="rs-seg" id="rs-g-ex" role="group" aria-label="Exaggeration"><button type="button" data-v="auto" aria-pressed="true">Exaggerated so you can see it</button><button type="button" data-v="1" aria-pressed="false">True scale</button></div><span class="tu-note" id="rs-g-exn"></span></div>
+					<div class="tu-field"><span class="tu-label" id="rs-g-sp-l">Animation speed: <b id="rs-g-sp-v"></b></span><input type="range" id="rs-g-sp" min="0.2" max="3" step="0.1" aria-labelledby="rs-g-sp-l"></div>
+				</div>
+			</div>
+			<div class="tu-card" id="rs-g-res"></div>
+			<div class="tu-card rs-facts"><h3>Check it against real experiments</h3><div class="rs-chips" id="rs-g-pre" role="group" aria-label="Real examples"></div><p class="tu-note" id="rs-g-pnote"></p></div>
+		</section>
+
+		<section data-panel="dop" role="tabpanel" hidden>
+			<p class="tu-note rs-lead">A moving source emits waves that bunch up ahead of it (<b class="rs-blue">blueshift</b>) and spread out behind it (<b class="rs-red">redshift</b>). Each ring below is a light wavefront, coloured by the shift an observer in that direction would see. At high speed time dilation matters too: a source slows its own emission by &gamma;, so even sideways light is redshifted.</p>
+			<div class="rs-stage"><canvas id="rs-d" tabindex="0" role="img" aria-label="A moving light source with circular wavefronts: compressed and blue ahead, stretched and red behind."></canvas>
+				<div class="rs-run"><button type="button" id="rs-d-play" class="rs-pill rs-pill--on" aria-pressed="true">&#10074;&#10074; Pause</button><button type="button" id="rs-d-reset" class="rs-pill">&#8634; Restart</button></div></div>
+			<div class="rs-cards" id="rs-d-cards"></div>
+			<div class="tu-card rs-controls"><div class="rs-grid">
+				<div class="tu-field"><span class="tu-label" id="rs-d-b-l">Speed of the source: <b id="rs-d-b-v"></b></span><input type="range" id="rs-d-b" min="-0.95" max="0.95" step="0.005" aria-labelledby="rs-d-b-l"><span class="tu-note">Positive moves to the right. Or type: <input id="rs-d-bin" class="tu-input rs-small" type="text" aria-label="Type a speed such as 0.5c or 150000 km/s" placeholder="0.5c or 150000 km/s"></span></div>
+				<div class="tu-field"><span class="tu-label" id="rs-d-wl-l">Colour it emits: <b id="rs-d-wl-v"></b></span><input type="range" id="rs-d-wl" min="400" max="700" step="1" aria-labelledby="rs-d-wl-l"></div>
+				<div class="tu-field"><span class="tu-label" id="rs-d-sp-l">Animation speed: <b id="rs-d-sp-v"></b></span><input type="range" id="rs-d-sp" min="0.2" max="2" step="0.1" aria-labelledby="rs-d-sp-l"></div>
+			</div><div class="rs-chips" id="rs-d-pre" role="group" aria-label="Speeds to try"></div></div>
+			<div class="tu-card" id="rs-d-res"></div>
+		</section>
+
+		<section data-panel="spec" role="tabpanel" hidden>
+			<p class="tu-note rs-lead">Shift a real set of spectral lines by any mix of causes. The three sources of redshift <b>multiply</b>: (1+z) = (1+z<sub>motion</sub>) &times; (1+z<sub>gravity</sub>) &times; (1+z<sub>expansion</sub>). Lines that leave the coloured band turn into ultraviolet, infrared or radio waves.</p>
+			<div class="tu-card rs-controls"><div class="rs-grid">
+				<div class="tu-field"><label class="tu-label" for="rs-s-set">Lines</label><select id="rs-s-set" class="tu-select"></select></div>
+				<div class="tu-field"><span class="tu-label">Show as</span><div class="rs-seg" id="rs-s-mode" role="group" aria-label="Emission or absorption"><button type="button" data-v="em" aria-pressed="true">Bright lines (emission)</button><button type="button" data-v="ab" aria-pressed="false">Dark lines (absorption)</button></div></div>
+				<div class="tu-field"><span class="tu-label">Wavelength scale</span><div class="rs-seg" id="rs-s-scale" role="group" aria-label="Wavelength scale"><button type="button" data-v="vis" aria-pressed="false">Visible</button><button type="button" data-v="ext" aria-pressed="true">100 nm to 3 µm (log)</button></div></div>
+				<div class="tu-field"><span class="tu-label" id="rs-s-b-l">Motion (line of sight): <b id="rs-s-b-v"></b></span><input type="range" id="rs-s-b" min="-0.9" max="0.9" step="0.001" aria-labelledby="rs-s-b-l"><span class="tu-note">Left = toward you (blue), right = away (red).</span></div>
+				<div class="tu-field"><span class="tu-label" id="rs-s-a-l">Gravity (emitter's r<sub>s</sub> / r): <b id="rs-s-a-v"></b></span><input type="range" id="rs-s-a" min="0" max="0.95" step="0.005" aria-labelledby="rs-s-a-l"><span class="tu-note">0 = no gravity. 0.5 means the emitter sits at twice the Schwarzschild radius.</span></div>
+				<div class="tu-field"><label class="tu-label" for="rs-s-zc">Expansion of the universe: z</label><div class="rs-two"><input id="rs-s-zc" class="tu-input" type="text" inputmode="decimal" aria-describedby="rs-s-zn"><input type="range" id="rs-s-zr" min="0" max="1" step="0.001" aria-label="Cosmological redshift slider"></div><span class="tu-note" id="rs-s-zn"></span></div>
+			</div><div class="rs-chips" id="rs-s-pre" role="group" aria-label="Examples"></div></div>
+			<div class="rs-stage rs-stage--spec"><canvas id="rs-s" role="img" aria-label="Two spectra: the lines as emitted and as observed after the shift."></canvas></div>
+			<div class="tu-card" id="rs-s-res"></div>
+			<div class="tu-card"><h3>Work out z from one line</h3>
+				<div class="rs-grid"><div class="tu-field"><label class="tu-label" for="rs-q-rest">Wavelength at rest (nm)</label><input id="rs-q-rest" class="tu-input" type="text" inputmode="decimal" value="656.28"></div>
+				<div class="tu-field"><label class="tu-label" for="rs-q-obs">Wavelength you observe (nm)</label><input id="rs-q-obs" class="tu-input" type="text" inputmode="decimal" value="662.0"></div></div>
+				<div id="rs-q-out" class="rs-q"></div></div>
+		</section>
+
+		<section data-panel="cos" role="tabpanel" hidden>
+			<p class="tu-note rs-lead">Cosmological redshift is not a Doppler shift through space: the <b>space</b> light travels through stretches, so every wavelength is stretched by the same factor as the universe grows, 1 + z = a<sub>now</sub> / a<sub>then</sub>. Distances here use a flat &Lambda;CDM universe (radiation neglected).</p>
+			<div class="tu-card rs-controls"><div class="rs-grid">
+				<div class="tu-field"><label class="tu-label" for="rs-c-z">Redshift z</label><div class="rs-two"><input id="rs-c-z" class="tu-input" type="text" inputmode="decimal"><input type="range" id="rs-c-zr" min="0" max="1" step="0.0005" aria-label="Redshift slider (logarithmic)"></div></div>
+				<div class="tu-field"><label class="tu-label" for="rs-c-h">Hubble constant H<sub>0</sub> (km/s/Mpc)</label><input id="rs-c-h" class="tu-input" type="text" inputmode="decimal"></div>
+				<div class="tu-field"><label class="tu-label" for="rs-c-m">Matter density &Omega;<sub>m</sub></label><input id="rs-c-m" class="tu-input" type="text" inputmode="decimal"><span class="tu-note">&Omega;<sub>&Lambda;</sub> = 1 &minus; &Omega;<sub>m</sub></span></div>
+				<div class="tu-field"><label class="tu-label" for="rs-c-line">Line to follow</label><select id="rs-c-line" class="tu-select"></select></div>
+			</div><div class="rs-chips" id="rs-c-pre" role="group" aria-label="Real objects"></div></div>
+			<div class="rs-stage rs-stage--cos"><canvas id="rs-c" role="img" aria-label="A wave drawn at the time it was emitted and the same wave stretched by the expansion of the universe."></canvas></div>
+			<div class="tu-card" id="rs-c-res"></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Redshift and blueshift explained</h2>
+			<p>A <b>redshift</b> lengthens the wavelength of light, a <b>blueshift</b> shortens it. Astronomers measure it as <b>z = (&lambda;<sub>observed</sub> &minus; &lambda;<sub>emitted</sub>) / &lambda;<sub>emitted</sub></b>; a positive z is red, a negative z is blue. There are three physical causes, and this page simulates all of them:</p>
+			<ul>
+				<li><b>Motion (Doppler shift).</b> A source moving away is redshifted, one moving toward you is blueshifted: 1 + z = &radic;((1 + &beta;) / (1 &minus; &beta;)) along the line of sight, and the general formula f<sub>obs</sub> = f<sub>src</sub> / (&gamma;(1 &minus; &beta; cos &theta;)). Even sideways motion gives a redshift 1 / &gamma; because the moving source's clock runs slow.</li>
+				<li><b>Gravity.</b> Near a mass clocks run slow, by &radic;(1 &minus; r<sub>s</sub>/r) with r<sub>s</sub> = 2GM/c&sup2;. Light climbing out of a gravity well is redshifted, light falling in is blueshifted: f<sub>obs</sub>/f<sub>src</sub> = &radic;((1 &minus; r<sub>s</sub>/r<sub>src</sub>) / (1 &minus; r<sub>s</sub>/r<sub>obs</sub>)). The 1959 Pound-Rebka experiment measured it across 22.5 metres; GPS satellites must correct for it every day.</li>
+				<li><b>Expansion of space.</b> Light from distant galaxies is stretched as the universe grows: 1 + z = a<sub>now</sub>/a<sub>then</sub>. At z = 1089 the light is the cosmic microwave background.</li>
+			</ul>
+			<h3>The refractive-index picture</h3>
+			<p>Because clocks tick slower near a mass, a wave whose frequency is fixed in far-away time has a shorter wavelength nearby, just as light entering glass keeps its frequency and shortens its wavelength. Treating gravity as a medium with index n = 1 / (clock rate) reproduces the redshift, the slowing of light near a mass (the Shapiro delay) and light bending. It is an analogy for the Schwarzschild geometry, not a separate theory, and the animation exaggerates the tiny real numbers so you can see them (switch to True scale for the real picture).</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is a cosmological redshift a Doppler shift?</dt><dd>Not exactly. Galaxies are nearly at rest in their own patch of space; the space between them grows. For small z the two agree (z &approx; v/c); for large z they differ, and the recession speed in the table can even pass the speed of light, which is allowed because nothing moves through space that fast.</dd>
+				<dt>Why does gravitational redshift matter for GPS?</dt><dd>Satellite clocks run about 45.7 &micro;s a day fast from gravity and 7.2 &micro;s slow from their speed, a net 38.5 &micro;s a day. Uncorrected, positions would drift by about 10 km a day.</dd>
+				<dt>Why can nothing be seen leaving a black hole?</dt><dd>As the emitter approaches the horizon (r = r<sub>s</sub>) the redshift grows without limit, so the light is stretched to nothing and arrives later and later.</dd>
+			</dl>
+			<p class="tu-note">Limits: static emitters and receivers in the Schwarzschild geometry (no spin, no orbital Doppler mixed in), a flat &Lambda;CDM universe without radiation (the age at very high z is approximate), the spectral lines are laboratory values to 0.1 nm. For research use real ephemerides and models.</p>
+		</div>
+	</div>

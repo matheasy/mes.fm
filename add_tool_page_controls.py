@@ -130,6 +130,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("grounding-rod-simulator", "Ground Rod Simulator"),
     ("double-pendulum", "Double Pendulum"),
     ("orbit-simulator", "Orbit Simulator"),
+    ("redshift-simulator", "Redshift Simulator"),
     ("metric-tensor", "Metric Tensor Explorer"),
     ("black-hole-simulator", "Black Hole Simulator"),   # also built by build_tool_apps.py (tools sidebar collection, dark stages, four tabs)
     ("light-in-a-medium", "Light in a Medium"),   # also built by build_tool_apps.py (tools sidebar collection, dark stage)

@@ -648,6 +648,12 @@ APPS = {
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
                        js_v="1", lib_from=["image-converter"]),
+    # Redshift & Blueshift Simulator (2026-10-16): gravity (a pulse between a place near and far from a mass, drawn as a refractive-index gradient with two clocks), Doppler (relativistic
+    # wavefronts), spectrum shifter / calculator (motion x gravity x expansion), expanding universe. lib.js = MESRed (node tests tool_apps_src/redshift-simulator-tests.js).
+    "redshift-simulator": dict(title="MES Redshift & Blueshift Simulator", page_title="Redshift and Blueshift Simulator: Doppler, Gravitational and Cosmological",
+                               tag="Why light changes colour.", accent="#be123c", dark="#9f1239", tint="#ffe4e8",
+                               desc="Free redshift and blueshift simulator: watch light shift near and far from a heavy mass (gravitational redshift, clocks and refractive-index view), moving sources with relativistic Doppler wavefronts, a spectrum shifter that combines motion, gravity and cosmic expansion, and an expanding-universe calculator with lookback time and distance.",
+                               js_v="1"),
 }
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
