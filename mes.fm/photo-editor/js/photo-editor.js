@@ -987,7 +987,7 @@ var MESPixel = (function () {
 			PE.selShape(function (x) { if (o.shape === "ellipse") { x.beginPath(); x.ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2, r.h / 2, 0, 0, 6.2832); x.fill(); } else x.fillRect(r.x, r.y, r.w, r.h); }, d.mode);
 			if (o.feather > 0) PE.selFeather(o.feather); PE.commit("Select");
 		},
-		overlay: function (x) { if (!selDrag || selDrag.move) return; var r = rectOf(selDrag.a, selDrag.b, null, selDrag.sq), s0 = PE.toScreen(r.x, r.y), z = PE.view.zoom; x.setLineDash([5, 4]); x.strokeStyle = "#fff"; x.lineWidth = 1; if (PE.opt.marquee.shape === "ellipse") { x.beginPath(); x.ellipse(s0.x + r.w * z / 2, s0.y + r.h * z / 2, r.w * z / 2, r.h * z / 2, 0, 0, 6.2832); x.stroke(); } else x.strokeRect(s0.x, s0.y, r.w * z, r.h * z); x.setLineDash([]); },
+		overlay: function (x) { if (!selDrag || selDrag.move) return; var r = rectOf(selDrag.a, selDrag.b, null, selDrag.sq), s0 = PE.toScreen(r.x, r.y), z = PE.view.zoom; x.lineWidth = 1; [["#000", 0], ["#fff", 5]].forEach(function (p) { x.setLineDash([5, 5]); x.lineDashOffset = p[1]; x.strokeStyle = p[0]; if (PE.opt.marquee.shape === "ellipse") { x.beginPath(); x.ellipse(s0.x + r.w * z / 2, s0.y + r.h * z / 2, r.w * z / 2, r.h * z / 2, 0, 0, 6.2832); x.stroke(); } else x.strokeRect(s0.x, s0.y, r.w * z, r.h * z); }); x.setLineDash([]); x.lineDashOffset = 0; },
 		cancel: function () { selDrag = null; } });
 	var lasso = null;
 	function lassoDone(mode) { var pts = lasso.pts; lasso = null; if (pts.length < 3) { PE.invalidateOverlay(); return; } PE.selShape(function (x) { x.beginPath(); pts.forEach(function (p, i) { i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.fill(); }, mode); if (PE.opt.lasso.feather > 0) PE.selFeather(PE.opt.lasso.feather); PE.commit("Lasso select"); PE.invalidateOverlay(); }
@@ -1004,7 +1004,7 @@ var MESPixel = (function () {
 		up: function () { if (lasso && lasso.free) lassoDone(lasso.mode); },
 		dbl: function () { if (lasso && lasso.poly) { lasso.pts.pop(); lassoDone(lasso.mode); } },
 		enter: function () { if (lasso && lasso.poly) lassoDone(lasso.mode); }, cancel: function () { lasso = null; },
-		overlay: function (x) { if (!lasso) return; x.strokeStyle = "#fff"; x.setLineDash([5, 4]); x.lineWidth = 1; x.beginPath(); lasso.pts.forEach(function (p, i) { var s = PE.toScreen(p.x, p.y); i ? x.lineTo(s.x, s.y) : x.moveTo(s.x, s.y); }); if (lasso.poly && lasso.cur) { var c = PE.toScreen(lasso.cur.x, lasso.cur.y); x.lineTo(c.x, c.y); } x.stroke(); x.setLineDash([]); } });
+		overlay: function (x) { if (!lasso) return; x.lineWidth = 1; [["#000", 0], ["#fff", 5]].forEach(function (p) { x.strokeStyle = p[0]; x.setLineDash([5, 5]); x.lineDashOffset = p[1]; x.beginPath(); lasso.pts.forEach(function (q, i) { var s = PE.toScreen(q.x, q.y); i ? x.lineTo(s.x, s.y) : x.moveTo(s.x, s.y); }); if (lasso.poly && lasso.cur) { var c = PE.toScreen(lasso.cur.x, lasso.cur.y); x.lineTo(c.x, c.y); } x.stroke(); }); x.setLineDash([]); x.lineDashOffset = 0; } });
 	PE.defTool({ id: "wand", name: "Magic Wand (select by colour)", key: "w", icon: "✨", opts: { tol: 32, contiguous: true, merged: false, mode: "new", smooth: true },
 		ui: [{ k: "tol", label: "Tolerance", type: "range", min: 0, max: 255, step: 1 }, { k: "contiguous", label: "Contiguous", type: "check" }, { k: "merged", label: "All layers", type: "check" }, { k: "smooth", label: "Smooth edges", type: "check" }, { k: "mode", label: "Mode", type: "seg", options: [["new", "New"], ["add", "Add"], ["sub", "Subtract"], ["int", "Intersect"]] }],
 		hint: "Click a colour to select it. Raise Tolerance to include similar colours. Great for removing a plain background.",
@@ -1984,7 +1984,7 @@ var MESPixel = (function () {
 	PE.on("sel", function () { var b = PE.sel && PE.selBounds(); $("pe-st-sel").textContent = b ? "Selection " + b.w + " × " + b.h : ""; });
 	$("pe-zoom").addEventListener("click", function () { PE.view.zoom === 1 ? PE.fit() : PE.setZoom(1); });
 	$("pe-zin").addEventListener("click", function () { PE.setZoom(PE.view.zoom * 1.25); }); $("pe-zout").addEventListener("click", function () { PE.setZoom(PE.view.zoom / 1.25); });
-	$("pe-fit").addEventListener("click", function () { PE.fit(); }); $("pe-undo").addEventListener("click", function () { PE.undo(); }); $("pe-redo").addEventListener("click", function () { PE.redo(); }); $("pe-export").addEventListener("click", function () { PE.dlgExport(); });
+	$("pe-fit").addEventListener("click", function () { PE.fit(); }); $("pe-undo").addEventListener("click", function () { PE.undo(); }); $("pe-redo").addEventListener("click", function () { PE.redo(); }); $("pe-export").addEventListener("click", function () { PE.dlgExport(); }); $("pe-copy").addEventListener("click", function () { if (needDoc()) copyMerged(); });
 
 	/* ---------- edit actions ---------- */
 	PE.clipCanvas = null;
