@@ -64,7 +64,7 @@
 		var c = gs.calc = gCompute(), res = $("rs-g-res"), cards = $("rs-g-cards");
 		$("rs-g-wl-v").textContent = G.wl + " nm"; $("rs-g-sp-v").textContent = fmt(G.sp, 2) + "×"; $("rs-g-bnote").textContent = bodyOf().note;
 		if (c.err) { res.innerHTML = "<p class='rs-red'>" + esc(c.err) + "</p>"; cards.innerHTML = ""; return; }
-		gs.k = G.ex === "auto" ? R.autoK(c.nN, c.nF, 1.9) : 1; gs.nNd = R.exaggerate(c.nN, gs.k); gs.nFd = R.exaggerate(c.nF, gs.k);
+		gs.k = G.ex === "auto" ? R.autoK(c.nN, c.nF, 1.9) : 1; gs.nNd = R.exaggerate(c.nN / c.nF, gs.k); gs.nFd = 1;   // drawn relative to the far point (n = 1 there), so a huge exaggeration keeps the clock periods sensible
 		$("rs-g-exn").textContent = G.ex === "auto" ? (gs.k > 1.5 ? "The real index difference is " + fmt(c.nN / c.nF - 1, 3) + ": drawn " + fmt(gs.k, 3) + "× bigger so you can see it. Every number below is the true one." : "The effect is large enough to draw as it is.") : "No exaggeration: for ordinary objects you will see almost nothing, which is the point.";
 		var zw = c.f > 1 ? "blueshifted" : "redshifted", dl = c.wlO - c.wlE;
 		cards.innerHTML =
