@@ -161,7 +161,7 @@ const PAGES = [
     // Tile only: links to the 9/11 Spooks hub (mes.fm/911spooks, its own build.mjs; Posts + Videos). Icon = img/911spooks-icon.jpg (crop of the newest spooks post).
     slug: "911spooks",
     href: "/911spooks",
-    iconVersion: 1,
+    iconVersion: 2,
     tileOnly: true,
     tileLabel: "Spooks",
   },

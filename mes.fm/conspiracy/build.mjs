@@ -105,7 +105,7 @@ const PAGES = [
     // Tile only: no page is written. Links to the PizzaGate Video Series hub (mes.fm/pg, its own build.mjs); icon = img/pg-icon.jpg, bump iconVersion if replaced.
     slug: "pg",
     icon: "pg",
-    iconVersion: 1,
+    iconVersion: 2,
     tileOnly: true,
     tileLabel: "PizzaGate Video Series",
   },
