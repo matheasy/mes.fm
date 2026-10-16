@@ -387,6 +387,8 @@
       transition: transform 0.3s ease;
     }
 
+    .clue-link { text-decoration: underline dotted; text-underline-offset: 3px; }
+    .chapter-toggle { scroll-margin-top: 72px; }
     .chapter-toggle-list.hidden {
       display: none;
     }
@@ -932,20 +934,20 @@
 </blockquote>
 <p>I will now list and then expand upon many &quot;clues&quot;, that Norman Swanepoel + AI wrote it.</p>
 <ol>
-<li>Norman never publicly denied writing the email</li>
-<li>The email is obviously AI written or heavily assisted</li>
-<li>My name is misspelled</li>
-<li>The email pretends that I don&#39;t know the 3 people listed</li>
-<li>Norman offered to write the introduction of MES to Patricia</li>
-<li>The email is a new email thread and not a reply</li>
-<li>The email title includes 9/11 Accountability</li>
-<li>The email ends with two links to Norman&#39;s articles</li>
-<li>The email promotes disinfo spook Bob Greenyer</li>
-<li>Seven days after email, Norman &quot;welcomes Bob Greenyer&quot;</li>
-<li>Three months before the email Norman asks me for Bob Greenyer&#39;s email on behalf of Patricia</li>
-<li>Norman tells me focus on the Patricia letter instead of 9/11 &quot;planes&quot;</li>
-<li>Norman curses Dr. Judy Wood while promoting lying swindler Bob Greenyer</li>
-<li>Nick M was the first subscriber to realize Norman was behind the email!</li>
+<li><a class="clue-link" href="#1-norman-never-publicly-denied-writing-the-email">Norman never publicly denied writing the email</a></li>
+<li><a class="clue-link" href="#2-the-email-is-obviously-ai-written-or-heavily-assisted">The email is obviously AI written or heavily assisted</a></li>
+<li><a class="clue-link" href="#3-my-name-is-misspelled">My name is misspelled</a></li>
+<li><a class="clue-link" href="#4-the-email-pretends-that-i-don-t-know-the-3-people-listed">The email pretends that I don&#39;t know the 3 people listed</a></li>
+<li><a class="clue-link" href="#5-norman-offered-to-write-the-introduction-of-mes-to-patricia">Norman offered to write the introduction of MES to Patricia</a></li>
+<li><a class="clue-link" href="#6-the-email-is-a-new-email-thread-and-not-a-reply">The email is a new email thread and not a reply</a></li>
+<li><a class="clue-link" href="#7-the-email-title-includes-9-11-accountability">The email title includes 9/11 Accountability</a></li>
+<li><a class="clue-link" href="#8-the-email-ends-with-two-links-to-norman-s-articles">The email ends with two links to Norman&#39;s articles</a></li>
+<li><a class="clue-link" href="#9-the-email-promotes-disinfo-spook-bob-greenyer">The email promotes disinfo spook Bob Greenyer</a></li>
+<li><a class="clue-link" href="#10-seven-days-after-email-norman-welcomes-bob-greenyer">Seven days after email, Norman &quot;welcomes Bob Greenyer&quot;</a></li>
+<li><a class="clue-link" href="#11-three-months-before-the-email-norman-asks-me-for-bob-greenyer-s-email-on-behalf-of-patricia">Three months before the email Norman asks me for Bob Greenyer&#39;s email on behalf of Patricia</a></li>
+<li><a class="clue-link" href="#12-norman-tells-me-to-focus-on-the-patricia-letter-instead-of-9-11-planes">Norman tells me focus on the Patricia letter instead of 9/11 &quot;planes&quot;</a></li>
+<li><a class="clue-link" href="#13-norman-curses-dr-judy-wood-while-promoting-lying-swindler-bob-greenyer">Norman curses Dr. Judy Wood while promoting lying swindler Bob Greenyer</a></li>
+<li><a class="clue-link" href="#14-nick-m-was-the-first-subscriber-to-realize-norman-was-behind-the-email">Nick M was the first subscriber to realize Norman was behind the email!</a></li>
 </ol>
 <hr>
 </div>
@@ -1328,6 +1330,19 @@ Article: <a href="https://911revision.substack.com/p/richard-gage-calls-out-911-
   </div>
 
   <script>
+    // Jump-to links and the clue links open the collapsed chapter they point at before scrolling to it.
+    function openChapterFor(id) {
+      var t = id && document.getElementById(id);
+      var box = t && t.closest ? t.closest('.chapter-toggle') : null;
+      var list = box && document.getElementById(box.id + '-list');
+      if (list && list.classList.contains('hidden')) toggleChapter(list.id);
+    }
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (a && a.getAttribute('href').length > 1) openChapterFor(decodeURIComponent(a.getAttribute('href').slice(1)));
+    }, true);
+    window.addEventListener('load', function () { if (location.hash.length > 1) { openChapterFor(decodeURIComponent(location.hash.slice(1))); var el = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el) el.scrollIntoView(); } });
+
     function toggleChapter(listId) {
       const list = document.getElementById(listId);
       const arrowIcon = document.getElementById('arrowIcon-' + listId);

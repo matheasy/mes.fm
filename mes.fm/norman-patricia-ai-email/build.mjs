@@ -243,11 +243,32 @@ function blankImageAlt(html) {
   return html.replace(/(<img\b[^>]*\balt=")[^"]*(")/g, "$1$2");
 }
 
+// The "clues" list at the top of the article repeats the numbered section headings ("1. Norman never ..."); make each list item a link to its section,
+// like the Jump-to menu (2026-10-16). Matches by the item's plain text, first occurrence only.
+function linkClues(html, toc) {
+  const plainOf = (x) => x.replace(/<[^>]+>/g, "").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&").trim();
+  const words = (x) => new Set(x.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").split(/\s+/).filter((w) => w.length > 2));
+  const numbered = toc.map((t) => { const m = /^(\d+)\.\s+([\s\S]+)$/.exec(t.plain); return m ? { n: +m[1], text: m[2].trim(), id: t.id } : null; }).filter(Boolean);
+  // an <ol> whose items match the numbered headings in order (exactly, or by overlapping words when the wording differs a little) becomes links
+  return html.replace(/<ol>([\s\S]*?)<\/ol>/g, (full, inner) => {
+    const items = [...inner.matchAll(/<li>([\s\S]*?)<\/li>/g)];
+    if (items.length < 3) return full;
+    const hits = items.map((m, i) => {
+      const h = numbered.find((x) => x.n === i + 1); if (!h) return null;
+      const a = words(plainOf(m[1])), b = words(h.text); let both = 0; a.forEach((w) => { if (b.has(w)) both++; });
+      return both / Math.max(1, Math.min(a.size, b.size)) >= 0.7 ? h.id : null;
+    });
+    if (hits.filter(Boolean).length < Math.ceil(items.length * 0.6)) return full;
+    let k = 0;
+    return full.replace(/<li>([\s\S]*?)<\/li>/g, (li, content) => { const id = hits[k++]; return id ? `<li><a class="clue-link" href="#${id}">${content}</a></li>` : li; });
+  });
+}
+
 async function buildPage(post) {
   const title = post.title;
   const preprocessed = embedYoutubeLinks(post.body);
   const { html: parsedBodyHtml, toc } = addSectionAnchors(blankImageAlt(marked.parse(preprocessed)));
-  const wrappedBodyHtml = wrapChaptersInToggles(parsedBodyHtml);
+  const wrappedBodyHtml = wrapChaptersInToggles(linkClues(parsedBodyHtml, toc));
 
   // Everything before the first "## "/"### " heading (the intro paragraphs +
   // images, plus the "# The Culprit..." heading's own intro/mini-TOC, since
@@ -700,6 +721,8 @@ ${leadingHtml}
       transition: transform 0.3s ease;
     }
 
+    .clue-link { text-decoration: underline dotted; text-underline-offset: 3px; }
+    .chapter-toggle { scroll-margin-top: 72px; }
     .chapter-toggle-list.hidden {
       display: none;
     }
@@ -996,6 +1019,19 @@ ${bodyHtml}
   </div>
 
   <script>
+    // Jump-to links and the clue links open the collapsed chapter they point at before scrolling to it.
+    function openChapterFor(id) {
+      var t = id && document.getElementById(id);
+      var box = t && t.closest ? t.closest('.chapter-toggle') : null;
+      var list = box && document.getElementById(box.id + '-list');
+      if (list && list.classList.contains('hidden')) toggleChapter(list.id);
+    }
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (a && a.getAttribute('href').length > 1) openChapterFor(decodeURIComponent(a.getAttribute('href').slice(1)));
+    }, true);
+    window.addEventListener('load', function () { if (location.hash.length > 1) { openChapterFor(decodeURIComponent(location.hash.slice(1))); var el = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el) el.scrollIntoView(); } });
+
     function toggleChapter(listId) {
       const list = document.getElementById(listId);
       const arrowIcon = document.getElementById('arrowIcon-' + listId);
