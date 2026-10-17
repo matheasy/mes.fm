@@ -1,0 +1,9 @@
+{
+  "appId": "fm.mes.fitnesscalculators",
+  "appName": "Fitness Calcs",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#237a35"
+  }
+}
