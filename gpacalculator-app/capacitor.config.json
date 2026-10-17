@@ -1,0 +1,9 @@
+{
+  "appId": "fm.mes.gpacalculator",
+  "appName": "GPA Calc",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#5a812d"
+  }
+}
