@@ -200,10 +200,12 @@
 	PE.selChanged = function () { var s = PE.sel; if (s) { s.ver++; s.u8 = null; s.bb = undefined; } PE.emit("sel"); PE.invalidateOverlay(); };
 	/* shape(ctx): draws the new region in white; mode "new" | "add" | "sub" | "int" */
 	PE.selShape = function (draw, mode) {
+		if (!PE.sel && (mode === "sub" || mode === "int")) mode = "new"; /* nothing to subtract from: start a selection instead of making an empty one */
 		var d = PE.doc, s = selCanvas(), n = mk(d.w, d.h), nx = n.getContext("2d"); nx.fillStyle = "#fff"; draw(nx);
 		PE.selCombine(n, mode);
 	};
 	PE.selCombine = function (n, mode) {
+		if (!PE.sel && (mode === "sub" || mode === "int")) mode = "new";
 		var s = selCanvas(), x = s.c.getContext("2d");
 		if (mode === "add") { x.globalCompositeOperation = "source-over"; x.drawImage(n, 0, 0); }
 		else if (mode === "sub") { x.globalCompositeOperation = "destination-out"; x.drawImage(n, 0, 0); }
