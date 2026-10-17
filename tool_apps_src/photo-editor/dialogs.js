@@ -229,4 +229,29 @@
 	};
 
 	PE.download = function (blob, name) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000); };
+
+	/* ---------- share as a link (temporary public upload to Litterbox / catbox.moe) ---------- */
+	PE.dlgShare = function () {
+		var d = PE.doc; if (!d) return;
+		var wrap = el("div", "pe-exp"), f = PE.form([{ k: "fmt", label: "Format", type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"]], val: "png" }, { k: "life", label: "Link lasts", type: "select", options: [["1h", "1 hour"], ["12h", "12 hours"], ["24h", "1 day"], ["72h", "3 days"]], val: "72h" }, { k: "scale", label: "Size", type: "range", min: 10, max: 100, step: 5, val: 100, unit: "%" }], null);
+		wrap.appendChild(f.el);
+		wrap.appendChild(el("p", "pe-hint2", "This uploads a copy of the whole image to <b>Litterbox (catbox.moe)</b>, a free temporary file host, and gives you a link. <b>Anyone who has the link can see the picture</b>, and it is deleted automatically when the time is up. MES does not store it. Don't share anything private."));
+		var out = el("div", "pe-share-out"); wrap.appendChild(out);
+		var busy = false, link = "";
+		function show(url) {
+			link = url; out.innerHTML = ""; var inp = el("input"); inp.type = "text"; inp.readOnly = true; inp.value = url; inp.style.cssText = "width:100%;margin-top:.6em"; inp.addEventListener("focus", function () { inp.select(); }); out.appendChild(inp); inp.focus(); inp.select();
+		}
+		var m = PE.modal({ title: "Share as a link", body: wrap, buttons: [{ label: "Close", act: function (m) { m.close(); } },
+			{ label: "Copy link", act: function () { if (!link) { PE.toast("Upload first"); return; } (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () { PE.toast("Link copied"); }).catch(function () { PE.toast("Select the link and press Ctrl+C"); }); } },
+			{ label: "Upload and get link", primary: true, act: function () {
+				if (busy) return; busy = true; var v = f.get(); out.textContent = "Uploading…";
+				PE.exportBlob(v.fmt, 0.92, { scale: v.scale / 100, bg: "#ffffff" }).then(function (b) {
+					if (b.size > 190 * 1024 * 1024) throw new Error("Too big: choose a smaller size");
+					var fd = new FormData(); fd.append("reqtype", "fileupload"); fd.append("time", v.life); fd.append("fileToUpload", b, "mes-photo." + (v.fmt === "jpg" ? "jpg" : "png"));
+					return fetch("https://litterbox.catbox.moe/resources/internals/api.php", { method: "POST", body: fd });
+				}).then(function (r) { return r.text().then(function (t) { if (!r.ok || !/^https:\/\//.test(t.trim())) throw new Error(t.trim().slice(0, 120) || "Upload failed"); return t.trim(); }); })
+				.then(function (url) { busy = false; show(url); navigator.clipboard && navigator.clipboard.writeText(url).then(function () { PE.toast("Link copied"); }).catch(function () {}); })
+				.catch(function (e) { busy = false; out.textContent = "Couldn't upload: " + (e && e.message ? e.message : "the host did not answer") + ". Try a smaller size, or download the picture and use another site."; });
+			} }] });
+	};
 })();
