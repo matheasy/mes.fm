@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/photo",
+   "title": "Photo Editor",
+   "icon": "/img/photo-editor-logo.png",
+   "desc": "Free online editor with layers, selections, clone stamp, levels and curves. Add labels, arrows and callouts, combine images, keep transparency, open PSD. Nothing is uploaded.",
+   "added": "2026-10-16",
+   "kind": "tool"
+  },
+  {
    "href": "/redshift-simulator",
    "title": "Redshift & Blueshift Simulator",
    "icon": "/img/redshift-simulator-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Paste an image link or upload a picture and search Google Lens, Bing, TinEye, Yandex and more at once. Search part of the picture.",
    "added": "2026-10-14",
    "kind": "tool"
-  },
-  {
-   "href": "/buddhabrot",
-   "title": "Buddhabrot Explorer",
-   "icon": "/img/buddhabrot-logo.png",
-   "desc": "Watch the Buddhabrot fill in live: millions of random Mandelbrot orbits piled into a glowing figure. Try the three-colour Nebulabrot and the Anti-Buddhabrot.",
-   "added": "2026-10-13",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/photo",
+   "title": "Photo Editor",
+   "icon": "/img/photo-editor-logo.png",
+   "desc": "Free online editor with layers, selections, clone stamp, levels and curves. Add labels, arrows and callouts, combine images, keep transparency, open PSD. Nothing is uploaded.",
+   "added": "2026-10-16",
+   "kind": "tool"
+  },
   {
    "href": "/redshift-simulator",
    "title": "Redshift & Blueshift Simulator",
@@ -250,14 +258,6 @@
    "title": "One-Rep Max Calculator",
    "icon": "/img/one-rep-max-calculator-logo.png",
    "desc": "Estimate your 1RM from a set, with a rep chart, plate loader and strength level.",
-   "added": "2026-10-15",
-   "kind": "calculator"
-  },
-  {
-   "href": "/pregnancy-calorie-calculator",
-   "title": "Pregnancy Calorie Calculator",
-   "icon": "/img/pregnancy-calorie-calculator-logo.png",
-   "desc": "Extra calories by trimester or breastfeeding, and healthy weight gain by week.",
    "added": "2026-10-15",
    "kind": "calculator"
   }

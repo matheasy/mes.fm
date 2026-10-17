@@ -1846,11 +1846,66 @@ var MESPixel = (function () {
 
 	/* ---------- tool bar ---------- */
 	var ORDER = ["move", "marquee", "lasso", "wand", "crop", "brush", "eraser", "clone", "retouch", "objerase", "bucket", "gradient", "eyedropper", "text", "equation", "shape", "hand", "zoom"];
+	var HELP = {
+		move: "Move, resize and rotate the active layer (or a whole group). Drag a layer to move it. Drag a square handle to resize; hold Shift while dragging a corner for free proportions. Drag just outside a corner to rotate. Arrow keys nudge by 1 px (Shift = 10 px). The option bar has Remove background (AI).",
+		marquee: "Draw a rectangle or ellipse selection. Anything you then do (fill, delete, adjust, copy) only touches the selection. Shift while dragging = square or circle, Shift-drag on an existing selection = add to it, Alt = subtract. Drag inside a selection to move it, click once to deselect. Feather softens the edge.",
+		lasso: "Select any shape. Freehand: drag around the area. Polygon: click each corner, then double-click or press Enter to close. Use the Mode buttons to add to, subtract from or intersect an existing selection.",
+		wand: "Click a colour to select every touching pixel of a similar colour. Raise Tolerance to include more shades. Click the background, press Delete, then export as PNG for a transparent background.",
+		crop: "Cut the picture down to part of it. Drag the box or its handles, pick a ratio in the option bar if you want one, then press Enter or Apply. Everything outside the box is removed.",
+		brush: "Paint with the foreground colour. [ and ] change the size, Shift-click draws a straight line from the last point. Opacity, hardness and size are in the option bar. On a layer mask the brush reveals the layer.",
+		eraser: "Erase pixels on the active layer (they become transparent). Same size and hardness controls as the brush. On a layer mask the eraser hides parts of the layer without destroying them.",
+		clone: "Copy one part of the picture over another. Alt-click to choose the source spot, then paint where the copy should go. Good for removing blemishes, dust and small objects.",
+		retouch: "Paint to blur, sharpen, lighten, darken or change the saturation only where you drag. Choose the effect and its strength in the option bar.",
+		objerase: "AI object remover. Paint over the thing you want gone (Alt un-paints), then press Enter or the Erase button. The AI fills the area from its surroundings. Works best on small objects against plain or repeating backgrounds. The model downloads once on first use.",
+		bucket: "Click an area to fill it with the foreground colour. Tolerance decides how similar a colour must be to be filled. With a selection active, only the selection is filled.",
+		gradient: "Drag from where the gradient should start to where it should end. It blends the foreground and background colours and respects any selection.",
+		eyedropper: "Click anywhere on the picture to pick that colour as the foreground colour. Alt-click picks the background colour instead.",
+		text: "Click to add text. Click existing text to edit it. Turn on Background for a label or callout look. Esc finishes. Each text is its own layer, so you can move, scale and rotate it later.",
+		equation: "Insert a maths equation. Click where it goes, type LaTeX (a live preview appears), then Insert. Click an existing equation to edit it. Equations stay sharp when enlarged.",
+		shape: "Draw rectangles, rounded boxes, ellipses, lines, arrows, callouts, numbered step badges, highlights and blur / hide areas. Shift = square or straight line. Outline uses the foreground colour, fill uses the background colour. Each shape lands on its own layer.",
+		hand: "Drag to pan around a zoomed-in picture. You can also hold Space with any tool, or use the middle mouse button.",
+		zoom: "Click to zoom in, Alt-click to zoom out. Ctrl + mouse wheel also zooms, and Ctrl+0 fits the picture to the window."
+	};
+	var UI = S.ui || { tw: false, sw: 17.5, side: "r", hide: false };
+	function saveUI() { sset({ ui: UI }); }
+	function closeHelp() { var h = root.querySelector(".pe-help"); if (h) h.remove(); }
+	function showHelp(id, anchor) {
+		closeHelp(); var t = PE.tools[id]; if (!t) return; var h = el("div", "pe-help"), r = anchor.getBoundingClientRect(), rr = root.getBoundingClientRect();
+		h.setAttribute("role", "dialog"); h.innerHTML = '<div class="pe-help-t">' + esc(t.icon) + " " + esc(t.name) + (t.key ? ' <kbd>' + esc(t.key.toUpperCase()) + "</kbd>" : "") + '</div><p>' + esc(HELP[id] || t.hint || "") + '</p><button type="button" class="pe-btn pe-btn--sm">Got it</button>';
+		h.querySelector("button").addEventListener("click", closeHelp); root.appendChild(h);
+		var top = Math.max(4, Math.min(r.top - rr.top - 8, rr.height - h.offsetHeight - 8)); h.style.top = top + "px"; h.style.left = (UI.side === "l" && !UI.hide ? 4 : (r.right - rr.left + 8)) + "px";
+		if (UI.side === "l" && !UI.hide) h.style.left = (r.right - rr.left + 8) + "px";
+	}
+	document.addEventListener("mousedown", function (e) { if (!e.target.closest || (!e.target.closest(".pe-help") && !e.target.closest(".pe-thelp"))) closeHelp(); });
+	document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeHelp(); });
+	function applyUI() {
+		var main = root.querySelector(".pe-main"), tools = $("pe-tools"), side = $("pe-side");
+		tools.classList.toggle("pe-tools--wide", !!UI.tw); main.classList.toggle("pe-main--sl", UI.side === "l"); main.classList.toggle("pe-main--shide", !!UI.hide);
+		side.style.width = UI.sw + "em"; var tg = $("pe-ttoggle"); if (tg) { tg.textContent = UI.tw ? "« Collapse" : "»"; tg.title = UI.tw ? "Show only the icons" : "Show the tool names and help"; tg.setAttribute("aria-pressed", UI.tw ? "true" : "false"); }
+		var sw = $("pe-sswap"); if (sw) sw.title = UI.side === "l" ? "Move the panels to the right" : "Move the panels to the left";
+		var sh = $("pe-sshow"); if (sh) { sh.hidden = !UI.hide; sh.textContent = UI.side === "l" ? "Panels ›" : "‹ Panels"; }
+		setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 0);
+	}
+	function initLayoutUI() {
+		var tg = el("button", "pe-ttoggle", "»"); tg.type = "button"; tg.id = "pe-ttoggle"; tg.addEventListener("click", function () { UI.tw = !UI.tw; saveUI(); applyUI(); }); $("pe-tools").insertBefore(tg, $("pe-tools").firstChild);
+		var bar = el("div", "pe-sbar"); bar.innerHTML = '<span>Panels</span><button type="button" id="pe-sswap" class="pe-mini">⇄</button><button type="button" id="pe-shide" class="pe-mini" title="Hide the panels (more room for the picture)">Hide ✕</button>'; $("pe-side").insertBefore(bar, $("pe-side").firstChild);
+		var grip = el("div", "pe-sres"); grip.title = "Drag to make the panels wider or narrower (double-click to reset)"; $("pe-side").appendChild(grip);
+		var show = el("button", "pe-sshow", "‹ Panels"); show.type = "button"; show.id = "pe-sshow"; show.hidden = true; $("pe-stage").appendChild(show);
+		$("pe-sswap").addEventListener("click", function () { UI.side = UI.side === "l" ? "r" : "l"; saveUI(); applyUI(); });
+		$("pe-shide").addEventListener("click", function () { UI.hide = true; saveUI(); applyUI(); }); show.addEventListener("click", function () { UI.hide = false; saveUI(); applyUI(); });
+		grip.addEventListener("dblclick", function () { UI.sw = 17.5; saveUI(); applyUI(); });
+		grip.addEventListener("pointerdown", function (e) { e.preventDefault(); grip.setPointerCapture(e.pointerId); var x0 = e.clientX, w0 = $("pe-side").getBoundingClientRect().width, fs = parseFloat(getComputedStyle($("pe-side")).fontSize) || 16, dir = UI.side === "l" ? 1 : -1;
+			function mv(ev) { UI.sw = Math.max(12, Math.min(40, (w0 + (ev.clientX - x0) * dir) / fs)); $("pe-side").style.width = UI.sw + "em"; }
+			function up() { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); saveUI(); window.dispatchEvent(new Event("resize")); } grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); });
+		applyUI();
+	}
 	function buildTools() {
 		var box = $("pe-tools"); box.innerHTML = "";
-		ORDER.forEach(function (id) { var t = PE.tools[id]; if (!t) return; var b = el("button", "pe-tool", esc(t.icon)); b.type = "button"; b.dataset.t = id; b.title = t.name + " (" + t.key.toUpperCase() + ")"; b.setAttribute("aria-label", t.name); b.addEventListener("click", function () { PE.setTool(id); }); box.appendChild(b); });
+		ORDER.forEach(function (id) { var t = PE.tools[id]; if (!t) return; var row = el("div", "pe-trow"), b = el("button", "pe-tool"); b.type = "button"; b.dataset.t = id; b.title = t.name + " (" + t.key.toUpperCase() + ")"; b.setAttribute("aria-label", t.name); b.innerHTML = '<span class="pe-ticon">' + esc(t.icon) + '</span><span class="pe-tname">' + esc(t.name.replace(/ \(.*\)$/, "")) + '</span><kbd class="pe-tkey">' + esc(t.key.toUpperCase()) + "</kbd>"; b.addEventListener("click", function () { PE.setTool(id); });
+			var q = el("button", "pe-thelp", "?"); q.type = "button"; q.title = "What is this tool and how do I use it?"; q.setAttribute("aria-label", "Help: " + t.name); q.addEventListener("click", function () { showHelp(id, row); }); row.appendChild(b); row.appendChild(q); box.appendChild(row); });
+		initLayoutUI();
 	}
-	PE.on("tool", function () { Array.prototype.forEach.call($("pe-tools").children, function (b) { b.setAttribute("aria-pressed", b.dataset.t === PE.toolId ? "true" : "false"); }); var t = PE.tool(); if (t.activate) t.activate(); buildOpts(); $("pe-hint").textContent = t.hint || ""; setCursor(); });
+	PE.on("tool", function () { Array.prototype.forEach.call($("pe-tools").querySelectorAll(".pe-tool"), function (b) { b.setAttribute("aria-pressed", b.dataset.t === PE.toolId ? "true" : "false"); }); var t = PE.tool(); if (t.activate) t.activate(); buildOpts(); $("pe-hint").textContent = t.hint || ""; setCursor(); });
 	function setCursor() { PE.els.over.style.cursor = PE.tool().cursorSize ? "none" : PE.toolId === "hand" ? "grab" : PE.toolId === "zoom" ? "zoom-in" : PE.toolId === "text" ? "text" : PE.toolId === "move" ? "default" : "crosshair"; }
 
 	/* ---------- options bar ---------- */

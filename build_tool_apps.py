@@ -306,7 +306,7 @@ APPS = {
                           nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/time-dilation-explained'>Explained</a></li>", menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/time-dilation-explained\">Time Dilation Explained</a></li>"),
     # Photo Editor: layers, selections, text labels, arrows / callouts / step badges, retouch, adjustments, PSD, all in the browser (canvas). lib.js = MESPixel (pure pixel maths, node-tested:
     # tool_apps_src/photo-editor-tests.js), js_parts = engine (core.js layers / history / selection) + tools + dialogs; lib_from = image-converter's lib (MESImg: formats, zip). Wide page, always-dark workspace.
-    "photo-editor": dict(title="MES Photo Editor", page_title="Free Online Photo Editor with Layers",
+    "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
                          js_v="13", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js"], lib_from=["image-converter"]),
