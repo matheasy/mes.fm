@@ -59,7 +59,7 @@ function flip(tab) {
     // the page was open before the extension was installed or reloaded, so it has no content script yet: add it now (the click grants access to this tab)
     try {
       chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ['shared.js', 'content.js'] }, function () {
-        if (chrome.runtime.lastError) { badge(tab.id, '\u2715', '#777'); chrome.action.setTitle({ tabId: tab.id, title: 'MES Dark Mode cannot change this page (browser pages and the Chrome Web Store are off limits).' }); return; }
+        if (chrome.runtime.lastError) { var why = chrome.runtime.lastError.message; console.error('MES Dark Mode:', why); badge(tab.id, '\u2715', '#777'); chrome.action.setTitle({ tabId: tab.id, title: 'MES Dark Mode cannot change this page: ' + why }); return; }
         setTimeout(function () { send(tab, function (ok2) { if (ok2) after(); else badge(tab.id, '\u2715', '#777'); }); }, 250);
       });
     } catch (e) { badge(tab.id, '\u2715', '#777'); }

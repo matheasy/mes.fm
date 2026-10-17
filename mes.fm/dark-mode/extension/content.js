@@ -178,7 +178,7 @@
   try {
     chrome.runtime.onMessage.addListener(function (m, sender, send) {
       if (!m || !m.mesdm || window !== window.top) return;
-      if (m.mesdm === 'toggle') { resolve(); setSite(state.want ? 'light' : 'dark'); }
+      if (m.mesdm === 'toggle') { resolve(); setSite(state.want ? 'light' : 'dark'); send({ ok: true }); }
       else if (m.mesdm === 'status') {
         resolve();
         send({ host: host, off: state.off, want: state.want, invert: state.invert, pageDark: knownDark(), override: V.siteMode(S, host) });
