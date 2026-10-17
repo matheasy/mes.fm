@@ -22,9 +22,11 @@ from pathlib import Path
 APP = Path(__file__).resolve().parent
 REPO = APP.parent
 SRC = REPO / "mes.fm" / "gradecalculator"
+WA_SRC = REPO / "mes.fm" / "weighted-average-calculator.html"
+WA_JS = REPO / "mes.fm" / "gradecalculator" / "js" / "weighted-average-calculator.js"
 WWW = APP / "www"
 EXT = "https://mes.fm"
-VERSION = "1.0"
+VERSION = "1.1"
 
 
 def balanced(fragment: str) -> str:
@@ -49,6 +51,14 @@ def extract(html: str):
     end = html.index("<!-- PC (Responsive/Rectangle)", start)
     tool = balanced(html[start:end].rstrip())
     return css, tool
+
+
+def extract_wa(html: str):
+    head = html.split("<body", 1)[0]
+    styles = re.findall(r"<style>(.*?)</style>", head, flags=re.S)
+    start = html.index('<div class="tu" id="wa">')
+    end = html.index("<!-- PC (Responsive/Rectangle)", start)
+    return "\n".join(styles[:2]), balanced(html[start:end].rstrip())
 
 
 def rewrite_links(tool: str) -> str:
@@ -133,6 +143,14 @@ body.dark-mode #app-foot a{color:#aab0ee;}
 /* the page's reset paints every bare div/span/b/strong #333, and the web build leaves dark mode to display-controls.js;
    :where() keeps this at type-selector specificity so any class that sets its own colour (category colours, chips) still wins */
 :where(body.dark-mode #gc) :is(div,span,b,strong,p,li,small,label,td,th){color:#e6e6e6;}
+:where(body.dark-mode #wa) :is(div,span,b,strong,p,li,small,label,td,th){color:#e6e6e6;}
+/* Final grade | Weighted average switch */
+#tabs{display:flex;gap:.4em;margin:0 0 1em 0;}
+#tabs button{all:unset;cursor:pointer;flex:1;text-align:center;box-sizing:border-box;padding:.65em .5em;border:1.5px solid #575fab;border-radius:999px;color:#3f4690;font-weight:700;font-size:.95em;touch-action:manipulation;}
+#tabs button[aria-selected=true]{background:#575fab;color:#fff;}
+body.dark-mode #tabs button{border-color:#aab0ee;color:#aab0ee;}
+body.dark-mode #tabs button[aria-selected=true]{background:#575fab;color:#fff;}
+.pane[hidden]{display:none;}
 """
 
 MOON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
@@ -163,6 +181,11 @@ CONTROLS_JS = """
   all(".js-menu").forEach(function(e){ e.addEventListener("click",function(ev){ ev.stopPropagation(); toggleMenu(!menu.classList.contains("open")); }); });
   scrim.addEventListener("click",function(){ toggleMenu(false); });
   menu.addEventListener("click",function(ev){ if(ev.target.tagName==="A") toggleMenu(false); });
+  var KP="mes-grade-app:tab";
+  function showTab(t){ ["gc","wa"].forEach(function(k){ document.getElementById("pane-"+k).hidden=(k!==t); document.getElementById("tab-"+k).setAttribute("aria-selected",k===t?"true":"false"); }); try{localStorage.setItem(KP,t);}catch(e){} }
+  document.getElementById("tab-gc").addEventListener("click",function(){ showTab("gc"); });
+  document.getElementById("tab-wa").addEventListener("click",function(){ showTab("wa"); });
+  try{ if(localStorage.getItem(KP)==="wa") showTab("wa"); }catch(e){}
   var cbar=document.getElementById("cbar"), bar=document.getElementById("app-bar");
   try{ if(localStorage.getItem(KH)==="1") b.classList.add("cbar-hidden"); }catch(e){}
   document.getElementById("cbar-hide").addEventListener("click",function(){ b.classList.add("cbar-hidden"); try{localStorage.setItem(KH,"1");}catch(e){} });
@@ -173,7 +196,7 @@ CONTROLS_JS = """
 """
 
 
-def page(css: str, tool: str) -> str:
+def page(css: str, tool: str, wa_tool: str) -> str:
     return """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -188,7 +211,7 @@ def page(css: str, tool: str) -> str:
 <div id="status-cover"></div>
 <header id="app-bar" role="banner">
   <img src="img/logo.png" alt="" width="64" height="64">
-  <div class="t"><div class="name">Grade Calculator</div><div class="tag">What do I need on the final? Track every course, weight and target. Free, private, works offline.</div></div>
+  <div class="t"><div class="name">Grade Calculator</div><div class="tag">What do I need on the final? Plus a weighted average calculator. Free, private, works offline.</div></div>
   <button id="menu-btn" class="hb js-menu" type="button" aria-label="Menu">%(burger)s</button>
 </header>
 <div id="cbar" role="toolbar" aria-label="Quick controls">
@@ -208,7 +231,7 @@ def page(css: str, tool: str) -> str:
   <div class="sec">Learn more</div>
   <a href="%(ext)s/gradecalculator/tutorial" target="_blank" rel="noopener">How to calculate your grade</a>
   <a href="%(ext)s/gradecalculator/study-tips" target="_blank" rel="noopener">Study tips</a>
-  <a href="%(ext)s/weighted-average-calculator" target="_blank" rel="noopener">Weighted average calculator</a>
+  <a href="%(ext)s/gradecalculator/weighted-average-tutorial" target="_blank" rel="noopener">How a weighted average works</a>
   <a href="%(ext)s/gpacalculator" target="_blank" rel="noopener">GPA calculator</a>
   <div class="sec">About</div>
   <a href="%(ext)s/gradecalculator" target="_blank" rel="noopener">Grade Calculator website</a>
@@ -216,20 +239,28 @@ def page(css: str, tool: str) -> str:
   <a href="%(ext)s/contact" target="_blank" rel="noopener">Contact us</a>
 </nav>
 <main id="app-main">
+<div id="tabs" role="tablist"><button type="button" role="tab" id="tab-gc" aria-selected="true" aria-controls="pane-gc">Final grade</button><button type="button" role="tab" id="tab-wa" aria-selected="false" aria-controls="pane-wa">Weighted average</button></div>
+<div id="pane-gc" class="pane" role="tabpanel">
 %(tool)s
+</div>
+<div id="pane-wa" class="pane" role="tabpanel" hidden>
+%(wa_tool)s
+</div>
 </main>
 <div id="app-foot">
   <p><strong>Estimates only.</strong> Results are calculated from the grades, weights and targets you type in. Your school&rsquo;s syllabus decides how grades are weighted, rounded and dropped, so check it (or ask your teacher) before relying on a number. Letter labels use a common US scale and are only a guide.</p>
   <p><strong>How it is calculated.</strong> Grade needed on the final = (target &minus; current grade &times; (100 &minus; final weight) &divide; 100) &divide; final weight &times; 100. With individual assignments, each score (points earned &divide; points possible) is multiplied by its weight, the graded weights are added up, and the remaining weight is what is left to earn.</p>
+  <p><strong>Weighted average.</strong> Weighted average = &Sigma;(grade &times; weight) &divide; &Sigma;weight. Only the weights relative to each other matter, so credits, hours, points or percentages all work.</p>
   <p><strong>Your data stays on this device.</strong> Courses, grades and targets are stored only on this device, inside the app. There are no accounts, no ads and no tracking, and nothing you enter is sent anywhere.</p>
   <p class="links"><a href="%(ext)s/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a><a href="%(ext)s/contact" target="_blank" rel="noopener">Contact</a><a href="%(ext)s/gradecalculator" target="_blank" rel="noopener">Website</a></p>
   <p>Version %(version)s &middot; Math Easy Solutions &middot; mes.fm</p>
 </div>
 <script src="js/gradecalculator.js"></script>
+<script src="js/weighted-average-calculator.js"></script>
 <script>%(controls)s</script>
 </body>
 </html>
-""" % dict(css=css, app_css=APP_CSS, tool=tool, ext=EXT, version=VERSION, controls=CONTROLS_JS, burger=BURGER, theme_btn=THEME_BTN)
+""" % dict(css=css, app_css=APP_CSS, tool=tool, wa_tool=wa_tool, ext=EXT, version=VERSION, controls=CONTROLS_JS, burger=BURGER, theme_btn=THEME_BTN)
 
 
 def main() -> None:
@@ -241,6 +272,12 @@ def main() -> None:
     (WWW / "img").mkdir()
 
     css, tool = extract((SRC / "index.html").read_text(encoding="utf-8"))
+    wa_css, wa_tool = extract_wa(WA_SRC.read_text(encoding="utf-8"))
+    css = css + "\n" + wa_css
+    wa_tool = rewrite_links(wa_tool)
+    wa_tool, n_wp = re.subn(r'<button[^>]*\bwa-print\b[^>]*>Print</button>', '<button type="button" class="tu-btn tu-btn--ghost" id="wa-import">Open a copied link&hellip;</button>', wa_tool)
+    assert n_wp == 1, "weighted average Print button not found"
+    wa_tool = wa_tool.replace("saved in this browser", "saved on this device")
     tool = rewrite_links(tool)
     # window.print() and blob downloads / file pickers do nothing useful in the iOS / Android WebView (App Review 2.1):
     # drop Print, Download a backup and Restore a backup; sharing is by copying a link, and a pasted link can be imported
@@ -252,7 +289,7 @@ def main() -> None:
     tool = tool.replace("saved in this browser automatically", "saved on this device automatically").replace("so use a backup or a link if they matter", "so copy a link if they matter").replace("Clearing your browser&rsquo;s site data", "Deleting the app or clearing its data").replace("Everything stays in your browser (localStorage)", "Everything stays on this device")
     tool, n_fi = re.subn(r'\s*<input type="file" id="gc-file"[^>]*>', "", tool)
     assert n_fi == 1, "file input not found"
-    (WWW / "index.html").write_text(page(css, tool), encoding="utf-8")
+    (WWW / "index.html").write_text(page(css, tool, wa_tool), encoding="utf-8")
 
     js = (SRC / "js" / "gradecalculator.js").read_text(encoding="utf-8")
     # share links must point at the website (the app's own origin is capacitor://localhost)
@@ -278,6 +315,21 @@ def main() -> None:
     js = js.replace('<a href="/gpacalculator">', '<a href="%s/gpacalculator" target="_blank" rel="noopener">' % EXT)
     assert "gc-backup" not in js and "gc-print" not in js and 'href="/' not in js, "script still has app-incompatible bits"
     (WWW / "js" / "gradecalculator.js").write_text(js, encoding="utf-8")
+
+    wjs = WA_JS.read_text(encoding="utf-8")
+    wjs = wjs.replace("location.origin", '"%s"' % EXT)
+    old = 'document.querySelector("#wa .wa-print").onclick = function () { window.print(); };'
+    assert old in wjs
+    wjs = wjs.replace(old, '$("wa-import").onclick = function () {\n'
+        '\t\tvar t = prompt("Paste a Weighted Average link (copied from the app or from mes.fm/weighted-average-calculator):", "");\n'
+        '\t\tif (!t) return;\n'
+        '\t\tvar mm = String(t).match(/[?&]s=([A-Za-z0-9_-]+)/), dec = mm && WA.decode(mm[1]);\n'
+        '\t\tif (dec && confirm("Replace the list on this device with the one in that link?")) { st.title = dec.title; st.rows = dec.rows; pad(); save(); fillTitle(); renderRows(); update(); toast("Opened the shared list"); }\n'
+        '\t\telse if (!dec) toast("That does not look like a Weighted Average link");\n'
+        '\t};')
+    wjs = wjs.replace("It is saved in this browser now.", "It is saved on this device now.").replace("Your browser is blocking storage, so this list will be lost when you close the tab.", "Storage is unavailable, so this list will be lost when you close the app.")
+    assert "wa-print" not in wjs
+    (WWW / "js" / "weighted-average-calculator.js").write_text(wjs, encoding="utf-8")
 
     # logo-512.png has white rounded-corner padding; the app icon master is the same art cropped full-bleed
     from PIL import Image
