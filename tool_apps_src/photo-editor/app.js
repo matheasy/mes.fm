@@ -46,7 +46,7 @@
 		hand: "Drag to pan around a zoomed-in picture. You can also hold Space with any tool, or use the middle mouse button.",
 		zoom: "Click to zoom in, Alt-click to zoom out. Ctrl + mouse wheel also zooms, and Ctrl+0 fits the picture to the window."
 	};
-	var UI = S.ui || { tw: false, sw: 17.5, side: "r", hide: false };
+	var UI = S.ui || { tw: false, sw: 17.5, side: "r", hide: false }; if (!UI.tws) UI.tws = 15.5;
 	function saveUI() { sset({ ui: UI }); }
 	function closeHelp() { var h = root.querySelector(".pe-help"); if (h) h.remove(); }
 	function showHelp(id, anchor) {
@@ -61,7 +61,7 @@
 	function applyUI() {
 		var main = root.querySelector(".pe-main"), tools = $("pe-tools"), side = $("pe-side");
 		tools.classList.toggle("pe-tools--wide", !!UI.tw); main.classList.toggle("pe-main--sl", UI.side === "l"); main.classList.toggle("pe-main--shide", !!UI.hide);
-		side.style.width = UI.sw + "em"; var tg = $("pe-ttoggle"); if (tg) { tg.textContent = UI.tw ? "« Collapse" : "»"; tg.title = UI.tw ? "Show only the icons" : "Show the tool names and help"; tg.setAttribute("aria-pressed", UI.tw ? "true" : "false"); }
+		side.style.width = UI.sw + "em"; tools.style.width = UI.tw ? UI.tws + "em" : ""; var tg = $("pe-ttoggle"); if (tg) { tg.textContent = UI.tw ? "« Collapse" : "»"; tg.title = UI.tw ? "Show only the icons" : "Show the tool names and help"; tg.setAttribute("aria-pressed", UI.tw ? "true" : "false"); }
 		var sw = $("pe-sswap"); if (sw) sw.title = UI.side === "l" ? "Move the panels to the right" : "Move the panels to the left";
 		var sh = $("pe-sshow"); if (sh) { sh.hidden = !UI.hide; sh.textContent = UI.side === "l" ? "Panels ›" : "‹ Panels"; }
 		setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 0);
@@ -77,6 +77,11 @@
 		grip.addEventListener("pointerdown", function (e) { e.preventDefault(); grip.setPointerCapture(e.pointerId); var x0 = e.clientX, w0 = $("pe-side").getBoundingClientRect().width, fs = parseFloat(getComputedStyle($("pe-side")).fontSize) || 16, dir = UI.side === "l" ? 1 : -1;
 			function mv(ev) { UI.sw = Math.max(12, Math.min(40, (w0 + (ev.clientX - x0) * dir) / fs)); $("pe-side").style.width = UI.sw + "em"; }
 			function up() { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); saveUI(); window.dispatchEvent(new Event("resize")); } grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); });
+		var tg2 = el("div", "pe-tres"); tg2.title = "Drag to make the toolbox wider or narrower (double-click to reset)"; $("pe-tools").parentNode.insertBefore(tg2, $("pe-tools").nextSibling);
+		tg2.addEventListener("dblclick", function () { UI.tws = 15.5; UI.tw = true; saveUI(); applyUI(); });
+		tg2.addEventListener("pointerdown", function (e) { e.preventDefault(); tg2.setPointerCapture(e.pointerId); var x0 = e.clientX, w0 = $("pe-tools").getBoundingClientRect().width, fs = parseFloat(getComputedStyle($("pe-tools")).fontSize) || 16, dir = UI.side === "l" && false ? -1 : 1;
+			function mv(ev) { var w = (w0 + (ev.clientX - x0) * dir) / fs; if (w < 7) { UI.tw = false; } else { UI.tw = true; UI.tws = Math.max(9, Math.min(30, w)); } applyUI(); }
+			function up() { tg2.removeEventListener("pointermove", mv); tg2.removeEventListener("pointerup", up); saveUI(); window.dispatchEvent(new Event("resize")); } tg2.addEventListener("pointermove", mv); tg2.addEventListener("pointerup", up); });
 		applyUI();
 	}
 	function buildTools() {
