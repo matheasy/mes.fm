@@ -43,6 +43,11 @@
 
   // before the page has been looked at, trust what we saw last time on this site, else assume a light page
   function knownDark() { return pageDark != null ? pageDark : seen[host] === 1; }
+  function saveSeen() {
+    var keys = Object.keys(seen);
+    if (keys.length > 800) keys.slice(0, 200).forEach(function (k) { delete seen[k]; });
+    try { chrome.storage.local.set({ mesdmSeen: seen }); } catch (e) { /* ignore */ }
+  }
 
   function update() {
     if (!ready) return;
@@ -76,17 +81,15 @@
   function detect() {
     var w = window.innerWidth, h = window.innerHeight;
     if (!w || !h) return;
-    var pts = [[0.3, 0.35], [0.7, 0.35], [0.3, 0.55], [0.7, 0.55], [0.3, 0.75], [0.7, 0.75]], vals = [];
-    pts.forEach(function (p) { vals.push(sampleAt(Math.floor(w * p[0]), Math.floor(h * p[1]))); });
+    // a grid over the whole window: a page that mixes a dark frame with a big white reading pane (Gmail) is judged by what covers most of it
+    var vals = [];
+    for (var gx = 1; gx <= 8; gx++) for (var gy = 1; gy <= 6; gy++) vals.push(sampleAt(Math.floor(w * gx / 9), Math.floor(h * gy / 7)));
     var d = V.isDarkPage(vals);
     if (d == null) return;
     if (d !== pageDark) {
       pageDark = d;
       if (seen[host] !== (d ? 1 : 0)) {
-        seen[host] = d ? 1 : 0;
-        var keys = Object.keys(seen);
-        if (keys.length > 800) keys.slice(0, 200).forEach(function (k) { delete seen[k]; });
-        try { chrome.storage.local.set({ mesdmSeen: seen }); } catch (e) { /* ignore */ }
+        seen[host] = d ? 1 : 0; saveSeen();
       }
       update();
     }
