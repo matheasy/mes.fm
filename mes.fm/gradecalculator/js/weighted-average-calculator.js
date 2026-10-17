@@ -137,7 +137,41 @@
 	$("wa-add").onclick = function () { st.rows.push(WA.blankRow()); save(); renderRows(); update(); var l = $("wa-rows").querySelector(".wa-row:last-child input"); if (l) l.focus(); };
 	$("wa-equal").onclick = function () { var n = 0; st.rows.forEach(function (x) { if (WA.num(x.v) != null) { x.w = "1"; n++; } }); if (!n) { toast("Enter some grades first"); return; } save(); renderRows(); update(); toast("Every row now has weight 1"); };
 	$("wa-clear").onclick = function () { var snap = JSON.stringify(st); st.title = ""; st.rows = []; pad(); save(); fillTitle(); renderRows(); update(); notice('List cleared. <button type="button" class="tu-chip" id="wa-undo">Undo</button>'); $("wa-undo").onclick = function () { st = JSON.parse(snap); save(); fillTitle(); renderRows(); update(); notice(""); }; };
-	$("wa-title").addEventListener("input", function () { st.title = this.value; save(); });
+	// saved lists: named copies of the list, kept in this browser (own key, never in share links)
+	var LKEY = "mes-weighted-average:lists", lists = [];
+	try { var ls = JSON.parse(localStorage.getItem(LKEY) || "[]"); if (Array.isArray(ls)) lists = ls.filter(function (x) { return x && x.n && Array.isArray(x.rows); }).slice(0, 30); } catch (e) {}
+	function storeLists() { try { localStorage.setItem(LKEY, JSON.stringify(lists)); } catch (e) {} }
+	function renderLists() {
+		var cur = st.title.trim().toLowerCase();
+		$("wa-saved").hidden = !lists.length;
+		$("wa-saved-chips").innerHTML = lists.map(function (x, i) {
+			return '<span class="wa-chip' + (cur && x.n.toLowerCase() === cur ? " wa-on" : "") + '"><button type="button" class="tu-chip" data-open="' + i + '">' + esc(x.n) + '</button><button type="button" class="wa-x" data-del="' + i + '" aria-label="Delete ' + esc(x.n) + '">&times;</button></span>';
+		}).join("");
+	}
+	$("wa-savelist").onclick = function () {
+		var used = st.rows.filter(function (r) { return WA.num(r.v) != null || WA.num(r.w) != null; });
+		if (!used.length) { toast("Enter some grades first"); return; }
+		var name = st.title.trim().slice(0, 60);
+		if (!name) { name = "List " + (lists.length + 1); st.title = name; fillTitle(); }
+		var copyOf = { n: name, d: st.dec, rows: st.rows.map(function (r) { return { n: r.n, v: r.v, w: r.w }; }) }, at = -1;
+		lists.forEach(function (x, i) { if (x.n.toLowerCase() === name.toLowerCase()) at = i; });
+		if (at >= 0) lists[at] = copyOf; else if (lists.length >= 30) { toast("Up to 30 saved lists: delete one first"); return; } else lists.unshift(copyOf);
+		storeLists(); save(); renderLists(); toast((at >= 0 ? "Updated " : "Saved ") + "\u201c" + name + "\u201d");
+	};
+	$("wa-saved-chips").addEventListener("click", function (e) {
+		var o = e.target.closest("[data-open]"), d = e.target.closest("[data-del]");
+		if (o) {
+			var x = lists[+o.dataset.open], snap = JSON.stringify(st); if (!x) return;
+			st.title = x.n; st.dec = +x.d >= 0 && +x.d <= 4 ? +x.d : 2; st.rows = x.rows.map(function (r) { return { n: r.n, v: r.v, w: r.w }; }); pad(); save(); fillTitle(); renderRows(); update(); renderLists();
+			notice('Opened \u201c' + esc(x.n) + '\u201d. <button type="button" class="tu-chip" id="wa-undo2">Undo</button>');
+			$("wa-undo2").onclick = function () { st = JSON.parse(snap); save(); fillTitle(); renderRows(); update(); renderLists(); notice(""); };
+		} else if (d) {
+			var i = +d.dataset.del, gone = lists[i]; if (!gone) return; lists.splice(i, 1); storeLists(); renderLists();
+			notice('Deleted \u201c' + esc(gone.n) + '\u201d. <button type="button" class="tu-chip" id="wa-undo3">Undo</button>');
+			$("wa-undo3").onclick = function () { lists.splice(i, 0, gone); storeLists(); renderLists(); notice(""); };
+		}
+	});
+	$("wa-title").addEventListener("input", function () { st.title = this.value; save(); renderLists(); });
 	$("wa-dec").addEventListener("change", function () { st.dec = +this.value; save(); update(); });
 	function fillTitle() { $("wa-title").value = st.title; $("wa-dec").value = String(st.dec); }
 
@@ -197,5 +231,5 @@
 	var q = new URLSearchParams(location.search);
 	if (q.get("s")) { var d = WA.decode(q.get("s")); if (d) { st.title = d.title; st.rows = d.rows; save(); notice("Opened a shared list. It is saved in this browser now."); } else notice("That link could not be read."); history.replaceState(null, "", location.pathname); }
 	else if (q.get("g") || q.get("w")) { st.rows = WA.fromLists(q.get("g"), q.get("w")); save(); history.replaceState(null, "", location.pathname); }
-	fillTitle(); renderRows(); save(); update();
+	fillTitle(); renderRows(); save(); update(); renderLists();
 })();

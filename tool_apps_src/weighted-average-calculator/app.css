@@ -16,6 +16,12 @@
 	body.dark-mode #wa .wa-f label, body.dark-mode #wa .wa-n {color:#a0a8b3;}
 	body.dark-mode #wa .wa-warn {color:#ffb74d;}
 	body.dark-mode #wa #wa-table .wa-total td {border-top-color:#666;}
+	.tu .wa-saved {margin-top:0.9em;}
+	.tu .wa-chip {display:inline-flex;align-items:stretch;}
+	.tu .wa-chip .tu-chip:first-child {border-top-right-radius:0;border-bottom-right-radius:0;}
+	.tu .wa-chip .wa-x {border:1px solid #c3c9d2;border-left:0;background:#fff;color:#777;cursor:pointer;padding:0 0.6em;border-radius:0 1.2em 1.2em 0;font-size:0.95em;}
+	.tu .wa-chip.wa-on .tu-chip:first-child {background:var(--accent,#575fab);border-color:var(--accent,#575fab);color:#fff;}
+	body.dark-mode #wa .wa-chip .wa-x {background:#2a2a2a;border-color:#555;color:#bbb;}
 	@media (max-width: 600px) {
 		.tu .wa-n {display:none;}
 		.tu .wa-f-n {flex:1 1 calc(100% - 4em);order:0;}

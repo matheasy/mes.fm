@@ -12,12 +12,14 @@
 					<select id="wa-dec" class="tu-select"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select>
 				</div>
 			</div>
+			<div id="wa-saved" class="wa-saved" hidden><div class="tu-label">Saved lists</div><div class="tu-chips" id="wa-saved-chips"></div></div>
 			<p class="tu-note" style="margin:0.8em 0 0.2em;">Enter each grade (or any number) and how much it counts: credits, hours, points or a percentage. Only the weights relative to each other matter.</p>
 			<div id="wa-rows"></div>
 			<div class="wa-btns">
 				<button type="button" class="tu-btn tu-btn--primary" id="wa-add">+ Add a row</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wa-equal" title="Give every row the weight 1 to get a plain average">Equal weights</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wa-paste" title="Paste a column of numbers from a spreadsheet">Paste from a spreadsheet</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wa-savelist" title="Keep this list under its name so you can open it later">Save list</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wa-clear">Clear</button>
 			</div>
 			<div id="wa-pastebox" hidden style="margin-top:0.8em;">
