@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MES Read Aloud",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Reads any web page or selected text aloud and highlights the word and sentence being read. Free, private, no tracking. By MES (mes.fm).",
   "homepage_url": "https://mes.fm/read-aloud",
   "icons": {

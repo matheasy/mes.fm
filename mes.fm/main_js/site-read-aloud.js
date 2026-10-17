@@ -1065,11 +1065,13 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     });
     rz.addEventListener('pointermove', function (e) {
       if (!rs0) return;
+      if (!(e.buttons & 1)) { endRz(); return; }   // the button was let go somewhere we did not hear about: stop following the pointer
       setZoom(rs0.z * (rs0.w + e.clientX - rs0.x) / rs0.w);
     });
     function endRz() { if (rs0) { rs0 = null; saveUi(); } }
     rz.addEventListener('pointerup', endRz);
     rz.addEventListener('pointercancel', endRz);
+    rz.addEventListener('lostpointercapture', endRz);
     rz.ondblclick = function () { setZoom(1); saveUi(); };
     ['click', 'mousedown', 'mouseup', 'pointerdown', 'dblclick', 'keydown', 'keyup'].forEach(function (t) { h.addEventListener(t, function (e) { e.stopPropagation(); }); });
     (document.body || document.documentElement).appendChild(h);
