@@ -127,6 +127,9 @@ body.dark-mode #app-foot,body.dark-mode #app-foot p{color:#b9bdc4;}
 body.dark-mode #app-foot a{color:#aab0ee;}
 .tu .tu-seo{display:none;}
 #app-foot strong{color:inherit;}
+/* big text sizes (zoom): let table headings and cells wrap so the tables fit the card instead of scrolling sideways */
+.tu .tu-table th,.tu .tu-table td{white-space:normal;padding:.5em .35em;overflow-wrap:anywhere;}
+.tu .tu-table td:last-child,.tu .tu-table th:last-child{min-width:5.5em;}
 /* the page's reset paints every bare div/span/b/strong #333, and the web build leaves dark mode to display-controls.js;
    :where() keeps this at type-selector specificity so any class that sets its own colour (category colours, chips) still wins */
 :where(body.dark-mode #gc) :is(div,span,b,strong,p,li,small,label,td,th){color:#e6e6e6;}
