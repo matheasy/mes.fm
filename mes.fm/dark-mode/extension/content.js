@@ -60,7 +60,13 @@
     if (!css) { if (styleEl) { styleEl.remove(); styleEl = null; } return; }
     if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'mesdm-style'; }
     styleEl.textContent = css;
-    if (!styleEl.parentNode) document.documentElement.appendChild(styleEl);
+    attach();
+  }
+  // some apps (Gmail) rewrite <html> / <head> while they load and drop a style that is not theirs, so put ours back (in <head> once there is one)
+  function attach() {
+    if (!styleEl) return;
+    var want = document.head || document.documentElement;
+    if (styleEl.parentNode !== want) want.appendChild(styleEl);
   }
 
   // ---- looking at the page --------------------------------------------------------------------------------------------
@@ -120,10 +126,12 @@
   function scanAll() { enqueue(document.querySelectorAll('*')); }
 
   var detectTimer = 0;
+  setInterval(function () { if (styleEl && !styleEl.isConnected) attach(); }, 1000);
   function detectSoon(ms) { clearTimeout(detectTimer); detectTimer = setTimeout(detect, ms || 400); }
 
   function observe() {
     if (!window.MutationObserver) return;
+    new MutationObserver(function () { if (styleEl && !styleEl.isConnected) attach(); }).observe(document, { childList: true, subtree: true });
     new MutationObserver(function (list) {
       var add = [];
       for (var i = 0; i < list.length; i++) {
