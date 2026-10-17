@@ -960,7 +960,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
 
   // ---- the player -----------------------------------------------------------------------------------------------------
-  var CSS_UI = '*{box-sizing:border-box}:host{all:initial}.p{position:fixed;left:50%;transform:translateX(-50%);z-index:2147483647;width:min(640px,calc(100vw - 20px));background:#1f2023;color:#f2f2f2;border:1px solid #3a3c41;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.45);font:13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:8px 10px 10px}' +
+  var CSS_UI = '*{box-sizing:border-box}:host{all:initial}.p{position:fixed;left:50%;transform:translateX(-50%);z-index:2147483647;width:min(640px,calc(100vw - 20px));background:#1f2023;color:#f2f2f2;border:1px solid #3a3c41;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.45);font:13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:8px 10px 10px;zoom:var(--z,1)}' +
     '.p.bottom{bottom:12px}.p.top{top:12px}.bar{height:5px;border-radius:3px;background:#3a3c41;cursor:pointer;margin:2px 0 8px;position:relative}.fill{height:100%;border-radius:3px;background:#4cc38a;width:0}' +
     '.row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}button{all:unset;cursor:pointer;min-width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 16px/1 system-ui,sans-serif;color:#f2f2f2;background:#2c2e33;padding:0 8px;text-align:center}' +
     'button:hover,button:focus-visible{background:#3d4047;outline:none}button.pl{background:#15803d;min-width:44px}button.pl:hover{background:#1a9a49}select{font:inherit;background:#2c2e33;color:#f2f2f2;border:1px solid #3a3c41;border-radius:8px;height:34px;padding:0 6px;max-width:170px}' +
@@ -969,7 +969,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     '.volr{width:74px;height:34px;margin:0 2px;accent-color:#4cc38a;cursor:pointer;background:transparent}.vol svg{display:block}.vol.muted{color:#ff9b8f}' +
     '.rs{background:#1f6f43;font-size:13px;padding:0 12px}.rs[hidden]{display:none}.dk.on{background:#2b3a67}.p.flip:not(.pip){filter:invert(1) hue-rotate(180deg)}.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
     '.p.moved{left:var(--x);top:var(--y);bottom:auto;transform:none}' +
-    '.p.pip,.p.pip.moved{position:static;left:auto;top:auto;bottom:auto;transform:none;width:100%;border:0;border-radius:0;box-shadow:none}.p.pip .grip,.p.pip .mini{display:none}.pip-b.on{background:#1a4d6b}' +
+    '.rz{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;touch-action:none;border-radius:0 0 13px 0;color:#8a919a;background:linear-gradient(135deg,transparent 50%,currentColor 50%,currentColor 58%,transparent 58%,transparent 70%,currentColor 70%,currentColor 78%,transparent 78%);opacity:.7}.rz:hover{opacity:1}.p.pip .rz,.p.min .rz{display:none}' +
+    '.p.pip,.p.pip.moved{zoom:1;position:static;left:auto;top:auto;bottom:auto;transform:none;width:100%;border:0;border-radius:0;box-shadow:none}.p.pip .grip,.p.pip .mini{display:none}.pip-b.on{background:#1a4d6b}' +
     '.tp{display:none;margin:0 0 8px;border:1px solid #3a3c41;border-radius:10px;background:#17181a;overflow:hidden}.tp.on{display:block}.p.pip .tp,.p.min .tp{display:none}' +
     '.th{display:flex;align-items:center;gap:4px;padding:3px 6px;background:#25272b;color:#aab0b8;font-size:12px}.th b{flex:1;font-weight:600}.th button{min-width:28px;height:24px;font-size:13px;border-radius:6px;padding:0 6px}.tpb.on{background:#1a4d6b}' +
     '.tb{position:relative;height:150px;min-height:56px;max-height:60vh;overflow:auto;resize:vertical;padding:8px 12px;font-size:calc(16px * var(--tf,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:#e6e6e6;user-select:text}.tb .w{cursor:pointer;border-radius:3px}.tb .w:hover{text-decoration:underline}.tb .s.cur{background:var(--sc);color:var(--sct);border-radius:3px}.tb .w.cur{background:var(--wc);color:var(--wct)}' +
@@ -983,6 +984,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     sh.innerHTML = '<style>' + CSS_UI + '</style><div class="p ' + (P.playerPosition === 'top' ? 'top' : 'bottom') + '" role="region" aria-label="MES Read Aloud">' +
       '<div class="tp" role="region" aria-label="Text being read"><div class="th"><b class="tl">Text being read</b><button class="tsm2" title="Smaller text in this box" aria-label="Smaller text in the box">A&minus;</button><button class="tsp2" title="Larger text in this box" aria-label="Larger text in the box">A+</button><button class="tpx" title="Hide this box" aria-label="Hide the text box">&times;</button></div><div class="tb" tabindex="0"></div></div>' +
       '<div class="bar" title="Click to jump"><div class="fill"></div></div>' +
+      '<div class="rz" title="Drag to resize the player (double-click for normal size)" aria-label="Resize the player"></div>' +
       '<div class="row"><button class="grip" title="Drag to move the player (double-click to put it back)">&#8942;&#8942;</button><button class="prev" title="Previous sentence (Left arrow)">&#9198;</button><button class="pl" title="Pause / resume (Space)">&#9654;</button><button class="next" title="Next sentence (Right arrow)">&#9197;</button>' +
       '<button class="slow" title="Slower (Down arrow)">&minus;</button><button class="rate" title="Speed">1.0&times;</button><button class="fast" title="Faster (Up arrow)">+</button>' +
       '<button class="tsm" title="Smaller text on the page" aria-label="Smaller text">A&minus;</button><button class="tsp" title="Larger text on the page" aria-label="Larger text">A+</button>' +
@@ -1038,7 +1040,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     // drag the player anywhere by its grip or any empty part of it
     var drag = null;
     ui.p.addEventListener('pointerdown', function (e) {
-      if (e.button > 0 || (e.target.closest && e.target.closest('button:not(.grip),select,input,.bar'))) return;
+      if (e.button > 0 || (e.target.closest && e.target.closest('button:not(.grip),select,input,.bar,.rz'))) return;
       var r = ui.p.getBoundingClientRect();
       drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, moved: false };
       try { ui.p.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
@@ -1051,9 +1053,27 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     function endDrag() { if (!drag) return; var m = drag.moved; drag = null; ui.p.classList.remove('dragging'); if (m) saveUi(); }
     ui.p.addEventListener('pointerup', endDrag);
     ui.p.addEventListener('pointercancel', endDrag);
+    // resize by the bottom-right corner: everything in the player scales together (CSS zoom)
+    var rz = q('.rz'), rs0 = null;
+    rz.addEventListener('pointerdown', function (e) {
+      if (e.button > 0) return;
+      var r = ui.p.getBoundingClientRect();
+      place({ x: r.left, y: r.top }, true);   // anchor the top-left corner so it grows toward the bottom-right
+      rs0 = { x: e.clientX, w: r.width, z: uiZoom };
+      try { rz.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+      e.preventDefault();
+    });
+    rz.addEventListener('pointermove', function (e) {
+      if (!rs0) return;
+      setZoom(rs0.z * (rs0.w + e.clientX - rs0.x) / rs0.w);
+    });
+    function endRz() { if (rs0) { rs0 = null; saveUi(); } }
+    rz.addEventListener('pointerup', endRz);
+    rz.addEventListener('pointercancel', endRz);
+    rz.ondblclick = function () { setZoom(1); saveUi(); };
     ['click', 'mousedown', 'mouseup', 'pointerdown', 'dblclick', 'keydown', 'keyup'].forEach(function (t) { h.addEventListener(t, function (e) { e.stopPropagation(); }); });
     (document.body || document.documentElement).appendChild(h);
-    place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini();
+    applyZoom(); place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini();
     if (pipWin) mountPip();
   }
 
@@ -1156,19 +1176,25 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
 
   // player position + minimised state, remembered per browser (not per site)
-  var uiPos = null, uiMin = false, hlPrev = null, uiDark = {};
+  var uiPos = null, uiZoom = 1, uiMin = false, hlPrev = null, uiDark = {};
   function loadUi(cb) {
-    try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; uiDark = u.dark || {}; } setDark(!!uiDark[location.hostname], false); if (cb) cb(); }); } catch (e) { if (cb) cb(); }
+    try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; uiZoom = Math.max(0.5, Math.min(2, Number(u.zoom) || 1)); uiDark = u.dark || {}; } setDark(!!uiDark[location.hostname], false); if (cb) cb(); }); } catch (e) { if (cb) cb(); }
   }
   loadUi();
-  function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, min: uiMin, dark: uiDark } }); } catch (e) { /* ignore */ } }
+  function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, zoom: uiZoom, min: uiMin, dark: uiDark } }); } catch (e) { /* ignore */ } }
   function place(pt, keep) {
     if (!ui || pipWin) return;
     if (!pt) { uiPos = null; ui.p.classList.remove('moved'); if (!keep) saveUi(); return; }
-    var w = ui.p.offsetWidth || 300, h2 = ui.p.offsetHeight || 60;
+    var br = ui.p.getBoundingClientRect(), w = br.width || 300, h2 = br.height || 60;
     var x = Math.max(8, Math.min(window.innerWidth - w - 8, pt.x)), y = Math.max(8, Math.min(window.innerHeight - h2 - 8, pt.y));
     uiPos = { x: x, y: y };
-    ui.p.style.setProperty('--x', x + 'px'); ui.p.style.setProperty('--y', y + 'px'); ui.p.classList.add('moved');
+    ui.p.style.setProperty('--x', x / uiZoom + 'px'); ui.p.style.setProperty('--y', y / uiZoom + 'px'); ui.p.classList.add('moved');
+  }
+  function applyZoom() { if (ui) ui.p.style.setProperty('--z', String(uiZoom)); }
+  function setZoom(z) {
+    uiZoom = Math.max(0.5, Math.min(2, z));
+    if (!ui) return;
+    var oldPos = uiPos; applyZoom(); if (oldPos) place(oldPos, true);
   }
   window.addEventListener('resize', function () { if (ui && uiPos) place(uiPos, true); });
   function fillMini() { if (ui) { ui.mini.innerHTML = uiMin ? '&#9652;' : '&#9662;'; ui.mini.title = uiMin ? 'Show the full player (M)' : 'Minimise to a small bar (M)'; } }
