@@ -55,7 +55,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 .outer-container {width:68.25em;margin:0 auto;}
 .inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
-.header {position:relative;margin-bottom: 0.7em;}
+.header {position:relative;margin-bottom: 0.7em;} /* PADTOP-EARLY: same strip display-controls.js adds later; set at first paint so the header does not jump */ @media (max-width:768px),(pointer:coarse){#header{position:relative;padding-top:3.7em}}
 .logo-image-container {display:table-cell;}
 .logo {display:block;}
 .logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
@@ -516,7 +516,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
             </div>
 
             <div class="footer__item">
-                <a class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
             </div>
 
             <div class="footer__item footer__item--extra-padding">

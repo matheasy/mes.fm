@@ -61,7 +61,7 @@ def block(slot, responsive=False):
         "\n<!-- MES-BOTTOM-AD -->\n"
         '<div class="mes-bottom-ad" data-ad-slot="{slot}"{attrs} style="clear:both;text-align:center;margin:1.5em auto 1.75em;'
         'min-height:{oh}px;">'
-        '<span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span>'
+        '<span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span>'
         '<div class="mes-bottom-ad__slot" style="{holder}"></div></div>\n'
         "<!-- /MES-BOTTOM-AD -->\n"
     ).format(slot=html.escape(slot, quote=True), attrs=attrs, oh=outer_h, holder=holder)

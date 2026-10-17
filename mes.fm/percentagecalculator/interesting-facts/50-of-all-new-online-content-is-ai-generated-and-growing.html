@@ -55,7 +55,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 .outer-container {width:68.25em;margin:0 auto;}
 .inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
-.header {position:relative;margin-bottom: 0.7em;}
+.header {position:relative;margin-bottom: 0.7em;} /* PADTOP-EARLY: same strip display-controls.js adds later; set at first paint so the header does not jump */ @media (max-width:768px),(pointer:coarse){#header{position:relative;padding-top:3.7em}}
 .logo-image-container {display:table-cell;}
 .logo {display:block;}
 .logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
@@ -473,7 +473,7 @@ Grok AI response, and associated links referenced: https://grok.com/share/c2hhcm
                                     <div id="comments-box" class="hide">
                                         <div id="fastcomments-widget"></div>                                    </div>
 <!-- MES-BOTTOM-AD -->
-<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#777777;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
 <!-- /MES-BOTTOM-AD -->
                                                                     </div>
                         <!-- MES-ASIDE -->
@@ -499,7 +499,7 @@ Grok AI response, and associated links referenced: https://grok.com/share/c2hhcm
             </div>
 
             <div class="footer__item">
-                <a class="footer__text footer__text--title" href="https://mes.fm/tools.html">Tools</a>
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
             </div>
 
             <div class="footer__item footer__item--extra-padding">
