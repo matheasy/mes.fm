@@ -148,7 +148,7 @@ CONTROLS_JS = """
   try{ var v=parseInt(localStorage.getItem(KS),10); if(v>=0&&v<steps.length) i=v; }catch(e){}
   var m=document.getElementById("app-main"), f=document.getElementById("app-foot");
   function all(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
-  function applyScale(){ m.style.zoom=f.style.zoom=steps[i];
+  function applyScale(){ m.style.fontSize=(16*steps[i])+'px'; f.style.fontSize=(13.6*steps[i])+'px';
     all(".js-down").forEach(function(e){ e.style.opacity=i===0?".4":"1"; }); all(".js-up").forEach(function(e){ e.style.opacity=i===steps.length-1?".4":"1"; });
     try{localStorage.setItem(KS,i);}catch(e){} }
   all(".js-down").forEach(function(e){ e.addEventListener("click",function(){ if(i>0){i--;applyScale();} }); });
