@@ -124,7 +124,7 @@
     var css = 'html{filter:' + f.join(' ') + ' !important}';
     if (invert) {
       css += 'html{background-color:#fff}';   // a page that paints no background still turns dark
-      if (cfg.keepImages) css += MEDIA + '{filter:' + FLIP + ' !important}:is(' + MEDIA + ') :is(' + MEDIA + '){filter:none !important}';
+      if (cfg.keepImages) css += MEDIA + '{filter:' + FLIP + ' !important}:is(' + MEDIA + ') :is(' + MEDIA + '){filter:none !important}img[data-mesdm-vec]{filter:none !important}';
     }
     return css + '@media print{html{filter:none !important}}';
   }

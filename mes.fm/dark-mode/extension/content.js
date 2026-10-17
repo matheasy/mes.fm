@@ -117,7 +117,10 @@
   function markBg(el) {
     if (el.nodeType !== 1 || el === document.documentElement || el === document.body) return;
     var bi;
+    // vector pictures (logos, icons: Wikipedia's black wordmark) are drawn for a light page, so they stay inverted with it instead of being flipped back to black-on-dark
+    if (el.tagName === 'IMG' && /\.svg(\?|#|$)|^data:image\/svg/i.test(el.currentSrc || el.getAttribute('src') || '')) { el.setAttribute('data-mesdm-vec', ''); return; }
     try { bi = getComputedStyle(el).backgroundImage; } catch (e) { return; }
+    if (bi && /\.svg(\?|#|["')])|data:image\/svg/i.test(bi)) return;
     if (!bi || bi === 'none' || !/url\(/.test(bi)) return;
     var r = el.getBoundingClientRect();
     if (r.width * r.height > window.innerWidth * window.innerHeight * 0.6 && el.querySelectorAll('*').length > 40) return;   // a page-sized wrapper with a texture: leave it inverted
