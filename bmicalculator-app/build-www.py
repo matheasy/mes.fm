@@ -62,7 +62,7 @@ def rewrite_links(tool: str) -> str:
 
 
 APP_CSS = """
-html,body{margin:0;padding:0;background:#fff;}
+html,body{margin:0;padding:0;background:#fff;overscroll-behavior-y:none;}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#222;
   -webkit-text-size-adjust:100%;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
 #status-cover{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#b3529d;z-index:2147483000;pointer-events:none;}
