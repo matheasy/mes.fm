@@ -1,0 +1,9 @@
+{
+  "appId": "fm.mes.gradecalculator",
+  "appName": "Grade Calc",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#575fab"
+  }
+}

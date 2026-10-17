@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Grade Calculator</title>
+<style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#575fab;color:white;}
+        .button {color:#575fab;border:0.125em solid#575fab;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#575fab; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#575fab; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#575fab;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#575fab;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#575fab;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#434a8a;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#575fab;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#575fab;border:0.125em solid#575fab;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#434a8a;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#575fab;}
+        .dropdown-symbol--dark {color:#575fab;}
+        .button--active {background-color:#575fab;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+
+
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#575fab;--accent-dark:#434a8a;--tint:#e9eaf6;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e9eaf6;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#e9eaf6;border-color:#e9eaf6;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e9eaf6;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#e9eaf6;border-color:#e9eaf6;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#e9eaf6;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#e9eaf6;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#9196c8 !important;--accent-dark:#9196c8 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+
+	/* Grade Calculator 2.0 */
+	.tu [hidden] {display:none !important;}
+	.tu #gc-mode {display:flex;flex-wrap:wrap;max-width:100%;}
+	.tu #gc-mode button {flex:1 1 auto;border-bottom:1px solid #dfe4ea;}
+	.tu .gc-courses {display:flex;flex-wrap:wrap;gap:0.4em;align-items:flex-end;margin:0 0 0.8em;padding-bottom:0.2em;border-bottom:2px solid #e9eaf6;}
+	.tu .gc-tab {cursor:pointer;border:1px solid #c3c9d2;border-bottom:0;border-radius:0.5em 0.5em 0 0;background:#fff;color:#444;padding:0.5em 0.9em;font-size:0.92em;margin-bottom:-2px;max-width:14em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	.tu .gc-tab:hover {border-color:var(--accent);color:var(--accent);}
+	.tu .gc-tab[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	.tu .gc-tab--add {border-style:dashed;color:var(--accent);background:transparent;}
+	.tu .gc-menu {position:relative;margin-left:auto;}
+	.tu .gc-menu summary {list-style:none;padding:0.35em 0.8em;}
+	.tu .gc-menu summary::-webkit-details-marker {display:none;}
+	.tu .gc-menu-box {position:absolute;right:0;top:calc(100% + 0.3em);z-index:30;min-width:14em;display:flex;flex-direction:column;background:#fff;border:1px solid #c3c9d2;border-radius:0.5em;box-shadow:0 0.5em 1.4em rgba(0,0,0,0.2);padding:0.3em;}
+	.tu .gc-menu-box button {cursor:pointer;text-align:left;border:0;background:transparent;padding:0.55em 0.7em;border-radius:0.35em;color:#333;font-size:0.92em;}
+	.tu .gc-menu-box button:hover {background:#e9eaf6;}
+	.tu .gc-menu-box .gc-danger {color:#b3261e;}
+	.tu .tu-chip small {opacity:0.8;}
+	.tu .gc-row {display:flex;flex-wrap:wrap;gap:0.5em 0.6em;align-items:flex-end;padding:0.7em 0;border-bottom:1px solid #e3e7ec;}
+	.tu .gc-f label {display:block;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;margin-bottom:0.15em;}
+	.tu .gc-f-n {flex:3 1 11em;}
+	.tu .gc-f-s, .tu .gc-f-o, .tu .gc-f-g, .tu .gc-f-w {flex:1 1 4.6em;min-width:4em;}
+	.tu .gc-f-s .tu-input, .tu .gc-f-o .tu-input, .tu .gc-f-g .tu-input, .tu .gc-f-w .tu-input {text-align:center;}
+	.tu .gc-del {padding:0.45em 0.8em;font-size:1.05em;}
+	.tu .gc-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.9em;}
+	.tu .gc-summary {margin:0.8em 0 0;line-height:1.6;}
+	.tu .gc-warn {color:#9a5200;font-weight:700;}
+	.tu .gc-summary.is-over, .tu .gc-summary.is-over b {color:#b3261e;}
+	.tu .gc-verdict {font-size:1.05em;line-height:1.5;border-left:5px solid #aab2bd;}
+	.tu .gc-verdict.is-ok {border-left-color:var(--accent);}
+	.tu .gc-verdict.is-good {border-left-color:#2e9b57;}
+	.tu .gc-verdict.is-bad {border-left-color:#d1453b;}
+	.tu .gc-track {position:relative;height:1.1em;margin:1.8em 0.4em 0.2em;background:#e8ebf0;border-radius:0.6em;}
+	.tu .gc-range {position:absolute;top:0;bottom:0;background:var(--accent);opacity:0.55;border-radius:0.6em;}
+	.tu .gc-mark {position:absolute;top:-0.3em;bottom:-0.3em;width:0.18em;margin-left:-0.09em;background:#1e2733;}
+	.tu .gc-mark span {position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:0.72em;font-weight:700;white-space:nowrap;color:#1e2733;}
+	.tu .gc-mark--tgt {background:#d1453b;} .tu .gc-mark--tgt span {color:#d1453b;}
+	.tu .gc-scale {display:flex;justify-content:space-between;font-size:0.75em;color:#6a7280;margin:0.2em 0.4em 0;}
+	.tu .gc-wi-out {margin:0.6em 0 0;}
+	.tu #gc-table td, .tu #gc-overview td {font-variant-numeric:tabular-nums;}
+	.tu #gc-table td small {color:#6a7280;margin-left:0.3em;}
+	.tu #gc-table .gc-safe, .tu #gc-overview .gc-safe {color:#1f7a3d;}
+	.tu #gc-table .gc-no, .tu #gc-overview .gc-no {color:#b3261e;}
+	.tu #gc-table tr.gc-sel td, .tu #gc-overview tr.gc-sel td {background:#e9eaf6;font-weight:700;}
+	.tu #gc-overview .gc-orow {cursor:pointer;}
+	.tu #gc-overview .gc-orow:hover td {background:#e9eaf6;}
+	.tu #gc-store-note.gc-warn {color:#9a5200;}
+	.tu .gc-undo {margin-left:0.8em;cursor:pointer;border:0;background:transparent;color:#ffd666;font-weight:700;text-decoration:underline;}
+	.tu #gc-file {display:none !important;}
+	body.dark-mode #gc .gc-tab {background:#262626;color:#d1d6dc;border-color:#444;}
+	body.dark-mode #gc .gc-tab[aria-selected="true"] {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode #gc .gc-tab--add {background:transparent;color:var(--accent);}
+	body.dark-mode #gc .gc-menu-box {background:#262626;border-color:#555;}
+	body.dark-mode #gc .gc-menu-box button {color:#e4e4e4;}
+	body.dark-mode #gc .gc-menu-box button:hover {background:rgba(255,255,255,0.1);}
+	body.dark-mode #gc .gc-menu-box .gc-danger {color:#ff8a80;}
+	body.dark-mode #gc .gc-row {border-bottom-color:#3a3a3a;}
+	body.dark-mode #gc .gc-f label, body.dark-mode #gc .gc-scale {color:#a0a8b3;}
+	body.dark-mode #gc .gc-track {background:#3a3a3a;}
+	body.dark-mode #gc .gc-mark {background:#e4e4e4;} body.dark-mode #gc .gc-mark span {color:#e4e4e4;}
+	body.dark-mode #gc .gc-mark--tgt {background:#ff8a80;} body.dark-mode #gc .gc-mark--tgt span {color:#ff8a80;}
+	body.dark-mode #gc .gc-warn {color:#ffb74d;}
+	body.dark-mode #gc .gc-summary.is-over, body.dark-mode #gc .gc-summary.is-over b {color:#ff8a80;}
+	body.dark-mode #gc #gc-table .gc-safe, body.dark-mode #gc #gc-overview .gc-safe {color:#7bd88f;}
+	body.dark-mode #gc #gc-table .gc-no, body.dark-mode #gc #gc-overview .gc-no {color:#ff8a80;}
+	body.dark-mode #gc #gc-table tr.gc-sel td, body.dark-mode #gc #gc-overview tr.gc-sel td, body.dark-mode #gc #gc-overview .gc-orow:hover td {background:rgba(255,255,255,0.1);}
+	body.dark-mode #gc #gc-mode button {border-bottom-color:#444;}
+	@media (max-width: 600px) {
+		.tu .gc-f-n {flex:1 1 calc(100% - 4em);order:0;}
+		.tu .gc-del {order:1;margin-left:auto;}
+		.tu .gc-f-s, .tu .gc-f-o, .tu .gc-f-g, .tu .gc-f-w {flex:1 1 20%;order:2;}
+		.tu #gc-mode button {flex:1 1 100%;}
+	}
+	@media print {
+		.tu-seo, #gc-save, #gc-examples, #gc-targets, .gc-btns, .gc-del, #gc-whatif, #gc-courses {display:none !important;}
+		.tu .gc-row {break-inside:avoid;}
+	}
+	.tu #gc-mode {width:fit-content;max-width:100%;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #575fab;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #575fab; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(87,95,171,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#5c64ad;--accent-dark:#5a63af}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #181a3a}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#191a25;border-color:#181a3a}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#191a25;border-color:#181a3a}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#191a25}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu #gc-mode button{border-bottom:1px solid #28323e}
+	body.dark-mode .tu .gc-courses{border-bottom:2px solid #181a3a}
+	body.dark-mode .tu .gc-tab{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
+	body.dark-mode .tu .gc-menu-box{background:#1a1a1a;border:1px solid #3a424d}
+	body.dark-mode .tu .gc-menu-box button{color:#cccccc}
+	body.dark-mode .tu .gc-menu-box button:hover{background:#191a25}
+	body.dark-mode .tu .gc-menu-box .gc-danger{color:#e87973}
+	body.dark-mode .tu .gc-row{border-bottom:1px solid #29323d}
+	body.dark-mode .tu .gc-f label{color:#9a9aa2}
+	body.dark-mode .tu .gc-warn{color:#ffb35c}
+	body.dark-mode .tu .gc-summary.is-over,body.dark-mode .tu .gc-summary.is-over b{color:#e87973}
+	body.dark-mode .tu .gc-verdict{border-left:5px solid #4f5966}
+	body.dark-mode .tu .gc-verdict.is-good{border-left-color:#3ac56e}
+	body.dark-mode .tu .gc-verdict.is-bad{border-left-color:#a52f27}
+	body.dark-mode .tu .gc-track{background:#1f2126}
+	body.dark-mode .tu .gc-mark{background:#3c4f67}
+	body.dark-mode .tu .gc-mark span{color:#d1d6dc}
+	body.dark-mode .tu .gc-mark--tgt span{color:#e0827b}
+	body.dark-mode .tu .gc-scale{color:#9a9da3}
+	body.dark-mode .tu #gc-table td small{color:#9a9da3}
+	body.dark-mode .tu #gc-table .gc-safe,body.dark-mode .tu #gc-overview .gc-safe{color:#7dde9d}
+	body.dark-mode .tu #gc-table .gc-no,body.dark-mode .tu #gc-overview .gc-no{color:#e87973}
+	body.dark-mode .tu #gc-table tr.gc-sel td,body.dark-mode .tu #gc-overview tr.gc-sel td{background:#191a25}
+	body.dark-mode .tu #gc-overview .gc-orow:hover td{background:#191a25}
+	body.dark-mode .tu #gc-store-note.gc-warn{color:#ffb35c}
+	/* TOOL-DARK:END */
+</style>
+<style>
+html,body{margin:0;padding:0;background:#fff;overscroll-behavior-y:none;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#222;
+  -webkit-text-size-adjust:100%;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+#status-cover{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#575fab;z-index:2147483000;pointer-events:none;}
+body.dark-mode #status-cover{background:#262a5c;}
+/* full header (scrolls away) */
+#app-bar{display:flex;align-items:center;gap:.8em;background:#575fab;color:#fff;
+  padding:calc(env(safe-area-inset-top) + .8em) 1em .9em 1em;box-shadow:0 1px 6px rgba(0,0,0,.25);}
+#app-bar img{width:64px;height:64px;border-radius:15px;background:#fff;flex:none;}
+#app-bar .t{flex:1;min-width:0;color:#fff;}
+#app-bar .name{font-size:1.45em;font-weight:700;line-height:1.1;color:#fff;}
+#app-bar .tag{font-size:.82em;line-height:1.3;margin-top:.25em;opacity:.95;color:#fff;}
+.hb{all:unset;cursor:pointer;color:#fff;font-weight:600;text-align:center;box-sizing:border-box;}
+#menu-btn{width:44px;height:44px;border:1.5px solid rgba(255,255,255,.75);border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;}
+#menu-btn svg{width:22px;height:22px;stroke:#fff;}
+/* floating compact bar: appears once the full header has scrolled away; can be hidden */
+#cbar{position:fixed;left:0;right:0;top:env(safe-area-inset-top);z-index:2147482000;display:flex;align-items:center;gap:.4em;
+  background:#575fab;color:#fff;padding:.4em .6em .4em .8em;box-shadow:0 2px 8px rgba(0,0,0,.3);
+  transform:translateY(-140%);transition:transform .2s ease;visibility:hidden;}
+#cbar.show{transform:translateY(0);visibility:visible;}
+body.dark-mode #cbar{background:#262a5c;}
+#cbar img{width:28px;height:28px;border-radius:7px;background:#fff;flex:none;}
+#cbar .cn{flex:1;min-width:0;font-weight:700;font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
+#cbar .hb{border:1.5px solid rgba(255,255,255,.7);border-radius:999px;padding:.35em .6em;min-width:2.1em;font-size:.88em;}
+#cbar .hb.ic{padding:.3em;width:2.2em;height:2.2em;display:flex;align-items:center;justify-content:center;border-radius:10px;}
+#cbar .hb.ic svg{width:18px;height:18px;stroke:#fff;}
+.js-theme .sun{display:none;}
+body.dark-mode .js-theme .sun{display:inline-flex;}
+body.dark-mode .js-theme .moon{display:none;}
+.js-theme span{display:inline-flex;align-items:center;justify-content:center;}
+#menu .btn.ic{padding:.3em .75em;}
+#menu .btn.ic svg{width:20px;height:20px;stroke:#3f4690;}
+body.dark-mode #menu .btn.ic svg{stroke:#aab0ee;}
+#ctab{position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 4px);z-index:2147482000;background:#575fab;color:#fff;border-radius:0 0 10px 10px;
+  padding:.2em 1.1em .3em;font-size:.95em;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.3);display:none;cursor:pointer;}
+body.dark-mode #ctab{background:#262a5c;}
+body.cbar-hidden.past #ctab{display:block;}
+body.cbar-hidden #cbar{display:none;}
+/* burger menu */
+#menu{position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 66px);z-index:2147483001;width:min(20em,calc(100vw - 20px));background:#fff;color:#222;border-radius:14px;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);padding:.5em 0;display:none;max-height:calc(100vh - env(safe-area-inset-top) - 90px);overflow:auto;}
+#menu.open{display:block;}
+#menu .row{display:flex;align-items:center;justify-content:space-between;padding:.6em 1em;gap:.6em;font-size:.95em;color:#222;}
+#menu .row b{color:#222;}
+#menu .btn{border:1.5px solid #575fab;color:#3f4690;border-radius:999px;padding:.35em .8em;font-weight:700;}
+#menu a{display:block;padding:.7em 1em;color:#3f4690;font-weight:600;text-decoration:none;border-top:1px solid #eee;font-size:.95em;}
+#menu .sec{padding:.5em 1em .2em;font-size:.72em;letter-spacing:.06em;text-transform:uppercase;color:#777;border-top:1px solid #eee;}
+#menu-scrim{position:fixed;inset:0;z-index:2147483000;display:none;}
+#menu-scrim.open{display:block;}
+body.dark-mode #menu{background:#23262b;color:#e6e6e6;}
+body.dark-mode #menu .row,body.dark-mode #menu .row b{color:#e6e6e6;}
+body.dark-mode #menu a{color:#aab0ee;border-top-color:#3a3e45;}
+body.dark-mode #menu .sec{color:#9aa0a8;border-top-color:#3a3e45;}
+body.dark-mode #menu .btn{border-color:#aab0ee;color:#aab0ee;}
+#app-main{max-width:46em;margin:0 auto;padding:1em 1em 0 1em;}
+#app-foot{max-width:46em;margin:0 auto;padding:1.2em 1em calc(env(safe-area-inset-bottom) + 2em) 1em;font-size:.85em;line-height:1.5;color:#555;}
+#app-foot p{margin:0 0 .8em 0;color:inherit;}
+#app-foot a{color:#3f4690;font-weight:600;}
+#app-foot .links a{margin-right:1.1em;}
+body.dark-mode{background:#16181c;color:#e6e6e6;}
+body.dark-mode #app-bar{background:#262a5c;}
+body.dark-mode #app-foot,body.dark-mode #app-foot p{color:#b9bdc4;}
+body.dark-mode #app-foot a{color:#aab0ee;}
+.tu .tu-seo{display:none;}
+#app-foot strong{color:inherit;}
+/* the page's reset paints every bare div/span/b/strong #333, and the web build leaves dark mode to display-controls.js;
+   :where() keeps this at type-selector specificity so any class that sets its own colour (category colours, chips) still wins */
+:where(body.dark-mode #gc) :is(div,span,b,strong,p,li,small,label,td,th){color:#e6e6e6;}
+</style>
+</head>
+<body>
+<div id="status-cover"></div>
+<header id="app-bar" role="banner">
+  <img src="img/logo.png" alt="" width="64" height="64">
+  <div class="t"><div class="name">Grade Calculator</div><div class="tag">What do I need on the final? Track every course, weight and target. Free, private, works offline.</div></div>
+  <button id="menu-btn" class="hb js-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</header>
+<div id="cbar" role="toolbar" aria-label="Quick controls">
+  <img src="img/logo.png" alt="" width="28" height="28">
+  <div class="cn">Grade Calculator</div>
+  <button class="hb js-down" type="button" aria-label="Smaller text">A&minus;</button>
+  <button class="hb js-up" type="button" aria-label="Larger text">A+</button>
+  <button class="hb ic js-theme" type="button" aria-label="Switch between light and dark mode"><span class="moon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><span class="sun"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></button>
+  <button class="hb ic js-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <button id="cbar-hide" class="hb" type="button" aria-label="Hide this bar">&#9650;</button>
+</div>
+<div id="ctab" role="button" aria-label="Show the quick controls bar">&#9660;</div>
+<div id="menu-scrim"></div>
+<nav id="menu" aria-label="Menu">
+  <div class="row"><b>Text size</b><span><button class="hb btn js-down" type="button">A&minus;</button> <button class="hb btn js-up" type="button">A+</button></span></div>
+  <div class="row"><b>Theme</b><button class="hb btn ic js-theme" type="button" aria-label="Switch between light and dark mode"><span class="moon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><span class="sun"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></button></div>
+  <div class="sec">Learn more</div>
+  <a href="https://mes.fm/gradecalculator/tutorial" target="_blank" rel="noopener">How to calculate your grade</a>
+  <a href="https://mes.fm/gradecalculator/study-tips" target="_blank" rel="noopener">Study tips</a>
+  <a href="https://mes.fm/weighted-average-calculator" target="_blank" rel="noopener">Weighted average calculator</a>
+  <a href="https://mes.fm/gpacalculator" target="_blank" rel="noopener">GPA calculator</a>
+  <div class="sec">About</div>
+  <a href="https://mes.fm/gradecalculator" target="_blank" rel="noopener">Grade Calculator website</a>
+  <a href="https://mes.fm/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
+  <a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact us</a>
+</nav>
+<main id="app-main">
+<div class="tu" id="gc">
+		<div id="gc-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
+
+		<div class="gc-courses" id="gc-courses" role="tablist" aria-label="Your courses"></div>
+
+		<div class="tu-card" id="gc-setup">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field" style="flex:2 1 13em;">
+					<label for="gc-name">Course name</label>
+					<input id="gc-name" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Calculus 101">
+				</div>
+				<div class="tu-field tu-field--sm" style="flex:1 1 9em;">
+					<label for="gc-target">Grade I want in the course</label>
+					<div class="tu-suffix"><input id="gc-target" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="80"><span>%</span></div>
+				</div>
+			</div>
+			<div class="tu-chips" id="gc-targets" role="group" aria-label="Common target grades" style="margin-top:0.6em;"></div>
+
+			<span class="tu-label" id="gc-mode-label" style="margin-top:1em;display:block;">Do you know your current grade?</span>
+			<div class="tu-seg" id="gc-mode" role="group" aria-labelledby="gc-mode-label" style="margin-top:0.4em;display:flex;flex-wrap:wrap;">
+				<button type="button" data-mode="known" aria-pressed="true">Yes, I know it</button>
+				<button type="button" data-mode="items" aria-pressed="false">No, work it out from my assignments</button>
+			</div>
+
+			<div id="gc-known" class="tu-row" style="margin-top:1em;">
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+					<label for="gc-cur">My current grade</label>
+					<div class="tu-suffix"><input id="gc-cur" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 78"><span>%</span></div>
+				</div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;">
+					<label for="gc-fw">Weight of the final exam</label>
+					<div class="tu-suffix"><input id="gc-fw" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 40"><span>%</span></div>
+				</div>
+			</div>
+
+			<div id="gc-items" hidden>
+				<p class="tu-note" style="margin:0.8em 0 0.2em;">Enter what you have been graded on so far: a score and what it was out of (or just the grade %), and how much it counts towards the course. Rows with a weight but no score yet are treated as still to come. Whatever weight is left is your final exam.</p>
+				<div id="gc-rows"></div>
+				<div class="gc-btns">
+					<button type="button" class="tu-btn tu-btn--primary" id="gc-add">+ Add an assignment</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="gc-even" title="Give every row the same weight">Even weights&hellip;</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="gc-clearrows">Clear scores</button>
+				</div>
+				<p class="gc-summary" id="gc-summary" aria-live="polite"></p>
+			</div>
+		</div>
+
+		<div id="gc-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Fill in the boxes above and your answer appears instantly &mdash; or try an example: </span><span class="tu-chips" id="gc-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+
+		<div id="gc-out" hidden>
+			<div class="tu-stats" id="gc-hero" aria-live="polite"></div>
+			<div class="tu-card gc-verdict" id="gc-verdict" aria-live="polite"></div>
+
+			<div class="tu-card" id="gc-meter-card">
+				<div class="tu-label">Where your course grade can end up</div>
+				<div class="gc-meter" id="gc-meter" aria-hidden="true"></div>
+				<p class="tu-note" id="gc-meter-note" style="margin:0.4em 0 0;"></p>
+			</div>
+
+			<div class="tu-card" id="gc-whatif">
+				<div class="tu-label">What if I score&hellip;</div>
+				<div class="tu-row" style="align-items:center;">
+					<div class="tu-field tu-field--sm" style="flex:0 1 8em;">
+						<div class="tu-suffix"><input id="gc-wi" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="75" aria-label="Score on the final exam"><span>%</span></div>
+					</div>
+					<div class="tu-field" style="flex:3 1 14em;"><input id="gc-wi-r" type="range" min="0" max="100" step="1" value="75" aria-label="Score on the final exam, slider" style="width:100%;"></div>
+				</div>
+				<p id="gc-wi-out" class="gc-wi-out" aria-live="polite"></p>
+			</div>
+
+			<h2>What you need for each target</h2>
+			<div class="tu-card" id="gc-table-card">
+				<div class="tu-table-wrap"><table class="tu-table" id="gc-table"></table></div>
+				<p class="tu-note" style="margin-bottom:0;">Letter labels use the common US scale (90% = A-); your school's cut-offs may differ.</p>
+			</div>
+		</div>
+
+		<div id="gc-overview-card" hidden>
+			<h2>All my courses</h2>
+			<div class="tu-card">
+				<div class="tu-table-wrap"><table class="tu-table" id="gc-overview"></table></div>
+				<p class="tu-note" id="gc-overview-note" style="margin-bottom:0;"></p>
+			</div>
+		</div>
+
+		<h2>Save and share</h2>
+		<div class="tu-card" id="gc-save">
+			<p style="margin:0 0 0.6em;"><b>Your courses are saved on this device automatically.</b> To carry them to another phone or computer, copy a link and open it there. The link holds everything, so there is no account and nothing is uploaded.</p>
+			<div class="gc-btns">
+				<button type="button" class="tu-btn tu-btn--primary" id="gc-link-all">Copy link to all my courses</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="gc-link-one">Copy link to this course</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="gc-import">Open a copied link&hellip;</button>
+			</div>
+			<p class="tu-note" id="gc-store-note" style="margin-bottom:0;"></p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the final grade calculator works</h2>
+			<p>Your course grade is a weighted average: each part of the course counts for a share of the total. Once you know how much of the course is already graded, the grade you need on what is left follows from one formula:</p>
+			<p style="text-align:center;"><b>needed on the final = (target &minus; current &times; (100 &minus; final weight) / 100) &divide; final weight &times; 100</b></p>
+			<p>For example, with a current grade of 78%, a final worth 40% and a target of 80%: 78 &times; 60 / 100 = 46.8 points are already banked, so you need (80 &minus; 46.8) &divide; 40 &times; 100 = <b>83%</b> on the final. If the answer is above 100% the target is out of reach; if it is zero or below, you have already secured it.</p>
+			<h3>Using it</h3>
+			<ul>
+				<li><strong>Know your current grade?</strong> Choose <em>Yes</em>, type it with the weight of the final exam.</li>
+				<li><strong>Don&rsquo;t?</strong> Choose <em>No</em> and list your assignments, tests and labs with their scores and weights. The calculator works out your current grade, and the weight left over is your final exam.</li>
+				<li><strong>Several courses?</strong> Press <em>+ Course</em>. Each course keeps its own target and assignments, and the <em>All my courses</em> table shows what you need in every one.</li>
+				<li><strong>What if?</strong> Slide the what-if score to see the course grade you would finish with.</li>
+				<li><strong>Another device?</strong> Copy the link under <em>Save and share</em> and open it on the other device.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>What grade do I need on my final to get an A?</h4>
+			<p>Set the target to 90 (an A- on the common US scale) or 93 (an A), enter your current grade and the final&rsquo;s weight, and read the result. The table lists every target from 40% to 100% at once.</p>
+			<h4>Can I use it if my final is worth 100%?</h4>
+			<p>Yes. With a weight of 100 your current grade does not matter: you need the target grade itself on the exam.</p>
+			<h4>What if my course uses points instead of percentages?</h4>
+			<p>Enter each assignment&rsquo;s points earned and points possible as the score and out-of, and its share of the course as the weight. If every assignment simply counts by its points, use <em>Even weights&hellip;</em> or the <a href="https://mes.fm/weighted-average-calculator" target="_blank" rel="noopener">Weighted Average Calculator</a>.</p>
+			<h4>Is my data private?</h4>
+			<p>Yes. Everything stays on this device and only leaves it if you copy a link and share it yourself. Deleting the app or clearing its data deletes your courses, so copy a link if they matter. <a href="https://mes.fm/gpacalculator" target="_blank" rel="noopener">GPA Calculator</a> &middot; <a href="https://mes.fm/gradecalculator/study-tips" target="_blank" rel="noopener">Study tips</a> &middot; <a href="https://mes.fm/gradecalculator/tutorial" target="_blank" rel="noopener">Tutorial</a></p>
+		</div>
+	</div>
+	
+</main>
+<div id="app-foot">
+  <p><strong>Estimates only.</strong> Results are calculated from the grades, weights and targets you type in. Your school&rsquo;s syllabus decides how grades are weighted, rounded and dropped, so check it (or ask your teacher) before relying on a number. Letter labels use a common US scale and are only a guide.</p>
+  <p><strong>How it is calculated.</strong> Grade needed on the final = (target &minus; current grade &times; (100 &minus; final weight) &divide; 100) &divide; final weight &times; 100. With individual assignments, each score (points earned &divide; points possible) is multiplied by its weight, the graded weights are added up, and the remaining weight is what is left to earn.</p>
+  <p><strong>Your data stays on this device.</strong> Courses, grades and targets are stored only on this device, inside the app. There are no accounts, no ads and no tracking, and nothing you enter is sent anywhere.</p>
+  <p class="links"><a href="https://mes.fm/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a><a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact</a><a href="https://mes.fm/gradecalculator" target="_blank" rel="noopener">Website</a></p>
+  <p>Version 1.0 &middot; Math Easy Solutions &middot; mes.fm</p>
+</div>
+<script src="js/gradecalculator.js"></script>
+<script>
+(function(){
+  var b=document.body, KS="mes-grade-app:textscale", KT="mes-grade-app:theme", KH="mes-grade-app:cbarhide";
+  var steps=[0.85,1,1.15,1.3,1.5,1.75], i=1;
+  try{ var v=parseInt(localStorage.getItem(KS),10); if(v>=0&&v<steps.length) i=v; }catch(e){}
+  var m=document.getElementById("app-main"), f=document.getElementById("app-foot");
+  function all(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  function applyScale(){ m.style.zoom=f.style.zoom=steps[i];
+    all(".js-down").forEach(function(e){ e.style.opacity=i===0?".4":"1"; }); all(".js-up").forEach(function(e){ e.style.opacity=i===steps.length-1?".4":"1"; });
+    try{localStorage.setItem(KS,i);}catch(e){} }
+  all(".js-down").forEach(function(e){ e.addEventListener("click",function(){ if(i>0){i--;applyScale();} }); });
+  all(".js-up").forEach(function(e){ e.addEventListener("click",function(){ if(i<steps.length-1){i++;applyScale();} }); });
+  applyScale();
+  function pref(){ try{ var v=localStorage.getItem(KT); if(v) return v; }catch(e){} return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"; }
+  function applyTheme(v){ b.classList.toggle("dark-mode",v==="dark"); b.classList.toggle("dark",v==="dark"); }
+  applyTheme(pref());
+  all(".js-theme").forEach(function(e){ e.addEventListener("click",function(){ var v=b.classList.contains("dark-mode")?"light":"dark"; try{localStorage.setItem(KT,v);}catch(e){} applyTheme(v); }); });
+  var menu=document.getElementById("menu"), scrim=document.getElementById("menu-scrim");
+  function toggleMenu(open){ menu.classList.toggle("open",open); scrim.classList.toggle("open",open); }
+  all(".js-menu").forEach(function(e){ e.addEventListener("click",function(ev){ ev.stopPropagation(); toggleMenu(!menu.classList.contains("open")); }); });
+  scrim.addEventListener("click",function(){ toggleMenu(false); });
+  menu.addEventListener("click",function(ev){ if(ev.target.tagName==="A") toggleMenu(false); });
+  var cbar=document.getElementById("cbar"), bar=document.getElementById("app-bar");
+  try{ if(localStorage.getItem(KH)==="1") b.classList.add("cbar-hidden"); }catch(e){}
+  document.getElementById("cbar-hide").addEventListener("click",function(){ b.classList.add("cbar-hidden"); try{localStorage.setItem(KH,"1");}catch(e){} });
+  document.getElementById("ctab").addEventListener("click",function(){ b.classList.remove("cbar-hidden"); try{localStorage.setItem(KH,"0");}catch(e){} });
+  function onScroll(){ var past=bar.getBoundingClientRect().bottom<0; cbar.classList.toggle("show",past); b.classList.toggle("past",past); }
+  window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
+})();
+</script>
+</body>
+</html>
