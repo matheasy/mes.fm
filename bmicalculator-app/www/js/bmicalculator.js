@@ -235,7 +235,7 @@
 	$("bm-link").onclick = function () { copy(shareUrl(false), "Link copied", this); };
 	$("bm-link-top").onclick = function () { copy(shareUrl(false), "Link copied", this); };
 	$("bm-link-all").onclick = function () { copy(shareUrl(true), "Link copied: it holds your whole history", this); };
-	document.querySelector("#bm .bm-print").onclick = function () { window.print(); };
+	var _pb = document.querySelector("#bm .bm-print"); if (_pb) _pb.onclick = function () { window.print(); };
 
 	function loadOld(id) {
 		notice("Loading the calculation from your shared link…");

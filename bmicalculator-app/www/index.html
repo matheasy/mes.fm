@@ -495,12 +495,50 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 html,body{margin:0;padding:0;background:#fff;}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#222;
   -webkit-text-size-adjust:100%;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
-#app-bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:.7em;background:#b3529d;color:#fff;
-  padding:calc(env(safe-area-inset-top) + .55em) 1em .55em 1em;box-shadow:0 1px 6px rgba(0,0,0,.25);}
-#app-bar img{width:36px;height:36px;border-radius:9px;background:#fff;}
-#app-bar .t{flex:1;font-size:1.15em;font-weight:700;color:#fff;line-height:1.15;}
-#app-bar .t small{display:block;font-weight:400;font-size:.68em;opacity:.9;color:#fff;}
-#app-bar button{all:unset;cursor:pointer;color:#fff;font-size:.9em;font-weight:600;padding:.45em .8em;border:1.5px solid rgba(255,255,255,.7);border-radius:999px;}
+#status-cover{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#b3529d;z-index:2147483000;pointer-events:none;}
+body.dark-mode #status-cover{background:#5b2a50;}
+/* full header (scrolls away) */
+#app-bar{display:flex;align-items:center;gap:.8em;background:#b3529d;color:#fff;
+  padding:calc(env(safe-area-inset-top) + .8em) 1em .9em 1em;box-shadow:0 1px 6px rgba(0,0,0,.25);}
+#app-bar img{width:64px;height:64px;border-radius:15px;background:#fff;flex:none;}
+#app-bar .t{flex:1;min-width:0;color:#fff;}
+#app-bar .name{font-size:1.45em;font-weight:700;line-height:1.1;color:#fff;}
+#app-bar .tag{font-size:.82em;line-height:1.3;margin-top:.25em;opacity:.95;color:#fff;}
+.hb{all:unset;cursor:pointer;color:#fff;font-weight:600;text-align:center;box-sizing:border-box;}
+#menu-btn{width:44px;height:44px;border:1.5px solid rgba(255,255,255,.75);border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;}
+#menu-btn svg{width:22px;height:22px;stroke:#fff;}
+/* floating compact bar: appears once the full header has scrolled away; can be hidden */
+#cbar{position:fixed;left:0;right:0;top:env(safe-area-inset-top);z-index:2147482000;display:flex;align-items:center;gap:.4em;
+  background:#b3529d;color:#fff;padding:.4em .6em .4em .8em;box-shadow:0 2px 8px rgba(0,0,0,.3);
+  transform:translateY(-140%);transition:transform .2s ease;visibility:hidden;}
+#cbar.show{transform:translateY(0);visibility:visible;}
+body.dark-mode #cbar{background:#5b2a50;}
+#cbar img{width:28px;height:28px;border-radius:7px;background:#fff;flex:none;}
+#cbar .cn{flex:1;min-width:0;font-weight:700;font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
+#cbar .hb{border:1.5px solid rgba(255,255,255,.7);border-radius:999px;padding:.35em .6em;min-width:2.1em;font-size:.88em;}
+#cbar .hb.ic{padding:.3em;width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;border-radius:10px;}
+#cbar .hb.ic svg{width:18px;height:18px;stroke:#fff;}
+#ctab{position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 4px);z-index:2147482000;background:#b3529d;color:#fff;border-radius:0 0 10px 10px;
+  padding:.15em .8em .25em;font-size:.8em;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.3);display:none;cursor:pointer;}
+body.dark-mode #ctab{background:#5b2a50;}
+body.cbar-hidden.past #ctab{display:block;}
+body.cbar-hidden #cbar{display:none;}
+/* burger menu */
+#menu{position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 66px);z-index:2147483001;width:min(20em,calc(100vw - 20px));background:#fff;color:#222;border-radius:14px;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);padding:.5em 0;display:none;max-height:calc(100vh - env(safe-area-inset-top) - 90px);overflow:auto;}
+#menu.open{display:block;}
+#menu .row{display:flex;align-items:center;justify-content:space-between;padding:.6em 1em;gap:.6em;font-size:.95em;color:#222;}
+#menu .row b{color:#222;}
+#menu .btn{border:1.5px solid #b3529d;color:#8a3d79;border-radius:999px;padding:.35em .8em;font-weight:700;}
+#menu a{display:block;padding:.7em 1em;color:#8a3d79;font-weight:600;text-decoration:none;border-top:1px solid #eee;font-size:.95em;}
+#menu .sec{padding:.5em 1em .2em;font-size:.72em;letter-spacing:.06em;text-transform:uppercase;color:#777;border-top:1px solid #eee;}
+#menu-scrim{position:fixed;inset:0;z-index:2147483000;display:none;}
+#menu-scrim.open{display:block;}
+body.dark-mode #menu{background:#23262b;color:#e6e6e6;}
+body.dark-mode #menu .row,body.dark-mode #menu .row b{color:#e6e6e6;}
+body.dark-mode #menu a{color:#e7a5d7;border-top-color:#3a3e45;}
+body.dark-mode #menu .sec{color:#9aa0a8;border-top-color:#3a3e45;}
+body.dark-mode #menu .btn{border-color:#e7a5d7;color:#e7a5d7;}
 #app-main{max-width:46em;margin:0 auto;padding:1em 1em 0 1em;}
 #app-foot{max-width:46em;margin:0 auto;padding:1.2em 1em calc(env(safe-area-inset-bottom) + 2em) 1em;font-size:.85em;line-height:1.5;color:#555;}
 #app-foot p{margin:0 0 .8em 0;color:inherit;}
@@ -518,11 +556,36 @@ body.dark-mode #app-foot a{color:#e7a5d7;}
 </style>
 </head>
 <body>
-<div id="app-bar" role="banner">
-  <img src="img/logo.png" alt="" width="36" height="36">
-  <div class="t">BMI Calculator<small>Body mass index, healthy range and progress</small></div>
-  <button id="theme-btn" type="button" aria-label="Switch between light and dark">Dark</button>
+<div id="status-cover"></div>
+<header id="app-bar" role="banner">
+  <img src="img/logo.png" alt="" width="64" height="64">
+  <div class="t"><div class="name">BMI Calculator</div><div class="tag">Body mass index, healthy weight range and progress. Free, private, works offline.</div></div>
+  <button id="menu-btn" class="hb js-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</header>
+<div id="cbar" role="toolbar" aria-label="Quick controls">
+  <img src="img/logo.png" alt="" width="28" height="28">
+  <div class="cn">BMI Calculator</div>
+  <button class="hb js-down" type="button" aria-label="Smaller text">A&minus;</button>
+  <button class="hb js-up" type="button" aria-label="Larger text">A+</button>
+  <button class="hb js-theme" type="button" aria-label="Switch between light and dark">Dark</button>
+  <button class="hb ic js-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <button id="cbar-hide" class="hb" type="button" aria-label="Hide this bar">&#9650;</button>
 </div>
+<div id="ctab" role="button" aria-label="Show the quick controls bar">&#9660; Controls</div>
+<div id="menu-scrim"></div>
+<nav id="menu" aria-label="Menu">
+  <div class="row"><b>Text size</b><span><button class="hb btn js-down" type="button">A&minus;</button> <button class="hb btn js-up" type="button">A+</button></span></div>
+  <div class="row"><b>Theme</b><button class="hb btn js-theme" type="button" data-icon="1">Switch</button></div>
+  <div class="sec">Learn more</div>
+  <a href="https://mes.fm/bmicalculator/body-mass-index" target="_blank" rel="noopener">What is BMI?</a>
+  <a href="https://mes.fm/bmicalculator/bmi-chart" target="_blank" rel="noopener">BMI chart</a>
+  <a href="https://mes.fm/bmicalculator/bmi-formula" target="_blank" rel="noopener">BMI formula</a>
+  <a href="https://mes.fm/bmicalculator/health-tips" target="_blank" rel="noopener">Health tips</a>
+  <div class="sec">About</div>
+  <a href="https://mes.fm/bmicalculator" target="_blank" rel="noopener">BMI Calculator website</a>
+  <a href="https://mes.fm/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
+  <a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact us</a>
+</nav>
 <main id="app-main">
 <div class="tu" id="bm">
 		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
@@ -566,7 +629,6 @@ body.dark-mode #app-foot a{color:#e7a5d7;}
 			<div class="bm-btns">
 				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copy link to this result</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="bm-save">Save this measurement</button>
-				<button type="button" class="tu-btn tu-btn--ghost bm-print">Print</button>
 			</div>
 		</div>
 
@@ -621,11 +683,33 @@ body.dark-mode #app-foot a{color:#e7a5d7;}
 <script src="js/bmicalculator.js"></script>
 <script>
 (function(){
-  var KEY="mes-bmi-app:theme", b=document.body, btn=document.getElementById("theme-btn");
-  function pref(){ try{ var v=localStorage.getItem(KEY); if(v) return v; }catch(e){} return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"; }
-  function apply(v){ b.classList.toggle("dark-mode",v==="dark"); b.classList.toggle("dark",v==="dark"); btn.textContent=v==="dark"?"Light":"Dark"; }
-  apply(pref());
-  btn.addEventListener("click",function(){ var v=b.classList.contains("dark-mode")?"light":"dark"; try{localStorage.setItem(KEY,v);}catch(e){} apply(v); });
+  var b=document.body, KS="mes-bmi-app:textscale", KT="mes-bmi-app:theme", KH="mes-bmi-app:cbarhide";
+  var steps=[0.85,1,1.15,1.3,1.5,1.75], i=1;
+  try{ var v=parseInt(localStorage.getItem(KS),10); if(v>=0&&v<steps.length) i=v; }catch(e){}
+  var m=document.getElementById("app-main"), f=document.getElementById("app-foot");
+  function all(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  function applyScale(){ m.style.zoom=f.style.zoom=steps[i];
+    all(".js-down").forEach(function(e){ e.style.opacity=i===0?".4":"1"; }); all(".js-up").forEach(function(e){ e.style.opacity=i===steps.length-1?".4":"1"; });
+    try{localStorage.setItem(KS,i);}catch(e){} }
+  all(".js-down").forEach(function(e){ e.addEventListener("click",function(){ if(i>0){i--;applyScale();} }); });
+  all(".js-up").forEach(function(e){ e.addEventListener("click",function(){ if(i<steps.length-1){i++;applyScale();} }); });
+  applyScale();
+  function pref(){ try{ var v=localStorage.getItem(KT); if(v) return v; }catch(e){} return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"; }
+  function applyTheme(v){ b.classList.toggle("dark-mode",v==="dark"); b.classList.toggle("dark",v==="dark"); all(".js-theme").forEach(function(e){ e.textContent=e.dataset.icon?e.textContent:(v==="dark"?"Light":"Dark"); });
+    all(".js-theme-label").forEach(function(e){ e.textContent=v==="dark"?"Switch to light":"Switch to dark"; }); }
+  applyTheme(pref());
+  all(".js-theme").forEach(function(e){ e.addEventListener("click",function(){ var v=b.classList.contains("dark-mode")?"light":"dark"; try{localStorage.setItem(KT,v);}catch(e){} applyTheme(v); }); });
+  var menu=document.getElementById("menu"), scrim=document.getElementById("menu-scrim");
+  function toggleMenu(open){ menu.classList.toggle("open",open); scrim.classList.toggle("open",open); }
+  all(".js-menu").forEach(function(e){ e.addEventListener("click",function(ev){ ev.stopPropagation(); toggleMenu(!menu.classList.contains("open")); }); });
+  scrim.addEventListener("click",function(){ toggleMenu(false); });
+  menu.addEventListener("click",function(ev){ if(ev.target.tagName==="A") toggleMenu(false); });
+  var cbar=document.getElementById("cbar"), bar=document.getElementById("app-bar");
+  try{ if(localStorage.getItem(KH)==="1") b.classList.add("cbar-hidden"); }catch(e){}
+  document.getElementById("cbar-hide").addEventListener("click",function(){ b.classList.add("cbar-hidden"); try{localStorage.setItem(KH,"1");}catch(e){} });
+  document.getElementById("ctab").addEventListener("click",function(){ b.classList.remove("cbar-hidden"); try{localStorage.setItem(KH,"0");}catch(e){} });
+  function onScroll(){ var past=bar.getBoundingClientRect().bottom<0; cbar.classList.toggle("show",past); b.classList.toggle("past",past); }
+  window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
 })();
 </script>
 </body>
