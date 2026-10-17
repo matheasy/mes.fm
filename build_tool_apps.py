@@ -76,7 +76,7 @@ APPS = {
     "calculator": dict(title="MES Calculator", page_title="Calculator",
                        tag="Multiply, divide, squares, roots and more.", accent="#c2255c", dark="#8f1a43", tint="#fbe6ee",
                        desc="Free online calculator: type any expression or use the keypad for multiplication, division, squares, square roots, powers, percentages, fractions, factorials, logarithms and trigonometry, plus exact big-number maths, prime factors, GCD, LCM and more.",
-                       js_v="1"),
+                       js_v="2"),
     # 2D graphing calculator (Desmos-style): lib.js = tokenizer/parser -> compiled JS functions + key-point numerics (node-testable), app.js = canvas UI.
     # Slug keeps the capital D as requested (Vercel is case-sensitive on static paths).
     "2d-graphing-calculator": dict(title="MES 2D Graphing Calculator", page_title="2D Graphing Calculator",

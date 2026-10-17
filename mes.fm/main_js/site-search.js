@@ -536,5 +536,19 @@
         if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey) && !e.altKey) { e.preventDefault(); open(); }
         else if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); open(); }
     });
+    /* the burger / side menu closes when you click or tap anywhere outside it (it used to close only from its own button) */
+    function outsideClose(e) {
+        var nav = document.getElementById("navbar"), btn = document.getElementById("navbar-button");
+        if (!nav || !btn || nav.classList.contains("hide")) return;
+        if (nav.contains(e.target) || btn.contains(e.target)) return;
+        if (e.target.closest && e.target.closest("#mes-search,#hdrMorePanel,.hc-group")) return;
+        btn.click();
+    }
+    document.addEventListener("click", outsideClose, true);
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        var nav = document.getElementById("navbar"), btn = document.getElementById("navbar-button");
+        if (nav && btn && !nav.classList.contains("hide")) btn.click();
+    });
     window.MESSearch.open = open;
 })();

@@ -352,6 +352,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		.st .wide-table th.views {white-space:nowrap;}
 		.st th, .st td {padding:0.4em 0.4em;font-size:0.8em;overflow-wrap:anywhere;}
 		.st th.views, .st td.views {width:3.5em;}
+		/* Device / Source breakdowns: a narrower Share column (small bar + %), so the Views and Share headings no longer run into each other */
+		.st .brk table th, .st .brk table td {padding:0.4em 0.25em;}
+		.st .brk th.views {letter-spacing:0;white-space:nowrap;overflow-wrap:normal;}
+		.st .brk td.share, .st .brk th.share-h {width:5.6em;}
+		.st .brk td.views:not(.share), .st .brk th.views:not(.share-h) {width:3.2em;}
+		.st .share-bar {width:1.6em;margin-right:0.3em;}
 	}
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, .range-tabs, .color-box, .st-seo { display:none !important; }

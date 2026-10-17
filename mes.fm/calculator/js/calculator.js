@@ -294,7 +294,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 	'use strict';
 	var $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-calculator:v1';
-	var state = { deg: true, hist: [], tab: 'muldiv', sci: true, sciPick: false };
+	var state = { deg: true, both: false, hist: [], tab: 'muldiv', sci: true, sciPick: false };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved) { for (var k in saved) if (k in state) state[k] = saved[k]; } } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
@@ -320,7 +320,17 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 
 	/* ---------- main calculator ---------- */
 	function compute(text) {
-		try { return { v: MC.evaluate(text, { deg: state.deg, ans: ans }) }; } catch (e) { return { err: e.message }; }
+		try { return { v: MC.evaluate(text, { deg: state.both ? true : state.deg, ans: ans }) }; } catch (e) { return { err: e.message }; }
+	}
+	// "Both": the same expression in radians too; null when it gives the same number (no angle in it)
+	function computeRad(text) {
+		if (!state.both) return null;
+		try { var v = MC.evaluate(text, { deg: false, ans: ans }); return v; } catch (e) { return null; }
+	}
+	function liveText(text, v) {
+		var t = '= ' + G(v), rv = computeRad(text);
+		if (rv != null && G(rv) !== G(v)) t = '= ' + G(v) + ' deg  |  ' + G(rv) + ' rad';
+		return t;
 	}
 	function showLive() {
 		var text = expr.value.trim();
@@ -333,7 +343,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 			else { live.className = 'mc-live is-err'; live.textContent = r.err; }
 			lastText = ''; return;
 		}
-		lastText = G(r.v); live.textContent = '= ' + lastText;
+		lastText = G(r.v); live.textContent = liveText(text, r.v);
 	}
 	function addHistory(e, r) {
 		state.hist = state.hist.filter(function (h) { return h[0] !== e; });
@@ -347,8 +357,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 		var text = expr.value.trim(); if (!text) return;
 		var r = compute(text);
 		if (r.err) { showLive(); return; }
+		var bothTxt = liveText(text, r.v);
 		ans = r.v; addHistory(text, r.v);
-		expr.value = MC.fmt(r.v); live.className = 'mc-live'; live.textContent = '= ' + G(r.v); lastText = G(r.v);
+		expr.value = MC.fmt(r.v); live.className = 'mc-live'; live.textContent = bothTxt; lastText = G(r.v);
 		expr.dataset.fresh = '1'; expr.scrollLeft = 0;
 	}
 	function toEnd(p) { if (p >= expr.value.length) expr.scrollLeft = expr.scrollWidth; }
@@ -384,8 +395,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 	$('mc-link').addEventListener('click', function () {
 		var u = location.origin + location.pathname + (expr.value.trim() ? '?q=' + encodeURIComponent(expr.value.trim()) : ''); copy(u, 'Link copied');
 	});
-	function setAngle() { Array.prototype.forEach.call($('mc-angle').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String((b.dataset.deg === '1') === state.deg)); }); }
-	$('mc-angle').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; state.deg = b.dataset.deg === '1'; save(); setAngle(); showLive(); });
+	function setAngle() { Array.prototype.forEach.call($('mc-angle').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.deg === 'b' ? !!state.both : (!state.both && (b.dataset.deg === '1') === state.deg))); }); }
+	$('mc-angle').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; if (b.dataset.deg === 'b') state.both = true; else { state.both = false; state.deg = b.dataset.deg === '1'; } save(); setAngle(); showLive(); });
 	var compact = window.matchMedia('(max-width:700px), (max-height:800px)'), coarse = window.matchMedia('(pointer: coarse)');
 	var sciOn = true;
 	function applySci() { $('mc-sci').hidden = !sciOn; $('mc-sci-toggle').setAttribute('aria-pressed', String(sciOn)); }
