@@ -7,6 +7,7 @@
   function prof() { return V.profileById(S, cur); }
   function cfg() { return prof().config; }
   function save() {
+    try { chrome.storage.local.set({ mesdm: S }); } catch (e) { /* ignore */ }
     chrome.storage.sync.set({ mesdm: S }, function () {
       $('saved').textContent = chrome.runtime.lastError ? 'Not saved' : 'Saved';
       clearTimeout(timer); timer = setTimeout(function () { $('saved').textContent = ''; }, 2000);

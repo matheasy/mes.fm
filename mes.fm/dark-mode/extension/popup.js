@@ -5,7 +5,7 @@
   var S = V.merge(null), tab = null, host = '', timer = 0, forTab = new URLSearchParams(location.search).get('tab');   // ?tab= when opened from the right-click menu in a window of its own
 
   function cfg() { return V.profileById(S, S.active).config; }
-  function save() { clearTimeout(timer); timer = setTimeout(function () { chrome.storage.sync.set({ mesdm: S }, function () { setTimeout(status, 250); }); }, 150); }
+  function save() { clearTimeout(timer); timer = setTimeout(function () { try { chrome.storage.local.set({ mesdm: S }); } catch (e) { /* ignore */ } chrome.storage.sync.set({ mesdm: S }, function () { setTimeout(status, 250); }); }, 150); }
 
   function seg(id, value) { Array.prototype.forEach.call($(id).children, function (b) { b.classList.toggle('on', b.dataset.m === value); }); }
   function draw() {

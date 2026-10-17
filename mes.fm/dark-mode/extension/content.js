@@ -15,20 +15,30 @@
   var MEDIA_TAGS = { IMG: 1, PICTURE: 1, VIDEO: 1, CANVAS: 1, IFRAME: 1, EMBED: 1, OBJECT: 1 };
 
   // ---- settings -------------------------------------------------------------------------------------------------------
+  function finish(a, b) {
+    if (ready) return;
+    S = V.merge(a && a.mesdm); seen = (b && b.mesdmSeen) || {};
+    ready = true; update();
+    schedule();
+  }
   function load() {
+    // never stay unstyled because a storage area is slow, missing or throws (Brave ships without Chrome Sync): after 1.5 s use the defaults
+    var safety = setTimeout(function () { finish(null, null); }, 1500);
+    function getLocal(a) {
+      try { chrome.storage.local.get('mesdmSeen', function (b) { clearTimeout(safety); finish(a, chrome.runtime.lastError ? null : b); }); }
+      catch (e) { clearTimeout(safety); finish(a, null); }
+    }
     try {
       chrome.storage.sync.get('mesdm', function (a) {
-        chrome.storage.local.get('mesdmSeen', function (b) {
-          S = V.merge(a && a.mesdm); seen = (b && b.mesdmSeen) || {};
-          ready = true; update();
-          schedule();
-        });
+        if (chrome.runtime.lastError || !a || !a.mesdm) {
+          try { chrome.storage.local.get('mesdm', function (c) { getLocal(chrome.runtime.lastError ? null : c); }); } catch (e) { getLocal(null); }
+        } else getLocal(a);
       });
-    } catch (e) { /* the extension was reloaded: this old script goes quiet */ }
+    } catch (e) { try { chrome.storage.local.get('mesdm', function (c) { getLocal(chrome.runtime.lastError ? null : c); }); } catch (e2) { getLocal(null); } }
   }
   try {
     chrome.storage.onChanged.addListener(function (ch, area) {
-      if (area === 'sync' && ch.mesdm) { S = V.merge(ch.mesdm.newValue); update(); }
+      if ((area === 'sync' || area === 'local') && ch.mesdm) { S = V.merge(ch.mesdm.newValue); update(); }
       if (area === 'local' && ch.mesdmSeen) seen = ch.mesdmSeen.newValue || {};
     });
   } catch (e) { /* ignore */ }
@@ -145,8 +155,8 @@
     var tm = new MutationObserver(function () { detectSoon(500); });
     var opts = { attributes: true, attributeFilter: ['class', 'style', 'data-theme', 'data-bs-theme', 'data-color-mode', 'data-mode', 'theme'] };
     tm.observe(document.documentElement, opts);
-    var attach = function () { if (document.body) tm.observe(document.body, opts); };
-    if (document.body) attach(); else document.addEventListener('DOMContentLoaded', attach);
+    var watchBody = function () { if (document.body) tm.observe(document.body, opts); };
+    if (document.body) watchBody(); else document.addEventListener('DOMContentLoaded', watchBody);
   }
 
   var timer = 0;
@@ -162,6 +172,7 @@
     if (mode) m[host] = mode; else delete m[host];
     S.siteModes = m;
     try { chrome.storage.sync.set({ mesdm: S }); } catch (e) { /* ignore */ }
+    try { chrome.storage.local.set({ mesdm: S }); } catch (e) { /* ignore */ }
     update();
   }
   try {
