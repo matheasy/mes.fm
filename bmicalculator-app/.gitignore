@@ -1,0 +1,17 @@
+node_modules/
+ios/build/
+ios/App/Pods/
+ios/App/App/public/
+DerivedData/
+*.log
+.DS_Store
+www/img_*.png
+ios/build-sim/
+ios/*.xcarchive
+android/keystore.properties
+android/local.properties
+android/build/
+android/app/build/
+android/.gradle/
+*.jks
+*.keystore
