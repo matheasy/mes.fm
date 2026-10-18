@@ -238,6 +238,8 @@ body.dark-mode .back{color:#8fe0a1;}
 .tool-src{margin:1.4em 0 .2em;font-size:.9em;} .tool-src a{color:#1f6a2f;font-weight:600;} body.dark-mode .tool-src a{color:#8fe0a1;}
 .promo{margin-top:1em;} .promo a{color:#1f6a2f;font-weight:700;} body.dark-mode .promo a{color:#8fe0a1;}
 .pane[hidden]{display:none;}
+body.dark-mode .lead,body.dark-mode .tool-title,body.dark-mode #noq,body.dark-mode .promo,body.dark-mode .promo b{color:#e6e6e6;}
+body.dark-mode .tu code{background:#33363d;color:#f0a8bd;}
 .srch{-webkit-appearance:none;appearance:none;width:100%;box-sizing:border-box;font-size:1em;padding:.7em .9em;border:1.5px solid #9fc3a8;border-radius:12px;margin:0 0 .4em;background:#fff !important;color:#222;}
 body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#37413a;}
 .grp[hidden],.grid[hidden],.tile[hidden]{display:none;}
@@ -345,7 +347,7 @@ def main() -> None:
         c0, c1, tool, rid = extract(slug)
         base_css = base_css or c0
         css_parts.append(c1)
-        css_parts.append(":where(body.dark-mode #%s) :is(div,span,b,strong,p,li,small,label,td,th){color:#e6e6e6;}" % rid)
+        css_parts.append(":where(body.dark-mode #%s) :is(div,span,b,strong,p,li,small,label,td,th,output,h1,h2,h3,h4,dt,dd,em,i,summary){color:#e6e6e6;}" % rid)
         tool = clean_tool(rewrite_links(tool))
         extra = ""
         if slug == "bmicalculator":
