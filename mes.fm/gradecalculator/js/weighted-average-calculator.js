@@ -200,7 +200,8 @@
 	});
 
 	function stat(l, v, s, c) { return '<div class="tu-stat' + (c ? " " + c : "") + '"><div class="tu-stat__label">' + l + '</div><div class="tu-stat__value">' + v + '</div><div class="tu-stat__sub">' + s + "</div></div>"; }
-	var last = null;
+	var last = null, namesOff = false;
+	$("wa-tnames").onclick = function () { namesOff = !namesOff; update(); };
 	function update() {
 		var R = WA.compute(st.rows), d = st.dec; last = R;
 		var ok = R.avg != null; $("wa-empty").hidden = ok || R.used > 0 && R.sumW > 0; $("wa-out").hidden = !ok;
@@ -209,9 +210,12 @@
 			stat("Plain average", WA.fix(R.simple, d), "every row counted equally") +
 			stat("Rows used", String(R.used), R.skipped ? R.skipped + " row" + (R.skipped > 1 ? "s" : "") + " skipped: a grade needs a weight and a weight needs a grade" : "") +
 			stat("Total weight", WA.fix(R.sumW, 4, true), "sum of all the weights");
-		var h = "<thead><tr><th>#</th><th>Name</th><th>Grade</th><th>Weight</th><th>Share of total</th><th>Grade &times; weight</th></tr></thead><tbody>" +
-			R.rows.map(function (r) { var x = st.rows[r.i]; return "<tr><td>" + (r.i + 1) + "</td><td>" + esc(x.n) + "</td><td>" + WA.fix(r.v, 4, true) + "</td><td>" + WA.fix(r.w, 4, true) + "</td><td>" + WA.fix(r.share, 1) + "%</td><td>" + WA.fix(r.v * r.w, 4, true) + "</td></tr>"; }).join("") +
-			"<tr class=\"wa-total\"><td></td><td>Total</td><td></td><td>" + WA.fix(R.sumW, 4, true) + "</td><td>100%</td><td>" + WA.fix(R.sumVW, 4, true) + "</td></tr></tbody>";
+		var anyName = R.rows.some(function (r) { return String(st.rows[r.i].n || "").trim(); }), showN = anyName && !namesOff;   // the Name column only exists once a name has been typed, and can be switched off
+		var tg = $("wa-tnames"); tg.hidden = !anyName; tg.setAttribute("aria-pressed", String(showN));
+		var nh = showN ? "<th>Name</th>" : "";
+		var h = "<thead><tr><th>#</th>" + nh + "<th>Grade</th><th>Weight</th><th>Share of total</th><th>Grade &times; weight</th></tr></thead><tbody>" +
+			R.rows.map(function (r) { var x = st.rows[r.i]; return "<tr><td>" + (r.i + 1) + "</td>" + (showN ? "<td>" + esc(x.n) + "</td>" : "") + "<td>" + WA.fix(r.v, 4, true) + "</td><td>" + WA.fix(r.w, 4, true) + "</td><td>" + WA.fix(r.share, 1) + "%</td><td>" + WA.fix(r.v * r.w, 4, true) + "</td></tr>"; }).join("") +
+			"<tr class=\"wa-total\"><td></td>" + (showN ? "<td>Total</td><td></td>" : "<td>Total</td>") + "<td>" + WA.fix(R.sumW, 4, true) + "</td><td>100%</td><td>" + WA.fix(R.sumVW, 4, true) + "</td></tr></tbody>";
 		$("wa-table").innerHTML = h;
 		$("wa-formula").innerHTML = "Weighted average = " + WA.fix(R.sumVW, 4, true) + " &divide; " + WA.fix(R.sumW, 4, true) + " = <b>" + WA.fix(R.avg, d) + "</b>" + (R.warn ? ' &middot; <span class="wa-warn">' + esc(R.warn) + "</span>" : "");
 	}

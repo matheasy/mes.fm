@@ -328,8 +328,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 		try { var v = MC.evaluate(text, { deg: false, ans: ans }); return v; } catch (e) { return null; }
 	}
 	function liveText(text, v) {
-		var t = '= ' + G(v), rv = computeRad(text);
-		if (rv != null && G(rv) !== G(v)) t = '= ' + G(v) + ' deg  |  ' + G(rv) + ' rad';
+		var t = '= ' + esc(G(v)), rv = computeRad(text);   // HTML: in "Both" mode the two answers are told apart by the ° / rad units and a small italic "or"
+		if (rv != null && G(rv) !== G(v)) t = '= ' + esc(G(v)) + '<span class="mc-u">°</span> <i class="mc-or">or</i> ' + esc(G(rv)) + ' <span class="mc-u">rad</span>';
 		return t;
 	}
 	function showLive() {
@@ -343,7 +343,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 			else { live.className = 'mc-live is-err'; live.textContent = r.err; }
 			lastText = ''; return;
 		}
-		lastText = G(r.v); live.textContent = liveText(text, r.v);
+		lastText = G(r.v); live.innerHTML = liveText(text, r.v);
 	}
 	function addHistory(e, r) {
 		state.hist = state.hist.filter(function (h) { return h[0] !== e; });
@@ -359,7 +359,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MC;
 		if (r.err) { showLive(); return; }
 		var bothTxt = liveText(text, r.v);
 		ans = r.v; addHistory(text, r.v);
-		expr.value = MC.fmt(r.v); live.className = 'mc-live'; live.textContent = bothTxt; lastText = G(r.v);
+		expr.value = MC.fmt(r.v); live.className = 'mc-live'; live.innerHTML = bothTxt; lastText = G(r.v);
 		expr.dataset.fresh = '1'; expr.scrollLeft = 0;
 	}
 	function toEnd(p) { if (p >= expr.value.length) expr.scrollLeft = expr.scrollWidth; }

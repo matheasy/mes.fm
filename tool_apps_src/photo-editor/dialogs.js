@@ -236,6 +236,7 @@
 		var wrap = el("div", "pe-exp"), f = PE.form([{ k: "fmt", label: "Format", type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"]], val: "png" }, { k: "life", label: "Link lasts", type: "select", options: [["1h", "1 hour"], ["12h", "12 hours"], ["24h", "1 day"], ["72h", "3 days"]], val: "72h" }, { k: "scale", label: "Size", type: "range", min: 10, max: 100, step: 5, val: 100, unit: "%" }], null);
 		wrap.appendChild(f.el);
 		wrap.appendChild(el("p", "pe-hint2", "This uploads a copy of the whole image to <b>Litterbox (catbox.moe)</b>, a free temporary file host, and gives you a link. <b>Anyone who has the link can see the picture</b>, and it is deleted automatically when the time is up. MES does not store it. Don't share anything private."));
+		wrap.appendChild(el("p", "pe-hint2", "Want a link that does not expire? <b>Copy for Snipboard</b> copies the picture and opens <b>snipboard.io</b> in a new tab: click there and press Ctrl+V (Cmd+V on a Mac) and Snipboard gives you its own permanent link. Snipboard has no upload service we can call for you, so that last paste is yours."));
 		var out = el("div", "pe-share-out"); wrap.appendChild(out);
 		var busy = false, link = "";
 		function show(url) {
@@ -243,6 +244,14 @@
 		}
 		var m = PE.modal({ title: "Share as a link", body: wrap, buttons: [{ label: "Close", act: function (m) { m.close(); } },
 			{ label: "Copy link", act: function () { if (!link) { PE.toast("Upload first"); return; } (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () { PE.toast("Link copied"); }).catch(function () { PE.toast("Select the link and press Ctrl+C"); }); } },
+			{ label: "Copy for Snipboard", act: function () {
+				var w = window.open("about:blank", "_blank"); var v = f.get();   // opened inside the click so a pop-up blocker lets it through
+				PE.exportBlob("png", 0.92, { scale: v.scale / 100, bg: "#ffffff" }).then(function (b) {
+					if (!navigator.clipboard || !window.ClipboardItem) throw new Error("clipboard");
+					return navigator.clipboard.write([new ClipboardItem({ "image/png": b })]);
+				}).then(function () { if (w) w.location.href = "https://snipboard.io/"; PE.toast("Picture copied: paste it on Snipboard with Ctrl+V"); })
+				.catch(function () { if (w) w.close(); PE.toast("Couldn't copy the picture: download it and drag it onto snipboard.io instead"); });
+			} },
 			{ label: "Upload and get link", primary: true, act: function () {
 				if (busy) return; busy = true; var v = f.get(); out.textContent = "Uploading…";
 				PE.exportBlob(v.fmt, 0.92, { scale: v.scale / 100, bg: "#ffffff" }).then(function (b) {

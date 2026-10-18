@@ -4,6 +4,9 @@
 	.mc-live {min-height:2.2em;margin:0.35em 0 0.7em;text-align:right;font-size:1.7em;font-weight:700;color:#1e2733;word-break:break-all;line-height:1.3;}
 	.mc-live.is-err {font-size:0.95em;font-weight:400;color:#b3261e;padding-top:0.5em;}
 	.mc-live.is-dim {color:#8a93a0;}
+	.mc-live .mc-u {font-weight:600;opacity:0.75;}
+	.mc-live .mc-or {font-weight:400;font-size:0.6em;color:#c2255c;padding:0 0.35em;}
+	body.dark-mode #mc .mc-live .mc-or {color:#f783ac;}
 	.mc-display {background:#fff;}
 	.mc-tools {display:flex;gap:0.5em;margin:0 0 0.6em;}
 	.mc-chip {cursor:pointer;border:1px solid #b9c1cc;background:#fff;color:#333;border-radius:2em;padding:0.4em 0.9em;font-size:0.9em;min-height:2.4em;touch-action:manipulation;}

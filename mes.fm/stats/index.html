@@ -307,8 +307,8 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.st .dn-total {font-size:6px;font-weight:700;fill:#1e2733;}
 	.st .dn-sub {font-size:2.8px;fill:rgba(0,0,0,0.55);}
 	.st .dot {display:inline-block;width:0.7em;height:0.7em;border-radius:50%;margin-right:0.55em;vertical-align:baseline;}
-	.st td.share, .st th.share-h {width:9em;}
-	.st .share-bar {display:inline-block;width:4.5em;height:0.5em;border-radius:0.25em;background:rgba(128,128,128,0.18);margin-right:0.6em;vertical-align:middle;overflow:hidden;}
+	.st td.share, .st th.share-h {width:12em;white-space:nowrap;}
+	.st .share-bar {display:inline-block;width:6em;height:0.5em;border-radius:0.25em;background:rgba(128,128,128,0.18);margin-right:0.6em;vertical-align:middle;overflow:hidden;}
 	.st .share-bar i {display:block;height:100%;border-radius:0.25em;}
 	.st .ts-break {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;margin-top:0.5em;}
 	.st .ts-break .ts-toggle-btn {font-size:0.8em;padding:0.2em 0.7em;}
@@ -355,9 +355,9 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 		/* Device / Source breakdowns: a narrower Share column (small bar + %), so the Views and Share headings no longer run into each other */
 		.st .brk table th, .st .brk table td {padding:0.4em 0.25em;}
 		.st .brk th.views {letter-spacing:0;white-space:nowrap;overflow-wrap:normal;}
-		.st .brk td.share, .st .brk th.share-h {width:5.6em;}
-		.st .brk td.views:not(.share), .st .brk th.views:not(.share-h) {width:3.2em;}
-		.st .share-bar {width:1.6em;margin-right:0.3em;}
+		.st .brk td.share, .st .brk th.share-h {width:9.6em;white-space:nowrap;font-weight:700;}
+		.st .brk td.views:not(.share), .st .brk th.views:not(.share-h) {width:3.6em;}
+		.st .share-bar {width:4em;height:0.6em;margin-right:0.4em;}
 	}
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, .range-tabs, .color-box, .st-seo { display:none !important; }
