@@ -1649,7 +1649,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -1670,7 +1670,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	.tu-stat--hero {background:#e0f1e3;border-color:#e0f1e3;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -1753,6 +1753,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .mx-check {margin:0.8em 0 0;line-height:1.5;font-size:0.95em;} .tu .mx-warn {color:#c0392b;font-weight:600;}
 	.tu .mx-donut text {fill:#1e2733;} .tu .mx-donut .mx-big {font-size:9px;font-weight:700;} .tu .mx-donut .mx-sm {font-size:3.6px;fill:#6a7280;}
 	.tu .mx-donut circle.mx-seg {fill:none;stroke-width:6;}
+	body.dark-mode .tu .mx-donut circle.mx-seg {fill:none;} /* the dark .mx-cN swatch rules (fill:..) would otherwise fill the donut disc */
 	.tu .mx-mini {display:flex;height:0.9em;border-radius:0.45em;overflow:hidden;min-width:7em;} .tu .mx-mini span {display:block;}
 	.tu #mx-cmp tr.is-on td, .tu #mx-meals-t tr.is-total td {background:#e0f1e3;font-weight:700;} .tu #mx-cmp td, .tu #mx-meals-t td, .tu #mx-ref td {font-variant-numeric:tabular-nums;}
 	body.dark-mode #mx .mx-donut text {fill:#e8e8e8;} body.dark-mode #mx .mx-donut .mx-sm {fill:#a0a8b3;} body.dark-mode #mx .mx-legend li {border-bottom-color:#3a3f45;} body.dark-mode #mx .mx-warn {color:#ff8a80;}
@@ -1810,7 +1811,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu-card--tint{background:#1f2c22;border-color:#1e4224}
 	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
 	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-suffix span{color:#989ca4}
 	body.dark-mode .tu-btn{background:#1a1a1a}
 	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
 	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
@@ -1822,7 +1823,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu-stat--hero{background:#1f2c22;border-color:#1e4224}
 	body.dark-mode .tu-stat__label{color:#9a9aa2}
 	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
 	body.dark-mode .tu-pos{color:#7dde9d !important}
 	body.dark-mode .tu-neg{color:#e87973 !important}
 	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
@@ -3897,6 +3898,9 @@ body.dark-mode .back{color:#8fe0a1;}
 .tool-src{margin:1.4em 0 .2em;font-size:.9em;} .tool-src a{color:#1f6a2f;font-weight:600;} body.dark-mode .tool-src a{color:#8fe0a1;}
 .promo{margin-top:1em;} .promo a{color:#1f6a2f;font-weight:700;} body.dark-mode .promo a{color:#8fe0a1;}
 .pane[hidden]{display:none;}
+.srch{-webkit-appearance:none;appearance:none;width:100%;box-sizing:border-box;font-size:1em;padding:.7em .9em;border:1.5px solid #9fc3a8;border-radius:12px;margin:0 0 .4em;background:#fff !important;color:#222;}
+body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#37413a;}
+.grp[hidden],.grid[hidden],.tile[hidden]{display:none;}
 </style>
 </head>
 <body>
@@ -3927,11 +3931,11 @@ body.dark-mode .back{color:#8fe0a1;}
   <a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact us</a>
 </nav>
 <main id="app-main">
-<section id="home" class="pane"><p class="lead">Pick a calculator. Everything works offline and stays on your phone.</p>
-<h2 class="grp">Body</h2><div class="grid"><a class="tile" href="#bmicalculator" data-go="bmicalculator"><img src="img/t-bmicalculator.png" alt="" width="56" height="56"><span class="tt">BMI Calculator</span><span class="td">BMI, healthy weight range and a history chart</span></a><a class="tile" href="#body-fat-calculator" data-go="body-fat-calculator"><img src="img/t-body-fat-calculator.png" alt="" width="56" height="56"><span class="tt">Body Fat Calculator</span><span class="td">U.S. Navy tape method, lean mass and goals</span></a><a class="tile" href="#ideal-weight-calculator" data-go="ideal-weight-calculator"><img src="img/t-ideal-weight-calculator.png" alt="" width="56" height="56"><span class="tt">Ideal Weight</span><span class="td">Four classic formulas next to the healthy range</span></a><a class="tile" href="#waist-to-hip-ratio-calculator" data-go="waist-to-hip-ratio-calculator"><img src="img/t-waist-to-hip-ratio-calculator.png" alt="" width="56" height="56"><span class="tt">Waist-to-Hip Ratio</span><span class="td">WHR, waist-to-height and body shape</span></a></div>
-<h2 class="grp">Food and water</h2><div class="grid"><a class="tile" href="#bmr-calculator" data-go="bmr-calculator"><img src="img/t-bmr-calculator.png" alt="" width="56" height="56"><span class="tt">BMR and TDEE</span><span class="td">Daily calories to maintain, lose or gain</span></a><a class="tile" href="#macro-calculator" data-go="macro-calculator"><img src="img/t-macro-calculator.png" alt="" width="56" height="56"><span class="tt">Macro Calculator</span><span class="td">Protein, carbs and fat in grams</span></a><a class="tile" href="#protein-intake-calculator" data-go="protein-intake-calculator"><img src="img/t-protein-intake-calculator.png" alt="" width="56" height="56"><span class="tt">Protein Intake</span><span class="td">How much protein for your goal</span></a><a class="tile" href="#water-intake-calculator" data-go="water-intake-calculator"><img src="img/t-water-intake-calculator.png" alt="" width="56" height="56"><span class="tt">Water Intake</span><span class="td">Daily water target and a drink tracker</span></a></div>
-<h2 class="grp">Training</h2><div class="grid"><a class="tile" href="#heart-rate-zone-calculator" data-go="heart-rate-zone-calculator"><img src="img/t-heart-rate-zone-calculator.png" alt="" width="56" height="56"><span class="tt">Heart Rate Zones</span><span class="td">Five training zones from your max heart rate</span></a><a class="tile" href="#calories-burned-calculator" data-go="calories-burned-calculator"><img src="img/t-calories-burned-calculator.png" alt="" width="56" height="56"><span class="tt">Calories Burned</span><span class="td">85 activities, minutes and weekly totals</span></a><a class="tile" href="#pace-calculator" data-go="pace-calculator"><img src="img/t-pace-calculator.png" alt="" width="56" height="56"><span class="tt">Running Pace</span><span class="td">Pace, time, distance, splits and race predictions</span></a><a class="tile" href="#one-rep-max-calculator" data-go="one-rep-max-calculator"><img src="img/t-one-rep-max-calculator.png" alt="" width="56" height="56"><span class="tt">One-Rep Max</span><span class="td">Seven formulas, percent table and plate loader</span></a></div>
-<h2 class="grp">Sleep</h2><div class="grid"><a class="tile" href="#sleep-calculator" data-go="sleep-calculator"><img src="img/t-sleep-calculator.png" alt="" width="56" height="56"><span class="tt">Sleep Calculator</span><span class="td">Bedtimes and wake-up times in 90-minute cycles</span></a></div>
+<section id="home" class="pane"><p class="lead">Pick a calculator. Everything works offline and stays on your phone.</p><input id="q" class="srch" type="search" placeholder="Search: bmr, protein, pace, sleep..." autocomplete="off" autocapitalize="off" aria-label="Search calculators"><p id="noq" class="lead" hidden>No calculator matches that. <a href="https://mes.fm" target="_blank" rel="noopener">Try mes.fm</a></p>
+<h2 class="grp">Body</h2><div class="grid"><a class="tile" href="#bmicalculator" data-go="bmicalculator" data-k="bmi calculator bmi, healthy weight range and a history chart bmi body mass index weight height obesity"><img src="img/t-bmicalculator.png" alt="" width="56" height="56"><span class="tt">BMI Calculator</span><span class="td">BMI, healthy weight range and a history chart</span></a><a class="tile" href="#body-fat-calculator" data-go="body-fat-calculator" data-k="body fat calculator u.s. navy tape method, lean mass and goals body fat navy lean mass tape"><img src="img/t-body-fat-calculator.png" alt="" width="56" height="56"><span class="tt">Body Fat Calculator</span><span class="td">U.S. Navy tape method, lean mass and goals</span></a><a class="tile" href="#ideal-weight-calculator" data-go="ideal-weight-calculator" data-k="ideal weight four classic formulas next to the healthy range ideal weight devine robinson hamwi miller"><img src="img/t-ideal-weight-calculator.png" alt="" width="56" height="56"><span class="tt">Ideal Weight</span><span class="td">Four classic formulas next to the healthy range</span></a><a class="tile" href="#waist-to-hip-ratio-calculator" data-go="waist-to-hip-ratio-calculator" data-k="waist-to-hip ratio whr, waist-to-height and body shape waist hip whr ratio shape apple pear"><img src="img/t-waist-to-hip-ratio-calculator.png" alt="" width="56" height="56"><span class="tt">Waist-to-Hip Ratio</span><span class="td">WHR, waist-to-height and body shape</span></a></div>
+<h2 class="grp">Food and water</h2><div class="grid"><a class="tile" href="#bmr-calculator" data-go="bmr-calculator" data-k="bmr and tdee daily calories to maintain, lose or gain bmr tdee calories metabolism maintenance mifflin"><img src="img/t-bmr-calculator.png" alt="" width="56" height="56"><span class="tt">BMR and TDEE</span><span class="td">Daily calories to maintain, lose or gain</span></a><a class="tile" href="#macro-calculator" data-go="macro-calculator" data-k="macro calculator protein, carbs and fat in grams macros protein carbs fat diet cutting bulking"><img src="img/t-macro-calculator.png" alt="" width="56" height="56"><span class="tt">Macro Calculator</span><span class="td">Protein, carbs and fat in grams</span></a><a class="tile" href="#protein-intake-calculator" data-go="protein-intake-calculator" data-k="protein intake how much protein for your goal protein grams muscle diet vegan"><img src="img/t-protein-intake-calculator.png" alt="" width="56" height="56"><span class="tt">Protein Intake</span><span class="td">How much protein for your goal</span></a><a class="tile" href="#water-intake-calculator" data-go="water-intake-calculator" data-k="water intake daily water target and a drink tracker water hydration drink tracker"><img src="img/t-water-intake-calculator.png" alt="" width="56" height="56"><span class="tt">Water Intake</span><span class="td">Daily water target and a drink tracker</span></a></div>
+<h2 class="grp">Training</h2><div class="grid"><a class="tile" href="#heart-rate-zone-calculator" data-go="heart-rate-zone-calculator" data-k="heart rate zones five training zones from your max heart rate heart rate pulse zones karvonen max hr"><img src="img/t-heart-rate-zone-calculator.png" alt="" width="56" height="56"><span class="tt">Heart Rate Zones</span><span class="td">Five training zones from your max heart rate</span></a><a class="tile" href="#calories-burned-calculator" data-go="calories-burned-calculator" data-k="calories burned 85 activities, minutes and weekly totals calories burned exercise met activity workout"><img src="img/t-calories-burned-calculator.png" alt="" width="56" height="56"><span class="tt">Calories Burned</span><span class="td">85 activities, minutes and weekly totals</span></a><a class="tile" href="#pace-calculator" data-go="pace-calculator" data-k="running pace pace, time, distance, splits and race predictions running pace speed marathon split race time"><img src="img/t-pace-calculator.png" alt="" width="56" height="56"><span class="tt">Running Pace</span><span class="td">Pace, time, distance, splits and race predictions</span></a><a class="tile" href="#one-rep-max-calculator" data-go="one-rep-max-calculator" data-k="one-rep max seven formulas, percent table and plate loader 1rm one rep max strength lifting plates barbell"><img src="img/t-one-rep-max-calculator.png" alt="" width="56" height="56"><span class="tt">One-Rep Max</span><span class="td">Seven formulas, percent table and plate loader</span></a></div>
+<h2 class="grp">Sleep</h2><div class="grid"><a class="tile" href="#sleep-calculator" data-go="sleep-calculator" data-k="sleep calculator bedtimes and wake-up times in 90-minute cycles sleep bedtime wake cycles nap"><img src="img/t-sleep-calculator.png" alt="" width="56" height="56"><span class="tt">Sleep Calculator</span><span class="td">Bedtimes and wake-up times in 90-minute cycles</span></a></div>
 </section>
 <section id="pane-bmicalculator" class="pane tool" hidden>
 <a class="back" href="#home" data-go="home">&#8249; All calculators</a>
@@ -4922,6 +4926,13 @@ body.dark-mode .back{color:#8fe0a1;}
   }
   window.addEventListener("hashchange",route);
   document.addEventListener("click",function(e){ var a=e.target.closest&&e.target.closest("a[data-go]"); if(!a) return; e.preventDefault(); location.hash="#"+a.getAttribute("data-go"); });
+  var q=document.getElementById("q");
+  if(q) q.addEventListener("input",function(){
+    var w=q.value.toLowerCase().split(/\s+/).filter(Boolean), any=false;
+    [].slice.call(document.querySelectorAll("#home .tile")).forEach(function(t){ var k=t.getAttribute("data-k")||"", ok=w.every(function(x){ return k.indexOf(x)>-1; }); t.hidden=!ok; if(ok) any=true; });
+    [].slice.call(document.querySelectorAll("#home .grid")).forEach(function(g){ var vis=g.querySelector(".tile:not([hidden])"); g.hidden=!vis; g.previousElementSibling.hidden=!vis; });
+    document.getElementById("noq").hidden=any;
+  });
   route();
 })();
 </script>

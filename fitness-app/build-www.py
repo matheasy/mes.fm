@@ -25,19 +25,19 @@ VERSION = "1.0"
 
 # slug, group, title, one-line description
 TOOLS = [
-    ("bmicalculator", "Body", "BMI Calculator", "BMI, healthy weight range and a history chart"),
-    ("body-fat-calculator", "Body", "Body Fat Calculator", "U.S. Navy tape method, lean mass and goals"),
-    ("ideal-weight-calculator", "Body", "Ideal Weight", "Four classic formulas next to the healthy range"),
-    ("waist-to-hip-ratio-calculator", "Body", "Waist-to-Hip Ratio", "WHR, waist-to-height and body shape"),
-    ("bmr-calculator", "Food and water", "BMR and TDEE", "Daily calories to maintain, lose or gain"),
-    ("macro-calculator", "Food and water", "Macro Calculator", "Protein, carbs and fat in grams"),
-    ("protein-intake-calculator", "Food and water", "Protein Intake", "How much protein for your goal"),
-    ("water-intake-calculator", "Food and water", "Water Intake", "Daily water target and a drink tracker"),
-    ("heart-rate-zone-calculator", "Training", "Heart Rate Zones", "Five training zones from your max heart rate"),
-    ("calories-burned-calculator", "Training", "Calories Burned", "85 activities, minutes and weekly totals"),
-    ("pace-calculator", "Training", "Running Pace", "Pace, time, distance, splits and race predictions"),
-    ("one-rep-max-calculator", "Training", "One-Rep Max", "Seven formulas, percent table and plate loader"),
-    ("sleep-calculator", "Sleep", "Sleep Calculator", "Bedtimes and wake-up times in 90-minute cycles"),
+    ("bmicalculator", "Body", "BMI Calculator", "BMI, healthy weight range and a history chart", "bmi body mass index weight height obesity"),
+    ("body-fat-calculator", "Body", "Body Fat Calculator", "U.S. Navy tape method, lean mass and goals", "body fat navy lean mass tape"),
+    ("ideal-weight-calculator", "Body", "Ideal Weight", "Four classic formulas next to the healthy range", "ideal weight devine robinson hamwi miller"),
+    ("waist-to-hip-ratio-calculator", "Body", "Waist-to-Hip Ratio", "WHR, waist-to-height and body shape", "waist hip whr ratio shape apple pear"),
+    ("bmr-calculator", "Food and water", "BMR and TDEE", "Daily calories to maintain, lose or gain", "bmr tdee calories metabolism maintenance mifflin"),
+    ("macro-calculator", "Food and water", "Macro Calculator", "Protein, carbs and fat in grams", "macros protein carbs fat diet cutting bulking"),
+    ("protein-intake-calculator", "Food and water", "Protein Intake", "How much protein for your goal", "protein grams muscle diet vegan"),
+    ("water-intake-calculator", "Food and water", "Water Intake", "Daily water target and a drink tracker", "water hydration drink tracker"),
+    ("heart-rate-zone-calculator", "Training", "Heart Rate Zones", "Five training zones from your max heart rate", "heart rate pulse zones karvonen max hr"),
+    ("calories-burned-calculator", "Training", "Calories Burned", "85 activities, minutes and weekly totals", "calories burned exercise met activity workout"),
+    ("pace-calculator", "Training", "Running Pace", "Pace, time, distance, splits and race predictions", "running pace speed marathon split race time"),
+    ("one-rep-max-calculator", "Training", "One-Rep Max", "Seven formulas, percent table and plate loader", "1rm one rep max strength lifting plates barbell"),
+    ("sleep-calculator", "Sleep", "Sleep Calculator", "Bedtimes and wake-up times in 90-minute cycles", "sleep bedtime wake cycles nap"),
 ]
 SLUGS = {t[0] for t in TOOLS}
 ALIAS = {"tdee-calculator": "bmr-calculator"}  # the BMR page already shows TDEE
@@ -238,6 +238,9 @@ body.dark-mode .back{color:#8fe0a1;}
 .tool-src{margin:1.4em 0 .2em;font-size:.9em;} .tool-src a{color:#1f6a2f;font-weight:600;} body.dark-mode .tool-src a{color:#8fe0a1;}
 .promo{margin-top:1em;} .promo a{color:#1f6a2f;font-weight:700;} body.dark-mode .promo a{color:#8fe0a1;}
 .pane[hidden]{display:none;}
+.srch{-webkit-appearance:none;appearance:none;width:100%;box-sizing:border-box;font-size:1em;padding:.7em .9em;border:1.5px solid #9fc3a8;border-radius:12px;margin:0 0 .4em;background:#fff !important;color:#222;}
+body.dark-mode .srch{background:#202428 !important;color:#e6e6e6;border-color:#37413a;}
+.grp[hidden],.grid[hidden],.tile[hidden]{display:none;}
 """
 
 def tile_img(slug: str) -> str:
@@ -318,6 +321,13 @@ ROUTE_JS = """
   }
   window.addEventListener("hashchange",route);
   document.addEventListener("click",function(e){ var a=e.target.closest&&e.target.closest("a[data-go]"); if(!a) return; e.preventDefault(); location.hash="#"+a.getAttribute("data-go"); });
+  var q=document.getElementById("q");
+  if(q) q.addEventListener("input",function(){
+    var w=q.value.toLowerCase().split(/\s+/).filter(Boolean), any=false;
+    [].slice.call(document.querySelectorAll("#home .tile")).forEach(function(t){ var k=t.getAttribute("data-k")||"", ok=w.every(function(x){ return k.indexOf(x)>-1; }); t.hidden=!ok; if(ok) any=true; });
+    [].slice.call(document.querySelectorAll("#home .grid")).forEach(function(g){ var vis=g.querySelector(".tile:not([hidden])"); g.hidden=!vis; g.previousElementSibling.hidden=!vis; });
+    document.getElementById("noq").hidden=any;
+  });
   route();
 })();
 """
@@ -331,7 +341,7 @@ def main() -> None:
 
     css_parts, panes, tiles, scripts, groups = [], [], {}, [], []
     base_css = None
-    for slug, group, title, desc in TOOLS:
+    for slug, group, title, desc, kws in TOOLS:
         c0, c1, tool, rid = extract(slug)
         base_css = base_css or c0
         css_parts.append(c1)
@@ -349,9 +359,9 @@ def main() -> None:
         (WWW / "js" / ("%s.js" % slug)).write_text(js, encoding="utf-8")
         scripts.append('<script src="js/%s.js"></script>' % slug)
         tiles.setdefault(group, []).append(
-            '<a class="tile" href="#%s" data-go="%s"><img src="%s" alt="" width="56" height="56"><span class="tt">%s</span><span class="td">%s</span></a>'
-            % (slug, slug, tile_img(slug), title, desc))
-    home = ['<section id="home" class="pane"><p class="lead">Pick a calculator. Everything works offline and stays on your phone.</p>']
+            '<a class="tile" href="#%s" data-go="%s" data-k="%s"><img src="%s" alt="" width="56" height="56"><span class="tt">%s</span><span class="td">%s</span></a>'
+            % (slug, slug, (title + " " + desc + " " + kws).lower(), tile_img(slug), title, desc))
+    home = ['<section id="home" class="pane"><p class="lead">Pick a calculator. Everything works offline and stays on your phone.</p><input id="q" class="srch" type="search" placeholder="Search: bmr, protein, pace, sleep..." autocomplete="off" autocapitalize="off" aria-label="Search calculators"><p id="noq" class="lead" hidden>No calculator matches that. <a href="https://mes.fm" target="_blank" rel="noopener">Try mes.fm</a></p>']
     for g, items in tiles.items():
         home.append('<h2 class="grp">%s</h2><div class="grid">%s</div>' % (g, "".join(items)))
     home.append("</section>")
