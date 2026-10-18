@@ -38,7 +38,7 @@ function setIcon(tabId, kind, title) {
 }
 function showState(tabId, r) {
   var dark = !!(r && !r.off && r.want);
-  setIcon(tabId, dark ? 'moon' : 'sun', dark ? 'MES Dark Mode: this site is dark. Click for light.' : 'MES Dark Mode: this site is light. Click for dark.');
+  setIcon(tabId, dark ? 'moon' : 'sun', dark ? 'MES Dark Mode: this tab is dark. Click for light.' : 'MES Dark Mode: this tab is light. Click for dark.');
 }
 function status(tabId, cb) {
   chrome.tabs.sendMessage(tabId, { mesdm: 'status' }, { frameId: 0 }, function (r) { if (chrome.runtime.lastError || !r) cb(null); else cb(r); });

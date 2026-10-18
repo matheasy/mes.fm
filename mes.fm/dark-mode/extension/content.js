@@ -46,9 +46,9 @@
   // ---- deciding and applying ------------------------------------------------------------------------------------------
   function resolve() {
     cfg = V.profileById(S, S.active).config;
-    var ov = V.siteMode(S, host);
+    var ov = V.siteMode(S, host), tv = S.scope === 'all' ? '' : tabMode();   // a switch pressed in this tab only counts while the button is set to "this tab only"
     state.off = !S.enabled || ov === 'off';
-    state.want = ov === 'dark' ? true : ov === 'light' ? false : V.wantDark(cfg, mql.matches, new Date());
+    state.want = tv ? tv === 'dark' : ov === 'dark' ? true : ov === 'light' ? false : V.wantDark(cfg, mql.matches, new Date());
   }
 
   // before the page has been looked at, trust what we saw last time on this site, else assume a light page
@@ -169,19 +169,29 @@
   }
   if (mql.addEventListener) mql.addEventListener('change', function () { update(); }); else if (mql.addListener) mql.addListener(function () { update(); });
 
+  // ---- this tab's own choice: kept in the tab's sessionStorage, so other tabs (even of the same site) are not touched and a reload keeps it ----
+  var tabMem = '';
+  function tabMode() {
+    try { var v = window.top === window ? sessionStorage.getItem('mesdmTab') : ''; if (v === 'dark' || v === 'light') return v; } catch (e) { /* storage blocked */ }
+    return window.top === window ? tabMem : '';
+  }
+  function setTab(mode) { tabMem = mode; try { sessionStorage.setItem('mesdmTab', mode); } catch (e) { /* ignore */ } update(); }
+
   // ---- the keyboard shortcut / popup ---------------------------------------------------------------------------------------
-  function setSite(mode) {
-    var m = JSON.parse(JSON.stringify(S.siteModes));
-    if (mode) m[host] = mode; else delete m[host];
-    S.siteModes = m;
+  function saveAll() {
     try { chrome.storage.sync.set({ mesdm: S }); } catch (e) { /* ignore */ }
     try { chrome.storage.local.set({ mesdm: S }); } catch (e) { /* ignore */ }
-    update();
   }
   try {
     chrome.runtime.onMessage.addListener(function (m, sender, send) {
       if (!m || !m.mesdm || window !== window.top) return;
-      if (m.mesdm === 'toggle') { resolve(); setSite(state.want ? 'light' : 'dark'); send({ ok: true }); }
+      if (m.mesdm === 'toggle') {
+        resolve();
+        var to = state.want ? 'light' : 'dark';
+        if (S.scope === 'all') { V.profileById(S, S.active).config.mode = to; Object.keys(S.siteModes).forEach(function (h) { if (S.siteModes[h] !== 'off') delete S.siteModes[h]; }); saveAll(); update(); }   // every page: the setup itself flips
+        else setTab(to);
+        send({ ok: true });
+      }
       else if (m.mesdm === 'status') {
         resolve();
         send({ host: host, off: state.off, want: state.want, invert: state.invert, pageDark: knownDark(), override: V.siteMode(S, host) });

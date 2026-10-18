@@ -44,6 +44,7 @@
   $('mode').addEventListener('change', function () { cfg().mode = $('mode').value; drawFields(); save(); });
   ['scheduleFrom', 'scheduleTo'].forEach(function (k) { $(k).addEventListener('change', function () { if ($(k).value) { cfg()[k] = $(k).value; save(); } }); });
   $('toolbar').addEventListener('change', function () { S.toolbar = $('toolbar').value; save(); });
+  $('scope').addEventListener('change', function () { S.scope = $('scope').value; save(); });
   $('keepImages').addEventListener('change', function () { cfg().keepImages = $('keepImages').checked; save(); });
 
   $('profile').addEventListener('change', function () { cur = $('profile').value; S.active = cur; draw(); save(); });
@@ -79,7 +80,7 @@
 
   chrome.storage.sync.get('mesdm', function (a) {
     var had = !!(a && a.mesdm);
-    S = V.merge(a && a.mesdm); cur = S.active; $('toolbar').value = S.toolbar; draw();
+    S = V.merge(a && a.mesdm); cur = S.active; $('toolbar').value = S.toolbar; $('scope').value = S.scope; draw();
     if (!had) save();
   });
 })();
