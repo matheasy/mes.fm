@@ -47,7 +47,10 @@
   function resolve() {
     cfg = V.profileById(S, S.active).config;
     var ov = V.siteMode(S, host), tv = S.scope === 'all' ? '' : tabMode();   // a switch pressed in this tab only counts while the button is set to "this tab only"
-    state.off = !S.enabled || ov === 'off';
+    // mes.fm has its own dark mode (moon button, body.dark-mode): inverting on top of it made the two fight (the site's light button still looked dark,
+    // and the page flashed while the extension re-sampled the colours), so the extension stays out of mes.fm unless this site is set to dark / light by hand
+    var own = (host === 'mes.fm' || /\.mes\.fm$/.test(host)) && !ov;
+    state.off = !S.enabled || ov === 'off' || own;
     state.want = tv ? tv === 'dark' : ov === 'dark' ? true : ov === 'light' ? false : V.wantDark(cfg, mql.matches, new Date());
   }
 
