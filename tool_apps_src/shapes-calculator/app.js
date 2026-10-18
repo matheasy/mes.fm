@@ -74,7 +74,7 @@
 	/* ---- results ---- */
 	var cur = null;
 	function update() {
-		var v = vals(); st.v[st.s] = v; save(); var r = SH.compute(st.s, v); cur = null;
+		var v = vals(); st.v[st.s] = v; save(); if (window.v3Build_) v3Build_(); var r = SH.compute(st.s, v); cur = null;
 		$("sh-empty").hidden = r.ok || !!r.error; $("sh-err").hidden = !r.error; $("sh-res").hidden = !r.ok; if (r.error) $("sh-err").textContent = r.error; if (!r.ok) return;
 		cur = r; var u = st.u, main = r.results[0];
 		$("sh-stats").innerHTML = r.results.map(function (x, i) {
@@ -101,7 +101,7 @@
 	/* ---- events ---- */
 	$("sh-unit").innerHTML = SH.UNIT_ORDER.map(function (u) { return '<option value="' + u + '">' + u + " (" + SH.UNIT_NAMES[u] + ")</option>"; }).join("");
 	SH.UNIT_VOL = function (u) { return u + "³"; };
-	function show() { $("sh-unit").value = st.u; buildChips(); buildFields(); update(); }
+	function show() { $("sh-unit").value = st.u; buildChips(); buildFields(); update(); v3Build(); }
 	$("sh-unit").addEventListener("change", function () { var o = st.u, n = this.value; st.u = n; save(); buildFields(); update(); });
 	$("sh-dim").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var d = +b.dataset.d; if (SH.byId(st.s).dim === d) return; st.s = d === 3 ? "cylinder" : "circle"; save(); show(); });
 	$("sh-shapes").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.s = b.dataset.s; save(); show(); });
@@ -119,5 +119,46 @@
 		var ex = EXAMPLE[s.id], r = ex ? SH.compute(s.id, ex) : null; return "<tr><td><b>" + esc(s.name) + "</b></td><td>" + (r && r.ok ? r.results.map(function (x) { return esc(x.label) + ": " + esc(x.formula); }).join("<br>") : "") + "</td></tr>";
 	}).join("") + "</tbody>";
 
-	load(); fromUrl(); show();
+
+	/* ---- 3D viewer (plain canvas, painter's algorithm; meshes come from SH.mesh) ---- */
+	var V3 = { yaw: -0.6, pitch: 0.42, zoom: 1, mode: "solid", spin: true, labels: true, mesh: null, id: 0, ptrs: {}, pinch: 0 };
+	function v3Dims() { var S = SH.byId(st.s), cur = vals(), ex = EXAMPLE[st.s], d = {}; S.inputs.forEach(function (i) { var n = SH.num(cur[i[0]]); d[i[0]] = n != null && (n > 0 || (S.id === "capsule" && i[0] === "h" && n === 0)) ? n : ex[i[0]]; }); return SH.compute(st.s, d).ok ? d : Object.assign({}, ex); }
+	function v3Build() {
+		var S = SH.byId(st.s), box = $("sh-3d"); box.hidden = S.dim !== 3; if (S.dim !== 3) { V3.mesh = null; return; }
+		var M = SH.mesh(st.s, v3Dims(), 48); if (!M) { box.hidden = true; return; } var mx = 0; M.verts.forEach(function (p) { mx = Math.max(mx, Math.hypot(p[0], p[1], p[2])); }); var k = 1.35 / (mx || 1);
+		M.verts = M.verts.map(function (p) { return [p[0] * k, p[1] * k, p[2] * k]; }); M.lines.forEach(function (l) { l.a = [l.a[0] * k, l.a[1] * k, l.a[2] * k]; l.b = [l.b[0] * k, l.b[1] * k, l.b[2] * k]; }); V3.mesh = M; v3Draw(); v3Loop();
+	}
+	function v3Color() { var c = getComputedStyle(root).getPropertyValue("--accent").trim(), m; if ((m = /^#([0-9a-f]{6})$/i.exec(c))) return [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4), 16)]; if ((m = /(\d+)[ ,]+(\d+)[ ,]+(\d+)/.exec(c))) return [+m[1], +m[2], +m[3]]; return [15, 108, 189]; }
+	function v3Draw() {
+		var M = V3.mesh, cv = $("sh-cv"); if (!M || $("sh-3d").hidden) return; var dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 400, h = Math.round(Math.min(400, w * 0.75)); if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.height = h + "px"; }
+		var g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h); var dark = document.body.classList.contains("dark-mode"), col = v3Color(), ink = dark ? "205,214,228" : "44,62,85";
+		var cy = Math.cos(V3.yaw), sy = Math.sin(V3.yaw), cp = Math.cos(V3.pitch), sp = Math.sin(V3.pitch), D = 5.5, sc = Math.min(w, h) * 0.30 * V3.zoom;
+		function rot(p) { var x1 = p[0] * cy + p[2] * sy, z1 = -p[0] * sy + p[2] * cy; return [x1, p[1] * cp - z1 * sp, p[1] * sp + z1 * cp]; }
+		function scr(q) { var f = D / (D - q[2]); return [w / 2 + sc * f * q[0], h / 2 - sc * f * q[1]]; }
+		var Tv = M.verts.map(rot), P = Tv.map(scr), L = [-0.4, 0.55, 0.73], faces = [];
+		M.tris.forEach(function (t) {
+			var a = Tv[t[0]], b = Tv[t[1]], c = Tv[t[2]], u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]], n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]], nl = Math.hypot(n[0], n[1], n[2]); if (nl < 1e-12) return;
+			var front = n[0] * (0 - a[0]) + n[1] * (0 - a[1]) + n[2] * (D - a[2]) > 0; if (V3.mode === "solid" && !front) return;
+			var lam = Math.abs(n[0] * L[0] + n[1] * L[1] + n[2] * L[2]) / nl; faces.push({ t: t, z: (a[2] + b[2] + c[2]) / 3, s: 0.32 + 0.68 * lam });
+		});
+		faces.sort(function (p, q) { return p.z - q.z; });
+		if (V3.mode !== "wire") faces.forEach(function (f) {
+			var t = f.t, c0 = [Math.round(col[0] * f.s + 255 * (1 - f.s) * 0.12), Math.round(col[1] * f.s + 255 * (1 - f.s) * 0.12), Math.round(col[2] * f.s + 255 * (1 - f.s) * 0.12)], st2 = "rgb(" + c0.join(",") + ")";
+			g.beginPath(); g.moveTo(P[t[0]][0], P[t[0]][1]); g.lineTo(P[t[1]][0], P[t[1]][1]); g.lineTo(P[t[2]][0], P[t[2]][1]); g.closePath(); if (V3.mode === "glass") { g.fillStyle = "rgba(" + c0.join(",") + ",0.22)"; g.fill(); } else { g.fillStyle = st2; g.strokeStyle = st2; g.lineWidth = 0.7; g.fill(); g.stroke(); }
+		});
+		var flat = M.wire.every(function (e) { return e.length === 2; }); g.lineJoin = "round";
+		M.wire.forEach(function (e) { if (V3.mode === "solid" && !flat) return; g.beginPath(); e.forEach(function (i, k) { if (k) g.lineTo(P[i][0], P[i][1]); else g.moveTo(P[i][0], P[i][1]); }); g.strokeStyle = "rgba(" + ink + "," + (V3.mode === "wire" ? 0.85 : V3.mode === "glass" ? 0.5 : flat ? 0.75 : 0.3) + ")"; g.lineWidth = V3.mode === "wire" ? 1.3 : flat ? 1.6 : 0.8; g.stroke(); });
+		if (V3.labels) M.lines.forEach(function (l) { var A = scr(rot(l.a)), B = scr(rot(l.b)); g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(B[0], B[1]); g.strokeStyle = dark ? "#ffd166" : "#c2410c"; g.lineWidth = 3; g.lineCap = "round"; g.stroke(); var mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2; g.font = "italic 700 17px Georgia, serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 4; g.strokeStyle = dark ? "#1d2127" : "#ffffff"; g.strokeText(l.t, mx + 9, my - 9); g.fillStyle = dark ? "#ffd166" : "#c2410c"; g.fillText(l.t, mx + 9, my - 9); });
+	}
+	function v3Loop() { if (V3.id) return; (function tick() { V3.id = 0; if (!V3.mesh || $("sh-3d").hidden) return; if (V3.spin && !document.hidden) { V3.yaw += 0.007; v3Draw(); } V3.id = requestAnimationFrame(tick); })(); }
+	(function () {
+		var cv = $("sh-cv"); $("sh-3d-mode").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; V3.mode = b.dataset.m; [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); v3Draw(); });
+		$("sh-3d-spin").addEventListener("change", function () { V3.spin = this.checked; v3Loop(); }); $("sh-3d-lab").addEventListener("change", function () { V3.labels = this.checked; v3Draw(); }); $("sh-3d-reset").addEventListener("click", function () { V3.yaw = -0.6; V3.pitch = 0.42; V3.zoom = 1; v3Draw(); });
+		cv.addEventListener("pointerdown", function (e) { V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; try { cv.setPointerCapture(e.pointerId); } catch (x) {} V3.spin = false; $("sh-3d-spin").checked = false; });
+		cv.addEventListener("pointermove", function (e) { var p = V3.ptrs[e.pointerId]; if (!p) return; var ids = Object.keys(V3.ptrs); if (ids.length === 2) { V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; var a = V3.ptrs[ids[0]], b = V3.ptrs[ids[1]], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (V3.pinch) V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * d / V3.pinch)); V3.pinch = d; v3Draw(); return; } V3.yaw += (e.clientX - p[0]) * 0.01; V3.pitch = Math.max(-1.5, Math.min(1.5, V3.pitch + (e.clientY - p[1]) * 0.01)); V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; v3Draw(); });
+		var up = function (e) { delete V3.ptrs[e.pointerId]; V3.pinch = 0; }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+		cv.addEventListener("wheel", function (e) { e.preventDefault(); V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); v3Draw(); }, { passive: false });
+		window.addEventListener("resize", v3Draw); new MutationObserver(v3Draw).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+	})();
+	window.v3Build_ = v3Build; load(); fromUrl(); show();
 })();

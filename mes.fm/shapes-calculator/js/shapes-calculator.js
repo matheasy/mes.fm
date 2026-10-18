@@ -99,6 +99,70 @@
 	def("tetrahedron", "Regular tetrahedron", 3, [["a", "Edge a"]], function (v) { if (!need(v, ["a"])) return null; return [R("Volume", Math.pow(v.a, 3) / (6 * Math.SQRT2), "vol", "V = a³ / (6√2)"), R("Surface area", Math.sqrt(3) * v.a * v.a, "area", "S = √3 a²"), R("Height", v.a * Math.sqrt(2 / 3), "len", "h = a√(2/3)")]; }, "Pyramids");
 	def("octahedron", "Regular octahedron", 3, [["a", "Edge a"]], function (v) { if (!need(v, ["a"])) return null; return [R("Volume", Math.SQRT2 / 3 * Math.pow(v.a, 3), "vol", "V = (√2/3)a³"), R("Surface area", 2 * Math.sqrt(3) * v.a * v.a, "area", "S = 2√3 a²")]; }, "Pyramids");
 
+
+	/* ---------- 3D meshes (for the viewer; y is up, closed surfaces with outward normals) ---------- */
+	function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+	function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+	function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+	function meshOut() { return { verts: [], tris: [], lines: [], wire: [] }; }
+	// a convex flat face given as a vertex-index loop; oriented outward away from `inside`
+	function addFace(M, idx, inside) {
+		var v = M.verts, n = cross(sub(v[idx[1]], v[idx[0]]), sub(v[idx[2]], v[idx[0]])), c = [0, 0, 0]; idx.forEach(function (i) { c[0] += v[i][0] / idx.length; c[1] += v[i][1] / idx.length; c[2] += v[i][2] / idx.length; });
+		if (dot(n, sub(c, inside)) < 0) idx = idx.slice().reverse();
+		for (var k = 1; k < idx.length - 1; k++) M.tris.push([idx[0], idx[k], idx[k + 1]]);
+		for (var e = 0; e < idx.length; e++) M.wire.push([idx[e], idx[(e + 1) % idx.length]]);
+	}
+	function revolve(profile, n) {
+		var M = meshOut(), K = profile.length, i, j;
+		for (i = 0; i < K; i++) for (j = 0; j < n; j++) { var th = 2 * PI * j / n; M.verts.push([profile[i][0] * Math.cos(th), profile[i][1], profile[i][0] * Math.sin(th)]); }
+		var id = function (a, b) { return a * n + (b % n); };
+		for (i = 0; i < K - 1; i++) for (j = 0; j < n; j++) { var A = id(i, j), B = id(i + 1, j), C = id(i + 1, j + 1), D = id(i, j + 1); M.tris.push([A, B, C]); M.tris.push([A, C, D]); }
+		for (i = 1; i < K - 1 || i === 1; i++) { if (i >= K) break; var ring = []; for (j = 0; j <= n; j++) ring.push(id(i, j)); M.wire.push(ring); }
+		var step = Math.max(1, Math.round(n / 16)); for (j = 0; j < n; j += step) { var mer = []; for (i = 0; i < K; i++) mer.push(id(i, j)); M.wire.push(mer); }
+		return M;
+	}
+	function arcPts(cx, cy, r, a0, a1, k) { var o = []; for (var i = 0; i <= k; i++) { var a = a0 + (a1 - a0) * i / k; o.push([r * Math.cos(a), cy + r * Math.sin(a)]); } return o; }   // (r, y) pairs around (0, cy)
+	function lineSeg(M, p, q, t) { M.lines.push({ a: p, b: q, t: t }); }
+	function mesh(id, v, n) {
+		n = n || 64; var M, h, i, j;
+		function box(a, b, c) {
+			M = meshOut(); var x = a / 2, y = c / 2, z = b / 2; M.verts = [[-x, -y, -z], [x, -y, -z], [x, y, -z], [-x, y, -z], [-x, -y, z], [x, -y, z], [x, y, z], [-x, y, z]];
+			[[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [3, 2, 6, 7], [0, 3, 7, 4], [1, 2, 6, 5]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); return M;
+		}
+		switch (id) {
+			case "cube": M = box(v.a, v.a, v.a); lineSeg(M, [-v.a / 2, -v.a / 2, v.a / 2], [v.a / 2, -v.a / 2, v.a / 2], "a"); return M;
+			case "box": M = box(v.a, v.b, v.c); lineSeg(M, [-v.a / 2, -v.c / 2, v.b / 2], [v.a / 2, -v.c / 2, v.b / 2], "a"); lineSeg(M, [v.a / 2, -v.c / 2, v.b / 2], [v.a / 2, -v.c / 2, -v.b / 2], "b"); lineSeg(M, [-v.a / 2, -v.c / 2, v.b / 2], [-v.a / 2, v.c / 2, v.b / 2], "c"); return M;
+			case "prism": {
+				M = meshOut(); var a = v.a, b = v.b, c = v.c, ca = (b * b + c * c - a * a) / (2 * b * c), sa = Math.sqrt(Math.max(0, 1 - ca * ca)), P = [[0, 0], [c, 0], [b * ca, b * sa]], cx = (P[0][0] + P[1][0] + P[2][0]) / 3, cy = (P[0][1] + P[1][1] + P[2][1]) / 3, l = v.l;
+				for (i = 0; i < 3; i++) M.verts.push([P[i][0] - cx, P[i][1] - cy, -l / 2]); for (i = 0; i < 3; i++) M.verts.push([P[i][0] - cx, P[i][1] - cy, l / 2]);
+				[[0, 1, 2], [3, 4, 5], [0, 1, 4, 3], [1, 2, 5, 4], [2, 0, 3, 5]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); lineSeg(M, M.verts[3], M.verts[0], "l"); return M;
+			}
+			case "cylinder": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [v.r, -v.h / 2, 0], [v.r, v.h / 2, 0], "h"); return M;
+			case "cone": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, -v.h / 2, 0], [v.r, -v.h / 2, 0], "r"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
+			case "frustum": M = revolve([[0, -v.h / 2], [v.R, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, -v.h / 2, 0], [v.R, -v.h / 2, 0], "R"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
+			case "sphere": { var pr = []; for (i = 0; i <= n / 2; i++) { var f = PI * i / (n / 2); pr.push([v.r * Math.sin(f), -v.r * Math.cos(f)]); } M = revolve(pr, n); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
+			case "hemisphere": { var ph = [[0, 0], [v.r, 0]]; arcPts(0, 0, v.r, 0, PI / 2, n / 4).forEach(function (q, k) { if (k > 0) ph.push(q); }); M = revolve(ph, n); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
+			case "capsule": { var pc = arcPts(0, -v.h / 2, v.r, -PI / 2, 0, n / 4).map(function (q) { return [q[0], q[1]]; }).concat(arcPts(0, v.h / 2, v.r, 0, PI / 2, n / 4).slice(1)); M = revolve([[0, -v.h / 2 - v.r]].concat(pc.slice(1)), n); lineSeg(M, [v.r, -v.h / 2, 0], [v.r, v.h / 2, 0], "h"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); return M; }
+			case "ellipsoid": { var pe = []; for (i = 0; i <= n / 2; i++) { var g = PI * i / (n / 2); pe.push([Math.sin(g), -Math.cos(g)]); } M = revolve(pe, n); M.verts = M.verts.map(function (p) { return [p[0] * v.a, p[1] * v.b, p[2] * v.c]; }); lineSeg(M, [0, 0, 0], [v.a, 0, 0], "a"); lineSeg(M, [0, 0, 0], [0, v.b, 0], "b"); lineSeg(M, [0, 0, 0], [0, 0, v.c], "c"); return M; }
+			case "torus": {
+				M = meshOut(); var m = n, k2 = Math.round(n / 2), idt = function (a, b) { return (a % m) * k2 + (b % k2); };
+				for (i = 0; i < m; i++) for (j = 0; j < k2; j++) { var u = 2 * PI * i / m, w = 2 * PI * j / k2; M.verts.push([(v.R + v.r * Math.cos(w)) * Math.cos(u), v.r * Math.sin(w), (v.R + v.r * Math.cos(w)) * Math.sin(u)]); }
+				for (i = 0; i < m; i++) for (j = 0; j < k2; j++) { var A = idt(i, j), B = idt(i + 1, j), C = idt(i + 1, j + 1), D = idt(i, j + 1); M.tris.push([A, D, C]); M.tris.push([A, C, B]); }
+				for (j = 0; j < k2; j += Math.max(1, Math.round(k2 / 6))) { var rg = []; for (i = 0; i <= m; i++) rg.push(idt(i, j)); M.wire.push(rg); } for (i = 0; i < m; i += Math.max(1, Math.round(m / 16))) { var mr = []; for (j = 0; j <= k2; j++) mr.push(idt(i, j)); M.wire.push(mr); }
+				lineSeg(M, [0, 0, 0], [v.R, 0, 0], "R"); lineSeg(M, [v.R, 0, 0], [v.R + v.r, 0, 0], "r"); return M;
+			}
+			case "pyramid": case "rect-pyramid": {
+				M = meshOut(); var pa = v.a, pb = id === "pyramid" ? v.a : v.b, ph2 = v.h; M.verts = [[-pa / 2, -ph2 / 2, -pb / 2], [pa / 2, -ph2 / 2, -pb / 2], [pa / 2, -ph2 / 2, pb / 2], [-pa / 2, -ph2 / 2, pb / 2], [0, ph2 / 2, 0]]; var ins = [0, -ph2 / 4, 0];
+				addFace(M, [0, 1, 2, 3], ins); [[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]].forEach(function (f) { addFace(M, f, ins); }); lineSeg(M, [-pa / 2, -ph2 / 2, pb / 2], [pa / 2, -ph2 / 2, pb / 2], "a"); if (id === "rect-pyramid") lineSeg(M, [pa / 2, -ph2 / 2, pb / 2], [pa / 2, -ph2 / 2, -pb / 2], "b"); lineSeg(M, [0, -ph2 / 2, 0], [0, ph2 / 2, 0], "h"); return M;
+			}
+			case "tetrahedron": { M = meshOut(); var q = v.a / (2 * Math.SQRT2); M.verts = [[q, q, q], [q, -q, -q], [-q, q, -q], [-q, -q, q]]; [[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); lineSeg(M, M.verts[1], M.verts[2], "a"); return M; }
+			case "octahedron": { M = meshOut(); var o = v.a / Math.SQRT2; M.verts = [[o, 0, 0], [-o, 0, 0], [0, o, 0], [0, -o, 0], [0, 0, o], [0, 0, -o]]; [[0, 2, 4], [0, 2, 5], [0, 3, 4], [0, 3, 5], [1, 2, 4], [1, 2, 5], [1, 3, 4], [1, 3, 5]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); lineSeg(M, M.verts[0], M.verts[2], "a"); return M; }
+		}
+		return null;
+	}
+	function meshVolume(M) { var s = 0; M.tris.forEach(function (t) { var a = M.verts[t[0]], b = M.verts[t[1]], c = M.verts[t[2]]; s += dot(a, cross(b, c)) / 6; }); return s; }
+	function meshArea(M) { var s = 0; M.tris.forEach(function (t) { var a = M.verts[t[0]], b = M.verts[t[1]], c = M.verts[t[2]], x = cross(sub(b, a), sub(c, a)); s += Math.sqrt(dot(x, x)) / 2; }); return s; }
+
 	function byId(id) { for (var i = 0; i < SHAPES.length; i++) if (SHAPES[i].id === id) return SHAPES[i]; return null; }
 	// values = { key: "text" } in the user's unit; returns { ok, error, results:[{label, value, kind, formula}] } (empty fields -> null)
 	function compute(id, values) {
@@ -112,7 +176,7 @@
 		var base = compute(id, values); if (!base.ok) return null; var res = base.results.filter(function (x) { return x.kind === kind; })[0]; if (!res || !(res.value > 0) || !(target > 0)) return null;
 		return Math.pow(target / res.value, 1 / (kind === "vol" ? 3 : 2));
 	}
-	var SH = { num: num, fix: fix, trim: trim, pretty: pretty, UNITS: UNITS, UNIT_ORDER: UNIT_ORDER, UNIT_NAMES: UNIT_NAMES, sup: sup, convert: convert, capacity: capacity, areaUnits: areaUnits, SHAPES: SHAPES, byId: byId, compute: compute, scaleFor: scaleFor, heron: heron };
+	var SH = { num: num, fix: fix, trim: trim, pretty: pretty, UNITS: UNITS, UNIT_ORDER: UNIT_ORDER, UNIT_NAMES: UNIT_NAMES, sup: sup, convert: convert, capacity: capacity, areaUnits: areaUnits, SHAPES: SHAPES, byId: byId, compute: compute, scaleFor: scaleFor, heron: heron, mesh: mesh, meshVolume: meshVolume, meshArea: meshArea };
 	if (typeof module !== "undefined" && module.exports) module.exports = SH; else root.SH = SH;
 })(typeof window !== "undefined" ? window : this);
 
@@ -192,7 +256,7 @@
 	/* ---- results ---- */
 	var cur = null;
 	function update() {
-		var v = vals(); st.v[st.s] = v; save(); var r = SH.compute(st.s, v); cur = null;
+		var v = vals(); st.v[st.s] = v; save(); if (window.v3Build_) v3Build_(); var r = SH.compute(st.s, v); cur = null;
 		$("sh-empty").hidden = r.ok || !!r.error; $("sh-err").hidden = !r.error; $("sh-res").hidden = !r.ok; if (r.error) $("sh-err").textContent = r.error; if (!r.ok) return;
 		cur = r; var u = st.u, main = r.results[0];
 		$("sh-stats").innerHTML = r.results.map(function (x, i) {
@@ -219,7 +283,7 @@
 	/* ---- events ---- */
 	$("sh-unit").innerHTML = SH.UNIT_ORDER.map(function (u) { return '<option value="' + u + '">' + u + " (" + SH.UNIT_NAMES[u] + ")</option>"; }).join("");
 	SH.UNIT_VOL = function (u) { return u + "³"; };
-	function show() { $("sh-unit").value = st.u; buildChips(); buildFields(); update(); }
+	function show() { $("sh-unit").value = st.u; buildChips(); buildFields(); update(); v3Build(); }
 	$("sh-unit").addEventListener("change", function () { var o = st.u, n = this.value; st.u = n; save(); buildFields(); update(); });
 	$("sh-dim").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var d = +b.dataset.d; if (SH.byId(st.s).dim === d) return; st.s = d === 3 ? "cylinder" : "circle"; save(); show(); });
 	$("sh-shapes").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.s = b.dataset.s; save(); show(); });
@@ -237,5 +301,46 @@
 		var ex = EXAMPLE[s.id], r = ex ? SH.compute(s.id, ex) : null; return "<tr><td><b>" + esc(s.name) + "</b></td><td>" + (r && r.ok ? r.results.map(function (x) { return esc(x.label) + ": " + esc(x.formula); }).join("<br>") : "") + "</td></tr>";
 	}).join("") + "</tbody>";
 
-	load(); fromUrl(); show();
+
+	/* ---- 3D viewer (plain canvas, painter's algorithm; meshes come from SH.mesh) ---- */
+	var V3 = { yaw: -0.6, pitch: 0.42, zoom: 1, mode: "solid", spin: true, labels: true, mesh: null, id: 0, ptrs: {}, pinch: 0 };
+	function v3Dims() { var S = SH.byId(st.s), cur = vals(), ex = EXAMPLE[st.s], d = {}; S.inputs.forEach(function (i) { var n = SH.num(cur[i[0]]); d[i[0]] = n != null && (n > 0 || (S.id === "capsule" && i[0] === "h" && n === 0)) ? n : ex[i[0]]; }); return SH.compute(st.s, d).ok ? d : Object.assign({}, ex); }
+	function v3Build() {
+		var S = SH.byId(st.s), box = $("sh-3d"); box.hidden = S.dim !== 3; if (S.dim !== 3) { V3.mesh = null; return; }
+		var M = SH.mesh(st.s, v3Dims(), 48); if (!M) { box.hidden = true; return; } var mx = 0; M.verts.forEach(function (p) { mx = Math.max(mx, Math.hypot(p[0], p[1], p[2])); }); var k = 1.35 / (mx || 1);
+		M.verts = M.verts.map(function (p) { return [p[0] * k, p[1] * k, p[2] * k]; }); M.lines.forEach(function (l) { l.a = [l.a[0] * k, l.a[1] * k, l.a[2] * k]; l.b = [l.b[0] * k, l.b[1] * k, l.b[2] * k]; }); V3.mesh = M; v3Draw(); v3Loop();
+	}
+	function v3Color() { var c = getComputedStyle(root).getPropertyValue("--accent").trim(), m; if ((m = /^#([0-9a-f]{6})$/i.exec(c))) return [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4), 16)]; if ((m = /(\d+)[ ,]+(\d+)[ ,]+(\d+)/.exec(c))) return [+m[1], +m[2], +m[3]]; return [15, 108, 189]; }
+	function v3Draw() {
+		var M = V3.mesh, cv = $("sh-cv"); if (!M || $("sh-3d").hidden) return; var dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 400, h = Math.round(Math.min(400, w * 0.75)); if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.height = h + "px"; }
+		var g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h); var dark = document.body.classList.contains("dark-mode"), col = v3Color(), ink = dark ? "205,214,228" : "44,62,85";
+		var cy = Math.cos(V3.yaw), sy = Math.sin(V3.yaw), cp = Math.cos(V3.pitch), sp = Math.sin(V3.pitch), D = 5.5, sc = Math.min(w, h) * 0.30 * V3.zoom;
+		function rot(p) { var x1 = p[0] * cy + p[2] * sy, z1 = -p[0] * sy + p[2] * cy; return [x1, p[1] * cp - z1 * sp, p[1] * sp + z1 * cp]; }
+		function scr(q) { var f = D / (D - q[2]); return [w / 2 + sc * f * q[0], h / 2 - sc * f * q[1]]; }
+		var Tv = M.verts.map(rot), P = Tv.map(scr), L = [-0.4, 0.55, 0.73], faces = [];
+		M.tris.forEach(function (t) {
+			var a = Tv[t[0]], b = Tv[t[1]], c = Tv[t[2]], u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]], n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]], nl = Math.hypot(n[0], n[1], n[2]); if (nl < 1e-12) return;
+			var front = n[0] * (0 - a[0]) + n[1] * (0 - a[1]) + n[2] * (D - a[2]) > 0; if (V3.mode === "solid" && !front) return;
+			var lam = Math.abs(n[0] * L[0] + n[1] * L[1] + n[2] * L[2]) / nl; faces.push({ t: t, z: (a[2] + b[2] + c[2]) / 3, s: 0.32 + 0.68 * lam });
+		});
+		faces.sort(function (p, q) { return p.z - q.z; });
+		if (V3.mode !== "wire") faces.forEach(function (f) {
+			var t = f.t, c0 = [Math.round(col[0] * f.s + 255 * (1 - f.s) * 0.12), Math.round(col[1] * f.s + 255 * (1 - f.s) * 0.12), Math.round(col[2] * f.s + 255 * (1 - f.s) * 0.12)], st2 = "rgb(" + c0.join(",") + ")";
+			g.beginPath(); g.moveTo(P[t[0]][0], P[t[0]][1]); g.lineTo(P[t[1]][0], P[t[1]][1]); g.lineTo(P[t[2]][0], P[t[2]][1]); g.closePath(); if (V3.mode === "glass") { g.fillStyle = "rgba(" + c0.join(",") + ",0.22)"; g.fill(); } else { g.fillStyle = st2; g.strokeStyle = st2; g.lineWidth = 0.7; g.fill(); g.stroke(); }
+		});
+		var flat = M.wire.every(function (e) { return e.length === 2; }); g.lineJoin = "round";
+		M.wire.forEach(function (e) { if (V3.mode === "solid" && !flat) return; g.beginPath(); e.forEach(function (i, k) { if (k) g.lineTo(P[i][0], P[i][1]); else g.moveTo(P[i][0], P[i][1]); }); g.strokeStyle = "rgba(" + ink + "," + (V3.mode === "wire" ? 0.85 : V3.mode === "glass" ? 0.5 : flat ? 0.75 : 0.3) + ")"; g.lineWidth = V3.mode === "wire" ? 1.3 : flat ? 1.6 : 0.8; g.stroke(); });
+		if (V3.labels) M.lines.forEach(function (l) { var A = scr(rot(l.a)), B = scr(rot(l.b)); g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(B[0], B[1]); g.strokeStyle = dark ? "#ffd166" : "#c2410c"; g.lineWidth = 3; g.lineCap = "round"; g.stroke(); var mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2; g.font = "italic 700 17px Georgia, serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 4; g.strokeStyle = dark ? "#1d2127" : "#ffffff"; g.strokeText(l.t, mx + 9, my - 9); g.fillStyle = dark ? "#ffd166" : "#c2410c"; g.fillText(l.t, mx + 9, my - 9); });
+	}
+	function v3Loop() { if (V3.id) return; (function tick() { V3.id = 0; if (!V3.mesh || $("sh-3d").hidden) return; if (V3.spin && !document.hidden) { V3.yaw += 0.007; v3Draw(); } V3.id = requestAnimationFrame(tick); })(); }
+	(function () {
+		var cv = $("sh-cv"); $("sh-3d-mode").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; V3.mode = b.dataset.m; [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); v3Draw(); });
+		$("sh-3d-spin").addEventListener("change", function () { V3.spin = this.checked; v3Loop(); }); $("sh-3d-lab").addEventListener("change", function () { V3.labels = this.checked; v3Draw(); }); $("sh-3d-reset").addEventListener("click", function () { V3.yaw = -0.6; V3.pitch = 0.42; V3.zoom = 1; v3Draw(); });
+		cv.addEventListener("pointerdown", function (e) { V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; try { cv.setPointerCapture(e.pointerId); } catch (x) {} V3.spin = false; $("sh-3d-spin").checked = false; });
+		cv.addEventListener("pointermove", function (e) { var p = V3.ptrs[e.pointerId]; if (!p) return; var ids = Object.keys(V3.ptrs); if (ids.length === 2) { V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; var a = V3.ptrs[ids[0]], b = V3.ptrs[ids[1]], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (V3.pinch) V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * d / V3.pinch)); V3.pinch = d; v3Draw(); return; } V3.yaw += (e.clientX - p[0]) * 0.01; V3.pitch = Math.max(-1.5, Math.min(1.5, V3.pitch + (e.clientY - p[1]) * 0.01)); V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; v3Draw(); });
+		var up = function (e) { delete V3.ptrs[e.pointerId]; V3.pinch = 0; }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+		cv.addEventListener("wheel", function (e) { e.preventDefault(); V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); v3Draw(); }, { passive: false });
+		window.addEventListener("resize", v3Draw); new MutationObserver(v3Draw).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+	})();
+	window.v3Build_ = v3Build; load(); fromUrl(); show();
 })();

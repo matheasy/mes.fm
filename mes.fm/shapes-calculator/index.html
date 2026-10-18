@@ -321,6 +321,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .sh-g {margin:0.7em 0 0.1em;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;width:100%;}
 	.tu .sh-line {fill:none;stroke:#2c3e55;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;} .tu .sh-fill {fill:#dcebf8;stroke:#2c3e55;stroke-width:2;stroke-linejoin:round;} .tu .sh-hid {fill:none;stroke:#2c3e55;stroke-width:1.4;stroke-dasharray:4 4;} .tu .sh-dim {fill:none;stroke:var(--accent);stroke-width:2;} .tu .sh-lt {fill:var(--accent);font-size:15px;font-weight:700;font-style:italic;font-family:Georgia,serif;}
 	body.dark-mode #sh .sh-line, body.dark-mode #sh .sh-fill, body.dark-mode #sh .sh-hid {stroke:#c9d3e2;} body.dark-mode #sh .sh-fill {fill:rgba(255,255,255,0.08);} body.dark-mode #sh .sh-f, body.dark-mode #sh .sh-g {color:#a0a8b3;} body.dark-mode #sh .sh-error {border-left-color:#e57373;} body.dark-mode #sh .tu-stat__value small {color:#a0a8b3;}
+	.tu .sh-3d canvas {width:100%;display:block;margin-top:0.6em;border-radius:0.4em;background:#f6f8fb;border:1px solid #e3e7ec;cursor:grab;touch-action:none;} .tu .sh-3d canvas:active {cursor:grabbing;} .tu .sh-ck {font-size:0.92em;cursor:pointer;display:inline-flex;align-items:center;gap:0.35em;color:#333;}
+	body.dark-mode #sh .sh-3d canvas {background:#1d2127;border-color:#3a3f45;} body.dark-mode #sh .sh-ck {color:#d8dde5;}
 	@media print {.tu .sh-btns, .tu .tu-chips {display:none;}}
 
 
@@ -407,6 +409,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu .sh-line{stroke:#577ba8}
 	body.dark-mode .tu .sh-fill{stroke:#577ba8}
 	body.dark-mode .tu .sh-hid{stroke:#577ba8}
+	body.dark-mode .tu .sh-3d canvas{background:#15191e;border:1px solid #29323d}
+	body.dark-mode .tu .sh-ck{color:#cccccc}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -675,6 +679,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="sh-btns"><button type="button" class="tu-btn tu-btn--ghost" id="sh-clear">Clear</button><button type="button" class="tu-btn tu-btn--ghost" id="sh-ex">Example</button><button type="button" class="tu-btn tu-btn--primary" id="sh-link">Copy link</button></div>
 			</div>
 			<div class="sh-out">
+				<div class="tu-card sh-3d" id="sh-3d" hidden>
+					<div class="tu-row" style="align-items:center;gap:0.6em 1em;">
+						<div class="tu-seg" id="sh-3d-mode" role="group" aria-label="Drawing style"><button type="button" data-m="solid" aria-pressed="true">Solid</button><button type="button" data-m="glass" aria-pressed="false">See-through</button><button type="button" data-m="wire" aria-pressed="false">Wireframe</button></div>
+						<label class="sh-ck"><input type="checkbox" id="sh-3d-spin" checked> Spin</label><label class="sh-ck"><input type="checkbox" id="sh-3d-lab" checked> Labels</label><button type="button" class="tu-btn tu-btn--ghost" id="sh-3d-reset" style="padding:0.3em 0.9em;">Reset view</button>
+					</div>
+					<canvas id="sh-cv" aria-label="3D view of the solid. Drag to rotate, scroll to zoom." role="img"></canvas>
+					<p class="tu-note" style="margin:0.3em 0 0;" id="sh-3d-note">Drag to rotate, scroll or pinch to zoom. The drawing uses your numbers (or an example until you type some), scaled to fit.</p>
+				</div>
 				<div id="sh-empty" class="tu-card tu-card--tint">Type the size of the shape to see its <b>volume, surface area, area and perimeter</b> with the formula used for each. Lengths can be in any unit; results come back in that unit squared or cubed, and in litres, gallons, acres and more.</div>
 				<div id="sh-err" class="tu-card sh-error" hidden role="alert"></div>
 				<div id="sh-res" hidden>

@@ -99,6 +99,70 @@
 	def("tetrahedron", "Regular tetrahedron", 3, [["a", "Edge a"]], function (v) { if (!need(v, ["a"])) return null; return [R("Volume", Math.pow(v.a, 3) / (6 * Math.SQRT2), "vol", "V = a³ / (6√2)"), R("Surface area", Math.sqrt(3) * v.a * v.a, "area", "S = √3 a²"), R("Height", v.a * Math.sqrt(2 / 3), "len", "h = a√(2/3)")]; }, "Pyramids");
 	def("octahedron", "Regular octahedron", 3, [["a", "Edge a"]], function (v) { if (!need(v, ["a"])) return null; return [R("Volume", Math.SQRT2 / 3 * Math.pow(v.a, 3), "vol", "V = (√2/3)a³"), R("Surface area", 2 * Math.sqrt(3) * v.a * v.a, "area", "S = 2√3 a²")]; }, "Pyramids");
 
+
+	/* ---------- 3D meshes (for the viewer; y is up, closed surfaces with outward normals) ---------- */
+	function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+	function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+	function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+	function meshOut() { return { verts: [], tris: [], lines: [], wire: [] }; }
+	// a convex flat face given as a vertex-index loop; oriented outward away from `inside`
+	function addFace(M, idx, inside) {
+		var v = M.verts, n = cross(sub(v[idx[1]], v[idx[0]]), sub(v[idx[2]], v[idx[0]])), c = [0, 0, 0]; idx.forEach(function (i) { c[0] += v[i][0] / idx.length; c[1] += v[i][1] / idx.length; c[2] += v[i][2] / idx.length; });
+		if (dot(n, sub(c, inside)) < 0) idx = idx.slice().reverse();
+		for (var k = 1; k < idx.length - 1; k++) M.tris.push([idx[0], idx[k], idx[k + 1]]);
+		for (var e = 0; e < idx.length; e++) M.wire.push([idx[e], idx[(e + 1) % idx.length]]);
+	}
+	function revolve(profile, n) {
+		var M = meshOut(), K = profile.length, i, j;
+		for (i = 0; i < K; i++) for (j = 0; j < n; j++) { var th = 2 * PI * j / n; M.verts.push([profile[i][0] * Math.cos(th), profile[i][1], profile[i][0] * Math.sin(th)]); }
+		var id = function (a, b) { return a * n + (b % n); };
+		for (i = 0; i < K - 1; i++) for (j = 0; j < n; j++) { var A = id(i, j), B = id(i + 1, j), C = id(i + 1, j + 1), D = id(i, j + 1); M.tris.push([A, B, C]); M.tris.push([A, C, D]); }
+		for (i = 1; i < K - 1 || i === 1; i++) { if (i >= K) break; var ring = []; for (j = 0; j <= n; j++) ring.push(id(i, j)); M.wire.push(ring); }
+		var step = Math.max(1, Math.round(n / 16)); for (j = 0; j < n; j += step) { var mer = []; for (i = 0; i < K; i++) mer.push(id(i, j)); M.wire.push(mer); }
+		return M;
+	}
+	function arcPts(cx, cy, r, a0, a1, k) { var o = []; for (var i = 0; i <= k; i++) { var a = a0 + (a1 - a0) * i / k; o.push([r * Math.cos(a), cy + r * Math.sin(a)]); } return o; }   // (r, y) pairs around (0, cy)
+	function lineSeg(M, p, q, t) { M.lines.push({ a: p, b: q, t: t }); }
+	function mesh(id, v, n) {
+		n = n || 64; var M, h, i, j;
+		function box(a, b, c) {
+			M = meshOut(); var x = a / 2, y = c / 2, z = b / 2; M.verts = [[-x, -y, -z], [x, -y, -z], [x, y, -z], [-x, y, -z], [-x, -y, z], [x, -y, z], [x, y, z], [-x, y, z]];
+			[[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [3, 2, 6, 7], [0, 3, 7, 4], [1, 2, 6, 5]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); return M;
+		}
+		switch (id) {
+			case "cube": M = box(v.a, v.a, v.a); lineSeg(M, [-v.a / 2, -v.a / 2, v.a / 2], [v.a / 2, -v.a / 2, v.a / 2], "a"); return M;
+			case "box": M = box(v.a, v.b, v.c); lineSeg(M, [-v.a / 2, -v.c / 2, v.b / 2], [v.a / 2, -v.c / 2, v.b / 2], "a"); lineSeg(M, [v.a / 2, -v.c / 2, v.b / 2], [v.a / 2, -v.c / 2, -v.b / 2], "b"); lineSeg(M, [-v.a / 2, -v.c / 2, v.b / 2], [-v.a / 2, v.c / 2, v.b / 2], "c"); return M;
+			case "prism": {
+				M = meshOut(); var a = v.a, b = v.b, c = v.c, ca = (b * b + c * c - a * a) / (2 * b * c), sa = Math.sqrt(Math.max(0, 1 - ca * ca)), P = [[0, 0], [c, 0], [b * ca, b * sa]], cx = (P[0][0] + P[1][0] + P[2][0]) / 3, cy = (P[0][1] + P[1][1] + P[2][1]) / 3, l = v.l;
+				for (i = 0; i < 3; i++) M.verts.push([P[i][0] - cx, P[i][1] - cy, -l / 2]); for (i = 0; i < 3; i++) M.verts.push([P[i][0] - cx, P[i][1] - cy, l / 2]);
+				[[0, 1, 2], [3, 4, 5], [0, 1, 4, 3], [1, 2, 5, 4], [2, 0, 3, 5]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); lineSeg(M, M.verts[3], M.verts[0], "l"); return M;
+			}
+			case "cylinder": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [v.r, -v.h / 2, 0], [v.r, v.h / 2, 0], "h"); return M;
+			case "cone": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, -v.h / 2, 0], [v.r, -v.h / 2, 0], "r"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
+			case "frustum": M = revolve([[0, -v.h / 2], [v.R, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, -v.h / 2, 0], [v.R, -v.h / 2, 0], "R"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
+			case "sphere": { var pr = []; for (i = 0; i <= n / 2; i++) { var f = PI * i / (n / 2); pr.push([v.r * Math.sin(f), -v.r * Math.cos(f)]); } M = revolve(pr, n); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
+			case "hemisphere": { var ph = [[0, 0], [v.r, 0]]; arcPts(0, 0, v.r, 0, PI / 2, n / 4).forEach(function (q, k) { if (k > 0) ph.push(q); }); M = revolve(ph, n); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
+			case "capsule": { var pc = arcPts(0, -v.h / 2, v.r, -PI / 2, 0, n / 4).map(function (q) { return [q[0], q[1]]; }).concat(arcPts(0, v.h / 2, v.r, 0, PI / 2, n / 4).slice(1)); M = revolve([[0, -v.h / 2 - v.r]].concat(pc.slice(1)), n); lineSeg(M, [v.r, -v.h / 2, 0], [v.r, v.h / 2, 0], "h"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); return M; }
+			case "ellipsoid": { var pe = []; for (i = 0; i <= n / 2; i++) { var g = PI * i / (n / 2); pe.push([Math.sin(g), -Math.cos(g)]); } M = revolve(pe, n); M.verts = M.verts.map(function (p) { return [p[0] * v.a, p[1] * v.b, p[2] * v.c]; }); lineSeg(M, [0, 0, 0], [v.a, 0, 0], "a"); lineSeg(M, [0, 0, 0], [0, v.b, 0], "b"); lineSeg(M, [0, 0, 0], [0, 0, v.c], "c"); return M; }
+			case "torus": {
+				M = meshOut(); var m = n, k2 = Math.round(n / 2), idt = function (a, b) { return (a % m) * k2 + (b % k2); };
+				for (i = 0; i < m; i++) for (j = 0; j < k2; j++) { var u = 2 * PI * i / m, w = 2 * PI * j / k2; M.verts.push([(v.R + v.r * Math.cos(w)) * Math.cos(u), v.r * Math.sin(w), (v.R + v.r * Math.cos(w)) * Math.sin(u)]); }
+				for (i = 0; i < m; i++) for (j = 0; j < k2; j++) { var A = idt(i, j), B = idt(i + 1, j), C = idt(i + 1, j + 1), D = idt(i, j + 1); M.tris.push([A, D, C]); M.tris.push([A, C, B]); }
+				for (j = 0; j < k2; j += Math.max(1, Math.round(k2 / 6))) { var rg = []; for (i = 0; i <= m; i++) rg.push(idt(i, j)); M.wire.push(rg); } for (i = 0; i < m; i += Math.max(1, Math.round(m / 16))) { var mr = []; for (j = 0; j <= k2; j++) mr.push(idt(i, j)); M.wire.push(mr); }
+				lineSeg(M, [0, 0, 0], [v.R, 0, 0], "R"); lineSeg(M, [v.R, 0, 0], [v.R + v.r, 0, 0], "r"); return M;
+			}
+			case "pyramid": case "rect-pyramid": {
+				M = meshOut(); var pa = v.a, pb = id === "pyramid" ? v.a : v.b, ph2 = v.h; M.verts = [[-pa / 2, -ph2 / 2, -pb / 2], [pa / 2, -ph2 / 2, -pb / 2], [pa / 2, -ph2 / 2, pb / 2], [-pa / 2, -ph2 / 2, pb / 2], [0, ph2 / 2, 0]]; var ins = [0, -ph2 / 4, 0];
+				addFace(M, [0, 1, 2, 3], ins); [[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]].forEach(function (f) { addFace(M, f, ins); }); lineSeg(M, [-pa / 2, -ph2 / 2, pb / 2], [pa / 2, -ph2 / 2, pb / 2], "a"); if (id === "rect-pyramid") lineSeg(M, [pa / 2, -ph2 / 2, pb / 2], [pa / 2, -ph2 / 2, -pb / 2], "b"); lineSeg(M, [0, -ph2 / 2, 0], [0, ph2 / 2, 0], "h"); return M;
+			}
+			case "tetrahedron": { M = meshOut(); var q = v.a / (2 * Math.SQRT2); M.verts = [[q, q, q], [q, -q, -q], [-q, q, -q], [-q, -q, q]]; [[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); lineSeg(M, M.verts[1], M.verts[2], "a"); return M; }
+			case "octahedron": { M = meshOut(); var o = v.a / Math.SQRT2; M.verts = [[o, 0, 0], [-o, 0, 0], [0, o, 0], [0, -o, 0], [0, 0, o], [0, 0, -o]]; [[0, 2, 4], [0, 2, 5], [0, 3, 4], [0, 3, 5], [1, 2, 4], [1, 2, 5], [1, 3, 4], [1, 3, 5]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); lineSeg(M, M.verts[0], M.verts[2], "a"); return M; }
+		}
+		return null;
+	}
+	function meshVolume(M) { var s = 0; M.tris.forEach(function (t) { var a = M.verts[t[0]], b = M.verts[t[1]], c = M.verts[t[2]]; s += dot(a, cross(b, c)) / 6; }); return s; }
+	function meshArea(M) { var s = 0; M.tris.forEach(function (t) { var a = M.verts[t[0]], b = M.verts[t[1]], c = M.verts[t[2]], x = cross(sub(b, a), sub(c, a)); s += Math.sqrt(dot(x, x)) / 2; }); return s; }
+
 	function byId(id) { for (var i = 0; i < SHAPES.length; i++) if (SHAPES[i].id === id) return SHAPES[i]; return null; }
 	// values = { key: "text" } in the user's unit; returns { ok, error, results:[{label, value, kind, formula}] } (empty fields -> null)
 	function compute(id, values) {
@@ -112,6 +176,6 @@
 		var base = compute(id, values); if (!base.ok) return null; var res = base.results.filter(function (x) { return x.kind === kind; })[0]; if (!res || !(res.value > 0) || !(target > 0)) return null;
 		return Math.pow(target / res.value, 1 / (kind === "vol" ? 3 : 2));
 	}
-	var SH = { num: num, fix: fix, trim: trim, pretty: pretty, UNITS: UNITS, UNIT_ORDER: UNIT_ORDER, UNIT_NAMES: UNIT_NAMES, sup: sup, convert: convert, capacity: capacity, areaUnits: areaUnits, SHAPES: SHAPES, byId: byId, compute: compute, scaleFor: scaleFor, heron: heron };
+	var SH = { num: num, fix: fix, trim: trim, pretty: pretty, UNITS: UNITS, UNIT_ORDER: UNIT_ORDER, UNIT_NAMES: UNIT_NAMES, sup: sup, convert: convert, capacity: capacity, areaUnits: areaUnits, SHAPES: SHAPES, byId: byId, compute: compute, scaleFor: scaleFor, heron: heron, mesh: mesh, meshVolume: meshVolume, meshArea: meshArea };
 	if (typeof module !== "undefined" && module.exports) module.exports = SH; else root.SH = SH;
 })(typeof window !== "undefined" ? window : this);
