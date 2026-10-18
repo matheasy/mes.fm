@@ -1,0 +1,16 @@
+	/* Geometry & Angle Lab */
+	.tu [hidden] {display:none !important;}
+	.tu .ge-tabs {display:flex;flex-wrap:wrap;} .tu .ge-tabs button {flex:1 1 auto;}
+	.tu section {margin-top:1em;} .tu .ge-ctl {margin-bottom:0.8em;} .tu .ge-stage {padding:0.5em;margin-bottom:0.8em;}
+	.tu .ge-stage svg {width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;background:#fcfdfe;border-radius:0.4em;border:1px solid #e3e7ec;}
+	.tu .ge-opts {display:flex;flex-wrap:wrap;gap:0.4em 1.1em;margin-top:0.4em;} .tu .ge-ck {font-size:0.92em;cursor:pointer;display:inline-flex;align-items:center;gap:0.35em;color:#333;}
+	.tu .ge-two {display:grid;grid-template-columns:repeat(auto-fit,minmax(18em,1fr));gap:1em;}
+	.tu .ge-legend {display:flex;flex-wrap:wrap;gap:0.4em 1em;margin:0 0 0.8em;font-size:0.9em;} .tu .ge-legend i {display:inline-block;width:0.9em;height:0.9em;border-radius:0.2em;vertical-align:-0.1em;margin-right:0.3em;}
+	.tu .ge-facts {margin:0;padding-left:1.2em;line-height:1.55;} .tu .ge-facts li {margin:0.25em 0;} .tu .ge-bad {color:#b3261e;font-weight:700;} .tu .ge-ok {color:#1b7a3d;font-weight:700;}
+	.tu .ge-badge {display:inline-block;padding:0.15em 0.7em;border-radius:1em;background:var(--tint);color:#233;font-weight:700;font-size:0.85em;margin:0 0.3em 0.3em 0;}
+	.tu .g-bg {fill:none;} .tu .g-line {stroke:#2c3e55;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;} .tu .g-tri {fill:var(--tint);fill-opacity:0.75;stroke:#2c3e55;stroke-width:2.5;stroke-linejoin:round;} .tu .g-sim {fill:rgba(224,120,20,0.18);stroke:#d97706;stroke-width:2.2;stroke-dasharray:7 4;} .tu .g-aux {fill:none;stroke:#7b8794;stroke-width:1.6;stroke-dasharray:5 4;} .tu .g-thin {stroke:#9aa5b4;stroke-width:1;fill:none;} .tu .g-grid {stroke:#e8ecf1;stroke-width:1;}
+	.tu .g-h {fill:#fff;stroke:var(--accent);stroke-width:3;cursor:grab;} .tu .g-h:hover, .tu .g-h:focus {fill:var(--tint);outline:none;stroke-width:4.5;} .tu .g-ht {font-size:13px;font-weight:800;fill:var(--accent);pointer-events:none;text-anchor:middle;font-family:Georgia,serif;}
+	.tu .g-t {font-size:14px;fill:#1e2733;font-weight:700;text-anchor:middle;} .tu .g-ts {font-size:12px;fill:#556;text-anchor:middle;} .tu .g-ta {font-size:13px;font-weight:800;text-anchor:middle;}
+	.tu .g-wedge {cursor:pointer;stroke:#fff;stroke-width:1.5;} .tu .g-wedge:hover {opacity:0.8;} .tu .g-sel {stroke:#111;stroke-width:3;}
+	body.dark-mode #ge .ge-stage svg {background:#1d2127;border-color:#3a3f45;} body.dark-mode #ge .g-line, body.dark-mode #ge .g-tri {stroke:#cdd6e4;} body.dark-mode #ge .g-tri {fill-opacity:0.35;} body.dark-mode #ge .g-t {fill:#eceff4;} body.dark-mode #ge .g-ts {fill:#a0a8b3;} body.dark-mode #ge .g-grid {stroke:#2a2f36;} body.dark-mode #ge .g-h {fill:#1d2127;} body.dark-mode #ge .g-h:hover, body.dark-mode #ge .g-h:focus {fill:#35404f;} body.dark-mode #ge .g-aux, body.dark-mode #ge .g-thin {stroke:#7b8794;} body.dark-mode #ge .ge-ck {color:#d8dde5;} body.dark-mode #ge .ge-badge {background:rgba(255,255,255,0.12);color:#eceff4;} body.dark-mode #ge .ge-bad {color:#ff8a80;} body.dark-mode #ge .ge-ok {color:#7fd69b;}
+	@media print {.tu .ge-ctl, .tu .ge-tabs {display:none;}}

@@ -1,0 +1,722 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- Trigonometry Calculator -- mes.fm/trigonometry -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/trigonometry/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/trigonometry" />                    <title>Trigonometry Calculator | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#c2410c;color:white;}
+        .button {color:#c2410c;border:0.125em solid#c2410c;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#c2410c; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#c2410c; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#c2410c;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#c2410c;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#c2410c;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#9a3412;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#c2410c;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#c2410c;border:0.125em solid#c2410c;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#9a3412;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#c2410c;}
+        .dropdown-symbol--dark {color:#c2410c;}
+        .button--active {background-color:#c2410c;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#c2410c;--accent-dark:#9a3412;--tint:#fbe6da;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #fbe6da;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#fbe6da;border-color:#fbe6da;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #fbe6da;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#fbe6da;border-color:#fbe6da;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#fbe6da;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#fbe6da;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#f37541 !important;--accent-dark:#f37541 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	/* Trigonometry Calculator */
+	.tu [hidden] {display:none !important;}
+	.tu .tg-tabs {display:flex;flex-wrap:wrap;} .tu .tg-tabs button {flex:1 1 auto;}
+	.tu section {margin-top:1em;} .tu .tg-ctl {margin-bottom:0.8em;} .tu .tg-stage {padding:0.5em;margin-bottom:0.8em;}
+	.tu .tg-stage svg {width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;background:#fcfdfe;border-radius:0.4em;border:1px solid #e3e7ec;}
+	.tu .tg-opts {display:flex;flex-wrap:wrap;gap:0.4em 1.1em;margin-top:0.5em;align-items:center;} .tu .tg-ck {font-size:0.92em;cursor:pointer;display:inline-flex;align-items:center;gap:0.35em;color:#333;}
+	.tu .tg-k {font-weight:800;} .tu .tg-sin {color:#d64545;} .tu .tg-cos {color:#2f6fd0;} .tu .tg-tan {color:#1f9a56;}
+	.tu .tg-res {line-height:1.6;margin-top:0.8em;} .tu .tg-res b {font-variant-numeric:tabular-nums;} .tu .tg-bad {color:#b3261e;font-weight:700;} .tu .tg-ok {color:#1b7a3d;font-weight:700;}
+	.tu .tg-tgrid {display:grid;grid-template-columns:repeat(auto-fit,minmax(9em,1fr));gap:0.6em;margin:0.6em 0;} .tu .tg-tgrid .tu-field label span {color:#888;font-weight:400;}
+	.tu .tg-btns {display:flex;gap:0.5em;margin-top:0.6em;}
+	.tu .tg-sl {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.3em 1.2em;margin-top:0.6em;} .tu .tg-sl label {font-size:0.9em;display:block;} .tu .tg-sl input[type=range] {width:100%;accent-color:var(--accent);height:1.8em;}
+	.tu .tg-eq {font-family:Georgia,"Times New Roman",serif;font-size:1.15em;font-weight:700;margin-left:0.8em;}
+	.tu .tg-tbl {max-height:26em;overflow:auto;} .tu .tu-table td, .tu .tu-table th {font-variant-numeric:tabular-nums;}
+	.tu .tg-fig svg {width:100%;max-width:26em;height:auto;display:block;} .tu .tg-sol {margin-top:0.8em;} .tu .tg-sol h3 {margin:0 0 0.3em;}
+	.tu .t-ax {stroke:#8a93a0;stroke-width:1.4;} .tu .t-gr {stroke:#e3e7ec;stroke-width:1;} .tu .t-cir {fill:rgba(60,100,200,0.05);stroke:#2c3e55;stroke-width:2;} .tu .t-tx {font-size:12px;fill:#667;} .tu .t-lb {font-size:14px;font-weight:700;} .tu .t-ln {fill:none;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;} .tu .t-h {fill:#fff;stroke:var(--accent);stroke-width:3.5;cursor:grab;} .tu .t-h:hover, .tu .t-h:focus {fill:#fbe6da;outline:none;stroke-width:5;}
+	body.dark-mode #tg .tg-stage svg {background:#1d2127;border-color:#3a3f45;} body.dark-mode #tg .t-ax {stroke:#7b8794;} body.dark-mode #tg .t-gr {stroke:#2a2f36;} body.dark-mode #tg .t-cir {stroke:#cdd6e4;fill:rgba(255,255,255,0.04);} body.dark-mode #tg .t-tx {fill:#a0a8b3;} body.dark-mode #tg .t-h {fill:#1d2127;} body.dark-mode #tg .t-h:hover, body.dark-mode #tg .t-h:focus {fill:#35404f;} body.dark-mode #tg .tg-ck {color:#d8dde5;} body.dark-mode #tg .tg-bad {color:#ff8a80;} body.dark-mode #tg .tg-ok {color:#7fd69b;} body.dark-mode #tg .tg-sin {color:#ff8a80;} body.dark-mode #tg .tg-cos {color:#7fb0ff;} body.dark-mode #tg .tg-tan {color:#6fd99b;} body.dark-mode #tg .t-fg {stroke:#cdd6e4;} body.dark-mode #tg .t-lbl {fill:#e8ecf2;}
+	.tu .t-fg {fill:#fbe6da;fill-opacity:0.8;stroke:#2c3e55;stroke-width:2.2;stroke-linejoin:round;} .tu .t-lbl {font-size:13px;font-weight:700;fill:#1e2733;text-anchor:middle;}
+	@media print {.tu .tg-ctl, .tu .tg-tabs {display:none;}}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/trigonometry" />            <meta property="og:title" content="Trigonometry Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/trigonometry/img/logo-big.png" />
+        <meta property="og:description" content="Free trigonometry calculator and simulator: drag the unit circle, get sin, cos, tan, csc, sec and cot with exact values, solve any triangle (SSS, SAS, ASA, AAS and the ambiguous SSA case), graph sinusoids, build trig tables and check identities." />
+
+        <meta name="description" content="Free trigonometry calculator and simulator: drag the unit circle, get sin, cos, tan, csc, sec and cot with exact values, solve any triangle (SSS, SAS, ASA, AAS and the ambiguous SSA case), graph sinusoids, build trig tables and check identities.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="Trigonometry Calculator">
+        <meta name="twitter:description" content="Free trigonometry calculator and simulator: drag the unit circle, get sin, cos, tan, csc, sec and cot with exact values, solve any triangle (SSS, SAS, ASA, AAS and the ambiguous SSA case), graph sinusoids, build trig tables and check identities.">
+        <meta name="twitter:image" content="https://mes.fm/trigonometry/img/logo-big.png">
+        <meta name="twitter:image:alt" content="Trigonometry Calculator">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Trigonometry Calculator", "url": "https://mes.fm/trigonometry", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free trigonometry calculator and simulator: drag the unit circle, get sin, cos, tan, csc, sec and cot with exact values, solve any triangle (SSS, SAS, ASA, AAS and the ambiguous SSA case), graph sinusoids, build trig tables and check identities."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    </head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/trigonometry'><img height="88" width="88" id="logo" class="logo lazyload" alt="Trigonometry Calculator logo" data-src="/trigonometry/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/trigonometry'>
+                                    <p class="calculator-title">Trigonometry Calculator</p>
+                                </a>
+                                <p class="tag-line">Unit circle, triangles, graphs and tables.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/trigonometry'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Trigonometry Calculator: Unit Circle, Sin Cos Tan, Triangle Solver and Graphs</h1>                                        <p class="page-description">Free trigonometry calculator and simulator: drag the unit circle, get sin, cos, tan, csc, sec and cot with exact values, solve any triangle (SSS, SAS, ASA, AAS and the ambiguous SSA case), graph sinusoids, build trig tables and check identities.</p>                                    	<div id="main-content">
+	<div class="tu" id="tg">
+		<div class="tu-card"><div class="tu-seg tg-tabs" id="tg-tabs" role="tablist" aria-label="Trigonometry tools">
+			<button type="button" role="tab" data-t="circle" aria-pressed="true">Unit circle</button><button type="button" role="tab" data-t="calc" aria-pressed="false">Calculator</button><button type="button" role="tab" data-t="tri" aria-pressed="false">Solve triangles</button><button type="button" role="tab" data-t="graph" aria-pressed="false">Graphs</button><button type="button" role="tab" data-t="tables" aria-pressed="false">Tables &amp; identities</button>
+		</div></div>
+
+		<section data-p="circle">
+			<div class="tu-card tg-ctl">
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field" style="flex:1 1 12em;"><label for="tg-c-in">Angle (try 45, 3pi/4, 2.5 rad)</label><input id="tg-c-in" class="tu-input tu-input--big" type="text" autocomplete="off" inputmode="text" value="45"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:13em;"><span class="tu-label" id="tg-u-l">Unit</span><div class="tu-seg" id="tg-c-unit" role="group" aria-labelledby="tg-u-l"><button type="button" data-u="deg" aria-pressed="true">Degrees</button><button type="button" data-u="rad" aria-pressed="false">Radians</button></div></div>
+				</div>
+				<div class="tg-opts"><label class="tg-ck"><input type="checkbox" id="tg-c-snap"> Snap to special angles (15&deg;)</label><label class="tg-ck"><input type="checkbox" id="tg-c-rec"> Show csc, sec, cot</label></div>
+				<div class="tu-chips" id="tg-c-pre"></div>
+			</div>
+			<div class="tu-card tg-stage"><svg id="tg-svg-c" viewBox="0 0 640 400" role="img" aria-label="Unit circle you can drag"></svg><p class="tu-note" style="margin:0.4em 0 0;">Drag the point around the circle (or use the arrow keys when it is focused). <span class="tg-k tg-sin">sin</span> is the height, <span class="tg-k tg-cos">cos</span> is the horizontal distance, <span class="tg-k tg-tan">tan</span> is the length on the tangent line at (1, 0).</p></div>
+			<div class="tu-stats" id="tg-c-stats" aria-live="polite"></div>
+			<div class="tu-card tg-stage"><svg id="tg-svg-w" viewBox="0 0 640 190" role="img" aria-label="sine and cosine waves"></svg></div>
+			<div class="tu-card" id="tg-c-facts"></div>
+		</section>
+
+		<section data-p="calc" hidden>
+			<div class="tu-card">
+				<h2 style="margin-top:0;">Trig functions of an angle</h2>
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field" style="flex:1 1 12em;"><label for="tg-a-in">Angle</label><input id="tg-a-in" class="tu-input tu-input--big" type="text" autocomplete="off" value="30"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:17em;"><span class="tu-label" id="tg-au-l">Unit</span><div class="tu-seg" id="tg-a-unit" role="group" aria-labelledby="tg-au-l"><button type="button" data-u="deg" aria-pressed="true">Degrees</button><button type="button" data-u="rad" aria-pressed="false">Radians</button><button type="button" data-u="grad" aria-pressed="false">Gradians</button></div></div>
+				</div>
+				<div class="tu-table-wrap" style="margin-top:0.8em;"><table class="tu-table" id="tg-a-tab"></table></div>
+				<p class="tu-note" id="tg-a-note"></p>
+			</div>
+			<div class="tu-card">
+				<h2 style="margin-top:0;">Inverse trig: find the angle</h2>
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tg-i-fn">Function</label><select id="tg-i-fn" class="tu-select"><option value="sin">sin⁻¹ (arcsin)</option><option value="cos">cos⁻¹ (arccos)</option><option value="tan">tan⁻¹ (arctan)</option><option value="csc">csc⁻¹</option><option value="sec">sec⁻¹</option><option value="cot">cot⁻¹</option></select></div>
+					<div class="tu-field" style="flex:1 1 12em;"><label for="tg-i-v">Value (e.g. 0.5, 1/2, sqrt(3)/2)</label><input id="tg-i-v" class="tu-input tu-input--big" type="text" autocomplete="off" value="0.5"></div>
+				</div>
+				<div id="tg-i-out" class="tg-res" aria-live="polite"></div>
+			</div>
+		</section>
+
+		<section data-p="tri" hidden>
+			<div class="tu-card">
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:15em;"><span class="tu-label" id="tg-tm-l">Triangle type</span><div class="tu-seg" id="tg-t-mode" role="group" aria-labelledby="tg-tm-l"><button type="button" data-m="right" aria-pressed="true">Right triangle</button><button type="button" data-m="any" aria-pressed="false">Any triangle</button></div></div>
+				</div>
+				<p class="tu-note" id="tg-t-help" style="margin:0.6em 0;"></p>
+				<div class="tg-tgrid" id="tg-t-fields"></div>
+				<div class="tu-chips" id="tg-t-ex"></div>
+				<div class="tg-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tg-t-clear">Clear</button></div>
+			</div>
+			<div id="tg-t-out" aria-live="polite"></div>
+		</section>
+
+		<section data-p="graph" hidden>
+			<div class="tu-card tg-ctl">
+				<div class="tu-row" style="align-items:center;"><div class="tu-seg" id="tg-g-fn" role="group" aria-label="Function"><button type="button" data-f="sin" aria-pressed="true">sin</button><button type="button" data-f="cos" aria-pressed="false">cos</button><button type="button" data-f="tan" aria-pressed="false">tan</button></div><span class="tg-eq" id="tg-g-eq"></span></div>
+				<div class="tg-sl" id="tg-g-sl"></div>
+				<div class="tg-opts"><label class="tg-ck"><input type="checkbox" id="tg-g-par" checked> Show the plain function (dashed)</label><button type="button" class="tu-btn tu-btn--ghost" id="tg-g-reset" style="padding:0.3em 0.9em;">Reset</button></div>
+			</div>
+			<div class="tu-card tg-stage"><svg id="tg-svg-g" viewBox="0 0 640 330" role="img" aria-label="Graph of the trig function"></svg><p class="tu-note" style="margin:0.4em 0 0;" id="tg-g-trace">Move the pointer over the graph to read values.</p></div>
+			<div class="tu-stats" id="tg-g-stats" aria-live="polite"></div>
+		</section>
+
+		<section data-p="tables" hidden>
+			<div class="tu-card">
+				<h2 style="margin-top:0;">Trig table</h2>
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tg-tb-r">Range</label><select id="tg-tb-r" class="tu-select"><option value="90">0° to 90°</option><option value="180">0° to 180°</option><option value="360" selected>0° to 360°</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tg-tb-s">Step</label><select id="tg-tb-s" class="tu-select"><option>1</option><option>5</option><option>10</option><option selected>15</option><option>30</option><option>45</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tg-tb-d">Decimals</label><select id="tg-tb-d" class="tu-select"><option>3</option><option selected>4</option><option>6</option><option>8</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label class="tg-ck" style="margin-top:1.4em;"><input type="checkbox" id="tg-tb-x" checked> Exact values</label></div>
+				</div>
+				<div class="tu-table-wrap tg-tbl" style="margin-top:0.8em;"><table class="tu-table" id="tg-tb"></table></div>
+			</div>
+			<div class="tu-card">
+				<h2 style="margin-top:0;">Identity checker</h2>
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field" style="flex:2 1 18em;"><label for="tg-id-s">Identity</label><select id="tg-id-s" class="tu-select"></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="tg-id-x">x (°)</label><input id="tg-id-x" class="tu-input" type="text" inputmode="decimal" value="25"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:7em;" id="tg-id-yf"><label for="tg-id-y">y (°)</label><input id="tg-id-y" class="tu-input" type="text" inputmode="decimal" value="40"></div>
+				</div>
+				<div id="tg-id-out" class="tg-res" aria-live="polite"></div>
+				<h3>All the identities</h3>
+				<div class="tu-table-wrap"><table class="tu-table" id="tg-id-ref"></table></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Trigonometry in one page</h2>
+			<p><b>Trigonometry</b> links the angles of a triangle to the lengths of its sides. In a right triangle: <b>sin &theta; = opposite &divide; hypotenuse</b>, <b>cos &theta; = adjacent &divide; hypotenuse</b>, <b>tan &theta; = opposite &divide; adjacent</b> (remember <b>SOH-CAH-TOA</b>). The reciprocals are csc = 1/sin, sec = 1/cos and cot = 1/tan. On the <b>unit circle</b> (radius 1), the point at angle &theta; is (cos &theta;, sin &theta;), which extends the functions to every angle, positive or negative.</p>
+			<h2>Special angles</h2>
+			<div class="tu-table-wrap"><table class="tu-table"><thead><tr><th>Angle</th><th>Radians</th><th>sin</th><th>cos</th><th>tan</th></tr></thead><tbody>
+				<tr><td>0&deg;</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td>30&deg;</td><td>&pi;/6</td><td>1/2</td><td>&radic;3/2</td><td>&radic;3/3</td></tr><tr><td>45&deg;</td><td>&pi;/4</td><td>&radic;2/2</td><td>&radic;2/2</td><td>1</td></tr><tr><td>60&deg;</td><td>&pi;/3</td><td>&radic;3/2</td><td>1/2</td><td>&radic;3</td></tr><tr><td>90&deg;</td><td>&pi;/2</td><td>1</td><td>0</td><td>undefined</td></tr>
+			</tbody></table></div>
+			<h2>The laws for any triangle</h2>
+			<p><b>Law of sines:</b> a / sin A = b / sin B = c / sin C. <b>Law of cosines:</b> c&sup2; = a&sup2; + b&sup2; &minus; 2ab cos C. Use the Solve triangles tab for SSS, SAS, ASA, AAS and the ambiguous SSA case (two possible triangles).</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Should my calculator be in degrees or radians?</dt><dd>Use degrees for everyday angles and geometry; radians (2&pi; = 360&deg;) in calculus and physics. Type 3pi/4 or &ldquo;2 rad&rdquo; here and the unit is detected for you.</dd>
+				<dt>Why is tan 90&deg; undefined?</dt><dd>tan = sin &divide; cos, and cos 90&deg; = 0, so the division by zero has no value; the graph has a vertical asymptote there.</dd>
+				<dt>What is the ambiguous case?</dt><dd>When you know two sides and an angle that is <i>not</i> between them (SSA), the shorter side can swing to two positions, so there can be two different triangles, one, or none.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything runs in your browser.</dd>
+			</dl>
+			<p>Related: <a href="/geometry">Geometry &amp; Angle Lab</a> &middot; <a href="/2d-graphing-calculator">2D Graphing Calculator</a> &middot; <a href="/shapes-calculator">Volume, Area &amp; Surface Area Calculator</a> &middot; <a href="/calculator">Calculator</a></p>
+		</div>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>                            </div>
+                        </div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/trigonometry">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/trigonometry/js/trigonometry.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
+
+</html>

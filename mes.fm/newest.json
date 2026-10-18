@@ -1,6 +1,30 @@
 {
- "generated": "2026-10-16",
+ "generated": "2026-10-18",
  "calculators": [
+  {
+   "href": "/trigonometry",
+   "title": "Trigonometry Calculator",
+   "icon": "/img/trigonometry-logo.png",
+   "desc": "Unit circle, triangle solver, graphs, tables and identities.",
+   "added": "2026-10-18",
+   "kind": "calculator"
+  },
+  {
+   "href": "/shapes-calculator",
+   "title": "Volume, Area & Surface Area Calculator",
+   "icon": "/img/shapes-calculator-logo.png",
+   "desc": "Volume, area and surface area of 27 shapes, with every formula.",
+   "added": "2026-10-18",
+   "kind": "calculator"
+  },
+  {
+   "href": "/geometry",
+   "title": "Geometry & Angle Lab",
+   "icon": "/img/geometry-logo.png",
+   "desc": "Drag triangles, lines and circles and watch the angles update.",
+   "added": "2026-10-18",
+   "kind": "calculator"
+  },
   {
    "href": "/body-surface-area-calculator",
    "title": "Body Surface Area Calculator",
@@ -70,30 +94,6 @@
    "title": "Waist-to-Hip Ratio Calculator",
    "icon": "/img/waist-to-hip-ratio-calculator-logo.png",
    "desc": "Waist-to-hip, waist-to-height and body shape with risk levels.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/ideal-weight-calculator",
-   "title": "Ideal Weight Calculator",
-   "icon": "/img/ideal-weight-calculator-logo.png",
-   "desc": "Ideal body weight by four formulas, next to your healthy BMI range.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/tdee-calculator",
-   "title": "TDEE Calculator",
-   "icon": "/img/tdee-calculator-logo.png",
-   "desc": "Your maintenance calories, plus calories to lose or gain weight.",
-   "added": "2026-10-14",
-   "kind": "calculator"
-  },
-  {
-   "href": "/water-intake-calculator",
-   "title": "Water Intake Calculator",
-   "icon": "/img/water-intake-calculator-logo.png",
-   "desc": "How much water to drink a day, with a daily tracker.",
    "added": "2026-10-14",
    "kind": "calculator"
   }
@@ -198,6 +198,30 @@
  ],
  "latest": [
   {
+   "href": "/trigonometry",
+   "title": "Trigonometry Calculator",
+   "icon": "/img/trigonometry-logo.png",
+   "desc": "Unit circle, triangle solver, graphs, tables and identities.",
+   "added": "2026-10-18",
+   "kind": "calculator"
+  },
+  {
+   "href": "/shapes-calculator",
+   "title": "Volume, Area & Surface Area Calculator",
+   "icon": "/img/shapes-calculator-logo.png",
+   "desc": "Volume, area and surface area of 27 shapes, with every formula.",
+   "added": "2026-10-18",
+   "kind": "calculator"
+  },
+  {
+   "href": "/geometry",
+   "title": "Geometry & Angle Lab",
+   "icon": "/img/geometry-logo.png",
+   "desc": "Drag triangles, lines and circles and watch the angles update.",
+   "added": "2026-10-18",
+   "kind": "calculator"
+  },
+  {
    "href": "/photo",
    "title": "Photo Editor",
    "icon": "/img/photo-editor-logo.png",
@@ -236,30 +260,6 @@
    "desc": "Merge, split, rearrange, compress and convert PDFs and pictures. Private: nothing is uploaded.",
    "added": "2026-10-15",
    "kind": "tool"
-  },
-  {
-   "href": "/pdf",
-   "title": "PDF Editor",
-   "icon": "/img/pdf-logo.png",
-   "desc": "Sign, fill in, annotate, highlight, redact and edit text in a PDF. Private: it never leaves your browser.",
-   "added": "2026-10-15",
-   "kind": "tool"
-  },
-  {
-   "href": "/body-surface-area-calculator",
-   "title": "Body Surface Area Calculator",
-   "icon": "/img/body-surface-area-calculator-logo.png",
-   "desc": "BSA by ten formulas for adults and children, plus clinical helpers.",
-   "added": "2026-10-15",
-   "kind": "calculator"
-  },
-  {
-   "href": "/one-rep-max-calculator",
-   "title": "One-Rep Max Calculator",
-   "icon": "/img/one-rep-max-calculator-logo.png",
-   "desc": "Estimate your 1RM from a set, with a rep chart, plate loader and strength level.",
-   "added": "2026-10-15",
-   "kind": "calculator"
   }
  ]
 }

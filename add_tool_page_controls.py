@@ -64,6 +64,9 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("exif-viewer", "EXIF Viewer"),
     ("contraction-timer", "Contraction Timer"),
     ("bmr-calculator", "BMR Calculator"),
+    ("trigonometry", "Trigonometry Calculator"),   # also built by build_tool_apps.py
+    ("geometry", "Geometry & Angle Lab"),   # also built by build_tool_apps.py
+    ("shapes-calculator", "Volume, Area & Surface Area Calculator"),   # also built by build_tool_apps.py
     ("pregnancy-calorie-calculator", "Pregnancy Calorie Calculator"),   # also built by build_tool_apps.py
     ("body-surface-area-calculator", "Body Surface Area Calculator"),   # also built by build_tool_apps.py
     ("one-rep-max-calculator", "One-Rep Max Calculator"),   # also built by build_tool_apps.py

@@ -1,0 +1,79 @@
+	<div class="tu" id="ge">
+		<div class="tu-card">
+			<div class="tu-seg ge-tabs" id="ge-tabs" role="tablist" aria-label="Geometry lab">
+				<button type="button" role="tab" data-t="tri" aria-pressed="true">Triangles</button><button type="button" role="tab" data-t="lines" aria-pressed="false">Parallel lines</button><button type="button" role="tab" data-t="circle" aria-pressed="false">Circles</button><button type="button" role="tab" data-t="poly" aria-pressed="false">Angles &amp; polygons</button>
+			</div>
+		</div>
+
+		<section id="ge-p-tri" data-p="tri">
+			<div class="tu-card ge-ctl">
+				<div class="tu-chips" id="ge-tri-pre" style="margin:0 0 0.6em;"></div>
+				<div class="ge-opts" id="ge-tri-opts"></div>
+				<div class="tu-row" id="ge-sim-row" style="align-items:center;margin-top:0.5em;" hidden><label for="ge-sim-k" class="tu-label" style="margin:0;">Similar triangle scale k = <b id="ge-sim-ko"></b></label><input type="range" id="ge-sim-k" min="0.3" max="2.5" step="0.05" value="0.6" style="flex:1 1 12em;accent-color:var(--accent);height:2em;"></div>
+			</div>
+			<div class="tu-card ge-stage"><svg id="ge-svg-tri" viewBox="0 0 640 420" role="img" aria-label="Triangle you can drag"></svg><p class="tu-note" style="margin:0.4em 0 0;">Drag the corners A, B and C (or focus one and use the arrow keys). Everything updates as you move.</p></div>
+			<div class="tu-stats" id="ge-tri-stats" aria-live="polite"></div>
+			<div class="tu-card" id="ge-tri-facts"></div>
+		</section>
+
+		<section id="ge-p-lines" data-p="lines" hidden>
+			<div class="tu-card ge-ctl">
+				<div class="tu-row" style="align-items:center;"><label for="ge-th" class="tu-label" style="margin:0;">Transversal angle &theta; = <b id="ge-tho"></b>&deg;</label><input type="range" id="ge-th" min="15" max="165" step="1" value="65" style="flex:1 1 12em;accent-color:var(--accent);height:2em;"></div>
+				<div class="ge-opts"><label class="ge-ck"><input type="checkbox" id="ge-par" checked> Lines are parallel</label></div>
+				<div class="tu-row" id="ge-tilt-row" style="align-items:center;" hidden><label for="ge-tilt" class="tu-label" style="margin:0;">Tilt the lower line by <b id="ge-tilto"></b>&deg;</label><input type="range" id="ge-tilt" min="-35" max="35" step="1" value="12" style="flex:1 1 12em;accent-color:var(--accent);height:2em;"></div>
+			</div>
+			<div class="tu-card ge-stage"><svg id="ge-svg-lines" viewBox="0 0 640 420" role="img" aria-label="Two lines cut by a transversal"></svg><p class="tu-note" style="margin:0.4em 0 0;">Click any numbered angle to see how every other angle is related to it. Drag the top of the transversal to turn it.</p></div>
+			<div class="ge-legend" id="ge-lines-legend"></div>
+			<div class="tu-card" id="ge-lines-facts"></div>
+		</section>
+
+		<section id="ge-p-circle" data-p="circle" hidden>
+			<div class="tu-card ge-ctl"><div class="tu-chips" id="ge-circ-modes" style="margin:0;"></div></div>
+			<div class="tu-card ge-stage"><svg id="ge-svg-circle" viewBox="0 0 640 420" role="img" aria-label="Circle theorems"></svg><p class="tu-note" style="margin:0.4em 0 0;">Drag the lettered points around the circle.</p></div>
+			<div class="tu-stats" id="ge-circ-stats" aria-live="polite"></div>
+			<div class="tu-card" id="ge-circ-facts"></div>
+		</section>
+
+		<section id="ge-p-poly" data-p="poly" hidden>
+			<div class="ge-two">
+				<div>
+					<h2 style="margin-top:0;">Angle explorer</h2>
+					<div class="tu-card ge-ctl"><div class="tu-row" style="align-items:center;"><label for="ge-ang" class="tu-label" style="margin:0;">Angle</label><div class="tu-suffix" style="width:8em;"><input id="ge-ang" class="tu-input" type="text" inputmode="decimal" value="60"><span>&deg;</span></div><label class="ge-ck"><input type="checkbox" id="ge-snap"> Snap to 15&deg;</label></div></div>
+					<div class="tu-card ge-stage"><svg id="ge-svg-ang" viewBox="0 0 320 300" role="img" aria-label="Angle explorer"></svg></div>
+					<div class="tu-stats" id="ge-ang-stats" aria-live="polite"></div>
+				</div>
+				<div>
+					<h2 style="margin-top:0;">Polygon angles</h2>
+					<div class="tu-card ge-ctl"><div class="tu-row" style="align-items:center;"><label for="ge-n" class="tu-label" style="margin:0;">Sides n = <b id="ge-no"></b></label><input type="range" id="ge-n" min="3" max="16" step="1" value="5" style="flex:1 1 10em;accent-color:var(--accent);height:2em;"></div><div class="ge-opts"><label class="ge-ck"><input type="checkbox" id="ge-free"> Free polygon (drag the corners)</label><label class="ge-ck"><input type="checkbox" id="ge-ext"> Show exterior angles</label></div></div>
+					<div class="tu-card ge-stage"><svg id="ge-svg-poly" viewBox="0 0 320 300" role="img" aria-label="Polygon with its angles"></svg></div>
+					<div class="tu-stats" id="ge-poly-stats" aria-live="polite"></div>
+				</div>
+			</div>
+			<div class="tu-card" id="ge-poly-facts"></div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Learn angles and geometry by moving things</h2>
+			<p>This lab lets you <b>drag points and lines and watch the angles recalculate</b>. In the <b>Triangles</b> tab, move the corners to see the angle sum stay at 180&deg;, how the triangle is named (acute, right or obtuse; scalene, isosceles or equilateral), its area, circumcircle, incircle, centroid and orthocentre, and add a <b>similar triangle</b> to see why corresponding angles stay equal while sides and areas scale. In <b>Parallel lines</b> you get the eight angles made by a transversal and the names <b>corresponding, alternate interior, alternate exterior, co-interior and vertical</b>. In <b>Circles</b> you can test the central-angle theorem, Thales' theorem, cyclic quadrilaterals and the tangent-chord theorem. <b>Angles &amp; polygons</b> classifies any angle and shows interior and exterior angle sums.</p>
+			<h2>Key facts</h2>
+			<div class="tu-table-wrap"><table class="tu-table"><thead><tr><th>Fact</th><th>Rule</th></tr></thead><tbody>
+				<tr><td>Triangle angle sum</td><td>A + B + C = 180&deg;</td></tr>
+				<tr><td>Exterior angle of a triangle</td><td>equals the sum of the two opposite interior angles</td></tr>
+				<tr><td>Similar triangles (AA)</td><td>two equal angles &rarr; all angles equal, sides in the same ratio k, areas in ratio k&sup2;</td></tr>
+				<tr><td>Parallel lines + transversal</td><td>corresponding and alternate angles are equal; co-interior angles add to 180&deg;</td></tr>
+				<tr><td>Vertical angles</td><td>always equal</td></tr>
+				<tr><td>Linear pair</td><td>adjacent angles on a straight line add to 180&deg;</td></tr>
+				<tr><td>Inscribed angle theorem</td><td>the angle at the centre is twice the angle at the circumference on the same arc</td></tr>
+				<tr><td>Thales' theorem</td><td>an angle in a semicircle is 90&deg;</td></tr>
+				<tr><td>Cyclic quadrilateral</td><td>opposite angles add to 180&deg;</td></tr>
+				<tr><td>Polygon with n sides</td><td>interior angles add to (n &minus; 2) &times; 180&deg;; exterior angles add to 360&deg;</td></tr>
+			</tbody></table></div>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How do I know if two triangles are similar?</dt><dd>If two angles of one equal two angles of the other (AA), or all three side ratios match (SSS), or two side ratios and the angle between them match (SAS).</dd>
+				<dt>What is a transversal?</dt><dd>A line that crosses two other lines. It makes eight angles; when the two lines are parallel the angles fall into just two sizes, &theta; and 180&deg; &minus; &theta;.</dd>
+				<dt>Is my data private?</dt><dd>Nothing is sent anywhere: it all runs in your browser.</dd>
+			</dl>
+			<p>Related: <a href="/trigonometry">Trigonometry Calculator</a> &middot; <a href="/shapes-calculator">Volume, Area &amp; Surface Area Calculator</a> &middot; <a href="/2d-graphing-calculator">2D Graphing Calculator</a></p>
+		</div>
+	</div>

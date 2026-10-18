@@ -1,0 +1,106 @@
+	<div class="tu" id="tg">
+		<div class="tu-card"><div class="tu-seg tg-tabs" id="tg-tabs" role="tablist" aria-label="Trigonometry tools">
+			<button type="button" role="tab" data-t="circle" aria-pressed="true">Unit circle</button><button type="button" role="tab" data-t="calc" aria-pressed="false">Calculator</button><button type="button" role="tab" data-t="tri" aria-pressed="false">Solve triangles</button><button type="button" role="tab" data-t="graph" aria-pressed="false">Graphs</button><button type="button" role="tab" data-t="tables" aria-pressed="false">Tables &amp; identities</button>
+		</div></div>
+
+		<section data-p="circle">
+			<div class="tu-card tg-ctl">
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field" style="flex:1 1 12em;"><label for="tg-c-in">Angle (try 45, 3pi/4, 2.5 rad)</label><input id="tg-c-in" class="tu-input tu-input--big" type="text" autocomplete="off" inputmode="text" value="45"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:13em;"><span class="tu-label" id="tg-u-l">Unit</span><div class="tu-seg" id="tg-c-unit" role="group" aria-labelledby="tg-u-l"><button type="button" data-u="deg" aria-pressed="true">Degrees</button><button type="button" data-u="rad" aria-pressed="false">Radians</button></div></div>
+				</div>
+				<div class="tg-opts"><label class="tg-ck"><input type="checkbox" id="tg-c-snap"> Snap to special angles (15&deg;)</label><label class="tg-ck"><input type="checkbox" id="tg-c-rec"> Show csc, sec, cot</label></div>
+				<div class="tu-chips" id="tg-c-pre"></div>
+			</div>
+			<div class="tu-card tg-stage"><svg id="tg-svg-c" viewBox="0 0 640 400" role="img" aria-label="Unit circle you can drag"></svg><p class="tu-note" style="margin:0.4em 0 0;">Drag the point around the circle (or use the arrow keys when it is focused). <span class="tg-k tg-sin">sin</span> is the height, <span class="tg-k tg-cos">cos</span> is the horizontal distance, <span class="tg-k tg-tan">tan</span> is the length on the tangent line at (1, 0).</p></div>
+			<div class="tu-stats" id="tg-c-stats" aria-live="polite"></div>
+			<div class="tu-card tg-stage"><svg id="tg-svg-w" viewBox="0 0 640 190" role="img" aria-label="sine and cosine waves"></svg></div>
+			<div class="tu-card" id="tg-c-facts"></div>
+		</section>
+
+		<section data-p="calc" hidden>
+			<div class="tu-card">
+				<h2 style="margin-top:0;">Trig functions of an angle</h2>
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field" style="flex:1 1 12em;"><label for="tg-a-in">Angle</label><input id="tg-a-in" class="tu-input tu-input--big" type="text" autocomplete="off" value="30"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:17em;"><span class="tu-label" id="tg-au-l">Unit</span><div class="tu-seg" id="tg-a-unit" role="group" aria-labelledby="tg-au-l"><button type="button" data-u="deg" aria-pressed="true">Degrees</button><button type="button" data-u="rad" aria-pressed="false">Radians</button><button type="button" data-u="grad" aria-pressed="false">Gradians</button></div></div>
+				</div>
+				<div class="tu-table-wrap" style="margin-top:0.8em;"><table class="tu-table" id="tg-a-tab"></table></div>
+				<p class="tu-note" id="tg-a-note"></p>
+			</div>
+			<div class="tu-card">
+				<h2 style="margin-top:0;">Inverse trig: find the angle</h2>
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tg-i-fn">Function</label><select id="tg-i-fn" class="tu-select"><option value="sin">sin⁻¹ (arcsin)</option><option value="cos">cos⁻¹ (arccos)</option><option value="tan">tan⁻¹ (arctan)</option><option value="csc">csc⁻¹</option><option value="sec">sec⁻¹</option><option value="cot">cot⁻¹</option></select></div>
+					<div class="tu-field" style="flex:1 1 12em;"><label for="tg-i-v">Value (e.g. 0.5, 1/2, sqrt(3)/2)</label><input id="tg-i-v" class="tu-input tu-input--big" type="text" autocomplete="off" value="0.5"></div>
+				</div>
+				<div id="tg-i-out" class="tg-res" aria-live="polite"></div>
+			</div>
+		</section>
+
+		<section data-p="tri" hidden>
+			<div class="tu-card">
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:15em;"><span class="tu-label" id="tg-tm-l">Triangle type</span><div class="tu-seg" id="tg-t-mode" role="group" aria-labelledby="tg-tm-l"><button type="button" data-m="right" aria-pressed="true">Right triangle</button><button type="button" data-m="any" aria-pressed="false">Any triangle</button></div></div>
+				</div>
+				<p class="tu-note" id="tg-t-help" style="margin:0.6em 0;"></p>
+				<div class="tg-tgrid" id="tg-t-fields"></div>
+				<div class="tu-chips" id="tg-t-ex"></div>
+				<div class="tg-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tg-t-clear">Clear</button></div>
+			</div>
+			<div id="tg-t-out" aria-live="polite"></div>
+		</section>
+
+		<section data-p="graph" hidden>
+			<div class="tu-card tg-ctl">
+				<div class="tu-row" style="align-items:center;"><div class="tu-seg" id="tg-g-fn" role="group" aria-label="Function"><button type="button" data-f="sin" aria-pressed="true">sin</button><button type="button" data-f="cos" aria-pressed="false">cos</button><button type="button" data-f="tan" aria-pressed="false">tan</button></div><span class="tg-eq" id="tg-g-eq"></span></div>
+				<div class="tg-sl" id="tg-g-sl"></div>
+				<div class="tg-opts"><label class="tg-ck"><input type="checkbox" id="tg-g-par" checked> Show the plain function (dashed)</label><button type="button" class="tu-btn tu-btn--ghost" id="tg-g-reset" style="padding:0.3em 0.9em;">Reset</button></div>
+			</div>
+			<div class="tu-card tg-stage"><svg id="tg-svg-g" viewBox="0 0 640 330" role="img" aria-label="Graph of the trig function"></svg><p class="tu-note" style="margin:0.4em 0 0;" id="tg-g-trace">Move the pointer over the graph to read values.</p></div>
+			<div class="tu-stats" id="tg-g-stats" aria-live="polite"></div>
+		</section>
+
+		<section data-p="tables" hidden>
+			<div class="tu-card">
+				<h2 style="margin-top:0;">Trig table</h2>
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tg-tb-r">Range</label><select id="tg-tb-r" class="tu-select"><option value="90">0° to 90°</option><option value="180">0° to 180°</option><option value="360" selected>0° to 360°</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tg-tb-s">Step</label><select id="tg-tb-s" class="tu-select"><option>1</option><option>5</option><option>10</option><option selected>15</option><option>30</option><option>45</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="tg-tb-d">Decimals</label><select id="tg-tb-d" class="tu-select"><option>3</option><option selected>4</option><option>6</option><option>8</option></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label class="tg-ck" style="margin-top:1.4em;"><input type="checkbox" id="tg-tb-x" checked> Exact values</label></div>
+				</div>
+				<div class="tu-table-wrap tg-tbl" style="margin-top:0.8em;"><table class="tu-table" id="tg-tb"></table></div>
+			</div>
+			<div class="tu-card">
+				<h2 style="margin-top:0;">Identity checker</h2>
+				<div class="tu-row" style="align-items:flex-end;">
+					<div class="tu-field" style="flex:2 1 18em;"><label for="tg-id-s">Identity</label><select id="tg-id-s" class="tu-select"></select></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="tg-id-x">x (°)</label><input id="tg-id-x" class="tu-input" type="text" inputmode="decimal" value="25"></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:7em;" id="tg-id-yf"><label for="tg-id-y">y (°)</label><input id="tg-id-y" class="tu-input" type="text" inputmode="decimal" value="40"></div>
+				</div>
+				<div id="tg-id-out" class="tg-res" aria-live="polite"></div>
+				<h3>All the identities</h3>
+				<div class="tu-table-wrap"><table class="tu-table" id="tg-id-ref"></table></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Trigonometry in one page</h2>
+			<p><b>Trigonometry</b> links the angles of a triangle to the lengths of its sides. In a right triangle: <b>sin &theta; = opposite &divide; hypotenuse</b>, <b>cos &theta; = adjacent &divide; hypotenuse</b>, <b>tan &theta; = opposite &divide; adjacent</b> (remember <b>SOH-CAH-TOA</b>). The reciprocals are csc = 1/sin, sec = 1/cos and cot = 1/tan. On the <b>unit circle</b> (radius 1), the point at angle &theta; is (cos &theta;, sin &theta;), which extends the functions to every angle, positive or negative.</p>
+			<h2>Special angles</h2>
+			<div class="tu-table-wrap"><table class="tu-table"><thead><tr><th>Angle</th><th>Radians</th><th>sin</th><th>cos</th><th>tan</th></tr></thead><tbody>
+				<tr><td>0&deg;</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td>30&deg;</td><td>&pi;/6</td><td>1/2</td><td>&radic;3/2</td><td>&radic;3/3</td></tr><tr><td>45&deg;</td><td>&pi;/4</td><td>&radic;2/2</td><td>&radic;2/2</td><td>1</td></tr><tr><td>60&deg;</td><td>&pi;/3</td><td>&radic;3/2</td><td>1/2</td><td>&radic;3</td></tr><tr><td>90&deg;</td><td>&pi;/2</td><td>1</td><td>0</td><td>undefined</td></tr>
+			</tbody></table></div>
+			<h2>The laws for any triangle</h2>
+			<p><b>Law of sines:</b> a / sin A = b / sin B = c / sin C. <b>Law of cosines:</b> c&sup2; = a&sup2; + b&sup2; &minus; 2ab cos C. Use the Solve triangles tab for SSS, SAS, ASA, AAS and the ambiguous SSA case (two possible triangles).</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Should my calculator be in degrees or radians?</dt><dd>Use degrees for everyday angles and geometry; radians (2&pi; = 360&deg;) in calculus and physics. Type 3pi/4 or &ldquo;2 rad&rdquo; here and the unit is detected for you.</dd>
+				<dt>Why is tan 90&deg; undefined?</dt><dd>tan = sin &divide; cos, and cos 90&deg; = 0, so the division by zero has no value; the graph has a vertical asymptote there.</dd>
+				<dt>What is the ambiguous case?</dt><dd>When you know two sides and an angle that is <i>not</i> between them (SSA), the shorter side can swing to two positions, so there can be two different triangles, one, or none.</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything runs in your browser.</dd>
+			</dl>
+			<p>Related: <a href="/geometry">Geometry &amp; Angle Lab</a> &middot; <a href="/2d-graphing-calculator">2D Graphing Calculator</a> &middot; <a href="/shapes-calculator">Volume, Area &amp; Surface Area Calculator</a> &middot; <a href="/calculator">Calculator</a></p>
+		</div>
+	</div>

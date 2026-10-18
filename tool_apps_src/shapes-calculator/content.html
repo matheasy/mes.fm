@@ -1,0 +1,48 @@
+	<div class="tu" id="sh">
+		<div class="tu-card">
+			<div class="tu-row" style="align-items:flex-end;">
+				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="sh-dim-l">Type</span><div class="tu-seg" id="sh-dim" role="group" aria-labelledby="sh-dim-l"><button type="button" data-d="3" aria-pressed="true">3D solids</button><button type="button" data-d="2" aria-pressed="false">2D shapes</button></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="sh-unit">Length unit</label><select id="sh-unit" class="tu-select"></select></div>
+			</div>
+			<div class="tu-chips" id="sh-shapes" role="group" aria-label="Shape"></div>
+		</div>
+		<div class="sh-main">
+			<div class="tu-card sh-in">
+				<h2 id="sh-title" style="margin-top:0;"></h2>
+				<div id="sh-fields"></div>
+				<div class="sh-pic" id="sh-pic" role="img" aria-label="Diagram of the shape"></div>
+				<div class="sh-btns"><button type="button" class="tu-btn tu-btn--ghost" id="sh-clear">Clear</button><button type="button" class="tu-btn tu-btn--ghost" id="sh-ex">Example</button><button type="button" class="tu-btn tu-btn--primary" id="sh-link">Copy link</button></div>
+			</div>
+			<div class="sh-out">
+				<div id="sh-empty" class="tu-card tu-card--tint">Type the size of the shape to see its <b>volume, surface area, area and perimeter</b> with the formula used for each. Lengths can be in any unit; results come back in that unit squared or cubed, and in litres, gallons, acres and more.</div>
+				<div id="sh-err" class="tu-card sh-error" hidden role="alert"></div>
+				<div id="sh-res" hidden>
+					<div class="tu-stats" id="sh-stats" aria-live="polite"></div>
+					<h3>In other units</h3>
+					<div class="tu-table-wrap"><table class="tu-table" id="sh-conv"></table></div>
+					<h3>Work it backwards</h3>
+					<div class="tu-card">
+						<div class="tu-row" style="align-items:flex-end;">
+							<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="sh-back-k">I want a given</label><select id="sh-back-k" class="tu-select"></select></div>
+							<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="sh-back-v">Target value</label><div class="tu-suffix"><input id="sh-back-v" class="tu-input" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 500"><span id="sh-back-u"></span></div></div>
+						</div>
+						<p class="sh-back" id="sh-back" aria-live="polite"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="tu-seo">
+			<h2>Area, surface area and volume: what is the difference?</h2>
+			<p><b>Area</b> measures flat space (square units: m&sup2;, ft&sup2;). <b>Surface area</b> is the total area of the outside of a 3D solid: add up every face. <b>Volume</b> is the space inside a solid (cubic units: m&sup3;, in&sup3;), which is also its capacity: 1,000 cm&sup3; = 1 litre. <b>Perimeter</b> and <b>circumference</b> are distances around a flat shape.</p>
+			<h2>Formulas used by this calculator</h2>
+			<div class="tu-table-wrap"><table class="tu-table" id="sh-ref"></table></div>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How do I find the volume of a cylinder?</dt><dd>V = &pi;r&sup2;h. A can with radius 3 cm and height 10 cm holds &pi; &times; 9 &times; 10 &asymp; 282.7 cm&sup3;, about 0.28 litres.</dd>
+				<dt>Why does doubling a length multiply the area by 4 and the volume by 8?</dt><dd>Area depends on two lengths multiplied together and volume on three, so scaling every length by k scales areas by k&sup2; and volumes by k&sup3;. The &ldquo;work it backwards&rdquo; box uses this.</dd>
+				<dt>Are the ellipse perimeter and ellipsoid surface area exact?</dt><dd>No exact formula exists for either. This page uses Ramanujan's ellipse approximation (accurate to a tiny fraction of a percent for all but extreme shapes) and Knud Thomsen's ellipsoid formula (within about 1%).</dd>
+				<dt>Is my data private?</dt><dd>Yes. Everything is calculated in your browser.</dd>
+			</dl>
+			<p>Related: <a href="/geometry">Geometry &amp; Angle Lab</a> &middot; <a href="/trigonometry">Trigonometry Calculator</a> &middot; <a href="/calculator">Calculator</a> &middot; <a href="/unit-conversion">Unit Conversion</a></p>
+		</div>
+	</div>
