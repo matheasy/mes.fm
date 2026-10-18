@@ -7,6 +7,9 @@ import sys, os
 from PIL import Image, ImageDraw
 R = os.path.dirname(os.path.abspath(__file__)); D = os.path.expanduser("~/Downloads/")
 apply = "--apply" in sys.argv
+def src(n):  # newest of .jpg / .jpeg / .png downloads
+    c = [D + n + e for e in (".jpg", ".jpeg", ".png") if os.path.exists(D + n + e)]
+    return max(c, key=os.path.getmtime) if c else D + n + ".jpg"
 def square_box(im):
     W, H = im.size; px = im.load(); xs = []; ys = []
     for y in range(0, H, 2):
@@ -19,7 +22,7 @@ def rounded(c, n):
     ImageDraw.Draw(m).rounded_rectangle([0, 0, n * 4 - 1, n * 4 - 1], radius=int(n * 4 * 0.2), fill=255); im.putalpha(m.resize((n, n), Image.LANCZOS)); return im
 for a in [x for x in sys.argv[1:] if not x.startswith("--")]:
     name, _, slug = a.partition("="); slug = slug or name
-    ic = Image.open(D + name + "-icon.jpg").convert("RGB"); box = square_box(ic); print(slug, "icon box", box, "size", (box[2] - box[0], box[3] - box[1]))
+    ic = Image.open(src(name + "-icon")).convert("RGB"); box = square_box(ic); print(slug, "icon box", box, "size", (box[2] - box[0], box[3] - box[1]))
     if not apply: continue
     os.makedirs(f"{R}/mes.fm/{slug}/img", exist_ok=True); c = ic.crop(box); w0, h0 = c.size
     if h0 > w0 * 1.04:   # portrait rounded rectangle: drop its rounded corners, keep the whole height, and widen the sides with the edge colour (no squashing, no clipped art)
@@ -32,9 +35,9 @@ for a in [x for x in sys.argv[1:] if not x.startswith("--")]:
     elif abs(w0 - h0) > 0.04 * max(w0, h0):
         side = min(w0, h0); l = (w0 - side) // 2; t = (h0 - side) // 2; c = c.crop((l, t, l + side, t + side))
     rounded(c, 512).save(f"{R}/mes.fm/{slug}/img/logo.png"); rounded(c, 352).save(f"{R}/mes.fm/img/{slug}-logo.png")
-    s = Image.open(D + name + "-share.jpg").convert("RGB"); w, h = s.size; ch = round(w * 630 / 1200); t = (h - ch) // 2
+    s = Image.open(src(name + "-share")).convert("RGB"); w, h = s.size; ch = round(w * 630 / 1200); t = (h - ch) // 2
     s.crop((0, t, w, t + ch)).resize((1200, 630), Image.LANCZOS).save(f"{R}/mes.fm/{slug}/img/logo-big.png")
-    if not os.path.exists(D + name + "-tile.jpg"): print("  (no -tile.jpg: tile left as is)"); continue
-    tl = Image.open(D + name + "-tile.jpg").convert("RGB"); w, h = tl.size; ch = round(w * 2 / 3); t = (h - ch) // 2
+    if not os.path.exists(src(name + "-tile")): print("  (no -tile.jpg: tile left as is)"); continue
+    tl = Image.open(src(name + "-tile")).convert("RGB"); w, h = tl.size; ch = round(w * 2 / 3); t = (h - ch) // 2
     tl.crop((0, t, w, t + ch)).resize((900, 600), Image.LANCZOS).save(f"{R}/mes.fm/img/{slug}-icon.jpg", quality=88)
 print("applied" if apply else "dry run (use --apply)")
