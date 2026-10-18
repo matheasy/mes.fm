@@ -12,6 +12,7 @@
 	.tu .mx-check {margin:0.8em 0 0;line-height:1.5;font-size:0.95em;} .tu .mx-warn {color:#c0392b;font-weight:600;}
 	.tu .mx-donut text {fill:#1e2733;} .tu .mx-donut .mx-big {font-size:9px;font-weight:700;} .tu .mx-donut .mx-sm {font-size:3.6px;fill:#6a7280;}
 	.tu .mx-donut circle.mx-seg {fill:none;stroke-width:6;}
+	body.dark-mode .tu .mx-donut circle.mx-seg {fill:none;} /* the dark .mx-cN swatch rules (fill:..) would otherwise fill the donut disc */
 	.tu .mx-mini {display:flex;height:0.9em;border-radius:0.45em;overflow:hidden;min-width:7em;} .tu .mx-mini span {display:block;}
 	.tu #mx-cmp tr.is-on td, .tu #mx-meals-t tr.is-total td {background:var(--tint);font-weight:700;} .tu #mx-cmp td, .tu #mx-meals-t td, .tu #mx-ref td {font-variant-numeric:tabular-nums;}
 	body.dark-mode #mx .mx-donut text {fill:#e8e8e8;} body.dark-mode #mx .mx-donut .mx-sm {fill:#a0a8b3;} body.dark-mode #mx .mx-legend li {border-bottom-color:#3a3f45;} body.dark-mode #mx .mx-warn {color:#ff8a80;}
