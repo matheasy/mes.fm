@@ -2,6 +2,14 @@
  "generated": "2026-10-18",
  "calculators": [
   {
+   "href": "/geometry",
+   "title": "Geometry & Angle Lab",
+   "icon": "/img/geometry-logo.png",
+   "desc": "Drag triangles, lines and circles and watch the angles update.",
+   "added": "2026-10-18",
+   "kind": "calculator"
+  },
+  {
    "href": "/trigonometry",
    "title": "Trigonometry Calculator",
    "icon": "/img/trigonometry-logo.png",
@@ -14,14 +22,6 @@
    "title": "Volume, Area & Surface Area Calculator",
    "icon": "/img/shapes-calculator-logo.png",
    "desc": "Volume, area and surface area of 27 shapes, with every formula.",
-   "added": "2026-10-18",
-   "kind": "calculator"
-  },
-  {
-   "href": "/geometry",
-   "title": "Geometry & Angle Lab",
-   "icon": "/img/geometry-logo.png",
-   "desc": "Drag triangles, lines and circles and watch the angles update.",
    "added": "2026-10-18",
    "kind": "calculator"
   },
@@ -198,6 +198,14 @@
  ],
  "latest": [
   {
+   "href": "/geometry",
+   "title": "Geometry & Angle Lab",
+   "icon": "/img/geometry-logo.png",
+   "desc": "Drag triangles, lines and circles and watch the angles update.",
+   "added": "2026-10-18",
+   "kind": "calculator"
+  },
+  {
    "href": "/trigonometry",
    "title": "Trigonometry Calculator",
    "icon": "/img/trigonometry-logo.png",
@@ -210,14 +218,6 @@
    "title": "Volume, Area & Surface Area Calculator",
    "icon": "/img/shapes-calculator-logo.png",
    "desc": "Volume, area and surface area of 27 shapes, with every formula.",
-   "added": "2026-10-18",
-   "kind": "calculator"
-  },
-  {
-   "href": "/geometry",
-   "title": "Geometry & Angle Lab",
-   "icon": "/img/geometry-logo.png",
-   "desc": "Drag triangles, lines and circles and watch the angles update.",
    "added": "2026-10-18",
    "kind": "calculator"
   },
