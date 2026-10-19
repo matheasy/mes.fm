@@ -123,7 +123,29 @@
 	}
 	function arcPts(cx, cy, r, a0, a1, k) { var o = []; for (var i = 0; i <= k; i++) { var a = a0 + (a1 - a0) * i / k; o.push([r * Math.cos(a), cy + r * Math.sin(a)]); } return o; }   // (r, y) pairs around (0, cy)
 	function lineSeg(M, p, q, t) { M.lines.push({ a: p, b: q, t: t }); }
+		// flat shapes as meshes in the z = 0 plane (counter-clockwise, normal +z) for the scale-drawing viewer
+	function flatMesh(id, v, n) {
+		var M = meshOut(), P, i, k;
+		function fan(pts) { var b = M.verts.length; pts.forEach(function (p) { M.verts.push([p[0], p[1], 0]); }); for (var q = 1; q < pts.length - 1; q++) M.tris.push([b, b + q, b + q + 1]); var lp = []; for (var e = 0; e <= pts.length; e++) lp.push(b + (e % pts.length)); M.wire.push(lp); }
+		function circ(r, a0, a1, m) { var o = []; for (var j = 0; j <= m; j++) { var a = a0 + (a1 - a0) * j / m; o.push([r * Math.cos(a), r * Math.sin(a)]); } return o; }
+		switch (id) {
+			case "square": k = v.a / 2; fan([[-k, -k], [k, -k], [k, k], [-k, k]]); lineSeg(M, [-k, -k, 0], [k, -k, 0], "a"); return M;
+			case "rectangle": fan([[-v.a / 2, -v.b / 2], [v.a / 2, -v.b / 2], [v.a / 2, v.b / 2], [-v.a / 2, v.b / 2]]); lineSeg(M, [-v.a / 2, -v.b / 2, 0], [v.a / 2, -v.b / 2, 0], "a"); lineSeg(M, [v.a / 2, -v.b / 2, 0], [v.a / 2, v.b / 2, 0], "b"); return M;
+			case "triangle": { var ca = (v.b * v.b + v.c * v.c - v.a * v.a) / (2 * v.b * v.c), sa = Math.sqrt(Math.max(0, 1 - ca * ca)), T = [[0, 0], [v.c, 0], [v.b * ca, v.b * sa]], cx = (T[0][0] + T[1][0] + T[2][0]) / 3, cy = (T[0][1] + T[1][1] + T[2][1]) / 3; T = T.map(function (p) { return [p[0] - cx, p[1] - cy]; }); fan(T); lineSeg(M, [T[0][0], T[0][1], 0], [T[1][0], T[1][1], 0], "c"); lineSeg(M, [T[0][0], T[0][1], 0], [T[2][0], T[2][1], 0], "b"); lineSeg(M, [T[1][0], T[1][1], 0], [T[2][0], T[2][1], 0], "a"); return M; }
+			case "triangle-bh": fan([[-v.b / 2, -v.h / 2], [v.b / 2, -v.h / 2], [0, v.h / 2]]); lineSeg(M, [-v.b / 2, -v.h / 2, 0], [v.b / 2, -v.h / 2, 0], "b"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
+			case "circle": fan(circ(v.r, 0, 2 * PI, n).slice(0, n)); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M;
+			case "ellipse": fan(circ(1, 0, 2 * PI, n).slice(0, n).map(function (p) { return [p[0] * v.a, p[1] * v.b]; })); lineSeg(M, [0, 0, 0], [v.a, 0, 0], "a"); lineSeg(M, [0, 0, 0], [0, v.b, 0], "b"); return M;
+			case "trapezoid": fan([[-v.b / 2, -v.h / 2], [v.b / 2, -v.h / 2], [v.a / 2, v.h / 2], [-v.a / 2, v.h / 2]]); lineSeg(M, [-v.a / 2, v.h / 2, 0], [v.a / 2, v.h / 2, 0], "a"); lineSeg(M, [-v.b / 2, -v.h / 2, 0], [v.b / 2, -v.h / 2, 0], "b"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
+			case "parallelogram": { var sk = v.s > v.h ? Math.sqrt(v.s * v.s - v.h * v.h) : v.h * 0.5; fan([[-v.b / 2 - sk / 2, -v.h / 2], [v.b / 2 - sk / 2, -v.h / 2], [v.b / 2 + sk / 2, v.h / 2], [-v.b / 2 + sk / 2, v.h / 2]]); lineSeg(M, [-v.b / 2 - sk / 2, -v.h / 2, 0], [v.b / 2 - sk / 2, -v.h / 2, 0], "b"); lineSeg(M, [v.b / 2 - sk / 2, -v.h / 2, 0], [v.b / 2 - sk / 2, v.h / 2, 0], "h"); return M; }
+			case "rhombus": fan([[v.p / 2, 0], [0, v.q / 2], [-v.p / 2, 0], [0, -v.q / 2]]); lineSeg(M, [-v.p / 2, 0, 0], [v.p / 2, 0, 0], "p"); lineSeg(M, [0, -v.q / 2, 0], [0, v.q / 2, 0], "q"); return M;
+			case "regular-polygon": { var Rc = v.a / (2 * Math.sin(PI / v.n)); P = []; for (i = 0; i < v.n; i++) { var an = -PI / 2 - PI / v.n + 2 * PI * i / v.n; P.push([Rc * Math.cos(an), Rc * Math.sin(an)]); } fan(P); lineSeg(M, [P[0][0], P[0][1], 0], [P[1][0], P[1][1], 0], "a"); return M; }
+			case "sector": { var th = v.t * PI / 180; P = [[0, 0]].concat(circ(v.r, 0, th, Math.max(8, Math.round(n * th / (2 * PI))))); fan(P); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
+			case "annulus": { var o = circ(v.R, 0, 2 * PI, n).slice(0, n), inn = circ(v.r, 0, 2 * PI, n).slice(0, n); o.forEach(function (p) { M.verts.push([p[0], p[1], 0]); }); inn.forEach(function (p) { M.verts.push([p[0], p[1], 0]); }); for (i = 0; i < n; i++) { var j = (i + 1) % n; M.tris.push([i, j, n + j]); M.tris.push([i, n + j, n + i]); } var w1 = [], w2 = []; for (i = 0; i <= n; i++) { w1.push(i % n); w2.push(n + (i % n)); } M.wire.push(w1); M.wire.push(w2); lineSeg(M, [0, 0, 0], [v.R, 0, 0], "R"); lineSeg(M, [0, 0, 0], [0, v.r, 0], "r"); return M; }
+		}
+		return null;
+	}
 	function mesh(id, v, n) {
+		var fm = flatMesh(id, v, n || 64); if (fm) return fm;
 		n = n || 64; var M, h, i, j;
 		function box(a, b, c) {
 			M = meshOut(); var x = a / 2, y = c / 2, z = b / 2; M.verts = [[-x, -y, -z], [x, -y, -z], [x, y, -z], [-x, y, -z], [-x, -y, z], [x, -y, z], [x, y, z], [-x, y, z]];
@@ -137,12 +159,12 @@
 				for (i = 0; i < 3; i++) M.verts.push([P[i][0] - cx, P[i][1] - cy, -l / 2]); for (i = 0; i < 3; i++) M.verts.push([P[i][0] - cx, P[i][1] - cy, l / 2]);
 				[[0, 1, 2], [3, 4, 5], [0, 1, 4, 3], [1, 2, 5, 4], [2, 0, 3, 5]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); lineSeg(M, M.verts[3], M.verts[0], "l"); return M;
 			}
-			case "cylinder": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [v.r, -v.h / 2, 0], [v.r, v.h / 2, 0], "h"); return M;
+			case "cylinder": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [v.r, v.h / 2, 0], [v.r, -v.h / 2, 0], "h"); return M;
 			case "cone": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, -v.h / 2, 0], [v.r, -v.h / 2, 0], "r"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
 			case "frustum": M = revolve([[0, -v.h / 2], [v.R, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, -v.h / 2, 0], [v.R, -v.h / 2, 0], "R"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
 			case "sphere": { var pr = []; for (i = 0; i <= n / 2; i++) { var f = PI * i / (n / 2); pr.push([v.r * Math.sin(f), -v.r * Math.cos(f)]); } M = revolve(pr, n); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
 			case "hemisphere": { var ph = [[0, 0], [v.r, 0]]; arcPts(0, 0, v.r, 0, PI / 2, n / 4).forEach(function (q, k) { if (k > 0) ph.push(q); }); M = revolve(ph, n); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
-			case "capsule": { var pc = arcPts(0, -v.h / 2, v.r, -PI / 2, 0, n / 4).map(function (q) { return [q[0], q[1]]; }).concat(arcPts(0, v.h / 2, v.r, 0, PI / 2, n / 4).slice(1)); M = revolve([[0, -v.h / 2 - v.r]].concat(pc.slice(1)), n); lineSeg(M, [v.r, -v.h / 2, 0], [v.r, v.h / 2, 0], "h"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); return M; }
+			case "capsule": { var pc = arcPts(0, -v.h / 2, v.r, -PI / 2, 0, n / 4).map(function (q) { return [q[0], q[1]]; }).concat(arcPts(0, v.h / 2, v.r, 0, PI / 2, n / 4).slice(1)); M = revolve([[0, -v.h / 2 - v.r]].concat(pc.slice(1)), n); lineSeg(M, [v.r, v.h / 2, 0], [v.r, -v.h / 2, 0], "h"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); return M; }
 			case "ellipsoid": { var pe = []; for (i = 0; i <= n / 2; i++) { var g = PI * i / (n / 2); pe.push([Math.sin(g), -Math.cos(g)]); } M = revolve(pe, n); M.verts = M.verts.map(function (p) { return [p[0] * v.a, p[1] * v.b, p[2] * v.c]; }); lineSeg(M, [0, 0, 0], [v.a, 0, 0], "a"); lineSeg(M, [0, 0, 0], [0, v.b, 0], "b"); lineSeg(M, [0, 0, 0], [0, 0, v.c], "c"); return M; }
 			case "torus": {
 				M = meshOut(); var m = n, k2 = Math.round(n / 2), idt = function (a, b) { return (a % m) * k2 + (b % k2); };

@@ -6,8 +6,8 @@
 		<section data-p="circle">
 			<div class="tu-card tg-ctl">
 				<div class="tu-row" style="align-items:flex-end;">
-					<div class="tu-field" style="flex:1 1 12em;"><label for="tg-c-in">Angle (try 45, 3pi/4, 2.5 rad)</label><input id="tg-c-in" class="tu-input tu-input--big" type="text" autocomplete="off" inputmode="text" value="45"></div>
-					<div class="tu-field tu-field--sm" style="flex-basis:13em;"><span class="tu-label" id="tg-u-l">Unit</span><div class="tu-seg" id="tg-c-unit" role="group" aria-labelledby="tg-u-l"><button type="button" data-u="deg" aria-pressed="true">Degrees</button><button type="button" data-u="rad" aria-pressed="false">Radians</button></div></div>
+					<div class="tu-field" style="flex:1 1 10em;"><label for="tg-c-deg">Degrees</label><div class="tu-suffix"><input id="tg-c-deg" class="tu-input tu-input--big" type="text" autocomplete="off" inputmode="decimal" value="45"><span>&deg;</span></div></div>
+					<div class="tu-field" style="flex:1 1 10em;"><label for="tg-c-rad">Radians (try pi/3 or 2.5)</label><div class="tu-suffix"><input id="tg-c-rad" class="tu-input tu-input--big" type="text" autocomplete="off" inputmode="text" value="π/4"><span>rad</span></div></div>
 				</div>
 				<div class="tg-opts"><label class="tg-ck"><input type="checkbox" id="tg-c-snap"> Snap to special angles (15&deg;)</label><label class="tg-ck"><input type="checkbox" id="tg-c-rec"> Show csc, sec, cot</label></div>
 				<div class="tu-chips" id="tg-c-pre"></div>
@@ -21,9 +21,11 @@
 		<section data-p="calc" hidden>
 			<div class="tu-card">
 				<h2 style="margin-top:0;">Trig functions of an angle</h2>
+				<p class="tu-note" style="margin:0 0 0.6em;">Type in any box: the other two update (like kg and lb in the BMI calculator). Radians accept pi, such as 3pi/4.</p>
 				<div class="tu-row" style="align-items:flex-end;">
-					<div class="tu-field" style="flex:1 1 12em;"><label for="tg-a-in">Angle</label><input id="tg-a-in" class="tu-input tu-input--big" type="text" autocomplete="off" value="30"></div>
-					<div class="tu-field tu-field--sm" style="flex-basis:17em;"><span class="tu-label" id="tg-au-l">Unit</span><div class="tu-seg" id="tg-a-unit" role="group" aria-labelledby="tg-au-l"><button type="button" data-u="deg" aria-pressed="true">Degrees</button><button type="button" data-u="rad" aria-pressed="false">Radians</button><button type="button" data-u="grad" aria-pressed="false">Gradians</button></div></div>
+					<div class="tu-field" style="flex:1 1 9em;"><label for="tg-a-deg">Degrees</label><div class="tu-suffix"><input id="tg-a-deg" class="tu-input tu-input--big" type="text" autocomplete="off" inputmode="decimal" value="30"><span>&deg;</span></div></div>
+					<div class="tu-field" style="flex:1 1 9em;"><label for="tg-a-rad">Radians</label><div class="tu-suffix"><input id="tg-a-rad" class="tu-input tu-input--big" type="text" autocomplete="off" value="π/6"><span>rad</span></div></div>
+					<div class="tu-field" style="flex:1 1 9em;"><label for="tg-a-grad">Gradians</label><div class="tu-suffix"><input id="tg-a-grad" class="tu-input tu-input--big" type="text" autocomplete="off" inputmode="decimal" value="33.3333"><span>grad</span></div></div>
 				</div>
 				<div class="tu-table-wrap" style="margin-top:0.8em;"><table class="tu-table" id="tg-a-tab"></table></div>
 				<p class="tu-note" id="tg-a-note"></p>

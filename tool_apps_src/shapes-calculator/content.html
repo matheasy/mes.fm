@@ -2,7 +2,7 @@
 		<div class="tu-card">
 			<div class="tu-row" style="align-items:flex-end;">
 				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="sh-dim-l">Type</span><div class="tu-seg" id="sh-dim" role="group" aria-labelledby="sh-dim-l"><button type="button" data-d="3" aria-pressed="true">3D solids</button><button type="button" data-d="2" aria-pressed="false">2D shapes</button></div></div>
-				<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="sh-unit">Length unit</label><select id="sh-unit" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:17em;min-width:12em;"><label for="sh-unit">Length unit</label><select id="sh-unit" class="tu-select"></select></div>
 			</div>
 			<div class="tu-chips" id="sh-shapes" role="group" aria-label="Shape"></div>
 		</div>
@@ -17,7 +17,7 @@
 				<div class="tu-card sh-3d" id="sh-3d" hidden>
 					<div class="tu-row" style="align-items:center;gap:0.6em 1em;">
 						<div class="tu-seg" id="sh-3d-mode" role="group" aria-label="Drawing style"><button type="button" data-m="solid" aria-pressed="true">Solid</button><button type="button" data-m="glass" aria-pressed="false">See-through</button><button type="button" data-m="wire" aria-pressed="false">Wireframe</button></div>
-						<label class="sh-ck"><input type="checkbox" id="sh-3d-spin" checked> Spin</label><label class="sh-ck"><input type="checkbox" id="sh-3d-lab" checked> Labels</label><button type="button" class="tu-btn tu-btn--ghost" id="sh-3d-reset" style="padding:0.3em 0.9em;">Reset view</button>
+						<label class="sh-ck" id="sh-3d-spinw"><input type="checkbox" id="sh-3d-spin" checked> Spin</label><label class="sh-ck"><input type="checkbox" id="sh-3d-lab" checked> Labels</label><button type="button" class="tu-btn tu-btn--ghost" id="sh-3d-reset" style="padding:0.3em 0.9em;">Reset view</button>
 					</div>
 					<canvas id="sh-cv" aria-label="3D view of the solid. Drag to rotate, scroll to zoom." role="img"></canvas>
 					<p class="tu-note" style="margin:0.3em 0 0;" id="sh-3d-note">Drag to rotate, scroll or pinch to zoom. The drawing uses your numbers (or an example until you type some), scaled to fit.</p>

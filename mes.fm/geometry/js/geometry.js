@@ -108,10 +108,10 @@
 	var KEY = "mes-geometry:v1", T = GE.trim, PX = 50;
 	var COL = { A: "#d64545", B: "#2e9e5b", C: "#3a6fd8" };
 	var RELCOL = { corr: "#2e9e5b", alt: "#3a6fd8", altx: "#16a3a3", co: "#e08a1e", vert: "#8e55c7", lin: "#d64545" };
-	var st = { tab: "tri", pre: "scalene", opts: { lens: true, angs: true, circ: false, inc: false, cent: false, grid: false, sim: false }, k: 0.6, th: 65, par: true, tilt: 12, sel: 3, cm: "insc", ang: 60, n: 5, free: false, ext: false, snap15: false };
+	var st = { tab: "tri", pre: "scalene", opts: { lens: true, angs: true, circ: false, inc: false, cent: false, grid: false, sim: false }, k: 0.6, th: 65, par: true, tilt: 12, sel: 3, cm: "insc", ang: 60, n: 5, free: false, ext: false, snap15: false, lab: {}, fs: 1, zm: 1 };
 	var tri = null, cp = { a: 20, b: 150, p: 250, c: 320 }, poly = null, focusH = null;
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-	function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { ["tab", "pre", "cm"].forEach(function (k) { if (typeof s[k] === "string") st[k] = s[k]; }); ["k", "th", "tilt", "sel", "ang", "n"].forEach(function (k) { if (typeof s[k] === "number") st[k] = s[k]; }); ["par", "free", "ext", "snap15"].forEach(function (k) { if (typeof s[k] === "boolean") st[k] = s[k]; }); if (s.opts) Object.keys(st.opts).forEach(function (k) { if (typeof s.opts[k] === "boolean") st.opts[k] = s.opts[k]; }); } } catch (e) {} }
+	function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { ["tab", "pre", "cm"].forEach(function (k) { if (typeof s[k] === "string") st[k] = s[k]; }); ["k", "th", "tilt", "sel", "ang", "n", "fs", "zm"].forEach(function (k) { if (typeof s[k] === "number") st[k] = s[k]; }); if (s.lab && typeof s.lab === "object") st.lab = s.lab; ["par", "free", "ext", "snap15"].forEach(function (k) { if (typeof s[k] === "boolean") st[k] = s[k]; }); if (s.opts) Object.keys(st.opts).forEach(function (k) { if (typeof s.opts[k] === "boolean") st.opts[k] = s.opts[k]; }); } } catch (e) {} }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 	var D2R = Math.PI / 180;
 	function pol(c, r, deg) { return [c[0] + r * Math.cos(deg * D2R), c[1] - r * Math.sin(deg * D2R)]; }
@@ -129,16 +129,33 @@
 
 	/* ---- dragging (all svgs) ---- */
 	var drag = null;
-	function wireSvg(svg, onMove, onClick) {
-		svg.addEventListener("pointerdown", function (e) { var h = e.target.closest && e.target.closest("[data-h]"); if (h) { drag = { svg: svg, h: h.dataset.h }; try { svg.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); } else if (onClick) { var w = e.target.closest("[data-w]"); if (w) onClick(w.dataset.w); } });
-		svg.addEventListener("pointermove", function (e) { if (!drag || drag.svg !== svg) return; var p = svgPoint(svg, e); onMove(drag.h, [p.x, p.y]); });
-		var end = function () { if (drag && drag.svg === svg) drag = null; }; svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+	function wireSvg(svg, onMove, onClick, redraw) {
+		svg.addEventListener("pointerdown", function (e) {
+			var h = e.target.closest && e.target.closest("[data-h]"), lb = e.target.closest && e.target.closest("[data-lb]");
+			if (h) { drag = { svg: svg, h: h.dataset.h }; try { svg.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); }
+			else if (lb) { var p0 = svgPoint(svg, e); drag = { svg: svg, lb: lb.dataset.lb, last: [p0.x, p0.y] }; try { svg.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); }
+			else if (onClick && e.target.closest("[data-w]")) onClick(e.target.closest("[data-w]").dataset.w);
+			else if (st.zm > 1.001) { var p1 = svgPoint(svg, e); drag = { svg: svg, pan: 1, last: [p1.x, p1.y] }; try { svg.setPointerCapture(e.pointerId); } catch (x) {} }
+		});
+		svg.addEventListener("pointermove", function (e) {
+			if (!drag || drag.svg !== svg) return; var p = svgPoint(svg, e);
+			if (drag.lb) { var o = st.lab[drag.lb] || [0, 0]; st.lab[drag.lb] = [o[0] + p.x - drag.last[0], o[1] + p.y - drag.last[1]]; drag.last = [p.x, p.y]; if (redraw) redraw(); return; }
+			if (drag.pan) { var q = PAN[svg.id] || [0, 0]; PAN[svg.id] = [q[0] - (p.x - drag.last[0]), q[1] - (p.y - drag.last[1])]; applyVB(svg); var p2 = svgPoint(svg, e); drag.last = [p2.x, p2.y]; return; }
+			onMove(drag.h, [p.x, p.y]);
+		});
+		var end = function () { if (drag && drag.svg === svg) { if (drag.lb) save(); drag = null; } }; svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
 		svg.addEventListener("keydown", function (e) {
 			var h = e.target.closest && e.target.closest("[data-h]"); if (!h) return; var d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (!d) return; e.preventDefault();
 			var c = h; var cx = +c.getAttribute("cx"), cy = +c.getAttribute("cy"), s = e.shiftKey ? 1 : 5; focusH = h.dataset.h; onMove(h.dataset.h, [cx + d[0] * s, cy + d[1] * s], true);
 		});
 	}
-	function put(svg, html) { var a = document.activeElement, id = a && a.dataset && a.dataset.h && svg.contains(a) ? a.dataset.h : focusH; svg.innerHTML = html; if (id) { var n = svg.querySelector('[data-h="' + id + '"]'); if (n && (a && svg.contains(a) || focusH)) { n.focus({ preventScroll: true }); } } focusH = null; }
+	var BASEVB = {}, PAN = {};
+	function applyVB(svg) { if (!BASEVB[svg.id]) BASEVB[svg.id] = svg.getAttribute("viewBox").split(" ").map(Number); var b = BASEVB[svg.id], z = st.zm, w = b[2] / z, h = b[3] / z, p = PAN[svg.id] || [0, 0], x = Math.max(0, Math.min(b[2] - w, (b[2] - w) / 2 + p[0])), y = Math.max(0, Math.min(b[3] - h, (b[3] - h) / 2 + p[1])); PAN[svg.id] = [x - (b[2] - w) / 2, y - (b[3] - h) / 2]; svg.setAttribute("viewBox", x.toFixed(1) + " " + y.toFixed(1) + " " + w.toFixed(1) + " " + h.toFixed(1)); }
+	function put(svg, html) {
+		var a = document.activeElement, id = a && a.dataset && a.dataset.h && svg.contains(a) ? a.dataset.h : focusH, n = 0;
+		html = html.replace(/<text ([^>]*)>/g, function (m, attrs) { if (/class="g-ht"/.test(attrs)) return m; var lid = svg.id + ":" + (n++), o = st.lab[lid]; return '<text data-lb="' + lid + '" ' + (o ? 'transform="translate(' + o[0].toFixed(1) + "," + o[1].toFixed(1) + ')" ' : "") + attrs + ">"; });
+		svg.innerHTML = html; applyVB(svg); if (id) { var nd = svg.querySelector('[data-h="' + id + '"]'); if (nd && (a && svg.contains(a) || focusH)) { nd.focus({ preventScroll: true }); } } focusH = null;
+	}
 
 	/* ================= TRIANGLES ================= */
 	var PSCALE = { "right-345": 50, "right-isos": 50, "30-60-90": 100, equilateral: 100, isosceles: 50, scalene: 50, obtuse: 50 }, PNAMES = [["right-345", "Right 3-4-5"], ["right-isos", "Right isosceles"], ["30-60-90", "30-60-90"], ["equilateral", "Equilateral"], ["isosceles", "Isosceles"], ["scalene", "Scalene"], ["obtuse", "Obtuse"]];
@@ -199,7 +216,7 @@
 	}
 	wireSvg($("ge-svg-tri"), function (h, p) {
 		var x = Math.max(16, Math.min(624, p[0])), y = Math.max(16, Math.min(404, p[1])); if (st.opts.grid) { x = Math.round(x / 20) * 20; y = Math.round(y / 20) * 20; } tri[{ A: 0, B: 1, C: 2 }[h]] = [x, y]; st.pre = ""; syncTriCtl(); rTri();
-	});
+	}, null, function () { rTri(); });
 
 	/* ================= PARALLEL LINES ================= */
 	var LW = { 1: "upper left", 2: "upper right", 3: "lower left", 4: "lower right" };
@@ -223,7 +240,7 @@
 			if (q === 2) { a0 = a; span = thv - a; } else if (q === 1) { a0 = thv; span = a + 180 - thv; } else if (q === 3) { a0 = a + 180; span = thv - a; } else { a0 = thv + 180; span = a + 360 - thv - 180; }
 			var rel = sel === n ? "sel" : GE.relation(sel, n), fill = sel === n ? "#f2b01e" : rel ? RELCOL[rel] : "#9aa5b4", C0 = inter[ln];
 			s += wedge(C0, 46, a0, span, "g-wedge" + (sel === n ? " g-sel" : ""), 'data-w="' + n + '" style="fill:' + fill + ';fill-opacity:' + (rel ? 0.7 : 0.25) + '"');
-			var mid = a0 + span / 2; s += text(pol(C0, 30, mid), n, "g-ta", "pointer-events:none;fill:#111;font-size:14px"); s += text(pol(C0, 74, mid), T(ang[n - 1], 1) + "°", "g-ts", "pointer-events:none;font-weight:700");
+			var mid = a0 + span / 2; s += text(pol(C0, 30, mid), n, "g-ta", "pointer-events:none;fill:#111;font-size:14px"); s += text(pol(C0, 74, mid), T(ang[n - 1], 1) + "°", "g-ts", "font-weight:700");
 		}
 		var H = [U[0] + 120 * d[0], U[1] - 120 * d[1]]; s += handle("th", [U[0] + 150 * d[0], U[1] + 150 * d[1] * 1], "θ"); put($("ge-svg-lines"), s);
 		// facts
@@ -237,7 +254,7 @@
 		});
 		var kinds = []; $("ge-lines-facts").innerHTML = '<h3 style="margin-top:0;">Angle ' + sel + " (" + (sel > 4 ? "lower line, " : "upper line, ") + LW[((sel - 1) % 4) + 1] + ") = " + T(ang[sel - 1], 1) + "°</h3><ul class=\"ge-facts\"><li>" + L2.join("</li><li>") + "</li></ul><p style=\"margin-bottom:0;\">" + (st.par ? "Because the lines are parallel there are only two different sizes: <b>" + T(th, 1) + "°</b> and <b>" + T(180 - th, 1) + "°</b>. Turn on &ldquo;tilt&rdquo; by clearing <i>Lines are parallel</i> to see the rules break." : "The lower line is tilted " + eps + "° so the top four angles (" + T(th, 1) + "° / " + T(180 - th, 1) + "°) differ from the bottom four (" + T(th2, 1) + "° / " + T(180 - th2, 1) + "°). <b>Converse:</b> if corresponding (or alternate) angles are equal, the lines must be parallel.") + "</p>";
 	}
-	wireSvg($("ge-svg-lines"), function (h, p) { if (h !== "th") return; var cot0 = 0, th = Math.atan2(LY1 - p[1] + 0.0001, 0) ; var U0 = [320 + 80 * Math.cos(st.th * D2R) / Math.sin(st.th * D2R), LY1], v = Math.atan2(U0[1] - p[1], p[0] - U0[0]) / D2R; if (v < 0) v += 180; v = Math.max(25, Math.min(155, Math.round(v))); st.th = v; save(); syncLinesCtl(); rLines(); }, function (w) { st.sel = +w; save(); rLines(); });
+	wireSvg($("ge-svg-lines"), function (h, p) { if (h !== "th") return; var cot0 = 0, th = Math.atan2(LY1 - p[1] + 0.0001, 0) ; var U0 = [320 + 80 * Math.cos(st.th * D2R) / Math.sin(st.th * D2R), LY1], v = Math.atan2(U0[1] - p[1], p[0] - U0[0]) / D2R; if (v < 0) v += 180; v = Math.max(25, Math.min(155, Math.round(v))); st.th = v; save(); syncLinesCtl(); rLines(); }, function (w) { st.sel = +w; save(); rLines(); }, function () { rLines(); });
 
 	/* ================= CIRCLES ================= */
 	var CM = [["insc", "Central & inscribed angle"], ["thales", "Thales (semicircle)"], ["quad", "Cyclic quadrilateral"], ["tang", "Tangent & chord"]], O = [320, 210], RR = 150;
@@ -278,7 +295,7 @@
 		}
 		put($("ge-svg-circle"), s); $("ge-circ-stats").innerHTML = stats; $("ge-circ-facts").innerHTML = facts;
 	}
-	wireSvg($("ge-svg-circle"), function (h, p) { var d = Math.round(norm(Math.atan2(O[1] - p[1], p[0] - O[0]) / D2R)); cp[h] = d; rCircle(); });
+	wireSvg($("ge-svg-circle"), function (h, p) { var d = Math.round(norm(Math.atan2(O[1] - p[1], p[0] - O[0]) / D2R)); cp[h] = d; rCircle(); }, null, function () { rCircle(); });
 
 	/* ================= ANGLES & POLYGONS ================= */
 	var AV = [60, 230], AR = 200, ACOL = { zero: "#9aa5b4", acute: "#2e9e5b", right: "#3a6fd8", obtuse: "#e08a1e", straight: "#7b8794", reflex: "#8e55c7", full: "#9aa5b4" };
@@ -295,7 +312,7 @@
 	function setAng(v, noInput) { v = Math.max(0, Math.min(360, v)); if (st.snap15) v = Math.round(v / 15) * 15; st.ang = Math.round(v * 100) / 100; if (!noInput) $("ge-ang").value = T(st.ang, 2); save(); rAng(); }
 	$("ge-ang").addEventListener("input", function () { var v = parseFloat(this.value.replace(",", ".")); if (isFinite(v)) { st.ang = Math.max(0, Math.min(360, v)); save(); rAng(); } });
 	$("ge-snap").addEventListener("change", function () { st.snap15 = this.checked; save(); });
-	wireSvg($("ge-svg-ang"), function (h, p) { var v = Math.atan2(AV[1] - p[1], p[0] - AV[0]) / D2R; if (v < 0) v += 360; var old = st.ang; if (old > 300 && v < 60) v = 360; else if (old < 60 && v > 300) v = 0; setAng(v); });
+	wireSvg($("ge-svg-ang"), function (h, p) { var v = Math.atan2(AV[1] - p[1], p[0] - AV[0]) / D2R; if (v < 0) v += 360; var old = st.ang; if (old > 300 && v < 60) v = 360; else if (old < 60 && v > 300) v = 0; setAng(v); }, null, function () { rAng(); });
 	// polygon
 	var PC = [160, 150], PRAD = 105;
 	function regularPts(n) { var p = []; for (var i = 0; i < n; i++) p.push(pol(PC, PRAD, 90 + i * 360 / n)); return p; }
@@ -320,8 +337,13 @@
 	$("ge-n").addEventListener("input", function () { st.n = +this.value; poly = null; save(); syncPolyCtl(); rPoly(); });
 	$("ge-free").addEventListener("change", function () { st.free = this.checked; poly = null; save(); rPoly(); });
 	$("ge-ext").addEventListener("change", function () { st.ext = this.checked; save(); rPoly(); });
-	wireSvg($("ge-svg-poly"), function (h, p) { var i = +h.slice(1); poly[i] = [Math.max(10, Math.min(310, p[0])), Math.max(10, Math.min(290, p[1]))]; rPoly(); });
+	wireSvg($("ge-svg-poly"), function (h, p) { var i = +h.slice(1); poly[i] = [Math.max(10, Math.min(310, p[0])), Math.max(10, Math.min(290, p[1]))]; rPoly(); }, null, function () { rPoly(); });
 
+	/* ---- text size, figure zoom, reset labels ---- */
+	function syncView() { $("ge-fs").value = st.fs; $("ge-zm").value = st.zm; $("ge-fso").textContent = Math.round(st.fs * 100) + "%"; $("ge-zmo").textContent = Math.round(st.zm * 100) + "%"; root.style.setProperty("--gefs", st.fs); }
+	function redrawAll() { if (st.tab === "tri") rTri(); else if (st.tab === "lines") rLines(); else if (st.tab === "circle") rCircle(); else { rAng(); rPoly(); } }
+	$("ge-fs").addEventListener("input", function () { st.fs = +this.value; save(); syncView(); }); $("ge-zm").addEventListener("input", function () { st.zm = +this.value; PAN = {}; save(); syncView(); redrawAll(); });
+	$("ge-lab-reset").addEventListener("click", function () { st.lab = {}; PAN = {}; save(); redrawAll(); });
 	/* ================= tabs ================= */
 	function show(tab) {
 		st.tab = tab; save(); [].forEach.call($("ge-tabs").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.t === tab)); b.setAttribute("aria-selected", String(b.dataset.t === tab)); });
@@ -329,6 +351,6 @@
 		if (tab === "tri") { syncTriCtl(); rTri(); } else if (tab === "lines") { syncLinesCtl(); rLines(); } else if (tab === "circle") rCircle(); else { syncPolyCtl(); rAng(); rPoly(); }
 	}
 	$("ge-tabs").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { show(b.dataset.t); try { history.replaceState(null, "", "?tab=" + b.dataset.t); } catch (x) {} } });
-	load(); var q = new URLSearchParams(location.search).get("tab"); if (q && /^(tri|lines|circle|poly)$/.test(q)) st.tab = q;
+	load(); syncView(); var q = new URLSearchParams(location.search).get("tab"); if (q && /^(tri|lines|circle|poly)$/.test(q)) st.tab = q;
 	setPreset(GE.PRESETS[st.pre] ? st.pre : "scalene"); show(st.tab);
 })();

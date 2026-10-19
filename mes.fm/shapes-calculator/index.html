@@ -309,7 +309,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu [hidden] {display:none !important;}
 	.tu .sh-main {display:grid;grid-template-columns:minmax(0,22em) minmax(0,1fr);gap:1em;align-items:start;margin-top:1em;}
 	@media (max-width: 800px) {.tu .sh-main {grid-template-columns:minmax(0,1fr);}}
-	.tu .sh-in .tu-field {margin-bottom:0.6em;}
+	.tu .sh-in .tu-field {margin-bottom:0.6em;} .tu #sh-unit {width:100%;text-overflow:ellipsis;}
 	.tu .sh-pic svg {width:100%;max-width:18em;height:auto;display:block;margin:0.8em auto 0.4em;}
 	.tu .sh-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.6em;}
 	.tu .sh-error {border-left:5px solid #c0392b;line-height:1.5;}
@@ -667,7 +667,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card">
 			<div class="tu-row" style="align-items:flex-end;">
 				<div class="tu-field tu-field--sm" style="flex-basis:12em;"><span class="tu-label" id="sh-dim-l">Type</span><div class="tu-seg" id="sh-dim" role="group" aria-labelledby="sh-dim-l"><button type="button" data-d="3" aria-pressed="true">3D solids</button><button type="button" data-d="2" aria-pressed="false">2D shapes</button></div></div>
-				<div class="tu-field tu-field--sm" style="flex-basis:9em;"><label for="sh-unit">Length unit</label><select id="sh-unit" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:17em;min-width:12em;"><label for="sh-unit">Length unit</label><select id="sh-unit" class="tu-select"></select></div>
 			</div>
 			<div class="tu-chips" id="sh-shapes" role="group" aria-label="Shape"></div>
 		</div>
@@ -682,7 +682,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-card sh-3d" id="sh-3d" hidden>
 					<div class="tu-row" style="align-items:center;gap:0.6em 1em;">
 						<div class="tu-seg" id="sh-3d-mode" role="group" aria-label="Drawing style"><button type="button" data-m="solid" aria-pressed="true">Solid</button><button type="button" data-m="glass" aria-pressed="false">See-through</button><button type="button" data-m="wire" aria-pressed="false">Wireframe</button></div>
-						<label class="sh-ck"><input type="checkbox" id="sh-3d-spin" checked> Spin</label><label class="sh-ck"><input type="checkbox" id="sh-3d-lab" checked> Labels</label><button type="button" class="tu-btn tu-btn--ghost" id="sh-3d-reset" style="padding:0.3em 0.9em;">Reset view</button>
+						<label class="sh-ck" id="sh-3d-spinw"><input type="checkbox" id="sh-3d-spin" checked> Spin</label><label class="sh-ck"><input type="checkbox" id="sh-3d-lab" checked> Labels</label><button type="button" class="tu-btn tu-btn--ghost" id="sh-3d-reset" style="padding:0.3em 0.9em;">Reset view</button>
 					</div>
 					<canvas id="sh-cv" aria-label="3D view of the solid. Drag to rotate, scroll to zoom." role="img"></canvas>
 					<p class="tu-note" style="margin:0.3em 0 0;" id="sh-3d-note">Drag to rotate, scroll or pinch to zoom. The drawing uses your numbers (or an example until you type some), scaled to fit.</p>
@@ -778,7 +778,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/shapes-calculator/js/shapes-calculator.js?v=1" defer></script>
+	<script src="/shapes-calculator/js/shapes-calculator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

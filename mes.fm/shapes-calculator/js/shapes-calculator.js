@@ -123,7 +123,29 @@
 	}
 	function arcPts(cx, cy, r, a0, a1, k) { var o = []; for (var i = 0; i <= k; i++) { var a = a0 + (a1 - a0) * i / k; o.push([r * Math.cos(a), cy + r * Math.sin(a)]); } return o; }   // (r, y) pairs around (0, cy)
 	function lineSeg(M, p, q, t) { M.lines.push({ a: p, b: q, t: t }); }
+		// flat shapes as meshes in the z = 0 plane (counter-clockwise, normal +z) for the scale-drawing viewer
+	function flatMesh(id, v, n) {
+		var M = meshOut(), P, i, k;
+		function fan(pts) { var b = M.verts.length; pts.forEach(function (p) { M.verts.push([p[0], p[1], 0]); }); for (var q = 1; q < pts.length - 1; q++) M.tris.push([b, b + q, b + q + 1]); var lp = []; for (var e = 0; e <= pts.length; e++) lp.push(b + (e % pts.length)); M.wire.push(lp); }
+		function circ(r, a0, a1, m) { var o = []; for (var j = 0; j <= m; j++) { var a = a0 + (a1 - a0) * j / m; o.push([r * Math.cos(a), r * Math.sin(a)]); } return o; }
+		switch (id) {
+			case "square": k = v.a / 2; fan([[-k, -k], [k, -k], [k, k], [-k, k]]); lineSeg(M, [-k, -k, 0], [k, -k, 0], "a"); return M;
+			case "rectangle": fan([[-v.a / 2, -v.b / 2], [v.a / 2, -v.b / 2], [v.a / 2, v.b / 2], [-v.a / 2, v.b / 2]]); lineSeg(M, [-v.a / 2, -v.b / 2, 0], [v.a / 2, -v.b / 2, 0], "a"); lineSeg(M, [v.a / 2, -v.b / 2, 0], [v.a / 2, v.b / 2, 0], "b"); return M;
+			case "triangle": { var ca = (v.b * v.b + v.c * v.c - v.a * v.a) / (2 * v.b * v.c), sa = Math.sqrt(Math.max(0, 1 - ca * ca)), T = [[0, 0], [v.c, 0], [v.b * ca, v.b * sa]], cx = (T[0][0] + T[1][0] + T[2][0]) / 3, cy = (T[0][1] + T[1][1] + T[2][1]) / 3; T = T.map(function (p) { return [p[0] - cx, p[1] - cy]; }); fan(T); lineSeg(M, [T[0][0], T[0][1], 0], [T[1][0], T[1][1], 0], "c"); lineSeg(M, [T[0][0], T[0][1], 0], [T[2][0], T[2][1], 0], "b"); lineSeg(M, [T[1][0], T[1][1], 0], [T[2][0], T[2][1], 0], "a"); return M; }
+			case "triangle-bh": fan([[-v.b / 2, -v.h / 2], [v.b / 2, -v.h / 2], [0, v.h / 2]]); lineSeg(M, [-v.b / 2, -v.h / 2, 0], [v.b / 2, -v.h / 2, 0], "b"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
+			case "circle": fan(circ(v.r, 0, 2 * PI, n).slice(0, n)); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M;
+			case "ellipse": fan(circ(1, 0, 2 * PI, n).slice(0, n).map(function (p) { return [p[0] * v.a, p[1] * v.b]; })); lineSeg(M, [0, 0, 0], [v.a, 0, 0], "a"); lineSeg(M, [0, 0, 0], [0, v.b, 0], "b"); return M;
+			case "trapezoid": fan([[-v.b / 2, -v.h / 2], [v.b / 2, -v.h / 2], [v.a / 2, v.h / 2], [-v.a / 2, v.h / 2]]); lineSeg(M, [-v.a / 2, v.h / 2, 0], [v.a / 2, v.h / 2, 0], "a"); lineSeg(M, [-v.b / 2, -v.h / 2, 0], [v.b / 2, -v.h / 2, 0], "b"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
+			case "parallelogram": { var sk = v.s > v.h ? Math.sqrt(v.s * v.s - v.h * v.h) : v.h * 0.5; fan([[-v.b / 2 - sk / 2, -v.h / 2], [v.b / 2 - sk / 2, -v.h / 2], [v.b / 2 + sk / 2, v.h / 2], [-v.b / 2 + sk / 2, v.h / 2]]); lineSeg(M, [-v.b / 2 - sk / 2, -v.h / 2, 0], [v.b / 2 - sk / 2, -v.h / 2, 0], "b"); lineSeg(M, [v.b / 2 - sk / 2, -v.h / 2, 0], [v.b / 2 - sk / 2, v.h / 2, 0], "h"); return M; }
+			case "rhombus": fan([[v.p / 2, 0], [0, v.q / 2], [-v.p / 2, 0], [0, -v.q / 2]]); lineSeg(M, [-v.p / 2, 0, 0], [v.p / 2, 0, 0], "p"); lineSeg(M, [0, -v.q / 2, 0], [0, v.q / 2, 0], "q"); return M;
+			case "regular-polygon": { var Rc = v.a / (2 * Math.sin(PI / v.n)); P = []; for (i = 0; i < v.n; i++) { var an = -PI / 2 - PI / v.n + 2 * PI * i / v.n; P.push([Rc * Math.cos(an), Rc * Math.sin(an)]); } fan(P); lineSeg(M, [P[0][0], P[0][1], 0], [P[1][0], P[1][1], 0], "a"); return M; }
+			case "sector": { var th = v.t * PI / 180; P = [[0, 0]].concat(circ(v.r, 0, th, Math.max(8, Math.round(n * th / (2 * PI))))); fan(P); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
+			case "annulus": { var o = circ(v.R, 0, 2 * PI, n).slice(0, n), inn = circ(v.r, 0, 2 * PI, n).slice(0, n); o.forEach(function (p) { M.verts.push([p[0], p[1], 0]); }); inn.forEach(function (p) { M.verts.push([p[0], p[1], 0]); }); for (i = 0; i < n; i++) { var j = (i + 1) % n; M.tris.push([i, j, n + j]); M.tris.push([i, n + j, n + i]); } var w1 = [], w2 = []; for (i = 0; i <= n; i++) { w1.push(i % n); w2.push(n + (i % n)); } M.wire.push(w1); M.wire.push(w2); lineSeg(M, [0, 0, 0], [v.R, 0, 0], "R"); lineSeg(M, [0, 0, 0], [0, v.r, 0], "r"); return M; }
+		}
+		return null;
+	}
 	function mesh(id, v, n) {
+		var fm = flatMesh(id, v, n || 64); if (fm) return fm;
 		n = n || 64; var M, h, i, j;
 		function box(a, b, c) {
 			M = meshOut(); var x = a / 2, y = c / 2, z = b / 2; M.verts = [[-x, -y, -z], [x, -y, -z], [x, y, -z], [-x, y, -z], [-x, -y, z], [x, -y, z], [x, y, z], [-x, y, z]];
@@ -137,12 +159,12 @@
 				for (i = 0; i < 3; i++) M.verts.push([P[i][0] - cx, P[i][1] - cy, -l / 2]); for (i = 0; i < 3; i++) M.verts.push([P[i][0] - cx, P[i][1] - cy, l / 2]);
 				[[0, 1, 2], [3, 4, 5], [0, 1, 4, 3], [1, 2, 5, 4], [2, 0, 3, 5]].forEach(function (f) { addFace(M, f, [0, 0, 0]); }); lineSeg(M, M.verts[3], M.verts[0], "l"); return M;
 			}
-			case "cylinder": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [v.r, -v.h / 2, 0], [v.r, v.h / 2, 0], "h"); return M;
+			case "cylinder": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [v.r, v.h / 2, 0], [v.r, -v.h / 2, 0], "h"); return M;
 			case "cone": M = revolve([[0, -v.h / 2], [v.r, -v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, -v.h / 2, 0], [v.r, -v.h / 2, 0], "r"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
 			case "frustum": M = revolve([[0, -v.h / 2], [v.R, -v.h / 2], [v.r, v.h / 2], [0, v.h / 2]], n); lineSeg(M, [0, -v.h / 2, 0], [v.R, -v.h / 2, 0], "R"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); lineSeg(M, [0, -v.h / 2, 0], [0, v.h / 2, 0], "h"); return M;
 			case "sphere": { var pr = []; for (i = 0; i <= n / 2; i++) { var f = PI * i / (n / 2); pr.push([v.r * Math.sin(f), -v.r * Math.cos(f)]); } M = revolve(pr, n); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
 			case "hemisphere": { var ph = [[0, 0], [v.r, 0]]; arcPts(0, 0, v.r, 0, PI / 2, n / 4).forEach(function (q, k) { if (k > 0) ph.push(q); }); M = revolve(ph, n); lineSeg(M, [0, 0, 0], [v.r, 0, 0], "r"); return M; }
-			case "capsule": { var pc = arcPts(0, -v.h / 2, v.r, -PI / 2, 0, n / 4).map(function (q) { return [q[0], q[1]]; }).concat(arcPts(0, v.h / 2, v.r, 0, PI / 2, n / 4).slice(1)); M = revolve([[0, -v.h / 2 - v.r]].concat(pc.slice(1)), n); lineSeg(M, [v.r, -v.h / 2, 0], [v.r, v.h / 2, 0], "h"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); return M; }
+			case "capsule": { var pc = arcPts(0, -v.h / 2, v.r, -PI / 2, 0, n / 4).map(function (q) { return [q[0], q[1]]; }).concat(arcPts(0, v.h / 2, v.r, 0, PI / 2, n / 4).slice(1)); M = revolve([[0, -v.h / 2 - v.r]].concat(pc.slice(1)), n); lineSeg(M, [v.r, v.h / 2, 0], [v.r, -v.h / 2, 0], "h"); lineSeg(M, [0, v.h / 2, 0], [v.r, v.h / 2, 0], "r"); return M; }
 			case "ellipsoid": { var pe = []; for (i = 0; i <= n / 2; i++) { var g = PI * i / (n / 2); pe.push([Math.sin(g), -Math.cos(g)]); } M = revolve(pe, n); M.verts = M.verts.map(function (p) { return [p[0] * v.a, p[1] * v.b, p[2] * v.c]; }); lineSeg(M, [0, 0, 0], [v.a, 0, 0], "a"); lineSeg(M, [0, 0, 0], [0, v.b, 0], "b"); lineSeg(M, [0, 0, 0], [0, 0, v.c], "c"); return M; }
 			case "torus": {
 				M = meshOut(); var m = n, k2 = Math.round(n / 2), idt = function (a, b) { return (a % m) * k2 + (b % k2); };
@@ -302,43 +324,74 @@
 	}).join("") + "</tbody>";
 
 
-	/* ---- 3D viewer (plain canvas, painter's algorithm; meshes come from SH.mesh) ---- */
-	var V3 = { yaw: -0.6, pitch: 0.42, zoom: 1, mode: "solid", spin: true, labels: true, mesh: null, id: 0, ptrs: {}, pinch: 0 };
+	/* ---- scale-drawing / 3D viewer (plain canvas, painter's algorithm; meshes come from SH.mesh). Drag the white dots to change a dimension, drag a label to move it. ---- */
+	var V3 = { yaw: -0.6, pitch: 0.42, zoom: 1, mode: "solid", spin: true, labels: true, mesh: null, id: 0, ptrs: {}, pinch: 0, hot: [], act: null, flat: false, k: 1, frozen: 0, dims: {}, off: {} };
+	root.__v3 = V3; try { V3.off = JSON.parse(localStorage.getItem(KEY + ":lab") || "{}") || {}; } catch (e) {}
+	function offSave() { try { localStorage.setItem(KEY + ":lab", JSON.stringify(V3.off)); } catch (e) {} }
 	function v3Dims() { var S = SH.byId(st.s), cur = vals(), ex = EXAMPLE[st.s], d = {}; S.inputs.forEach(function (i) { var n = SH.num(cur[i[0]]); d[i[0]] = n != null && (n > 0 || (S.id === "capsule" && i[0] === "h" && n === 0)) ? n : ex[i[0]]; }); return SH.compute(st.s, d).ok ? d : Object.assign({}, ex); }
 	function v3Build() {
-		var S = SH.byId(st.s), box = $("sh-3d"); box.hidden = S.dim !== 3; if (S.dim !== 3) { V3.mesh = null; return; }
-		var M = SH.mesh(st.s, v3Dims(), 48); if (!M) { box.hidden = true; return; } var mx = 0; M.verts.forEach(function (p) { mx = Math.max(mx, Math.hypot(p[0], p[1], p[2])); }); var k = 1.35 / (mx || 1);
+		var box = $("sh-3d"), d = v3Dims(), M = SH.mesh(st.s, d, 64); if (!M) { box.hidden = true; V3.mesh = null; return; } box.hidden = false; V3.dims = d;
+		var flat = SH.byId(st.s).dim === 2; if (flat !== V3.flat) { V3.flat = flat; if (flat) { V3.yaw = 0; V3.pitch = 0; } else { V3.yaw = -0.6; V3.pitch = 0.42; } }
+		$("sh-3d-spin").parentNode.hidden = flat; $("sh-3d-note").innerHTML = flat ? "A scale drawing of your shape. <b>Drag a white dot</b> to change that length, or drag a label to move it." : "Drag the picture to rotate, scroll or pinch to zoom. <b>Drag a white dot</b> to change that length; drag a label to move it. Uses an example until you type valid numbers.";
+		var mx = 0; M.verts.forEach(function (p) { mx = Math.max(mx, Math.hypot(p[0], p[1], p[2])); }); var k = V3.frozen ? V3.k : 1.35 / (mx || 1); V3.k = k;
 		M.verts = M.verts.map(function (p) { return [p[0] * k, p[1] * k, p[2] * k]; }); M.lines.forEach(function (l) { l.a = [l.a[0] * k, l.a[1] * k, l.a[2] * k]; l.b = [l.b[0] * k, l.b[1] * k, l.b[2] * k]; }); V3.mesh = M; v3Draw(); v3Loop();
 	}
 	function v3Color() { var c = getComputedStyle(root).getPropertyValue("--accent").trim(), m; if ((m = /^#([0-9a-f]{6})$/i.exec(c))) return [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4), 16)]; if ((m = /(\d+)[ ,]+(\d+)[ ,]+(\d+)/.exec(c))) return [+m[1], +m[2], +m[3]]; return [15, 108, 189]; }
+	var UN = { mm: "mm", cm: "cm", m: "m", km: "km", in: "in", ft: "ft", yd: "yd", mi: "mi" };
 	function v3Draw() {
-		var M = V3.mesh, cv = $("sh-cv"); if (!M || $("sh-3d").hidden) return; var dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 400, h = Math.round(Math.min(400, w * 0.75)); if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.height = h + "px"; }
+		var M = V3.mesh, cv = $("sh-cv"); if (!M || $("sh-3d").hidden) return; var dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 400, h = Math.round(Math.min(420, w * 0.75)); if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.height = h + "px"; }
 		var g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h); var dark = document.body.classList.contains("dark-mode"), col = v3Color(), ink = dark ? "205,214,228" : "44,62,85";
-		var cy = Math.cos(V3.yaw), sy = Math.sin(V3.yaw), cp = Math.cos(V3.pitch), sp = Math.sin(V3.pitch), D = 5.5, sc = Math.min(w, h) * 0.30 * V3.zoom;
+		var cy = Math.cos(V3.yaw), sy = Math.sin(V3.yaw), cp = Math.cos(V3.pitch), sp = Math.sin(V3.pitch), D = 5.5, sc = Math.min(w, h) * (V3.flat ? 0.33 : 0.30) * V3.zoom;
 		function rot(p) { var x1 = p[0] * cy + p[2] * sy, z1 = -p[0] * sy + p[2] * cy; return [x1, p[1] * cp - z1 * sp, p[1] * sp + z1 * cp]; }
 		function scr(q) { var f = D / (D - q[2]); return [w / 2 + sc * f * q[0], h / 2 - sc * f * q[1]]; }
 		var Tv = M.verts.map(rot), P = Tv.map(scr), L = [-0.4, 0.55, 0.73], faces = [];
 		M.tris.forEach(function (t) {
 			var a = Tv[t[0]], b = Tv[t[1]], c = Tv[t[2]], u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]], n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]], nl = Math.hypot(n[0], n[1], n[2]); if (nl < 1e-12) return;
 			var front = n[0] * (0 - a[0]) + n[1] * (0 - a[1]) + n[2] * (D - a[2]) > 0; if (V3.mode === "solid" && !front) return;
-			var lam = Math.abs(n[0] * L[0] + n[1] * L[1] + n[2] * L[2]) / nl; faces.push({ t: t, z: (a[2] + b[2] + c[2]) / 3, s: 0.32 + 0.68 * lam });
+			var lam = V3.flat ? 0.85 : Math.abs(n[0] * L[0] + n[1] * L[1] + n[2] * L[2]) / nl; faces.push({ t: t, z: (a[2] + b[2] + c[2]) / 3, s: 0.32 + 0.68 * lam });
 		});
 		faces.sort(function (p, q) { return p.z - q.z; });
 		if (V3.mode !== "wire") faces.forEach(function (f) {
 			var t = f.t, c0 = [Math.round(col[0] * f.s + 255 * (1 - f.s) * 0.12), Math.round(col[1] * f.s + 255 * (1 - f.s) * 0.12), Math.round(col[2] * f.s + 255 * (1 - f.s) * 0.12)], st2 = "rgb(" + c0.join(",") + ")";
 			g.beginPath(); g.moveTo(P[t[0]][0], P[t[0]][1]); g.lineTo(P[t[1]][0], P[t[1]][1]); g.lineTo(P[t[2]][0], P[t[2]][1]); g.closePath(); if (V3.mode === "glass") { g.fillStyle = "rgba(" + c0.join(",") + ",0.22)"; g.fill(); } else { g.fillStyle = st2; g.strokeStyle = st2; g.lineWidth = 0.7; g.fill(); g.stroke(); }
 		});
-		var flat = M.wire.every(function (e) { return e.length === 2; }); g.lineJoin = "round";
-		M.wire.forEach(function (e) { if (V3.mode === "solid" && !flat) return; g.beginPath(); e.forEach(function (i, k) { if (k) g.lineTo(P[i][0], P[i][1]); else g.moveTo(P[i][0], P[i][1]); }); g.strokeStyle = "rgba(" + ink + "," + (V3.mode === "wire" ? 0.85 : V3.mode === "glass" ? 0.5 : flat ? 0.75 : 0.3) + ")"; g.lineWidth = V3.mode === "wire" ? 1.3 : flat ? 1.6 : 0.8; g.stroke(); });
-		if (V3.labels) M.lines.forEach(function (l) { var A = scr(rot(l.a)), B = scr(rot(l.b)); g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(B[0], B[1]); g.strokeStyle = dark ? "#ffd166" : "#c2410c"; g.lineWidth = 3; g.lineCap = "round"; g.stroke(); var mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2; g.font = "italic 700 17px Georgia, serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 4; g.strokeStyle = dark ? "#1d2127" : "#ffffff"; g.strokeText(l.t, mx + 9, my - 9); g.fillStyle = dark ? "#ffd166" : "#c2410c"; g.fillText(l.t, mx + 9, my - 9); });
+		var flatMesh = M.wire.every(function (e) { return e.length === 2; }); g.lineJoin = "round";
+		M.wire.forEach(function (e) { if (V3.mode === "solid" && !flatMesh && !V3.flat) return; g.beginPath(); e.forEach(function (i, k) { if (k) g.lineTo(P[i][0], P[i][1]); else g.moveTo(P[i][0], P[i][1]); }); g.strokeStyle = "rgba(" + ink + "," + (V3.mode === "wire" ? 0.85 : V3.mode === "glass" ? 0.5 : (flatMesh || V3.flat) ? 0.8 : 0.3) + ")"; g.lineWidth = V3.mode === "wire" ? 1.3 : (flatMesh || V3.flat) ? 1.8 : 0.8; g.stroke(); });
+		V3.hot = []; var acc = dark ? "#ffd166" : "#c2410c", halo = dark ? "#1d2127" : "#ffffff";
+		M.lines.forEach(function (l, li) {
+			var A = scr(rot(l.a)), B = scr(rot(l.b)), key = l.t, val = V3.dims[key], ok = val != null && key !== "θ" && SH.byId(st.s).inputs.some(function (i) { return i[0] === key; });
+			if (V3.labels) { g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(B[0], B[1]); g.strokeStyle = acc; g.lineWidth = 3; g.lineCap = "round"; g.stroke(); }
+			var oid = st.s + ":" + li, of = V3.off[oid] || [0, 0], lx = (A[0] + B[0]) / 2 + 9 + of[0], ly = (A[1] + B[1]) / 2 - 9 + of[1], txt = key + (val != null ? " = " + SH.trim(val, 3) + " " + st.u : "");
+			if (V3.labels) { g.font = "italic 700 16px Georgia, serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 4; g.strokeStyle = halo; g.strokeText(txt, lx, ly); g.fillStyle = acc; g.fillText(txt, lx, ly); }
+			if (V3.labels && ok) { g.beginPath(); g.arc(B[0], B[1], 7, 0, 6.2832); g.fillStyle = "#fff"; g.fill(); g.lineWidth = 3; g.strokeStyle = acc; g.stroke(); }
+			V3.hot.push({ key: key, oid: oid, A: A, B: B, lx: lx, ly: ly, tw: g.measureText ? g.measureText(txt).width : 40, slide: ok });
+		});
 	}
-	function v3Loop() { if (V3.id) return; (function tick() { V3.id = 0; if (!V3.mesh || $("sh-3d").hidden) return; if (V3.spin && !document.hidden) { V3.yaw += 0.007; v3Draw(); } V3.id = requestAnimationFrame(tick); })(); }
+	function v3Loop() { if (V3.id || V3.flat) return; (function tick() { V3.id = 0; if (!V3.mesh || $("sh-3d").hidden || V3.flat) return; if (V3.spin && !document.hidden && !V3.act) { V3.yaw += 0.007; v3Draw(); } V3.id = requestAnimationFrame(tick); })(); }
+	function v3Hit(x, y) {
+		if (!V3.labels) return null; for (var i = 0; i < V3.hot.length; i++) { var o = V3.hot[i]; if (o.slide && Math.hypot(x - o.B[0], y - o.B[1]) <= 13) return { t: "dim", o: o }; }
+		for (var j = 0; j < V3.hot.length; j++) { var q = V3.hot[j]; if (Math.abs(x - q.lx) <= q.tw / 2 + 6 && Math.abs(y - q.ly) <= 12) return { t: "lab", o: q }; } return null;
+	}
+	function v3Slide(o, x, y) {
+		var dx = o.B[0] - o.A[0], dy = o.B[1] - o.A[1], ls = Math.hypot(dx, dy), v0 = V3.dims[o.key], t; if (!(v0 > 0)) return;
+		if (ls < 28) t = 1 - ((y - o.B[1]) - 0) / 120 * 0; else t = ((x - o.A[0]) * dx + (y - o.A[1]) * dy) / (ls * ls);
+		if (ls < 28) return; t = Math.max(0.2, Math.min(5, t)); var nv = Math.max(0.001, v0 * t); nv = +nv.toPrecision(3); var nd = Object.assign({}, V3.dims); nd[o.key] = nv; if (!SH.compute(st.s, nd).ok) return;
+		var inp = $("sh-i-" + o.key); if (!inp) return; V3.frozen = 1; inp.value = SH.trim(nv, 4); inp.dispatchEvent(new Event("input", { bubbles: true }));
+	}
 	(function () {
-		var cv = $("sh-cv"); $("sh-3d-mode").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; V3.mode = b.dataset.m; [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); v3Draw(); });
-		$("sh-3d-spin").addEventListener("change", function () { V3.spin = this.checked; v3Loop(); }); $("sh-3d-lab").addEventListener("change", function () { V3.labels = this.checked; v3Draw(); }); $("sh-3d-reset").addEventListener("click", function () { V3.yaw = -0.6; V3.pitch = 0.42; V3.zoom = 1; v3Draw(); });
-		cv.addEventListener("pointerdown", function (e) { V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; try { cv.setPointerCapture(e.pointerId); } catch (x) {} V3.spin = false; $("sh-3d-spin").checked = false; });
-		cv.addEventListener("pointermove", function (e) { var p = V3.ptrs[e.pointerId]; if (!p) return; var ids = Object.keys(V3.ptrs); if (ids.length === 2) { V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; var a = V3.ptrs[ids[0]], b = V3.ptrs[ids[1]], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (V3.pinch) V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * d / V3.pinch)); V3.pinch = d; v3Draw(); return; } V3.yaw += (e.clientX - p[0]) * 0.01; V3.pitch = Math.max(-1.5, Math.min(1.5, V3.pitch + (e.clientY - p[1]) * 0.01)); V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; v3Draw(); });
-		var up = function (e) { delete V3.ptrs[e.pointerId]; V3.pinch = 0; }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+		var cv = $("sh-cv"); function pos(e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+		$("sh-3d-mode").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; V3.mode = b.dataset.m; [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); v3Draw(); });
+		$("sh-3d-spin").addEventListener("change", function () { V3.spin = this.checked; v3Loop(); }); $("sh-3d-lab").addEventListener("change", function () { V3.labels = this.checked; v3Draw(); });
+		$("sh-3d-reset").addEventListener("click", function () { V3.yaw = V3.flat ? 0 : -0.6; V3.pitch = V3.flat ? 0 : 0.42; V3.zoom = 1; V3.off = {}; offSave(); v3Draw(); });
+		cv.addEventListener("pointerdown", function (e) { var p = pos(e); V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; try { cv.setPointerCapture(e.pointerId); } catch (x) {} var hit = Object.keys(V3.ptrs).length === 1 ? v3Hit(p[0], p[1]) : null; if (hit) { V3.act = { h: hit, last: p }; e.preventDefault(); return; } V3.act = null; if (!V3.flat) { V3.spin = false; $("sh-3d-spin").checked = false; } });
+		cv.addEventListener("pointermove", function (e) {
+			var p = pos(e), ids = Object.keys(V3.ptrs);
+			if (!ids.length) { var hv = v3Hit(p[0], p[1]); cv.style.cursor = hv ? (hv.t === "dim" ? "ew-resize" : "move") : (V3.flat ? "default" : "grab"); return; }
+			if (V3.act) { var a = V3.act; if (a.h.t === "lab") { var of = V3.off[a.h.o.oid] || [0, 0]; V3.off[a.h.o.oid] = [of[0] + p[0] - a.last[0], of[1] + p[1] - a.last[1]]; a.last = p; v3Draw(); } else v3Slide(a.h.o, p[0], p[1]); return; }
+			var prev = V3.ptrs[e.pointerId]; if (!prev) return; if (ids.length === 2) { V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; var A1 = V3.ptrs[ids[0]], B1 = V3.ptrs[ids[1]], d = Math.hypot(A1[0] - B1[0], A1[1] - B1[1]); if (V3.pinch) V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * d / V3.pinch)); V3.pinch = d; v3Draw(); return; }
+			if (!V3.flat) { V3.yaw += (e.clientX - prev[0]) * 0.01; V3.pitch = Math.max(-1.5, Math.min(1.5, V3.pitch + (e.clientY - prev[1]) * 0.01)); } V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; v3Draw();
+		});
+		var up = function (e) { delete V3.ptrs[e.pointerId]; V3.pinch = 0; if (V3.act) { if (V3.act.h.t === "lab") offSave(); V3.act = null; if (V3.frozen) { V3.frozen = 0; v3Build(); } } }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
 		cv.addEventListener("wheel", function (e) { e.preventDefault(); V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); v3Draw(); }, { passive: false });
 		window.addEventListener("resize", v3Draw); new MutationObserver(v3Draw).observe(document.body, { attributes: true, attributeFilter: ["class"] });
 	})();

@@ -137,7 +137,7 @@
 	var $ = function (id) { return document.getElementById(id); };
 	var root = $("tg"); if (!root || !window.TR) return;
 	var KEY = "mes-trigonometry:v1", T = TR.trim, R = Math.PI / 180;
-	var st = { tab: "circle", ang: 45, cu: "deg", snap: false, rec: false, au: "deg", aIn: "30", ifn: "sin", iv: "0.5", tmode: "right", fn: "sin", g: { A: 1, B: 1, C: 0, D: 0 }, par: true, tr: 15, ts: 360, td: 4, tx: true, id: "pyth", ix: "25", iy: "40" }, ts = {};
+	var st = { tab: "circle", ang: 45, cu: "deg", snap: false, rec: false, aDeg: 30, ifn: "sin", iv: "0.5", tmode: "right", fn: "sin", g: { A: 1, B: 1, C: 0, D: 0 }, par: true, tr: 15, ts: 360, td: 4, tx: true, id: "pyth", ix: "25", iy: "40" }, ts = {};
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) Object.keys(st).forEach(function (k) { if (s[k] != null && typeof s[k] === typeof st[k]) st[k] = s[k]; }); if (s && s.g && typeof s.g === "object") ["A", "B", "C", "D"].forEach(function (k) { if (typeof s.g[k] === "number") st.g[k] = s.g[k]; }); } catch (e) {} }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
@@ -157,15 +157,17 @@
 	var PRE = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
 	function setAngle(d, fromInput) {
 		d = Math.max(-1440, Math.min(1440, d)); if (st.snap) d = Math.round(d / 15) * 15; st.ang = Math.round(d * 1e4) / 1e4; save();
-		if (!fromInput) $("tg-c-in").value = st.cu === "rad" ? (TR.piFraction(st.ang) || T(st.ang * R, 5)).replace("−", "-") : T(st.ang, 3); rCircle();
+		if (!fromInput) cFields(); rCircle();
 	}
 	$("tg-c-pre").innerHTML = PRE.map(function (d) { return '<button type="button" class="tu-chip" data-d="' + d + '">' + d + "°</button>"; }).join("");
 	$("tg-c-pre").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) setAngle(+b.dataset.d); });
-	$("tg-c-in").addEventListener("input", function () { var v = TR.parseAngle(this.value, st.cu); if (v != null) { st.ang = Math.round(v * 1e6) / 1e6; save(); rCircle(); } });
-	$("tg-c-unit").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.cu = b.dataset.u; save(); syncC(); setAngle(st.ang); });
+	function radText(d) { return TR.piFraction(d) || T(d * R, 6); }
+	function cFields(except) { if (except !== "deg") $("tg-c-deg").value = T(st.ang, 4); if (except !== "rad") $("tg-c-rad").value = radText(st.ang); }
+	$("tg-c-deg").addEventListener("input", function () { var v = TR.parseAngle(this.value, "deg"); if (v != null) { st.ang = Math.round(v * 1e6) / 1e6; save(); cFields("deg"); rCircle(); } });
+	$("tg-c-rad").addEventListener("input", function () { var v = TR.parseAngle(this.value, "rad"); if (v != null) { st.ang = Math.round(v * 1e6) / 1e6; save(); cFields("rad"); rCircle(); } });
 	$("tg-c-snap").addEventListener("change", function () { st.snap = this.checked; save(); if (st.snap) setAngle(st.ang); });
 	$("tg-c-rec").addEventListener("change", function () { st.rec = this.checked; save(); rCircle(); });
-	function syncC() { [].forEach.call($("tg-c-unit").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.u === st.cu)); }); $("tg-c-snap").checked = st.snap; $("tg-c-rec").checked = st.rec; }
+	function syncC() { cFields(); $("tg-c-snap").checked = st.snap; $("tg-c-rec").checked = st.rec; }
 	function cl(v) { return Math.max(-9999, Math.min(9999, v)); }
 	function rCircle() {
 		var d = st.ang, t = TR.trig(d), r = d * R, cx = C0[0], cy = C0[1], px = cx + RC * Math.cos(r), py = cy - RC * Math.sin(r), s = "", i;
@@ -213,15 +215,15 @@
 	})();
 
 	/* ================= CALCULATOR ================= */
+	function aFields(except) { if (except !== "deg") $("tg-a-deg").value = T(st.aDeg, 6); if (except !== "rad") $("tg-a-rad").value = radText(st.aDeg); if (except !== "grad") $("tg-a-grad").value = T(st.aDeg / 0.9, 6); }
 	function rCalc() {
-		var d = TR.parseAngle($("tg-a-in").value, st.au), tab = $("tg-a-tab"), note = $("tg-a-note");
-		if (d == null) { tab.innerHTML = ""; note.textContent = $("tg-a-in").value.trim() ? "Could not read that angle. Try 45, 45°, pi/4, 0.785 rad or 50 grad." : "Enter an angle."; return; }
+		var d = st.aDeg, tab = $("tg-a-tab"), note = $("tg-a-note");
+		if (d == null || !isFinite(d)) { tab.innerHTML = ""; note.textContent = "Enter an angle in any box."; return; }
 		var t = TR.trig(d), ex = TR.exact(d), rows = [["sin", t.sin, ex && ex.sin, ""], ["cos", t.cos, ex && ex.cos, ""], ["tan", t.tan, ex && ex.tan, ""], ["csc", t.csc, null, "1 / sin"], ["sec", t.sec, null, "1 / cos"], ["cot", t.cot, null, "1 / tan"]];
 		tab.innerHTML = "<thead><tr><th>Function</th><th>Value</th><th>Exact</th></tr></thead><tbody>" + rows.map(function (r) { return "<tr><td><b>" + r[0] + "</b> " + T(d, 4) + "°</td><td>" + (r[1] == null ? "undefined" : esc(T(r[1], 10))) + "</td><td>" + (r[2] ? esc(r[2]) : r[3] ? esc(r[3]) : "") + "</td></tr>"; }).join("") + "</tbody>";
 		note.innerHTML = "Angle: <b>" + T(d, 6) + "°</b> = <b>" + T(d * R, 8) + " rad</b>" + (TR.piFraction(d) ? " = " + TR.piFraction(d) : "") + " = " + T(d / 0.9, 5) + " grad. Quadrant " + (TR.quadrant(d) ? ["I", "II", "III", "IV"][TR.quadrant(d) - 1] : "boundary") + ", reference angle " + T(TR.referenceAngle(d), 4) + "°.";
 	}
-	$("tg-a-in").addEventListener("input", function () { st.aIn = this.value; save(); rCalc(); });
-	$("tg-a-unit").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.au = b.dataset.u; save(); [].forEach.call($("tg-a-unit").children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); rCalc(); });
+	[["deg", "deg"], ["rad", "rad"], ["grad", "grad"]].forEach(function (u) { $("tg-a-" + u[0]).addEventListener("input", function () { var v = TR.parseAngle(this.value, u[1]); if (v != null) { st.aDeg = v; save(); aFields(u[0]); rCalc(); } else if (!this.value.trim()) { $("tg-a-tab").innerHTML = ""; $("tg-a-note").textContent = "Enter an angle in any box."; } }); });
 	function rInv() {
 		var v = parseVal($("tg-i-v").value), fn = $("tg-i-fn").value, out = $("tg-i-out"); st.ifn = fn; st.iv = $("tg-i-v").value; save();
 		if (v == null) { out.innerHTML = $("tg-i-v").value.trim() ? '<span class="tg-bad">Could not read that value.</span>' : ""; return; }
@@ -313,9 +315,9 @@
 	/* ================= tabs ================= */
 	function show(tab) {
 		st.tab = tab; save(); [].forEach.call($("tg-tabs").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.t === tab)); b.setAttribute("aria-selected", String(b.dataset.t === tab)); }); [].forEach.call(root.querySelectorAll("section[data-p]"), function (s) { s.hidden = s.dataset.p !== tab; });
-		if (tab === "circle") { syncC(); setAngle(st.ang); } else if (tab === "calc") { $("tg-a-in").value = st.aIn; [].forEach.call($("tg-a-unit").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.u === st.au)); }); $("tg-i-fn").value = st.ifn; $("tg-i-v").value = st.iv; rCalc(); rInv(); } else if (tab === "tri") { buildT(); rTri(); } else if (tab === "graph") rGraph(); else { $("tg-tb-r").value = st.ts; $("tg-tb-s").value = st.tr; $("tg-tb-d").value = st.td; $("tg-tb-x").checked = st.tx; $("tg-id-s").value = st.id; $("tg-id-x").value = st.ix; $("tg-id-y").value = st.iy; rTable(); rIdent(); }
+		if (tab === "circle") { syncC(); setAngle(st.ang); } else if (tab === "calc") { aFields(); $("tg-i-fn").value = st.ifn; $("tg-i-v").value = st.iv; rCalc(); rInv(); } else if (tab === "tri") { buildT(); rTri(); } else if (tab === "graph") rGraph(); else { $("tg-tb-r").value = st.ts; $("tg-tb-s").value = st.tr; $("tg-tb-d").value = st.td; $("tg-tb-x").checked = st.tx; $("tg-id-s").value = st.id; $("tg-id-x").value = st.ix; $("tg-id-y").value = st.iy; rTable(); rIdent(); }
 	}
 	$("tg-tabs").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { show(b.dataset.t); try { history.replaceState(null, "", "?tab=" + b.dataset.t); } catch (x) {} } });
-	load(); var qp = new URLSearchParams(location.search), tq = qp.get("tab"); if (tq && /^(circle|calc|tri|graph|tables)$/.test(tq)) st.tab = tq; var aq = qp.get("a"); if (aq) { var av = TR.parseAngle(aq, "deg"); if (av != null) { st.ang = av; st.aIn = aq; } }
+	load(); var qp = new URLSearchParams(location.search), tq = qp.get("tab"); if (tq && /^(circle|calc|tri|graph|tables)$/.test(tq)) st.tab = tq; var aq = qp.get("a"); if (aq) { var av = TR.parseAngle(aq, "deg"); if (av != null) { st.ang = av; st.aDeg = av; } }
 	show(st.tab);
 })();
