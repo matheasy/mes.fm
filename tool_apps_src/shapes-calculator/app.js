@@ -177,6 +177,7 @@
 		});
 	}
 	function v3Loop() { if (V3.id || V3.flat) return; (function tick() { V3.id = 0; if (!V3.mesh || $("sh-3d").hidden || V3.flat) return; if (V3.spin && !document.hidden && !V3.act) { V3.yaw += 0.007; v3Draw(); } V3.id = requestAnimationFrame(tick); })(); }
+	function curFor(o) { var a = ((Math.atan2(o.B[1] - o.A[1], o.B[0] - o.A[0]) * 180 / Math.PI) + 180) % 180; return a < 22.5 || a > 157.5 ? "ew-resize" : a < 67.5 ? "nwse-resize" : a < 112.5 ? "ns-resize" : "nesw-resize"; }
 	function v3Hit(x, y) {
 		if (!V3.labels) return null; for (var i = 0; i < V3.hot.length; i++) { var o = V3.hot[i]; if (o.slide && Math.hypot(x - o.B[0], y - o.B[1]) <= 13) return { t: "dim", o: o }; }
 		for (var j = 0; j < V3.hot.length; j++) { var q = V3.hot[j]; if (Math.abs(x - q.lx) <= q.tw / 2 + 6 && Math.abs(y - q.ly) <= 12) return { t: "lab", o: q }; } return null;
@@ -197,8 +198,8 @@
 		cv.addEventListener("pointerdown", function (e) { var p = pos(e); V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; try { cv.setPointerCapture(e.pointerId); } catch (x) {} var hit = Object.keys(V3.ptrs).length === 1 ? v3Hit(p[0], p[1]) : null; if (hit) { V3.act = { h: hit, last: p }; if (hit.t === "dim") { var o0 = hit.o; V3.act.o = o0; V3.act.A0 = o0.A.slice(); V3.act.B0 = o0.B.slice(); V3.act.ls0 = Math.hypot(o0.B[0] - o0.A[0], o0.B[1] - o0.A[1]); V3.act.v0 = V3.dims[o0.key]; V3.act.gain = 1; V3.act.learned = false; if (V3.act.ls0 < 28) V3.act = null; else V3.frozen = 1; } e.preventDefault(); return; } V3.act = null; if (!V3.flat) { V3.spin = false; $("sh-3d-spin").checked = false; } });
 		cv.addEventListener("pointermove", function (e) {
 			var p = pos(e), ids = Object.keys(V3.ptrs);
-			if (!ids.length) { var hv = v3Hit(p[0], p[1]); cv.style.cursor = hv ? (hv.t === "dim" ? "ew-resize" : "move") : (V3.flat ? "default" : "grab"); return; }
-			if (V3.act) { var a = V3.act; if (a.h.t === "lab") { var of = V3.off[a.h.o.oid] || [0, 0]; V3.off[a.h.o.oid] = [of[0] + p[0] - a.last[0], of[1] + p[1] - a.last[1]]; a.last = p; v3Draw(); } else v3Slide(a, p[0], p[1]); return; }
+			if (!ids.length) { var hv = v3Hit(p[0], p[1]); cv.style.cursor = hv ? (hv.t === "dim" ? curFor(hv.o) : "move") : (V3.flat ? "default" : "grab"); return; }
+			if (V3.act) { var a = V3.act; if (a.h.t === "dim") cv.style.cursor = curFor(a.o); if (a.h.t === "lab") { var of = V3.off[a.h.o.oid] || [0, 0]; V3.off[a.h.o.oid] = [of[0] + p[0] - a.last[0], of[1] + p[1] - a.last[1]]; a.last = p; v3Draw(); } else v3Slide(a, p[0], p[1]); return; }
 			var prev = V3.ptrs[e.pointerId]; if (!prev) return; if (ids.length === 2) { V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; var A1 = V3.ptrs[ids[0]], B1 = V3.ptrs[ids[1]], d = Math.hypot(A1[0] - B1[0], A1[1] - B1[1]); if (V3.pinch) V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * d / V3.pinch)); V3.pinch = d; v3Draw(); return; }
 			if (!V3.flat) { V3.yaw += (e.clientX - prev[0]) * 0.01; V3.pitch = Math.max(-1.5, Math.min(1.5, V3.pitch + (e.clientY - prev[1]) * 0.01)); } V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; v3Draw();
 		});
