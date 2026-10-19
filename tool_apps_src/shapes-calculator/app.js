@@ -148,7 +148,7 @@
 	function v3Color() { var c = getComputedStyle(root).getPropertyValue("--accent").trim(), m; if ((m = /^#([0-9a-f]{6})$/i.exec(c))) return [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4), 16)]; if ((m = /(\d+)[ ,]+(\d+)[ ,]+(\d+)/.exec(c))) return [+m[1], +m[2], +m[3]]; return [15, 108, 189]; }
 	var UN = { mm: "mm", cm: "cm", m: "m", km: "km", in: "in", ft: "ft", yd: "yd", mi: "mi" };
 	function v3Draw() {
-		var M = V3.mesh, cv = $("sh-cv"); if (!M || $("sh-3d").hidden) return; var box = $("sh-3d"), big = box.classList.contains("sh-fill") || document.fullscreenElement === box, dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 400, h = Math.round(Math.min(420, w * 0.75));
+		var M = V3.mesh, cv = $("sh-cv"); if (!M || $("sh-3d").hidden) return; var box = $("sh-3d"), big = box.classList.contains("sh-fill") || document.fullscreenElement === box, dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 400, h = Math.round(Math.min(root.classList.contains("sh-wide") ? 620 : 420, w * (root.classList.contains("sh-wide") ? 0.6 : 0.75)));
 		if (big) { var others = 0; [].forEach.call(box.children, function (c) { if (c !== cv) { var cs = getComputedStyle(c); others += c.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom); } }); h = Math.max(240, Math.round(window.innerHeight - others - 40)); } if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.height = h + "px"; }
 		var g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h); var dark = document.body.classList.contains("dark-mode"), col = v3Color(), ink = dark ? "205,214,228" : "44,62,85";
 		var cy = Math.cos(V3.yaw), sy = Math.sin(V3.yaw), cp = Math.cos(V3.pitch), sp = Math.sin(V3.pitch), D = 5.5, sc = Math.min(w, h) * (V3.flat ? 0.33 : 0.30) * V3.zoom;
@@ -209,7 +209,16 @@
 		var fillBtn = $("sh-3d-fill"), fsBtn = $("sh-3d-fs"), box3 = $("sh-3d");
 		function setFill(on) { box3.classList.toggle("sh-fill", on); document.documentElement.style.overflow = on ? "hidden" : ""; fillBtn.setAttribute("aria-pressed", String(on)); fillBtn.innerHTML = on ? "&#10005; Close" : "&#10530; Fill window"; v3Draw(); requestAnimationFrame(function () { v3Draw(); }); }
 		fillBtn.addEventListener("click", function () { if (document.fullscreenElement) { document.exitFullscreen(); return; } setFill(!box3.classList.contains("sh-fill")); });
-		if (document.fullscreenEnabled && box3.requestFullscreen) { fsBtn.hidden = false; fsBtn.addEventListener("click", function () { if (document.fullscreenElement) document.exitFullscreen(); else box3.requestFullscreen().catch(function () {}); }); }
+		var wideBtn = $("sh-3d-wide");
+		function setWide(on) { root.classList.toggle("sh-wide", on); wideBtn.setAttribute("aria-pressed", String(on)); wideBtn.innerHTML = on ? "&harr; Back to side by side" : "&harr; Fill width"; try { localStorage.setItem(KEY + ":wide", on ? "1" : ""); } catch (e) {} v3Draw(); requestAnimationFrame(function () { v3Draw(); }); }
+		wideBtn.addEventListener("click", function () { setWide(!root.classList.contains("sh-wide")); }); try { if (localStorage.getItem(KEY + ":wide") === "1") setWide(true); } catch (e) {}
+		fsBtn.hidden = false;
+		fsBtn.addEventListener("click", function () {
+			if (document.fullscreenElement) { document.exitFullscreen(); return; }
+			var done = false, fallback = function () { if (!done) { done = true; if (!box3.classList.contains("sh-fill")) setFill(true); toast("Full screen is blocked here, so the window is filled instead."); } };
+			if (!document.fullscreenEnabled || !box3.requestFullscreen) { fallback(); return; }
+			try { box3.requestFullscreen().then(function () { done = true; }).catch(fallback); } catch (e) { fallback(); } setTimeout(function () { if (!document.fullscreenElement) fallback(); }, 700);
+		});
 		document.addEventListener("fullscreenchange", function () { var on = document.fullscreenElement === box3; fsBtn.innerHTML = on ? "&#10005; Exit full screen" : "&#9974; Full screen"; v3Draw(); requestAnimationFrame(function () { v3Draw(); }); });
 		document.addEventListener("keydown", function (e) { if (e.key === "Escape" && box3.classList.contains("sh-fill")) setFill(false); });
 		window.addEventListener("resize", v3Draw); new MutationObserver(v3Draw).observe(document.body, { attributes: true, attributeFilter: ["class"] });

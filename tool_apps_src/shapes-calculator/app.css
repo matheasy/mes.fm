@@ -20,4 +20,5 @@
 	body.dark-mode #sh .sh-slk {color:#ffd166;}
 	.tu .sh-3d.sh-fill, .tu .sh-3d:fullscreen {position:fixed;inset:0;z-index:99999;margin:0;border-radius:0;overflow:auto;padding:0.8em 1em;background:#fff;box-sizing:border-box;max-width:none;}
 	body.dark-mode #sh .sh-3d.sh-fill, body.dark-mode #sh .sh-3d:fullscreen {background:#1a1a1a;} .tu .sh-3d:fullscreen {position:static;}
+	.tu.sh-wide .sh-main {grid-template-columns:minmax(0,1fr);} .tu.sh-wide .sh-in {order:0;}
 	@media print {.tu .sh-btns, .tu .tu-chips {display:none;}}
