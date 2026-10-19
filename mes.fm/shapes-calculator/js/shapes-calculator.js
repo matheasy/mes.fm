@@ -334,7 +334,7 @@
 		var flat = SH.byId(st.s).dim === 2; if (flat !== V3.flat) { V3.flat = flat; if (flat) { V3.yaw = 0; V3.pitch = 0; } else { V3.yaw = -0.6; V3.pitch = 0.42; } }
 		$("sh-3d-spin").parentNode.hidden = flat; $("sh-3d-note").innerHTML = flat ? "A scale drawing of your shape. <b>Drag a white dot</b> to change that length, or drag a label to move it." : "Drag the picture to rotate, scroll or pinch to zoom. <b>Drag a white dot</b> to change that length; drag a label to move it. Uses an example until you type valid numbers.";
 		var mx = 0; M.verts.forEach(function (p) { mx = Math.max(mx, Math.hypot(p[0], p[1], p[2])); }); var k = V3.frozen ? V3.k : 1.35 / (mx || 1); V3.k = k;
-		M.verts = M.verts.map(function (p) { return [p[0] * k, p[1] * k, p[2] * k]; }); M.lines.forEach(function (l) { l.a = [l.a[0] * k, l.a[1] * k, l.a[2] * k]; l.b = [l.b[0] * k, l.b[1] * k, l.b[2] * k]; }); V3.mesh = M; v3Draw(); v3Loop();
+		M.verts = M.verts.map(function (p) { return [p[0] * k, p[1] * k, p[2] * k]; }); M.lines.forEach(function (l) { l.a = [l.a[0] * k, l.a[1] * k, l.a[2] * k]; l.b = [l.b[0] * k, l.b[1] * k, l.b[2] * k]; }); V3.mesh = M; v3Draw(); v3Loop(); if (window.slBuild_) slBuild_();
 	}
 	function v3Color() { var c = getComputedStyle(root).getPropertyValue("--accent").trim(), m; if ((m = /^#([0-9a-f]{6})$/i.exec(c))) return [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4), 16)]; if ((m = /(\d+)[ ,]+(\d+)[ ,]+(\d+)/.exec(c))) return [+m[1], +m[2], +m[3]]; return [15, 108, 189]; }
 	var UN = { mm: "mm", cm: "cm", m: "m", km: "km", in: "in", ft: "ft", yd: "yd", mi: "mi" };
@@ -372,22 +372,24 @@
 		if (!V3.labels) return null; for (var i = 0; i < V3.hot.length; i++) { var o = V3.hot[i]; if (o.slide && Math.hypot(x - o.B[0], y - o.B[1]) <= 13) return { t: "dim", o: o }; }
 		for (var j = 0; j < V3.hot.length; j++) { var q = V3.hot[j]; if (Math.abs(x - q.lx) <= q.tw / 2 + 6 && Math.abs(y - q.ly) <= 12) return { t: "lab", o: q }; } return null;
 	}
-	function v3Slide(o, x, y) {
-		var dx = o.B[0] - o.A[0], dy = o.B[1] - o.A[1], ls = Math.hypot(dx, dy), v0 = V3.dims[o.key], t; if (!(v0 > 0)) return;
-		if (ls < 28) t = 1 - ((y - o.B[1]) - 0) / 120 * 0; else t = ((x - o.A[0]) * dx + (y - o.A[1]) * dy) / (ls * ls);
-		if (ls < 28) return; t = Math.max(0.2, Math.min(5, t)); var nv = Math.max(0.001, v0 * t); nv = +nv.toPrecision(3); var nd = Object.assign({}, V3.dims); nd[o.key] = nv; if (!SH.compute(st.s, nd).ok) return;
-		var inp = $("sh-i-" + o.key); if (!inp) return; V3.frozen = 1; inp.value = SH.trim(nv, 4); inp.dispatchEvent(new Event("input", { bubbles: true }));
+	function v3Slide(act, x, y) {
+		var o = act.o, dx = act.B0[0] - act.A0[0], dy = act.B0[1] - act.A0[1], ls = act.ls0, L = ((x - act.A0[0]) * dx + (y - act.A0[1]) * dy) / ls, r = 1 + act.gain * (L - ls) / ls;   // always measured from where the drag started, so it can never run away
+		r = Math.max(0.2, Math.min(5, r)); var nv = +(act.v0 * r).toPrecision(3), nd = Object.assign({}, V3.dims); nd[o.key] = nv; if (!SH.compute(st.s, nd).ok) return;
+		var inp = $("sh-i-" + o.key); if (!inp) return; inp.value = SH.trim(nv, 4); inp.dispatchEvent(new Event("input", { bubbles: true }));
+		if (!act.learned && Math.abs(nv - act.v0) / act.v0 > 0.03) {   // some lines grow from one end, some from the middle: learn how far the dot really moves so it follows the pointer
+			var hh = V3.hot.filter(function (q) { return q.key === o.key; })[0]; if (hh) { var d1 = ((hh.B[0] - act.B0[0]) * dx + (hh.B[1] - act.B0[1]) * dy) / ls, e1 = (nv - act.v0) / act.v0 * ls; if (Math.abs(d1) > 1) { act.gain = Math.max(0.5, Math.min(4, e1 / d1)); act.learned = true; } }
+		}
 	}
 	(function () {
 		var cv = $("sh-cv"); function pos(e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
 		$("sh-3d-mode").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; V3.mode = b.dataset.m; [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); v3Draw(); });
 		$("sh-3d-spin").addEventListener("change", function () { V3.spin = this.checked; v3Loop(); }); $("sh-3d-lab").addEventListener("change", function () { V3.labels = this.checked; v3Draw(); });
 		$("sh-3d-reset").addEventListener("click", function () { V3.yaw = V3.flat ? 0 : -0.6; V3.pitch = V3.flat ? 0 : 0.42; V3.zoom = 1; V3.off = {}; offSave(); v3Draw(); });
-		cv.addEventListener("pointerdown", function (e) { var p = pos(e); V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; try { cv.setPointerCapture(e.pointerId); } catch (x) {} var hit = Object.keys(V3.ptrs).length === 1 ? v3Hit(p[0], p[1]) : null; if (hit) { V3.act = { h: hit, last: p }; e.preventDefault(); return; } V3.act = null; if (!V3.flat) { V3.spin = false; $("sh-3d-spin").checked = false; } });
+		cv.addEventListener("pointerdown", function (e) { var p = pos(e); V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; try { cv.setPointerCapture(e.pointerId); } catch (x) {} var hit = Object.keys(V3.ptrs).length === 1 ? v3Hit(p[0], p[1]) : null; if (hit) { V3.act = { h: hit, last: p }; if (hit.t === "dim") { var o0 = hit.o; V3.act.o = o0; V3.act.A0 = o0.A.slice(); V3.act.B0 = o0.B.slice(); V3.act.ls0 = Math.hypot(o0.B[0] - o0.A[0], o0.B[1] - o0.A[1]); V3.act.v0 = V3.dims[o0.key]; V3.act.gain = 1; V3.act.learned = false; if (V3.act.ls0 < 28) V3.act = null; else V3.frozen = 1; } e.preventDefault(); return; } V3.act = null; if (!V3.flat) { V3.spin = false; $("sh-3d-spin").checked = false; } });
 		cv.addEventListener("pointermove", function (e) {
 			var p = pos(e), ids = Object.keys(V3.ptrs);
 			if (!ids.length) { var hv = v3Hit(p[0], p[1]); cv.style.cursor = hv ? (hv.t === "dim" ? "ew-resize" : "move") : (V3.flat ? "default" : "grab"); return; }
-			if (V3.act) { var a = V3.act; if (a.h.t === "lab") { var of = V3.off[a.h.o.oid] || [0, 0]; V3.off[a.h.o.oid] = [of[0] + p[0] - a.last[0], of[1] + p[1] - a.last[1]]; a.last = p; v3Draw(); } else v3Slide(a.h.o, p[0], p[1]); return; }
+			if (V3.act) { var a = V3.act; if (a.h.t === "lab") { var of = V3.off[a.h.o.oid] || [0, 0]; V3.off[a.h.o.oid] = [of[0] + p[0] - a.last[0], of[1] + p[1] - a.last[1]]; a.last = p; v3Draw(); } else v3Slide(a, p[0], p[1]); return; }
 			var prev = V3.ptrs[e.pointerId]; if (!prev) return; if (ids.length === 2) { V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; var A1 = V3.ptrs[ids[0]], B1 = V3.ptrs[ids[1]], d = Math.hypot(A1[0] - B1[0], A1[1] - B1[1]); if (V3.pinch) V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * d / V3.pinch)); V3.pinch = d; v3Draw(); return; }
 			if (!V3.flat) { V3.yaw += (e.clientX - prev[0]) * 0.01; V3.pitch = Math.max(-1.5, Math.min(1.5, V3.pitch + (e.clientY - prev[1]) * 0.01)); } V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; v3Draw();
 		});
@@ -395,5 +397,18 @@
 		cv.addEventListener("wheel", function (e) { e.preventDefault(); V3.zoom = Math.max(0.4, Math.min(3, V3.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); v3Draw(); }, { passive: false });
 		window.addEventListener("resize", v3Draw); new MutationObserver(v3Draw).observe(document.body, { attributes: true, attributeFilter: ["class"] });
 	})();
-	window.v3Build_ = v3Build; load(); fromUrl(); show();
+
+	/* ---- one slider per dimension under the picture (centred on the current value, one decade either way; the picture re-fits as you slide) ---- */
+	var SL = { ref: {}, sliding: null };
+	function slDims() { var S = SH.byId(st.s); return S.inputs.filter(function (i) { return i[0] !== "n" && !(S.id === "sector" && i[0] === "t"); }); }
+	function slBuild() {
+		var box = $("sh-sl"); if (!box || SL.sliding) return; var d = V3.dims || {};
+		box.innerHTML = slDims().map(function (i) { var v = d[i[0]]; SL.ref[i[0]] = v; return '<label class="sh-slr"><span class="sh-slk">' + esc(i[0]) + '</span><input type="range" min="-1" max="1" step="0.005" value="0" data-k="' + i[0] + '" aria-label="' + esc(i[1]) + '"><b class="sh-slv" id="sh-slv-' + i[0] + '">' + esc(SH.trim(v, 3)) + " " + esc(st.u) + "</b></label>"; }).join("");
+	}
+	$("sh-sl").addEventListener("input", function (e) {
+		var k = e.target.dataset.k; if (!k) return; var ref = SL.ref[k], v = +(ref * Math.pow(10, +e.target.value)).toPrecision(3), nd = Object.assign({}, V3.dims); nd[k] = v; if (!SH.compute(st.s, nd).ok) return;
+		SL.sliding = k; var inp = $("sh-i-" + k); inp.value = SH.trim(v, 4); inp.dispatchEvent(new Event("input", { bubbles: true })); var o = $("sh-slv-" + k); if (o) o.textContent = SH.trim(v, 3) + " " + st.u;
+	});
+	$("sh-sl").addEventListener("change", function () { SL.sliding = null; slBuild(); });
+	window.slBuild_ = slBuild; window.v3Build_ = v3Build; load(); fromUrl(); show();
 })();

@@ -137,7 +137,7 @@
 	var $ = function (id) { return document.getElementById(id); };
 	var root = $("tg"); if (!root || !window.TR) return;
 	var KEY = "mes-trigonometry:v1", T = TR.trim, R = Math.PI / 180;
-	var st = { tab: "circle", ang: 45, cu: "deg", snap: false, rec: false, aDeg: 30, ifn: "sin", iv: "0.5", tmode: "right", fn: "sin", g: { A: 1, B: 1, C: 0, D: 0 }, par: true, tr: 15, ts: 360, td: 4, tx: true, id: "pyth", ix: "25", iy: "40" }, ts = {};
+	var st = { tab: "circle", ang: 45, cu: "deg", snap: false, rec: false, aDeg: 30, ifn: "sin", iv: "0.5", tmode: "right", fn: "sin", g: { A: 1, B: 1, C: 0, D: 0 }, par: true, tr: 15, ts: 360, td: 4, tx: true, lab: {}, id: "pyth", ix: "25", iy: "40" }, ts = {};
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) Object.keys(st).forEach(function (k) { if (s[k] != null && typeof s[k] === typeof st[k]) st[k] = s[k]; }); if (s && s.g && typeof s.g === "object") ["A", "B", "C", "D"].forEach(function (k) { if (typeof s.g[k] === "number") st.g[k] = s.g[k]; }); } catch (e) {} }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
@@ -148,6 +148,11 @@
 		var chk = t.replace(/sqrt/g, "").replace(/pi/g, ""); if (/[a-z]/.test(chk)) return null; t = t.replace(/(\d|\))(sqrt|pi|\()/g, "$1*$2").replace(/(pi)(\d|\()/g, "$1*$2").replace(/sqrt/g, "Math.sqrt").replace(/pi/g, "Math.PI");
 		try { var v = Function('"use strict";return (' + t + ")")(); return typeof v === "number" && isFinite(v) ? v : null; } catch (e) { return null; }
 	}
+	function lbPost(prefix, html) { var n = 0; return html.replace(/<text ([^>]*)>/g, function (m, attrs) { var id = prefix + ":" + n++, o = st.lab[id]; return '<text data-lb="' + id + '" ' + (o ? 'transform="translate(' + o[0].toFixed(1) + "," + o[1].toFixed(1) + ')" ' : "") + attrs + ">"; }); }
+	var LD = null;
+	document.addEventListener("pointerdown", function (e) { var t = e.target.closest && e.target.closest("[data-lb]"); if (!t || !root.contains(t) || !t.ownerSVGElement) return; var svg = t.ownerSVGElement, p = svgPoint(svg, e); LD = { id: t.dataset.lb, idx: [].indexOf.call(root.querySelectorAll("svg"), svg), last: [p.x, p.y] }; e.preventDefault(); }, true);
+	document.addEventListener("pointermove", function (e) { if (!LD) return; var svg = root.querySelectorAll("svg")[LD.idx]; if (!svg) return; var p = svgPoint(svg, e), o = st.lab[LD.id] || [0, 0]; st.lab[LD.id] = [o[0] + p.x - LD.last[0], o[1] + p.y - LD.last[1]]; LD.last = [p.x, p.y]; if (st.tab === "tri") rTri(); else rCircle(); });
+	var ldEnd = function () { if (LD) { LD = null; save(); } }; document.addEventListener("pointerup", ldEnd); document.addEventListener("pointercancel", ldEnd);
 	function toast(msg) { var t = $("tg-toast"); if (!t) { t = document.createElement("div"); t.id = "tg-toast"; t.className = "tu-toast"; document.body.appendChild(t); } t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 1600); }
 	function svgPoint(svg, e) { var p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; var m = svg.getScreenCTM(); return m ? p.matrixTransform(m.inverse()) : { x: 0, y: 0 }; }
 	function fmtU(deg, u) { return u === "rad" ? T(deg * R, 4) + " rad" : T(deg, 2) + "°"; }
@@ -190,7 +195,7 @@
 		s += '<circle class="t-h" data-h="1" tabindex="0" role="slider" aria-label="Angle point" aria-valuenow="' + T(d, 1) + '" cx="' + px + '" cy="' + py + '" r="11"/>';
 		var ly = 34; [["sin", t.sin], ["cos", t.cos], ["tan", t.tan]].concat(st.rec ? [["csc", t.csc], ["sec", t.sec], ["cot", t.cot]] : []).forEach(function (f) { s += '<text class="t-lb" x="470" y="' + ly + '" style="fill:' + FN[f[0]] + '">' + f[0] + " θ = " + num(f[1], 4) + "</text>"; ly += 26; });
 		s += '<text class="t-lb" x="470" y="' + (ly + 10) + '" style="fill:#e08a1e">θ = ' + T(d, 2) + "°</text>" + '<text class="t-tx" x="470" y="' + (ly + 30) + '">= ' + T(d * R, 4) + " rad" + (TR.piFraction(d) ? " = " + TR.piFraction(d) : "") + "</text>";
-		var h = $("tg-svg-c"); var had = document.activeElement && h.contains(document.activeElement); h.innerHTML = s; if (had) h.querySelector("[data-h]").focus({ preventScroll: true });
+		var h = $("tg-svg-c"); var had = document.activeElement && h.contains(document.activeElement); h.innerHTML = lbPost("circ", s); if (had) h.querySelector("[data-h]").focus({ preventScroll: true });
 		// wave strip
 		var w = "", W0 = 44, W1 = 620, YM = 95, YA = 70, X = function (dd) { return W0 + (((dd % 360) + 360) % 360) / 360 * (W1 - W0); };
 		for (i = 0; i <= 4; i++) { var xx = W0 + i * (W1 - W0) / 4; w += '<line class="t-gr" x1="' + xx + '" y1="14" x2="' + xx + '" y2="176"/><text class="t-tx" x="' + xx + '" y="188" text-anchor="middle">' + i * 90 + "°</text>"; }
@@ -239,19 +244,20 @@
 	$("tg-t-ex").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var x = EX[+b.dataset.i]; st.tmode = x[1]; ts = Object.assign({}, x[2]); save(); buildT(); rTri(); });
 	$("tg-t-mode").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; st.tmode = b.dataset.m; ts = {}; save(); buildT(); rTri(); });
 	$("tg-t-clear").addEventListener("click", function () { ts = {}; buildT(); rTri(); });
+	$("tg-t-labreset").addEventListener("click", function () { st.lab = {}; save(); rTri(); }); $("tg-c-labreset").addEventListener("click", function () { st.lab = {}; save(); rCircle(); });
 	function buildT() {
 		[].forEach.call($("tg-t-mode").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.m === st.tmode)); });
 		$("tg-t-help").innerHTML = st.tmode === "right" ? "C is the right angle (90°). Fill in <b>any two</b> values (at least one side); the rest is worked out." : "Fill in <b>any three</b> values, at least one a side. Side a is opposite angle A, and so on.";
 		$("tg-t-fields").innerHTML = FIELDS[st.tmode].map(function (f) { return '<div class="tu-field"><label for="tg-t-' + f[0] + '">' + esc(f[1]) + '</label><input id="tg-t-' + f[0] + '" data-k="' + f[0] + '" class="tu-input" type="text" inputmode="decimal" autocomplete="off" value="' + esc(ts[f[0]] || "") + '"></div>'; }).join("");
 	}
 	$("tg-t-fields").addEventListener("input", function (e) { var k = e.target.dataset.k; if (k) { ts[k] = e.target.value; rTri(); } });
-	function figure(s) {
+	function figure(s, si) {
 		var A = [0, 0], B = [s.c, 0], C = [s.b * Math.cos(s.A * R), s.b * Math.sin(s.A * R)], xs = [A[0], B[0], C[0]], ys = [0, 0, C[1]], w = Math.max.apply(null, xs) - Math.min.apply(null, xs), h = Math.max.apply(null, ys) - Math.min.apply(null, ys), k = Math.min(210 / w, 120 / h), ox = 30 - Math.min.apply(null, xs) * k, oy = 150;
 		function P(p) { return [ox + p[0] * k, oy - p[1] * k]; } var pa = P(A), pb = P(B), pc = P(C), cen = [(pa[0] + pb[0] + pc[0]) / 3, (pa[1] + pb[1] + pc[1]) / 3];
 		function lab(p, q, txt) { var m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2], dx = m[0] - cen[0], dy = m[1] - cen[1], n = Math.hypot(dx, dy) || 1; return '<text class="t-lbl" x="' + (m[0] + dx / n * 17).toFixed(1) + '" y="' + (m[1] + dy / n * 15 + 4).toFixed(1) + '">' + txt + "</text>"; }
 		function vl(p, nm, v) { var dx = p[0] - cen[0], dy = p[1] - cen[1], n = Math.hypot(dx, dy) || 1; return '<text class="t-lbl" style="fill:#d64545" x="' + (p[0] + dx / n * 24).toFixed(1) + '" y="' + (p[1] + dy / n * 20 + 4).toFixed(1) + '">' + nm + " " + T(v, 1) + "°</text>"; }
 		var g = '<polygon class="t-fg" points="' + [pa, pb, pc].map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>' + lab(pb, pc, "a = " + T(s.a, 3)) + lab(pc, pa, "b = " + T(s.b, 3)) + lab(pa, pb, "c = " + T(s.c, 3)) + vl(pa, "A", s.A) + vl(pb, "B", s.B) + vl(pc, "C", s.C);
-		return '<svg viewBox="0 0 290 180" role="img" aria-label="The triangle">' + g + "</svg>";
+		return '<svg viewBox="0 0 290 180" role="img" aria-label="The triangle">' + lbPost("tri" + si, g) + "</svg>";
 	}
 	function rTri() {
 		var out = $("tg-t-out"), ks = {}, n = 0, need = st.tmode === "right" ? 2 : 3; FIELDS[st.tmode].forEach(function (f) { var raw = (ts[f[0]] || "").trim(); if (raw) { var v = TR.parseAngle(raw, "deg"); if (f[0] > "Z" || true) { var nn = parseFloat(raw.replace(",", ".")); ks[f[0]] = nn; n++; } } });
@@ -261,7 +267,7 @@
 		var known = Object.assign({}, ks); if (st.tmode === "right") known.C = 90; var res = TR.solveTriangle(known);
 		if (!res.ok) { out.innerHTML = '<div class="tu-card"><span class="tg-bad">' + esc(res.error) + "</span></div>"; return; }
 		out.innerHTML = '<div class="tu-card tu-card--tint"><b>' + esc(res.case) + ":</b> " + esc(res.note) + "</div>" + res.solutions.map(function (s, i) {
-			return '<div class="tu-card tg-sol"><h3>' + (res.solutions.length > 1 ? "Triangle " + (i + 1) : "Solution") + '</h3><div class="tg-fig">' + figure(s) + '</div><div class="tu-table-wrap"><table class="tu-table"><thead><tr><th>Side</th><th>Length</th><th>Angle</th><th>Size</th></tr></thead><tbody>' + ["a", "b", "c"].map(function (k, j) { var A = ["A", "B", "C"][j]; return "<tr><td>" + k + "</td><td>" + T(s[k], 6) + "</td><td>" + A + "</td><td>" + T(s[A], 5) + "° (" + T(s[A] * R, 5) + " rad)</td></tr>"; }).join("") + "</tbody></table></div><p style=\"margin:0.6em 0 0;\">Area = ½ab sin C = <b>" + T(s.area, 6) + "</b> · Perimeter = <b>" + T(s.perimeter, 6) + "</b></p></div>";
+			return '<div class="tu-card tg-sol"><h3>' + (res.solutions.length > 1 ? "Triangle " + (i + 1) : "Solution") + '</h3><div class="tg-fig">' + figure(s, i) + '</div><div class="tu-table-wrap"><table class="tu-table"><thead><tr><th>Side</th><th>Length</th><th>Angle</th><th>Size</th></tr></thead><tbody>' + ["a", "b", "c"].map(function (k, j) { var A = ["A", "B", "C"][j]; return "<tr><td>" + k + "</td><td>" + T(s[k], 6) + "</td><td>" + A + "</td><td>" + T(s[A], 5) + "° (" + T(s[A] * R, 5) + " rad)</td></tr>"; }).join("") + "</tbody></table></div><p style=\"margin:0.6em 0 0;\">Area = ½ab sin C = <b>" + T(s.area, 6) + "</b> · Perimeter = <b>" + T(s.perimeter, 6) + "</b></p></div>";
 		}).join("");
 	}
 

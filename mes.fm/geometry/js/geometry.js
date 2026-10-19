@@ -108,10 +108,10 @@
 	var KEY = "mes-geometry:v1", T = GE.trim, PX = 50;
 	var COL = { A: "#d64545", B: "#2e9e5b", C: "#3a6fd8" };
 	var RELCOL = { corr: "#2e9e5b", alt: "#3a6fd8", altx: "#16a3a3", co: "#e08a1e", vert: "#8e55c7", lin: "#d64545" };
-	var st = { tab: "tri", pre: "scalene", opts: { lens: true, angs: true, circ: false, inc: false, cent: false, grid: false, sim: false }, k: 0.6, th: 65, par: true, tilt: 12, sel: 3, cm: "insc", ang: 60, n: 5, free: false, ext: false, snap15: false, lab: {}, fs: 1, zm: 1 };
+	var st = { tab: "tri", pre: "scalene", opts: { lens: true, angs: true, circ: false, inc: false, cent: false, grid: false, sim: false }, k: 0.6, th: 65, par: true, tilt: 12, sel: 3, cm: "insc", ang: 60, n: 5, free: false, ext: false, snap15: false, lab: {}, fs: 1, zm: 1, vh: true };
 	var tri = null, cp = { a: 20, b: 150, p: 250, c: 320 }, poly = null, focusH = null;
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-	function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { ["tab", "pre", "cm"].forEach(function (k) { if (typeof s[k] === "string") st[k] = s[k]; }); ["k", "th", "tilt", "sel", "ang", "n", "fs", "zm"].forEach(function (k) { if (typeof s[k] === "number") st[k] = s[k]; }); if (s.lab && typeof s.lab === "object") st.lab = s.lab; ["par", "free", "ext", "snap15"].forEach(function (k) { if (typeof s[k] === "boolean") st[k] = s[k]; }); if (s.opts) Object.keys(st.opts).forEach(function (k) { if (typeof s.opts[k] === "boolean") st.opts[k] = s.opts[k]; }); } } catch (e) {} }
+	function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { ["tab", "pre", "cm"].forEach(function (k) { if (typeof s[k] === "string") st[k] = s[k]; }); ["k", "th", "tilt", "sel", "ang", "n", "fs", "zm"].forEach(function (k) { if (typeof s[k] === "number") st[k] = s[k]; }); if (s.lab && typeof s.lab === "object") st.lab = s.lab; ["par", "free", "ext", "snap15", "vh"].forEach(function (k) { if (typeof s[k] === "boolean") st[k] = s[k]; }); if (s.opts) Object.keys(st.opts).forEach(function (k) { if (typeof s.opts[k] === "boolean") st.opts[k] = s.opts[k]; }); } } catch (e) {} }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 	var D2R = Math.PI / 180;
 	function pol(c, r, deg) { return [c[0] + r * Math.cos(deg * D2R), c[1] - r * Math.sin(deg * D2R)]; }
@@ -343,12 +343,14 @@
 	function syncView() { $("ge-fs").value = st.fs; $("ge-zm").value = st.zm; $("ge-fso").textContent = Math.round(st.fs * 100) + "%"; $("ge-zmo").textContent = Math.round(st.zm * 100) + "%"; root.style.setProperty("--gefs", st.fs); }
 	function redrawAll() { if (st.tab === "tri") rTri(); else if (st.tab === "lines") rLines(); else if (st.tab === "circle") rCircle(); else { rAng(); rPoly(); } }
 	$("ge-fs").addEventListener("input", function () { st.fs = +this.value; save(); syncView(); }); $("ge-zm").addEventListener("input", function () { st.zm = +this.value; PAN = {}; save(); syncView(); redrawAll(); });
+	function viewBar() { var panel = $("ge-vpanel"), tog = $("ge-vtog"); panel.hidden = !st.vh; tog.setAttribute("aria-expanded", String(st.vh)); tog.innerHTML = st.vh ? "Text size &amp; zoom: hide &#9652;" : "Text size &amp; zoom &#9662;"; var sec = root.querySelector("section[data-p=" + st.tab + "] .ge-stage"); if (sec && $("ge-view").parentNode !== sec) sec.insertBefore($("ge-view"), sec.firstChild); }
+	$("ge-vtog").addEventListener("click", function () { st.vh = !st.vh; save(); viewBar(); });
 	$("ge-lab-reset").addEventListener("click", function () { st.lab = {}; PAN = {}; save(); redrawAll(); });
 	/* ================= tabs ================= */
 	function show(tab) {
 		st.tab = tab; save(); [].forEach.call($("ge-tabs").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.t === tab)); b.setAttribute("aria-selected", String(b.dataset.t === tab)); });
 		[].forEach.call(root.querySelectorAll("section[data-p]"), function (s) { s.hidden = s.dataset.p !== tab; });
-		if (tab === "tri") { syncTriCtl(); rTri(); } else if (tab === "lines") { syncLinesCtl(); rLines(); } else if (tab === "circle") rCircle(); else { syncPolyCtl(); rAng(); rPoly(); }
+		viewBar(); if (tab === "tri") { syncTriCtl(); rTri(); } else if (tab === "lines") { syncLinesCtl(); rLines(); } else if (tab === "circle") rCircle(); else { syncPolyCtl(); rAng(); rPoly(); }
 	}
 	$("ge-tabs").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { show(b.dataset.t); try { history.replaceState(null, "", "?tab=" + b.dataset.t); } catch (x) {} } });
 	load(); syncView(); var q = new URLSearchParams(location.search).get("tab"); if (q && /^(tri|lines|circle|poly)$/.test(q)) st.tab = q;

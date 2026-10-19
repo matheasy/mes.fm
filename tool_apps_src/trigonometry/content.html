@@ -12,7 +12,7 @@
 				<div class="tg-opts"><label class="tg-ck"><input type="checkbox" id="tg-c-snap"> Snap to special angles (15&deg;)</label><label class="tg-ck"><input type="checkbox" id="tg-c-rec"> Show csc, sec, cot</label></div>
 				<div class="tu-chips" id="tg-c-pre"></div>
 			</div>
-			<div class="tu-card tg-stage"><svg id="tg-svg-c" viewBox="0 0 640 400" role="img" aria-label="Unit circle you can drag"></svg><p class="tu-note" style="margin:0.4em 0 0;">Drag the point around the circle (or use the arrow keys when it is focused). <span class="tg-k tg-sin">sin</span> is the height, <span class="tg-k tg-cos">cos</span> is the horizontal distance, <span class="tg-k tg-tan">tan</span> is the length on the tangent line at (1, 0).</p></div>
+			<div class="tu-card tg-stage"><svg id="tg-svg-c" viewBox="0 0 640 400" role="img" aria-label="Unit circle you can drag"></svg><p class="tu-note" style="margin:0.4em 0 0;"><button type="button" class="tu-btn tu-btn--ghost" id="tg-c-labreset" style="padding:0.15em 0.7em;float:right;margin-left:0.6em;">Reset labels</button>Drag the point around the circle (or use the arrow keys when it is focused); drag any label to move it. <span class="tg-k tg-sin">sin</span> is the height, <span class="tg-k tg-cos">cos</span> is the horizontal distance, <span class="tg-k tg-tan">tan</span> is the length on the tangent line at (1, 0).</p></div>
 			<div class="tu-stats" id="tg-c-stats" aria-live="polite"></div>
 			<div class="tu-card tg-stage"><svg id="tg-svg-w" viewBox="0 0 640 190" role="img" aria-label="sine and cosine waves"></svg></div>
 			<div class="tu-card" id="tg-c-facts"></div>
@@ -48,7 +48,7 @@
 				<p class="tu-note" id="tg-t-help" style="margin:0.6em 0;"></p>
 				<div class="tg-tgrid" id="tg-t-fields"></div>
 				<div class="tu-chips" id="tg-t-ex"></div>
-				<div class="tg-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tg-t-clear">Clear</button></div>
+				<div class="tg-btns"><button type="button" class="tu-btn tu-btn--ghost" id="tg-t-clear">Clear</button><button type="button" class="tu-btn tu-btn--ghost" id="tg-t-labreset">Reset labels</button></div>
 			</div>
 			<div id="tg-t-out" aria-live="polite"></div>
 		</section>
