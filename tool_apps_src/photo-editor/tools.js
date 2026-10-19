@@ -118,7 +118,7 @@
 		if (L && PE.topGroupOf(L) === PE.topGroupOf(hit)) return hit; return PE.topGroupOf(hit);
 	}
 	PE.defTool({ id: "move", name: "Move / Transform", key: "v", icon: "✥", opts: { auto: true, handles: true, snap: true, groups: true },
-		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
+		ui: [{ k: "auto", label: "Pick layer on click", type: "check" }, { k: "groups", label: "Pick the whole group", type: "check" }, { k: "handles", label: "Transform handles", type: "check" }, { k: "snap", label: "Snap to canvas edges", type: "check" }, { type: "button", label: "✎ Edit text / equation", act: function () { var L = PE.active(); if (L && L.type === "text") PE.editActiveText(); else if (L && L.eq) PE.dlgEquation(L); else PE.toast("Select a text or equation layer first (click it on the picture)"); } }, { type: "button", label: "✂ Remove background (AI)", act: function () { PE.aiRemoveBackground(); } }],
 		hint: "Drag to move. Drag a square handle to resize, just outside a corner to rotate (Shift = snap / keep proportions). Arrow keys nudge.",
 		down: function (e) {
 			var L = PE.active(), o = PE.opt.move, z = PE.view.zoom;
@@ -269,10 +269,12 @@
 		var g = x.createRadialGradient(cx, cy, 0, cx, cy, r); g.addColorStop(0, col.solid); g.addColorStop(Math.max(0.01, hard), col.solid); g.addColorStop(1, col.clear); x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, 6.2832); x.fill();
 	}
 	function beginStroke(kind, e) {
-		var L = PE.active(); var mask = L && L.editMask && L.mask; if (!PE.prepare(L)) return false;
+		var L = PE.active(); var mask = L && L.editMask && L.mask; if (!PE.prepare(L, false, true)) return false;
+		var pre = (function () { var q = PE.origin(L); return { x: q.x, y: q.y, w: L.canvas.width, h: L.canvas.height }; })();   // the layer as it was: after the stroke it only grows as far as the paint reached
+		PE.growLayer(L, { x: 0, y: 0, w: PE.doc.w, h: PE.doc.h });
 		var o = PE.opt[kind === "eraser" ? "eraser" : kind === "clone" ? "clone" : kind === "retouch" ? "retouch" : "brush"], cv = mask ? L.mask : L.canvas, og = PE.origin(L), erase = kind === "eraser";
 		var hex = mask ? "#000000" : (erase ? "#000000" : PE.fg);
-		stroke = { kind: kind, L: L, o: o, og: og, target: mask ? "mask" : "pixel", buf: mk(cv.width, cv.height), erase: erase, alpha: (o.opacity == null ? 100 : o.opacity) / 100, col: { solid: rgba(hex, 1), clear: rgba(hex, 0) }, last: null, rem: 0, sm: { x: e.x, y: e.y }, n: 0 };
+		stroke = { kind: kind, L: L, o: o, og: og, target: mask ? "mask" : "pixel", buf: mk(cv.width, cv.height), erase: erase, alpha: (o.opacity == null ? 100 : o.opacity) / 100, col: { solid: rgba(hex, 1), clear: rgba(hex, 0) }, last: null, rem: 0, sm: { x: e.x, y: e.y }, n: 0, pre: pre, bb: null };
 		L.live = { buf: stroke.buf, erase: erase, alpha: stroke.alpha, target: stroke.target };
 		if (kind === "clone") { if (!PE.cloneSrc) { PE.toast("Alt-click first to set the source point"); L.live = null; stroke = null; return false; } stroke.snap = PE.clone(cv); stroke.off = stroke.aligned ? null : null; stroke.off = { x: PE.cloneSrc.x - e.x, y: PE.cloneSrc.y - e.y }; if (!o.aligned) stroke.start = { x: PE.cloneSrc.x, y: PE.cloneSrc.y, px: e.x, py: e.y }; }
 		if (kind === "retouch") { stroke.proc = retouchCopy(cv, o); stroke.alpha = Math.max(0.05, o.strength / 100); L.live.alpha = stroke.alpha; }
@@ -284,6 +286,7 @@
 		x.putImageData(id, 0, 0); return c;
 	}
 	function dab(px, py, size) {
+		if (stroke) { var rr0 = Math.max(0.5, size / 2) + 2, q = stroke.bb; stroke.bb = q ? { x0: Math.min(q.x0, px - rr0), y0: Math.min(q.y0, py - rr0), x1: Math.max(q.x1, px + rr0), y1: Math.max(q.y1, py + rr0) } : { x0: px - rr0, y0: py - rr0, x1: px + rr0, y1: py + rr0 }; }
 		var s = stroke, L = s.L, r = Math.max(0.5, size / 2), lx = px - s.og.x, ly = py - s.og.y, bx = s.buf.getContext("2d"), hard = (s.o.hardness == null ? 100 : s.o.hardness) / 100;
 		if (!PE.sel && s.kind !== "clone" && s.kind !== "retouch") { softDab(bx, r, hard, s.col, lx, ly); return; }
 		var D = Math.ceil(r * 2) + 2, t = PE.tmp("dab", D, D), tx = t.getContext("2d"), c = D / 2;
@@ -305,7 +308,9 @@
 	}
 	function endStroke(label) {
 		var s = stroke; if (!s) return; stroke = null; var L = s.L, cv = s.target === "mask" ? L.mask : L.canvas, x = cv.getContext("2d");
-		x.save(); x.globalAlpha = s.alpha; x.globalCompositeOperation = s.erase ? "destination-out" : "source-over"; x.drawImage(s.buf, 0, 0); x.restore(); L.live = null; L.rev++; PE.commit(label);
+		x.save(); x.globalAlpha = s.alpha; x.globalCompositeOperation = s.erase ? "destination-out" : "source-over"; x.drawImage(s.buf, 0, 0); x.restore(); L.live = null; L.rev++;
+		if (s.target === "pixel" && s.pre && s.bb && !L.mask) { var b = s.bb, p0 = s.pre; PE.cropLayerTo(L, { x: Math.min(p0.x, b.x0), y: Math.min(p0.y, b.y0), w: Math.max(p0.x + p0.w, b.x1) - Math.min(p0.x, b.x0), h: Math.max(p0.y + p0.h, b.y1) - Math.min(p0.y, b.y0) }); }
+		PE.commit(label);
 	}
 	function paintTool(id, name, key, icon, kind, opts, ui, extra) {
 		var t = { id: id, name: name, key: key, icon: icon, opts: opts, ui: ui, hint: "Drag to paint. [ and ] change the size, Shift-click draws a straight line from the last point.",

@@ -6,6 +6,22 @@
 	function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 	PE.el = el; PE.esc = esc;
 
+	/* ---------- "?" help buttons: a small round button that opens a short explanation next to it ---------- */
+	var helpEl = null;
+	function closeHelp2() { if (helpEl) { helpEl.remove(); helpEl = null; } }
+	PE.helpBtn = function (title, text) {
+		var b = el("button", "pe-qh", "?"); b.type = "button"; b.title = text.replace(/<[^>]+>/g, "").slice(0, 160); b.setAttribute("aria-label", "What is " + title + "?");
+		b.addEventListener("click", function (e) {
+			e.preventDefault(); e.stopPropagation(); var same = helpEl && helpEl._b === b; closeHelp2(); if (same) return;
+			var root = PE.els.root || document.body, h = el("div", "pe-qpop"), r = b.getBoundingClientRect(), rr = root.getBoundingClientRect();
+			h.innerHTML = "<b>" + esc(title) + "</b><div>" + text + "</div>"; h._b = b; root.appendChild(h); helpEl = h;
+			var x = Math.min(Math.max(4, r.left - rr.left - 10), rr.width - h.offsetWidth - 6), y = r.bottom - rr.top + 6; if (y + h.offsetHeight > rr.height - 4) y = Math.max(4, r.top - rr.top - h.offsetHeight - 6); h.style.left = x + "px"; h.style.top = y + "px";
+		});
+		return b;
+	};
+	document.addEventListener("mousedown", function (e) { if (helpEl && !(e.target.closest && (e.target.closest(".pe-qpop") || e.target.closest(".pe-qh")))) closeHelp2(); }, true);
+	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && helpEl) { closeHelp2(); e.stopPropagation(); } }, true);
+
 	/* ---------- modal ---------- */
 	var openModal = null;
 	PE.modal = function (o) {
@@ -24,7 +40,7 @@
 	PE.form = function (params, onChange) {
 		var root = el("div", "pe-form"), inputs = {};
 		params.forEach(function (p) {
-			var row = el("label", "pe-row"), lab = el("span", "pe-row-l", esc(p.label)); row.appendChild(lab); var inp, out;
+			var row = el("label", "pe-row"), lab = el("span", "pe-row-l", esc(p.label)); row.appendChild(lab); if (p.help) lab.appendChild(PE.helpBtn(p.label, p.help)); var inp, out;
 			if (p.type === "check") { inp = el("input"); inp.type = "checkbox"; inp.checked = !!p.val; row.className += " pe-row--check"; }
 			else if (p.type === "select") { inp = el("select"); p.options.forEach(function (o) { var op = el("option", null, esc(o[1])); op.value = o[0]; inp.appendChild(op); }); inp.value = p.val; }
 			else if (p.type === "color") { inp = el("input"); inp.type = "color"; inp.value = p.val; }
@@ -148,11 +164,66 @@
 		PE.modal({ title: "Image size", body: wrap, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "Resize", primary: true, act: function (m) { var v = f.get(); m.close(); PE.resizeImage(Math.round(v.w), Math.round(v.h)); } }] });
 	};
 	PE.dlgCanvasSize = function () {
-		var d = PE.doc; if (!d) return; var wrap = el("div"), anchor = [0.5, 0.5];
-		var f = PE.form([{ k: "w", label: "Width", type: "number", val: d.w, min: 1, max: PE.MAXPX }, { k: "h", label: "Height", type: "number", val: d.h, min: 1, max: PE.MAXPX }, { k: "fill", label: "New area", type: "select", options: [["none", "Transparent"], ["bg", "Background colour"], ["fg", "Foreground colour"], ["white", "White"], ["black", "Black"]], val: "none" }], null);
-		wrap.appendChild(f.el); var grid = el("div", "pe-anchor"); for (var i = 0; i < 9; i++) { (function (i) { var b = el("button", null, i === 4 ? "●" : ""); b.type = "button"; b.setAttribute("aria-pressed", i === 4 ? "true" : "false"); b.addEventListener("click", function () { anchor = [(i % 3) / 2, Math.floor(i / 3) / 2]; Array.prototype.forEach.call(grid.children, function (c, j) { c.setAttribute("aria-pressed", j === i ? "true" : "false"); c.textContent = j === i ? "●" : ""; }); }); grid.appendChild(b); })(i); }
-		var row = el("div", "pe-row"); row.appendChild(el("span", "pe-row-l", "Anchor")); row.appendChild(grid); wrap.appendChild(row);
-		PE.modal({ title: "Canvas size", body: wrap, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "Apply", primary: true, act: function (m) { var v = f.get(); m.close(); PE.canvasSize(v.w, v.h, anchor[0], anchor[1], v.fill === "none" ? null : v.fill === "bg" ? PE.bg : v.fill === "fg" ? PE.fg : v.fill); } }] });
+		var d = PE.doc; if (!d) return; var wrap = el("div", "pe-cs"), ax = 0.5, ay = 0.5, R = { x: 0, y: 0, w: d.w, h: d.h };
+		var thumb = null; try { thumb = PE.flatten(); } catch (e) {}
+		var cv = el("canvas", "pe-cs-cv"); cv.width = 440; cv.height = 280; wrap.appendChild(cv); var cx = cv.getContext("2d");
+		var f = PE.form([{ k: "w", label: "Width", help: "The width of the canvas in pixels. Bigger than the picture adds empty space; smaller crops the picture. Or drag the purple edges in the preview.", type: "number", val: d.w, min: 1, max: PE.MAXPX }, { k: "h", label: "Height", help: "The height of the canvas in pixels.", type: "number", val: d.h, min: 1, max: PE.MAXPX }, { k: "fill", label: "New area", help: "What fills any extra space the bigger canvas adds. Transparent keeps it see-through (use PNG or WebP to keep that).", type: "select", options: [["none", "Transparent"], ["bg", "Background colour"], ["fg", "Foreground colour"], ["white", "White"], ["black", "Black"]], val: "none" }], null);
+		wrap.appendChild(f.el);
+		var chips = el("div", "pe-cs-chips"); chips.appendChild(el("span", "pe-row-l", "Quick sizes")); chips.appendChild(PE.helpBtn("Quick sizes", "One click to make the canvas exactly as big as: all the visible layers together, just the selected layer, or the current selection. Handy after pasting a picture bigger than the canvas."));
+		function chip(label, fn, tip) { var b = el("button", "pe-btn pe-btn--sm", esc(label)); b.type = "button"; b.title = tip; b.addEventListener("click", fn); chips.appendChild(b); }
+		function setRect(r) { R = { x: Math.round(r.x), y: Math.round(r.y), w: Math.max(1, Math.round(r.w)), h: Math.max(1, Math.round(r.h)) }; sync(); draw(); }
+		function union(list) { var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; list.forEach(function (L) { var b = PE.bounds(L); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); }); return x1 > x0 ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : null; }
+		chip("Fit all visible layers", function () { var r = union(d.layers.filter(function (L) { return !PE.isGroup(L) && PE.effVisible(L); })); if (r) setRect(r); else PE.toast("No visible layers"); }, "Canvas = the box around everything you can see");
+		chip("Fit selected layer", function () { var L = PE.active(), r = L && !PE.isGroup(L) ? union([L]) : null; if (r) setRect(r); else PE.toast("Select a layer first"); }, "Canvas = the box around the selected layer");
+		chip("Fit selection", function () { var b = PE.selBounds && PE.selBounds(); if (b) setRect(b); else PE.toast("Make a selection first"); }, "Canvas = the box around the current selection");
+		chip("Reset", function () { ax = ay = 0.5; setRect({ x: 0, y: 0, w: d.w, h: d.h }); }, "Back to the current size");
+		wrap.appendChild(chips);
+		var grid = el("div", "pe-anchor"); for (var i = 0; i < 9; i++) { (function (i) { var b = el("button", null, i === 4 ? "●" : ""); b.type = "button"; b.setAttribute("aria-pressed", i === 4 ? "true" : "false"); b.title = "Where the current picture sits inside the new canvas"; b.addEventListener("click", function () { ax = (i % 3) / 2; ay = Math.floor(i / 3) / 2; Array.prototype.forEach.call(grid.children, function (c, j) { c.setAttribute("aria-pressed", j === i ? "true" : "false"); c.textContent = j === i ? "●" : ""; }); fromInputs(); }); grid.appendChild(b); })(i); }
+		var row = el("div", "pe-row"); var al = el("span", "pe-row-l", "Anchor"); al.appendChild(PE.helpBtn("Anchor", "When you change the width or height, the anchor decides which side of the picture stays put. Centre grows or shrinks evenly all round; top-left keeps the top-left corner and adds or removes space at the right and bottom.")); row.appendChild(al); row.appendChild(grid); wrap.appendChild(row);
+		var info = el("p", "pe-hint2"); wrap.appendChild(info);
+		function sync() { f.set("w", R.w); f.set("h", R.h); info.textContent = "Current " + d.w + " × " + d.h + " px → new " + R.w + " × " + R.h + " px" + (R.w * R.h > PE.MAXAREA ? " (too large)" : ""); }
+		function fromInputs() { var v = f.get(), w = Math.max(1, Math.round(v.w || 1)), h = Math.max(1, Math.round(v.h || 1)); R = { x: Math.round(-(w - d.w) * ax), y: Math.round(-(h - d.h) * ay), w: w, h: h }; info.textContent = "Current " + d.w + " × " + d.h + " px → new " + w + " × " + h + " px"; draw(); }
+		f.inputs.w.inp.addEventListener("input", fromInputs); f.inputs.h.inp.addEventListener("input", fromInputs);
+		var sc = 1, ox = 0, oy = 0;
+		function view() { var x0 = Math.min(0, R.x), y0 = Math.min(0, R.y), x1 = Math.max(d.w, R.x + R.w), y1 = Math.max(d.h, R.y + R.h), pw = x1 - x0, ph = y1 - y0, m = 26; sc = Math.min((cv.width - m * 2) / pw, (cv.height - m * 2) / ph); ox = (cv.width - pw * sc) / 2 - x0 * sc; oy = (cv.height - ph * sc) / 2 - y0 * sc; }
+		function draw() {
+			view(); cx.clearRect(0, 0, cv.width, cv.height); cx.fillStyle = "#101014"; cx.fillRect(0, 0, cv.width, cv.height);
+			// new canvas area (checker so transparent space reads as empty)
+			var nx = ox + R.x * sc, ny = oy + R.y * sc, nw = R.w * sc, nh = R.h * sc; cx.save(); cx.beginPath(); cx.rect(nx, ny, nw, nh); cx.clip(); for (var yy = 0; yy < nh; yy += 10) for (var xx = 0; xx < nw; xx += 10) { cx.fillStyle = ((xx + yy) / 10) % 2 ? "#2a2a33" : "#33333d"; cx.fillRect(nx + xx, ny + yy, 10, 10); } cx.restore();
+			if (thumb) { cx.imageSmoothingQuality = "high"; cx.drawImage(thumb, ox, oy, d.w * sc, d.h * sc); } else { cx.fillStyle = "#555"; cx.fillRect(ox, oy, d.w * sc, d.h * sc); }
+			cx.strokeStyle = "rgba(255,255,255,0.45)"; cx.setLineDash([4, 3]); cx.lineWidth = 1; cx.strokeRect(ox + 0.5, oy + 0.5, d.w * sc, d.h * sc); cx.setLineDash([]);   // the current picture's edge
+			cx.fillStyle = "rgba(0,0,0,0.5)"; // darken what will be cropped away
+			cx.save(); cx.beginPath(); cx.rect(ox, oy, d.w * sc, d.h * sc); cx.rect(nx, ny, nw, nh); cx.clip("evenodd"); cx.fillRect(ox, oy, d.w * sc, d.h * sc); cx.restore();
+			cx.strokeStyle = "#a78bfa"; cx.lineWidth = 2; cx.strokeRect(nx, ny, nw, nh);
+			cx.fillStyle = "#a78bfa"; cx.strokeStyle = "#fff"; cx.lineWidth = 1.5; handles(nx, ny, nw, nh).forEach(function (h) { cx.beginPath(); cx.rect(h.x - 5, h.y - 5, 10, 10); cx.fill(); cx.stroke(); });
+		}
+		function handles(nx, ny, nw, nh) { return [{ k: "nw", x: nx, y: ny }, { k: "n", x: nx + nw / 2, y: ny }, { k: "ne", x: nx + nw, y: ny }, { k: "e", x: nx + nw, y: ny + nh / 2 }, { k: "se", x: nx + nw, y: ny + nh }, { k: "s", x: nx + nw / 2, y: ny + nh }, { k: "sw", x: nx, y: ny + nh }, { k: "w", x: nx, y: ny + nh / 2 }]; }
+		var drag = null;
+		function pos(e) { var r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * cv.width / r.width, y: (e.clientY - r.top) * cv.height / r.height }; }
+		function hit(p) { var hs = handles(ox + R.x * sc, oy + R.y * sc, R.w * sc, R.h * sc); for (var i = 0; i < hs.length; i++) if (Math.abs(p.x - hs[i].x) < 9 && Math.abs(p.y - hs[i].y) < 9) return hs[i].k; return null; }
+		var CUR = { n: "ns-resize", s: "ns-resize", e: "ew-resize", w: "ew-resize", ne: "nesw-resize", sw: "nesw-resize", nw: "nwse-resize", se: "nwse-resize" };
+		cv.addEventListener("pointermove", function (e) {
+			var p = pos(e); if (!drag) { var k = hit(p); cv.style.cursor = k ? CUR[k] : "default"; return; }
+			var dx = Math.round((p.x - drag.p.x) / sc), dy = Math.round((p.y - drag.p.y) / sc), r = { x: drag.R.x, y: drag.R.y, w: drag.R.w, h: drag.R.h }, k = drag.k;
+			if (k.indexOf("e") >= 0) r.w = Math.max(1, drag.R.w + dx); if (k.indexOf("s") >= 0) r.h = Math.max(1, drag.R.h + dy);
+			if (k.indexOf("w") >= 0) { r.w = Math.max(1, drag.R.w - dx); r.x = drag.R.x + drag.R.w - r.w; } if (k.indexOf("n") >= 0) { r.h = Math.max(1, drag.R.h - dy); r.y = drag.R.y + drag.R.h - r.h; }
+			if (e.shiftKey && k.length === 2) { var asp = drag.R.w / drag.R.h; r.h = Math.max(1, Math.round(r.w / asp)); if (k.indexOf("n") >= 0) r.y = drag.R.y + drag.R.h - r.h; }
+			R = r; sync(); draw();
+		});
+		cv.addEventListener("pointerdown", function (e) { var p = pos(e), k = hit(p); if (!k) return; cv.setPointerCapture(e.pointerId); drag = { k: k, p: p, R: { x: R.x, y: R.y, w: R.w, h: R.h } }; });
+		cv.addEventListener("pointerup", function () { drag = null; }); cv.addEventListener("pointercancel", function () { drag = null; });
+		wrap.appendChild(el("p", "pe-hint2", "Drag the purple handles to resize the canvas (hold Shift on a corner to keep the shape). The dashed line is your picture's current edge; darkened parts will be cropped away."));
+		sync(); draw();
+		PE.modal({ title: "Canvas size", wide: true, body: wrap, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "Apply", primary: true, act: function (m) { var v = f.get(); m.close(); PE.canvasRect(R.x, R.y, R.w, R.h, v.fill === "none" ? null : v.fill === "bg" ? PE.bg : v.fill === "fg" ? PE.fg : v.fill); } }] });
+	};
+
+	/* ---------- new solid colour layer (white, black, any colour) ---------- */
+	PE.dlgFillLayer = function () {
+		var d = PE.doc; if (!d) { PE.toast("Open or create an image first"); return; } var wrap = el("div"), f = PE.form([{ k: "c", label: "Colour", help: "The colour the whole layer is filled with. Pick any colour, or use the quick buttons below.", type: "color", val: "#ffffff" }, { k: "where", label: "Put it", help: "Above the selected layer, or at the very bottom as a background (it then sits behind everything).", type: "select", options: [["above", "Above the selected layer"], ["bottom", "At the bottom (as a background)"]], val: "bottom" }, { k: "name", label: "Layer name", type: "text", val: "Fill" }], null);
+		wrap.appendChild(f.el); var q = el("div", "pe-cs-chips"); q.appendChild(el("span", "pe-row-l", "Quick colours"));
+		[["White", "#ffffff"], ["Black", "#000000"], ["Foreground", PE.fg], ["Background", PE.bg], ["Grey", "#808080"], ["Red", "#e53935"], ["Yellow", "#ffeb3b"], ["Green", "#43a047"], ["Blue", "#1e88e5"]].forEach(function (c) { var b = el("button", "pe-btn pe-btn--sm", esc(c[0])); b.type = "button"; b.style.cssText = "border-left:1.1em solid " + c[1]; b.addEventListener("click", function () { f.set("c", c[1]); f.set("name", c[0]); }); q.appendChild(b); });
+		wrap.appendChild(q); wrap.appendChild(el("p", "pe-hint2", "Adds a new layer filled with one colour, the size of the image. Use it for a white or coloured background, or put it above other layers and lower its opacity for a tint."));
+		PE.modal({ title: "New solid colour layer", body: wrap, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "Add layer", primary: true, act: function (m) { var v = f.get(); m.close(); var L = PE.makeLayer({ name: v.name || "Fill" }), x = L.canvas.getContext("2d"); x.fillStyle = v.c; x.fillRect(0, 0, L.canvas.width, L.canvas.height); if (v.where === "bottom") { d.layers.unshift(L); PE.setActive(L.id); PE.emit("layers"); PE.invalidate(); } else PE.addLayer(L); PE.commit("New solid colour layer"); } }] });
 	};
 
 	/* ---------- new document ---------- */
@@ -164,9 +235,10 @@
 	};
 
 	/* ---------- export ---------- */
+	var HELP_FMT = "<p><b>PNG</b>: perfect quality, keeps transparency. Files are big for photos. Best for screenshots, logos, text, anything with sharp edges or see-through parts.</p><p><b>JPEG</b>: small files for photos, but slightly lossy and no transparency (it fills with the background colour). Works everywhere. Best for photographs and anything you will email or post.</p><p><b>WebP</b>: a newer format that is usually 25-35% smaller than JPEG at the same look, and keeps transparency. Works in all modern browsers and most apps, but some older programs cannot open it.</p>";
 	PE.dlgExport = function () {
 		var d = PE.doc; if (!d) return; var wrap = el("div", "pe-exp"), saved = PE.savedParams.export || { fmt: "png", q: 90, scale: 100, bg: "#ffffff", name: d.name };
-		var f = PE.form([{ k: "fmt", label: "Format", type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"], ["webp", "WebP"]], val: saved.fmt }, { k: "q", label: "Quality", type: "range", min: 30, max: 100, step: 1, val: saved.q, unit: "%" }, { k: "scale", label: "Scale", type: "range", min: 10, max: 400, step: 1, val: saved.scale, unit: "%" }, { k: "bg", label: "Background (JPEG)", type: "color", val: saved.bg }, { k: "name", label: "File name", type: "text", val: saved.name }], function () { vis(); est(); });
+		var f = PE.form([{ k: "fmt", label: "Format", help: HELP_FMT, type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"], ["webp", "WebP"]], val: saved.fmt }, { k: "q", label: "Quality", help: "How much detail JPEG and WebP keep. Higher looks better but makes a bigger file. 85-92% is a good balance: the picture looks the same and the file is much smaller than PNG. PNG is lossless, so it has no quality setting.", type: "range", min: 30, max: 100, step: 1, val: saved.q, unit: "%" }, { k: "scale", label: "Scale", help: "Makes the exported picture bigger or smaller than the image you are editing. 100% keeps the size. 50% halves the width and height (a quarter of the pixels), handy for web use; 200% doubles it (the pixels are enlarged, it does not add detail).", type: "range", min: 10, max: 400, step: 1, val: saved.scale, unit: "%" }, { k: "bg", label: "Background (JPEG)", help: "JPEG cannot be see-through. Any transparent parts of your image are filled with this colour. PNG and WebP keep transparency, so they ignore this.", type: "color", val: saved.bg }, { k: "name", label: "File name", help: "The name of the downloaded file, without the ending (the ending comes from the format).", type: "text", val: saved.name }], function () { vis(); est(); });
 		wrap.appendChild(f.el); var info = el("div", "pe-exp-info", ""); wrap.appendChild(info);
 		function vis() { var v = f.get(), F = I.FORMATS[v.fmt]; f.inputs.q.inp.closest(".pe-row").style.display = F.lossy ? "" : "none"; f.inputs.bg.inp.closest(".pe-row").style.display = F.alpha ? "none" : ""; }
 		var t = 0, token = 0; function est() { clearTimeout(t); t = setTimeout(function () { var v = f.get(), my = ++token; info.textContent = "Calculating…"; PE.exportBlob(v.fmt, v.q / 100, { scale: v.scale / 100, bg: v.bg }).then(function (b) { if (my !== token) return; info.innerHTML = "<b>" + Math.round(d.w * v.scale / 100) + " × " + Math.round(d.h * v.scale / 100) + " px</b> · " + I.formatBytes(b.size); }).catch(function (e) { info.textContent = e.message; }); }, 250); }
@@ -230,36 +302,56 @@
 
 	PE.download = function (blob, name) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000); };
 
-	/* ---------- share as a link (temporary public upload to Litterbox / catbox.moe) ---------- */
+	/* ---------- share as a link: Litterbox (up to 3 days) with an automatic fallback to the mes.fm 1-hour picture host ---------- */
+	function shrinkJpeg(maxBytes) {   // a JPEG of the whole image that fits maxBytes (steps the quality, then the size, down)
+		var scale = Math.min(1, 1600 / Math.max(PE.doc.w, PE.doc.h)), q = 0.88, tries = 0;
+		return new Promise(function (res, rej) {
+			(function step() { PE.exportBlob("jpg", q, { scale: scale, bg: "#ffffff" }).then(function (b) { if (b.size <= maxBytes) return res(b); if (++tries > 10) return rej(new Error("The picture is too big to shrink enough")); if (q > 0.55) q -= 0.1; else scale *= 0.8; step(); }).catch(rej); })();
+		});
+	}
 	PE.dlgShare = function () {
 		var d = PE.doc; if (!d) return;
-		var wrap = el("div", "pe-exp"), f = PE.form([{ k: "fmt", label: "Format", type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"]], val: "png" }, { k: "life", label: "Link lasts", type: "select", options: [["1h", "1 hour"], ["12h", "12 hours"], ["24h", "1 day"], ["72h", "3 days"]], val: "72h" }, { k: "scale", label: "Size", type: "range", min: 10, max: 100, step: 5, val: 100, unit: "%" }], null);
+		var wrap = el("div", "pe-exp"), f = PE.form([
+			{ k: "host", label: "Send it to", help: "<p><b>Litterbox</b> is a free temporary file host (catbox.moe). It keeps the picture at full quality for the time you choose, up to 3 days.</p><p><b>mes.fm</b> keeps a smaller copy (a JPEG under 700 KB) for exactly 1 hour at a private link. It is the fallback if Litterbox is busy or down, and is deleted automatically.</p>", type: "select", options: [["lb", "Litterbox (up to 3 days, full quality)"], ["mes", "mes.fm (1 hour, shrunk to a small JPEG)"]], val: "lb" },
+			{ k: "fmt", label: "Format", help: HELP_FMT, type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"]], val: "png" },
+			{ k: "life", label: "Link lasts", help: "How long the link keeps working before the picture is deleted. Only for Litterbox: the mes.fm link always lasts 1 hour.", type: "select", options: [["1h", "1 hour"], ["12h", "12 hours"], ["24h", "1 day"], ["72h", "3 days"]], val: "72h" },
+			{ k: "scale", label: "Size", help: "Shrinks the picture before it is uploaded. Smaller uploads faster and fails less often. 100% = the full image.", type: "range", min: 10, max: 100, step: 5, val: 100, unit: "%" }], null);
 		wrap.appendChild(f.el);
-		wrap.appendChild(el("p", "pe-hint2", "This uploads a copy of the whole image to <b>Litterbox (catbox.moe)</b>, a free temporary file host, and gives you a link. <b>Anyone who has the link can see the picture</b>, and it is deleted automatically when the time is up. MES does not store it. Don't share anything private."));
-		wrap.appendChild(el("p", "pe-hint2", "Want a link that does not expire? <b>Copy for Snipboard</b> copies the picture and opens <b>snipboard.io</b> in a new tab: click there and press Ctrl+V (Cmd+V on a Mac) and Snipboard gives you its own permanent link. Snipboard has no upload service we can call for you, so that last paste is yours."));
+		wrap.appendChild(el("p", "pe-hint2", "This uploads a copy of the whole image to a free temporary host and gives you a link. <b>Anyone who has the link can see the picture</b>, and it is deleted automatically when the time is up. MES does not keep it. Don't share anything private."));
+		wrap.appendChild(el("p", "pe-hint2", "Want a link that never expires? <b>Copy for Snipboard</b> copies the picture and opens <b>snipboard.io</b>: click on that page and press Ctrl+V (Cmd+V on a Mac) and Snipboard gives you its own permanent link. Snipboard has no upload service we can call for you, so that last paste is yours."));
 		var out = el("div", "pe-share-out"); wrap.appendChild(out);
 		var busy = false, link = "";
-		function show(url) {
-			link = url; out.innerHTML = ""; var inp = el("input"); inp.type = "text"; inp.readOnly = true; inp.value = url; inp.style.cssText = "width:100%;margin-top:.6em"; inp.addEventListener("focus", function () { inp.select(); }); out.appendChild(inp); inp.focus(); inp.select();
+		function show(url, note) {
+			link = url; out.innerHTML = ""; var inp = el("input"); inp.type = "text"; inp.readOnly = true; inp.value = url; inp.style.cssText = "width:100%;margin-top:.6em"; inp.addEventListener("focus", function () { inp.select(); }); out.appendChild(inp); if (note) out.appendChild(el("p", "pe-hint2", esc(note))); inp.focus(); inp.select();
+		}
+		function viaLitterbox(v) {
+			return PE.exportBlob(v.fmt, 0.92, { scale: v.scale / 100, bg: "#ffffff" }).then(function (b) {
+				if (b.size > 190 * 1024 * 1024) throw new Error("Too big: choose a smaller size");
+				var fd = new FormData(); fd.append("reqtype", "fileupload"); fd.append("time", v.life); fd.append("fileToUpload", b, "mes-photo." + (v.fmt === "jpg" ? "jpg" : "png"));
+				return fetch("https://litterbox.catbox.moe/resources/internals/api.php", { method: "POST", body: fd });
+			}).then(function (r) { return r.text().then(function (t) { if (!r.ok || !/^https:\/\//.test(t.trim())) throw new Error("Litterbox said " + r.status + (/^</.test(t.trim()) ? "" : ": " + t.trim().slice(0, 80))); return t.trim(); }); });
+		}
+		function viaMes() {
+			return shrinkJpeg(650000).then(function (b) { return fetch("/api/image-temp", { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: b }); })
+				.then(function (r) { if (!r.ok) throw new Error("mes.fm said " + r.status); return r.json(); }).then(function (j) { if (!j || !j.url) throw new Error("mes.fm gave no link"); return j.url; });
 		}
 		var m = PE.modal({ title: "Share as a link", body: wrap, buttons: [{ label: "Close", act: function (m) { m.close(); } },
 			{ label: "Copy link", act: function () { if (!link) { PE.toast("Upload first"); return; } (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () { PE.toast("Link copied"); }).catch(function () { PE.toast("Select the link and press Ctrl+C"); }); } },
 			{ label: "Copy for Snipboard", act: function () {
-				var w = window.open("about:blank", "_blank"); var v = f.get();   // opened inside the click so a pop-up blocker lets it through
-				PE.exportBlob("png", 0.92, { scale: v.scale / 100, bg: "#ffffff" }).then(function (b) {
-					if (!navigator.clipboard || !window.ClipboardItem) throw new Error("clipboard");
-					return navigator.clipboard.write([new ClipboardItem({ "image/png": b })]);
-				}).then(function () { if (w) w.location.href = "https://snipboard.io/"; PE.toast("Picture copied: paste it on Snipboard with Ctrl+V"); })
-				.catch(function () { if (w) w.close(); PE.toast("Couldn't copy the picture: download it and drag it onto snipboard.io instead"); });
+				var w = window.open("about:blank", "_blank"), v = f.get();   // opened inside the click so a pop-up blocker lets it through
+				// the clipboard item is handed over as a PROMISE inside the click: browsers only allow the copy while the click still counts, and rendering a big image takes longer than that
+				var png = PE.exportBlob("png", 0.92, { scale: v.scale / 100, bg: "#ffffff" }), done = false;
+				try {
+					navigator.clipboard.write([new ClipboardItem({ "image/png": png })]).then(function () { done = true; PE.toast("Picture copied: press Ctrl/Cmd+V on the Snipboard page"); if (w) w.location.href = "https://snipboard.io/"; }, function () {
+						if (w) w.location.href = "https://snipboard.io/"; PE.toast("The browser would not copy the picture. Use Export to download it, then drag it onto the Snipboard page.");
+					});
+				} catch (e) { if (w) w.location.href = "https://snipboard.io/"; PE.toast("This browser cannot copy pictures. Use Export, then drag the file onto the Snipboard page."); }
 			} },
 			{ label: "Upload and get link", primary: true, act: function () {
 				if (busy) return; busy = true; var v = f.get(); out.textContent = "Uploading…";
-				PE.exportBlob(v.fmt, 0.92, { scale: v.scale / 100, bg: "#ffffff" }).then(function (b) {
-					if (b.size > 190 * 1024 * 1024) throw new Error("Too big: choose a smaller size");
-					var fd = new FormData(); fd.append("reqtype", "fileupload"); fd.append("time", v.life); fd.append("fileToUpload", b, "mes-photo." + (v.fmt === "jpg" ? "jpg" : "png"));
-					return fetch("https://litterbox.catbox.moe/resources/internals/api.php", { method: "POST", body: fd });
-				}).then(function (r) { return r.text().then(function (t) { if (!r.ok || !/^https:\/\//.test(t.trim())) throw new Error(t.trim().slice(0, 120) || "Upload failed"); return t.trim(); }); })
-				.then(function (url) { busy = false; show(url); navigator.clipboard && navigator.clipboard.writeText(url).then(function () { PE.toast("Link copied"); }).catch(function () {}); })
+				var first = v.host === "mes" ? viaMes() : viaLitterbox(v);
+				first.catch(function (e) { if (v.host === "mes") throw e; out.textContent = "Litterbox did not accept it (" + (e && e.message ? e.message : "no answer") + "). Trying mes.fm instead…"; return viaMes().then(function (u) { u = { url: u }; return u; }); })
+				.then(function (url) { busy = false; var fallback = typeof url === "object"; var u = fallback ? url.url : url; show(u, fallback ? "Litterbox failed, so this link is on mes.fm: a smaller JPEG that lasts 1 hour." : (v.host === "mes" ? "This link lasts 1 hour." : "")); navigator.clipboard && navigator.clipboard.writeText(u).then(function () { PE.toast("Link copied"); }).catch(function () {}); })
 				.catch(function (e) { busy = false; out.textContent = "Couldn't upload: " + (e && e.message ? e.message : "the host did not answer") + ". Try a smaller size, or download the picture and use another site."; });
 			} }] });
 	};

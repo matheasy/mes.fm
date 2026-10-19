@@ -2,6 +2,7 @@
 	<div class="tu pe" id="pe">
 		<div class="pe-top">
 			<div class="pe-menubar" id="pe-menubar" role="menubar"></div>
+			<div class="pe-search" id="pe-searchw"><input type="search" id="pe-search" placeholder="🔍 Search tools, menus, layers…  (Ctrl+K)" aria-label="Search tools, menu commands and layers" autocomplete="off"><div class="pe-sres" id="pe-sres" hidden></div></div>
 			<div class="pe-top-r">
 				<button type="button" class="pe-ib" id="pe-undo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↶</button>
 				<button type="button" class="pe-ib" id="pe-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>↷</button>
@@ -42,7 +43,7 @@
 						<label class="pe-op">Opacity <input type="range" id="pe-opacity" min="0" max="100" value="100" aria-label="Layer opacity"><span id="pe-opacity-v">100%</span></label>
 					</div>
 					<div class="pe-lbtns">
-						<button type="button" class="pe-mini" id="pe-lnew" title="New layer (Ctrl+Shift+N)">＋</button><button type="button" class="pe-mini" id="pe-lgroup" title="Group the selected layers (Ctrl+G); Ctrl-click to select several. On a group: ungroup (Ctrl+Shift+G)">📁</button><button type="button" class="pe-mini" id="pe-ldup" title="Duplicate (Ctrl+J)">⧉</button><button type="button" class="pe-mini" id="pe-lmerge" title="Merge down (Ctrl+E)">⇩</button><button type="button" class="pe-mini" id="pe-mask-btn" title="Layer mask">◑</button><button type="button" class="pe-mini" id="pe-lock" title="Lock layer" aria-pressed="false">🔒</button><button type="button" class="pe-mini" id="pe-ldel" title="Delete layer">🗑</button>
+						<button type="button" class="pe-mini pe-mini--t" id="pe-lnew" title="Add a new empty (transparent) layer (Ctrl+Shift+N)">＋ New</button><button type="button" class="pe-mini pe-mini--t" id="pe-lfill" title="Add a layer filled with one colour: white, black or any colour">■ Colour fill</button><button type="button" class="pe-mini pe-mini--t" id="pe-lgroup" title="Group the selected layers (Ctrl+G); Ctrl-click to select several. On a group: ungroup (Ctrl+Shift+G)">📁 Group</button><button type="button" class="pe-mini pe-mini--t" id="pe-ldup" title="Duplicate the layer (Ctrl+J)">⧉ Duplicate</button><button type="button" class="pe-mini pe-mini--t" id="pe-lmerge" title="Merge this layer into the one below it (Ctrl+E)">⇩ Merge down</button><button type="button" class="pe-mini pe-mini--t" id="pe-mask-btn" title="Layer mask: paint black to hide parts of a layer without erasing them">◑ Mask</button><button type="button" class="pe-mini pe-mini--t" id="pe-lock" title="Lock the layer so it cannot be changed" aria-pressed="false">🔒 Lock</button><button type="button" class="pe-mini pe-mini--t" id="pe-ldel" title="Delete the layer">🗑 Delete</button>
 					</div>
 					<input type="search" class="pe-lfilter" id="pe-lfilter" placeholder="Find a layer…" aria-label="Find a layer by name">
 					<div class="pe-layers" id="pe-layers"></div>

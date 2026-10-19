@@ -91,6 +91,14 @@
 		if (L.mask) { var nm = mk(W, H), mx = nm.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, W, H); mx.clearRect(o.x - x0, o.y - y0, w, h); mx.drawImage(L.mask, o.x - x0, o.y - y0); L.mask = nm; }
 		L.canvas = nc; L.cx = x0 + W / 2; L.cy = y0 + H / 2; L.rev++;
 	};
+	/* shrink a baked layer's canvas (and mask) to rect {x,y,w,h} in doc coordinates, clipped to what it has now (the opposite of growLayer) */
+	PE.cropLayerTo = function (L, r) {
+		var o = PE.origin(L), w = L.canvas.width, h = L.canvas.height, x0 = Math.max(o.x, Math.floor(r.x)), y0 = Math.max(o.y, Math.floor(r.y)), x1 = Math.min(o.x + w, Math.ceil(r.x + r.w)), y1 = Math.min(o.y + h, Math.ceil(r.y + r.h));
+		if (x1 <= x0 || y1 <= y0 || (x0 === o.x && y0 === o.y && x1 === o.x + w && y1 === o.y + h)) return;
+		var W = x1 - x0, H = y1 - y0, nc = mk(W, H); nc.getContext("2d").drawImage(L.canvas, x0 - o.x, y0 - o.y, W, H, 0, 0, W, H);
+		if (L.mask) { var nm = mk(W, H); nm.getContext("2d").drawImage(L.mask, x0 - o.x, y0 - o.y, W, H, 0, 0, W, H); L.mask = nm; }
+		L.canvas = nc; L.cx = x0 + W / 2; L.cy = y0 + H / 2; L.rev++;
+	};
 	PE.rasterize = function (L) { if (L.type === "text") { L.type = "raster"; L.text = null; L.rev++; } };
 	/* make a layer ready for painting: raster, baked, at least as big as the document; returns false if locked / not possible */
 	PE.prepare = function (L, quiet, noGrow) {
@@ -103,11 +111,22 @@
 	};
 
 	/* ---------- text layers ---------- */
-	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0 };
+	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0 };
 	PE.renderText = function (L) {
-		var t = L.text, lines = String(t.str).split("\n"), f = (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px " + t.font, m = mk(8, 8).getContext("2d");
+		var t = L.text, f = (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px " + t.font, m = mk(8, 8).getContext("2d");
 		m.font = f; if ("letterSpacing" in m) m.letterSpacing = (t.ls || 0) + "px";
-		var lw = lines.map(function (s) { return m.measureText(s).width; }), mw = Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
+		// word wrap: an explicit box width (Box width option / the handle on the box), else never wider than 90% of the image so pasted text stays reasonable
+		var lim = t.wrapW > 0 ? t.wrapW : Math.max(160, (PE.doc ? PE.doc.w : 1200) * 0.9), lines = [];
+		String(t.str).split("\n").forEach(function (para) {
+			if (m.measureText(para).width <= lim) { lines.push(para); return; }
+			var words = para.split(/(\s+)/), cur = "";
+			words.forEach(function (wd) {
+				var tryS = cur + wd; if (cur && m.measureText(tryS.replace(/\s+$/, "")).width > lim) { lines.push(cur.replace(/\s+$/, "")); cur = /^\s+$/.test(wd) ? "" : wd; } else cur = tryS;
+				while (m.measureText(cur).width > lim && cur.length > 1) { var k = cur.length - 1; while (k > 1 && m.measureText(cur.slice(0, k)).width > lim) k--; lines.push(cur.slice(0, k)); cur = cur.slice(k); }   // a single word longer than the box
+			});
+			lines.push(cur.replace(/\s+$/, ""));
+		});
+		var lw = lines.map(function (s) { return m.measureText(s).width; }), mw = t.wrapW > 0 ? t.wrapW : Math.max.apply(null, lw.concat([1])), lhp = t.size * t.lh;
 		var bgp = t.bgOn ? t.bgPad : 0, pad = Math.ceil(bgp + (t.strokeOn ? t.strokeW : 0) + (t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0) + t.size * 0.15 + 2);
 		var W = Math.ceil(mw) + pad * 2, H = Math.ceil(lhp * lines.length + t.size * 0.3) + pad * 2; if (W * H > PE.MAXAREA) return;
 		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d");
@@ -391,6 +410,13 @@
 	PE.cropTo = function (x, y, w, h) {
 		x = Math.round(x); y = Math.round(y); w = Math.round(w); h = Math.round(h); if (w < 1 || h < 1) return;
 		var d = PE.doc; d.layers.forEach(function (L) { L.cx -= x; L.cy -= y; }); d.w = w; d.h = h; PE.sel = null; PE.emit("sel"); PE.emit("docsize"); PE.commit("Crop"); PE.fit();
+	};
+	/* set the canvas to rect {x,y,w,h} measured from the current top-left (x / y may be negative to grow upwards / leftwards), optional fill colour layer at the bottom */
+	PE.canvasRect = function (x, y, w, h, fill) {
+		var d = PE.doc; x = Math.round(x); y = Math.round(y); w = Math.round(w); h = Math.round(h); if (w < 1 || h < 1) return; if (w * h > PE.MAXAREA || w > PE.MAXPX || h > PE.MAXPX) { PE.toast("Too large"); return; }
+		d.layers.forEach(function (L) { L.cx -= x; L.cy -= y; }); d.w = w; d.h = h;
+		if (fill) { var L = PE.makeLayer({ name: "Background" }); L.canvas.getContext("2d").fillStyle = fill; L.canvas.getContext("2d").fillRect(0, 0, w, h); d.layers.unshift(L); }
+		PE.sel = null; PE.emit("sel"); PE.emit("docsize"); PE.commit("Canvas size"); PE.fit();
 	};
 	PE.canvasSize = function (w, h, ax, ay, fill) {
 		var d = PE.doc; w = Math.round(w); h = Math.round(h); if (w * h > PE.MAXAREA || w > PE.MAXPX || h > PE.MAXPX) { PE.toast("Too large"); return; }

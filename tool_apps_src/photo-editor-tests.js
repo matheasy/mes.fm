@@ -36,3 +36,16 @@ t("blendByMask", () => { const b = px([0, 0, 0, 255, 0, 0, 0, 255]), a = px([200
 t("autoLevels", () => { const h = new Uint32Array(256); for (let i = 40; i <= 200; i++) h[i] = 100; const r = P.autoLevels(h, 0.005); assert(r.black >= 40 && r.black < 50 && r.white <= 200 && r.white > 190); });
 t("convolve identity", () => { const w = 3, h = 3, d = new Uint8ClampedArray(w * h * 4); for (let i = 0; i < d.length; i++) d[i] = (i * 7) % 256; const c = new Uint8ClampedArray(d); P.convolve(d, w, h, [0, 0, 0, 0, 1, 0, 0, 0, 0], 1, 0); for (let i = 0; i < d.length; i++) if (i % 4 !== 3) assert.strictEqual(d[i], c[i]); });
 console.log(n + " photo-editor pixel checks passed");
+
+// GIMP (.xcf) writer: structure checked with a tiny reader (and, once, against the independent Python `gimpformats` reader)
+t("xcf: header, layer list, tiles", () => {
+	const X = require("./photo-editor/xcf.js"), mk = (w, h, c) => { const d = new Uint8Array(w * h * 4); for (let i = 0; i < w * h; i++) d.set(c, i * 4); return d; };
+	const b = X.write({ w: 150, h: 90, layers: [{ name: "Bottom", x: 0, y: 0, w: 150, h: 90, data: mk(150, 90, [1, 2, 3, 255]), opacity: 1 }, { name: "Top é", x: 20, y: 10, w: 70, h: 100, data: mk(70, 100, [9, 8, 7, 200]), opacity: 0.5, mode: 3 }] });
+	const dv = new DataView(b.buffer, b.byteOffset, b.byteLength), u32 = (o) => dv.getUint32(o);
+	assert.strictEqual(String.fromCharCode(...b.slice(0, 13)), "gimp xcf file"); assert.strictEqual(u32(14), 150); assert.strictEqual(u32(18), 90);
+	let o = 26; for (;;) { const id = u32(o), len = u32(o + 4); o += 8 + len; if (id === 0) break; }
+	const p0 = u32(o), p1 = u32(o + 4); assert.ok(p0 > 0 && p1 > 0 && u32(o + 8) === 0);
+	const name = (off) => { const L = u32(off + 12); return String.fromCharCode(...b.slice(off + 16, off + 16 + L - 1)); };
+	assert.strictEqual(u32(p0), 70); assert.strictEqual(u32(p0 + 4), 100); assert.ok(/^Top/.test(name(p0))); assert.strictEqual(u32(p1), 150); assert.strictEqual(name(p1), "Bottom");   // top-first
+});
+console.log(n + " checks ok");

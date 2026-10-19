@@ -18,7 +18,7 @@
 	function placeEditor() {
 		if (!te) return; var L = te.L, ta = editor(), t = L.text, v = PE.view, c = Math.cos(L.rot), s = Math.sin(L.rot), pad = L._pad || 0;
 		var lx = pad - L.canvas.width / 2, ly = pad - L.canvas.height / 2, dx = L.cx + c * L.sx * lx - s * L.sy * ly, dy = L.cy + s * L.sx * lx + c * L.sy * ly, sp = PE.toScreen(dx, dy), z = v.zoom;
-		ta.style.cssText = "display:block;left:0;top:0;transform-origin:0 0;transform:matrix(" + (c * L.sx * z) + "," + (s * L.sx * z) + "," + (-s * L.sy * z) + "," + (c * L.sy * z) + "," + sp.x + "," + sp.y + ");font:" + (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px/" + (t.size * t.lh) + "px " + t.font + ";text-align:" + t.align + ";width:" + (L.canvas.width - pad * 2 + 4) + "px;height:" + (L.canvas.height - pad * 2 + t.size * 0.2) + "px;letter-spacing:" + (t.ls || 0) + "px;caret-color:" + (t.color) + ";";
+		ta.style.cssText = "display:block;left:0;top:0;transform-origin:0 0;transform:matrix(" + (c * L.sx * z) + "," + (s * L.sx * z) + "," + (-s * L.sy * z) + "," + (c * L.sy * z) + "," + sp.x + "," + sp.y + ");font:" + (t.italic ? "italic " : "") + (t.bold ? "bold " : "") + t.size + "px/" + (t.size * t.lh) + "px " + t.font + ";text-align:" + t.align + ";white-space:pre-wrap;overflow:hidden;width:" + (L.canvas.width - pad * 2 + 4) + "px;height:" + (L.canvas.height - pad * 2 + t.size * 0.2) + "px;letter-spacing:" + (t.ls || 0) + "px;caret-color:" + (t.color) + ";";
 	}
 	PE.placeTextEditor = placeEditor;
 	function openEdit(L, isNew) {
@@ -42,15 +42,24 @@
 		PE.on("view", function () { if (te) placeEditor(); });
 	};
 	var ctimer = 0;
-	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click to add text. Click an existing text to edit it. Turn on Background for a label or callout look. Esc finishes.",
-		ui: [{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "color", label: "Colour", type: "color" },
+	var bw = null;   // dragging the box-width handle of a text layer
+	function boxHandle() {   // the little purple handle on the right edge of the active text box (only for an upright, unscaled text layer)
+		var L = PE.active(); if (!L || L.type !== "text" || PE.toolId !== "text" || L.rot || Math.abs(L.sx - 1) > 1e-6 || Math.abs(L.sy - 1) > 1e-6) return null;
+		var pad = L._pad || 0, left = L.cx - L.canvas.width / 2 + pad, tw = L.canvas.width - pad * 2, th = L.canvas.height - pad * 2; return { L: L, left: left, x: left + tw, y: L.cy - L.canvas.height / 2 + pad + th / 2 };
+	}
+	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click to add text. Click an existing text to edit it. Drag the purple handle on the right edge of a text to wrap it to a width (or use Box width). Turn on Background for a label or callout look. Esc finishes.",
+		ui: [{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px" }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "color", label: "Colour", type: "color" },
 			{ k: "bgOn", label: "Background box", type: "check" }, { k: "bgColor", label: "Box colour", type: "color", show: "bgOn" }, { k: "bgPad", label: "Padding", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" }, { k: "bgRadius", label: "Corners", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" },
 			{ k: "strokeOn", label: "Outline", type: "check" }, { k: "stroke", label: "Outline colour", type: "color", show: "strokeOn" }, { k: "strokeW", label: "Outline width", type: "range", min: 1, max: 40, step: 1, unit: "px", show: "strokeOn" },
 			{ k: "shadowOn", label: "Shadow", type: "check" }, { k: "shadow", label: "Shadow colour", type: "color", show: "shadowOn" }, { k: "shadowBlur", label: "Blur", type: "range", min: 0, max: 60, step: 1, unit: "px", show: "shadowOn" },
 			{ type: "button", label: "Load font file…", act: function () { PE.pickFontFile(); } }, { type: "button", label: "Yellow label", act: function () { preset({ bgOn: true, bgColor: "#ffeb3b", color: "#111111", bold: true, bgPad: 14, bgRadius: 8 }); } }, { type: "button", label: "Red callout", act: function () { preset({ bgOn: true, bgColor: "#e53935", color: "#ffffff", bold: true, bgPad: 14, bgRadius: 10 }); } }, { type: "button", label: "Meme text", act: function () { preset({ bgOn: false, color: "#ffffff", strokeOn: true, stroke: "#000000", strokeW: 6, bold: true, font: "Impact, 'Arial Black', sans-serif", align: "center" }); } }],
 		optsTarget: function () { var L = PE.active(); return L && L.type === "text" && L.text ? L.text : null; },
 		onopt: function () { var L = PE.active(); if (!L || L.type !== "text") return; PE.renderText(L); PE.touch(L); if (te) placeEditor(); clearTimeout(ctimer); ctimer = setTimeout(function () { PE.commit("Text style"); }, 450); },
+		overlay: function (x) { var h = boxHandle(); if (!h) return; var sp = PE.toScreen(h.x, h.y); x.fillStyle = "#a78bfa"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); x.rect(sp.x - 6, sp.y - 12, 12, 24); x.fill(); x.stroke(); },
+		move: function (e) { if (!bw) return; var L = bw.L, nw = Math.max(40, Math.round(e.x - bw.left)); L.text.wrapW = nw; PE.renderText(L); PE.touch(L); if (te) placeEditor(); PE.emit("opts", "text"); },
+		up: function () { if (bw) { bw = null; PE.commit("Text box width"); } },
 		down: function (e) {
+			var hh = boxHandle(); if (hh && Math.abs(e.x - hh.x) * PE.view.zoom < 12 && Math.abs(e.y - hh.y) * PE.view.zoom < 18) { bw = { L: hh.L, left: hh.left }; return; }
 			if (te) { PE.endTextEdit(false); }
 			var hit = PE.layerAt(e.x, e.y); if (hit && hit.type === "text") { PE.setActive(hit.id); openEdit(hit, false); return; }
 			var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); L.cx = e.x - (L._pad || 0) + L.canvas.width / 2; L.cy = e.y - (L._pad || 0) + L.canvas.height / 2;
