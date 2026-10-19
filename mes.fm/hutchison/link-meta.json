@@ -31,6 +31,24 @@
       }
     ]
   },
+  "https://mes.fm/hutchison-birthday-2026": {
+    "image": "https://mes.fm/hutchison-birthday-2026/img/hutchison-birthday-2026.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mes/re-leothreads-51dzjr7a"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35654"
+      },
+      {
+        "label": "Hutchison Effect",
+        "href": "https://mes.fm/hutchison"
+      }
+    ]
+  },
   "https://mes.fm/hutchison-cancer-treatment": {
     "image": "https://mes.fm/hutchison-cancer-treatment/img/hutchison-cancer-treatment.jpg",
     "watchLinks": [],
