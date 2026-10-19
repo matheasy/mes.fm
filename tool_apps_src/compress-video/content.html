@@ -1,0 +1,46 @@
+	<div class="tu" id="cv">
+		<div class="cv-drop" id="cv-drop" tabindex="0" role="button" aria-label="Choose videos or drop them here">
+			<div class="cv-drop-t">Drop videos here</div>
+			<div class="cv-drop-s">MP4, MOV, M4V are compressed fast with your graphics hardware. WebM, MKV and others also work, in real time. Choose several files to make a queue.</div>
+			<button type="button" class="tu-btn tu-btn--primary" id="cv-pick">Choose videos</button>
+			<input type="file" id="cv-input" accept="video/*,.mp4,.m4v,.mov,.webm,.mkv,.avi,.3gp" multiple hidden>
+			<p class="cv-priv">Private: your videos never leave this computer. Nothing is uploaded.</p>
+		</div>
+		<div id="cv-notice" class="tu-card tu-card--tint cv-notice" role="status" hidden></div>
+		<div class="tu-card cv-caps" id="cv-caps" aria-live="polite">Checking what this computer can do...</div>
+		<div id="cv-work" hidden>
+			<div class="tu-card cv-opts" id="cv-opts">
+				<h3>How small?</h3>
+				<div class="cv-lv"><input type="radio" name="cv-goal" id="cv-g-target" value="target"><label for="cv-g-target"><b>Aim for a file size</b><span class="cv-note"> &ndash; the bitrate is worked out from the length of each video, then adjusted once if the result lands over.</span></label></div>
+				<div class="cv-row cv-indent" id="cv-targetrow"><label for="cv-target">Each file at most</label> <input type="text" id="cv-target" inputmode="decimal" size="8" aria-label="Target size, for example 25 MB">
+					<span class="cv-chips" id="cv-chips"><button type="button" class="tu-btn tu-btn--ghost" data-mb="8">8 MB</button><button type="button" class="tu-btn tu-btn--ghost" data-mb="25">25 MB</button><button type="button" class="tu-btn tu-btn--ghost" data-mb="50">50 MB</button><button type="button" class="tu-btn tu-btn--ghost" data-mb="100">100 MB</button><button type="button" class="tu-btn tu-btn--ghost" data-mb="500">500 MB</button></span></div>
+				<div class="cv-lv"><input type="radio" name="cv-goal" id="cv-g-preset" value="preset"><label for="cv-g-preset"><b>Choose a quality</b><span class="cv-note"> &ndash; the size follows from the picture.</span></label></div>
+				<div class="cv-row cv-indent" id="cv-presetrow"><label for="cv-preset">Quality</label> <select id="cv-preset"></select></div>
+				<h3>Picture and sound</h3>
+				<div class="cv-row">
+					<label for="cv-cap">Largest side <select id="cv-cap"></select></label>
+					<label for="cv-fps">Frame rate <select id="cv-fps"></select></label>
+					<label for="cv-audio">Sound <select id="cv-audio"></select></label>
+					<label for="cv-fmt">Format <select id="cv-fmt"></select></label>
+				</div>
+				<p class="cv-note" id="cv-fmtnote"></p>
+				<div class="cv-row" id="cv-diskrow"><label><input type="checkbox" id="cv-disk"> Save straight to disk (best for big files: nothing is kept in memory)</label></div>
+			</div>
+			<div class="cv-list" id="cv-list"></div>
+			<div class="cv-actions"><button type="button" class="tu-btn tu-btn--primary cv-go" id="cv-go">Compress</button> <button type="button" class="tu-btn tu-btn--ghost" id="cv-more">Add more videos</button> <button type="button" class="tu-btn tu-btn--ghost" id="cv-clear">Start over</button> <span class="cv-prog" id="cv-prog" role="status" aria-live="polite"></span></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the video compressor works</h2>
+			<dl>
+				<dt>It uses your computer's own video encoder</dt><dd>Modern browsers can reach the video chip in your computer through WebCodecs. The compressor reads your file with an MP4 reader, decodes each frame, scales it if you asked for a smaller size, and encodes it again with H.264 (MP4) or VP9 (WebM) on the hardware encoder when there is one. That is usually several times faster than playing the video, and far faster than the older trick of running a copy of ffmpeg inside the page, which needs a 30 MB download and a single slow thread. The reading, encoding and file-writing code is a few small open-source libraries (mp4box, mp4-muxer, webm-muxer) loaded the first time you press Compress.</dd>
+				<dt>When WebCodecs is missing</dt><dd>Firefox and older Safari cannot encode video this way, and a few formats (WebM, MKV, AVI) cannot be read by the fast path. For those the page plays the video through a canvas and records it again with the browser's recorder. That works everywhere, but only in real time: a 10-minute video takes 10 minutes and the tab must stay open and visible. The page tells you which path each file takes before you start.</dd>
+				<dt>Aim for a file size</dt><dd>Say 25 MB for an email or chat attachment. The video bitrate is the size you want, minus the sound, spread over the length of the video. Encoders do not hit a number exactly, so if the first result is more than 3% over, the video is encoded a second time with a corrected bitrate. If the size you ask for is too small for the length, the page warns you that the picture will look blocky.</dd>
+				<dt>Safe for your computer</dt><dd>The page reads your number of processor cores, the memory your browser reports, the free storage space and which encoders the browser supports, then picks sensible defaults (a weaker computer starts with a smaller picture) and warns before a job that is likely to fail, for example a 4K video on a small laptop or a result bigger than the free space. In Chrome, Edge and Brave you can save straight to disk, so even a huge result is written as it is made instead of being kept in memory. Browsers report memory and free space only roughly, so treat the warnings as guidance.</dd>
+				<dt>Which format?</dt><dd>MP4 with H.264 and AAC plays everywhere, including phones, so it is the default. WebM with VP9 and Opus is about 20% smaller at the same look, and is a good choice for the web. Compressing again and again loses quality each time, so keep your original.</dd>
+				<dt>Tips</dt><dd>The biggest savings come from a lower resolution (1080 to 720 cuts the size by more than half) and a lower frame rate (60 to 30). Screen recordings shrink enormously; video that is already compressed by a phone shrinks less. A result that would be larger than the original is flagged.</dd>
+			</dl>
+			<h2>Is it private?</h2>
+			<p>Yes. Your video is read and compressed by your own browser. It is never sent to mes.fm or anywhere else, and closing the tab discards everything that was not saved. The only thing that downloads is the small open-source code libraries. The &ldquo;Save straight to disk&rdquo; option writes only where you tell the browser to.</p>
+		</div>
+	</div>

@@ -667,6 +667,12 @@ APPS = {
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
                        js_v="1", lib_from=["image-converter"]),
+    # MES Video Compressor (2026-10-18): WebCodecs fast path (mp4box.js demux, VideoDecoder -> VideoEncoder, mp4-muxer / webm-muxer, optional File System Access streaming to disk),
+    # real-time canvas + MediaRecorder fallback. Decisions in lib.js (MESVid, node tests tool_apps_src/compress-video-tests.js).
+    "compress-video": dict(title="MES Video Compressor", page_title="Video Compressor: Make Videos Smaller Online, No Upload",
+                       tag="Make videos smaller, privately.", accent="#0f766e", dark="#115e59", tint="#dcf5f1",
+                       desc="Free online video compressor: shrink MP4 and MOV videos to a file size you choose (say 25 MB for email or chat) or a quality, lower the resolution and frame rate, and save as MP4 or WebM. Fast with your computer's own video encoder, a queue for several files, and nothing is uploaded.",
+                       js_v="1"),
     # Redshift & Blueshift Simulator (2026-10-16): gravity (a pulse between a place near and far from a mass, drawn as a refractive-index gradient with two clocks), Doppler (relativistic
     # wavefronts), spectrum shifter / calculator (motion x gravity x expansion), expanding universe. lib.js = MESRed (node tests tool_apps_src/redshift-simulator-tests.js).
     "redshift-simulator": dict(title="MES Redshift & Blueshift Simulator", page_title="Redshift and Blueshift Simulator: Doppler, Gravitational and Cosmological",

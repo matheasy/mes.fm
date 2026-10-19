@@ -2,7 +2,7 @@
 	.tu [hidden] {display:none !important;}
 	#cm .cm-drop {border:3px dashed var(--accent);border-radius:0.8em;padding:2.2em 1em;text-align:center;background:var(--tint);cursor:pointer;transition:background .15s;} #cm .cm-drop.is-over {background:#f7cfa6;}
 	#cm .cm-drop-t {font-size:1.5em;font-weight:700;color:#1e2733;} #cm .cm-drop-s {color:#566;margin:0.3em 0 1em;} #cm .cm-priv {margin:0.9em 0 0;font-size:0.88em;color:#566;}
-	#cm .cm-notice {margin-top:1em;} #cm .cm-notice.is-err {border-left:5px solid #c0392b;}
+	#cm .cm-vidcard {margin-top:1em;} #cm .cm-notice {margin-top:1em;} #cm .cm-notice.is-err {border-left:5px solid #c0392b;}
 	#cm .cm-opts {margin-top:1em;} #cm .cm-opts h3 {margin:0.2em 0 0.4em;font-size:1.05em;} #cm .cm-opts h3:not(:first-child) {margin-top:1em;border-top:1px solid #e3e7ec;padding-top:0.8em;}
 	#cm .cm-row {display:flex;flex-wrap:wrap;gap:0.8em 1.4em;align-items:center;} #cm .cm-row label {display:inline-flex;align-items:center;gap:0.4em;} #cm .cm-row input[type=range] {width:11em;} #cm .cm-row input[type=number] {width:6em;}
 	#cm .cm-lv {display:flex;align-items:flex-start;gap:0.5em;margin:0.4em 0;} #cm .cm-lv input {margin-top:0.3em;} #cm .cm-note {color:#566;font-size:0.9em;}

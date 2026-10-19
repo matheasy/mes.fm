@@ -97,6 +97,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("site-index", "Site Index"),
     ("fav", "MES Favourites"),
     ("compress", "MES Compressor"),
+    ("compress-video", "MES Video Compressor"),
     ("browser", "Browser Extensions"),   # also built by build_tool_apps.py
     ("videospeed", "Video Speed Controller"),
     ("read-aloud", "Read Aloud"),

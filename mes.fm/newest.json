@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/compress-video",
+   "title": "Video Compressor",
+   "icon": "/img/compress-video-logo.png",
+   "desc": "Make MP4 and MOV videos smaller: aim for a file size like 25 MB, lower the resolution, save as MP4 or WebM. Fast, and nothing is uploaded.",
+   "added": "2026-10-18",
+   "kind": "tool"
+  },
+  {
    "href": "/photo",
    "title": "Photo Editor",
    "icon": "/img/photo-editor-logo.png",
@@ -186,17 +194,17 @@
    "desc": "See the camera, date, GPS location and AI / edit flags hidden in a photo, and save a copy with the metadata removed.",
    "added": "2026-10-14",
    "kind": "tool"
-  },
-  {
-   "href": "/reverse-image-search",
-   "title": "Reverse Image Search",
-   "icon": "/img/reverse-image-search-logo.png",
-   "desc": "Paste an image link or upload a picture and search Google Lens, Bing, TinEye, Yandex and more at once. Search part of the picture.",
-   "added": "2026-10-14",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/compress-video",
+   "title": "Video Compressor",
+   "icon": "/img/compress-video-logo.png",
+   "desc": "Make MP4 and MOV videos smaller: aim for a file size like 25 MB, lower the resolution, save as MP4 or WebM. Fast, and nothing is uploaded.",
+   "added": "2026-10-18",
+   "kind": "tool"
+  },
   {
    "href": "/geometry",
    "title": "Geometry & Angle Lab",
@@ -250,14 +258,6 @@
    "title": "MES Favourites",
    "icon": "/img/fav-logo.png",
    "desc": "Build your own page of favourite mes.fm calculators and tools: search, drag into groups, and take it to any device with one link.",
-   "added": "2026-10-15",
-   "kind": "tool"
-  },
-  {
-   "href": "/pdf-tools",
-   "title": "PDF Tools: Merge, Split, Convert",
-   "icon": "/img/pdf-tools-logo.png",
-   "desc": "Merge, split, rearrange, compress and convert PDFs and pictures. Private: nothing is uploaded.",
    "added": "2026-10-15",
    "kind": "tool"
   }

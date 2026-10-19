@@ -33,7 +33,7 @@
 		var rej = [];
 		list.forEach(function (f) {
 			var k = C.kindOf(f.name, f.type);
-			if (k === "video") { rej.push(f.name + " (video is not supported yet)"); return; }
+			if (k === "video") { rej.push(f.name + " (video: use the Video Compressor at mes.fm/compress-video)"); return; }
 			if (k === "other") { rej.push(f.name + " (not a picture, PDF or audio file)"); return; }
 			files.push({ id: ++uid, file: f, name: f.name || "pasted-image.png", kind: k, size: f.size, state: "ready", out: null });
 		});
