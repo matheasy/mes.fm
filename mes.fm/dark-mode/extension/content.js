@@ -65,9 +65,10 @@
   function update() {
     if (!ready) return;
     resolve();
-    var invert = !state.off && state.want !== knownDark();
+    var idle = state.off || state.want == null;   // manual setup and this tab not switched: touch nothing
+    var invert = !idle && state.want !== knownDark();
     state.invert = invert;
-    var css = state.off ? '' : V.buildCss(invert, cfg);
+    var css = idle ? '' : V.buildCss(invert, cfg);
     if (css === applied) return;
     applied = css;
     if (!css) { if (styleEl) { styleEl.remove(); styleEl = null; } return; }
@@ -190,7 +191,7 @@
       if (!m || !m.mesdm || window !== window.top) return;
       if (m.mesdm === 'toggle') {
         resolve();
-        var to = state.want ? 'light' : 'dark';
+        var cur = state.want != null ? state.want : knownDark(), to = cur ? 'light' : 'dark';   // flip what the page looks like now
         if (S.scope === 'all') { V.profileById(S, S.active).config.mode = to; Object.keys(S.siteModes).forEach(function (h) { if (S.siteModes[h] !== 'off') delete S.siteModes[h]; }); saveAll(); update(); }   // every page: the setup itself flips
         else setTab(to);
         send({ ok: true });

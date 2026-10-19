@@ -24,6 +24,7 @@
       var el = $('status');
       if (chrome.runtime.lastError || !r) { el.textContent = 'Not available on this page (browser pages are off limits).'; return; }
       if (r.off) el.textContent = 'Off on this site.';
+      else if (r.want == null) el.textContent = 'Nothing is changed on this page. Press the toolbar button (or Alt+Shift+D) to switch this tab only.';
       else if (r.invert) el.textContent = r.want ? 'Dark mode is on for this page.' : 'Light mode is on for this page.';
       else el.textContent = r.want ? 'This page is already dark, so it is left alone.' : 'This page is already light, so it is left alone.';
     });

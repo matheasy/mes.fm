@@ -5,7 +5,7 @@
 
   function defaultConfig() {
     return {
-      mode: 'dark',            // 'dark' | 'light' | 'system' | 'schedule'
+      mode: 'manual',          // 'manual' (nothing changes until you switch a tab on) | 'dark' | 'light' | 'system' | 'schedule'
       scheduleFrom: '19:00',   // schedule mode: dark from this time ...
       scheduleTo: '07:00',     // ... until this time
       brightness: 100, contrast: 100, sepia: 0, grayscale: 0,   // percent
@@ -15,9 +15,10 @@
 
   function builtins() {
     var system = defaultConfig(); system.mode = 'system';
-    var night = defaultConfig(); night.brightness = 85; night.contrast = 95; night.sepia = 20;
+    var always = defaultConfig(); always.mode = 'dark';
+    var night = defaultConfig(); night.mode = 'dark'; night.brightness = 85; night.contrast = 95; night.sepia = 20;
     var paper = defaultConfig(); paper.mode = 'light'; paper.sepia = 18; paper.brightness = 98;
-    return [{ id: 'default', name: 'Dark', config: defaultConfig() }, { id: 'system', name: 'Follow system', config: system },
+    return [{ id: 'default', name: 'Only when I switch it on', config: defaultConfig() }, { id: 'always', name: 'Always dark (every page)', config: always }, { id: 'system', name: 'Follow system', config: system },
             { id: 'night', name: 'Night (dim and warm)', config: night }, { id: 'paper', name: 'Paper (light, warm)', config: paper }];
   }
 
@@ -27,7 +28,7 @@
   function normConfig(c) {
     var out = defaultConfig();
     if (!c || typeof c !== 'object') return out;
-    if (['dark', 'light', 'system', 'schedule'].indexOf(c.mode) >= 0) out.mode = c.mode;
+    if (['manual', 'dark', 'light', 'system', 'schedule'].indexOf(c.mode) >= 0) out.mode = c.mode;
     out.scheduleFrom = time(c.scheduleFrom, out.scheduleFrom); out.scheduleTo = time(c.scheduleTo, out.scheduleTo);
     out.brightness = num(c.brightness, 40, 150, 100); out.contrast = num(c.contrast, 40, 150, 100);
     out.sepia = num(c.sepia, 0, 100, 0); out.grayscale = num(c.grayscale, 0, 100, 0);
@@ -39,7 +40,7 @@
 
   // everything stored in chrome.storage.sync under "mesdm"
   function merge(stored) {
-    var out = { v: 1, enabled: true, toolbar: 'toggle', scope: 'tab', active: 'default', profiles: [], siteModes: {} };   // toolbar: what clicking the toolbar button does: 'toggle' = switch this site dark / light, 'menu' = open the panel
+    var out = { v: 2, enabled: true, toolbar: 'toggle', scope: 'tab', active: 'default', profiles: [], siteModes: {} };   // toolbar: what clicking the toolbar button does: 'toggle' = switch this site dark / light, 'menu' = open the panel
     if (stored && stored.enabled === false) out.enabled = false;
     if (stored && stored.toolbar === 'menu') out.toolbar = 'menu';
     if (stored && stored.scope === 'all') out.scope = 'all';   // scope: what the toolbar button / shortcut changes: 'tab' = only the tab it is pressed in, 'all' = every page (flips the setup between dark and light)
@@ -51,6 +52,7 @@
         out.profiles.push({ id: p.id, name: String(p.name || 'Setup').slice(0, 40), config: normConfig(p.config) });
       });
     }
+    if (stored && (stored.v || 1) < 2) out.profiles.forEach(function (p) { if (p.id === 'default' && p.config.mode === 'dark') { p.config.mode = 'manual'; p.name = 'Only when I switch it on'; } });   // v2: dark mode is no longer applied to every page by default
     if (!out.profiles.length) out.profiles = builtins();
     out.active = stored && out.profiles.some(function (p) { return p.id === stored.active; }) ? stored.active : out.profiles[0].id;
     if (stored && stored.siteModes && typeof stored.siteModes === 'object') {
@@ -82,6 +84,7 @@
 
   // should the page end up dark?
   function wantDark(cfg, systemDark, date) {
+    if (cfg.mode === 'manual') return null;   // no opinion: leave the page alone unless this tab was switched
     if (cfg.mode === 'dark') return true;
     if (cfg.mode === 'light') return false;
     if (cfg.mode === 'system') return !!systemDark;

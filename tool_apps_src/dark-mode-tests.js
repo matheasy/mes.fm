@@ -5,12 +5,12 @@ function eq(a, b, m) { n++; if (JSON.stringify(a) !== JSON.stringify(b)) { bad++
 
 // setups
 const B = V.builtins();
-eq(B.map(p => p.id), ['default', 'system', 'night', 'paper'], 'built-in setups'); eq(B[1].config.mode, 'system', 'system setup'); eq(B[3].config.mode, 'light', 'paper is light');
-eq(B[2].config.brightness, 85, 'night is dimmer');
-let m = V.merge(null); eq(m.profiles.length, 4, 'merge null'); eq(m.enabled, true, 'enabled by default'); eq(m.toolbar, 'toggle', 'toolbar button switches by default'); eq(V.merge({ toolbar: 'menu' }).toolbar, 'menu', 'toolbar menu option kept'); eq(V.merge({ toolbar: 'x' }).toolbar, 'toggle', 'bad toolbar value ignored'); eq(m.active, 'default', 'active');
+eq(B.map(p => p.id), ['default', 'always', 'system', 'night', 'paper'], 'built-in setups'); eq(B[0].config.mode, 'manual', 'default setup leaves pages alone'); eq(B[1].config.mode, 'dark', 'always dark setup'); eq(B[2].config.mode, 'system', 'system setup'); eq(B[4].config.mode, 'light', 'paper is light');
+eq(B[3].config.brightness, 85, 'night is dimmer'); eq(B[3].config.mode, 'dark', 'night is dark');
+let m = V.merge(null); eq(m.profiles.length, 5, 'merge null'); eq(m.enabled, true, 'enabled by default'); eq(m.toolbar, 'toggle', 'toolbar button switches by default'); eq(V.merge({ toolbar: 'menu' }).toolbar, 'menu', 'toolbar menu option kept'); eq(V.merge({ toolbar: 'x' }).toolbar, 'toggle', 'bad toolbar value ignored'); eq(m.active, 'default', 'active');
 m = V.merge({ enabled: false, active: 'x', profiles: [{ id: 'a', name: 'A', config: { mode: 'bogus', brightness: 999, contrast: 'x', sepia: -5, scheduleFrom: '7pm', keepImages: 'no' } }, { id: 'a' }], siteModes: { 'Y.com': 'dark', 'z.com': 'blue', 'w.org': 'off' } });
 eq(m.enabled, false, 'disabled kept'); eq(m.profiles.length, 1, 'dup ids dropped'); eq(m.active, 'a', 'bad active falls back');
-eq(m.profiles[0].config.mode, 'dark', 'bad mode'); eq(m.profiles[0].config.brightness, 150, 'brightness clamped'); eq(m.profiles[0].config.contrast, 100, 'bad contrast'); eq(m.profiles[0].config.sepia, 0, 'sepia floor');
+eq(m.profiles[0].config.mode, 'manual', 'bad mode falls back to manual'); eq(m.profiles[0].config.brightness, 150, 'brightness clamped'); eq(m.profiles[0].config.contrast, 100, 'bad contrast'); eq(m.profiles[0].config.sepia, 0, 'sepia floor');
 eq(m.profiles[0].config.scheduleFrom, '19:00', 'bad time'); eq(m.profiles[0].config.keepImages, true, 'non-boolean ignored'); eq(m.siteModes, { 'y.com': 'dark', 'w.org': 'off' }, 'site modes');
 eq(V.normConfig(JSON.parse(JSON.stringify(B[2].config))), B[2].config, 'config round trip'); eq(V.normConfig(null), V.defaultConfig(), 'null config');
 
@@ -21,7 +21,7 @@ eq(V.siteMode(S, 'notexample.com'), '', 'needs a dot'); eq(V.siteMode(S, 'other.
 
 // what should the page be?
 const D = V.defaultConfig();
-eq(V.wantDark(Object.assign({}, D, { mode: 'dark' }), false), true, 'dark'); eq(V.wantDark(Object.assign({}, D, { mode: 'light' }), true), false, 'light');
+eq(V.wantDark(Object.assign({}, D, { mode: 'manual' }), true), null, 'manual has no opinion'); eq(V.merge({ v: 1, profiles: [{ id: 'default', name: 'Dark', config: { mode: 'dark' } }] }).profiles[0].config.mode, 'manual', 'v1 default dark setup migrated to manual'); eq(V.merge({ v: 2, profiles: [{ id: 'default', name: 'Dark', config: { mode: 'dark' } }] }).profiles[0].config.mode, 'dark', 'v2 choice kept'); eq(V.wantDark(Object.assign({}, D, { mode: 'dark' }), false), true, 'dark'); eq(V.wantDark(Object.assign({}, D, { mode: 'light' }), true), false, 'light');
 eq(V.wantDark(Object.assign({}, D, { mode: 'system' }), true), true, 'system dark'); eq(V.wantDark(Object.assign({}, D, { mode: 'system' }), false), false, 'system light');
 const sched = Object.assign({}, D, { mode: 'schedule', scheduleFrom: '19:00', scheduleTo: '07:00' });
 const at = (h, mi) => { const d = new Date(2026, 0, 1, h, mi); return d; };
