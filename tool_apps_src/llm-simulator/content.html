@@ -1,0 +1,60 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu lm" id="lm">
+		<div class="tu-card lm-note"><b>A toy, on purpose.</b> This is a tiny language model that learns from a short text in a fraction of a second, so you can see every step: how text becomes tokens, how a model scores the next word, what temperature does, and how attention mixes words. Real chatbots do the same things with billions of numbers and much more text.</div>
+		<div class="tu-card lm-corp">
+			<div class="lm-row">
+				<div class="tu-field tu-field--sm"><label for="lm-c">Practice text</label><select id="lm-c" class="tu-select"><option value="stories">Fox and river stories</option><option value="science">Science facts</option><option value="math">Maths ideas</option><option value="mine">My own text (below)</option></select></div>
+				<span class="tu-note" id="lm-cinfo"></span>
+			</div>
+			<details id="lm-own"><summary>Use your own text</summary><textarea id="lm-ownt" class="tu-input" rows="4" placeholder="Paste a few paragraphs here (at least a few hundred words works best)…"></textarea></details>
+		</div>
+		<div class="lm-tabs"><button type="button" class="tu-chip" data-t="tok" aria-pressed="true">1. Tokens</button><button type="button" class="tu-chip" data-t="gen" aria-pressed="false">2. Predict the next word</button><button type="button" class="tu-chip" data-t="emb" aria-pressed="false">3. Word meaning (embeddings)</button><button type="button" class="tu-chip" data-t="att" aria-pressed="false">4. Attention</button></div>
+
+		<section class="tu-card" id="lm-p-tok">
+			<h3 style="margin-top:0">Text becomes tokens</h3>
+			<p>A model never sees letters or words, only numbered pieces called <b>tokens</b>. Type anything and choose how to cut it up.</p>
+			<textarea id="lm-tin" class="tu-input" rows="2">The fox walked along the river, unbelievably quietly!</textarea>
+			<div class="tu-chips"><button type="button" class="tu-chip" data-m="words" aria-pressed="true">Whole words</button><button type="button" class="tu-chip" data-m="chars" aria-pressed="false">Single characters</button><button type="button" class="tu-chip" data-m="bpe" aria-pressed="false">Word pieces (BPE, like ChatGPT)</button></div>
+			<div class="lm-toks" id="lm-toks"></div><p class="tu-note" id="lm-tokinfo"></p>
+		</section>
+
+		<section class="tu-card" id="lm-p-gen" hidden>
+			<h3 style="margin-top:0">Predict the next word</h3>
+			<p>The model counted which words follow which in the practice text. Type a start, and it scores every word it knows as the next one.</p>
+			<div class="lm-row"><div class="tu-field" style="flex:1 1 20em"><label for="lm-prompt">Start of the sentence</label><input id="lm-prompt" class="tu-input" type="text" value="the fox walked along the"></div>
+				<div class="tu-field tu-field--sm"><label for="lm-ord">Memory (words it looks back)</label><select id="lm-ord" class="tu-select"><option value="1">0 (just word frequency)</option><option value="2">1 word</option><option value="3" selected>2 words</option><option value="4">3 words</option></select></div></div>
+			<div class="lm-row"><label class="lm-sl">Temperature <b id="lm-tv">1.0</b><input id="lm-temp" type="range" min="0" max="2.5" step="0.05" value="1"></label><label class="lm-sl">Top-k <b id="lm-kv">off</b><input id="lm-k" type="range" min="0" max="20" step="1" value="0"></label><label class="lm-sl">Top-p <b id="lm-pv">off</b><input id="lm-p" type="range" min="0" max="1" step="0.05" value="0"></label></div>
+			<p class="lm-bars-h"><b>What the model thinks comes next</b> <span class="tu-note" id="lm-used"></span></p><div id="lm-bars"></div>
+			<div class="lm-row lm-gb"><button type="button" class="tu-btn tu-btn--primary" id="lm-pick">Pick the next word</button><button type="button" class="tu-btn tu-btn--ghost" id="lm-gen">Write 30 words</button><button type="button" class="tu-btn tu-btn--ghost" id="lm-reset">Start over</button></div>
+			<div class="lm-out" id="lm-out" aria-live="polite"></div>
+			<p class="tu-note" id="lm-facts"></p>
+		</section>
+
+		<section class="tu-card" id="lm-p-emb" hidden>
+			<h3 style="margin-top:0">Words become points: embeddings</h3>
+			<p>Words that appear in similar company get similar vectors. Here every common word of the practice text is squeezed into 8 numbers (from how often words occur near each other) and drawn using its first two. Click a word to see its closest neighbours.</p>
+			<canvas id="lm-map" width="640" height="440" aria-label="Map of word vectors. Click a word to see similar words." role="img"></canvas>
+			<div class="lm-nb" id="lm-nb">Click a word on the map.</div>
+		</section>
+
+		<section class="tu-card" id="lm-p-att" hidden>
+			<h3 style="margin-top:0">Attention: how words look at each other</h3>
+			<p>Each word asks a question (Q), every word offers a label (K), and the better they match, the more of that word's content (V) is mixed in. The result is a table: <b>row = the word that is looking, column = the word it looks at.</b></p>
+			<input id="lm-asent" class="tu-input" type="text" value="the fox walked along the river">
+			<div class="tu-chips"><button type="button" class="tu-chip" data-w="random" aria-pressed="true">Untrained random weights</button><button type="button" class="tu-chip" data-w="identity" aria-pressed="false">Similarity of word vectors</button><label class="lm-ck"><input type="checkbox" id="lm-causal" checked> Only look backwards (like a chatbot)</label></div>
+			<div id="lm-att"></div><p class="tu-note" id="lm-attnote"></p>
+		</section>
+		<div class="tu-toast" id="lm-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>How a language model works, with a tiny one you can poke</h2>
+			<p>Large language models predict the next token. Everything else (answering, summarising, coding) comes from doing that billions of times with a model that has learned patterns from an enormous amount of text. This page builds the smallest honest version of each ingredient so you can see it work.</p>
+			<h3>Questions</h3>
+			<h4>What is a token?</h4><p>A piece of text with a number. Whole words are simple but cannot handle new words; single characters never fail but make very long sequences. Byte-pair encoding (BPE) starts from characters and repeatedly glues together the most frequent neighbouring pair, so common words become one token and rare words are built from pieces. The "word pieces" view learns its pieces from the practice text.</p>
+			<h4>What do temperature, top-k and top-p do?</h4><p>The model gives every word a probability. <b>Temperature</b> sharpens (below 1) or flattens (above 1) those probabilities before one is drawn at random: 0 always takes the most likely word, high values get adventurous and eventually nonsense. <b>Top-k</b> only allows the k most likely words, and <b>top-p</b> only the smallest group of words whose probabilities add up to p.</p>
+			<h4>Why does this toy repeat itself and wander?</h4><p>It only remembers the last one to three words and has read a few hundred. Real models look at thousands of earlier tokens, have read much of the internet, and replace the counting table with a neural network that generalises, but sampling works the same way.</p>
+			<h4>What is an embedding?</h4><p>A list of numbers that stands for a word, where similar words get similar lists. Here they come from counting which words appear near each other (positive pointwise mutual information, then keeping the 8 strongest directions with SVD). Chatbots learn theirs while training.</p>
+			<h4>What is attention?</h4><p>The mixing step of a transformer: <code>softmax(Q·Kᵀ/√d)·V</code>. The weights here use random, untrained matrices, so the pattern is not meaningful language: it shows the mechanism. Choose <em>Similarity of word vectors</em> to see attention when the weights simply compare real word vectors. A chatbot hides "look backwards only" so a word cannot peek at the future.</p>
+			<h4>Is it private?</h4><p>Yes. Everything is computed in your browser and nothing is sent anywhere. The three practice texts were written for this page.</p>
+		</div>
+	</div>

@@ -1,0 +1,50 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu nn" id="nn">
+		<div class="tu-card nn-ctl">
+			<div class="nn-row">
+				<div class="tu-field tu-field--sm"><label for="nn-ds">Data</label><select id="nn-ds" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm"><label for="nn-noise">Noise <span id="nn-noisev"></span></label><input id="nn-noise" type="range" min="0" max="1" step="0.05"></div>
+				<div class="tu-field tu-field--sm"><label for="nn-n">Points <span id="nn-nv"></span></label><input id="nn-n" type="range" min="40" max="400" step="20"></div>
+				<button type="button" class="tu-btn tu-btn--ghost" id="nn-regen">New random data</button>
+			</div>
+			<div class="nn-row nn-feats"><span class="tu-label">Inputs the network may use:</span><span id="nn-feats"></span></div>
+			<div class="nn-row">
+				<div class="tu-field tu-field--sm"><span class="tu-label">Hidden layers</span><span class="nn-layers"><button type="button" class="tu-btn tu-btn--ghost" id="nn-ldel" aria-label="Remove a hidden layer">−</button><b id="nn-lcount">2</b><button type="button" class="tu-btn tu-btn--ghost" id="nn-ladd" aria-label="Add a hidden layer">+</button></span></div>
+				<div class="tu-field" id="nn-sizes"></div>
+				<div class="tu-field tu-field--sm"><label for="nn-act">Activation</label><select id="nn-act" class="tu-select"><option value="tanh">tanh</option><option value="relu">ReLU</option><option value="leaky">Leaky ReLU</option><option value="sigmoid">Sigmoid</option><option value="linear">Linear (none)</option></select></div>
+			</div>
+			<div class="nn-row">
+				<div class="tu-field tu-field--sm"><label for="nn-opt">Optimiser</label><select id="nn-opt" class="tu-select"><option value="adam">Adam</option><option value="sgd">Plain gradient descent</option></select></div>
+				<div class="tu-field tu-field--sm"><label for="nn-lr">Learning rate</label><select id="nn-lr" class="tu-select"><option>0.001</option><option>0.003</option><option selected>0.01</option><option>0.03</option><option>0.1</option><option>0.3</option><option>1</option></select></div>
+				<div class="tu-field tu-field--sm"><label for="nn-l2">Weight decay (L2)</label><select id="nn-l2" class="tu-select"><option value="0">0</option><option value="0.0001">0.0001</option><option value="0.001">0.001</option><option value="0.01">0.01</option></select></div>
+				<div class="tu-field tu-field--sm"><label for="nn-batch">Batch size</label><select id="nn-batch" class="tu-select"><option>1</option><option>4</option><option selected>16</option><option>32</option><option>128</option></select></div>
+				<div class="tu-field tu-field--sm"><label for="nn-speed">Speed</label><select id="nn-speed" class="tu-select"><option value="1">Slow</option><option value="4" selected>Normal</option><option value="20">Fast</option><option value="80">Very fast</option></select></div>
+			</div>
+			<div class="nn-row nn-btns"><button type="button" class="tu-btn tu-btn--primary" id="nn-play">▶ Train</button><button type="button" class="tu-btn tu-btn--ghost" id="nn-step">Step (1 pass)</button><button type="button" class="tu-btn tu-btn--ghost" id="nn-reset">Reset the network</button><button type="button" class="tu-btn tu-btn--ghost" id="nn-share">Copy link to this setup</button></div>
+			<div class="tu-chips" id="nn-try"><span class="tu-note">Try this:</span></div>
+		</div>
+		<div class="nn-main">
+			<div class="tu-card nn-left">
+				<div class="nn-stage"><canvas id="nn-cv" width="560" height="560" aria-label="Decision picture: orange and blue regions are what the network predicts, dots are the data. Click to follow one point through the network." role="img"></canvas></div>
+				<div class="nn-legend"><span><i class="nn-dot nn-o"></i> class 1 (orange)</span><span><i class="nn-dot nn-b"></i> class 0 (blue)</span><span>filled = training data, ring = test data</span></div>
+			</div>
+			<div class="nn-right">
+				<div class="tu-card"><div class="nn-stats" id="nn-stats" aria-live="polite"></div><canvas id="nn-loss" width="520" height="150" aria-label="Loss over time"></canvas><p class="tu-note">Orange line = loss on the training data, blue = loss on data it never trained on (test). If test stays high while training drops, it is memorising (overfitting).</p></div>
+				<div class="tu-card"><h3 style="margin-top:0">The network</h3><canvas id="nn-net" width="520" height="300" aria-label="Network diagram. Each square shows what that neuron responds to."></canvas><p class="tu-note">Each square is one neuron, drawn as the picture of inputs it responds to. Blue lines are positive weights, orange negative; thicker = stronger.</p></div>
+			</div>
+		</div>
+		<div class="tu-card nn-math" id="nn-math"><h3 style="margin-top:0">The maths for one point</h3><p class="tu-note" id="nn-mathnote">Click a spot on the picture to follow that point through the network.</p><div id="nn-mathbody"></div></div>
+		<div class="tu-toast" id="nn-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Train a neural network and watch it learn</h2>
+			<p>A neural network is a stack of layers; each neuron adds up its inputs times weights, adds a bias, and passes the result through an activation function. Training means nudging every weight a little to make the mistakes smaller, over and over. This playground trains a real one on your computer while you watch: the coloured picture is the network's prediction at every point, the squares inside the diagram show what each hidden neuron has learned to detect, and the curve shows the loss falling.</p>
+			<h3>Things to try</h3>
+			<ul><li><b>Circle</b> with only <i>x</i> and <i>y</i> as inputs and no hidden layers: a straight line can't split a ring. Add a hidden layer, or switch on <i>x²</i> and <i>y²</i>, and it becomes easy.</li><li><b>Spiral</b> is hard: try three layers of 8 neurons, all the sine inputs, and the Adam optimiser, and give it a minute.</li><li>Set the learning rate to 1 and watch training become unstable; set it to 0.001 and watch it crawl.</li><li>Add noise, then give a big network few points and see the test loss rise while the training loss falls: overfitting. Weight decay (L2) reduces it.</li></ul>
+			<h3>Questions</h3>
+			<h4>What does the learning rate do?</h4><p>It is the size of each nudge. Too small and learning is slow; too big and the weights overshoot and bounce around.</p>
+			<h4>Why do we need activation functions?</h4><p>Without them every layer is just a matrix multiplication, and a stack of matrix multiplications is still one matrix multiplication: the network could only draw straight lines. The bend in tanh or ReLU is what lets layers combine into curves.</p>
+			<h4>What is the difference between the training and test data?</h4><p>The network only learns from the training points (solid dots). The test points (rings) are held back to check it has learned the pattern rather than memorised the dots.</p>
+			<h4>Is this a real neural network?</h4><p>Yes: forward pass, backpropagation and the optimiser are real and run in your browser (a few hundred weights). It is tiny compared to the networks behind chatbots, but the mathematics is the same. Nothing is uploaded.</p>
+		</div>
+	</div>

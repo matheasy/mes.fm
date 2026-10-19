@@ -1,0 +1,38 @@
+	<div class="tu" id="mx">
+		<div class="tu-card mx-in">
+			<div class="mx-mats">
+				<div class="mx-mat"><label for="mx-a" class="tu-label">Matrix A <span class="mx-shape" id="mx-sa"></span></label><textarea id="mx-a" class="tu-input mx-ta" rows="4" spellcheck="false" aria-label="Matrix A, one row per line, numbers separated by spaces or commas"></textarea></div>
+				<div class="mx-mat"><label for="mx-b" class="tu-label">Matrix B <span class="mx-shape" id="mx-sb"></span></label><textarea id="mx-b" class="tu-input mx-ta" rows="4" spellcheck="false" aria-label="Matrix B"></textarea></div>
+				<div class="mx-mat" id="mx-cw" hidden><label for="mx-c" class="tu-label"><span id="mx-cl">Matrix C</span> <span class="mx-shape" id="mx-sc"></span></label><textarea id="mx-c" class="tu-input mx-ta" rows="4" spellcheck="false" aria-label="Matrix C"></textarea></div>
+			</div>
+			<p class="tu-note">One row per line (or separate rows with <code>;</code>). Numbers can be separated by spaces or commas, and can be fractions like <code>1/3</code> or <code>pi</code>.</p>
+			<div class="tu-row mx-ctl">
+				<div class="tu-field" style="flex:1 1 18em;"><label for="mx-op">What do you want to do?</label><select id="mx-op" class="tu-select"></select></div>
+				<div class="tu-field tu-field--sm" id="mx-pw" hidden><label for="mx-p" id="mx-pl">Value</label><input id="mx-p" class="tu-input" type="text" inputmode="decimal" value="2"></div>
+				<div class="tu-field tu-field--sm" id="mx-actw" hidden><label for="mx-act">Activation</label><select id="mx-act" class="tu-select"><option value="relu">ReLU</option><option value="sigmoid">Sigmoid</option><option value="tanh">tanh</option><option value="gelu">GELU</option><option value="leaky">Leaky ReLU</option><option value="identity">None</option></select></div>
+				<div class="tu-field tu-field--sm"><label for="mx-dp">Decimals</label><select id="mx-dp" class="tu-select"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="6">6</option></select></div>
+				<label class="mx-ck"><input type="checkbox" id="mx-fr"> Show fractions</label>
+			</div>
+			<div class="tu-chips mx-ex" id="mx-ex"><span class="tu-note">Try an example:</span></div>
+			<div class="tu-chips"><button type="button" class="tu-chip" id="mx-swap">⇄ Swap A and B</button><button type="button" class="tu-chip" id="mx-rand">🎲 Random A and B</button><button type="button" class="tu-chip" id="mx-copy">Copy result</button><button type="button" class="tu-chip" id="mx-use">Use result as A</button></div>
+		</div>
+		<div id="mx-err" class="tu-card mx-error" hidden role="alert"></div>
+		<div id="mx-out" aria-live="polite"></div>
+		<div class="tu-toast" id="mx-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>A matrix calculator that explains the machine-learning parts</h2>
+			<p>Matrices are how a neural network stores what it has learned and how it computes: a layer is <code>y = activation(W·x + b)</code>, a language model's attention is <code>softmax(Q·Kᵀ/√d)·V</code>, and training changes the numbers inside the matrices. This calculator does the usual linear algebra (add, multiply, transpose, determinant, inverse, rank, eigenvalues, SVD, solving equations) and shows the working, and it has the machine-learning operations built in: softmax with temperature, the common activation functions, one dense layer and one attention step.</p>
+			<h3>Questions</h3>
+			<h4>Why do the shapes have to match?</h4>
+			<p>To multiply A × B, A's columns must equal B's rows, because each result number is a row of A paired up, one by one, with a column of B. Click any number in a product to see exactly which pairs were multiplied and added. The result has A's rows and B's columns. This is why a layer with 784 inputs and 128 neurons has a 128 × 784 weight matrix.</p>
+			<h4>What is the inverse for?</h4>
+			<p>The inverse undoes a matrix (A⁻¹·A = I). It exists only when the determinant is not 0. Solving <code>A·x = b</code> is the same as <code>x = A⁻¹·b</code>, which is how linear regression's normal equation works. The page shows the row operations that get there.</p>
+			<h4>What do eigenvalues and SVD mean in machine learning?</h4>
+			<p>Eigenvectors are the directions a matrix only stretches; the eigenvalues say by how much. For a symmetric matrix such as a covariance matrix they give the principal components (PCA). SVD does the same job for any rectangular matrix and is behind compression, recommendations and low-rank fine-tuning.</p>
+			<h4>What do softmax and temperature do?</h4>
+			<p>Softmax turns any list of numbers (scores) into probabilities that add up to 1 by giving bigger scores much bigger shares. A low temperature makes the biggest score win almost every time; a high temperature spreads the probability out. Language models use exactly this to pick the next word.</p>
+			<h4>Is the working exact?</h4>
+			<p>Numbers are double-precision decimals, so results can be off in the 15th digit and tiny values show as 0. Fractions are found for display (for example 0.3333 shows as 1/3). Everything is computed in your browser; nothing is sent anywhere.</p>
+		</div>
+	</div>

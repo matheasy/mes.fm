@@ -678,6 +678,23 @@ APPS = {
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
                   desc="Free online font previewer: type your text and see it in every font on your computer at once, with size, colour, shadow, outline, gradient and glow. Make marketing text, download a transparent PNG or copy the CSS, compare fonts side by side, and find a font from a picture. Private: nothing is uploaded.",
                   js_v="1"),
+    # Machine-learning teaching tools (2026-10-19): matrix calculator (lib = MESMat), neural network playground (MESNN), letter / digit recognition (MESOCR, uses MESNN), toy language model (MESLM). Node tests: tool_apps_src/<slug>-tests.js
+    "matrix-calculator": dict(title="MES Matrix Calculator for Machine Learning", page_title="Matrix Calculator: Multiply, Inverse, Eigenvalues, SVD, Softmax and Attention",
+                  tag="Linear algebra, with the machine-learning parts.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
+                  desc="Free matrix calculator that shows the working: multiply, add, transpose, determinant, inverse, rank, row reduction, eigenvalues, SVD and QR, plus the machine-learning operations: softmax with temperature, activation functions, a dense neural-network layer and one attention step. Private: nothing is uploaded.",
+                  js_v="1"),
+    "neural-network-playground": dict(title="MES Neural Network Playground", page_title="Neural Network Playground: Train a Network in Your Browser and Watch It Learn",
+                  tag="Train a neural network and watch it learn.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
+                  desc="Free neural network playground: choose a dataset, inputs, layers, neurons and activation, then train a real network in your browser and watch the decision boundary, the loss curve and what every hidden neuron has learned. Follow one point through the maths. Private: nothing is uploaded.",
+                  js_v="1"),
+    "letter-recognition": dict(title="MES Letter and Digit Recognition", page_title="Letter and Digit Recognition: Train a Neural Network and Test It by Drawing",
+                  tag="Teach a network to read, then test it.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe", lib_from=["neural-network-playground"],
+                  desc="Train a small neural network in your browser to recognise printed digits and letters, draw a character and see what it thinks with its confidence, look at what its hidden neurons do, test it on fonts it has never seen, and teach it your handwriting. Private: nothing is uploaded.",
+                  js_v="1"),
+    "llm-simulator": dict(title="MES Toy Language Model Simulator", page_title="How a Language Model Works: Tokens, Next-Word Prediction, Embeddings and Attention",
+                  tag="See how a language model works, in miniature.", accent="#047857", dark="#065f46", tint="#d1fae5",
+                  desc="A tiny language model you can poke: see text split into tokens (words, characters or BPE pieces), how a model scores the next word, what temperature, top-k and top-p do, how words become vectors, and how attention mixes words. Paste your own text. Private: nothing is uploaded.",
+                  js_v="1"),
     # Redshift & Blueshift Simulator (2026-10-16): gravity (a pulse between a place near and far from a mass, drawn as a refractive-index gradient with two clocks), Doppler (relativistic
     # wavefronts), spectrum shifter / calculator (motion x gravity x expansion), expanding universe. lib.js = MESRed (node tests tool_apps_src/redshift-simulator-tests.js).
     "redshift-simulator": dict(title="MES Redshift & Blueshift Simulator", page_title="Redshift and Blueshift Simulator: Doppler, Gravitational and Cosmological",

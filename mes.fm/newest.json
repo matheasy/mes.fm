@@ -2,6 +2,14 @@
  "generated": "2026-10-19",
  "calculators": [
   {
+   "href": "/matrix-calculator",
+   "title": "Matrix Calculator for Machine Learning",
+   "icon": "/img/matrix-calculator-logo.png",
+   "desc": "Multiply, invert, find determinants, eigenvalues and SVD with the working shown, plus softmax, activation functions, a neural-network layer and attention.",
+   "added": "2026-10-19",
+   "kind": "calculator"
+  },
+  {
    "href": "/geometry",
    "title": "Geometry & Angle Lab",
    "icon": "/img/geometry-logo.png",
@@ -88,17 +96,33 @@
    "desc": "Pace, time and distance, splits, and race time predictions.",
    "added": "2026-10-14",
    "kind": "calculator"
-  },
-  {
-   "href": "/waist-to-hip-ratio-calculator",
-   "title": "Waist-to-Hip Ratio Calculator",
-   "icon": "/img/waist-to-hip-ratio-calculator-logo.png",
-   "desc": "Waist-to-hip, waist-to-height and body shape with risk levels.",
-   "added": "2026-10-14",
-   "kind": "calculator"
   }
  ],
  "tools": [
+  {
+   "href": "/llm-simulator",
+   "title": "Toy Language Model Simulator",
+   "icon": "/img/llm-simulator-logo.png",
+   "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
+   "added": "2026-10-19",
+   "kind": "tool"
+  },
+  {
+   "href": "/letter-recognition",
+   "title": "Letter and Digit Recognition",
+   "icon": "/img/letter-recognition-logo.png",
+   "desc": "Train a small network to read digits and letters, draw a character and see what it thinks, test it on unseen fonts, and teach it your handwriting.",
+   "added": "2026-10-19",
+   "kind": "tool"
+  },
+  {
+   "href": "/neural-network-playground",
+   "title": "Neural Network Playground",
+   "icon": "/img/neural-network-playground-logo.png",
+   "desc": "Train a real neural network in your browser: pick the data, layers and activation, and watch the decision boundary, the loss and every hidden neuron.",
+   "added": "2026-10-19",
+   "kind": "tool"
+  },
   {
    "href": "/fonts",
    "title": "Font Preview and Finder",
@@ -170,33 +194,41 @@
    "desc": "Find a ground rod's resistance for your soil, see why a rod doesn't trip a breaker, model lightning step voltage and static discharge, and read the grounding rules for your region.",
    "added": "2026-10-14",
    "kind": "tool"
-  },
-  {
-   "href": "/julia-set-explorer",
-   "title": "Julia Set Explorer",
-   "icon": "/img/julia-set-explorer-logo.png",
-   "desc": "Drag a point on a map of the Mandelbrot set and watch its Julia set change live. Walk c around the cardioid, zoom and save pictures.",
-   "added": "2026-10-14",
-   "kind": "tool"
-  },
-  {
-   "href": "/archive",
-   "title": "Archive",
-   "icon": "/img/archive-logo.png",
-   "desc": "Save or find any web page on the Wayback Machine, archive.today, Ghostarchive and more at once. Includes a one-click browser extension.",
-   "added": "2026-10-14",
-   "kind": "tool"
-  },
-  {
-   "href": "/domain-lookup",
-   "title": "Domain Lookup",
-   "icon": "/img/domain-lookup-logo.png",
-   "desc": "Whois for the web: domain age, registrar, expiry, who hosts a site, DNS and email setup, and warning signs.",
-   "added": "2026-10-14",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/llm-simulator",
+   "title": "Toy Language Model Simulator",
+   "icon": "/img/llm-simulator-logo.png",
+   "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
+   "added": "2026-10-19",
+   "kind": "tool"
+  },
+  {
+   "href": "/letter-recognition",
+   "title": "Letter and Digit Recognition",
+   "icon": "/img/letter-recognition-logo.png",
+   "desc": "Train a small network to read digits and letters, draw a character and see what it thinks, test it on unseen fonts, and teach it your handwriting.",
+   "added": "2026-10-19",
+   "kind": "tool"
+  },
+  {
+   "href": "/neural-network-playground",
+   "title": "Neural Network Playground",
+   "icon": "/img/neural-network-playground-logo.png",
+   "desc": "Train a real neural network in your browser: pick the data, layers and activation, and watch the decision boundary, the loss and every hidden neuron.",
+   "added": "2026-10-19",
+   "kind": "tool"
+  },
+  {
+   "href": "/matrix-calculator",
+   "title": "Matrix Calculator for Machine Learning",
+   "icon": "/img/matrix-calculator-logo.png",
+   "desc": "Multiply, invert, find determinants, eigenvalues and SVD with the working shown, plus softmax, activation functions, a neural-network layer and attention.",
+   "added": "2026-10-19",
+   "kind": "calculator"
+  },
   {
    "href": "/fonts",
    "title": "Font Preview and Finder",
@@ -228,38 +260,6 @@
    "desc": "Unit circle, triangle solver, graphs, tables and identities.",
    "added": "2026-10-18",
    "kind": "calculator"
-  },
-  {
-   "href": "/shapes-calculator",
-   "title": "Volume, Area & Surface Area Calculator",
-   "icon": "/img/shapes-calculator-logo.png",
-   "desc": "Volume, area and surface area of 27 shapes, with every formula.",
-   "added": "2026-10-18",
-   "kind": "calculator"
-  },
-  {
-   "href": "/photo",
-   "title": "Photo Editor",
-   "icon": "/img/photo-editor-logo.png",
-   "desc": "Free online editor with layers, selections, clone stamp, levels and curves. Add labels, arrows and callouts, combine images, keep transparency, open PSD. Nothing is uploaded.",
-   "added": "2026-10-16",
-   "kind": "tool"
-  },
-  {
-   "href": "/redshift-simulator",
-   "title": "Redshift & Blueshift Simulator",
-   "icon": "/img/redshift-simulator-logo.png",
-   "desc": "Why light changes colour: near and far from a heavy mass, moving sources, a spectrum shifter and the expanding universe, with real numbers.",
-   "added": "2026-10-16",
-   "kind": "tool"
-  },
-  {
-   "href": "/compress",
-   "title": "Compressor: Pictures, PDFs, Audio",
-   "icon": "/img/compress-logo.png",
-   "desc": "Make JPG, PNG, WebP, PDF and audio files smaller with a before and after preview. Private: nothing is uploaded.",
-   "added": "2026-10-16",
-   "kind": "tool"
   }
  ]
 }

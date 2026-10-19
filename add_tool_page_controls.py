@@ -64,6 +64,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("exif-viewer", "EXIF Viewer"),
     ("contraction-timer", "Contraction Timer"),
     ("bmr-calculator", "BMR Calculator"),
+    ("matrix-calculator", "Matrix Calculator for Machine Learning"),   # also built by build_tool_apps.py
     ("trigonometry", "Trigonometry Calculator"),   # also built by build_tool_apps.py
     ("geometry", "Geometry & Angle Lab"),   # also built by build_tool_apps.py
     ("shapes-calculator", "Volume, Area & Surface Area Calculator"),   # also built by build_tool_apps.py
@@ -99,6 +100,9 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("compress", "MES Compressor"),
     ("compress-video", "MES Video Compressor"),
     ("fonts", "MES Font Preview and Finder"),
+    ("llm-simulator", "MES Toy Language Model Simulator"),
+    ("letter-recognition", "MES Letter and Digit Recognition"),
+    ("neural-network-playground", "MES Neural Network Playground"),
     ("browser", "Browser Extensions"),   # also built by build_tool_apps.py
     ("videospeed", "Video Speed Controller"),
     ("read-aloud", "Read Aloud"),

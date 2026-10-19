@@ -1,0 +1,10 @@
+	/* MES Neural Network Playground */
+	.tu [hidden] {display:none !important;}
+	#nn .nn-row {display:flex;flex-wrap:wrap;gap:0.6em 1.2em;align-items:flex-end;margin-top:0.7em;} #nn .nn-row:first-child {margin-top:0;} #nn .nn-fk {display:inline-flex;align-items:center;gap:0.25em;margin-right:0.9em;min-height:36px;} #nn .nn-feats {align-items:center;} #nn select {min-height:40px;}
+	#nn .nn-layers {display:inline-flex;align-items:center;gap:0.5em;} #nn .nn-sz {display:inline-flex;align-items:center;gap:0.35em;margin-right:0.9em;} #nn .nn-sz b, #nn .nn-layers b {min-width:1.4em;text-align:center;} #nn .nn-sz .tu-btn, #nn .nn-layers .tu-btn {min-width:36px;min-height:36px;padding:0 0.5em;}
+	#nn .nn-btns .tu-btn {min-height:42px;} #nn .nn-main {display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:0.9em;margin-top:0.9em;} @media (max-width:900px) {#nn .nn-main {grid-template-columns:1fr;}}
+	#nn .nn-stage {line-height:0;} #nn #nn-cv {width:100%;height:auto;aspect-ratio:1;border-radius:0.5em;cursor:crosshair;touch-action:none;display:block;} #nn #nn-loss, #nn #nn-net {width:100%;height:auto;border:1px solid #e3e7ec;border-radius:0.4em;display:block;}
+	#nn .nn-legend {display:flex;flex-wrap:wrap;gap:0.4em 1.2em;margin-top:0.5em;font-size:0.88em;color:#566;} #nn .nn-dot {display:inline-block;width:0.8em;height:0.8em;border-radius:50%;vertical-align:-1px;} #nn .nn-o {background:#f59e0b;} #nn .nn-b {background:#2563eb;}
+	#nn .nn-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(8em,1fr));gap:0.6em;margin-bottom:0.6em;} #nn .nn-stats b {display:block;font-size:1.4em;color:var(--accent);font-variant-numeric:tabular-nums;} #nn .nn-stats span {font-size:0.82em;color:#566;}
+	#nn .nn-math {margin-top:0.9em;} #nn .nn-math code {overflow-wrap:anywhere;white-space:normal;font-size:0.9em;}
+	body.dark-mode #nn #nn-loss, body.dark-mode #nn #nn-net {border-color:#3a3f45;} body.dark-mode #nn .nn-legend, body.dark-mode #nn .nn-stats span {color:#b8bec7;}

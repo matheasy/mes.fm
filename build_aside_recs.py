@@ -47,6 +47,7 @@ CALC = {   # path -> (kind, tags)
     "/vatcalculator": ("Calculator", ["money", "percent"]),
     "/bmicalculator": ("Calculator", ["health", "everyday"]),
     "/bmr-calculator": ("Calculator", ["health", "everyday"]),
+    "/matrix-calculator": ("Calculator", ["health", "everyday"]),
     "/trigonometry": ("Calculator", ["health", "everyday"]),
     "/geometry": ("Calculator", ["health", "everyday"]),
     "/shapes-calculator": ("Calculator", ["health", "everyday"]),

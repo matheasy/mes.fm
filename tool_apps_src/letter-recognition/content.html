@@ -1,0 +1,45 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu lr" id="lr">
+		<div class="tu-card lr-train">
+			<div class="lr-row">
+				<div class="tu-field tu-field--sm"><label for="lr-set">What should it recognise?</label><select id="lr-set" class="tu-select"><option value="digits">Digits 0 to 9</option><option value="letters">Capital letters A to Z</option><option value="both">Digits and letters (confusing!)</option></select></div>
+				<div class="tu-field tu-field--sm"><label for="lr-hid">Hidden neurons</label><select id="lr-hid" class="tu-select"><option value="16">16 (tiny)</option><option value="32">32</option><option value="64" selected>64</option><option value="128">128</option></select></div>
+				<div class="tu-field tu-field--sm"><label for="lr-ep">Training passes</label><select id="lr-ep" class="tu-select"><option value="6">6 (quick)</option><option value="14" selected>14</option><option value="30">30</option></select></div>
+				<button type="button" class="tu-btn tu-btn--primary" id="lr-go">Train the network</button>
+			</div>
+			<p class="tu-note" id="lr-info">The network learns from pictures of characters drawn in the fonts on this computer, bent and shifted at random. Nothing is downloaded or uploaded.</p>
+			<div class="lr-bar" id="lr-barw" hidden><i id="lr-bar"></i></div><div class="lr-status" id="lr-status" aria-live="polite"></div>
+		</div>
+		<div class="lr-main">
+			<div class="tu-card lr-draw">
+				<h3 style="margin-top:0">1. Draw one character</h3>
+				<canvas id="lr-pad" width="280" height="280" aria-label="Drawing pad: draw a digit or letter with your finger or mouse" role="img"></canvas>
+				<div class="lr-padbtns"><button type="button" class="tu-btn tu-btn--ghost" id="lr-clear">Clear</button><label class="lr-pen">Pen <input type="range" id="lr-pen" min="8" max="34" value="18"></label></div>
+				<div class="lr-teach" id="lr-teach" hidden><b>Wrong?</b> Tell it the right answer and it will learn from your drawing: <select id="lr-right" class="tu-select" aria-label="The correct character"></select> <button type="button" class="tu-btn tu-btn--ghost" id="lr-add">Teach it this</button><span class="tu-note" id="lr-mine"></span></div>
+			</div>
+			<div class="tu-card lr-res">
+				<h3 style="margin-top:0">2. What it thinks</h3>
+				<div class="lr-guess" id="lr-guess">Train the network, then draw.</div>
+				<div id="lr-top" aria-live="polite"></div>
+				<div class="lr-see"><div><span class="tu-note">What the network sees (the drawing shrunk and centred):</span><canvas id="lr-see" width="140" height="140"></canvas></div><div><span class="tu-note">How its hidden neurons react:</span><canvas id="lr-hidden" width="200" height="140"></canvas></div></div>
+			</div>
+		</div>
+		<div class="tu-card lr-test">
+			<h3 style="margin-top:0">3. Test it on fonts it has never seen</h3>
+			<div class="lr-row"><button type="button" class="tu-btn tu-btn--ghost" id="lr-shuffle" disabled>Show 24 random test pictures</button><span id="lr-acc"></span></div>
+			<div class="lr-samples" id="lr-samples"></div>
+			<details class="lr-conf"><summary>Which characters does it mix up? (confusion table)</summary><div id="lr-conf"></div><p class="tu-note" id="lr-worst"></p></details>
+		</div>
+		<div class="tu-toast" id="lr-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Teach a neural network to read letters and digits</h2>
+			<p>Press <em>Train</em> and a small neural network learns, in a few seconds on your own computer, to recognise printed characters from thousands of pictures it generates in your fonts. Then draw a digit or letter on the pad and watch it guess, with its confidence for each possibility. Because it was trained on printed fonts rather than handwriting it is often wrong about your scribbles; press <em>Teach it this</em> with the right answer and it learns your handwriting from your examples. That is the central lesson of machine learning: the model is only as good as the examples it was trained on.</p>
+			<h3>Questions</h3>
+			<h4>How does it turn a drawing into numbers?</h4><p>Your drawing is cropped to the ink, shrunk to a 14 × 14 grid of grey values (196 numbers, shown as <em>what the network sees</em>) and moved so its centre of mass sits in the middle, so a character drawn small or in a corner looks the same as one drawn big. Those 196 numbers go into the network.</p>
+			<h4>What are the hidden neurons doing?</h4><p>Each hidden neuron adds up all 196 pixels times its own weights; it learns to fire for a pattern such as a curve at the top or a stroke down the right. The next layer combines these patterns into ten (or 26, or 36) scores, and softmax turns the scores into percentages.</p>
+			<h4>Why is the test on fonts it has never seen?</h4><p>Some fonts are held back and never used for training. Its accuracy on them shows whether it has learned what a "7" looks like in general or only memorised the training pictures.</p>
+			<h4>Why does it mix up O and 0, or I and 1?</h4><p>Because in many fonts they really are nearly identical. No amount of training can separate shapes that look the same: that is a limit of the data, not of the network. Try <em>Digits and letters</em> and look at the confusion table.</p>
+			<h4>Is anything uploaded?</h4><p>No. The pictures are drawn by your browser, the network trains in your browser, and the examples you teach it stay in this browser.</p>
+		</div>
+	</div>
