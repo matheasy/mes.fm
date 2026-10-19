@@ -118,6 +118,10 @@ def thumb_index():
     return idx
 
 
+# hub pages without an og:image of their own use the tile shown on the homepage
+HUB_THUMBS = {"calculators": "/img/calculators-icon.jpg", "tools": "/img/tools-icon.jpg", "memes": "/img/memes-icon.jpg", "puzzles": "/img/puzzles-icon.jpg"}
+
+
 def thumbnail(path, img, thumbs):
     if not img or GENERIC_IMG.search(img):
         return ""
@@ -173,7 +177,7 @@ def main():
         cat = category(path, doc)
         counts[cat] = counts.get(cat, 0) + 1
         img = meta(doc, "property", "og:image")
-        rows.append(["/" + path, title, where, desc, CI[cat], thumbnail(path, img, thumbs)])
+        rows.append(["/" + path, title, where, desc, CI[cat], thumbnail(path, img, thumbs) or HUB_THUMBS.get(path, "")])
     data = {"v": datetime.date.today().isoformat(), "cats": [list(c) for c in CATS], "p": rows}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(data, ensure_ascii=False, separators=(",", ":"))

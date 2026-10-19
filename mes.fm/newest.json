@@ -100,14 +100,6 @@
  ],
  "tools": [
   {
-   "href": "/llm-simulator",
-   "title": "Toy Language Model Simulator",
-   "icon": "/img/llm-simulator-logo.png",
-   "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
-   "added": "2026-10-19",
-   "kind": "tool"
-  },
-  {
    "href": "/letter-recognition",
    "title": "Letter and Digit Recognition",
    "icon": "/img/letter-recognition-logo.png",
@@ -120,6 +112,14 @@
    "title": "Neural Network Playground",
    "icon": "/img/neural-network-playground-logo.png",
    "desc": "Train a real neural network in your browser: pick the data, layers and activation, and watch the decision boundary, the loss and every hidden neuron.",
+   "added": "2026-10-19",
+   "kind": "tool"
+  },
+  {
+   "href": "/llm-simulator",
+   "title": "Toy Language Model Simulator",
+   "icon": "/img/llm-simulator-logo.png",
+   "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
    "added": "2026-10-19",
    "kind": "tool"
   },
@@ -198,12 +198,12 @@
  ],
  "latest": [
   {
-   "href": "/llm-simulator",
-   "title": "Toy Language Model Simulator",
-   "icon": "/img/llm-simulator-logo.png",
-   "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
+   "href": "/matrix-calculator",
+   "title": "Matrix Calculator for Machine Learning",
+   "icon": "/img/matrix-calculator-logo.png",
+   "desc": "Multiply, invert, find determinants, eigenvalues and SVD with the working shown, plus softmax, activation functions, a neural-network layer and attention.",
    "added": "2026-10-19",
-   "kind": "tool"
+   "kind": "calculator"
   },
   {
    "href": "/letter-recognition",
@@ -222,12 +222,12 @@
    "kind": "tool"
   },
   {
-   "href": "/matrix-calculator",
-   "title": "Matrix Calculator for Machine Learning",
-   "icon": "/img/matrix-calculator-logo.png",
-   "desc": "Multiply, invert, find determinants, eigenvalues and SVD with the working shown, plus softmax, activation functions, a neural-network layer and attention.",
+   "href": "/llm-simulator",
+   "title": "Toy Language Model Simulator",
+   "icon": "/img/llm-simulator-logo.png",
+   "desc": "See how a language model works in miniature: tokens, next-word probabilities, temperature, word vectors and attention.",
    "added": "2026-10-19",
-   "kind": "calculator"
+   "kind": "tool"
   },
   {
    "href": "/fonts",

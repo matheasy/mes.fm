@@ -98,6 +98,9 @@
             if (terms.length > 1 && p.t.indexOf(" " + nq + " ") !== -1) score += 15;
             else if (terms.length > 1 && p.t.indexOf(" " + nq) !== -1) score += 10;
             if (p.t.indexOf(" " + nq) === 0) score += 8;
+            // a page whose title (without a leading "MES") or address IS the search gets to the top: "calculator" finds /calculator before the 100 other calculators
+            var tt = p.t.replace(/^ mes /, " ");
+            if (tt === " " + nq + " ") score += 40; else if (p.u === " " + nq.replace(/ /g, " ") + " " || p.u.replace(/ /g, "") === " " + nq.replace(/ /g, "") + " ") score += 30;
             score += CAT_BOOST[data.cats[p.r[4]][0]] || 0;
             (matched === terms.length ? all : partial).push({ p: p, s: score, m: matched });
         });
