@@ -112,7 +112,7 @@ const PAGES = [
   {
     slug: "hutchison-posts",
     sectionId: "hutchison-posts",
-    iconVersion: 4,
+    iconVersion: 5,
     tileLabel: "Posts and Updates",
     title: "Hutchison Effect Posts and Updates",
     description:
