@@ -139,7 +139,7 @@
 	var KEY = "mes-trigonometry:v1", T = TR.trim, R = Math.PI / 180;
 	var st = { tab: "circle", ang: 45, cu: "deg", snap: false, rec: false, aDeg: 30, ifn: "sin", iv: "0.5", tmode: "right", fn: "sin", g: { A: 1, B: 1, C: 0, D: 0 }, par: true, tr: 15, ts: 360, td: 4, tx: true, lab: {}, tpos: {}, tsz: 1, id: "pyth", ix: "25", iy: "40" }, ts = {};
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-	function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) Object.keys(st).forEach(function (k) { if (s[k] != null && typeof s[k] === typeof st[k]) st[k] = s[k]; }); if (s && s.tpos && typeof s.tpos === "object") { st.tpos = {}; Object.keys(s.tpos).forEach(function (k) { var v = s.tpos[k]; if (Array.isArray(v) && Math.abs(v[0]) <= 300 && Math.abs(v[1]) <= 140) st.tpos[k] = v; }); } if (s && s.g && typeof s.g === "object") ["A", "B", "C", "D"].forEach(function (k) { if (typeof s.g[k] === "number") st.g[k] = s.g[k]; }); } catch (e) {} }
+	function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) Object.keys(st).forEach(function (k) { if (s[k] != null && typeof s[k] === typeof st[k]) st[k] = s[k]; }); if (s && s.tpos && typeof s.tpos === "object") { st.tpos = {}; Object.keys(s.tpos).forEach(function (k) { var v = s.tpos[k]; if (Array.isArray(v) && Math.abs(v[0]) <= 600 && Math.abs(v[1]) <= 200) st.tpos[k] = v; }); } if (s && s.g && typeof s.g === "object") ["A", "B", "C", "D"].forEach(function (k) { if (typeof s.g[k] === "number") st.g[k] = s.g[k]; }); } catch (e) {} }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 	function stat(l, v, s, c) { return '<div class="tu-stat' + (c ? " " + c : "") + '"><div class="tu-stat__label">' + l + '</div><div class="tu-stat__value">' + v + '</div><div class="tu-stat__sub">' + (s || "") + "</div></div>"; }
 	function num(v, d) { return v == null ? "undefined" : T(v, d == null ? 6 : d); }
@@ -253,23 +253,25 @@
 		$("tg-t-fields").innerHTML = FIELDS[st.tmode].map(function (f) { return '<div class="tu-field"><label for="tg-t-' + f[0] + '">' + esc(f[1]) + '</label><input id="tg-t-' + f[0] + '" data-k="' + f[0] + '" class="tu-input" type="text" inputmode="decimal" autocomplete="off" value="' + esc(ts[f[0]] || "") + '"></div>'; }).join("");
 	}
 	$("tg-t-fields").addEventListener("input", function (e) { var k = e.target.dataset.k; if (k) { ts[k] = e.target.value; rTri(); } });
+	var FW = 420, FH = 300;
 	var FIGLIM = {};
 	function clampPos(si, tp, P) {   // keep the whole figure (triangle + its labels) inside the 420 x 224 frame
 		var z = st.tsz, xs = P.map(function (p) { return p[0]; }), ys = P.map(function (p) { return p[1]; }), mnx = Math.min.apply(null, xs) - 56, mxx = Math.max.apply(null, xs) + 56, mny = Math.min.apply(null, ys) - 30, mxy = Math.max.apply(null, ys) + 30;
-		function sc(v, c) { return c + (v - c) * z; } var bx0 = sc(mnx, 210), bx1 = sc(mxx, 210), by0 = sc(mny, 112), by1 = sc(mxy, 112);
-		var lx = 2 - bx0, hx = 418 - bx1, ly = 2 - by0, hy = 222 - by1; if (lx > hx) lx = hx = (lx + hx) / 2; if (ly > hy) ly = hy = (ly + hy) / 2;
+		function sc(v, c) { return c + (v - c) * z; } var bx0 = sc(mnx, FW / 2), bx1 = sc(mxx, FW / 2), by0 = sc(mny, FH / 2), by1 = sc(mxy, FH / 2);
+		var lx = 2 - bx0, hx = FW - 2 - bx1, ly = 2 - by0, hy = FH - 2 - by1; if (lx > hx) lx = hx = (lx + hx) / 2; if (ly > hy) ly = hy = (ly + hy) / 2;
 		FIGLIM[si] = [lx, hx, ly, hy]; return [Math.max(lx, Math.min(hx, tp[0])), Math.max(ly, Math.min(hy, tp[1]))];
 	}
 	function figure(s, si) {
-		var A = [0, 0], B = [s.c, 0], C = [s.b * Math.cos(s.A * R), s.b * Math.sin(s.A * R)], xs = [A[0], B[0], C[0]], x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), h = C[1], k = Math.min(280 / Math.max(1e-9, x1 - x0), 120 / Math.max(1e-9, h)), ox = 210 - (x0 + x1) / 2 * k, oy = 112 + h * k / 2;
+		var A = [0, 0], B = [s.c, 0], C = [s.b * Math.cos(s.A * R), s.b * Math.sin(s.A * R)], xs = [A[0], B[0], C[0]], x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), h = C[1], k = Math.min(Math.min(300, FW - 120) / Math.max(1e-9, x1 - x0), (FH - 110) / Math.max(1e-9, h)), ox = FW / 2 - (x0 + x1) / 2 * k, oy = FH / 2 + h * k / 2;
 		function P(p) { return [ox + p[0] * k, oy - p[1] * k]; } var pa = P(A), pb = P(B), pc = P(C), cen = [(pa[0] + pb[0] + pc[0]) / 3, (pa[1] + pb[1] + pc[1]) / 3];
 		function lab(p, q, txt) { var m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2], dx = m[0] - cen[0], dy = m[1] - cen[1], n = Math.hypot(dx, dy) || 1; return '<text class="t-lbl" x="' + (m[0] + dx / n * 17).toFixed(1) + '" y="' + (m[1] + dy / n * 15 + 4).toFixed(1) + '">' + txt + "</text>"; }
 		function vl(p, nm, v) { var dx = p[0] - cen[0], dy = p[1] - cen[1], n = Math.hypot(dx, dy) || 1; return '<text class="t-lbl" style="fill:#d64545" x="' + (p[0] + dx / n * 26).toFixed(1) + '" y="' + (p[1] + dy / n * 20 + 4).toFixed(1) + '">' + nm + " " + T(v, 1) + "°</text>"; }
 		var g = lab(pb, pc, "a = " + T(s.a, 3)) + lab(pc, pa, "b = " + T(s.b, 3)) + lab(pa, pb, "c = " + T(s.c, 3)) + vl(pa, "A", s.A) + vl(pb, "B", s.B) + vl(pc, "C", s.C), tp = clampPos(si, st.tpos["tri" + si] || [0, 0], [pa, pb, pc]), z = st.tsz;
-		var tf = "translate(" + tp[0].toFixed(1) + "," + tp[1].toFixed(1) + ") translate(210,112) scale(" + z + ") translate(-210,-112)";
-		return '<svg viewBox="0 0 420 224" role="img" aria-label="The triangle"><g transform="' + tf + '"><polygon data-tm="' + si + '" class="t-fg" points="' + [pa, pb, pc].map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>' + lbPost("tri" + si, g) + "</g></svg>";
+		var tf = "translate(" + tp[0].toFixed(1) + "," + tp[1].toFixed(1) + ") translate(" + FW / 2 + "," + FH / 2 + ") scale(" + z + ") translate(" + -FW / 2 + "," + -FH / 2 + ")";
+		return '<svg viewBox="0 0 ' + FW + " " + FH + '" role="img" aria-label="The triangle"><g transform="' + tf + '"><polygon data-tm="' + si + '" class="t-fg" points="' + [pa, pb, pc].map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>' + lbPost("tri" + si, g) + "</g></svg>";
 	}
 	function rTri() {
+		FW = Math.max(300, Math.min(900, Math.round($("tg-t-out").clientWidth - 44))); FH = 300;
 		var out = $("tg-t-out"), ks = {}, n = 0, need = st.tmode === "right" ? 2 : 3; FIELDS[st.tmode].forEach(function (f) { var raw = (ts[f[0]] || "").trim(); if (raw) { var v = TR.parseAngle(raw, "deg"); if (f[0] > "Z" || true) { var nn = parseFloat(raw.replace(",", ".")); ks[f[0]] = nn; n++; } } });
 		var bad = Object.keys(ks).filter(function (k) { return !(ks[k] > 0) || !isFinite(ks[k]); }); if (bad.length) { out.innerHTML = '<div class="tu-card"><span class="tg-bad">Values must be positive numbers (' + bad.join(", ") + ").</span></div>"; return; }
 		if (n < need) { out.innerHTML = '<div class="tu-card tu-card--tint">Enter ' + (need - n) + " more value" + (need - n === 1 ? "" : "s") + " to solve the triangle.</div>"; return; }
@@ -333,6 +335,7 @@
 		st.tab = tab; save(); [].forEach.call($("tg-tabs").children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.t === tab)); b.setAttribute("aria-selected", String(b.dataset.t === tab)); }); [].forEach.call(root.querySelectorAll("section[data-p]"), function (s) { s.hidden = s.dataset.p !== tab; });
 		if (tab === "circle") { syncC(); setAngle(st.ang); } else if (tab === "calc") { aFields(); $("tg-i-fn").value = st.ifn; $("tg-i-v").value = st.iv; rCalc(); rInv(); } else if (tab === "tri") { buildT(); rTri(); } else if (tab === "graph") rGraph(); else { $("tg-tb-r").value = st.ts; $("tg-tb-s").value = st.tr; $("tg-tb-d").value = st.td; $("tg-tb-x").checked = st.tx; $("tg-id-s").value = st.id; $("tg-id-x").value = st.ix; $("tg-id-y").value = st.iy; rTable(); rIdent(); }
 	}
+	var rsT = 0; window.addEventListener("resize", function () { clearTimeout(rsT); rsT = setTimeout(function () { if (st.tab === "tri" && $("tg-t-out").querySelector("svg")) rTri(); }, 200); });
 	$("tg-tabs").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { show(b.dataset.t); try { history.replaceState(null, "", "?tab=" + b.dataset.t); } catch (x) {} } });
 	load(); var qp = new URLSearchParams(location.search), tq = qp.get("tab"); if (tq && /^(circle|calc|tri|graph|tables)$/.test(tq)) st.tab = tq; var aq = qp.get("a"); if (aq) { var av = TR.parseAngle(aq, "deg"); if (av != null) { st.ang = av; st.aDeg = av; } }
 	show(st.tab);
