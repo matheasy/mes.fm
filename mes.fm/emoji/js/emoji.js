@@ -519,6 +519,18 @@
 				{ c: "⚛️", n: "atom symbol", k: "physics" },
 				{ c: "🧬", n: "dna" },
 				{ c: "🔬", n: "microscope" },
+				{ c: "🧑‍🔬", n: "scientist", k: "lab research physicist chemist biologist" },
+				{ c: "👩‍🔬", n: "woman scientist", k: "female lab research physicist chemist biologist" },
+				{ c: "👨‍🔬", n: "man scientist", k: "male lab research physicist chemist biologist" },
+				{ c: "🧑‍🏫", n: "teacher", k: "professor lecturer science math" },
+				{ c: "👩‍🏫", n: "woman teacher", k: "female professor lecturer" },
+				{ c: "👨‍🏫", n: "man teacher", k: "male professor lecturer" },
+				{ c: "🧑‍🎓", n: "student", k: "graduate scholar" },
+				{ c: "🧑‍💻", n: "technologist", k: "programmer developer coder engineer computer" },
+				{ c: "🧑‍🏭", n: "factory worker", k: "engineer industrial" },
+				{ c: "🧑‍⚕️", n: "health worker", k: "doctor nurse medical" },
+				{ c: "🥼", n: "lab coat", k: "scientist doctor science" },
+				{ c: "🥽", n: "goggles", k: "safety lab science" },
 				{ c: "🧪", n: "test tube", k: "science" },
 				{ c: "🧫", n: "petri dish" },
 				{ c: "⚗️", n: "alembic", k: "chemistry" },
@@ -1247,7 +1259,7 @@
 		var cp = ch.codePointAt(0);
 		var rest = ch.slice(cp > 0xFFFF ? 2 : 1);
 		// plain emoji (with or without FE0F) or gendered ones like woman superhero (base + ZWJ + female/male sign); not families, flags, keycaps
-		if (!/^\uFE0F?(\u200D[\u2640\u2642]\uFE0F?)?$/.test(rest)) return false;
+		if (!/^️?(‍([♀♂⚕⚖✈]️?|[\u{1F52C}\u{1F3EB}\u{1F4BB}\u{1F3ED}\u{1F680}\u{1F393}\u{1F3A8}\u{1F3E2}\u{1F33E}\u{1F373}\u{1F527}\u{1F692}\u{1F3A4}]))?$/u.test(rest)) return false;
 		return MOD_BASES.some(function (r) { return cp >= r[0] && cp <= r[1]; });
 	}
 	function toned(ch) {
