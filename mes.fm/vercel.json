@@ -596,6 +596,7 @@
   ],
   "rewrites": [
     { "source": "/f/:id", "destination": "/fav?f=:id" },
+    { "source": "/ri/:id", "destination": "/api/image-temp?id=:id" },
     { "source": "/vatcalculator/s/:id", "destination": "/vatcalculator" },
     { "source": "/gpacalculator/s/:id", "destination": "/gpacalculator" },
     { "source": "/youtubemoney/s/:id", "destination": "/youtubemoney" },
