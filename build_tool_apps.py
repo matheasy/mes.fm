@@ -500,7 +500,7 @@ APPS = {
     "trigonometry": dict(title="Trigonometry Calculator", page_title="Trigonometry Calculator: Unit Circle, Sin Cos Tan, Triangle Solver and Graphs",
                          tag="Unit circle, triangles, graphs and tables.", accent="#c2410c", dark="#9a3412", tint="#fbe6da",
                          desc="Free trigonometry calculator and simulator: drag the unit circle, get sin, cos, tan, csc, sec and cot with exact values, solve any triangle (SSS, SAS, ASA, AAS and the ambiguous SSA case), graph sinusoids, build trig tables and check identities.",
-                         js_v="3"),
+                         js_v="4"),
     "pregnancy-calorie-calculator": dict(title="Pregnancy Calorie Calculator", page_title="Pregnancy and Breastfeeding Calorie Calculator: Extra Calories and Weight Gain",
                                          tag="How many calories you need, week by week.", accent="#be185d", dark="#8f1146", tint="#fbe1ee",
                                          desc="Free pregnancy and breastfeeding calorie calculator: how many extra calories you need by trimester or baby's age, healthy weight gain by week for your BMI (with twins), a chart to plot your own weight, foods for the extra calories, and key nutrients.",
