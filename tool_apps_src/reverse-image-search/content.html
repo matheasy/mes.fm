@@ -1,21 +1,23 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu ri" id="ri">
 		<div class="tu-card ri-src">
-			<div class="tu-seg" id="ri-mode" role="group" aria-label="Where is the image?"><button type="button" data-m="link" aria-pressed="true">&#128279; Paste an image link</button><button type="button" data-m="file" aria-pressed="false">&#128444; Upload, drop or paste a picture</button></div>
-
+			<p class="tu-note ri-either">Paste an image link <b>or</b> add a picture: both boxes are here, use whichever you have. The one you used last is the one that gets searched.</p>
+			<div class="ri-two">
 			<div id="ri-linkbox" class="ri-box">
 				<label class="tu-label" for="ri-link">Link to the image</label>
 				<div class="ri-row"><input id="ri-link" class="tu-input tu-input--big" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://example.com/photo.jpg"><button type="button" class="tu-btn tu-btn--ghost" id="ri-pastelink">Paste</button></div>
 				<p class="tu-note">Right-click a picture on any site and choose <i>Copy image address</i> (or <i>Copy image link</i>), then paste it here. Links that end in .jpg, .png or .webp work best.</p>
 			</div>
 
-			<div id="ri-filebox" class="ri-box" hidden>
+			<div id="ri-filebox" class="ri-box">
 				<div class="ri-drop" id="ri-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture">
 					<div class="ri-drop__big">Drop a picture here</div>
 					<div class="ri-drop__sub">or <b>click to choose</b> a file, or press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> to paste a screenshot or copied image</div>
 					<input type="file" id="ri-file" accept="image/*" hidden>
 				</div>
 				<p class="tu-note">Your picture stays in this browser until you press Open. Then, unless you turn it off below, a resized copy is kept for one hour at a private link on mes.fm so each site can load it by itself, and is deleted automatically.</p>
+			</div>
+
 			</div>
 
 			<div class="ri-prev" id="ri-prev" hidden>

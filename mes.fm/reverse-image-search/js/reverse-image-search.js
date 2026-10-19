@@ -65,14 +65,13 @@
 
 	/* ---------- mode ---------- */
 	function setMode(m) {
-		mode = m; Array.prototype.forEach.call($('ri-mode').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-m') === m)); });
-		$('ri-linkbox').hidden = m !== 'link'; $('ri-filebox').hidden = m !== 'file'; $('ri-stage').setAttribute('data-m', m); refresh();
+		mode = m; $('ri-linkbox').classList.toggle('ri-active', m === 'link'); $('ri-filebox').classList.toggle('ri-active', m === 'file'); $('ri-stage').setAttribute('data-m', m); refresh();
 	}
-	$('ri-mode').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setMode(b.getAttribute('data-m')); });
 
 	/* ---------- link ---------- */
 	function readLink() {
 		link = M.cleanLink($('ri-link').value); ok = M.isImageUrl(link);
+		if (ok && mode !== 'link') { mode = 'link'; setMode('link'); } else if (!ok && !link && mode === 'link' && work) { setMode('file'); drawBase(); return; }
 		var img = $('ri-img');
 		if (ok) { if (img.getAttribute('data-src') !== link) { img.setAttribute('data-src', link); $('ri-info').textContent = 'Checking the picture…'; img.src = link; } }
 		else { img.removeAttribute('src'); img.removeAttribute('data-src'); }

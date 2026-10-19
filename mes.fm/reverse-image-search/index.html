@@ -215,7 +215,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -236,7 +236,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-stat--hero {background:#e8e7fb;border-color:#e8e7fb;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -339,6 +339,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #ri kbd {background:#333;color:#eee;border-color:#666;} body.dark-mode #ri .ri-stage {background:#2b2b2b;border-color:#444;}
 	body.dark-mode #ri .ri-queue {background:#3a2c10;border-color:#7a5a1a;color:#f3dca8;}
 
+	#ri .ri-two {display:grid;grid-template-columns:1fr 1fr;gap:1em;align-items:start;} #ri .ri-two .ri-box {border:2px solid transparent;border-radius:0.6em;padding:0.4em;} #ri .ri-two .ri-box.ri-active {border-color:var(--accent);} #ri .ri-either {margin:0 0 0.6em;}
+	@media (max-width:760px) {#ri .ri-two {grid-template-columns:1fr;}}
+	#ri input[type=file][hidden] {display:none !important;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -389,7 +393,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu-card--tint{background:#151427;border-color:#0e0b44}
 	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
 	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
+	body.dark-mode .tu-suffix span{color:#989ca4}
 	body.dark-mode .tu-btn{background:#1a1a1a}
 	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
 	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
@@ -401,7 +405,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu-stat--hero{background:#151427;border-color:#0e0b44}
 	body.dark-mode .tu-stat__label{color:#9a9aa2}
 	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
 	body.dark-mode .tu-pos{color:#7dde9d !important}
 	body.dark-mode .tu-neg{color:#e87973 !important}
 	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
@@ -686,21 +690,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu ri" id="ri">
 		<div class="tu-card ri-src">
-			<div class="tu-seg" id="ri-mode" role="group" aria-label="Where is the image?"><button type="button" data-m="link" aria-pressed="true">&#128279; Paste an image link</button><button type="button" data-m="file" aria-pressed="false">&#128444; Upload, drop or paste a picture</button></div>
-
+			<p class="tu-note ri-either">Paste an image link <b>or</b> add a picture: both boxes are here, use whichever you have. The one you used last is the one that gets searched.</p>
+			<div class="ri-two">
 			<div id="ri-linkbox" class="ri-box">
 				<label class="tu-label" for="ri-link">Link to the image</label>
 				<div class="ri-row"><input id="ri-link" class="tu-input tu-input--big" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://example.com/photo.jpg"><button type="button" class="tu-btn tu-btn--ghost" id="ri-pastelink">Paste</button></div>
 				<p class="tu-note">Right-click a picture on any site and choose <i>Copy image address</i> (or <i>Copy image link</i>), then paste it here. Links that end in .jpg, .png or .webp work best.</p>
 			</div>
 
-			<div id="ri-filebox" class="ri-box" hidden>
+			<div id="ri-filebox" class="ri-box">
 				<div class="ri-drop" id="ri-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture">
 					<div class="ri-drop__big">Drop a picture here</div>
 					<div class="ri-drop__sub">or <b>click to choose</b> a file, or press <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd> to paste a screenshot or copied image</div>
 					<input type="file" id="ri-file" accept="image/*" hidden>
 				</div>
 				<p class="tu-note">Your picture stays in this browser until you press Open. Then, unless you turn it off below, a resized copy is kept for one hour at a private link on mes.fm so each site can load it by itself, and is deleted automatically.</p>
+			</div>
+
 			</div>
 
 			<div class="ri-prev" id="ri-prev" hidden>
@@ -764,7 +770,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/exif-viewer"><img class="mes-aside__img mes-aside__img--logo" src="/exif-viewer/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">EXIF Viewer: Photo Metadata, GPS Location and AI Flags</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/fluid-simulator"><img class="mes-aside__img mes-aside__img--logo" src="/fluid-simulator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Fluid Simulator: Navier-Stokes in 2D</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/exif-viewer"><img class="mes-aside__img mes-aside__img--logo" src="/exif-viewer/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">EXIF Viewer: Photo Metadata, GPS Location and AI Flags</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/black-hole-simulator"><img class="mes-aside__img mes-aside__img--logo" src="/black-hole-simulator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Black Hole Simulator: Light Bending, Orbits and Shadow</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 

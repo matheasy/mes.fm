@@ -31,3 +31,7 @@
 	body.dark-mode #ri .ri-eng {background:#262626;border-color:#444;} body.dark-mode #ri .ri-eng.on {background:#2a2f36;border-color:var(--accent);}
 	body.dark-mode #ri kbd {background:#333;color:#eee;border-color:#666;} body.dark-mode #ri .ri-stage {background:#2b2b2b;border-color:#444;}
 	body.dark-mode #ri .ri-queue {background:#3a2c10;border-color:#7a5a1a;color:#f3dca8;}
+
+	#ri .ri-two {display:grid;grid-template-columns:1fr 1fr;gap:1em;align-items:start;} #ri .ri-two .ri-box {border:2px solid transparent;border-radius:0.6em;padding:0.4em;} #ri .ri-two .ri-box.ri-active {border-color:var(--accent);} #ri .ri-either {margin:0 0 0.6em;}
+	@media (max-width:760px) {#ri .ri-two {grid-template-columns:1fr;}}
+	#ri input[type=file][hidden] {display:none !important;}
