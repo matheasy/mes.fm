@@ -114,7 +114,7 @@
 		text(x, "heavy mass", 6, cy + rad * 0.62, 12, "#e3d2a8"); text(x, "NEAR", left + 6, cy - bandH / 2 - 9, 12, "#8db2ff"); text(x, "FAR", right - 6, cy - bandH / 2 - 9, 12, "#ff9f8f", "right");
 		// index gradient slab: bluer where the index is higher
 		var gr = x.createLinearGradient(left, 0, right, 0), nmax = Math.max(a, b), nmin = Math.min(a, b);
-		function idxCol(n) { var t = nmax > nmin ? (n - nmin) / (nmax - nmin) : 0.5; return "rgba(" + Math.round(40 + 20 * (1 - t)) + "," + Math.round(120 + 60 * (1 - t)) + "," + Math.round(160 + 90 * t) + "," + (0.22 + 0.45 * t) + ")"; }
+		function idxCol(n) { var t = nmax > nmin ? (n - nmin) / (nmax - nmin) : 0.5; return "rgba(" + Math.round(40 + 20 * (1 - t)) + "," + Math.round(120 + 60 * (1 - t)) + "," + Math.round(160 + 90 * t) + "," + (0.12 + 0.32 * t) + ")"; }
 		gr.addColorStop(0, idxCol(a)); gr.addColorStop(1, idxCol(b)); x.fillStyle = gr; x.fillRect(left, cy - bandH / 2, sw, bandH);
 		x.strokeStyle = "rgba(160,190,255,0.5)"; x.lineWidth = 1; x.strokeRect(left + 0.5, cy - bandH / 2 + 0.5, sw, bandH);
 		x.setLineDash([3, 5]); x.strokeStyle = "rgba(255,255,255,0.15)"; x.beginPath(); x.moveTo(left, cy); x.lineTo(right, cy); x.stroke(); x.setLineDash([]);
@@ -124,14 +124,15 @@
 		if (dt) { gs.pulses.forEach(function (p) { p.d += dt * speed; }); gs.pulses = gs.pulses.filter(function (p) { return p.d < S1 * 1.25; }); if (!gs.pulses.length && G.rep) { gs.gap += dt; if (gs.gap > 0.5) { gs.gap = 0; emit(); } } else gs.gap = 0; }
 		var nE = inw ? b : a, N0 = Math.max(10, sw / 38), amp = bandH * 0.36, sig = S1 * 0.11;
 		gs.pulses.forEach(function (p) {
-			var sc = inw ? S1 - p.d : p.d, px = null, py = 0, pc = "";
+			var sc = inw ? S1 - p.d : p.d, px = null, py = 0, pts = [];
 			for (var i = 0; i <= 360; i++) {
-				var u = i / 360, s = sAt(u), env = Math.exp(-Math.pow((s - sc) / sig, 2)); if (env < 0.02) { px = null; continue; }
-				var yy = cy - amp * env * Math.cos(TAU * N0 * (s - sc)) , xx = left + sw * u, col = R.wlToRgb(Math.min(700, Math.max(400, c.wlE * nE / nAt(u))));
-				var cc = col[3] ? rgba(col, 0.95) : "rgba(220,220,220,0.8)";
-				if (px != null) { x.strokeStyle = cc; x.lineWidth = 2; x.beginPath(); x.moveTo(px, py); x.lineTo(xx, yy); x.stroke(); }
-				px = xx; py = yy;
+				var u = i / 360, s2 = sAt(u), env = Math.exp(-Math.pow((s2 - sc) / sig, 2)); if (env < 0.02) { pts.push(null); continue; }
+				var yy = cy - amp * env * Math.cos(TAU * N0 * (s2 - sc)), xx = left + sw * u, col = R.wlToRgb(Math.min(700, Math.max(400, c.wlE * nE / nAt(u))));
+				pts.push([xx, yy, col[3] ? rgba(col, 1) : "rgba(235,235,235,0.9)"]);
 			}
+			// a dark halo under the wave so it reads against the coloured slab, then the coloured line on top
+			x.lineJoin = "round"; x.lineCap = "round"; x.strokeStyle = "rgba(4,8,20,0.88)"; x.lineWidth = 6; x.beginPath(); pts.forEach(function (q, i) { if (!q) { px = null; return; } if (px == null) x.moveTo(q[0], q[1]); else x.lineTo(q[0], q[1]); px = 1; }); x.stroke();
+			x.lineWidth = 2.8; px = null; pts.forEach(function (q, i) { if (!q) { px = null; return; } var pq = pts[i - 1]; if (pq) { x.strokeStyle = q[2]; x.beginPath(); x.moveTo(pq[0], pq[1]); x.lineTo(q[0], q[1]); x.stroke(); } });
 		});
 		// light clocks
 		var P0 = 1.1, tt = gs.t, clocks = [{ u: 0.0, n: a, nm: "near", ox: left + sw * 0.12 }, { u: 1, n: b, nm: "far", ox: right - sw * 0.12 }];
@@ -299,6 +300,20 @@
 	(function fromUrl() {
 		var q = new URLSearchParams(location.search); if (q.get("tab") && ["grav", "dop", "spec", "cos"].indexOf(q.get("tab")) >= 0) S.tab = q.get("tab");
 		if (q.get("z") && isFinite(+q.get("z"))) { K.z = q.get("z"); S.tab = q.get("tab") || "cos"; } if (q.get("b") && isFinite(+q.get("b")) && Math.abs(+q.get("b")) < 0.96) { D.b = +q.get("b"); S.tab = q.get("tab") || "dop"; }
+	})();
+
+	// phones: keep the picture visible while you work the controls (pin it under the floating bar), or hide it
+	(function () {
+		var pinned = false, hid = false; try { pinned = localStorage.getItem(KEY + ":pin") === "1"; } catch (e) {}
+		var wraps = [];
+		[].forEach.call(root.querySelectorAll(".rs-stage"), function (st) {
+			var w = document.createElement("div"); w.className = "rs-pinwrap"; var bar = document.createElement("div"); bar.className = "rs-pinbar";
+			bar.innerHTML = '<button type="button" class="rs-pill rs-pb-pin" aria-pressed="false">&#128204; Keep picture at top</button><button type="button" class="rs-pill rs-pb-hide" aria-pressed="false">Hide picture &#9652;</button>';
+			st.parentNode.insertBefore(w, st); w.appendChild(bar); w.appendChild(st); wraps.push(w);
+		});
+		function apply() { wraps.forEach(function (w) { w.classList.toggle("rs-pinned", pinned); w.classList.toggle("rs-hid", hid); var p = w.querySelector(".rs-pb-pin"), h = w.querySelector(".rs-pb-hide"); p.setAttribute("aria-pressed", String(pinned)); p.innerHTML = pinned ? "&#128204; Pinned at top" : "&#128204; Keep picture at top"; h.setAttribute("aria-pressed", String(hid)); h.innerHTML = hid ? "Show picture &#9662;" : "Hide picture &#9652;"; }); }
+		root.addEventListener("click", function (e) { var p = e.target.closest(".rs-pb-pin"), h = e.target.closest(".rs-pb-hide"); if (p) { pinned = !pinned; try { localStorage.setItem(KEY + ":pin", pinned ? "1" : ""); } catch (x) {} apply(); } else if (h) { hid = !hid; apply(); window.dispatchEvent(new Event("resize")); } });
+		apply();
 	})();
 	gSync(); gUpdate(); dUpdate(); sUpdate(); qUpdate(); cUpdate(false); showTab(S.tab, true); emit(); requestAnimationFrame(frame);
 })();
