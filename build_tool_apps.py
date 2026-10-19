@@ -490,7 +490,7 @@ APPS = {
     "shapes-calculator": dict(title="Volume, Area & Surface Area Calculator", page_title="Volume, Area and Surface Area Calculator: Cylinder, Sphere, Cone, Box and More",
                               tag="Volume, area and surface area of 27 shapes.", accent="#0f6cbd", dark="#0a4f8c", tint="#dcebf8",
                               desc="Free volume, area, surface area and perimeter calculator for 27 shapes: cube, box, cylinder, cone, sphere, pyramid, torus, circle, triangle, trapezoid and more. Shows every formula, converts to litres, gallons and acres, and works backwards from a target volume.",
-                              js_v="3"),
+                              js_v="4"),
     # Geometry & Angle Lab (2026-10-18; tests: node tool_apps_src/geometry-tests.js): drag triangles (similar triangles, circles, Euler line), parallel lines + transversal, circle theorems, angle types and polygon angles.
     "geometry": dict(title="Geometry & Angle Lab", page_title="Geometry Angle Calculator and Simulator: Triangles, Parallel Lines, Circles and Polygons",
                      tag="Drag shapes and watch the angles update.", accent="#6d3fd1", dark="#522ca3", tint="#ece4fb",

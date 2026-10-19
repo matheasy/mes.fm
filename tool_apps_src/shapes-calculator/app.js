@@ -37,7 +37,7 @@
 		cube: function () { return pg([[70, 40], [150, 40], [150, 120], [70, 120]], "sh-hid") + pg([[40, 55], [120, 55], [150, 40], [70, 40]]) + pg([[40, 55], [120, 55], [120, 135], [40, 135]]) + pg([[120, 55], [150, 40], [150, 120], [120, 135]]) + tx("a", 80, 150) + tx("a", 30, 98); },
 		box: function () { return pg([[40, 55], [150, 55], [180, 35], [70, 35]]) + pg([[40, 55], [150, 55], [150, 125], [40, 125]]) + pg([[150, 55], [180, 35], [180, 105], [150, 125]]) + tx("a", 95, 142) + tx("b", 183, 128).replace('x="183"', 'x="175"').replace('y="128"', 'y="55"') + tx("c", 28, 94); },
 		prism: function () { return pg([[30, 120], [100, 120], [65, 55]]) + pg([[30, 120], [100, 120], [170, 95], [100, 95]], "sh-fill") + pg([[100, 120], [170, 95], [135, 30], [65, 55]], "sh-fill") + pg([[30, 120], [100, 120], [65, 55]]) + tx("l", 140, 118) + tx("a", 65, 140) + tx("b", 94, 82) + tx("c", 36, 84); },
-		cylinder: function () { return '<path class="sh-fill" d="M50,32 L50,118 A50,14 0 0 0 150,118 L150,32 Z"/>' + el(100, 32, 50, 14) + ln([100, 32], [150, 32], "sh-dim") + ln([160, 32], [160, 118], "sh-dim") + tx("r", 126, 27) + tx("h", 174, 80); },
+		cylinder: function () { return '<path class="sh-fill" d="M50,32 L50,118 A50,14 0 0 0 150,118 L150,32 Z"/>' + el(100, 32, 50, 14) + ln([100, 32], [150, 32], "sh-dim") + ln([160, 32], [160, 118], "sh-dim") + tx("r", 126, 48) + tx("h", 174, 80); },
 		cone: function () { return '<path class="sh-fill" d="M100,15 L40,112 A60,15 0 0 0 160,112 Z"/>' + ln([100, 15], [100, 112], "sh-hid") + ln([100, 112], [160, 112], "sh-dim") + tx("h", 110, 66) + tx("r", 130, 128); },
 		frustum: function () { return '<path class="sh-fill" d="M70,30 L30,115 A70,16 0 0 0 170,115 L130,30 Z"/>' + el(100, 30, 30, 8) + ln([100, 30], [130, 30], "sh-dim") + ln([100, 115], [170, 115], "sh-dim") + ln([100, 30], [100, 115], "sh-hid") + tx("r", 116, 24) + tx("R", 136, 132) + tx("h", 112, 78); },
 		sphere: function () { return el(100, 75, 60, 60) + arc(100, 75, 60, 16, "sh-hid", false) + arc(100, 75, 60, 16, "sh-line", true) + ln([100, 75], [160, 75], "sh-dim") + tx("r", 130, 68); },
@@ -50,7 +50,20 @@
 		tetrahedron: function () { return pg([[100, 15], [30, 120], [165, 120]]) + ln([100, 15], [120, 92], "sh-line") + ln([30, 120], [120, 92], "sh-hid") + ln([165, 120], [120, 92], "sh-hid") + tx("a", 100, 140); },
 		octahedron: function () { return pg([[100, 12], [30, 80], [100, 105], [170, 80]]) + pg([[100, 148], [30, 80], [100, 105], [170, 80]], "sh-fill") + ln([30, 80], [170, 80], "sh-hid") + tx("a", 56, 40); }
 	};
-	function drawPic(id) { var f = D[id]; $("sh-pic").innerHTML = f ? '<svg viewBox="0 0 200 150" role="presentation">' + f() + "</svg>" : ""; }
+	var DL = {}; try { DL = JSON.parse(localStorage.getItem(KEY + ":dlab") || "{}") || {}; } catch (e) {}
+	function drawPic(id) {
+		var f = D[id], n = 0; if (!f) { $("sh-pic").innerHTML = ""; return; }
+		var inner = f().replace(/<text /g, function () { var k = id + ":" + n++, o = DL[k]; return '<text data-lb="' + k + '" ' + (o ? 'transform="translate(' + o[0].toFixed(1) + "," + o[1].toFixed(1) + ')" ' : ""); });
+		$("sh-pic").innerHTML = '<svg viewBox="0 0 200 150" role="presentation">' + inner + "</svg>";
+	}
+	(function () {
+		var pic = $("sh-pic"), drag = null;
+		function pt(e) { var svg = pic.querySelector("svg"), p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+		pic.addEventListener("pointerdown", function (e) { var t = e.target.closest && e.target.closest("[data-lb]"); if (!t) return; var p = pt(e); drag = { id: t.dataset.lb, last: [p.x, p.y] }; try { pic.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
+		pic.addEventListener("pointermove", function (e) { if (!drag) return; var p = pt(e), o = DL[drag.id] || [0, 0]; DL[drag.id] = [o[0] + p.x - drag.last[0], o[1] + p.y - drag.last[1]]; drag.last = [p.x, p.y]; drawPic(st.s); });
+		var end = function () { if (drag) { drag = null; try { localStorage.setItem(KEY + ":dlab", JSON.stringify(DL)); } catch (e) {} } }; pic.addEventListener("pointerup", end); pic.addEventListener("pointercancel", end);
+		window.dlReset = function () { DL = {}; try { localStorage.removeItem(KEY + ":dlab"); } catch (e) {} drawPic(st.s); };
+	})();
 
 	/* ---- layout ---- */
 	function groups(dim) { var out = [], seen = {}; SH.SHAPES.forEach(function (s) { if (s.dim !== dim) return; var g = s.group || ""; if (!seen[g]) { seen[g] = []; out.push([g, seen[g]]); } seen[g].push(s); }); return out; }
@@ -180,7 +193,7 @@
 		var cv = $("sh-cv"); function pos(e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
 		$("sh-3d-mode").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; V3.mode = b.dataset.m; [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", String(x === b)); }); v3Draw(); });
 		$("sh-3d-spin").addEventListener("change", function () { V3.spin = this.checked; v3Loop(); }); $("sh-3d-lab").addEventListener("change", function () { V3.labels = this.checked; v3Draw(); });
-		$("sh-3d-reset").addEventListener("click", function () { V3.yaw = V3.flat ? 0 : -0.6; V3.pitch = V3.flat ? 0 : 0.42; V3.zoom = 1; V3.off = {}; offSave(); v3Draw(); });
+		$("sh-3d-reset").addEventListener("click", function () { V3.yaw = V3.flat ? 0 : -0.6; V3.pitch = V3.flat ? 0 : 0.42; V3.zoom = 1; V3.off = {}; offSave(); if (window.dlReset) dlReset(); v3Draw(); });
 		cv.addEventListener("pointerdown", function (e) { var p = pos(e); V3.ptrs[e.pointerId] = [e.clientX, e.clientY]; try { cv.setPointerCapture(e.pointerId); } catch (x) {} var hit = Object.keys(V3.ptrs).length === 1 ? v3Hit(p[0], p[1]) : null; if (hit) { V3.act = { h: hit, last: p }; if (hit.t === "dim") { var o0 = hit.o; V3.act.o = o0; V3.act.A0 = o0.A.slice(); V3.act.B0 = o0.B.slice(); V3.act.ls0 = Math.hypot(o0.B[0] - o0.A[0], o0.B[1] - o0.A[1]); V3.act.v0 = V3.dims[o0.key]; V3.act.gain = 1; V3.act.learned = false; if (V3.act.ls0 < 28) V3.act = null; else V3.frozen = 1; } e.preventDefault(); return; } V3.act = null; if (!V3.flat) { V3.spin = false; $("sh-3d-spin").checked = false; } });
 		cv.addEventListener("pointermove", function (e) {
 			var p = pos(e), ids = Object.keys(V3.ptrs);
