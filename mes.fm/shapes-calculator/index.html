@@ -325,6 +325,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #sh .sh-3d canvas {background:#1d2127;border-color:#3a3f45;} body.dark-mode #sh .sh-ck {color:#d8dde5;}
 	.tu .sh-sl {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.2em 1.2em;margin-top:0.6em;} .tu .sh-slr {display:flex;align-items:center;gap:0.5em;font-size:0.92em;} .tu .sh-slk {font-family:Georgia,serif;font-style:italic;font-weight:700;color:#c2410c;min-width:1.2em;} .tu .sh-slr input {flex:1;accent-color:var(--accent);height:1.8em;min-width:6em;} .tu .sh-slv {min-width:5.5em;text-align:right;font-variant-numeric:tabular-nums;}
 	body.dark-mode #sh .sh-slk {color:#ffd166;}
+	.tu .sh-3d.sh-fill, .tu .sh-3d:fullscreen {position:fixed;inset:0;z-index:99999;margin:0;border-radius:0;overflow:auto;padding:0.8em 1em;background:#fff;box-sizing:border-box;max-width:none;}
+	body.dark-mode #sh .sh-3d.sh-fill, body.dark-mode #sh .sh-3d:fullscreen {background:#1a1a1a;} .tu .sh-3d:fullscreen {position:static;}
 	@media print {.tu .sh-btns, .tu .tu-chips {display:none;}}
 
 
@@ -414,6 +416,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu .sh-3d canvas{background:#15191e;border:1px solid #29323d}
 	body.dark-mode .tu .sh-ck{color:#cccccc}
 	body.dark-mode .tu .sh-slk{color:#f58f65}
+	body.dark-mode .tu .sh-3d.sh-fill,body.dark-mode .tu .sh-3d:fullscreen{background:#1a1a1a}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -686,7 +689,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="tu-card sh-3d" id="sh-3d" hidden>
 					<div class="tu-row" style="align-items:center;gap:0.6em 1em;">
 						<div class="tu-seg" id="sh-3d-mode" role="group" aria-label="Drawing style"><button type="button" data-m="solid" aria-pressed="true">Solid</button><button type="button" data-m="glass" aria-pressed="false">See-through</button><button type="button" data-m="wire" aria-pressed="false">Wireframe</button></div>
-						<label class="sh-ck" id="sh-3d-spinw"><input type="checkbox" id="sh-3d-spin" checked> Spin</label><label class="sh-ck"><input type="checkbox" id="sh-3d-lab" checked> Labels</label><button type="button" class="tu-btn tu-btn--ghost" id="sh-3d-reset" style="padding:0.3em 0.9em;">Reset view</button>
+						<label class="sh-ck" id="sh-3d-spinw"><input type="checkbox" id="sh-3d-spin" checked> Spin</label><label class="sh-ck"><input type="checkbox" id="sh-3d-lab" checked> Labels</label><button type="button" class="tu-btn tu-btn--ghost" id="sh-3d-reset" style="padding:0.3em 0.9em;">Reset view</button><button type="button" class="tu-btn tu-btn--ghost" id="sh-3d-fill" style="padding:0.3em 0.9em;" aria-pressed="false">&#10530; Fill window</button><button type="button" class="tu-btn tu-btn--ghost" id="sh-3d-fs" style="padding:0.3em 0.9em;" hidden>&#9974; Full screen</button>
 					</div>
 					<canvas id="sh-cv" aria-label="3D view of the solid. Drag to rotate, scroll to zoom." role="img"></canvas>
 					<div class="sh-sl" id="sh-sl" aria-label="Dimension sliders"></div>
@@ -783,7 +786,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/shapes-calculator/js/shapes-calculator.js?v=6" defer></script>
+	<script src="/shapes-calculator/js/shapes-calculator.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
