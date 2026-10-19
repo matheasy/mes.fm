@@ -33,7 +33,7 @@ PAGES = {
         ("fun", "Fun", ["gematria", "pokemongocalculator"]),
     ]),
     "tools.html": dict(noun="tools", popular=["timer", "typing-test", "speedreader", "moon", "emoji", "calendar", "clock", "timezone"], cats=[
-        ("text", "Text &amp; Symbols", ["emoji", "latex", "symbols", "copy-text", "enigma"]),
+        ("text", "Text &amp; Symbols", ["emoji", "latex", "fonts", "symbols", "copy-text", "enigma"]),
         ("time", "Time &amp; Focus", ["speedreader", "typing-test", "typing-test-transcribe", "typing-test-voice", "timer", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "clock", "timezone", "calendar"]),
         ("media", "Media &amp; Web", ["youtube-thumbnail", "stats", "fav", "share", "search", "search-engines", "reverse-image-search", "domain-lookup", "archive", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
         ("photos", "Photos &amp; Images", ["photo", "compress", "compress-video", "pdf", "pdf-tools", "merge-pdf", "image-converter", "exif-viewer"]),

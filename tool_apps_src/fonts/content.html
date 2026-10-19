@@ -1,0 +1,109 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu fn" id="fn">
+		<div class="tu-card fn-bar">
+			<label class="tu-label" for="fn-text">Your text <span class="tu-note">(type here and every font below updates)</span></label>
+			<textarea id="fn-text" class="tu-input" rows="2" spellcheck="false"></textarea>
+			<div class="fn-row">
+				<label>Size <input type="range" id="fn-size" min="12" max="200" step="1"><input type="number" id="fn-sizen" min="8" max="400" step="1"> px</label>
+				<label>Weight <select id="fn-weight"><option value="300">Light</option><option value="400">Regular</option><option value="500">Medium</option><option value="600">Semibold</option><option value="700">Bold</option><option value="800">Extra bold</option><option value="900">Black</option></select></label>
+				<label><input type="checkbox" id="fn-italic"> Italic</label>
+				<label>Case <select id="fn-tf"><option value="none">As typed</option><option value="uppercase">UPPERCASE</option><option value="lowercase">lowercase</option><option value="capitalize">Capitalize Words</option></select></label>
+				<label>Align <select id="fn-align"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></label>
+			</div>
+			<div class="fn-row">
+				<label>Text colour <input type="color" id="fn-color"></label>
+				<label><input type="checkbox" id="fn-bgon"> Background <input type="color" id="fn-bg"></label>
+				<label>Letter spacing <input type="range" id="fn-ls" min="-10" max="40" step="0.5"><input type="number" id="fn-lsn" step="0.5"> px</label>
+				<label>Line height <input type="range" id="fn-lh" min="0.8" max="2.2" step="0.05"><input type="number" id="fn-lhn" step="0.05"></label>
+			</div>
+			<details class="fn-fx"><summary>Effects: shadow, outline, gradient, glow</summary>
+				<div class="fn-row">
+					<label><input type="checkbox" id="fn-shon"> Shadow <input type="color" id="fn-sh"></label>
+					<label>Blur <input type="number" id="fn-shblur" min="0" max="60"></label><label>X <input type="number" id="fn-shx" min="-60" max="60"></label><label>Y <input type="number" id="fn-shy" min="-60" max="60"></label>
+				</div>
+				<div class="fn-row">
+					<label><input type="checkbox" id="fn-stron"> Outline <input type="color" id="fn-str"></label><label>Width <input type="number" id="fn-strw" min="0.5" max="20" step="0.5"> px</label>
+					<label><input type="checkbox" id="fn-glon"> Glow <input type="color" id="fn-gl"></label><label>Size <input type="number" id="fn-glb" min="2" max="80"> px</label>
+				</div>
+				<div class="fn-row">
+					<label><input type="checkbox" id="fn-grad"> Gradient text <input type="color" id="fn-g1"> to <input type="color" id="fn-g2"></label><label>Angle <input type="number" id="fn-gang" min="0" max="360" step="5">&deg;</label>
+				</div>
+			</details>
+			<div class="fn-presets" id="fn-presets"><span class="tu-note">Marketing looks:</span></div>
+		</div>
+
+		<div class="fn-tabs" role="tablist">
+			<button type="button" class="tu-chip" id="fn-t-browse" aria-pressed="true">Browse fonts</button>
+			<button type="button" class="tu-chip" id="fn-t-compare" aria-pressed="false">Compare</button>
+			<button type="button" class="tu-chip" id="fn-t-find" aria-pressed="false">What font is this? (from a picture)</button>
+		</div>
+
+		<div id="fn-p-browse">
+			<div class="fn-filters">
+				<div class="tu-chips" id="fn-cats"></div>
+				<input type="search" id="fn-q" class="tu-input" placeholder="Search font names…" aria-label="Search font names">
+				<label class="fn-fav"><input type="checkbox" id="fn-favonly"> ★ Favourites only</label>
+			</div>
+			<div class="tu-card fn-more">
+				<b>More fonts:</b>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fn-google">Add 80 popular Google Fonts</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fn-localfonts" hidden>Add every font installed on this computer</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fn-file">Add a font file…</button><input type="file" id="fn-fileinp" accept=".ttf,.otf,.woff,.woff2" hidden>
+				<span class="tu-note" id="fn-count"></span>
+				<p class="tu-note">Only fonts your browser can really draw are listed, so every sample is honest. Google Fonts are downloaded from Google when you press the button (that is the only thing that leaves your computer); everything else stays here.</p>
+			</div>
+			<div class="fn-grid" id="fn-grid"></div>
+		</div>
+
+		<div id="fn-p-compare" hidden>
+			<p class="tu-note">Tick the star-pick button <b>Compare</b> on up to four fonts in <i>Browse fonts</i>, then see them side by side here with your text and style.</p>
+			<div class="fn-cmp" id="fn-cmp"></div>
+		</div>
+
+		<div id="fn-p-find" hidden>
+			<div class="tu-card">
+				<p><b>Find a font from a picture.</b> Add a picture of the text (a screenshot, a logo, a photo of a sign), drag a box around one line of it, and type the words it says. The page draws those words in every font it has and ranks the ones that look most like your picture. It runs entirely in your browser: nothing is uploaded.</p>
+				<div class="fn-drop" id="fn-drop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture of the text">Drop a picture here, paste one (Ctrl/&#8984;+V) or click to choose
+					<input type="file" id="fn-img" accept="image/*" hidden></div>
+				<div class="fn-pic" id="fn-pic" hidden><div class="fn-stage" id="fn-stage"><canvas id="fn-cv"></canvas><div class="fn-sel" id="fn-sel" hidden></div></div></div>
+				<div class="fn-row" id="fn-matchrow" hidden>
+					<label class="fn-grow">The words in the picture <input type="text" id="fn-says" class="tu-input" placeholder="Type exactly what the selected text says" maxlength="80"></label>
+					<button type="button" class="tu-btn tu-btn--primary" id="fn-match">Find similar fonts</button>
+				</div>
+				<p class="tu-note" id="fn-matchnote"></p>
+				<div class="fn-results" id="fn-results"></div>
+			</div>
+			<div class="tu-card">
+				<p><b>Other free font identifiers</b> (these work from a picture too, and are better at fonts you do not have installed, but they upload your picture to their own site):</p>
+				<div class="fn-ext">
+					<a class="tu-btn tu-btn--ghost" href="https://www.myfonts.com/pages/whatthefont" target="_blank" rel="noopener">WhatTheFont (MyFonts)</a>
+					<a class="tu-btn tu-btn--ghost" href="https://www.fontsquirrel.com/matcherator" target="_blank" rel="noopener">Font Squirrel Matcherator</a>
+					<a class="tu-btn tu-btn--ghost" href="https://www.fontspring.com/matcherator" target="_blank" rel="noopener">Fontspring Matcherator</a>
+					<a class="tu-btn tu-btn--ghost" href="https://fonts.google.com/" target="_blank" rel="noopener">Google Fonts (browse and filter)</a>
+				</div>
+				<p class="tu-note">Tip: crop tightly to one line, make sure the letters are straight and not touching, and use a big, clear picture.</p>
+			</div>
+		</div>
+
+		<div class="tu-card fn-big" id="fn-big" hidden>
+			<div class="fn-bighead"><b id="fn-bigname"></b>
+				<span class="fn-bigbtns"><button type="button" class="tu-btn tu-btn--primary" id="fn-png">Download PNG</button> <button type="button" class="tu-btn tu-btn--ghost" id="fn-pngcopy">Copy as image</button> <button type="button" class="tu-btn tu-btn--ghost" id="fn-csscopy">Copy CSS</button> <button type="button" class="tu-btn tu-btn--ghost" id="fn-share">Copy link</button> <button type="button" class="tu-btn tu-btn--ghost" id="fn-bigx" aria-label="Close">&times;</button></span></div>
+			<div class="fn-bigprev" id="fn-bigprev"></div>
+			<pre class="fn-css" id="fn-css"></pre>
+		</div>
+		<div class="tu-toast" id="fn-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Preview your text in every font</h2>
+			<p>Type a headline, a name or a slogan and see it in every font on your computer at once, with your size, colours, shadow, outline, gradient and glow. Pick the one you like, copy the CSS for your website or download a PNG with a transparent background for a thumbnail, banner or sale sign.</p>
+			<h3>Questions</h3>
+			<h4>Why do I see only some fonts?</h4>
+			<p>The page lists only fonts your browser can actually draw. A website cannot read your font folder, so it asks the browser, font by font, whether each name is really installed. Press <em>Add 80 popular Google Fonts</em> for a large, free set that works on every device, or add a font file you own.</p>
+			<h4>Will the PNG look the same on another computer?</h4>
+			<p>Yes: the PNG is a picture, so it looks exactly like the preview. The CSS only looks the same where that font is available, so for websites use a Google Font or host the font file yourself.</p>
+			<h4>How does the picture matcher work?</h4>
+			<p>It turns your picture into black and white, crops to the ink, shrinks it to a small grid, does the same for your words in each font, and compares the shapes (and the proportions of the text). It is a simple, honest comparison, not an AI: it works well for clear, straight text and fonts it can draw. For a font you do not have, try the other identifiers listed on the page.</p>
+			<h4>Is it private?</h4>
+			<p>Yes. Your text, pictures and favourites stay in your browser (favourites are saved in this browser only). The only network request is the Google Fonts download you start yourself.</p>
+		</div>
+	</div>

@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-18",
+ "generated": "2026-10-19",
  "calculators": [
   {
    "href": "/geometry",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/fonts",
+   "title": "Font Preview and Finder",
+   "icon": "/img/fonts-logo.png",
+   "desc": "Type your text and see it in every font, with shadow, outline, gradient and glow. Download a transparent PNG, copy the CSS, or find a font from a picture.",
+   "added": "2026-10-19",
+   "kind": "tool"
+  },
+  {
    "href": "/compress-video",
    "title": "Video Compressor",
    "icon": "/img/compress-video-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Whois for the web: domain age, registrar, expiry, who hosts a site, DNS and email setup, and warning signs.",
    "added": "2026-10-14",
    "kind": "tool"
-  },
-  {
-   "href": "/exif-viewer",
-   "title": "EXIF Viewer",
-   "icon": "/img/exif-viewer-logo.png",
-   "desc": "See the camera, date, GPS location and AI / edit flags hidden in a photo, and save a copy with the metadata removed.",
-   "added": "2026-10-14",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/fonts",
+   "title": "Font Preview and Finder",
+   "icon": "/img/fonts-logo.png",
+   "desc": "Type your text and see it in every font, with shadow, outline, gradient and glow. Download a transparent PNG, copy the CSS, or find a font from a picture.",
+   "added": "2026-10-19",
+   "kind": "tool"
+  },
   {
    "href": "/compress-video",
    "title": "Video Compressor",
@@ -251,14 +259,6 @@
    "icon": "/img/compress-logo.png",
    "desc": "Make JPG, PNG, WebP, PDF and audio files smaller with a before and after preview. Private: nothing is uploaded.",
    "added": "2026-10-16",
-   "kind": "tool"
-  },
-  {
-   "href": "/fav",
-   "title": "MES Favourites",
-   "icon": "/img/fav-logo.png",
-   "desc": "Build your own page of favourite mes.fm calculators and tools: search, drag into groups, and take it to any device with one link.",
-   "added": "2026-10-15",
    "kind": "tool"
   }
  ]

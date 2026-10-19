@@ -673,6 +673,11 @@ APPS = {
                        tag="Make videos smaller, privately.", accent="#0f766e", dark="#115e59", tint="#dcf5f1",
                        desc="Free online video compressor: shrink MP4 and MOV videos to a file size you choose (say 25 MB for email or chat) or a quality, lower the resolution and frame rate, and save as MP4 or WebM. Fast with your computer's own video encoder, a queue for several files, and nothing is uploaded.",
                        js_v="1"),
+    # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
+    "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
+                  tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
+                  desc="Free online font previewer: type your text and see it in every font on your computer at once, with size, colour, shadow, outline, gradient and glow. Make marketing text, download a transparent PNG or copy the CSS, compare fonts side by side, and find a font from a picture. Private: nothing is uploaded.",
+                  js_v="1"),
     # Redshift & Blueshift Simulator (2026-10-16): gravity (a pulse between a place near and far from a mass, drawn as a refractive-index gradient with two clocks), Doppler (relativistic
     # wavefronts), spectrum shifter / calculator (motion x gravity x expansion), expanding universe. lib.js = MESRed (node tests tool_apps_src/redshift-simulator-tests.js).
     "redshift-simulator": dict(title="MES Redshift & Blueshift Simulator", page_title="Redshift and Blueshift Simulator: Doppler, Gravitational and Cosmological",
