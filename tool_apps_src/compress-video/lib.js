@@ -1,6 +1,7 @@
 /* MES Video Compressor -- pure helpers (no DOM). Browser global `MESVid`; node: require('./tool_apps_src/compress-video/lib.js'); tests: node tool_apps_src/compress-video-tests.js
- * Decisions only: size parsing, resolution / frame-rate fitting, codec strings, bitrate for a quality or a target size, what to default to on this
- * computer (cores, memory, free disk, codec support) and what to warn about before a job. app.js does the demuxing, encoding and muxing. */
+ * Decisions only: size parsing, resolution / frame-rate fitting, codec strings, constant-quality maths (quantizer per preset, the size model fitted on
+ * a short probe of the video, which samples to probe), bitrate for a target size, what to default to on this computer (cores, memory, free disk, codec
+ * support) and what to warn about before a job. app.js does the demuxing, encoding and muxing. */
 (function (root) {
 	"use strict";
 	var MB = 1048576;
@@ -31,6 +32,13 @@
 	// frame-rate cap: drop frames so the output never exceeds `cap` fps (0 = keep). Time-based so odd rates (29.97, VFR) behave.
 	function outFps(srcFps, cap) { srcFps = srcFps > 0 ? srcFps : 30; return cap > 0 && srcFps > cap ? cap : srcFps; }
 	function keepFrame(ts, lastKept, fps) { return lastKept == null || ts - lastKept >= 1e6 / fps * 0.9; }
+	// frame rate to give mp4-muxer, which SNAPS every timestamp to a 1/frameRate grid: only for a constant whole-number rate that the frames really
+	// sit on. A phone's variable rate, 29.97 fps, or 25 fps capped at 24 (all frames kept) would get repeated timestamps; then none (exact microseconds).
+	function muxFrameRate(srcFps, outFps, cfr) {
+		if (!cfr || !(srcFps > 0) || !(outFps > 0)) return undefined;
+		var r = Math.round(outFps), k = srcFps / outFps; if (r < 1 || Math.abs(outFps - r) > 0.001 || Math.abs(srcFps - Math.round(srcFps)) > 0.001 || Math.abs(k - Math.round(k)) > 0.001) return undefined;
+		return r;
+	}
 
 	function avcCodec(w, h, fps) {
 		var mbps = Math.ceil(w / 16) * Math.ceil(h / 16) * (fps || 30), fs = Math.ceil(w / 16) * Math.ceil(h / 16);
@@ -38,14 +46,81 @@
 		return "avc1.6400" + lvl;   // High profile
 	}
 	function vp9Codec(w, h) { var px = w * h; return "vp09.00." + (px <= 414720 ? "30" : px <= 983040 ? "31" : px <= 2228224 ? "40" : px <= 8912896 ? "50" : "51") + ".08"; }
-	var PRESETS = { high: { bpp: 0.11, label: "High quality" }, balanced: { bpp: 0.07, label: "Balanced" }, small: { bpp: 0.045, label: "Small" }, smallest: { bpp: 0.028, label: "Smallest" } };
-	function codecFactor(c) { return /vp|av1/i.test(c || "") ? 0.8 : 1; }
-	// bitrate for a quality preset: bits per pixel per frame x pixels x fps, never above 85% of what the source used
+	// "Choose a quality" = constant quality, like HandBrake's RF: every frame gets the same H.264 quantizer (q), so a still picture costs little and
+	// a busy one costs more. Measured 2026-10-20 against x264 (HandBrake's encoder) at RF 22 on a 79 s 1080p talk-show clip with a Mac's hardware
+	// encoder: q 24 = 1.18x the video size at VMAF 95.9 vs 96.0, q 23 = 1.33x at 96.2, so Balanced is 23.5 (frames alternate 23 / 24).
+	// bpp is only used when no encoder here takes a quantizer (then the size cannot follow the picture).
+	var PRESETS = { high: { q: 21, bpp: 0.08, label: "High (bigger, cleanest picture)" }, balanced: { q: 23.5, bpp: 0.05, label: "Balanced (like HandBrake RF 22)" },
+		small: { q: 27, bpp: 0.032, label: "Small" }, smallest: { q: 30, bpp: 0.02, label: "Smallest (soft picture)" } };
+	var GOP_SEC = 10;   // a key frame every 10 s, as HandBrake does: key frames are big, and a 2 s interval cost ~16% extra on a talking-head video
+	function keyEvery(fps) { return Math.max(1, Math.round((fps > 0 ? fps : 30) * GOP_SEC)); }
+	function presetQ(preset) { return (PRESETS[preset] || PRESETS.balanced).q; }
+	// fallback when no quantizer is available: bits per pixel per frame x pixels x fps, never above 85% of what the source used
 	function presetBitrate(w, h, fps, preset, codec, srcBps) {
-		var p = PRESETS[preset] || PRESETS.balanced, b = w * h * fps * p.bpp * codecFactor(codec);
+		var p = PRESETS[preset] || PRESETS.balanced, b = w * h * fps * p.bpp;
 		if (srcBps > 0) b = Math.min(b, srcBps * 0.85);
 		return Math.max(80000, Math.round(b));
 	}
+	// which stretches to probe: times = decode time of each sample (s, ascending), sync = key-frame flags. Windows start on a key frame (so they can be
+	// decoded on their own), spread through the video, about 300 frames in all. Returns [{ i: first sample, n: count }].
+	function probeWindows(times, sync, dur) {
+		var total = times.length, keys = [], out = [], seen = {}; if (!total) return out;
+		for (var j = 0; j < total; j++) if (sync[j]) keys.push(j); if (!keys.length) keys.push(0);
+		var want = Math.max(3, Math.min(8, Math.ceil((dur || 0) / 12))), per = Math.max(30, Math.min(60, Math.floor(300 / want)));
+		for (var k = 0; k < want; k++) {
+			var t = (dur || times[total - 1]) * (k + 0.5) / want, lo = 0, hi = keys.length - 1;
+			while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (times[keys[mid]] <= t) lo = mid; else hi = mid - 1; }
+			if (!seen[keys[lo]]) { seen[keys[lo]] = 1; out.push({ i: keys[lo], n: 0 }); }
+		}
+		var len = out.length === 1 ? 150 : per;   // key frames too far apart to spread the windows: one longer window at the start
+		for (k = 0; k < out.length; k++) out[k].n = Math.min(len, total - out[k].i, k + 1 < out.length ? out[k + 1].i - out[k].i : total);
+		return out;
+	}
+	// size model from a probe: pr = { q, bitsP, bitsK (average bits of a delta / key frame at quantizer q), sP, sK (quantizer steps that halve them; s = both) }
+	function cqVideoBps(pr, q, durSec, fps) {
+		var frames = Math.max(1, Math.round(durSec * fps)), keys = Math.min(frames, Math.max(1, Math.ceil(frames / keyEvery(fps))));
+		var kP = Math.pow(2, -(q - pr.q) / (pr.sP || pr.s)), kK = Math.pow(2, -(q - pr.q) / (pr.sK || pr.s));
+		return ((frames - keys) * pr.bitsP * kP + keys * pr.bitsK * kK) / Math.max(0.1, durSec);
+	}
+	// the quantizer that gives `bps` (the model falls as q rises, so bisection)
+	function qForBps(pr, bps, durSec, fps) {
+		var lo = -40, hi = 120; for (var j = 0; j < 60; j++) { var mid = (lo + hi) / 2; if (cqVideoBps(pr, mid, durSec, fps) > bps) lo = mid; else hi = mid; }
+		return (lo + hi) / 2;
+	}
+	function clampQ(q) { return Math.max(10, Math.min(51, Math.round(q * 4) / 4)); }
+	// slope from the same probe windows encoded at two quantizers; null when the encoder ignored the quantizer (all the bits together did not drop)
+	function probeSlope(q0, bits0, q1, bits1) {
+		if (!(bits0 > 0) || !(bits1 > 0) || q1 <= q0) return null;
+		var r = bits1 / bits0; if (r > 0.85) return null;
+		return Math.max(4, Math.min(10, (q1 - q0) / Math.log2(1 / r)));
+	}
+	// the same for one kind of frame (key or delta) once the quantizer is known to work: an almost still picture can barely shrink its delta frames
+	function slopeOf(q0, bits0, q1, bits1) {
+		if (!(bits0 > 0) || !(bits1 > 0) || q1 <= q0) return null;
+		var r = bits1 / bits0; return r >= 1 ? 14 : Math.max(3, Math.min(14, (q1 - q0) / Math.log2(1 / r)));
+	}
+	// the quantizer to use. goal "preset": the preset's q, raised only when that would not make the file smaller than the source (capBps).
+	// goal "target": the q that should land just under the target, never better than High (there is no point spending more than that).
+	function chooseQ(pr, o) {
+		var q, why = "";
+		if (o.goal === "target") { q = qForBps(pr, o.targetBps * 0.97, o.dur, o.fps); if (q < PRESETS.high.q) { q = PRESETS.high.q; why = "roomy"; } }
+		else q = presetQ(o.preset);
+		if (o.capBps > 0 && cqVideoBps(pr, q, o.dur, o.fps) > o.capBps) { q = Math.max(q, qForBps(pr, o.capBps, o.dur, o.fps)); why = "capped"; }
+		q = clampQ(q); return { q: q, bps: Math.round(cqVideoBps(pr, q, o.dur, o.fps)), why: why };
+	}
+	// whole-number quantizer for each frame that averages out to a fractional q (23.5 -> 24, 23, 24, 23 ...)
+	function qStepper(q) { var n = 0; return function () { n++; return Math.max(0, Math.min(51, Math.round(q * n) - Math.round(q * (n - 1)))); }; }
+	// target-size run with a quantizer came out at actualBytes: quantizer for one more try, or null when close enough (<= 3% over, or under)
+	function retuneQ(prevQ, s, targetBytes, actualBytes, audioBytes) {
+		if (actualBytes <= targetBytes * 1.03) return null;
+		var a = audioBytes || 0, va = Math.max(1, actualBytes - a), vt = Math.max(1, targetBytes * 0.97 - a);
+		return clampQ(prevQ + (s || 6) * Math.log2(va / vt) + 0.25);
+	}
+	// when the final encoder takes no quantizer (VP9 / WebM, the software H.264 fallback) it gets an average bitrate this much above the
+	// constant-quality size, which was about the same look in our tests (VP9 needed ~1.2x, Chrome's software H.264 far more)
+	var VBR_FACTOR = { vp9: 1.2, sw: 1.6, hw: 1.25 };
+	// 10-bit / HDR sources: the hardware H.264 encoder cannot take their frames, so they go through a canvas (8-bit) first
+	function needs8bit(codec) { return /^(hvc1|hev1)\.2\./i.test(codec || "") || /^avc1\.6e/i.test(codec || "") || /^vp09\.0[23]\./i.test(codec || "") || /^vp09\.\d\d\.\d\d\.1[02]/i.test(codec || "") || /^av01\.\d\.\d\d[MH]\.1[02]/i.test(codec || ""); }
 	// video bitrate that should land on a target file size (container overhead ~3%); feasible=false when it would be starved
 	function targetBitrate(targetBytes, durationSec, audioBps, w, h, fps) {
 		var total = targetBytes * 8 * 0.97 / Math.max(0.1, durationSec), v = total - (audioBps || 0), floor = 60000;
@@ -97,7 +172,9 @@
 	function isMp4Family(name, type) { return /\.(mp4|m4v|mov|3gp)$/i.test(name || "") || /^video\/(mp4|quicktime|3gpp)/i.test(type || ""); }
 
 	var V = { MB: MB, parseSize: parseSize, formatBytes: formatBytes, formatTime: formatTime, formatBitrate: formatBitrate, even: even, fitDims: fitDims, rotationFromMatrix: rotationFromMatrix,
-		outFps: outFps, keepFrame: keepFrame, avcCodec: avcCodec, vp9Codec: vp9Codec, PRESETS: PRESETS, presetBitrate: presetBitrate, targetBitrate: targetBitrate, retuneBitrate: retuneBitrate,
+		outFps: outFps, keepFrame: keepFrame, muxFrameRate: muxFrameRate, avcCodec: avcCodec, vp9Codec: vp9Codec, PRESETS: PRESETS, presetBitrate: presetBitrate, targetBitrate: targetBitrate, retuneBitrate: retuneBitrate,
+		GOP_SEC: GOP_SEC, keyEvery: keyEvery, presetQ: presetQ, probeWindows: probeWindows, cqVideoBps: cqVideoBps, qForBps: qForBps, clampQ: clampQ, probeSlope: probeSlope, slopeOf: slopeOf, chooseQ: chooseQ,
+		qStepper: qStepper, retuneQ: retuneQ, VBR_FACTOR: VBR_FACTOR, needs8bit: needs8bit,
 		estimateBytes: estimateBytes, AUDIO_CHOICES: AUDIO_CHOICES, audioBps: audioBps, profile: profile, chooseFormat: chooseFormat, warnings: warnings, outName: outName, isVideo: isVideo, isMp4Family: isMp4Family };
 	if (typeof module !== "undefined" && module.exports) module.exports = V; else root.MESVid = V;
 })(typeof window !== "undefined" ? window : this);

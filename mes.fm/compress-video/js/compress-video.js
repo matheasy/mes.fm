@@ -1,6 +1,7 @@
 /* MES Video Compressor -- pure helpers (no DOM). Browser global `MESVid`; node: require('./tool_apps_src/compress-video/lib.js'); tests: node tool_apps_src/compress-video-tests.js
- * Decisions only: size parsing, resolution / frame-rate fitting, codec strings, bitrate for a quality or a target size, what to default to on this
- * computer (cores, memory, free disk, codec support) and what to warn about before a job. app.js does the demuxing, encoding and muxing. */
+ * Decisions only: size parsing, resolution / frame-rate fitting, codec strings, constant-quality maths (quantizer per preset, the size model fitted on
+ * a short probe of the video, which samples to probe), bitrate for a target size, what to default to on this computer (cores, memory, free disk, codec
+ * support) and what to warn about before a job. app.js does the demuxing, encoding and muxing. */
 (function (root) {
 	"use strict";
 	var MB = 1048576;
@@ -31,6 +32,13 @@
 	// frame-rate cap: drop frames so the output never exceeds `cap` fps (0 = keep). Time-based so odd rates (29.97, VFR) behave.
 	function outFps(srcFps, cap) { srcFps = srcFps > 0 ? srcFps : 30; return cap > 0 && srcFps > cap ? cap : srcFps; }
 	function keepFrame(ts, lastKept, fps) { return lastKept == null || ts - lastKept >= 1e6 / fps * 0.9; }
+	// frame rate to give mp4-muxer, which SNAPS every timestamp to a 1/frameRate grid: only for a constant whole-number rate that the frames really
+	// sit on. A phone's variable rate, 29.97 fps, or 25 fps capped at 24 (all frames kept) would get repeated timestamps; then none (exact microseconds).
+	function muxFrameRate(srcFps, outFps, cfr) {
+		if (!cfr || !(srcFps > 0) || !(outFps > 0)) return undefined;
+		var r = Math.round(outFps), k = srcFps / outFps; if (r < 1 || Math.abs(outFps - r) > 0.001 || Math.abs(srcFps - Math.round(srcFps)) > 0.001 || Math.abs(k - Math.round(k)) > 0.001) return undefined;
+		return r;
+	}
 
 	function avcCodec(w, h, fps) {
 		var mbps = Math.ceil(w / 16) * Math.ceil(h / 16) * (fps || 30), fs = Math.ceil(w / 16) * Math.ceil(h / 16);
@@ -38,14 +46,81 @@
 		return "avc1.6400" + lvl;   // High profile
 	}
 	function vp9Codec(w, h) { var px = w * h; return "vp09.00." + (px <= 414720 ? "30" : px <= 983040 ? "31" : px <= 2228224 ? "40" : px <= 8912896 ? "50" : "51") + ".08"; }
-	var PRESETS = { high: { bpp: 0.11, label: "High quality" }, balanced: { bpp: 0.07, label: "Balanced" }, small: { bpp: 0.045, label: "Small" }, smallest: { bpp: 0.028, label: "Smallest" } };
-	function codecFactor(c) { return /vp|av1/i.test(c || "") ? 0.8 : 1; }
-	// bitrate for a quality preset: bits per pixel per frame x pixels x fps, never above 85% of what the source used
+	// "Choose a quality" = constant quality, like HandBrake's RF: every frame gets the same H.264 quantizer (q), so a still picture costs little and
+	// a busy one costs more. Measured 2026-10-20 against x264 (HandBrake's encoder) at RF 22 on a 79 s 1080p talk-show clip with a Mac's hardware
+	// encoder: q 24 = 1.18x the video size at VMAF 95.9 vs 96.0, q 23 = 1.33x at 96.2, so Balanced is 23.5 (frames alternate 23 / 24).
+	// bpp is only used when no encoder here takes a quantizer (then the size cannot follow the picture).
+	var PRESETS = { high: { q: 21, bpp: 0.08, label: "High (bigger, cleanest picture)" }, balanced: { q: 23.5, bpp: 0.05, label: "Balanced (like HandBrake RF 22)" },
+		small: { q: 27, bpp: 0.032, label: "Small" }, smallest: { q: 30, bpp: 0.02, label: "Smallest (soft picture)" } };
+	var GOP_SEC = 10;   // a key frame every 10 s, as HandBrake does: key frames are big, and a 2 s interval cost ~16% extra on a talking-head video
+	function keyEvery(fps) { return Math.max(1, Math.round((fps > 0 ? fps : 30) * GOP_SEC)); }
+	function presetQ(preset) { return (PRESETS[preset] || PRESETS.balanced).q; }
+	// fallback when no quantizer is available: bits per pixel per frame x pixels x fps, never above 85% of what the source used
 	function presetBitrate(w, h, fps, preset, codec, srcBps) {
-		var p = PRESETS[preset] || PRESETS.balanced, b = w * h * fps * p.bpp * codecFactor(codec);
+		var p = PRESETS[preset] || PRESETS.balanced, b = w * h * fps * p.bpp;
 		if (srcBps > 0) b = Math.min(b, srcBps * 0.85);
 		return Math.max(80000, Math.round(b));
 	}
+	// which stretches to probe: times = decode time of each sample (s, ascending), sync = key-frame flags. Windows start on a key frame (so they can be
+	// decoded on their own), spread through the video, about 300 frames in all. Returns [{ i: first sample, n: count }].
+	function probeWindows(times, sync, dur) {
+		var total = times.length, keys = [], out = [], seen = {}; if (!total) return out;
+		for (var j = 0; j < total; j++) if (sync[j]) keys.push(j); if (!keys.length) keys.push(0);
+		var want = Math.max(3, Math.min(8, Math.ceil((dur || 0) / 12))), per = Math.max(30, Math.min(60, Math.floor(300 / want)));
+		for (var k = 0; k < want; k++) {
+			var t = (dur || times[total - 1]) * (k + 0.5) / want, lo = 0, hi = keys.length - 1;
+			while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (times[keys[mid]] <= t) lo = mid; else hi = mid - 1; }
+			if (!seen[keys[lo]]) { seen[keys[lo]] = 1; out.push({ i: keys[lo], n: 0 }); }
+		}
+		var len = out.length === 1 ? 150 : per;   // key frames too far apart to spread the windows: one longer window at the start
+		for (k = 0; k < out.length; k++) out[k].n = Math.min(len, total - out[k].i, k + 1 < out.length ? out[k + 1].i - out[k].i : total);
+		return out;
+	}
+	// size model from a probe: pr = { q, bitsP, bitsK (average bits of a delta / key frame at quantizer q), sP, sK (quantizer steps that halve them; s = both) }
+	function cqVideoBps(pr, q, durSec, fps) {
+		var frames = Math.max(1, Math.round(durSec * fps)), keys = Math.min(frames, Math.max(1, Math.ceil(frames / keyEvery(fps))));
+		var kP = Math.pow(2, -(q - pr.q) / (pr.sP || pr.s)), kK = Math.pow(2, -(q - pr.q) / (pr.sK || pr.s));
+		return ((frames - keys) * pr.bitsP * kP + keys * pr.bitsK * kK) / Math.max(0.1, durSec);
+	}
+	// the quantizer that gives `bps` (the model falls as q rises, so bisection)
+	function qForBps(pr, bps, durSec, fps) {
+		var lo = -40, hi = 120; for (var j = 0; j < 60; j++) { var mid = (lo + hi) / 2; if (cqVideoBps(pr, mid, durSec, fps) > bps) lo = mid; else hi = mid; }
+		return (lo + hi) / 2;
+	}
+	function clampQ(q) { return Math.max(10, Math.min(51, Math.round(q * 4) / 4)); }
+	// slope from the same probe windows encoded at two quantizers; null when the encoder ignored the quantizer (all the bits together did not drop)
+	function probeSlope(q0, bits0, q1, bits1) {
+		if (!(bits0 > 0) || !(bits1 > 0) || q1 <= q0) return null;
+		var r = bits1 / bits0; if (r > 0.85) return null;
+		return Math.max(4, Math.min(10, (q1 - q0) / Math.log2(1 / r)));
+	}
+	// the same for one kind of frame (key or delta) once the quantizer is known to work: an almost still picture can barely shrink its delta frames
+	function slopeOf(q0, bits0, q1, bits1) {
+		if (!(bits0 > 0) || !(bits1 > 0) || q1 <= q0) return null;
+		var r = bits1 / bits0; return r >= 1 ? 14 : Math.max(3, Math.min(14, (q1 - q0) / Math.log2(1 / r)));
+	}
+	// the quantizer to use. goal "preset": the preset's q, raised only when that would not make the file smaller than the source (capBps).
+	// goal "target": the q that should land just under the target, never better than High (there is no point spending more than that).
+	function chooseQ(pr, o) {
+		var q, why = "";
+		if (o.goal === "target") { q = qForBps(pr, o.targetBps * 0.97, o.dur, o.fps); if (q < PRESETS.high.q) { q = PRESETS.high.q; why = "roomy"; } }
+		else q = presetQ(o.preset);
+		if (o.capBps > 0 && cqVideoBps(pr, q, o.dur, o.fps) > o.capBps) { q = Math.max(q, qForBps(pr, o.capBps, o.dur, o.fps)); why = "capped"; }
+		q = clampQ(q); return { q: q, bps: Math.round(cqVideoBps(pr, q, o.dur, o.fps)), why: why };
+	}
+	// whole-number quantizer for each frame that averages out to a fractional q (23.5 -> 24, 23, 24, 23 ...)
+	function qStepper(q) { var n = 0; return function () { n++; return Math.max(0, Math.min(51, Math.round(q * n) - Math.round(q * (n - 1)))); }; }
+	// target-size run with a quantizer came out at actualBytes: quantizer for one more try, or null when close enough (<= 3% over, or under)
+	function retuneQ(prevQ, s, targetBytes, actualBytes, audioBytes) {
+		if (actualBytes <= targetBytes * 1.03) return null;
+		var a = audioBytes || 0, va = Math.max(1, actualBytes - a), vt = Math.max(1, targetBytes * 0.97 - a);
+		return clampQ(prevQ + (s || 6) * Math.log2(va / vt) + 0.25);
+	}
+	// when the final encoder takes no quantizer (VP9 / WebM, the software H.264 fallback) it gets an average bitrate this much above the
+	// constant-quality size, which was about the same look in our tests (VP9 needed ~1.2x, Chrome's software H.264 far more)
+	var VBR_FACTOR = { vp9: 1.2, sw: 1.6, hw: 1.25 };
+	// 10-bit / HDR sources: the hardware H.264 encoder cannot take their frames, so they go through a canvas (8-bit) first
+	function needs8bit(codec) { return /^(hvc1|hev1)\.2\./i.test(codec || "") || /^avc1\.6e/i.test(codec || "") || /^vp09\.0[23]\./i.test(codec || "") || /^vp09\.\d\d\.\d\d\.1[02]/i.test(codec || "") || /^av01\.\d\.\d\d[MH]\.1[02]/i.test(codec || ""); }
 	// video bitrate that should land on a target file size (container overhead ~3%); feasible=false when it would be starved
 	function targetBitrate(targetBytes, durationSec, audioBps, w, h, fps) {
 		var total = targetBytes * 8 * 0.97 / Math.max(0.1, durationSec), v = total - (audioBps || 0), floor = 60000;
@@ -97,7 +172,9 @@
 	function isMp4Family(name, type) { return /\.(mp4|m4v|mov|3gp)$/i.test(name || "") || /^video\/(mp4|quicktime|3gpp)/i.test(type || ""); }
 
 	var V = { MB: MB, parseSize: parseSize, formatBytes: formatBytes, formatTime: formatTime, formatBitrate: formatBitrate, even: even, fitDims: fitDims, rotationFromMatrix: rotationFromMatrix,
-		outFps: outFps, keepFrame: keepFrame, avcCodec: avcCodec, vp9Codec: vp9Codec, PRESETS: PRESETS, presetBitrate: presetBitrate, targetBitrate: targetBitrate, retuneBitrate: retuneBitrate,
+		outFps: outFps, keepFrame: keepFrame, muxFrameRate: muxFrameRate, avcCodec: avcCodec, vp9Codec: vp9Codec, PRESETS: PRESETS, presetBitrate: presetBitrate, targetBitrate: targetBitrate, retuneBitrate: retuneBitrate,
+		GOP_SEC: GOP_SEC, keyEvery: keyEvery, presetQ: presetQ, probeWindows: probeWindows, cqVideoBps: cqVideoBps, qForBps: qForBps, clampQ: clampQ, probeSlope: probeSlope, slopeOf: slopeOf, chooseQ: chooseQ,
+		qStepper: qStepper, retuneQ: retuneQ, VBR_FACTOR: VBR_FACTOR, needs8bit: needs8bit,
 		estimateBytes: estimateBytes, AUDIO_CHOICES: AUDIO_CHOICES, audioBps: audioBps, profile: profile, chooseFormat: chooseFormat, warnings: warnings, outName: outName, isVideo: isVideo, isMp4Family: isMp4Family };
 	if (typeof module !== "undefined" && module.exports) module.exports = V; else root.MESVid = V;
 })(typeof window !== "undefined" ? window : this);
@@ -116,7 +193,9 @@
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
 	var qs = new URLSearchParams(location.search), FORCE_REC = qs.get("engine") === "recorder";
 	var files = [], busy = false, uid = 0, cancelAll = false, caps = { cores: navigator.hardwareConcurrency || 0, mem: navigator.deviceMemory || 0, fs: !!window.showSaveFilePicker, webcodecs: !!(window.VideoEncoder && window.VideoDecoder && window.EncodedVideoChunk), freeBytes: 0, quota: 0 };
-	var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+	// a wake-up signal for the encode loops: a background tab runs setTimeout at most once a second (after 5 minutes once a minute), so the loops
+	// wait for the codecs' "dequeue" events and for new samples instead; the timeout is only a safety net
+	function signal() { var w = []; return { wait: function (ms) { return new Promise(function (r) { var t = setTimeout(done, ms || 250); function done() { clearTimeout(t); r(); } w.push(done); }); }, wake: function () { var a = w; w = []; for (var j = 0; j < a.length; j++) a[j](); } }; }
 	var scripts = {};
 	function loadScript(u) { if (!scripts[u]) scripts[u] = new Promise(function (res, rej) { var s = document.createElement("script"); s.src = u; s.onload = res; s.onerror = function () { delete scripts[u]; rej(new Error("Could not load " + u.split("/")[4] + ". Check your connection and try again.")); }; document.head.appendChild(s); }); return scripts[u]; }
 	function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
@@ -124,11 +203,13 @@
 	function download(blob, name) { var a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 20000); }
 
 	/* ---------- what this computer can do ---------- */
-	var support = { h264: false, hw: false, vp9: false, aac: false, opus: false };
+	var support = { h264: false, hw: false, vp9: false, aac: false, opus: false, cq: false };
 	function probeCaps() {
 		var jobs = [];
 		if (navigator.storage && navigator.storage.estimate) jobs.push(navigator.storage.estimate().then(function (e) { caps.quota = e.quota || 0; caps.freeBytes = Math.max(0, (e.quota || 0) - (e.usage || 0)); }).catch(function () { }));
+		try { if (navigator.brave && navigator.brave.isBrave) jobs.push(navigator.brave.isBrave().then(function (b) { caps.brave = !!b; }, function () { })); } catch (e) { /* ignore */ }
 		if (caps.webcodecs) {
+			jobs.push(cqConfig(1920, 1080, 30).then(function (c) { support.cq = !!c; }));
 			var ve = function (codec, extra) { return VideoEncoder.isConfigSupported(Object.assign({ codec: codec, width: 1920, height: 1080, bitrate: 5e6, framerate: 30 }, extra || {})).then(function (r) { return !!(r && r.supported); }, function () { return false; }); };
 			jobs.push(ve("avc1.640028").then(function (b) { support.h264 = b; }), ve("avc1.640028", { hardwareAcceleration: "prefer-hardware" }).then(function (b) { support.hw = b; }), ve("vp09.00.40.08").then(function (b) { support.vp9 = b; }));
 			if (window.AudioEncoder) {
@@ -143,9 +224,34 @@
 		var pr = V.profile(caps), h = "<b>This computer</b> &ndash; ";
 		h += (caps.cores ? caps.cores + " processor cores" : "cores unknown") + ", " + (caps.mem ? "about " + (caps.mem >= 8 ? "8 GB or more" : caps.mem + " GB") + " memory" : "memory not reported by this browser") + ", " + (caps.freeBytes ? V.formatBytes(caps.freeBytes) + " free space reported" : "free space unknown") + ". ";
 		h += "Rated <b>" + pr.level + "</b>: sensible pictures up to " + (pr.maxShort >= 2160 ? "4K" : pr.maxShort + "p") + ".<br>";
-		h += pill(caps.webcodecs && support.h264, "H.264 (MP4) encoder" + (support.hw ? ", hardware" : "")) + pill(caps.webcodecs && support.vp9, "VP9 (WebM) encoder") + pill(support.aac || support.opus, "audio encoder" + (support.aac ? " (AAC)" : support.opus ? " (Opus)" : "")) + pill(caps.fs, "save straight to disk");
+		h += pill(caps.webcodecs && support.h264, "H.264 (MP4) encoder" + (support.hw ? ", hardware" : "")) + pill(caps.webcodecs && support.vp9, "VP9 (WebM) encoder") + pill(support.aac || support.opus, "audio encoder" + (support.aac ? " (AAC)" : support.opus ? " (Opus)" : ""));
+		h += pill(support.cq, "constant quality (the size follows the picture)");
+		h += caps.fs ? pill(true, "save straight to disk") : caps.brave ? '<span class="cv-pill is-off">&#9888; save straight to disk: off in Brave</span>' : pill(false, "save straight to disk");
 		if (!caps.webcodecs || (!support.h264 && !support.vp9)) h += "<br>This browser cannot encode video with WebCodecs, so videos are recorded again in real time (as long as the video plays). Chrome, Edge and Brave on a computer are much faster.";
+		else if (!support.cq) h += "<br>This browser's H.264 encoder cannot keep a constant quality, so &ldquo;Choose a quality&rdquo; uses a fixed bitrate for the picture size here: the file size cannot follow how much detail the video has.";
+		if (!caps.fs && caps.brave) h += '<p class="cv-hint">Brave turns off saving straight to disk. To turn it on, open <code>brave://flags/#file-system-access-api</code> in a new tab, set it to Enabled and restart Brave. Without it the result is kept in memory and downloaded at the end, which is fine unless the result is several GB. <button type="button" class="tu-btn tu-btn--ghost cv-copy" data-copy="brave://flags/#file-system-access-api">Copy the address</button></p>';
 		$("cv-caps").innerHTML = h; fillOptions();
+	}
+	$("cv-caps").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-copy]"); if (!b) return; var txt = b.getAttribute("data-copy");
+		var done = function () { var was = b.textContent; b.textContent = "Copied"; setTimeout(function () { b.textContent = was; }, 1600); };
+		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, function () { window.prompt("Copy this:", txt); }); else window.prompt("Copy this:", txt);
+	});
+
+	/* ---------- constant quality: an H.264 encoder that takes a quantizer for every frame ---------- */
+	var cqCache = {};
+	function cqConfig(w, h, fps) {
+		var k = w + "x" + h + "@" + Math.round(fps);
+		if (!cqCache[k]) cqCache[k] = (async function () {
+			if (!caps.webcodecs) return null;
+			var hws = ["prefer-hardware", "no-preference"];
+			for (var j = 0; j < hws.length; j++) {
+				var c = { codec: V.avcCodec(w, h, fps), width: w, height: h, framerate: Math.round(fps * 100) / 100, bitrateMode: "quantizer", latencyMode: "quality", hardwareAcceleration: hws[j], avc: { format: "avc" } };
+				try { var r = await VideoEncoder.isConfigSupported(c); if (r && r.supported) return c; } catch (e) { /* try the next one */ }
+			}
+			return null;
+		})();
+		return cqCache[k];
 	}
 
 	/* ---------- options ---------- */
@@ -177,17 +283,85 @@
 		var cap = capValue(), rot = i.rot || 0, d = V.fitDims(i.w, i.h, cap), fps = V.outFps(i.fps, parseInt(S.fps, 10) || 0), fmt = S.fmt;
 		var codec = fmt === "webm" ? "vp09" : "avc1", abps = i.hasAudio ? V.audioBps(S.audio, i.abps) : 0;
 		if (S.audio === "keep" && i.hasAudio && !(fmt === "mp4" && i.acodecAac)) abps = V.audioBps("128", 0);
-		var tb = V.parseSize(S.target), vbps, info = "", tight = false;
-		if (S.goal === "target" && tb) { var t = V.targetBitrate(tb, i.dur, abps, d.w, d.h, fps); vbps = t.videoBps; tight = t.tight; if (!t.feasible) info = "That size is too small for this length: the picture will be very rough."; else if (t.tight) info = "A very small size for this length and picture: expect a blocky picture. A lower size setting or a longer limit looks better."; }
+		var tb = V.parseSize(S.target), target = S.goal === "target" && tb, vbps, tbps = 0, info = "", tight = false, rc = null, why = "", notes = [];
+		var engine = (!caps.webcodecs || FORCE_REC || !f.fast || !(fmt === "webm" ? support.vp9 : support.h264)) ? "recorder" : "webcodecs";
+		// the probe (a few short stretches encoded at two quantizers) says how many bits this picture needs; it is redone when the size or frame rate changes
+		var qkey = d.w + "x" + d.h + "@" + fps, qp = f.qps && f.qps[qkey] || null, probing = engine === "webcodecs" && !!(i.pw && i.pw.wins.length) && !qp, measured = !!(qp && qp.ok);
+		if (target) { var t = V.targetBitrate(tb, i.dur, abps, d.w, d.h, fps); vbps = tbps = t.videoBps; tight = t.tight; if (!t.feasible) info = "That size is too small for this length: the picture will be very rough."; else if (t.tight) info = "A very small size for this length and picture: expect a blocky picture. A lower size setting or a longer limit looks better."; }
 		else vbps = V.presetBitrate(d.w, d.h, fps, S.preset, codec, i.vbps);
-		var est = V.estimateBytes(vbps, abps, i.dur), engine = (!caps.webcodecs || FORCE_REC || !f.fast || !(fmt === "webm" ? support.vp9 : support.h264)) ? "recorder" : "webcodecs";
+		if (measured) {
+			var ch = V.chooseQ(qp, { goal: target ? "target" : "preset", preset: S.preset, targetBps: tbps, capBps: i.vbps > 0 ? i.vbps * 0.85 : 0, dur: i.dur, fps: fps }); why = ch.why;
+			if (fmt === "mp4") { rc = { q: ch.q, s: qp.s, hw: qp.hw }; vbps = ch.bps; }
+			else vbps = target && why !== "roomy" ? Math.min(tbps, Math.round(ch.bps * V.VBR_FACTOR.vp9)) : Math.round(ch.bps * V.VBR_FACTOR.vp9);   // WebM: VP9 takes no quantizer here, so an average bitrate for the same look
+			if (why === "roomy") notes.push("This video looks its best (High quality) at about " + V.formatBytes(V.estimateBytes(vbps, abps, i.dur)) + ", so it will come out smaller than the size you asked for.");
+			if (why === "capped") notes.push("The original is already compressed efficiently (" + V.formatBitrate(i.vbps) + "): at this quality the result would be bigger than the original, so the quality is lowered to keep it smaller. A lower resolution saves more; or keep the original.");
+			// the measured quantizer says how rough it will look (the bits-per-pixel guess above does not know the picture)
+			info = ch.q >= 40 ? "That size is too small for this length: the picture will be very rough." : ch.q >= 34 ? "A small size for this length and picture: expect a blocky picture in busy scenes. A lower resolution often looks better at this size." : "";
+		}
+		var est = V.estimateBytes(vbps, abps, i.dur);
 		var warn = V.warnings({ inputBytes: f.file.size, durationSec: i.dur, outW: d.w, outH: d.h, estBytes: est, toDisk: S.disk && caps.fs, engine: engine }, caps);
-		if (S.goal === "target" && tb && tb >= f.file.size) warn.push("The original is already smaller than the size you asked for (" + V.formatBytes(f.file.size) + "): compressing may make it only slightly smaller or even larger.");
-		if (info) warn.push(info);
-		if (engine === "recorder" && S.goal === "target") warn.push("Real-time recording cannot promise an exact size.");
-		return { w: d.w, h: d.h, fps: fps, vbps: vbps, abps: abps, est: est, engine: engine, rot: rot, fmt: fmt, warn: warn, tight: tight, scaled: d.scaled };
+		if (target && tb >= f.file.size) warn.push("The original is already smaller than the size you asked for (" + V.formatBytes(f.file.size) + "): compressing may make it only slightly smaller or even larger.");
+		if (info && why !== "roomy") warn.push(info);
+		if (engine === "recorder" && target) warn.push("Real-time recording cannot promise an exact size.");
+		return { w: d.w, h: d.h, fps: fps, vbps: vbps, tbps: tbps, abps: abps, est: est, engine: engine, rot: rot, fmt: fmt, warn: warn, notes: notes, tight: tight, scaled: d.scaled, rc: rc, why: why, qkey: qkey, probing: probing, measured: measured };
 	}
-	function updateAll() { files.forEach(function (f) { if (f.state === "ready" || f.state === "queued") f.plan = plan(f); }); render(); }
+	function updateAll() { files.forEach(function (f) { if (f.state === "ready" || f.state === "queued") f.plan = plan(f); }); render(); kick(); }
+
+	/* ---------- how much detail does this video have? ---------- */
+	// A few short stretches (each from a key frame) are decoded and encoded at quantizer 24 and, for two of them, at 30: the bits per frame give the
+	// size at any quality, the drop between the two shows the encoder really obeys the quantizer. Nothing is kept. One file at a time, never while compressing.
+	var qChain = Promise.resolve();
+	function kick() { if (busy) return; files.forEach(function (f) { if (f.state === "ready" && f.plan && f.plan.probing) ensureProbe(f); }); }
+	function ensureProbe(f) {
+		var p = f.plan, key = p.qkey; if (f.qps && f.qps[key]) return Promise.resolve(f.qps[key]);
+		f.qpRuns = f.qpRuns || {}; if (f.qpRuns[key]) return f.qpRuns[key];
+		return f.qpRuns[key] = qChain = qChain.then(function () { return files.indexOf(f) < 0 ? null : runProbe(f, p.w, p.h, p.fps, key); }).then(function (r) {
+			if (r) { (f.qps = f.qps || {})[r.key] = r; if (f.state === "ready" || f.state === "queued") f.plan = plan(f); render(); }
+			return r;
+		}, function () { return null; });
+	}
+	async function runProbe(f, w, h, fps, key) {
+		var i = f.info, pw = i.pw, t0 = performance.now(), Q0 = 24, Q1 = 30;
+		try {
+			var cfg = await cqConfig(w, h, fps); if (!cfg) return { key: key, ok: false, reason: "no quantizer" };
+			var useCanvas = !!f.need8 || w !== i.w || h !== i.h, all = [], k;
+			async function encWin(win, q, cvs) {
+				var err = null, n = 0, lastTs = null, r = { pb: 0, pn: 0, kb: 0, kn: 0 }, cv = null, cx = null, lo = Infinity, hi = 0;
+				if (cvs) { cv = typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(w, h) : Object.assign(document.createElement("canvas"), { width: w, height: h }); cx = cv.getContext("2d"); cx.imageSmoothingQuality = "high"; }
+				var enc = new VideoEncoder({ output: function (c) { if (c.type === "key") { r.kb += c.byteLength * 8; r.kn++; } else { r.pb += c.byteLength * 8; r.pn++; } }, error: function (e) { err = err || e; } }), sg = signal();
+				enc.configure(cfg); enc.addEventListener("dequeue", sg.wake);
+				var dec = new VideoDecoder({ output: function (fr) {
+					try {
+						if (err || !V.keepFrame(fr.timestamp, lastTs, fps)) { fr.close(); return; }
+						lastTs = fr.timestamp; var o = fr;
+						if (cx) { cx.drawImage(fr, 0, 0, w, h); o = new VideoFrame(cv, { timestamp: fr.timestamp, duration: fr.duration || undefined }); fr.close(); }
+						enc.encode(o, { keyFrame: n === 0, avc: { quantizer: q } }); o.close(); n++;
+					} catch (e) { err = err || e; try { fr.close(); } catch (x) { /* ignore */ } }
+				}, error: function (e) { err = err || e; } });
+				dec.configure({ codec: pw.codec, codedWidth: pw.cw, codedHeight: pw.ch, description: pw.desc }); dec.addEventListener("dequeue", sg.wake);
+				win.forEach(function (s) { lo = Math.min(lo, s.o); hi = Math.max(hi, s.o + s.s); });
+				var buf = await f.file.slice(lo, hi).arrayBuffer();
+				for (var j = 0; j < win.length && !err; j++) {
+					var s = win[j]; while ((dec.decodeQueueSize > 12 || enc.encodeQueueSize > 8) && !err) await sg.wait(100);
+					dec.decode(new EncodedVideoChunk({ type: j === 0 || s.k ? "key" : "delta", timestamp: s.c, duration: s.d, data: new Uint8Array(buf, s.o - lo, s.s) }));
+				}
+				try { await dec.flush(); await enc.flush(); } catch (e) { err = err || e; }
+				try { dec.close(); } catch (e) { /* ignore */ } try { enc.close(); } catch (e) { /* ignore */ }
+				if (err) throw err; return r;
+			}
+			try { all.push(await encWin(pw.wins[0], Q0, useCanvas)); }
+			catch (e) { if (useCanvas) throw e; useCanvas = true; all.push(await encWin(pw.wins[0], Q0, true)); f.need8 = true; }   // 10-bit / HDR frames: the encoder only takes them through a canvas
+			for (k = 1; k < pw.wins.length; k++) all.push(await encWin(pw.wins[k], Q0, useCanvas));
+			var pick = pw.wins.length > 2 ? [0, Math.floor(pw.wins.length / 2)] : [0], p0 = 0, p1 = 0, k0 = 0, k1 = 0;
+			for (k = 0; k < pick.length; k++) { var r1 = await encWin(pw.wins[pick[k]], Q1, useCanvas); p0 += all[pick[k]].pb; k0 += all[pick[k]].kb; p1 += r1.pb; k1 += r1.kb; }
+			var s = V.probeSlope(Q0, p0 + k0, Q1, p1 + k1), pb = 0, pn = 0, kb = 0, kn = 0;
+			all.forEach(function (r) { pb += r.pb; pn += r.pn; kb += r.kb; kn += r.kn; });
+			if (!s) return { key: key, ok: false, reason: "the encoder did not follow the quantizer" };
+			if (!pn || !kn) return { key: key, ok: false, reason: "too few frames" };
+			var sP = V.slopeOf(Q0, p0, Q1, p1) || s, sK = V.slopeOf(Q0, k0, Q1, k1) || s;
+			return { key: key, ok: true, q: Q0, s: sP, sP: sP, sK: sK, bitsP: pb / pn, bitsK: kb / kn, hw: cfg.hardwareAcceleration, ms: Math.round(performance.now() - t0), frames: pn + kn };
+		} catch (e) { if (window.console) console.warn("[video compressor] probe failed", e); return { key: key, ok: false, reason: (e && e.message) || String(e) }; }
+	}
 
 	/* ---------- adding files, probing ---------- */
 	var drop = $("cv-drop"), input = $("cv-input");
@@ -223,9 +397,9 @@
 				try { await loadScript(LIB.box); info = await mp4Info(f.file); f.fast = !!info; } catch (e) { info = null; }
 			}
 			if (!info) { var m = await videoMeta(f.file); info = { dur: m.dur, w: m.w, h: m.h, fps: 30, rot: 0, vbps: 0, hasAudio: true, abps: 0, rec: true }; f.fast = false; }
-			f.info = info; f.state = "ready"; f.plan = plan(f);
+			f.info = info; f.need8 = V.needs8bit(info.vcodec); f.state = "ready"; f.plan = plan(f);
 		} catch (e) { f.state = "error"; f.note = (e && e.message) || "This file could not be read."; }
-		render();
+		render(); kick();
 	}
 	function mp4Info(file) {
 		return new Promise(function (resolve) {
@@ -239,8 +413,15 @@
 					try { dec = await VideoDecoder.isConfigSupported({ codec: vt.codec, codedWidth: vt.video.width, codedHeight: vt.video.height, description: desc }); } catch (e) { /* ignore */ }
 					if (!dec || !dec.supported) return resolve(null);
 					var dur = (i.duration || vt.movie_duration) / (i.timescale || vt.movie_timescale || 1), fps = vt.nb_samples && dur ? vt.nb_samples / dur : 30;
+					// where the quality probe will look: only those samples' positions are kept (a fragmented MP4 has none here, and then nothing is probed)
+					var ss = trak.samples || [], times = [], sync = [], pw = null, dmin = Infinity, dmax = 0;
+					for (var j = 0; j < ss.length; j++) { times.push(ss[j].dts / ss[j].timescale); sync.push(!!ss[j].is_sync); if (j < ss.length - 1) { dmin = Math.min(dmin, ss[j].duration); dmax = Math.max(dmax, ss[j].duration); } }
+					var cfr = ss.length > 1 && dmin > 0 && dmax - dmin <= 1;   // every frame lasts the same (one tick of slack): a constant frame rate
+					if (cfr) fps = ss[0].timescale / dmin;
+					var wins = V.probeWindows(times, sync, dur).map(function (wn) { var a = []; for (var q = wn.i; q < wn.i + wn.n; q++) { var s = ss[q]; if (!(s.size > 0) || !(s.offset >= 0)) return null; a.push({ o: s.offset, s: s.size, c: Math.round(s.cts * 1e6 / s.timescale), d: Math.round(s.duration * 1e6 / s.timescale), k: !!s.is_sync }); } return a.length ? a : null; }).filter(Boolean);
+					if (wins.length) pw = { codec: vt.codec, cw: vt.video.width, ch: vt.video.height, desc: desc, wins: wins };
 					resolve({ dur: dur, w: vt.video.width, h: vt.video.height, fps: Math.round(fps * 100) / 100, rot: V.rotationFromMatrix(vt.matrix), vbps: vt.bitrate || 0, vcodec: vt.codec,
-						hasAudio: !!at, abps: at ? at.bitrate || 0 : 0, acodec: at ? at.codec : "", acodecAac: !!at && /^mp4a\.40\./.test(at.codec), arate: at ? at.audio.sample_rate : 0, ach: at ? at.audio.channel_count : 0, nv: vt.nb_samples });
+						hasAudio: !!at, abps: at ? at.bitrate || 0 : 0, acodec: at ? at.codec : "", acodecAac: !!at && /^mp4a\.40\./.test(at.codec), arate: at ? at.audio.sample_rate : 0, ach: at ? at.audio.channel_count : 0, nv: vt.nb_samples, pw: pw, cfr: cfr });
 				} catch (e) { resolve(null); }
 			};
 			(async function () {
@@ -268,7 +449,8 @@
 			else meta = V.formatBytes(f.file.size);
 			var st = "", act = "";
 			if (f.state === "probing") st = "Reading...";
-			else if (f.state === "ready" && p) st = "Will become " + p.w + "&times;" + p.h + (p.fps ? ", " + Math.round(p.fps) + " fps" : "") + ", about " + V.formatBitrate(p.vbps) + ", roughly " + V.formatBytes(p.est) + '<span class="cv-eng">' + (p.engine === "webcodecs" ? "fast" : "real time") + "</span>";
+			else if (f.state === "ready" && p && p.probing) st = "Will become " + p.w + "&times;" + p.h + (p.fps ? ", " + Math.round(p.fps) + " fps" : "") + ". Checking how much detail this video has...";
+			else if (f.state === "ready" && p) st = "Will become " + p.w + "&times;" + p.h + (p.fps ? ", " + Math.round(p.fps) + " fps" : "") + ", about " + V.formatBitrate(p.vbps) + ", roughly " + V.formatBytes(p.est) + (p.measured ? " (measured on samples of this video)" : "") + '<span class="cv-eng">' + (p.engine === "webcodecs" ? "fast" : "real time") + "</span>";
 			else if (f.state === "queued") st = "Waiting...";
 			else if (f.state === "working") st = esc(f.note || "Working...");
 			else if (f.state === "done") st = '<span class="' + (f.out.size < f.file.size ? "cv-ok" : "cv-bad") + '">' + esc(V.formatBytes(f.out.size) + " - " + savedLine(f)) + "</span>" + (f.note ? " " + esc(f.note) : "");
@@ -278,7 +460,7 @@
 			if (!busy && f.state !== "working") act += '<button type="button" class="cv-x" data-a="rm" data-id="' + f.id + '" aria-label="Remove ' + name + '">&times;</button>';
 			h += '<div class="cv-f" data-fid="' + f.id + '"><div class="cv-th">VID</div><div><div class="cv-fn" title="' + name + '">' + name + '</div><div class="cv-fm">' + meta + '</div><div class="cv-fm" data-st>' + st + '</div>' +
 				(f.state === "working" ? '<div class="cv-bar"><i style="width:' + (f.pct || 0) + '%"></i></div>' : "") + '</div><div class="cv-fr">' + act + "</div>";
-			if (p && (f.state === "ready" || f.state === "queued") && p.warn.length) h += '<div class="cv-fx">' + p.warn.map(function (w) { return '<p class="cv-warn">' + esc(w) + "</p>"; }).join("") + "</div>";
+			if (p && (f.state === "ready" || f.state === "queued") && (p.warn.length || p.notes.length)) h += '<div class="cv-fx">' + p.notes.map(function (w) { return '<p class="cv-info">' + esc(w) + "</p>"; }).join("") + p.warn.map(function (w) { return '<p class="cv-warn">' + esc(w) + "</p>"; }).join("") + "</div>";
 			if (f.state === "done" && f.out.url) h += '<div class="cv-fx"><video class="cv-vid" controls preload="metadata" playsinline src="' + f.out.url + '"></video></div>';
 			h += "</div>";
 		});
@@ -324,7 +506,7 @@
 			}
 			render();
 		}
-		busy = false; unlock(); $("cv-prog").textContent = ""; render();
+		busy = false; unlock(); $("cv-prog").textContent = ""; render(); kick();
 		var done = files.filter(function (f) { return f.state === "done"; }), before = 0, after = 0; done.forEach(function (f) { before += f.file.size; after += f.out.size; });
 		if (done.length) notice("Finished: " + V.formatBytes(before) + " became " + V.formatBytes(after) + (after < before ? " (" + Math.round((before - after) / before * 100) + "% smaller)." : "."));
 	};
@@ -347,39 +529,54 @@
 
 	/* ---------- fast path: WebCodecs ---------- */
 	async function runFast(f, dest, used) {
-		await loadScript(LIB.box); var p = f.plan, fmt = p.fmt;
+		await loadScript(LIB.box);
+		if (f.plan.probing) { setProgress(f, 0, "Checking how much detail this video has..."); await ensureProbe(f); f.plan = plan(f); }
+		var p = f.plan, fmt = p.fmt;
 		await loadScript(fmt === "webm" ? LIB.webm : LIB.mp4);
-		var tgt = S.goal === "target" ? V.parseSize(S.target) : 0, vbps = p.vbps, res = null, attempt = 0, t = await openTarget(f, dest, used, fmt), note = "", mode = { sw: false, canvas: false };
+		// rc = how the encoder is told the quality: { q } = a quantizer for every frame (constant quality), { bps } = an average bitrate
+		var tgt = S.goal === "target" ? V.parseSize(S.target) : 0, rc = p.rc ? { q: p.rc.q, s: p.rc.s, hw: p.rc.hw } : { bps: p.vbps }, res = null, attempt = 0, t = await openTarget(f, dest, used, fmt), note = "", mode = { sw: false, canvas: !!f.need8 }, fixes = 0;
+		var audioBytes = p.abps * f.info.dur / 8, bpsFor = function (k) { var b = Math.round(p.vbps * k); return tgt && p.tbps ? Math.min(b, p.tbps) : b; };
 		while (true) {
 			attempt++;
-			try { res = await encodeOnce(f, p, vbps, t, attempt > 1 ? "Second pass to hit the size... " : "", mode); }
+			try { res = await encodeOnce(f, p, rc, t, attempt > 1 ? "Second pass to hit the size... " : "", mode); }
 			catch (e) {
-				if (e && e.fromEncoder && !mode.sw && !cancelled(f)) { mode = { sw: true, canvas: true }; attempt--; setProgress(f, 0, "The hardware encoder could not take this video's format; trying the software encoder..."); note = "(converted to standard 8-bit video through a canvas because the encoder could not take this video's format: an HDR or 10-bit video may look flatter)"; continue; }
+				if (cancelled(f)) throw e;
+				if (e && e.noCq && rc.q != null) { rc = { bps: bpsFor(V.VBR_FACTOR.hw) }; attempt--; continue; }   // the encoder refused a quantizer after all: an average bitrate for about the same look
+				if (e && e.fromEncoder && fixes < 2) {
+					fixes++; attempt--;
+					if (!mode.canvas) { mode = { sw: false, canvas: true }; setProgress(f, 0, "The encoder could not take this video's frames; converting them to standard 8-bit video first..."); }
+					else if (!mode.sw) { mode = { sw: true, canvas: true }; if (rc.q != null) rc = { bps: bpsFor(V.VBR_FACTOR.sw) }; setProgress(f, 0, "The hardware encoder could not take this video; trying the software encoder..."); }
+					else throw e;
+					continue;
+				}
 				throw e;
 			}
-			var next = tgt ? V.retuneBitrate(vbps, tgt, res.size) : null;
-			if (next && attempt < 2 && !cancelled(f)) { vbps = next; res.cleanup && res.cleanup(); continue; }
+			var next = null;
+			if (tgt) next = rc.q != null ? V.retuneQ(rc.q, rc.s, tgt, res.size, audioBytes) : V.retuneBitrate(rc.bps, tgt, res.size);
+			if (next && attempt < 2 && !cancelled(f)) { rc = rc.q != null ? { q: next, s: rc.s, hw: rc.hw } : { bps: next }; res.cleanup && res.cleanup(); continue; }
 			break;
 		}
+		if (mode.canvas && (f.need8 || fixes)) note = "(converted to standard 8-bit video through a canvas because the encoder could not take this video's frames: an HDR or 10-bit video may look flatter)";
+		if (mode.sw && rc.bps) note = (note ? note + " " : "") + "(made with the slower software encoder)";
 		if (tgt && res.size > tgt * 1.03) note = (note ? note + " " : "") + "(" + Math.round((res.size / tgt - 1) * 100) + "% over the size you asked for)";
 		if (res.audioNote) note = (note ? note + " " : "") + res.audioNote;
 		return finishOut(t, res.blob, res.size, note);
 	}
-	async function encodeOnce(f, p, vbps, t, label, mode) {
-		var i = f.info, fmt = p.fmt, file = f.file, Q = [], demuxDone = false, failed = null, frames = 0, lastTs = null, kfEvery = Math.max(1, Math.round(p.fps * 2)), lastVideoTs = 0, audioNote = "";
+	async function encodeOnce(f, p, rc, t, label, mode) {
+		var i = f.info, fmt = p.fmt, file = f.file, Q = [], demuxDone = false, failed = null, frames = 0, lastTs = null, kfEvery = V.keyEvery(p.fps), lastVideoTs = 0, audioNote = "", qNext = rc.q != null ? V.qStepper(rc.q) : null;
 		var writable = null, target, M = fmt === "webm" ? WebMMuxer : Mp4Muxer;
 		if (t.handle) { writable = await t.handle.createWritable(); target = new M.FileSystemWritableFileStreamTarget(writable); } else target = new M.ArrayBufferTarget();
 		function fail(e, tag) { if (window.console) console.error("[video compressor]", tag || "", e); if (!failed) { failed = e instanceof Error ? e : new Error(String(e && e.message || e)); if (tag === "video encoder") failed.fromEncoder = true; } }
 		function failer(tag) { return function (e) { fail(e, tag); }; }
 		var swap = (fmt === "webm" && (p.rot === 90 || p.rot === 270)), ow = swap ? p.h : p.w, oh = swap ? p.w : p.h;   // WebM cannot carry a rotation flag: turn the pixels instead
-		var needCanvas = mode.canvas || p.scaled || (fmt === "webm" && p.rot) || (p.w !== i.w || p.h !== i.h);
+		var needCanvas = mode.canvas || f.need8 || p.scaled || (fmt === "webm" && p.rot) || (p.w !== i.w || p.h !== i.h);
 		var canvas = null, ctx = null; if (needCanvas) { canvas = typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(ow, oh) : Object.assign(document.createElement("canvas"), { width: ow, height: oh }); ctx = canvas.getContext("2d"); ctx.imageSmoothingQuality = "high"; }
 		// audio plan
 		var doAudio = i.hasAudio && p.abps > 0, passthru = doAudio && S.audio === "keep" && fmt === "mp4" && i.acodecAac, aenc = null, adec = null, aCodec = fmt === "webm" ? "opus" : (support.aac ? "mp4a.40.2" : "opus");
 		if (doAudio && !passthru) {
 			if (!window.AudioEncoder || !window.AudioDecoder || (aCodec === "mp4a.40.2" ? !support.aac : !support.opus)) { doAudio = false; audioNote = "(sound was removed: this browser cannot re-encode it)"; }
 		}
-		var vOpts = { codec: fmt === "webm" ? "V_VP9" : "avc", width: ow, height: oh, frameRate: Math.round(p.fps) };
+		var vOpts = { codec: fmt === "webm" ? "V_VP9" : "avc", width: ow, height: oh }, mfr = V.muxFrameRate(i.fps, p.fps, i.cfr); if (mfr) vOpts.frameRate = mfr;
 		if (fmt === "mp4" && p.rot) vOpts.rotation = p.rot;
 		var mOpts = { target: target, video: vOpts, firstTimestampBehavior: "offset" };
 		if (fmt === "mp4") mOpts.fastStart = t.handle ? false : "in-memory";
@@ -395,14 +592,18 @@
 		var muxer = muxerReady;
 
 		var venc = new VideoEncoder({ output: function (chunk, meta) { try { muxer.addVideoChunk(chunk, meta); } catch (e) { fail(e); } }, error: failer("video encoder") });
-		var vcfg = { codec: fmt === "webm" ? V.vp9Codec(ow, oh) : V.avcCodec(ow, oh, p.fps), width: ow, height: oh, bitrate: Math.round(vbps), framerate: Math.round(p.fps * 100) / 100, latencyMode: "quality", bitrateMode: tgtMode(), hardwareAcceleration: mode.sw ? "prefer-software" : "no-preference" };
+		var vcfg = { codec: fmt === "webm" ? V.vp9Codec(ow, oh) : V.avcCodec(ow, oh, p.fps), width: ow, height: oh, framerate: Math.round(p.fps * 100) / 100, latencyMode: "quality" };
+		if (qNext) { vcfg.bitrateMode = "quantizer"; vcfg.hardwareAcceleration = mode.sw ? "prefer-software" : (rc.hw || "prefer-hardware"); }
+		else { vcfg.bitrate = Math.round(rc.bps); vcfg.bitrateMode = "variable"; vcfg.hardwareAcceleration = mode.sw ? "prefer-software" : "no-preference"; }
 		if (fmt === "mp4") vcfg.avc = { format: "avc" };
-		function tgtMode() { return S.goal === "target" ? "constant" : "variable"; }
+		async function bail(e) { try { venc.close(); } catch (x) { /* ignore */ } try { if (writable) await writable.abort(); } catch (x) { /* ignore */ } throw e; }
 		var sup = await VideoEncoder.isConfigSupported(vcfg);
+		if (!sup.supported && qNext) { var nq = new Error("This encoder does not take a quantizer."); nq.noCq = true; await bail(nq); }
 		if (!sup.supported) { delete vcfg.bitrateMode; sup = await VideoEncoder.isConfigSupported(vcfg); }
-		if (!sup.supported) throw new Error("This computer's encoder does not support " + ow + "×" + oh + ". Choose a smaller size and try again.");
+		if (!sup.supported) await bail(new Error("This computer's encoder does not support " + ow + "×" + oh + ". Choose a smaller size and try again."));
 		venc.configure(vcfg);
-		var vdec = new VideoDecoder({ output: onFrame, error: failer("video decoder") });
+		var vdec = new VideoDecoder({ output: onFrame, error: failer("video decoder") }), sig = signal(), pumpSig = signal();
+		venc.addEventListener("dequeue", sig.wake); vdec.addEventListener("dequeue", sig.wake);
 		var mp4 = MP4Box.createFile(), vId = 0, aId = 0, vtrak, atrak;
 		function onFrame(frame) {
 			try {
@@ -415,7 +616,8 @@
 					if (fmt === "webm" && p.rot) { ctx.translate(ow / 2, oh / 2); ctx.rotate(p.rot * Math.PI / 180); ctx.drawImage(frame, -p.w / 2, -p.h / 2, p.w, p.h); } else ctx.drawImage(frame, 0, 0, ow, oh);
 					ctx.restore(); out = new VideoFrame(canvas, { timestamp: frame.timestamp, duration: dur }); frame.close();
 				}
-				venc.encode(out, { keyFrame: frames % kfEvery === 0 }); out.close(); frames++;
+				var eo = { keyFrame: frames % kfEvery === 0 }; if (qNext) eo.avc = { quantizer: qNext() };
+				venc.encode(out, eo); out.close(); frames++;
 			} catch (e) { fail(e); }
 		}
 		var vSamples = 0;
@@ -445,13 +647,13 @@
 			};
 		});
 		var seen = {}, relOk = true, hold = {};   // relOk / hold: samples are released (memory) only once no seek-back is pending and never inside the part that is re-delivered after it   // after the seek-back below mp4box re-delivers the first samples: keep each one once
-		mp4.onSamples = function (id, u, samples) { for (var j = 0; j < samples.length; j++) { var n = samples[j].number; if (seen[id] != null && n <= seen[id]) continue; seen[id] = n; Q.push({ id: id, s: samples[j] }); } };
+		mp4.onSamples = function (id, u, samples) { for (var j = 0; j < samples.length; j++) { var n = samples[j].number; if (seen[id] != null && n <= seen[id]) continue; seen[id] = n; Q.push({ id: id, s: samples[j] }); } sig.wake(); };
 		// demux pump with backpressure
 		(async function pump() {
 			try {
 				var off = 0, CH = 4194304, seeks = 0, jumped = false, restarted = false;
 				while (off < file.size && !failed && !cancelled(f)) {
-					while (Q.length > 200 && !failed && !cancelled(f)) await sleep(8);
+					while (Q.length > 200 && !failed && !cancelled(f)) await pumpSig.wait(250);
 					var end = Math.min(file.size, off + CH), buf = await file.slice(off, end).arrayBuffer(); buf.fileStart = off;
 					var next = mp4.appendBuffer(buf, end >= file.size);
 					if (!restarted && typeof next === "number" && next !== end) { if (++seeks > 50) throw new Error("This file's structure could not be read."); jumped = true; relOk = false; off = next; } else off = end;
@@ -460,16 +662,16 @@
 				}
 				mp4.flush();
 			} catch (e) { fail(e); }
-			demuxDone = true;
+			demuxDone = true; sig.wake();
 		})();
 		await ready;
 		var firstAudioChunk = true, tMax = i.dur * 1e6;
 		while (!failed && !cancelled(f)) {
-			var it = Q.shift();
-			if (!it) { if (demuxDone && !Q.length) break; await sleep(4); continue; }
+			var it = Q.shift(); if (Q.length < 100) pumpSig.wake();
+			if (!it) { if (demuxDone && !Q.length) break; await sig.wait(250); continue; }
 			var s = it.s, ts = Math.round(s.cts * 1e6 / s.timescale), du = Math.round(s.duration * 1e6 / s.timescale);
 			if (it.id === vId) {
-				while ((vdec.decodeQueueSize > 24 || venc.encodeQueueSize > 12) && !failed && !cancelled(f)) await sleep(3);
+				while ((vdec.decodeQueueSize > 24 || venc.encodeQueueSize > 12) && !failed && !cancelled(f)) await sig.wait(250);
 				vdec.decode(new EncodedVideoChunk({ type: s.is_sync ? "key" : "delta", timestamp: ts, duration: du, data: s.data })); vSamples++;
 				if (vSamples % 8 === 0) { var fr = Math.min(1, lastVideoTs / Math.max(1, tMax)); setProgress(f, fr * 98, label + "Compressing " + V.formatTime(lastVideoTs / 1e6) + " of " + V.formatTime(i.dur) + " (" + Math.round(fr * 100) + "%)" + eta(f, fr)); }
 			} else if (it.id === aId && doAudio) {
@@ -525,5 +727,6 @@
 	}
 
 	probeCaps(); fillOptions();
+	if (qs.get("debug") === "1") window.MESVidDebug = { get files() { return files; }, support: support, caps: caps };   // for testing: the queue, probe results and plans
 	window.addEventListener("beforeunload", function (e) { if (busy) { e.preventDefault(); e.returnValue = ""; } });
 })();
