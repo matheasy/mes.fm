@@ -26,7 +26,7 @@ export default function AllocationChart({ holdings }: { holdings: Holding[] }) {
           </Pie>
           <Tooltip
             formatter={(value: number) => value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-            contentStyle={{ background: '#131722', border: '1px solid #232838', borderRadius: 8 }}
+            contentStyle={{ background: 'rgb(var(--c-panel))', border: '1px solid rgb(var(--c-border))', borderRadius: 8, color: 'rgb(var(--g-100))' }} itemStyle={{ color: 'rgb(var(--g-100))' }} labelStyle={{ color: 'rgb(var(--g-300))' }}
           />
         </PieChart>
       </ResponsiveContainer>

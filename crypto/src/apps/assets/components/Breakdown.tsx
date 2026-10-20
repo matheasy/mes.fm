@@ -21,7 +21,7 @@ function Donut({ title, data }: { title: string; data: { name: string; value: nu
                   <Cell key={d.name} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(v: number) => usd(v)} contentStyle={{ background: '#131722', border: '1px solid #232838', borderRadius: 8 }} />
+              <Tooltip formatter={(v: number) => usd(v)} contentStyle={{ background: 'rgb(var(--c-panel))', border: '1px solid rgb(var(--c-border))', borderRadius: 8, color: 'rgb(var(--g-100))' }} itemStyle={{ color: 'rgb(var(--g-100))' }} labelStyle={{ color: 'rgb(var(--g-300))' }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
