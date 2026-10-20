@@ -11,6 +11,14 @@
 		if (!/^(\d+\.?\d*|\.\d+)$/.test(t)) return null;
 		var n = parseFloat(t); return isFinite(n) ? n : null;
 	}
+	// typed numbers on a decimal-comma page (es, de, vi ...): "68,5" = 68.5 and "1.234,5" = 1234.5, while a plain "68.5" still works
+	function numLoc(v, comma) {
+		if (!comma) return num(v);
+		if (v == null) return null;
+		var t = String(v).trim().replace(/[\s\u00a0\u202f']+/g, "");
+		if (t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
+		return num(t);
+	}
 	function fix(n, d) { if (n == null || !isFinite(n)) return ""; return (Math.round(n * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); }
 	function trim(n, d) { return fix(n, d).replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, ""); }
 
@@ -77,7 +85,7 @@
 		return { kg: String(Math.round(d.weight * 100) / 100), cm: String(Math.round(d.height * 10) / 10) };
 	}
 
-	var BM = { num: num, fix: fix, trim: trim, lbToKg: lbToKg, kgToLb: kgToLb, ftInToCm: ftInToCm, cmToFtIn: cmToFtIn, bmi: bmi, weightAt: weightAt, SCALES: SCALES, category: category, healthyRange: healthyRange, toNormal: toNormal,
+	var BM = { num: num, numLoc: numLoc, fix: fix, trim: trim, lbToKg: lbToKg, kgToLb: kgToLb, ftInToCm: ftInToCm, cmToFtIn: cmToFtIn, bmi: bmi, weightAt: weightAt, SCALES: SCALES, category: category, healthyRange: healthyRange, toNormal: toNormal,
 		prime: prime, ponderal: ponderal, sortEntries: sortEntries, cleanEntry: cleanEntry, encode: encode, decode: decode, fromOldShare: fromOldShare };
 	if (typeof module !== "undefined" && module.exports) module.exports = BM; else root.BM = BM;
 })(typeof window !== "undefined" ? window : globalThis);

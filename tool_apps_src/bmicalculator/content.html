@@ -1,85 +1,71 @@
-	<div class="tu" id="bm">
+	<div class="tu" id="bm" data-lang="{{t:code}}">
+{{LANGSW}}
 		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
 
 		<div class="tu-card" id="bm-setup">
-			<p class="tu-note" style="margin:0;"><b>Mix units freely:</b> type weight in kg or lb and height in cm or ft + in, in any combination &mdash; the other fields fill in as you type.</p>
+			<p class="tu-note" style="margin:0;">{{t:mixUnits}}</p>
 			<div class="tu-row" style="margin-top:1em;" id="bm-metric">
-				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-kg">Weight</label><div class="tu-suffix"><input id="bm-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 65.8"><span>kg</span></div></div>
-				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-cm">Height</label><div class="tu-suffix"><input id="bm-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 182.9"><span>cm</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-kg">{{t:weight}}</label><div class="tu-suffix"><input id="bm-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="{{t:phKg}}"><span>kg</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-cm">{{t:height}}</label><div class="tu-suffix"><input id="bm-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="{{t:phCm}}"><span>cm</span></div></div>
 			</div>
+			<button type="button" class="bm-optbtn bm-imptoggle" id="bm-imptoggle" aria-controls="bm-imperial" hidden>{{t:impShow}}</button>
 			<div class="tu-row" style="margin-top:1em;" id="bm-imperial">
-				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-lb">Weight</label><div class="tu-suffix"><input id="bm-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 145.1"><span>lb</span></div></div>
-				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-ft">Height</label><div class="tu-suffix"><input id="bm-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 6"><span>ft</span></div></div>
-				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-in">&nbsp;</label><div class="tu-suffix"><input id="bm-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0"><span>in</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-lb">{{t:weight}}</label><div class="tu-suffix"><input id="bm-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="{{t:phLb}}"><span>lb</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-ft">{{t:height}}</label><div class="tu-suffix"><input id="bm-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="{{t:phFt}}"><span>ft</span></div></div>
+				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-in">&nbsp;</label><div class="tu-suffix"><input id="bm-in" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="{{t:phIn}}"><span>in</span></div></div>
 			</div>
-			<div class="bm-optbar"><span id="bm-optsum" class="bm-optsum" hidden></span><button type="button" id="bm-opttoggle" class="bm-optbtn" aria-controls="bm-opts" aria-expanded="true">Hide options</button></div>
+			<div class="bm-optbar"><span id="bm-optsum" class="bm-optsum" hidden></span><button type="button" id="bm-opttoggle" class="bm-optbtn" aria-controls="bm-opts" aria-expanded="true">{{t:hideOptions}}</button></div>
 			<div class="bm-opts" id="bm-opts">
-				<div class="bm-opt"><span class="tu-label" id="bm-units-label">Show results in</span>
+				<div class="bm-opt"><span class="tu-label" id="bm-units-label">{{t:showResultsIn}}</span>
 					<div class="tu-seg" id="bm-units" role="group" aria-labelledby="bm-units-label">
-						<button type="button" data-u="b" aria-pressed="true">Both</button>
-						<button type="button" data-u="m" aria-pressed="false">Metric</button>
-						<button type="button" data-u="i" aria-pressed="false">US</button>
+						<button type="button" data-u="b" aria-pressed="true">{{t:both}}</button>
+						<button type="button" data-u="m" aria-pressed="false">{{t:metric}}</button>
+						<button type="button" data-u="i" aria-pressed="false">{{t:us}}</button>
 					</div></div>
-				<div class="bm-opt"><label for="bm-scale" class="tu-label">BMI scale</label>
-					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option></select></div>
+				<div class="bm-opt"><label for="bm-scale" class="tu-label">{{t:bmiScale}}</label>
+					<select id="bm-scale" class="tu-select"><option value="who">{{t:scaleWho}}</option><option value="asia">{{t:scaleAsia}}</option></select></div>
+				<p class="tu-note bm-scalehint" id="bm-scalehint">{{t:scaleHint}}</p>
 			</div>
-			<p class="tu-note" style="margin-bottom:0;">Every field stays in step with its twin. Adults 20 and over only; see the notes below.</p>
+			<p class="tu-note" style="margin-bottom:0;">{{t:stepNote}}</p>
 		</div>
 
-		<div id="bm-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>Enter your weight and height to see your BMI &mdash; or try an example: </span><span class="tu-chips" id="bm-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
+		<div id="bm-empty" class="tu-card tu-card--tint" style="margin-top:1em;"><span>{{t:emptyPrompt}}</span><span class="tu-chips" id="bm-examples" style="display:inline-flex;margin:0;vertical-align:middle;"></span></div>
 
 		<div id="bm-out" hidden>
-			<div class="bm-top"><button type="button" class="tu-btn tu-btn--ghost" id="bm-link-top">&#128279; Copy link to this result</button></div>
+			<div class="bm-top"><button type="button" class="tu-btn tu-btn--ghost" id="bm-link-top">&#128279; {{t:copyLink}}</button></div>
 			<div class="tu-stats" id="bm-hero" aria-live="polite"></div>
 			<div class="tu-card bm-verdict" id="bm-verdict" aria-live="polite"></div>
 			<div class="tu-card" id="bm-gauge-card">
-				<div class="tu-label">Where you are on the scale</div>
+				<div class="tu-label">{{t:whereScale}}</div>
 				<div class="bm-gauge" id="bm-gauge" aria-hidden="true"></div>
 				<ul class="bm-cats" id="bm-cats"></ul>
 			</div>
 			<div class="bm-btns">
-				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">Copy link to this result</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="bm-save">Save this measurement</button>
-				<button type="button" class="tu-btn tu-btn--ghost bm-print">Print</button>
+				<button type="button" class="tu-btn tu-btn--primary" id="bm-link">{{t:copyLink}}</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="bm-save">{{t:saveMeasurement}}</button>
+				<button type="button" class="tu-btn tu-btn--ghost bm-print">{{t:print}}</button>
 			</div>
 		</div>
 
 		<div id="bm-hist-card" hidden>
-			<h2>My measurements</h2>
+			<h2>{{t:myMeasurements}}</h2>
 			<div class="tu-card">
 				<div class="tu-row" style="align-items:flex-end;" id="bm-addrow" hidden>
-					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="bm-date">Date</label><input id="bm-date" class="tu-input" type="date"></div>
-					<div class="tu-field" style="flex:2 1 12em;"><label for="bm-note">Note (optional)</label><input id="bm-note" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. after holiday"></div>
-					<div class="tu-field tu-field--sm" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--primary" id="bm-add">Save</button> <button type="button" class="tu-btn tu-btn--ghost" id="bm-addcancel">Cancel</button></div>
+					<div class="tu-field tu-field--sm" style="flex-basis:10em;"><label for="bm-date">{{t:date}}</label><input id="bm-date" class="tu-input" type="date"></div>
+					<div class="tu-field" style="flex:2 1 12em;"><label for="bm-note">{{t:noteOpt}}</label><input id="bm-note" class="tu-input" type="text" maxlength="60" autocomplete="off" placeholder="{{t:notePh}}"></div>
+					<div class="tu-field tu-field--sm" style="flex:0 0 auto;"><button type="button" class="tu-btn tu-btn--primary" id="bm-add">{{t:save}}</button> <button type="button" class="tu-btn tu-btn--ghost" id="bm-addcancel">{{t:cancel}}</button></div>
 				</div>
-				<div id="bm-chart" class="bm-chart" role="img" aria-label="Chart of your saved BMI over time"></div>
+				<div id="bm-chart" class="bm-chart" role="img" aria-label="{{t:chartAria}}"></div>
 				<div class="tu-table-wrap"><table class="tu-table" id="bm-table"></table></div>
 				<div class="bm-btns">
-					<button type="button" class="tu-btn tu-btn--ghost" id="bm-csv">Copy as a spreadsheet table</button>
-					<button type="button" class="tu-btn tu-btn--ghost" id="bm-link-all">Copy link with my history</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="bm-csv">{{t:copyCsv}}</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="bm-link-all">{{t:copyLinkAll}}</button>
 				</div>
 				<p class="tu-note" id="bm-store-note" style="margin-bottom:0;"></p>
 			</div>
 		</div>
 
 		<div class="tu-seo">
-			<h2>How BMI is calculated</h2>
-			<p>Body Mass Index is your weight divided by your height squared:</p>
-			<p style="text-align:center;"><b>BMI = weight (kg) &divide; height (m)&sup2;</b> &nbsp;or&nbsp; <b>703 &times; weight (lb) &divide; height (in)&sup2;</b></p>
-			<p>For example, 65.8 kg at 182.9 cm is 65.8 &divide; (1.829 &times; 1.829) = <b>19.7</b>, in the normal range.</p>
-			<h3>BMI categories for adults</h3>
-			<div class="tu-table-wrap"><table class="tu-table" id="bm-ref"></table></div>
-			<p class="tu-note">The WHO standard cut-offs are used by most countries. The WHO Asia-Pacific cut-offs (overweight from 23, obese from 27.5) reflect the higher health risk at lower BMI in many Asian populations. Switch the <em>BMI scale</em> above to use them.</p>
-			<h3>Important notes on BMI</h3>
-			<p>BMI is a general screening tool, not a diagnosis. It assumes a &ldquo;normal&rdquo; proportion of weight to height for people of average build and activity, which has some limits:</p>
-			<ul>
-				<li>It does not tell muscle from fat: athletes and bodybuilders can have a high BMI with low body fat.</li>
-				<li>Body shape, bone structure, age, sex and ethnicity all change what a healthy weight looks like.</li>
-				<li>It does not show where fat is carried; a larger waist measurement is a separate risk marker.</li>
-				<li><strong>Children and teens</strong> (2&ndash;19) are judged with BMI-for-age percentiles, not these cut-offs: use a growth chart such as the <a href="https://www.cdc.gov/bmi/child-teen-calculator/index.html" rel="nofollow noopener" target="_blank">CDC child and teen BMI calculator</a>.</li>
-			</ul>
-			<p>BMI is still popular because it is the simplest index to compute and has decades of research behind it. Talk to a doctor or dietitian before starting a new diet or fitness plan. <a href="/bmicalculator/body-mass-index">What is BMI?</a> &middot; <a href="/bmicalculator/bmi-chart">BMI chart</a> &middot; <a href="/bmicalculator/bmi-formula">BMI formula</a> &middot; <a href="/bmicalculator/health-tips">Health tips</a></p>
-			<h3>Is my data private?</h3>
-			<p>Yes. Your numbers and saved measurements stay in this browser. Nothing is uploaded unless you copy a link and share it yourself.</p>
+{{SEO}}
 		</div>
 	</div>

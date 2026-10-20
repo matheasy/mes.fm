@@ -46,3 +46,22 @@
 	.tu .bm-opts {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin:0.5em 0 0.2em;} .tu .bm-opts[hidden] {display:none;}
 	.tu .bm-opt {display:flex;flex-direction:column;gap:0.25em;min-width:0;} .tu .bm-opt .tu-label {margin:0;font-size:0.8em;}
 	.tu #bm-ref th, .tu #bm-ref td {white-space:normal;padding:0.45em 0.5em;} .tu #bm-ref th:not(:first-child), .tu #bm-ref td:not(:first-child) {text-align:right;}
+
+/* languages: switcher above the calculator, the kg/cm pages' pounds toggle, the Asian-scale hint (id / vi) */
+.tu .bm-lang {display:flex; justify-content:flex-end; margin:0 0 0.6em;}
+.tu .bm-lang details {position:relative; font-size:0.92em;}
+.tu .bm-lang summary {cursor:pointer; list-style:none; padding:0.3em 0.75em; border:1px solid #d8c4d2; border-radius:999px; background:#fff; color:#5a2d50; font-weight:600; user-select:none;}
+.tu .bm-lang summary::-webkit-details-marker {display:none;}
+.tu .bm-lang summary::after {content:" \25BE";}
+.tu .bm-lang ul {position:absolute; right:0; top:calc(100% + 4px); z-index:30; margin:0; padding:0.35em 0; list-style:none; min-width:13em; background:#fff; border:1px solid #d8c4d2; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.14);}
+.tu .bm-lang li a {display:block; padding:0.45em 1em; color:#333 !important; text-decoration:none !important;}
+.tu .bm-lang li a:hover, .tu .bm-lang li a:focus {background:#f8e2ed;}
+.tu .bm-lang li a[aria-current] {font-weight:700; color:#8a3d79 !important;}
+.tu .bm-imptoggle {margin-top:0.8em;}
+.tu .bm-scalehint {flex-basis:100%; margin:0.2em 0 0;}
+.tu .bm-scalehint:empty {display:none;}
+body.dark-mode #bm .bm-lang summary, body.dark-mode #bm .bm-lang ul {background:#262626; border-color:#5a4554; color:#f0d4e6;}
+body.dark-mode #bm .bm-lang li a {color:#e6e6e6 !important;}
+body.dark-mode #bm .bm-lang li a:hover, body.dark-mode #bm .bm-lang li a:focus {background:#3a2a35;}
+body.dark-mode #bm .bm-lang li a[aria-current] {color:#f0a6d8 !important;}
+.tu #bm-imperial[hidden] {display:none;}

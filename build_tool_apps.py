@@ -439,7 +439,7 @@ APPS = {
     "bmicalculator": dict(title="BMI Calculator", page_title="BMI Calculator",
                           tag="Body mass index, healthy weight range and progress.", accent="#b3529d", dark="#8a3d79", tint="#f8e2ed",
                           desc="Free BMI calculator: enter your weight and height in kg/cm or lb/ft/in to get your body mass index, your category, your healthy weight range and how much to gain or lose. WHO or Asian cut-offs, a gauge, and saved measurements with a BMI-over-time chart.",
-                          js_v="6",
+                          js_v="7", js_parts=["i18n.js"],
                           nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bmicalculator/health-tips'>Health Tips</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bmicalculator/memes'>Memes</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/bmicalculator/body-mass-index'>What is BMI?</a></li>",
                           menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/health-tips\">Health Tips</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/memes\">Memes</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/body-mass-index\">What is BMI?</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/bmi-chart\">BMI Chart</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/bmi-formula\">BMI Formula</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/bmicalculator/sports\">Sports Articles</a></li>"),
     # BMR Calculator (2026-10-14): basal metabolic rate + TDEE + calories for a goal. Mifflin-St Jeor / revised Harris-Benedict / Katch-McArdle / Cunningham, kg/cm mirrored with lb/ft/in,
@@ -727,6 +727,51 @@ APPS = {
                                desc="Free redshift and blueshift simulator: watch light shift near and far from a heavy mass (gravitational redshift, clocks and refractive-index view), moving sources with relativistic Doppler wavefronts, a spectrum shifter that combines motion, gravity and cosmic expansion, and an expanding-universe calculator with lookback time and distance.",
                                js_v="6"),
 }
+
+
+# ---------- BMI Calculator in other languages (2026-10-20) ----------
+# One calculator, many languages: every page is built from tool_apps_src/bmicalculator/ (same lib.js / app.js, one served bmicalculator/js/bmicalculator.js);
+# all UI strings + page meta live in tool_apps_src/bmicalculator/i18n.js (read here through node), the explanation / FAQ in seo/<code>.html.
+# Each page: own URL, <html lang>, title, description, og:locale, canonical; hreflang links to every language (x-default = English) and a language menu above the calculator.
+BMI_LANG_SLUGS = {"es": "calculadora-imc", "pt-BR": "calculadora-imc-pt", "id": "kalkulator-bmi", "fr": "calcul-imc", "de": "bmi-rechner",
+                  "it": "calcolo-bmi", "tr": "vucut-kitle-indeksi", "vi": "tinh-chi-so-bmi", "pl": "kalkulator-bmi-pl"}
+
+
+def _bmi_i18n():
+    import subprocess
+    out = subprocess.run(["node", "-e", "process.stdout.write(JSON.stringify(require(process.argv[1])))", str(SRC / "bmicalculator" / "i18n.js")],
+                         capture_output=True, text=True, check=True).stdout
+    return json.loads(out)
+
+
+def _bmi_pages():
+    I = _bmi_i18n()
+    tbl = I["table"]
+    codes = ["en"] + list(BMI_LANG_SLUGS)
+    url = lambda c: "https://mes.fm" + tbl[c]["path"]
+    hreflang = "".join('<link rel="alternate" hreflang="%s" href="%s" />' % (c, url(c)) for c in codes) + '<link rel="alternate" hreflang="x-default" href="%s" />' % url("en")
+
+    def switcher(code):
+        T = tbl[code]
+        items = "".join('<li><a href="%s" hreflang="%s" lang="%s"%s>%s</a></li>' % (tbl[c]["path"], c, c, ' aria-current="page"' if c == code else "", tbl[c]["name"]) for c in codes)
+        return ('\t\t<nav class="bm-lang" aria-label="%s"><details><summary>&#127760; %s</summary><ul>%s</ul></details></nav>' % (T["langLabel"], T["name"], items))
+
+    def strings(code):
+        T, E = tbl[code], tbl["en"]
+        return {k: (T.get(k) if isinstance(T.get(k), str) else E[k]) for k in E if isinstance(E[k], str)}
+    base = APPS["bmicalculator"]
+    base.update(i18n=strings("en"), head_extra=hreflang, vars={"SEO": "@seo/en.html", "LANGSW": switcher("en")})
+    for code, slug in BMI_LANG_SLUGS.items():
+        T = tbl[code]
+        assert T["path"] == "/" + slug, (code, T["path"])
+        m = T["meta"]
+        APPS[slug] = dict(title=m["title"], page_title=m["h1"], tag=m["tag"], desc=m["desc"], accent=base["accent"], dark=base["dark"], tint=base["tint"],
+                          js_v=base["js_v"], js_parts=base["js_parts"], src="bmicalculator", js_path="bmicalculator/js/bmicalculator.js", logo_from="bmicalculator",
+                          lang=code, og_locale=m["ogLocale"], doc_title=m["docTitle"], i18n=strings(code),
+                          head_extra=hreflang, vars={"SEO": "@seo/%s.html" % code, "LANGSW": switcher(code)})
+
+
+_bmi_pages()
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
 
@@ -836,10 +881,16 @@ def build_from_source(slug, cfg, tpl):
     content = (d / cfg.get("content", "content.html")).read_text(encoding="utf-8")
     for k, v in cfg.get("vars", {}).items():       # {{KEY}} placeholders in a shared content template; a value starting with "@" is a file in the source folder
         content = content.replace("{{%s}}" % k, (d / v[1:]).read_text(encoding="utf-8").strip("\n") if v.startswith("@") else v)
+    if cfg.get("i18n") is not None:   # {{t:key}} = a UI string of the page's language (the BMI pages: tool_apps_src/bmicalculator/i18n.js)
+        content = re.sub(r"\{\{t:(\w+)\}\}", lambda m: cfg["i18n"][m.group(1)], content)
+        assert "{{" not in content, re.findall(r"\{\{[^}]*\}\}", content)[:3]
     desc = cfg["desc"]
-    ld = json.dumps({"@context": "https://schema.org", "@type": "WebApplication", "name": cfg["title"],
-                     "url": "https://mes.fm/" + slug, "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any",
-                     "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": desc}, ensure_ascii=False)
+    ldd = {"@context": "https://schema.org", "@type": "WebApplication", "name": cfg["title"],
+           "url": "https://mes.fm/" + slug, "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any",
+           "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": desc}
+    if cfg.get("lang"):
+        ldd["inLanguage"] = cfg["lang"]
+    ld = json.dumps(ldd, ensure_ascii=False)
     scripts = "".join('<script src="%s" defer></script>' % u for u in cfg.get("pre_js", []))
     if slug in STAGE_CTL:             # the shared View bar (Small / Medium / Large, corner grip, Fill window) above the simulation boxes
         scripts += '<script src="/main_js/stage-ctl.js?v=2" defer></script>'
@@ -854,6 +905,18 @@ def build_from_source(slug, cfg, tpl):
                  "@@TAGLINE@@": cfg["tag"], "@@PAGE_TITLE@@": cfg["page_title"], "@@PAGE_DESC@@": desc,
                  "@@ACCENT@@": cfg["accent"], "@@ACCENT_DARK@@": cfg["dark"]}.items():
         page = page.replace(k, v)
+    if cfg.get("lang"):               # a page in another language: <html lang>, og:locale
+        page = page.replace('<html lang="en">', '<html lang="%s">' % cfg["lang"], 1)
+        page = page.replace('<meta property="og:description"', '<meta property="og:locale" content="%s" />        <meta property="og:description"' % cfg.get("og_locale", cfg["lang"]), 1)
+    if cfg.get("doc_title"):          # <title> / og:title / twitter:title other than "<title> | Math Easy Solutions"
+        dt = cfg["doc_title"].replace('"', "&quot;")
+        for old_t in ("<title>%s | Math Easy Solutions</title>" % cfg["title"], '<meta property="og:title" content="%s | Math Easy Solutions" />' % cfg["title"], '<meta name="twitter:title" content="%s">' % cfg["title"]):
+            assert old_t in page, old_t
+        page = page.replace("<title>%s | Math Easy Solutions</title>" % cfg["title"], "<title>%s</title>" % dt, 1)
+        page = page.replace('<meta property="og:title" content="%s | Math Easy Solutions" />' % cfg["title"], '<meta property="og:title" content="%s" />' % dt, 1)
+        page = page.replace('<meta name="twitter:title" content="%s">' % cfg["title"], '<meta name="twitter:title" content="%s">' % dt, 1)
+    if cfg.get("logo_from"):          # the same brand's logo / favicon / share image, but this page's own name, links and Home
+        page = page.replace("/%s/img/logo" % slug, "/%s/img/logo" % cfg["logo_from"])
     # these are calculators: the info bar reads Home | Calculators | Tools (cross-link both ways, see add_cross_links.py)
     tools_li = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/tools.html'>Tools</a></li>"
     page = page.replace(tools_li, "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='https://mes.fm/calculators'>Calculators</a></li>" + tools_li.replace("tools.html", "tools"))

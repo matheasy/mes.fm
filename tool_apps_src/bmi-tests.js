@@ -24,4 +24,37 @@ eq(BM.sortEntries([{ d: "2026-02-01" }, { d: "2025-12-31" }]).map(e => e.d), ["2
 const st = { kg: "70.5", cm: "175", scale: "asia", history: [{ d: "2026-10-02", kg: 70, cm: 175, n: "after trip ✓" }, { d: "2026-09-01", kg: 72, cm: 175, n: "" }] };
 const d = BM.decode(BM.encode(st)); eq(d.kg, "70.5", "kg"); eq(d.scale, "asia", "scale"); eq(d.history.length, 2, "hist"); eq(d.history[0].d, "2026-09-01", "sorted in link"); eq(d.history[1].n, "after trip ✓", "unicode"); eq(BM.decode("junk"), null, "bad");
 eq(BM.fromOldShare({ weight: 65.8, height: 182.9 }), { kg: "65.8", cm: "182.9" }, "old"); eq(BM.fromOldShare({}), null, "old empty"); eq(BM.fromOldShare('{"weight":70,"height":175}').kg, "70", "old string");
+// typed numbers on decimal-comma pages
+eq(BM.numLoc("68,5", true), 68.5, "comma decimal"); eq(BM.numLoc("68.5", true), 68.5, "dot still works"); eq(BM.numLoc("1.234,5", true), 1234.5, "dot thousands"); eq(BM.numLoc("170", true), 170, "integer");
+eq(BM.numLoc("182,88", true), 182.88, "two decimals"); eq(BM.numLoc("65,855", true), 65.855, "three decimals are not thousands on a comma page"); eq(BM.numLoc(" 70 ", true), 70, "spaces"); eq(BM.numLoc("abc", true), null, "bad"); eq(BM.numLoc("1,200", false), 1200, "en unchanged");
+// i18n: every language has every key of the English source (nested objects too), same placeholders, and nothing empty except scaleHint
+const I = require("./bmicalculator/i18n.js"), EN = I.table.en, fs = require("fs"), path = require("path");
+const ph = s => (String(s).match(/\{\w+\}/g) || []).sort().join(",");
+const optional = { scaleHint: 1, catl: 1 };
+for (const code of I.langs) {
+	const T = I.table[code];
+	for (const k of Object.keys(EN)) {
+		n++; if (!(k in T)) { f++; console.log("FAIL", code, "missing key", k); continue; }
+		const e = EN[k], v = T[k];
+		if (typeof e === "string") {
+			eq(typeof v, "string", code + "." + k + " type");
+			if (!optional[k]) eq(v.trim().length > 0, true, code + "." + k + " empty");
+			if (k !== "verdictGain" && k !== "verdictLose") eq(ph(v), ph(e), code + "." + k + " placeholders");
+			else eq(/\{min\}/.test(v) && /\{max\}/.test(v) && /\{cat\}|\{catl\}/.test(v), true, code + "." + k + " placeholders");
+			if (/^(ph|notePh|chartAria|deleteAria|langLabel)/.test(k)) eq(v.indexOf('"'), -1, code + "." + k + " no double quote (attribute)");
+		} else if (Array.isArray(e)) {
+			eq(Array.isArray(v) && v.length === e.length, true, code + "." + k + " array");
+			if (k === "examples") v.forEach((x, i) => { const b = BM.bmi(+x[1], +x[2]); eq(b > 10 && b < 60, true, code + " example " + i); });
+		} else if (k === "saved") { eq(typeof v.other === "string" && /\{n\}/.test(v.other), true, code + ".saved.other"); }
+		else for (const kk of Object.keys(e)) { n++; if (!(kk in v) || !String(v[kk]).trim()) { f++; console.log("FAIL", code, "missing", k + "." + kk); } }
+	}
+	for (const k of Object.keys(T)) if (!(k in EN)) { n++; f++; console.log("FAIL", code, "extra key not in English", k); }
+	eq(Object.keys(T.cats).sort().join("|"), I.CATS_EN.slice().sort().join("|"), code + " categories");
+	for (const sc of ["who", "asia"]) BM.SCALES[sc].cuts.forEach(c => eq(!!T.cats[c[1]], true, code + " category " + c[1]));
+	eq(T.code, code, code + " code"); eq(/^\/[a-z0-9-]+$/.test(T.path), true, code + " path");
+	eq(new Intl.NumberFormat(T.locale).format(1.5).includes(T.dec), true, code + " decimal mark matches its locale");
+	eq(fs.existsSync(path.join(__dirname, "bmicalculator", "seo", code + ".html")), true, code + " seo file");
+	const seo = fs.readFileSync(path.join(__dirname, "bmicalculator", "seo", code + ".html"), "utf8"); eq(seo.includes('id="bm-ref"'), true, code + " seo has the category table");
+}
+eq(new Set(I.langs.map(c => I.table[c].path)).size, I.langs.length, "paths are unique");
 console.log(f ? f + " of " + n + " FAILED" : "all " + n + " passed"); process.exit(f ? 1 : 0);

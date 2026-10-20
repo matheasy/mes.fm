@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
 <!-- BMI Calculator -- mes.fm/bmicalculator -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/bmicalculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/bmicalculator" />                    <title>BMI Calculator | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/bmicalculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/bmicalculator" />                    <title>BMI Calculator | Math Easy Solutions</title><link rel="alternate" hreflang="en" href="https://mes.fm/bmicalculator" /><link rel="alternate" hreflang="es" href="https://mes.fm/calculadora-imc" /><link rel="alternate" hreflang="pt-BR" href="https://mes.fm/calculadora-imc-pt" /><link rel="alternate" hreflang="id" href="https://mes.fm/kalkulator-bmi" /><link rel="alternate" hreflang="fr" href="https://mes.fm/calcul-imc" /><link rel="alternate" hreflang="de" href="https://mes.fm/bmi-rechner" /><link rel="alternate" hreflang="it" href="https://mes.fm/calcolo-bmi" /><link rel="alternate" hreflang="tr" href="https://mes.fm/vucut-kitle-indeksi" /><link rel="alternate" hreflang="vi" href="https://mes.fm/tinh-chi-so-bmi" /><link rel="alternate" hreflang="pl" href="https://mes.fm/kalkulator-bmi-pl" /><link rel="alternate" hreflang="x-default" href="https://mes.fm/bmicalculator" />
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -215,7 +215,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
 	.tu-suffix {position:relative;}
 	.tu-suffix .tu-input {padding-right:3.2em;}
-	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#8a93a0;pointer-events:none;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
 	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
 	.tu-btn:hover {background:var(--accent);color:#fff;}
 	.tu-btn--primary {background:var(--accent);color:#fff;}
@@ -236,7 +236,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-stat--hero {background:#f8e2ed;border-color:#f8e2ed;}
 	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
 	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
-	.tu-stat__sub {font-size:0.85em;color:#6a7280;line-height:1.35;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
 	.tu-pos {color:#1f7a3d !important;}
 	.tu-neg {color:#b3261e !important;}
 	.tu-table-wrap {overflow-x:auto;}
@@ -249,7 +249,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
 	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
 	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
-	.tu-seo h2 {border-bottom:0;padding-bottom:0;font-size:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
 	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
 	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
 	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
@@ -291,6 +299,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 .tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
 .tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
 body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
 
 	/* BMI Calculator 2.0 */
 	.tu [hidden] {display:none !important;}
@@ -341,6 +354,25 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .bm-opt {display:flex;flex-direction:column;gap:0.25em;min-width:0;} .tu .bm-opt .tu-label {margin:0;font-size:0.8em;}
 	.tu #bm-ref th, .tu #bm-ref td {white-space:normal;padding:0.45em 0.5em;} .tu #bm-ref th:not(:first-child), .tu #bm-ref td:not(:first-child) {text-align:right;}
 
+/* languages: switcher above the calculator, the kg/cm pages' pounds toggle, the Asian-scale hint (id / vi) */
+.tu .bm-lang {display:flex; justify-content:flex-end; margin:0 0 0.6em;}
+.tu .bm-lang details {position:relative; font-size:0.92em;}
+.tu .bm-lang summary {cursor:pointer; list-style:none; padding:0.3em 0.75em; border:1px solid #d8c4d2; border-radius:999px; background:#fff; color:#5a2d50; font-weight:600; user-select:none;}
+.tu .bm-lang summary::-webkit-details-marker {display:none;}
+.tu .bm-lang summary::after {content:" \25BE";}
+.tu .bm-lang ul {position:absolute; right:0; top:calc(100% + 4px); z-index:30; margin:0; padding:0.35em 0; list-style:none; min-width:13em; background:#fff; border:1px solid #d8c4d2; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.14);}
+.tu .bm-lang li a {display:block; padding:0.45em 1em; color:#333 !important; text-decoration:none !important;}
+.tu .bm-lang li a:hover, .tu .bm-lang li a:focus {background:#f8e2ed;}
+.tu .bm-lang li a[aria-current] {font-weight:700; color:#8a3d79 !important;}
+.tu .bm-imptoggle {margin-top:0.8em;}
+.tu .bm-scalehint {flex-basis:100%; margin:0.2em 0 0;}
+.tu .bm-scalehint:empty {display:none;}
+body.dark-mode #bm .bm-lang summary, body.dark-mode #bm .bm-lang ul {background:#262626; border-color:#5a4554; color:#f0d4e6;}
+body.dark-mode #bm .bm-lang li a {color:#e6e6e6 !important;}
+body.dark-mode #bm .bm-lang li a:hover, body.dark-mode #bm .bm-lang li a:focus {background:#3a2a35;}
+body.dark-mode #bm .bm-lang li a[aria-current] {color:#f0a6d8 !important;}
+.tu #bm-imperial[hidden] {display:none;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -379,6 +411,77 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#b4559f;--accent-dark:#b4559f}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #46112c}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#2a1821;border-color:#46112c}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#2a1821;border-color:#46112c}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#2a1821}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .tu .bm-verdict{border-left:5px solid #4f5966}
+	body.dark-mode .tu .bm-verdict.is-normal{border-left-color:#3ac56e}
+	body.dark-mode .tu .bm-verdict.is-under{border-left-color:#e3a41c}
+	body.dark-mode .tu .bm-verdict.is-over{border-left-color:#e37c1c}
+	body.dark-mode .tu .bm-verdict.is-obese{border-left-color:#a52f27}
+	body.dark-mode .tu .bm-small{color:#9a9da3}
+	body.dark-mode .tu .bm-pin{background:#3c4f67}
+	body.dark-mode .tu .bm-pin span{background:#3c4f67}
+	body.dark-mode .tu .bm-ticks{color:#9a9da3}
+	body.dark-mode .tu .bm-cat{border-left:4px solid #424242;color:#bbbbbb}
+	body.dark-mode .tu .bm-cat--under{border-left-color:#bb8b11}
+	body.dark-mode .tu .bm-cat--normal{border-left-color:#3e8e58}
+	body.dark-mode .tu .bm-cat--over{border-left-color:#ba6212}
+	body.dark-mode .tu .bm-cat--obese{border-left-color:#ac2720}
+	body.dark-mode .tu .bm-cat.is-on{background:#2a1821;color:#d1d6dc}
+	body.dark-mode .tu .bm-cb--under{fill:#f1cb6a}
+	body.dark-mode .tu .bm-cb--normal{fill:#8dcda2}
+	body.dark-mode .tu .bm-cb--over{fill:#f1aa6a}
+	body.dark-mode .tu .bm-cb--obese{fill:#e57b76}
+	body.dark-mode .tu .bm-gl{stroke:#3a424d}
+	body.dark-mode .tu .bm-ct{fill:#9a9da3}
+	body.dark-mode .tu .bm-dot{stroke:#333333}
+	body.dark-mode .tu .bm-del{color:#999da3}
+	body.dark-mode .tu .bm-del:hover{color:#e0827b}
+	body.dark-mode .tu .tu-btn.bm-copied{border-color:#45ba4b !important}
+	body.dark-mode .tu .bm-optbar{border-top:1px solid #29323d}
+	body.dark-mode .tu .bm-lang summary{border:1px solid #4d3346;background:#1a1a1a;color:#c992bd}
+	body.dark-mode .tu .bm-lang ul{background:#1a1a1a;border:1px solid #4d3346}
+	body.dark-mode .tu .bm-lang li a{color:#cccccc !important}
+	body.dark-mode .tu .bm-lang li a:hover,body.dark-mode .tu .bm-lang li a:focus{background:#2a1821}
+	body.dark-mode .tu .bm-lang li a[aria-current]{color:#cd8ebf !important}
+	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
    slides in, and the hamburger is pinned into its right end. Toggled by
@@ -421,72 +524,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 @media (max-width: 480px) {
   #compact-nav { padding-right: 70px; gap: 8px; }
 }
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent:#b4559f;--accent-dark:#b4559f}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #46112c}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#2a1821;border-color:#46112c}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#999da3}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#2a1821;border-color:#46112c}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9da3}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#2a1821}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu .bm-verdict{border-left:5px solid #4f5966}
-	body.dark-mode .tu .bm-verdict.is-normal{border-left-color:#3ac56e}
-	body.dark-mode .tu .bm-verdict.is-under{border-left-color:#e3a41c}
-	body.dark-mode .tu .bm-verdict.is-over{border-left-color:#e37c1c}
-	body.dark-mode .tu .bm-verdict.is-obese{border-left-color:#a52f27}
-	body.dark-mode .tu .bm-small{color:#9a9da3}
-	body.dark-mode .tu .bm-pin{background:#3c4f67}
-	body.dark-mode .tu .bm-pin span{background:#3c4f67}
-	body.dark-mode .tu .bm-ticks{color:#9a9da3}
-	body.dark-mode .tu .bm-cat{border-left:4px solid #424242;color:#bbbbbb}
-	body.dark-mode .tu .bm-cat--under{border-left-color:#bb8b11}
-	body.dark-mode .tu .bm-cat--normal{border-left-color:#3e8e58}
-	body.dark-mode .tu .bm-cat--over{border-left-color:#ba6212}
-	body.dark-mode .tu .bm-cat--obese{border-left-color:#ac2720}
-	body.dark-mode .tu .bm-cat.is-on{background:#2a1821;color:#d1d6dc}
-	body.dark-mode .tu .bm-cb--under{fill:#f1cb6a}
-	body.dark-mode .tu .bm-cb--normal{fill:#8dcda2}
-	body.dark-mode .tu .bm-cb--over{fill:#f1aa6a}
-	body.dark-mode .tu .bm-cb--obese{fill:#e57b76}
-	body.dark-mode .tu .bm-gl{stroke:#3a424d}
-	body.dark-mode .tu .bm-ct{fill:#9a9da3}
-	body.dark-mode .tu .bm-dot{stroke:#333333}
-	body.dark-mode .tu .bm-del{color:#999da3}
-	body.dark-mode .tu .bm-del:hover{color:#e0827b}
-	body.dark-mode .tu .tu-btn.bm-copied{border-color:#45ba4b !important}
-	body.dark-mode .tu .bm-optbar{border-top:1px solid #29323d}
-	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -660,18 +697,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --><style id="seo-headings">
-/* SEO-HEADINGS */
-body .tu-seo {font-size:1.04em;line-height:1.65;}
-body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
-body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
-body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
-body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
-body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
-.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}   /* the page reset made superscripts as big as the text, e.g. 10^-13 */
-.tu div[class$="-eq"] {overflow-y:hidden;}   /* equation boxes: overflow-x:auto made overflow-y auto too, so a tall formula showed a vertical scrollbar */
-</style>
-</head>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -707,7 +733,8 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">BMI Calculator</h1>                                        <p class="page-description">Free BMI calculator: enter your weight and height in kg/cm or lb/ft/in to get your body mass index, your category, your healthy weight range and how much to gain or lose. WHO or Asian cut-offs, a gauge, and saved measurements with a BMI-over-time chart.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<div class="tu" id="bm">
+	<div class="tu" id="bm" data-lang="en">
+		<nav class="bm-lang" aria-label="Language"><details><summary>&#127760; English</summary><ul><li><a href="/bmicalculator" hreflang="en" lang="en" aria-current="page">English</a></li><li><a href="/calculadora-imc" hreflang="es" lang="es">Español</a></li><li><a href="/calculadora-imc-pt" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li><li><a href="/kalkulator-bmi" hreflang="id" lang="id">Bahasa Indonesia</a></li><li><a href="/calcul-imc" hreflang="fr" lang="fr">Français</a></li><li><a href="/bmi-rechner" hreflang="de" lang="de">Deutsch</a></li><li><a href="/calcolo-bmi" hreflang="it" lang="it">Italiano</a></li><li><a href="/vucut-kitle-indeksi" hreflang="tr" lang="tr">Türkçe</a></li><li><a href="/tinh-chi-so-bmi" hreflang="vi" lang="vi">Tiếng Việt</a></li><li><a href="/kalkulator-bmi-pl" hreflang="pl" lang="pl">Polski</a></li></ul></details></nav>
 		<div id="bm-notice" class="tu-card tu-card--tint" hidden style="margin-bottom:1em;"></div>
 
 		<div class="tu-card" id="bm-setup">
@@ -716,6 +743,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-kg">Weight</label><div class="tu-suffix"><input id="bm-kg" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 65.8"><span>kg</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-cm">Height</label><div class="tu-suffix"><input id="bm-cm" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 182.9"><span>cm</span></div></div>
 			</div>
+			<button type="button" class="bm-optbtn bm-imptoggle" id="bm-imptoggle" aria-controls="bm-imperial" hidden>Use pounds, feet and inches</button>
 			<div class="tu-row" style="margin-top:1em;" id="bm-imperial">
 				<div class="tu-field tu-field--sm" style="flex-basis:11em;"><label for="bm-lb">Weight</label><div class="tu-suffix"><input id="bm-lb" class="tu-input tu-input--big" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 145.1"><span>lb</span></div></div>
 				<div class="tu-field tu-field--sm" style="flex-basis:7em;"><label for="bm-ft">Height</label><div class="tu-suffix"><input id="bm-ft" class="tu-input tu-input--big" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 6"><span>ft</span></div></div>
@@ -731,6 +759,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 					</div></div>
 				<div class="bm-opt"><label for="bm-scale" class="tu-label">BMI scale</label>
 					<select id="bm-scale" class="tu-select"><option value="who">WHO standard (overweight from 25)</option><option value="asia">Asian (overweight from 23)</option></select></div>
+				<p class="tu-note bm-scalehint" id="bm-scalehint"></p>
 			</div>
 			<p class="tu-note" style="margin-bottom:0;">Every field stays in step with its twin. Adults 20 and over only; see the notes below.</p>
 		</div>
@@ -801,7 +830,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/weighted-average-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo-512.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Weighted Average Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/speedreader"><img class="mes-aside__img mes-aside__img--logo" src="/speedreader/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Speed Reader</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/photo"><img class="mes-aside__img mes-aside__img--logo" src="/photo/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Free Online Photo Editor with Layers</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/geometry"><img class="mes-aside__img mes-aside__img--logo" src="/geometry/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Geometry Angle Calculator and Simulator: Triangles, Parallel Lines, Circles and Polygons</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -851,7 +880,7 @@ body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4,
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/bmicalculator/js/bmicalculator.js?v=6" defer></script>
+	<script src="/bmicalculator/js/bmicalculator.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
