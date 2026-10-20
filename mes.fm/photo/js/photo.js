@@ -1033,11 +1033,18 @@ var MESPixel = (function () {
 		dbl: function () { if (lasso && lasso.poly) { lasso.pts.pop(); lassoDone(lasso.mode); } },
 		enter: function () { if (lasso && lasso.poly) lassoDone(lasso.mode); }, cancel: function () { lasso = null; },
 		overlay: function (x) { if (!lasso) return; x.lineWidth = 1; [["#000", 0], ["#fff", 5]].forEach(function (p) { x.strokeStyle = p[0]; x.setLineDash([5, 5]); x.lineDashOffset = p[1]; x.beginPath(); lasso.pts.forEach(function (q, i) { var s = PE.toScreen(q.x, q.y); i ? x.lineTo(s.x, s.y) : x.moveTo(s.x, s.y); }); if (lasso.poly && lasso.cur) { var c = PE.toScreen(lasso.cur.x, lasso.cur.y); x.lineTo(c.x, c.y); } x.stroke(); }); x.setLineDash([]); x.lineDashOffset = 0; } });
-	PE.defTool({ id: "wand", name: "Magic Wand (select by colour)", key: "w", icon: "✨", opts: { tol: 32, contiguous: true, merged: false, mode: "new", smooth: true },
-		ui: [{ k: "tol", label: "Tolerance", type: "range", min: 0, max: 255, step: 1 }, { k: "contiguous", label: "Contiguous", type: "check" }, { k: "merged", label: "All layers", type: "check" }, { k: "smooth", label: "Smooth edges", type: "check" }, { k: "mode", label: "Mode", type: "seg", options: [["new", "New"], ["add", "Add"], ["sub", "Subtract"], ["int", "Intersect"]] }],
+	PE.defTool({ id: "wand", name: "Magic Wand (select by colour)", key: "w", icon: "✨", opts: { tol: 32, contiguous: true, merged: false, mode: "new", smooth: true, auto: true },
+		ui: [{ k: "tol", label: "Tolerance", type: "range", min: 0, max: 255, step: 1 }, { k: "contiguous", label: "Contiguous", type: "check" }, { k: "merged", label: "All layers", type: "check" }, { k: "smooth", label: "Smooth edges", type: "check" }, { k: "auto", label: "Pick the layer under the click", type: "check", help: "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer." }, { k: "mode", label: "Mode", type: "seg", options: [["new", "New"], ["add", "Add"], ["sub", "Subtract"], ["int", "Intersect"]] }],
 		hint: "Click a colour to select it. Raise Tolerance to include similar colours. Great for removing a plain background.",
 		down: function (e) {
 			var o = PE.opt.wand, d = PE.doc, L = PE.active(), mask, w, h;
+			if (o.auto && !o.merged && L) {   // the layer that is really visible under the click (a letter on its own layer, a pasted picture ...)
+				for (var li = d.layers.length - 1; li >= 0; li--) {
+					var C = d.layers[li]; if (PE.isGroup(C) || !PE.effVisible(C)) continue; var q = PE.toLayerPt(C, e.x, e.y), cw = C.canvas.width, ch = C.canvas.height;
+					if (q.x < 0 || q.y < 0 || q.x >= cw || q.y >= ch) continue; if (C.canvas.getContext("2d").getImageData(Math.floor(q.x), Math.floor(q.y), 1, 1).data[3] < 24) continue;
+					if (C !== L && !C.locked) { PE.setActive(C.id); L = C; PE.toast("Picked layer \u201c" + C.name + "\u201d"); } break;
+				}
+			}
 			if (o.merged || !L) { var c = PE.flatten(), id = c.getContext("2d").getImageData(0, 0, c.width, c.height); mask = P.floodMask(id.data, c.width, c.height, e.x, e.y, o.tol, o.contiguous); w = c.width; h = c.height; }
 			else { var og = PE.origin(L), lp = PE.toLayerPt(L, e.x, e.y); if (!PE.isIdentity(L)) { PE.bake(L); og = PE.origin(L); lp = { x: e.x - og.x, y: e.y - og.y }; } var data = PE.layerData(L); var m = P.floodMask(data.data, data.width, data.height, lp.x, lp.y, o.tol, o.contiguous); mask = new Uint8Array(d.w * d.h); for (var y = 0; y < data.height; y++) { var dy = y + og.y; if (dy < 0 || dy >= d.h) continue; for (var x = 0; x < data.width; x++) { var dx = x + og.x; if (dx >= 0 && dx < d.w) mask[dy * d.w + dx] = m[y * data.width + x]; } } w = d.w; h = d.h; }
 			if (o.smooth) mask = P.featherMask(P.growShrinkMask(mask, w, h, 0, true), w, h, 1.5);
@@ -1157,6 +1164,49 @@ var MESPixel = (function () {
 		{ hint: "Alt-click to pick the source area, then paint to copy it. Great for removing blemishes and objects.", overlay: function (x) { if (!PE.cloneSrc) return; var s = PE.toScreen(PE.cloneSrc.x, PE.cloneSrc.y); x.strokeStyle = "#ff3d3d"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(s.x - 8, s.y); x.lineTo(s.x + 8, s.y); x.moveTo(s.x, s.y - 8); x.lineTo(s.x, s.y + 8); x.stroke(); } });
 	paintTool("retouch", "Retouch (blur / sharpen / dodge / burn)", "r", "💧", "retouch", { size: 40, hardness: 50, strength: 50, mode: "blur" }, [{ k: "mode", label: "Effect", type: "select", options: [["blur", "Blur"], ["sharpen", "Sharpen"], ["dodge", "Lighten (dodge)"], ["burn", "Darken (burn)"], ["saturate", "Saturate"], ["desaturate", "Desaturate"]] }, BRUSHUI[0], BRUSHUI[1], { k: "strength", label: "Strength", type: "range", min: 5, max: 100, step: 1, unit: "%" }],
 		{ hint: "Paint to blur, sharpen, lighten, darken or change saturation just where you drag." });
+
+	/* ---------- smudge: picks up the colours under the pointer and drags them along ---------- */
+	(function () {
+		var sm = null;
+		function region(L, x, y, D) { var c = PE.tmp("smr", D, D), g = c.getContext("2d"); g.clearRect(0, 0, D, D); g.drawImage(L.canvas, Math.round(x), Math.round(y), D, D, 0, 0, D, D); return c; }
+		function smudgeDab(px, py) {
+			var L = sm.L, o = sm.o, r = Math.max(1, o.size / 2), D = Math.ceil(r * 2) + 2, c = D / 2, lx = px - sm.og.x, ly = py - sm.og.y, rx = lx - c, ry = ly - c;
+			var rr = r + 2, q = sm.bb; sm.bb = q ? { x0: Math.min(q.x0, px - rr), y0: Math.min(q.y0, py - rr), x1: Math.max(q.x1, px + rr), y1: Math.max(q.y1, py + rr) } : { x0: px - rr, y0: py - rr, x1: px + rr, y1: py + rr };
+			var under = PE.mk(D, D); under.getContext("2d").drawImage(region(L, rx, ry, D), 0, 0);
+			if (!sm.carry) { sm.carry = PE.mk(D, D); sm.carry.getContext("2d").drawImage(under, 0, 0); return; }
+			var s = Math.max(0.05, o.strength / 100), t = PE.tmp("smt", D, D), tx = t.getContext("2d");
+			tx.globalCompositeOperation = "source-over"; tx.clearRect(0, 0, D, D); tx.drawImage(sm.carry, 0, 0); tx.globalCompositeOperation = "destination-in"; softDab(tx, r, Math.min(o.hardness / 100, 0.9), { solid: "#000", clear: "rgba(0,0,0,0)" }, c, c); tx.globalCompositeOperation = "source-over";
+			if (PE.sel) PE.restrictToSel(tx, Math.round(px - c), Math.round(py - c), D, D);
+			var lg = L.canvas.getContext("2d"); lg.save(); lg.globalAlpha = Math.min(1, s * 0.9 + 0.1); lg.drawImage(t, Math.round(rx), Math.round(ry)); lg.restore();
+			var cg = sm.carry.getContext("2d"); cg.save(); cg.globalAlpha = 1 - Math.min(0.95, s * 0.8); cg.drawImage(under, 0, 0); cg.restore();
+			L.rev++;
+		}
+		function moveTo(e, first) {
+			var o = sm.o; if (first || !sm.last) { smudgeDab(e.x, e.y); sm.last = { x: e.x, y: e.y }; return; }
+			var dx = e.x - sm.last.x, dy = e.y - sm.last.y, len = Math.hypot(dx, dy), sp = Math.max(1, o.size * 0.12), pos = sp - sm.rem;
+			while (pos <= len) { smudgeDab(sm.last.x + dx * pos / len, sm.last.y + dy * pos / len); pos += sp; }
+			sm.rem = len - (pos - sp); sm.last = { x: e.x, y: e.y }; PE.invalidate();
+		}
+		function end() {
+			if (!sm) return; var s = sm, L = s.L; sm = null;
+			if (s.pre && s.bb && !L.mask) { var b = s.bb, p0 = s.pre; PE.cropLayerTo(L, { x: Math.min(p0.x, b.x0), y: Math.min(p0.y, b.y0), w: Math.max(p0.x + p0.w, b.x1) - Math.min(p0.x, b.x0), h: Math.max(p0.y + p0.h, b.y1) - Math.min(p0.y, b.y0) }); }
+			L.rev++; PE.commit("Smudge");
+		}
+		PE.defTool({ id: "smudge", name: "Smudge", key: "n", icon: "👆", opts: { size: 40, hardness: 50, strength: 60 },
+			ui: [BRUSHUI[0], BRUSHUI[1], { k: "strength", label: "Strength", type: "range", min: 5, max: 100, step: 1, unit: "%" }],
+			hint: "Drag across the picture to smear the colours along, like dragging a finger through wet paint.",
+			cursorSize: function () { return PE.opt.smudge.size; },
+			down: function (e) {
+				var L = PE.active(); if (!L || L.type === "group") return; if (L.editMask && L.mask) { PE.toast("Smudge works on the picture, not on the layer mask"); return; }
+				if (!PE.prepare(L, false, true)) return;
+				var pre = (function () { var q = PE.origin(L); return { x: q.x, y: q.y, w: L.canvas.width, h: L.canvas.height }; })();
+				PE.growLayer(L, { x: 0, y: 0, w: PE.doc.w, h: PE.doc.h });
+				sm = { L: L, o: PE.opt.smudge, og: PE.origin(L), pre: pre, bb: null, carry: null, last: null, rem: 0 };
+				moveTo(e, true);
+			},
+			move: function (e) { if (sm) moveTo(e, false); },
+			up: function () { end(); }, abort: function () { end(); }, cancel: function () { end(); } });
+	})();
 
 	/* ---------- bucket + gradient ---------- */
 	PE.defTool({ id: "bucket", name: "Paint Bucket", key: "k", icon: "🪣", opts: { tol: 24, contiguous: true, merged: false, opacity: 100 },
@@ -1582,6 +1632,37 @@ var MESPixel = (function () {
 		function getBlob(v) { return PE.exportBlob(v.fmt, v.q / 100, { scale: v.scale / 100, bg: v.bg }); }
 		PE.modal({ title: "Export image", body: wrap, buttons: [{ label: "Copy to clipboard", act: function (m) { var v = f.get(); PE.exportBlob("png", 1, { scale: v.scale / 100 }).then(function (b) { return navigator.clipboard.write([new ClipboardItem({ "image/png": b })]); }).then(function () { PE.toast("Copied as PNG"); }).catch(function () { PE.toast("This browser can't copy images"); }); } },
 			{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download", primary: true, act: function (m) { var v = f.get(); PE.savedParams.export = v; getBlob(v).then(function (b) { PE.download(b, I.cleanFileName(v.name || "image") + "." + I.FORMATS[v.fmt].ext); PE.toast("Saved"); m.close(); }).catch(function (e) { PE.toast(e.message); }); } }] });
+	};
+	/* ---------- export one group as its own image, on a canvas of its own size ---------- */
+	PE.dlgExportGroup = function (G) {
+		var d = PE.doc; if (!d) return; G = G || PE.active(); while (G && !PE.isGroup(G)) G = d.layers.filter(function (k) { return k.id === G.group; })[0];
+		if (!G) { PE.toast("Select a group (or a layer inside one) first"); return; }
+		var members = PE.descendants(G).filter(function (k) { return !PE.isGroup(k); }); if (!members.length) { PE.toast("This group has no layers in it"); return; }
+		var gb = PE.groupBounds(G), cx0 = Math.floor(gb.x), cy0 = Math.floor(gb.y), cw = Math.max(1, Math.ceil(gb.x + gb.w) - cx0), ch = Math.max(1, Math.ceil(gb.y + gb.h) - cy0);
+		var saved = PE.savedParams.groupExport || { fmt: "png", q: 90, area: "contents", fit: "fit", bg: "#ffffff", solid: false }, wrap = el("div", "pe-exp");
+		var f = PE.form([{ k: "area", label: "Take from", help: "<p><b>The group's contents</b>: the smallest box around everything in the group (you can use any size below).</p><p><b>The whole canvas</b>: the full image area, with only this group showing.</p>", type: "seg", options: [["contents", "The group's contents"], ["canvas", "The whole canvas"]], val: saved.area },
+			{ k: "w", label: "Canvas width", type: "number", min: 1, max: 12000, step: 1, val: cw }, { k: "h", label: "Canvas height", type: "number", min: 1, max: 12000, step: 1, val: ch },
+			{ k: "fit", label: "Place the group", help: "<p><b>Fit</b>: scaled to fit inside, nothing cut off.</p><p><b>Fill</b>: scaled to cover the whole canvas, the edges may be cut off.</p><p><b>Actual size</b>: not scaled, centred.</p><p><b>Stretch</b>: squashed to the exact shape.</p>", type: "seg", options: [["fit", "Fit"], ["fill", "Fill"], ["none", "Actual size"], ["stretch", "Stretch"]], val: saved.fit },
+			{ k: "solid", label: "Solid background", type: "check", val: saved.solid }, { k: "bg", label: "Background colour", type: "color", val: saved.bg },
+			{ k: "fmt", label: "Format", type: "seg", options: [["png", "PNG"], ["jpg", "JPEG"], ["webp", "WebP"]], val: saved.fmt }, { k: "q", label: "Quality", type: "range", min: 30, max: 100, step: 1, val: saved.q, unit: "%" }], function () { vis(); });
+		wrap.appendChild(f.el); var info = el("p", "pe-hint2", "Exports only this group (" + members.length + " layer" + (members.length > 1 ? "s" : "") + ") as its own picture, on a canvas of the size you choose. Your document is not changed.");
+		wrap.appendChild(info);
+		var lastArea = saved.area;
+		function vis() { var v = f.get(), F = I.FORMATS[v.fmt]; f.inputs.q.inp.closest(".pe-row").style.display = F.lossy ? "" : "none"; var sol = v.solid || !F.alpha; f.inputs.bg.inp.closest(".pe-row").style.display = sol ? "" : "none"; if (v.area !== lastArea) { lastArea = v.area; f.set("w", v.area === "canvas" ? d.w : cw); f.set("h", v.area === "canvas" ? d.h : ch); } }
+		vis();
+		function render(v) {
+			var rx = v.area === "canvas" ? 0 : cx0, ry = v.area === "canvas" ? 0 : cy0, rw = v.area === "canvas" ? d.w : cw, rh = v.area === "canvas" ? d.h : ch;
+			var chain = []; for (var g = G; g; g = d.layers.filter(function (k) { return k.id === g.group; })[0]) chain.push(g); var was = chain.map(function (k) { return k.visible; }); chain.forEach(function (k) { k.visible = true; }); PE.relink();
+			var src = mk(rw, rh), sx = src.getContext("2d"); sx.imageSmoothingQuality = "high";
+			try { d.layers.forEach(function (L) { if (members.indexOf(L) >= 0) PE.drawLayer(sx, L, [1, 0, 0, 1, -rx, -ry], "exp", rw, rh); }); } finally { chain.forEach(function (k, i) { k.visible = was[i]; }); }
+			var W = Math.max(1, Math.min(12000, Math.round(v.w))), H = Math.max(1, Math.min(12000, Math.round(v.h))), out = mk(W, H), x = out.getContext("2d"), F = I.FORMATS[v.fmt];
+			if (v.solid || !F.alpha) { x.fillStyle = v.bg; x.fillRect(0, 0, W, H); }
+			x.imageSmoothingQuality = "high";
+			if (v.fit === "stretch") x.drawImage(src, 0, 0, W, H); else { var k = v.fit === "none" ? 1 : v.fit === "fill" ? Math.max(W / rw, H / rh) : Math.min(W / rw, H / rh); x.drawImage(src, (W - rw * k) / 2, (H - rh * k) / 2, rw * k, rh * k); }
+			return out;
+		}
+		PE.modal({ title: "Export group: " + G.name, body: wrap, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "⬇ Download", primary: true, act: function (m) {
+			var v = f.get(), F = I.FORMATS[v.fmt]; PE.savedParams.groupExport = v; render(v).toBlob(function (b) { if (!b || b.type !== F.mime) { PE.toast("This browser can't save " + F.name); return; } PE.download(b, I.cleanFileName(G.name || "group") + "." + F.ext); PE.toast("Saved"); m.close(); }, F.mime, v.q / 100); } }] });
 	};
 	/* ---------- layer effects (new layer under the active one) + round corners + straighten ---------- */
 	function flatLayer(L) { var c = mk(L.canvas.width, L.canvas.height); PE.drawLayer(c.getContext("2d"), Object.assign({}, L, { opacity: 1, blend: "source-over", live: null, preview: null, _p: null }), [1, 0, 0, 1, 0, 0], "fl", c.width, c.height); return c; }
@@ -2125,7 +2206,7 @@ var MESPixel = (function () {
 	var _fit = PE.fit; PE.fit = function (p) { PE.autoFit = true; _fit(p); }; var _sz = PE.setZoom; PE.setZoom = function (z, x, y) { PE.autoFit = false; _sz(z, x, y); }; var _pb = PE.panBy; PE.panBy = function (dx, dy) { PE.autoFit = false; _pb(dx, dy); };
 
 	/* ---------- tool bar ---------- */
-	var ORDER = ["move", "marquee", "lasso", "wand", "crop", "brush", "eraser", "clone", "retouch", "objerase", "bucket", "gradient", "eyedropper", "text", "equation", "shape", "hand", "zoom"];
+	var ORDER = ["move", "marquee", "lasso", "wand", "crop", "brush", "smudge", "eraser", "clone", "retouch", "objerase", "bucket", "gradient", "eyedropper", "text", "equation", "shape", "hand", "zoom"];
 	var HELP = {
 		move: "Move, resize and rotate the active layer (or a whole group). Drag a layer to move it. Drag a square handle to resize; hold Shift while dragging a corner for free proportions. Drag just outside a corner to rotate. Arrow keys nudge by 1 px (Shift = 10 px). The option bar has Remove background (AI).",
 		marquee: "Draw a rectangle or ellipse selection. Anything you then do (fill, delete, adjust, copy) only touches the selection. Shift while dragging = square or circle, Shift-drag on an existing selection = add to it, Alt = subtract. Drag inside a selection to move it, click once to deselect. Feather softens the edge.",
@@ -2133,6 +2214,7 @@ var MESPixel = (function () {
 		wand: "Click a colour to select every touching pixel of a similar colour. Raise Tolerance to include more shades. Click the background, press Delete, then export as PNG for a transparent background.",
 		crop: "Cut the picture down to part of it. Drag the box or its handles, pick a ratio in the option bar if you want one, then press Enter or Apply. Everything outside the box is removed.",
 		brush: "Paint with the foreground colour. [ and ] change the size, Shift-click draws a straight line from the last point. Opacity, hardness and size are in the option bar. On a layer mask the brush reveals the layer.",
+		smudge: "Drag to smear colours along, like pulling a finger through wet paint. Strength decides how far the colour is carried; Size and Hardness work like the brush.",
 		eraser: "Erase pixels on the active layer (they become transparent). Same size and hardness controls as the brush. On a layer mask the eraser hides parts of the layer without destroying them.",
 		clone: "Copy one part of the picture over another. Alt-click to choose the source spot, then paint where the copy should go. Good for removing blemishes, dust and small objects.",
 		retouch: "Paint to blur, sharpen, lighten, darken or change the saturation only where you drag. Choose the effect and its strength in the option bar.",
@@ -2218,7 +2300,7 @@ var MESPixel = (function () {
 		});
 		if (id === "text" || id === "shape") { }
 	}
-	var OPTHELP = { "Size": "How big the brush or item is, in pixels of the image.", "Hardness": "How sharp the edge of the brush is. 100% is a crisp hard circle; lower values fade softly towards the edge, like an airbrush.", "Opacity": "How see-through the paint is. 100% covers fully; 30% lets what is underneath show through. Overlapping strokes in one drag do not stack.", "Smoothing": "Steadies a shaky hand: the brush lags a little behind the pointer and draws smoother curves. 0% = follows the pointer exactly.", "Pen pressure": "With a drawing tablet or pen, pressing harder makes the stroke bigger. Has no effect with a mouse.", "Tolerance": "How different a colour can be and still count as the same area. Low = only almost identical colours; high = spreads into similar colours.", "Strength": "How strong the effect is each time you paint over it.", "Aligned": "On: the copy source moves along with your brush. Off: every stroke starts again from the same source point.", "Contiguous": "On: only connected areas are filled. Off: every matching colour in the whole layer.", "Sample all layers": "Look at the merged picture instead of only the selected layer when deciding what is the same colour.", "Line height": "Space between lines of text. 1.2 is normal; bigger spreads the lines out.", "Box width (0 = auto)": "How wide the text box is before words wrap onto the next line. 0 = as wide as the text needs (up to the image width). You can also drag the purple handle on the right edge of the text box.", "Background box": "Draws a coloured rectangle behind the text, like a label or caption.", "Outline": "Draws a border around the letters (or the shape).", "Shadow": "Adds a soft shadow behind the text so it stands out from busy pictures.", "Padding": "Space between the text and the edge of its background box.", "Corners": "How round the corners of the box are.", "Blur": "How soft the edge is.", "Bold": "Makes the letters thicker.", "Italic": "Slants the letters." };
+	var OPTHELP = { "Hardness": "How sharp the edge of the brush is. 100% is a crisp hard circle; lower values fade softly towards the edge, like an airbrush.", "Opacity": "How see-through the paint is. 100% covers fully; 30% lets what is underneath show through. Overlapping strokes in one drag do not stack.", "Smoothing": "Steadies a shaky hand: the brush lags a little behind the pointer and draws smoother curves. 0% = follows the pointer exactly.", "Pen pressure": "With a drawing tablet or pen, pressing harder makes the stroke bigger. Has no effect with a mouse.", "Tolerance": "How different a colour can be and still count as the same area. Low = only almost identical colours; high = spreads into similar colours.", "Strength": "How strong the effect is each time you paint over it.", "Aligned": "On: the copy source moves along with your brush. Off: every stroke starts again from the same source point.", "Contiguous": "On: only connected areas are filled. Off: every matching colour in the whole layer.", "Sample all layers": "Look at the merged picture instead of only the selected layer when deciding what is the same colour.", "Pick the layer under the click": "On: clicking a letter or shape picks the layer that is actually showing there, so the selection (and a following Delete) acts on that layer and not on the picture behind it. Off: always use the selected layer.", "Box width (0 = auto)": "How wide the text box is before words wrap onto the next line. 0 = as wide as the text needs (up to the image width). You can also drag the purple handle on the right edge of the text box.", };
 	function optHelp(u) { var t = u.help || OPTHELP[u.label]; return t ? PE.helpBtn(u.label, esc(t)) : null; }
 	function fmtV(v, u) { return (u.step < 1 ? (+v).toFixed(2) : Math.round(v)) + (u.unit || ""); }
 	var optsTimer = 0; PE.on("opts", function (id) { if (id === PE.toolId) { clearTimeout(optsTimer); optsTimer = setTimeout(function () { if (!document.activeElement || document.activeElement.type !== "range") buildOpts(); }, 10); } sset({ opt: PE.opt }); });
@@ -2258,6 +2340,10 @@ var MESPixel = (function () {
 		});
 		return out;
 	}
+	function renameLayer(id) {
+		var nm = $("pe-layers").querySelector('.pe-layer[data-id="' + id + '"] .pe-lname'); if (nm) nm.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+	}
+	root.addEventListener("keydown", function (e) { if (e.key === "F2" && PE.doc && PE.active() && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") { e.preventDefault(); renameLayer(PE.active().id); } });
 	function buildLayers() {
 		var list = $("pe-layers"), d = PE.doc; list.innerHTML = ""; if (!d) return; var act = PE.active(), rows = rowsTopDown(); PE.relink();
 		rows.forEach(function (r) {
@@ -2269,7 +2355,10 @@ var MESPixel = (function () {
 			else { var th = el("span", "pe-th"); th.appendChild(thumbFor(L)); row.appendChild(th); }
 			var nm = el("span", "pe-lname", esc(L.name) + (L.type === "text" ? " ᵀ" : "") + (grp ? ' <small class="pe-cnt">' + PE.descendants(L).filter(function (k) { return !PE.isGroup(k); }).length + "</small>" : "")); nm.title = "Double-click to rename";
 			if (L.mask) { var mt = el("span", "pe-th pe-th--mask" + (L.editMask ? " is-on" : "")); var mc = PE.mk(36, 36), mx = mc.getContext("2d"); mx.fillStyle = "#000"; mx.fillRect(0, 0, 36, 36); var wm = PE.mk(36, 36), wx = wm.getContext("2d"); wx.drawImage(L.mask, 0, 0, 36, 36); wx.globalCompositeOperation = "source-in"; wx.fillStyle = "#fff"; wx.fillRect(0, 0, 36, 36); mx.drawImage(wm, 0, 0); mt.appendChild(mc); mt.title = "Layer mask: click to paint on the mask (white-ish = shown). Click the picture to paint on the layer."; mt.addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = true; buildLayers(); }); row.querySelector(".pe-th").addEventListener("click", function (e) { e.stopPropagation(); PE.setActive(L.id); L.editMask = false; buildLayers(); }); row.appendChild(mt); }
-			row.appendChild(nm); if (L.locked) row.appendChild(el("span", "pe-lock", "🔒"));
+			row.appendChild(nm);
+			if (grp) { var xg = el("button", "pe-pen", "⬇"); xg.type = "button"; xg.title = "Export this group as its own image, on a canvas of any size"; xg.addEventListener("click", function (e) { e.stopPropagation(); PE.dlgExportGroup(L); }); row.appendChild(xg); }
+			var pen = el("button", "pe-pen", "✎"); pen.type = "button"; pen.title = "Rename"; pen.addEventListener("click", function (e) { e.stopPropagation(); renameLayer(L.id); }); row.appendChild(pen);
+			if (L.locked) row.appendChild(el("span", "pe-lock", "🔒"));
 			row.addEventListener("click", function (e) {
 				if (e.ctrlKey || e.metaKey) { multi[L.id] = !multi[L.id]; if (!Object.keys(multi).some(function (k) { return multi[k]; })) multi = {}; else multi[act ? act.id : L.id] = true; buildLayers(); return; }
 				if (e.shiftKey && act) { var order = rowsTopDown().map(function (x) { return x.L; }), i0 = order.indexOf(act), i1 = order.indexOf(L); if (i0 >= 0 && i1 >= 0) { multi = {}; order.slice(Math.min(i0, i1), Math.max(i0, i1) + 1).forEach(function (x) { multi[x.id] = true; }); buildLayers(); return; } }
@@ -2324,7 +2413,7 @@ var MESPixel = (function () {
 	$("pe-blend").addEventListener("change", function () { var L = PE.active(); if (L) { L.blend = this.value; PE.touch(L); PE.commit("Blend mode"); } });
 	var opTimer = 0; $("pe-opacity").addEventListener("input", function () { var L = PE.active(); if (!L) return; L.opacity = this.value / 100; $("pe-opacity-v").textContent = this.value + "%"; PE.invalidate(); clearTimeout(opTimer); opTimer = setTimeout(function () { PE.commit("Layer opacity"); }, 400); });
 	function lbtn(id, fn) { $(id).addEventListener("click", function () { if (PE.doc) fn(); }); }
-	lbtn("pe-lnew", function () { PE.newRasterLayer(); }); lbtn("pe-lfill", function () { PE.dlgFillLayer(); }); lbtn("pe-lgroup", function () { groupSelected(); }); lbtn("pe-ldup", function () { PE.duplicateLayer(); }); lbtn("pe-ldel", function () { PE.deleteLayer(); }); lbtn("pe-lmerge", function () { PE.mergeDown(); });
+	lbtn("pe-lrename", function () { var L = PE.active(); if (L) renameLayer(L.id); }); lbtn("pe-lnew", function () { PE.newRasterLayer(); }); lbtn("pe-lfill", function () { PE.dlgFillLayer(); }); lbtn("pe-lgroup", function () { groupSelected(); }); lbtn("pe-ldup", function () { PE.duplicateLayer(); }); lbtn("pe-ldel", function () { PE.deleteLayer(); }); lbtn("pe-lmerge", function () { PE.mergeDown(); });
 	lbtn("pe-lock", function () { var L = PE.active(); L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); });
 	lbtn("pe-mask-btn", function () { var L = PE.active(); if (L.mask) PE.deleteMask(L); else PE.addMask(L, true); });
 
@@ -2427,7 +2516,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function adj(list) { return list.map(function (a) { return { label: a.title, act: function () { if (needDoc()) PE.runAdjust(a.id); } }; }); }
 	var MENUS = [
 		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / project…", act: function () { pickFiles("image/*,.psd,.mesproj", true, function (fs) { openFiles(fs); }); } }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
-			{ label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Save project (keeps layers)", key: MOD + "S", act: saveProject }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
+			{ label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Save project (keeps layers)", key: MOD + "S", act: saveProject }, { label: "Save as PSD (Photoshop)", act: savePsd }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Bulk convert images…", act: function () { window.open("/image-converter", "_blank"); } }] },
 		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",
 			{ label: "Select all", key: MOD + "A", act: function () { if (needDoc()) { PE.selAll(); PE.commit("Select all"); } } }, { label: "Deselect", key: MOD + "D", act: function () { if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } }, { label: "Invert selection", key: MOD + "Shift+I", act: function () { if (needDoc()) { PE.selInvert(); PE.commit("Invert selection"); } } },

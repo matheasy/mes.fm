@@ -141,7 +141,7 @@
 	function chips(id, list, fn) { var el = $(id); el.innerHTML = list.map(function (p, i) { return "<button type='button' data-i='" + i + "'>" + esc(p.name || p.label) + "</button>"; }).join(""); el.addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) fn(list[+b.getAttribute("data-i")]); }); }
 
 	/* =========================== 1. GRAVITY =========================== */
-	var G = S.g, gs = { pulses: [], t: 0, gap: 0, err: "", calc: null, ticksN: 0, ticksF: 0 };
+	var G = S.g, gs = { paused: false, pulses: [], t: 0, gap: 0, err: "", calc: null, ticksN: 0, ticksF: 0 };
 	var bodySel = $("rs-g-body"), nearIn = $("rs-g-near"), farIn = $("rs-g-far"), nearU = $("rs-g-nearu"), farU = $("rs-g-faru");
 	bodySel.innerHTML = R.BODIES.map(function (b) { return "<option value='" + b.id + "'>" + esc(b.name) + "</option>"; }).join("");
 	var UNITS = "<option value='R'>× its radius</option><option value='rs'>× Schwarzschild radius</option><option value='km'>km</option><option value='m'>m</option>"; nearU.innerHTML = UNITS; farU.innerHTML = UNITS;
@@ -191,7 +191,16 @@
 	seg("rs-g-ex", "ex", G, function () { gUpdate(); });
 	$("rs-g-dir").onclick = function () { G.dir = G.dir === "in" ? "out" : "in"; seg0(); save(); gs.pulses = []; gUpdate(); emit(); };
 	function emit() { if (gs.calc && !gs.calc.err) gs.pulses.push({ d: 0 }); }
-	$("rs-g-emit").onclick = emit;
+	$("rs-g-emit").onclick = function () { gsPause(false); emit(); };
+	function gsPause(on) { gs.paused = on; var b = $("rs-g-pause"); b.innerHTML = on ? "&#9654; Play" : "&#9208; Pause"; b.setAttribute("aria-pressed", String(on)); }
+	$("rs-g-pause").onclick = function () { gsPause(!gs.paused); };
+	$("rs-g-reset").onclick = function () { gs.t = 0; gs.pulses = []; gsPause(false); emit(); gDraw(0); };
+	var scrub = $("rs-g-scrub"), scrubbing = false;
+	scrub.addEventListener("input", function () {
+		scrubbing = true; gsPause(true); if (!gs.pulses.length) emit(); var c = gs.calc; if (!c || c.err) return;
+		var S1 = gs.nNd * 0.5 + gs.nFd * 0.5; gs.pulses[gs.pulses.length - 1].d = (+scrub.value / 1000) * S1; gDraw(0);
+	});
+	scrub.addEventListener("change", function () { scrubbing = false; });
 	var GPRE = [
 		{ name: "Pound–Rebka tower (22.5 m)", body: "earth", near: "6371", nearU: "km", far: "6371.0225", farU: "km", dir: "in" },
 		{ name: "GPS satellite to ground", body: "gps", near: "6371", nearU: "km", far: "26571", farU: "km", dir: "in" },
@@ -211,7 +220,7 @@
 		function nAt(u) { return a + (b - a) * u; } function sAt(u) { return a * u + (b - a) * u * u / 2; } var S1 = sAt(1);
 		// heavy mass on the left with a glow
 		var rad = H * 0.36, g0 = x.createRadialGradient(left - rad * 0.2, cy, rad * 0.2, left - rad * 0.2, cy, rad * 1.5); g0.addColorStop(0, "rgba(255,200,120,0.95)"); g0.addColorStop(0.4, "rgba(120,80,255,0.35)"); g0.addColorStop(1, "rgba(60,80,255,0)");
-		x.fillStyle = g0; x.fillRect(0, 0, left + 10, H); x.beginPath(); x.arc(left - rad * 0.2 - rad * 0.55, cy, rad * 0.55, 0, TAU); x.fillStyle = "#f0b25a"; x.fill();
+		x.save(); x.beginPath(); x.rect(0, 0, left, H); x.clip(); x.fillStyle = g0; x.fillRect(0, 0, left, H); x.restore(); x.save(); x.beginPath(); x.rect(0, 0, left, H); x.clip(); x.beginPath(); x.arc(left - rad * 0.2 - rad * 0.55, cy, rad * 0.55, 0, TAU); x.fillStyle = "#f0b25a"; x.fill(); x.restore();
 		text(x, "heavy mass", 6, cy + rad * 0.62, 12, "#e3d2a8"); text(x, "NEAR", left + 6, cy - bandH / 2 - 9, 12, "#8db2ff"); text(x, "FAR", right - 6, cy - bandH / 2 - 9, 12, "#ff9f8f", "right");
 		// index gradient slab: bluer where the index is higher
 		var gr = x.createLinearGradient(left, 0, right, 0), nmax = Math.max(a, b), nmin = Math.min(a, b);
@@ -223,6 +232,7 @@
 		// pulses
 		var inw = G.dir === "in", speed = 0.32 * G.sp * S1;
 		if (dt) { gs.pulses.forEach(function (p) { p.d += dt * speed; }); gs.pulses = gs.pulses.filter(function (p) { return p.d < S1 * 1.25; }); if (!gs.pulses.length && G.rep) { gs.gap += dt; if (gs.gap > 0.5) { gs.gap = 0; emit(); } } else gs.gap = 0; }
+		if (!scrubbing && gs.pulses.length) { var lp = gs.pulses[gs.pulses.length - 1]; scrub.value = Math.max(0, Math.min(1000, Math.round(lp.d / S1 * 1000))); }
 		var nE = inw ? b : a, N0 = Math.max(10, sw / 38), amp = bandH * 0.36, sig = S1 * 0.11;
 		gs.pulses.forEach(function (p) {
 			var sc = inw ? S1 - p.d : p.d, px = null, py = 0, pts = [];
@@ -248,7 +258,7 @@
 		// receiver / emitter labels with colour dots
 		var recvU = inw ? 0 : 1, emU = inw ? 1 : 0; function dotAt(u, wl, label) { var col = R.wlToRgb(wl); x.fillStyle = col[3] ? rgba(col, 1) : "#999"; x.beginPath(); x.arc(left + sw * u + (u === 0 ? -12 : 12) * 0, cy + bandH / 2 + 13, 5, 0, TAU); x.fill(); text(x, label, left + sw * u + (u === 0 ? 10 : -10), cy + bandH / 2 + 13, 11, "#cfd6e6", u === 0 ? "left" : "right"); }
 		dotAt(emU, c.wlE, "emits " + c.wlE + " nm"); dotAt(recvU, c.wlO, "sees " + fmt(c.wlO, 6) + " nm");
-		if (gs.k > 1.5) text(x, "drawn " + fmt(gs.k, 3) + "× exaggerated; real values in the table", W - 8, H - 8, 11, "#7f8ba6", "right");
+		if (gs.k > 1.5) text(x, "drawn " + fmt(gs.k, 3) + "× exaggerated (real values below)", W - 8, 14, 11, "#7f8ba6", "right");
 	}
 
 	/* =========================== 2. DOPPLER =========================== */
@@ -394,7 +404,7 @@
 	function frame(ts) {
 		requestAnimationFrame(frame); if (document.hidden) { last = 0; return; }
 		var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0; last = ts;
-		if (S.tab === "grav") { gs.t += dt; gDraw(dt); } else if (S.tab === "dop") dDraw(dt);
+		if (S.tab === "grav") { if (!gs.paused) gs.t += dt; gDraw(gs.paused ? 0 : dt); } else if (S.tab === "dop") dDraw(dt);
 	}
 	if (window.ResizeObserver) new ResizeObserver(function () { redrawAll(); }).observe(root); else window.addEventListener("resize", redrawAll);
 	/* ---------- links ---------- */
