@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
-<!-- MES Matrix Calculator for Machine Learning -- mes.fm/matrix-calculator -->
+<!-- MES Matrix Calculator -- mes.fm/matrix-calculator -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/matrix-calculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/matrix-calculator" />                    <title>MES Matrix Calculator for Machine Learning | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/matrix-calculator/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/matrix-calculator" />                    <title>MES Matrix Calculator | Math Easy Solutions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -307,14 +307,56 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 
 	/* MES Matrix Calculator */
 	.tu [hidden] {display:none !important;}
-	#mx .mx-mats {display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:0.8em;} #mx .mx-ta {width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.05em;resize:vertical;line-height:1.5;} #mx .mx-shape {font-weight:400;color:#566;font-size:0.9em;} #mx .mx-shape.mx-bad {color:#b42318;}
-	#mx .mx-ctl {margin-top:0.8em;align-items:flex-end;} #mx .mx-ck {display:inline-flex;align-items:center;gap:0.4em;min-height:40px;} #mx .mx-ex, #mx .tu-chips {margin-top:0.6em;} #mx select, #mx input[type=text] {min-height:40px;}
-	#mx .mx-blk {margin-top:0.9em;} #mx .mx-blk h3 {margin:0 0 0.5em;font-size:1.05em;} #mx .mx-error {margin-top:0.9em;border-left:5px solid #c0392b;background:#fdecea;color:#611a15;}
-	#mx table.mx-m {border-collapse:separate;border-spacing:0;margin:0.2em 0;position:relative;font-variant-numeric:tabular-nums;} #mx table.mx-m td {padding:0.35em 0.8em;text-align:right;border:0;min-width:3.2em;} #mx table.mx-m::before, #mx table.mx-m::after {content:"";position:absolute;top:0;bottom:0;width:0.5em;border:2px solid #334;} #mx table.mx-m::before {left:-0.3em;border-right:0;} #mx table.mx-m::after {right:-0.3em;border-left:0;}
-	#mx table.mx-m {margin-left:0.6em;margin-right:0.6em;max-width:100%;} #mx .mx-blk {overflow-x:auto;} #mx td.mx-click {cursor:pointer;border-radius:0.3em;} #mx td.mx-click:hover, #mx td.mx-click:focus {background:#e0f2fe;outline:2px solid var(--accent);}
+	#mx .mx-ctl {align-items:flex-end;} #mx .mx-ck {display:inline-flex;align-items:center;gap:0.4em;min-height:40px;} #mx .mx-ex, #mx .tu-chips {margin-top:0.6em;} #mx select, #mx input[type=text].tu-input {min-height:40px;}
+	#mx .mx-top {display:flex;flex-wrap:wrap;gap:0.5em 1.2em;align-items:center;justify-content:space-between;margin:0.9em 0 0.7em;} #mx .mx-top .tu-note {margin:0;flex:1 1 22em;}
+	#mx .mx-view {display:inline-flex;align-items:center;gap:0.5em;} #mx .mx-view .tu-seg button {min-height:36px;padding:0.4em 0.75em;font-size:0.88em;}
+	/* the matrix grids */
+	#mx .mx-mats {display:flex;flex-wrap:wrap;gap:1.1em 1.8em;align-items:flex-start;}
+	#mx .mx-mat {flex:1 1 auto;min-width:min(100%, 15em);max-width:100%;} #mx .mx-mat.mx-off {opacity:0.62;} #mx .mx-mat.mx-off:focus-within {opacity:1;}
+	#mx .mx-mh {display:flex;flex-wrap:wrap;align-items:baseline;gap:0.2em 0.6em;margin-bottom:0.25em;} #mx .mx-mh .tu-label {text-transform:none;letter-spacing:0;font-size:0.88em;color:#3d4654;} #mx .mx-size {font-size:0.85em;color:#566070;font-variant-numeric:tabular-nums;} #mx .mx-offnote {display:none;font-size:0.8em;color:#566070;font-style:italic;} #mx .mx-off .mx-offnote {display:inline;}
+	#mx .mx-gw {overflow-x:auto;max-width:100%;padding:0.2em 0.1em 0.3em;-webkit-overflow-scrolling:touch;}
+	#mx .mx-br {display:inline-block;position:relative;padding:0.1em 0.5em;vertical-align:top;} #mx .mx-br::before, #mx .mx-br::after {content:"";position:absolute;top:0;bottom:0;width:0.45em;border-style:solid;border-color:#334;} #mx .mx-br::before {left:0;border-width:2px 0 2px 2px;} #mx .mx-br::after {right:0;border-width:2px 2px 2px 0;}
+	#mx table.mx-grid {border-collapse:separate;border-spacing:0.22em;margin:0;} #mx table.mx-grid td {padding:0;border:0;}
+	#mx .mx-cell {display:block;width:4.2em;height:2.35em;min-height:36px;margin:0;padding:0.2em 0.3em;text-align:center;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1em;font-variant-numeric:tabular-nums;border:1px solid #b2bac6;border-radius:0.3em;background:#fff;color:#1e2733;}
+	#mx .mx-cell::placeholder {color:#8a939d;opacity:1;} #mx .mx-cell:hover {border-color:#7d8796;}
+	#mx .mx-cell:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);}
+	#mx .mx-cell.mx-bad {border-color:#c0392b;background:#fdecea;color:#7a1810;box-shadow:inset 0 0 0 1px #c0392b;}
+	#mx .mx-cell.mx-hr {background:#fff1c2;border-color:#a8650a;color:#1e2733;} #mx .mx-cell.mx-hc {background:#d7efff;border-color:#0369a1;color:#1e2733;}
+	#mx .mx-ta {width:100%;margin-top:0.35em;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1em;resize:vertical;line-height:1.5;min-height:5.2em;}
+	#mx[data-view="grid"] .mx-ta {display:none;} #mx[data-view="text"] .mx-gw {display:none;} #mx[data-view="grid"] .mx-terr {display:none !important;}
+	#mx .mx-terr {margin:0.3em 0 0;font-size:0.85em;color:#b42318;} #mx .mx-gnote, #mx .mx-unote {margin:0.25em 0 0;font-size:0.82em;color:#5c6573;line-height:1.4;}
+	#mx .mx-undo {cursor:pointer;border:0;background:none;padding:0.2em 0.1em;font:inherit;font-weight:700;color:var(--accent);text-decoration:underline;}
+	#mx .mx-tools {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;margin-top:0.4em;} #mx .mx-sz {display:inline-flex;align-items:center;gap:0.25em;font-size:0.82em;color:#566070;margin-right:0.45em;}
+	#mx .mx-tb {cursor:pointer;min-width:36px;min-height:36px;padding:0 0.4em;font-size:1.15em;line-height:1;border:1px solid #b2bac6;border-radius:0.35em;background:#fff;color:#1e2733;} #mx .mx-tb:hover {border-color:var(--accent);color:var(--accent);}
+	#mx .mx-tb:disabled, #mx .mx-fill:disabled {opacity:0.4;cursor:default;} #mx .mx-tb:disabled:hover, #mx .mx-fill:disabled:hover {border-color:#b2bac6;color:#1e2733;}
+	#mx .mx-fills {margin-top:0.3em;gap:0.3em;} #mx .mx-fill {min-height:32px;font-size:0.8em;padding:0.3em 0.7em;} #mx .mx-tb:focus-visible, #mx .mx-fill:focus-visible, #mx .tu-chip:focus-visible, #mx .tu-seg button:focus-visible, #mx .mx-undo:focus-visible {outline:2px solid var(--accent);outline-offset:2px;}
+	/* results */
+	#mx .mx-resbar {margin-top:0.9em;display:flex;flex-wrap:wrap;gap:0.55em 1.3em;align-items:center;padding:0.7em 1em;} #mx .mx-resbar .tu-chips {margin:0;}
+	#mx .mx-pickw {display:inline-flex;align-items:center;gap:0.5em;max-width:100%;} #mx .mx-pickw .tu-select {width:auto;max-width:100%;min-width:12em;font-size:0.95em;}
+	#mx .mx-rgroup {display:inline-flex;flex-wrap:wrap;gap:0.35em;align-items:center;} #mx .mx-rlab {font-size:0.85em;color:#566070;margin-right:0.15em;} #mx .mx-resbar .tu-chip {min-height:34px;}
+	#mx .mx-blk {margin-top:0.9em;overflow-x:auto;} #mx .mx-blk h3 {margin:0 0 0.5em;font-size:1.05em;} #mx .mx-error {margin-top:0.9em;border-left-width:5px;border-left-style:solid;border-left-color:#c0392b;background:#fdecea;color:#611a15;}
+	#mx table.mx-m {border-collapse:separate;border-spacing:0;margin:0.2em 0.6em;position:relative;font-variant-numeric:tabular-nums;max-width:100%;} #mx table.mx-m td {padding:0.35em 0.8em;text-align:right;border:0;min-width:3.2em;} #mx table.mx-m::before, #mx table.mx-m::after {content:"";position:absolute;top:0;bottom:0;width:0.5em;border-style:solid;border-color:#334;} #mx table.mx-m::before {left:-0.3em;border-width:2px 0 2px 2px;} #mx table.mx-m::after {right:-0.3em;border-width:2px 2px 2px 0;}
+	#mx td.mx-click {cursor:pointer;border-radius:0.3em;} #mx td.mx-click:hover, #mx td.mx-click:focus {background:#e0f2fe;outline:2px solid var(--accent);} #mx td.mx-click.mx-on {background:#d7efff;outline:2px solid var(--accent);font-weight:700;}
 	#mx .mx-small td {padding:0.15em 0.55em;font-size:0.85em;} #mx .mx-steps {margin-top:0.7em;} #mx .mx-steps summary {cursor:pointer;font-weight:700;} #mx .mx-steps ol {padding-left:1.3em;} #mx .mx-steps li {margin:0.6em 0;}
-	#mx .mx-big {font-size:2em;font-weight:700;color:var(--accent);} #mx .mx-why {margin:0.5em 0 0;padding:0.5em 0.7em;background:#e0f2fe;border-radius:0.4em;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.92em;overflow-wrap:anywhere;} #mx .mx-ev {margin:0.2em 0;padding-left:1.4em;font-variant-numeric:tabular-nums;} #mx .mx-kv td {padding:0.25em 1.2em 0.25em 0;border:0;} #mx .mx-kv td + td {font-weight:700;font-variant-numeric:tabular-nums;}
-	body.dark-mode #mx .mx-shape {color:#b8bec7;} body.dark-mode #mx .mx-error {background:#4a2420;color:#ffd7d2;} body.dark-mode #mx table.mx-m::before, body.dark-mode #mx table.mx-m::after {border-color:#cfd6df;} body.dark-mode #mx .mx-why {background:rgba(255,255,255,0.07);}
+	#mx .mx-big {font-size:2em;font-weight:700;color:var(--accent);} #mx .mx-why {margin:0.5em 0 0;padding:0.5em 0.7em;background:#e0f2fe;border-radius:0.4em;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.92em;overflow-wrap:anywhere;}
+	#mx .mx-kr, #mx .mx-kc {padding:0.05em 0.35em;border-radius:0.25em;font-weight:700;} #mx .mx-kr {background:#fff1c2;color:#6b4300;box-shadow:inset 0 0 0 1px #a8650a;} #mx .mx-kc {background:#d7efff;color:#064a73;box-shadow:inset 0 0 0 1px #0369a1;}
+	#mx .mx-ev {margin:0.2em 0;padding-left:1.4em;font-variant-numeric:tabular-nums;} #mx .mx-kv td {padding:0.25em 1.2em 0.25em 0;border:0;} #mx .mx-kv td + td {font-weight:700;font-variant-numeric:tabular-nums;}
+	@media (max-width:600px), (pointer:coarse) {
+		#mx .mx-cell, #mx .mx-ta {font-size:16px;} #mx .mx-cell {min-height:38px;} #mx .mx-tb {min-width:38px;min-height:38px;} #mx .mx-fill {min-height:36px;}
+	}
+	@media (max-width:600px) { #mx .mx-pickw {flex:1 1 100%;} #mx .mx-pickw .tu-select {flex:1 1 auto;min-width:0;} }
+	/* dark mode: "#mx.tu" so these win over the generated TOOL-DARK twins of the rules above */
+	body.dark-mode #mx.tu .mx-cell {background:#15181c;border-color:#566070;color:#eef1f5;} body.dark-mode #mx.tu .mx-cell::placeholder {color:#848d99;} body.dark-mode #mx.tu .mx-cell:hover {border-color:#7d8796;}
+	body.dark-mode #mx.tu .mx-cell:focus {border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);}
+	body.dark-mode #mx.tu .mx-cell.mx-bad {background:#3b1a17;border-color:#ef7a70;color:#ffdcd7;box-shadow:inset 0 0 0 1px #ef7a70;}
+	body.dark-mode #mx.tu .mx-cell.mx-hr {background:#3d2f0c;border-color:#f0b145;color:#fff3d6;} body.dark-mode #mx.tu .mx-cell.mx-hc {background:#0b2c42;border-color:var(--accent);color:#e2f4ff;}
+	body.dark-mode #mx.tu .mx-br::before, body.dark-mode #mx.tu .mx-br::after, body.dark-mode #mx.tu table.mx-m::before, body.dark-mode #mx.tu table.mx-m::after {border-color:#c9d1db;}
+	body.dark-mode #mx.tu .mx-mh .tu-label {color:#c3c9d2;} body.dark-mode #mx.tu .mx-size, body.dark-mode #mx.tu .mx-offnote, body.dark-mode #mx.tu .mx-sz, body.dark-mode #mx.tu .mx-rlab, body.dark-mode #mx.tu .mx-gnote, body.dark-mode #mx.tu .mx-unote {color:#aab2bd;}
+	body.dark-mode #mx.tu .mx-terr {color:#ff9d93;} body.dark-mode #mx.tu .mx-error {background:#3a1d1a;color:#ffd7d2;border-left-color:#e0675c;}
+	body.dark-mode #mx.tu .mx-tb {background:#1f2329;border-color:#566070;color:#eef1f5;} body.dark-mode #mx.tu .mx-tb:hover {border-color:var(--accent);color:var(--accent);} body.dark-mode #mx.tu .mx-tb:disabled:hover {border-color:#566070;color:#eef1f5;}
+	body.dark-mode #mx.tu .mx-undo {color:var(--accent);}
+	body.dark-mode #mx.tu td.mx-click:hover, body.dark-mode #mx.tu td.mx-click:focus, body.dark-mode #mx.tu td.mx-click.mx-on {background:#0b2c42;outline-color:var(--accent);}
+	body.dark-mode #mx.tu .mx-why {background:rgba(255,255,255,0.07);} body.dark-mode #mx.tu .mx-kr {background:#3d2f0c;color:#ffe2a3;box-shadow:inset 0 0 0 1px #f0b145;} body.dark-mode #mx.tu .mx-kc {background:#0b2c42;color:#c4e8ff;box-shadow:inset 0 0 0 1px var(--accent);}
 
 
 	@media print {
@@ -393,12 +435,29 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
 	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode #mx .mx-shape{color:#9da6a6}
-	body.dark-mode #mx .mx-shape.mx-bad{color:#ec786f}
-	body.dark-mode #mx .mx-error{border-left:5px solid #d03e2f;background:#251311;color:#e28079}
-	body.dark-mode #mx table.mx-m::before,body.dark-mode #mx table.mx-m::after{border:2px solid #424257}
+	body.dark-mode #mx .mx-mh .tu-label{color:#b1b5bc}
+	body.dark-mode #mx .mx-size{color:#989da4}
+	body.dark-mode #mx .mx-offnote{color:#989da4}
+	body.dark-mode #mx .mx-br::before,body.dark-mode #mx .mx-br::after{border-color:#424257}
+	body.dark-mode #mx .mx-cell{border:1px solid #46505f;background:#1a1a1a;color:#d1d6dc}
+	body.dark-mode #mx .mx-cell::placeholder{color:#9a9ea2}
+	body.dark-mode #mx .mx-cell:hover{border-color:#606976}
+	body.dark-mode #mx .mx-cell.mx-bad{border-color:#d03e2f;background:#251311;color:#ec786f}
+	body.dark-mode #mx .mx-cell.mx-hr{background:#423919;border-color:#f1910e;color:#d1d6dc}
+	body.dark-mode #mx .mx-cell.mx-hc{background:#132633;border-color:#05a3fa;color:#d1d6dc}
+	body.dark-mode #mx .mx-terr{color:#ec786f}
+	body.dark-mode #mx .mx-gnote,body.dark-mode #mx .mx-unote{color:#999da3}
+	body.dark-mode #mx .mx-sz{color:#989da4}
+	body.dark-mode #mx .mx-tb{border:1px solid #46505f;background:#1a1a1a;color:#d1d6dc}
+	body.dark-mode #mx .mx-tb:disabled:hover,body.dark-mode #mx .mx-fill:disabled:hover{border-color:#46505f;color:#d1d6dc}
+	body.dark-mode #mx .mx-rlab{color:#989da4}
+	body.dark-mode #mx .mx-error{border-left-color:#d03e2f;background:#251311;color:#e28079}
+	body.dark-mode #mx table.mx-m::before,body.dark-mode #mx table.mx-m::after{border-color:#424257}
 	body.dark-mode #mx td.mx-click:hover,body.dark-mode #mx td.mx-click:focus{background:#12222d}
+	body.dark-mode #mx td.mx-click.mx-on{background:#132633}
 	body.dark-mode #mx .mx-why{background:#12222d}
+	body.dark-mode #mx .mx-kr{background:#423919;color:#ffc25c}
+	body.dark-mode #mx .mx-kc{background:#132633;color:#64c0f7}
 	/* TOOL-DARK:END */
 /* Floating compact header bar: once the full header + nav scroll out of
    view, a slim fixed bar (small logo, title, as many nav links as fit)
@@ -446,16 +505,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://mes.fm/matrix-calculator" />            <meta property="og:title" content="MES Matrix Calculator for Machine Learning | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/matrix-calculator/img/logo-big.png" />
-        <meta property="og:description" content="Free matrix calculator that shows the working: multiply, add, transpose, determinant, inverse, rank, row reduction, eigenvalues, SVD and QR, plus the machine-learning operations: softmax with temperature, activation functions, a dense neural-network layer and one attention step. Private: nothing is uploaded." />
+        <meta property="og:url" content="https://mes.fm/matrix-calculator" />            <meta property="og:title" content="MES Matrix Calculator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/matrix-calculator/img/logo-big.png" />
+        <meta property="og:description" content="Free matrix calculator with steps: type or paste matrices into a grid (from Excel, MATLAB, NumPy or LaTeX), then multiply, invert, find the determinant, rank, RREF, eigenvalues, SVD and QR, or solve A·x = b. Also softmax, activations, a dense layer and attention for machine learning." />
 
-        <meta name="description" content="Free matrix calculator that shows the working: multiply, add, transpose, determinant, inverse, rank, row reduction, eigenvalues, SVD and QR, plus the machine-learning operations: softmax with temperature, activation functions, a dense neural-network layer and one attention step. Private: nothing is uploaded.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
-        <meta name="twitter:title" content="MES Matrix Calculator for Machine Learning">
-        <meta name="twitter:description" content="Free matrix calculator that shows the working: multiply, add, transpose, determinant, inverse, rank, row reduction, eigenvalues, SVD and QR, plus the machine-learning operations: softmax with temperature, activation functions, a dense neural-network layer and one attention step. Private: nothing is uploaded.">
+        <meta name="description" content="Free matrix calculator with steps: type or paste matrices into a grid (from Excel, MATLAB, NumPy or LaTeX), then multiply, invert, find the determinant, rank, RREF, eigenvalues, SVD and QR, or solve A·x = b. Also softmax, activations, a dense layer and attention for machine learning.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Matrix Calculator">
+        <meta name="twitter:description" content="Free matrix calculator with steps: type or paste matrices into a grid (from Excel, MATLAB, NumPy or LaTeX), then multiply, invert, find the determinant, rank, RREF, eigenvalues, SVD and QR, or solve A·x = b. Also softmax, activations, a dense layer and attention for machine learning.">
         <meta name="twitter:image" content="https://mes.fm/matrix-calculator/img/logo-big.png">
-        <meta name="twitter:image:alt" content="MES Matrix Calculator for Machine Learning">
+        <meta name="twitter:image:alt" content="MES Matrix Calculator">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Matrix Calculator for Machine Learning", "url": "https://mes.fm/matrix-calculator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free matrix calculator that shows the working: multiply, add, transpose, determinant, inverse, rank, row reduction, eigenvalues, SVD and QR, plus the machine-learning operations: softmax with temperature, activation functions, a dense neural-network layer and one attention step. Private: nothing is uploaded."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Matrix Calculator", "url": "https://mes.fm/matrix-calculator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free matrix calculator with steps: type or paste matrices into a grid (from Excel, MATLAB, NumPy or LaTeX), then multiply, invert, find the determinant, rank, RREF, eigenvalues, SVD and QR, or solve A·x = b. Also softmax, activations, a dense layer and attention for machine learning."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -632,12 +691,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/matrix-calculator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Matrix Calculator for Machine Learning logo" data-src="/matrix-calculator/img/logo.png?v=2"></a>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/matrix-calculator'><img height="88" width="88" id="logo" class="logo lazyload" alt="MES Matrix Calculator logo" data-src="/matrix-calculator/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/matrix-calculator'>
-                                    <p class="calculator-title">MES Matrix Calculator for Machine Learning</p>
+                                    <p class="calculator-title">MES Matrix Calculator</p>
                                 </a>
-                                <p class="tag-line">Linear algebra, with the machine-learning parts.</p>                            </div>
+                                <p class="tag-line">Linear algebra with the working shown, plus machine-learning tools.</p>                            </div>
 
                             <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
@@ -650,43 +709,67 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Matrix Calculator: Multiply, Inverse, Eigenvalues, SVD, Softmax and Attention</h1>                                        <p class="page-description">Free matrix calculator that shows the working: multiply, add, transpose, determinant, inverse, rank, row reduction, eigenvalues, SVD and QR, plus the machine-learning operations: softmax with temperature, activation functions, a dense neural-network layer and one attention step. Private: nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<div class="tu" id="mx">
+                                    <h1 class="page-title">Matrix Calculator with Steps: Multiply, Inverse, Determinant, Eigenvalues, SVD and Machine Learning</h1>                                        <p class="page-description">Free matrix calculator with steps: type or paste matrices into a grid (from Excel, MATLAB, NumPy or LaTeX), then multiply, invert, find the determinant, rank, RREF, eigenvalues, SVD and QR, or solve A·x = b. Also softmax, activations, a dense layer and attention for machine learning.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="mx" data-view="grid">
 		<div class="tu-card mx-in">
-			<div class="mx-mats">
-				<div class="mx-mat"><label for="mx-a" class="tu-label">Matrix A <span class="mx-shape" id="mx-sa"></span></label><textarea id="mx-a" class="tu-input mx-ta" rows="4" spellcheck="false" aria-label="Matrix A, one row per line, numbers separated by spaces or commas"></textarea></div>
-				<div class="mx-mat"><label for="mx-b" class="tu-label">Matrix B <span class="mx-shape" id="mx-sb"></span></label><textarea id="mx-b" class="tu-input mx-ta" rows="4" spellcheck="false" aria-label="Matrix B"></textarea></div>
-				<div class="mx-mat" id="mx-cw" hidden><label for="mx-c" class="tu-label"><span id="mx-cl">Matrix C</span> <span class="mx-shape" id="mx-sc"></span></label><textarea id="mx-c" class="tu-input mx-ta" rows="4" spellcheck="false" aria-label="Matrix C"></textarea></div>
-			</div>
-			<p class="tu-note">One row per line (or separate rows with <code>;</code>). Numbers can be separated by spaces or commas, and can be fractions like <code>1/3</code> or <code>pi</code>.</p>
 			<div class="tu-row mx-ctl">
 				<div class="tu-field" style="flex:1 1 18em;"><label for="mx-op">What do you want to do?</label><select id="mx-op" class="tu-select"></select></div>
 				<div class="tu-field tu-field--sm" id="mx-pw" hidden><label for="mx-p" id="mx-pl">Value</label><input id="mx-p" class="tu-input" type="text" inputmode="decimal" value="2"></div>
 				<div class="tu-field tu-field--sm" id="mx-actw" hidden><label for="mx-act">Activation</label><select id="mx-act" class="tu-select"><option value="relu">ReLU</option><option value="sigmoid">Sigmoid</option><option value="tanh">tanh</option><option value="gelu">GELU</option><option value="leaky">Leaky ReLU</option><option value="identity">None</option></select></div>
+				<label class="mx-ck" id="mx-cmw" hidden><input type="checkbox" id="mx-cm"> Causal mask</label>
 				<div class="tu-field tu-field--sm"><label for="mx-dp">Decimals</label><select id="mx-dp" class="tu-select"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="6">6</option></select></div>
 				<label class="mx-ck"><input type="checkbox" id="mx-fr"> Show fractions</label>
 			</div>
+			<div class="mx-top">
+				<p class="tu-note">Type into the grid, or paste a whole table into any cell: from Excel or Google Sheets, MATLAB, NumPy, LaTeX or Mathematica. Cells can hold fractions and expressions such as <code>1/3</code>, <code>pi/4</code> or <code>sqrt(2)</code>. Blank cells count as 0.</p>
+				<div class="mx-view"><span class="tu-label" id="mx-viewl">Edit as</span><div class="tu-seg" id="mx-view" role="group" aria-labelledby="mx-viewl"><button type="button" data-view="grid" aria-pressed="true">Grid</button><button type="button" data-view="both" aria-pressed="false">Grid + text</button><button type="button" data-view="text" aria-pressed="false">Text</button></div></div>
+			</div>
+			<div class="mx-mats" id="mx-mats"></div>
 			<div class="tu-chips mx-ex" id="mx-ex"><span class="tu-note">Try an example:</span></div>
-			<div class="tu-chips"><button type="button" class="tu-chip" id="mx-swap">⇄ Swap A and B</button><button type="button" class="tu-chip" id="mx-rand">🎲 Random A and B</button><button type="button" class="tu-chip" id="mx-copy">Copy result</button><button type="button" class="tu-chip" id="mx-use">Use result as A</button></div>
+			<div class="tu-chips"><button type="button" class="tu-chip" id="mx-swap">⇄ Swap A and B</button><button type="button" class="tu-chip" id="mx-rand">🎲 Random A and B</button><button type="button" class="tu-chip" id="mx-link">🔗 Copy link</button></div>
 		</div>
 		<div id="mx-err" class="tu-card mx-error" hidden role="alert"></div>
 		<div id="mx-out" aria-live="polite"></div>
+		<div id="mx-resbar" class="tu-card mx-resbar" hidden>
+			<span class="mx-pickw" id="mx-pickw"><label for="mx-pick" class="tu-label">Result</label> <select id="mx-pick" class="tu-select"></select></span>
+			<span class="mx-rgroup"><span class="mx-rlab">Copy as</span><button type="button" class="tu-chip" data-fmt="text">Text</button><button type="button" class="tu-chip" data-fmt="tsv" title="Tab-separated: pastes into separate cells">Spreadsheet</button><button type="button" class="tu-chip" data-fmt="latex">LaTeX</button><button type="button" class="tu-chip" data-fmt="numpy">NumPy</button></span>
+			<span class="mx-rgroup"><button type="button" class="tu-chip" data-use="a">Use as A</button><button type="button" class="tu-chip" data-use="b">Use as B</button></span>
+		</div>
 		<div class="tu-toast" id="mx-toast" role="status" aria-live="polite"></div>
 
 		<div class="tu-seo">
-			<h2>A matrix calculator that explains the machine-learning parts</h2>
-			<p>Matrices are how a neural network stores what it has learned and how it computes: a layer is <code>y = activation(W·x + b)</code>, a language model's attention is <code>softmax(Q·Kᵀ/√d)·V</code>, and training changes the numbers inside the matrices. This calculator does the usual linear algebra (add, multiply, transpose, determinant, inverse, rank, eigenvalues, SVD, solving equations) and shows the working, and it has the machine-learning operations built in: softmax with temperature, the common activation functions, one dense layer and one attention step.</p>
+			<h2>A matrix calculator that shows the working</h2>
+			<p>Type or paste your matrices, pick an operation and see the answer as a matrix, with the steps where there are steps. It does the usual linear algebra: add, subtract and multiply matrices, multiply by a number, transpose, powers, the determinant, the inverse, rank, trace, row reduction (RREF), solving a system of linear equations, eigenvalues and eigenvectors, the singular value decomposition (SVD) and the QR decomposition. Click any number in a product to see which row and column made it.</p>
+			<h3>Machine learning</h3>
+			<p>Matrices are also how neural networks compute. A layer is <code>y = activation(W·x + b)</code>, a language model's attention is <code>softmax(Q·Kᵀ/√d)·V</code>, and training changes the numbers inside the matrices. The Machine learning group in the list of operations does these steps with your own numbers: softmax with temperature, the common activation functions (ReLU, sigmoid, tanh, GELU), one dense layer and one attention step, with an optional causal mask. Dot products, lengths and cosine similarity (how embeddings are compared) are under Vectors.</p>
+			<h3>Typing and pasting a matrix</h3>
+			<p>Each matrix is a grid. The + and − buttons add or remove rows and columns. Tab and the arrow keys move between cells, and Enter goes down a row. Zero, Identity, Random, Clear and Transpose change the whole grid at once, and Undo puts it back. Blank cells count as 0.</p>
+			<p>To paste, copy a block of cells from a spreadsheet, or a matrix written as text, and paste it into a cell. Pasting into the first cell replaces the whole matrix; pasting further in fills from that cell and makes the grid bigger if needed. The page reads:</p>
+			<ul>
+				<li>spreadsheet cells from Excel, Google Sheets or Numbers (a header row or a first column of labels is skipped)</li>
+				<li>plain text: <code>1 2; 3 4</code>, or one row per line with spaces or commas</li>
+				<li>MATLAB and Octave: <code>[1 2; 3 4]</code></li>
+				<li>NumPy and Python: <code>[[1, 2], [3, 4]]</code> and <code>np.array([[1, 2], [3, 4]])</code></li>
+				<li>LaTeX: <code>\begin{bmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{bmatrix}</code>, and pmatrix, vmatrix and the others</li>
+				<li>Mathematica: <code>{{1, 2}, {3, 4}}</code></li>
+				<li>Markdown tables</li>
+			</ul>
+			<p>Prefer typing? Choose <b>Edit as: Text</b> (or Grid + text). The text box and the grid stay in step. A result can be copied as text, as spreadsheet cells, as LaTeX or as NumPy code, or used as A or B for the next step.</p>
 			<h3>Questions</h3>
 			<h4>Why do the shapes have to match?</h4>
-			<p>To multiply A × B, A's columns must equal B's rows, because each result number is a row of A paired up, one by one, with a column of B. Click any number in a product to see exactly which pairs were multiplied and added. The result has A's rows and B's columns. This is why a layer with 784 inputs and 128 neurons has a 128 × 784 weight matrix.</p>
+			<p>To multiply A × B, A's columns must equal B's rows, because each result number is a row of A paired up, one by one, with a column of B. Click any number in a product: its row of A and column of B light up in the grids and the sum is written out. The result has A's rows and B's columns. This is also why a network layer with 784 inputs and 128 neurons has a 128 × 784 weight matrix.</p>
+			<h4>How do I solve a system of linear equations?</h4>
+			<p>Put the coefficients in A (one equation per row) and the right-hand sides in b, then choose <b>Solve A·x = b</b>. For example 2x + y = 3 and x + 3y = 5 is A = [2 1; 1 3] and b = [3; 5], which gives x = 0.8 and y = 1.4. The page shows every row operation. If b has several columns, each column is solved as its own system.</p>
 			<h4>What is the inverse for?</h4>
-			<p>The inverse undoes a matrix (A⁻¹·A = I). It exists only when the determinant is not 0. Solving <code>A·x = b</code> is the same as <code>x = A⁻¹·b</code>, which is how linear regression's normal equation works. The page shows the row operations that get there.</p>
-			<h4>What do eigenvalues and SVD mean in machine learning?</h4>
-			<p>Eigenvectors are the directions a matrix only stretches; the eigenvalues say by how much. For a symmetric matrix such as a covariance matrix they give the principal components (PCA). SVD does the same job for any rectangular matrix and is behind compression, recommendations and low-rank fine-tuning.</p>
+			<p>The inverse undoes a matrix (A⁻¹·A = I). It exists only when the determinant is not 0. Solving <code>A·x = b</code> is the same as <code>x = A⁻¹·b</code>, which is how the normal equation of linear regression works. The page shows the row operations that get there.</p>
+			<h4>What do eigenvalues and the SVD tell you?</h4>
+			<p>Eigenvectors are the directions a matrix only stretches; the eigenvalues say by how much. For a symmetric matrix such as a covariance matrix they give the principal components (PCA). The SVD does the same job for any rectangular matrix and is behind image compression, recommendations and low-rank fine-tuning (LoRA).</p>
 			<h4>What do softmax and temperature do?</h4>
 			<p>Softmax turns any list of numbers (scores) into probabilities that add up to 1 by giving bigger scores much bigger shares. A low temperature makes the biggest score win almost every time; a high temperature spreads the probability out. Language models use exactly this to pick the next word.</p>
+			<h4>What can I type in a cell?</h4>
+			<p>Numbers (<code>1.5</code>, <code>-2</code>, <code>3e-4</code>), fractions (<code>1/3</code>), <code>pi</code> and <code>e</code>, the signs + − × ÷ and ^, square roots (<code>sqrt(2)</code> or <code>√2</code>), <code>sin</code>, <code>cos</code> and <code>tan</code> (in radians, or add ° for degrees), <code>exp</code>, <code>ln</code> and percentages such as <code>50%</code>. <code>2pi</code> means 2 × pi. A cell that is not a number is outlined in red.</p>
 			<h4>Is the working exact?</h4>
-			<p>Numbers are double-precision decimals, so results can be off in the 15th digit and tiny values show as 0. Fractions are found for display (for example 0.3333 shows as 1/3). Everything is computed in your browser; nothing is sent anywhere.</p>
+			<p>Numbers are double-precision decimals, so results can be off in the 15th digit and tiny values show as 0. Fractions are found for display (for example 0.3333 shows as 1/3 with Show fractions on). Everything is computed in your browser; nothing is sent anywhere.</p>
 		</div>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
@@ -698,7 +781,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/trigonometry"><img class="mes-aside__img mes-aside__img--logo" src="/trigonometry/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Trigonometry Calculator: Unit Circle, Sin Cos Tan, Triangle Solver and Graphs</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/ideal-weight-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/ideal-weight-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Ideal Weight Calculator: Devine, Robinson, Miller and Hamwi Formulas</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/trigonometry"><img class="mes-aside__img mes-aside__img--logo" src="/trigonometry/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Trigonometry Calculator: Unit Circle, Sin Cos Tan, Triangle Solver and Graphs</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/macro-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/macro-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Macro Calculator: Daily Protein, Carbs and Fat for Your Goal</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -748,7 +831,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/matrix-calculator/js/matrix-calculator.js?v=1" defer></script>
+	<script src="/matrix-calculator/js/matrix-calculator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

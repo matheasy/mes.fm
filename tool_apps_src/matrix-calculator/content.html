@@ -1,38 +1,62 @@
-	<div class="tu" id="mx">
+	<div class="tu" id="mx" data-view="grid">
 		<div class="tu-card mx-in">
-			<div class="mx-mats">
-				<div class="mx-mat"><label for="mx-a" class="tu-label">Matrix A <span class="mx-shape" id="mx-sa"></span></label><textarea id="mx-a" class="tu-input mx-ta" rows="4" spellcheck="false" aria-label="Matrix A, one row per line, numbers separated by spaces or commas"></textarea></div>
-				<div class="mx-mat"><label for="mx-b" class="tu-label">Matrix B <span class="mx-shape" id="mx-sb"></span></label><textarea id="mx-b" class="tu-input mx-ta" rows="4" spellcheck="false" aria-label="Matrix B"></textarea></div>
-				<div class="mx-mat" id="mx-cw" hidden><label for="mx-c" class="tu-label"><span id="mx-cl">Matrix C</span> <span class="mx-shape" id="mx-sc"></span></label><textarea id="mx-c" class="tu-input mx-ta" rows="4" spellcheck="false" aria-label="Matrix C"></textarea></div>
-			</div>
-			<p class="tu-note">One row per line (or separate rows with <code>;</code>). Numbers can be separated by spaces or commas, and can be fractions like <code>1/3</code> or <code>pi</code>.</p>
 			<div class="tu-row mx-ctl">
 				<div class="tu-field" style="flex:1 1 18em;"><label for="mx-op">What do you want to do?</label><select id="mx-op" class="tu-select"></select></div>
 				<div class="tu-field tu-field--sm" id="mx-pw" hidden><label for="mx-p" id="mx-pl">Value</label><input id="mx-p" class="tu-input" type="text" inputmode="decimal" value="2"></div>
 				<div class="tu-field tu-field--sm" id="mx-actw" hidden><label for="mx-act">Activation</label><select id="mx-act" class="tu-select"><option value="relu">ReLU</option><option value="sigmoid">Sigmoid</option><option value="tanh">tanh</option><option value="gelu">GELU</option><option value="leaky">Leaky ReLU</option><option value="identity">None</option></select></div>
+				<label class="mx-ck" id="mx-cmw" hidden><input type="checkbox" id="mx-cm"> Causal mask</label>
 				<div class="tu-field tu-field--sm"><label for="mx-dp">Decimals</label><select id="mx-dp" class="tu-select"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="6">6</option></select></div>
 				<label class="mx-ck"><input type="checkbox" id="mx-fr"> Show fractions</label>
 			</div>
+			<div class="mx-top">
+				<p class="tu-note">Type into the grid, or paste a whole table into any cell: from Excel or Google Sheets, MATLAB, NumPy, LaTeX or Mathematica. Cells can hold fractions and expressions such as <code>1/3</code>, <code>pi/4</code> or <code>sqrt(2)</code>. Blank cells count as 0.</p>
+				<div class="mx-view"><span class="tu-label" id="mx-viewl">Edit as</span><div class="tu-seg" id="mx-view" role="group" aria-labelledby="mx-viewl"><button type="button" data-view="grid" aria-pressed="true">Grid</button><button type="button" data-view="both" aria-pressed="false">Grid + text</button><button type="button" data-view="text" aria-pressed="false">Text</button></div></div>
+			</div>
+			<div class="mx-mats" id="mx-mats"></div>
 			<div class="tu-chips mx-ex" id="mx-ex"><span class="tu-note">Try an example:</span></div>
-			<div class="tu-chips"><button type="button" class="tu-chip" id="mx-swap">⇄ Swap A and B</button><button type="button" class="tu-chip" id="mx-rand">🎲 Random A and B</button><button type="button" class="tu-chip" id="mx-copy">Copy result</button><button type="button" class="tu-chip" id="mx-use">Use result as A</button></div>
+			<div class="tu-chips"><button type="button" class="tu-chip" id="mx-swap">⇄ Swap A and B</button><button type="button" class="tu-chip" id="mx-rand">🎲 Random A and B</button><button type="button" class="tu-chip" id="mx-link">🔗 Copy link</button></div>
 		</div>
 		<div id="mx-err" class="tu-card mx-error" hidden role="alert"></div>
 		<div id="mx-out" aria-live="polite"></div>
+		<div id="mx-resbar" class="tu-card mx-resbar" hidden>
+			<span class="mx-pickw" id="mx-pickw"><label for="mx-pick" class="tu-label">Result</label> <select id="mx-pick" class="tu-select"></select></span>
+			<span class="mx-rgroup"><span class="mx-rlab">Copy as</span><button type="button" class="tu-chip" data-fmt="text">Text</button><button type="button" class="tu-chip" data-fmt="tsv" title="Tab-separated: pastes into separate cells">Spreadsheet</button><button type="button" class="tu-chip" data-fmt="latex">LaTeX</button><button type="button" class="tu-chip" data-fmt="numpy">NumPy</button></span>
+			<span class="mx-rgroup"><button type="button" class="tu-chip" data-use="a">Use as A</button><button type="button" class="tu-chip" data-use="b">Use as B</button></span>
+		</div>
 		<div class="tu-toast" id="mx-toast" role="status" aria-live="polite"></div>
 
 		<div class="tu-seo">
-			<h2>A matrix calculator that explains the machine-learning parts</h2>
-			<p>Matrices are how a neural network stores what it has learned and how it computes: a layer is <code>y = activation(W·x + b)</code>, a language model's attention is <code>softmax(Q·Kᵀ/√d)·V</code>, and training changes the numbers inside the matrices. This calculator does the usual linear algebra (add, multiply, transpose, determinant, inverse, rank, eigenvalues, SVD, solving equations) and shows the working, and it has the machine-learning operations built in: softmax with temperature, the common activation functions, one dense layer and one attention step.</p>
+			<h2>A matrix calculator that shows the working</h2>
+			<p>Type or paste your matrices, pick an operation and see the answer as a matrix, with the steps where there are steps. It does the usual linear algebra: add, subtract and multiply matrices, multiply by a number, transpose, powers, the determinant, the inverse, rank, trace, row reduction (RREF), solving a system of linear equations, eigenvalues and eigenvectors, the singular value decomposition (SVD) and the QR decomposition. Click any number in a product to see which row and column made it.</p>
+			<h3>Machine learning</h3>
+			<p>Matrices are also how neural networks compute. A layer is <code>y = activation(W·x + b)</code>, a language model's attention is <code>softmax(Q·Kᵀ/√d)·V</code>, and training changes the numbers inside the matrices. The Machine learning group in the list of operations does these steps with your own numbers: softmax with temperature, the common activation functions (ReLU, sigmoid, tanh, GELU), one dense layer and one attention step, with an optional causal mask. Dot products, lengths and cosine similarity (how embeddings are compared) are under Vectors.</p>
+			<h3>Typing and pasting a matrix</h3>
+			<p>Each matrix is a grid. The + and − buttons add or remove rows and columns. Tab and the arrow keys move between cells, and Enter goes down a row. Zero, Identity, Random, Clear and Transpose change the whole grid at once, and Undo puts it back. Blank cells count as 0.</p>
+			<p>To paste, copy a block of cells from a spreadsheet, or a matrix written as text, and paste it into a cell. Pasting into the first cell replaces the whole matrix; pasting further in fills from that cell and makes the grid bigger if needed. The page reads:</p>
+			<ul>
+				<li>spreadsheet cells from Excel, Google Sheets or Numbers (a header row or a first column of labels is skipped)</li>
+				<li>plain text: <code>1 2; 3 4</code>, or one row per line with spaces or commas</li>
+				<li>MATLAB and Octave: <code>[1 2; 3 4]</code></li>
+				<li>NumPy and Python: <code>[[1, 2], [3, 4]]</code> and <code>np.array([[1, 2], [3, 4]])</code></li>
+				<li>LaTeX: <code>\begin{bmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{bmatrix}</code>, and pmatrix, vmatrix and the others</li>
+				<li>Mathematica: <code>{{1, 2}, {3, 4}}</code></li>
+				<li>Markdown tables</li>
+			</ul>
+			<p>Prefer typing? Choose <b>Edit as: Text</b> (or Grid + text). The text box and the grid stay in step. A result can be copied as text, as spreadsheet cells, as LaTeX or as NumPy code, or used as A or B for the next step.</p>
 			<h3>Questions</h3>
 			<h4>Why do the shapes have to match?</h4>
-			<p>To multiply A × B, A's columns must equal B's rows, because each result number is a row of A paired up, one by one, with a column of B. Click any number in a product to see exactly which pairs were multiplied and added. The result has A's rows and B's columns. This is why a layer with 784 inputs and 128 neurons has a 128 × 784 weight matrix.</p>
+			<p>To multiply A × B, A's columns must equal B's rows, because each result number is a row of A paired up, one by one, with a column of B. Click any number in a product: its row of A and column of B light up in the grids and the sum is written out. The result has A's rows and B's columns. This is also why a network layer with 784 inputs and 128 neurons has a 128 × 784 weight matrix.</p>
+			<h4>How do I solve a system of linear equations?</h4>
+			<p>Put the coefficients in A (one equation per row) and the right-hand sides in b, then choose <b>Solve A·x = b</b>. For example 2x + y = 3 and x + 3y = 5 is A = [2 1; 1 3] and b = [3; 5], which gives x = 0.8 and y = 1.4. The page shows every row operation. If b has several columns, each column is solved as its own system.</p>
 			<h4>What is the inverse for?</h4>
-			<p>The inverse undoes a matrix (A⁻¹·A = I). It exists only when the determinant is not 0. Solving <code>A·x = b</code> is the same as <code>x = A⁻¹·b</code>, which is how linear regression's normal equation works. The page shows the row operations that get there.</p>
-			<h4>What do eigenvalues and SVD mean in machine learning?</h4>
-			<p>Eigenvectors are the directions a matrix only stretches; the eigenvalues say by how much. For a symmetric matrix such as a covariance matrix they give the principal components (PCA). SVD does the same job for any rectangular matrix and is behind compression, recommendations and low-rank fine-tuning.</p>
+			<p>The inverse undoes a matrix (A⁻¹·A = I). It exists only when the determinant is not 0. Solving <code>A·x = b</code> is the same as <code>x = A⁻¹·b</code>, which is how the normal equation of linear regression works. The page shows the row operations that get there.</p>
+			<h4>What do eigenvalues and the SVD tell you?</h4>
+			<p>Eigenvectors are the directions a matrix only stretches; the eigenvalues say by how much. For a symmetric matrix such as a covariance matrix they give the principal components (PCA). The SVD does the same job for any rectangular matrix and is behind image compression, recommendations and low-rank fine-tuning (LoRA).</p>
 			<h4>What do softmax and temperature do?</h4>
 			<p>Softmax turns any list of numbers (scores) into probabilities that add up to 1 by giving bigger scores much bigger shares. A low temperature makes the biggest score win almost every time; a high temperature spreads the probability out. Language models use exactly this to pick the next word.</p>
+			<h4>What can I type in a cell?</h4>
+			<p>Numbers (<code>1.5</code>, <code>-2</code>, <code>3e-4</code>), fractions (<code>1/3</code>), <code>pi</code> and <code>e</code>, the signs + − × ÷ and ^, square roots (<code>sqrt(2)</code> or <code>√2</code>), <code>sin</code>, <code>cos</code> and <code>tan</code> (in radians, or add ° for degrees), <code>exp</code>, <code>ln</code> and percentages such as <code>50%</code>. <code>2pi</code> means 2 × pi. A cell that is not a number is outlined in red.</p>
 			<h4>Is the working exact?</h4>
-			<p>Numbers are double-precision decimals, so results can be off in the 15th digit and tiny values show as 0. Fractions are found for display (for example 0.3333 shows as 1/3). Everything is computed in your browser; nothing is sent anywhere.</p>
+			<p>Numbers are double-precision decimals, so results can be off in the 15th digit and tiny values show as 0. Fractions are found for display (for example 0.3333 shows as 1/3 with Show fractions on). Everything is computed in your browser; nothing is sent anywhere.</p>
 		</div>
 	</div>
