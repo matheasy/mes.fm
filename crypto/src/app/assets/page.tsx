@@ -12,7 +12,7 @@ import { timeAgo, usd } from '@/apps/assets/lib/format';
 
 /**
  * mes.fm/assets, kept simple on request (2026-10-19): the total, one table with every asset and its
- * wrapped forms folded under it (GroupedTable), and two donuts (by asset, by type). The per-account
+ * wrapped forms folded under it (GroupedTable), with two donuts above it (by asset, by type). The per-account
  * cards, Bitcoin / Hive summaries and the source list were dropped; a source that failed still shows
  * as one warning line.
  */
@@ -50,8 +50,8 @@ export default function AssetsPage() {
               </p>
             )}
 
-            <GroupedTable groups={groups} accounts={snapshot.groups} />
             <Breakdown holdings={snapshot.holdings} assets={groups} />
+            <GroupedTable groups={groups} accounts={snapshot.groups} />
           </div>
         )}
       </StateView>
