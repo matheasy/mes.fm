@@ -85,6 +85,7 @@ const OCCULT_IDS = new Set(["pPQvYWTc2Xo", "tBWFVtdRYNs", "hrhpo2AWr-g", "BzJmBK
 const CATEGORIES = [
   { id: "hutchison", label: "Hutchison Effect", test: (v) => /hutchison/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0GlfVj5AYNtbF688pr8fk9X" },
   { id: "911", label: "9/11 Truth", test: (v) => /9\/11|\bWTC\b|towers|judy wood/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0G_HHWt33moIqEeUBP3cgCh" },
+  { id: "judywood", label: "Dr. Judy Wood", test: (v) => /judy wood/i.test(v.title) },
   { id: "planes", label: "9/11 Planes Research", test: (v) => /planes research/i.test(v.title) },
   { id: "mh370", label: "MH370", test: (v) => /mh370/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EJGgDKXr-wW8z1jd7pZ069" },
   { id: "beneficence", label: "BeneficenceTV", test: (v) => /beneficence/i.test(v.title), playlist: "https://www.youtube.com/playlist?list=PLai3U8-WIK0EbRnMsUBx2RxlerL7GQuLX" },
@@ -99,6 +100,7 @@ const CATEGORIES = [
 const EXTRA_CATS = {
   lRxpPXnrLgo: ["911", "planes", "mestruth"], // Trailer for 55 (Debbie Welsh, UA93): about 9/11 planes research, shown with MES Truth
   PiJhwXKbRNU: ["911", "planes", "mestruth"], // Trailer for 130 (Impossible Crash Physics on 9/11): same as the 55 trailer
+  "1z-OrtI-rzI": ["judywood"], // 108 (Turning the Tide on 9/11 Disinformation Agents): its trailer is "Disinfo Agents Triggered by Dr. Judy Wood"
 };
 const catsOf = (v) => [...new Set([...CATEGORIES.filter((c) => c.test(v)).map((c) => c.id), ...(EXTRA_CATS[v.id] || [])])].join(" ");
 
