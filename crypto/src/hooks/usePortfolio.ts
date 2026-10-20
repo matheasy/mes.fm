@@ -1,20 +1,10 @@
 'use client';
 
-import useSWR from 'swr';
-import { ApiError, fetchApiResult } from '@/lib/apiFetcher';
-import { BASE_PATH } from '@/lib/basePath';
 import type { CombinedPortfolio } from '@/lib/types';
+import { useStoredThenLive } from './useStoredThenLive';
 
+/** The combined wallets: the last saved numbers at once, then the live ones (see useStoredThenLive) */
 export function usePortfolio() {
-  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/portfolio`, (url: string) =>
-    fetchApiResult<CombinedPortfolio>(url),
-  );
-
-  return {
-    portfolio: data,
-    isLoading,
-    error: error instanceof Error ? error.message : null,
-    rateLimited: error instanceof ApiError && error.rateLimited,
-    refresh: () => mutate(),
-  };
+  const r = useStoredThenLive<CombinedPortfolio>('/api/portfolio');
+  return { ...r, portfolio: r.data };
 }

@@ -1,3 +1,4 @@
+import { remember, storedAnswer } from '@/lib/store/lastSeen';
 import { NextResponse } from 'next/server';
 import { getSnapshot } from '@/apps/assets/lib/snapshot';
 import { getCadRates } from '@/lib/cadRate';
@@ -62,7 +63,9 @@ async function lpHistory(): Promise<LpEvent[]> {
  * PancakeSwap add / removal / harvest from the Main wallet's ledger. Only the Main wallet on BNB
  * Chain: the Magi BTC/HBD pool on @mes is left out by request.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const stored = await storedAnswer(request, 'lp');
+  if (stored) return stored;
   try {
     // the balances snapshot is cached by the Assets section itself; the history comes from the store
     const [snap, history] = await Promise.all([
@@ -101,6 +104,7 @@ export async function GET() {
       totals,
       historyError: history.error,
     } satisfies LpSnapshot;
+    await remember('lp', data);
     return NextResponse.json({ data } satisfies ApiResult<LpSnapshot>);
   } catch (err) {
     return apiErrorResponse(err, 'Failed to load the liquidity positions');

@@ -1,3 +1,4 @@
+import { remember, storedAnswer } from '@/lib/store/lastSeen';
 import { NextResponse } from 'next/server';
 import { cached, cacheKey } from '@/lib/cache';
 import { apiErrorResponse } from '@/lib/errors';
@@ -28,7 +29,9 @@ interface UpstreamSnapshot {
  * Only the totals are passed on, not the holdings list. Cached for 5 minutes: assets' own
  * snapshot is itself cached, this just saves the round trip on every page view.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const stored = await storedAnswer(request, 'assets');
+  if (stored) return stored;
   try {
     const data = await cached<AssetsTotal>(cacheKey('assets-total'), async () => {
       // the Assets section of this same app, called directly (it was a separate app until 2026-09-29)
@@ -43,6 +46,7 @@ export async function GET() {
           .sort((a, b) => b.totalUsd - a.totalUsd),
       };
     }, 300);
+    await remember('assets', data);
     return NextResponse.json({ data } satisfies ApiResult<AssetsTotal>);
   } catch (err) {
     return apiErrorResponse(err, 'Failed to load mes.fm/assets');

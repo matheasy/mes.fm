@@ -2,7 +2,8 @@
 
 import AssetsTotalCard from '@/components/AssetsTotalCard';
 import PortfolioSummary from '@/components/PortfolioSummary';
-import RefreshButton from '@/components/RefreshButton';
+import { useSWRConfig } from 'swr';
+import FreshNote from '@/components/FreshNote';
 import SyncStatus from '@/components/SyncStatus';
 import LpCard from '@/components/LpCard';
 import SovCard from '@/components/SovCard';
@@ -11,7 +12,11 @@ import WalletBreakdown from '@/components/WalletBreakdown';
 import { usePortfolio } from '@/hooks/usePortfolio';
 
 export default function OverviewPage() {
-  const { portfolio, isLoading, error, rateLimited, refresh } = usePortfolio();
+  const { portfolio, isLoading, error, savedAt, updating } = usePortfolio();
+  const { mutate } = useSWRConfig();
+  // fresh prices for every card on the page: current prices are cached for only 2 minutes server-side,
+  // so re-asking the live endpoints is enough (the old Refresh also wiped every wallet's history cache)
+  const refreshPrices = () => mutate((key) => typeof key === 'string' && key.includes('/api/') && !key.includes('stored=1'));
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,14 +54,18 @@ export default function OverviewPage() {
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <SyncStatus />
-        <RefreshButton
-          label="Refresh balances"
-          onRefreshed={refresh}
-          disabledReason={rateLimited ? (error ?? 'Usage limit reached') : undefined}
-        />
+        <button
+          type="button"
+          onClick={() => refreshPrices()}
+          disabled={updating}
+          className="rounded-md border border-bg-border px-3 py-1.5 text-sm text-gray-200 hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {updating ? 'Updating prices…' : 'Refresh prices'}
+        </button>
       </div>
 
-      <StateView loading={isLoading} error={rateLimited && portfolio ? null : error} onRetry={refresh}>
+      <FreshNote savedAt={savedAt} updating={updating} error={error} />
+      <StateView loading={isLoading} error={portfolio ? null : error} onRetry={refreshPrices}>
         {portfolio && (
           <div className="flex flex-col gap-6">
             <PortfolioSummary summary={portfolio} />

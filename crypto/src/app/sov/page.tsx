@@ -1,11 +1,10 @@
 'use client';
 
-import useSWR from 'swr';
+import FreshNote from '@/components/FreshNote';
 import StateView from '@/components/StateView';
+import { useStoredThenLive } from '@/hooks/useStoredThenLive';
 import { money } from '@/components/TaxSummary';
 import { useTaxes } from '@/hooks/useTaxes';
-import { fetchApiResult } from '@/lib/apiFetcher';
-import { BASE_PATH } from '@/lib/basePath';
 import type { SovSnapshot } from '@/lib/types';
 
 const NAMES: Record<string, string> = { BTC: 'Bitcoin', XRP: 'XRP', TGLD: 'TGLD' };
@@ -18,7 +17,9 @@ const qty = (n: number, d = 8) => n.toLocaleString('en-US', { maximumFractionDig
  * from the same calculation as mes.fm/taxes. Used to be a separate app/Vercel project.
  */
 export default function StoreOfValuePage() {
-  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/sov`, (url: string) => fetchApiResult<SovSnapshot>(url));
+  const { data, error: liveError, isLoading, refresh, savedAt, updating } = useStoredThenLive<SovSnapshot>('/api/sov');
+  const mutate = refresh;
+  const error = liveError && !data ? new Error(liveError) : null;
   const { taxes, isLoading: acbLoading } = useTaxes();
   const acb = new Map((taxes?.holdings ?? []).map((h) => [h.asset, h]));
   const rate = data?.cadRate ?? null;
@@ -38,6 +39,7 @@ export default function StoreOfValuePage() {
         .
       </p>
 
+      <FreshNote savedAt={savedAt} updating={updating} error={liveError} />
       <StateView loading={isLoading} error={error instanceof Error ? error.message : null} onRetry={() => mutate()}>
         {data && (
           <div className="flex flex-col gap-6">

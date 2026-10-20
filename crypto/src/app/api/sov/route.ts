@@ -1,3 +1,4 @@
+import { remember, storedAnswer } from '@/lib/store/lastSeen';
 import { NextResponse } from 'next/server';
 import { cached, cacheKey } from '@/lib/cache';
 import { getCadRates } from '@/lib/cadRate';
@@ -84,7 +85,9 @@ interface UpstreamSnapshot {
  * mes.fm/sov used to be its own app and Vercel project; it's now this page, reading the one
  * place that already fetches every balance. Its cost side (ACB) comes from the Taxes calculation.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const stored = await storedAnswer(request, 'sov');
+  if (stored) return stored;
   try {
     const data = await cached<SovSnapshot>(cacheKey('sov-snapshot'), async () => {
       // the Assets section of this same app, called directly (it was a separate app until 2026-09-29)
@@ -110,6 +113,7 @@ export async function GET() {
       const assets = (['BTC', 'XRP', 'TGLD'] as const).map((k) => byAsset.get(k)).filter((a): a is SovAsset => !!a);
       return { fetchedAt: snap.fetchedAt, cadRate: rate, totalUsd: assets.reduce((s, a) => s + a.valueUsd, 0), assets };
     }, 300);
+    await remember('sov', data);
     return NextResponse.json({ data } satisfies ApiResult<SovSnapshot>);
   } catch (err) {
     return apiErrorResponse(err, 'Failed to load the Store of Value holdings');

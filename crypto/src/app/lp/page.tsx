@@ -1,11 +1,10 @@
 'use client';
 
-import useSWR from 'swr';
+import FreshNote from '@/components/FreshNote';
 import StateView from '@/components/StateView';
+import { useStoredThenLive } from '@/hooks/useStoredThenLive';
 import SyncStatus from '@/components/SyncStatus';
 import { money } from '@/components/TaxSummary';
-import { fetchApiResult } from '@/lib/apiFetcher';
-import { BASE_PATH } from '@/lib/basePath';
 import type { LpSnapshot } from '@/lib/types';
 
 const qty = (n: number, d = 6) => n.toLocaleString('en-US', { maximumFractionDigits: d });
@@ -17,7 +16,9 @@ const TYPE_LABELS = { added: 'Added liquidity', removed: 'Removed liquidity', ha
  * from the Assets section, history from the Main wallet's ledger; taxes on it are on mes.fm/taxes.
  */
 export default function LiquidityPage() {
-  const { data, error, isLoading, mutate } = useSWR(`${BASE_PATH}/api/lp`, (url: string) => fetchApiResult<LpSnapshot>(url));
+  const { data, error: liveError, isLoading, refresh, savedAt, updating } = useStoredThenLive<LpSnapshot>('/api/lp');
+  const mutate = refresh;
+  const error = liveError && !data ? new Error(liveError) : null;
   const rate = data?.cadRate ?? null;
 
   return (
@@ -34,6 +35,7 @@ export default function LiquidityPage() {
 
       <SyncStatus onSynced={() => mutate()} />
 
+      <FreshNote savedAt={savedAt} updating={updating} error={liveError} />
       <StateView loading={isLoading} error={error instanceof Error ? error.message : null} onRetry={() => mutate()}>
         {data && (
           <div className="flex flex-col gap-6">

@@ -1,3 +1,4 @@
+import { remember, storedAnswer } from '@/lib/store/lastSeen';
 import { NextResponse } from 'next/server';
 import { fetchAllSources } from '@/lib/combine';
 import type { ApiResult, CombinedPortfolio, Holding, PortfolioSummary, WalletPortfolio } from '@/lib/types';
@@ -5,7 +6,9 @@ import type { ApiResult, CombinedPortfolio, Holding, PortfolioSummary, WalletPor
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-export async function GET() {
+export async function GET(request: Request) {
+  const stored = await storedAnswer(request, 'portfolio');
+  if (stored) return stored;
   const results = await fetchAllSources<PortfolioSummary>('/api/portfolio');
 
   if (results.every((r) => r.data === null)) {
@@ -58,5 +61,6 @@ export async function GET() {
     holdings: Array.from(holdingsBySymbol.values()).sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0)),
   };
 
+  await remember('portfolio', combined);
   return NextResponse.json({ data: combined } satisfies ApiResult<CombinedPortfolio>);
 }

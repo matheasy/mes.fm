@@ -1,5 +1,6 @@
 'use client';
 
+import FreshNote from '@/components/FreshNote';
 import { useAssetsTotal } from '@/hooks/useAssetsTotal';
 
 function formatUsd(value: number): string {
@@ -12,7 +13,7 @@ function formatUsd(value: number): string {
  * everything else: Hive, the Main wallet, XRP, native BTC), so adding the two would double count.
  */
 export default function AssetsTotalCard() {
-  const { assets, isLoading, error } = useAssetsTotal();
+  const { assets, isLoading, error, savedAt, updating } = useAssetsTotal();
 
   return (
     <a href="https://mes.fm/assets" className="panel block transition hover:border-accent">
@@ -24,6 +25,7 @@ export default function AssetsTotalCard() {
       {error && !assets && <p className="mt-2 text-sm text-loss">{error}</p>}
       {assets && (
         <>
+          <FreshNote savedAt={savedAt} updating={updating} error={error} />
           <p className="mt-1 text-3xl font-semibold">{formatUsd(assets.totalAllUsd)}</p>
           <p className="mt-1 text-xs text-gray-500">
             Includes the wallets above &middot; {formatUsd(assets.totalUsd)} in holdings worth $10+ &middot; updated{' '}
