@@ -3,6 +3,7 @@
 import AssetsTotalCard from '@/components/AssetsTotalCard';
 import PortfolioSummary from '@/components/PortfolioSummary';
 import RefreshButton from '@/components/RefreshButton';
+import SyncStatus from '@/components/SyncStatus';
 import LpCard from '@/components/LpCard';
 import SovCard from '@/components/SovCard';
 import StateView from '@/components/StateView';
@@ -46,8 +47,13 @@ export default function OverviewPage() {
         .
       </p>
 
-      <div className="flex items-center justify-end">
-        <RefreshButton onRefreshed={refresh} disabledReason={rateLimited ? (error ?? 'Usage limit reached') : undefined} />
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <SyncStatus />
+        <RefreshButton
+          label="Refresh balances"
+          onRefreshed={refresh}
+          disabledReason={rateLimited ? (error ?? 'Usage limit reached') : undefined}
+        />
       </div>
 
       <StateView loading={isLoading} error={rateLimited && portfolio ? null : error} onRetry={refresh}>

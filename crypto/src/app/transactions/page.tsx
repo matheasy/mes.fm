@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import RefreshButton from '@/components/RefreshButton';
+import SyncStatus from '@/components/SyncStatus';
 import StateView from '@/components/StateView';
 import TransactionFilters from '@/components/TransactionFilters';
 import TransactionsTable from '@/components/TransactionsTable';
@@ -23,9 +23,9 @@ function TransactionsPageInner() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2">
         <h2 className="text-base font-medium text-gray-200">Combined Transaction History</h2>
-        <RefreshButton onRefreshed={refresh} disabledReason={rateLimited ? (error ?? 'Usage limit reached') : undefined} />
+        <SyncStatus onSynced={refresh} />
       </div>
 
       <TransactionFilters filters={filters} onChange={setFilters} />

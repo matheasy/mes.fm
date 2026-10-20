@@ -2,6 +2,7 @@
 
 import useSWR from 'swr';
 import StateView from '@/components/StateView';
+import SyncStatus from '@/components/SyncStatus';
 import { money } from '@/components/TaxSummary';
 import { fetchApiResult } from '@/lib/apiFetcher';
 import { BASE_PATH } from '@/lib/basePath';
@@ -30,6 +31,8 @@ export default function LiquidityPage() {
         </a>
         .
       </p>
+
+      <SyncStatus onSynced={() => mutate()} />
 
       <StateView loading={isLoading} error={error instanceof Error ? error.message : null} onRetry={() => mutate()}>
         {data && (

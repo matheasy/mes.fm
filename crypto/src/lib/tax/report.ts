@@ -1,7 +1,9 @@
 import { getCadRates } from '../cadRate';
-import { fetchSource } from '../combine';
-import { WALLET_SOURCES } from '../sources';
 import { listLabels } from '../labels';
+import { redisClient } from '../cache';
+import { CHECKS_KEY } from '../store/ledgerStore';
+import { readStoredLedger, storeStatusLines } from '../store/read';
+import type { StoreChecks } from '../store/sync';
 import {
   custodyLabelId,
   isTransferLabel,
@@ -20,28 +22,7 @@ import { assetKey } from './assetKey';
 import { contractsAmong, EVM_NETWORKS } from './contracts';
 import { isLpContract } from '../lp';
 import { isOwnAddress, isOwnExchangeDeposit } from './ownAddresses';
-import { getBitcoinEntries } from './sources/bitcoin';
-import { getHiveEntries } from './sources/hive';
-import { getTgldEntries } from './sources/tgld';
-import { getHiveEngineEntries, swapHiveGaps } from './sources/hiveEngine';
-import { getXrpEntries } from './sources/xrp';
 import { groupOf, sourceLabel, sourceLink, type TaxGroup } from './taxSources';
-
-/** What every source app's GET /api/ledger returns (ai/, mfa/, sov/ - see e.g. ai/src/app/api/ledger/route.ts) */
-interface UpstreamLedger {
-  wallet: string;
-  entries: {
-    hash: string;
-    network: string;
-    timestamp: string;
-    token: { symbol: string };
-    from: string;
-    to: string;
-    amount: number;
-    priceUsd: number | null;
-  }[];
-}
-
 
 /** Every source failed to load - carries each one's reason so the page can say which and why */
 export class NoWalletLoadedError extends Error {
@@ -146,27 +127,13 @@ function needsInput(d: AcbDisposal, label: LabelRecord | null): TaxRow['needsInp
 }
 
 /**
- * The whole Taxes report: every source's history (the ai/mfa/sov apps' /api/ledger, plus native
- * Bitcoin and the Hive accounts read here directly), one ACB calculation across all of them
- * (acb.ts), then one tax year's rows, income and receipts. Sources load independently - one being
- * down shows as an error on the page rather than blanking it; if none load, NoWalletLoadedError.
- * Shared by /api/taxes and /api/taxes/export so the page and the CSV always agree.
+ * The whole Taxes report: every stored transaction (lib/store - the permanent copy that the sync keeps
+ * up to date; no outside API is asked here), one ACB calculation across all of them (acb.ts), then one
+ * tax year's rows, income and receipts. A source that was never stored shows as an error (and the CSV
+ * export refuses); one whose last update failed is used as stored, with a note. If nothing is stored at
+ * all, NoWalletLoadedError. Shared by /api/taxes, /api/taxes/export and the "filed" snapshots, so they
+ * always agree.
  */
-/** Runs one keyless source, turning a failure into a reported error instead of a thrown one */
-function settle(load: () => Promise<TaxEntry[]>) {
-  return load().then(
-    (entries) => ({ entries, error: null as string | null }),
-    (err: unknown) => ({ entries: [] as TaxEntry[], error: err instanceof Error ? err.message : 'failed to load' }),
-  );
-}
-
-/**
- * The EVM wallets come from the ai/ (AI Trading + Main) and mfa/ apps' /api/ledger. mes.fm/sov isn't
- * read any more: its Main-wallet BTCB/WBTC is in the Main wallet's own ledger, and XRP and TGLD are
- * read here directly (sources/xrp.ts, sources/tgld.ts), so the report doesn't depend on that app.
- */
-const LEDGER_SOURCES = WALLET_SOURCES.filter((s) => s.key !== 'sov');
-
 const PEG_NETWORKS: Record<NonNullable<TaxEntry['peg']>, (network: string) => boolean> = {
   hive: (n) => n === 'hive',
   bitcoin: (n) => n === 'bitcoin-l1',
@@ -211,71 +178,36 @@ function pairPegMoves(entries: TaxEntry[]): void {
   }
 }
 
-export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }): Promise<TaxesResponse> {
-  const [upstream, bitcoin, xrp, tgld, hiveEngine, hive, labels] = await Promise.all([
-    Promise.all(LEDGER_SOURCES.map((s) => fetchSource<UpstreamLedger>(s, '/api/ledger'))),
-    settle(getBitcoinEntries),
-    settle(getXrpEntries),
-    settle(getTgldEntries),
-    settle(getHiveEngineEntries),
-    getHiveEntries().catch((err: unknown) => ({
-      entries: [] as TaxEntry[],
-      errors: [{ account: 'all accounts', error: err instanceof Error ? err.message : 'failed to load' }],
-      counts: {} as Record<string, number>,
-    })),
-    listLabels(),
-  ]);
+/**
+ * The stored rows in the order the live report used to receive them: each EVM wallet's ledger (all its
+ * networks, oldest first - what /api/ledger returned), then Bitcoin, XRP, TGLD, Hive Engine and the Hive
+ * accounts. The calculation sorts by time anyway; this only keeps exact ties resolved the same way.
+ */
+function inReportOrder(bySource: Record<string, TaxEntry[]>): TaxEntry[] {
+  const ids = Object.keys(bySource);
+  const out: TaxEntry[] = [];
+  for (const w of ['main', 'ai', 'mfa']) {
+    const legs = ids.filter((id) => id.startsWith(`evm:${w}:`)).flatMap((id) => bySource[id]!);
+    out.push(...legs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()));
+  }
+  for (const id of ['bitcoin', 'xrp', 'tgld', 'hive-engine']) out.push(...(bySource[id] ?? []));
+  for (const id of ids.filter((x) => x.startsWith('hive:'))) out.push(...bySource[id]!);
+  return out;
+}
 
-  const entries: TaxEntry[] = [
-    ...upstream.flatMap((r) =>
-      (r.data?.entries ?? []).map((e) => ({
-        source: r.source.key,
-        hash: e.hash,
-        network: e.network,
-        timestamp: e.timestamp,
-        symbol: e.token.symbol,
-        amount: e.amount,
-        priceUsd: e.priceUsd,
-        from: e.from,
-        to: e.to,
-      })),
-    ),
-    ...bitcoin.entries,
-    ...xrp.entries,
-    ...tgld.entries,
-    ...hiveEngine.entries,
-    ...hive.entries,
-  ];
+export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }): Promise<TaxesResponse> {
+  const redis = redisClient();
+  const [stored, labels, checks] = await Promise.all([
+    readStoredLedger(),
+    listLabels(),
+    redis ? redis.get<StoreChecks>(CHECKS_KEY).catch(() => null) : Promise.resolve(null),
+  ]);
+  const entries = inReportOrder(stored.taxBySource);
   pairPegMoves(entries);
 
-  const hiveBySource = new Map<string, number>();
-  for (const e of hive.entries) hiveBySource.set(e.source, (hiveBySource.get(e.source) ?? 0) + 1);
-  const sources: TaxSourceStatus[] = [
-    ...upstream.map((r) => {
-      // a network the wallet app couldn't load is simply absent from its entries - never let that pass
-      // silently, it changes the totals (seen live 2026-09-29: an Ethereum hiccup dropped 6 rows)
-      const failedNetworks = Object.entries(r.networkErrors ?? {});
-      const error =
-        r.error ??
-        (failedNetworks.length
-          ? `${failedNetworks.map(([n, e]) => `${n} (${e})`).join(', ')} didn't load, so those transactions are missing`
-          : null);
-      return { key: r.source.key, label: r.source.label, entries: r.data?.entries.length ?? 0, error };
-    }),
-    { key: 'bitcoin', label: 'Bitcoin', entries: bitcoin.entries.length, error: bitcoin.error },
-    { key: 'xrp', label: 'XRP', entries: xrp.entries.length, error: xrp.error },
-    { key: 'tgld', label: 'TGLD (Hive Engine)', entries: tgld.entries.length, error: tgld.error },
-    { key: 'hive-engine', label: 'Hive Engine (SWAP.HIVE, LEO, SWAP.BTC...)', entries: hiveEngine.entries.length, error: hiveEngine.error },
-    ...Object.keys(hive.counts).map((account) => ({
-      key: `hive:${account}`,
-      label: `Hive @${account}`,
-      entries: hiveBySource.get(`hive:${account}`) ?? 0,
-      error: null,
-    })),
-    ...hive.errors.map((e) => ({ key: `hive:${e.account}`, label: `Hive @${e.account}`, entries: 0, error: e.error })),
-  ];
-  if (entries.length === 0 && sources.every((s) => s.error)) {
-    throw new NoWalletLoadedError(sources.map((s) => `${s.label}: ${s.error}`));
+  const sources: TaxSourceStatus[] = storeStatusLines(stored.metas);
+  if (entries.length === 0) {
+    throw new NoWalletLoadedError(sources.filter((s) => s.error).map((s) => `${s.label}: ${s.error}`));
   }
 
   const cadRatesRaw = await getCadRates(entries.map((e) => e.timestamp));
@@ -294,8 +226,8 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
   }
   // detected round-trip contracts, minus any the owner switched off on the Taxes page
   // SWAP.HIVE counted on Hive Engine but no longer there: spent in a way not tracked yet - say so
-  const gaps = await swapHiveGaps(entries).catch(() => []);
-  for (const g of gaps)
+  // (worked out by the sync, which has the live Hive Engine balance)
+  for (const g of checks?.hiveGaps ?? [])
     sources.push({
       key: `check:hive-engine:${g.account}`,
       label: `Hive Engine @${g.account}`,
@@ -308,7 +240,7 @@ export async function buildTaxReport(opts: { group?: TaxGroup; year?: number }):
       key: `check:contracts:${network}`,
       label: `Round-trip check (${network})`,
       entries: 0,
-      error: `couldn't ask the ${network} network which addresses are contracts, so some round trips there count as sales for now - press Refresh Data in a minute`,
+      error: `couldn't ask the ${network} network which addresses are contracts, so some round trips there count as sales for now - reload the page in a minute`,
     });
   const disabled = new Set([...detected].filter((k) => {
     const [network, address] = k.split(':') as [string, string];

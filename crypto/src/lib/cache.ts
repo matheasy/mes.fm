@@ -2,6 +2,11 @@ import { Redis } from '@upstash/redis';
 
 let client: Redis | null = null;
 
+/** The shared Upstash client (null when Redis isn't configured, e.g. local dev) - also used by lib/store */
+export function redisClient(): Redis | null {
+  return getClient();
+}
+
 function getClient(): Redis | null {
   if (client) return client;
 

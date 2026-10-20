@@ -34,6 +34,8 @@ export type TransactionType = 'send' | 'receive' | 'swap' | 'contract';
 
 export interface Transaction {
   hash: string;
+  /** bsc, ethereum, arbitrum, polygon, hyperliquid (absent on rows from before the store) */
+  network?: string;
   timestamp: string;
   type: TransactionType;
   token: Pick<Token, 'symbol' | 'contractAddress' | 'isNative'>;

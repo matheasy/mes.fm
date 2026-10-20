@@ -3,7 +3,8 @@
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import CsvExportButton from '@/components/CsvExportButton';
-import RefreshButton from '@/components/RefreshButton';
+import FiledReports from '@/components/FiledReports';
+import SyncStatus from '@/components/SyncStatus';
 import StateView from '@/components/StateView';
 import TaxesTable from '@/components/TaxesTable';
 import TaxSummary, { money } from '@/components/TaxSummary';
@@ -79,6 +80,8 @@ function TaxesPageInner() {
         </p>
       </div>
 
+      <SyncStatus onSynced={refresh} />
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <select
@@ -116,7 +119,6 @@ function TaxesPageInner() {
 
         <div className="flex gap-2">
           <CsvExportButton year={taxes?.year ?? year} wallet={wallet} />
-          <RefreshButton onRefreshed={refresh} disabledReason={rateLimited ? (error ?? 'Usage limit reached') : undefined} />
         </div>
       </div>
 
@@ -182,6 +184,7 @@ function TaxesPageInner() {
             )}
 
             <YearNotes year={taxes.year} notes={taxes.yearNotes} onSave={(record) => saveLabel(yearNotesId(taxes.year), record)} />
+            <FiledReports year={taxes.year} />
 
             {taxes.rows.length === 0 ? (
               <div className="panel py-12 text-center text-gray-400">Nothing sold or swapped in {taxes.year}.</div>

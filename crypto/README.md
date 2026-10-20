@@ -150,6 +150,26 @@ CRA's actual rule instead of per-wallet FIFO/LIFO:
   to already-cached upstream endpoints. Only the Taxes page's CAD rates and labels use Redis (see
   above).
 
+## Permanent transaction store (since 2026-10-19)
+
+Every transaction the Taxes, Transactions and Liquidity pages use is kept permanently in Upstash under
+`ledgerstore:v1:*` (no expiry; outside the `portfolio:` / `mfa:` namespaces the Refresh buttons bulk-delete),
+so those pages read a stored copy instead of every API on each visit, and the records survive for a CRA review.
+
+- `src/lib/store/storeSources.ts` - the sources (each wallet x network, each Hive account, Hive Engine, TGLD,
+  Bitcoin, XRP) and the fetchers that fill them (the same code paths the pages used to call live).
+- `src/lib/store/ledgerStore.ts` - chunked storage + the merge rule: a sync may add rows and correct ones it
+  already has, but never drops one; if a source comes back without stored rows, the stored copy is kept, newer
+  rows are appended and the source is marked `held` (shown on the pages). Only a rebuild (owner, POST
+  `/api/sync {"rebuild": [id]}`) takes a fresh copy as it is. Tests: `npx tsx scripts/ledger-store-tests.ts`.
+- `src/lib/store/sync.ts` + `/api/sync` - one sync = all fetchers in parallel, lock + 3-minute minimum gap.
+  Triggers: the daily Vercel cron (`vercel.json`, 10:17 UTC), the page itself when the stored copy is older
+  than 6 h (`components/SyncStatus.tsx`, the "Last synced ... Sync now" bar), and Sync now.
+- `/api/taxes/filed` - frozen "as filed" copies of a year's report (Taxes page, "Records for the CRA").
+- `/api/archive` - the whole archive in parts (index + `?source=`); "Download everything" on the Taxes page and
+  `backup_finance_archive.py` at the repo root assemble it into one JSON file. Owner-only routes check the same
+  Basic Auth as mes.fm's middleware (`src/lib/auth.ts`).
+
 ## Deploying at mes.fm/portfolio and mes.fm/taxes
 
 Same multi-zones pattern as `sov/`/`ai/`/`mfa/` (see any of their READMEs' "Deploying at

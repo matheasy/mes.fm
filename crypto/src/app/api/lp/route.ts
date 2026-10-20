@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSnapshot } from '@/apps/assets/lib/snapshot';
-import { cached, cacheKey } from '@/lib/cache';
 import { getCadRates } from '@/lib/cadRate';
-import { getAggregatedNetworkData } from '@/apps/ai/lib/ledger';
-import { runAsWallet } from '@/apps/ai/lib/walletContext';
+import { readStoredLedger } from '@/lib/store/read';
 import { apiErrorResponse } from '@/lib/errors';
 import { isFarmReward, isLpContract } from '@/lib/lp';
 import type { ApiResult, LpEvent, LpSnapshot } from '@/lib/types';
@@ -23,15 +21,13 @@ interface LedgerEntry {
 
 /**
  * The Main wallet's history, reduced to its PancakeSwap LP transactions, one event per transaction.
- * Read in-process (BNB Chain only - the position is there), not over HTTP from this app's own
- * /finance/ai/api/ledger: that self-call sometimes stalled until its 240s timeout although the same
- * ledger answers in ~20s directly, and the portfolio overview asks for this on every visit.
+ * Read from the permanent store (the Main wallet's BNB Chain copy - the position is there), so it costs
+ * a few database reads instead of re-reading the chain on every visit.
  */
 async function lpHistory(): Promise<LpEvent[]> {
-  const { byNetwork, networkErrors } = await runAsWallet('main', () => getAggregatedNetworkData('bsc', { includeExcluded: true }));
-  const bsc = byNetwork.bsc;
-  if (!bsc) throw new Error(networkErrors.bsc?.message ?? 'Main wallet history unavailable');
-  const entries: LedgerEntry[] = bsc.pricedTransactions.filter((t) => t.amount !== 0);
+  const { tax, metas } = await readStoredLedger(['evm:main:bsc']);
+  if (!metas[0]?.meta?.syncedAt) throw new Error('the Main wallet is not stored yet - press Sync now');
+  const entries: LedgerEntry[] = tax.map((e) => ({ hash: e.hash, timestamp: e.timestamp, token: { symbol: e.symbol }, from: e.from, to: e.to, amount: e.amount, priceUsd: e.priceUsd }));
 
   const byHash = new Map<string, LedgerEntry[]>();
   for (const e of entries) {
@@ -68,11 +64,10 @@ async function lpHistory(): Promise<LpEvent[]> {
  */
 export async function GET() {
   try {
-    // the balances snapshot is cached by the Assets section itself; the history is cached here for 10
-    // minutes, but only when it loaded - a failure is never stored, so the next visit tries again
+    // the balances snapshot is cached by the Assets section itself; the history comes from the store
     const [snap, history] = await Promise.all([
       getSnapshot({ minValueUsd: 0 }),
-      cached(cacheKey('lp-history-v2'), lpHistory, 600).then(
+      lpHistory().then(
         (events) => ({ events, error: null as string | null }),
         (err: unknown) => ({ events: [] as LpEvent[], error: err instanceof Error ? err.message : 'history unavailable' }),
       ),

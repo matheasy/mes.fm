@@ -13,6 +13,19 @@ const TYPE_LABELS: Record<SourcedTransaction['type'], string> = {
   contract: 'Contract',
 };
 
+const EXPLORERS: Record<string, string> = {
+  bsc: 'https://bscscan.com/tx/',
+  ethereum: 'https://etherscan.io/tx/',
+  arbitrum: 'https://arbiscan.io/tx/',
+  polygon: 'https://polygonscan.com/tx/',
+  hyperliquid: 'https://app.hyperliquid.xyz/explorer/tx/',
+};
+
+/** The block explorer of the row's own network (rows used to all link BscScan, even Ethereum ones) */
+function txUrl(network: string | undefined, hash: string): string {
+  return `${EXPLORERS[network ?? 'bsc'] ?? EXPLORERS.bsc}${hash}`;
+}
+
 export default function TransactionsTable({ transactions }: { transactions: SourcedTransaction[] }) {
   return (
     <div className="panel overflow-x-auto">
@@ -31,8 +44,8 @@ export default function TransactionsTable({ transactions }: { transactions: Sour
           </tr>
         </thead>
         <tbody>
-          {transactions.map((t) => (
-            <tr key={`${t.wallet}-${t.hash}-${t.token.contractAddress}`}>
+          {transactions.map((t, i) => (
+            <tr key={`${t.wallet}-${t.hash}-${t.token.contractAddress}-${i}`}>
               <td>
                 <a href={WALLET_LINKS[t.wallet]} className="text-accent hover:underline">
                   {WALLET_LABELS[t.wallet]}
@@ -56,7 +69,7 @@ export default function TransactionsTable({ transactions }: { transactions: Sour
                   <span className="text-gray-500">—</span>
                 ) : (
                   <a
-                    href={`https://bscscan.com/tx/${t.hash}`}
+                    href={txUrl(t.network, t.hash)}
                     target="_blank"
                     rel="noreferrer"
                     className="text-accent hover:underline"
