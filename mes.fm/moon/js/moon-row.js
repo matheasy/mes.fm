@@ -148,19 +148,39 @@
   // view mode: Default / Wide / Theater -- breaks the box out of the normal column width so
   // more of the preview table's columns fit without horizontal scrolling. Not persisted
   // (matches the video embeds' Wide/Theater toggle elsewhere on the site).
+  // The box is centred on the window by measuring where its column (.container) really is:
+  // the page's Wide / Theatre modes and the Jump-to list shift that column off centre, so a
+  // CSS left:50% breakout put the box partly off screen there. Widths use clientWidth (no
+  // scrollbar), so Theater never makes the page scroll sideways.
   var viewMode = 'default';
   var defBtn = $('rowDefaultToggle'), wideBtn = $('rowWideToggle'), theaterBtn = $('rowTheaterToggle');
+  function place() {
+    var s = box.style;
+    if (viewMode === 'default') { if (s.width) s.width = s.maxWidth = s.marginLeft = ''; return; }
+    var vw = document.documentElement.clientWidth, col = box.parentNode.getBoundingClientRect();
+    // Wide: 94% of the window up to 1400px, but never narrower than the column itself
+    // (the page's Theatre mode can already make the column wider than that)
+    var w = viewMode === 'wide' ? Math.min(vw, Math.max(col.width, Math.min(Math.round(vw * 0.94), 1400))) : vw;
+    var x = (vw - w) / 2 - col.left;
+    s.width = w + 'px'; s.maxWidth = 'none'; s.marginLeft = x + 'px';
+  }
   function applyView() {
     box.classList.toggle('row-wide', viewMode === 'wide');
     box.classList.toggle('row-theater', viewMode === 'theater');
     [[defBtn, 'default'], [wideBtn, 'wide'], [theaterBtn, 'theater']].forEach(function (p) {
       p[0].setAttribute('aria-pressed', viewMode === p[1] ? 'true' : 'false');
     });
+    place();
   }
   if (defBtn && wideBtn && theaterBtn) {
     defBtn.addEventListener('click', function () { viewMode = 'default'; applyView(); });
     wideBtn.addEventListener('click', function () { viewMode = viewMode === 'wide' ? 'default' : 'wide'; applyView(); });
     theaterBtn.addEventListener('click', function () { viewMode = viewMode === 'theater' ? 'default' : 'theater'; applyView(); });
     applyView();
+    // re-centre when the window (or its scrollbar) changes size, and when the page's
+    // Standard / Wide / Theatre, Side or Hide buttons move the column (classes on <html>)
+    window.addEventListener('resize', place);
+    if (window.ResizeObserver) new ResizeObserver(place).observe(document.documentElement);
+    if (window.MutationObserver) new MutationObserver(place).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   }
 })();
